@@ -14,6 +14,9 @@ interface PendingBlockOpts {
 
   /* Tx Pool */
   txPool: TxPool
+
+  /* Skip hardfork validation */
+  skipHardForkValidation?: boolean
 }
 
 /**
@@ -27,10 +30,12 @@ export class PendingBlock {
   config: Config
   txPool: TxPool
   pendingPayloads: [payloadId: Buffer, builder: BlockBuilder][] = []
+  private skipHardForkValidation?: boolean
 
   constructor(opts: PendingBlockOpts) {
     this.config = opts.config
     this.txPool = opts.txPool
+    this.skipHardForkValidation = opts.skipHardForkValidation
   }
 
   /**
@@ -87,7 +92,9 @@ export class PendingBlock {
     let blockFull = false
     while (index < txs.length && !blockFull) {
       try {
-        await builder.addTransaction(txs[index])
+        await builder.addTransaction(txs[index], {
+          skipHardForkValidation: this.skipHardForkValidation,
+        })
       } catch (error) {
         if (
           (error as Error).message ===
@@ -100,9 +107,7 @@ export class PendingBlock {
               `Pending: Assembled block full (gasLeft: ${gasLimit - builder.gasUsed})`
             )
           }
-        } else if (
-          (error as Error).message.includes('tx has a different hardfork than the block')
-        ) {
+        } else if ((error as Error).message.includes('tx has a different hardfork than the vm')) {
           // We can here decide to keep a tx in pool if it belongs to future hf
           // but for simplicity just remove the tx as the sender can always retransmit
           // the tx
@@ -163,7 +168,9 @@ export class PendingBlock {
     let skippedByAddErrors = 0
     while (index < txs.length && !blockFull) {
       try {
-        await builder.addTransaction(txs[index])
+        await builder.addTransaction(txs[index], {
+          skipHardForkValidation: this.skipHardForkValidation,
+        })
       } catch (error: any) {
         if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
           if (builder.gasUsed > (builder as any).headerData.gasLimit - BigInt(21000)) {
@@ -171,6 +178,16 @@ export class PendingBlock {
             blockFull = true
             this.config.logger.info(`Pending: Assembled block full`)
           }
+        } else if ((error as Error).message.includes('tx has a different hardfork than the vm')) {
+          // We can here decide to keep a tx in pool if it belongs to future hf
+          // but for simplicity just remove the tx as the sender can always retransmit
+          // the tx
+          this.txPool.removeByHash(txs[index].hash().toString('hex'))
+          this.config.logger.error(
+            `Pending: Removed from txPool tx 0x${txs[index].hash()} having different hf=${txs[
+              index
+            ].common.hardfork()} than block vm hf=${vm._common.hardfork()}`
+          )
         } else {
           skippedByAddErrors++
           // If there is an error adding a tx, it will be skipped

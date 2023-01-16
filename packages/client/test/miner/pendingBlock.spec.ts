@@ -8,6 +8,7 @@ import * as tape from 'tape'
 import * as td from 'testdouble'
 
 import { Config } from '../../lib/config'
+import { getLogger } from '../../lib/logging'
 import { PendingBlock } from '../../lib/miner'
 import { TxPool } from '../../lib/service/txpool'
 import { mockBlockchain } from '../rpc/mockBlockchain'
@@ -35,7 +36,7 @@ const setBalance = async (vm: VM, address: Address, balance: bigint) => {
 }
 
 const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berlin })
-const config = new Config({ transports: [], common })
+const config = new Config({ transports: [], common, logger: getLogger({ loglevel: 'debug' }) })
 
 const setup = () => {
   const stateManager = {
@@ -101,7 +102,7 @@ tape('[PendingBlock]', async (t) => {
     await setBalance(vm, B.address, BigInt(5000000000000000))
     await txPool.add(txA01)
     await txPool.add(txA02)
-    const pendingBlock = new PendingBlock({ config, txPool })
+    const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
@@ -119,7 +120,7 @@ tape('[PendingBlock]', async (t) => {
   t.test('should start and stop', async (t) => {
     const { txPool } = setup()
     await txPool.add(txA01)
-    const pendingBlock = new PendingBlock({ config, txPool })
+    const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
     const vm = await VM.create({ common })
     await setBalance(vm, A.address, BigInt(5000000000000000))
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
@@ -150,7 +151,7 @@ tape('[PendingBlock]', async (t) => {
       { common }
     ).sign(A.privateKey)
     await txPool.add(txA03)
-    const pendingBlock = new PendingBlock({ config, txPool })
+    const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
     await setBalance(vm, A.address, BigInt(5000000000000000))
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
@@ -168,7 +169,7 @@ tape('[PendingBlock]', async (t) => {
   t.test('should not add tx that errors (sender with insufficient funds)', async (t) => {
     const { txPool } = setup()
     await txPool.add(txA01)
-    const pendingBlock = new PendingBlock({ config, txPool })
+    const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
     const vm = await VM.create({ common })
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
@@ -189,7 +190,7 @@ tape('[PendingBlock]', async (t) => {
 
   t.test('should throw when blockchain does not have getTotalDifficulty function', async (st) => {
     const { txPool } = setup()
-    const pendingBlock = new PendingBlock({ config, txPool })
+    const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
     const vm = (txPool as any).vm
     try {
       await pendingBlock.start(vm, new Block())

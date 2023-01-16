@@ -303,9 +303,7 @@ export class Miner {
               `Miner: Assembled block full (gasLeft: ${gasLimit - blockBuilder.gasUsed})`
             )
           }
-        } else if (
-          (error as Error).message.includes('tx has a different hardfork than the block')
-        ) {
+        } else if ((error as Error).message.includes('tx has a different hardfork than the vm')) {
           // We can here decide to keep a tx in pool if it belongs to future hf
           // but for simplicity just remove the tx as the sender can always retransmit
           // the tx
