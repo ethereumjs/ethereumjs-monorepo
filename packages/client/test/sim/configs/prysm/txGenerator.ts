@@ -3,7 +3,7 @@ import { BlobEIP4844Transaction, initKZG } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
-} from '@ethereumjs/tx/test/utils/blobHelpers'
+} from '@ethereumjs/tx/dist/utils/blobHelpers'
 import { Address } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'

@@ -17,7 +17,7 @@ import { calcDataFee, fakeExponential } from '../src/helpers'
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
 if (isBrowser() === false) initKZG(kzg)
-const gethGenesis = require('./testdata/post-merge-hardfork.json')
+const gethGenesis = require('./testdata/4844-hardfork.json')
 const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
   hardfork: Hardfork.ShardingForkDev,

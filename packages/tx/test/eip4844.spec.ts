@@ -16,7 +16,7 @@ const isBrowser = new Function('try {return this===window;}catch(e){ return fals
 const pk = randomBytes(32)
 if (isBrowser() === false) initKZG(kzg)
 
-const gethGenesis = require('../../block/test/testdata/post-merge-hardfork.json')
+const gethGenesis = require('../../block/test/testdata/4844-hardfork.json')
 const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
   hardfork: Hardfork.ShardingForkDev,

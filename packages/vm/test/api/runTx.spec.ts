@@ -789,7 +789,7 @@ tape(
 )
 
 tape('EIP 4844 transaction tests', async (t) => {
-  const genesisJson = require('../../../block/test/testdata/post-merge-hardfork.json')
+  const genesisJson = require('../../../block/test/testdata/4844-hardfork.json')
   const common = Common.fromGethGenesis(genesisJson, {
     chain: 'customChain',
     hardfork: Hardfork.ShardingForkDev,
