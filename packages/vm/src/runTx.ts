@@ -33,7 +33,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // create a reasonable default if no block is given
   opts.block = opts.block ?? Block.fromBlockData({}, { common: opts.tx.common })
 
-  if (opts.skipHardForkValidation === true) {
+  if (opts.skipHardForkValidation !== true) {
     if (opts.block._common.hardfork() !== opts.tx.common.hardfork()) {
       // If hardforks aren't same then we can posibily try upgrading tx hardfork but it may
       // be fraught with challenges. Better to just reject the tx and the tx sender can
