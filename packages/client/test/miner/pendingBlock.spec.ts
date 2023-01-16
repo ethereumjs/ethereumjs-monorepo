@@ -92,8 +92,10 @@ tape('[PendingBlock]', async (t) => {
   }
 
   const txA01 = createTx() // A -> B, nonce: 0, value: 1, normal gasPrice
+  const txA011 = createTx() // A -> B, nonce: 0, value: 1, normal gasPrice
   const txA02 = createTx(A, B, 1, 1, 2000000000) // A -> B, nonce: 1, value: 1, 2x gasPrice
   const txB01 = createTx(B, A, 0, 1, 2500000000) // B -> A, nonce: 0, value: 1, 2.5x gasPrice
+  const txB011 = createTx(B, A, 0, 1, 2500000000) // B -> A, nonce: 0, value: 1, 2.5x gasPrice
 
   t.test('should start and build', async (t) => {
     const { txPool } = setup()
@@ -114,6 +116,35 @@ tape('[PendingBlock]', async (t) => {
     t.equal(block?.header.number, BigInt(1), 'should have built block number 1')
     t.equal(block?.transactions.length, 3, 'should include txs from pool')
     t.equal(receipts.length, 3, 'receipts should match number of transactions')
+    t.equal(pendingBlock.pendingPayloads.length, 0, 'should reset the pending payload after build')
+    t.end()
+  })
+
+  t.test('should filterout hf mismatching txs', async (t) => {
+    const { txPool } = setup()
+    const vm = await VM.create({ common })
+    await setBalance(vm, A.address, BigInt(5000000000000000))
+    await setBalance(vm, B.address, BigInt(5000000000000000))
+
+    txA011.common.setHardfork(Hardfork.Merge)
+    await txPool.add(txA011)
+    t.equal(txPool.txsInPool, 1, '1 txA011 should be added')
+    // skip hardfork validation for ease
+    const pendingBlock = new PendingBlock({ config, txPool })
+    const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
+    const payloadId = await pendingBlock.start(vm, parentBlock)
+    t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
+    t.equal(txPool.txsInPool, 0, 'tx should have been removed from pool')
+
+    txB011.common.setHardfork(Hardfork.Merge)
+    await txPool.add(txB011)
+    t.equal(txPool.txsInPool, 1, '1 txB011 should be added')
+    const built = await pendingBlock.build(payloadId)
+    if (!built) return t.fail('pendingBlock did not return')
+    const [block] = built
+    t.equal(block?.header.number, BigInt(1), 'should have built block number 1')
+    t.equal(block?.transactions.length, 0, 'should include txs from pool')
+    t.equal(txPool.txsInPool, 0, 'txs should have been removed from pool')
     t.equal(pendingBlock.pendingPayloads.length, 0, 'should reset the pending payload after build')
     t.end()
   })
