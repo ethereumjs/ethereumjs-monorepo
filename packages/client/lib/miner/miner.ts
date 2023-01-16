@@ -19,6 +19,9 @@ export interface MinerOptions {
 
   /* FullEthereumService */
   service: FullEthereumService
+
+  /* Skip hardfork validation */
+  skipHardForkValidation?: boolean
 }
 
 /**
@@ -41,6 +44,7 @@ export class Miner {
   private ethash: Ethash | undefined
   private ethashMiner: EthashMiner | undefined
   private nextSolution: Solution | undefined
+  private skipHardForkValidation?: boolean
   public running: boolean
 
   /**
@@ -53,6 +57,7 @@ export class Miner {
     this.execution = this.service.execution
     this.running = false
     this.assembling = false
+    this.skipHardForkValidation = options.skipHardForkValidation
     this.period =
       ((this.config.chainCommon.consensusConfig() as CliqueConfig).period ?? this.DEFAULT_PERIOD) *
       1000 // defined in ms for setTimeout use
@@ -283,7 +288,9 @@ export class Miner {
     let blockFull = false
     while (index < txs.length && !blockFull && !interrupt) {
       try {
-        await blockBuilder.addTransaction(txs[index])
+        await blockBuilder.addTransaction(txs[index], {
+          skipHardForkValidation: this.skipHardForkValidation,
+        })
       } catch (error) {
         if (
           (error as Error).message ===

@@ -160,7 +160,7 @@ tape('[Miner]', async (t) => {
       config,
       chain,
     })
-    const miner = new Miner({ config, service })
+    const miner = new Miner({ config, service, skipHardForkValidation: true })
     const { txPool } = service
     const { vm } = service.execution
 
@@ -193,7 +193,7 @@ tape('[Miner]', async (t) => {
         config,
         chain,
       })
-      const miner = new Miner({ config, service })
+      const miner = new Miner({ config, service, skipHardForkValidation: true })
       const { txPool } = service
       const { vm } = service.execution
       txPool.start()
@@ -249,7 +249,7 @@ tape('[Miner]', async (t) => {
       config,
       chain,
     })
-    const miner = new Miner({ config, service })
+    const miner = new Miner({ config, service, skipHardForkValidation: true })
     const { txPool } = service
     const { vm } = service.execution
     txPool.start()
@@ -298,7 +298,7 @@ tape('[Miner]', async (t) => {
       config,
       chain,
     })
-    const miner = new Miner({ config, service })
+    const miner = new Miner({ config, service, skipHardForkValidation: true })
     const { txPool } = service
     const { vm } = service.execution
     txPool.start()
@@ -339,7 +339,7 @@ tape('[Miner]', async (t) => {
       config,
       chain,
     })
-    const miner = new Miner({ config, service })
+    const miner = new Miner({ config, service, skipHardForkValidation: true })
 
     // stub chainUpdated so assemble isn't called again
     // when emitting Event.CHAIN_UPDATED in this test
@@ -394,7 +394,7 @@ tape('[Miner]', async (t) => {
       config,
       chain,
     })
-    const miner = new Miner({ config, service })
+    const miner = new Miner({ config, service, skipHardForkValidation: true })
 
     const { vm } = service.execution
     ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
@@ -461,7 +461,7 @@ tape('[Miner]', async (t) => {
       config,
       chain,
     })
-    const miner = new Miner({ config, service })
+    const miner = new Miner({ config, service, skipHardForkValidation: true })
     ;(chain.blockchain as any)._validateConsensus = false
     ;(miner as any).chainUpdated = async () => {} // stub
     miner.start()
