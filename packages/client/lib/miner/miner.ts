@@ -309,7 +309,9 @@ export class Miner {
           // the tx
           this.service.txPool.removeByHash(txs[index].hash().toString('hex'))
           this.config.logger.error(
-            `Pending: Removed from txPool tx 0x${txs[index].hash()} having different hf=${txs[
+            `Pending: Removed from txPool tx 0x${txs[index]
+              .hash()
+              .toString('hex')} having different hf=${txs[
               index
             ].common.hardfork()} than block vm hf=${blockBuilder['vm']._common.hardfork()}`
           )

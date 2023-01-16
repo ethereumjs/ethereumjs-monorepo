@@ -116,6 +116,7 @@ tape('[Miner]', async (t) => {
   }
 
   const txA01 = createTx() // A -> B, nonce: 0, value: 1, normal gasPrice
+  const txA011 = createTx() // A -> B, nonce: 0, value: 1, normal gasPrice
   const txA02 = createTx(A, B, 1, 1, 2000000000) // A -> B, nonce: 1, value: 1, 2x gasPrice
   const txA03 = createTx(A, B, 2, 1, 3000000000) // A -> B, nonce: 2, value: 1, 3x gasPrice
   const txB01 = createTx(B, A, 0, 1, 2500000000) // B -> A, nonce: 0, value: 1, 2.5x gasPrice
@@ -177,6 +178,42 @@ tape('[Miner]', async (t) => {
 
     chain.putBlocks = (blocks: Block[]) => {
       t.equal(blocks[0].transactions.length, 1, 'new block should include tx')
+      miner.stop()
+      txPool.stop()
+    }
+    await (miner as any).queueNextAssembly(0)
+    await wait(500)
+  })
+
+  t.test('assembleBlocks() -> with a hardfork mismatching tx', async (t) => {
+    t.plan(3)
+    const chain = new FakeChain() as any
+    const service = new FullEthereumService({
+      config,
+      chain,
+    })
+
+    // no skipHardForkValidation
+    const miner = new Miner({ config, service })
+    const { txPool } = service
+    const { vm } = service.execution
+
+    txPool.start()
+    miner.start()
+
+    await setBalance(vm, A.address, BigInt('200000000000001'))
+
+    // add tx
+    txA011.common.setHardfork(Hardfork.Merge)
+    await txPool.add(txA011)
+    t.equal(txPool.txsInPool, 1, 'transaction should be in pool')
+
+    // disable consensus to skip PoA block signer validation
+    ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
+    // tx as at Harfork.Berlin so lets change the vm's hardfork
+    chain.putBlocks = (blocks: Block[]) => {
+      t.equal(blocks[0].transactions.length, 0, 'new block should not include tx')
+      t.equal(txPool.txsInPool, 0, 'transaction should also have been removed from pool')
       miner.stop()
       txPool.stop()
     }
