@@ -22,7 +22,7 @@ tape('EIP 3541 tests', (t) => {
 
     let vm = await VM.create({ common })
 
-    let result = await vm.runTx({ tx })
+    let result = await vm.runTx({ tx, skipHardForkValidation: true })
     let created = result.createdAddress
 
     let code = await vm.stateManager.getContractCode(created!)
@@ -38,7 +38,7 @@ tape('EIP 3541 tests', (t) => {
       nonce: 1,
     }).sign(pkey)
 
-    result = await vm.runTx({ tx: tx1 })
+    result = await vm.runTx({ tx: tx1, skipHardForkValidation: true })
     created = result.createdAddress
 
     code = await vm.stateManager.getContractCode(created!)
@@ -53,7 +53,7 @@ tape('EIP 3541 tests', (t) => {
       gasLimit: 1000000,
     }).sign(pkey)
 
-    result = await vm.runTx({ tx: tx2 })
+    result = await vm.runTx({ tx: tx2, skipHardForkValidation: true })
     created = result.createdAddress
 
     code = await vm.stateManager.getContractCode(created!)
@@ -78,7 +78,7 @@ tape('EIP 3541 tests', (t) => {
       }
     })
 
-    await vm.runTx({ tx })
+    await vm.runTx({ tx, skipHardForkValidation: true })
 
     let code = await vm.stateManager.getContractCode(address!)
 
@@ -91,7 +91,7 @@ tape('EIP 3541 tests', (t) => {
       nonce: 1,
     }).sign(pkey)
 
-    await vm.runTx({ tx: tx1 })
+    await vm.runTx({ tx: tx1, skipHardForkValidation: true })
 
     code = await vm.stateManager.getContractCode(address!)
 
@@ -114,7 +114,7 @@ tape('EIP 3541 tests', (t) => {
       }
     })
 
-    await vm.runTx({ tx })
+    await vm.runTx({ tx, skipHardForkValidation: true })
 
     let code = await vm.stateManager.getContractCode(address!)
 
@@ -127,7 +127,7 @@ tape('EIP 3541 tests', (t) => {
       nonce: 1,
     }).sign(pkey)
 
-    await vm.runTx({ tx: tx1 })
+    await vm.runTx({ tx: tx1, skipHardForkValidation: true })
 
     code = await vm.stateManager.getContractCode(address!)
 

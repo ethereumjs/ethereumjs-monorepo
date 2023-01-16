@@ -57,7 +57,7 @@ tape('EIP 2929: gas cost tests', (t) => {
 
     const tx = unsignedTx.sign(senderKey)
 
-    const result = await vm.runTx({ tx })
+    const result = await vm.runTx({ tx, skipHardForkValidation: true })
 
     const totalGasUsed = initialGas - currentGas
     st.equal(true, totalGasUsed === BigInt(test.totalGasUsed) + BigInt(21000)) // Add tx upfront cost.
@@ -97,7 +97,7 @@ tape('EIP 2929: gas cost tests', (t) => {
       Account.fromAccountData({ ...account, balance: initialBalance })
     )
 
-    const result = await vm.runTx({ tx })
+    const result = await vm.runTx({ tx, skipHardForkValidation: true })
 
     st.equal(result.totalGasSpent, expectedGasUsed)
   }

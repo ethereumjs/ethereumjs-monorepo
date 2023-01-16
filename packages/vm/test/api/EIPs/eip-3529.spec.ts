@@ -167,6 +167,7 @@ tape('EIP-3529 tests', (t) => {
 
     const result = await vm.runTx({
       tx,
+      skipHardForkValidation: true,
     })
 
     st.equal(result.execResult.exceptionError, undefined, 'transaction executed successfully')
@@ -216,7 +217,7 @@ tape('EIP-3529 tests', (t) => {
       gasLimit: 10000000,
     }).sign(pkey)
 
-    const result = await vm.runTx({ tx })
+    const result = await vm.runTx({ tx, skipHardForkValidation: true })
 
     const actualGasUsed = startGas! - finalGas! + BigInt(21000)
     const maxRefund = actualGasUsed / BigInt(5)

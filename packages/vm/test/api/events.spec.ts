@@ -65,7 +65,7 @@ tape('VM events', (t) => {
       to: '0x1111111111111111111111111111111111111111',
     }).sign(privKey)
 
-    await vm.runTx({ tx, skipBalance: true })
+    await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
     st.equal(emitted, tx)
 
@@ -88,7 +88,7 @@ tape('VM events', (t) => {
       value: 1,
     }).sign(privKey)
 
-    await vm.runTx({ tx, skipBalance: true })
+    await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
     st.equal(bufferToHex(emitted.execResult.returnValue), '0x')
 
@@ -111,7 +111,7 @@ tape('VM events', (t) => {
       value: 1,
     }).sign(privKey)
 
-    await vm.runTx({ tx, skipBalance: true })
+    await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
     st.equal(bufferToHex(emitted.to), '0x1111111111111111111111111111111111111111')
     st.equal(bufferToHex(emitted.code), '0x')
@@ -135,7 +135,7 @@ tape('VM events', (t) => {
       value: 1,
     }).sign(privKey)
 
-    await vm.runTx({ tx, skipBalance: true })
+    await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
     st.equal(bufferToHex(emitted.createdAddress), '0x')
 
@@ -159,7 +159,7 @@ tape('VM events', (t) => {
       data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
     }).sign(privKey)
 
-    await vm.runTx({ tx, skipBalance: true })
+    await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
     st.equal(lastEmitted.opcode.name, 'RETURN')
 
@@ -183,7 +183,7 @@ tape('VM events', (t) => {
       data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
     }).sign(privKey)
 
-    await vm.runTx({ tx, skipBalance: true })
+    await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
     st.equal(
       bufferToHex(emitted.code),

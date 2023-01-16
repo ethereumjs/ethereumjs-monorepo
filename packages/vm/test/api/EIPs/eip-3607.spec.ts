@@ -16,7 +16,7 @@ tape('EIP-3607 tests', (t) => {
     const tx = Transaction.fromTxData({ gasLimit: 100000 }, { freeze: false })
     tx.getSenderAddress = () => precompileAddr
     try {
-      await vm.runTx({ tx })
+      await vm.runTx({ tx, skipHardForkValidation: true })
       st.fail('runTx should have thrown')
     } catch (error: any) {
       if ((error.message as string).includes('EIP-3607')) {
@@ -36,7 +36,7 @@ tape('EIP-3607 tests', (t) => {
       const tx = Transaction.fromTxData({ gasLimit: 100000 }, { freeze: false })
       tx.getSenderAddress = () => precompileAddr
       try {
-        await vm.runTx({ tx })
+        await vm.runTx({ tx, skipHardForkValidation: true })
         st.ok('runTx successfully ran')
       } catch (error: any) {
         st.fail('threw an unexpected error')

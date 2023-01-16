@@ -74,6 +74,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       // @ts-ignore
       root: vm.stateManager._trie.root(),
       skipBlockValidation: true,
+      skipHardForkValidation: true,
     })
 
     const block2Rlp = toBuffer(testData.blocks[1].rlp)
@@ -83,6 +84,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       // @ts-ignore
       root: vm.stateManager._trie.root(),
       skipBlockValidation: true,
+      skipHardForkValidation: true,
     })
 
     const block3Rlp = toBuffer(testData.blocks[2].rlp)
@@ -92,6 +94,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       // @ts-ignore
       root: vm.stateManager._trie.root(),
       skipBlockValidation: true,
+      skipHardForkValidation: true,
     })
 
     const uncleReward = (

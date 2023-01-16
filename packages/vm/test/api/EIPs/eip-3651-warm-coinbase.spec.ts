@@ -55,6 +55,7 @@ tape('EIP 3651 tests', (t) => {
     const result = await vm.runTx({
       block,
       tx,
+      skipHardForkValidation: true,
     })
 
     const vm2 = await getVM(
@@ -64,7 +65,7 @@ tape('EIP 3651 tests', (t) => {
       })
     )
 
-    const result2 = await vm2.runTx({ block, tx })
+    const result2 = await vm2.runTx({ block, tx, skipHardForkValidation: true })
     const expectedDiff =
       common.param('gasPrices', 'coldaccountaccess')! -
       common.param('gasPrices', 'warmstorageread')!

@@ -231,7 +231,7 @@ tape('EIP-3074 AUTH', (t) => {
     account.balance = BigInt(10000000)
     await vm.stateManager.putAccount(callerAddress, account)
 
-    const result = await vm.runTx({ tx, block })
+    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue.slice(31)
     st.ok(buf.equals(Buffer.from('01', 'hex')), 'auth should return 1')
   })
@@ -254,7 +254,7 @@ tape('EIP-3074 AUTH', (t) => {
     account.balance = BigInt(10000000)
     await vm.stateManager.putAccount(callerAddress, account)
 
-    const result = await vm.runTx({ tx, block })
+    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue
     st.ok(buf.equals(zeros(32)), 'auth puts 0 on stack on invalid signature')
   })
@@ -278,7 +278,7 @@ tape('EIP-3074 AUTH', (t) => {
     account.balance = BigInt(10000000)
     await vm.stateManager.putAccount(callerAddress, account)
 
-    const result = await vm.runTx({ tx, block })
+    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue
     st.ok(buf.equals(zeros(32)), 'auth puts 0')
   })
@@ -300,7 +300,7 @@ tape('EIP-3074 AUTH', (t) => {
     account.balance = BigInt(10000000)
     await vm.stateManager.putAccount(callerAddress, account)
 
-    const result = await vm.runTx({ tx, block })
+    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     st.equal(result.execResult.exceptionError?.error, ERROR.AUTH_INVALID_S, 'threw correct error')
   })
 
@@ -326,7 +326,7 @@ tape('EIP-3074 AUTH', (t) => {
     account.balance = BigInt(10000000)
     await vm.stateManager.putAccount(callerAddress, account)
 
-    const result = await vm.runTx({ tx, block })
+    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue.slice(31)
     st.ok(buf.equals(Buffer.from('01', 'hex')), 'auth returned right address')
   })
@@ -351,7 +351,7 @@ tape('EIP-3074 AUTH', (t) => {
     account.balance = BigInt(10000000)
     await vm.stateManager.putAccount(callerAddress, account)
 
-    const result = await vm.runTx({ tx, block })
+    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue.slice(31)
     st.ok(buf.equals(Buffer.from('01', 'hex')), 'auth returned right address')
   })
@@ -373,7 +373,7 @@ tape('EIP-3074 AUTH', (t) => {
     account.balance = BigInt(20000000)
     await vm.stateManager.putAccount(callerAddress, account)
 
-    const result = await vm.runTx({ tx, block })
+    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
 
     st.ok(
       result.execResult.returnValue.slice(31).equals(Buffer.from('80', 'hex')),
@@ -394,7 +394,7 @@ tape('EIP-3074 AUTH', (t) => {
       nonce: 1,
     }).sign(callerPrivateKey)
 
-    const result2 = await vm.runTx({ tx: tx2, block })
+    const result2 = await vm.runTx({ tx: tx2, block, skipHardForkValidation: true })
 
     // the memory size in AUTH is 0x90 (so extra 16 bytes), but memory expands with words (32 bytes)
     // so the correct amount of msize is 0xa0, not 0x90
@@ -437,7 +437,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
-    const result = await vm.runTx({ tx, block })
+    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
 
     const buf = result.execResult.returnValue.slice(31)
     st.ok(buf.equals(Buffer.from('01', 'hex')), 'authcall success')
@@ -471,7 +471,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
-    await vm.runTx({ tx, block })
+    await vm.runTx({ tx, block, skipHardForkValidation: true })
 
     const gasUsed = await vm.stateManager.getContractStorage(
       contractStorageAddress,
@@ -514,7 +514,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
-    await vm.runTx({ tx, block })
+    await vm.runTx({ tx, block, skipHardForkValidation: true })
 
     const gasUsed = await vm.stateManager.getContractStorage(
       contractStorageAddress,
@@ -559,7 +559,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
         value: 1,
       }).sign(callerPrivateKey)
 
-      await vm.runTx({ tx, block })
+      await vm.runTx({ tx, block, skipHardForkValidation: true })
 
       const gasBigInt = gas! - gasAfterCall!
       const expected =
@@ -604,7 +604,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
         value,
       }).sign(callerPrivateKey)
 
-      const result = await vm.runTx({ tx, block })
+      const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
 
       const gasUsed = await vm.stateManager.getContractStorage(
         contractStorageAddress,
@@ -647,7 +647,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
-    const result = await vm.runTx({ tx, block })
+    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     st.equal(
       result.execResult.exceptionError?.error,
       ERROR.AUTHCALL_UNSET,
@@ -683,7 +683,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
-    const result = await vm.runTx({ tx, block })
+    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     st.equal(
       result.execResult.exceptionError?.error,
       ERROR.AUTHCALL_UNSET,
@@ -711,7 +711,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
-    const result = await vm.runTx({ tx, block })
+    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     st.equal(result.amountSpent, tx.gasLimit * tx.gasPrice, 'spent all gas')
     st.equal(result.execResult.exceptionError?.error, ERROR.OUT_OF_GAS, 'correct error type')
   })
@@ -735,7 +735,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
-    const result = await vm.runTx({ tx, block })
+    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     st.equal(result.amountSpent, tx.gasLimit * tx.gasPrice, 'spent all gas')
     st.equal(
       result.execResult.exceptionError?.error,
@@ -763,7 +763,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
-    await vm.runTx({ tx, block })
+    await vm.runTx({ tx, block, skipHardForkValidation: true })
     const gas = await vm.stateManager.getContractStorage(
       contractStorageAddress,
       Buffer.from('00'.repeat(31) + '01', 'hex')
@@ -796,7 +796,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
-    const result = await vm.runTx({ tx, block })
+    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const callInput = await vm.stateManager.getContractStorage(
       contractStorageAddress,
       Buffer.from('00'.repeat(31) + '02', 'hex')
