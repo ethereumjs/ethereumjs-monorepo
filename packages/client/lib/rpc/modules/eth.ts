@@ -439,8 +439,6 @@ export class Eth {
     }
 
     const vm = await this._vm.copy()
-    // Set the vm to correct hardfork
-    vm._common.setHardfork(block._common.hardfork())
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     if (transaction.gas === undefined) {
@@ -478,6 +476,7 @@ export class Eth {
         skipNonce: true,
         skipBalance: true,
         skipBlockGasLimitValidation: true,
+        skipHardForkValidation: true,
         block,
       })
       return `0x${totalGasSpent.toString(16)}`
