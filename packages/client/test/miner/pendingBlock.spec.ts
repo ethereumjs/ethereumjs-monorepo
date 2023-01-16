@@ -102,6 +102,7 @@ tape('[PendingBlock]', async (t) => {
     await setBalance(vm, B.address, BigInt(5000000000000000))
     await txPool.add(txA01)
     await txPool.add(txA02)
+    // skip hardfork validation for ease
     const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
