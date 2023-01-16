@@ -139,7 +139,10 @@ export class BlockBuilder {
    * Throws if the transaction's gasLimit is greater than
    * the remaining gas in the block.
    */
-  async addTransaction(tx: TypedTransaction) {
+  async addTransaction(
+    tx: TypedTransaction,
+    { skipHardForkValidation }: { skipHardForkValidation?: boolean } = {}
+  ) {
     this.checkStatus()
 
     if (!this.checkpointed) {
@@ -162,7 +165,7 @@ export class BlockBuilder {
     const blockData = { header, transactions: this.transactions }
     const block = Block.fromBlockData(blockData, this.blockOpts)
 
-    const result = await this.vm.runTx({ tx, block })
+    const result = await this.vm.runTx({ tx, block, skipHardForkValidation })
 
     this.transactions.push(tx)
     this.transactionResults.push(result)
