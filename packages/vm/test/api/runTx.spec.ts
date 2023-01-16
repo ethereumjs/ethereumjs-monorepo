@@ -266,7 +266,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
     await vm.eei.putAccount(caller, acc)
 
     try {
-      await vm.runTx({ tx })
+      await vm.runTx({ tx, skipHardForkValidation: true })
       // TODO uncomment:
       // t.fail('should throw error')
     } catch (e: any) {
@@ -730,7 +730,7 @@ tape('runTx() -> skipBalance behavior', async (t) => {
       to: Address.zero(),
     }).sign(senderKey)
 
-    const res = await vm.runTx({ tx, skipBalance: true })
+    const res = await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
     t.pass('runTx should not throw with no balance and skipBalance')
     const afterTxBalance = (await vm.stateManager.getAccount(sender)).balance
     t.equal(
@@ -766,7 +766,7 @@ tape(
     const acc = await vm.eei.getAccount(addr)
     acc.balance = BigInt(tx.gasLimit * tx.gasPrice)
     await vm.eei.putAccount(addr, acc)
-    await vm.runTx({ tx })
+    await vm.runTx({ tx, skipHardForkValidation: true })
 
     const hash = await vm.stateManager.getContractStorage(
       codeAddr,
@@ -807,7 +807,11 @@ tape(
     const acc = await vm.eei.getAccount(addr)
     acc.balance = BigInt(tx.gasLimit * tx.gasPrice + tx.value)
     await vm.eei.putAccount(addr, acc)
-    t.equals((await vm.runTx({ tx })).totalGasSpent, BigInt(27818), 'did not charge callNewAccount')
+    t.equals(
+      (await vm.runTx({ tx, skipHardForkValidation: true })).totalGasSpent,
+      BigInt(27818),
+      'did not charge callNewAccount'
+    )
 
     t.end()
   }
@@ -838,7 +842,11 @@ tape(
     const acc = await vm.eei.getAccount(addr)
     acc.balance = BigInt(tx.gasLimit * tx.gasPrice + tx.value)
     await vm.eei.putAccount(addr, acc)
-    t.equals((await vm.runTx({ tx })).totalGasSpent, BigInt(13001), 'did not charge callNewAccount')
+    t.equals(
+      (await vm.runTx({ tx, skipHardForkValidation: true })).totalGasSpent,
+      BigInt(13001),
+      'did not charge callNewAccount'
+    )
 
     t.end()
   }
