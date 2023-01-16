@@ -123,6 +123,11 @@ export const fakeExponential = (factor: bigint, numerator: bigint, denominator: 
   return BigInt(Math.floor(Number(output / denominator)))
 }
 
+/**
+ * Returns the price per unit of data gas for a blob transaction in the current/pending block
+ * @param header the parent header for the current block (or current head of the chain)
+ * @returns the price in gwei per unit of data gas spent
+ */
 export const getDataGasPrice = (header: BlockHeader) => {
   if (header.excessDataGas === undefined) {
     throw new Error('parent header must have excessDataGas field populated')
@@ -134,12 +139,17 @@ export const getDataGasPrice = (header: BlockHeader) => {
   )
 }
 
-export const calcDataFee = (tx: BlobEIP4844Transaction, parent: BlockHeader) => {
+/**
+ * Returns the total fee for data gas spent on `numBlobs` in the current/pending block
+ * @param numBlobs
+ * @param parent parent header of the current/pending block
+ * @returns the total data gas fee for a transaction assuming it contains `numBlobs`
+ */
+export const calcDataFee = (numBlobs: number, parent: BlockHeader) => {
   if (parent.excessDataGas === undefined) {
     throw new Error('parent header must have excessDataGas field populated')
   }
-  const totalDataGas =
-    parent._common.param('gasConfig', 'dataGasPerBlob') * BigInt(tx.versionedHashes.length)
+  const totalDataGas = parent._common.param('gasConfig', 'dataGasPerBlob') * BigInt(numBlobs)
   const dataGasPrice = getDataGasPrice(parent)
   return totalDataGas * dataGasPrice
 }

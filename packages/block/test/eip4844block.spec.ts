@@ -98,7 +98,11 @@ tape('data gas tests', async (t) => {
     )
 
     t.throws(
-      () => calcDataFee(BlobEIP4844Transaction.fromTxData({}, { common }), preShardingHeader),
+      () =>
+        calcDataFee(
+          BlobEIP4844Transaction.fromTxData({}, { common }).numBlobs(),
+          preShardingHeader
+        ),
       (err: any) => err.message.includes('parent header must have excessDataGas field'),
       'calcDataFee throws when header has no excessDataGas field'
     )
@@ -139,8 +143,12 @@ tape('data gas tests', async (t) => {
       { common }
     )
 
-    t.equal(calcDataFee(unsignedTx, lowGasHeader), 131072n, 'compute data fee correctly')
-    t.equal(calcDataFee(unsignedTx, highGasHeader), 786432n, 'compute data fee correctly')
+    t.equal(calcDataFee(unsignedTx.numBlobs(), lowGasHeader), 131072n, 'compute data fee correctly')
+    t.equal(
+      calcDataFee(unsignedTx.numBlobs(), highGasHeader),
+      786432n,
+      'compute data fee correctly'
+    )
     t.end()
   }
 })
