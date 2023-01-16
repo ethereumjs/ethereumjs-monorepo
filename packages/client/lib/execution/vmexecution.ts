@@ -421,9 +421,7 @@ export class VMExecution extends Execution {
     const vm = await this.vm.copy()
 
     for (let blockNumber = first; blockNumber <= last; blockNumber++) {
-      const block = await vm.blockchain.getBlock(
-        Buffer.from('58223568c930c78b16603d30cb657cc9a52315bff3f40f674dd1ae8131a1d9f1', 'hex')
-      )
+      const block = await vm.blockchain.getBlock(blockNumber)
       if (block === null) throw new Error('No block found')
       const parentBlock = await vm.blockchain.getBlock(block.header.parentHash)
       if (parentBlock === null) throw new Error('No block found')
