@@ -88,8 +88,11 @@ export class PendingBlock {
     while (index < txs.length && !blockFull) {
       try {
         await builder.addTransaction(txs[index])
-      } catch (error: any) {
-        if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
+      } catch (error) {
+        if (
+          (error as Error).message ===
+          'tx has a higher gas limit than the remaining gas in the block'
+        ) {
           if (builder.gasUsed > gasLimit - BigInt(21000)) {
             // If block has less than 21000 gas remaining, consider it full
             blockFull = true
@@ -97,7 +100,9 @@ export class PendingBlock {
               `Pending: Assembled block full (gasLeft: ${gasLimit - builder.gasUsed})`
             )
           }
-        } else if (error.message === 'tx has a different hardfork than the block') {
+        } else if (
+          (error as Error).message.includes('tx has a different hardfork than the block')
+        ) {
           // We can here decide to keep a tx in pool if it belongs to future hf
           // but for simplicity just remove the tx as the sender can always retransmit
           // the tx

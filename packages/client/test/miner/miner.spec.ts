@@ -215,7 +215,7 @@ tape('[Miner]', async (t) => {
         const msg = 'txs in block should be properly ordered by gasPrice and nonce'
         const expectedOrder = [txB01, txA01, txA02, txA03]
         for (const [index, tx] of expectedOrder.entries()) {
-          t.ok(blocks[0].transactions[index].hash().equals(tx.hash()), msg)
+          t.ok(blocks[0].transactions[index]?.hash().equals(tx.hash()), msg)
         }
         miner.stop()
         txPool.stop()
