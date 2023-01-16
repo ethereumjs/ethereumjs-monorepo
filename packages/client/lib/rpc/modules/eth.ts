@@ -439,6 +439,7 @@ export class Eth {
     }
 
     const vm = await this._vm.copy()
+    vm._common.setHardfork(block._common.hardfork())
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     if (transaction.gas === undefined) {
