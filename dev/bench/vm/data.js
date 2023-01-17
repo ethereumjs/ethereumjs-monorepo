@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1673946253407,
+  "lastUpdate": 1673956659903,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "48c3d85c630f20d1f83f2b4c5dfab1a286b8a33f",
-          "message": "pre-shanghai: Eof testnet setup (#2316)\n\n* client: Shandong testnet single instance sim run\r\n\r\n* remove extra rebased code\r\n\r\n* reduce diff\r\n\r\n* lint\r\n\r\n* remove feeHistory stub\r\n\r\n* add shandong cleanup comment\r\n\r\n* rename shandong to eof\r\n\r\n* make NETWORK specification mandatory\r\n\r\n* Apply suggestions from code review\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2022-12-05T22:53:55+05:30",
-          "tree_id": "e2b782799244230320b5b9b925d777689465a822",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/48c3d85c630f20d1f83f2b4c5dfab1a286b8a33f"
-        },
-        "date": 1670261207334,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18396,
-            "range": "±2.28%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17724,
-            "range": "±4.43%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18267,
-            "range": "±1.74%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 16183,
-            "range": "±10.49%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18671,
-            "range": "±1.41%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±7.12%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8bcdb4883b6d6ae656c0929a31ebcb5374205590",
+          "message": "Update Dockerfiles to use node 18 (#2487)",
+          "timestamp": "2023-01-17T17:24:58+05:30",
+          "tree_id": "ac90e2b163056a7cdef792286c9bcae94373ab68",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8bcdb4883b6d6ae656c0929a31ebcb5374205590"
+        },
+        "date": 1673956658833,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19470,
+            "range": "±2.28%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 19053,
+            "range": "±2.43%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18541,
+            "range": "±7.44%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19113,
+            "range": "±1.45%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18901,
+            "range": "±1.76%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
