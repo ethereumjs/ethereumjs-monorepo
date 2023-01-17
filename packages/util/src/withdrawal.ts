@@ -4,8 +4,6 @@ import { TypeOutput, toType } from './types'
 
 import type { AddressLike, BigIntLike } from './types'
 
-/** Easy conversion from Gwei to wei */
-export const GWEI_TO_WEI = BigInt(1000000000)
 /**
  * Flexible input data type for EIP-4895 withdrawal data with amount in Gwei to
  * match CL representation and for eventual ssz withdrawalsRoot
