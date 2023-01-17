@@ -5,7 +5,8 @@ import { TypeOutput, toType } from './types'
 import type { AddressLike, BigIntLike } from './types'
 
 /**
- * Flexible input data type for EIP-4895 withdrawal data
+ * Flexible input data type for EIP-4895 withdrawal data with amount in Gwei to
+ * match CL representation and for eventual ssz withdrawalsRoot
  */
 export type WithdrawalData = {
   index: BigIntLike
@@ -15,13 +16,14 @@ export type WithdrawalData = {
 }
 
 /**
- * JSON RPC interface for EIP-4895 withdrawal data
+ * JSON RPC interface for EIP-4895 withdrawal data with amount in Gwei to
+ * match CL representation and for eventual ssz withdrawalsRoot
  */
 export interface JsonRpcWithdrawal {
   index: string // QUANTITY - bigint 8 bytes
   validatorIndex: string // QUANTITY - bigint 8 bytes
   address: string // DATA, 20 Bytes  address to withdraw to
-  amount: string // QUANTITY - bigint amount in wei 32 bytes
+  amount: string // QUANTITY - bigint amount in Gwei 8 bytes
 }
 
 export type WithdrawalBuffer = [Buffer, Buffer, Buffer, Buffer]
@@ -33,11 +35,15 @@ export class Withdrawal {
   /**
    * This constructor assigns and validates the values.
    * Use the static factory methods to assist in creating a Withdrawal object from varying data types.
+   * Its amount is in Gwei to match CL representation and for eventual ssz withdrawalsRoot
    */
   constructor(
     public readonly index: bigint,
     public readonly validatorIndex: bigint,
     public readonly address: Address,
+    /**
+     * withdrawal amount in Gwei to match the CL repesentation and eventually ssz withdrawalsRoot
+     */
     public readonly amount: bigint
   ) {}
 

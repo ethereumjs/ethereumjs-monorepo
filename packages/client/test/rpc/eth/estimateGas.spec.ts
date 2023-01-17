@@ -94,6 +94,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
     skipNonce: true,
     skipBalance: true,
     skipBlockGasLimitValidation: true,
+    skipHardForkValidation: true,
   })
 
   // verify estimated gas is accurate

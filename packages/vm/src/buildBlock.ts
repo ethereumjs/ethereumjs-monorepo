@@ -3,7 +3,7 @@ import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
-import { Address, TypeOutput, Withdrawal, toBuffer, toType } from '@ethereumjs/util'
+import { Address, GWEI_TO_WEI, TypeOutput, Withdrawal, toBuffer, toType } from '@ethereumjs/util'
 
 import { Bloom } from './bloom'
 import { calculateMinerReward, encodeReceipt, rewardAccount } from './runBlock'
@@ -134,7 +134,9 @@ export class BlockBuilder {
       // although this should never happen as no withdrawals with 0
       // amount should ever land up here.
       if (amount === 0n) continue
-      await rewardAccount(this.vm.eei, address, amount)
+      // Withdrawal amount is represented in Gwei so needs to be
+      // converted to wei
+      await rewardAccount(this.vm.eei, address, amount * GWEI_TO_WEI)
     }
   }
 
@@ -144,7 +146,10 @@ export class BlockBuilder {
    * Throws if the transaction's gasLimit is greater than
    * the remaining gas in the block.
    */
-  async addTransaction(tx: TypedTransaction) {
+  async addTransaction(
+    tx: TypedTransaction,
+    { skipHardForkValidation }: { skipHardForkValidation?: boolean } = {}
+  ) {
     this.checkStatus()
 
     if (!this.checkpointed) {
@@ -189,7 +194,7 @@ export class BlockBuilder {
     const blockData = { header, transactions: this.transactions }
     const block = Block.fromBlockData(blockData, this.blockOpts)
 
-    const result = await this.vm.runTx({ tx, block })
+    const result = await this.vm.runTx({ tx, block, skipHardForkValidation })
 
     // If tx is a blob transaction, remove blobs/kzg commitments before adding to block per EIP-4844
     if (tx instanceof BlobEIP4844Transaction) {

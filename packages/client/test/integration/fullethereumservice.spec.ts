@@ -1,9 +1,11 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
+import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Account, toBuffer } from '@ethereumjs/util'
 import * as tape from 'tape'
+import * as td from 'testdouble'
 
 import { Config } from '../../lib/config'
 import { FullEthereumService } from '../../lib/service'
@@ -93,6 +95,24 @@ tape('[Integration:FullEthereumService]', async (t) => {
       new Account(BigInt(0), BigInt('40000000000100000'))
     )
     await service.txPool.add(tx)
+    service.config.chainCommon.getHardforkByBlockNumber =
+      td.func<typeof config.chainCommon.getHardforkByBlockNumber>()
+    td.when(
+      service.config.chainCommon.getHardforkByBlockNumber(
+        td.matchers.anything(),
+        td.matchers.anything(),
+        td.matchers.anything()
+      )
+    ).thenReturn(Hardfork.London)
+    td.when(
+      service.config.chainCommon.getHardforkByBlockNumber(
+        td.matchers.anything(),
+        td.matchers.anything()
+      )
+    ).thenReturn(Hardfork.London)
+    td.when(service.config.chainCommon.getHardforkByBlockNumber(td.matchers.anything())).thenReturn(
+      Hardfork.London
+    )
     const [_, txs] = await peer.eth!.getPooledTransactions({ hashes: [tx.hash()] })
     t.equal(
       txs[0].hash().toString('hex'),

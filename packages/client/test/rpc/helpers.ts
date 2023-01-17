@@ -274,7 +274,7 @@ export async function runBlockWithTxs(
     },
   })
   for (const tx of txs) {
-    await blockBuilder.addTransaction(tx)
+    await blockBuilder.addTransaction(tx, { skipHardForkValidation: true })
   }
   const block = await blockBuilder.build()
 
