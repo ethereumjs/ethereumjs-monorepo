@@ -4,6 +4,11 @@
 export * from './constants'
 
 /**
+ * Units helpers
+ */
+export * from './units'
+
+/**
  * Account class and helper functions
  */
 export * from './account'

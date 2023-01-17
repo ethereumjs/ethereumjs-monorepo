@@ -107,7 +107,7 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
       await Block.genWithdrawalsTrieRoot(withdrawals.map(Withdrawal.fromWithdrawalData))
     ).toString('hex')
     t.equal(withdrawalsRoot, computedWithdrawalsRoot, 'withdrawalsRoot compuation should match')
-    const { server, common } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
     let req = params('engine_forkchoiceUpdatedV2', [validForkChoiceState, validPayloadAttributes])
     let expectRes = checkError(
@@ -141,10 +141,9 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
 
     if (gethBlockRlp !== undefined) {
       // check if stateroot matches
-      const gethBlock = Block.fromRLPSerializedBlock(Buffer.from(gethBlockRlp, 'hex'), { common })
       t.equal(
         payload!.stateRoot,
-        `0x${gethBlock.header.stateRoot.toString('hex')}`,
+        '0x23eadd91fca55c0e14034e4d63b2b3ed43f2e807b6bf4d276b784ac245e7fa3f',
         'stateRoot should match'
       )
     }
