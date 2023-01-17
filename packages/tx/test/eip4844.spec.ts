@@ -146,6 +146,80 @@ tape('Network wrapper tests', async (t) => {
       'has the same hash as the network wrapper version'
     )
 
+    const txWithMissingBlob = BlobEIP4844Transaction.fromTxData(
+      {
+        versionedHashes: bufferedHashes,
+        blobs: blobs.slice(1),
+        kzgCommitments: commitments,
+        maxFeePerDataGas: 100000000n,
+        gasLimit: 0xffffffn,
+        to: randomBytes(20),
+      },
+      { common }
+    )
+
+    const serializedWithMissingBlob = txWithMissingBlob.serializeNetworkWrapper()
+    t.throws(
+      () =>
+        BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(serializedWithMissingBlob, {
+          common,
+        }),
+      (err: any) =>
+        err.message === 'Number of versionedHashes, blobs, and commitments not all equal',
+      'throws when blobs/commitments/hashes mismatch'
+    )
+
+    const mangledValue = commitments[0][0]
+    commitments[0][0] = 154
+    const txWithInvalidCommitment = BlobEIP4844Transaction.fromTxData(
+      {
+        versionedHashes: bufferedHashes,
+        blobs,
+        kzgCommitments: commitments,
+        maxFeePerDataGas: 100000000n,
+        gasLimit: 0xffffffn,
+        to: randomBytes(20),
+      },
+      { common }
+    )
+
+    const serializedWithInvalidCommitment = txWithInvalidCommitment.serializeNetworkWrapper()
+    t.throws(
+      () =>
+        BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(serializedWithInvalidCommitment, {
+          common,
+        }),
+      (err: any) => err.message === 'KZG proof cannot be verified from blobs/commitments',
+      'throws when kzg proof cant be verified'
+    )
+
+    bufferedHashes[0][1] = 2
+    commitments[0][0] = mangledValue
+    const txWithInvalidVersionedHashes = BlobEIP4844Transaction.fromTxData(
+      {
+        versionedHashes: bufferedHashes,
+        blobs,
+        kzgCommitments: commitments,
+        maxFeePerDataGas: 100000000n,
+        gasLimit: 0xffffffn,
+        to: randomBytes(20),
+      },
+      { common }
+    )
+
+    const serializedWithInvalidVersionedHashes =
+      txWithInvalidVersionedHashes.serializeNetworkWrapper()
+    t.throws(
+      () =>
+        BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(
+          serializedWithInvalidVersionedHashes,
+          {
+            common,
+          }
+        ),
+      (err: any) => err.message === 'commitment for blob at index 0 does not match versionedHash',
+      'throws when versioned hashes dont match kzg commitments'
+    )
     t.end()
   }
 })

@@ -47,9 +47,9 @@ const validateBlobTransactionNetworkWrapper = (
     throw new Error('Number of versionedHashes, blobs, and commitments not all equal')
   }
 
-  const verified = kzg.verifyAggregateKzgProof(blobs, commitments, kzgProof)
-
-  if (!verified) {
+  try {
+    kzg.verifyAggregateKzgProof(blobs, commitments, kzgProof)
+  } catch {
     throw new Error('KZG proof cannot be verified from blobs/commitments')
   }
 
@@ -197,7 +197,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
    * @param serialized a buffer representing a serialized BlobTransactionNetworkWrapper
    * @param opts any TxOptions defined
    * @returns a BlobEIP4844Transaction
-   * @throws if no KZG library is loaded -- using the {@link initKzg} helper method -- or if `opts.common` not provided
+   * @throws if no KZG library is loaded -- using the `initKzg` helper method -- or if `opts.common` not provided
    */
   public static fromSerializedBlobTxNetworkWrapper(
     serialized: Buffer,
