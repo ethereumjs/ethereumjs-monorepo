@@ -36,6 +36,10 @@
     "kzgPointEvaluationGasPrecompilePrice": {
       "v": 50000,
       "d": "The fee associated with the point evaluation precompile"
+    },
+    "datahash": {
+      "v": 3,
+      "d": "Base fee of the DATAHASH opcode"
     }
   },
   "sharding": {

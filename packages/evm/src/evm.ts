@@ -843,6 +843,7 @@ export class EVM implements EVMInterface {
       depth: opts.depth,
       selfdestruct: opts.selfdestruct ?? {},
       isStatic: opts.isStatic,
+      versionedHashes: opts.versionedHashes,
     })
 
     return this.runInterpreter(message, { pc: opts.pc })

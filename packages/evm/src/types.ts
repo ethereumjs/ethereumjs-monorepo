@@ -209,6 +209,10 @@ export interface EVMRunCodeOpts {
    * The initial program counter. Defaults to `0`
    */
   pc?: number
+  /**
+   * Versioned hashes for each blob in a blob transaction
+   */
+  versionedHashes?: Buffer[]
 }
 
 interface NewContractEvent {

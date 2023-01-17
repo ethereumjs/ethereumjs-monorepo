@@ -638,9 +638,10 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const index = runState.stack.pop()
       if (runState.env.versionedHashes.length > Number(index)) {
-        return runState.env.versionedHashes[Number(index)]
+        runState.stack.push(bufferToBigInt(runState.env.versionedHashes[Number(index)]))
+      } else {
+        runState.stack.push(BigInt(0))
       }
-      return BigInt(0)
     },
   ],
   // 0x50 range - 'storage' and execution
