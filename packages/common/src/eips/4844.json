@@ -47,10 +47,6 @@
       "v": 1,
       "d": "The number indicated a versioned hash is a KZG commitment"
     },
-    "blsModulus": {
-      "v": 52435875175126190479447740508185965837690552500527637822603658699938581184513,
-      "d": "The BLS modulus that is the upper bound of the finite field in which the point precompile evaluates points"
-    },
     "fieldElementsPerBlob": {
       "v": 4096,
       "d": "The number of field elements allowed per blob"
