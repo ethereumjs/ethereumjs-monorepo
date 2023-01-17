@@ -33,6 +33,21 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // create a reasonable default if no block is given
   opts.block = opts.block ?? Block.fromBlockData({}, { common: opts.tx.common })
 
+  if (opts.skipHardForkValidation !== true) {
+    if (opts.tx.common.hardfork() !== this._common.hardfork()) {
+      // If hardforks aren't same then we can posibily try upgrading tx hardfork but it may
+      // be fraught with challenges. Better to just reject the tx and the tx sender can
+      // update the tx as per new hardfork
+      const msg = _errorMsg('tx has a different hardfork than the vm', this, opts.block, opts.tx)
+      throw new Error(msg)
+    }
+    if (opts.block._common.hardfork() !== this._common.hardfork()) {
+      // Block and VM's hardfork should match as well
+      const msg = _errorMsg('block has a different hardfork than the vm', this, opts.block, opts.tx)
+      throw new Error(msg)
+    }
+  }
+
   if (opts.skipBlockGasLimitValidation !== true && opts.block.header.gasLimit < opts.tx.gasLimit) {
     const msg = _errorMsg('tx has a higher gas limit than the block', this, opts.block, opts.tx)
     throw new Error(msg)

@@ -222,6 +222,11 @@ export interface RunBlockOpts {
    */
   skipBlockValidation?: boolean
   /**
+   * If true, skips the hardfork validation of vm, block
+   * and tx
+   */
+  skipHardForkValidation?: boolean
+  /**
    * if true, will skip "Header validation"
    * If the block has been picked from the blockchain to be executed,
    * header has already been validated, and can be skipped especially when
@@ -305,6 +310,12 @@ export interface RunTxOpts {
    * against the block's gas limit.
    */
   skipBlockGasLimitValidation?: boolean
+
+  /**
+   * If true, skips the hardfork validation of vm, block
+   * and tx
+   */
+  skipHardForkValidation?: boolean
 
   /**
    * If true, adds a generated EIP-2930 access list

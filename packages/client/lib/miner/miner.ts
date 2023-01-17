@@ -19,6 +19,9 @@ export interface MinerOptions {
 
   /* FullEthereumService */
   service: FullEthereumService
+
+  /* Skip hardfork validation */
+  skipHardForkValidation?: boolean
 }
 
 /**
@@ -41,6 +44,7 @@ export class Miner {
   private ethash: Ethash | undefined
   private ethashMiner: EthashMiner | undefined
   private nextSolution: Solution | undefined
+  private skipHardForkValidation?: boolean
   public running: boolean
 
   /**
@@ -53,6 +57,7 @@ export class Miner {
     this.execution = this.service.execution
     this.running = false
     this.assembling = false
+    this.skipHardForkValidation = options.skipHardForkValidation
     this.period =
       ((this.config.chainCommon.consensusConfig() as CliqueConfig).period ?? this.DEFAULT_PERIOD) *
       1000 // defined in ms for setTimeout use
@@ -283,9 +288,14 @@ export class Miner {
     let blockFull = false
     while (index < txs.length && !blockFull && !interrupt) {
       try {
-        await blockBuilder.addTransaction(txs[index])
-      } catch (error: any) {
-        if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
+        await blockBuilder.addTransaction(txs[index], {
+          skipHardForkValidation: this.skipHardForkValidation,
+        })
+      } catch (error) {
+        if (
+          (error as Error).message ===
+          'tx has a higher gas limit than the remaining gas in the block'
+        ) {
           if (blockBuilder.gasUsed > gasLimit - BigInt(21000)) {
             // If block has less than 21000 gas remaining, consider it full
             blockFull = true
@@ -293,6 +303,18 @@ export class Miner {
               `Miner: Assembled block full (gasLeft: ${gasLimit - blockBuilder.gasUsed})`
             )
           }
+        } else if ((error as Error).message.includes('tx has a different hardfork than the vm')) {
+          // We can here decide to keep a tx in pool if it belongs to future hf
+          // but for simplicity just remove the tx as the sender can always retransmit
+          // the tx
+          this.service.txPool.removeByHash(txs[index].hash().toString('hex'))
+          this.config.logger.error(
+            `Pending: Removed from txPool tx 0x${txs[index]
+              .hash()
+              .toString('hex')} having different hf=${txs[
+              index
+            ].common.hardfork()} than block vm hf=${blockBuilder['vm']._common.hardfork()}`
+          )
         } else {
           // If there is an error adding a tx, it will be skipped
           const hash = '0x' + txs[index].hash().toString('hex')

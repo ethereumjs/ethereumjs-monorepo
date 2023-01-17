@@ -66,6 +66,67 @@ tape('runTx() -> successful API parameter usage', async (t) => {
     st.end()
   })
 
+  t.test('test successful hardfork matching', async (st) => {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const vm = await VM.create({
+      common,
+      blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),
+    })
+    const tx = getTransaction(vm._common, 0, true)
+    const caller = tx.getSenderAddress()
+    const acc = createAccount()
+    await vm.eei.putAccount(caller, acc)
+    const block = Block.fromBlockData({}, { common: vm._common.copy() })
+    await vm.runTx({ tx, block })
+    st.pass('matched hardfork should run without throwing')
+    st.end()
+  })
+
+  t.test('test hardfork mismatch', async (st) => {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const vm = await VM.create({
+      common,
+      blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),
+    })
+    const tx = getTransaction(vm._common, 0, true)
+    const caller = tx.getSenderAddress()
+    const acc = createAccount()
+    await vm.eei.putAccount(caller, acc)
+    const block = Block.fromBlockData({}, { common: vm._common.copy() })
+
+    tx.common.setHardfork(Hardfork.Merge)
+    try {
+      await vm.runTx({ tx, block })
+      st.fail('vm/tx mismatched hardfork should have failed')
+    } catch (e) {
+      st.equal(
+        (e as Error).message.includes('tx has a different hardfork than the vm'),
+        true,
+        'block has a different hardfork than the vm'
+      )
+      st.pass('vm/tx mismatched hardfork correctly failed')
+    }
+
+    tx.common.setHardfork(Hardfork.London)
+    block._common.setHardfork(Hardfork.Merge)
+    try {
+      await vm.runTx({ tx, block })
+      st.fail('vm/tx mismatched hardfork should have failed')
+    } catch (e) {
+      st.equal(
+        (e as Error).message.includes('block has a different hardfork than the vm'),
+        true,
+        'block has a different hardfork than the vm'
+      )
+      st.pass('vm/tx mismatched hardfork correctly failed')
+    }
+
+    await vm.runTx({ tx, block, skipHardForkValidation: true })
+    st.pass('runTx should not fail with mismatching hardforks if validation skipped')
+
+    st.end()
+  })
+
   t.test('should use passed in blockGasUsed to generate tx receipt', async (t) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const vm = await VM.create({ common })
@@ -205,7 +266,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
     await vm.eei.putAccount(caller, acc)
 
     try {
-      await vm.runTx({ tx })
+      await vm.runTx({ tx, skipHardForkValidation: true })
       // TODO uncomment:
       // t.fail('should throw error')
     } catch (e: any) {
@@ -669,7 +730,7 @@ tape('runTx() -> skipBalance behavior', async (t) => {
       to: Address.zero(),
     }).sign(senderKey)
 
-    const res = await vm.runTx({ tx, skipBalance: true })
+    const res = await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
     t.pass('runTx should not throw with no balance and skipBalance')
     const afterTxBalance = (await vm.stateManager.getAccount(sender)).balance
     t.equal(
@@ -705,7 +766,7 @@ tape(
     const acc = await vm.eei.getAccount(addr)
     acc.balance = BigInt(tx.gasLimit * tx.gasPrice)
     await vm.eei.putAccount(addr, acc)
-    await vm.runTx({ tx })
+    await vm.runTx({ tx, skipHardForkValidation: true })
 
     const hash = await vm.stateManager.getContractStorage(
       codeAddr,
@@ -746,7 +807,11 @@ tape(
     const acc = await vm.eei.getAccount(addr)
     acc.balance = BigInt(tx.gasLimit * tx.gasPrice + tx.value)
     await vm.eei.putAccount(addr, acc)
-    t.equals((await vm.runTx({ tx })).totalGasSpent, BigInt(27818), 'did not charge callNewAccount')
+    t.equals(
+      (await vm.runTx({ tx, skipHardForkValidation: true })).totalGasSpent,
+      BigInt(27818),
+      'did not charge callNewAccount'
+    )
 
     t.end()
   }
@@ -777,7 +842,11 @@ tape(
     const acc = await vm.eei.getAccount(addr)
     acc.balance = BigInt(tx.gasLimit * tx.gasPrice + tx.value)
     await vm.eei.putAccount(addr, acc)
-    t.equals((await vm.runTx({ tx })).totalGasSpent, BigInt(13001), 'did not charge callNewAccount')
+    t.equals(
+      (await vm.runTx({ tx, skipHardForkValidation: true })).totalGasSpent,
+      BigInt(13001),
+      'did not charge callNewAccount'
+    )
 
     t.end()
   }
