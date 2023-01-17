@@ -134,7 +134,8 @@ function checkOpcodes(container: EOFContainer, opcodeList: OpcodeList): true {
         const jumptableSize = tableSize * 2
         if (pos + jumptableSize + 1 > code.length - 1) {
           // JUMP table is not contained in the code
-          throw new Error('RJUMPV opcode exceeds code bounds')
+          // throw new Error('RJUMPV opcode exceeds code bounds')
+          throw new Error('err: relative offset out of bounds')
         }
         const finalPos = pos + 1 + jumptableSize
         for (let immediate = pos; immediate < finalPos; immediate++) {
@@ -291,11 +292,9 @@ function checkOpcodes(container: EOFContainer, opcodeList: OpcodeList): true {
     }
     if (maxHeight !== container.body.typeSections[currentSection].maxStackHeight) {
       throw new Error(
-        `Section max height does not correspond to actual max height, expected: 0x${maxHeight
-          .toString(16)
-          .padStart(4, '0')}, got: 0x${container.body.typeSections[currentSection].maxStackHeight
-          .toString(16)
-          .padStart(4, '0')}`
+        `err: computed max stack height for code section ${currentSection} does not match expect (want: ${maxHeight.toString()}, got:${container.body.typeSections[
+          currentSection
+        ].maxStackHeight.toString()}`
       )
     }
   }

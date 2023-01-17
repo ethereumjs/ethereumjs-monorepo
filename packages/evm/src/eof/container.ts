@@ -70,6 +70,9 @@ class EOFHeader {
     const stream = new StreamReader(buf)
     stream.verifyBytes(MAGIC, EOFError.MAGIC)
     stream.verifyUint(VERSION, EOFError.VERSION)
+    if (buf.length < 11) {
+      throw new Error('err: container size less than minimum valid size')
+    }
     stream.verifyUint(KIND_TYPE, EOFError.KIND_TYPE)
     const typeSize = stream.readUint16(EOFError.TypeSize)
     if (typeSize < 4) {
@@ -77,6 +80,9 @@ class EOFHeader {
     }
     if (typeSize % 4 !== 0) {
       validationError(EOFError.InvalidTypeSize, typeSize)
+    }
+    if (typeSize > 1024) {
+      throw new Error(`err: number of code sections must not exceed 1024 (got ${typeSize})`)
     }
     stream.verifyUint(KIND_CODE, EOFError.KIND_CODE)
     const codeSize = stream.readUint16(EOFError.CodeSize)
@@ -87,7 +93,7 @@ class EOFHeader {
       validationError(EOFError.MaxCodeSections)
     }
     if (codeSize !== typeSize / 4) {
-      validationError(EOFError.TypeSections)
+      validationError(EOFError.TypeSections, typeSize / 4, codeSize)
     }
     const codeSizes = []
     for (let i = 0; i < codeSize; i++) {
