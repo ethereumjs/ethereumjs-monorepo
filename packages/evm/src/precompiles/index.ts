@@ -161,7 +161,7 @@ function getPrecompile(address: Address, common: Common): PrecompileFunc {
       (availability.type === PrecompileAvailabilityCheck.Hardfork &&
         common.gteHardfork(availability.param)) ||
       (availability.type === PrecompileAvailabilityCheck.EIP &&
-        common.eips().includes(availability.param))
+        common.isActivatedEIP(availability.param))
     ) {
       return precompiles[addr]
     }

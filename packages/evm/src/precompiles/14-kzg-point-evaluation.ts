@@ -7,9 +7,7 @@ import { ERROR, EvmError } from '../exceptions'
 import type { ExecResult } from '../evm'
 import type { PrecompileInput } from './types'
 
-const { verifyKzgProof } = kzg
-
-const BLS_MODULUS = BigInt(
+export const BLS_MODULUS = BigInt(
   '52435875175126190479447740508185965837690552500527637822603658699938581184513'
 )
 
@@ -34,7 +32,7 @@ export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
     return EvmErrorResult(new EvmError(ERROR.INVALID_COMMITMENT), opts.gasLimit)
   }
 
-  verifyKzgProof(commitment, z, y, kzgProof)
+  kzg.verifyKzgProof(commitment, z, y, kzgProof)
 
   // Return value - FIELD_ELEMENTS_PER_BLOB and BLS_MODULUS as padded 32 byte big endian values
   const fieldElementsBuffer = setLengthLeft(bigIntToBuffer(fieldElementsPerBlob), 32)
