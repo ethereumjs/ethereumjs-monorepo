@@ -58,7 +58,7 @@ export class Block {
    * @param wts array of Withdrawal to compute the root of
    */
   public static async generateWithdrawalsSSZRoot(withdrawals: Withdrawal[]) {
-    ssz.Withdrawals.hashTreeRoot(wts.map((wt) => wt.toValue()))
+    ssz.Withdrawals.hashTreeRoot(withdrawals.map((wt) => wt.toValue()))
   }
 
   /**
