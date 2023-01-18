@@ -34,6 +34,11 @@ export * from './signature'
 export * from './bytes'
 
 /**
+ * SSZ containers
+ */
+export * as ssz from './ssz'
+
+/**
  * Helpful TypeScript types
  */
 export * from './types'
