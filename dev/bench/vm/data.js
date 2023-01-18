@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1673956659903,
+  "lastUpdate": 1674060879727,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b6a896bad4abc285fea1ea92f5c0e363c7f45ee6",
-          "message": "evm: fix forfeiting refunds/selfdestructs when there is a codestore-out-of-gas error (chainstart/frontier only) (#2439)\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2022-12-06T14:54:25+01:00",
-          "tree_id": "d83261f98c0a3d6ec66284fa6373ed5f4154851d",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b6a896bad4abc285fea1ea92f5c0e363c7f45ee6"
-        },
-        "date": 1670335021641,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19500,
-            "range": "±2.53%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18586,
-            "range": "±4.97%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 19660,
-            "range": "±1.38%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19128,
-            "range": "±1.50%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 17001,
-            "range": "±9.37%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.76%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6508bf9213d32929e0e2456c9c4fcfabe4e9d3c6",
+          "message": "util: Add ssz roots capability for withdrawals hash tree root (#2488)\n\n* util: Add ssz roots capability for withdrawals hash tree root\r\n\r\n* Fix karma setup\r\n\r\n* Update rlp to v4.0.0\r\n\r\n* add cl spec testcase\r\n\r\n* better naming\r\n\r\n* improve wording\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* improve wording\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* fix\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-01-18T11:51:23-05:00",
+          "tree_id": "c03aa0931ce219424a64426c8ed6c10cb119bdca",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6508bf9213d32929e0e2456c9c4fcfabe4e9d3c6"
+        },
+        "date": 1674060878527,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 13675,
+            "range": "±3.77%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 13804,
+            "range": "±6.32%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 13943,
+            "range": "±2.89%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 13459,
+            "range": "±2.91%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 12126,
+            "range": "±11.84%",
+            "unit": "ops/sec",
+            "extra": "66 samples"
           }
         ]
       }
