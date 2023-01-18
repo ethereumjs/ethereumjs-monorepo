@@ -54,7 +54,7 @@ export class Block {
   }
 
   /**
-   * Returns the withdrawals ssz root for array of Withdrawal.
+   * Returns the ssz root for array of withdrawal transactions.
    * @param wts array of Withdrawal to compute the root of
    */
   public static async genWithdrawalsSSZRoot(wts: Withdrawal[]) {
