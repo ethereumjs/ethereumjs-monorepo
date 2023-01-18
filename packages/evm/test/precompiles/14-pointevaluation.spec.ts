@@ -1,6 +1,6 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { computeVersionedHash, initKZG } from '@ethereumjs/tx'
-import { bufferToBigInt, unpadBuffer } from '@ethereumjs/util'
+import { bigIntToBuffer, bufferToBigInt, unpadBuffer } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import * as tape from 'tape'
 
@@ -56,11 +56,51 @@ tape('Precompiles: point evaluation', async (t) => {
     _common: common,
   }
 
-  const res = await pointEvaluation(opts)
+  let res = await pointEvaluation(opts)
   t.equal(
     bufferToBigInt(unpadBuffer(res.returnValue.slice(32))),
     BLS_MODULUS,
     'point evaluation precompile returned expected output'
+  )
+
+  const optsWithBigNumbers: PrecompileInput = {
+    data: Buffer.concat([
+      versionedHash,
+      testCase.InputPoint,
+      bigIntToBuffer(BLS_MODULUS + 5n),
+      testCase.Commitment,
+      testCase.Proof,
+    ]),
+    gasLimit: 0xfffffffffn,
+    _EVM: evm,
+    _common: common,
+  }
+
+  res = await pointEvaluation(optsWithBigNumbers)
+  t.equal(
+    res.exceptionError?.error,
+    'point greater than BLS modulus',
+    'point evaluation precompile throws when points are too big'
+  )
+
+  const optsWithInvalidCommitment: PrecompileInput = {
+    data: Buffer.concat([
+      Buffer.concat([Uint8Array.from([0]), versionedHash.slice(1)]),
+      testCase.InputPoint,
+      testCase.ClaimedValue,
+      testCase.Commitment,
+      testCase.Proof,
+    ]),
+    gasLimit: 0xfffffffffn,
+    _EVM: evm,
+    _common: common,
+  }
+
+  res = await pointEvaluation(optsWithInvalidCommitment)
+  t.equal(
+    res.exceptionError?.error,
+    'kzg commitment does not match versioned hash',
+    'precompile throws when commitment doesnt match versioned hash'
   )
   t.end()
 })
