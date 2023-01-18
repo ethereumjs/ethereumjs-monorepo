@@ -103,6 +103,15 @@ export class Withdrawal {
     return Withdrawal.toBufferArray(this)
   }
 
+  toValue() {
+    return {
+      index: this.index,
+      validatorIndex: this.validatorIndex,
+      address: this.address.buf,
+      amount: this.amount,
+    }
+  }
+
   toJSON() {
     return {
       index: bigIntToHex(this.index),

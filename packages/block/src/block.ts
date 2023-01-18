@@ -11,6 +11,7 @@ import {
   bufferToHex,
   intToHex,
   isHexPrefixed,
+  ssz,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { ethers } from 'ethers'
@@ -50,6 +51,14 @@ export class Block {
       await trie.put(Buffer.from(RLP.encode(i)), arrToBufArr(RLP.encode(wt.raw())))
     }
     return trie.root()
+  }
+
+  /**
+   * Returns the withdrawals ssz root for array of Withdrawal.
+   * @param wts array of Withdrawal to compute the root of
+   */
+  public static async genWithdrawalsSSZRoot(wts: Withdrawal[]) {
+    ssz.Withdrawals.hashTreeRoot(wts.map((wt) => wt.toValue()))
   }
 
   /**

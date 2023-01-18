@@ -83,12 +83,18 @@ tape('Withdrawal', (t) => {
     st.end()
   })
 
-  t.test('fromValuesArray and toJSON', (st) => {
+  t.test('fromValuesArray, toJSON and toValue', (st) => {
     const withdrawals = (gethWithdrawalsBuffer as WithdrawalBuffer[]).map(
       Withdrawal.fromValuesArray
     )
     const withdrawalsJson = withdrawals.map((wt) => wt.toJSON())
     st.deepEqual(withdrawalsGethVector, withdrawalsJson, 'Withdrawals json should match')
+
+    const withdrawalsValue = withdrawals.map((wt) => wt.toValue())
+    st.deepEqual(
+      withdrawalsValue.map((wt) => `0x${wt.address.toString('hex')}`),
+      withdrawalsJson.map((wt) => wt.address)
+    )
     st.end()
   })
 })
