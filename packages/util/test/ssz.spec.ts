@@ -71,4 +71,24 @@ tape('ssz', (t) => {
     )
     st.end()
   })
+
+  const specWithdrawals = [
+    // https://github.com/ethereum/consensus-spec-tests/tree/v1.3.0-rc.1/tests/mainnet/capella/ssz_static/Withdrawal/ssz_random/case_0
+    {
+      index: BigInt('17107150653359250726'),
+      validatorIndex: BigInt('1906681273455760070'),
+      address: Buffer.from('02ab1379b6334b58df82c85d50ff1214663cba20', 'hex'),
+      amount: BigInt('5055030296454530815'),
+    },
+  ]
+
+  t.test('match spec v1.3.0-rc.1', (st) => {
+    const withdrawalsRoot = ssz.Withdrawal.hashTreeRoot(specWithdrawals[0])
+    st.equal(
+      Buffer.from(withdrawalsRoot).toString('hex'),
+      'ed9cec6fb8ee22b146059d02c38940cca1dd22a00d0132b000999b983fceff95',
+      'ssz root should match'
+    )
+    st.end()
+  })
 })
