@@ -284,7 +284,9 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe:
       'Block number to start syncing from. Must be lower than the local chain tip. Note: this is destructive and removes blocks from the blockchain, please back up your datadir before using.',
     number: true,
-  }).argv
+  })
+  // strict() ensures that yargs throws when an invalid arg is provided
+  .strict().argv
 
 /**
  * Initializes and returns the databases needed for the client
