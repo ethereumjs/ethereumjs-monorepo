@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1674133471401,
+  "lastUpdate": 1674158362286,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "tim@daubenschuetz.de",
-            "name": "Tim Daubenschütz",
-            "username": "TimDaub"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "0d398cba77d7e5d88566076b58379400c1f0d3b8",
-          "message": "In readme, remove references to LevelDB abstraction (#2434)\n\n`LevelDB` abstraction was removed and can now not be imported through @ethereumjs/trie >= 5.0.0 anymore. Hence, for most examples in the readme.md file, we're removing references to a top-level exported `LevelDB` abstraction, and we're replacing it with the generic and in-memory `MapDB` implementation.",
-          "timestamp": "2022-12-07T11:00:07+01:00",
-          "tree_id": "6c17cd6db670c2bddf4dff98b2e0f637e6c53141",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0d398cba77d7e5d88566076b58379400c1f0d3b8"
-        },
-        "date": 1670407770382,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19363,
-            "range": "±2.15%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18391,
-            "range": "±4.59%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 19429,
-            "range": "±1.32%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18880,
-            "range": "±1.43%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 17326,
-            "range": "±7.80%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.26%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2036b55d0720e090441a606115e6a7285c9f8d63",
+          "message": "Implement EIP-4844 (#2349)\n\nAdd first round of EIP-4844\r\nCo-authored-by: harkamal <develop@g11tech.io>",
+          "timestamp": "2023-01-19T14:56:29-05:00",
+          "tree_id": "c5d67d6d3e5700c5cc861a19708695ffbd6c47f9",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2036b55d0720e090441a606115e6a7285c9f8d63"
+        },
+        "date": 1674158361138,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18035,
+            "range": "±2.83%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 17333,
+            "range": "±6.67%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 17554,
+            "range": "±1.98%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 16635,
+            "range": "±6.01%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 15932,
+            "range": "±11.02%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
           }
         ]
       }
