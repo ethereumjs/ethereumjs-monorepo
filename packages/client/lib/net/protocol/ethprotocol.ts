@@ -1,7 +1,7 @@
 import { Block, BlockHeader, getDifficulty, valuesArrayToHeaderData } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, TransactionFactory } from '@ethereumjs/tx'
 import {
   arrToBufArr,
   bigIntToUnpaddedBuffer,
@@ -95,6 +95,8 @@ export class EthProtocol extends Protocol {
       encode: (txs: TypedTransaction[]) => {
         const serializedTxs = []
         for (const tx of txs) {
+          // Don't automatically broadcast blob transactions - they should only be announced using NewPooledTransactionHashes
+          if (tx instanceof BlobEIP4844Transaction) continue
           serializedTxs.push(tx.serialize())
         }
         return serializedTxs
@@ -149,12 +151,13 @@ export class EthProtocol extends Protocol {
           const common = this.config.chainCommon
           // If this is a post merge block, we can still send chainTTD since it would still lead
           // to correct hardfork choice
-          return BlockHeader.fromValuesArray(
+          const header = BlockHeader.fromValuesArray(
             h,
             difficulty > 0
               ? { common, hardforkByBlockNumber: true }
               : { common, hardforkByTTD: this.chainTTD }
           )
+          return header
         }),
       ],
     },
@@ -217,10 +220,16 @@ export class EthProtocol extends Protocol {
       encode: ({ reqId, txs }: { reqId: bigint; txs: TypedTransaction[] }) => {
         const serializedTxs = []
         for (const tx of txs) {
-          if (tx.type === 0) {
-            serializedTxs.push(tx.raw())
-          } else {
-            serializedTxs.push(tx.serialize())
+          switch (tx.type) {
+            case 0:
+              serializedTxs.push(tx.raw())
+              break
+            case 5:
+              serializedTxs.push((tx as BlobEIP4844Transaction).serializeNetworkWrapper())
+              break
+            default:
+              serializedTxs.push(tx.serialize())
+              break
           }
         }
         return [bigIntToUnpaddedBuffer(reqId), serializedTxs]
@@ -237,7 +246,13 @@ export class EthProtocol extends Protocol {
         )
         return [
           bufferToBigInt(reqId),
-          txs.map((txData) => TransactionFactory.fromBlockBodyData(txData, { common })),
+          txs.map((txData) => {
+            if (txData[0] === 5) {
+              // Blob transactions are deserialized with network wrapper
+              return BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txData)
+            }
+            return TransactionFactory.fromBlockBodyData(txData)
+          }),
         ]
       },
     },

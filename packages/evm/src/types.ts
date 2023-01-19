@@ -143,6 +143,10 @@ export interface EVMRunCallOpts {
    * Optionally pass in an already-built message.
    */
   message?: Message
+  /**
+   * Versioned hashes for each blob in a blob transaction
+   */
+  versionedHashes?: Buffer[]
 }
 
 /**
@@ -205,6 +209,10 @@ export interface EVMRunCodeOpts {
    * The initial program counter. Defaults to `0`
    */
   pc?: number
+  /**
+   * Versioned hashes for each blob in a blob transaction
+   */
+  versionedHashes?: Buffer[]
 }
 
 interface NewContractEvent {

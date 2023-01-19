@@ -123,6 +123,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     [Hardfork.London]: { name: 'londonBlock' },
     [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: mergeForkIdPostMerge },
     [Hardfork.Shanghai]: { name: 'shanghaiTime', postMerge: true, isTimestamp: true },
+    [Hardfork.ShardingForkDev]: { name: 'shardingForkTime', postMerge: true, isTimestamp: true },
   }
 
   // forkMapRev is the map from config field name to Hardfork

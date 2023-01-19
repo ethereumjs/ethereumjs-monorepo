@@ -1,6 +1,6 @@
 import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Capability, TransactionFactory } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
   Address,
   TypeOutput,
@@ -117,6 +117,7 @@ const jsonRpcBlock = async (
     uncles: block.uncleHeaders.map((uh) => bufferToHex(uh.hash())),
     baseFeePerGas: header.baseFeePerGas,
     ...withdrawalsAttr,
+    excessDataGas: header.excessDataGas,
   }
 }
 
@@ -888,7 +889,13 @@ export class Eth {
 
     let tx
     try {
-      tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), { common })
+      const txBuf = toBuffer(serializedTx)
+      if (txBuf[0] === 0x05) {
+        // Blob Transactions sent over RPC are expected to be in Network Wrapper format
+        tx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txBuf, { common })
+      } else {
+        tx = TransactionFactory.fromSerializedData(txBuf, { common })
+      }
     } catch (e: any) {
       throw {
         code: PARSE_ERROR,
@@ -904,10 +911,11 @@ export class Eth {
     }
 
     // Add the tx to own tx pool
-    const { txPool } = this.service as FullEthereumService
+    const { txPool, pool } = this.service as FullEthereumService
 
     try {
       await txPool.add(tx, true)
+      await txPool.sendNewTxHashes([tx.hash()], pool.peers)
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,

@@ -2,7 +2,9 @@
 
 import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
+import { initKZG } from '@ethereumjs/tx'
 import { Address, toBuffer } from '@ethereumjs/util'
+import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import { existsSync, writeFileSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
@@ -391,8 +393,8 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
       genesisState: customGenesisState,
       common: config.chainCommon,
       hardforkByHeadBlockNumber: true,
-      validateBlocks: true,
       validateConsensus,
+      validateBlocks: true,
     })
     config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
   }
@@ -562,6 +564,9 @@ async function run() {
     return helprpc()
   }
 
+  // TODO sharding: Just initialize kzg library now, in future it can be optimized to be
+  // loaded and initialized on the sharding hardfork activation
+  initKZG(kzg)
   // Give network id precedence over network name
   const chain = args.networkId ?? args.network ?? Chain.Mainnet
 
@@ -622,6 +627,8 @@ async function run() {
       mergeForkIdPostMerge: args.mergeForkIdPostMerge,
     })
     customGenesisState = parseGethGenesisState(genesisFile)
+    // Set hardfork by block number 0
+    common.setHardforkByBlockNumber(0)
   }
 
   if (args.mine === true && accounts.length === 0) {
@@ -695,4 +702,7 @@ async function run() {
   })
 }
 
-run().catch((err) => logger?.error(err.message.toString()) ?? console.error(err))
+run().catch((err) => {
+  console.log(err)
+  logger?.error(err.message.toString()) ?? console.error(err)
+})

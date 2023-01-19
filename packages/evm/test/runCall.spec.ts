@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Account, Address, MAX_UINT64, padToEven } from '@ethereumjs/util'
+import { Account, Address, MAX_UINT64, padToEven, unpadBuffer } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
@@ -7,6 +7,8 @@ import { EVM } from '../src'
 import { ERROR } from '../src/exceptions'
 
 import { getEEI } from './utils'
+
+import type { EVMRunCallOpts } from '../src/types'
 
 // Non-protected Create2Address generator. Does not check if buffers have the right padding.
 function create2address(sourceAddress: Address, codeHash: Buffer, salt: Buffer): Address {
@@ -574,4 +576,43 @@ tape('runCall() => allows to detect for max code size deposit errors', async (t)
     ERROR.CODESIZE_EXCEEDS_MAXIMUM,
     'reported error is correct'
   )
+})
+tape('runCall() => use DATAHASH opcode from EIP 4844', async (t) => {
+  // setup the evm
+  const genesisJSON = require('../../client/test/testdata/geth-genesis/eip4844.json')
+  const common = Common.fromGethGenesis(genesisJSON, {
+    chain: 'custom',
+    hardfork: Hardfork.ShardingForkDev,
+  })
+  const eei = await getEEI()
+  const evm = await EVM.create({ common, eei })
+
+  // setup the call arguments
+  const runCallArgs: EVMRunCallOpts = {
+    gasLimit: BigInt(0xffffffffff),
+    // calldata -- retrieves the versioned hash at index 0 and returns it from memory
+    data: Buffer.from('60004960005260206000F3', 'hex'),
+    versionedHashes: [Buffer.from('ab', 'hex')],
+  }
+  const res = await evm.runCall(runCallArgs)
+  t.equal(
+    unpadBuffer(res.execResult.returnValue).toString('hex'),
+    'ab',
+    'retrieved correct versionedHash from runState'
+  )
+
+  // setup the call arguments
+  const runCall2Args: EVMRunCallOpts = {
+    gasLimit: BigInt(0xffffffffff),
+    // calldata -- tries to retrieve the versioned hash at index 1 and return it from memory
+    data: Buffer.from('60014960005260206000F3', 'hex'),
+    versionedHashes: [Buffer.from('ab', 'hex')],
+  }
+  const res2 = await evm.runCall(runCall2Args)
+  t.equal(
+    unpadBuffer(res2.execResult.returnValue).toString('hex'),
+    '',
+    'retrieved no versionedHash when specified versionedHash does not exist in runState'
+  )
+  t.end()
 })

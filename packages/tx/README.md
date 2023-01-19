@@ -65,9 +65,54 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eip
 
 This library supports the following transaction types ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)):
 
+- `BlobEIP4844Transaction` ([EIP-4844](https://eips.ethereumorg/EIPS/eip-4844), proto-danksharding)
 - `FeeMarketEIP1559Transaction` ([EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), gas fee market)
 - `AccessListEIP2930Transaction` ([EIP-2930](https://eips.ethereum.org/EIPS/eip-2930), optional access lists)
 - `Transaction`, the Ethereum standard tx up to `berlin`, now referred to as legacy txs with the introduction of tx types
+
+#### Blob Transactions (EIP-4844)
+
+- Class: `BlobEIP4844Transaction`
+- Activation: `sharding`
+- Type: `5`
+
+This is an experimental implementation of the blob transaction type introducd with EIP-4844. See the following code snipped for an example on how to instantiate.
+Please note you must first call `initKzg` and pass in a KZG library object (defaulting to `c-kzg` which is available on NPM).
+
+```typescript
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { BlobEIP4844Transaction, initKzg } from '@ethereumjs/tx'
+import { myKzgLibrary } from 'myKzgLibrary'
+
+initKzg(myKzgLibrary, 'path/to/my/trusted_setup.txt')
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Sharding })
+
+const txData = {
+  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+  gasLimit: '0x02625a00',
+  maxPriorityFeePerGas: '0x01',
+  maxFeePerGas: '0xff',
+  maxFeePerDataGas: '0xfff',
+  nonce: '0x00',
+  to: '0xcccccccccccccccccccccccccccccccccccccccc',
+  value: '0x0186a0',
+  v: '0x01',
+  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
+  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
+  chainId: '0x01',
+  accessList: [],
+  type: '0x05',
+  versionedHashes: ['0xabc...'],
+  kzgCommitments: ['0xdef...'],
+  blobs: ['0xghi...'],
+}
+
+const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
+```
+
+Note, the `versionedHashes`, `kzgCommitments`, and `blobs` are in reality 32 bytes or 4096 bytes in length but are trimmed here for brevity.
+
+See the [Blob Transaction Tests](./test/eip4844.spec.ts) for examples of usage in instantiating, serializing, and deserializing these transactions.
 
 #### Gas Fee Market Transactions (EIP-1559)
 

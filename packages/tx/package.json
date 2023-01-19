@@ -34,7 +34,7 @@
     "src"
   ],
   "scripts": {
-    "build": "../../config/cli/ts-build.sh",
+    "build": "../../config/cli/ts-build.sh && mkdir -p dist/kzg && cp ./src/kzg/* ./dist/kzg",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "../../config/cli/coverage.sh",
     "docs:build": "typedoc --options typedoc.js",
@@ -51,11 +51,20 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
+    "@chainsafe/ssz": "^0.9.2",
     "@ethereumjs/common": "^3.0.2",
     "@ethereumjs/rlp": "^4.0.0",
     "@ethereumjs/util": "^8.0.3",
     "ethereum-cryptography": "^1.1.2",
     "ethers": "^5.7.1"
+  },
+  "peerDependencies": {
+    "c-kzg": "^1.0.8"
+  },
+  "peerDependenciesMeta": {
+    "c-kzg": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/minimist": "^1.2.0",

@@ -45,12 +45,14 @@ export type ExecutionPayload = {
   timestamp: string // QUANTITY, 64 Bits
   extraData: string // DATA, 0 to 32 Bytes
   baseFeePerGas: string // QUANTITY, 256 Bits
+  excessDataGas?: string // QUANTITY, 256 Bits
   blockHash: string // DATA, 32 Bytes
   transactions: string[] // Array of DATA - Array of transaction rlp strings,
   withdrawals?: WithdrawalV1[] // Array of withdrawal objects
 }
-export type ExecutionPayloadV1 = Omit<ExecutionPayload, 'withdrawals'>
+export type ExecutionPayloadV1 = Omit<ExecutionPayload, 'withdrawals' | 'excessDataGas'>
 export type ExecutionPayloadV2 = ExecutionPayload & { withdrawals: WithdrawalV1[] }
+export type ExecutionPayloadV3 = ExecutionPayload & { excessDataGas: string }
 
 export type ForkchoiceStateV1 = {
   headBlockHash: string
@@ -84,6 +86,11 @@ type TransitionConfigurationV1 = {
   terminalBlockNumber: string
 }
 
+type BlobsBundleV1 = {
+  blockHash: string
+  kzgs: string[]
+  blobs: string[]
+}
 const EngineError = {
   UnknownPayload: {
     code: -32001,
@@ -110,6 +117,10 @@ const executionPayloadV1FieldValidators = {
 const executionPayloadV2FieldValidators = {
   ...executionPayloadV1FieldValidators,
   withdrawals: validators.array(validators.withdrawal()),
+}
+const executionPayloadV3FieldValidators = {
+  ...executionPayloadV2FieldValidators,
+  excessDataGas: validators.hex,
 }
 
 const forkchoiceFieldValidators = {
@@ -148,6 +159,7 @@ const blockToExecutionPayload = (block: Block, value: bigint) => {
     timestamp: header.timestamp!,
     extraData: header.extraData!,
     baseFeePerGas: header.baseFeePerGas!,
+    excessDataGas: header.excessDataGas,
     blockHash: bufferToHex(block.hash()),
     prevRandao: header.mixHash!,
     transactions,
@@ -338,6 +350,13 @@ export class Engine {
       ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
     )
 
+    this.newPayloadV3 = cmMiddleware(
+      middleware(this.newPayloadV3.bind(this), 1, [
+        [validators.object(executionPayloadV3FieldValidators)],
+      ]),
+      ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
+    )
+
     const forkchoiceUpdatedResponseCMHandler = (
       [state]: ForkchoiceStateV1[],
       response?: ForkchoiceResponseV1 & { headBlock?: Block },
@@ -379,6 +398,11 @@ export class Engine {
       () => this.connectionManager.updateStatus()
     )
 
+    this.getPayloadV3 = cmMiddleware(
+      middleware(this.getPayloadV3.bind(this), 1, [[validators.hex]]),
+      () => this.connectionManager.updateStatus()
+    )
+
     this.exchangeTransitionConfigurationV1 = cmMiddleware(
       middleware(this.exchangeTransitionConfigurationV1.bind(this), 1, [
         [
@@ -389,6 +413,11 @@ export class Engine {
           }),
         ],
       ]),
+      () => this.connectionManager.updateStatus()
+    )
+
+    this.getBlobsBundleV1 = cmMiddleware(
+      middleware(this.getBlobsBundleV1.bind(this), 1, [[validators.hex]]),
       () => this.connectionManager.updateStatus()
     )
   }
@@ -518,6 +547,10 @@ export class Engine {
   }
 
   async newPayloadV2(params: [ExecutionPayloadV2]): Promise<PayloadStatusV1> {
+    return this.newPayload(params)
+  }
+
+  async newPayloadV3(params: [ExecutionPayloadV3]): Promise<PayloadStatusV1> {
     return this.newPayload(params)
   }
 
@@ -757,6 +790,10 @@ export class Engine {
   async getPayloadV2(params: [string]) {
     return this.getPayload(params)
   }
+
+  async getPayloadV3(params: [string]) {
+    return this.getPayload(params)
+  }
   /**
    * Compare transition configuration parameters.
    *
@@ -786,5 +823,28 @@ export class Engine {
     // Note: our client does not yet support block whitelisting (terminalBlockHash/terminalBlockNumber)
     // since we are not yet fast enough to run along tip-of-chain mainnet execution
     return { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber }
+  }
+
+  /**
+   *
+   * @param params a payloadId for a pending block
+   * @returns a BlobsBundle consisting of the blockhash, the blobs, and the corresponding kzg commitments
+   */
+  private async getBlobsBundleV1(params: [string]): Promise<BlobsBundleV1> {
+    const payloadId = params[0]
+
+    const bundle = this.pendingBlock.blobBundles.get(payloadId)
+
+    if (bundle === undefined) {
+      throw EngineError.UnknownPayload
+    }
+
+    // Remove built blocks once retrieved by CL layer
+    this.pendingBlock.blobBundles.delete(payloadId)
+    return {
+      blockHash: bundle.blockHash,
+      kzgs: bundle.kzgCommitments.map((commitment) => '0x' + commitment.toString('hex')),
+      blobs: bundle.blobs.map((blob) => '0x' + blob.toString('hex')),
+    }
   }
 }
