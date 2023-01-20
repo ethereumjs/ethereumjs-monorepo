@@ -291,6 +291,12 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
       0xf7: { name: 'AUTHCALL', isAsync: true, dynamicGas: true },
     },
   },
+  {
+    eip: 4844,
+    opcodes: {
+      0x49: { name: 'DATAHASH', isAsync: false, dynamicGas: false },
+    },
+  },
 ]
 
 /**

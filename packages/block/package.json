@@ -47,7 +47,8 @@
     "ethers": "^5.7.1"
   },
   "devDependencies": {
-    "@types/lru-cache": "^5.1.0"
+    "@types/lru-cache": "^5.1.0",
+    "c-kzg": "^1.0.8"
   },
   "engines": {
     "node": ">=14"

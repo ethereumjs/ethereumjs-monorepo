@@ -71,6 +71,9 @@ tape('[Miner]', async (t) => {
         height: BigInt(0),
       }
     }
+    getBlock() {
+      return BlockHeader.fromHeaderData()
+    }
     getCanonicalHeadHeader() {
       return BlockHeader.fromHeaderData()
     }

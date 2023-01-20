@@ -1,5 +1,27 @@
+import {
+  BooleanType,
+  ByteListType,
+  ByteVectorType,
+  ContainerType,
+  ListCompositeType,
+  NoneType,
+  UintBigintType,
+  UnionType,
+} from '@chainsafe/ssz'
+
+import {
+  BYTES_PER_FIELD_ELEMENT,
+  FIELD_ELEMENTS_PER_BLOB,
+  LIMIT_BLOBS_PER_TX,
+  MAX_ACCESS_LIST_SIZE,
+  MAX_CALLDATA_SIZE,
+  MAX_TX_WRAP_KZG_COMMITMENTS,
+  MAX_VERSIONED_HASHES_LIST_SIZE,
+} from './constants'
+
 import type { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 import type { AccessListEIP2930Transaction } from './eip2930Transaction'
+import type { BlobEIP4844Transaction } from './eip4844Transaction'
 import type { Transaction } from './legacyTransaction'
 import type { Common } from '@ethereumjs/common'
 import type { AddressLike, BigIntLike, BufferLike, PrefixedHexString } from '@ethereumjs/util'
@@ -106,6 +128,7 @@ export type TypedTransaction =
   | Transaction
   | AccessListEIP2930Transaction
   | FeeMarketEIP1559Transaction
+  | BlobEIP4844Transaction
 
 /**
  * Legacy {@link Transaction} Data
@@ -198,6 +221,32 @@ export interface FeeMarketEIP1559TxData extends AccessListEIP2930TxData {
 }
 
 /**
+ * {@link BlobEIP4844Transaction} data.
+ */
+export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
+  /**
+   * The versioned hashes used to validate the blobs attached to a transaction
+   */
+  versionedHashes?: Buffer[]
+  /**
+   * The maximum fee per data gas paid for the transaction
+   */
+  maxFeePerDataGas?: bigint
+  /**
+   * The blobs associated with a transaction
+   */
+  blobs?: Buffer[]
+  /**
+   * The KZG commitments corresponding to the versioned hashes for each blob
+   */
+  kzgCommitments?: Buffer[]
+  /**
+   * The aggregate KZG proof associated with the transaction
+   */
+  kzgProof?: Buffer
+}
+
+/**
  * Buffer values array for a legacy {@link Transaction}
  */
 export type TxValuesArray = Buffer[]
@@ -262,6 +311,8 @@ export interface JsonTx {
   type?: string
   maxPriorityFeePerGas?: string
   maxFeePerGas?: string
+  maxFeePerDataGas?: string
+  versionedHashes?: string[]
 }
 
 /*
@@ -287,4 +338,61 @@ export interface JsonRpcTx {
   v: string // QUANTITY - ECDSA recovery id
   r: string // DATA, 32 Bytes - ECDSA signature r
   s: string // DATA, 32 Bytes - ECDSA signature s
+  maxFeePerDataGas?: string // QUANTITY - max data fee for blob transactions
+  versionedHashes?: string[] // DATA - array of 32 byte versioned hashes for blob transactions
 }
+
+/** EIP4844 types */
+export const AddressType = new ByteVectorType(20) // SSZ encoded address
+
+// SSZ encoded container for address and storage keys
+export const AccessTupleType = new ContainerType({
+  address: AddressType,
+  storageKeys: new ListCompositeType(new ByteVectorType(32), MAX_VERSIONED_HASHES_LIST_SIZE),
+})
+
+// SSZ encoded blob transaction
+export const BlobTransactionType = new ContainerType({
+  chainId: new UintBigintType(32),
+  nonce: new UintBigintType(8),
+  maxPriorityFeePerGas: new UintBigintType(32),
+  maxFeePerGas: new UintBigintType(32),
+  gas: new UintBigintType(8),
+  to: new UnionType([new NoneType(), AddressType]),
+  value: new UintBigintType(32),
+  data: new ByteListType(MAX_CALLDATA_SIZE),
+  accessList: new ListCompositeType(AccessTupleType, MAX_ACCESS_LIST_SIZE),
+  maxFeePerDataGas: new UintBigintType(32),
+  blobVersionedHashes: new ListCompositeType(
+    new ByteVectorType(32),
+    MAX_VERSIONED_HASHES_LIST_SIZE
+  ),
+})
+
+// SSZ encoded ECDSA Signature
+export const ECDSASignatureType = new ContainerType({
+  yParity: new BooleanType(),
+  r: new UintBigintType(32),
+  s: new UintBigintType(32),
+})
+
+// SSZ encoded signed blob transaction
+export const SignedBlobTransactionType = new ContainerType({
+  message: BlobTransactionType,
+  signature: ECDSASignatureType,
+})
+
+// SSZ encoded KZG Commitment/Proof (48 bytes)
+export const KZGCommitmentType = new ByteVectorType(48)
+export const KZGProofType = KZGCommitmentType
+
+// SSZ encoded blob network transaction wrapper
+export const BlobNetworkTransactionWrapper = new ContainerType({
+  tx: SignedBlobTransactionType,
+  blobKzgs: new ListCompositeType(KZGCommitmentType, MAX_TX_WRAP_KZG_COMMITMENTS),
+  blobs: new ListCompositeType(
+    new ByteVectorType(FIELD_ELEMENTS_PER_BLOB * BYTES_PER_FIELD_ELEMENT),
+    LIMIT_BLOBS_PER_TX
+  ),
+  kzgAggregatedProof: KZGProofType,
+})

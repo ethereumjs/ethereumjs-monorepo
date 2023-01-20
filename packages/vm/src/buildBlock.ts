@@ -1,7 +1,8 @@
-import { Block } from '@ethereumjs/block'
+import { Block, calcExcessDataGas } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
+import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { Address, GWEI_TO_WEI, TypeOutput, Withdrawal, toBuffer, toType } from '@ethereumjs/util'
 
 import { Bloom } from './bloom'
@@ -17,6 +18,10 @@ export class BlockBuilder {
    * The cumulative gas used by the transactions added to the block.
    */
   gasUsed = BigInt(0)
+  /**
+   *  The cumulative data gas used by the blobs in a block
+   */
+  dataGasUsed = BigInt(0)
   /**
    * Value of the block, represented by the final transaction fees
    * acruing to the miner.
@@ -155,20 +160,50 @@ export class BlockBuilder {
     // According to the Yellow Paper, a transaction's gas limit
     // cannot be greater than the remaining gas in the block
     const blockGasLimit = toType(this.headerData.gasLimit, TypeOutput.BigInt)
+
+    const dataGasLimit = this.vm._common.param('gasConfig', 'maxDataGasPerBlock')
+    const dataGasPerBlob = this.vm._common.param('gasConfig', 'dataGasPerBlob')
+
     const blockGasRemaining = blockGasLimit - this.gasUsed
     if (tx.gasLimit > blockGasRemaining) {
       throw new Error('tx has a higher gas limit than the remaining gas in the block')
     }
+    let excessDataGas = undefined
+    if (tx instanceof BlobEIP4844Transaction) {
+      if (this.blockOpts.common?.isActivatedEIP(4844) !== true) {
+        throw Error('eip4844 not activated yet for adding a blob transaction')
+      }
+      const blobTx = tx as BlobEIP4844Transaction
 
+      if (this.dataGasUsed + BigInt(blobTx.numBlobs()) * dataGasPerBlob > dataGasLimit) {
+        throw new Error('block data gas limit reached')
+      }
+
+      const parentHeader = await this.vm.blockchain.getBlock(this.headerData.parentHash! as Buffer)
+      excessDataGas = calcExcessDataGas(
+        parentHeader!.header,
+        (tx as BlobEIP4844Transaction).blobs?.length ?? 0
+      )
+    }
     const header = {
       ...this.headerData,
       gasUsed: this.gasUsed,
+      excessDataGas,
     }
+
     const blockData = { header, transactions: this.transactions }
     const block = Block.fromBlockData(blockData, this.blockOpts)
 
     const result = await this.vm.runTx({ tx, block, skipHardForkValidation })
 
+    // If tx is a blob transaction, remove blobs/kzg commitments before adding to block per EIP-4844
+    if (tx instanceof BlobEIP4844Transaction) {
+      const txData = tx as BlobEIP4844Transaction
+      this.dataGasUsed += BigInt(txData.versionedHashes.length) * dataGasPerBlob
+      tx = BlobEIP4844Transaction.minimalFromNetworkWrapper(txData, {
+        common: this.blockOpts.common,
+      })
+    }
     this.transactions.push(tx)
     this.transactionResults.push(result)
     this.gasUsed += result.totalGasSpent
@@ -218,7 +253,26 @@ export class BlockBuilder {
     const logsBloom = this.logsBloom()
     const gasUsed = this.gasUsed
     const timestamp = this.headerData.timestamp ?? Math.round(Date.now() / 1000)
+    let excessDataGas = undefined
 
+    if (this.vm._common.isActivatedEIP(4844)) {
+      let parentHeader = null
+      if (this.headerData.parentHash !== undefined) {
+        parentHeader = await this.vm.blockchain.getBlock(toBuffer(this.headerData.parentHash))
+      }
+      if (parentHeader !== null && parentHeader.header._common.isActivatedEIP(4844)) {
+        // Compute total number of blobs in block
+        const blobTxns = this.transactions.filter((tx) => tx instanceof BlobEIP4844Transaction)
+        let newBlobs = 0
+        for (const txn of blobTxns) {
+          newBlobs += (txn as BlobEIP4844Transaction).numBlobs()
+        }
+        // Compute excess data gas for block
+        excessDataGas = calcExcessDataGas(parentHeader.header, newBlobs)
+      } else {
+        excessDataGas = BigInt(0)
+      }
+    }
     const headerData = {
       ...this.headerData,
       stateRoot,
@@ -228,6 +282,7 @@ export class BlockBuilder {
       logsBloom,
       gasUsed,
       timestamp,
+      excessDataGas,
     }
 
     if (consensusType === ConsensusType.ProofOfWork) {

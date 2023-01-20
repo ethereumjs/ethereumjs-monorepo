@@ -20,23 +20,36 @@ then
   exit;
 fi;
 
-if [ "$MULTIPEER" != "peer2" ]
-then 
-  DATADIR="$DATADIR/peer1"
-  EL_PORT_ARGS="--extIP 127.0.0.1"
-  if [ ! -n "$MULTIPEER" ]
-  then
-    CL_PORT_ARGS="--genesisValidators 8 --startValidators 0..7"
-  else
-    CL_PORT_ARGS="--enr.ip 127.0.0.1 --enr.tcp 9000 --enr.udp 9000 --genesisValidators 8 --startValidators 0..3"
-  fi;
-else
-  DATADIR="$DATADIR/peer2"
-  bootEnrs=$(cat "$origDataDir/peer1/lodestar/enr")
-  elBootnode=$(cat "$origDataDir/peer1/ethereumjs/$NETWORK/rlpx");
-  EL_PORT_ARGS="--port 30304 --rpcEnginePort 8552 --rpcport 8946 --multiaddrs /ip4/127.0.0.1/tcp/50581/ws --bootnodes $elBootnode --loglevel debug"
-  CL_PORT_ARGS="--genesisValidators 8 --startValidators 4..7 --enr.tcp 9001 --port 9001 --execution.urls http://localhost:8552  --rest.port 9597 --server http://localhost:9597 --network.connectToDiscv5Bootnodes true --bootnodes $bootEnrs"
-fi;
+case $MULTIPEER in
+  syncpeer)
+    echo "setting up to run as a sync only peer to peer1 (bootnode)..."
+    DATADIR="$DATADIR/syncpeer"
+    EL_PORT_ARGS="--port 30305 --rpcEnginePort 8553 --rpcport 8947 --multiaddrs /ip4/127.0.0.1/tcp/50582/ws --loglevel debug"
+    CL_PORT_ARGS="--genesisValidators 8 --enr.tcp 9002 --port 9002 --execution.urls http://localhost:8553  --rest.port 9598 --server http://localhost:9598 --network.connectToDiscv5Bootnodes true"
+    ;;
+
+  peer2 )
+    echo "setting up peer2 to run with peer1 (bootnode)..."
+    DATADIR="$DATADIR/peer2"
+    EL_PORT_ARGS="--port 30304 --rpcEnginePort 8552 --rpcport 8946 --multiaddrs /ip4/127.0.0.1/tcp/50581/ws --bootnodes $elBootnode --loglevel debug"
+    CL_PORT_ARGS="--genesisValidators 8 --startValidators 4..7 --enr.tcp 9001 --port 9001 --execution.urls http://localhost:8552  --rest.port 9597 --server http://localhost:9597 --network.connectToDiscv5Bootnodes true --bootnodes $bootEnrs"
+    ;;
+
+  * )
+    DATADIR="$DATADIR/peer1"
+    EL_PORT_ARGS="--extIP 127.0.0.1 --loglevel debug"
+    CL_PORT_ARGS="--enr.ip 127.0.0.1 --enr.tcp 9000 --enr.udp 9000"
+    if [ ! -n "$MULTIPEER" ]
+    then
+      echo "setting up to run as a solo node..."
+      CL_PORT_ARGS="$CL_PORT_ARGS --genesisValidators 8 --startValidators 0..7"
+    else
+      echo "setting up to run as peer1 (bootnode)..."
+      CL_PORT_ARGS="$CL_PORT_ARGS --genesisValidators 8 --startValidators 0..3"
+    fi;
+    MULTIPEER="peer1"
+esac
+
 mkdir $DATADIR
 echo "EL_PORT_ARGS=$EL_PORT_ARGS"
 echo "CL_PORT_ARGS=$CL_PORT_ARGS"
@@ -47,13 +60,13 @@ then
   exit;
 fi;
 
+# clean these folders as old data can cause issues
+sudo rm -rf $DATADIR/ethereumjs
+sudo rm -rf $DATADIR/lodestar
+
 # these two commands will harmlessly fail if folders exists
 mkdir $DATADIR/ethereumjs
 mkdir $DATADIR/lodestar
-
-# clean these folders as old data can cause issues
-rm -rf $DATADIR/ethereumjs
-rm -rf $DATADIR/lodestar
 
 run_cmd(){
   execCmd=$1;
@@ -95,13 +108,13 @@ cleanup() {
   lodePid=""
 }
 
-ejsCmd="npm run client:start -- --datadir $DATADIR/ethereumjs --gethGenesis $scriptDir/configs/$NETWORK.json --rpc --rpcEngine --rpcEngineAuth false $EL_PORT_ARGS"
-run_cmd "$ejsCmd"
-ejsPid=$!
-echo "ejsPid: $ejsPid"
-
-if [ "$MULTIPEER" != "peer2" ] 
+if [ "$MULTIPEER" == "peer1" ]
 then
+  ejsCmd="npm run client:start -- --datadir $DATADIR/ethereumjs --gethGenesis $scriptDir/configs/$NETWORK.json --rpc --rpcEngine --rpcEngineAuth false $EL_PORT_ARGS"
+  run_cmd "$ejsCmd"
+  ejsPid=$!
+  echo "ejsPid: $ejsPid"
+
   # generate the genesis hash and time
   ejsId=0
   if [ ! -n "$GENESIS_HASH" ]
@@ -131,14 +144,35 @@ then
   echo $genTime > "$origDataDir/genesisTime"
   echo $GENESIS_HASH > "$origDataDir/geneisHash"
 else
-  genTime=$(cat "$origDataDir/genesisTime")
+  # We should curl and get genesis hash, but for now lets assume it will be provided
+  while [ ! -n "$CL_GENESIS_HASH" ]
+  do
+    sleep 3
+    echo "Fetching genesis block from peer1/bootnode ..."
+    ejsId=$(( ejsId +1 ))
+    responseCmd="curl --location --request GET 'http://localhost:9596/eth/v1/beacon/headers/genesis' --header 'Content-Type: application/json'  2>/dev/null | jq \".data.root\""
+    CL_GENESIS_HASH=$(eval "$responseCmd")
+  done;
+  # since peer1 is setup get their enr and enode
+  bootEnrs=$(sudo cat "$origDataDir/peer1/lodestar/enr")
+  elBootnode=$(cat "$origDataDir/peer1/ethereumjs/$NETWORK/rlpx");
+  EL_PORT_ARGS="$EL_PORT_ARGS --bootnodes $elBootnode"
+  CL_PORT_ARGS="$CL_PORT_ARGS --bootnodes $bootEnrs"
+
   GENESIS_HASH=$(cat "$origDataDir/geneisHash")
+  genTime=$(cat "$origDataDir/genesisTime")
+
+
+  ejsCmd="npm run client:start -- --datadir $DATADIR/ethereumjs --gethGenesis $scriptDir/configs/$NETWORK.json --rpc --rpcEngine --rpcEngineAuth false $EL_PORT_ARGS"
+  run_cmd "$ejsCmd"
+  ejsPid=$!
+  echo "ejsPid: $ejsPid"
 fi;
 
 echo "genesisHash=${GENESIS_HASH}"
 echo "genTime=${genTime}"
 
-CL_PORT_ARGS="--genesisEth1Hash $GENESIS_HASH --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime $genTime ${CL_PORT_ARGS} --suggestedFeeRecipient 0xcccccccccccccccccccccccccccccccccccccccc --network.maxPeers 55 --targetPeers 50"
+CL_PORT_ARGS="--genesisEth1Hash $GENESIS_HASH --params.ALTAIR_FORK_EPOCH 0 --params.BELLATRIX_FORK_EPOCH 0 $EXTRA_CL_PARAMS --params.TERMINAL_TOTAL_DIFFICULTY 0x01 --genesisTime $genTime ${CL_PORT_ARGS} --suggestedFeeRecipient 0xcccccccccccccccccccccccccccccccccccccccc --network.maxPeers 55 --targetPeers 50"
 if [ ! -n "$LODE_BINARY" ]
 then
   if [ ! -n "$LODE_IMAGE" ]
