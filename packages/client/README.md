@@ -9,6 +9,20 @@
 | Ethereum Execution (Eth 1.0) Client built in TypeScript/JavaScript. |
 | ------------------------------------------------------------------- |
 
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [General Usage](#general-usage)
+- [Supported Networks](#supported-networks)
+- [Running with a Consensus Layer (CL) Client](#running-with-a-consensus-layer-cl-client)
+- [Custom Chains](#custom-chains)
+- [Custom Network Mining (Beta)](#custom-network-mining-beta)
+- [API](#api)
+- [JSON RPC](#json-rpc)
+- [Development](#development)
+- [EthereumJS](#ethereumjs)
+
 ## Introduction
 
 The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](https://github.com/ethereum/go-ethereum) or [Nethermind](https://github.com/NethermindEth/nethermind)) written in `TypeScript`/`JavaScript`, the non-Smart-Contract language Ethereum dApp developers are most familiar with. It is targeted to be a client for research and development and not meant to be used in production on `mainnet` for the foreseeable future (out of resource and security considerations).
