@@ -145,7 +145,7 @@ This will expose `engine` endpoints at `8551`(default port, can be modified see 
 
 #### JWT Authentication
 
-To ensure a secure communication channel between clients a [JWT](https://jwt.io/) token is needed for authentication. If no further option is provided in the client, a JWT token is created on first run and stored to a predefined location (see CLI output). This secret can then be provided to the CL client (see CL client documentation for details).
+To ensure a secure communication channel between clients, a [JWT](https://jwt.io/) token is needed for authentication. If no further option is provided in the client, a JWT token is created on first run and stored to a predefined location (see CLI output). This secret can then be provided to the CL client (see CL client documentation for details).
 
 To use an existing token the path to the token can be passed to the client with the following flag:
 
@@ -164,7 +164,7 @@ The following is a rough guidance to run Lodestar as a beacon (non-validating) N
 1. Use lodestar branch `stable` and run `yarn && yarn build`
 2. Run cmd: `./lodestar beacon --network sepolia --jwt-secret /path/to/jwtsecret/file`
 
-This will by default try reaching out `ethereumjs` over the endpoint `8551`. (You may customize this in conjunction with `ethereumjs`, see lodestar cli help via `--help`).
+This will by default try connecting to `ethereumjs` over the endpoint `8551`. (You may customize this in conjunction with `ethereumjs`, see lodestar cli help via `--help`).
 
 You may provide `--checkpointSyncUrl` (with a synced `sepolia` beacon node endpoint as arg value) to start directly off the head/provided checkpoint on the `sepolia` beacon chain, possibly triggering (backfill) beacon sync on ethereumjs.
 
