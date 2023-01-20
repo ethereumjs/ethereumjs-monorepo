@@ -1,10 +1,11 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { getActivePrecompiles } from '@ethereumjs/evm'
 import { Address, bufferToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { VM } from '../../../src/vm'
-import { isRunningInKarma } from '../../util'
+import { isRunningInKarma } from '../../../vm/test/util'
+import { getActivePrecompiles } from '../../src'
+import { EVM } from '../../src/evm'
+import { getEEI } from '../utils'
 
 const precompileAddressStart = 0x0a
 const precompileAddressEnd = 0x12
@@ -22,11 +23,12 @@ tape('EIP-2537 BLS tests', (t) => {
       return st.end()
     }
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
-    const vm = await VM.create({ common })
+    const eei = await getEEI()
+    const evm = await EVM.create({ common, eei })
 
     for (const address of precompiles) {
       const to = new Address(Buffer.from(address, 'hex'))
-      const result = await vm.evm.runCall({
+      const result = await evm.runCall({
         caller: Address.zero(),
         gasLimit: BigInt(0xffffffffff),
         to,
@@ -53,11 +55,12 @@ tape('EIP-2537 BLS tests', (t) => {
       return st.end()
     }
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium, eips: [2537] })
-    const vm = await VM.create({ common })
+    const eei = await getEEI()
+    const evm = await EVM.create({ common, eei })
 
     for (const address of precompiles) {
       const to = new Address(Buffer.from(address, 'hex'))
-      const result = await vm.evm.runCall({
+      const result = await evm.runCall({
         caller: Address.zero(),
         gasLimit: BigInt(0xffffffffff),
         to,
@@ -91,7 +94,8 @@ tape('EIP-2537 BLS tests', (t) => {
       return st.end()
     }
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2537] })
-    const vm = await VM.create({ common })
+    const eei = await getEEI()
+    const evm = await EVM.create({ common, eei })
     const BLS12G2MultiExp = getActivePrecompiles(common).get(
       '000000000000000000000000000000000000000f'
     )!
@@ -105,7 +109,7 @@ tape('EIP-2537 BLS tests', (t) => {
       data: Buffer.from(testVector, 'hex'),
       gasLimit: BigInt(5000000),
       _common: common,
-      _EVM: <any>vm.evm,
+      _EVM: evm,
     })
 
     st.deepEqual(
