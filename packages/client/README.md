@@ -133,7 +133,7 @@ In most scenarios you will want to run the EthereumJS client in a combination wi
 
 #### Engine API
 
-Execution and consensus layer clients communicate with each other through a new set of JSON RPC API calls, the so called [Engine API](https://github.com/ethereum/execution-apis/tree/main/src/engine).
+Execution and consensus layer clients communicate with each other through a new set of JSON-RPC API calls, the so-called [Engine API](https://github.com/ethereum/execution-apis/tree/main/src/engine).
 
 The Engine API can be activated in the client with:
 
