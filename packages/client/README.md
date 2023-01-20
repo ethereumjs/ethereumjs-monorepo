@@ -16,7 +16,7 @@ The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](
 Here are some use cases:
 
 - Sync the main Ethereum networks (`mainnet`, `goerli`, `rinkeby`, `sepolia`...)
-- Set up your own local development networks (PoA Clique or PoW with CPU miner)
+- Set up your own local development networks (PoS with consensus client / PoA Clique / PoW with CPU miner)
 - Run a network with your own custom [EthereumJS VM](../vm)
 - Analyze what's in the Ethereum `mainnet` [transaction pool](./lib/sync/txpool.ts)
 - Run experiments with Ethereum browser sync (see [example](./examples/light-browser-sync.md)) **currently unsupported due to browser dependency issues**
@@ -27,17 +27,28 @@ We invite you to explore and would be delighted if you give us feedback on your 
 
 ## Installation
 
-To obtain the latest version, simply require the project using `npm`:
+To be able to run the EthereumJS client, you need a working [Node.js](https://nodejs.org/en/) installation, see e.g. these [docs](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) from the npm documentation for combined instructions on how to install Node.js and eventually npm.
+
+We currently recommend to run the client with a recent Node.js version `18` installation.
+
+### NPM Installation
+
+Client releases are done on a regular basis on [npm](https://www.npmjs.com/package/@ethereumjs/client).
+
+You can install the latest version with:
 
 ```shell
 npm install -g @ethereumjs/client
 ```
 
-For development purposes the client can also be set up like this:
+### Source Installation
 
-1. Clone the monorepo with `git clone https://github.com/ethereumjs/ethereumjs-monorepo.git`
-2. Set things up and install dependencies (see [monorepo docs](../../config/MONOREPO.md))
-3. Run the client with `npm run client:start` from the `client` root directory (e.g. `packages/client` if working on a local copy of the monorepo)
+The client can also be easily installed and build from source:
+
+1. Clone the EthereumJS monorepo with `git clone https://github.com/ethereumjs/ethereumjs-monorepo.git`
+2. Run `npm i` from the root folder to install dependencies and build
+3. Now the client can be run from the `packages/client` folder with `npm run client:start`
+4. Run `npm client:start -- --help` for help on the CLI parameters
 
 ## Usage
 
