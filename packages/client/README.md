@@ -57,7 +57,7 @@ npm install -g @ethereumjs/client
 
 ### Source Installation
 
-The client can also be easily installed and build from source:
+The client can also be easily installed and built from source:
 
 1. Clone the EthereumJS monorepo with `git clone https://github.com/ethereumjs/ethereumjs-monorepo.git`
 2. Run `npm i` from the root folder to install dependencies and build
