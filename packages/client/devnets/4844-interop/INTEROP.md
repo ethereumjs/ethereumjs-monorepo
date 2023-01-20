@@ -28,26 +28,34 @@ Create a symlink to the monorepo interop directory from within the prysm reposit
 ln -s ../ethereumjs-monorepo/packages/client/devnets/4844-interop .
 ```
 
-Start Prysm from the `prysm` root directory
+Start Prysm beacon client from the `prysm` root directory:
 
 ```shell
 bazel run //cmd/beacon-chain -- \
-        --datadir=$CONFIGDIR/CLData \
+        --datadir=4844_interop/prysm/cl_data \
 	--min-sync-peers=0 \
         --force-clear-db \
-	--interop-genesis-state=$CONFIGDIR/CLData/genesis.ssz \
+	--interop-genesis-state=4844_interop/prysm/genesis.ssz \
 	--interop-eth1data-votes \
 	--bootstrap-node= \
-	--chain-config-file=$CONFIGDIR/config.yml \
+	--chain-config-file=4844_interop/prysm/config.yml \
 	--chain-id=32382 \
 	--accept-terms-of-use \
-	--jwt-secret=$CONFIGDIR/jwtsecret.txt \
+	--jwt-secret=4844_interop/config/jwtsecret.txt \
 	--suggested-fee-recipient=0x123463a4b065722e99115d6c222f267d9cabb524 \
 	--verbosity debug
 ```
 
-1. Open a second terminal, , go to the `prysm` subfolder
-2. Run `./start_prysm_validator.sh /[path/to/prysm/directory/root]`
+Optionally start Prysm validator from the `prysm` directory:
+
+```shell
+bazel run //cmd/validator -- \
+    --datadir=4844_interop/prysm/cl_data \
+	--accept-terms-of-use \
+	--interop-num-validators=512 \
+	--interop-start-index=0 \
+	--chain-config-file=4844_interop/prysm/config.yml
+```
 
 ## General Helpers
 
