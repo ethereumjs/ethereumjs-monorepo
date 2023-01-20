@@ -107,7 +107,7 @@ For the networks that have transitioned to PoS aka **merged** (all Ethereum netw
 
 ## Supported Networks
 
-The EthereumJS client is tightly integrated with the EthereumJS [Common](../common) library and gets its network state and information from this library and supports all networks support by `Common`.
+The EthereumJS client is tightly integrated with the EthereumJS [Common](../common) library and gets its network state and information from this library. The client supports all networks supported by `Common`.
 
 The main supported networks are:
 
