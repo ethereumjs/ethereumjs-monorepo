@@ -1,24 +1,5 @@
 # 4844 Interop Instructions
 
-## Configure genesis parameters
-
-For local interop testing, run `generate_genesis.sh` to update the genesis parameters with correct timestamps for post merge hardforks so that EthJS <> [insert your favorite CL client here] can run a local devnet from genesis.
-
-## Running EthereumJS
-
-Start EthereumJS with a miner, jwt-secured Engine APIs, and the interop genesis parameters
-
-```
-npm run client:start -- \
-  --datadir=devnets/4844-interop/prysm/el_data \
-  --gethGenesis=[devnets/4844-interop/config/genesis.json or your preferred interop genesis.json] \
-  --rpc --rpcEngine \
-  --jwt-secret=devnets/4844-interop/config/jwtsecret.txt \
-  --mine \
-  --unlock=devnets/4844-interop/config/minerKey.txt \
-  --rpcDebug --loglevel=debug
-```
-
 ## Prysm<>EthJS
 
 ### Build Prysm
@@ -35,15 +16,36 @@ $ bazel build //cmd/validator
 $ cd ../
 ```
 
+### Configure genesis parameters
+
+For local interop testing with prysm, run `generate_genesis.sh [absolute path to prysm directory root]` from the `devnets/4844-interop/prysm` subdirectory to update the genesis parameters with correct timestamps for post merge hardforks so that EthJS <> Prysm can run a local devnet from genesis.
+
+### Running EthereumJS
+
+Start EthereumJS with a miner, jwt-secured Engine APIs, and the interop genesis parameters created in the step above.
+
+```
+npm run client:start -- \
+  --datadir=devnets/4844-interop/prysm/el_data \
+  --gethGenesis=devnets/4844-interop/prysm/genesisGEN.json \
+  --rpc --rpcEngine \
+  --jwt-secret=devnets/4844-interop/config/jwtsecret.txt \
+  --mine \
+  --unlock=devnets/4844-interop/config/minerKey.txt \
+  --rpcDebug --loglevel=debug
+```
+
 ### Start Prysm
 
-#### Optional
+#### Optional symlinks
 
 Create a symlink to the monorepo interop directory from within the prysm repository root:
 
 ```shell
 ln -s ../ethereumjs-monorepo/packages/client/devnets/4844-interop .
 ```
+
+#### Starting prysm
 
 Start Prysm beacon client from the `prysm` root directory:
 
