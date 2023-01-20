@@ -1,96 +1,38 @@
 // Adapted from - https://github.com/Inphi/eip4844-interop/blob/master/blob_tx_generator/blob.js
+import { Common, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, initKZG } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
+  getBlobs,
 } from '@ethereumjs/tx/dist/utils/blobHelpers'
 import { Address } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import { Client } from 'jayson/promise'
-const clientPort = process.argv[2]
-const input = process.argv[3]
 
-const BYTES_PER_FIELD_ELEMENT = 32
-const FIELD_ELEMENTS_PER_BLOB = 4096
-const USEFUL_BYTES_PER_BLOB = 32 * FIELD_ELEMENTS_PER_BLOB
-const MAX_BLOBS_PER_TX = 2
-const MAX_USEFUL_BYTES_PER_TX = USEFUL_BYTES_PER_BLOB * MAX_BLOBS_PER_TX - 1
-const BLOB_SIZE = BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB
+// CLI Args
+const clientPort = parseInt(process.argv[2]) // EL client port number
+const input = process.argv[3] // text to generate blob from
+const genesisJson = require(process.argv[4]) // Genesis parameters
+const pkey = Buffer.from(process.argv[5], 'hex') // private key of tx sender as unprefixed hex string
 
 initKZG(kzg)
-const pkey = Buffer.from('50843d07baad059307faa9519f41b48e4630f7ca8e16c37bf386e62b5a3c2be6', 'hex')
+
 const sender = Address.fromPrivateKey(pkey)
-
-function get_padded(data: any, blobs_len: number) {
-  const pdata = Buffer.alloc(blobs_len * USEFUL_BYTES_PER_BLOB)
-  const datalen = Buffer.byteLength(data)
-  pdata.fill(data, 0, datalen)
-  // TODO: if data already fits in a pad, then ka-boom
-  pdata[datalen] = 0x80
-  return pdata
-}
-
-function get_blob(data: any) {
-  const blob = Buffer.alloc(BLOB_SIZE, 'binary')
-  for (let i = 0; i < FIELD_ELEMENTS_PER_BLOB; i++) {
-    const chunk = Buffer.alloc(32, 'binary')
-    chunk.fill(data.subarray(i * 31, (i + 1) * 31), 0, 31)
-    blob.fill(chunk, i * 32, (i + 1) * 32)
-  }
-
-  return blob
-}
-
-// ref: https://github.com/asn-d6/blobbers/blob/packing_benchmarks/src/packer_naive.rs
-function get_blobs(data: any) {
-  data = Buffer.from(data, 'binary')
-  const len = Buffer.byteLength(data)
-  if (len === 0) {
-    throw Error('invalid blob data')
-  }
-  if (len > MAX_USEFUL_BYTES_PER_TX) {
-    throw Error('blob data is too large')
-  }
-
-  const blobs_len = Math.ceil(len / USEFUL_BYTES_PER_BLOB)
-
-  const pdata = get_padded(data, blobs_len)
-
-  const blobs: Buffer[] = []
-  for (let i = 0; i < blobs_len; i++) {
-    const chunk = pdata.subarray(i * USEFUL_BYTES_PER_BLOB, (i + 1) * USEFUL_BYTES_PER_BLOB)
-    const blob = get_blob(chunk)
-    blobs.push(blob)
-  }
-
-  return blobs
-}
-
-function sleep(ms: number) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms)
-  })
-}
-
+const common = Common.fromGethGenesis(genesisJson, {
+  chain: genesisJson.ChainName ?? 'devnet',
+  hardfork: Hardfork.ShardingForkDev,
+})
 async function getNonce(client: Client, account: string) {
   const nonce = await client.request('eth_getTransactionCount', [account, 'latest'], 2.0)
   return nonce.result
 }
-async function run(data: any) {
-  const client = Client.http({ port: parseInt(clientPort) })
-  let done = false
-  while (!done) {
-    const num = parseInt((await client.request('eth_blockNumber', [], 2.0)).result)
-    if (num >= 1) {
-      done = true
-      break
-    }
-    console.log(`waiting for eip4844 proc.... bn=${num}`)
-    await sleep(1000)
-  }
 
-  const blobs = get_blobs(data)
+async function run(data: any) {
+  const client = Client.http({ port: clientPort })
+
+  const blobs = getBlobs(data)
   const commitments = blobsToCommitments(blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
 
@@ -99,7 +41,7 @@ async function run(data: any) {
     from: sender.toString(),
     to: account.toString(),
     data: '0x',
-    chainId: '0x7e7e',
+    chainId: common.chainId(),
     blobs,
     kzgCommitments: commitments,
     versionedHashes: hashes,
@@ -117,7 +59,7 @@ async function run(data: any) {
   txData['gasLimit'] = BigInt(28000000) as any
   const nonce = await getNonce(client, sender.toString())
   txData['nonce'] = BigInt(nonce) as any
-  const blobTx = BlobEIP4844Transaction.fromTxData(txData).sign(pkey)
+  const blobTx = BlobEIP4844Transaction.fromTxData(txData, { common }).sign(pkey)
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 
@@ -132,47 +74,5 @@ async function run(data: any) {
     console.log(res.result.error)
     return false
   }
-
-  let blob_kzg = null
-  try {
-    const res = (
-      await (await fetch('http://127.0.0.1:9596/eth/v1/beacon/headers', { method: 'get' })).json()
-    ).data[0].header.message.slot
-    const start = parseInt(res)
-    for (let i = 0; i < 5; i++) {
-      const res = (
-        await (await fetch(`http://127.0.0.1:9596/eth/v2/beacon/blocks/${start + i}`)).json()
-      ).data.message.body.blob_kzg_commitments
-      if (res !== undefined && res.length > 0) {
-        blob_kzg = res[0]
-        break
-      }
-      let done = false
-      while (!done) {
-        const current =
-          (await (await fetch('http://127.0.0.1:9596/eth/v1/beacon/headers')).json()).data[0].header
-            .message.slot - 1
-        if (current > start + i) {
-          done = true
-        }
-        console.log(`waiting for tx to be included in block.... block number=${current}`)
-        await sleep(1000)
-      }
-    }
-  } catch (error: any) {
-    console.log(error)
-    console.log(`Error retrieving blocks from ${error.config.url}: ${error.response.data}`)
-    return false
-  }
-
-  const expected_kzgs = '0x' + blobTx.kzgCommitments![0].toString('hex')
-  if (blob_kzg !== '0x' + blobTx.kzgCommitments![0].toString('hex')) {
-    console.log(`Unexpected KZG commitment: expected ${expected_kzgs}, got ${blob_kzg}`)
-    return false
-  } else {
-    console.log(`Found expected KZG commitment: ${blob_kzg}`)
-  }
-
-  return true
 }
 void run(input)

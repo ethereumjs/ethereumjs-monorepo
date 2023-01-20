@@ -1,8 +1,23 @@
 # 4844 Interop Instructions
 
+## Configure genesis parameters
+
+For local interop testing, run `generate_genesis.sh` to update the genesis parameters with correct timestamps for post merge hardforks so that EthJS <> [insert your favorite CL client here] can run a local devnet from genesis.
+
 ## Running EthereumJS
 
-See [Interop Issue #2494](https://github.com/ethereumjs/ethereumjs-monorepo/issues/2494) for EthereumJS setup instructions.
+Start EthereumJS with a miner, jwt-secured Engine APIs, and the interop genesis parameters
+
+```
+npm run client:start -- \
+  --datadir=devnets/4844-interop/prysm/el_data \
+  --gethGenesis=[devnets/4844-interop/config/genesis.json or your preferred interop genesis.json] \
+  --rpc --rpcEngine \
+  --jwt-secret=devnets/4844-interop/config/jwtsecret.txt \
+  --mine \
+  --unlock=devnets/4844-interop/config/minerKey.txt \
+  --rpcDebug --loglevel=debug
+```
 
 ## Prysm<>EthJS
 
@@ -22,6 +37,8 @@ $ cd ../
 
 ### Start Prysm
 
+#### Optional
+
 Create a symlink to the monorepo interop directory from within the prysm repository root:
 
 ```shell
@@ -30,11 +47,13 @@ ln -s ../ethereumjs-monorepo/packages/client/devnets/4844-interop .
 
 Start Prysm beacon client from the `prysm` root directory:
 
+Note, if the above symlink isn't created, provide absolute paths to your data directory, `genesis.ssz`, and `config.yml` in below commands.
+
 ```shell
 bazel run //cmd/beacon-chain -- \
-        --datadir=4844_interop/prysm/cl_data \
+    --datadir=4844_interop/prysm/cl_data \
 	--min-sync-peers=0 \
-        --force-clear-db \
+    --force-clear-db \
 	--interop-genesis-state=4844_interop/prysm/genesis.ssz \
 	--interop-eth1data-votes \
 	--bootstrap-node= \
@@ -70,9 +89,9 @@ You should see something like below Prysm reaches the 4844 epoch.
 [2023-01-11 16:00:57]  INFO state: Upgraded to EIP4844 hard fork!
 ```
 
-1. Run `npx ts-node ./tools/txGenerator.ts 8545 'hello'` to submit a blob transaction.
+1. Run `npx ts-node ./tools/txGenerator.ts 8545 'hello' [path/to/genesis.json] [private key of tx sender as unprefixed hex string]` to submit a blob transaction.
 2. Monitor the EthJS logs to see when the transaction is included in a block via an RPC call to `engine_newPayloadV3` and note the block hash.
-3. Monitor the Prysm Beacon Node logs and note when the EL block payload is included in a beacon block. You should see logs like below indicating a block with one blob init. The first few characters of the `blockhash` field in the logs should match the blockhash reported by EthJS
+3. Monitor the Prysm Beacon Node logs and note when the EL block payload is included in a beacon block. You should see logs like below indicating a block with one blob in it. The first few characters of the `blockhash` field in the logs should match the blockhash reported by EthJS
 
 ```
 [2023-01-11 20:40:59] DEBUG blockchain: Synced new payload blockHash=0xe254fb313f64 blsToExecutionChanges=0 gasUtilized=0.00 parentHash=0x00b9a2268e4b withdrawals=0
