@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1674225901747,
+  "lastUpdate": 1674230593184,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "c1bf118ccd9cc48fbbad564a97eda63629f6bd16",
-          "message": "Implement `debug_traceTransaction` RPC endpoint (#2444)\n\n* add basic debug_traceTransaction rpc endpoint\r\n\r\n* Add first test\r\n\r\n* WIP tests\r\n\r\n* Add test for simple code execution\r\n\r\n* Add more tests\r\n\r\n* rename test data file\r\n\r\n* add tracer opts validation\r\n\r\n* add structLog interface\r\n\r\n* Add storage to structLogs\r\n\r\n* add error to structLogs\r\n\r\n* Throw on enabling return data opt\r\n\r\n* Update tests\r\n\r\n* Remove invalid test\r\n\r\n* Add tests for other invalid params",
-          "timestamp": "2022-12-13T10:27:56-05:00",
-          "tree_id": "64eb1b9694f0895a2576edee9600c8bb5f6f60c8",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c1bf118ccd9cc48fbbad564a97eda63629f6bd16"
-        },
-        "date": 1670945446695,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18380,
-            "range": "±2.62%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17890,
-            "range": "±5.16%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 16639,
-            "range": "±9.05%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18618,
-            "range": "±1.58%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 17729,
-            "range": "±1.97%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.59%",
             "unit": "ops/sec",
             "extra": "78 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4ba69d4524ffd29b65423155fc2647d3caca7975",
+          "message": "Client and README Doc Updates (#2492)\n\n* Updated branch statuses on main repo README\r\n\r\n* Updated client installation instructions\r\n\r\n* Updated CL/EL run instructions, integrated and consolidated with RunAsElClient.md (deleted)\r\n\r\n* Added a ToC to client README\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
+          "timestamp": "2023-01-20T11:00:35-05:00",
+          "tree_id": "ba24c287e9b8961ce770d011a7d6b033320d06b6",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4ba69d4524ffd29b65423155fc2647d3caca7975"
+        },
+        "date": 1674230592482,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19767,
+            "range": "±1.93%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 19162,
+            "range": "±4.14%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 19365,
+            "range": "±1.31%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 17859,
+            "range": "±7.39%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19786,
+            "range": "±1.10%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
           }
         ]
       }
