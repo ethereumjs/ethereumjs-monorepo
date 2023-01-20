@@ -1,6 +1,12 @@
-# Interop instructions for running Prysm<>EthJS
+# 4844 Interop Instructions
 
-## Build Prysm
+## Running EthereumJS
+
+Run `./start_ethjs.sh` from this folder.
+
+## Prysm<>EthJS
+
+### Build Prysm
 
 Following [these instructions](https://hackmd.io/q1SLCaubTIWw_1zsEjW_Vg?view), build Prysm locally.
 ```sh
@@ -13,18 +19,16 @@ $ bazel build //cmd/validator
 $ cd ../
 ```
 
-## Start Prysm
+### Start Prysm
 
-Open a terminal window and navigate to the `[path/to/ethjs/client]/test/sim/configs/prysm` folder --
-1. Run `start_prysm.sh /[path/to/prysm/directory/root]`
-2. Open a second terminal window and run `start_prysm_validator.sh /[path/to/prysm/directory/root]`
+1. Open a terminal, go to the `prysm` subfolder
+2. Run `./start_prysm.sh /[path/to/prysm/directory/root]` 
+3. Open a second terminal, , go to the `prysm` subfolder
+4. Run `./start_prysm_validator.sh /[path/to/prysm/directory/root]`
 
-## Start EthJS
+## General Helpers
 
-Open a terminal window and navigate to the `[path/to/ethjs/client]/test/sim/configs/prysm` folder --
-Run `start_ethjs.sh`
-
-## Run blob transactions
+### Run blob transactions
 
 It takes 25-30 slots to reach the 4844 epoch on the beacon chain (1-2 minutes).
 
@@ -34,7 +38,7 @@ You should see something like below Prysm reaches the 4844 epoch.
 [2023-01-11 16:00:57]  INFO state: Upgraded to EIP4844 hard fork!
 ```
 
-1. Run `npx ts-node ./test/sim//configs/prysm/txGenerator.ts 8545 'hello'` to submit a blob transaction.  
+1. Run `npx ts-node ./tools/txGenerator.ts 8545 'hello'` to submit a blob transaction.  
 2. Monitor the EthJS logs to see when the transaction is included in a block via an RPC call to `engine_newPayloadV3` and note the block hash.  
 3. Monitor the Prysm Beacon Node logs and note when the EL block payload is included in a beacon block.  You should see logs like below indicating a block with one blob init.  The first few characters of the `blockhash` field in the logs should match the blockhash reported by EthJS
 ```
