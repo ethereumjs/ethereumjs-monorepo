@@ -9,16 +9,30 @@
 | Ethereum Execution (Eth 1.0) Client built in TypeScript/JavaScript. |
 | ------------------------------------------------------------------- |
 
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [General Usage](#general-usage)
+- [Supported Networks](#supported-networks)
+- [Running with a Consensus Layer (CL) Client](#running-with-a-consensus-layer-cl-client)
+- [Custom Chains](#custom-chains)
+- [Custom Network Mining (Beta)](#custom-network-mining-beta)
+- [API](#api)
+- [JSON RPC](#json-rpc)
+- [Development](#development)
+- [EthereumJS](#ethereumjs)
+
 ## Introduction
 
 The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](https://github.com/ethereum/go-ethereum) or [Nethermind](https://github.com/NethermindEth/nethermind)) written in `TypeScript`/`JavaScript`, the non-Smart-Contract language Ethereum dApp developers are most familiar with. It is targeted to be a client for research and development and not meant to be used in production on `mainnet` for the foreseeable future (out of resource and security considerations).
 
 Here are some use cases:
 
-- Sync the main Ethereum networks (`mainnet`, `goerli`, `rinkeby`, `sepolia`...)
-- Set up your own local development networks (PoA Clique or PoW with CPU miner)
+- Sync the main Ethereum networks (`mainnet` (experimental), `goerli`, `rinkeby`, `sepolia`...)
+- Set up your own local development networks (PoS with consensus client / PoA Clique / PoW with CPU miner)
 - Run a network with your own custom [EthereumJS VM](../vm)
-- Analyze what's in the Ethereum `mainnet` [transaction pool](./lib/sync/txpool.ts)
+- Analyze what's in the Ethereum `mainnet` [transaction pool (mempool)](./lib/sync/txpool.ts)
 - Run experiments with Ethereum browser sync (see [example](./examples/light-browser-sync.md)) **currently unsupported due to browser dependency issues**
 
 The client has an extremely modular design by building upon central other libraries in the EthereumJS monorepo ([VM](../vm), [Merkle Patricia Tree](../trie), [Blockchain](../blockchain), [Block](../block), [tx](../tx), [devp2p](../devp2p) and [Common](../common)) and is therefore extremely well suited for a deep dive into Ethereum protocol development.
@@ -27,21 +41,41 @@ We invite you to explore and would be delighted if you give us feedback on your 
 
 ## Installation
 
-To obtain the latest version, simply require the project using `npm`:
+To be able to run the EthereumJS client, you need a working [Node.js](https://nodejs.org/en/) installation, see e.g. these [docs](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) from the npm documentation for combined instructions on how to install Node.js and eventually npm.
+
+We currently recommend to run the client with a recent Node.js version `18` installation.
+
+### NPM Installation
+
+Client releases are done on a regular basis on [npm](https://www.npmjs.com/package/@ethereumjs/client).
+
+You can install the latest version with:
 
 ```shell
 npm install -g @ethereumjs/client
 ```
 
-For development purposes the client can also be set up like this:
+### Source Installation
 
-1. Clone the monorepo with `git clone https://github.com/ethereumjs/ethereumjs-monorepo.git`
-2. Set things up and install dependencies (see [monorepo docs](../../config/MONOREPO.md))
-3. Run the client with `npm run client:start` from the `client` root directory (e.g. `packages/client` if working on a local copy of the monorepo)
+The client can also be easily installed and built from source:
 
-## Usage
+1. Clone the EthereumJS monorepo with `git clone https://github.com/ethereumjs/ethereumjs-monorepo.git`
+2. Run `npm i` from the root folder to install dependencies and build
+3. Now the client can be run from the `packages/client` folder with `npm run client:start`
+4. Run `npm client:start -- --help` for help on the CLI parameters
 
-### Introduction
+### Docker
+
+Docker images are not yet published on a regular basis. You can build your own image by going to the repository
+root directory and run:
+
+```shell
+docker build . -f Dockerfile.fromSource --tag ethereumjs:latest
+```
+
+You may now do appropriate directory/file mounts for `data` dir and `jwtsecret` file and provide their path appropriately in the `client` run command.
+
+## General Usage
 
 You can get the client up and running by going to the shell and run:
 
@@ -71,13 +105,13 @@ ethereumjs --help
 
 For the networks that have transitioned to PoS aka **merged** (all Ethereum networks have been _merged_), checkout how to [run Ethereumjs in the PoS configuration](docs/usage/RunAsElClient.md).
 
-### Supported Networks
+## Supported Networks
 
-The EthereumJS client is tightly integrated with the EthereumJS [Common](../common) library and gets its network state and information from this library and supports all networks support by `Common`.
+The EthereumJS client is tightly integrated with the EthereumJS [Common](../common) library and gets its network state and information from this library. The client supports all networks supported by `Common`.
 
 The main supported networks are:
 
-- `mainnet`
+- `mainnet` (experimental)
 - `rinkeby`
 - `ropsten`
 - `goerli`
@@ -91,32 +125,68 @@ ethereumjs --network=rinkeby
 
 The client currently supports `full` sync being set as a default and has experimental support for `light` sync.
 
-### The Merge
+## Running with a Consensus Layer (CL) Client
 
-The EthereumJS client is participating actively in the different testnets preparing for the Merge hardfork and the team is following up on implementing the Merge [specs](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/paris.md) and updating along new versions of the specification.
+In most scenarios you will want to run the EthereumJS client in a combination with a consensus layer (CL) client. The most tested combination is to run the client with the [Lodestar](https://github.com/ChainSafe/lodestar) TypeScript CL client. Other possible options are to run with [Prysm](https://github.com/prysmaticlabs/prysm) (Go), [Lighthouse](https://github.com/sigp/lighthouse) (Rust), [Nimbus](https://github.com/status-im/nimbus-eth2) (Nim) or [Teku](https://github.com/ConsenSys/teku) (Java).
 
-There are dedicated instructions on how to setup for running the client in conjunction with a consensus (Eth 2.0) client (e.g. [Lodestar](https://github.com/ChainSafe/lodestar)).
+### Necessary CLI Options
 
-Testnet Instructions:
+#### Engine API
 
-- [Merge Testnet Setup](./merge/)
+Execution and consensus layer clients communicate with each other through a new set of JSON-RPC API calls, the so-called [Engine API](https://github.com/ethereum/execution-apis/tree/main/src/engine).
 
-#### Sync Scenarios
+The Engine API can be activated in the client with:
 
-When running an Execution Layer (EL) client (so here: the `EthereumJS` client) together with a Consensus Layer (CL) client (e.g. Lodestar or Lighthouse) it is generally recommended to first start and last stop the EL client, since this client acts as a service worker post-Merge and the CL client is depending on a working EL client connection.
+```shell
+--rpcEngine
+```
 
-Currently the following sync scenarios are **supported**:
+This will expose `engine` endpoints at `8551`(default port, can be modified see cli help via `--help`).
 
-- **EL and CL Live Transition**: both clients follow the head of the respective chains pre Merge and go through the Merge transition live and in sync
-- **EL synced to Merge block, CL Merge transition**: the EL client has been synced to the Merge transitition block and is waiting for CL requests, the CL is syncing through the transition and starts EL requests along
-- **Resume syncing with equally synced clients / CL client behind**: sync can be resumed with EL client and CL client synced to the respective counterparts of the beacon and embedded execution chain, CL client can also be somewhat behind the EL client
-- **CL client ahead of EL client**: if the CL client has been synced without the EL client syncing in _lockstep_ on/after merge (e.g. using weak subjectivity sync) and is therefore _ahead_ of the EL client post-merge, the EL backfills blocks and brings the chain up-to-date with the head fcUs being issued by the CL via [optimistic](https://github.com/ethereum/consensus-specs/blob/dev/sync/optimistic.md) (beacon) sync (since `v0.5.0`)
+#### JWT Authentication
 
-### Custom Chains
+To ensure a secure communication channel between clients, a [JWT](https://jwt.io/) token is needed for authentication. If no further option is provided in the client, a JWT token is created on first run and stored to a predefined location (see CLI output). This secret will then be re-used by default, and can then be provided to the CL client (see CL client documentation for details).
+
+To use an existing token the path to the token can be passed to the client with the following flag:
+
+```shell
+--jwt-secret
+```
+
+JWT authentication can be disabled by adding the `--rpcEngineAuth false` flag (do not use in production).
+
+### Example: Setup with Lodestar
+
+#### Beacon
+
+The following is a rough guidance to run Lodestar as a beacon (non-validating) Node, see Lodestar [docs](https://chainsafe.github.io/lodestar/usage/beacon-management/) for more complete and up-to-date instructions on beacon management with Lodestar.
+
+1. Use lodestar branch `stable` and run `yarn && yarn build`
+2. Run cmd: `./lodestar beacon --network sepolia --jwt-secret /path/to/jwtsecret/file`
+
+This will by default try connecting to `ethereumjs` over the endpoint `8551`. (You may customize this in conjunction with `ethereumjs`, see lodestar cli help via `--help`).
+
+You may provide `--checkpointSyncUrl` (with a synced `sepolia` beacon node endpoint as arg value) to start directly off the head/provided checkpoint on the `sepolia` beacon chain, possibly triggering (backfill) beacon sync on ethereumjs.
+
+#### (Optional) Validator
+
+Once you start a beacon node as instructed above, it will expose some default api endpoints. The validator started as instructed below will connect to the beacon node via these apis (Refer to `lodestar` cli help to modify the default endpoints for both beacon and validator). Again more complete and up-to-date [docs](https://chainsafe.github.io/lodestar/usage/validator-management/) are available within the Lodestar documentation.
+
+1. Run cmd: `./lodestar validator --importKeystores /path/to/generated/keystores --importKeystoresPassword /path/to/keystores/password/file`
+
+where the keystores have been generated via [staking-deposit-cli](https://github.com/ethereum/staking-deposit-cli) with the same password as in the above provided password file.
+
+For a testnet chain, you may skip keystore generation and directly provide lodestar validator with a `mnemonic` and its range indices to derive validators via `--fromMnemonic` and `--mnemonicIndexes` args. For e.g.:
+
+`./lodestar validator --fromMnemonic "lens risk clerk foot verb planet drill roof boost aim salt omit celery tube list permit motor obvious flash demise churn hold wave hollow" --mnemonicIndexes 0..5`
+
+(Modify the mnemonic and range indices as per your validator configuration).
+
+## Custom Chains
 
 The EthereumJS client supports running custom chains based on a custom chain configuration. There are two ways of reading in custom chain configuration parameters:
 
-#### Common-based Configuration
+### Common-based Configuration
 
 We have got our own flexible chain configuration and genesis state configuration format applied in the `Common` library, see the `Common` [chain JSON files](../common/src/chains/) as well as corresponding blockchain [Genesis JSON files](../blockchain/src/genesisStates/) for inspiration.
 
@@ -126,7 +196,7 @@ Custom chain files following this format can be passed in to the client with the
 ethereumjs --customChain=[COMMON_FORMAT_CHAIN_FILE] --customGenesisState=[COMMON_FORMAT_GENESIS_STATE]
 ```
 
-#### Geth Genesis Files
+### Geth Genesis Files
 
 It is also possible to use a chain configuration as defined by the Go-Ethereum [genesis.json file format](https://geth.ethereum.org/docs/interface/private-network).
 
@@ -136,7 +206,7 @@ Use the following option to pass in to the client:
 ethereumjs --gethGenesis=[GETH_GENESIS_JSON_FILE]
 ```
 
-### Custom Network Mining (Beta)
+## Custom Network Mining (Beta)
 
 The client supports private custom network mining by using the `--mine` option together with passing in a comma separated list of accounts with the `--unlock` option:
 
@@ -146,7 +216,7 @@ ethereumjs --mine --unlock=[ADDRESS1],[ADDRESS2],...
 
 Note that this feature is in `beta` and shouldn't be used with accounts holding a substantial amount of `Ether` on mainnet (or other valuable assets) for security reasons.
 
-#### Custom Network for Development
+### Custom Network for Development
 
 The client provides a quick way to get a local instance of a blockchain up and running using the `--dev` command. This will start up a private PoA clique network with a prefunded account that mines block on 10 second intervals. The prefunded account and its private key are printed to the screen when the client starts. When paired with the `--rpc` command, you have a ready-made environment for local development.
 
