@@ -145,7 +145,7 @@ This will expose `engine` endpoints at `8551`(default port, can be modified see 
 
 #### JWT Authentication
 
-To ensure a secure communication channel between clients, a [JWT](https://jwt.io/) token is needed for authentication. If no further option is provided in the client, a JWT token is created on first run and stored to a predefined location (see CLI output). This secret can then be provided to the CL client (see CL client documentation for details).
+To ensure a secure communication channel between clients, a [JWT](https://jwt.io/) token is needed for authentication. If no further option is provided in the client, a JWT token is created on first run and stored to a predefined location (see CLI output). This secret will then be re-used by default, and can then be provided to the CL client (see CL client documentation for details).
 
 To use an existing token the path to the token can be passed to the client with the following flag:
 
