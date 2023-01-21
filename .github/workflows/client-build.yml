@@ -103,4 +103,4 @@ jobs:
         with:
           timeout_minutes: 10
           max_attempts: 3
-          command: cd ${{github.workspace}}/packages/client && npm run test:cli -- --network=${{matrix.network}} --syncmode=${{matrix.syncmode}} --transports rlpx
+          command: cd ${{github.workspace}}/packages/client && npm run test:cli -- --network=${{matrix.network}} --syncMode=${{matrix.syncmode}} --transports rlpx

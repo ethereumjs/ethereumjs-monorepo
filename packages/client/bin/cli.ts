@@ -43,22 +43,22 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     choices: networks.map((n) => n[1]),
     default: 'mainnet',
   })
-  .option('network-id', {
+  .option('networkId', {
     describe: 'Network ID',
     choices: networks.map((n) => parseInt(n[0])),
     default: undefined,
   })
-  .option('syncmode', {
+  .option('syncMode', {
     describe: 'Blockchain sync mode (light sync experimental)',
     choices: Object.values(SyncMode),
     default: Config.SYNCMODE_DEFAULT,
   })
-  .option('lightserv', {
+  .option('lightServe', {
     describe: 'Serve light peer requests',
     boolean: true,
     default: Config.LIGHTSERV_DEFAULT,
   })
-  .option('datadir', {
+  .option('dataDir', {
     describe: 'Data directory for the blockchain',
     default: `${homedir()}/Library/Ethereum/ethereumjs`,
   })
@@ -105,11 +105,11 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe: 'Enable the JSON-RPC server with HTTP endpoint',
     boolean: true,
   })
-  .option('rpcport', {
+  .option('rpcPort', {
     describe: 'HTTP-RPC server listening port',
     default: 8545,
   })
-  .option('rpcaddr', {
+  .option('rpcAddr', {
     describe: 'HTTP-RPC server listening interface address',
     default: 'localhost',
   })
@@ -154,15 +154,15 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     boolean: true,
     default: true,
   })
-  .option('jwt-secret', {
+  .option('jwtSecret', {
     describe: 'Provide a file containing a hex encoded jwt secret for Engine RPC server',
     coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
   })
-  .option('helprpc', {
+  .option('helpRpc', {
     describe: 'Display the JSON RPC help with a list of all RPC methods implemented (and exit)',
     boolean: true,
   })
-  .option('loglevel', {
+  .option('logLevel', {
     describe: 'Logging verbosity',
     choices: ['error', 'warn', 'info', 'debug'],
     default: 'info',
@@ -559,7 +559,7 @@ function generateAccount(): Account {
  * Main entry point to start a client
  */
 async function run() {
-  if (args.helprpc === true) {
+  if (args.helpRpc === true) {
     // Output RPC help and exit
     return helprpc()
   }
@@ -583,7 +583,7 @@ async function run() {
     args.discDns = false
     if (accounts.length === 0) {
       // If generating new keys delete old chain data to prevent genesis block mismatch
-      removeSync(`${args.datadir}/devnet`)
+      removeSync(`${args.dataDir}/devnet`)
       // Create new account
       accounts.push(generateAccount())
     }
@@ -638,7 +638,7 @@ async function run() {
     process.exit()
   }
 
-  const datadir = args.datadir ?? Config.DATADIR_DEFAULT
+  const datadir = args.dataDir ?? Config.DATADIR_DEFAULT
   const configDirectory = `${datadir}/${common.chainName()}/config`
   ensureDirSync(configDirectory)
   const key = await Config.getClientKey(datadir, common)
@@ -658,7 +658,7 @@ async function run() {
     dnsNetworks: args.dnsNetworks,
     extIP: args.extIP,
     key,
-    lightserv: args.lightserv,
+    lightserv: args.lightServe,
     logger,
     maxPeers: args.maxPeers,
     maxPerRequest: args.maxPerRequest,
@@ -669,7 +669,7 @@ async function run() {
     multiaddrs,
     port: args.port,
     saveReceipts: args.saveReceipts,
-    syncmode: args.syncmode,
+    syncmode: args.syncMode,
     disableBeaconSync: args.disableBeaconSync,
     forceSnapSync: args.forceSnapSync,
     transports: args.transports,

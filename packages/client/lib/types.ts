@@ -102,9 +102,9 @@ export type Libp2pMuxedStream = MuxedStream
 export interface ClientOpts {
   network?: string
   networkId?: number
-  syncmode?: SyncMode
-  lightserv?: boolean
-  datadir?: string
+  syncMode?: SyncMode
+  lightServe?: boolean
+  dataDir?: string
   customChain?: string
   customGenesisState?: string
   gethGenesis?: string
@@ -115,8 +115,8 @@ export interface ClientOpts {
   extIP?: string
   multiaddrs?: string | string[]
   rpc?: boolean
-  rpcport?: number
-  rpcaddr?: string
+  rpcPort?: number
+  rpcAddr?: string
   ws?: boolean
   wsPort?: number
   wsAddr?: string
@@ -126,9 +126,9 @@ export interface ClientOpts {
   wsEnginePort?: number
   wsEngineAddr?: string
   rpcEngineAuth?: boolean
-  'jwt-secret'?: string
-  helprpc?: boolean
-  loglevel?: string
+  jwtSecret?: string
+  helpRpc?: boolean
+  logLevel?: string
   logFile?: boolean
   logLevelFile?: string
   logRotate?: boolean

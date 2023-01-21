@@ -15,8 +15,8 @@ import type { Server as RPCServer } from 'jayson/promise'
 
 export type RPCArgs = {
   rpc: boolean
-  rpcaddr: string
-  rpcport: number
+  rpcAddr: string
+  rpcPort: number
   ws: boolean
   wsPort: number
   wsAddr: string
@@ -26,8 +26,8 @@ export type RPCArgs = {
   wsEngineAddr: string
   wsEnginePort: number
   rpcDebug: boolean
-  helprpc: boolean
-  'jwt-secret'?: string
+  helpRpc: boolean
+  jwtSecret?: string
   rpcEngineAuth: boolean
   rpcCors: string
 }
@@ -78,8 +78,8 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
   const servers: RPCServer[] = []
   const {
     rpc,
-    rpcaddr,
-    rpcport,
+    rpcAddr,
+    rpcPort,
     ws,
     wsPort,
     wsAddr,
@@ -88,7 +88,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     rpcEnginePort,
     wsEngineAddr,
     wsEnginePort,
-    'jwt-secret': jwtSecretPath,
+    jwtSecret: jwtSecretPath,
     rpcEngineAuth,
     rpcCors,
     rpcDebug,
@@ -107,7 +107,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
 
   if (rpc || ws) {
     let rpcHttpServer
-    withEngineMethods = rpcEngine && rpcEnginePort === rpcport && rpcEngineAddr === rpcaddr
+    withEngineMethods = rpcEngine && rpcEnginePort === rpcPort && rpcEngineAddr === rpcAddr
 
     const { server, namespaces, methods } = createRPCServer(manager, {
       methodConfig: withEngineMethods ? MethodConfig.WithEngine : MethodConfig.WithoutEngine,
@@ -131,14 +131,14 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
               }
             : undefined,
       })
-      rpcHttpServer.listen(rpcport)
+      rpcHttpServer.listen(rpcPort)
       logger.info(
-        `Started JSON RPC Server address=http://${rpcaddr}:${rpcport} namespaces=${namespaces}${
+        `Started JSON RPC Server address=http://${rpcAddr}:${rpcPort} namespaces=${namespaces}${
           withEngineMethods ? ' rpcEngineAuth=' + rpcEngineAuth.toString() : ''
         }`
       )
       logger.debug(
-        `Methods available at address=http://${rpcaddr}:${rpcport} namespaces=${namespaces} methods=${Object.keys(
+        `Methods available at address=http://${rpcAddr}:${rpcPort} namespaces=${namespaces} methods=${Object.keys(
           methods
         ).join(',')}`
       )
@@ -149,7 +149,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
         server,
         withEngineMiddleware: withEngineMethods && rpcEngineAuth ? { jwtSecret } : undefined,
       }
-      if (rpcaddr === wsAddr && rpcport === wsPort) {
+      if (rpcAddr === wsAddr && rpcPort === wsPort) {
         // We want to load the websocket upgrade request to the same server
         opts.httpServer = rpcHttpServer
       }
@@ -169,7 +169,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     }
   }
 
-  if (rpcEngine && !(rpc && rpcport === rpcEnginePort && rpcaddr === rpcEngineAddr)) {
+  if (rpcEngine && !(rpc && rpcPort === rpcEnginePort && rpcAddr === rpcEngineAddr)) {
     const { server, namespaces, methods } = createRPCServer(manager, {
       methodConfig: MethodConfig.EngineOnly,
       rpcDebug,
