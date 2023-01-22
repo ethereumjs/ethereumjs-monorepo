@@ -50,7 +50,8 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   // create and add genesis block
   const header = formatBlockHeader(testData.genesisBlockHeader)
-  const blockData = { header }
+  const withdrawals = common.isActivatedEIP(4895) ? [] : undefined
+  const blockData = { header, withdrawals }
   const genesisBlock = Block.fromBlockData(blockData, { common })
 
   if (typeof testData.genesisRLP === 'string') {
