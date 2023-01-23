@@ -123,7 +123,7 @@ export class EthereumClient {
     await Promise.all(this.services.map((s) => s.open()))
 
     const ts = this.chain.genesis.header.timestamp
-    const tsDiff = Number(ts) - Date.now()
+    const tsDiff = Number(ts) - Date.now()/1000
     if (tsDiff > 0) {
       this.config.logger.warn(
         `Gensis timestamp set for a future date (${tsDiff} secs in the future).`
