@@ -128,11 +128,11 @@ function logFileTransport(args: any) {
 /**
  * Returns a formatted {@link Logger}
  */
-export function getLogger(args: { [key: string]: any } = { loglevel: 'info' }) {
+export function getLogger(args: { [key: string]: any } = { logLevel: 'info' }) {
   const transports: any[] = [
     new wTransports.Console({
-      level: args.loglevel,
-      silent: args.loglevel === 'off',
+      level: args.logLevel,
+      silent: args.logLevel === 'off',
       format: formatConfig(true),
     }),
   ]
@@ -142,7 +142,7 @@ export function getLogger(args: { [key: string]: any } = { loglevel: 'info' }) {
   const logger = createLogger({
     transports,
     format: formatConfig(),
-    level: args.loglevel,
+    level: args.logLevel,
   })
   return logger
 }
