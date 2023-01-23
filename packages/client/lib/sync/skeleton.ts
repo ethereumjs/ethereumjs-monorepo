@@ -217,7 +217,7 @@ export class Skeleton extends MetaDBManager {
         lastchain.tail = number
         lastchain.next = head.header.parentHash
       } else {
-        this.config.logger.warn(
+        this.config.logger.debug(
           `Skeleton announcement before tail, will reset skeleton tail=${lastchain.tail} head=${lastchain.head} newHead=${number}`
         )
       }
