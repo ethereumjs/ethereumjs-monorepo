@@ -66,7 +66,7 @@ export interface BlockOptions {
    * It also enables block hash caching when the `hash()` method is called multiple times.
    *
    * If you need to deactivate the block freeze - e.g. because you want to subclass block and
-   * add aditional properties - it is strongly encouraged that you do the freeze yourself
+   * add additional properties - it is strongly encouraged that you do the freeze yourself
    * within your code instead.
    *
    * Default: true

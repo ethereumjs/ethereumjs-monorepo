@@ -682,7 +682,7 @@ async function run() {
     try {
       writeFileSync(`${networkDir}/${details.transport}`, details.url)
     } catch (e) {
-      // Incase dir is not really setup, mostly to take care of mockserver in test
+      // In case dir is not really setup, mostly to take care of mockserver in test
       config.logger.error(`Error writing listener details to disk: ${(e as Error).message}`)
     }
   })

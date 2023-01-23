@@ -1015,7 +1015,7 @@ export class Eth {
 
   /**
    * Returns the transaction count for a block given by the block number.
-   * @param params An array of one paramater:
+   * @param params An array of one parameter:
    *  1. integer of a block number, or the string "latest", "earliest" or "pending"
    */
   async getBlockTransactionCountByNumber(params: [string]) {

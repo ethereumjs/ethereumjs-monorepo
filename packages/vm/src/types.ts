@@ -43,7 +43,7 @@ export interface PreByzantiumTxReceipt extends BaseTxReceipt {
  */
 export interface PostByzantiumTxReceipt extends BaseTxReceipt {
   /**
-   * Status of transaction, `1` if successful, `0` if an exception occured
+   * Status of transaction, `1` if successful, `0` if an exception occurred
    */
   status: 0 | 1
 }

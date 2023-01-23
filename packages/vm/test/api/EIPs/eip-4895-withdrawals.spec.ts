@@ -67,7 +67,7 @@ tape('EIP4895 tests', (t) => {
 
     let index = 0
     for (let i = 0; i < addresses.length; i++) {
-      // Just assign any number to validatorIndex as its just for CL convinience
+      // Just assign any number to validatorIndex as its just for CL convenience
       withdrawals.push({
         index,
         validatorIndex: index,

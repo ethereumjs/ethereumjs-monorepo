@@ -87,7 +87,7 @@ ethereumjs
 npm run client:start
 ```
 
-And pass in CLI paramters like:
+And pass in CLI parameters like:
 
 ```shell
 # npm installation
@@ -305,7 +305,7 @@ This will give you an output like the following:
 ```
 
 Here's an example for a call on an endpoint with the need for parameters. The following call uses
-the [eth_getBlockByNumer](https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_getblockbynumber) endpoint
+the [eth_getBlockByNumber](https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_getblockbynumber) endpoint
 to request data for block number 436 (you can use a tool like
 [RapidTables](https://www.rapidtables.com/convert/number/decimal-to-hex.html) for conversion to `hex`):
 

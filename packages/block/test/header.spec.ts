@@ -489,7 +489,7 @@ tape('[Block]: Header functions', function (t) {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
       const header = BlockHeader.fromHeaderData({}, { common })
       st.equal(header._common.hardfork(), Hardfork.Shanghai, 'hardfork should be set to shanghai')
-      st.equal(header.baseFeePerGas, BigInt(7), 'baseFeePerGas should be set to minimun default')
+      st.equal(header.baseFeePerGas, BigInt(7), 'baseFeePerGas should be set to minimum default')
       st.deepEqual(
         header.withdrawalsRoot,
         KECCAK256_RLP,

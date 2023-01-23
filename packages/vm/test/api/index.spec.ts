@@ -255,7 +255,7 @@ tape('VM -> hardforkByBlockNumber, hardforkByTTD, state (deprecated), blockchain
   })
   tape('Ensure that precompile activation creates non-empty accounts', async (t) => {
     // setup the accounts for this test
-    const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
+    const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
     const contractAddress = new Address(
       Buffer.from('00000000000000000000000000000000000000ff', 'hex')
     ) // contract address

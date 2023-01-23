@@ -206,7 +206,7 @@ export class BlockHeader {
 
     if (!this._common.isActivatedEIP(4895) && withdrawalsRoot !== undefined) {
       throw new Error(
-        'A withdrawalsRoot for a header can only be provied with EIP4895 being activated'
+        'A withdrawalsRoot for a header can only be provided with EIP4895 being activated'
       )
     }
 

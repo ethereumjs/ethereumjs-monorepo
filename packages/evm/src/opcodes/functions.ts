@@ -18,7 +18,7 @@ import { ERROR } from '../exceptions'
 import {
   addressToBuffer,
   describeLocation,
-  exponentation,
+  exponentiation,
   fromTwos,
   getDataSlice,
   jumpIsValid,
@@ -178,7 +178,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.stack.push(base)
         return
       }
-      const r = exponentation(base, exponent)
+      const r = exponentiation(base, exponent)
       runState.stack.push(r)
     },
   ],

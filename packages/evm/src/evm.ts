@@ -602,7 +602,7 @@ export class EVM implements EVMInterface {
       if (!this._common.gteHardfork(Hardfork.Homestead)) {
         // Pre-Homestead behavior; put an empty contract.
         // This contract would be considered "DEAD" in later hard forks.
-        // It is thus an unecessary default item, which we have to save to dik
+        // It is thus an unnecessary default item, which we have to save to dik
         // It does change the state root, but it only wastes storage.
         //await this._state.putContractCode(message.to, result.returnValue)
         const account = await this.eei.getAccount(message.to)

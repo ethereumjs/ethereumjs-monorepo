@@ -304,7 +304,7 @@ tape('EIP-3074 AUTH', (t) => {
     st.equal(result.execResult.exceptionError?.error, ERROR.AUTH_INVALID_S, 'threw correct error')
   })
 
-  t.test('Should be able to call AUTH mutliple times', async (st) => {
+  t.test('Should be able to call AUTH multiple times', async (st) => {
     const vm = await VM.create({ common })
     const message = Buffer.from('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)

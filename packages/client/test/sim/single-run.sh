@@ -142,7 +142,7 @@ then
   genTime="$(date +%s)"
   genTime=$((genTime + 30))
   echo $genTime > "$origDataDir/genesisTime"
-  echo $GENESIS_HASH > "$origDataDir/geneisHash"
+  echo $GENESIS_HASH > "$origDataDir/genesisHash"
 else
   # We should curl and get genesis hash, but for now lets assume it will be provided
   while [ ! -n "$CL_GENESIS_HASH" ]
@@ -187,7 +187,7 @@ run_cmd "$lodeCmd"
 lodePid=$!
 echo "lodePid: $lodePid"
 
-trap "echo exit signal recived;cleanup" SIGINT SIGTERM
+trap "echo exit signal received;cleanup" SIGINT SIGTERM
 
 if [ ! -n "$DETACHED" ] && [ -n "$ejsPid" ] && [ -n "$lodePid" ]
 then
