@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1674404726922,
+  "lastUpdate": 1674488066709,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "696b36fe9091cd67f3e0a70bc696e41bd16e57a2",
-          "message": "New December Releases (#2445)\n\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs, some withdrawal module code docs (Util v8.0.3)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs (Common v3.0.2)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs (Trie v5.0.2)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs (Tx v4.0.2)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs (Block v4.1.0)\r\n\r\n* Added withdrawal code example to Block README\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs (StateManager v1.0.2)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs (Devp2p v5.0.2)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs (Ethash v2.0.2)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs (Blockchain v6.1.0)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs (EVM v1.2.3)\r\n\r\n* Added CHANGELOG entry, bumped version number, updated upstream dependency versions, rebuild docs (VM v6.3.0)\r\n\r\n* Client -> Release: Bumped version to v0.6.6, added CHANGELOG entry\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Release updates (removed sharding and EOF internal HFs, CHANGELOG updates (in particular Hardfork-By-Time addition))\r\n\r\n* Remove extraneous comment\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2022-12-15T16:55:46+01:00",
-          "tree_id": "54af64530cb76379ec4c18aee1c3e0b85176a38f",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/696b36fe9091cd67f3e0a70bc696e41bd16e57a2"
-        },
-        "date": 1671119937140,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 14862,
-            "range": "±3.70%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 14861,
-            "range": "±4.73%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 14035,
-            "range": "±8.42%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 15440,
-            "range": "±2.16%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 14850,
-            "range": "±2.57%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±9.98%",
             "unit": "ops/sec",
             "extra": "74 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "dimitris.apostolou@icloud.com",
+            "name": "Dimitris Apostolou",
+            "username": "rex4539"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ecd7b5d62dd874559bc059ec2da6a343a72bb634",
+          "message": "Fix typos (#2485)",
+          "timestamp": "2023-01-23T16:31:07+01:00",
+          "tree_id": "907b11a50b7a3e32a94d62380b0d0d55b82c8224",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ecd7b5d62dd874559bc059ec2da6a343a72bb634"
+        },
+        "date": 1674488065477,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15493,
+            "range": "±3.00%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 14465,
+            "range": "±6.88%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15812,
+            "range": "±2.04%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15307,
+            "range": "±2.28%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 13156,
+            "range": "±10.90%",
+            "unit": "ops/sec",
+            "extra": "65 samples"
           }
         ]
       }
