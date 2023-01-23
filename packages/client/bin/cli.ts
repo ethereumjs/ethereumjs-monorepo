@@ -686,11 +686,20 @@ async function run() {
       config.logger.error(`Error writing listener details to disk: ${(e as Error).message}`)
     }
   })
+  if (customGenesisState) {
+    const numAccounts = Object.keys(customGenesisState).length
+    config.logger.info(`Reading custom genesis state accounts=${numAccounts}`)
+  }
 
   const client = await startClient(config, customGenesisState)
   const servers =
     args.rpc === true || args.rpcEngine === true ? startRPCServers(client, args as RPCArgs) : []
-
+  if (
+    client.config.chainCommon.gteHardfork(Hardfork.Merge) === true &&
+    (args.rpcEngine === false || args.rpcEngine === undefined)
+  ) {
+    config.logger.warn(`Engine RPC endpoint not activated on a post-Merge HF setup.`)
+  }
   process.on('SIGINT', async () => {
     config.logger.info('Caught interrupt signal. Shutting down...')
     for (const s of servers) {

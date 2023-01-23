@@ -49,7 +49,7 @@ export abstract class Execution {
    */
   async open(): Promise<void> {
     this.started = true
-    this.config.logger.info('Starting execution.')
+    this.config.logger.info('Setup EVM execution.')
   }
 
   /**
