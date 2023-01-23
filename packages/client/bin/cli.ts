@@ -621,7 +621,6 @@ async function run() {
   } else if (typeof args.gethGenesis === 'string') {
     // Use geth genesis parameters file if specified
     const genesisFile = JSON.parse(readFileSync(args.gethGenesis, 'utf-8'))
-    console.log(genesisFile)
     const chainName = path.parse(args.gethGenesis).base.split('.')[0]
     common = Common.fromGethGenesis(genesisFile, {
       chain: chainName,
