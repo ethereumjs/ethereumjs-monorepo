@@ -131,7 +131,7 @@ export class EthereumClient {
     if (this.started) {
       return false
     }
-    this.config.logger.info('Connecting to network and synchronizing blockchain...')
+    this.config.logger.info('Setup networking and services.')
 
     await Promise.all(this.services.map((s) => s.start()))
     await Promise.all(this.config.servers.map((s) => s.start()))

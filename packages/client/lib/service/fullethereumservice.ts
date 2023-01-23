@@ -128,9 +128,9 @@ export class FullEthereumService extends EthereumService {
 
   async open() {
     this.config.logger.info(
-      `Opening FullEthereumService with ${
+      `Preparing for sync (FullEthereumService with ${
         this.synchronizer instanceof BeaconSynchronizer ? 'BeaconSynchronizer' : 'FullSynchronizer'
-      } `
+      }).`
     )
     await super.open()
     await this.execution.open()
