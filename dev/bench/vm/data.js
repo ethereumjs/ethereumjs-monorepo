@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1674488066709,
+  "lastUpdate": 1674516027242,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "47403fc028e1098bd625ff32ee3b5441481cdfbf",
-          "message": "Fix EVM test scripts (#2451)\n\n* Fix coverage test script\r\n\r\n* Fix tests\r\n\r\n* Update tests",
-          "timestamp": "2022-12-16T10:51:10+01:00",
-          "tree_id": "5b84d6ec2a001b95514d5ba854033f504c0d43c9",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/47403fc028e1098bd625ff32ee3b5441481cdfbf"
-        },
-        "date": 1671184432453,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19545,
-            "range": "±2.45%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18885,
-            "range": "±4.64%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 19861,
-            "range": "±1.18%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19128,
-            "range": "±1.41%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 17024,
-            "range": "±8.37%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±10.90%",
             "unit": "ops/sec",
             "extra": "65 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a06fede7fd1cf851237ed9a8c057142901ab4e24",
+          "message": "Interop Client CLI Improvements (#2497)\n\n* Added the chain ID to client start-up log output\r\n\r\n* Added custom genesis state account information log message\r\n\r\n* Some EVM, networking and sync startup log rewording to better align with actions taken and better reflect post-merge client behavior\r\n\r\n* Switched CL client needed log message from WARN to INFO level (expected behavior)\r\n\r\n* Added genesis timestamp to chain initialization log message, added timestamp-in-the-future warning log message\r\n\r\n* Added some more prominent post-Merge client mode message, added warnign if running post-Merge without Engine API\r\n\r\n* Moved timestamp warning log message further down the instantiation line due to race condition issues (mainnet)\r\n\r\n* Moved beacon sync skeleton put block and VM execution warn msgs to debug log level to avoid CLI overloading, moved fillLogIndex in skeleton to be class based, down-leveled interval log from 50 to 10\r\n\r\n* Moved skeleton announcement before tail msg to debug level\r\n\r\n* Added withdrawal number and excess data gas to last consensus payload log msg\r\n\r\n* fix tsDiff\r\n\r\n* Removed timestamp-in-future warning due to race conditions leading to test failures\r\n\r\n* fix loglevel parameter usage\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-01-24T00:17:45+01:00",
+          "tree_id": "90f248d779ca55fd1f45760e1cd2945928a12cc7",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a06fede7fd1cf851237ed9a8c057142901ab4e24"
+        },
+        "date": 1674516026656,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18914,
+            "range": "±2.59%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18526,
+            "range": "±4.36%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18779,
+            "range": "±1.73%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 16683,
+            "range": "±9.42%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19397,
+            "range": "±1.36%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
