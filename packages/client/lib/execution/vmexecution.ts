@@ -365,7 +365,7 @@ export class VMExecution extends Execution {
           `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} txs=${txCounter}`
         )
       } else {
-        this.config.logger.warn(
+        this.config.logger.debug(
           `No blocks executed past chain head hash=${short(endHeadBlock.hash())} number=${
             endHeadBlock.header.number
           }`
