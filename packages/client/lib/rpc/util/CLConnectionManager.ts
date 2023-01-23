@@ -6,6 +6,8 @@ import { short, timeDiff } from '../../util'
 import type { Config } from '../../config'
 import type {
   ExecutionPayloadV1,
+  ExecutionPayloadV2,
+  ExecutionPayloadV3,
   ForkchoiceResponseV1,
   ForkchoiceStateV1,
   PayloadStatusV1,
@@ -23,7 +25,7 @@ type CLConnectionManagerOpts = {
 }
 
 type NewPayload = {
-  payload: ExecutionPayloadV1
+  payload: ExecutionPayloadV1 | ExecutionPayloadV2 | ExecutionPayloadV3
   response?: PayloadStatusV1
 }
 
@@ -130,13 +132,20 @@ export class CLConnectionManager {
   }
 
   private _getPayloadLogMsg(payload: NewPayload) {
-    const msg = `number=${Number(payload.payload.blockNumber)} hash=${short(
+    let msg = `number=${Number(payload.payload.blockNumber)} hash=${short(
       payload.payload.blockHash
     )} parentHash=${short(payload.payload.parentHash)}  status=${
       payload.response ? payload.response.status : '-'
     } gasUsed=${this.compactNum(Number(payload.payload.gasUsed))} baseFee=${Number(
       payload.payload.baseFeePerGas
     )} txs=${payload.payload.transactions.length}`
+
+    if ('withdrawals' in payload.payload) {
+      msg += ` withdrawals=${(payload.payload as ExecutionPayloadV2).withdrawals.length}`
+    }
+    if ('excessDataGas' in payload.payload) {
+      msg += ` excessDataGas=${(payload.payload as ExecutionPayloadV3).excessDataGas}`
+    }
     return msg
   }
 
