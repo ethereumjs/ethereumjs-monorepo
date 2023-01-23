@@ -102,10 +102,11 @@ export class EthereumClient {
     if (this.opened) {
       return false
     }
+    const name = this.config.chainCommon.chainName()
+    const chainId = this.config.chainCommon.chainId()
     this.config.logger.info(
-      `Initializing Ethereumjs client version=v${packageVersion} network=${this.config.chainCommon.chainName()}`
+      `Initializing Ethereumjs client version=v${packageVersion} network=${name} chainId=${chainId}`
     )
-
     this.config.events.on(Event.SERVER_ERROR, (error) => {
       this.config.logger.warn(`Server error: ${error.name} - ${error.message}`)
     })
