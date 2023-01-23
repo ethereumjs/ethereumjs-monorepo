@@ -104,16 +104,10 @@ export class EthereumClient {
     }
     const name = this.config.chainCommon.chainName()
     const chainId = this.config.chainCommon.chainId()
-    const ts = this.chain.genesis.header.timestamp
     this.config.logger.info(
-      `Initializing Ethereumjs client version=v${packageVersion} network=${name} chainId=${chainId} timestamp=${ts} (genesis)`
+      `Initializing Ethereumjs client version=v${packageVersion} network=${name} chainId=${chainId}`
     )
-    const tsDiff = Number(ts) - Date.now()
-    if (tsDiff > 0) {
-      this.config.logger.warn(
-        `Gensis timestamp set for a future date (${tsDiff} secs in the future).`
-      )
-    }
+
     this.config.events.on(Event.SERVER_ERROR, (error) => {
       this.config.logger.warn(`Server error: ${error.name} - ${error.message}`)
     })
@@ -127,6 +121,14 @@ export class EthereumClient {
     })
 
     await Promise.all(this.services.map((s) => s.open()))
+
+    const ts = this.chain.genesis.header.timestamp
+    const tsDiff = Number(ts) - Date.now()
+    if (tsDiff > 0) {
+      this.config.logger.warn(
+        `Gensis timestamp set for a future date (${tsDiff} secs in the future).`
+      )
+    }
 
     this.opened = true
   }
