@@ -51,6 +51,11 @@ export interface BlockOptions {
    * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
    */
   hardforkByTTD?: BigIntLike
+
+  /**
+   * Determine the HF by timestamp
+   */
+  hardforkByTimestamp?: BigIntLike
   /**
    * If a preceding {@link BlockHeader} (usually the parent header) is given the preceding
    * header will be used to calculate the difficulty for this block and the calculated

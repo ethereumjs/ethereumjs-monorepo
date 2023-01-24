@@ -178,8 +178,16 @@ export class BlockHeader {
     const nonce = toType(headerData.nonce, TypeOutput.Buffer) ?? defaults.nonce
 
     const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
-    if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
-      this._common.setHardforkByBlockNumber(number, options.hardforkByTTD, timestamp)
+    if (
+      hardforkByBlockNumber ||
+      options.hardforkByTTD !== undefined ||
+      options.hardforkByTimestamp !== undefined
+    ) {
+      this._common.setHardforkByBlockNumber(
+        number,
+        options.hardforkByTTD,
+        options.hardforkByTimestamp ?? timestamp
+      )
     }
 
     // Hardfork defaults which couldn't be paired with earlier defaults
