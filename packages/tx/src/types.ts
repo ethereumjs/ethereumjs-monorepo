@@ -234,7 +234,7 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   /**
    * The versioned hashes used to validate the blobs attached to a transaction
    */
-  versionedHashes?: Buffer[]
+  versionedHashes?: BufferLike[]
   /**
    * The maximum fee per data gas paid for the transaction
    */

@@ -139,7 +139,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       toBuffer((maxFeePerDataGas ?? '') === '' ? '0x' : maxFeePerDataGas)
     )
 
-    this.versionedHashes = txData.versionedHashes ?? []
+    this.versionedHashes = (txData.versionedHashes ?? []).map((vh) => toBuffer(vh))
     this._validateYParity()
     this._validateHighS()
 
