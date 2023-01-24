@@ -101,16 +101,16 @@ const EngineError = {
 const executionPayloadV1FieldValidators = {
   parentHash: validators.blockHash,
   feeRecipient: validators.address,
-  stateRoot: validators.hex,
-  receiptsRoot: validators.hex,
-  logsBloom: validators.hex,
-  prevRandao: validators.hex,
-  blockNumber: validators.hex,
-  gasLimit: validators.hex,
-  gasUsed: validators.hex,
-  timestamp: validators.hex,
-  extraData: validators.hex,
-  baseFeePerGas: validators.hex,
+  stateRoot: validators.bytes32,
+  receiptsRoot: validators.bytes32,
+  logsBloom: validators.bytes256,
+  prevRandao: validators.bytes32,
+  blockNumber: validators.uint64,
+  gasLimit: validators.uint64,
+  gasUsed: validators.uint64,
+  timestamp: validators.uint64,
+  extraData: validators.variableBytes32,
+  baseFeePerGas: validators.uint256,
   blockHash: validators.blockHash,
   transactions: validators.array(validators.hex),
 }
@@ -120,7 +120,7 @@ const executionPayloadV2FieldValidators = {
 }
 const executionPayloadV3FieldValidators = {
   ...executionPayloadV2FieldValidators,
-  excessDataGas: validators.hex,
+  excessDataGas: validators.uint256,
 }
 
 const forkchoiceFieldValidators = {
@@ -130,8 +130,8 @@ const forkchoiceFieldValidators = {
 }
 
 const payloadAttributesFieldValidatorsV1 = {
-  timestamp: validators.hex,
-  prevRandao: validators.hex,
+  timestamp: validators.uint64,
+  prevRandao: validators.bytes32,
   suggestedFeeRecipient: validators.address,
 }
 const payloadAttributesFieldValidatorsV2 = {
@@ -389,17 +389,17 @@ export class Engine {
     )
 
     this.getPayloadV1 = cmMiddleware(
-      middleware(this.getPayloadV1.bind(this), 1, [[validators.hex]]),
+      middleware(this.getPayloadV1.bind(this), 1, [[validators.bytes8]]),
       () => this.connectionManager.updateStatus()
     )
 
     this.getPayloadV2 = cmMiddleware(
-      middleware(this.getPayloadV2.bind(this), 1, [[validators.hex]]),
+      middleware(this.getPayloadV2.bind(this), 1, [[validators.bytes8]]),
       () => this.connectionManager.updateStatus()
     )
 
     this.getPayloadV3 = cmMiddleware(
-      middleware(this.getPayloadV3.bind(this), 1, [[validators.hex]]),
+      middleware(this.getPayloadV3.bind(this), 1, [[validators.bytes8]]),
       () => this.connectionManager.updateStatus()
     )
 
@@ -407,9 +407,9 @@ export class Engine {
       middleware(this.exchangeTransitionConfigurationV1.bind(this), 1, [
         [
           validators.object({
-            terminalTotalDifficulty: validators.hex,
-            terminalBlockHash: validators.hex,
-            terminalBlockNumber: validators.hex,
+            terminalTotalDifficulty: validators.uint256,
+            terminalBlockHash: validators.bytes32,
+            terminalBlockNumber: validators.uint64,
           }),
         ],
       ]),
@@ -417,7 +417,7 @@ export class Engine {
     )
 
     this.getBlobsBundleV1 = cmMiddleware(
-      middleware(this.getBlobsBundleV1.bind(this), 1, [[validators.hex]]),
+      middleware(this.getBlobsBundleV1.bind(this), 1, [[validators.bytes8]]),
       () => this.connectionManager.updateStatus()
     )
   }
