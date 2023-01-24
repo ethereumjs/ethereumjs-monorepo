@@ -89,6 +89,7 @@ export class PendingBlock {
       blockOpts: {
         putBlockIntoBlockchain: false,
         hardforkByTTD: td,
+        hardforkByTimestamp: timestamp,
       },
     })
 
