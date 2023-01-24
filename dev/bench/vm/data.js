@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1674516027242,
+  "lastUpdate": 1674573901425,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "9966408adb104f09747a65f7285585f63e90a8cf",
-          "message": "client: Build block fixes (#2452)\n\n* set hardfork by time fixes\r\n\r\n* bump test coverage\r\n\r\n* further cleanup\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2022-12-16T16:36:17+01:00",
-          "tree_id": "0dee1d57430a308fca99bbb074cd42950e55cd97",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9966408adb104f09747a65f7285585f63e90a8cf"
-        },
-        "date": 1671205210442,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19482,
-            "range": "±1.78%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18857,
-            "range": "±3.93%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 19071,
-            "range": "±1.43%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 17686,
-            "range": "±8.22%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19477,
-            "range": "±1.42%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.36%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "91fca3babf5e7dcf46568c8a1844b621e90f2317",
+          "message": "tx: Handle json fields in fromTxData for eip4844 tx (#2499)\n\n* tx: Handle json fields in fromTxData for eip4844 tx\r\n\r\n* cleanup the serialization code\r\n\r\n* fix spec\r\n\r\n* make ssz types more readable\r\n\r\n* fixes\r\n\r\n* Add bufferlike for other blob txdata fields\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-01-24T20:52:06+05:30",
+          "tree_id": "978a810c5cc18ef07f552d94c6e310dd447b4098",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/91fca3babf5e7dcf46568c8a1844b621e90f2317"
+        },
+        "date": 1674573900296,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18983,
+            "range": "±3.28%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18639,
+            "range": "±4.18%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18732,
+            "range": "±1.60%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 16722,
+            "range": "±8.72%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19541,
+            "range": "±1.38%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
