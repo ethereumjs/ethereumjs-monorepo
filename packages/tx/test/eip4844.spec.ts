@@ -154,14 +154,14 @@ tape('Network wrapper tests', async (t) => {
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(blobs)
     const versionedHashes = commitmentsToVersionedHashes(commitments)
-
+    const proof = kzg.computeAggregateKzgProof(blobs)
     const bufferedHashes = versionedHashes.map((el) => Buffer.from(el))
-
     const unsignedTx = BlobEIP4844Transaction.fromTxData(
       {
         versionedHashes: bufferedHashes,
         blobs,
         kzgCommitments: commitments,
+        kzgProof: Buffer.from(proof),
         maxFeePerDataGas: 100000000n,
         gasLimit: 0xffffffn,
         to: randomBytes(20),
@@ -217,6 +217,7 @@ tape('Network wrapper tests', async (t) => {
     )
 
     const mangledValue = commitments[0][0]
+
     commitments[0][0] = 154
     const txWithInvalidCommitment = BlobEIP4844Transaction.fromTxData(
       {
@@ -242,11 +243,13 @@ tape('Network wrapper tests', async (t) => {
 
     bufferedHashes[0][1] = 2
     commitments[0][0] = mangledValue
+
     const txWithInvalidVersionedHashes = BlobEIP4844Transaction.fromTxData(
       {
         versionedHashes: bufferedHashes,
         blobs,
         kzgCommitments: commitments,
+        kzgProof: Buffer.from(proof),
         maxFeePerDataGas: 100000000n,
         gasLimit: 0xffffffn,
         to: randomBytes(20),

@@ -47,10 +47,9 @@ const validateBlobTransactionNetworkWrapper = (
   if (!(versionedHashes.length === blobs.length && blobs.length === commitments.length)) {
     throw new Error('Number of versionedHashes, blobs, and commitments not all equal')
   }
-
   try {
     kzg.verifyAggregateKzgProof(blobs, commitments, kzgProof)
-  } catch {
+  } catch (e) {
     throw new Error('KZG proof cannot be verified from blobs/commitments')
   }
 
@@ -79,7 +78,8 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
   public readonly common: Common
   public versionedHashes: Buffer[]
   blobs?: Buffer[] // This property should only be populated when the transaction is in the "Network Wrapper" format
-  kzgCommitments?: Buffer[] // THis property should only be populated when the transaction is in the "Network Wrapper" format
+  kzgCommitments?: Buffer[] // This property should only be populated when the transaction is in the "Network Wrapper" format
+  aggregateKzgProof?: Buffer // This property should only be populated when the transaction is in the "Network Wrapper" format
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
@@ -166,6 +166,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
 
     this.blobs = txData.blobs?.map((blob) => toBuffer(blob))
     this.kzgCommitments = txData.kzgCommitments?.map((commitment) => toBuffer(commitment))
+    this.aggregateKzgProof = toBuffer(txData.kzgProof)
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -187,7 +188,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     const tx = BlobEIP4844Transaction.fromTxData(
       {
         ...txData,
-        ...{ blobs: undefined, kzgCommitments: undefined },
+        ...{ blobs: undefined, kzgCommitments: undefined, kzgProof: undefined },
       },
       opts
     )
@@ -353,16 +354,26 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
    * @returns the serialized form of a blob transaction in the network wrapper format (used for gossipping mempool transactions over devp2p)
    */
   serializeNetworkWrapper(): Buffer {
+    if (
+      this.blobs === undefined ||
+      this.kzgCommitments === undefined ||
+      this.aggregateKzgProof === undefined
+    ) {
+      throw new Error(
+        'cannot serialize network wrapper without blobs, KZG commitments and aggregate KZG proof provided'
+      )
+    }
     const to = {
       selector: this.to !== undefined ? 1 : 0,
       value: this.to?.toBuffer() ?? null,
     }
+
     const blobArrays = this.blobs?.map((blob) => Uint8Array.from(blob)) ?? []
     const serializedTxWrapper = BlobNetworkTransactionWrapper.serialize({
       blobs: blobArrays,
       blobKzgs: this.kzgCommitments?.map((commitment) => Uint8Array.from(commitment)) ?? [],
       tx: { ...blobTxToNetworkWrapperDataFormat(this), ...to },
-      kzgAggregatedProof: kzg.computeAggregateKzgProof(blobArrays),
+      kzgAggregatedProof: Uint8Array.from(this.aggregateKzgProof ?? []),
     })
     return Buffer.concat([Buffer.from([0x05]), serializedTxWrapper])
   }
@@ -457,6 +468,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
         versionedHashes: this.versionedHashes,
         blobs: this.blobs,
         kzgCommitments: this.kzgCommitments,
+        kzgProof: this.aggregateKzgProof,
       },
       opts
     )
