@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1674578081456,
+  "lastUpdate": 1674585845239,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "2eada55e427090b14e2c340e83678bc69f53566d",
-          "message": "common: Update forkhash calculation for timebased hardforks (#2458)\n\n* common: Update forkhash calculation for timebased hardforks\r\n\r\n* update title of test",
-          "timestamp": "2022-12-20T10:39:47+01:00",
-          "tree_id": "609321c6c6b190b81653dc5d3e450c221934cb10",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2eada55e427090b14e2c340e83678bc69f53566d"
-        },
-        "date": 1671529355491,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 17967,
-            "range": "±4.35%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18285,
-            "range": "±1.85%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 17620,
-            "range": "±7.35%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 17964,
-            "range": "±1.85%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 17754,
-            "range": "±2.00%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±6.16%",
             "unit": "ops/sec",
             "extra": "81 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d0b53b4bd9a92977ac7d795b60eb97c6cf8890db",
+          "message": "client/rpc/engine: fix forkchoiceUpdateV2 shanghai (#2502)",
+          "timestamp": "2023-01-24T19:41:13+01:00",
+          "tree_id": "fb2d8ab77f2b6f808dabe2a738e7c19744be1547",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d0b53b4bd9a92977ac7d795b60eb97c6cf8890db"
+        },
+        "date": 1674585844593,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18225,
+            "range": "±2.51%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 17427,
+            "range": "±6.67%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18007,
+            "range": "±1.89%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 16896,
+            "range": "±6.53%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 17008,
+            "range": "±9.37%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
           }
         ]
       }
