@@ -25,28 +25,38 @@ export enum Status {
   VALID = 'VALID',
 }
 
+type Bytes8 = string
+type Bytes20 = string
+type Bytes32 = string
+type Root = Bytes32
+type Bytes48 = string
+type Bytes256 = string
+type VariableBytes32 = string
+type Uint64 = string
+type Uint256 = string
+
 export type WithdrawalV1 = {
-  index: string // Quantity, 8 Bytes
-  validatorIndex: string // Quantity, 8 bytes
-  address: string // DATA, 20 bytes
-  amount: string // Quantity, 32 bytes
+  index: Bytes8 // Quantity, 8 Bytes
+  validatorIndex: Bytes8 // Quantity, 8 bytes
+  address: Bytes20 // DATA, 20 bytes
+  amount: Bytes32 // Quantity, 32 bytes
 }
 
 export type ExecutionPayload = {
-  parentHash: string // DATA, 32 Bytes
-  feeRecipient: string // DATA, 20 Bytes
-  stateRoot: string // DATA, 32 Bytes
-  receiptsRoot: string // DATA, 32 bytes
-  logsBloom: string // DATA, 256 Bytes
-  prevRandao: string // DATA, 32 Bytes
-  blockNumber: string // QUANTITY, 64 Bits
-  gasLimit: string // QUANTITY, 64 Bits
-  gasUsed: string // QUANTITY, 64 Bits
-  timestamp: string // QUANTITY, 64 Bits
-  extraData: string // DATA, 0 to 32 Bytes
-  baseFeePerGas: string // QUANTITY, 256 Bits
-  excessDataGas?: string // QUANTITY, 256 Bits
-  blockHash: string // DATA, 32 Bytes
+  parentHash: Bytes32 // DATA, 32 Bytes
+  feeRecipient: Bytes20 // DATA, 20 Bytes
+  stateRoot: Bytes32 // DATA, 32 Bytes
+  receiptsRoot: Bytes32 // DATA, 32 bytes
+  logsBloom: Bytes256 // DATA, 256 Bytes
+  prevRandao: Bytes32 // DATA, 32 Bytes
+  blockNumber: Uint64 // QUANTITY, 64 Bits
+  gasLimit: Uint64 // QUANTITY, 64 Bits
+  gasUsed: Uint64 // QUANTITY, 64 Bits
+  timestamp: Uint64 // QUANTITY, 64 Bits
+  extraData: VariableBytes32 // DATA, 0 to 32 Bytes
+  baseFeePerGas: Uint256 // QUANTITY, 256 Bits
+  excessDataGas?: Uint256 // QUANTITY, 256 Bits
+  blockHash: Bytes32 // DATA, 32 Bytes
   transactions: string[] // Array of DATA - Array of transaction rlp strings,
   withdrawals?: WithdrawalV1[] // Array of withdrawal objects
 }
@@ -55,15 +65,15 @@ export type ExecutionPayloadV2 = ExecutionPayload & { withdrawals: WithdrawalV1[
 export type ExecutionPayloadV3 = ExecutionPayload & { excessDataGas: string }
 
 export type ForkchoiceStateV1 = {
-  headBlockHash: string
-  safeBlockHash: string
-  finalizedBlockHash: string
+  headBlockHash: Bytes32
+  safeBlockHash: Bytes32
+  finalizedBlockHash: Bytes32
 }
 
 type PayloadAttributes = {
-  timestamp: string
-  prevRandao: string
-  suggestedFeeRecipient: string
+  timestamp: Uint64
+  prevRandao: Bytes32
+  suggestedFeeRecipient: Bytes20
   withdrawals?: WithdrawalV1[]
 }
 type PayloadAttributesV1 = Omit<PayloadAttributes, 'withdrawals'>
@@ -71,25 +81,25 @@ type PayloadAttributesV2 = PayloadAttributes & { withdrawals: WithdrawalV1[] }
 
 export type PayloadStatusV1 = {
   status: Status
-  latestValidHash: string | null
+  latestValidHash: Bytes32 | null
   validationError: string | null
 }
 
 export type ForkchoiceResponseV1 = {
   payloadStatus: PayloadStatusV1
-  payloadId: string | null
+  payloadId: Bytes8 | null
 }
 
 type TransitionConfigurationV1 = {
-  terminalTotalDifficulty: string
-  terminalBlockHash: string
-  terminalBlockNumber: string
+  terminalTotalDifficulty: Uint256
+  terminalBlockHash: Bytes32
+  terminalBlockNumber: Uint64
 }
 
 type BlobsBundleV1 = {
   blockHash: string
-  kzgs: string[]
-  blobs: string[]
+  kzgs: Bytes48[]
+  blobs: Root[]
 }
 const EngineError = {
   UnknownPayload: {
@@ -826,16 +836,16 @@ export class Engine {
     }
   }
 
-  async getPayloadV1(params: [string]) {
+  async getPayloadV1(params: [Bytes8]) {
     const { executionPayload } = await this.getPayload(params)
     return executionPayload
   }
 
-  async getPayloadV2(params: [string]) {
+  async getPayloadV2(params: [Bytes8]) {
     return this.getPayload(params)
   }
 
-  async getPayloadV3(params: [string]) {
+  async getPayloadV3(params: [Bytes8]) {
     return this.getPayload(params)
   }
   /**
@@ -874,7 +884,7 @@ export class Engine {
    * @param params a payloadId for a pending block
    * @returns a BlobsBundle consisting of the blockhash, the blobs, and the corresponding kzg commitments
    */
-  private async getBlobsBundleV1(params: [string]): Promise<BlobsBundleV1> {
+  private async getBlobsBundleV1(params: [Bytes8]): Promise<BlobsBundleV1> {
     const payloadId = params[0]
 
     const bundle = this.pendingBlock.blobBundles.get(payloadId)
