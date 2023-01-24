@@ -1,7 +1,20 @@
+import { BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
+import {
+  BlobEIP4844Transaction,
+  FeeMarketEIP1559Transaction,
+  Transaction,
+  initKZG,
+} from '@ethereumjs/tx'
+import {
+  blobsToCommitments,
+  commitmentsToVersionedHashes,
+  getBlobs,
+} from '@ethereumjs/tx/dist/utils/blobHelpers'
 import { toBuffer } from '@ethereumjs/util'
+import * as kzg from 'c-kzg'
+import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../lib/rpc/error-code'
@@ -187,4 +200,90 @@ tape(`${method}: call with no peers`, async (t) => {
   // Restore setStateRoot
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
   DefaultStateManager.prototype.copy = originalStateManagerCopy
+})
+
+tape('blob EIP 4844 transaction', async (t) => {
+  t.plan(2)
+  // Disable stateroot validation in TxPool since valid state root isn't available
+  const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
+  DefaultStateManager.prototype.setStateRoot = (): any => {}
+  const originalStateManagerCopy = DefaultStateManager.prototype.copy
+  DefaultStateManager.prototype.copy = function () {
+    return this
+  }
+  // Disable block header consensus format validation
+  const consensusFormatValidation = BlockHeader.prototype._consensusFormatValidation
+  BlockHeader.prototype._consensusFormatValidation = (): any => {}
+  try {
+    kzg.freeTrustedSetup()
+  } catch {
+    // NOOP - just verifying KZG is ready if not already
+  }
+  initKZG(kzg)
+  const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
+  const common = Common.fromGethGenesis(gethGenesis, {
+    chain: 'customChain',
+    hardfork: Hardfork.ShardingForkDev,
+  })
+  common.setHardfork(Hardfork.ShardingForkDev)
+  const { server, client } = baseSetup({
+    commonChain: common,
+    includeVM: true,
+    syncTargetHeight: 100n,
+  })
+  const blobs = getBlobs('hello world')
+  const commitments = blobsToCommitments(blobs)
+  const versionedHashes = commitmentsToVersionedHashes(commitments)
+  const proof = kzg.computeAggregateKzgProof(blobs.map((blob) => Uint8Array.from(blob)))
+  const bufferedHashes = versionedHashes.map((el) => Buffer.from(el))
+  const pk = randomBytes(32)
+  const tx = BlobEIP4844Transaction.fromTxData(
+    {
+      versionedHashes: bufferedHashes,
+      blobs,
+      kzgCommitments: commitments,
+      kzgProof: proof,
+      maxFeePerDataGas: 1000000n,
+      gasLimit: 0xffffn,
+      maxFeePerGas: 10000000n,
+      maxPriorityFeePerGas: 1000000n,
+      to: randomBytes(20),
+    },
+    { common }
+  ).sign(pk)
+
+  const replacementTx = BlobEIP4844Transaction.fromTxData(
+    {
+      versionedHashes: bufferedHashes,
+      blobs,
+      kzgCommitments: commitments,
+      kzgProof: proof,
+      maxFeePerDataGas: 1000000n,
+      gasLimit: 0xfffffn,
+      maxFeePerGas: 100000000n,
+      maxPriorityFeePerGas: 10000000n,
+      to: randomBytes(20),
+    },
+    { common }
+  ).sign(pk)
+  const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
+  const account = await vm.stateManager.getAccount(tx.getSenderAddress())
+  account.balance = BigInt(0xfffffffffffff)
+  await vm.stateManager.putAccount(tx.getSenderAddress(), account)
+
+  const req = params(method, ['0x' + tx.serializeNetworkWrapper().toString('hex')])
+  const req2 = params(method, ['0x' + replacementTx.serializeNetworkWrapper().toString('hex')])
+  const expectRes = (res: any) => {
+    t.equal(res.body.error, undefined, 'initial blob transaction accepted')
+  }
+
+  const expectRes2 = checkError(t, INVALID_PARAMS, 'replacement data gas too low')
+
+  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(t, server, req2, 200, expectRes2)
+
+  // Restore stubbed out functionality
+  DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
+  DefaultStateManager.prototype.copy = originalStateManagerCopy
+  BlockHeader.prototype._consensusFormatValidation = consensusFormatValidation
 })
