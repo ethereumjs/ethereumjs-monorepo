@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1674585845239,
+  "lastUpdate": 1674595197616,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "eee3ab8aa07cf1d5633b496319fbcec76b3c7310",
-          "message": "common: Add eips 3651,3855,3860 to shanghai hf for Zhejiang shanghai testnet (#2459)",
-          "timestamp": "2022-12-21T12:58:17+01:00",
-          "tree_id": "e47f54c9b119ed3ee17028741570abe95e5ea55e",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/eee3ab8aa07cf1d5633b496319fbcec76b3c7310"
-        },
-        "date": 1671624053890,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19480,
-            "range": "±2.89%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 19195,
-            "range": "±4.18%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 19309,
-            "range": "±1.40%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18158,
-            "range": "±8.25%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19345,
-            "range": "±1.49%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±9.37%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7d7b0ad0915b560093a7e1ac5802432e40f436f5",
+          "message": "Add checks for replacement data gas too low for blob txs (#2503)",
+          "timestamp": "2023-01-24T22:17:06+01:00",
+          "tree_id": "8e8df3ac647974c5b425d20f13d9f0ffe9b3e531",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/7d7b0ad0915b560093a7e1ac5802432e40f436f5"
+        },
+        "date": 1674595196964,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18423,
+            "range": "±3.50%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 17786,
+            "range": "±5.93%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18263,
+            "range": "±1.80%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 16402,
+            "range": "±9.10%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18654,
+            "range": "±1.42%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
