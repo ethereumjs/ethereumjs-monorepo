@@ -54,6 +54,53 @@ tape('EIP4844 constructor tests - valid scenarios', (t) => {
   }
 })
 
+tape('fromTxData using from a json', (t) => {
+  if (isBrowser() === true) {
+    t.end()
+  } else {
+    const txData = {
+      type: '0x5',
+      nonce: '0x0',
+      gasPrice: null,
+      maxPriorityFeePerGas: '0x12a05f200',
+      maxFeePerGas: '0x12a05f200',
+      gasLimit: '0x33450',
+      value: '0xbc614e',
+      input: '0x',
+      v: '0x0',
+      r: '0x8a83833ec07806485a4ded33f24f5cea4b8d4d24dc8f357e6d446bcdae5e58a7',
+      s: '0x68a2ba422a50cf84c0b5fcbda32ee142196910c97198ffd99035d920c2b557f8',
+      to: '0xffb38a7a99e3e2335be83fc74b7faa19d5531243',
+      chainId: '0x28757b3',
+      accessList: null,
+      maxFeePerDataGas: '0xb2d05e00',
+      versionedHashes: ['0x01b0a4cdd5f55589f5c5b4d46c76704bb6ce95c0a8c09f77f197a57808dded28'],
+      kzgAggregatedProof:
+        '0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      hash: 'd5455662e76b193a84ce57d4c0a3b6fd609fdfca21cc93b93408de62be3c5708',
+      serialized:
+        '054500000000a7585eaecd6b446d7e358fdc244d8d4bea5c4ff233ed4d5a480678c03e83838af857b5c220d93590d9ff9871c910691942e12ea3bdfcb5c084cf502a42baa268b357870200000000000000000000000000000000000000000000000000000000000000000000000000f2052a0100000000000000000000000000000000000000000000000000000000f2052a010000000000000000000000000000000000000000000000000000005034030000000000c00000004e61bc0000000000000000000000000000000000000000000000000000000000d5000000d5000000005ed0b200000000000000000000000000000000000000000000000000000000d500000001ffb38a7a99e3e2335be83fc74b7faa19d553124301b0a4cdd5f55589f5c5b4d46c76704bb6ce95c0a8c09f77f197a57808dded28',
+    }
+    const c = common.copy()
+    c['_chainParams'] = Object.assign({}, common['_chainParams'], {
+      chainId: Number(txData.chainId),
+    })
+    try {
+      const tx = BlobEIP4844Transaction.fromTxData(txData, { common: c })
+      t.pass('Should be able to parse a json data and hash it')
+
+      t.equal(typeof tx.maxFeePerDataGas, 'bigint', 'should be able to parse correctly')
+      t.equal(tx.serialize().toString('hex'), txData.serialized, 'serialization should match')
+      // TODO: fix the hash
+      t.equal(tx.hash().toString('hex'), txData.hash, 'hash should match')
+    } catch (e) {
+      t.fail('failed to parse json data')
+    }
+
+    t.end()
+  }
+})
+
 tape('EIP4844 constructor tests - invalid scenarios', (t) => {
   if (isBrowser() === true) {
     t.end()
@@ -249,7 +296,7 @@ tape('hash() and signature verification', async (t) => {
       { common }
     )
     t.equal(
-      unsignedTx.hash().toString('hex'),
+      unsignedTx.unsignedHash().toString('hex'),
       '0fcee5b30088a9c96b4990a3914002736a50f42468209d65a93badd3d1cd0677',
       'produced the correct transaction hash'
     )
