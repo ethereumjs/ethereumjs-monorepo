@@ -293,7 +293,7 @@ tape('hash() and signature verification', async (t) => {
       { common }
     )
     t.equal(
-      unsignedTx.hash().toString('hex'),
+      unsignedTx.unsignedHash().toString('hex'),
       '0fcee5b30088a9c96b4990a3914002736a50f42468209d65a93badd3d1cd0677',
       'produced the correct transaction hash'
     )
