@@ -31,6 +31,7 @@ import type {
   TxOptions,
   TxValuesArray,
 } from './types'
+import type { ValueOf } from '@chainsafe/ssz'
 import type { Common } from '@ethereumjs/common'
 
 const TRANSACTION_TYPE = 0x05
@@ -310,16 +311,12 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     throw new Error('Method not implemented.')
   }
 
-  /**
-   * Serialize a blob transaction to the execution payload variant
-   * @returns the minimum (execution payload) serialization of a signed transaction
-   */
-  serialize(): Buffer {
+  toValue(): ValueOf<typeof SignedBlobTransactionType> {
     const to = {
       selector: this.to !== undefined ? 1 : 0,
       value: this.to?.toBuffer() ?? null,
     }
-    const sszEncodedTx = SignedBlobTransactionType.serialize({
+    return {
       message: {
         chainId: this.common.chainId(),
         nonce: this.nonce,
@@ -341,7 +338,15 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
         s: this.s ?? BigInt(0),
         yParity: this.v === BigInt(1) ? true : false,
       },
-    })
+    }
+  }
+
+  /**
+   * Serialize a blob transaction to the execution payload variant
+   * @returns the minimum (execution payload) serialization of a signed transaction
+   */
+  serialize(): Buffer {
+    const sszEncodedTx = SignedBlobTransactionType.serialize(this.toValue())
     return Buffer.concat([TRANSACTION_TYPE_BUFFER, sszEncodedTx])
   }
 
@@ -366,37 +371,23 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
   getMessageToSign(hashMessage: false): Buffer | Buffer[]
   getMessageToSign(hashMessage?: true | undefined): Buffer
   getMessageToSign(_hashMessage?: unknown): Buffer | Buffer[] {
-    return this.hash()
+    return this.unsignedHash()
   }
 
   /**
    * Returns the hash of a blob transaction
    */
-  hash(): Buffer {
-    const to = {
-      selector: this.to !== undefined ? 1 : 0,
-      value: this.to?.toBuffer() ?? null,
-    }
-    const serializedTx = BlobTransactionType.serialize({
-      chainId: this.common.chainId(),
-      nonce: this.nonce,
-      maxPriorityFeePerGas: this.maxPriorityFeePerGas,
-      maxFeePerGas: this.maxFeePerGas,
-      gas: this.gasLimit,
-      to,
-      value: this.value,
-      data: this.data,
-      accessList: this.accessList.map((listItem) => {
-        return { address: listItem[0], storageKeys: listItem[1] }
-      }),
-      blobVersionedHashes: this.versionedHashes,
-      maxFeePerDataGas: this.maxFeePerDataGas,
-    })
+  unsignedHash(): Buffer {
+    const serializedTx = BlobTransactionType.serialize(this.toValue().message)
     return Buffer.from(keccak256(Buffer.concat([TRANSACTION_TYPE_BUFFER, serializedTx])))
   }
 
+  hash(): Buffer {
+    return Buffer.from(keccak256(this.serialize()))
+  }
+
   getMessageToVerifySignature(): Buffer {
-    throw new Error('Method not implemented.')
+    return this.getMessageToSign()
   }
 
   /**
@@ -408,7 +399,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       throw new Error(msg)
     }
 
-    const msgHash = this.hash()
+    const msgHash = this.getMessageToVerifySignature()
     const { v, r, s } = this
 
     this._validateHighS()
