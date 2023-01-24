@@ -96,6 +96,220 @@ export const validators = {
     }
   },
 
+  get bytes8() {
+    return (params: any[], index: number) => {
+      if (typeof params[index] !== 'string') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be a hex string`,
+        }
+      }
+
+      if (params[index].substr(0, 2) !== '0x') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: hex string without 0x prefix`,
+        }
+      }
+      if (params[index].substr(2).length !== 16) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: expected 8 byte value`,
+        }
+      }
+    }
+  },
+  get bytes16() {
+    return (params: any[], index: number) => {
+      if (typeof params[index] !== 'string') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be a hex string`,
+        }
+      }
+
+      if (params[index].substr(0, 2) !== '0x') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: hex string without 0x prefix`,
+        }
+      }
+      if (params[index].substr(2).length !== 32) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: expected 16 byte value`,
+        }
+      }
+    }
+  },
+  get bytes20() {
+    return (params: any[], index: number) => {
+      if (typeof params[index] !== 'string') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be a hex string`,
+        }
+      }
+
+      if (params[index].substr(0, 2) !== '0x') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: hex string without 0x prefix`,
+        }
+      }
+      if (params[index].substr(2).length !== 40) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: expected 20 byte value`,
+        }
+      }
+    }
+  },
+  get bytes32() {
+    return (params: any[], index: number) => {
+      if (typeof params[index] !== 'string') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be a hex string`,
+        }
+      }
+
+      if (params[index].substr(0, 2) !== '0x') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: hex string without 0x prefix`,
+        }
+      }
+      if (params[index].substr(2).length !== 64) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: expected 32 byte value`,
+        }
+      }
+    }
+  },
+  get variableBytes32() {
+    return (params: any[], index: number) => {
+      if (typeof params[index] !== 'string') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be a hex string`,
+        }
+      }
+
+      if (params[index].substr(0, 2) !== '0x') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: hex string without 0x prefix`,
+        }
+      }
+      if (params[index].length < 3) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: expected 0 to 32 byte value`,
+        }
+      }
+      if (params[index].substr(2).length > 64) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: expected 0 to 32 byte value`,
+        }
+      }
+    }
+  },
+  get bytes48() {
+    return (params: any[], index: number) => {
+      if (typeof params[index] !== 'string') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be a hex string`,
+        }
+      }
+
+      if (params[index].substr(0, 2) !== '0x') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: hex string without 0x prefix`,
+        }
+      }
+      if (params[index].substr(2).length !== 96) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: expected 32 byte value`,
+        }
+      }
+    }
+  },
+  get bytes256() {
+    return (params: any[], index: number) => {
+      if (typeof params[index] !== 'string') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be a hex string`,
+        }
+      }
+
+      if (params[index].substr(0, 2) !== '0x') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: hex string without 0x prefix`,
+        }
+      }
+      if (params[index].substr(2).length !== 512) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: expected 32 byte value`,
+        }
+      }
+    }
+  },
+  get uint64() {
+    return (params: any[], index: number) => {
+      if (typeof params[index] !== 'string') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be a hex string`,
+        }
+      }
+
+      if (params[index].substr(0, 2) !== '0x') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: hex string without 0x prefix`,
+        }
+      }
+      if (params[index].substr(2).length !== 16) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: expected 64 bit value`,
+        }
+      }
+    }
+  },
+  get uint256() {
+    return (params: any[], index: number) => {
+      if (typeof params[index] !== 'string') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be a hex string`,
+        }
+      }
+
+      if (params[index].substr(0, 2) !== '0x') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: hex string without 0x prefix`,
+        }
+      }
+      if (params[index].substr(2).length !== 64) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: expected 256 bit value`,
+        }
+      }
+    }
+  },
+
   /**
    * hex validator to validate block hash
    * @param params parameters of method
