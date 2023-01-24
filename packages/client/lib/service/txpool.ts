@@ -1,4 +1,4 @@
-import { Capability } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
 import { Address, bufferToHex } from '@ethereumjs/util'
 import Heap = require('qheap')
 
@@ -229,6 +229,16 @@ export class TxPool {
       (existingTxGasPrice.maxFee * BigInt(MIN_GAS_PRICE_BUMP_PERCENT)) / BigInt(100)
     if (newGasPrice.tip < minTipCap || newGasPrice.maxFee < minFeeCap) {
       throw new Error('replacement gas too low')
+    }
+
+    if (addedTx instanceof BlobEIP4844Transaction && existingTx instanceof BlobEIP4844Transaction) {
+      const minDataGasFee =
+        (existingTx.maxFeePerDataGas *
+          (existingTx.maxFeePerDataGas * BigInt(MIN_GAS_PRICE_BUMP_PERCENT))) /
+        BigInt(100)
+      if (addedTx.maxFeePerDataGas < minDataGasFee) {
+        throw new Error('replacement data gas too low')
+      }
     }
   }
 
