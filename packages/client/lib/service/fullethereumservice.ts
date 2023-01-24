@@ -70,6 +70,7 @@ export class FullEthereumService extends EthereumService {
         if (!this.config.disableBeaconSync) {
           void this.switchToBeaconSync()
         }
+        this.config.logger.info(`Post-merge 🐼 client mode: run with CL client.`)
       } else {
         this.synchronizer = new FullSynchronizer({
           config: this.config,
@@ -128,9 +129,9 @@ export class FullEthereumService extends EthereumService {
 
   async open() {
     this.config.logger.info(
-      `Opening FullEthereumService with ${
+      `Preparing for sync using FullEthereumService with ${
         this.synchronizer instanceof BeaconSynchronizer ? 'BeaconSynchronizer' : 'FullSynchronizer'
-      } `
+      }.`
     )
     await super.open()
     await this.execution.open()

@@ -74,6 +74,8 @@ export class Skeleton extends MetaDBManager {
   private pulled = BigInt(0) /** Number of headers downloaded in this run */
   private filling = false /** Whether we are actively filling the canonical chain */
 
+  private fillLogIndex = 0
+
   private STATUS_LOG_INTERVAL = 8000 /** How often to log sync status (in ms) */
   private chainTTD: BigIntLike
 
@@ -215,7 +217,7 @@ export class Skeleton extends MetaDBManager {
         lastchain.tail = number
         lastchain.next = head.header.parentHash
       } else {
-        this.config.logger.warn(
+        this.config.logger.debug(
           `Skeleton announcement before tail, will reset skeleton tail=${lastchain.tail} head=${lastchain.head} newHead=${number}`
         )
       }
@@ -593,7 +595,6 @@ export class Skeleton extends MetaDBManager {
     this.config.logger.debug(
       `Starting canonical chain fill canonicalHead=${this.chain.blocks.height} subchainHead=${subchain.head}`
     )
-    let fillLogIndex = 0
     while (this.filling && canonicalHead < subchain.head) {
       // Get next block
       const number = canonicalHead + BigInt(1)
@@ -654,19 +655,19 @@ export class Skeleton extends MetaDBManager {
         break
       }
       canonicalHead += BigInt(numBlocksInserted)
-      fillLogIndex += numBlocksInserted
+      this.fillLogIndex += numBlocksInserted
       // Delete skeleton block to clean up as we go, if block is fetched and chain is linked
       // it will be fetched from the chain without any issues
       await this.deleteBlock(block)
-      if (fillLogIndex > 50) {
+      if (this.fillLogIndex >= 10) {
         this.config.logger.info(
           `Skeleton canonical chain fill status: canonicalHead=${canonicalHead} chainHead=${this.chain.blocks.height} subchainHead=${subchain.head}`
         )
-        fillLogIndex = 0
+        this.fillLogIndex = 0
       }
     }
     this.filling = false
-    this.config.logger.info(
+    this.config.logger.debug(
       `Successfully put blocks start=${start} end=${canonicalHead} skeletonHead=${subchain.head} from skeleton chain to canonical syncTargetHeight=${this.config.syncTargetHeight}`
     )
   }
