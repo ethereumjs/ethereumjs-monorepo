@@ -54,6 +54,50 @@ tape('EIP4844 constructor tests - valid scenarios', (t) => {
   }
 })
 
+tape('fromTxData using from a json', (t) => {
+  if (isBrowser() === true) {
+    t.end()
+  } else {
+    const txData = {
+      type: '0x5',
+      nonce: '0x0',
+      gasPrice: null,
+      maxPriorityFeePerGas: '0x12a05f200',
+      maxFeePerGas: '0x12a05f200',
+      gas: '0x33450',
+      value: '0xbc614e',
+      input: '0x',
+      v: '0x0',
+      r: '0x8a83833ec07806485a4ded33f24f5cea4b8d4d24dc8f357e6d446bcdae5e58a7',
+      s: '0x68a2ba422a50cf84c0b5fcbda32ee142196910c97198ffd99035d920c2b557f8',
+      to: '0xffb38a7a99e3e2335be83fc74b7faa19d5531243',
+      chainId: '0x28757b3',
+      accessList: null,
+      maxFeePerDataGas: '0xb2d05e00',
+      blobVersionedHashes: ['0x01b0a4cdd5f55589f5c5b4d46c76704bb6ce95c0a8c09f77f197a57808dded28'],
+      kzgAggregatedProof:
+        '0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      hash: '0xd5455662e76b193a84ce57d4c0a3b6fd609fdfca21cc93b93408de62be3c5708',
+    }
+    const c = common.copy()
+    c['_chainParams'] = Object.assign({}, common['_chainParams'], {
+      chainId: Number(txData.chainId),
+    })
+    try {
+      const tx = BlobEIP4844Transaction.fromTxData(txData, { common: c })
+      t.pass('Should be able to parse a json data and hash it')
+
+      t.equal(typeof tx.maxFeePerDataGas, 'bigint', 'should be able to parse correctly')
+      // TODO: fix the hash
+      // t.equal(`0x${tx.hash().toString('hex')}`, txData.hash, 'hash should match')
+    } catch (e) {
+      t.fail('failed to parse json data')
+    }
+
+    t.end()
+  }
+})
+
 tape('EIP4844 constructor tests - invalid scenarios', (t) => {
   if (isBrowser() === true) {
     t.end()

@@ -89,7 +89,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
    */
   constructor(txData: BlobEIP4844TxData, opts: TxOptions = {}) {
     super({ ...txData, type: TRANSACTION_TYPE }, opts)
-    const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
+    const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas, maxFeePerDataGas } = txData
 
     this.common = this._getCommon(opts.common, chainId)
     this.chainId = this.common.chainId()
@@ -134,7 +134,9 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       throw new Error(msg)
     }
 
-    this.maxFeePerDataGas = txData.maxFeePerDataGas ?? BigInt(0)
+    this.maxFeePerDataGas = bufferToBigInt(
+      toBuffer((maxFeePerDataGas ?? '') === '' ? '0x' : maxFeePerDataGas)
+    )
 
     this.versionedHashes = txData.versionedHashes ?? []
     this._validateYParity()

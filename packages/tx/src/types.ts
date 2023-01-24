@@ -142,7 +142,7 @@ export type TxData = {
   /**
    * The transaction's gas price.
    */
-  gasPrice?: BigIntLike
+  gasPrice?: BigIntLike | null
 
   /**
    * The transaction's gas limit.
@@ -198,7 +198,7 @@ export interface AccessListEIP2930TxData extends TxData {
   /**
    * The access list which contains the addresses/storage slots which the transaction wishes to access
    */
-  accessList?: AccessListBuffer | AccessList
+  accessList?: AccessListBuffer | AccessList | null
 }
 
 /**
@@ -209,7 +209,7 @@ export interface FeeMarketEIP1559TxData extends AccessListEIP2930TxData {
    * The transaction's gas price, inherited from {@link Transaction}.  This property is not used for EIP1559
    * transactions and should always be undefined for this specific transaction type.
    */
-  gasPrice?: never
+  gasPrice?: never | null
   /**
    * The maximum inclusion fee per gas (this fee is given to the miner)
    */
@@ -231,7 +231,7 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   /**
    * The maximum fee per data gas paid for the transaction
    */
-  maxFeePerDataGas?: bigint
+  maxFeePerDataGas?: BigIntLike
   /**
    * The blobs associated with a transaction
    */
