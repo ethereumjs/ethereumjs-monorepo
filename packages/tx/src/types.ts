@@ -242,15 +242,15 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   /**
    * The blobs associated with a transaction
    */
-  blobs?: Buffer[]
+  blobs?: BufferLike[]
   /**
    * The KZG commitments corresponding to the versioned hashes for each blob
    */
-  kzgCommitments?: Buffer[]
+  kzgCommitments?: BufferLike[]
   /**
    * The aggregate KZG proof associated with the transaction
    */
-  kzgProof?: Buffer
+  kzgProof?: BufferLike
 }
 
 /**

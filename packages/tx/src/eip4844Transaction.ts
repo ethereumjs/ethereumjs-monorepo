@@ -164,9 +164,8 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       throw new Error(msg)
     }
 
-    this.blobs = txData.blobs
-    this.kzgCommitments = txData.kzgCommitments
-
+    this.blobs = txData.blobs?.map((blob) => toBuffer(blob))
+    this.kzgCommitments = txData.kzgCommitments?.map((commitment) => toBuffer(commitment))
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
