@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1674651047493,
+  "lastUpdate": 1674653698389,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "7e1bc94e79ca73d189b29ab58d40ec9c82683743",
-          "message": "client: Handle withdrawal bodies in the blockfetcher and skeleton sync fixes (#2462)\n\n* client: Handle withdrawal bodies in the blockfetcher\r\n\r\n* fix test\r\n\r\n* enhance coverage\r\n\r\n* improv coverage\r\n\r\n* limit count in reverse fetcher to not sync on/pre genesis\r\n\r\n* enhance coverage",
-          "timestamp": "2022-12-24T00:36:29+05:30",
-          "tree_id": "c82483106151ffd8a66f3f9a858aa056ccfb4f20",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/7e1bc94e79ca73d189b29ab58d40ec9c82683743"
-        },
-        "date": 1671822581834,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15161,
-            "range": "±5.46%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 16046,
-            "range": "±2.18%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 14646,
-            "range": "±8.36%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 16196,
-            "range": "±2.19%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 15366,
-            "range": "±2.57%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 19337,
             "range": "±1.19%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5283b8821a017e7349dd53be26187363589cabf0",
+          "message": "More Interop Improvements (#2506)\n\n* Fewer tx pool statistics\r\n\r\n* Only emit synchronized event if synchronized status change, explicitly set synchronized to false in non-synced case\r\n\r\n* Switch from interval to sequential payload and forkchoice logging after chain sync completed, added missing synchronized message\r\n\r\n* Adjusted skeleton canonical chain fill status log interval\r\n\r\n* Reduce RLPx server restarts in a post-Merge world\r\n\r\n* Lint fix\r\n\r\n* Test fixes\r\n\r\n* Test fixes",
+          "timestamp": "2023-01-25T14:31:05+01:00",
+          "tree_id": "0d4f9f90a1138c4ef375c44be63486c361ad574e",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5283b8821a017e7349dd53be26187363589cabf0"
+        },
+        "date": 1674653697785,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19224,
+            "range": "±2.12%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18672,
+            "range": "±3.35%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18849,
+            "range": "±1.49%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 17181,
+            "range": "±8.07%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19215,
+            "range": "±1.21%",
             "unit": "ops/sec",
             "extra": "86 samples"
           }
