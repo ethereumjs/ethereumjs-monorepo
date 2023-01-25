@@ -572,7 +572,7 @@ export class Engine {
   }
 
   async newPayloadV2(params: [ExecutionPayloadV2 | ExecutionPayloadV1]): Promise<PayloadStatusV1> {
-    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp('shanghai')
+    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
     if (shanghaiTimestamp === null || parseInt(params[0].timestamp) < shanghaiTimestamp) {
       if ('withdrawals' in params[0]) {
         throw {
@@ -598,8 +598,10 @@ export class Engine {
   async newPayloadV3(
     params: [ExecutionPayloadV3 | ExecutionPayloadV2 | ExecutionPayloadV1]
   ): Promise<PayloadStatusV1> {
-    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp('shanghai')
-    const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp('eip4844')
+    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
+    const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp(
+      Hardfork.ShardingForkDev
+    )
     if (shanghaiTimestamp === null || parseInt(params[0].timestamp) < shanghaiTimestamp) {
       if ('withdrawals' in params[0]) {
         throw {
