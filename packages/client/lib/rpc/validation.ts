@@ -37,6 +37,66 @@ export function middleware(method: any, requiredParamsCount: number, validators:
   }
 }
 
+function bytes(bytes: number, params: any[], index: number) {
+  if (typeof params[index] !== 'string') {
+    return {
+      code: INVALID_PARAMS,
+      message: `invalid argument ${index}: argument must be a hex string`,
+    }
+  }
+
+  if (params[index].substr(0, 2) !== '0x') {
+    return {
+      code: INVALID_PARAMS,
+      message: `invalid argument ${index}: hex string without 0x prefix`,
+    }
+  }
+  if (params[index].length > 2 && !/^[0-9a-fA-F]+$/.test(params[index].substr(2))) {
+    return {
+      code: INVALID_PARAMS,
+      message: `invalid argument ${index}: argument must be a hex string`,
+    }
+  }
+  if (params[index].substr(2).length > bytes * 2) {
+    return {
+      code: INVALID_PARAMS,
+      message: `invalid argument ${index}: expected ${bytes} byte value`,
+    }
+  }
+}
+
+function uint(uint: number, params: any[], index: number) {
+  if (uint % 8 !== 0) {
+    // Sanity check
+    throw new Error(`Uint should be a multiple of 8, got: ${uint}`)
+  }
+  if (typeof params[index] !== 'string') {
+    return {
+      code: INVALID_PARAMS,
+      message: `invalid argument ${index}: argument must be a hex string`,
+    }
+  }
+
+  if (params[index].substr(0, 2) !== '0x') {
+    return {
+      code: INVALID_PARAMS,
+      message: `invalid argument ${index}: hex string without 0x prefix`,
+    }
+  }
+  if (params[index].length > 2 && !/^[0-9a-fA-F]+$/.test(params[index].substr(2))) {
+    return {
+      code: INVALID_PARAMS,
+      message: `invalid argument ${index}: argument must be a hex string`,
+    }
+  }
+  if (params[index].substr(2).length > (uint / 8) * 2) {
+    return {
+      code: INVALID_PARAMS,
+      message: `invalid argument ${index}: expected ${uint} bit value`,
+    }
+  }
+}
+
 /**
  * @memberof module:rpc
  */
@@ -94,6 +154,39 @@ export const validators = {
         }
       }
     }
+  },
+
+  get bytes8() {
+    return (params: any[], index: number) => bytes(8, params, index)
+  },
+  get bytes16() {
+    return (params: any[], index: number) => bytes(16, params, index)
+  },
+  get bytes20() {
+    return (params: any[], index: number) => bytes(20, params, index)
+  },
+  get bytes32() {
+    return (params: any[], index: number) => bytes(32, params, index)
+  },
+  get variableBytes32() {
+    return (params: any[], index: number) => bytes(32, params, index)
+  },
+  get bytes48() {
+    return (params: any[], index: number) => bytes(48, params, index)
+  },
+  get bytes256() {
+    return (params: any[], index: number) => bytes(256, params, index)
+  },
+  get uint64() {
+    return (params: any[], index: number) => uint(64, params, index)
+  },
+  get uint256() {
+    return (params: any[], index: number) => uint(256, params, index)
+  },
+  get blob() {
+    // "each blob is FIELD_ELEMENTS_PER_BLOB * BYTES_PER_FIELD_ELEMENT = 4096 * 32 = 131072"
+    // See: https://github.com/ethereum/execution-apis/blob/b7c5d3420e00648f456744d121ffbd929862924d/src/engine/experimental/blob-extension.md
+    return (params: any[], index: number) => bytes(131072, params, index)
   },
 
   /**

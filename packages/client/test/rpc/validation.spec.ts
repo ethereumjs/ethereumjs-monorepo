@@ -1,3 +1,5 @@
+import { bufferToHex } from '@ethereumjs/util'
+import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../lib/rpc/error-code'
@@ -195,6 +197,133 @@ tape(`${prefix} hex`, (t) => {
   t.notOk(validatorResult(validators.hex(['00'], 0)))
   t.notOk(validatorResult(validators.hex(['1'], 0)))
   t.notOk(validatorResult(validators.hex(['1'], 0)))
+
+  t.end()
+})
+tape(`${prefix} byteVectors`, (t) => {
+  const bytes = (byteLength: number, prefix: boolean = true) => {
+    return prefix ? '0x'.padEnd(byteLength * 2 + 2, '0') : ''.padEnd(byteLength * 2, '0')
+  }
+  const badhex = (byteLength: number) => {
+    return '0x'.padEnd(byteLength * 2 + 2, 'G')
+  }
+  t.test('Bytes8', (st) => {
+    // valid
+    st.ok(validatorResult(validators.bytes8([bufferToHex(randomBytes(8))], 0)))
+    st.ok(validatorResult(validators.bytes8([bytes(8)], 0)))
+    st.ok(validatorResult(validators.bytes8([bytes(1)], 0)))
+    st.ok(validatorResult(validators.bytes8([bytes(2)], 0)))
+    st.ok(validatorResult(validators.bytes8([bytes(4)], 0)))
+    // invalid
+    st.notOk(validatorResult(validators.bytes8([bytes(10)], 0)))
+    st.notOk(validatorResult(validators.bytes8([bytes(8, false)], 0)))
+    st.notOk(validatorResult(validators.bytes8([randomBytes(8).toString('hex')], 0)))
+    st.end()
+  })
+  t.test('Uint64', (st) => {
+    // valid
+    st.ok(validatorResult(validators.uint64([bufferToHex(randomBytes(8))], 0)))
+    st.ok(validatorResult(validators.uint64([bytes(8)], 0)))
+    st.ok(validatorResult(validators.uint64([bytes(1)], 0)))
+    st.ok(validatorResult(validators.uint64([bytes(2)], 0)))
+    st.ok(validatorResult(validators.uint64([bytes(4)], 0)))
+
+    // invalid
+    st.notOk(validatorResult(validators.bytes8([badhex(8)], 0)))
+    st.notOk(validatorResult(validators.uint64([bytes(10)], 0)))
+    st.notOk(validatorResult(validators.uint64([bytes(8, false)], 0)))
+    st.notOk(validatorResult(validators.uint64([randomBytes(8).toString('hex')], 0)))
+    st.end()
+  })
+  t.test('Bytes16', (st) => {
+    // valid
+    st.ok(validatorResult(validators.bytes16([bufferToHex(randomBytes(16))], 0)))
+    st.ok(validatorResult(validators.bytes16([bytes(16)], 0)))
+    st.ok(validatorResult(validators.bytes16([bytes(1)], 0)))
+    st.ok(validatorResult(validators.bytes16([bytes(2)], 0)))
+    st.ok(validatorResult(validators.bytes16([bytes(4)], 0)))
+    st.ok(validatorResult(validators.bytes16([bytes(8)], 0)))
+    // invalid
+    st.notOk(validatorResult(validators.bytes16([badhex(16)], 0)))
+    st.notOk(validatorResult(validators.bytes16([bytes(20)], 0)))
+    st.notOk(validatorResult(validators.bytes16([bytes(16, false)], 0)))
+    st.notOk(validatorResult(validators.bytes16([randomBytes(16).toString('hex')], 0)))
+    st.end()
+  })
+  t.test('Bytes20', (st) => {
+    // valid
+    st.ok(validatorResult(validators.bytes20([bytes(20)], 0)))
+    st.ok(validatorResult(validators.bytes20([bufferToHex(randomBytes(20))], 0)))
+    st.ok(validatorResult(validators.bytes20([bytes(8)], 0)))
+    st.ok(validatorResult(validators.bytes20([bytes(16)], 0)))
+    // invalid
+    st.notOk(validatorResult(validators.bytes20([badhex(20)], 0)))
+    st.notOk(validatorResult(validators.bytes20([bytes(20, false)], 0)))
+    st.notOk(validatorResult(validators.bytes20([bytes(32)], 0)))
+    st.notOk(validatorResult(validators.bytes20([randomBytes(20).toString('hex')], 0)))
+    st.end()
+  })
+  t.test('Bytes32', (st) => {
+    // valid
+    st.ok(validatorResult(validators.bytes32([bufferToHex(randomBytes(32))], 0)))
+    st.ok(validatorResult(validators.bytes32([bytes(32)], 0)))
+    st.ok(validatorResult(validators.bytes32([bytes(8)], 0)))
+    st.ok(validatorResult(validators.bytes32([bytes(16)], 0)))
+    st.ok(validatorResult(validators.bytes32([bytes(20)], 0)))
+    // invalid
+    st.notOk(validatorResult(validators.bytes32([badhex(32)], 0)))
+    st.notOk(validatorResult(validators.bytes32([bytes(48)], 0)))
+    st.notOk(validatorResult(validators.bytes32([bytes(32, false)], 0)))
+    st.notOk(validatorResult(validators.bytes32([randomBytes(32).toString('hex')], 0)))
+    st.end()
+  })
+  t.test('Uint256', (st) => {
+    // valid
+    st.ok(validatorResult(validators.uint256([bufferToHex(randomBytes(32))], 0)))
+    st.ok(validatorResult(validators.uint256([bytes(32)], 0)))
+    st.ok(validatorResult(validators.uint256([bytes(8)], 0)))
+    st.ok(validatorResult(validators.uint256([bytes(16)], 0)))
+    st.ok(validatorResult(validators.uint256([bytes(20)], 0)))
+    // invalid
+    st.notOk(validatorResult(validators.uint256([badhex(32)], 0)))
+    st.notOk(validatorResult(validators.uint256([bytes(48)], 0)))
+    st.notOk(validatorResult(validators.uint256([bytes(32, false)], 0)))
+    st.notOk(validatorResult(validators.uint256([randomBytes(32).toString('hex')], 0)))
+    st.end()
+  })
+  t.test('Bytes48', (st) => {
+    // valid
+    st.ok(validatorResult(validators.bytes48([bufferToHex(randomBytes(48))], 0)))
+    st.ok(validatorResult(validators.bytes48([bytes(48)], 0)))
+    st.ok(validatorResult(validators.bytes48([bytes(8)], 0)))
+    st.ok(validatorResult(validators.bytes48([bytes(16)], 0)))
+    st.ok(validatorResult(validators.bytes48([bytes(20)], 0)))
+    st.ok(validatorResult(validators.bytes48([bytes(32)], 0)))
+
+    // invalid
+    st.notOk(validatorResult(validators.bytes48([badhex(48)], 0)))
+    st.notOk(validatorResult(validators.bytes48([bytes(64)], 0)))
+    st.notOk(validatorResult(validators.bytes48([bytes(48, false)], 0)))
+    st.notOk(validatorResult(validators.bytes48([randomBytes(48).toString('hex')], 0)))
+    st.end()
+  })
+  t.test('Bytes256', (st) => {
+    // valid
+    st.ok(validatorResult(validators.bytes256([bufferToHex(randomBytes(256))], 0)))
+    st.ok(validatorResult(validators.bytes256([bytes(256)], 0)))
+    st.ok(validatorResult(validators.bytes256([bytes(8)], 0)))
+    st.ok(validatorResult(validators.bytes256([bytes(16)], 0)))
+    st.ok(validatorResult(validators.bytes256([bytes(32)], 0)))
+    st.ok(validatorResult(validators.bytes256([bytes(64)], 0)))
+    st.ok(validatorResult(validators.bytes256([bytes(128)], 0)))
+
+    // invalid
+    st.notOk(validatorResult(validators.bytes256([badhex(256)], 0)))
+    st.notOk(validatorResult(validators.bytes256([bytes(512)], 0)))
+    st.notOk(validatorResult(validators.bytes256([bytes(256, false)], 0)))
+    st.notOk(validatorResult(validators.bytes256([randomBytes(256).toString('hex')], 0)))
+    st.end()
+  })
 
   t.end()
 })
