@@ -3,10 +3,9 @@ import { Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { Withdrawal, bigIntToHex, bufferToHex, toBuffer, zeros } from '@ethereumjs/util'
 
-import { RPCManager } from '..'
 import { PendingBlock } from '../../miner'
 import { short } from '../../util'
-import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
+import { INTERNAL_ERROR, INVALID_PARAMS, TOO_LARGE_REQUEST } from '../error-code'
 import { CLConnectionManager, middleware as cmMiddleware } from '../util/CLConnectionManager'
 import { middleware, validators } from '../validation'
 
@@ -103,6 +102,12 @@ type BlobsBundleV1 = {
   kzgs: Bytes48[]
   blobs: Blob[]
 }
+
+type ExecutionPayloadBodyV1 = {
+  transactions: string[]
+  withdrawals: WithdrawalV1[] | null
+}
+
 const EngineError = {
   UnknownPayload: {
     code: -32001,
@@ -446,6 +451,13 @@ export class Engine {
 
     this.getCapabilities = cmMiddleware(middleware(this.getCapabilities.bind(this), 0, []), () =>
       this.connectionManager.updateStatus()
+    )
+
+    this.getPayloadBodiesByHashV1 = cmMiddleware(
+      middleware(this.getPayloadBodiesByHashV1.bind(this), 1, [
+        validators.array(validators.bytes32),
+      ]),
+      () => this.connectionManager.updateStatus()
     )
   }
 
@@ -1000,5 +1012,45 @@ export class Engine {
       (el) => nonFunctions.findIndex((innerEl) => innerEl === el) < 0
     )
     return engineMethods.map((el) => 'engine_' + el)
+  }
+
+  /**
+   *
+   * @param params a list of block hashes as hex prefixed strings
+   * @returns an array of ExecutionPayloadBodyV1 objects or null if a given execution payload isn't stored locally
+   */
+  private getPayloadBodiesByHashV1 = async (
+    params: [[Bytes32]]
+  ): Promise<(ExecutionPayloadBodyV1 | null)[]> => {
+    if (params[0].length > 32) {
+      throw {
+        code: TOO_LARGE_REQUEST,
+        message: 'More than 32 execution payload bodies requested',
+      }
+    }
+    const hashes = params[0].map((hash) => toBuffer(hash))
+    const blocks: (ExecutionPayloadBodyV1 | null)[] = []
+    for (const hash of hashes) {
+      try {
+        const block = await this.chain.getBlock(hash)
+        const transactions: string[] = []
+        for (const txn of block.transactions) {
+          transactions.push('0x' + txn.serialize())
+        }
+        let withdrawals
+        if (block._common.gteHardfork(Hardfork.Shanghai)) {
+          withdrawals = []
+          for (const withdrawal of block.withdrawals!) {
+            withdrawals.push(withdrawal.toJSON() as WithdrawalV1)
+          }
+        } else {
+          withdrawals = null
+        }
+        blocks.push({ transactions, withdrawals })
+      } catch {
+        blocks.push(null)
+      }
+    }
+    return blocks
   }
 }
