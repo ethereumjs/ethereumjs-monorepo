@@ -585,7 +585,40 @@ export class Engine {
     return this.newPayload(params)
   }
 
-  async newPayloadV3(params: [ExecutionPayloadV3]): Promise<PayloadStatusV1> {
+  async newPayloadV3(
+    params: [ExecutionPayloadV3 | ExecutionPayloadV2 | ExecutionPayloadV1]
+  ): Promise<PayloadStatusV1> {
+    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp('shanghai')!
+    const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp('eip4844')!
+    if (parseInt(params[0].timestamp) < shanghaiTimestamp) {
+      if ('withdrawals' in params[0]) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'ExecutionPayloadV1 MUST be used before Shanghai is activated',
+        }
+      }
+    } else if (
+      parseInt(params[0].timestamp) >= shanghaiTimestamp &&
+      parseInt(params[0].timestamp) < eip4844Timestamp
+    ) {
+      if (!('extraDataGas' in params[0])) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'ExecutionPayloadV2 MUST be used if Shanghai is activated and EIP-4844 is not',
+        }
+      }
+    } else if (parseInt(params[0].timestamp) >= eip4844Timestamp) {
+      if (!('extraData' in params[0])) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'ExecutionPayloadV3 MUST be used after EIP-4844 is activated',
+        }
+      }
+    }
+    const newPayload = await this.newPayload(params)
+    if (newPayload.status === Status.INVALID_BLOCK_HASH) {
+      newPayload.status = Status.INVALID
+    }
     return this.newPayload(params)
   }
 
