@@ -62,7 +62,7 @@ export type ExecutionPayload = {
 }
 export type ExecutionPayloadV1 = Omit<ExecutionPayload, 'withdrawals' | 'excessDataGas'>
 export type ExecutionPayloadV2 = ExecutionPayload & { withdrawals: WithdrawalV1[] }
-export type ExecutionPayloadV3 = ExecutionPayload & { excessDataGas: string }
+export type ExecutionPayloadV3 = ExecutionPayload & { excessDataGas: Uint256 }
 
 export type ForkchoiceStateV1 = {
   headBlockHash: Bytes32
@@ -355,7 +355,12 @@ export class Engine {
 
     this.newPayloadV2 = cmMiddleware(
       middleware(this.newPayloadV2.bind(this), 1, [
-        [validators.object(executionPayloadV2FieldValidators)],
+        [
+          validators.either(
+            validators.object(executionPayloadV1FieldValidators),
+            validators.object(executionPayloadV2FieldValidators)
+          ),
+        ],
       ]),
       ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
     )
@@ -556,18 +561,23 @@ export class Engine {
     return this.newPayload(params)
   }
 
-  async newPayloadV2(params: [ExecutionPayloadV2]): Promise<PayloadStatusV1> {
-    const shanghaiTimestamp = this.chain.config.chainCommon
-      .hardforks()
-      .find((hf) => hf.name === 'shanghai')?.timestamp!
-
-    if (parseInt(params[0].timestamp) < shanghaiTimestamp) {
-      throw {
-        code: INVALID_PARAMS,
-        message: 'Cannot invoke newPayloadV2 before Shanghai is activated',
+  async newPayloadV2(params: [ExecutionPayloadV2 | ExecutionPayloadV1]): Promise<PayloadStatusV1> {
+    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp('shanghai')!
+    if ('withdrawals' in params[0]) {
+      if (parseInt(params[0].timestamp) < shanghaiTimestamp) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'ExecutionPayloadV1 MUST be used before Shanghai is activated',
+        }
+      }
+    } else {
+      if (parseInt(params[0].timestamp) >= shanghaiTimestamp) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'ExecutionPayloadV2 MUST be used after Shanghai is activated',
+        }
       }
     }
-
     return this.newPayload(params)
   }
 
