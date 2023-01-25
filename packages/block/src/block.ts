@@ -1,4 +1,4 @@
-import { ConsensusType } from '@ethereumjs/common'
+import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
@@ -569,6 +569,10 @@ export class Block {
     let hf = ''
     try {
       hf = this._common.hardfork()
+      if (hf === Hardfork.Merge) {
+        // Add info of execHardFork if relevant
+        hf = `${hf}(${this._common.execHardfork()})`
+      }
     } catch (e: any) {
       hf = 'error'
     }

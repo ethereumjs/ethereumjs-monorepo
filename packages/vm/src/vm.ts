@@ -1,5 +1,5 @@
 import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain, Common } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address, AsyncEventEmitter, TypeOutput, toType } from '@ethereumjs/util'
@@ -262,6 +262,10 @@ export class VM {
     let hf = ''
     try {
       hf = this._common.hardfork()
+      if (hf === Hardfork.Merge) {
+        // Add info of execHardFork if relevant
+        hf = `${hf}(${this._common.execHardfork()})`
+      }
     } catch (e: any) {
       hf = 'error'
     }
