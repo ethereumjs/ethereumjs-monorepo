@@ -572,7 +572,7 @@ export class Engine {
   }
 
   async newPayloadV2(params: [ExecutionPayloadV2 | ExecutionPayloadV1]): Promise<PayloadStatusV1> {
-    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp('shanghai')
+    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
     if (shanghaiTimestamp === null || parseInt(params[0].timestamp) < shanghaiTimestamp) {
       if ('withdrawals' in params[0]) {
         throw {
@@ -598,8 +598,10 @@ export class Engine {
   async newPayloadV3(
     params: [ExecutionPayloadV3 | ExecutionPayloadV2 | ExecutionPayloadV1]
   ): Promise<PayloadStatusV1> {
-    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp('shanghai')
-    const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp('eip4844')
+    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
+    const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp(
+      Hardfork.ShardingForkDev
+    )
     if (shanghaiTimestamp === null || parseInt(params[0].timestamp) < shanghaiTimestamp) {
       if ('withdrawals' in params[0]) {
         throw {
@@ -846,29 +848,20 @@ export class Engine {
   ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
     const payloadAttributes = params[1]
     if (payloadAttributes !== undefined && payloadAttributes !== null) {
-      let shanghaiTimestamp: any = this.chain.config.chainCommon
-        .hardforks()
-        .find((hf) => hf.name === 'shanghai')?.timestamp
-      if (shanghaiTimestamp !== undefined) {
-        shanghaiTimestamp = BigInt(shanghaiTimestamp)
-      } else {
-        shanghaiTimestamp = Infinity
-      }
-      const ts = payloadAttributes.timestamp
-      if ((<any>payloadAttributes).withdrawals !== undefined) {
-        if (ts < shanghaiTimestamp) {
+      const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
+      const ts = BigInt(payloadAttributes.timestamp)
+      if ('withdrawals' in payloadAttributes) {
+        if (ts < shanghaiTimestamp!) {
           throw {
             code: INVALID_PARAMS,
-            message:
-              'Cannot invoke forkchoiceUpdatedV2 with PayloadAttributesV1 after Shanghai is activated',
+            message: 'PayloadAttributesV1 MUST be used before Shanghai is activated',
           }
         }
       } else {
-        if (ts >= shanghaiTimestamp) {
+        if (ts >= shanghaiTimestamp!) {
           throw {
             code: INVALID_PARAMS,
-            message:
-              'Cannot invoke forkchoiceUpdatedV2 with PayloadAttributesV2 before Shanghai is activated',
+            message: 'PayloadAttributesV2 MUST be used after Shanghai is activated',
           }
         }
       }
