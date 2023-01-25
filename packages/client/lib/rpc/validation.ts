@@ -98,7 +98,7 @@ export const validators = {
 
   get bytes8() {
     return (params: any[], index: number) => {
-      if (!/^[0-9a-fA-F]+$/.test(params[index].substr(2)) || typeof params[index] !== 'string') {
+      if (typeof params[index] !== 'string') {
         return {
           code: INVALID_PARAMS,
           message: `invalid argument ${index}: argument must be a hex string`,
@@ -109,6 +109,12 @@ export const validators = {
         return {
           code: INVALID_PARAMS,
           message: `invalid argument ${index}: hex string without 0x prefix`,
+        }
+      }
+      if (params[index].length > 2 && !/^[0-9a-fA-F]+$/.test(params[index].substr(2))) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be a hex string`,
         }
       }
       if (params[index].substr(2).length > 16) {
@@ -121,7 +127,7 @@ export const validators = {
   },
   get bytes16() {
     return (params: any[], index: number) => {
-      if (!/^[0-9a-fA-F]+$/.test(params[index].substr(2)) || typeof params[index] !== 'string') {
+      if (typeof params[index] !== 'string') {
         return {
           code: INVALID_PARAMS,
           message: `invalid argument ${index}: argument must be a hex string`,
@@ -132,6 +138,12 @@ export const validators = {
         return {
           code: INVALID_PARAMS,
           message: `invalid argument ${index}: hex string without 0x prefix`,
+        }
+      }
+      if (params[index].length > 2 && !/^[0-9a-fA-F]+$/.test(params[index].substr(2))) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be a hex string`,
         }
       }
       if (params[index].substr(2).length > 32) {
@@ -144,7 +156,7 @@ export const validators = {
   },
   get bytes20() {
     return (params: any[], index: number) => {
-      if (!/^[0-9a-fA-F]+$/.test(params[index].substr(2)) || typeof params[index] !== 'string') {
+      if (typeof params[index] !== 'string') {
         return {
           code: INVALID_PARAMS,
           message: `invalid argument ${index}: argument must be a hex string`,
@@ -155,6 +167,12 @@ export const validators = {
         return {
           code: INVALID_PARAMS,
           message: `invalid argument ${index}: hex string without 0x prefix`,
+        }
+      }
+      if (params[index].length > 2 && !/^[0-9a-fA-F]+$/.test(params[index].substr(2))) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be a hex string`,
         }
       }
       if (params[index].substr(2).length > 40) {
@@ -167,7 +185,7 @@ export const validators = {
   },
   get bytes32() {
     return (params: any[], index: number) => {
-      if (!/^[0-9a-fA-F]+$/.test(params[index].substr(2)) || typeof params[index] !== 'string') {
+      if (typeof params[index] !== 'string') {
         return {
           code: INVALID_PARAMS,
           message: `invalid argument ${index}: argument must be a hex string`,
@@ -178,6 +196,12 @@ export const validators = {
         return {
           code: INVALID_PARAMS,
           message: `invalid argument ${index}: hex string without 0x prefix`,
+        }
+      }
+      if (params[index].length > 2 && !/^[0-9a-fA-F]+$/.test(params[index].substr(2))) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be a hex string`,
         }
       }
       if (params[index].substr(2).length > 64) {
@@ -219,7 +243,7 @@ export const validators = {
   },
   get bytes48() {
     return (params: any[], index: number) => {
-      if (!/^[0-9a-fA-F]+$/.test(params[index].substr(2)) || typeof params[index] !== 'string') {
+      if (typeof params[index] !== 'string') {
         return {
           code: INVALID_PARAMS,
           message: `invalid argument ${index}: argument must be a hex string`,
@@ -230,6 +254,12 @@ export const validators = {
         return {
           code: INVALID_PARAMS,
           message: `invalid argument ${index}: hex string without 0x prefix`,
+        }
+      }
+      if (params[index].length > 2 && !/^[0-9a-fA-F]+$/.test(params[index].substr(2))) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be a hex string`,
         }
       }
       if (params[index].substr(2).length > 96) {
@@ -242,7 +272,7 @@ export const validators = {
   },
   get bytes256() {
     return (params: any[], index: number) => {
-      if (!/^[0-9a-fA-F]+$/.test(params[index].substr(2)) || typeof params[index] !== 'string') {
+      if (typeof params[index] !== 'string') {
         return {
           code: INVALID_PARAMS,
           message: `invalid argument ${index}: argument must be a hex string`,
@@ -253,6 +283,12 @@ export const validators = {
         return {
           code: INVALID_PARAMS,
           message: `invalid argument ${index}: hex string without 0x prefix`,
+        }
+      }
+      if (params[index].length > 2 && !/^[0-9a-fA-F]+$/.test(params[index].substr(2))) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be a hex string`,
         }
       }
       if (params[index].substr(2).length > 512) {
@@ -265,7 +301,7 @@ export const validators = {
   },
   get uint64() {
     return (params: any[], index: number) => {
-      if (!/^[0-9a-fA-F]+$/.test(params[index].substr(2)) || typeof params[index] !== 'string') {
+      if (typeof params[index] !== 'string') {
         return {
           code: INVALID_PARAMS,
           message: `invalid argument ${index}: argument must be a hex string`,
@@ -276,6 +312,12 @@ export const validators = {
         return {
           code: INVALID_PARAMS,
           message: `invalid argument ${index}: hex string without 0x prefix`,
+        }
+      }
+      if (params[index].length > 2 && !/^[0-9a-fA-F]+$/.test(params[index].substr(2))) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be a hex string`,
         }
       }
       if (params[index].substr(2).length > 16) {
@@ -288,7 +330,7 @@ export const validators = {
   },
   get uint256() {
     return (params: any[], index: number) => {
-      if (!/^[0-9a-fA-F]+$/.test(params[index].substr(2)) || typeof params[index] !== 'string') {
+      if (typeof params[index] !== 'string') {
         return {
           code: INVALID_PARAMS,
           message: `invalid argument ${index}: argument must be a hex string`,
@@ -301,10 +343,45 @@ export const validators = {
           message: `invalid argument ${index}: hex string without 0x prefix`,
         }
       }
+      if (params[index].length > 2 && !/^[0-9a-fA-F]+$/.test(params[index].substr(2))) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be a hex string`,
+        }
+      }
       if (params[index].substr(2).length > 64) {
         return {
           code: INVALID_PARAMS,
           message: `invalid argument ${index}: expected 256 bit value`,
+        }
+      }
+    }
+  },
+  get blob() {
+    return (params: any[], index: number) => {
+      if (typeof params[index] !== 'string') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be a hex string`,
+        }
+      }
+
+      if (params[index].substr(0, 2) !== '0x') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: hex string without 0x prefix`,
+        }
+      }
+      if (params[index].length > 2 && !/^[0-9a-fA-F]+$/.test(params[index].substr(2))) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be a hex string`,
+        }
+      }
+      if (params[index].substr(2).length > 131072) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: value larger than 131072 bytes`,
         }
       }
     }
