@@ -16,7 +16,7 @@ const method = 'eth_estimateGas'
 tape(`${method}: call with valid arguments`, async (t) => {
   // Use custom genesis so we can test EIP1559 txs more easily
   const genesisJson = await import('../../testdata/geth-genesis/rpctestnet.json')
-  const common = Common.fromGethGenesis(genesisJson, { chain: 'testnet', hardfork: 'istanbul' })
+  const common = Common.fromGethGenesis(genesisJson, { chain: 'testnet', hardfork: 'berlin' })
   const blockchain = await Blockchain.create({
     common,
     validateBlocks: false,
