@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1674595197616,
+  "lastUpdate": 1674651047493,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "bd67a97cf7696d7ceffe6b24ba1c83150f684a2e",
-          "message": "common: Update setForkHashes to update timebased hardfork forkhashes (#2461)",
-          "timestamp": "2022-12-23T20:09:31+05:30",
-          "tree_id": "94bbcbd12534cbca20a7c37859943e21a17373c9",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/bd67a97cf7696d7ceffe6b24ba1c83150f684a2e"
-        },
-        "date": 1671806630135,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18471,
-            "range": "±3.99%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18767,
-            "range": "±1.74%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 17966,
-            "range": "±7.04%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18535,
-            "range": "±1.79%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18336,
-            "range": "±1.91%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.42%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f38bf6076c5a72513c9c3dcd82c43177355adbb6",
+          "message": "engine-api-validators (#2504)\n\n* client/RPC: add validators for bytevectors\r\n\r\n* client/RPC: update validators for bytevectors\r\n\r\n* client/RPC: include typenames for bytevectors\r\n\r\n* client/RPC: make updates to newPayloadV2 method and validation\r\n\r\n* client/rpc: include tests for new validators\r\n\r\n* client/rpc: fix bytevector validators\r\n\r\n* client/rpc: allow '0x' for variableBytes32\r\n\r\n* client/rpc: flip conditional order in newPayloadV2\r\n\r\n* client/rpc: include status restriction in newPayloadV2\r\n\r\n* client/rpc: update engine_newPayloadV3 to spec\r\n\r\n* client/rpc: update validators for engine_newPayloadV3\r\n\r\n* client/rpc: alter order of bytevector validator checks\r\n\r\n* client/rpc: update bytevector validator tests\r\n\r\n* client/rpc: check for null hardfork timestamp\r\n\r\n* client/rpc: test newPayloadV2 with executionPayloadV1 test vectors\r\n\r\n* client/rpc: begin writing test for newPayloadv3\r\n\r\n* lib/rpc/validation: generalize uint/bytes validation\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2023-01-25T13:48:02+01:00",
+          "tree_id": "5a00836a7c08da61164078d7a2b214ee30bacd5e",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f38bf6076c5a72513c9c3dcd82c43177355adbb6"
+        },
+        "date": 1674651046387,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19357,
+            "range": "±1.87%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18519,
+            "range": "±5.21%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18878,
+            "range": "±1.54%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 17350,
+            "range": "±7.37%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19337,
+            "range": "±1.19%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
