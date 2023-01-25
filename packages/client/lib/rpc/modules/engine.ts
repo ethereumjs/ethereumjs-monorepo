@@ -367,7 +367,13 @@ export class Engine {
 
     this.newPayloadV3 = cmMiddleware(
       middleware(this.newPayloadV3.bind(this), 1, [
-        [validators.object(executionPayloadV3FieldValidators)],
+        [
+          validators.either(
+            validators.object(executionPayloadV1FieldValidators),
+            validators.object(executionPayloadV2FieldValidators),
+            validators.object(executionPayloadV3FieldValidators)
+          ),
+        ],
       ]),
       ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
     )
