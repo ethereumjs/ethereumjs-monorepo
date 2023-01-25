@@ -276,8 +276,10 @@ export class CLConnectionManager {
    * Externally triggered payload logs
    */
   public newPayloadLog() {
-    const payloadMsg = this._getPayloadLogMsg(this._lastPayload!)
-    this.config.logger.info(`New consensus payload received  ${payloadMsg}`)
+    if (this._lastPayload) {
+      const payloadMsg = this._getPayloadLogMsg(this._lastPayload)
+      this.config.logger.info(`New consensus payload received  ${payloadMsg}`)
+    }
   }
 
   /**
@@ -304,11 +306,13 @@ export class CLConnectionManager {
    * Externally triggered forkchoice log
    */
   public newForkchoiceLog() {
-    this.config.logger.info(
-      `New chain head set (forkchoice update) ${this._getForkchoiceUpdateLogMsg(
-        this._lastForkchoiceUpdate!
-      )}`
-    )
+    if (this._lastForkchoiceUpdate) {
+      this.config.logger.info(
+        `New chain head set (forkchoice update) ${this._getForkchoiceUpdateLogMsg(
+          this._lastForkchoiceUpdate
+        )}`
+      )
+    }
   }
 }
 

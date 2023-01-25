@@ -157,8 +157,6 @@ export abstract class Synchronizer {
         this.config.events.emit(Event.SYNC_SYNCHRONIZED, this.chain.headers.height)
       }
       this.config.lastSyncDate = Date.now()
-    } else {
-      this.config.synchronized = false
     }
   }
 
