@@ -463,6 +463,9 @@ export class Engine {
    */
   private async newPayload(params: [ExecutionPayload]): Promise<PayloadStatusV1> {
     const [payload] = params
+    if (this.config.synchronized) {
+      this.connectionManager.newPayloadLog()
+    }
     const { parentHash, blockHash } = payload
     const { block, error } = await assembleBlock(payload, this.chain)
     if (!block || error) {
@@ -653,6 +656,10 @@ export class Engine {
     const { headBlockHash, finalizedBlockHash, safeBlockHash } = params[0]
     const payloadAttributes = params[1]
 
+    if (this.config.synchronized) {
+      this.connectionManager.newForkchoiceLog()
+    }
+
     // It is possible that newPayload didn't start beacon sync as the payload it was asked to
     // evaluate didn't require syncing beacon. This can happen if the EL<>CL starts and CL
     // starts from a bit behind like how lodestar does
@@ -754,7 +761,16 @@ export class Engine {
           this.config.syncTargetHeight < headBlock.header.number) &&
         timeDiff < 30
       ) {
-        this.config.synchronized = true
+        if (!this.config.synchronized) {
+          // TODO: this has side effects if generalized by emitting SYNC_SYNCHRONIZED
+          // event, consolidate at some point
+          this.config.logger.info('*'.repeat(60))
+          this.config.logger.info(
+            `Synchronized blockchain at height=${this.chain.headers.height} 🎉`
+          )
+          this.config.logger.info('*'.repeat(60))
+          this.config.synchronized = true
+        }
         this.config.lastSyncDate = Date.now()
         this.config.syncTargetHeight = headBlock.header.number
         this.service.txPool.checkRunState()

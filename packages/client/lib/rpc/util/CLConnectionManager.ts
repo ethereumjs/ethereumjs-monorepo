@@ -107,11 +107,11 @@ export class CLConnectionManager {
       this.DEFAULT_CONNECTION_CHECK_INTERVAL
     )
     this._payloadLogInterval = setInterval(
-      this.payloadLog.bind(this),
+      this.lastPayloadLog.bind(this),
       this.DEFAULT_PAYLOAD_LOG_INTERVAL
     )
     this._forkchoiceLogInterval = setInterval(
-      this.forkchoiceLog.bind(this),
+      this.lastForkchoiceLog.bind(this),
       this.DEFAULT_FORKCHOICE_LOG_INTERVAL
     )
   }
@@ -258,32 +258,57 @@ export class CLConnectionManager {
   /**
    * Regular payload request logs
    */
-  private payloadLog() {
+  private lastPayloadLog() {
     if (this.connectionStatus !== ConnectionStatus.Connected) {
       return
     }
-    if (!this._lastPayload) {
-      this.config.logger.info('No consensus payload received yet')
-    } else {
-      this.config.logger.info(`Last consensus payload received  ${this._getPayloadLogMsg(
-        this._lastPayload
-      )}
-      `)
+    if (!this.config.synchronized) {
+      if (!this._lastPayload) {
+        this.config.logger.info('No consensus payload received yet')
+      } else {
+        const payloadMsg = this._getPayloadLogMsg(this._lastPayload)
+        this.config.logger.info(`Last consensus payload received  ${payloadMsg}`)
+      }
+    }
+  }
+
+  /**
+   * Externally triggered payload logs
+   */
+  public newPayloadLog() {
+    if (this._lastPayload) {
+      const payloadMsg = this._getPayloadLogMsg(this._lastPayload)
+      this.config.logger.info(`New consensus payload received  ${payloadMsg}`)
     }
   }
 
   /**
    * Regular forkchoice request logs
    */
-  private forkchoiceLog() {
+  private lastForkchoiceLog() {
     if (this.connectionStatus !== ConnectionStatus.Connected) {
       return
     }
-    if (!this._lastForkchoiceUpdate) {
-      this.config.logger.info('No consensus forkchoice update received yet')
-    } else {
+    if (!this.config.synchronized) {
+      if (!this._lastForkchoiceUpdate) {
+        this.config.logger.info('No consensus forkchoice update received yet')
+      } else {
+        this.config.logger.info(
+          `Last consensus forkchoice update ${this._getForkchoiceUpdateLogMsg(
+            this._lastForkchoiceUpdate
+          )}`
+        )
+      }
+    }
+  }
+
+  /**
+   * Externally triggered forkchoice log
+   */
+  public newForkchoiceLog() {
+    if (this._lastForkchoiceUpdate) {
       this.config.logger.info(
-        `Last consensus forkchoice update ${this._getForkchoiceUpdateLogMsg(
+        `New chain head set (forkchoice update) ${this._getForkchoiceUpdateLogMsg(
           this._lastForkchoiceUpdate
         )}`
       )

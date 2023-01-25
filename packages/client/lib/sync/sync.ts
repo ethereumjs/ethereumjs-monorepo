@@ -147,17 +147,19 @@ export abstract class Synchronizer {
     if (this.config.syncTargetHeight === undefined || this.config.syncTargetHeight === BigInt(0)) {
       return
     }
-    if (this.chain.headers.height >= this.config.syncTargetHeight) {
+    const height = this.chain.headers.height
+    if (height >= this.config.syncTargetHeight) {
       if (!this.config.synchronized) {
         const hash = this.chain.headers.latest?.hash()
+        this.config.synchronized = true
+        this.config.logger.info('*'.repeat(60))
         this.config.logger.info(
-          `Chain synchronized height=${this.chain.headers.height} hash=${short(hash!)}`
+          `Synchronized blockchain at height=${height} hash=${short(hash!)} 🎉`
         )
+        this.config.logger.info('*'.repeat(60))
       }
-      this.config.synchronized = true
+      this.config.events.emit(Event.SYNC_SYNCHRONIZED, height)
       this.config.lastSyncDate = Date.now()
-
-      this.config.events.emit(Event.SYNC_SYNCHRONIZED, this.chain.headers.height)
     }
   }
 
