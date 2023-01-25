@@ -459,6 +459,13 @@ export class Engine {
       ]),
       () => this.connectionManager.updateStatus()
     )
+
+    this.getPayloadBodiesByRangeV1 = cmMiddleware(
+      middleware(this.getPayloadBodiesByRangeV1.bind(this), 2, [
+        validators.array(validators.bytes8),
+      ]),
+      () => this.connectionManager.updateStatus()
+    )
   }
 
   /**
@@ -1052,5 +1059,53 @@ export class Engine {
       }
     }
     return blocks
+  }
+
+  /**
+   *
+   * @param params an array of 2 parameters
+   *    1.  start: Bytes8 - the first block in the range
+   *    2.  count: Bytes8 - the number of blocks requested
+   * @returns an array of ExecutionPayloadBodyV1 objects or null if a given execution payload isn't stored locally
+   */
+  private getPayloadBodiesByRangeV1 = async (
+    params: [Bytes8, Bytes8]
+  ): Promise<(ExecutionPayloadBodyV1 | null)[]> => {
+    const start = BigInt(params[0])
+    let count = BigInt(params[1])
+    if (count > BigInt(32)) {
+      throw {
+        code: TOO_LARGE_REQUEST,
+        message: 'More than 32 execution payload bodies requested',
+      }
+    }
+
+    const currentChainHeight = (await this.chain.getCanonicalHeadHeader()).number
+    if (start + count > currentChainHeight) {
+      count = currentChainHeight - count
+    }
+    const blocks = await this.chain.getBlocks(start, Number(count))
+    const payloads: (ExecutionPayloadBodyV1 | null)[] = []
+    for (const block of blocks) {
+      try {
+        const transactions: string[] = []
+        for (const txn of block.transactions) {
+          transactions.push('0x' + txn.serialize())
+        }
+        let withdrawals
+        if (block._common.gteHardfork(Hardfork.Shanghai)) {
+          withdrawals = []
+          for (const withdrawal of block.withdrawals!) {
+            withdrawals.push(withdrawal.toJSON() as WithdrawalV1)
+          }
+        } else {
+          withdrawals = null
+        }
+        payloads.push({ transactions, withdrawals })
+      } catch {
+        payloads.push(null)
+      }
+    }
+    return payloads
   }
 }
