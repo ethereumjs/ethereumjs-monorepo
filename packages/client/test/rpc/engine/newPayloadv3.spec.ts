@@ -13,7 +13,7 @@ import { checkError } from '../util'
 import type { HttpServer } from 'jayson'
 type Test = tape.Test
 
-const method = 'engine_newPayloadV2'
+const method = 'engine_newPayloadV3'
 
 const [blockData] = blocks
 
@@ -310,6 +310,11 @@ tape(`${method}: call with executionPayloadV1`, (v1) => {
 
 tape(`${method}: call with executionPayloadV2`, (v2) => {
   v2.pass('TODO: add tests for executionPayloadV2')
-  // TODO: add tests for executionPayloadV2
   v2.end()
+  // TODO: add tests for executionPayloadV2
+})
+tape(`${method}: call with executionPayloadV3`, (v2) => {
+  v2.pass('TODO: add tests for executionPayloadV2')
+  v2.end()
+  // TODO: add tests for executionPayloadV3
 })
