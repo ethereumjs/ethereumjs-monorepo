@@ -4,7 +4,6 @@ import { TransactionFactory } from '@ethereumjs/tx'
 import { Withdrawal, bigIntToHex, bufferToHex, toBuffer, zeros } from '@ethereumjs/util'
 
 import { PendingBlock } from '../../miner'
-import { Event } from '../../types'
 import { short } from '../../util'
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
 import { CLConnectionManager, middleware as cmMiddleware } from '../util/CLConnectionManager'
