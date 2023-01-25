@@ -153,11 +153,12 @@ export abstract class Synchronizer {
         this.config.logger.info(
           `Chain synchronized height=${this.chain.headers.height} hash=${short(hash!)}`
         )
+        this.config.synchronized = true
+        this.config.events.emit(Event.SYNC_SYNCHRONIZED, this.chain.headers.height)
       }
-      this.config.synchronized = true
       this.config.lastSyncDate = Date.now()
-
-      this.config.events.emit(Event.SYNC_SYNCHRONIZED, this.chain.headers.height)
+    } else {
+      this.config.synchronized = false
     }
   }
 
