@@ -578,6 +578,10 @@ export class Engine {
         }
       }
     }
+    const newPayload = await this.newPayload(params)
+    if (newPayload.status === Status.INVALID_BLOCK_HASH) {
+      newPayload.status = Status.INVALID
+    }
     return this.newPayload(params)
   }
 
