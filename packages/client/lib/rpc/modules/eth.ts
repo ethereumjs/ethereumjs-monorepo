@@ -874,7 +874,8 @@ export class Eth {
     const { syncTargetHeight } = this.client.config
     if (
       (syncTargetHeight === undefined || syncTargetHeight === BigInt(0)) &&
-      !this.client.config.mine
+      !this.client.config.mine &&
+      !common.gteHardfork('merge')
     ) {
       throw {
         code: INTERNAL_ERROR,
