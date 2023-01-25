@@ -28,7 +28,8 @@ export enum Status {
 type Bytes8 = string
 type Bytes20 = string
 type Bytes32 = string
-type Root = Bytes32
+// type Root = Bytes32
+type Blob = Bytes32
 type Bytes48 = string
 type Bytes256 = string
 type VariableBytes32 = string
@@ -99,7 +100,7 @@ type TransitionConfigurationV1 = {
 type BlobsBundleV1 = {
   blockHash: string
   kzgs: Bytes48[]
-  blobs: Root[]
+  blobs: Blob[]
 }
 const EngineError = {
   UnknownPayload: {
