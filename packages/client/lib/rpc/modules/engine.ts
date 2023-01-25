@@ -3,6 +3,7 @@ import { Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { Withdrawal, bigIntToHex, bufferToHex, toBuffer, zeros } from '@ethereumjs/util'
 
+import { RPCManager } from '..'
 import { PendingBlock } from '../../miner'
 import { short } from '../../util'
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
@@ -441,6 +442,10 @@ export class Engine {
     this.getBlobsBundleV1 = cmMiddleware(
       middleware(this.getBlobsBundleV1.bind(this), 1, [[validators.bytes8]]),
       () => this.connectionManager.updateStatus()
+    )
+
+    this.getCapabilities = cmMiddleware(middleware(this.getCapabilities.bind(this), 0, []), () =>
+      this.connectionManager.updateStatus()
     )
   }
 
@@ -970,5 +975,30 @@ export class Engine {
       kzgs: bundle.kzgCommitments.map((commitment) => '0x' + commitment.toString('hex')),
       blobs: bundle.blobs.map((blob) => '0x' + blob.toString('hex')),
     }
+  }
+
+  /**
+   * Returns a list of engine API endpoints supported by the client
+   */
+  private getCapabilities(_params: []): string[] {
+    const caps = Object.getOwnPropertyNames(this)
+    // TODO: Figure out how to use RPCManager.getMethodNames to make this work since this semi-duplicates that functionality
+    const nonFunctions = [
+      'client',
+      'service',
+      'chain',
+      'config',
+      'execution',
+      'vm',
+      'connectionManager',
+      'pendingBlocks',
+      'remoteBlocks',
+      'getCapabilities',
+      'pendingBlock',
+    ]
+    const engineMethods = caps.filter(
+      (el) => nonFunctions.findIndex((innerEl) => innerEl === el) < 0
+    )
+    return engineMethods.map((el) => 'engine_' + el)
   }
 }
