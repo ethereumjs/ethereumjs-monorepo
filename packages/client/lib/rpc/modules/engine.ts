@@ -569,8 +569,8 @@ export class Engine {
   }
 
   async newPayloadV2(params: [ExecutionPayloadV2 | ExecutionPayloadV1]): Promise<PayloadStatusV1> {
-    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp('shanghai')!
-    if (parseInt(params[0].timestamp) < shanghaiTimestamp) {
+    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp('shanghai')
+    if (shanghaiTimestamp === null || parseInt(params[0].timestamp) < shanghaiTimestamp) {
       if ('withdrawals' in params[0]) {
         throw {
           code: INVALID_PARAMS,
@@ -589,15 +589,15 @@ export class Engine {
     if (newPayload.status === Status.INVALID_BLOCK_HASH) {
       newPayload.status = Status.INVALID
     }
-    return this.newPayload(params)
+    return newPayload
   }
 
   async newPayloadV3(
     params: [ExecutionPayloadV3 | ExecutionPayloadV2 | ExecutionPayloadV1]
   ): Promise<PayloadStatusV1> {
-    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp('shanghai')!
-    const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp('eip4844')!
-    if (parseInt(params[0].timestamp) < shanghaiTimestamp) {
+    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp('shanghai')
+    const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp('eip4844')
+    if (shanghaiTimestamp === null || parseInt(params[0].timestamp) < shanghaiTimestamp) {
       if ('withdrawals' in params[0]) {
         throw {
           code: INVALID_PARAMS,
@@ -606,7 +606,7 @@ export class Engine {
       }
     } else if (
       parseInt(params[0].timestamp) >= shanghaiTimestamp &&
-      parseInt(params[0].timestamp) < eip4844Timestamp
+      (eip4844Timestamp === null || parseInt(params[0].timestamp) < eip4844Timestamp)
     ) {
       if (!('extraDataGas' in params[0])) {
         throw {
@@ -614,7 +614,7 @@ export class Engine {
           message: 'ExecutionPayloadV2 MUST be used if Shanghai is activated and EIP-4844 is not',
         }
       }
-    } else if (parseInt(params[0].timestamp) >= eip4844Timestamp) {
+    } else if (eip4844Timestamp === null || parseInt(params[0].timestamp) >= eip4844Timestamp) {
       if (!('extraData' in params[0])) {
         throw {
           code: INVALID_PARAMS,
@@ -626,7 +626,7 @@ export class Engine {
     if (newPayload.status === Status.INVALID_BLOCK_HASH) {
       newPayload.status = Status.INVALID
     }
-    return this.newPayload(params)
+    return newPayload
   }
 
   /**
