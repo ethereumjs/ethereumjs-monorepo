@@ -190,7 +190,7 @@ export const validators = {
   },
   get variableBytes32() {
     return (params: any[], index: number) => {
-      if (!/^[0-9a-fA-F]+$/.test(params[index].substr(2)) || typeof params[index] !== 'string') {
+      if (typeof params[index] !== 'string') {
         return {
           code: INVALID_PARAMS,
           message: `invalid argument ${index}: argument must be a hex string`,
@@ -201,6 +201,12 @@ export const validators = {
         return {
           code: INVALID_PARAMS,
           message: `invalid argument ${index}: hex string without 0x prefix`,
+        }
+      }
+      if (params[index].length > 2 && !/^[0-9a-fA-F]+$/.test(params[index].substr(2))) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be a hex string`,
         }
       }
       if (params[index].substr(2).length > 64) {
