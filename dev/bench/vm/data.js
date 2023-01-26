@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1674684142593,
+  "lastUpdate": 1674763143917,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "e8b87e3c729c0feaeecf5f2c946726a66b9ca619",
-          "message": "common: add eip option to GethConfigOpts (#2469)\n\n* common: add eip options to GethConfigOpts\r\n\r\n* vm: simplify common setEIPs in 4895 test",
-          "timestamp": "2023-01-03T19:49:34-05:00",
-          "tree_id": "8fd4deffc41afb0e18107c39cb4bdf5683c6877a",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e8b87e3c729c0feaeecf5f2c946726a66b9ca619"
-        },
-        "date": 1672793549696,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18505,
-            "range": "±3.86%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 16293,
-            "range": "±7.58%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18376,
-            "range": "±1.71%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 17801,
-            "range": "±1.83%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 15609,
-            "range": "±11.57%",
-            "unit": "ops/sec",
-            "extra": "68 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 19541,
             "range": "±1.34%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e35296cc68296a5e33ce528a35b963299a131a83",
+          "message": "More Interop Log Improvements (#2510)\n\n* Added HF change logging for new payload and FCU calls\r\n\r\n* Add payload to payload stats (blocks count, min/max block numbers, tx count per type)\r\n\r\n* Fix dataGasFee calculation\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-01-26T14:56:21-05:00",
+          "tree_id": "835656e1cd06e51a36841b8c8d33a44d05778443",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e35296cc68296a5e33ce528a35b963299a131a83"
+        },
+        "date": 1674763142777,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19512,
+            "range": "±1.71%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18848,
+            "range": "±3.94%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 19026,
+            "range": "±1.36%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 17752,
+            "range": "±6.85%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19576,
+            "range": "±1.07%",
             "unit": "ops/sec",
             "extra": "88 samples"
           }
