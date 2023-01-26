@@ -329,6 +329,9 @@ export class Engine {
   private remoteBlocks: Map<String, Block>
   private connectionManager: CLConnectionManager
 
+  private lastNewPayloadHF: string = ''
+  private lastForkchoiceUpdatedHF: string = ''
+
   /**
    * Create engine_* RPC module
    * @param client Client to which the module binds
@@ -478,6 +481,18 @@ export class Engine {
       }
       return response
     }
+
+    this.connectionManager.updatePayloadStats(block)
+
+    const hardfork = block._common.hardfork()
+    if (hardfork !== this.lastNewPayloadHF && this.lastNewPayloadHF !== '') {
+      this.config.logger.info(
+        `Hardfork change along new payload block number=${block.header.number} hash=${short(
+          block.hash()
+        )} old=${this.lastNewPayloadHF} new=${hardfork}`
+      )
+    }
+    this.lastNewPayloadHF = hardfork
 
     // This optimistic lookup keeps skeleton updated even if for e.g. beacon sync might not have
     // been initialized here but a batch of blocks new payloads arrive, most likely during sync
@@ -692,6 +707,16 @@ export class Engine {
         this.remoteBlocks.delete(headBlockHash.slice(2))
       }
     }
+
+    const hardfork = headBlock._common.hardfork()
+    if (hardfork !== this.lastForkchoiceUpdatedHF && this.lastForkchoiceUpdatedHF !== '') {
+      this.config.logger.info(
+        `Hardfork change along forkchoice head block update number=${
+          headBlock.header.number
+        } hash=${short(headBlock.hash())} old=${this.lastForkchoiceUpdatedHF} new=${hardfork}`
+      )
+    }
+    this.lastForkchoiceUpdatedHF = hardfork
 
     // Always keep beaconSync skeleton updated so that it stays updated with any skeleton sync
     // requirements that might come later because of reorg or CL restarts
