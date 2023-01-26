@@ -236,7 +236,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Check from account's balance and nonce
   let fromAccount = await state.getAccount(caller)
   const { nonce, balance } = fromAccount
-
+  debug(`Sender's pre-tx balance is ${balance}`)
   // EIP-3607: Reject transactions from senders with deployed code
   if (this._common.isActivatedEIP(3607) === true && !fromAccount.codeHash.equals(KECCAK256_NULL)) {
     const msg = _errorMsg('invalid sender address, address is not EOA (EIP-3607)', this, block, tx)
@@ -287,8 +287,26 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     maxCost += totalDataGas * castTx.maxFeePerDataGas
 
     // 4844 minimum datagas price check
-    const headBlock = await this.blockchain.getCanonicalHeadBlock!()
-    dataGasPrice = getDataGasPrice(headBlock.header)
+    if (opts.block === undefined) {
+      const msg = _errorMsg(
+        `Block option must be supplied to compute data gas price`,
+        this,
+        block,
+        tx
+      )
+      throw new Error(msg)
+    }
+    const parentBlock = await this.blockchain.getBlock(opts.block?.header.parentHash)
+    if (parentBlock === null) {
+      const msg = _errorMsg(
+        `Parent block not found in blockchain so cannot compute data gas price`,
+        this,
+        block,
+        tx
+      )
+      throw new Error(msg)
+    }
+    dataGasPrice = getDataGasPrice(parentBlock.header)
     if (castTx.maxFeePerDataGas < dataGasPrice) {
       const msg = _errorMsg(
         `Transaction's maxFeePerDataGas ${castTx.maxFeePerDataGas}) is less than block dataGasPrice (${dataGasPrice}).`,
@@ -360,7 +378,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const dataGasCost = totalDataGas * dataGasPrice
   fromAccount.balance -= txCost
   fromAccount.balance -= dataGasCost
-
+  debug(`txCost ${txCost} -- ${dataGasCost}`)
   if (opts.skipBalance === true && fromAccount.balance < BigInt(0)) {
     fromAccount.balance = BigInt(0)
   }
