@@ -482,6 +482,8 @@ export class Engine {
       return response
     }
 
+    this.connectionManager.updatePayloadStats(block)
+
     const hardfork = block._common.hardfork()
     if (hardfork !== this.lastNewPayloadHF && this.lastNewPayloadHF !== '') {
       this.config.logger.info(
