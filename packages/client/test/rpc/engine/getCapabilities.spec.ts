@@ -10,7 +10,6 @@ tape(`${method}: call with invalid payloadId`, async (t) => {
   const req = params(method, [])
   const expectRes = (res: any) => {
     t.ok(res.body.result.length > 0, 'got more than 1 engine capability')
-    console.log(res.body.result)
     t.equal(
       res.body.result.findIndex((el: string) => el === 'engine_getCapabilities'),
       -1,
