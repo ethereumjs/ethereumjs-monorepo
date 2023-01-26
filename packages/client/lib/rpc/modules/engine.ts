@@ -1019,9 +1019,9 @@ export class Engine {
    * @param params a list of block hashes as hex prefixed strings
    * @returns an array of ExecutionPayloadBodyV1 objects or null if a given execution payload isn't stored locally
    */
-  private getPayloadBodiesByHashV1 = async (
+  private async getPayloadBodiesByHashV1(
     params: [[Bytes32]]
-  ): Promise<(ExecutionPayloadBodyV1 | null)[]> => {
+  ): Promise<(ExecutionPayloadBodyV1 | null)[]> {
     if (params[0].length > 32) {
       throw {
         code: TOO_LARGE_REQUEST,
@@ -1061,9 +1061,9 @@ export class Engine {
    *    2.  count: Bytes8 - the number of blocks requested
    * @returns an array of ExecutionPayloadBodyV1 objects or null if a given execution payload isn't stored locally
    */
-  private getPayloadBodiesByRangeV1 = async (
+  private async getPayloadBodiesByRangeV1(
     params: [Bytes8, Bytes8]
-  ): Promise<(ExecutionPayloadBodyV1 | null)[]> => {
+  ): Promise<(ExecutionPayloadBodyV1 | null)[]> {
     const start = BigInt(params[0])
     let count = BigInt(params[1])
     if (count > BigInt(32)) {
