@@ -1,6 +1,7 @@
 // explicitly import util and buffer,
 // needed for karma-typescript bundling
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { EVM } from '@ethereumjs/evm'
 import { Account, Address, KECCAK256_RLP } from '@ethereumjs/util'
 import { Buffer } from 'buffer'
 import * as tape from 'tape'
@@ -59,12 +60,33 @@ tape('VM -> basic instantiation / boolean switches', (t) => {
 tape('VM -> supportedHardforks', (t) => {
   t.test('should throw when common is set to an unsupported hardfork', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+    const prevSupported = EVM['supportedHardforks']
+    EVM['supportedHardforks'] = [
+      Hardfork.Chainstart,
+      Hardfork.Homestead,
+      Hardfork.Dao,
+      Hardfork.TangerineWhistle,
+      Hardfork.SpuriousDragon,
+      Hardfork.Byzantium,
+      Hardfork.Constantinople,
+      Hardfork.Petersburg,
+      Hardfork.Istanbul,
+      Hardfork.MuirGlacier,
+      Hardfork.Berlin,
+      Hardfork.London,
+      Hardfork.ArrowGlacier,
+      Hardfork.GrayGlacier,
+      Hardfork.MergeForkIdTransition,
+      Hardfork.Merge,
+    ]
     try {
       await VM.create({ common })
       st.fail('should have failed for unsupported hardfork')
     } catch (e: any) {
       st.ok(e.message.includes('supportedHardforks'))
     }
+    // restore supported hardforks
+    EVM['supportedHardforks'] = prevSupported
     st.end()
   })
 

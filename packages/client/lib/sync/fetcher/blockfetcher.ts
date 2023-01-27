@@ -66,17 +66,24 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       `Requested blocks=${blocksRange} from ${peerInfo} (received: ${headers.length} headers / ${bodies.length} bodies)`
     )
     const blocks: Block[] = []
-    for (const [i, [txsData, unclesData]] of bodies.entries()) {
+    for (const [i, [txsData, unclesData, withdrawalsData]] of bodies.entries()) {
+      const header = headers[i]
       if (
-        (!headers[i].transactionsTrie.equals(KECCAK256_RLP) && txsData.length === 0) ||
-        (!headers[i].uncleHash.equals(KECCAK256_RLP_ARRAY) && unclesData.length === 0)
+        (!header.transactionsTrie.equals(KECCAK256_RLP) && txsData.length === 0) ||
+        (!header.uncleHash.equals(KECCAK256_RLP_ARRAY) && unclesData.length === 0) ||
+        (header.withdrawalsRoot !== undefined &&
+          !header.withdrawalsRoot.equals(KECCAK256_RLP) &&
+          (withdrawalsData?.length ?? 0) === 0)
       ) {
         this.debug(
-          `Requested block=${headers[i].number}} from peer ${peerInfo} missing non-empty txs or uncles`
+          `Requested block=${headers[i].number}} from peer ${peerInfo} missing non-empty txs=${txsData.length} or uncles=${unclesData.length} or withdrawals=${withdrawalsData?.length}`
         )
         return []
       }
       const values: BlockBuffer = [headers[i].raw(), txsData, unclesData]
+      if (withdrawalsData !== undefined) {
+        values.push(withdrawalsData)
+      }
       // Supply the common from the corresponding block header already set on correct fork
       blocks.push(Block.fromValuesArray(values, { common: headers[i]._common }))
     }

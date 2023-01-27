@@ -72,7 +72,8 @@ export class BeaconSynchronizer extends Synchronizer {
     const { height: number, td } = this.chain.blocks
     const hash = this.chain.blocks.latest!.hash()
     this.startingBlock = number
-    this.config.chainCommon.setHardforkByBlockNumber(number, td)
+    const timestamp = this.chain.blocks.latest?.header.timestamp
+    this.config.chainCommon.setHardforkByBlockNumber(number, td, timestamp)
 
     this.config.logger.info(
       `Latest local block number=${Number(number)} td=${td} hash=${hash.toString(
@@ -216,7 +217,11 @@ export class BeaconSynchronizer extends Synchronizer {
    * @return Resolves when sync completed
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
-    if (this.skeleton.bounds() === undefined || this.skeleton.isLinked()) {
+    if (
+      !this.skeleton.isStarted() ||
+      this.skeleton.bounds() === undefined ||
+      this.skeleton.isLinked()
+    ) {
       this.clearFetcher()
       return false
     }
@@ -245,6 +250,11 @@ export class BeaconSynchronizer extends Synchronizer {
     } else {
       // We sync one less because tail's next should be pointing to the block in chain
       count = tail - this.chain.blocks.height - BigInt(1)
+    }
+
+    // Do not try syncing blocks on/pre genesis
+    if (count > first) {
+      count = first
     }
 
     if (count > BigInt(0) && (this.fetcher === null || this.fetcher.errored !== undefined)) {

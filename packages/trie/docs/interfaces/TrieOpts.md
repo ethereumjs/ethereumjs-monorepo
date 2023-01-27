@@ -7,11 +7,11 @@
 ### Properties
 
 - [db](TrieOpts.md#db)
-- [deleteFromDB](TrieOpts.md#deletefromdb)
-- [persistRoot](TrieOpts.md#persistroot)
 - [root](TrieOpts.md#root)
-- [useHashedKeys](TrieOpts.md#usehashedkeys)
-- [useHashedKeysFunction](TrieOpts.md#usehashedkeysfunction)
+- [useKeyHashing](TrieOpts.md#usekeyhashing)
+- [useKeyHashingFunction](TrieOpts.md#usekeyhashingfunction)
+- [useNodePruning](TrieOpts.md#usenodepruning)
+- [useRootPersistence](TrieOpts.md#userootpersistence)
 
 ## Properties
 
@@ -27,31 +27,6 @@ A database instance.
 
 ___
 
-### deleteFromDB
-
-• `Optional` **deleteFromDB**: `boolean`
-
-Delete nodes from DB on delete operations (disallows switching to an older state root)
-Default: `false`
-
-#### Defined in
-
-[packages/trie/src/types.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L36)
-
-___
-
-### persistRoot
-
-• `Optional` **persistRoot**: `boolean`
-
-Store the root inside the database after every `write` operation
-
-#### Defined in
-
-[packages/trie/src/types.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L60)
-
-___
-
 ### root
 
 • `Optional` **root**: `Buffer`
@@ -60,13 +35,13 @@ A `Buffer` for the root of a previously stored trie
 
 #### Defined in
 
-[packages/trie/src/types.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L31)
+[packages/trie/src/types.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L32)
 
 ___
 
-### useHashedKeys
+### useKeyHashing
 
-• `Optional` **useHashedKeys**: `boolean`
+• `Optional` **useKeyHashing**: `boolean`
 
 Create as a secure Trie where the keys are automatically hashed using the
 **keccak256** hash function or alternatively the custom hash function provided.
@@ -77,20 +52,45 @@ like Ethereum Mainnet.
 
 Note: This functionality has been refactored along the v5 release and was before
 provided as a separate inherited class `SecureTrie`. Just replace with `Trie`
-instantiation with `useHashedKeys` set to `true`.
+instantiation with `useKeyHashing` set to `true`.
 
 #### Defined in
 
-[packages/trie/src/types.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L50)
+[packages/trie/src/types.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L46)
 
 ___
 
-### useHashedKeysFunction
+### useKeyHashingFunction
 
-• `Optional` **useHashedKeysFunction**: [`HashKeysFunction`](../README.md#hashkeysfunction)
+• `Optional` **useKeyHashingFunction**: [`HashKeysFunction`](../README.md#hashkeysfunction)
 
 Hash function used for hashing trie node and securing key.
 
 #### Defined in
 
-[packages/trie/src/types.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L55)
+[packages/trie/src/types.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L51)
+
+___
+
+### useNodePruning
+
+• `Optional` **useNodePruning**: `boolean`
+
+Flag to prune the trie. When set to `true`, each time a value is overridden,
+unreachable nodes will be pruned (deleted) from the trie
+
+#### Defined in
+
+[packages/trie/src/types.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L62)
+
+___
+
+### useRootPersistence
+
+• `Optional` **useRootPersistence**: `boolean`
+
+Store the root inside the database after every `write` operation
+
+#### Defined in
+
+[packages/trie/src/types.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L56)

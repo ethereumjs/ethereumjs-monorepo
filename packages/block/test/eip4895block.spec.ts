@@ -1,11 +1,15 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, KECCAK256_RLP } from '@ethereumjs/util'
+import { decode } from '@ethereumjs/rlp'
+import { Address, KECCAK256_RLP, Withdrawal } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Block } from '../src/block'
 import { BlockHeader } from '../src/header'
 
-import type { Withdrawal } from '../src'
+import type { WithdrawalBuffer, WithdrawalData } from '@ethereumjs/util'
+
+const gethWithdrawals8BlockRlp =
+  'f903e1f90213a0fe950635b1bd2a416ff6283b0bbd30176e1b1125ad06fa729da9f3f4c1c61710a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d4934794aa00000000000000000000000000000000000000a07f7510a0cb6203f456e34ec3e2ce30d6c5590ded42c10a9cf3f24784119c5afba056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b901000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080018401c9c380802f80a0ff0000000000000000000000000000000000000000000000000000000000000088000000000000000007a0b695b29ec7ee934ef6a68838b13729f2d49fffe26718de16a1a9ed94a4d7d06dc0c0f901c6da8082ffff94000000000000000000000000000000000000000080f83b0183010000940100000000000000000000000000000000000000a00100000000000000000000000000000000000000000000000000000000000000f83b0283010001940200000000000000000000000000000000000000a00200000000000000000000000000000000000000000000000000000000000000f83b0383010002940300000000000000000000000000000000000000a00300000000000000000000000000000000000000000000000000000000000000f83b0483010003940400000000000000000000000000000000000000a00400000000000000000000000000000000000000000000000000000000000000f83b0583010004940500000000000000000000000000000000000000a00500000000000000000000000000000000000000000000000000000000000000f83b0683010005940600000000000000000000000000000000000000a00600000000000000000000000000000000000000000000000000000000000000f83b0783010006940700000000000000000000000000000000000000a00700000000000000000000000000000000000000000000000000000000000000'
 
 const common = new Common({
   eips: [4895],
@@ -25,7 +29,23 @@ common.hardforkBlock = function (hardfork: string | undefined) {
   return BigInt(0)
 }
 
-tape('EIP1559 tests', function (t) {
+tape('EIP4895 tests', function (t) {
+  t.test('should correctly generate withdrawalsRoot', async function (st) {
+    // get withdwalsArray
+    const gethBlockBufferArray = decode(Buffer.from(gethWithdrawals8BlockRlp, 'hex'))
+    const withdrawals = (gethBlockBufferArray[3] as WithdrawalBuffer[]).map((wa) =>
+      Withdrawal.fromValuesArray(wa)
+    )
+    st.equal(withdrawals.length, 8, '8 withdrawals should have been found')
+    const gethWitdrawalsRoot = (gethBlockBufferArray[0] as Buffer[])[16] as Buffer
+    st.deepEqual(
+      await Block.genWithdrawalsTrieRoot(withdrawals),
+      gethWitdrawalsRoot,
+      'withdrawalsRoot should be valid'
+    )
+    st.end()
+  })
+
   t.test('Header tests', function (st) {
     const earlyCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     st.throws(() => {
@@ -102,7 +122,7 @@ tape('EIP1559 tests', function (t) {
         common,
       }
     )
-    st.notOk(await block.validateWithdrawalsTrie(), 'should invalidate the withdrawals root')
+    st.notOk(await block.validateWithdrawalsTrie(), 'should invalidate the empty withdrawals root')
     const validHeader = BlockHeader.fromHeaderData(
       {
         withdrawalsRoot: KECCAK256_RLP,
@@ -118,9 +138,9 @@ tape('EIP1559 tests', function (t) {
         common,
       }
     )
-    st.ok(await validBlock.validateWithdrawalsTrie(), 'should validate withdrawals root')
+    st.ok(await validBlock.validateWithdrawalsTrie(), 'should validate empty withdrawals root')
 
-    const withdrawal = <Withdrawal>{
+    const withdrawal = <WithdrawalData>{
       index: BigInt(0),
       validatorIndex: BigInt(0),
       address: new Address(Buffer.from('20'.repeat(20), 'hex')),
@@ -131,7 +151,7 @@ tape('EIP1559 tests', function (t) {
       {
         header: {
           withdrawalsRoot: Buffer.from(
-            '69f28913c562b0d38f8dc81e72eb0d99052444d301bf8158dc1f3f94a4526357',
+            '897ca49edcb278aecab2688bcc2b7b7ee43524cc489672534fee332a172f1718',
             'hex'
           ),
         },
@@ -146,7 +166,7 @@ tape('EIP1559 tests', function (t) {
       'should validate withdrawals root'
     )
 
-    const withdrawal2 = <Withdrawal>{
+    const withdrawal2 = <WithdrawalData>{
       index: BigInt(1),
       validatorIndex: BigInt(11),
       address: new Address(Buffer.from('30'.repeat(20), 'hex')),
@@ -157,7 +177,7 @@ tape('EIP1559 tests', function (t) {
       {
         header: {
           withdrawalsRoot: Buffer.from(
-            'cb1accdf466a644291e7b5f0374a3d490d7c5545f9a346f8652f65b3960e720e',
+            '3b514862c42008079d461392e29d5b6775dd5ed370a6c4441ccb8ab742bf2436',
             'hex'
           ),
         },

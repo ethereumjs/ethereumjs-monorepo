@@ -4,13 +4,13 @@ import { Trie } from '@ethereumjs/trie'
 import { Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
   KECCAK256_RLP,
+  Withdrawal,
   arrToBufArr,
   bigIntToHex,
   bufArrToArr,
   bufferToHex,
   intToHex,
   isHexPrefixed,
-  toBuffer,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { ethers } from 'ethers'
@@ -18,14 +18,7 @@ import { ethers } from 'ethers'
 import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
 
-import type {
-  BlockBuffer,
-  BlockData,
-  BlockOptions,
-  JsonBlock,
-  JsonRpcBlock,
-  Withdrawal,
-} from './types'
+import type { BlockBuffer, BlockData, BlockOptions, JsonBlock, JsonRpcBlock } from './types'
 import type { Common } from '@ethereumjs/common'
 import type {
   FeeMarketEIP1559Transaction,
@@ -33,7 +26,7 @@ import type {
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import type { Address } from '@ethereumjs/util'
+import type { WithdrawalBuffer } from '@ethereumjs/util'
 
 /**
  * An object that represents the block.
@@ -47,6 +40,32 @@ export class Block {
   public readonly _common: Common
 
   /**
+   * Returns the withdrawals trie root for array of Withdrawal.
+   * @param wts array of Withdrawal to compute the root of
+   * @param optional emptyTrie to use to generate the root
+   */
+  public static async genWithdrawalsTrieRoot(wts: Withdrawal[], emptyTrie?: Trie) {
+    const trie = emptyTrie ?? new Trie()
+    for (const [i, wt] of wts.entries()) {
+      await trie.put(Buffer.from(RLP.encode(i)), arrToBufArr(RLP.encode(wt.raw())))
+    }
+    return trie.root()
+  }
+
+  /**
+   * Returns the txs trie root for array of TypedTransaction
+   * @param txs array of TypedTransaction to compute the root of
+   * @param optional emptyTrie to use to generate the root
+   */
+  public static async genTransactionsTrieRoot(txs: TypedTransaction[], emptyTrie?: Trie) {
+    const trie = emptyTrie ?? new Trie()
+    for (const [i, tx] of txs.entries()) {
+      await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
+    }
+    return trie.root()
+  }
+
+  /**
    * Static constructor to create a block from a block data dictionary
    *
    * @param blockData
@@ -57,7 +76,7 @@ export class Block {
       header: headerData,
       transactions: txsData,
       uncleHeaders: uhsData,
-      withdrawals,
+      withdrawals: withdrawalsData,
     } = blockData
     const header = BlockHeader.fromHeaderData(headerData, opts)
 
@@ -93,6 +112,8 @@ export class Block {
       uncleHeaders.push(uh)
     }
 
+    const withdrawals = withdrawalsData?.map(Withdrawal.fromWithdrawalData)
+
     return new Block(header, transactions, uncleHeaders, opts, withdrawals)
   }
 
@@ -122,8 +143,7 @@ export class Block {
     if (values.length > 4) {
       throw new Error('invalid block. More values than expected were received')
     }
-
-    const [headerData, txsData, uhsData, withdrawalsData] = values
+    const [headerData, txsData, uhsData, withdrawalsBuffer] = values
 
     const header = BlockHeader.fromValuesArray(headerData, opts)
 
@@ -159,14 +179,14 @@ export class Block {
       uncleHeaders.push(BlockHeader.fromValuesArray(uncleHeaderData, uncleOpts))
     }
 
-    let withdrawals
-    if (withdrawalsData) {
-      withdrawals = <Withdrawal[]>[]
-      for (const withdrawal of withdrawalsData) {
-        const [index, validatorIndex, address, amount] = withdrawal
-        withdrawals.push({ index, validatorIndex, address, amount })
-      }
-    }
+    const withdrawals = (withdrawalsBuffer as WithdrawalBuffer[])
+      ?.map(([index, validatorIndex, address, amount]) => ({
+        index,
+        validatorIndex,
+        address,
+        amount,
+      }))
+      ?.map(Withdrawal.fromWithdrawalData)
 
     return new Block(header, transactions, uncleHeaders, opts, withdrawals)
   }
@@ -241,6 +261,7 @@ export class Block {
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
     this.transactions = transactions
+    this.withdrawals = withdrawals
     this.uncleHeaders = uncleHeaders
     this._common = this.header._common
     if (uncleHeaders.length > 0) {
@@ -265,30 +286,10 @@ export class Block {
       throw new Error('Cannot have a withdrawals field if EIP 4895 is not active')
     }
 
-    this.withdrawals = withdrawals
-
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
     }
-  }
-
-  /**
-   * Convert a withdrawal to a buffer array
-   * @param withdrawal the withdrawal to convert
-   * @returns buffer array of the withdrawal
-   */
-  private withdrawalToBufferArray(withdrawal: Withdrawal): [Buffer, Buffer, Buffer, Buffer] {
-    const { index, validatorIndex, address, amount } = withdrawal
-    let addressBuffer: Buffer
-    if (typeof address === 'string') {
-      addressBuffer = Buffer.from(address.slice(2))
-    } else if (Buffer.isBuffer(address)) {
-      addressBuffer = address
-    } else {
-      addressBuffer = (<Address>address).buf
-    }
-    return [toBuffer(index), toBuffer(validatorIndex), addressBuffer, toBuffer(amount)]
   }
 
   /**
@@ -302,10 +303,9 @@ export class Block {
       ) as Buffer[],
       this.uncleHeaders.map((uh) => uh.raw()),
     ]
-    if (this.withdrawals) {
-      for (const withdrawal of this.withdrawals) {
-        bufferArray.push(this.withdrawalToBufferArray(withdrawal))
-      }
+    const withdrawalsRaw = this.withdrawals?.map((wt) => wt.raw())
+    if (withdrawalsRaw) {
+      bufferArray.push(withdrawalsRaw)
     }
     return bufferArray
   }
@@ -336,12 +336,7 @@ export class Block {
    */
   async genTxTrie(): Promise<void> {
     const { transactions, txTrie } = this
-    for (let i = 0; i < transactions.length; i++) {
-      const tx = transactions[i]
-      const key = Buffer.from(RLP.encode(i))
-      const value = tx.serialize()
-      await txTrie.put(key, value)
-    }
+    await Block.genTransactionsTrieRoot(transactions, txTrie)
   }
 
   /**
@@ -449,14 +444,8 @@ export class Block {
     if (!this._common.isActivatedEIP(4895)) {
       throw new Error('EIP 4895 is not activated')
     }
-    const trie = new Trie()
-    let index = 0
-    for (const withdrawal of this.withdrawals!) {
-      const withdrawalRLP = RLP.encode(this.withdrawalToBufferArray(withdrawal))
-      await trie.put(Buffer.from('0x' + index.toString(16)), arrToBufArr(withdrawalRLP))
-      index++
-    }
-    return trie.root().equals(this.header.withdrawalsRoot!)
+    const withdrawalsRoot = await Block.genWithdrawalsTrieRoot(this.withdrawals!)
+    return withdrawalsRoot.equals(this.header.withdrawalsRoot!)
   }
 
   /**
@@ -510,10 +499,16 @@ export class Block {
    * Returns the block in JSON format.
    */
   toJSON(): JsonBlock {
+    const withdrawalsAttr = this.withdrawals
+      ? {
+          withdrawals: this.withdrawals.map((wt) => wt.toJSON()),
+        }
+      : {}
     return {
       header: this.header.toJSON(),
       transactions: this.transactions.map((tx) => tx.toJSON()),
       uncleHeaders: this.uncleHeaders.map((uh) => uh.toJSON()),
+      ...withdrawalsAttr,
     }
   }
 

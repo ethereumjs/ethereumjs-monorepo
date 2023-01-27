@@ -86,6 +86,13 @@ const jsonRpcBlock = async (
   const transactions = block.transactions.map((tx, txIndex) =>
     includeTransactions ? jsonRpcTx(tx, block, txIndex) : bufferToHex(tx.hash())
   )
+  const withdrawalsAttr =
+    header.withdrawalsRoot !== undefined
+      ? {
+          withdrawalsRoot: header.withdrawalsRoot!,
+          withdrawals: json.withdrawals,
+        }
+      : {}
   const td = await chain.getTd(block.hash(), block.header.number)
   return {
     number: header.number!,
@@ -109,6 +116,7 @@ const jsonRpcBlock = async (
     transactions,
     uncles: block.uncleHeaders.map((uh) => bufferToHex(uh.hash())),
     baseFeePerGas: header.baseFeePerGas,
+    ...withdrawalsAttr,
   }
 }
 
@@ -278,6 +286,12 @@ export class Eth {
       [validators.hex],
       [validators.blockOption],
     ])
+
+    this.getTransactionByBlockHashAndIndex = middleware(
+      this.getTransactionByBlockHashAndIndex.bind(this),
+      2,
+      [[validators.hex, validators.blockHash], [validators.hex]]
+    )
 
     this.getTransactionByHash = middleware(this.getTransactionByHash.bind(this), 1, [
       [validators.hex],
@@ -595,6 +609,31 @@ export class Eth {
   }
 
   /**
+   * Returns information about a transaction given a block hash and a transaction's index position.
+   * @param params An array of two parameter:
+   *   1. a block hash
+   *   2. an integer of the transaction index position encoded as a hexadecimal.
+   */
+  async getTransactionByBlockHashAndIndex(params: [string, string]) {
+    try {
+      const [blockHash, txIndexHex] = params
+      const txIndex = parseInt(txIndexHex, 16)
+      const block = await this._chain.getBlock(toBuffer(blockHash))
+      if (block.transactions.length <= txIndex) {
+        return null
+      }
+
+      const tx = block.transactions[txIndex]
+      return jsonRpcTx(tx, block, txIndex)
+    } catch (error: any) {
+      throw {
+        code: INVALID_PARAMS,
+        message: error.message.toString(),
+      }
+    }
+  }
+
+  /**
    * Returns the transaction by hash when available within `--txLookupLimit`
    * @param params An array of one parameter:
    *   1. hash of the transaction
@@ -843,7 +882,7 @@ export class Eth {
     // Set the tx common to an appropriate HF to create a tx
     // with matching HF rules
     if (typeof syncTargetHeight === 'bigint' && syncTargetHeight !== BigInt(0)) {
-      common.setHardforkByBlockNumber(syncTargetHeight)
+      common.setHardforkByBlockNumber(syncTargetHeight, undefined, Math.floor(Date.now() / 1000))
     }
 
     let tx

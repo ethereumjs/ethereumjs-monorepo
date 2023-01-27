@@ -1,6 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
-import { Lock } from '@ethereumjs/util'
+import { KECCAK256_RLP, Lock } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
 import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus'
@@ -275,7 +275,7 @@ export class Blockchain implements BlockchainInterface {
     if (this._hardforkByHeadBlockNumber) {
       const latestHeader = await this._getHeader(this._headHeaderHash)
       const td = await this.getTotalDifficulty(this._headHeaderHash)
-      this.checkAndTransitionHardForkByNumber(latestHeader.number, td)
+      this.checkAndTransitionHardForkByNumber(latestHeader.number, td, latestHeader.timestamp)
     }
 
     this._isInitialized = true
@@ -498,7 +498,7 @@ export class Blockchain implements BlockchainInterface {
           this._headBlockHash = blockHash
         }
         if (this._hardforkByHeadBlockNumber) {
-          this.checkAndTransitionHardForkByNumber(blockNumber, td)
+          this.checkAndTransitionHardForkByNumber(blockNumber, td, header.timestamp)
         }
 
         // delete higher number assignments and overwrite stale canonical chain
@@ -1172,8 +1172,12 @@ export class Blockchain implements BlockchainInterface {
     return this.dbManager.getHeader(hash, number)
   }
 
-  protected checkAndTransitionHardForkByNumber(number: bigint, td?: BigIntLike): void {
-    this._common.setHardforkByBlockNumber(number, td)
+  protected checkAndTransitionHardForkByNumber(
+    number: bigint,
+    td?: BigIntLike,
+    timestamp?: BigIntLike
+  ): void {
+    this._common.setHardforkByBlockNumber(number, td, timestamp)
 
     // If custom consensus algorithm is used, skip merge hardfork consensus checks
     if (!Object.values(ConsensusAlgorithm).includes(this.consensus.algorithm as ConsensusAlgorithm))
@@ -1246,6 +1250,7 @@ export class Blockchain implements BlockchainInterface {
       ...common.genesis(),
       number: 0,
       stateRoot,
+      withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
     }
     if (common.consensusType() === 'poa') {
       if (common.genesis().extraData) {
@@ -1256,7 +1261,10 @@ export class Blockchain implements BlockchainInterface {
         header.extraData = Buffer.concat([Buffer.alloc(32), Buffer.alloc(65).fill(0)])
       }
     }
-    return Block.fromBlockData({ header }, { common })
+    return Block.fromBlockData(
+      { header, withdrawals: common.isActivatedEIP(4895) ? [] : undefined },
+      { common }
+    )
   }
 
   /**

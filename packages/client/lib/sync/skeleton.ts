@@ -80,7 +80,7 @@ export class Skeleton extends MetaDBManager {
   constructor(opts: MetaDBManagerOptions) {
     super(opts)
     this.status = { progress: { subchains: [] } }
-    this.started = new Date().getTime()
+    this.started = 0
     const chainTTD = this.config.chainCommon.hardforkTTD(Hardfork.Merge)
     if (chainTTD === undefined || chainTTD === null) {
       throw Error('Cannot create skeleton as merge not set')
@@ -108,6 +108,8 @@ export class Skeleton extends MetaDBManager {
   async open() {
     await this.runWithLock<void>(async () => {
       await this.getSyncStatus()
+      this.linked = await this.checkLinked()
+      this.logSyncStatus('Read')
       this.started = new Date().getTime()
     })
   }
@@ -140,6 +142,10 @@ export class Skeleton extends MetaDBManager {
 
   isLinked() {
     return this.linked
+  }
+
+  isStarted() {
+    return this.started > 0
   }
 
   /**
@@ -749,15 +755,19 @@ export class Skeleton extends MetaDBManager {
     }
   }
 
+  private logSyncStatus(logPrefix: string): void {
+    this.config.logger.debug(
+      `${logPrefix} sync status linked=${this.linked} subchains=${this.status.progress.subchains
+        .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
+        .join(',')}`
+    )
+  }
+
   /**
    * Writes the {@link SkeletonStatus} to db
    */
   private async writeSyncStatus(): Promise<boolean> {
-    this.config.logger.debug(
-      `Writing sync status linked=${this.linked} subchains=${this.status.progress.subchains
-        .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
-        .join(',')}`
-    )
+    this.logSyncStatus('Writing')
     const encodedStatus = this.statusToRLP()
     await this.put(DBKey.SkeletonStatus, Buffer.alloc(0), encodedStatus)
     return true

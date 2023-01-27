@@ -139,6 +139,25 @@ export interface EVMOpts {
  * @ignore
  */
 export class EVM implements EVMInterface {
+  private static supportedHardforks = [
+    Hardfork.Chainstart,
+    Hardfork.Homestead,
+    Hardfork.Dao,
+    Hardfork.TangerineWhistle,
+    Hardfork.SpuriousDragon,
+    Hardfork.Byzantium,
+    Hardfork.Constantinople,
+    Hardfork.Petersburg,
+    Hardfork.Istanbul,
+    Hardfork.MuirGlacier,
+    Hardfork.Berlin,
+    Hardfork.London,
+    Hardfork.ArrowGlacier,
+    Hardfork.GrayGlacier,
+    Hardfork.MergeForkIdTransition,
+    Hardfork.Merge,
+    Hardfork.Shanghai,
+  ]
   protected _tx?: {
     gasPrice: bigint
     origin: Address
@@ -246,25 +265,7 @@ export class EVM implements EVMInterface {
       }
     }
 
-    const supportedHardforks = [
-      Hardfork.Chainstart,
-      Hardfork.Homestead,
-      Hardfork.Dao,
-      Hardfork.TangerineWhistle,
-      Hardfork.SpuriousDragon,
-      Hardfork.Byzantium,
-      Hardfork.Constantinople,
-      Hardfork.Petersburg,
-      Hardfork.Istanbul,
-      Hardfork.MuirGlacier,
-      Hardfork.Berlin,
-      Hardfork.London,
-      Hardfork.ArrowGlacier,
-      Hardfork.GrayGlacier,
-      Hardfork.MergeForkIdTransition,
-      Hardfork.Merge,
-    ]
-    if (!supportedHardforks.includes(this._common.hardfork() as Hardfork)) {
+    if (!EVM.supportedHardforks.includes(this._common.hardfork() as Hardfork)) {
       throw new Error(
         `Hardfork ${this._common.hardfork()} not set as supported in supportedHardforks`
       )
@@ -297,10 +298,8 @@ export class EVM implements EVMInterface {
       promisify(this.events.emit.bind(this.events))
     )
 
-    // Safeguard if "process" is not available (browser)
-    if (typeof process?.env.DEBUG !== 'undefined') {
-      this.DEBUG = true
-    }
+    // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
+    this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
   }
 
   protected async init(): Promise<void> {
@@ -688,6 +687,7 @@ export class EVM implements EVMInterface {
    */
   async runCall(opts: EVMRunCallOpts): Promise<EVMResult> {
     let message = opts.message
+    let callerAccount
     if (!message) {
       this._block = opts.block ?? defaultBlock()
       this._tx = {
@@ -699,7 +699,7 @@ export class EVM implements EVMInterface {
 
       const value = opts.value ?? BigInt(0)
       if (opts.skipBalance === true) {
-        const callerAccount = await this.eei.getAccount(caller)
+        callerAccount = await this.eei.getAccount(caller)
         if (callerAccount.balance < value) {
           // if skipBalance and balance less than value, set caller balance to `value` to ensure sufficient funds
           callerAccount.balance = value
@@ -721,6 +721,17 @@ export class EVM implements EVMInterface {
         selfdestruct: opts.selfdestruct ?? {},
         delegatecall: opts.delegatecall,
       })
+    }
+
+    if (message.depth === 0) {
+      if (!callerAccount) {
+        callerAccount = await this.eei.getAccount(message.caller)
+      }
+      callerAccount.nonce++
+      await this.eei.putAccount(message.caller, callerAccount)
+      if (this.DEBUG) {
+        debug(`Update fromAccount (caller) nonce (-> ${callerAccount.nonce}))`)
+      }
     }
 
     await this._emit('beforeMessage', message)
@@ -768,7 +779,10 @@ export class EVM implements EVMInterface {
     const err = result.execResult.exceptionError
     // This clause captures any error which happened during execution
     // If that is the case, then all refunds are forfeited
-    if (err) {
+    // There is one exception: if the CODESTORE_OUT_OF_GAS error is thrown
+    // (this only happens the Frontier/Chainstart fork)
+    // then the error is dismissed
+    if (err && err.error !== ERROR.CODESTORE_OUT_OF_GAS) {
       result.execResult.selfdestruct = {}
       result.execResult.gasRefund = BigInt(0)
     }
@@ -885,10 +899,7 @@ export class EVM implements EVMInterface {
       addr = generateAddress2(message.caller.buf, message.salt, message.code as Buffer)
     } else {
       const acc = await this.eei.getAccount(message.caller)
-      let newNonce = acc.nonce
-      if (message.depth > 0) {
-        newNonce--
-      }
+      const newNonce = acc.nonce - BigInt(1)
       addr = generateAddress(message.caller.buf, bigIntToBuffer(newNonce))
     }
     return new Address(addr)

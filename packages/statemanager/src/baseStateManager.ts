@@ -36,10 +36,9 @@ export abstract class BaseStateManager {
    * Needs to be called from the subclass constructor
    */
   constructor(_opts: DefaultStateManagerOpts) {
-    // Safeguard if "process" is not available (browser)
-    if (typeof process?.env.DEBUG !== 'undefined') {
-      this.DEBUG = true
-    }
+    // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
+    this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
+
     this._debug = createDebugLogger('statemanager:statemanager')
   }
 

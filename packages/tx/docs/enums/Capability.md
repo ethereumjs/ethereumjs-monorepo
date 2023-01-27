@@ -20,7 +20,7 @@ to query on tx capabilities
 
 • **EIP1559FeeMarket** = ``1559``
 
-Tx supports EIP-1559 gas fee market mechansim
+Tx supports EIP-1559 gas fee market mechanism
 See: [1559](https://eips.ethereum.org/EIPS/eip-1559) Fee Market EIP
 
 #### Defined in

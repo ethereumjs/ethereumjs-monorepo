@@ -20,10 +20,6 @@ which validates inputs and sets encoding type.
 - [checkpoints](CheckpointDB.md#checkpoints)
 - [db](CheckpointDB.md#db)
 
-### Accessors
-
-- [isCheckpoint](CheckpointDB.md#ischeckpoint)
-
 ### Methods
 
 - [batch](CheckpointDB.md#batch)
@@ -32,8 +28,10 @@ which validates inputs and sets encoding type.
 - [copy](CheckpointDB.md#copy)
 - [del](CheckpointDB.md#del)
 - [get](CheckpointDB.md#get)
+- [hasCheckpoints](CheckpointDB.md#hascheckpoints)
 - [put](CheckpointDB.md#put)
 - [revert](CheckpointDB.md#revert)
+- [setCheckpoints](CheckpointDB.md#setcheckpoints)
 
 ## Constructors
 
@@ -73,22 +71,6 @@ ___
 
 [packages/trie/src/db/checkpoint.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L9)
 
-## Accessors
-
-### isCheckpoint
-
-• `get` **isCheckpoint**(): `boolean`
-
-Is the DB during a checkpoint phase?
-
-#### Returns
-
-`boolean`
-
-#### Defined in
-
-[packages/trie/src/db/checkpoint.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L23)
-
 ## Methods
 
 ### batch
@@ -113,7 +95,7 @@ Performs a batch operation on db.
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L125)
+[packages/trie/src/db/checkpoint.ts:140](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L140)
 
 ___
 
@@ -135,7 +117,7 @@ Adds a new checkpoint to the stack
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L31)
+[packages/trie/src/db/checkpoint.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L46)
 
 ___
 
@@ -151,7 +133,7 @@ Commits the latest checkpoint
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L38)
+[packages/trie/src/db/checkpoint.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L53)
 
 ___
 
@@ -172,7 +154,7 @@ to the **same** underlying leveldb instance.
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L142)
+[packages/trie/src/db/checkpoint.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L157)
 
 ___
 
@@ -198,7 +180,7 @@ Removes a raw value in the underlying leveldb.
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L112)
+[packages/trie/src/db/checkpoint.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L127)
 
 ___
 
@@ -226,7 +208,23 @@ A Promise that resolves to `Buffer` if a value is found or `null` if no value is
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L78)
+[packages/trie/src/db/checkpoint.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L93)
+
+___
+
+### hasCheckpoints
+
+▸ **hasCheckpoints**(): `boolean`
+
+Is the DB during a checkpoint phase?
+
+#### Returns
+
+`boolean`
+
+#### Defined in
+
+[packages/trie/src/db/checkpoint.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L38)
 
 ___
 
@@ -253,7 +251,7 @@ Writes a value directly to leveldb.
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L100)
+[packages/trie/src/db/checkpoint.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L115)
 
 ___
 
@@ -269,4 +267,26 @@ Reverts the latest checkpoint
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L70)
+[packages/trie/src/db/checkpoint.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L85)
+
+___
+
+### setCheckpoints
+
+▸ **setCheckpoints**(`checkpoints`): `void`
+
+Flush the checkpoints and use the given checkpoints instead.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `checkpoints` | [`Checkpoint`](../README.md#checkpoint)[] |
+
+#### Returns
+
+`void`
+
+#### Defined in
+
+[packages/trie/src/db/checkpoint.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L24)

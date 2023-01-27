@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 1.2.3 - 2022-12-09
+
+### Bug Fixes and Other Changes
+
+- Gas cost fixes for `EIP-3860` (experimental), PR [#2397](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2397)
+- More correctly timed `nonce` updates to avoid certain consensus-critical `nonce`/`account` update constallations. PR [#2404](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2404)
+- Fixed chainstart/Frontier mainnet bug, PR [#2439](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2439)
+- EVM memory expansion performance optimizations, PR [#2405](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2405)
+- `EIP-4895` beacon chain withdrawals support (see `@ethereumjs/vm` for full documentation), PRs [#2353](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2353) and [#2401](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2401)
+
 ## 1.2.2 - 2022-10-26
 
 - Fixed `EIP-3540` bug where EOF header validation was incorrectly applied to legacy contract code in EVM calls, PR [#2381](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2381)

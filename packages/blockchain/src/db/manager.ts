@@ -1,6 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
-import { arrToBufArr, bufferToBigInt } from '@ethereumjs/util'
+import { KECCAK256_RLP, arrToBufArr, bufferToBigInt } from '@ethereumjs/util'
 
 import { Cache } from './cache'
 import { DBOp, DBTarget } from './operation'
@@ -112,6 +112,10 @@ export class DBManager {
     } catch (error: any) {
       if (error.code !== 'LEVEL_NOT_FOUND') {
         throw error
+      }
+      // If this block had empty withdrawals push an empty array in body
+      if (header.withdrawalsRoot !== undefined && header.withdrawalsRoot.equals(KECCAK256_RLP)) {
+        body.push([])
       }
     }
     const blockData = [header.raw(), ...body] as BlockBuffer

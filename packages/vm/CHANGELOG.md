@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.3.0 - 2022-12-09
+
+### Experimental EIP-4895 Beacon Chain Withdrawals Support
+
+This release comes with experimental [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals support, see PR [#2353](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2353) for the plain implementation and PR [#2401](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2401) for updated calls for the CL/EL engine API. Also note that there is a new helper module in [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) with a new dedicated `Withdrawal` class together with additional TypeScript types to ease withdrawal handling.
+
+Withdrawals support can be activated by initializing a respective `Common` object, see [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) library README for an example on how to instantiate a withdrawals block:
+
+```typescript
+import { Common, Chain } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet, eips: [4895] })
+```
+
+In the VM withdrawals blocks can now both be executed with `VM.runBlock()` and build with `VM.buildBlock()` (for a more complex example you can have a look at the EIP tests in `test/api/EIPs/eip-4895-withdrawals.spec.ts`).
+
+### Hardfork-By-Time Support
+
+The VM library is now ready to work with hardforks triggered by timestamp, which will first be applied along the `Shanghai` HF, see PR [#2437](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2437). This is achieved by integrating a new timestamp supporting `@ethereumjs/common` library version.
+
+### Bug Fixes and Other Changes
+
+- More correctly timed `nonce` updates in `VM.runTx()` to avoid certain consensus-critical `nonce`/`account` update constallations. PR [#2404](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2404)
+
+A reminder: This package does not contain the core EVM code any more. For EVM related bugfixes see the associated [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) `v1.2.3` release.
+
 ## 6.2.0 - 2022-10-21
 
 This release replaces the `v6.1.0` release from a couple of days ago which now becomes deprecated. The async event emitter library switch from the `async-eventemitter` package to the `eventemitter2` package turned out to be breaking along parts of the functionality.

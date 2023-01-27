@@ -61,6 +61,13 @@ export enum CustomChain {
   ArbitrumRinkebyTestnet = 'arbitrum-rinkeby-testnet',
 
   /**
+   * Arbitrum One - mainnet for Arbitrum roll-up
+   *
+   * - [Documentation](https://developer.offchainlabs.com/public-chains)
+   */
+  ArbitrumOne = 'arbitrum-one',
+
+  /**
    * xDai EVM sidechain with a native stable token
    *
    * - [Documentation](https://www.xdaichain.com/)

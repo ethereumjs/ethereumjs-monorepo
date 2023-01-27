@@ -235,6 +235,56 @@ export const validators = {
   },
 
   /**
+   * validator to ensure required withdawal fields are present, and checks for valid address and hex values
+   * for the other quantity based fields
+   * @param requiredFields array of required fields
+   * @returns validator function with params:
+   *   - @param params parameters of method
+   *   - @param index index of parameter
+   */
+  get withdrawal() {
+    return (requiredFields: string[] = ['index', 'validatorIndex', 'address', 'amount']) => {
+      return (params: any[], index: number) => {
+        if (typeof params[index] !== 'object') {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: argument must be an object`,
+          }
+        }
+
+        const wt = params[index]
+
+        for (const field of requiredFields) {
+          if (wt[field] === undefined) {
+            return {
+              code: INVALID_PARAMS,
+              message: `invalid argument ${index}: required field ${field}`,
+            }
+          }
+        }
+
+        const validate = (field: any, validator: Function) => {
+          if (field === undefined) return
+          const v = validator([field], 0)
+          if (v !== undefined) return v
+        }
+
+        // validate addresses
+        for (const field of [wt.address]) {
+          const v = validate(field, this.address)
+          if (v !== undefined) return v
+        }
+
+        // validate hex
+        for (const field of [wt.index, wt.validatorIndex, wt.amount]) {
+          const v = validate(field, this.hex)
+          if (v !== undefined) return v
+        }
+      }
+    }
+  },
+
+  /**
    * object validator to check if type is object with
    * required keys and expected validation of values
    * @param form object with keys and values of validators

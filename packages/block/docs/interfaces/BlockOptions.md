@@ -13,10 +13,10 @@ hardfork.
 - [calcDifficultyFromHeader](BlockOptions.md#calcdifficultyfromheader)
 - [cliqueSigner](BlockOptions.md#cliquesigner)
 - [common](BlockOptions.md#common)
-- [consensusFormatValidation](BlockOptions.md#consensusformatvalidation)
 - [freeze](BlockOptions.md#freeze)
 - [hardforkByBlockNumber](BlockOptions.md#hardforkbyblocknumber)
 - [hardforkByTTD](BlockOptions.md#hardforkbyttd)
+- [skipConsensusFormatValidation](BlockOptions.md#skipconsensusformatvalidation)
 
 ## Properties
 
@@ -33,7 +33,7 @@ Note that this option has no effect on networks other than PoW/Ethash networks
 
 #### Defined in
 
-[types.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L53)
+[types.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L62)
 
 ___
 
@@ -46,7 +46,7 @@ Will throw if provided on a non-PoA chain.
 
 #### Defined in
 
-[types.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L70)
+[types.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L79)
 
 ___
 
@@ -66,19 +66,7 @@ Current default hardfork: `merge`
 
 #### Defined in
 
-[types.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L27)
-
-___
-
-### consensusFormatValidation
-
-• `Optional` **consensusFormatValidation**: `boolean`
-
-Perform consensus validation checks on header if set. Defaults to true.
-
-#### Defined in
-
-[types.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L74)
+[types.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L36)
 
 ___
 
@@ -98,7 +86,7 @@ Default: true
 
 #### Defined in
 
-[types.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L65)
+[types.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L74)
 
 ___
 
@@ -112,7 +100,7 @@ Default: `false` (HF is set to whatever default HF is set by the Common instance
 
 #### Defined in
 
-[types.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L33)
+[types.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L42)
 
 ___
 
@@ -131,4 +119,16 @@ pointing to a Shanghai block: this will lead to set the HF as Shanghai and not t
 
 #### Defined in
 
-[types.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L44)
+[types.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L53)
+
+___
+
+### skipConsensusFormatValidation
+
+• `Optional` **skipConsensusFormatValidation**: `boolean`
+
+Skip consensus format validation checks on header if set. Defaults to false.
+
+#### Defined in
+
+[types.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L83)

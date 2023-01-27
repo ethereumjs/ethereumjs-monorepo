@@ -1,4 +1,4 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { Account, Address } from '@ethereumjs/util'
@@ -10,6 +10,7 @@ import * as td from 'testdouble'
 import { Config } from '../../lib/config'
 import { PendingBlock } from '../../lib/miner'
 import { TxPool } from '../../lib/service/txpool'
+import { mockBlockchain } from '../rpc/mockBlockchain'
 
 const A = {
   address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
@@ -52,6 +53,7 @@ const setup = () => {
         eei: { getAccount: () => stateManager.getAccount() },
         copy: () => service.execution.vm,
         setStateRoot: () => {},
+        blockchain: mockBlockchain({}),
       },
     },
   }
@@ -183,6 +185,21 @@ tape('[PendingBlock]', async (t) => {
     t.equal(receipts.length, 0, 'receipts should match number of transactions')
     t.equal(pendingBlock.pendingPayloads.length, 0, 'should reset the pending payload after build')
     t.end()
+  })
+
+  t.test('should throw when blockchain does not have getTotalDifficulty function', async (st) => {
+    const { txPool } = setup()
+    const pendingBlock = new PendingBlock({ config, txPool })
+    const vm = (txPool as any).vm
+    try {
+      await pendingBlock.start(vm, new Block())
+      st.fail('should have thrown')
+    } catch (err: any) {
+      st.equal(
+        err.message,
+        'cannot get iterator head: blockchain has no getTotalDifficulty function'
+      )
+    }
   })
 
   t.test('should reset td', (t) => {

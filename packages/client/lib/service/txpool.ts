@@ -295,7 +295,7 @@ export class TxPool {
     const vmCopy = await this.vm.copy()
     // Set state root to latest block so that account balance is correct when doing balance check
     await vmCopy.stateManager.setStateRoot(block.stateRoot)
-    const account = await this.vm.stateManager.getAccount(senderAddress)
+    const account = await vmCopy.stateManager.getAccount(senderAddress)
     if (account.nonce > tx.nonce) {
       throw new Error(
         `0x${sender} tries to send a tx with nonce ${tx.nonce}, but account has nonce ${account.nonce} (tx nonce too low)`

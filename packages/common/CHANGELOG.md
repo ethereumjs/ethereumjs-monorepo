@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.0.2 - 2022-12-09
+
+### Experimental EIP-4895 Beacon Chain Withdrawals Support
+
+This release comes with experimental [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals support, see PR [#2353](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2353) for the plain implementation and PR [#2401](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2401) for updated calls for the CL/EL engine API. Also note that there is a new helper module in [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) with a new dedicated `Withdrawal` class together with additional TypeScript types to ease withdrawal handling.
+
+Withdrawals support can be activated by initializing a respective `Common` object:
+
+```typescript
+import { Common, Chain } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet, eips: [4895] })
+```
+
+### Hardfork-By-Time Support
+
+The Common library now supports setting and retrieving hardforks which are triggered by timestamp instead of a specific block number, see PR [#2437](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2437). This mechanism will be first applied for the upcoming `Shanghai` HF. The methods `getHardforkByBlockNumber()`, `setHardforkByBlockNumber()` and `paramByBlock()` have been altered to take in an additional `timestamp` value, method naming remains for now for backwards compatibility. There are two new utility methods `hardforkTimestamp()` and `nextHardforkBlockOrTimestamp()`.
+
+### Other Changes
+
+- Support for initialization with Arbitrum One Chain ID, PR [#2426](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2426)
+- Post-Merge hardfork fix in `Common.fromGethGenesis()` static constructor, PR [#2427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2427)
+- Fixed minor custom chain bugs, PR [#2448](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2448)
+
 ## 3.0.1 - 2022-10-18
 
 ### Support for Geth genesis.json Genesis Format

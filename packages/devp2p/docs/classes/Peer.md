@@ -118,7 +118,7 @@ EventEmitter.constructor
 
 ### \_EIP8
 
-• **\_EIP8**: `Buffer`
+• **\_EIP8**: `boolean` \| `Buffer`
 
 #### Defined in
 
@@ -188,7 +188,7 @@ ___
 
 ### \_disconnectWe
 
-• **\_disconnectWe**: `any`
+• **\_disconnectWe**: ``null`` \| `boolean`
 
 #### Defined in
 
@@ -440,7 +440,7 @@ Can be used together with the `devp2p:FIRST_PEER` debugger.
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:703](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L703)
+[packages/devp2p/src/rlpx/peer.ts:692](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L692)
 
 ___
 
@@ -464,7 +464,7 @@ reference to this Peer instance or to a subprotocol instance (e.g. `ETH`)
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:665](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L665)
+[packages/devp2p/src/rlpx/peer.ts:654](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L654)
 
 ___
 
@@ -480,7 +480,7 @@ ACK message received
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:347](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L347)
+[packages/devp2p/src/rlpx/peer.ts:340](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L340)
 
 ___
 
@@ -496,7 +496,7 @@ AUTH message received
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:324](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L324)
+[packages/devp2p/src/rlpx/peer.ts:317](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L317)
 
 ___
 
@@ -512,7 +512,7 @@ Handle message body
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:526](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L526)
+[packages/devp2p/src/rlpx/peer.ts:519](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L519)
 
 ___
 
@@ -534,7 +534,7 @@ DISCONNECT message received
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:455](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L455)
+[packages/devp2p/src/rlpx/peer.ts:448](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L448)
 
 ___
 
@@ -550,7 +550,7 @@ Handle message header
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:507](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L507)
+[packages/devp2p/src/rlpx/peer.ts:500](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L500)
 
 ___
 
@@ -572,7 +572,7 @@ HELLO message received
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:376](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L376)
+[packages/devp2p/src/rlpx/peer.ts:369](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L369)
 
 ___
 
@@ -595,7 +595,7 @@ Message handling, called from a SubProtocol context
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:487](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L487)
+[packages/devp2p/src/rlpx/peer.ts:480](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L480)
 
 ___
 
@@ -611,7 +611,7 @@ PING message received
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:471](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L471)
+[packages/devp2p/src/rlpx/peer.ts:464](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L464)
 
 ___
 
@@ -627,7 +627,7 @@ PONG message received
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:478](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L478)
+[packages/devp2p/src/rlpx/peer.ts:471](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L471)
 
 ___
 
@@ -643,7 +643,7 @@ React to socket being closed
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:652](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L652)
+[packages/devp2p/src/rlpx/peer.ts:641](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L641)
 
 ___
 
@@ -665,7 +665,7 @@ Process socket data
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:622](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L622)
+[packages/devp2p/src/rlpx/peer.ts:611](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L611)
 
 ___
 
@@ -681,7 +681,7 @@ Send ACK message
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L185)
+[packages/devp2p/src/rlpx/peer.ts:186](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L186)
 
 ___
 
@@ -697,7 +697,7 @@ Send AUTH message
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L164)
+[packages/devp2p/src/rlpx/peer.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L165)
 
 ___
 
@@ -719,7 +719,7 @@ Send DISCONNECT message
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:267](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L267)
+[packages/devp2p/src/rlpx/peer.ts:268](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L268)
 
 ___
 
@@ -735,7 +735,7 @@ Send HELLO message
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:230](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L230)
+[packages/devp2p/src/rlpx/peer.ts:231](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L231)
 
 ___
 
@@ -759,7 +759,7 @@ Also called from SubProtocol context
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:210](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L210)
+[packages/devp2p/src/rlpx/peer.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L211)
 
 ___
 
@@ -775,7 +775,7 @@ Send PING message
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L283)
+[packages/devp2p/src/rlpx/peer.ts:284](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L284)
 
 ___
 
@@ -791,7 +791,7 @@ Send PONG message
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:306](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L306)
+[packages/devp2p/src/rlpx/peer.ts:303](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L303)
 
 ___
 
@@ -842,7 +842,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:693](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L693)
+[packages/devp2p/src/rlpx/peer.ts:682](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L682)
 
 ___
 
@@ -967,7 +967,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:689](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L689)
+[packages/devp2p/src/rlpx/peer.ts:678](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L678)
 
 ___
 
@@ -981,7 +981,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:677](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L677)
+[packages/devp2p/src/rlpx/peer.ts:666](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L666)
 
 ___
 
@@ -995,7 +995,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:672](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L672)
+[packages/devp2p/src/rlpx/peer.ts:661](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L661)
 
 ___
 
@@ -1040,7 +1040,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:685](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L685)
+[packages/devp2p/src/rlpx/peer.ts:674](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L674)
 
 ___
 
@@ -1060,7 +1060,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:681](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L681)
+[packages/devp2p/src/rlpx/peer.ts:670](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L670)
 
 ___
 

@@ -27,7 +27,7 @@ Description of the exception, if any occurred
 
 #### Defined in
 
-[packages/evm/src/evm.ts:963](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L963)
+[evm.ts:978](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L978)
 
 ___
 
@@ -39,7 +39,7 @@ Amount of gas the code used to run
 
 #### Defined in
 
-[packages/evm/src/evm.ts:971](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L971)
+[evm.ts:986](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L986)
 
 ___
 
@@ -51,7 +51,7 @@ Amount of gas left
 
 #### Defined in
 
-[packages/evm/src/evm.ts:967](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L967)
+[evm.ts:982](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L982)
 
 ___
 
@@ -63,7 +63,7 @@ The gas refund counter
 
 #### Defined in
 
-[packages/evm/src/evm.ts:987](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L987)
+[evm.ts:1002](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1002)
 
 ___
 
@@ -75,7 +75,7 @@ Array of logs that the contract emitted
 
 #### Defined in
 
-[packages/evm/src/evm.ts:979](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L979)
+[evm.ts:994](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L994)
 
 ___
 
@@ -87,7 +87,7 @@ Return value from the contract
 
 #### Defined in
 
-[packages/evm/src/evm.ts:975](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L975)
+[evm.ts:990](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L990)
 
 ___
 
@@ -97,7 +97,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/evm.ts:959](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L959)
+[evm.ts:974](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L974)
 
 ___
 
@@ -113,4 +113,4 @@ A map from the accounts that have self-destructed to the addresses to send their
 
 #### Defined in
 
-[packages/evm/src/evm.ts:983](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L983)
+[evm.ts:998](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L998)

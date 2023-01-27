@@ -225,7 +225,11 @@ export class Chain {
     this._headers = headers
     this._blocks = blocks
 
-    this.config.chainCommon.setHardforkByBlockNumber(headers.latest.number, headers.td)
+    this.config.chainCommon.setHardforkByBlockNumber(
+      headers.latest.number,
+      headers.td,
+      headers.latest.timestamp
+    )
 
     if (emit) {
       this.config.events.emit(Event.CHAIN_UPDATED)

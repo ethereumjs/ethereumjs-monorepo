@@ -154,6 +154,7 @@ const vm = new VM({ common })
 
 Currently supported EIPs:
 
+- [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153) - Transient Storage Opcodes (`experimental`)
 - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee Market (`london` EIP)
 - [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - Simple subroutines (`experimental`)
 - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS precompiles (`experimental`)
@@ -169,6 +170,8 @@ Currently supported EIPs:
 - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
 - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
 - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
+- [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations (`experimental`)
+- [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022
 
 ### Tracing Events
 
@@ -212,7 +215,7 @@ event handlers.
 
 ## Understanding the EVM
 
-If you want to understand your EVM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=[Logger Selection] node [Your Script to Run].js` and produce output like the following:
+If you want to understand your EVM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=ethjs,[Logger Selection] node [Your Script to Run].js` and produce output like the following:
 
 ![EthereumJS EVM Debug Logger](./debug.png?raw=true)
 
@@ -231,31 +234,31 @@ Here are some examples for useful logger combinations.
 Run one specific logger:
 
 ```shell
-DEBUG=evm ts-node test.ts
+DEBUG=ethjs,evm ts-node test.ts
 ```
 
 Run all loggers currently available:
 
 ```shell
-DEBUG=evm:*,evm:*:* ts-node test.ts
+DEBUG=ethjs,evm:*,evm:*:* ts-node test.ts
 ```
 
 Run only the gas loggers:
 
 ```shell
-DEBUG=evm:*:gas ts-node test.ts
+DEBUG=ethjs,evm:*:gas ts-node test.ts
 ```
 
 Excluding the ops logger:
 
 ```shell
-DEBUG=evm:*,evm:*:*,-evm:ops ts-node test.ts
+DEBUG=ethjs,evm:*,evm:*:*,-evm:ops ts-node test.ts
 ```
 
 Run some specific loggers including a logger specifically logging the `SSTORE` executions from the EVM (this is from the screenshot above):
 
 ```shell
-DEBUG=evm,evm:ops:sstore,evm:*:gas ts-node test.ts
+DEBUG=ethjs,evm,evm:ops:sstore,evm:*:gas ts-node test.ts
 ```
 
 ### Internal Structure

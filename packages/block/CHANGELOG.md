@@ -6,6 +6,53 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.1.0 - 2022-12-09
+
+### Experimental EIP-4895 Beacon Chain Withdrawals Support
+
+This release comes with experimental [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals support, see PR [#2353](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2353) for the plain implementation and PR [#2401](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2401) for updated calls for the CL/EL engine API. Also note that there is a new helper module in [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) with a new dedicated `Withdrawal` class together with additional TypeScript types to ease withdrawal handling.
+
+Withdrawals support can be activated by initializing a respective `Common` object, here is an example for a `Block` object initialization:
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import { Common, Chain } from '@ethereumjs/common'
+import { Address } from '@ethereumjs/util'
+import type { WithdrawalData } from '@ethereumjs/util'
+
+const common = new Common({ chain: Chain.Mainnet, eips: [4895] })
+
+const withdrawal = <WithdrawalData>{
+  index: BigInt(0),
+  validatorIndex: BigInt(0),
+  address: new Address(Buffer.from('20'.repeat(20), 'hex')),
+  amount: BigInt(1000),
+}
+
+const block = Block.fromBlockData(
+  {
+    header: {
+      withdrawalsRoot: Buffer.from(
+        '69f28913c562b0d38f8dc81e72eb0d99052444d301bf8158dc1f3f94a4526357',
+        'hex'
+      ),
+    },
+    withdrawals: [withdrawal],
+  },
+  {
+    common,
+  }
+)
+```
+
+There is a new data option `withdrawals` to pass in system-level withdrawal operations, the block header also needs to contain a matching `withdrawalsRoot`, which is mandatory to be passed in when `EIP-4895` is activated.
+
+Validation of the withdrawals trie can be manually triggered with the new async `Block.validateWithdrawalsTrie()` method.
+
+### Hardfork-By-Time Support
+
+The Block library is now ready to work with hardforks triggered by timestamp, which will first be applied along the `Shanghai` HF, see PR [#2437](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2437). This is achieved by integrating a new timestamp supporting `@ethereumjs/common` library version.
+
 ## 4.0.1 - 2022-10-18
 
 ### Support for Geth genesis.json Genesis Format
