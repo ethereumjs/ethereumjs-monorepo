@@ -28,7 +28,7 @@ tape(`${method}: call with too many hashes`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape.only(`${method}: call with valid parameters`, async (t) => {
+tape(`${method}: call with valid parameters`, async (t) => {
   // Disable stateroot validation in TxPool since valid state root isn't available
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   const originalStateManagerCopy = DefaultStateManager.prototype.copy
