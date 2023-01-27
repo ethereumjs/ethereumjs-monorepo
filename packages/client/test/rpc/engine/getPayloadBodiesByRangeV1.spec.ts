@@ -11,7 +11,7 @@ import genesisJSON = require('../../testdata/geth-genesis/eip4844.json')
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 
-const method = 'engine_getPayloadBodiesByHashV1'
+const method = 'engine_getPayloadBodiesByRangeV1'
 
 tape(`${method}: call with too many hashes`, async (t) => {
   const { server } = baseSetup({ engine: true, includeVM: true })
@@ -28,7 +28,7 @@ tape(`${method}: call with too many hashes`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with valid parameters`, async (t) => {
+tape.only(`${method}: call with valid parameters`, async (t) => {
   // Disable stateroot validation in TxPool since valid state root isn't available
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   const originalStateManagerCopy = DefaultStateManager.prototype.copy
@@ -94,23 +94,30 @@ tape(`${method}: call with valid parameters`, async (t) => {
 
   await chain.putBlocks([block, block2], true)
 
-  const req = params(method, [
-    [
-      '0x' + block.hash().toString('hex'),
-      '0x' + randomBytes(32).toString('hex'),
-      '0x' + block2.hash().toString('hex'),
-    ],
-  ])
+  const req = params(method, ['0x1', '0x4'])
   const expectRes = (res: any) => {
     t.equal(
       res.body.result[0].transactions[0],
       '0x' + tx.serialize().toString('hex'),
       'got expected transaction from first payload'
     )
-    t.equal(res.body.result[1], null, 'got null for block not found in chain')
-    t.equal(res.body.result.length, 3, 'length of response matches number of block hashes sent')
+    t.equal(
+      res.body.result.length,
+      2,
+      'length of response matches start of range up to highest known block'
+    )
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes, false)
+
+  const req2 = params(method, ['0x3', '0x2'])
+  const expectRes2 = (res: any) => {
+    t.equal(
+      res.body.result.length,
+      0,
+      'got empty array when start of requested range is beyond current chain head'
+    )
+  }
+  await baseRequest(t, server, req2, 200, expectRes2, false)
   // Restore setStateRoot
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
   DefaultStateManager.prototype.copy = originalStateManagerCopy

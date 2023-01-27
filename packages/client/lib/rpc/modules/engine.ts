@@ -461,9 +461,7 @@ export class Engine {
     )
 
     this.getPayloadBodiesByRangeV1 = cmMiddleware(
-      middleware(this.getPayloadBodiesByRangeV1.bind(this), 2, [
-        validators.array(validators.bytes8),
-      ]),
+      middleware(this.getPayloadBodiesByRangeV1.bind(this), 2, [validators.bytes8]),
       () => this.connectionManager.updateStatus()
     )
   }
@@ -1035,7 +1033,7 @@ export class Engine {
         const block = await this.chain.getBlock(hash)
         const transactions: string[] = []
         for (const txn of block.transactions) {
-          transactions.push('0x' + txn.serialize())
+          transactions.push('0x' + txn.serialize().toString('hex'))
         }
         let withdrawals
         if (block._common.gteHardfork(Hardfork.Shanghai)) {
@@ -1072,10 +1070,9 @@ export class Engine {
         message: 'More than 32 execution payload bodies requested',
       }
     }
-
     const currentChainHeight = (await this.chain.getCanonicalHeadHeader()).number
     if (start + count > currentChainHeight) {
-      count = currentChainHeight - count
+      count = count - currentChainHeight
     }
     const blocks = await this.chain.getBlocks(start, Number(count))
     const payloads: (ExecutionPayloadBodyV1 | null)[] = []
@@ -1083,7 +1080,7 @@ export class Engine {
       try {
         const transactions: string[] = []
         for (const txn of block.transactions) {
-          transactions.push('0x' + txn.serialize())
+          transactions.push('0x' + txn.serialize().toString('hex'))
         }
         let withdrawals
         if (block._common.gteHardfork(Hardfork.Shanghai)) {
