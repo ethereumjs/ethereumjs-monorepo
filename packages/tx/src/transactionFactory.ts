@@ -1,5 +1,5 @@
 import { bufferToBigInt, toBuffer } from '@ethereumjs/util'
-import { ethers } from 'ethers'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 import { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 import { AccessListEIP2930Transaction } from './eip2930Transaction'
@@ -101,12 +101,11 @@ export class TransactionFactory {
    * @returns the transaction specified by `txHash`
    */
   public static async fromEthersProvider(
-    provider: string | ethers.providers.JsonRpcProvider,
+    provider: string | JsonRpcProvider,
     txHash: string,
     txOptions?: TxOptions
   ) {
-    const prov =
-      typeof provider === 'string' ? new ethers.providers.JsonRpcProvider(provider) : provider
+    const prov = typeof provider === 'string' ? new JsonRpcProvider(provider) : provider
     const txData = await prov.send('eth_getTransactionByHash', [txHash])
     const normedTx = normalizeTxParams(txData)
     return TransactionFactory.fromTxData(normedTx, txOptions)
