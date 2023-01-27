@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1674763143917,
+  "lastUpdate": 1674835808478,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f917530f762d353480ba582323ced6970cc6687e",
-          "message": "common: infer latest hardfork from geth genesis file (#2470)\n\n* common: improve geth genesis typings and infer latest hardfork if possible\r\n\r\n* common: adjust current hardfork setting placement\r\n\r\n* common: add test cases to check current hardfork setting",
-          "timestamp": "2023-01-05T09:09:06+01:00",
-          "tree_id": "2a92465f76de0c4e9a7022c16f0c0e0747048e02",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f917530f762d353480ba582323ced6970cc6687e"
-        },
-        "date": 1672906311802,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19256,
-            "range": "±3.42%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18273,
-            "range": "±5.41%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 19456,
-            "range": "±1.36%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18923,
-            "range": "±1.51%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 17164,
-            "range": "±7.94%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.07%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "88dce6ea1fbaa0c3c51821efbcc9e0137e071618",
+          "message": "vm: Add and use execHardfork while running a tx (#2505)\n\n* vm: Add and use execHardfork while running a tx\r\n\r\n* add spec\r\n\r\n* fix and add specs\r\n\r\n* improve comment\r\n\r\n* restructure exec hardfork\r\n\r\n* cleanup\r\n\r\n* empty commit to rerun CI\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-01-27T11:07:06-05:00",
+          "tree_id": "520c0a8408cf33b606d0a65bbcf33c75009c77ba",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/88dce6ea1fbaa0c3c51821efbcc9e0137e071618"
+        },
+        "date": 1674835807770,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18203,
+            "range": "±2.49%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 17380,
+            "range": "±6.49%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18018,
+            "range": "±1.82%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 16848,
+            "range": "±5.61%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 15699,
+            "range": "±12.27%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
           }
         ]
       }
