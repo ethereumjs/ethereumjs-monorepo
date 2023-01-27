@@ -36,6 +36,13 @@ type ForkchoiceUpdate = {
   error?: string
 }
 
+type PayloadToPayloadStats = {
+  blockCount: number
+  minBlockNumber?: BigInt
+  maxBlockNumber?: BigInt
+  txs: { [key: number]: number }
+}
+
 export class CLConnectionManager {
   private config: Config
   private numberFormatter: Intl.NumberFormat
@@ -67,6 +74,13 @@ export class CLConnectionManager {
   private lastRequestTimestamp = 0
 
   private _lastPayload?: NewPayload
+  private _payloadToPayloadStats: PayloadToPayloadStats = {
+    blockCount: 0,
+    minBlockNumber: undefined,
+    maxBlockNumber: undefined,
+    txs: {},
+  }
+
   private _lastForkchoiceUpdate?: ForkchoiceUpdate
 
   private _initialPayload?: NewPayload
@@ -197,6 +211,33 @@ export class CLConnectionManager {
     this._lastPayload = payload
   }
 
+  updatePayloadStats(block: Block) {
+    this._payloadToPayloadStats['blockCount'] += 1
+    const num = block.header.number
+    if (
+      this._payloadToPayloadStats['minBlockNumber'] === undefined ||
+      this._payloadToPayloadStats['minBlockNumber'] > num
+    ) {
+      this._payloadToPayloadStats['minBlockNumber'] = num
+    }
+    if (
+      this._payloadToPayloadStats['maxBlockNumber'] === undefined ||
+      this._payloadToPayloadStats['maxBlockNumber'] < num
+    ) {
+      this._payloadToPayloadStats['maxBlockNumber'] = num
+    }
+    for (const tx of block.transactions) {
+      this._payloadToPayloadStats['txs'][tx.type] += 1
+    }
+  }
+
+  clearPayloadStats() {
+    this._payloadToPayloadStats['blockCount'] = 0
+    this._payloadToPayloadStats['minBlockNumber'] = undefined
+    this._payloadToPayloadStats['maxBlockNumber'] = undefined
+    this._payloadToPayloadStats['txs'] = {}
+  }
+
   /**
    * Updates the Consensus Client connection status on new RPC requests
    */
@@ -268,6 +309,21 @@ export class CLConnectionManager {
       } else {
         const payloadMsg = this._getPayloadLogMsg(this._lastPayload)
         this.config.logger.info(`Last consensus payload received  ${payloadMsg}`)
+        const count = this._payloadToPayloadStats['blockCount']
+        const min = this._payloadToPayloadStats['minBlockNumber']
+        const max = this._payloadToPayloadStats['maxBlockNumber']
+
+        let txsMsg = ''
+        for (const [type, count] of Object.entries(this._payloadToPayloadStats['txs'])) {
+          txsMsg += `${count}(${type})`
+        }
+
+        this.config.logger.info(
+          `Payload stats blocks count=${count} minBlockNum=${min} maxBlockNum=${max} txsPerType=${
+            txsMsg !== '' ? txsMsg : '0'
+          }`
+        )
+        this.clearPayloadStats()
       }
     }
   }

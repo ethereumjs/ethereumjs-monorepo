@@ -477,7 +477,6 @@ export class Eth {
         skipNonce: true,
         skipBalance: true,
         skipBlockGasLimitValidation: true,
-        skipHardForkValidation: true,
         block,
       })
       return `0x${totalGasSpent.toString(16)}`

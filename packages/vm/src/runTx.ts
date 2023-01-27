@@ -27,6 +27,23 @@ const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')
 
 /**
+ * Returns the hardfork excluding the merge hf which has
+ * no effect on the vm execution capabilities.
+ *
+ * This is particularly useful in executing/evaluating the transaction
+ * when chain td is not available at many places to correctly set the
+ * hardfork in for e.g. vm or txs or when the chain is not fully synced yet.
+ *
+ * @returns Hardfork name
+ */
+function execHardfork(
+  hardfork: Hardfork | string,
+  preMergeHf: Hardfork | string
+): string | Hardfork {
+  return hardfork !== Hardfork.Merge ? hardfork : preMergeHf
+}
+
+/**
  * @ignore
  */
 export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
@@ -34,14 +51,26 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   opts.block = opts.block ?? Block.fromBlockData({}, { common: opts.tx.common })
 
   if (opts.skipHardForkValidation !== true) {
-    if (opts.tx.common.hardfork() !== this._common.hardfork()) {
+    // Find and set preMerge hf for easy access later
+    const hfs = this._common.hardforks()
+    const preMergeIndex = hfs.findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined) - 1
+    // If no pre merge hf found, set it to first hf even if its merge
+    const preMergeHf = preMergeIndex >= 0 ? hfs[preMergeIndex].name : hfs[0].name
+
+    if (
+      execHardfork(opts.tx.common.hardfork(), preMergeHf) !==
+      execHardfork(this._common.hardfork(), preMergeHf)
+    ) {
       // If hardforks aren't same then we can posibily try upgrading tx hardfork but it may
       // be fraught with challenges. Better to just reject the tx and the tx sender can
       // update the tx as per new hardfork
       const msg = _errorMsg('tx has a different hardfork than the vm', this, opts.block, opts.tx)
       throw new Error(msg)
     }
-    if (opts.block._common.hardfork() !== this._common.hardfork()) {
+    if (
+      execHardfork(opts.block._common.hardfork(), preMergeHf) !==
+      execHardfork(this._common.hardfork(), preMergeHf)
+    ) {
       // Block and VM's hardfork should match as well
       const msg = _errorMsg('block has a different hardfork than the vm', this, opts.block, opts.tx)
       throw new Error(msg)
@@ -236,7 +265,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Check from account's balance and nonce
   let fromAccount = await state.getAccount(caller)
   const { nonce, balance } = fromAccount
-
+  debug(`Sender's pre-tx balance is ${balance}`)
   // EIP-3607: Reject transactions from senders with deployed code
   if (this._common.isActivatedEIP(3607) === true && !fromAccount.codeHash.equals(KECCAK256_NULL)) {
     const msg = _errorMsg('invalid sender address, address is not EOA (EIP-3607)', this, block, tx)
@@ -287,8 +316,26 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     maxCost += totalDataGas * castTx.maxFeePerDataGas
 
     // 4844 minimum datagas price check
-    const headBlock = await this.blockchain.getCanonicalHeadBlock!()
-    dataGasPrice = getDataGasPrice(headBlock.header)
+    if (opts.block === undefined) {
+      const msg = _errorMsg(
+        `Block option must be supplied to compute data gas price`,
+        this,
+        block,
+        tx
+      )
+      throw new Error(msg)
+    }
+    const parentBlock = await this.blockchain.getBlock(opts.block?.header.parentHash)
+    if (parentBlock === null) {
+      const msg = _errorMsg(
+        `Parent block not found in blockchain so cannot compute data gas price`,
+        this,
+        block,
+        tx
+      )
+      throw new Error(msg)
+    }
+    dataGasPrice = getDataGasPrice(parentBlock.header)
     if (castTx.maxFeePerDataGas < dataGasPrice) {
       const msg = _errorMsg(
         `Transaction's maxFeePerDataGas ${castTx.maxFeePerDataGas}) is less than block dataGasPrice (${dataGasPrice}).`,
@@ -360,7 +407,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const dataGasCost = totalDataGas * dataGasPrice
   fromAccount.balance -= txCost
   fromAccount.balance -= dataGasCost
-
+  debug(`txCost ${txCost} -- ${dataGasCost}`)
   if (opts.skipBalance === true && fromAccount.balance < BigInt(0)) {
     fromAccount.balance = BigInt(0)
   }

@@ -132,6 +132,30 @@ tape('runTx() -> successful API parameter usage', async (t) => {
     st.end()
   })
 
+  t.test('should ignore merge in hardfork mismatch', async (st) => {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+    const vm = await VM.create({
+      common,
+      blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),
+    })
+    const tx = getTransaction(vm._common, 0, true)
+    const caller = tx.getSenderAddress()
+    const acc = createAccount()
+    await vm.eei.putAccount(caller, acc)
+    const block = Block.fromBlockData({}, { common: vm._common.copy() })
+
+    tx.common.setHardfork(Hardfork.GrayGlacier)
+    block._common.setHardfork(Hardfork.GrayGlacier)
+    try {
+      await vm.runTx({ tx, block })
+      st.pass('successfully ignored merge hf while hf matching in runTx')
+    } catch (e) {
+      st.fail('should have ignored merge hf while matching in runTx')
+    }
+
+    st.end()
+  })
+
   t.test('should use passed in blockGasUsed to generate tx receipt', async (t) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const vm = await VM.create({ common })
@@ -863,16 +887,18 @@ tape('EIP 4844 transaction tests', async (t) => {
     chain: 'customChain',
     hardfork: Hardfork.ShardingForkDev,
   })
-  const oldHeadBlockFunction = Blockchain.prototype.getCanonicalHeadBlock
+  common.setHardfork(Hardfork.ShardingForkDev)
+  const oldGetBlockFunction = Blockchain.prototype.getBlock
 
-  // Stub getCanonicalHeadBlock to produce a valid parent header under EIP 4844
-  Blockchain.prototype.getCanonicalHeadBlock = async () => {
+  // Stub getBlock to produce a valid parent header under EIP 4844
+  Blockchain.prototype.getBlock = async () => {
     return Block.fromBlockData(
       {
         header: BlockHeader.fromHeaderData(
           {
-            excessDataGas: 1n,
+            excessDataGas: 0n,
             number: 1,
+            parentHash: blockchain.genesisBlock.hash(),
           },
           {
             common,
@@ -880,7 +906,10 @@ tape('EIP 4844 transaction tests', async (t) => {
           }
         ),
       },
-      { common, skipConsensusFormatValidation: true }
+      {
+        common,
+        skipConsensusFormatValidation: true,
+      }
     )
   }
   const blockchain = await Blockchain.create({ validateBlocks: false, validateConsensus: false })
@@ -894,6 +923,7 @@ tape('EIP 4844 transaction tests', async (t) => {
         {
           excessDataGas: 1n,
           number: 2,
+          parentHash: (await blockchain.getBlock(1n)).hash(), // Faking parent hash with getBlock stub
         },
         {
           common,
@@ -905,6 +935,6 @@ tape('EIP 4844 transaction tests', async (t) => {
   )
   const res = await vm.runTx({ tx, block, skipBalance: true })
   t.ok(res.execResult.exceptionError === undefined, 'simple blob tx run succeeds')
-  Blockchain.prototype.getCanonicalHeadBlock = oldHeadBlockFunction
+  Blockchain.prototype.getBlock = oldGetBlockFunction
   t.end()
 })
