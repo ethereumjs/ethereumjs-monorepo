@@ -56,7 +56,7 @@
     "@ethereumjs/rlp": "^4.0.0",
     "@ethereumjs/util": "^8.0.3",
     "ethereum-cryptography": "^1.1.2",
-    "ethers": "^5.7.1"
+    "@ethersproject/providers": "^5.7.2"
   },
   "peerDependencies": {
     "c-kzg": "^1.0.8"
