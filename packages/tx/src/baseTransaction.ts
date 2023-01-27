@@ -509,10 +509,6 @@ export abstract class BaseTransaction<TransactionObject> {
     let hf = ''
     try {
       hf = this.common.hardfork()
-      if (hf === Hardfork.Merge) {
-        // Add info of execHardFork if relevant
-        hf = `${hf}(${this.common.execHardfork()})`
-      }
     } catch (e: any) {
       hf = 'error'
     }

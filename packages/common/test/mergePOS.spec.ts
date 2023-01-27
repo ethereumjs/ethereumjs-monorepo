@@ -265,8 +265,6 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
     st.equal(c.setHardforkByBlockNumber(0), Hardfork.London, msg)
     st.equal(c.setHardforkByBlockNumber(1450409), Hardfork.London, msg)
     st.equal(c.setHardforkByBlockNumber(1450409, BigInt('17000000000000000')), Hardfork.Merge, msg)
-    // However the execHardfork should still be common
-    st.equal(c.execHardfork(), Hardfork.London, 'execHardfork should be pre merge')
     st.equal(c.setHardforkByBlockNumber(1735371), Hardfork.MergeForkIdTransition, msg)
     st.equal(
       c.setHardforkByBlockNumber(1735371, BigInt('17000000000000000')),

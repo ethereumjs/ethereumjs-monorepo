@@ -44,7 +44,6 @@ export class Common extends EventEmitter {
 
   private _chainParams: ChainConfig
   private _hardfork: string | Hardfork
-  private _preMergeHf: string | Hardfork
   private _eips: number[] = []
   private _customChains: ChainConfig[]
 
@@ -231,17 +230,10 @@ export class Common extends EventEmitter {
     this._chainParams = this.setChain(opts.chain)
     this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Merge
     // Assign hardfork changes in the sequence of the applied hardforks
-    const hfs = this.hardforks()
-    this.HARDFORK_CHANGES = hfs.map((hf) => [
+    this.HARDFORK_CHANGES = this.hardforks().map((hf) => [
       hf.name as HardforkSpecKeys,
       HARDFORK_SPECS[hf.name as HardforkSpecKeys],
     ])
-
-    // Find and set preMerge hf for easy access later
-    const preMergeIndex = hfs.findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined) - 1
-    // If no pre merge hf found, set it to first hf even if its merge
-    this._preMergeHf = preMergeIndex >= 0 ? hfs[preMergeIndex].name : hfs[0].name
-
     this._hardfork = this.DEFAULT_HARDFORK
     if (opts.hardfork !== undefined) {
       this.setHardfork(opts.hardfork)
@@ -959,20 +951,6 @@ export class Common extends EventEmitter {
    */
   hardfork(): string | Hardfork {
     return this._hardfork
-  }
-
-  /**
-   * Returns the hardfork excluding the merge hf which has
-   * no effect on the vm execution capabilities.
-   *
-   * This is particularly useful in executing/evaluating the transaction
-   * when chain td is not available at many places to correctly set the
-   * hardfork in for e.g. vm or txs or when the chain is not fully synced yet.
-   *
-   * @returns Hardfork name
-   */
-  execHardfork(): string | Hardfork {
-    return this._hardfork !== Hardfork.Merge ? this._hardfork : this._preMergeHf
   }
 
   /**

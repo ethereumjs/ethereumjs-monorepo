@@ -569,10 +569,6 @@ export class Block {
     let hf = ''
     try {
       hf = this._common.hardfork()
-      if (hf === Hardfork.Merge) {
-        // Add info of execHardFork if relevant
-        hf = `${hf}(${this._common.execHardfork()})`
-      }
     } catch (e: any) {
       hf = 'error'
     }
