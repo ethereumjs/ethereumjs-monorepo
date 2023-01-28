@@ -1,12 +1,11 @@
+import { RLP } from '@ethereumjs/rlp'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Config } from '../../../lib/config'
-import { wait } from '../../integration/util'
-
-import { RLP } from '@ethereumjs/rlp'
 import { Chain } from '../../../lib/blockchain'
+import { Config } from '../../../lib/config'
 import { SnapProtocol } from '../../../lib/net/protocol'
+import { wait } from '../../integration/util'
 
 tape('[AccountFetcher]', async (t) => {
   class PeerPool {
@@ -182,8 +181,8 @@ tape('[AccountFetcher]', async (t) => {
     const mockedGetAccountRange = td.func<any>()
     td.when(mockedGetAccountRange()).thenReturn({
       reqId: BigInt(1),
-      accounts: accounts,
-      proof: proof,
+      accounts,
+      proof,
     })
     const peer = {
       snap: { getAccountRange: mockedGetAccountRange },
