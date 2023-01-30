@@ -3,7 +3,7 @@ import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
   getBlobs,
-} from '@ethereumjs/tx/test/utils/blobHelpers' // TODO: Decide where all these helpers should live
+} from '@ethereumjs/tx/dist/utils/blobHelpers'
 import { Address } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
