@@ -418,7 +418,6 @@ export const validators = {
   get array() {
     return (validator: Function) => {
       return (params: any[], index: number) => {
-        console.log(params, index)
         if (!Array.isArray(params[index])) {
           return {
             code: INVALID_PARAMS,
