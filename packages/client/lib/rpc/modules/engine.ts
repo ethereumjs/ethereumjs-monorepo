@@ -5,7 +5,7 @@ import { Withdrawal, bigIntToHex, bufferToHex, toBuffer, zeros } from '@ethereum
 
 import { PendingBlock } from '../../miner'
 import { short } from '../../util'
-import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
+import { INTERNAL_ERROR, INVALID_PARAMS, TOO_LARGE_REQUEST } from '../error-code'
 import { CLConnectionManager, middleware as cmMiddleware } from '../util/CLConnectionManager'
 import { middleware, validators } from '../validation'
 
@@ -102,6 +102,12 @@ type BlobsBundleV1 = {
   kzgs: Bytes48[]
   blobs: Blob[]
 }
+
+type ExecutionPayloadBodyV1 = {
+  transactions: string[]
+  withdrawals: WithdrawalV1[] | null
+}
+
 const EngineError = {
   UnknownPayload: {
     code: -32001,
@@ -314,6 +320,16 @@ const assembleBlock = async (
   return { block }
 }
 
+const getPayloadBody = (block: Block): ExecutionPayloadBodyV1 => {
+  const transactions = block.transactions.map((tx) => bufferToHex(tx.serialize()))
+  const withdrawals = block.withdrawals?.map((wt) => wt.toJSON()) ?? null
+
+  return {
+    transactions,
+    withdrawals,
+  }
+}
+
 /**
  * engine_* RPC module
  * @memberof module:rpc/modules
@@ -443,6 +459,25 @@ export class Engine {
 
     this.getBlobsBundleV1 = cmMiddleware(
       middleware(this.getBlobsBundleV1.bind(this), 1, [[validators.bytes8]]),
+      () => this.connectionManager.updateStatus()
+    )
+
+    this.getCapabilities = cmMiddleware(middleware(this.getCapabilities.bind(this), 0, []), () =>
+      this.connectionManager.updateStatus()
+    )
+
+    this.getPayloadBodiesByHashV1 = cmMiddleware(
+      middleware(this.getPayloadBodiesByHashV1.bind(this), 1, [
+        [validators.array(validators.bytes32)],
+      ]),
+      () => this.connectionManager.updateStatus()
+    )
+
+    this.getPayloadBodiesByRangeV1 = cmMiddleware(
+      middleware(this.getPayloadBodiesByRangeV1.bind(this), 2, [
+        [validators.bytes8],
+        [validators.bytes8],
+      ]),
       () => this.connectionManager.updateStatus()
     )
   }
@@ -988,5 +1023,84 @@ export class Engine {
       kzgs: bundle.kzgCommitments.map((commitment) => '0x' + commitment.toString('hex')),
       blobs: bundle.blobs.map((blob) => '0x' + blob.toString('hex')),
     }
+  }
+
+  /**
+   * Returns a list of engine API endpoints supported by the client
+   */
+  private getCapabilities(_params: []): string[] {
+    const caps = Object.getOwnPropertyNames(Engine.prototype)
+    const engineMethods = caps.filter((el) => el !== 'constructor' && el !== 'getCapabilities')
+    return engineMethods.map((el) => 'engine_' + el)
+  }
+
+  /**
+   *
+   * @param params a list of block hashes as hex prefixed strings
+   * @returns an array of ExecutionPayloadBodyV1 objects or null if a given execution payload isn't stored locally
+   */
+  private async getPayloadBodiesByHashV1(
+    params: [[Bytes32]]
+  ): Promise<(ExecutionPayloadBodyV1 | null)[]> {
+    if (params[0].length > 32) {
+      throw {
+        code: TOO_LARGE_REQUEST,
+        message: 'More than 32 execution payload bodies requested',
+      }
+    }
+    const hashes = params[0].map((hash) => toBuffer(hash))
+    const blocks: (ExecutionPayloadBodyV1 | null)[] = []
+    for (const hash of hashes) {
+      try {
+        const block = await this.chain.getBlock(hash)
+        const payloadBody = getPayloadBody(block)
+        blocks.push(payloadBody)
+      } catch {
+        blocks.push(null)
+      }
+    }
+    return blocks
+  }
+
+  /**
+   *
+   * @param params an array of 2 parameters
+   *    1.  start: Bytes8 - the first block in the range
+   *    2.  count: Bytes8 - the number of blocks requested
+   * @returns an array of ExecutionPayloadBodyV1 objects or null if a given execution payload isn't stored locally
+   */
+  private async getPayloadBodiesByRangeV1(
+    params: [Bytes8, Bytes8]
+  ): Promise<(ExecutionPayloadBodyV1 | null)[]> {
+    const start = BigInt(params[0])
+    let count = BigInt(params[1])
+    if (count > BigInt(32)) {
+      throw {
+        code: TOO_LARGE_REQUEST,
+        message: 'More than 32 execution payload bodies requested',
+      }
+    }
+
+    if (count < BigInt(1) || start < BigInt(1)) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'Start and Count parameters cannot be less than 1',
+      }
+    }
+    const currentChainHeight = this.chain.headers.height
+    if (start + count > currentChainHeight) {
+      count = count - currentChainHeight
+    }
+    const blocks = await this.chain.getBlocks(start, Number(count))
+    const payloads: (ExecutionPayloadBodyV1 | null)[] = []
+    for (const block of blocks) {
+      try {
+        const payloadBody = getPayloadBody(block)
+        payloads.push(payloadBody)
+      } catch {
+        payloads.push(null)
+      }
+    }
+    return payloads
   }
 }
