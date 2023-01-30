@@ -321,19 +321,9 @@ const assembleBlock = async (
 }
 
 const getPayloadBody = (block: Block): ExecutionPayloadBodyV1 => {
-  const transactions: string[] = []
-  for (const txn of block.transactions) {
-    transactions.push('0x' + txn.serialize().toString('hex'))
-  }
-  let withdrawals
-  if (block._common.gteHardfork(Hardfork.Shanghai)) {
-    withdrawals = []
-    for (const withdrawal of block.withdrawals!) {
-      withdrawals.push(withdrawal.toJSON() as WithdrawalV1)
-    }
-  } else {
-    withdrawals = null
-  }
+  const transactions = block.transactions.map((tx) => bufferToHex(tx.serialize()))
+  const withdrawals = block.withdrawals?.map((wt) => wt.toJSON()) ?? null
+
   return {
     transactions,
     withdrawals,
