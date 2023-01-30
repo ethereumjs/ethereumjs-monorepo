@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1675099813670,
+  "lastUpdate": 1675102846858,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "aa803093e5770e865d76a322d6f9a835d6adf5a9",
-          "message": "Fix beaconsync test race condition (#2481)\n\n* Switch tests to check logger messages\r\n\r\n* Remove second race condition\r\n\r\n* Remove unused import",
-          "timestamp": "2023-01-11T11:55:11+05:30",
-          "tree_id": "c51dd7b829ded3ba08b53f5e6e11ea2d40f4c9e6",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/aa803093e5770e865d76a322d6f9a835d6adf5a9"
-        },
-        "date": 1673418561895,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 9217,
-            "range": "±3.54%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 9602,
-            "range": "±2.29%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 9292,
-            "range": "±5.87%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 9576,
-            "range": "±2.15%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 9432,
-            "range": "±2.69%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 19042,
             "range": "±1.44%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "mpetrunic@users.noreply.github.com",
+            "name": "Marin Petrunić",
+            "username": "mpetrunic"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ff921f8e8bdd375780238eed7e73d301a35bbe01",
+          "message": "feat: remove async library (#2514)\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-01-30T13:18:00-05:00",
+          "tree_id": "f03449881dbf822ae819b9f2794238cf6f115b34",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ff921f8e8bdd375780238eed7e73d301a35bbe01"
+        },
+        "date": 1675102845478,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19381,
+            "range": "±2.08%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18817,
+            "range": "±4.87%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18924,
+            "range": "±1.51%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 17587,
+            "range": "±8.21%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19414,
+            "range": "±1.29%",
             "unit": "ops/sec",
             "extra": "86 samples"
           }
