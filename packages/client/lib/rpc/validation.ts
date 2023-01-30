@@ -17,13 +17,12 @@ export function middleware(method: any, requiredParamsCount: number, validators:
         }
         return reject(error)
       }
-
-      for (let i = 0; i < params.length; i++) {
-        if (params[i] !== undefined) {
-          for (let j = 0; j < validators.length; j++) {
+      for (let i = 0; i < validators.length; i++) {
+        if (validators[i] !== undefined) {
+          for (let j = 0; j < validators[i].length; j++) {
             // Only apply validators if params[i] is a required parameter or exists
-            if (i < requiredParamsCount) {
-              const error = validators[j](params, i)
+            if (i < requiredParamsCount || params[i] !== undefined) {
+              const error = validators[i][j](params, i)
               if (error !== undefined) {
                 return reject(error)
               }
@@ -31,6 +30,7 @@ export function middleware(method: any, requiredParamsCount: number, validators:
           }
         }
       }
+
       resolve(method(params))
     })
   }
@@ -418,6 +418,7 @@ export const validators = {
   get array() {
     return (validator: Function) => {
       return (params: any[], index: number) => {
+        console.log(params, index)
         if (!Array.isArray(params[index])) {
           return {
             code: INVALID_PARAMS,

@@ -458,13 +458,16 @@ export class Engine {
 
     this.getPayloadBodiesByHashV1 = cmMiddleware(
       middleware(this.getPayloadBodiesByHashV1.bind(this), 1, [
-        validators.array(validators.bytes32),
+        [validators.array(validators.bytes32)],
       ]),
       () => this.connectionManager.updateStatus()
     )
 
     this.getPayloadBodiesByRangeV1 = cmMiddleware(
-      middleware(this.getPayloadBodiesByRangeV1.bind(this), 2, [validators.bytes8]),
+      middleware(this.getPayloadBodiesByRangeV1.bind(this), 2, [
+        [validators.bytes8],
+        [validators.bytes8],
+      ]),
       () => this.connectionManager.updateStatus()
     )
   }

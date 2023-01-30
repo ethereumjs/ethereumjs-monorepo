@@ -126,7 +126,7 @@ tape(`${method}: call with valid parameters`, async (t) => {
       'got empty array when start of requested range is beyond current chain head'
     )
   }
-  await baseRequest(t, server, req2, 200, expectRes2, false)
+  await baseRequest(t, server, req2, 200, expectRes2)
   // Restore setStateRoot
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
   DefaultStateManager.prototype.copy = originalStateManagerCopy
@@ -207,7 +207,7 @@ tape(`${method}: call with valid parameters on pre-Shanghai hardfork`, async (t)
     )
   }
   service.execution.vm._common.setHardfork(Hardfork.London)
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(t, server, req, 200, expectRes)
   // Restore setStateRoot
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
   DefaultStateManager.prototype.copy = originalStateManagerCopy
