@@ -1095,6 +1095,13 @@ export class Engine {
         message: 'More than 32 execution payload bodies requested',
       }
     }
+
+    if (count < BigInt(1) || start < BigInt(1)) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'Start and Count parameters cannot be less than 1',
+      }
+    }
     const currentChainHeight = (await this.chain.getCanonicalHeadHeader()).number
     if (start + count > currentChainHeight) {
       count = count - currentChainHeight
