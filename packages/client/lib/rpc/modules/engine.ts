@@ -320,6 +320,26 @@ const assembleBlock = async (
   return { block }
 }
 
+const getPayloadBody = (block: Block): ExecutionPayloadBodyV1 => {
+  const transactions: string[] = []
+  for (const txn of block.transactions) {
+    transactions.push('0x' + txn.serialize().toString('hex'))
+  }
+  let withdrawals
+  if (block._common.gteHardfork(Hardfork.Shanghai)) {
+    withdrawals = []
+    for (const withdrawal of block.withdrawals!) {
+      withdrawals.push(withdrawal.toJSON() as WithdrawalV1)
+    }
+  } else {
+    withdrawals = null
+  }
+  return {
+    transactions,
+    withdrawals,
+  }
+}
+
 /**
  * engine_* RPC module
  * @memberof module:rpc/modules
@@ -1043,20 +1063,8 @@ export class Engine {
     for (const hash of hashes) {
       try {
         const block = await this.chain.getBlock(hash)
-        const transactions: string[] = []
-        for (const txn of block.transactions) {
-          transactions.push('0x' + txn.serialize().toString('hex'))
-        }
-        let withdrawals
-        if (block._common.gteHardfork(Hardfork.Shanghai)) {
-          withdrawals = []
-          for (const withdrawal of block.withdrawals!) {
-            withdrawals.push(withdrawal.toJSON() as WithdrawalV1)
-          }
-        } else {
-          withdrawals = null
-        }
-        blocks.push({ transactions, withdrawals })
+        const payloadBody = getPayloadBody(block)
+        blocks.push(payloadBody)
       } catch {
         blocks.push(null)
       }
@@ -1097,20 +1105,8 @@ export class Engine {
     const payloads: (ExecutionPayloadBodyV1 | null)[] = []
     for (const block of blocks) {
       try {
-        const transactions: string[] = []
-        for (const txn of block.transactions) {
-          transactions.push('0x' + txn.serialize().toString('hex'))
-        }
-        let withdrawals
-        if (block._common.gteHardfork(Hardfork.Shanghai)) {
-          withdrawals = []
-          for (const withdrawal of block.withdrawals!) {
-            withdrawals.push(withdrawal.toJSON() as WithdrawalV1)
-          }
-        } else {
-          withdrawals = null
-        }
-        payloads.push({ transactions, withdrawals })
+        const payloadBody = getPayloadBody(block)
+        payloads.push(payloadBody)
       } catch {
         payloads.push(null)
       }
