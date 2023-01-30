@@ -1087,7 +1087,7 @@ export class Engine {
         message: 'Start and Count parameters cannot be less than 1',
       }
     }
-    const currentChainHeight = (await this.chain.getCanonicalHeadHeader()).number
+    const currentChainHeight = this.chain.headers.height
     if (start + count > currentChainHeight) {
       count = count - currentChainHeight
     }
