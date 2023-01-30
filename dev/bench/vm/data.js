@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1674851131322,
+  "lastUpdate": 1675099813670,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "73983677+omahs@users.noreply.github.com",
-            "name": "omahs",
-            "username": "omahs"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "9821adbf62e1a4ac28bcc4918557b871bc8b108b",
-          "message": "Fix: typos (#2479)\n\n* Fix: typos\r\n\r\nFix: typos\r\n\r\n* Fix: typo\r\n\r\nFix: typo\r\n\r\n* Fix: typo\r\n\r\nFix: typo\r\n\r\n* Fix: typos\r\n\r\nFix: typos\r\n\r\n* Fix: typo\r\n\r\nFix: typo\r\n\r\n* Put spelling correction in correct place\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-01-10T20:55:54-05:00",
-          "tree_id": "9eb19214b71401008336f4b45a5f0bf0db256ad3",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9821adbf62e1a4ac28bcc4918557b871bc8b108b"
-        },
-        "date": 1673402344362,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18372,
-            "range": "±4.50%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17389,
-            "range": "±6.79%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18818,
-            "range": "±1.53%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18169,
-            "range": "±1.73%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 16341,
-            "range": "±8.93%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.20%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "02ec8920352776e7d8a3a94fef6e8bdc75694085",
+          "message": "client: add new shanghai  engine apis (#2509)\n\n* add getCapabilities engine endpoint\r\n\r\n* add engine_getPayloadBodiesByHashV1\r\n\r\n* add getPayloadBodiesByRangeV1\r\n\r\n* Add tests and fix validatoring logic\r\n\r\n* remove console log\r\n\r\n* WIP building blocks\r\n\r\n* Add tests for new endpoints\r\n\r\n* Remove tape.only\r\n\r\n* Add tests for pre-shanghai blocks\r\n\r\n* Improve getCapabilities implementation\r\n\r\n* Fix vaildation\r\n\r\n* remove logging\r\n\r\n* Add getPayloadBody helper\r\n\r\n* Simplify getPayloadBody\r\n\r\n* Use `chain.headers.height` for latest block number",
+          "timestamp": "2023-01-30T22:48:18+05:30",
+          "tree_id": "a126694a7bc54a4b31bd4fa339dbc92dfc77138c",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/02ec8920352776e7d8a3a94fef6e8bdc75694085"
+        },
+        "date": 1675099812181,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19711,
+            "range": "±1.47%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 19431,
+            "range": "±2.49%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18033,
+            "range": "±7.34%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19672,
+            "range": "±1.12%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19042,
+            "range": "±1.44%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
