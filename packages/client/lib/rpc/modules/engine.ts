@@ -1016,24 +1016,8 @@ export class Engine {
    * Returns a list of engine API endpoints supported by the client
    */
   private getCapabilities(_params: []): string[] {
-    const caps = Object.getOwnPropertyNames(this)
-    // TODO: Figure out how to use RPCManager.getMethodNames to make this work since this semi-duplicates that functionality
-    const nonFunctions = [
-      'client',
-      'service',
-      'chain',
-      'config',
-      'execution',
-      'vm',
-      'connectionManager',
-      'pendingBlocks',
-      'remoteBlocks',
-      'getCapabilities',
-      'pendingBlock',
-    ]
-    const engineMethods = caps.filter(
-      (el) => nonFunctions.findIndex((innerEl) => innerEl === el) < 0
-    )
+    const caps = Object.getOwnPropertyNames(Engine.prototype)
+    const engineMethods = caps.filter((el) => el !== 'constructor' && el !== 'getCapabilities')
     return engineMethods.map((el) => 'engine_' + el)
   }
 
