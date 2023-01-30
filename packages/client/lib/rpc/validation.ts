@@ -17,7 +17,6 @@ export function middleware(method: any, requiredParamsCount: number, validators:
         }
         return reject(error)
       }
-
       for (let i = 0; i < validators.length; i++) {
         if (validators[i] !== undefined) {
           for (let j = 0; j < validators[i].length; j++) {
