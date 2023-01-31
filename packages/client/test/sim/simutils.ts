@@ -360,3 +360,18 @@ export const runBlobTxsFromFile = async (client: Client, path: string) => {
   }
   return txnHashes
 }
+
+// To minimise noise on the spec run, selective filteration is applied to let the important events
+// of the testnet log to show up in the spec log
+export const filterKeywords = [
+  'warn',
+  'error',
+  'npm run client:start',
+  'docker run',
+  'lodestar dev',
+  'kill',
+  'ejs',
+  'lode',
+  'pid',
+]
+export const filterOutWords = ['duties', 'Low peer count', 'MaxListenersExceededWarning']

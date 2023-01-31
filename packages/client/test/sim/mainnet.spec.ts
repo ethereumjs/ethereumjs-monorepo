@@ -3,7 +3,7 @@ import { privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import * as tape from 'tape'
 
-import { runTxHelper, sleep, startNetwork } from './simutils'
+import { filterKeywords, filterOutWords, runTxHelper, sleep, startNetwork } from './simutils'
 
 const pkey = Buffer.from('ae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e', 'hex')
 const sender = '0x' + privateToAddress(pkey).toString('hex')
@@ -16,21 +16,6 @@ const common = Common.fromGethGenesis(eofJson, { chain: network })
 export async function runTx(data: string, to?: string, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
 }
-
-// To minimise noise on the spec run, selective filteration is applied to let the important events
-// of the testnet log to show up in the spec log
-const filterKeywords = [
-  'warn',
-  'error',
-  'npm run client:start',
-  'docker run',
-  'lodestar dev',
-  'kill',
-  'ejs',
-  'lode',
-  'pid',
-]
-const filterOutWords = ['duties', 'Low peer count', 'MaxListenersExceededWarning']
 
 tape('simple mainnet test run', async (t) => {
   const { teardownCallBack, result } = await startNetwork(network, client, {
