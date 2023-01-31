@@ -84,16 +84,13 @@ jobs:
   test-client-cli:
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        network: ['goerli']
-        syncmode: ['full', 'light']
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
 
       - uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: 18
           cache: 'npm'
 
       - run: npm ci
@@ -103,4 +100,4 @@ jobs:
         with:
           timeout_minutes: 10
           max_attempts: 3
-          command: cd ${{github.workspace}}/packages/client && npm run test:cli -- --network=${{matrix.network}} --syncMode=${{matrix.syncmode}} --transports rlpx
+          command: cd ${{github.workspace}}/packages/client && npm run tape -- 'test/sim/mainnet.spec.ts'

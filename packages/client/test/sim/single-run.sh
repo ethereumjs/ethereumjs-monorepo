@@ -24,20 +24,20 @@ case $MULTIPEER in
   syncpeer)
     echo "setting up to run as a sync only peer to peer1 (bootnode)..."
     DATADIR="$DATADIR/syncpeer"
-    EL_PORT_ARGS="--port 30305 --rpcEnginePort 8553 --rpcport 8947 --multiaddrs /ip4/127.0.0.1/tcp/50582/ws --loglevel debug"
+    EL_PORT_ARGS="--port 30305 --rpcEnginePort 8553 --rpcport 8947 --multiaddrs /ip4/127.0.0.1/tcp/50582/ws --logLevel debug"
     CL_PORT_ARGS="--genesisValidators 8 --enr.tcp 9002 --port 9002 --execution.urls http://localhost:8553  --rest.port 9598 --server http://localhost:9598 --network.connectToDiscv5Bootnodes true"
     ;;
 
   peer2 )
     echo "setting up peer2 to run with peer1 (bootnode)..."
     DATADIR="$DATADIR/peer2"
-    EL_PORT_ARGS="--port 30304 --rpcEnginePort 8552 --rpcport 8946 --multiaddrs /ip4/127.0.0.1/tcp/50581/ws --bootnodes $elBootnode --loglevel debug"
+    EL_PORT_ARGS="--port 30304 --rpcEnginePort 8552 --rpcport 8946 --multiaddrs /ip4/127.0.0.1/tcp/50581/ws --bootnodes $elBootnode --logLevel debug"
     CL_PORT_ARGS="--genesisValidators 8 --startValidators 4..7 --enr.tcp 9001 --port 9001 --execution.urls http://localhost:8552  --rest.port 9597 --server http://localhost:9597 --network.connectToDiscv5Bootnodes true --bootnodes $bootEnrs"
     ;;
 
   * )
     DATADIR="$DATADIR/peer1"
-    EL_PORT_ARGS="--extIP 127.0.0.1 --loglevel debug"
+    EL_PORT_ARGS="--extIP 127.0.0.1 --logLevel debug"
     CL_PORT_ARGS="--enr.ip 127.0.0.1 --enr.tcp 9000 --enr.udp 9000"
     if [ ! -n "$MULTIPEER" ]
     then
@@ -88,7 +88,7 @@ cleanup() {
   echo "cleaning up"
   if [ -n "$ejsPid" ] 
   then
-    ejsPidBySearch=$(ps x | grep "ts-node bin/cli.ts --datadir $DATADIR/ethereumjs" | grep -v grep | awk '{print $1}')
+    ejsPidBySearch=$(ps x | grep "ts-node bin/cli.ts --dataDir $DATADIR/ethereumjs" | grep -v grep | awk '{print $1}')
     echo "cleaning ethereumjs pid:${ejsPid} ejsPidBySearch:${ejsPidBySearch}..."
     kill $ejsPidBySearch
   fi;
@@ -110,7 +110,7 @@ cleanup() {
 
 if [ "$MULTIPEER" == "peer1" ]
 then
-  ejsCmd="npm run client:start -- --datadir $DATADIR/ethereumjs --gethGenesis $scriptDir/configs/$NETWORK.json --rpc --rpcEngine --rpcEngineAuth false $EL_PORT_ARGS"
+  ejsCmd="npm run client:start -- --dataDir $DATADIR/ethereumjs --gethGenesis $scriptDir/configs/$NETWORK.json --rpc --rpcEngine --rpcEngineAuth false $EL_PORT_ARGS"
   run_cmd "$ejsCmd"
   ejsPid=$!
   echo "ejsPid: $ejsPid"
@@ -163,7 +163,7 @@ else
   genTime=$(cat "$origDataDir/genesisTime")
 
 
-  ejsCmd="npm run client:start -- --datadir $DATADIR/ethereumjs --gethGenesis $scriptDir/configs/$NETWORK.json --rpc --rpcEngine --rpcEngineAuth false $EL_PORT_ARGS"
+  ejsCmd="npm run client:start -- --dataDir $DATADIR/ethereumjs --gethGenesis $scriptDir/configs/$NETWORK.json --rpc --rpcEngine --rpcEngineAuth false $EL_PORT_ARGS"
   run_cmd "$ejsCmd"
   ejsPid=$!
   echo "ejsPid: $ejsPid"

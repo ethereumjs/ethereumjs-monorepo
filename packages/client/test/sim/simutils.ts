@@ -3,7 +3,7 @@ import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
   getBlobs,
-} from '@ethereumjs/tx/test/utils/blobHelpers' // TODO: Decide where all these helpers should live
+} from '@ethereumjs/tx/dist/utils/blobHelpers'
 import { Address } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
@@ -66,6 +66,43 @@ export async function waitForELOffline(): Promise<void> {
     await sleep(4000)
   }
   throw Error('EL not offline in 120 seconds')
+}
+
+export async function waitForELStart(client: Client): Promise<void> {
+  for (let i = 0; i < 5; i++) {
+    const res = await client.request('eth_getBlockByNumber', ['latest', false])
+    if (Number(res.result.number) > 0) {
+      return
+    } else {
+      process.stdout.write('*')
+      await sleep(12000)
+    }
+  }
+  throw Error('EL not started in 60 seconds')
+}
+
+export async function validateBlockHashesInclusionInBeacon(
+  beaconUrl: string,
+  from: number,
+  to: number,
+  blockHashes: string[]
+) {
+  const executionHashes: string[] = []
+  for (let i = from; i <= to; i++) {
+    const res = await (await fetch(`${beaconUrl}/eth/v2/beacon/blocks/${i}`)).json()
+    // it could be possible that executionPayload is not provided if the block
+    // is not bellatrix+
+    const executionHash = res.data.message.body.execution_payload?.block_hash
+    if (executionHash !== undefined) {
+      executionHashes.push(executionHash)
+    }
+  }
+  const inclusionCheck = blockHashes.reduce((acc, blockHash) => {
+    return acc && executionHashes.includes(blockHash)
+  }, true)
+  if (!inclusionCheck) {
+    throw Error('Failed inclusion check')
+  }
 }
 
 type RunOpts = {
@@ -360,3 +397,18 @@ export const runBlobTxsFromFile = async (client: Client, path: string) => {
   }
   return txnHashes
 }
+
+// To minimise noise on the spec run, selective filteration is applied to let the important events
+// of the testnet log to show up in the spec log
+export const filterKeywords = [
+  'warn',
+  'error',
+  'npm run client:start',
+  'docker run',
+  'lodestar dev',
+  'kill',
+  'ejs',
+  'lode',
+  'pid',
+]
+export const filterOutWords = ['duties', 'Low peer count', 'MaxListenersExceededWarning']
