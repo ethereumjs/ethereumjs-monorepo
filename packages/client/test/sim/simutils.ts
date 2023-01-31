@@ -81,6 +81,30 @@ export async function waitForELStart(client: Client): Promise<void> {
   throw Error('EL not started in 60 seconds')
 }
 
+export async function validateBlockHashesInclusionInBeacon(
+  beaconUrl: string,
+  from: number,
+  to: number,
+  blockHashes: string[]
+) {
+  const executionHashes: string[] = []
+  for (let i = from; i <= to; i++) {
+    const res = await (await fetch(`${beaconUrl}/eth/v2/beacon/blocks/${i}`)).json()
+    // it could be possible that executionPayload is not provided if the block
+    // is not bellatrix+
+    const executionHash = res.data.message.body.execution_payload?.block_hash
+    if (executionHash !== undefined) {
+      executionHashes.push(executionHash)
+    }
+  }
+  const inclusionCheck = blockHashes.reduce((acc, blockHash) => {
+    return acc && executionHashes.includes(blockHash)
+  }, true)
+  if (!inclusionCheck) {
+    throw Error('Failed inclusion check')
+  }
+}
+
 type RunOpts = {
   filterKeywords: string[]
   filterOutWords: string[]

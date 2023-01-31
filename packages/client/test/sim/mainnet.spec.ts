@@ -8,6 +8,7 @@ import {
   filterOutWords,
   runTxHelper,
   startNetwork,
+  validateBlockHashesInclusionInBeacon,
   waitForELStart,
 } from './simutils'
 
@@ -45,7 +46,7 @@ tape('simple mainnet test run', async (t) => {
     throw e
   }
 
-  const blockHashes = []
+  const blockHashes: string[] = []
   // ------------Sanity checks--------------------------------
   t.test('Simple transfer - sanity check', async (st) => {
     await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
@@ -66,6 +67,17 @@ tape('simple mainnet test run', async (t) => {
     st.equal(BigInt(balance.result), 2000000n, 'sent a simple ETH transfer 2x')
     const latestBlock = await client.request('eth_getBlockByNumber', ['latest', false])
     blockHashes.push(latestBlock.result.hash)
+    st.end()
+  })
+
+  t.test('Validate execution hashes present in beacon headers', async (st) => {
+    const eth2res = await (await fetch('http://127.0.0.1:9596/eth/v1/beacon/headers')).json()
+    await validateBlockHashesInclusionInBeacon(
+      'http://127.0.0.1:9596',
+      1,
+      parseInt(eth2res.data[0].header.message.slot),
+      blockHashes
+    )
     st.end()
   })
 
