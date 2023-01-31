@@ -3,7 +3,13 @@ import { privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import * as tape from 'tape'
 
-import { filterKeywords, filterOutWords, runTxHelper, sleep, startNetwork } from './simutils'
+import {
+  filterKeywords,
+  filterOutWords,
+  runTxHelper,
+  startNetwork,
+  waitForELStart,
+} from './simutils'
 
 const pkey = Buffer.from('ae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e', 'hex')
 const sender = '0x' + privateToAddress(pkey).toString('hex')
@@ -31,23 +37,15 @@ tape('simple mainnet test run', async (t) => {
   }
 
   console.log(`Waiting for network to start...`)
-  let syncing = true
-  let tries = 0
-  while (syncing && tries < 5) {
-    tries++
-    const res = await client.request('eth_getBlockByNumber', ['latest', false])
-    if (res.result.number === '0x1') {
-      syncing = false
-    } else {
-      process.stdout.write('*')
-      await sleep(12000)
-    }
-  }
-  if (syncing) {
-    t.fail('ethereumjs<>lodestar failed to start')
-  } else {
+  try {
+    await waitForELStart(client)
     t.pass('ethereumjs<>lodestar started successfully')
+  } catch (e) {
+    t.fail('ethereumjs<>lodestar failed to start')
+    throw e
   }
+
+  const blockHashes = []
   // ------------Sanity checks--------------------------------
   t.test('Simple transfer - sanity check', async (st) => {
     await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
@@ -61,7 +59,13 @@ tape('simple mainnet test run', async (t) => {
       '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
       'latest',
     ])
+    balance = await client.request('eth_getBalance', [
+      '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
+      'latest',
+    ])
     st.equal(BigInt(balance.result), 2000000n, 'sent a simple ETH transfer 2x')
+    const latestBlock = await client.request('eth_getBlockByNumber', ['latest', false])
+    blockHashes.push(latestBlock.result.hash)
     st.end()
   })
 

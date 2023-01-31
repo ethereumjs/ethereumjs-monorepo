@@ -12,6 +12,7 @@ import {
   runTxHelper,
   sleep,
   startNetwork,
+  waitForELStart,
 } from './simutils'
 
 const pkey = Buffer.from('45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8', 'hex')
@@ -41,22 +42,12 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
   }
 
   console.log(`Waiting for network to start...`)
-  let syncing = true
-  let tries = 0
-  while (syncing && tries < 5) {
-    tries++
-    const res = await client.request('eth_syncing', [])
-    if (res.result === false) {
-      syncing = false
-    } else {
-      process.stdout.write('*')
-      await sleep(12000)
-    }
-  }
-  if (syncing) {
-    t.fail('ethereumjs<>lodestar failed to start')
-  } else {
+  try {
+    await waitForELStart(client)
     t.pass('ethereumjs<>lodestar started successfully')
+  } catch (e) {
+    t.fail('ethereumjs<>lodestar failed to start')
+    throw e
   }
 
   t.test('Simple blob tx', async (st) => {

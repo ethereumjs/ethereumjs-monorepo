@@ -68,6 +68,19 @@ export async function waitForELOffline(): Promise<void> {
   throw Error('EL not offline in 120 seconds')
 }
 
+export async function waitForELStart(client: Client): Promise<void> {
+  for (let i = 0; i < 5; i++) {
+    const res = await client.request('eth_getBlockByNumber', ['latest', false])
+    if (Number(res.result.number) > 0) {
+      return
+    } else {
+      process.stdout.write('*')
+      await sleep(12000)
+    }
+  }
+  throw Error('EL not started in 60 seconds')
+}
+
 type RunOpts = {
   filterKeywords: string[]
   filterOutWords: string[]
