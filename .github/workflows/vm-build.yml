@@ -1,8 +1,8 @@
 name: VM
 on:
-#  push:
-#    branches: [master, develop]
-#    tags: ['*']
+  push:
+    branches: [master, develop]
+    tags: ['*']
 
 env:
   cwd: ${{github.workspace}}/packages/vm
