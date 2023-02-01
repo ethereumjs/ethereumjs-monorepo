@@ -787,9 +787,8 @@ export class Eth {
     }
     let from: Block, to: Block
     if (blockHash !== undefined) {
-      try {
-        from = to = (await this._chain.getBlock(toBuffer(blockHash))) as Block
-      } catch (error: any) {
+      from = to = (await this._chain.getBlock(toBuffer(blockHash))) as Block
+      if (from === null || to === null) {
         throw {
           code: INVALID_PARAMS,
           message: 'unknown blockHash',
