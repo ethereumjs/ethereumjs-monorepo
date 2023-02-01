@@ -635,7 +635,7 @@ export class Eth {
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,
-        message: 'NotFound',
+        message: 'unknown block',
       }
     }
   }
