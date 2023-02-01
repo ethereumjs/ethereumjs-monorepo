@@ -393,7 +393,7 @@ tape('[Skeleton] / setHead', async (t) => {
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     await chain.open()
 
-    const genesis = await chain.getBlock(BigInt(0))
+    const genesis = (await chain.getBlock(BigInt(0)))!
     const block1 = Block.fromBlockData(
       { header: { number: 1, parentHash: genesis.hash(), difficulty: 100 } },
       { common, hardforkByBlockNumber: true }
@@ -497,7 +497,7 @@ tape('[Skeleton] / setHead', async (t) => {
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     await chain.open()
 
-    const genesis = await chain.getBlock(BigInt(0))
+    const genesis = (await chain.getBlock(BigInt(0)))!
     const block1 = Block.fromBlockData(
       { header: { number: 1, parentHash: genesis.hash(), difficulty: 100 } },
       { common, hardforkByBlockNumber: true }
@@ -569,7 +569,7 @@ tape('[Skeleton] / setHead', async (t) => {
       await chain.open()
       await skeleton.open()
 
-      const genesis = await chain.getBlock(BigInt(0))
+      const genesis = (await chain.getBlock(BigInt(0)))!
 
       const block1 = Block.fromBlockData(
         { header: { number: 1, parentHash: genesis.hash(), difficulty: 100 } },
@@ -652,8 +652,7 @@ tape('[Skeleton] / setHead', async (t) => {
       const chain = new Chain({ config })
       ;(chain.blockchain as any)._validateBlocks = false
       await chain.open()
-      const genesisBlock = await chain.getBlock(BigInt(0))
-
+      const genesisBlock = (await chain.getBlock(BigInt(0)))!
       const block1 = Block.fromBlockData(
         { header: { number: 1, parentHash: genesisBlock.hash(), difficulty: 100 } },
         { common }
@@ -758,7 +757,7 @@ tape('[Skeleton] / setHead', async (t) => {
       ;(chain.blockchain as any)._validateBlocks = false
       ;(chain.blockchain as any)._validateConsensus = false
       await chain.open()
-      const genesisBlock = await chain.getBlock(BigInt(0))
+      const genesisBlock = (await chain.getBlock(BigInt(0)))!
 
       const block1 = Block.fromBlockData(
         { header: { number: 1, parentHash: genesisBlock.hash(), difficulty: 100 } },
@@ -835,7 +834,7 @@ tape('[Skeleton] / setHead', async (t) => {
       BlockHeader.prototype._consensusFormatValidation = td.func<any>()
       td.replace('@ethereumjs/block', { BlockHeader })
       await chain.open()
-      const genesisBlock = await chain.getBlock(BigInt(0))
+      const genesisBlock = (await chain.getBlock(BigInt(0)))!
 
       const block1 = Block.fromBlockData(
         { header: { number: 1, parentHash: genesisBlock.hash(), difficulty: 100 } },
