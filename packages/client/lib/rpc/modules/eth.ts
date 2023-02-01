@@ -620,6 +620,12 @@ export class Eth {
       const [blockHash, txIndexHex] = params
       const txIndex = parseInt(txIndexHex, 16)
       const block = await this._chain.getBlock(toBuffer(blockHash))
+      if (block === null) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'unknown block',
+        }
+      }
       if (block!.transactions.length <= txIndex) {
         return null
       }
