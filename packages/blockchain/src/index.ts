@@ -1,4 +1,5 @@
 export { Blockchain } from './blockchain'
 export { CasperConsensus, CliqueConsensus, Consensus, EthashConsensus } from './consensus'
+export { NotFoundError } from './db/manager'
 export { BlockchainInterface, BlockchainOptions } from './types'
 export * from './utils'
