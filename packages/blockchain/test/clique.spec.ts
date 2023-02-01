@@ -14,7 +14,7 @@ tape('Clique: Initialization', (t) => {
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.create({ common })
 
-    const head = await blockchain.getIteratorHead()
+    const head = (await blockchain.getIteratorHead()) as Block
     st.ok(head.hash().equals(blockchain.genesisBlock.hash()), 'correct genesis hash')
 
     st.deepEquals(
@@ -292,7 +292,7 @@ tape('Clique: Initialization', (t) => {
     // noturn block
     await addNextBlock(blockchain, blocks, A)
     const block = await blockchain.getBlock(1)
-    if (inturnBlock.hash().equals(block.hash())) {
+    if (block && inturnBlock.hash().equals(block.hash())) {
       st.pass('correct canonical block')
     } else {
       st.fail('invalid canonical block')

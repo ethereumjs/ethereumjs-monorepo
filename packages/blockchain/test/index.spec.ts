@@ -26,11 +26,8 @@ tape('blockchain test', (t) => {
     let blockchain = await Blockchain.create({ common })
 
     const iteratorHead = await blockchain.getIteratorHead()
-
-    st.ok(
-      iteratorHead.hash().equals(blockchain.genesisBlock.hash()),
-      'correct genesis hash (getIteratorHead())'
-    )
+    const hash = iteratorHead instanceof Block ? iteratorHead.hash() : iteratorHead
+    st.ok(hash.equals(blockchain.genesisBlock.hash()), 'correct genesis hash (getIteratorHead())')
 
     blockchain = await Blockchain.create({ common, hardforkByHeadBlockNumber: true })
     st.equal(
@@ -48,7 +45,7 @@ tape('blockchain test', (t) => {
       validateConsensus: false,
       common,
     })
-    const head = await blockchain.getIteratorHead()
+    const head = (await blockchain.getIteratorHead()) as Block
     st.equals(head.header.number, BigInt(0), 'correct block number')
     st.end()
   })
@@ -184,7 +181,7 @@ tape('blockchain test', (t) => {
     await blockchain.putBlock(block)
 
     const returnedBlock = await blockchain.getBlock(1)
-    if (typeof returnedBlock !== 'undefined') {
+    if (returnedBlock !== null) {
       st.ok(returnedBlock.hash().equals(blocks[1].hash()))
     } else {
       st.fail('block is not defined!')
@@ -204,7 +201,7 @@ tape('blockchain test', (t) => {
       genesisBlock,
     })
     const block = await blockchain.getBlock(genesisBlock.hash())
-    if (typeof block !== 'undefined') {
+    if (block !== null) {
       st.ok(block.hash().equals(genesisBlock.hash()))
     } else {
       st.fail('block is not defined!')
@@ -693,20 +690,19 @@ tape('initialization tests', (t) => {
     })
     const blockchain = await Blockchain.create({ common })
     const genesisHash = blockchain.genesisBlock.hash()
+    const iteratorHead = await blockchain.getIteratorHead()
+    const iteratorHash = iteratorHead instanceof Block ? iteratorHead.hash() : iteratorHead
 
-    st.ok(
-      (await blockchain.getIteratorHead()).hash().equals(genesisHash),
-      'head hash should equal expected ropsten genesis hash'
-    )
+    st.ok(iteratorHash.equals(genesisHash), 'head hash should equal expected ropsten genesis hash')
 
     const db = blockchain.db
 
     const newBlockchain = await Blockchain.create({ db, common })
 
-    st.ok(
-      (await newBlockchain.getIteratorHead()).hash().equals(genesisHash),
-      'head hash should be read from the provided db'
-    )
+    const newIteratorHead = await newBlockchain.getIteratorHead()
+    const newIteratorHash =
+      newIteratorHead instanceof Block ? newIteratorHead.hash() : newIteratorHead
+    st.ok(newIteratorHash.equals(genesisHash), 'head hash should be read from the provided db')
     st.end()
   })
 
@@ -725,13 +721,13 @@ tape('initialization tests', (t) => {
     const db = blockchain.db
 
     st.ok(
-      (await blockchain.getIteratorHead()).hash().equals(hash),
+      ((await blockchain.getIteratorHead()) as Block).hash().equals(hash),
       'blockchain should put custom genesis block'
     )
 
     const newBlockchain = await Blockchain.create({ db, genesisBlock })
     st.ok(
-      (await newBlockchain.getIteratorHead()).hash().equals(hash),
+      ((await newBlockchain.getIteratorHead()) as Block).hash().equals(hash),
       'head hash should be read from the provided db'
     )
     st.end()
