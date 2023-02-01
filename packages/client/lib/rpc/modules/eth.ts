@@ -635,7 +635,7 @@ export class Eth {
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,
-        message: error.message.toString(),
+        message: 'NotFound',
       }
     }
   }
@@ -787,16 +787,25 @@ export class Eth {
     }
     let from: Block, to: Block
     if (blockHash !== undefined) {
-      from = to = (await this._chain.getBlock(toBuffer(blockHash))) as Block
-      if (from === null || to === null) {
+      const block = await this._chain.getBlock(toBuffer(blockHash))
+      if (block === null) {
         throw {
           code: INVALID_PARAMS,
           message: 'unknown blockHash',
         }
       }
+      from = to = block
     } else {
       if (fromBlock === 'earliest') {
-        from = (await this._chain.getBlock(BigInt(0))) as Block
+        const block = await this._chain.getBlock(BigInt(0))
+        if (block === null) {
+          throw {
+            code: INVALID_PARAMS,
+            message: 'unknown fromBlock',
+          }
+        } else {
+          from = block
+        }
       } else if (fromBlock === 'latest' || fromBlock === undefined) {
         from = this._chain.blocks.latest!
       } else {
@@ -807,7 +816,15 @@ export class Eth {
             message: 'specified `fromBlock` greater than current height',
           }
         }
-        from = (await this._chain.getBlock(blockNum)) as Block
+        const block = await this._chain.getBlock(blockNum)
+        if (block === null) {
+          throw {
+            code: INVALID_PARAMS,
+            message: 'unknown fromBlock',
+          }
+        } else {
+          from = block
+        }
       }
       if (toBlock === fromBlock) {
         to = from
@@ -821,7 +838,15 @@ export class Eth {
             message: 'specified `toBlock` greater than current height',
           }
         }
-        to = (await this._chain.getBlock(blockNum)) as Block
+        const block = await this._chain.getBlock(blockNum)
+        if (block === null) {
+          throw {
+            code: INVALID_PARAMS,
+            message: 'unknown toBlock',
+          }
+        } else {
+          to = block
+        }
       }
     }
     if (

@@ -726,14 +726,14 @@ export class Engine {
     /*
      * Process head block
      */
-    let headBlock: Block | undefined
-    try {
-      headBlock = (await this.chain.getBlock(toBuffer(headBlockHash))) as Block
-    } catch (error) {
-      headBlock =
-        (await this.service.beaconSync?.skeleton.getBlockByHash(toBuffer(headBlockHash))) ??
-        this.remoteBlocks.get(headBlockHash.slice(2))
-      if (headBlock === undefined) {
+    let headBlock: Block | null | undefined = await this.chain.getBlock(toBuffer(headBlockHash))
+    if (headBlock === null) {
+      headBlock = await this.service.beaconSync?.skeleton.getBlockByHash(toBuffer(headBlockHash))
+      if (headBlock === null || headBlock === undefined) {
+        headBlock = this.remoteBlocks.get(headBlockHash.slice(2))
+      }
+
+      if (headBlock === null || headBlock === undefined) {
         this.config.logger.debug(`Forkchoice requested unknown head hash=${short(headBlockHash)}`)
         const payloadStatus = {
           status: Status.SYNCING,
@@ -849,9 +849,8 @@ export class Engine {
     const zeroBlockHash = zeros(32)
     const safe = toBuffer(safeBlockHash)
     if (!safe.equals(headBlock.hash()) && !safe.equals(zeroBlockHash)) {
-      try {
-        await this.chain.getBlock(safe)
-      } catch (error) {
+      const block = await this.chain.getBlock(safe)
+      if (block === null) {
         const message = 'safe block not available'
         throw {
           code: INVALID_PARAMS,
@@ -861,12 +860,12 @@ export class Engine {
     }
     const finalized = toBuffer(finalizedBlockHash)
     if (!finalized.equals(zeroBlockHash)) {
-      try {
-        await this.chain.getBlock(finalized)
-      } catch (error) {
+      const block = await this.chain.getBlock(finalized)
+      if (block === null) {
+        const message = 'finalized block not available'
         throw {
-          message: 'finalized block not available',
           code: INVALID_PARAMS,
+          message,
         }
       }
     }
