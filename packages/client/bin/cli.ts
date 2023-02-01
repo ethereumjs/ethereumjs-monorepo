@@ -366,8 +366,8 @@ async function startBlock(client: EthereumClient) {
   try {
     const headBlock = await blockchain.getBlock(startBlock)
     const delBlock = await blockchain.getBlock(startBlock + BigInt(1))
-    await blockchain.delBlock(delBlock.hash())
-    logger.info(`Chain height reset to ${headBlock.header.number}`)
+    await blockchain.delBlock(delBlock!.hash())
+    logger.info(`Chain height reset to ${headBlock!.header.number}`)
   } catch (err: any) {
     logger.error(`Error setting back chain in startBlock: ${err}`)
     process.exit()

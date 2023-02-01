@@ -101,6 +101,9 @@ export class VMExecution extends Execution {
         throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
       }
       const headBlock = await this.vm.blockchain.getIteratorHead()
+      if (headBlock instanceof Buffer) {
+        throw new Error('cannot get iterator head: no head block found')
+      }
       const { number, timestamp } = headBlock.header
       if (typeof this.vm.blockchain.getTotalDifficulty !== 'function') {
         throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
@@ -205,7 +208,9 @@ export class VMExecution extends Execution {
     let canonicalHead = await blockchain.getCanonicalHeadBlock()
 
     this.config.logger.debug(
-      `Running execution startHeadBlock=${startHeadBlock?.header.number} canonicalHead=${canonicalHead?.header.number} loop=${loop}`
+      `Running execution startHeadBlock=${
+        startHeadBlock instanceof Buffer ? '' : startHeadBlock.header.number
+      } canonicalHead=${canonicalHead?.header.number} loop=${loop}`
     )
 
     let headBlock: Block | undefined
@@ -216,9 +221,11 @@ export class VMExecution extends Execution {
       this.started &&
       (!runOnlybatched ||
         (runOnlybatched &&
+          !(startHeadBlock instanceof Buffer) &&
           canonicalHead.header.number - startHeadBlock.header.number >=
             BigInt(this.NUM_BLOCKS_PER_ITERATION))) &&
       (numExecuted === undefined || (loop && numExecuted === this.NUM_BLOCKS_PER_ITERATION)) &&
+      !(startHeadBlock instanceof Buffer) &&
       startHeadBlock.hash().equals(canonicalHead.hash()) === false
     ) {
       let txCounter = 0
@@ -346,6 +353,9 @@ export class VMExecution extends Execution {
         endHeadBlock = await this.vm.blockchain.getIteratorHead('vm')
       } else {
         throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
+      }
+      if (endHeadBlock instanceof Buffer) {
+        throw new Error('getIteratorHead returned genesis hash')
       }
 
       if (typeof numExecuted === 'number' && numExecuted > 0) {

@@ -1,5 +1,5 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { Blockchain, NotFoundError } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 
 import { Event } from '../types'
@@ -254,9 +254,13 @@ export class Chain {
    * @param block block hash or number
    * @throws if block is not found
    */
-  async getBlock(block: Buffer | bigint): Promise<Block> {
+  async getBlock(block: Buffer | bigint): Promise<Block | null> {
     if (!this.opened) throw new Error('Chain closed')
-    return this.blockchain.getBlock(block)
+    const gotBlock = await this.blockchain.getBlock(block)
+    if (gotBlock === null) {
+      throw block instanceof Buffer ? new Error('NotFound') : new NotFoundError(block)
+    }
+    return gotBlock
   }
 
   /**
