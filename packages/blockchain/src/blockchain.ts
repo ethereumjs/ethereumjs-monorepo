@@ -702,13 +702,17 @@ export class Blockchain implements BlockchainInterface {
    * this will be immediately looked up, otherwise it will wait until we have
    * unlocked the DB
    */
-  async getBlock(blockId: Buffer | number | bigint): Promise<Block> {
+  async getBlock(blockId: Buffer | number | bigint): Promise<Block | null> {
     // cannot wait for a lock here: it is used both in `validate` of `Block`
     // (calls `getBlock` to get `parentHash`) it is also called from `runBlock`
     // in the `VM` if we encounter a `BLOCKHASH` opcode: then a bigint is used we
     // need to then read the block from the canonical chain Q: is this safe? We
     // know it is OK if we call it from the iterator... (runBlock)
-    return this.dbManager.getBlock(blockId)
+    try {
+      return await this.dbManager.getBlock(blockId)
+    } catch {
+      return null
+    }
   }
 
   /**
