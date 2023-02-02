@@ -9,6 +9,7 @@ import { Config } from '../../lib/config'
 import { getLogger } from '../../lib/logging'
 import { Skeleton, errReorgDenied, errSyncMerged } from '../../lib/sync/skeleton'
 import { short } from '../../lib/util'
+import { DBKey } from '../../lib/util/metaDBManager'
 import { wait } from '../integration/util'
 import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
 type Subchain = {
@@ -730,6 +731,12 @@ tape('[Skeleton] / setHead', async (t) => {
       await skeleton.setHead(block5, true)
       await wait(200)
       st.equal(skeleton.bounds().head, BigInt(5), 'should update to new height')
+      const found = await skeleton.getBlockByHash(block5.hash())
+      st.deepEqual(found!.hash(), block5.hash(), 'should find block5')
+      await skeleton.delete(DBKey.SkeletonBlock, block5.hash())
+      const notFound = await skeleton.getBlockByHash(block5.hash(), true)
+      st.equal(notFound, undefined, 'should not find block5')
+      st.end()
     }
   )
 
