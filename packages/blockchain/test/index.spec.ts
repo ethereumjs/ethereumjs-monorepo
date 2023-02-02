@@ -80,6 +80,36 @@ tape('blockchain test', (t) => {
     st.end()
   })
 
+  t.test('getCanonicalHeadHeader should throw if getBlock returns null', async (st) => {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const genesisBlock = Block.fromBlockData({ header: { number: 0 } }, { common })
+    const blockchain = await Blockchain.create({
+      common,
+      validateBlocks: true,
+      validateConsensus: false,
+      genesisBlock,
+    })
+    ;(blockchain as any)._headHeaderHash = Buffer.from(
+      '3383a90a5f14b3ed85579c4e81e8f73e2f414405ecb60cdddb73bbb90d4d5a2d',
+      'hex'
+    )
+
+    try {
+      st.notOk(
+        genesisBlock.hash().equals((await blockchain.getCanonicalHeadHeader()).hash()),
+        'this test should throw'
+      )
+      st.fail('should have thrown')
+    } catch (e: any) {
+      st.equal(
+        e.message,
+        'No head header found',
+        'getCanonicalHeadHeader() should throw when block is not found'
+      )
+    }
+    st.end()
+  })
+
   t.test('should not validate a block incorrectly flagged as genesis', async (st) => {
     const genesisBlock = Block.fromBlockData({ header: { number: BigInt(8) } })
     try {
