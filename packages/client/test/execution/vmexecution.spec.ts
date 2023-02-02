@@ -113,6 +113,19 @@ tape('[VMExecution]', async (t) => {
     exec = await testSetup(blockchain, common)
     await exec.run()
     t.equal(exec.hardfork, 'byzantium', 'should update HF on block run')
+    // await (exec.vm.blockchain as any).setIteratorHead('vm', Buffer.from([]))
+    t.equal(await exec.run(), 0, 'should not run any blocks if iterator head is not found')
+
+    t.end()
+  })
+  t.test('Block execution fail test', async (t) => {
+    const blockchain = await Blockchain.fromBlocksData(blocksDataMainnet, {
+      validateBlocks: true,
+      validateConsensus: false,
+    })
+    const exec = await testSetup(blockchain)
+    await (exec.vm.blockchain as any).setIteratorHead('vm', Buffer.from([]))
+    t.equal(await exec.run(), 0, 'should not run any blocks if iterator head is not found')
 
     t.end()
   })
