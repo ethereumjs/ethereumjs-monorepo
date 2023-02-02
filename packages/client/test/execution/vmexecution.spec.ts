@@ -31,6 +31,28 @@ tape('[VMExecution]', async (t) => {
     return exec
   }
 
+  t.test('open without head block', async (t) => {
+    const blockchain = await Blockchain.create({
+      validateBlocks: true,
+      validateConsensus: false,
+    })
+    await blockchain.setIteratorHead('vm', Buffer.from([]))
+    const config = new Config({ transports: [], saveReceipts: true })
+    const chain = new Chain({ config, blockchain })
+    const exec = new VMExecution({ config, chain, metaDB: chain.chainDB })
+    await chain.open()
+    try {
+      await exec.open()
+      t.fail('test should throw')
+    } catch (e: any) {
+      t.equals(
+        e.message,
+        'cannot get iterator head: no head block found',
+        'vm should fail to open with invalid head block'
+      )
+    }
+  })
+
   t.test('getReceipts', async (t) => {
     const blockchain = await Blockchain.create({
       validateBlocks: true,
