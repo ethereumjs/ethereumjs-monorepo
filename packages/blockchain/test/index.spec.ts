@@ -125,6 +125,16 @@ tape('blockchain test', (t) => {
         'getCanonicalHeadHeader() should throw when block is not found'
       )
     }
+    try {
+      await (blockchain as any).findCommonAncestor(genesisBlock.header)
+      st.fail('should have thrown')
+    } catch (e: any) {
+      st.equal(
+        e.message,
+        'Could not find block 0x3383a90a5f14b3ed85579c4e81e8f73e2f414405ecb60cdddb73bbb90d4d5a2d',
+        'blockchain.findCommonAncestor() should throw when head block is not found'
+      )
+    }
     st.end()
   })
 

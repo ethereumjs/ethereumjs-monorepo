@@ -1012,7 +1012,7 @@ export class Blockchain implements BlockchainInterface {
     const ancestorHeaders = new Set<BlockHeader>()
     const block = await this.getBlock(this._headHeaderHash)
     if (block === null) {
-      throw new Error('Could not find block ' + this._headHeaderHash.toString('hex'))
+      throw new Error('Could not find block 0x' + this._headHeaderHash.toString('hex'))
     }
     let { header } = block
     if (header.number > newHeader.number) {
