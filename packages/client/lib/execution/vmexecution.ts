@@ -221,8 +221,7 @@ export class VMExecution extends Execution {
       this.started &&
       (!runOnlybatched ||
         (runOnlybatched &&
-          !(startHeadBlock instanceof Buffer) &&
-          canonicalHead.header.number - startHeadBlock.header.number >=
+          canonicalHead.header.number - (startHeadBlock as Block).header.number >=
             BigInt(this.NUM_BLOCKS_PER_ITERATION))) &&
       (numExecuted === undefined || (loop && numExecuted === this.NUM_BLOCKS_PER_ITERATION)) &&
       !(startHeadBlock instanceof Buffer) &&
