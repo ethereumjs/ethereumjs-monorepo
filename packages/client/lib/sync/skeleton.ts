@@ -126,10 +126,7 @@ export class Skeleton extends MetaDBManager {
     if (tail === BigInt(0)) return true
     if (tail <= this.chain.blocks.height + BigInt(1)) {
       const nextBlock = await this.chain.getBlock(tail - BigInt(1))
-      if (nextBlock === null) {
-        return false
-      }
-      const linked = next.equals(nextBlock.hash())
+      const linked = next.equals(nextBlock!.hash())
       if (linked && this.status.progress.subchains.length > 1) {
         // Remove all other subchains as no more relevant
         const junkedSubChains = this.status.progress.subchains.splice(1)
