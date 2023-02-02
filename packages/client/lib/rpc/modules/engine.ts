@@ -194,16 +194,10 @@ const recursivelyFindParents = async (vmHeadHash: Buffer, parentHash: Buffer, ch
   }
   const parentBlocks: Block[] = []
   const block = await chain.getBlock(parentHash)
-  if (block === null) {
-    throw new Error('NotFound')
-  }
-  parentBlocks.push(block)
+  parentBlocks.push(block!)
   while (!parentBlocks[parentBlocks.length - 1].hash().equals(parentHash)) {
     const block = await chain.getBlock(parentBlocks[parentBlocks.length - 1].header.parentHash)
-    if (block === null) {
-      throw new Error('NotFound')
-    }
-    parentBlocks.push(block)
+    parentBlocks.push(block!)
   }
   return parentBlocks.reverse()
 }

@@ -61,7 +61,7 @@ export interface BlockchainInterface {
    *
    * @param name - Optional name of the iterator head (default: 'vm')
    */
-  getIteratorHead?(name?: string): Promise<Block | Buffer>
+  getIteratorHead?(name?: string): Promise<Block>
 
   /**
    * Gets total difficulty for a block specified by hash and number

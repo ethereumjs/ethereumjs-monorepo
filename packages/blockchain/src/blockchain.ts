@@ -309,15 +309,11 @@ export class Blockchain implements BlockchainInterface {
    *
    * @param name - Optional name of the iterator head (default: 'vm')
    */
-  async getIteratorHead(name = 'vm'): Promise<Block | Buffer> {
-    return this.runWithLock<Block | Buffer>(async () => {
-      // if the head is not found return the genesis hash
+  async getIteratorHead(name = 'vm'): Promise<Block> {
+    return this.runWithLock<Block>(async () => {
       const hash = this._heads[name] ?? this.genesisBlock.hash()
       const block = await this.getBlock(hash)
-      if (block === null) {
-        return this.genesisBlock.hash()
-      }
-      return block
+      return block!
     })
   }
 
@@ -338,10 +334,7 @@ export class Blockchain implements BlockchainInterface {
       const hash = this._heads[name] ?? this._headBlockHash
       if (hash === undefined) throw new Error('No head found.')
       const block = await this.getBlock(hash)
-      if (block === null) {
-        throw new Error('No head found.')
-      }
-      return block
+      return block!
     })
   }
 

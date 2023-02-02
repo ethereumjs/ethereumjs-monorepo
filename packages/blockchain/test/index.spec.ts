@@ -745,17 +745,6 @@ tape('blockchain test', (t) => {
     }
     st.end()
   })
-  t.test('should return genesis hash when head block is not found', async (t) => {
-    const blockchain = await Blockchain.create()
-    await blockchain.setIteratorHead(
-      'vm',
-      Buffer.from('807d8eb40f2618e6fedab067ab9b5eb50b1aa2c38b14ad97ddd25e8889ca6f88', 'hex')
-    )
-    const head = await blockchain.getIteratorHead()
-    t.ok(head instanceof Buffer, 'should return a Buffer when no Iterator head is found')
-    t.deepEqual(blockchain.genesisBlock.hash(), head, 'should return genesis hash')
-    t.end()
-  })
 })
 
 tape('initialization tests', (t) => {

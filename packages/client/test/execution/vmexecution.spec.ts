@@ -31,28 +31,6 @@ tape('[VMExecution]', async (t) => {
     return exec
   }
 
-  t.test('open without head block', async (t) => {
-    const blockchain = await Blockchain.create({
-      validateBlocks: true,
-      validateConsensus: false,
-    })
-    await blockchain.setIteratorHead('vm', Buffer.from([]))
-    const config = new Config({ transports: [], saveReceipts: true })
-    const chain = new Chain({ config, blockchain })
-    const exec = new VMExecution({ config, chain, metaDB: chain.chainDB })
-    await chain.open()
-    try {
-      await exec.open()
-      t.fail('test should throw')
-    } catch (e: any) {
-      t.equals(
-        e.message,
-        'cannot get iterator head: no head block found',
-        'vm should fail to open with invalid head block'
-      )
-    }
-  })
-
   t.test('getReceipts', async (t) => {
     const blockchain = await Blockchain.create({
       validateBlocks: true,
@@ -94,11 +72,9 @@ tape('[VMExecution]', async (t) => {
     })
     let exec = await testSetup(blockchain)
     const oldHead = await exec.vm.blockchain.getIteratorHead!()
-    const oldHeadHash = oldHead instanceof Buffer ? oldHead : oldHead.hash()
     await exec.run()
     let newHead = await exec.vm.blockchain.getIteratorHead!()
-    const newHeadHash = newHead instanceof Buffer ? newHead : newHead.hash()
-    t.deepEqual(newHeadHash, oldHeadHash, 'should not modify blockchain on empty run')
+    t.deepEqual(newHead.hash(), oldHead.hash(), 'should not modify blockchain on empty run')
 
     blockchain = await Blockchain.fromBlocksData(blocksDataMainnet, {
       validateBlocks: true,
@@ -107,25 +83,12 @@ tape('[VMExecution]', async (t) => {
     exec = await testSetup(blockchain)
     await exec.run()
     newHead = await exec.vm.blockchain.getIteratorHead!()
-    t.equals((newHead as Block).header.number, BigInt(5), 'should run all blocks')
+    t.equals(newHead.header.number, BigInt(5), 'should run all blocks')
 
     const common = new Common({ chain: 'testnet', customChains: [testnet] })
     exec = await testSetup(blockchain, common)
     await exec.run()
     t.equal(exec.hardfork, 'byzantium', 'should update HF on block run')
-    // await (exec.vm.blockchain as any).setIteratorHead('vm', Buffer.from([]))
-    t.equal(await exec.run(), 0, 'should not run any blocks if iterator head is not found')
-
-    t.end()
-  })
-  t.test('Block execution fail test', async (t) => {
-    const blockchain = await Blockchain.fromBlocksData(blocksDataMainnet, {
-      validateBlocks: true,
-      validateConsensus: false,
-    })
-    const exec = await testSetup(blockchain)
-    await (exec.vm.blockchain as any).setIteratorHead('vm', Buffer.from([]))
-    t.equal(await exec.run(), 0, 'should not run any blocks if iterator head is not found')
 
     t.end()
   })

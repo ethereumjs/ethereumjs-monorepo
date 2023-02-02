@@ -733,16 +733,16 @@ export class Eth {
       const result = await this.receiptsManager.getReceiptByTxHash(toBuffer(txHash))
       if (!result) return null
       const [receipt, blockHash, txIndex, logIndex] = result
-      const block = (await this._chain.getBlock(blockHash)) as Block
-      const parentBlock = await this._chain.getBlock(block!.header.parentHash)
-      const tx = block!.transactions[txIndex]
+      const block = (await this._chain.getBlock(blockHash))!
+      const parentBlock = await this._chain.getBlock(block.header.parentHash)
+      const tx = block.transactions[txIndex]
       const effectiveGasPrice = tx.supports(Capability.EIP1559FeeMarket)
         ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas <
-          (tx as FeeMarketEIP1559Transaction).maxFeePerGas - block!.header.baseFeePerGas!
+          (tx as FeeMarketEIP1559Transaction).maxFeePerGas - block.header.baseFeePerGas!
           ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
           : (tx as FeeMarketEIP1559Transaction).maxFeePerGas -
-            block!.header.baseFeePerGas! +
-            block!.header.baseFeePerGas!
+            block.header.baseFeePerGas! +
+            block.header.baseFeePerGas!
         : (tx as Transaction).gasPrice
       // Run tx through copied vm to get tx gasUsed and createdAddress
       const runBlockResult = await (
@@ -797,15 +797,7 @@ export class Eth {
       from = to = block
     } else {
       if (fromBlock === 'earliest') {
-        const block = await this._chain.getBlock(BigInt(0))
-        if (block === null) {
-          throw {
-            code: INVALID_PARAMS,
-            message: 'unknown fromBlock',
-          }
-        } else {
-          from = block
-        }
+        from = (await this._chain.getBlock(BigInt(0)))!
       } else if (fromBlock === 'latest' || fromBlock === undefined) {
         from = this._chain.blocks.latest!
       } else {
@@ -816,15 +808,7 @@ export class Eth {
             message: 'specified `fromBlock` greater than current height',
           }
         }
-        const block = await this._chain.getBlock(blockNum)
-        if (block === null) {
-          throw {
-            code: INVALID_PARAMS,
-            message: 'unknown fromBlock',
-          }
-        } else {
-          from = block
-        }
+        from = (await this._chain.getBlock(blockNum))!
       }
       if (toBlock === fromBlock) {
         to = from
@@ -838,15 +822,7 @@ export class Eth {
             message: 'specified `toBlock` greater than current height',
           }
         }
-        const block = await this._chain.getBlock(blockNum)
-        if (block === null) {
-          throw {
-            code: INVALID_PARAMS,
-            message: 'unknown toBlock',
-          }
-        } else {
-          to = block
-        }
+        to = (await this._chain.getBlock(blockNum))!
       }
     }
     if (
