@@ -315,7 +315,7 @@ export class Blockchain implements BlockchainInterface {
       const hash = this._heads[name] ?? this.genesisBlock.hash()
       const block = await this.getBlock(hash)
       if (block === null) {
-        return hash
+        return this.genesisBlock.hash()
       }
       return block
     })
