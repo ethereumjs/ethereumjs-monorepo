@@ -268,10 +268,8 @@ export class ReceiptsManager extends MetaDBManager {
             const limit = this.chain.headers.height - BigInt(this.config.txLookupLimit)
             if (limit < BigInt(0)) return
             const blockDelIndexes = await this.chain.getBlock(limit)
-            if (blockDelIndexes === null) {
-              throw new NotFoundError(limit)
-            }
-            void this.updateIndex(IndexOperation.Delete, IndexType.TxHash, blockDelIndexes)
+            blockDelIndexes &&
+              void this.updateIndex(IndexOperation.Delete, IndexType.TxHash, blockDelIndexes)
           }
         } else if (operation === IndexOperation.Delete) {
           for (const tx of block.transactions) {
