@@ -20,6 +20,24 @@ tape('blockchain test', (t) => {
     await blockchain.getIteratorHead()
     st.end()
   })
+  t.test('should throw when validating a block without its parent', async (st) => {
+    const blockchain = await Blockchain.create({
+      validateBlocks: true,
+      validateConsensus: false,
+    })
+    const block = await blockchain.getIteratorHead()
+    try {
+      await blockchain.validateBlock(block as Block)
+      st.fail('should throw')
+    } catch (e: any) {
+      st.equal(
+        e.message,
+        `Key ${(block as Block).header.number - BigInt(1)} was not found`,
+        'should throw during validation when no parent block is found'
+      )
+    }
+    st.end()
+  })
 
   t.test('should initialize correctly', async (st) => {
     const common = new Common({ chain: Chain.Ropsten })
