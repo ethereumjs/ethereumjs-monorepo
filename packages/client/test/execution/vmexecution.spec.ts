@@ -1,3 +1,4 @@
+import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common, Hardfork } from '@ethereumjs/common'
 import { toBuffer } from '@ethereumjs/util'
@@ -10,8 +11,6 @@ import { VMExecution } from '../../lib/execution'
 import blocksDataGoerli = require('../testdata/blocks/goerli.json')
 import blocksDataMainnet = require('../testdata/blocks/mainnet.json')
 import testnet = require('../testdata/common/testnet.json')
-
-import type { Block } from '@ethereumjs/block'
 
 tape('[VMExecution]', async (t) => {
   t.test('Initialization', async (t) => {
@@ -43,9 +42,25 @@ tape('[VMExecution]', async (t) => {
     await (exec.receiptsManager as any).put(0, toBuffer(fakeHash), Buffer.from([]))
     try {
       await exec.receiptsManager?.getReceipts(toBuffer(fakeHash), false, true)
-      t.fail('should throw error if target block not found')
+      t.fail('getReceipts should throw error if target block not found')
     } catch (e: any) {
-      t.equal(e.message, 'Block not found', 'should throw error if target block not found')
+      t.equal(
+        e.message,
+        'Block not found',
+        'getReceipts should throw error if target block not found'
+      )
+    }
+    try {
+      const block = blockchain.genesisBlock
+      const fakeBlock = Block.fromBlockData({ header: { number: BigInt(1) } })
+      await exec.receiptsManager?.getLogs(block, fakeBlock)
+      t.fail('getLogs should throw error if target block not found')
+    } catch (e: any) {
+      t.equal(
+        e.message,
+        `Key ${BigInt(1)} was not found`,
+        'getLogs should throw error if target block not found'
+      )
     }
     t.end()
   })
