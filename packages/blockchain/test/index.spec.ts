@@ -656,6 +656,13 @@ tape('blockchain test', (t) => {
 
     const getBlock = await blockchain.getCanonicalHeadBlock()
     st.ok(getBlock!.hash().equals(block.hash()), 'should update latest block')
+    ;(blockchain as any)._headBlockHash = Buffer.from('f000', 'hex')
+    try {
+      await blockchain.getCanonicalHeadBlock()
+      st.fail('should throw on missing head block')
+    } catch (e: any) {
+      st.equal(e.message, 'No head block found.', 'should throw on missing head block')
+    }
     st.end()
   })
 
