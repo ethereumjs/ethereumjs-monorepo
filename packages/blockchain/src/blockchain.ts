@@ -960,9 +960,6 @@ export class Blockchain implements BlockchainInterface {
             nextBlockNumber = headBlockNumber + BigInt(1)
             nextBlock = await this.getBlock(nextBlockNumber)
           }
-          if (nextBlock === null) {
-            break
-          }
           this._heads[name] = nextBlock!.hash()
           lastBlock = nextBlock!
           if (releaseLockOnCallback === true) {
