@@ -1088,8 +1088,12 @@ export class Engine {
       }
     }
     const currentChainHeight = this.chain.headers.height
+    if (start > currentChainHeight) {
+      return []
+    }
+
     if (start + count > currentChainHeight) {
-      count = count - currentChainHeight
+      count = currentChainHeight - start + BigInt(1)
     }
     const blocks = await this.chain.getBlocks(start, Number(count))
     const payloads: (ExecutionPayloadBodyV1 | null)[] = []
