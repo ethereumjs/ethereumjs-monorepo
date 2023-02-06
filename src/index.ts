@@ -12,7 +12,7 @@ import { base58check } from '@scure/base'
 import * as aes from 'ethereum-cryptography/aes'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { getRandomBytesSync } from 'ethereum-cryptography/random'
-import { pbkdf2Sync } from 'ethereum-cryptography/pbkdf2'
+import { pbkdf2 } from 'ethereum-cryptography/pbkdf2'
 import { scrypt } from 'ethereum-cryptography/scrypt'
 import { sha256 } from 'ethereum-cryptography/sha256'
 
@@ -432,7 +432,7 @@ export default class Wallet {
         throw new Error('Unsupported parameters to PBKDF2')
       }
 
-      derivedKey = pbkdf2Sync(
+      derivedKey = await pbkdf2(
         Buffer.from(password),
         Buffer.from(kdfparams.salt, 'hex'),
         kdfparams.c,
@@ -476,7 +476,7 @@ export default class Wallet {
 
     // key derivation
     const pass = Buffer.from(password, 'utf8')
-    const derivedKey = pbkdf2Sync(pass, pass, 2000, 32, 'sha256').slice(0, 16)
+    const derivedKey = (await pbkdf2(pass, pass, 2000, 32, 'sha256')).slice(0, 16)
 
     // seed decoding (IV is first 16 bytes)
     // NOTE: crypto (derived from openssl) when used with aes-*-cbc will handle PKCS#7 padding internally
@@ -588,7 +588,7 @@ export default class Wallet {
     switch (v3Params.kdf) {
       case KDFFunctions.PBKDF:
         kdfParams = kdfParamsForPBKDF(v3Params)
-        derivedKey = pbkdf2Sync(
+        derivedKey = await pbkdf2(
           Buffer.from(password),
           kdfParams.salt,
           kdfParams.c,

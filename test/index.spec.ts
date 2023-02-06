@@ -216,7 +216,12 @@ describe('.toV3()', function () {
   // [{a: 0, b: 0},
   //  {a: 1, b: 1},
   //  {a: 2, b: 2}]
-  const makePermutations = (...objs: Array<object>): Array<object> => {
+  type Perm = Array<{
+    salt: string | Buffer
+    iv: string | Buffer
+    uuid: string | Buffer
+  }>
+  const makePermutations = (...objs: Array<object>): Perm => {
     const permus = []
     const keys = Array.from(
       objs.reduce((acc: any, curr: object) => {
@@ -267,13 +272,7 @@ describe('.toV3()', function () {
       '{"version":3,"id":"7e59dc02-8d42-409d-b29a-a8a0f862cc81","address":"b14ab53e38da1c172f877dbc6d65e4a1b0474c3c","crypto":{"ciphertext":"01ee7f1a3c8d187ea244c92eea9e332ab0bb2b4c902d89bdd71f80dc384da1be","cipherparams":{"iv":"cecacd85e9cb89788b5aab2f93361233"},"cipher":"aes-128-ctr","kdf":"pbkdf2","kdfparams":{"dklen":32,"salt":"dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6","c":262144,"prf":"hmac-sha256"},"mac":"0c02cd0badfebd5e783e0cf41448f84086a96365fc3456716c33641a86ebc7cc"}}'
 
     await Promise.all(
-      (
-        permutations as Array<{
-          salt: string | Buffer
-          iv: string | Buffer
-          uuid: string | Buffer
-        }>
-      ).map(async function ({ salt, iv, uuid }) {
+      permutations.map(async function ({ salt, iv, uuid }) {
         const encFixtureWallet = await fixtureWallet.toV3String(pw, {
           kdf: 'pbkdf2',
           c: n,
@@ -287,21 +286,16 @@ describe('.toV3()', function () {
       })
     )
   })
-  it('should work with Scrypt', async function () {
-    this.timeout(0) // never
-    const wStatic =
+  describe('should work with Scrypt', () => {
+    const wStaticJSON =
       '{"version":3,"id":"7e59dc02-8d42-409d-b29a-a8a0f862cc81","address":"b14ab53e38da1c172f877dbc6d65e4a1b0474c3c","crypto":{"ciphertext":"c52682025b1e5d5c06b816791921dbf439afe7a053abb9fac19f38a57499652c","cipherparams":{"iv":"cecacd85e9cb89788b5aab2f93361233"},"cipher":"aes-128-ctr","kdf":"scrypt","kdfparams":{"dklen":32,"salt":"dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6","n":262144,"r":8,"p":1},"mac":"27b98c8676dc6619d077453b38db645a4c7c17a3e686ee5adaf53c11ac1b890e"}}'
+    const wStatic = JSON.parse(wStaticJSON)
     const wRandom = Wallet.generate()
     const wEthers = new ethersWallet(wRandom.getPrivateKeyString())
-
-    await Promise.all(
-      (
-        permutations as Array<{
-          salt: string | Buffer
-          iv: string | Buffer
-          uuid: string | Buffer
-        }>
-      ).map(async function ({ salt, iv, uuid }) {
+    for (const perm of permutations) {
+      it(`vector ${JSON.stringify(perm)}`, async function () {
+        this.timeout(0)
+        const { salt, iv, uuid } = perm
         const ethersOpts = makeEthersOptions({ salt, iv, uuid })
 
         const encFixtureWallet = await fixtureWallet.toV3String(pw, {
@@ -342,11 +336,11 @@ describe('.toV3()', function () {
           })
         ).toLowerCase()
 
-        assert.deepStrictEqual(JSON.parse(wStatic), JSON.parse(encFixtureWallet))
-        assert.deepStrictEqual(JSON.parse(wStatic), JSON.parse(encFixtureEthersWallet))
+        assert.deepStrictEqual(wStatic, JSON.parse(encFixtureWallet))
+        assert.deepStrictEqual(wStatic, JSON.parse(encFixtureEthersWallet))
         assert.deepStrictEqual(JSON.parse(encRandomWallet), JSON.parse(encEthersWallet))
       })
-    )
+    }
   })
   it('should work without providing options', async function () {
     this.timeout(0) // never
@@ -649,6 +643,7 @@ describe('.fromV1()', function () {
 
 describe('.fromV3()', function () {
   it('should work with PBKDF2', async function () {
+    this.timeout(0) // never
     const w =
       '{"crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"6087dab2f9fdbbfaddc31a909735c1e6"},"ciphertext":"5318b4d5bcd28de64ee5559e671353e16f075ecae9f99c7a79a38af5f869aa46","kdf":"pbkdf2","kdfparams":{"c":262144,"dklen":32,"prf":"hmac-sha256","salt":"ae3cd4e7013836a3df6bd7241b12db061dbe2c6785853cce422d148a624ce0bd"},"mac":"517ead924a9d0dc3124507e3393d175ce3ff7c1e96529c6c555ce9e51205e9b2"},"id":"3198bc9c-6672-5ab3-d995-4942343ae5b6","version":3}'
     let wEthersCompat = JSON.parse(w)
@@ -660,7 +655,6 @@ describe('.fromV3()', function () {
     const wRandom = await Wallet.generate().toV3String(pw, { kdf: 'pbkdf2' })
     const walletRandom = await Wallet.fromV3(wRandom, pw)
 
-    this.timeout(0) // never
     assert.strictEqual(wallet.getAddressString(), '0x008aeeda4d805471df9b2a5b0f38a0c3bcba786b')
     assert.strictEqual(
       wallet.getAddressString(),
@@ -697,10 +691,10 @@ describe('.fromV3()', function () {
     const wallet = await Wallet.fromV3(w, '')
     assert.strictEqual(wallet.getAddressString(), '0xa9886ac7489ecbcbd79268a79ef00d940e5fe1f2')
   })
-  it('should fail with invalid password', function () {
+  it('should fail with invalid password', async function () {
+    this.timeout(0) // never
     const w =
       '{"crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"6087dab2f9fdbbfaddc31a909735c1e6"},"ciphertext":"5318b4d5bcd28de64ee5559e671353e16f075ecae9f99c7a79a38af5f869aa46","kdf":"pbkdf2","kdfparams":{"c":262144,"dklen":32,"prf":"hmac-sha256","salt":"ae3cd4e7013836a3df6bd7241b12db061dbe2c6785853cce422d148a624ce0bd"},"mac":"517ead924a9d0dc3124507e3393d175ce3ff7c1e96529c6c555ce9e51205e9b2"},"id":"3198bc9c-6672-5ab3-d995-4942343ae5b6","version":3}'
-    this.timeout(0) // never
     assert.rejects(async function () {
       await Wallet.fromV3(w, 'wrongtestpassword')
     }, /^Error: Key derivation failed - possibly wrong passphrase$/)
