@@ -609,7 +609,8 @@ export default class Wallet {
       this.privKey,
       derivedKey.slice(0, 16),
       v3Params.iv,
-      v3Params.cipher
+      v3Params.cipher,
+      false
     )
     const mac = keccak256(
       Buffer.concat([Buffer.from(derivedKey.slice(16, 32)), Buffer.from(ciphertext)])
