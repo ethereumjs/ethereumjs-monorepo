@@ -436,18 +436,20 @@ export class Config {
 
         const diff = Date.now() - this.lastSyncDate
         // update synchronized
-        if (!this.synchronized && diff < this.syncedStateRemovalPeriod) {
+        if (diff < this.syncedStateRemovalPeriod) {
+          if (!this.synchronized) {
+            // Log to console the sync status
+            this.logger.info('*'.repeat(60))
+            this.logger.info(
+              `Synchronized blockchain at height=${height} hash=${short(latest.hash())} 🎉`
+            )
+            this.logger.info('*'.repeat(60))
+          }
+
           this.synchronized = true
           if (emitSyncEvent === true) {
             this.events.emit(Event.SYNC_SYNCHRONIZED, height)
           }
-
-          // Log to console the sync status
-          this.logger.info('*'.repeat(60))
-          this.logger.info(
-            `Synchronized blockchain at height=${height} hash=${short(latest.hash())} 🎉`
-          )
-          this.logger.info('*'.repeat(60))
         }
       }
     } else {
