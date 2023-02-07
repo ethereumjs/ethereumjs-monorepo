@@ -44,7 +44,7 @@ tape('[Synchronizer]', async (t) => {
     })
     void sync.start()
     ;(sync as any).chain._headers = {
-      latest: { hash: () => Buffer.from([]) },
+      latest: { hash: () => Buffer.from([]), number: BigInt(1) },
       td: BigInt(0),
       height: BigInt(1),
     }

@@ -432,7 +432,7 @@ export class Config {
       const height = latest.number
       if (height >= (this.syncTargetHeight ?? BigInt(0))) {
         this.syncTargetHeight = height
-        this.lastSyncDate = Number(latest.timestamp) * 1000
+        this.lastSyncDate = latest.timestamp ? Number(latest.timestamp) * 1000 : Date.now()
 
         const diff = Date.now() - this.lastSyncDate
         // update synchronized
