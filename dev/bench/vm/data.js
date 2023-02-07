@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1675689079798,
+  "lastUpdate": 1675772171939,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "14c451fb97d1a24dd137ddb099cc0d72d1776d9b",
-          "message": "Remove text-lcov reporter to clean coverage output (#2478)\n\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2023-01-11T13:56:54+01:00",
-          "tree_id": "2823ca1a4a20d62ab32f190f744f5c0153ca82a6",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/14c451fb97d1a24dd137ddb099cc0d72d1776d9b"
-        },
-        "date": 1673442010466,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15534,
-            "range": "±3.60%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 15209,
-            "range": "±4.85%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 15172,
-            "range": "±2.30%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 14449,
-            "range": "±9.12%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 15231,
-            "range": "±2.47%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.36%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c5bb62a5ac38ee052a0c4be54e77f2b37e3a6619",
+          "message": "blockchain.getBlock - return Null instead of throwing (#2516)\n\n* blockchain: update getBlock to return null instead of throw if block not found\r\n\r\n* blockchain: update getIteratorHead to return genesis hash if head block not found\r\n\r\n* blockchain: update calls to getBlock\r\n\r\n* blockchain: update blockchain tests\r\n\r\n* client: update calls to getBlock and getIteratorHead\r\n\r\n* client: update tests\r\n\r\n* vm: update tests\r\n\r\n* client: handle null returns for getBlock\r\n\r\n* vm: handle null returns for getBlock\r\n\r\n* client: return null if getBlock is not found\r\n\r\n* fix getTransactionByBlockHashAndIndex\r\n\r\n* fix getLogs\r\n\r\n* client: fix error throwing logic in eth_getLogs and engine_forkchoiceUpdatedV1\r\n\r\n* client: fix eth_getLogs error message\r\n\r\n* blockchain: fix return and write test for getIteratorHead\r\n\r\n* blockchain: add test coverage for getCononicalHeadHeader fail\r\n\r\n* blockchain: add test coverage for getCanonicalHead fail\r\n\r\n* blockchain: add test coverage for validateBlock fail\r\n\r\n* blockchain: remove extraneous null check\r\n\r\n* blockchain: add test coverage for findCommonAncestor fail\r\n\r\n* blockchain: add test coverage for consensus.validateDifficulty fail\r\n\r\n* client: add test coverage for getReceipts fail\r\n\r\n* client: add test for getLogs fail\r\n\r\n* client: simplify null check in updateIndex\r\n\r\n* client: add test coverage for exec.open() fail\r\n\r\n* client: add test coverage for exec.run() with invalid head block\r\n\r\n* client: simplify null check in skeleton\r\n\r\n* client: add test coverage for skeleton.getBlockByHash when block not found\r\n\r\n* client: remove extra type check\r\n\r\n* remove Buffer as return type for getIteratorHead, and remove checks for it\r\n\r\n* Removed unnecessary Block casts after getIteratorHead() calls\r\n\r\n* Replaced Block casts with non-null assertions where appropriate\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-02-07T13:13:25+01:00",
+          "tree_id": "9d9ca08d45bb232728c2426f666c6796d2e89173",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c5bb62a5ac38ee052a0c4be54e77f2b37e3a6619"
+        },
+        "date": 1675772170762,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19388,
+            "range": "±1.79%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18768,
+            "range": "±4.39%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 19030,
+            "range": "±1.48%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 17087,
+            "range": "±8.59%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19332,
+            "range": "±1.16%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
