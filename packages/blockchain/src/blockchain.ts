@@ -5,7 +5,7 @@ import { MemoryLevel } from 'memory-level'
 
 import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus'
 import { DBOp, DBSaveLookups, DBSetBlockOrHeader, DBSetHashToNumber, DBSetTD } from './db/helpers'
-import { DBManager } from './db/manager'
+import { DBManager, NotFoundError } from './db/manager'
 import { DBTarget } from './db/operation'
 import { genesisStateRoot } from './genesisStates'
 import {} from './utils'
@@ -311,10 +311,9 @@ export class Blockchain implements BlockchainInterface {
    */
   async getIteratorHead(name = 'vm'): Promise<Block> {
     return this.runWithLock<Block>(async () => {
-      // if the head is not found return the genesis hash
       const hash = this._heads[name] ?? this.genesisBlock.hash()
       const block = await this.getBlock(hash)
-      return block
+      return block!
     })
   }
 
@@ -335,7 +334,7 @@ export class Blockchain implements BlockchainInterface {
       const hash = this._heads[name] ?? this._headBlockHash
       if (hash === undefined) throw new Error('No head found.')
       const block = await this.getBlock(hash)
-      return block
+      return block!
     })
   }
 
@@ -346,6 +345,9 @@ export class Blockchain implements BlockchainInterface {
     return this.runWithLock<BlockHeader>(async () => {
       if (!this._headHeaderHash) throw new Error('No head header set')
       const block = await this.getBlock(this._headHeaderHash)
+      if (block === null) {
+        throw new Error('No head header found')
+      }
       return block.header
     })
   }
@@ -356,7 +358,11 @@ export class Blockchain implements BlockchainInterface {
   async getCanonicalHeadBlock(): Promise<Block> {
     return this.runWithLock<Block>(async () => {
       if (!this._headBlockHash) throw new Error('No head block set')
-      return this.getBlock(this._headBlockHash)
+      const block = await this.getBlock(this._headBlockHash)
+      if (block === null) {
+        throw new Error('No head block found.')
+      }
+      return block
     })
   }
 
@@ -546,7 +552,11 @@ export class Blockchain implements BlockchainInterface {
     if (header.isGenesis()) {
       return
     }
-    const parentHeader = (await this.getBlock(header.parentHash)).header
+    const parent = await this.getBlock(header.parentHash)
+    if (parent === null) {
+      throw new NotFoundError(header.number - BigInt(1))
+    }
+    const parentHeader = parent.header
 
     const { number } = header
     if (number !== parentHeader.number + BigInt(1)) {
@@ -609,6 +619,9 @@ export class Blockchain implements BlockchainInterface {
     // TODO: Rethink how validateHeader vs validateBlobTransactions works since the parentHeader is retrieved multiple times
     // (one for each uncle header and then for validateBlobTxs).
     const parentBlock = await this.getBlock(block.header.parentHash)
+    if (parentBlock === null) {
+      throw new NotFoundError(block.header.number - BigInt(1))
+    }
     block.validateBlobTransactions(parentBlock.header)
   }
   /**
@@ -653,7 +666,7 @@ export class Blockchain implements BlockchainInterface {
     let parentHash = block.header.parentHash
     for (let i = 0; i < getBlocks; i++) {
       const parentBlock = await this.getBlock(parentHash)
-      if (parentBlock === undefined) {
+      if (parentBlock === null) {
         throw new Error(`could not find parent block ${block.errorStr()}`)
       }
       canonicalBlockMap.push(parentBlock)
@@ -702,13 +715,17 @@ export class Blockchain implements BlockchainInterface {
    * this will be immediately looked up, otherwise it will wait until we have
    * unlocked the DB
    */
-  async getBlock(blockId: Buffer | number | bigint): Promise<Block> {
+  async getBlock(blockId: Buffer | number | bigint): Promise<Block | null> {
     // cannot wait for a lock here: it is used both in `validate` of `Block`
     // (calls `getBlock` to get `parentHash`) it is also called from `runBlock`
     // in the `VM` if we encounter a `BLOCKHASH` opcode: then a bigint is used we
     // need to then read the block from the canonical chain Q: is this safe? We
     // know it is OK if we call it from the iterator... (runBlock)
-    return this.dbManager.getBlock(blockId)
+    try {
+      return await this.dbManager.getBlock(blockId)
+    } catch {
+      return null
+    }
   }
 
   /**
@@ -740,13 +757,8 @@ export class Blockchain implements BlockchainInterface {
       let i = -1
 
       const nextBlock = async (blockId: Buffer | bigint | number): Promise<any> => {
-        let block
-        try {
-          block = await this.getBlock(blockId)
-        } catch (error: any) {
-          if (error.code !== 'LEVEL_NOT_FOUND') {
-            throw error
-          }
+        const block = await this.getBlock(blockId)
+        if (block === null) {
           return
         }
         i++
@@ -930,7 +942,10 @@ export class Blockchain implements BlockchainInterface {
       while (maxBlocks !== blocksRanCounter) {
         try {
           let nextBlock = await this.getBlock(nextBlockNumber)
-          const reorg = lastBlock ? !lastBlock.hash().equals(nextBlock.header.parentHash) : false
+          if (nextBlock === null) {
+            break
+          }
+          const reorg = lastBlock ? !lastBlock.hash().equals(nextBlock!.header.parentHash) : false
           if (reorg) {
             // If reorg has happened, the _heads must have been updated so lets reload the counters
             headHash = this._heads[name] ?? this.genesisBlock.hash()
@@ -938,13 +953,13 @@ export class Blockchain implements BlockchainInterface {
             nextBlockNumber = headBlockNumber + BigInt(1)
             nextBlock = await this.getBlock(nextBlockNumber)
           }
-          this._heads[name] = nextBlock.hash()
-          lastBlock = nextBlock
+          this._heads[name] = nextBlock!.hash()
+          lastBlock = nextBlock!
           if (releaseLockOnCallback === true) {
             this._lock.release()
           }
           try {
-            await onBlock(nextBlock, reorg)
+            await onBlock(nextBlock!, reorg)
           } finally {
             if (releaseLockOnCallback === true) {
               await this._lock.acquire()
@@ -988,8 +1003,11 @@ export class Blockchain implements BlockchainInterface {
   private async findCommonAncestor(newHeader: BlockHeader) {
     if (!this._headHeaderHash) throw new Error('No head header set')
     const ancestorHeaders = new Set<BlockHeader>()
-
-    let { header } = await this.getBlock(this._headHeaderHash)
+    const block = await this.getBlock(this._headHeaderHash)
+    if (block === null) {
+      throw new Error('Could not find block 0x' + this._headHeaderHash.toString('hex'))
+    }
+    let { header } = block
     if (header.number > newHeader.number) {
       header = await this.getCanonicalHeader(newHeader.number)
       ancestorHeaders.add(header)

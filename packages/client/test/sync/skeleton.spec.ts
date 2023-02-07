@@ -9,6 +9,7 @@ import { Config } from '../../lib/config'
 import { getLogger } from '../../lib/logging'
 import { Skeleton, errReorgDenied, errSyncMerged } from '../../lib/sync/skeleton'
 import { short } from '../../lib/util'
+import { DBKey } from '../../lib/util/metaDBManager'
 import { wait } from '../integration/util'
 import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
 type Subchain = {
@@ -393,7 +394,7 @@ tape('[Skeleton] / setHead', async (t) => {
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     await chain.open()
 
-    const genesis = await chain.getBlock(BigInt(0))
+    const genesis = (await chain.getBlock(BigInt(0)))!
     const block1 = Block.fromBlockData(
       { header: { number: 1, parentHash: genesis.hash(), difficulty: 100 } },
       { common, hardforkByBlockNumber: true }
@@ -497,7 +498,7 @@ tape('[Skeleton] / setHead', async (t) => {
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     await chain.open()
 
-    const genesis = await chain.getBlock(BigInt(0))
+    const genesis = (await chain.getBlock(BigInt(0)))!
     const block1 = Block.fromBlockData(
       { header: { number: 1, parentHash: genesis.hash(), difficulty: 100 } },
       { common, hardforkByBlockNumber: true }
@@ -569,7 +570,7 @@ tape('[Skeleton] / setHead', async (t) => {
       await chain.open()
       await skeleton.open()
 
-      const genesis = await chain.getBlock(BigInt(0))
+      const genesis = (await chain.getBlock(BigInt(0)))!
 
       const block1 = Block.fromBlockData(
         { header: { number: 1, parentHash: genesis.hash(), difficulty: 100 } },
@@ -652,8 +653,7 @@ tape('[Skeleton] / setHead', async (t) => {
       const chain = new Chain({ config })
       ;(chain.blockchain as any)._validateBlocks = false
       await chain.open()
-      const genesisBlock = await chain.getBlock(BigInt(0))
-
+      const genesisBlock = (await chain.getBlock(BigInt(0)))!
       const block1 = Block.fromBlockData(
         { header: { number: 1, parentHash: genesisBlock.hash(), difficulty: 100 } },
         { common }
@@ -731,6 +731,12 @@ tape('[Skeleton] / setHead', async (t) => {
       await skeleton.setHead(block5, true)
       await wait(200)
       st.equal(skeleton.bounds().head, BigInt(5), 'should update to new height')
+      const found = await skeleton.getBlockByHash(block5.hash())
+      st.deepEqual(found!.hash(), block5.hash(), 'should find block5')
+      await skeleton.delete(DBKey.SkeletonBlock, block5.hash())
+      const notFound = await skeleton.getBlockByHash(block5.hash(), true)
+      st.equal(notFound, undefined, 'should not find block5')
+      st.end()
     }
   )
 
@@ -758,7 +764,7 @@ tape('[Skeleton] / setHead', async (t) => {
       ;(chain.blockchain as any)._validateBlocks = false
       ;(chain.blockchain as any)._validateConsensus = false
       await chain.open()
-      const genesisBlock = await chain.getBlock(BigInt(0))
+      const genesisBlock = (await chain.getBlock(BigInt(0)))!
 
       const block1 = Block.fromBlockData(
         { header: { number: 1, parentHash: genesisBlock.hash(), difficulty: 100 } },
@@ -835,7 +841,7 @@ tape('[Skeleton] / setHead', async (t) => {
       BlockHeader.prototype._consensusFormatValidation = td.func<any>()
       td.replace('@ethereumjs/block', { BlockHeader })
       await chain.open()
-      const genesisBlock = await chain.getBlock(BigInt(0))
+      const genesisBlock = (await chain.getBlock(BigInt(0)))!
 
       const block1 = Block.fromBlockData(
         { header: { number: 1, parentHash: genesisBlock.hash(), difficulty: 100 } },

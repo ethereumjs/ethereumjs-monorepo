@@ -205,7 +205,9 @@ export class VMExecution extends Execution {
     let canonicalHead = await blockchain.getCanonicalHeadBlock()
 
     this.config.logger.debug(
-      `Running execution startHeadBlock=${startHeadBlock?.header.number} canonicalHead=${canonicalHead?.header.number} loop=${loop}`
+      `Running execution startHeadBlock=${
+        startHeadBlock instanceof Buffer ? '' : startHeadBlock.header.number
+      } canonicalHead=${canonicalHead?.header.number} loop=${loop}`
     )
 
     let headBlock: Block | undefined
@@ -219,6 +221,7 @@ export class VMExecution extends Execution {
           canonicalHead.header.number - startHeadBlock.header.number >=
             BigInt(this.NUM_BLOCKS_PER_ITERATION))) &&
       (numExecuted === undefined || (loop && numExecuted === this.NUM_BLOCKS_PER_ITERATION)) &&
+      !(startHeadBlock instanceof Buffer) &&
       startHeadBlock.hash().equals(canonicalHead.hash()) === false
     ) {
       let txCounter = 0

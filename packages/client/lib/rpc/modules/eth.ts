@@ -194,7 +194,7 @@ const getBlockByOption = async (blockOpt: string, chain: Chain) => {
   if (blockOpt === 'latest') {
     block = latest
   } else if (blockOpt === 'earliest') {
-    block = await chain.getBlock(BigInt(0))
+    block = (await chain.getBlock(BigInt(0)))!
   } else {
     const blockNumber = BigInt(blockOpt)
     if (blockNumber === latest.header.number) {
@@ -205,7 +205,7 @@ const getBlockByOption = async (blockOpt: string, chain: Chain) => {
         message: 'specified block greater than current height',
       }
     } else {
-      block = await chain.getBlock(blockNumber)
+      block = (await chain.getBlock(blockNumber))!
     }
   }
 
@@ -520,7 +520,7 @@ export class Eth {
 
     try {
       const block = await this._chain.getBlock(toBuffer(blockHash))
-      return await jsonRpcBlock(block, this._chain, includeTransactions)
+      return await jsonRpcBlock(block!, this._chain, includeTransactions)
     } catch (error) {
       throw {
         code: INVALID_PARAMS,
@@ -549,7 +549,7 @@ export class Eth {
     const [blockHash] = params
     try {
       const block = await this._chain.getBlock(toBuffer(blockHash))
-      return intToHex(block.transactions.length)
+      return intToHex(block!.transactions.length)
     } catch (error) {
       throw {
         code: INVALID_PARAMS,
@@ -620,16 +620,22 @@ export class Eth {
       const [blockHash, txIndexHex] = params
       const txIndex = parseInt(txIndexHex, 16)
       const block = await this._chain.getBlock(toBuffer(blockHash))
-      if (block.transactions.length <= txIndex) {
+      if (block === null) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'unknown block',
+        }
+      }
+      if (block!.transactions.length <= txIndex) {
         return null
       }
 
-      const tx = block.transactions[txIndex]
-      return jsonRpcTx(tx, block, txIndex)
+      const tx = block!.transactions[txIndex]
+      return jsonRpcTx(tx, block!, txIndex)
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,
-        message: error.message.toString(),
+        message: 'unknown block',
       }
     }
   }
@@ -648,8 +654,8 @@ export class Eth {
       if (!result) return null
       const [_receipt, blockHash, txIndex] = result
       const block = await this._chain.getBlock(blockHash)
-      const tx = block.transactions[txIndex]
-      return jsonRpcTx(tx, block, txIndex)
+      const tx = block!.transactions[txIndex]
+      return jsonRpcTx(tx, block!, txIndex)
     } catch (error: any) {
       throw {
         code: INTERNAL_ERROR,
@@ -707,7 +713,7 @@ export class Eth {
     }
 
     const block = await this._chain.getBlock(blockNumber)
-    return block.uncleHeaders.length
+    return block!.uncleHeaders.length
   }
 
   /**
@@ -727,7 +733,7 @@ export class Eth {
       const result = await this.receiptsManager.getReceiptByTxHash(toBuffer(txHash))
       if (!result) return null
       const [receipt, blockHash, txIndex, logIndex] = result
-      const block = await this._chain.getBlock(blockHash)
+      const block = (await this._chain.getBlock(blockHash))!
       const parentBlock = await this._chain.getBlock(block.header.parentHash)
       const tx = block.transactions[txIndex]
       const effectiveGasPrice = tx.supports(Capability.EIP1559FeeMarket)
@@ -743,7 +749,7 @@ export class Eth {
         await this._vm!.copy()
       ).runBlock({
         block,
-        root: parentBlock.header.stateRoot,
+        root: parentBlock!.header.stateRoot,
         skipBlockValidation: true,
       })
       const { totalGasSpent, createdAddress } = runBlockResult.results[txIndex]
@@ -781,17 +787,17 @@ export class Eth {
     }
     let from: Block, to: Block
     if (blockHash !== undefined) {
-      try {
-        from = to = await this._chain.getBlock(toBuffer(blockHash))
-      } catch (error: any) {
+      const block = await this._chain.getBlock(toBuffer(blockHash))
+      if (block === null) {
         throw {
           code: INVALID_PARAMS,
           message: 'unknown blockHash',
         }
       }
+      from = to = block
     } else {
       if (fromBlock === 'earliest') {
-        from = await this._chain.getBlock(BigInt(0))
+        from = (await this._chain.getBlock(BigInt(0)))!
       } else if (fromBlock === 'latest' || fromBlock === undefined) {
         from = this._chain.blocks.latest!
       } else {
@@ -802,7 +808,7 @@ export class Eth {
             message: 'specified `fromBlock` greater than current height',
           }
         }
-        from = await this._chain.getBlock(blockNum)
+        from = (await this._chain.getBlock(blockNum))!
       }
       if (toBlock === fromBlock) {
         to = from
@@ -816,7 +822,7 @@ export class Eth {
             message: 'specified `toBlock` greater than current height',
           }
         }
-        to = await this._chain.getBlock(blockNum)
+        to = (await this._chain.getBlock(blockNum))!
       }
     }
     if (
@@ -1037,13 +1043,13 @@ export class Eth {
       const baseFee = latest.calcNextBaseFee()
       let priorityFee = BigInt(0)
       const block = await this._chain.getBlock(latest.number)
-      for (const tx of block.transactions) {
+      for (const tx of block!.transactions) {
         const maxPriorityFeePerGas = (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
         priorityFee += maxPriorityFeePerGas
       }
 
       priorityFee =
-        priorityFee !== BigInt(0) ? priorityFee / BigInt(block.transactions.length) : BigInt(1)
+        priorityFee !== BigInt(0) ? priorityFee / BigInt(block!.transactions.length) : BigInt(1)
       gasPrice = baseFee + priorityFee > minGasPrice ? baseFee + priorityFee : minGasPrice
     } else {
       // For chains that don't support EIP-1559 we iterate over the last 20
@@ -1052,11 +1058,11 @@ export class Eth {
       let txCount = BigInt(0)
       for (let i = 0; i < blockIterations; i++) {
         const block = await this._chain.getBlock(latest.number - BigInt(i))
-        if (block.transactions.length === 0) {
+        if (block!.transactions.length === 0) {
           continue
         }
 
-        for (const tx of block.transactions) {
+        for (const tx of block!.transactions) {
           const txGasPrice = (tx as Transaction).gasPrice
           gasPrice += txGasPrice
           txCount++

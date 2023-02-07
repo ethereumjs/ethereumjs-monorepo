@@ -10,7 +10,7 @@ import type { BlockBodyBuffer, BlockBuffer, BlockOptions } from '@ethereumjs/blo
 import type { Common } from '@ethereumjs/common'
 import type { AbstractLevel } from 'abstract-level'
 
-class NotFoundError extends Error {
+export class NotFoundError extends Error {
   public code: string = 'LEVEL_NOT_FOUND'
 
   constructor(blockNumber: bigint) {
