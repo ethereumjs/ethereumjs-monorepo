@@ -813,8 +813,12 @@ export class Engine {
       const blocks = [...parentBlocks, headBlock]
       await this.execution.setHead(blocks)
       this.service.txPool.removeNewBlockTxs(blocks)
+
+      const isPrevSynced = this.chain.config.synchronized
       this.config.updateSynchronizedState(headBlock.header)
-      this.service.txPool.checkRunState()
+      if (!isPrevSynced && this.chain.config.synchronized) {
+        this.service.txPool.checkRunState()
+      }
     }
     /*
      * Process safe and finalized block

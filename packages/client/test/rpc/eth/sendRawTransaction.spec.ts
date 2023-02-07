@@ -113,7 +113,8 @@ tape(`${method}: call with invalid arguments: not enough balance`, async (t) => 
 })
 
 tape(`${method}: call with sync target height not set yet`, async (t) => {
-  const { server } = baseSetup()
+  const { server, client } = baseSetup()
+  client.config.synchronized = false
 
   // Mainnet EIP-1559 tx
   const txData =
