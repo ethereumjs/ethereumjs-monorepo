@@ -194,7 +194,7 @@ const getBlockByOption = async (blockOpt: string, chain: Chain) => {
   if (blockOpt === 'latest') {
     block = latest
   } else if (blockOpt === 'earliest') {
-    block = (await chain.getBlock(BigInt(0))) as Block
+    block = (await chain.getBlock(BigInt(0)))!
   } else {
     const blockNumber = BigInt(blockOpt)
     if (blockNumber === latest.header.number) {
@@ -205,7 +205,7 @@ const getBlockByOption = async (blockOpt: string, chain: Chain) => {
         message: 'specified block greater than current height',
       }
     } else {
-      block = (await chain.getBlock(blockNumber)) as Block
+      block = (await chain.getBlock(blockNumber))!
     }
   }
 
