@@ -202,16 +202,14 @@ export class TxPool {
    * Checks if tx pool should be started
    */
   checkRunState() {
-    if (
-      this.running ||
-      typeof this.config.syncTargetHeight !== 'bigint' ||
-      this.config.syncTargetHeight === BigInt(0)
-    )
+    if (this.running || !this.config.synchronized) {
       return
+    }
     // If height gte target, we are close enough to the
     // head of the chain that the tx pool can be started
     const target =
-      this.config.syncTargetHeight - BigInt(this.BLOCKS_BEFORE_TARGET_HEIGHT_ACTIVATION)
+      (this.config.syncTargetHeight ?? BigInt(0)) -
+      BigInt(this.BLOCKS_BEFORE_TARGET_HEIGHT_ACTIVATION)
     if (this.service.chain.headers.height >= target) {
       this.start()
     }

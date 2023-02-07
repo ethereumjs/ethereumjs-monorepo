@@ -154,5 +154,6 @@ export interface ClientOpts {
   forceSnapSync?: boolean
   txLookupLimit?: number
   startBlock?: number
+  isSingleNode?: boolean
   opened: boolean
 }
