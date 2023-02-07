@@ -43,7 +43,7 @@ async function main() {
   const blockchainHead = await vm.blockchain.getIteratorHead!()
 
   console.log('--- Finished processing the Blockchain ---')
-  console.log('New head:', '0x' + (blockchainHead as Block).hash().toString('hex'))
+  console.log('New head:', '0x' + blockchainHead.hash().toString('hex'))
   console.log('Expected:', testData.lastblockhash)
 }
 

@@ -27,12 +27,12 @@ tape('blockchain test', (t) => {
     })
     const block = await blockchain.getIteratorHead()
     try {
-      await blockchain.validateBlock(block as Block)
+      await blockchain.validateBlock(block)
       st.fail('should throw')
     } catch (e: any) {
       st.equal(
         e.message,
-        `Key ${(block as Block).header.number - BigInt(1)} was not found`,
+        `Key ${block.header.number - BigInt(1)} was not found`,
         'should throw during validation when no parent block is found'
       )
     }
@@ -63,7 +63,7 @@ tape('blockchain test', (t) => {
       validateConsensus: false,
       common,
     })
-    const head = (await blockchain.getIteratorHead()) as Block
+    const head = await blockchain.getIteratorHead()
     st.equals(head.header.number, BigInt(0), 'correct block number')
     st.end()
   })
@@ -786,13 +786,13 @@ tape('initialization tests', (t) => {
     const db = blockchain.db
 
     st.ok(
-      ((await blockchain.getIteratorHead()) as Block).hash().equals(hash),
+      (await blockchain.getIteratorHead()).hash().equals(hash),
       'blockchain should put custom genesis block'
     )
 
     const newBlockchain = await Blockchain.create({ db, genesisBlock })
     st.ok(
-      ((await newBlockchain.getIteratorHead()) as Block).hash().equals(hash),
+      (await newBlockchain.getIteratorHead()).hash().equals(hash),
       'head hash should be read from the provided db'
     )
     st.end()
