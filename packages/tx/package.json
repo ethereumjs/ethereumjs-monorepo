@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@chainsafe/ssz": "^0.9.2",
-    "@ethereumjs/common": "^3.0.2",
+    "@ethereumjs/common": "^3.1.0",
     "@ethereumjs/rlp": "^4.0.1",
     "@ethereumjs/util": "^8.0.4",
     "ethereum-cryptography": "^1.1.2",

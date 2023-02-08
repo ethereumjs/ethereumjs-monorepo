@@ -6,6 +6,44 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.1.0 - 2023-02-14
+
+### Functional Shanghai Support
+
+This release fully supports all EIPs included in the [Shanghai](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/shanghai.md) feature hardfork scheduled for early 2023. Note that a `timestamp` to trigger the `Shanghai` fork update is only added for the `sepolia` testnet and not yet for `goerli` or `mainnet`.
+
+You can instantiate a Shanghai-enabled Common instance with:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+```
+
+#### Changes
+
+- Added final Shanghai EIPs to HF file, PR [#2459](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2459)
+- Updated `forkHash` calculation for timebased hardforks, PR [#2458](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2458)
+- Updated `setForkHashes()` to update timebased hardfork `forkHash` values, PR [#2461](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2461)
+
+### Experimental EIP-4844 Shard Blob Transactions Support
+
+This release supports an experimental version of [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) Shard Blob Transactions as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023), see PR [#2349](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2349).
+
+You can instantiate an `EIP-4844` enabled Common instance with:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+```
+
+### Other Changes and Bugfixes
+
+- Added `eips` option to `Common.fromGethGenesis()` constructor options, PR [#2469](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2469)
+- Set alternative default HF in `Common.fromGethGenesis()` if `mergeForkBlock` not present, PR [#2414](https://github.com/ethereumjs/ethereumjs-monorepo/issues/2414)
+- Fixed some minor custom chain bugs, PR [#2448](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2448)
+
 ## 3.0.2 - 2022-12-09
 
 ### Experimental EIP-4895 Beacon Chain Withdrawals Support

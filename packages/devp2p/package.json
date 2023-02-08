@@ -49,7 +49,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^3.0.2",
+    "@ethereumjs/common": "^3.1.0",
     "@ethereumjs/rlp": "^4.0.1",
     "@ethereumjs/util": "^8.0.4",
     "@scure/base": "1.1.1",
