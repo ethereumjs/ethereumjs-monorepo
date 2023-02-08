@@ -4,6 +4,10 @@
 
 ## Table of contents
 
+### Namespaces
+
+- [ssz](modules/ssz.md)
+
 ### Enumerations
 
 - [TypeOutput](enums/TypeOutput.md)
@@ -41,6 +45,7 @@
 
 ### Variables
 
+- [GWEI\_TO\_WEI](README.md#gwei_to_wei)
 - [KECCAK256\_NULL](README.md#keccak256_null)
 - [KECCAK256\_NULL\_S](README.md#keccak256_null_s)
 - [KECCAK256\_RLP](README.md#keccak256_rlp)
@@ -50,6 +55,7 @@
 - [MAX\_INTEGER](README.md#max_integer)
 - [MAX\_INTEGER\_BIGINT](README.md#max_integer_bigint)
 - [MAX\_UINT64](README.md#max_uint64)
+- [MAX\_WITHDRAWALS\_PER\_PAYLOAD](README.md#max_withdrawals_per_payload)
 - [RLP\_EMPTY\_STRING](README.md#rlp_empty_string)
 - [SECP256K1\_ORDER](README.md#secp256k1_order)
 - [SECP256K1\_ORDER\_DIV\_2](README.md#secp256k1_order_div_2)
@@ -227,7 +233,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/withdrawal.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L27)
+[packages/util/src/withdrawal.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L29)
 
 ___
 
@@ -235,7 +241,8 @@ ___
 
 Ƭ **WithdrawalData**: `Object`
 
-Flexible input data type for EIP-4895 withdrawal data
+Flexible input data type for EIP-4895 withdrawal data with amount in Gwei to
+match CL representation and for eventual ssz withdrawalsRoot
 
 #### Type declaration
 
@@ -248,9 +255,21 @@ Flexible input data type for EIP-4895 withdrawal data
 
 #### Defined in
 
-[packages/util/src/withdrawal.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L10)
+[packages/util/src/withdrawal.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L11)
 
 ## Variables
+
+### GWEI\_TO\_WEI
+
+• `Const` **GWEI\_TO\_WEI**: `bigint`
+
+Easy conversion from Gwei to wei
+
+#### Defined in
+
+[packages/util/src/units.ts:2](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/units.ts#L2)
+
+___
 
 ### KECCAK256\_NULL
 
@@ -357,6 +376,16 @@ ___
 #### Defined in
 
 [packages/util/src/constants.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L7)
+
+___
+
+### MAX\_WITHDRAWALS\_PER\_PAYLOAD
+
+• `Const` **MAX\_WITHDRAWALS\_PER\_PAYLOAD**: ``16``
+
+#### Defined in
+
+[packages/util/src/constants.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L67)
 
 ___
 
