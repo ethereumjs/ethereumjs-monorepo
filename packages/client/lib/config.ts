@@ -463,6 +463,14 @@ export class Config {
         }
       }
     }
+
+    this.logger.debug(
+      `Client synchronized=${this.synchronized}${
+        latest ? ' height= ' + latest.number : ''
+      } syncTargetHeight=${this.syncTargetHeight} lastSyncDate=${
+        (Date.now() - this.lastSyncDate) / 1000
+      } secs ago`
+    )
   }
 
   /**
