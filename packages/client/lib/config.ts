@@ -438,6 +438,7 @@ export class Config {
         // update synchronized
         if (diff < this.syncedStateRemovalPeriod) {
           if (!this.synchronized) {
+            this.synchronized = true
             // Log to console the sync status
             this.logger.info('*'.repeat(60))
             this.logger.info(
@@ -446,7 +447,6 @@ export class Config {
             this.logger.info('*'.repeat(60))
           }
 
-          this.synchronized = true
           if (emitSyncEvent === true) {
             this.events.emit(Event.SYNC_SYNCHRONIZED, height)
           }
