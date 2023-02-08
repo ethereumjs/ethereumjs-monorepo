@@ -220,7 +220,7 @@ tape('blob EIP 4844 transaction', async (t) => {
   } catch {
     // NOOP - just verifying KZG is ready if not already
   }
-  initKZG(kzg)
+  initKZG(kzg, __dirname + '/../../../../tx/trustedSetups/trusted_setup.txt')
   const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
   const common = Common.fromGethGenesis(gethGenesis, {
     chain: 'customChain',
