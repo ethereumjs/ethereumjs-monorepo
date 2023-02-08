@@ -928,7 +928,7 @@ export class Eth {
     if (
       peerPool.peers.length === 0 &&
       !this.client.config.mine &&
-      !this.client.config.isSingleNode
+      this.client.config.isSingleNode === false
     ) {
       throw {
         code: INTERNAL_ERROR,

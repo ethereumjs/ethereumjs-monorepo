@@ -219,7 +219,7 @@ export interface ConfigOptions {
   mine?: boolean
 
   /**
-   * Is a single node and doesn't need peers for syncronization
+   * Is a single node and doesn't need peers for synchronization
    *
    * Default: `false`
    */

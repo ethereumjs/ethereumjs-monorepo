@@ -415,7 +415,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
   }
 
   await client.open()
-  // update client's sync status and start txpool if syncronized
+  // update client's sync status and start txpool if synchronized
   client.config.updateSynchronizedState(client.chain.headers.latest)
   if (client.config.synchronized) {
     const fullService = client.services.find((s) => s.name === 'eth')
