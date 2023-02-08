@@ -41,7 +41,7 @@
     "@ethereumjs/common": "^3.1.0",
     "@ethereumjs/rlp": "^4.0.1",
     "@ethereumjs/trie": "^5.0.3",
-    "@ethereumjs/tx": "^4.0.2",
+    "@ethereumjs/tx": "^4.1.0",
     "@ethereumjs/util": "^8.0.4",
     "ethereum-cryptography": "^1.1.2",
     "ethers": "^5.7.1"

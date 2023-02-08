@@ -41,15 +41,15 @@ Base default HF (determined by `Common`): `merge`
 
 Starting with `v3.2.1` the tx library now deviates from the default HF for typed tx using the following rule: "The default HF is the default HF from `Common` if the tx type is active on that HF. Otherwise it is set to the first greater HF where the tx is active."
 
-Supported Hardforks:
+Hardforks adding features and/or tx types:
 
 | Hardfork         | Introduced | Description                                                                                             |
 | ---------------- | ---------- | ------------------------------------------------------------------------------------------------------- |
-| `london`         | `v3.2.0`   | `EIP-1559` Transactions                                                                                 |
-| `berlin`         | `v3.1.0`   |  `EIP-2718` Typed Transactions, Optional Access Lists Tx Type `EIP-2930`                                |
-| `muirGlacier`    |  `v2.1.2`  |  -                                                                                                      |
-| `istanbul`       |  `v2.1.1`  | Support for reduced non-zero call data gas prices ([EIP-2028](https://eips.ethereum.org/EIPS/eip-2028)) |
 | `spuriousDragon` |  `v2.0.0`  |  `EIP-155` replay protection (disable by setting HF pre-`spuriousDragon`)                               |
+| `istanbul`       |  `v2.1.1`  | Support for reduced non-zero call data gas prices ([EIP-2028](https://eips.ethereum.org/EIPS/eip-2028)) |
+| `muirGlacier`    |  `v2.1.2`  |  -                                                                                                      |
+| `berlin`         | `v3.1.0`   |  `EIP-2718` Typed Transactions, Optional Access Lists Tx Type `EIP-2930`                                |
+| `london`         | `v3.2.0`   | `EIP-1559` Transactions                                                                                 |
 
 ### Standalone EIPs
 
@@ -76,14 +76,16 @@ This library supports the following transaction types ([EIP-2718](https://eips.e
 - Activation: `sharding`
 - Type: `5`
 
-This is an experimental implementation of the blob transaction type introducd with EIP-4844. This transaction type requires additional dependencies that are not installed by default to limit bundle size.
+This library supports an experimental version of the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023), see PR [#2349](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2349).
+
+This transaction type requires additional dependencies that are not installed by default to limit bundle size.
 
 ##### Configuration
 
 There are two additional configuration steps needed to work with blob transactions.
 
-1. Install an additional dependency that supports the `kzg` interface defined in [the kzg interface](./src/kzg/kzg.ts). You can install the default option `c-kzg` by simply running `npm install c-kzg`.
-2. Download the trusted setup required for the KZG module. It can be found [here](../client/lib/trustedSetups/trusted_setup.txt)
+1. Install an additional dependency that supports the `kzg` interface defined in [the kzg interface](./src/kzg/kzg.ts). You can install the default option [c-kzg](https://github.com/ethereum/c-kzg-4844) by simply running `npm install c-kzg`.
+2. Download the trusted setup required for the KZG module. It can be found [here](../client/lib/trustedSetups/trusted_setup.txt).
 
 ##### Usage
 
@@ -95,7 +97,7 @@ import { BlobEIP4844Transaction, initKzg } from '@ethereumjs/tx'
 import * as kzg from 'c-kzg'
 
 initKzg(kzg, 'path/to/my/trusted_setup.txt')
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Sharding })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
 
 const txData = {
   data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
@@ -112,9 +114,9 @@ const txData = {
   chainId: '0x01',
   accessList: [],
   type: '0x05',
-  versionedHashes: ['0xabc...'],
-  kzgCommitments: ['0xdef...'],
-  blobs: ['0xghi...'],
+  versionedHashes: ['0xabc...'], // Test with empty array on a first run
+  kzgCommitments: ['0xdef...'], // Test with empty array on a first run
+  blobs: ['0xghi...'], // Test with empty array on a first run
 }
 
 const tx = BlobEIP4844Transaction.fromTxData(txData, { common })

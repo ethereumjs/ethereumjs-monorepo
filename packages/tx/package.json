@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/tx",
-  "version": "4.0.2",
+  "version": "4.1.0",
   "description": "A simple module for creating, manipulating and signing Ethereum transactions",
   "keywords": [
     "ethereum",

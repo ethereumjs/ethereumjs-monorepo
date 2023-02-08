@@ -6,6 +6,63 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.1.0 - 2023-02-14
+
+### Functional Shanghai Support
+
+This release fully supports all EIPs included in the [Shanghai](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/shanghai.md) feature hardfork scheduled for early 2023. Note that a `timestamp` to trigger the `Shanghai` fork update is only added for the `sepolia` testnet and not yet for `goerli` or `mainnet`.
+
+You can instantiate a Shanghai-enabled Common instance for your transactions with:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+```
+
+### Experimental EIP-4844 Shard Blob Transactions Support
+
+This release supports an experimental version of [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) Shard Blob Transactions as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023), see PR [#2349](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2349) and follow-up PRs [#2501](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2501) and [#2499](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2499).
+
+See the following code snipped for an example on how to instantiate a blob transaction together with a matching `@ethereumjs/common` instance.
+
+Please note you must first call `initKZG` and pass in a KZG library object (defaulting to [c-kzg](https://github.com/ethereum/c-kzg-4844) which is added as an optional peer dependency in `package.json` and must be manually installed via NPM).
+
+```typescript
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { BlobEIP4844Transaction, initKZG } from '@ethereumjs/tx'
+import * as kzg from 'c-kzg' // import { myKzgLibrary } from 'myKzgLibrary'
+
+initKZG(kzg, 'path/to/my/trusted_setup.txt') // Download from https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+
+const txData = {
+  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+  gasLimit: '0x02625a00',
+  maxPriorityFeePerGas: '0x01',
+  maxFeePerGas: '0xff',
+  maxFeePerDataGas: '0xfff',
+  nonce: '0x00',
+  to: '0xcccccccccccccccccccccccccccccccccccccccc',
+  value: '0x0186a0',
+  v: '0x01',
+  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
+  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
+  chainId: '0x01',
+  accessList: [],
+  type: '0x05',
+  versionedHashes: ['0xabc...'], // Test with empty array on a first run
+  kzgCommitments: ['0xdef...'], // Test with empty array on a first run
+  blobs: ['0xghi...'], // Test with empty array on a first run
+}
+
+const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
+```
+
+Note, the `versionedHashes`, `kzgCommitments`, and `blobs` are in reality 32 bytes or 4096 bytes in length but are trimmed here for brevity.
+
+See the [Blob Transaction Tests](./test/eip4844.spec.ts) for examples of usage in instantiating, serializing, and deserializing these transactions.
+
 ## 4.0.2 - 2022-12-09
 
 Maintenance release with dependency updates, PR [#2445](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2445)
