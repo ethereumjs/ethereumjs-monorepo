@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/devp2p",
-  "version": "5.0.2",
+  "version": "5.1.0",
   "description": "A JavaScript implementation of ÐΞVp2p",
   "keywords": [
     "ethereum",

@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.1.0 - 2023-02-14
+
+This release updates the underlying `@ethereumjs/common` dependency version to make the library ready for the upcoming `Shanghai` hardfork (scheduled for early 2023) regarding the `forkHash` related fork switch logic, see PR [#2521](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2521). Note that a `timestamp` to trigger the `Shanghai` fork update is only added to Common for the `sepolia` testnet and not yet for `goerli` or `mainnet`.
+
+You can instantiate a Shanghai-enabled Common instance with:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+```
+
 ## 5.0.2 - 2022-12-09
 
 ### Hardfork-By-Time Support
