@@ -50,7 +50,7 @@
   },
   "devDependencies": {
     "@ethereumjs/block": "^4.1.0",
-    "@ethereumjs/trie": "^5.0.2",
+    "@ethereumjs/trie": "^5.0.3",
     "@ethereumjs/util": "^8.0.4",
     "@types/node": "^16.11.7",
     "@types/tape": "^4.13.2",
