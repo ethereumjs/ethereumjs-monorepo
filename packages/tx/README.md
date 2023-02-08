@@ -83,7 +83,7 @@ This is an experimental implementation of the blob transaction type introducd wi
 There are two additional configuration steps needed to work with blob transactions.
 
 1. Install an additional dependency that supports the `kzg` interface defined in [the kzg interface](./src/kzg/kzg.ts). You can install the default option `c-kzg` by simply running `npm install c-kzg`.
-2. Download the trusted setup required for the KZG module. It can be found [here](./trustedSetups/trusted_setup.txt)
+2. Download the trusted setup required for the KZG module. It can be found [here](../client/lib/trustedSetups/trusted_setup.txt)
 
 ##### Usage
 
