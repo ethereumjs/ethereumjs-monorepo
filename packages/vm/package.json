@@ -60,7 +60,7 @@
     "@ethereumjs/blockchain": "^6.1.0",
     "@ethereumjs/common": "^3.0.2",
     "@ethereumjs/evm": "^1.2.3",
-    "@ethereumjs/rlp": "^4.0.0",
+    "@ethereumjs/rlp": "^4.0.1",
     "@ethereumjs/statemanager": "^1.0.2",
     "@ethereumjs/trie": "^5.0.2",
     "@ethereumjs/tx": "^4.0.2",

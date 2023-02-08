@@ -84,7 +84,7 @@
   },
   "dependencies": {
     "@chainsafe/ssz": "^0.10.0",
-    "@ethereumjs/rlp": "^4.0.0",
+    "@ethereumjs/rlp": "^4.0.1",
     "ethereum-cryptography": "^1.1.2"
   },
   "devDependencies": {
