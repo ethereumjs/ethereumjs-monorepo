@@ -14,7 +14,7 @@ import {
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
 const pk = randomBytes(32)
-if (isBrowser() === false) initKZG(kzg)
+if (isBrowser() === false) initKZG(kzg, __dirname + '/../trustedSetups/trusted_setup.txt')
 
 const gethGenesis = require('../../block/test/testdata/4844-hardfork.json')
 const common = Common.fromGethGenesis(gethGenesis, {
