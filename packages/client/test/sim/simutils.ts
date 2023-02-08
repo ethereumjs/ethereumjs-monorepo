@@ -141,6 +141,8 @@ export function runNetwork(
       if (str.includes('Synchronized')) {
         process.stdout.write('.')
         lastPrintedDot = true
+      } else if (str.includes('Synced') && !str.includes('skipped')) {
+        process.stdout.write('`')
       }
     }
   })
@@ -410,5 +412,7 @@ export const filterKeywords = [
   'ejs',
   'lode',
   'pid',
+  'Synced - slot: 0 -',
+  'TxPool started',
 ]
 export const filterOutWords = ['duties', 'Low peer count', 'MaxListenersExceededWarning']

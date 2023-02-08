@@ -415,8 +415,14 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
   }
 
   await client.open()
-  // update client's sync status
+  // update client's sync status and start txpool if syncronized
   client.config.updateSynchronizedState(client.chain.headers.latest)
+  if (client.config.synchronized) {
+    const fullService = client.services.find((s) => s.name === 'eth')
+    // The service might not be FullEthereumService even if we cast it as one,
+    // so txPool might not exist on it
+    ;(fullService as FullEthereumService).txPool?.checkRunState()
+  }
 
   if (args.executeBlocks !== undefined) {
     // Special block execution debug mode (does not change any state)
