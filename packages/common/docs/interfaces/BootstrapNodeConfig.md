@@ -22,7 +22,7 @@
 
 #### Defined in
 
-[packages/common/src/types.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L58)
+[packages/common/src/types.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L59)
 
 ___
 
@@ -32,7 +32,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/types.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L61)
+[packages/common/src/types.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L62)
 
 ___
 
@@ -42,7 +42,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/types.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L59)
+[packages/common/src/types.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L60)
 
 ___
 
@@ -52,7 +52,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/types.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L55)
+[packages/common/src/types.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L56)
 
 ___
 
@@ -62,7 +62,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/types.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L60)
+[packages/common/src/types.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L61)
 
 ___
 
@@ -72,7 +72,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/types.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L57)
+[packages/common/src/types.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L58)
 
 ___
 
@@ -82,4 +82,4 @@ ___
 
 #### Defined in
 
-[packages/common/src/types.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L56)
+[packages/common/src/types.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L57)

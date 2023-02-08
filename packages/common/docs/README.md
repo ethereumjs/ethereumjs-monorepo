@@ -79,7 +79,7 @@ ___
 
 ### parseGethGenesis
 
-▸ **parseGethGenesis**(`json`, `name?`, `mergeForkIdPostMerge?`): `any`
+▸ **parseGethGenesis**(`json`, `name?`, `mergeForkIdPostMerge?`): `Object`
 
 Parses a genesis.json exported from Geth into parameters for Common instance
 
@@ -93,10 +93,29 @@ Parses a genesis.json exported from Geth into parameters for Common instance
 
 #### Returns
 
-`any`
+`Object`
 
 parsed params
 
+| Name | Type |
+| :------ | :------ |
+| `bootstrapNodes` | `never`[] |
+| `chainId` | `number` |
+| `consensus` | { `algorithm`: `string` = 'clique'; `clique`: { `epoch`: `any` ; `period`: `any`  } ; `ethash`: `undefined` = {}; `type`: `string` = 'poa' } \| { `algorithm`: `string` = 'ethash'; `clique`: `undefined` ; `ethash`: {} = {}; `type`: `string` = 'pow' } |
+| `genesis` | { `baseFeePerGas`: `string` ; `coinbase`: `string` ; `difficulty`: `number` ; `extraData`: `string` ; `gasLimit`: `number` ; `mixHash`: `string` ; `nonce`: `string` ; `timestamp`: `string`  } |
+| `genesis.baseFeePerGas` | `string` |
+| `genesis.coinbase` | `string` |
+| `genesis.difficulty` | `number` |
+| `genesis.extraData` | `string` |
+| `genesis.gasLimit` | `number` |
+| `genesis.mixHash` | `string` |
+| `genesis.nonce` | `string` |
+| `genesis.timestamp` | `string` |
+| `hardfork` | `undefined` \| `string` |
+| `hardforks` | `ConfigHardfork`[] |
+| `name` | `string` |
+| `networkId` | `number` |
+
 #### Defined in
 
-[packages/common/src/utils.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/utils.ts#L167)
+[packages/common/src/utils.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/utils.ts#L207)
