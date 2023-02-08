@@ -243,6 +243,11 @@ tape('[PendingBlock]', async (t) => {
   })
 
   t.test('construct blob bundles', async (st) => {
+    try {
+      kzg.freeTrustedSetup()
+    } catch {
+      /** ensure kzg is setup */
+    }
     initKZG(kzg, __dirname + '/../../../tx/trustedSetups/trusted_setup.txt')
     const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
     const common = Common.fromGethGenesis(gethGenesis, {
