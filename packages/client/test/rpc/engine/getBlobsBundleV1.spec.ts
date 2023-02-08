@@ -25,7 +25,7 @@ const validPayloadAttributes = {
 
 const validPayload = [validForkChoiceState, { ...validPayloadAttributes, withdrawals: [] }]
 
-initKZG(kzg, __dirname + '/../../../../tx/trustedSetups/trusted_setup.txt')
+initKZG(kzg, __dirname + '/../../../../client/lib/trustedSetups/trusted_setup.txt')
 const method = 'engine_getBlobsBundleV1'
 
 tape(`${method}: call with invalid payloadId`, async (t) => {
