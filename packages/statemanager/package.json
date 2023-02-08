@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/statemanager",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "An Ethereum statemanager implementation",
   "keywords": [
     "ethereum",

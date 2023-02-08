@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 1.0.3 - 2023-02-14
+
+Maintenance release with dependency updates, PR [#2521](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2521)
+
 ## 1.0.2 - 2022-12-09
 
 Added `EthersStateManager` to direct exports (if you use please fix our deep imports), see PR [#2419](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2419).

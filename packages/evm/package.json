@@ -56,7 +56,7 @@
     "rustbn.js": "~0.2.0"
   },
   "devDependencies": {
-    "@ethereumjs/statemanager": "^1.0.2",
+    "@ethereumjs/statemanager": "^1.0.3",
     "@ethersproject/abi": "^5.0.12",
     "@types/benchmark": "^1.0.33",
     "@types/core-js": "^2.5.0",

@@ -63,7 +63,7 @@
     "@ethereumjs/ethash": "2.0.2",
     "@ethereumjs/evm": "1.2.3",
     "@ethereumjs/rlp": "4.0.1",
-    "@ethereumjs/statemanager": "1.0.2",
+    "@ethereumjs/statemanager": "1.0.3",
     "@ethereumjs/trie": "5.0.3",
     "@ethereumjs/tx": "4.0.2",
     "@ethereumjs/util": "8.0.4",
