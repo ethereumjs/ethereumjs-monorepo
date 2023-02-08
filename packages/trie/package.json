@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@ethereumjs/rlp": "^4.0.1",
-    "@ethereumjs/util": "^8.0.3",
+    "@ethereumjs/util": "^8.0.4",
     "@types/readable-stream": "^2.3.13",
     "ethereum-cryptography": "^1.1.2",
     "readable-stream": "^3.6.0"

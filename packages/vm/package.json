@@ -64,7 +64,7 @@
     "@ethereumjs/statemanager": "^1.0.2",
     "@ethereumjs/trie": "^5.0.2",
     "@ethereumjs/tx": "^4.0.2",
-    "@ethereumjs/util": "^8.0.3",
+    "@ethereumjs/util": "^8.0.4",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.1.2",
     "mcl-wasm": "^0.7.1",

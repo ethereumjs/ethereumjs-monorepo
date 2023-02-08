@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/util",
-  "version": "8.0.3",
+  "version": "8.0.4",
   "description": "A collection of utility functions for Ethereum",
   "keywords": [
     "ethereum",

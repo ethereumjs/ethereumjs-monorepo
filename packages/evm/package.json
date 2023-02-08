@@ -48,7 +48,7 @@
   "dependencies": {
     "@ethereumjs/common": "^3.0.2",
     "@ethereumjs/tx": "^4.0.2",
-    "@ethereumjs/util": "^8.0.3",
+    "@ethereumjs/util": "^8.0.4",
     "@ethersproject/providers": "^5.7.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.1.2",
