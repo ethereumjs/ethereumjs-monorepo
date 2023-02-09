@@ -17,7 +17,7 @@ import type { Client } from 'jayson/promise'
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 // Initialize the kzg object with the kzg library
-initKZG(kzg)
+initKZG(kzg, __dirname + '/../../../client/lib/trustedSetups/devnet4.txt')
 
 export async function waitForELOnline(client: Client): Promise<string> {
   for (let i = 0; i < 15; i++) {

@@ -76,15 +76,25 @@ This library supports the following transaction types ([EIP-2718](https://eips.e
 - Activation: `sharding`
 - Type: `5`
 
-This is an experimental implementation of the blob transaction type introducd with EIP-4844. See the following code snipped for an example on how to instantiate.
-Please note you must first call `initKzg` and pass in a KZG library object (defaulting to `c-kzg` which is available on NPM).
+This is an experimental implementation of the blob transaction type introducd with EIP-4844. This transaction type requires additional dependencies that are not installed by default to limit bundle size.
+
+##### Configuration
+
+There are two additional configuration steps needed to work with blob transactions.
+
+1. Install an additional dependency that supports the `kzg` interface defined in [the kzg interface](./src/kzg/kzg.ts). You can install the default option `c-kzg` by simply running `npm install c-kzg`.
+2. Download the trusted setup required for the KZG module. It can be found [here](../client/lib/trustedSetups/trusted_setup.txt)
+
+##### Usage
+
+See the following code snipped for an example on how to instantiate (using the `c-kzg` module for our KZG dependency).
 
 ```typescript
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, initKzg } from '@ethereumjs/tx'
-import { myKzgLibrary } from 'myKzgLibrary'
+import * as kzg from 'c-kzg'
 
-initKzg(myKzgLibrary, 'path/to/my/trusted_setup.txt')
+initKzg(kzg, 'path/to/my/trusted_setup.txt')
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Sharding })
 
 const txData = {

@@ -243,8 +243,12 @@ tape('[PendingBlock]', async (t) => {
   })
 
   t.test('construct blob bundles', async (st) => {
-    kzg.freeTrustedSetup()
-    initKZG(kzg)
+    try {
+      kzg.freeTrustedSetup()
+    } catch {
+      /** ensure kzg is setup */
+    }
+    initKZG(kzg, __dirname + '/../../../client/lib/trustedSetups/devnet4.txt')
     const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
@@ -278,9 +282,10 @@ tape('[PendingBlock]', async (t) => {
     const payloadId = await pendingBlock.start(vm, parentBlock)
     await pendingBlock.build(payloadId)
     st.ok(pendingBlock.blobBundles.get(bufferToHex(payloadId))?.blobs[0].equals(blobs[0]))
+    kzg.freeTrustedSetup()
     st.end()
   })
-  t.test('should reset td', (t) => {
+  t.test('should reset td', (st) => {
     td.reset()
     // according to https://github.com/testdouble/testdouble.js/issues/379#issuecomment-415868424
     // mocking indirect dependencies is not properly supported, but it works for us in this file,
@@ -288,6 +293,6 @@ tape('[PendingBlock]', async (t) => {
     BlockHeader.prototype._consensusFormatValidation = originalValidate
     VmState.prototype.setStateRoot = originalSetStateRoot
 
-    t.end()
+    st.end()
   })
 })

@@ -10,7 +10,7 @@ import { getEEI } from '../utils'
 
 import type { PrecompileInput } from '../../src/precompiles'
 
-initKZG(kzg)
+initKZG(kzg, __dirname + '/../../../client/lib/trustedSetups/devnet4.txt')
 
 tape('Precompiles: point evaluation', async (t) => {
   const genesisJSON = require('../../../client/test/testdata/geth-genesis/eip4844.json')
