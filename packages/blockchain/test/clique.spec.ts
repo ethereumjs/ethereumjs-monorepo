@@ -292,7 +292,7 @@ tape('Clique: Initialization', (t) => {
     // noturn block
     await addNextBlock(blockchain, blocks, A)
     const block = await blockchain.getBlock(1)
-    if (block && inturnBlock.hash().equals(block.hash())) {
+    if (inturnBlock.hash().equals(block.hash())) {
       st.pass('correct canonical block')
     } else {
       st.fail('invalid canonical block')

@@ -11,22 +11,6 @@ import { Blockchain } from '../src'
 import { createBlock } from './util'
 
 tape('[Blockchain]: Block validation tests', (t) => {
-  t.test('should not be able to validate difficulty without parent', async (st) => {
-    const blockchain = await Blockchain.create({
-      validateBlocks: true,
-      validateConsensus: false,
-    })
-    try {
-      await blockchain.consensus.validateDifficulty(blockchain.genesisBlock.header)
-      st.fail('should have thrown')
-    } catch (error: any) {
-      st.equal(
-        error.message,
-        `Key ${blockchain.genesisBlock.header.number - BigInt(1)} was not found`
-      )
-    }
-    st.end()
-  })
   t.test('should throw if an uncle is included before', async function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.create({ common, validateConsensus: false })

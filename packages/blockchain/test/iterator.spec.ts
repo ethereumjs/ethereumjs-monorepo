@@ -1,9 +1,10 @@
-import { Block } from '@ethereumjs/block'
 import * as tape from 'tape'
 
 import { Blockchain } from '../src'
 
 import { createTestDB, generateBlockchain, generateConsecutiveBlock } from './util'
+
+import type { Block } from '@ethereumjs/block'
 
 tape('blockchain test', (t) => {
   t.test('should iterate through 24 blocks without reorg', async (st) => {
@@ -196,8 +197,7 @@ tape('blockchain test', (t) => {
     const blockchain = await Blockchain.create({ db, genesisBlock: genesis })
     const head = await blockchain.getIteratorHead()
     if (typeof genesis !== 'undefined') {
-      const headHash = head instanceof Block ? head.hash() : head
-      st.ok(headHash.equals(genesis.hash()), 'should get head')
+      st.ok(head.hash().equals(genesis.hash()), 'should get head')
       st.equal(
         (blockchain as any)._heads['head0'].toString('hex'),
         'abcd',

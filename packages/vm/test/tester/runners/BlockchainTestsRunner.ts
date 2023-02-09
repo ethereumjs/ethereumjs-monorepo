@@ -181,7 +181,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       try {
         await blockchain.iterator('vm', async (block: Block) => {
           const parentBlock = await blockchain!.getBlock(block.header.parentHash)
-          const parentState = parentBlock!.header.stateRoot
+          const parentState = parentBlock.header.stateRoot
           // run block, update head if valid
           try {
             await vm.runBlock({ block, root: parentState, hardforkByTTD: TD })

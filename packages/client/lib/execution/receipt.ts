@@ -1,4 +1,3 @@
-import { NotFoundError } from '@ethereumjs/blockchain'
 import { RLP } from '@ethereumjs/rlp'
 import {
   arrToBufArr,
@@ -139,9 +138,6 @@ export class ReceiptsManager extends MetaDBManager {
     }
     if (includeTxType) {
       const block = await this.chain.getBlock(blockHash)
-      if (block === null) {
-        throw new Error('Block not found')
-      }
       receipts = (receipts as TxReceiptWithType[]).map((r, i) => {
         r.txType = block.transactions[i].type
         return r
@@ -180,9 +176,6 @@ export class ReceiptsManager extends MetaDBManager {
     let returnedLogsSize = 0
     for (let i = from.header.number; i <= to.header.number; i++) {
       const block = await this.chain.getBlock(i)
-      if (block === null) {
-        throw new NotFoundError(i)
-      }
       const receipts = await this.getReceipts(block.hash())
       if (receipts.length === 0) continue
       let logs: GetLogsReturn = []
@@ -268,8 +261,7 @@ export class ReceiptsManager extends MetaDBManager {
             const limit = this.chain.headers.height - BigInt(this.config.txLookupLimit)
             if (limit < BigInt(0)) return
             const blockDelIndexes = await this.chain.getBlock(limit)
-            blockDelIndexes &&
-              void this.updateIndex(IndexOperation.Delete, IndexType.TxHash, blockDelIndexes)
+            void this.updateIndex(IndexOperation.Delete, IndexType.TxHash, blockDelIndexes)
           }
         } else if (operation === IndexOperation.Delete) {
           for (const tx of block.transactions) {
