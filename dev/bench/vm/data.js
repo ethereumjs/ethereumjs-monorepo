@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1675939105405,
+  "lastUpdate": 1675950649217,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "64d8d3c6f050281e121c46ec4978fc30fc632a73",
-          "message": "util: Change withdrawal amount representation from Wei to Gwei (#2483)\n\n* util: Change withdrawal amount representation for Wei to Gwei\r\n\r\n* cleanup\r\n\r\n* fix test\r\n\r\n* fix test\r\n\r\n* move unit to separate file\r\n\r\n* add missing file",
-          "timestamp": "2023-01-17T14:31:37+05:30",
-          "tree_id": "392122d9fc68c8f215d40bf392e43900abdaabec",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/64d8d3c6f050281e121c46ec4978fc30fc632a73"
-        },
-        "date": 1673946252655,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19254,
-            "range": "±2.50%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18597,
-            "range": "±4.81%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 19187,
-            "range": "±4.81%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18859,
-            "range": "±1.47%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 17708,
-            "range": "±7.12%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.56%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e0917c433fbe93a3d9f9f2f8934e531568a71768",
+          "message": "Fix blockchain interface getBlock() signature (remove null return option) (#2524)\n\n* Align Blockchain getBlock() interface signature with implementation (removed null return option), added test case for non-existing Block request\r\n\r\n* Improve getBlock() error message along NotFound DB error\r\n\r\n* Removed getBlock() null return assertion conditional logic throughout code base",
+          "timestamp": "2023-02-09T14:48:05+01:00",
+          "tree_id": "81e3325e65b15036b77ed183128741eeb4b2d835",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e0917c433fbe93a3d9f9f2f8934e531568a71768"
+        },
+        "date": 1675950647792,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19513,
+            "range": "±2.10%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18882,
+            "range": "±3.61%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 19063,
+            "range": "±1.54%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 17658,
+            "range": "±7.28%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19479,
+            "range": "±1.18%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
