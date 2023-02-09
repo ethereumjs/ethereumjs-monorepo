@@ -923,7 +923,7 @@ tape('EIP 4844 transaction tests', async (t) => {
         {
           excessDataGas: 1n,
           number: 2,
-          parentHash: (await blockchain.getBlock(1n))!.hash(), // Faking parent hash with getBlock stub
+          parentHash: (await blockchain.getBlock(1n)).hash(), // Faking parent hash with getBlock stub
         },
         {
           common,

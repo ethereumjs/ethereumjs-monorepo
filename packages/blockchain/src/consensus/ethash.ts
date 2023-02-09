@@ -1,8 +1,6 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 
-import { NotFoundError } from '..'
-
 import type { Blockchain } from '..'
 import type { Consensus, ConsensusOptions } from './interface'
 import type { Block, BlockHeader } from '@ethereumjs/block'
@@ -38,11 +36,8 @@ export class EthashConsensus implements Consensus {
     if (!this.blockchain) {
       throw new Error('blockchain not provided')
     }
-    const parent = await this.blockchain.getBlock(header.parentHash)
-    if (parent === null) {
-      throw new NotFoundError(header.number - BigInt(1))
-    }
-    if (header.ethashCanonicalDifficulty(parent.header) !== header.difficulty) {
+    const parentHeader = (await this.blockchain.getBlock(header.parentHash)).header
+    if (header.ethashCanonicalDifficulty(parentHeader) !== header.difficulty) {
       throw new Error(`invalid difficulty ${header.errorStr()}`)
     }
   }

@@ -126,7 +126,7 @@ export class Skeleton extends MetaDBManager {
     if (tail === BigInt(0)) return true
     if (tail <= this.chain.blocks.height + BigInt(1)) {
       const nextBlock = await this.chain.getBlock(tail - BigInt(1))
-      const linked = next.equals(nextBlock!.hash())
+      const linked = next.equals(nextBlock.hash())
       if (linked && this.status.progress.subchains.length > 1) {
         // Remove all other subchains as no more relevant
         const junkedSubChains = this.status.progress.subchains.splice(1)
@@ -715,7 +715,11 @@ export class Skeleton extends MetaDBManager {
       // If skeleton is linked, it probably has deleted the block and put it into the chain
       if (onlySkeleton || !this.linked) return undefined
       // As a fallback, try to get the block from the canonical chain in case it is available there
-      return (await this.chain.getBlock(number)) ?? undefined
+      try {
+        return await this.chain.getBlock(number)
+      } catch (error) {
+        return undefined
+      }
     }
   }
 
@@ -730,7 +734,11 @@ export class Skeleton extends MetaDBManager {
       if (onlySkeleton === true || !this.linked) {
         return undefined
       } else {
-        return (await this.chain.getBlock(hash)) ?? undefined
+        try {
+          return await this.chain.getBlock(hash)
+        } catch (e) {
+          return undefined
+        }
       }
     }
   }

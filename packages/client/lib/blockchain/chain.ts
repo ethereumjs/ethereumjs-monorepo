@@ -254,10 +254,9 @@ export class Chain {
    * @param block block hash or number
    * @throws if block is not found
    */
-  async getBlock(block: Buffer | bigint): Promise<Block | null> {
+  async getBlock(block: Buffer | bigint): Promise<Block> {
     if (!this.opened) throw new Error('Chain closed')
-    const gotBlock = await this.blockchain.getBlock(block)
-    return gotBlock
+    return this.blockchain.getBlock(block)
   }
 
   /**

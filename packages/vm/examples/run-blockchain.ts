@@ -35,7 +35,7 @@ async function main() {
 
   await blockchain.iterator('vm', async (block: Block, reorg: boolean) => {
     const parentBlock = await blockchain!.getBlock(block.header.parentHash)
-    const parentState = parentBlock!.header.stateRoot
+    const parentState = parentBlock.header.stateRoot
     // run block
     await vm.runBlock({ block, root: parentState, skipHardForkValidation: true })
   })

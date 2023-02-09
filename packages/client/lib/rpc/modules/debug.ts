@@ -106,9 +106,7 @@ export class Debug {
       if (!result) return null
       const [_, blockHash, txIndex] = result
       const block = await this.service.chain.getBlock(blockHash)
-      if (block === null) return null
       const parentBlock = await this.service.chain.getBlock(block.header.parentHash)
-      if (parentBlock === null) return null
       const tx = block.transactions[txIndex]
 
       // Copy VM so as to not modify state when running transactions being traced

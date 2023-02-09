@@ -192,12 +192,14 @@ const recursivelyFindParents = async (vmHeadHash: Buffer, parentHash: Buffer, ch
   if (parentHash.equals(vmHeadHash) || parentHash.equals(Buffer.alloc(32))) {
     return []
   }
-  const parentBlocks: Block[] = []
+  const parentBlocks = []
   const block = await chain.getBlock(parentHash)
-  parentBlocks.push(block!)
+  parentBlocks.push(block)
   while (!parentBlocks[parentBlocks.length - 1].hash().equals(parentHash)) {
-    const block = await chain.getBlock(parentBlocks[parentBlocks.length - 1].header.parentHash)
-    parentBlocks.push(block!)
+    const block: Block = await chain.getBlock(
+      parentBlocks[parentBlocks.length - 1].header.parentHash
+    )
+    parentBlocks.push(block)
   }
   return parentBlocks.reverse()
 }
@@ -547,7 +549,7 @@ export class Engine {
     }
 
     try {
-      const parent = (await this.chain.getBlock(toBuffer(parentHash)))!
+      const parent = await this.chain.getBlock(toBuffer(parentHash))
       if (!parent._common.gteHardfork(Hardfork.Merge)) {
         const validTerminalBlock = await validateTerminalBlock(parent, this.chain)
         if (!validTerminalBlock) {
@@ -589,7 +591,7 @@ export class Engine {
 
     try {
       for (const [i, block] of blocks.entries()) {
-        const root = (i > 0 ? blocks[i - 1] : await this.chain.getBlock(block.header.parentHash))!
+        const root = (i > 0 ? blocks[i - 1] : await this.chain.getBlock(block.header.parentHash))
           .header.stateRoot
         await this.execution.runWithoutSetHead({
           block,
@@ -720,14 +722,14 @@ export class Engine {
     /*
      * Process head block
      */
-    let headBlock: Block | null | undefined = await this.chain.getBlock(toBuffer(headBlockHash))
-    if (headBlock === null) {
-      headBlock = await this.service.beaconSync?.skeleton.getBlockByHash(toBuffer(headBlockHash))
-      if (headBlock === null || headBlock === undefined) {
-        headBlock = this.remoteBlocks.get(headBlockHash.slice(2))
-      }
-
-      if (headBlock === null || headBlock === undefined) {
+    let headBlock: Block | undefined
+    try {
+      headBlock = await this.chain.getBlock(toBuffer(headBlockHash))
+    } catch (error) {
+      headBlock =
+        (await this.service.beaconSync?.skeleton.getBlockByHash(toBuffer(headBlockHash))) ??
+        this.remoteBlocks.get(headBlockHash.slice(2))
+      if (headBlock === undefined) {
         this.config.logger.debug(`Forkchoice requested unknown head hash=${short(headBlockHash)}`)
         const payloadStatus = {
           status: Status.SYNCING,
@@ -827,8 +829,9 @@ export class Engine {
     const zeroBlockHash = zeros(32)
     const safe = toBuffer(safeBlockHash)
     if (!safe.equals(headBlock.hash()) && !safe.equals(zeroBlockHash)) {
-      const block = await this.chain.getBlock(safe)
-      if (block === null) {
+      try {
+        await this.chain.getBlock(safe)
+      } catch (error) {
         const message = 'safe block not available'
         throw {
           code: INVALID_PARAMS,
@@ -838,12 +841,12 @@ export class Engine {
     }
     const finalized = toBuffer(finalizedBlockHash)
     if (!finalized.equals(zeroBlockHash)) {
-      const block = await this.chain.getBlock(finalized)
-      if (block === null) {
-        const message = 'finalized block not available'
+      try {
+        await this.chain.getBlock(finalized)
+      } catch (error) {
         throw {
+          message: 'finalized block not available',
           code: INVALID_PARAMS,
-          message,
         }
       }
     }
@@ -1034,7 +1037,7 @@ export class Engine {
     for (const hash of hashes) {
       try {
         const block = await this.chain.getBlock(hash)
-        const payloadBody = getPayloadBody(block!)
+        const payloadBody = getPayloadBody(block)
         blocks.push(payloadBody)
       } catch {
         blocks.push(null)
