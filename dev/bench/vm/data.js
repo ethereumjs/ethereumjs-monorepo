@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1675772171939,
+  "lastUpdate": 1675933295997,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "9224fd0165083c7b14536f3b59821d749c9e17cc",
-          "message": "client: Clean stop sync and execution to allow client shutdown (#2477)\n\n* client: Clean stop sync and execution to allow client shutdown\r\n\r\n* add testcase\r\n\r\n* enhance coverage\r\n\r\n* fix typo\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2023-01-11T14:25:13+01:00",
-          "tree_id": "e66b3143a1a7aa47c4c6c1a5649965c5c5868e97",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9224fd0165083c7b14536f3b59821d749c9e17cc"
-        },
-        "date": 1673443669749,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19442,
-            "range": "±2.65%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18569,
-            "range": "±5.52%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 19786,
-            "range": "±1.16%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19045,
-            "range": "±1.34%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 16836,
-            "range": "±8.41%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.16%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "40bca1131d7cba48af336146224e907e50387297",
+          "message": "client: Fix client's sync state on startup or while mining or single node (test) runs (#2519)\n\n* client: Fix client's sync state on startup or while mining or single node (test) runs\r\n\r\n* fix spec\r\n\r\n* fix dangling txpool in spec\r\n\r\n* fix stalled test waiting for event\r\n\r\n* add some logging and test single run\r\n\r\n* start txpool on startup if starting from syncronized state\r\n\r\n* small inprov\r\n\r\n* enhance coverage\r\n\r\n* nits\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-02-09T09:58:43+01:00",
+          "tree_id": "a7f8562df729b5ef7fbdb78ce4541d25c03b4804",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/40bca1131d7cba48af336146224e907e50387297"
+        },
+        "date": 1675933295312,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19618,
+            "range": "±1.46%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18761,
+            "range": "±3.90%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18933,
+            "range": "±1.35%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 17499,
+            "range": "±7.33%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19492,
+            "range": "±1.21%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
