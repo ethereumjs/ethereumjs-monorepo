@@ -12,7 +12,7 @@ type Block = {
 }
 
 type Blockchain = {
-  getBlock(blockId: number): Promise<Block | null>
+  getBlock(blockId: number): Promise<Block>
   copy(): Blockchain
 }
 

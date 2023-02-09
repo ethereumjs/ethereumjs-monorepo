@@ -326,15 +326,6 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       throw new Error(msg)
     }
     const parentBlock = await this.blockchain.getBlock(opts.block?.header.parentHash)
-    if (parentBlock === null) {
-      const msg = _errorMsg(
-        `Parent block not found in blockchain so cannot compute data gas price`,
-        this,
-        block,
-        tx
-      )
-      throw new Error(msg)
-    }
     dataGasPrice = getDataGasPrice(parentBlock.header)
     if (castTx.maxFeePerDataGas < dataGasPrice) {
       const msg = _errorMsg(
