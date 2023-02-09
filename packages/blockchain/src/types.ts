@@ -26,7 +26,7 @@ export interface BlockchainInterface {
   /**
    * Returns a block by its hash or number.
    */
-  getBlock(blockId: Buffer | number | bigint): Promise<Block | null>
+  getBlock(blockId: Buffer | number | bigint): Promise<Block>
 
   /**
    * Iterates through blocks starting at the specified iterator head and calls

@@ -153,7 +153,7 @@ tape('blockchain test', (t) => {
     await addNextBlock(1)
   })
 
-  t.test('should get block by number', async (st) => {
+  t.test('getBlock(): should get block by number', async (st) => {
     const blocks: Block[] = []
     const gasLimit = 8000000
     const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Istanbul })
@@ -192,7 +192,7 @@ tape('blockchain test', (t) => {
     st.end()
   })
 
-  t.test('should get block by hash', async (st) => {
+  t.test('getBlock(): should get block by hash / not existing', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const gasLimit = 8000000
     const genesisBlock = Block.fromBlockData({ header: { gasLimit } }, { common })
@@ -204,11 +204,15 @@ tape('blockchain test', (t) => {
       genesisBlock,
     })
     const block = await blockchain.getBlock(genesisBlock.hash())
-    if (typeof block !== 'undefined') {
-      st.ok(block.hash().equals(genesisBlock.hash()))
-    } else {
-      st.fail('block is not defined!')
+    st.ok(block.hash().equals(genesisBlock.hash()))
+
+    try {
+      await blockchain.getBlock(5)
+      st.fail('should throw an exception')
+    } catch (e) {
+      st.ok(`should throw for non-existing block request`)
     }
+
     st.end()
   })
 
