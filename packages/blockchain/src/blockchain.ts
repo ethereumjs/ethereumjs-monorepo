@@ -653,9 +653,6 @@ export class Blockchain implements BlockchainInterface {
     let parentHash = block.header.parentHash
     for (let i = 0; i < getBlocks; i++) {
       const parentBlock = await this.getBlock(parentHash)
-      if (parentBlock === undefined) {
-        throw new Error(`could not find parent block ${block.errorStr()}`)
-      }
       canonicalBlockMap.push(parentBlock)
 
       // mark block hash as part of the canonical chain
