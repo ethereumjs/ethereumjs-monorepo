@@ -1,4 +1,3 @@
-import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
@@ -877,10 +876,7 @@ export class Eth {
 
     const common = this.client.config.chainCommon.copy()
     const { syncTargetHeight } = this.client.config
-    if (
-      (syncTargetHeight === undefined || syncTargetHeight === BigInt(0)) &&
-      !this.client.config.mine
-    ) {
+    if (!this.client.config.synchronized) {
       throw {
         code: INTERNAL_ERROR,
         message: `client is not aware of the current chain height yet (give sync some more time)`,
@@ -932,7 +928,7 @@ export class Eth {
     if (
       peerPool.peers.length === 0 &&
       !this.client.config.mine &&
-      this._chain.config.chainCommon.consensusType() !== ConsensusType.ProofOfStake
+      this.client.config.isSingleNode === false
     ) {
       throw {
         code: INTERNAL_ERROR,

@@ -44,11 +44,16 @@ tape('[Synchronizer]', async (t) => {
     })
     void sync.start()
     ;(sync as any).chain._headers = {
-      latest: { hash: () => Buffer.from([]) },
+      latest: { hash: () => Buffer.from([]), number: BigInt(1) },
       td: BigInt(0),
       height: BigInt(1),
     }
     config.events.emit(Event.CHAIN_UPDATED)
+
+    // test getting out of sync
+    ;(config as any).syncedStateRemovalPeriod = 0
+    config.updateSynchronizedState()
+    t.equal(config.synchronized, false, 'should fall out of sync')
     await new Promise(() => {}) // resolves once t.end() is called
   })
 

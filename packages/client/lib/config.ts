@@ -4,11 +4,12 @@ import { Level } from 'level'
 
 import { getLogger } from './logging'
 import { Libp2pServer, RlpxServer } from './net/server'
-import { EventBus } from './types'
-import { parseTransports } from './util'
+import { Event, EventBus } from './types'
+import { parseTransports, short } from './util'
 
 import type { Logger } from './logging'
 import type { EventBusType } from './types'
+import type { BlockHeader } from '@ethereumjs/block'
 import type { Address } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
 import type { Multiaddr } from 'multiaddr'
@@ -218,6 +219,13 @@ export interface ConfigOptions {
   mine?: boolean
 
   /**
+   * Is a single node and doesn't need peers for synchronization
+   *
+   * Default: `false`
+   */
+  isSingleNode?: boolean
+
+  /**
    * Unlocked accounts of form [address, privateKey]
    * Currently only the first account is used to seal mined PoA blocks
    *
@@ -250,6 +258,11 @@ export interface ConfigOptions {
    * reset
    */
   skeletonSubchainMergeMinimum?: number
+
+  /**
+   * The time after which synced state is downgraded to unsynced
+   */
+  syncedStateRemovalPeriod?: number
 }
 
 export class Config {
@@ -275,6 +288,7 @@ export class Config {
   public static readonly SAFE_REORG_DISTANCE = 100
   public static readonly SKELETON_FILL_CANONICAL_BACKSTEP = 100
   public static readonly SKELETON_SUBCHAIN_MERGE_MINIMUM = 1000
+  public static readonly SYNCED_STATE_REMOVAL_PERIOD = 60000
 
   public readonly logger: Logger
   public readonly syncmode: SyncMode
@@ -299,18 +313,22 @@ export class Config {
   public readonly discDns: boolean
   public readonly discV4: boolean
   public readonly mine: boolean
+  public readonly isSingleNode: boolean
   public readonly accounts: [address: Address, privKey: Buffer][]
   public readonly minerCoinbase?: Address
 
   public readonly safeReorgDistance: number
   public readonly skeletonFillCanonicalBackStep: number
   public readonly skeletonSubchainMergeMinimum: number
+  public readonly syncedStateRemovalPeriod: number
+
   public readonly disableBeaconSync: boolean
   public readonly forceSnapSync: boolean
   // Just a development only flag, will/should be removed
   public readonly disableSnapSync: boolean = false
 
   public synchronized: boolean
+  /** lastSyncDate in ms */
   public lastSyncDate: number
   /** Best known block height */
   public syncTargetHeight?: bigint
@@ -343,17 +361,23 @@ export class Config {
     this.dnsAddr = options.dnsAddr ?? Config.DNSADDR_DEFAULT
     this.debugCode = options.debugCode ?? Config.DEBUGCODE_DEFAULT
     this.mine = options.mine ?? false
+    this.isSingleNode = options.isSingleNode ?? false
     this.accounts = options.accounts ?? []
     this.minerCoinbase = options.minerCoinbase
+
     this.safeReorgDistance = options.safeReorgDistance ?? Config.SAFE_REORG_DISTANCE
     this.skeletonFillCanonicalBackStep =
       options.skeletonFillCanonicalBackStep ?? Config.SKELETON_FILL_CANONICAL_BACKSTEP
     this.skeletonSubchainMergeMinimum =
       options.skeletonSubchainMergeMinimum ?? Config.SKELETON_SUBCHAIN_MERGE_MINIMUM
+    this.syncedStateRemovalPeriod =
+      options.syncedStateRemovalPeriod ?? Config.SYNCED_STATE_REMOVAL_PERIOD
+
     this.disableBeaconSync = options.disableBeaconSync ?? false
     this.forceSnapSync = options.forceSnapSync ?? false
 
-    this.synchronized = false
+    // Start it off as synchronized if this is configured to mine or as single node
+    this.synchronized = this.isSingleNode ?? this.mine
     this.lastSyncDate = 0
 
     const common =
@@ -390,6 +414,63 @@ export class Config {
         }
       })
     }
+  }
+
+  /**
+   * Update the synchronized state of the chain
+   * @param option latest to update the sync state with
+   * @emits {@link Event.SYNC_SYNCHRONIZED}
+   */
+  updateSynchronizedState(latest?: BlockHeader | null, emitSyncEvent?: boolean) {
+    // If no syncTargetHeight has been discovered from peer and neither the client is set
+    // for mining/single run (validator), then sync state can't be updated
+    if ((this.syncTargetHeight ?? BigInt(0)) === BigInt(0) && !this.mine && !this.isSingleNode) {
+      return
+    }
+
+    if (latest) {
+      const height = latest.number
+      if (height >= (this.syncTargetHeight ?? BigInt(0))) {
+        this.syncTargetHeight = height
+        this.lastSyncDate = latest.timestamp ? Number(latest.timestamp) * 1000 : Date.now()
+
+        const diff = Date.now() - this.lastSyncDate
+        // update synchronized
+        if (diff < this.syncedStateRemovalPeriod) {
+          if (!this.synchronized) {
+            this.synchronized = true
+            // Log to console the sync status
+            this.logger.info('*'.repeat(60))
+            this.logger.info(
+              `Synchronized blockchain at height=${height} hash=${short(latest.hash())} 🎉`
+            )
+            this.logger.info('*'.repeat(60))
+          }
+
+          if (emitSyncEvent === true) {
+            this.events.emit(Event.SYNC_SYNCHRONIZED, height)
+          }
+        }
+      }
+    } else {
+      if (this.synchronized && !this.mine && !this.isSingleNode) {
+        const diff = Date.now() - this.lastSyncDate
+        if (diff >= this.syncedStateRemovalPeriod) {
+          this.synchronized = false
+          this.logger.info(
+            `Sync status reset (no chain updates for ${Math.round(diff / 1000)} seconds).`
+          )
+        }
+      }
+    }
+
+    this.logger.debug(
+      `Client synchronized=${this.synchronized}${
+        latest ? ' height= ' + latest.number : ''
+      } syncTargetHeight=${this.syncTargetHeight} lastSyncDate=${
+        (Date.now() - this.lastSyncDate) / 1000
+      } secs ago`
+    )
   }
 
   /**

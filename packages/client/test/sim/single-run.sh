@@ -37,7 +37,7 @@ case $MULTIPEER in
 
   * )
     DATADIR="$DATADIR/peer1"
-    EL_PORT_ARGS="--extIP 127.0.0.1 --logLevel debug"
+    EL_PORT_ARGS="--isSingleNode --extIP 127.0.0.1 --logLevel debug"
     CL_PORT_ARGS="--enr.ip 127.0.0.1 --enr.tcp 9000 --enr.udp 9000"
     if [ ! -n "$MULTIPEER" ]
     then

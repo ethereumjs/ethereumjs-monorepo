@@ -287,6 +287,11 @@ const args: ClientOpts = yargs(hideBin(process.argv))
       'Block number to start syncing from. Must be lower than the local chain tip. Note: this is destructive and removes blocks from the blockchain, please back up your datadir before using.',
     number: true,
   })
+  .option('isSingleNode', {
+    describe:
+      'To run client in single node configuration without need to discover the sync height from peer. Particularly useful in test configurations. This flag is automically activated in the "dev" mode',
+    boolean: true,
+  })
   // strict() ensures that yargs throws when an invalid arg is provided
   .strict().argv
 
@@ -410,6 +415,14 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
   }
 
   await client.open()
+  // update client's sync status and start txpool if synchronized
+  client.config.updateSynchronizedState(client.chain.headers.latest)
+  if (client.config.synchronized) {
+    const fullService = client.services.find((s) => s.name === 'eth')
+    // The service might not be FullEthereumService even if we cast it as one,
+    // so txPool might not exist on it
+    ;(fullService as FullEthereumService).txPool?.checkRunState()
+  }
 
   if (args.executeBlocks !== undefined) {
     // Special block execution debug mode (does not change any state)
@@ -646,6 +659,7 @@ async function run() {
   const bootnodes = args.bootnodes !== undefined ? parseMultiaddrs(args.bootnodes) : undefined
   const multiaddrs = args.multiaddrs !== undefined ? parseMultiaddrs(args.multiaddrs) : undefined
   const mine = args.mine !== undefined ? args.mine : args.dev !== undefined
+  const isSingleNode = args.isSingleNode !== undefined ? args.isSingleNode : args.dev !== undefined
   const config = new Config({
     accounts,
     bootnodes,
@@ -665,6 +679,7 @@ async function run() {
     maxFetcherJobs: args.maxFetcherJobs,
     mine,
     minerCoinbase: args.minerCoinbase,
+    isSingleNode,
     minPeers: args.minPeers,
     multiaddrs,
     port: args.port,

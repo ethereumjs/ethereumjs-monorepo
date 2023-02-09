@@ -814,25 +814,9 @@ export class Engine {
       await this.execution.setHead(blocks)
       this.service.txPool.removeNewBlockTxs(blocks)
 
-      const timeDiff = new Date().getTime() / 1000 - Number(headBlock.header.timestamp)
-      if (
-        (typeof this.config.syncTargetHeight !== 'bigint' ||
-          this.config.syncTargetHeight === BigInt(0) ||
-          this.config.syncTargetHeight < headBlock.header.number) &&
-        timeDiff < 30
-      ) {
-        if (!this.config.synchronized) {
-          // TODO: this has side effects if generalized by emitting SYNC_SYNCHRONIZED
-          // event, consolidate at some point
-          this.config.logger.info('*'.repeat(60))
-          this.config.logger.info(
-            `Synchronized blockchain at height=${this.chain.headers.height} 🎉`
-          )
-          this.config.logger.info('*'.repeat(60))
-          this.config.synchronized = true
-        }
-        this.config.lastSyncDate = Date.now()
-        this.config.syncTargetHeight = headBlock.header.number
+      const isPrevSynced = this.chain.config.synchronized
+      this.config.updateSynchronizedState(headBlock.header)
+      if (!isPrevSynced && this.chain.config.synchronized) {
         this.service.txPool.checkRunState()
       }
     }
