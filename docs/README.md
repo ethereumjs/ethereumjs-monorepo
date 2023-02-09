@@ -16,7 +16,6 @@
 
 - [fromEtherCamp](#fromethercamp)
 - [fromEtherWallet](#frometherwallet)
-- [fromKryptoKit](#fromkryptokit)
 - [fromQuorumWallet](#fromquorumwallet)
 
 ---
@@ -55,25 +54,6 @@ _Defined in [thirdparty.ts:121](https://github.com/ethereumjs/ethereumjs-wallet/
 | -------- | ------------------------------------------------------------------ |
 | input    | `string` \| [EtherWalletOptions](interfaces/etherwalletoptions.md) |
 | password | `string`                                                           |
-
-**Returns:** [Wallet](classes/wallet.md)
-
----
-
-<a id="fromkryptokit"></a>
-
-### fromKryptoKit
-
-▸ **fromKryptoKit**(entropy: _`string`_, password: _`string`_): [Wallet](classes/wallet.md)
-
-_Defined in [thirdparty.ts:176](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/thirdparty.ts#L176)_
-
-**Parameters:**
-
-| Name     | Type     |
-| -------- | -------- |
-| entropy  | `string` |
-| password | `string` |
 
 **Returns:** [Wallet](classes/wallet.md)
 

@@ -1,6 +1,5 @@
-import Wallet from './index'
-
 import { HDKey } from 'ethereum-cryptography/hdkey'
+import Wallet from './index'
 
 export default class EthereumHDKey {
   /**
@@ -20,12 +19,12 @@ export default class EthereumHDKey {
     return new EthereumHDKey(HDKey.fromExtendedKey(base58Key))
   }
 
-  constructor(private readonly _hdkey?: any) {}
+  constructor(private readonly _hdkey: HDKey) {}
 
   /**
    * Returns a BIP32 extended private key (xprv)
    */
-  public privateExtendedKey(): Buffer {
+  public privateExtendedKey(): string {
     if (!this._hdkey.privateExtendedKey) {
       throw new Error('This is a public key only wallet')
     }
@@ -35,7 +34,7 @@ export default class EthereumHDKey {
   /**
    * Return a BIP32 extended public key (xpub)
    */
-  public publicExtendedKey(): Buffer {
+  public publicExtendedKey(): string {
     return this._hdkey.publicExtendedKey
   }
 
@@ -57,9 +56,10 @@ export default class EthereumHDKey {
    * Return a `Wallet` instance as seen above
    */
   public getWallet(): Wallet {
-    if (this._hdkey._privateKey) {
-      return Wallet.fromPrivateKey(this._hdkey._privateKey)
+    if (this._hdkey.privateKey) {
+      return Wallet.fromPrivateKey(Buffer.from(this._hdkey.privateKey))
     }
-    return Wallet.fromPublicKey(this._hdkey._publicKey, true)
+    if (!this._hdkey.publicKey) throw new Error('No hdkey')
+    return Wallet.fromPublicKey(Buffer.from(this._hdkey.publicKey), true)
   }
 }

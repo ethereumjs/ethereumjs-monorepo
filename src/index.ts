@@ -1,7 +1,4 @@
-import * as crypto from 'crypto'
 import {
-  BN,
-  keccak256,
   bufferToHex,
   privateToAddress,
   publicToAddress,
@@ -10,15 +7,41 @@ import {
   importPublic,
   isValidPrivate,
   isValidPublic,
-} from 'ethereumjs-util'
-import { scrypt } from 'scrypt-js'
+} from '@ethereumjs/util'
+import { base58check } from '@scure/base'
+import * as aes from 'ethereum-cryptography/aes'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { getRandomBytesSync } from 'ethereum-cryptography/random'
+import { pbkdf2 } from 'ethereum-cryptography/pbkdf2'
+import { scrypt } from 'ethereum-cryptography/scrypt'
+import { sha256 } from 'ethereum-cryptography/sha256'
 
 export { default as hdkey } from './hdkey'
 export { default as thirdparty } from './thirdparty'
-
-const bs58check = require('bs58check')
-const randomBytes = require('randombytes')
 const uuidv4 = require('uuid').v4
+
+const bs58check = base58check(sha256)
+function randomBytes(num: number) {
+  return Buffer.from(getRandomBytesSync(num))
+}
+interface KDFParamsV1 {
+  N: number
+  P: number
+  R: number
+  DkLen: number
+}
+function scryptV1(password: Buffer, salt: Buffer, kdfparams: KDFParamsV1) {
+  const { N, P, R, DkLen } = kdfparams
+  return scrypt(password, salt, N, P, R, DkLen)
+}
+function scryptV3(password: string, kdfparams: ScryptKDFParams) {
+  const { salt, n, p, r, dklen } = kdfparams
+  return scrypt(Buffer.from(password), salt, n, p, r, dklen)
+}
+function scryptV3Out(password: string, kdfparams: ScryptKDFParamsOut) {
+  const { salt, n, p, r, dklen } = kdfparams
+  return scrypt(Buffer.from(password), Buffer.from(salt, 'hex'), n, p, r, dklen)
+}
 
 // parameters for the toV3() method
 
@@ -46,6 +69,11 @@ interface V3ParamsStrict {
   n: number
   r: number
   p: number
+}
+
+// helpers
+function keyExists(k: Buffer | undefined | null): k is Buffer {
+  return k !== undefined && k !== null
 }
 
 function validateHexString(paramName: string, str: string, length?: number) {
@@ -181,8 +209,8 @@ function kdfParamsForScrypt(opts: V3ParamsStrict): ScryptKDFParams {
     dklen: opts.dklen,
     salt: opts.salt,
     n: opts.n,
-    r: opts.r,
     p: opts.p,
+    r: opts.r,
   }
 }
 
@@ -264,10 +292,11 @@ export default class Wallet {
    */
   public static generate(icapDirect = false): Wallet {
     if (icapDirect) {
-      const max = new BN('088f924eeceeda7fe92e1f5b0fffffffffffffff', 16)
-      while (true) {
+      const max = BigInt('0x088f924eeceeda7fe92e1f5b0fffffffffffffff')
+      for (;;) {
         const privateKey = randomBytes(32) as Buffer
-        if (new BN(privateToAddress(privateKey)).lte(max)) {
+        const hex = privateToAddress(privateKey).toString('hex')
+        if (BigInt('0x' + hex) <= max) {
           return new Wallet(privateKey)
         }
       }
@@ -284,7 +313,7 @@ export default class Wallet {
       pattern = new RegExp(pattern)
     }
 
-    while (true) {
+    for (;;) {
       const privateKey = randomBytes(32) as Buffer
       const address = privateToAddress(privateKey)
 
@@ -314,9 +343,9 @@ export default class Wallet {
     if (extendedPublicKey.slice(0, 4) !== 'xpub') {
       throw new Error('Not an extended public key')
     }
-    const publicKey: Buffer = bs58check.decode(extendedPublicKey).slice(45)
+    const publicKey: Uint8Array = bs58check.decode(extendedPublicKey).slice(45)
     // Convert to an Ethereum public key
-    return Wallet.fromPublicKey(publicKey, true)
+    return Wallet.fromPublicKey(Buffer.from(publicKey), true)
   }
 
   /**
@@ -333,11 +362,11 @@ export default class Wallet {
     if (extendedPrivateKey.slice(0, 4) !== 'xprv') {
       throw new Error('Not an extended private key')
     }
-    const tmp: Buffer = bs58check.decode(extendedPrivateKey)
+    const tmp: Uint8Array = bs58check.decode(extendedPrivateKey)
     if (tmp[45] !== 0) {
       throw new Error('Invalid extended private key')
     }
-    return Wallet.fromPrivateKey(tmp.slice(46))
+    return Wallet.fromPrivateKey(Buffer.from(tmp.slice(46)))
   }
 
   /**
@@ -356,28 +385,21 @@ export default class Wallet {
     }
 
     const kdfparams = json.Crypto.KeyHeader.KdfParams
-    const derivedKey = await scrypt(
-      Buffer.from(password),
-      Buffer.from(json.Crypto.Salt, 'hex'),
-      kdfparams.N,
-      kdfparams.R,
-      kdfparams.P,
-      kdfparams.DkLen
-    )
-
+    const salt = Buffer.from(json.Crypto.Salt, 'hex')
+    const derivedKey = await scryptV1(Buffer.from(password), salt, kdfparams)
     const ciphertext = Buffer.from(json.Crypto.CipherText, 'hex')
     const mac = keccak256(Buffer.concat([derivedKey.slice(16, 32), ciphertext]))
-    if (mac.toString('hex') !== json.Crypto.MAC) {
+    if (Buffer.from(mac).toString('hex') !== json.Crypto.MAC) {
       throw new Error('Key derivation failed - possibly wrong passphrase')
     }
 
-    const decipher = crypto.createDecipheriv(
-      'aes-128-cbc',
+    const seed = await aes.decrypt(
+      ciphertext,
       keccak256(derivedKey.slice(0, 16) as Buffer).slice(0, 16),
-      Buffer.from(json.Crypto.IV, 'hex')
+      Buffer.from(json.Crypto.IV, 'hex'),
+      'aes-128-cbc'
     )
-    const seed = runCipherBuffer(decipher, ciphertext)
-    return new Wallet(seed)
+    return new Wallet(Buffer.from(seed))
   }
 
   /**
@@ -401,16 +423,8 @@ export default class Wallet {
     let derivedKey: Uint8Array, kdfparams: any
     if (json.crypto.kdf === 'scrypt') {
       kdfparams = json.crypto.kdfparams
-
       // FIXME: support progress reporting callback
-      derivedKey = await scrypt(
-        Buffer.from(password),
-        Buffer.from(kdfparams.salt, 'hex'),
-        kdfparams.n,
-        kdfparams.r,
-        kdfparams.p,
-        kdfparams.dklen
-      )
+      derivedKey = await scryptV3Out(password, kdfparams)
     } else if (json.crypto.kdf === 'pbkdf2') {
       kdfparams = json.crypto.kdfparams
 
@@ -418,7 +432,7 @@ export default class Wallet {
         throw new Error('Unsupported parameters to PBKDF2')
       }
 
-      derivedKey = crypto.pbkdf2Sync(
+      derivedKey = await pbkdf2(
         Buffer.from(password),
         Buffer.from(kdfparams.salt, 'hex'),
         kdfparams.c,
@@ -431,17 +445,17 @@ export default class Wallet {
 
     const ciphertext = Buffer.from(json.crypto.ciphertext, 'hex')
     const mac = keccak256(Buffer.concat([Buffer.from(derivedKey.slice(16, 32)), ciphertext]))
-    if (mac.toString('hex') !== json.crypto.mac) {
+    if (Buffer.from(mac).toString('hex') !== json.crypto.mac) {
       throw new Error('Key derivation failed - possibly wrong passphrase')
     }
 
-    const decipher = crypto.createDecipheriv(
-      json.crypto.cipher,
+    const seed = await aes.decrypt(
+      ciphertext,
       derivedKey.slice(0, 16),
-      Buffer.from(json.crypto.cipherparams.iv, 'hex')
+      Buffer.from(json.crypto.cipherparams.iv, 'hex'),
+      json.crypto.cipher
     )
-    const seed = runCipherBuffer(decipher, ciphertext)
-    return new Wallet(seed)
+    return new Wallet(Buffer.from(seed))
   }
 
   /*
@@ -452,21 +466,30 @@ export default class Wallet {
    * @param input A JSON serialized string, or an object representing EthSale Keystore.
    * @param password The keystore password.
    */
-  public static fromEthSale(input: string | EthSaleKeystore, password: string): Wallet {
+  public static async fromEthSale(
+    input: string | EthSaleKeystore,
+    password: string
+  ): Promise<Wallet> {
     const json: EthSaleKeystore = typeof input === 'object' ? input : JSON.parse(input)
 
-    const encseed = Buffer.from(json.encseed, 'hex')
+    const encseed = Uint8Array.from(Buffer.from(json.encseed, 'hex'))
 
     // key derivation
-    const derivedKey = crypto.pbkdf2Sync(password, password, 2000, 32, 'sha256').slice(0, 16)
+    const pass = Buffer.from(password, 'utf8')
+    const derivedKey = (await pbkdf2(pass, pass, 2000, 32, 'sha256')).slice(0, 16)
 
     // seed decoding (IV is first 16 bytes)
     // NOTE: crypto (derived from openssl) when used with aes-*-cbc will handle PKCS#7 padding internally
     //       see also http://stackoverflow.com/a/31614770/4964819
-    const decipher = crypto.createDecipheriv('aes-128-cbc', derivedKey, encseed.slice(0, 16))
-    const seed = runCipherBuffer(decipher, encseed.slice(16))
+    const seed = await aes.decrypt(
+      encseed.slice(16),
+      derivedKey,
+      encseed.slice(0, 16),
+      'aes-128-cbc',
+      true
+    )
 
-    const wallet = new Wallet(keccak256(seed))
+    const wallet = new Wallet(Buffer.from(keccak256(seed)))
     if (wallet.getAddress().toString('hex') !== json.ethaddr) {
       throw new Error('Decoded key mismatch - possibly wrong passphrase')
     }
@@ -565,7 +588,7 @@ export default class Wallet {
     switch (v3Params.kdf) {
       case KDFFunctions.PBKDF:
         kdfParams = kdfParamsForPBKDF(v3Params)
-        derivedKey = crypto.pbkdf2Sync(
+        derivedKey = await pbkdf2(
           Buffer.from(password),
           kdfParams.salt,
           kdfParams.c,
@@ -576,29 +599,19 @@ export default class Wallet {
       case KDFFunctions.Scrypt:
         kdfParams = kdfParamsForScrypt(v3Params)
         // FIXME: support progress reporting callback
-        derivedKey = await scrypt(
-          Buffer.from(password),
-          kdfParams.salt,
-          kdfParams.n,
-          kdfParams.r,
-          kdfParams.p,
-          kdfParams.dklen
-        )
+        derivedKey = await scryptV3(password, kdfParams)
         break
       default:
         throw new Error('Unsupported kdf')
     }
 
-    const cipher: crypto.Cipher = crypto.createCipheriv(
-      v3Params.cipher,
+    const ciphertext = await aes.encrypt(
+      this.privKey,
       derivedKey.slice(0, 16),
-      v3Params.iv
+      v3Params.iv,
+      v3Params.cipher,
+      false
     )
-    if (!cipher) {
-      throw new Error('Unsupported cipher')
-    }
-
-    const ciphertext = runCipherBuffer(cipher, this.privKey)
     const mac = keccak256(
       Buffer.concat([Buffer.from(derivedKey.slice(16, 32)), Buffer.from(ciphertext)])
     )
@@ -609,7 +622,7 @@ export default class Wallet {
       // @ts-ignore - the official V3 keystore spec omits the address key
       address: this.getAddress().toString('hex'),
       crypto: {
-        ciphertext: ciphertext.toString('hex'),
+        ciphertext: Buffer.from(ciphertext).toString('hex'),
         cipherparams: { iv: v3Params.iv.toString('hex') },
         cipher: v3Params.cipher,
         kdf: v3Params.kdf,
@@ -617,7 +630,7 @@ export default class Wallet {
           ...kdfParams,
           salt: kdfParams.salt.toString('hex'),
         },
-        mac: mac.toString('hex'),
+        mac: Buffer.from(mac).toString('hex'),
       },
     }
   }
@@ -655,14 +668,4 @@ export default class Wallet {
   public verifyPublicKey(publicKey: Buffer): boolean {
     return privateToPublic(this.privateKey as Buffer).equals(publicKey)
   }
-}
-
-// helpers
-
-function runCipherBuffer(cipher: crypto.Cipher | crypto.Decipher, data: Buffer): Buffer {
-  return Buffer.concat([cipher.update(data), cipher.final()])
-}
-
-function keyExists(k: Buffer | undefined | null): k is Buffer {
-  return k !== undefined && k !== null
 }

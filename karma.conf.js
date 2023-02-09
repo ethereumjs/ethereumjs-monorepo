@@ -1,7 +1,7 @@
 module.exports = function(config) {
   config.set({
     frameworks: ['mocha', 'karma-typescript'],
-    files: ['src/**/*.ts', 'test/**/*.ts'],
+    files: ['src/**/*.ts', 'test/**/*.spec.ts'],
     preprocessors: {
       '**/*.ts': ['karma-typescript'],
     },
@@ -10,6 +10,9 @@ module.exports = function(config) {
       tsconfig: './tsconfig.json',
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
+        acornOptions: {
+          ecmaVersion: 11
+        }
       },
     },
     colors: true,
