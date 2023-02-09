@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1675950649217,
+  "lastUpdate": 1675973002357,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "8bcdb4883b6d6ae656c0929a31ebcb5374205590",
-          "message": "Update Dockerfiles to use node 18 (#2487)",
-          "timestamp": "2023-01-17T17:24:58+05:30",
-          "tree_id": "ac90e2b163056a7cdef792286c9bcae94373ab68",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8bcdb4883b6d6ae656c0929a31ebcb5374205590"
-        },
-        "date": 1673956658833,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19470,
-            "range": "±2.28%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 19053,
-            "range": "±2.43%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18541,
-            "range": "±7.44%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19113,
-            "range": "±1.45%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18901,
-            "range": "±1.76%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.18%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bad735bc2e25db8291aa3f2e2c8b206fdaba356f",
+          "message": "Update trie docs (#2525)",
+          "timestamp": "2023-02-09T15:00:34-05:00",
+          "tree_id": "ce4ffe15c8e950141ff031baea82ada19f876f08",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/bad735bc2e25db8291aa3f2e2c8b206fdaba356f"
+        },
+        "date": 1675973000930,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19342,
+            "range": "±1.76%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18821,
+            "range": "±3.78%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18945,
+            "range": "±1.44%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 17503,
+            "range": "±8.64%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19235,
+            "range": "±1.36%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
