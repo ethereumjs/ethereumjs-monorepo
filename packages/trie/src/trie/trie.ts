@@ -32,8 +32,6 @@ interface Path {
 
 /**
  * The basic trie interface, use with `import { Trie } from '@ethereumjs/trie'`.
- * In Ethereum applications stick with the {@link SecureTrie} overlay.
- * The API for the base and the secure interface are about the same.
  */
 export class Trie {
   private readonly _opts: TrieOptsWithDefaults = {
@@ -53,8 +51,10 @@ export class Trie {
   protected _root: Buffer
 
   /**
-   * Create a new trie
+   * Creates a new trie.
    * @param opts Options for instantiating the trie
+   *
+   * Note: in most cases, the static {@link Trie.create} constructor should be used.  It uses the same API but provides sensible defaults
    */
   constructor(opts?: TrieOpts) {
     if (opts !== undefined) {
