@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1675936876473,
+  "lastUpdate": 1675939105405,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "9b146527bb585885b071cd19f023584e8708b96e",
-          "message": "client: Apply correct hf to peer fetched txs as well as filter and remove mismatching hf txs while building blocks (#2486)\n\n* client: Apply correct hf to peer fetched txes as well as filter and remove mismatching hf txs while building blocks\r\n\r\n* remove debugging inserts\r\n\r\n* also add check to match block and vm hf\r\n\r\n* add option to skip val\r\n\r\n* fix cond\r\n\r\n* add tests\r\n\r\n* add skip hardfork validation in block as well\r\n\r\n* fix spec tests\r\n\r\n* skip validation in vm examples run\r\n\r\n* handle the hf mismatch error properly\r\n\r\n* add skip hf validation to addtransaction and fix more specs\r\n\r\n* remove  debugging artifact\r\n\r\n* fix miner spec\r\n\r\n* skip hf validation in pending block spec\r\n\r\n* add comment\r\n\r\n* fix test\r\n\r\n* vm fx\r\n\r\n* altetrnatively skip hf validation for estimate gas\r\n\r\n* fix test\r\n\r\n* enhance covergae\r\n\r\n* enhance coverage",
-          "timestamp": "2023-01-17T09:34:34+01:00",
-          "tree_id": "b9d53cb3ada87d074bdd1d8e5c1b1b44e1f07eab",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9b146527bb585885b071cd19f023584e8708b96e"
-        },
-        "date": 1673944663056,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15275,
-            "range": "±3.64%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 14975,
-            "range": "±5.90%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 14994,
-            "range": "±2.47%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 14549,
-            "range": "±8.92%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 15157,
-            "range": "±2.60%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.10%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4428938ac30823f7eaa2950448e974ee48267c13",
+          "message": "Remove trusted setups from build (#2522)\n\n* Move trusted setups out of build dir\r\n\r\n* update readme\r\n\r\n* Fix tests\r\n\r\n* add check for kzg\r\n\r\n* move trusted setup to client\r\n\r\n* Update readme\r\n\r\n* Rename trusted_setup.txt to devnet4.txt\r\n\r\n* Renamed trusted_setup.txt to devnet4.txt\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-02-09T11:35:43+01:00",
+          "tree_id": "a5915e16b3d98ba32d5ee6e160a64362cc32cc75",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4428938ac30823f7eaa2950448e974ee48267c13"
+        },
+        "date": 1675939104267,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 20459,
+            "range": "±2.83%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 19692,
+            "range": "±4.85%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 20356,
+            "range": "±1.69%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18835,
+            "range": "±8.92%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 20501,
+            "range": "±1.56%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
           }
         ]
       }
