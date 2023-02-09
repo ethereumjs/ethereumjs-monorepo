@@ -209,8 +209,15 @@ tape('blockchain test', (t) => {
     try {
       await blockchain.getBlock(5)
       st.fail('should throw an exception')
-    } catch (e) {
-      st.ok(`should throw for non-existing block request`)
+    } catch (e: any) {
+      st.ok(e.message.includes('NotFound'), `should throw for non-existing block-by-number request`)
+    }
+
+    try {
+      await blockchain.getBlock(Buffer.from('1234', 'hex'))
+      st.fail('should throw an exception')
+    } catch (e: any) {
+      st.ok(e.message.includes('NotFound'), `should throw for non-existing block-by-hash request`)
     }
 
     st.end()

@@ -708,7 +708,18 @@ export class Blockchain implements BlockchainInterface {
     // in the `VM` if we encounter a `BLOCKHASH` opcode: then a bigint is used we
     // need to then read the block from the canonical chain Q: is this safe? We
     // know it is OK if we call it from the iterator... (runBlock)
-    return this.dbManager.getBlock(blockId)
+    try {
+      return await this.dbManager.getBlock(blockId)
+    } catch (error: any) {
+      if (error.code === 'LEVEL_NOT_FOUND') {
+        if (typeof blockId === 'object') {
+          error.message = `Block with hash ${blockId.toString('hex')} not found in DB (NotFound)`
+        } else {
+          error.message = `Block number ${blockId} not found in DB (NotFound)`
+        }
+      }
+      throw error
+    }
   }
 
   /**
