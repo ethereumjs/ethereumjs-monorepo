@@ -248,7 +248,7 @@ tape('[PendingBlock]', async (t) => {
     } catch {
       /** ensure kzg is setup */
     }
-    initKZG(kzg, __dirname + '/../../../client/lib/trustedSetups/devnet4.txt')
+    initKZG(kzg, __dirname + '/../../lib/trustedSetups/devnet4.txt')
     const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',

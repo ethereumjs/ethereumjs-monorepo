@@ -18,7 +18,7 @@ export let kzg: Kzg = {
  * @param kzgLib a KZG implementation (defaults to c-kzg)
  * @param trustedSetupPath the full path (e.g. "/home/linux/devnet4.txt") to a kzg trusted setup text file
  */
-export function initKZG(kzgLib: Kzg, trustedSetupPath = __dirname + '/devnet4.txt') {
+export function initKZG(kzgLib: Kzg, trustedSetupPath: string) {
   kzg = kzgLib
   kzg.loadTrustedSetup(trustedSetupPath)
 }
