@@ -641,7 +641,7 @@ async function run() {
     })
     customGenesisState = parseGethGenesisState(genesisFile)
     // Set hardfork by block number 0
-    common.setHardforkByBlockNumber(0)
+    common.setHardforkByBlockNumber(0, undefined, Math.floor(Date.now() / 1000))
   }
 
   if (args.mine === true && accounts.length === 0) {
