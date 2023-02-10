@@ -213,8 +213,8 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    * Generate list of tasks to fetch. Modifies `first` and `count` to indicate
    * remaining items apart from the tasks it pushes in the queue
    *
-   * Divides the full 256-bit range of hashes into @maxRangeConcurrency ranges
-   * and turnes each range into a task for the fetcher
+   * Divides the full 256-bit range of hashes into ranges of @maxAccountRange
+   * size and turnes each range into a task for the fetcher
    */
 
   tasks(first = this.first, count = this.count, maxTasks = this.config.maxFetcherJobs): JobTask[] {
