@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1675973002357,
+  "lastUpdate": 1676028942248,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "6508bf9213d32929e0e2456c9c4fcfabe4e9d3c6",
-          "message": "util: Add ssz roots capability for withdrawals hash tree root (#2488)\n\n* util: Add ssz roots capability for withdrawals hash tree root\r\n\r\n* Fix karma setup\r\n\r\n* Update rlp to v4.0.0\r\n\r\n* add cl spec testcase\r\n\r\n* better naming\r\n\r\n* improve wording\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* improve wording\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* fix\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-01-18T11:51:23-05:00",
-          "tree_id": "c03aa0931ce219424a64426c8ed6c10cb119bdca",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6508bf9213d32929e0e2456c9c4fcfabe4e9d3c6"
-        },
-        "date": 1674060878527,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 13675,
-            "range": "±3.77%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 13804,
-            "range": "±6.32%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 13943,
-            "range": "±2.89%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 13459,
-            "range": "±2.91%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 12126,
-            "range": "±11.84%",
-            "unit": "ops/sec",
-            "extra": "66 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.36%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "86d353a0e00b70c15fc1bafca172faa86c43f212",
+          "message": "Client trusted setup path fixes (#2526)\n\n* Copy trustedSetup folder to client dist folder on build\r\n\r\n* Switch to self-contained trusted setup path creations where possible (particularly for bin/cli.ts in Client)",
+          "timestamp": "2023-02-10T17:02:24+05:30",
+          "tree_id": "fbcca325a386a92a4f50e95a84262636ce16aebf",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/86d353a0e00b70c15fc1bafca172faa86c43f212"
+        },
+        "date": 1676028940848,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15600,
+            "range": "±3.60%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 14808,
+            "range": "±5.95%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15921,
+            "range": "±2.23%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15245,
+            "range": "±2.32%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 13694,
+            "range": "±10.81%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
           }
         ]
       }
