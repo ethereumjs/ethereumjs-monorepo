@@ -583,7 +583,7 @@ tape('Clique: Initialization', (t) => {
     "Clique Voting: Ensure that pending votes don't survive authorization status changes",
     async (st) => {
       // This corner case can only appear if a signer is quickly added, removed
-      // and then readded (or the inverse), while one of the original voters
+      // and then re-added (or the inverse), while one of the original voters
       // dropped. If a past vote is left cached in the system somewhere, this
       // will interfere with the final signer outcome.
       const { blocks, blockchain } = await initWithSigners([A, B, C, D, E])
@@ -662,7 +662,7 @@ tape('Clique: Initialization', (t) => {
   })
 
   t.test(
-    'Clique Voting: An authorized signer that signed recenty should not be able to sign again',
+    'Clique Voting: An authorized signer that signed recently should not be able to sign again',
     async (st) => {
       const { blocks, blockchain } = await initWithSigners([A, B])
       await addNextBlock(blockchain, blocks, A)

@@ -265,7 +265,7 @@ There are four situations:
   Besides, if there are still some other leaves available on the right side, then
   an error will be returned.
 
-- Two edge elements proof. In this case two existent or non-existent proof(fisrt and last) should be provided.
+- Two edge elements proof. In this case two existent or non-existent proof(first and last) should be provided.
 
 NOTE: Currently only supports verification when the length of firstKey and lastKey are the same.
 

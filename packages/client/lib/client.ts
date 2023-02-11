@@ -102,8 +102,10 @@ export class EthereumClient {
     if (this.opened) {
       return false
     }
+    const name = this.config.chainCommon.chainName()
+    const chainId = this.config.chainCommon.chainId()
     this.config.logger.info(
-      `Initializing Ethereumjs client version=v${packageVersion} network=${this.config.chainCommon.chainName()}`
+      `Initializing Ethereumjs client version=v${packageVersion} network=${name} chainId=${chainId}`
     )
 
     this.config.events.on(Event.SERVER_ERROR, (error) => {
@@ -113,9 +115,6 @@ export class EthereumClient {
       this.config.logger.info(
         `Server listener up transport=${details.transport} url=${details.url}`
       )
-    })
-    this.config.events.on(Event.SYNC_SYNCHRONIZED, (height) => {
-      this.config.logger.info(`Synchronized blockchain at height=${height}`)
     })
 
     await Promise.all(this.services.map((s) => s.open()))
@@ -130,7 +129,7 @@ export class EthereumClient {
     if (this.started) {
       return false
     }
-    this.config.logger.info('Connecting to network and synchronizing blockchain...')
+    this.config.logger.info('Setup networking and services.')
 
     await Promise.all(this.services.map((s) => s.start()))
     await Promise.all(this.config.servers.map((s) => s.start()))

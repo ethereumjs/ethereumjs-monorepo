@@ -23,7 +23,7 @@ tape('[Utils/Parse]', (t) => {
   })
 
   t.test('should import poa network params correctly', async (t) => {
-    t.plan(3)
+    t.plan(4)
     const json = require(`../../client/test/testdata/geth-genesis/poa.json`)
     let params = parseGethGenesis(json, 'poa')
     t.equals(params.genesis.nonce, '0x0000000000000000', 'nonce is formatted correctly')
@@ -39,6 +39,7 @@ tape('[Utils/Parse]', (t) => {
       '0x0000000000000000',
       'non-hex prefixed nonce is formatted correctly'
     )
+    t.equal(params.hardfork, Hardfork.London, 'should correctly infer current hardfork')
   })
 
   t.test(
@@ -91,6 +92,8 @@ tape('[Utils/Parse]', (t) => {
       st.equal(hf.forkHash, kilnForkHashes[hf.name], `${hf.name} forkHash should match`)
     }
 
+    st.equal(common.hardfork(), Hardfork.Merge, 'should correctly infer current hardfork')
+
     // Ok lets schedule shanghai at block 0, this should force merge to be scheduled at just after
     // genesis if even mergeForkIdTransition is not confirmed to be post merge
     // This will also check if the forks are being correctly sorted based on block
@@ -119,6 +122,8 @@ tape('[Utils/Parse]', (t) => {
       ],
       'hardfork parse order should be correct'
     )
+
+    st.equal(common1.hardfork(), Hardfork.Shanghai, 'should correctly infer current hardfork')
   })
 
   t.test('should successfully parse genesis with hardfork scheduled post merge', async (st) => {
@@ -169,10 +174,13 @@ tape('[Utils/Parse]', (t) => {
     // if not post merge, then should error
     try {
       common.getHardforkByBlockNumber(8, BigInt(1), 8)
-      st.fail('should have failed since merge not compeleted before shanghai')
+      st.fail('should have failed since merge not completed before shanghai')
     } catch (e) {
-      st.pass('correctly fails if merge not compeleted before shanghai')
+      st.pass('correctly fails if merge not completed before shanghai')
     }
+
+    st.equal(common.hardfork(), Hardfork.Shanghai, 'should correctly infer common hardfork')
+
     st.end()
   })
 })

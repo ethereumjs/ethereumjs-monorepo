@@ -9,7 +9,7 @@ import pow = require('./../../testdata/geth-genesis/pow.json')
 
 const method = 'eth_getTransactionByBlockHashAndIndex'
 
-// build a server with 1 genesis block and one custom block conatining 2 txs
+// build a server with 1 genesis block and one custom block containing 2 txs
 async function setUp() {
   const { common, execution, server, chain } = await setupChain(pow, 'pow')
   const txs = [

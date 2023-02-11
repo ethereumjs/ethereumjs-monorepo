@@ -3,7 +3,7 @@ import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { decode } from '@ethereumjs/rlp'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Address, KECCAK256_RLP, Withdrawal, zeros } from '@ethereumjs/util'
+import { Address, GWEI_TO_WEI, KECCAK256_RLP, Withdrawal, zeros } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import genesisJSON = require('../../../../client/test/testdata/geth-genesis/withdrawals.json')
@@ -14,6 +14,7 @@ import type { WithdrawalBuffer, WithdrawalData } from '@ethereumjs/util'
 const common = new Common({
   chain: Chain.Mainnet,
   hardfork: Hardfork.Merge,
+  eips: [4895],
 })
 
 const pkey = Buffer.from('20'.repeat(32), 'hex')
@@ -23,7 +24,6 @@ const gethWithdrawals8BlockRlp =
 tape('EIP4895 tests', (t) => {
   t.test('EIP4895: withdrawals execute as expected', async (st) => {
     const vm = await VM.create({ common })
-    vm._common.setEIPs([4895])
     const withdrawals = <WithdrawalData[]>[]
     const addresses = ['20'.repeat(20), '30'.repeat(20), '40'.repeat(20)]
     const amounts = [BigInt(1000), BigInt(3000), BigInt(5000)]
@@ -67,7 +67,7 @@ tape('EIP4895 tests', (t) => {
 
     let index = 0
     for (let i = 0; i < addresses.length; i++) {
-      // Just assign any number to validatorIndex as its just for CL convinience
+      // Just assign any number to validatorIndex as its just for CL convenience
       withdrawals.push({
         index,
         validatorIndex: index,
@@ -106,7 +106,7 @@ tape('EIP4895 tests', (t) => {
       const address = new Address(Buffer.from(addresses[i], 'hex'))
       const amount = amounts[i]
       const balance = (await vm.stateManager.getAccount(address)).balance
-      st.equals(BigInt(amount), balance, 'balance ok')
+      st.equals(BigInt(amount) * GWEI_TO_WEI, balance, 'balance ok')
     }
 
     st.ok(zeros(32).equals(result!), 'withdrawals happen after transactions')
@@ -117,7 +117,6 @@ tape('EIP4895 tests', (t) => {
 
   t.test('EIP4895: state updation should exclude 0 amount updates', async (st) => {
     const vm = await VM.create({ common })
-    vm._common.setEIPs([4895])
 
     await vm.eei.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
     const preState = (await vm.eei.getStateRoot()).toString('hex')
@@ -174,7 +173,7 @@ tape('EIP4895 tests', (t) => {
     postState = (await vm.eei.getStateRoot()).toString('hex')
     st.equal(
       postState,
-      '7f7510a0cb6203f456e34ec3e2ce30d6c5590ded42c10a9cf3f24784119c5afb',
+      '23eadd91fca55c0e14034e4d63b2b3ed43f2e807b6bf4d276b784ac245e7fa3f',
       'post state should match'
     )
     st.end()
@@ -221,7 +220,7 @@ tape('EIP4895 tests', (t) => {
 
     st.equal(
       block.header.stateRoot.toString('hex'),
-      '7f7510a0cb6203f456e34ec3e2ce30d6c5590ded42c10a9cf3f24784119c5afb',
+      '23eadd91fca55c0e14034e4d63b2b3ed43f2e807b6bf4d276b784ac245e7fa3f',
       'correct state root should be generated'
     )
 

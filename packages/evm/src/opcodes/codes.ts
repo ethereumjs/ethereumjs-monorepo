@@ -39,7 +39,7 @@ export class Opcode {
     this.isAsync = isAsync
     this.dynamicGas = dynamicGas
 
-    // Opcode isn't subject to change, thus all futher modifications are prevented.
+    // Opcode isn't subject to change, thus all further modifications are prevented.
     Object.freeze(this)
   }
 }
@@ -291,10 +291,16 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
       0xf7: { name: 'AUTHCALL', isAsync: true, dynamicGas: true },
     },
   },
+  {
+    eip: 4844,
+    opcodes: {
+      0x49: { name: 'DATAHASH', isAsync: false, dynamicGas: false },
+    },
+  },
 ]
 
 /**
- * Convert basic opcode info dictonary into complete OpcodeList instance.
+ * Convert basic opcode info dictionary into complete OpcodeList instance.
  *
  * @param opcodes {Object} Receive basic opcodes info dictionary.
  * @returns {OpcodeList} Complete Opcode list

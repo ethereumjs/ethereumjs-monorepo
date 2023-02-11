@@ -63,3 +63,5 @@ export const KECCAK256_RLP = Buffer.from(KECCAK256_RLP_S, 'hex')
  *  RLP encoded empty string
  */
 export const RLP_EMPTY_STRING = Buffer.from([0x80])
+
+export const MAX_WITHDRAWALS_PER_PAYLOAD = 16

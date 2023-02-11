@@ -60,7 +60,7 @@ tape('[Chain]', (t) => {
 
     t.equal(await chain.update(), false, 'skip update if not opened')
     t.equal(await chain.close(), false, 'skip close if not opened')
-    t.notOk(chain.opened, 'chain shoud be closed')
+    t.notOk(chain.opened, 'chain should be closed')
     t.notOk(chain.blocks.height, 'chain should be empty if not opened')
     try {
       await chain.putHeaders([block.header])

@@ -127,7 +127,7 @@ The following chain-specific parameters are provided:
 - `bootstrapNodes` list
 - `dnsNetworks` list ([EIP-1459](https://eips.ethereum.org/EIPS/eip-1459)-compliant list of DNS networks for peer discovery)
 
-To get an overview of the different parameters have a look at one of the chain-specifc
+To get an overview of the different parameters have a look at one of the chain-specific
 files like `mainnet.json` in the `chains` directory, or to the `Chain` type in [./src/types.ts](./src/types.ts).
 
 ### Working with private/custom chains
@@ -278,7 +278,7 @@ The following EIPs are currently supported:
 - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565): ModExp gas cost
 - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2565): Transaction Types
 - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929): gas cost increases for state access opcodes
-- [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930): Optional accesss list tx type
+- [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930): Optional access list tx type
 - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198): Base fee Opcode
 - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529): Reduction in refunds
 - [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`experimental`)

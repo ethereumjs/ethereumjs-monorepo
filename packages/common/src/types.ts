@@ -19,9 +19,9 @@ export interface ChainConfig {
   name: string
   chainId: number | bigint
   networkId: number | bigint
-  defaultHardfork: string
-  comment: string
-  url: string
+  defaultHardfork?: string
+  comment?: string
+  url?: string
   genesis: GenesisBlockConfig
   hardforks: HardforkConfig[]
   bootstrapNodes: BootstrapNodeConfig[]
@@ -115,9 +115,8 @@ export interface CustomCommonOpts extends BaseOpts {
   baseChain?: string | number | Chain | bigint
 }
 
-export interface GethConfigOpts {
+export interface GethConfigOpts extends BaseOpts {
   chain?: string
-  hardfork?: string | Hardfork
   genesisHash?: Buffer
   mergeForkIdPostMerge?: boolean
 }

@@ -30,7 +30,7 @@
     "build": "../../config/cli/ts-build.sh",
     "build:benchmarks": "npm run build && tsc -p tsconfig.benchmarks.json",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "c8 --all --reporter=lcov --reporter=text --reporter=text-lcov npm run coverage:test",
+    "coverage": "c8 --all --reporter=lcov --reporter=text npm run coverage:test",
     "coverage:test": "npm run test:API",
     "docs:build": "typedoc --options typedoc.js",
     "examples": "ts-node ../../scripts/examples-runner.ts -- vm",

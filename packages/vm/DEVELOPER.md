@@ -37,7 +37,7 @@ or
 
 By default it is set to use the latest hardfork (`FORK_CONFIG` in `tests/tester.js`).
 
-The `--fork` parameter can also be used to activate EIPs. This is done by first entering the hardfork, and then add the EIPs seperated with the `+` sign. For instance:
+The `--fork` parameter can also be used to activate EIPs. This is done by first entering the hardfork, and then add the EIPs separated with the `+` sign. For instance:
 
 `npm run test:state -- --fork='London+3855'`
 
@@ -176,7 +176,7 @@ ok 5 [ 1.472 secs ] the state roots should match (successful tx run)
 # Average test run: 1.801 s
 ```
 
-Note: this script runs by actually checking out the targeted branch, running the test, and then switching back to your current branch, running the test again, and then restoring any changes you had in the current branch. For best results, you shuld run this test while you currently have `master` checked out.
+Note: this script runs by actually checking out the targeted branch, running the test, and then switching back to your current branch, running the test again, and then restoring any changes you had in the current branch. For best results, you should run this test while you currently have `master` checked out.
 
 ## Profiling
 

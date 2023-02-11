@@ -8,6 +8,7 @@ import { DBOp, DBSaveLookups, DBSetBlockOrHeader, DBSetHashToNumber, DBSetTD } f
 import { DBManager } from './db/manager'
 import { DBTarget } from './db/operation'
 import { genesisStateRoot } from './genesisStates'
+import {} from './utils'
 
 import type { Consensus } from './consensus'
 import type { GenesisState } from './genesisStates'
@@ -605,8 +606,11 @@ export class Blockchain implements BlockchainInterface {
     await this.validateHeader(block.header)
     await this._validateUncleHeaders(block)
     await block.validateData(false)
+    // TODO: Rethink how validateHeader vs validateBlobTransactions works since the parentHeader is retrieved multiple times
+    // (one for each uncle header and then for validateBlobTxs).
+    const parentBlock = await this.getBlock(block.header.parentHash)
+    block.validateBlobTransactions(parentBlock.header)
   }
-
   /**
    * The following rules are checked in this method:
    * Uncle Header is a valid header.
@@ -649,9 +653,6 @@ export class Blockchain implements BlockchainInterface {
     let parentHash = block.header.parentHash
     for (let i = 0; i < getBlocks; i++) {
       const parentBlock = await this.getBlock(parentHash)
-      if (parentBlock === undefined) {
-        throw new Error(`could not find parent block ${block.errorStr()}`)
-      }
       canonicalBlockMap.push(parentBlock)
 
       // mark block hash as part of the canonical chain
@@ -704,7 +705,18 @@ export class Blockchain implements BlockchainInterface {
     // in the `VM` if we encounter a `BLOCKHASH` opcode: then a bigint is used we
     // need to then read the block from the canonical chain Q: is this safe? We
     // know it is OK if we call it from the iterator... (runBlock)
-    return this.dbManager.getBlock(blockId)
+    try {
+      return await this.dbManager.getBlock(blockId)
+    } catch (error: any) {
+      if (error.code === 'LEVEL_NOT_FOUND') {
+        if (typeof blockId === 'object') {
+          error.message = `Block with hash ${blockId.toString('hex')} not found in DB (NotFound)`
+        } else {
+          error.message = `Block number ${blockId} not found in DB (NotFound)`
+        }
+      }
+      throw error
+    }
   }
 
   /**
@@ -1251,6 +1263,7 @@ export class Blockchain implements BlockchainInterface {
       number: 0,
       stateRoot,
       withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
+      excessDataGas: common.isActivatedEIP(4844) ? BigInt(0) : undefined,
     }
     if (common.consensusType() === 'poa') {
       if (common.genesis().extraData) {

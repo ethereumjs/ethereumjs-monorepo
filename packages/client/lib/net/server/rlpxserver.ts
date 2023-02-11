@@ -61,7 +61,7 @@ export class RlpxServer extends Server {
    */
   constructor(options: RlpxServerOptions) {
     super(options)
-    // As of now, the devp2p dpt server listens on the ip4 protocol by default and hence the the ip in the
+    // As of now, the devp2p dpt server listens on the ip4 protocol by default and hence the ip in the
     // bootnode needs to be of ip4 by default
     this.ip = options.config.extIP ?? '0.0.0.0'
     this.discovery = options.config.discV4 || options.config.discDns

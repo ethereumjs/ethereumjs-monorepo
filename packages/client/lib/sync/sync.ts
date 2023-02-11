@@ -2,7 +2,6 @@ import { Hardfork } from '@ethereumjs/common'
 
 import { FlowControl } from '../net/protocol'
 import { Event } from '../types'
-import { short } from '../util'
 
 import type { Chain } from '../blockchain'
 import type { Config } from '../config'
@@ -72,7 +71,7 @@ export abstract class Synchronizer {
     })
 
     this.config.events.on(Event.CHAIN_UPDATED, () => {
-      this.updateSynchronizedState()
+      this.config.updateSynchronizedState(this.chain.headers.latest, true)
     })
   }
 
@@ -138,28 +137,6 @@ export abstract class Synchronizer {
   abstract best(): Promise<Peer | undefined>
 
   abstract syncWithPeer(peer?: Peer): Promise<boolean>
-
-  /**
-   * Checks if the synchronized state of the chain has changed
-   * @emits {@link Event.SYNC_SYNCHRONIZED}
-   */
-  updateSynchronizedState() {
-    if (this.config.syncTargetHeight === undefined || this.config.syncTargetHeight === BigInt(0)) {
-      return
-    }
-    if (this.chain.headers.height >= this.config.syncTargetHeight) {
-      if (!this.config.synchronized) {
-        const hash = this.chain.headers.latest?.hash()
-        this.config.logger.info(
-          `Chain synchronized height=${this.chain.headers.height} hash=${short(hash!)}`
-        )
-      }
-      this.config.synchronized = true
-      this.config.lastSyncDate = Date.now()
-
-      this.config.events.emit(Event.SYNC_SYNCHRONIZED, this.chain.headers.height)
-    }
-  }
 
   /**
    * Fetch all blocks from current height up to highest found amongst peers
@@ -239,18 +216,6 @@ export abstract class Synchronizer {
    * Reset synced status after a certain time with no chain updates
    */
   _syncedStatusCheck() {
-    if (this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
-      return
-    }
-
-    if (this.config.synchronized) {
-      const diff = Date.now() - this.config.lastSyncDate
-      if (diff >= this.SYNCED_STATE_REMOVAL_PERIOD) {
-        this.config.synchronized = false
-        this.config.logger.info(
-          `Sync status reset (no chain updates for ${Math.round(diff / 1000)} seconds).`
-        )
-      }
-    }
+    this.config.updateSynchronizedState()
   }
 }

@@ -1,3 +1,5 @@
+import { BlockHeader } from '@ethereumjs/block'
+import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { randomBytes } from 'crypto'
 
 import type { Config } from '../config'
@@ -14,8 +16,16 @@ interface PendingBlockOpts {
 
   /* Tx Pool */
   txPool: TxPool
+
+  /* Skip hardfork validation */
+  skipHardForkValidation?: boolean
 }
 
+interface BlobBundle {
+  blockHash: string
+  blobs: Buffer[]
+  kzgCommitments: Buffer[]
+}
 /**
  * In the future this class should build a pending block by keeping the
  * transaction set up-to-date with the state of local mempool until called.
@@ -27,10 +37,14 @@ export class PendingBlock {
   config: Config
   txPool: TxPool
   pendingPayloads: [payloadId: Buffer, builder: BlockBuilder][] = []
+  blobBundles: Map<string, BlobBundle>
+  private skipHardForkValidation?: boolean
 
   constructor(opts: PendingBlockOpts) {
     this.config = opts.config
     this.txPool = opts.txPool
+    this.blobBundles = new Map()
+    this.skipHardForkValidation = opts.skipHardForkValidation
   }
 
   /**
@@ -55,6 +69,8 @@ export class PendingBlock {
 
     const baseFeePerGas =
       vm._common.isActivatedEIP(1559) === true ? parentBlock.header.calcNextBaseFee() : undefined
+    // Set to default of 0 since fee can't be calculated until all blob transactions are added
+    const excessDataGas = vm._common.isActivatedEIP(4844) ? BigInt(0) : undefined
 
     // Set the state root to ensure the resulting state
     // is based on the parent block's state
@@ -67,6 +83,7 @@ export class PendingBlock {
         number,
         gasLimit,
         baseFeePerGas,
+        excessDataGas,
       },
       withdrawals,
       blockOpts: {
@@ -85,11 +102,19 @@ export class PendingBlock {
     )
     let index = 0
     let blockFull = false
+    const blobTxs = []
     while (index < txs.length && !blockFull) {
       try {
-        await builder.addTransaction(txs[index])
-      } catch (error: any) {
-        if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
+        const tx = txs[index]
+        await builder.addTransaction(tx, {
+          skipHardForkValidation: this.skipHardForkValidation,
+        })
+        if (tx instanceof BlobEIP4844Transaction) blobTxs.push(tx)
+      } catch (error) {
+        if (
+          (error as Error).message ===
+          'tx has a higher gas limit than the remaining gas in the block'
+        ) {
           if (builder.gasUsed > gasLimit - BigInt(21000)) {
             // If block has less than 21000 gas remaining, consider it full
             blockFull = true
@@ -97,6 +122,18 @@ export class PendingBlock {
               `Pending: Assembled block full (gasLeft: ${gasLimit - builder.gasUsed})`
             )
           }
+        } else if ((error as Error).message.includes('tx has a different hardfork than the vm')) {
+          // We can here decide to keep a tx in pool if it belongs to future hf
+          // but for simplicity just remove the tx as the sender can always retransmit
+          // the tx
+          this.txPool.removeByHash(txs[index].hash().toString('hex'))
+          this.config.logger.error(
+            `Pending: Removed from txPool tx 0x${txs[index]
+              .hash()
+              .toString('hex')} having different hf=${txs[
+              index
+            ].common.hardfork()} than block vm hf=${vm._common.hardfork()}`
+          )
         } else {
           // If there is an error adding a tx, it will be skipped
           this.config.logger.debug(
@@ -107,6 +144,24 @@ export class PendingBlock {
         }
       }
       index++
+    }
+
+    // Construct initial blobs bundle when payload is constructed
+    if (vm._common.isActivatedEIP(4844)) {
+      const header = BlockHeader.fromHeaderData(
+        {
+          ...headerData,
+          number,
+          gasLimit,
+          baseFeePerGas,
+          excessDataGas,
+        },
+        {
+          hardforkByTTD: td,
+          common: vm._common,
+        }
+      )
+      this.constructBlobsBundle(payloadId, blobTxs, header.hash())
     }
     return payloadId
   }
@@ -121,6 +176,7 @@ export class PendingBlock {
     void payload[1].revert()
     // Remove from pendingPayloads
     this.pendingPayloads = this.pendingPayloads.filter((p) => !p[0].equals(payloadId))
+    this.blobBundles.delete('0x' + payloadId.toString())
   }
 
   /**
@@ -146,9 +202,16 @@ export class PendingBlock {
     let index = 0
     let blockFull = false
     let skippedByAddErrors = 0
+    const blobTxs = []
     while (index < txs.length && !blockFull) {
       try {
-        await builder.addTransaction(txs[index])
+        const tx = txs[index]
+        if (tx instanceof BlobEIP4844Transaction) {
+          blobTxs.push(tx)
+        }
+        await builder.addTransaction(tx, {
+          skipHardForkValidation: this.skipHardForkValidation,
+        })
       } catch (error: any) {
         if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
           if (builder.gasUsed > (builder as any).headerData.gasLimit - BigInt(21000)) {
@@ -156,6 +219,18 @@ export class PendingBlock {
             blockFull = true
             this.config.logger.info(`Pending: Assembled block full`)
           }
+        } else if ((error as Error).message.includes('tx has a different hardfork than the vm')) {
+          // We can here decide to keep a tx in pool if it belongs to future hf
+          // but for simplicity just remove the tx as the sender can always retransmit
+          // the tx
+          this.txPool.removeByHash(txs[index].hash().toString('hex'))
+          this.config.logger.error(
+            `Pending: Removed from txPool tx 0x${txs[index]
+              .hash()
+              .toString('hex')} having different hf=${txs[
+              index
+            ].common.hardfork()} than block vm hf=${vm._common.hardfork()}`
+          )
         } else {
           skippedByAddErrors++
           // If there is an error adding a tx, it will be skipped
@@ -179,9 +254,47 @@ export class PendingBlock {
         .toString('hex')}`
     )
 
+    // Construct blobs bundle
+    if (block._common.isActivatedEIP(4844)) {
+      this.constructBlobsBundle(payloadId, blobTxs, block.header.hash())
+    }
+
     // Remove from pendingPayloads
     this.pendingPayloads = this.pendingPayloads.filter((p) => !p[0].equals(payloadId))
 
     return [block, builder.transactionReceipts, builder.minerValue]
+  }
+
+  /**
+   * An internal helper for storing the blob bundle associated with each transaction in an EIP4844 world
+   * @param payloadId the payload Id of the pending block
+   * @param txs an array of {@BlobEIP4844Transaction } transactions
+   * @param blockHash the blockhash of the pending block (computed from the header data provided)
+   */
+  private constructBlobsBundle = (
+    payloadId: Buffer,
+    txs: BlobEIP4844Transaction[],
+    blockHash: Buffer
+  ) => {
+    let blobs: Buffer[] = []
+    let kzgCommitments: Buffer[] = []
+    const bundle = this.blobBundles.get('0x' + payloadId.toString('hex'))
+    if (bundle !== undefined) {
+      blobs = bundle.blobs
+      kzgCommitments = bundle.kzgCommitments
+    }
+
+    for (let tx of txs) {
+      tx = tx as BlobEIP4844Transaction
+      if (tx.blobs !== undefined && tx.blobs.length > 0) {
+        blobs = blobs.concat(tx.blobs)
+        kzgCommitments = kzgCommitments.concat(tx.kzgCommitments!)
+      }
+    }
+    this.blobBundles.set('0x' + payloadId.toString('hex'), {
+      blockHash: '0x' + blockHash.toString('hex'),
+      blobs,
+      kzgCommitments,
+    })
   }
 }

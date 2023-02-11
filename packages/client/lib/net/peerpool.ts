@@ -1,3 +1,5 @@
+import { Hardfork } from '@ethereumjs/common'
+
 import { Event } from '../types'
 
 import { RlpxServer } from './server'
@@ -226,9 +228,13 @@ export class PeerPool {
    * Peer pool status check on a repeated interval
    */
   async _statusCheck() {
+    let NO_PEER_PERIOD_COUNT = 3
+    if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+      NO_PEER_PERIOD_COUNT = 6
+    }
     if (this.size === 0) {
       this.noPeerPeriods += 1
-      if (this.noPeerPeriods >= 3) {
+      if (this.noPeerPeriods >= NO_PEER_PERIOD_COUNT) {
         this.noPeerPeriods = 0
         const promises = this.config.servers.map(async (server) => {
           if (server instanceof RlpxServer) {

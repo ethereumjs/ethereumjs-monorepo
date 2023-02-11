@@ -1,6 +1,6 @@
-import { Block } from '@ethereumjs/block'
+import { Block, getDataGasPrice } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { Capability } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
 import { Address, KECCAK256_NULL, short, toBuffer } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
@@ -27,11 +27,55 @@ const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')
 
 /**
+ * Returns the hardfork excluding the merge hf which has
+ * no effect on the vm execution capabilities.
+ *
+ * This is particularly useful in executing/evaluating the transaction
+ * when chain td is not available at many places to correctly set the
+ * hardfork in for e.g. vm or txs or when the chain is not fully synced yet.
+ *
+ * @returns Hardfork name
+ */
+function execHardfork(
+  hardfork: Hardfork | string,
+  preMergeHf: Hardfork | string
+): string | Hardfork {
+  return hardfork !== Hardfork.Merge ? hardfork : preMergeHf
+}
+
+/**
  * @ignore
  */
 export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // create a reasonable default if no block is given
   opts.block = opts.block ?? Block.fromBlockData({}, { common: opts.tx.common })
+
+  if (opts.skipHardForkValidation !== true) {
+    // Find and set preMerge hf for easy access later
+    const hfs = this._common.hardforks()
+    const preMergeIndex = hfs.findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined) - 1
+    // If no pre merge hf found, set it to first hf even if its merge
+    const preMergeHf = preMergeIndex >= 0 ? hfs[preMergeIndex].name : hfs[0].name
+
+    if (
+      execHardfork(opts.tx.common.hardfork(), preMergeHf) !==
+      execHardfork(this._common.hardfork(), preMergeHf)
+    ) {
+      // If hardforks aren't same then we can posibily try upgrading tx hardfork but it may
+      // be fraught with challenges. Better to just reject the tx and the tx sender can
+      // update the tx as per new hardfork
+      const msg = _errorMsg('tx has a different hardfork than the vm', this, opts.block, opts.tx)
+      throw new Error(msg)
+    }
+    if (
+      execHardfork(opts.block._common.hardfork(), preMergeHf) !==
+      execHardfork(this._common.hardfork(), preMergeHf)
+    ) {
+      // Block and VM's hardfork should match as well
+      const msg = _errorMsg('block has a different hardfork than the vm', this, opts.block, opts.tx)
+      throw new Error(msg)
+    }
+  }
 
   if (opts.skipBlockGasLimitValidation !== true && opts.block.header.gasLimit < opts.tx.gasLimit) {
     const msg = _errorMsg('tx has a higher gas limit than the block', this, opts.block, opts.tx)
@@ -221,24 +265,25 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Check from account's balance and nonce
   let fromAccount = await state.getAccount(caller)
   const { nonce, balance } = fromAccount
-
+  debug(`Sender's pre-tx balance is ${balance}`)
   // EIP-3607: Reject transactions from senders with deployed code
   if (this._common.isActivatedEIP(3607) === true && !fromAccount.codeHash.equals(KECCAK256_NULL)) {
     const msg = _errorMsg('invalid sender address, address is not EOA (EIP-3607)', this, block, tx)
     throw new Error(msg)
   }
 
-  const cost = tx.getUpfrontCost(block.header.baseFeePerGas)
-  if (balance < cost) {
-    if (opts.skipBalance === true && fromAccount.balance < cost) {
+  // Check balance against upfront tx cost
+  const upFrontCost = tx.getUpfrontCost(block.header.baseFeePerGas)
+  if (balance < upFrontCost) {
+    if (opts.skipBalance === true && fromAccount.balance < upFrontCost) {
       if (tx.supports(Capability.EIP1559FeeMarket) === false) {
         // if skipBalance and not EIP1559 transaction, ensure caller balance is enough to run transaction
-        fromAccount.balance = cost
+        fromAccount.balance = upFrontCost
         await this.stateManager.putAccount(caller, fromAccount)
       }
     } else {
       const msg = _errorMsg(
-        `sender doesn't have enough funds to send tx. The upfront cost is: ${cost} and the sender's account (${caller}) only has: ${balance}`,
+        `sender doesn't have enough funds to send tx. The upfront cost is: ${upFrontCost} and the sender's account (${caller}) only has: ${balance}`,
         this,
         block,
         tx
@@ -247,27 +292,68 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
   }
 
+  // Check balance against max potential cost (for EIP 1559 and 4844)
+  let maxCost = tx.value
+  let dataGasPrice = BigInt(0)
+  let totalDataGas = BigInt(0)
   if (tx.supports(Capability.EIP1559FeeMarket)) {
     // EIP-1559 spec:
     // The signer must be able to afford the transaction
     // `assert balance >= gas_limit * max_fee_per_gas`
-    const cost = tx.gasLimit * (tx as FeeMarketEIP1559Transaction).maxFeePerGas + tx.value
-    if (balance < cost) {
-      if (opts.skipBalance === true && fromAccount.balance < cost) {
-        // if skipBalance, ensure caller balance is enough to run transaction
-        fromAccount.balance = cost
-        await this.stateManager.putAccount(caller, fromAccount)
-      } else {
-        const msg = _errorMsg(
-          `sender doesn't have enough funds to send tx. The max cost is: ${cost} and the sender's account (${caller}) only has: ${balance}`,
-          this,
-          block,
-          tx
-        )
-        throw new Error(msg)
-      }
+    maxCost += tx.gasLimit * (tx as FeeMarketEIP1559Transaction).maxFeePerGas
+  }
+
+  if (tx instanceof BlobEIP4844Transaction) {
+    if (!this._common.isActivatedEIP(4844)) {
+      const msg = _errorMsg('blob transactions are only valid with EIP4844 active', this, block, tx)
+      throw new Error(msg)
+    }
+    // EIP-4844 spec
+    // the signer must be able to afford the transaction
+    // assert signer(tx).balance >= tx.message.gas * tx.message.max_fee_per_gas + get_total_data_gas(tx) * tx.message.max_fee_per_data_gas
+    const castTx = tx as BlobEIP4844Transaction
+    totalDataGas = castTx.common.param('gasConfig', 'dataGasPerBlob') * BigInt(castTx.numBlobs())
+    maxCost += totalDataGas * castTx.maxFeePerDataGas
+
+    // 4844 minimum datagas price check
+    if (opts.block === undefined) {
+      const msg = _errorMsg(
+        `Block option must be supplied to compute data gas price`,
+        this,
+        block,
+        tx
+      )
+      throw new Error(msg)
+    }
+    const parentBlock = await this.blockchain.getBlock(opts.block?.header.parentHash)
+    dataGasPrice = getDataGasPrice(parentBlock.header)
+    if (castTx.maxFeePerDataGas < dataGasPrice) {
+      const msg = _errorMsg(
+        `Transaction's maxFeePerDataGas ${castTx.maxFeePerDataGas}) is less than block dataGasPrice (${dataGasPrice}).`,
+        this,
+        block,
+        tx
+      )
+      throw new Error(msg)
     }
   }
+
+  if (fromAccount.balance < maxCost) {
+    if (opts.skipBalance === true && fromAccount.balance < maxCost) {
+      // if skipBalance, ensure caller balance is enough to run transaction
+      fromAccount.balance = maxCost
+      await this.stateManager.putAccount(caller, fromAccount)
+    } else {
+      const msg = _errorMsg(
+        `sender doesn't have enough funds to send tx. The max cost is: ${maxCost} and the sender's account (${caller}) only has: ${balance}`,
+        this,
+        block,
+        tx
+      )
+      throw new Error(msg)
+    }
+  }
+
   if (opts.skipNonce !== true) {
     if (nonce !== tx.nonce) {
       const msg = _errorMsg(
@@ -301,9 +387,18 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
   }
 
+  // EIP-4844 tx
+  let versionedHashes
+  if (tx instanceof BlobEIP4844Transaction) {
+    versionedHashes = (tx as BlobEIP4844Transaction).versionedHashes
+  }
+
   // Update from account's balance
   const txCost = tx.gasLimit * gasPrice
+  const dataGasCost = totalDataGas * dataGasPrice
   fromAccount.balance -= txCost
+  fromAccount.balance -= dataGasCost
+  debug(`txCost ${txCost} -- ${dataGasCost}`)
   if (opts.skipBalance === true && fromAccount.balance < BigInt(0)) {
     fromAccount.balance = BigInt(0)
   }
@@ -335,6 +430,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     to,
     value,
     data,
+    versionedHashes,
   })) as RunTxResult
 
   if (this.DEBUG) {

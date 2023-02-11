@@ -208,9 +208,9 @@ to receive a function as the handler's second argument, nor call it.
 Note that if your event handler receives multiple arguments, the second
 one will be the continuation function, and it must be called.
 
-If an exception is thrown from withing the handler or a function called
+If an exception is thrown from within the handler or a function called
 by it, the exception will bubble into the EVM and interrupt it, possibly
-corrupting its state. It's strongly recommended not to throw from withing
+corrupting its state. It's strongly recommended not to throw from within
 event handlers.
 
 ## Understanding the EVM

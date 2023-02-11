@@ -156,7 +156,7 @@ tape('[Skeleton] / initSync', async (t) => {
     // header. We expect the old subchain to be truncated and extended with
     // the new head.
     {
-      name: 'Duplicate annoucement should not modify subchain',
+      name: 'Duplicate announcement should not modify subchain',
       blocks: [block49, block50],
       oldState: [{ head: BigInt(100), tail: BigInt(5) }],
       head: block50,
@@ -414,7 +414,7 @@ tape('[Skeleton] / setHead', async (t) => {
     st.equal(reorg, false, 'should not reorg on genesis init')
 
     reorg = await skeleton.setHead(genesis, false)
-    st.equal(reorg, false, 'should not reorg on genesis annoucement')
+    st.equal(reorg, false, 'should not reorg on genesis announcement')
 
     reorg = await skeleton.setHead(genesis, true)
     st.equal(reorg, false, 'should not reorg on genesis setHead')

@@ -42,7 +42,7 @@ export class SNAP extends Protocol {
   }
 
   sendStatus() {
-    throw Error('SNAP prococol doesnot support status handshake')
+    throw Error('SNAP protocol does not support status handshake')
   }
 
   /**

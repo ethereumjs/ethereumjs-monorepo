@@ -61,7 +61,7 @@ tape('EIP 1153: transient storage', (t) => {
     await vm.stateManager.putAccount(fromAddress, new Account(BigInt(0), BigInt(0xfffffffff)))
     const results = []
     for (const tx of test.transactions) {
-      const result = await vm.runTx({ tx, skipBalance: true })
+      const result = await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
       results.push(result)
     }
 
