@@ -868,7 +868,6 @@ export class Eth {
   async sendRawTransaction(params: [string]) {
     const [serializedTx] = params
 
-    const common = this.client.config.chainCommon.copy()
     const { syncTargetHeight } = this.client.config
     if (!this.client.config.synchronized) {
       throw {
@@ -876,11 +875,14 @@ export class Eth {
         message: `client is not aware of the current chain height yet (give sync some more time)`,
       }
     }
-    // Set the tx common to an appropriate HF to create a tx
-    // with matching HF rules
-    if (typeof syncTargetHeight === 'bigint' && syncTargetHeight !== BigInt(0)) {
-      common.setHardforkByBlockNumber(syncTargetHeight, undefined, Math.floor(Date.now() / 1000))
+    const common = this.client.config.chainCommon.copy()
+    const chainHeight = this.client.chain.headers.height
+    let txTargetHeight = syncTargetHeight ?? BigInt(0)
+    // Following step makes sure txTargetHeight > 0
+    if (txTargetHeight <= chainHeight) {
+      txTargetHeight = chainHeight + BigInt(1)
     }
+    common.setHardforkByBlockNumber(txTargetHeight, undefined, Math.floor(Date.now() / 1000))
 
     let tx
     try {

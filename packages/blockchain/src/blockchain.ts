@@ -1256,7 +1256,7 @@ export class Blockchain implements BlockchainInterface {
    */
   createGenesisBlock(stateRoot: Buffer): Block {
     const common = this._common.copy()
-    common.setHardforkByBlockNumber(0)
+    common.setHardforkByBlockNumber(0, undefined, common.genesis().timestamp)
 
     const header: BlockData['header'] = {
       ...common.genesis(),
