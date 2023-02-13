@@ -6,6 +6,51 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.2.0 - 2023-01-16
+
+### Functional Shanghai Support
+
+This release fully supports all EIPs included in the [Shanghai](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/shanghai.md) feature hardfork scheduled for early 2023. Note that a `timestamp` to trigger the `Shanghai` fork update is only added for the `sepolia` testnet and not yet for `goerli` or `mainnet`.
+
+You can instantiate a Shanghai-enabled Common instance for your transactions with:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+```
+
+### EIP-4844 Shard Blob Transactions Support (experimental)
+
+This release supports an experimental version of the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023).
+
+#### Initialization
+
+To create block tx including blocks you have to active EIP-4844 in the associated `@ethereumjs/common` library:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+```
+
+The underlying `@ethereumjs/tx` library needs to have a working `kzg` library installation in the global namespace adhering to the [Kzg](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/depInterfaces.ts) interface defined in the `@ethereumjs/tx` library.
+
+The EthereumJS libraries have been tested with the [c-kzg](https://github.com/ethereum/c-kzg-4844) library which can be installed with `npm install c-kzg`.
+
+This library then needs to be imported along the other library imports:
+
+```typescript
+import { Common, Hardfork } from '@ethereumjs/common'
+import * as kzg from 'c-kzg'
+import { VM } from '@ethereumjs/vm'
+```
+
+### Other Changes
+
+- Handle hardfork defaults consistently, PR [#2467](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2467)
+- New `generateWithdrawalsSSZRoot()` method, PR [#2488](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2488)
+
 ## 4.1.0 - 2022-12-09
 
 ### Experimental EIP-4895 Beacon Chain Withdrawals Support

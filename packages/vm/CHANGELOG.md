@@ -36,6 +36,18 @@ import { Common, Chain, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
 ```
 
+EIP-4844 comes with a new opcode `DATAHASH` and adds a new point evaluation precompile at address `0x14` in the underlying `@ethereumjs/evm` package. This precompile needs to have a working `kzg` library installation in the global namespace adhering to the [Kzg](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/depInterfaces.ts) interface defined in the `@ethereumjs/tx` library.
+
+The EthereumJS libraries have been tested with the [c-kzg](https://github.com/ethereum/c-kzg-4844) library which can be installed with `npm install c-kzg`.
+
+This library then needs to be imported along the other library imports:
+
+```typescript
+import { Common, Hardfork } from '@ethereumjs/common'
+import * as kzg from 'c-kzg'
+import { VM } from '@ethereumjs/vm'
+```
+
 #### Shard Blob Transactions and Block Building
 
 The VM is now capable of running blob-including txs and blocks with `VM.runTx()` and `VM.runBlock()` taking the new gas costs for blob transactions into account. The underlying EVM `v1.3.0` now supports the new `DATAHASH` opcode and the new point evaluation precompile.
