@@ -69,9 +69,11 @@ function DBSetHashToNumber(blockHash: Buffer, blockNumber: bigint): DBOp {
   })
 }
 
-function DBSaveLookups(blockHash: Buffer, blockNumber: bigint): DBOp[] {
+function DBSaveLookups(blockHash: Buffer, blockNumber: bigint, skipNumIndex?: boolean): DBOp[] {
   const ops = []
-  ops.push(DBOp.set(DBTarget.NumberToHash, blockHash, { blockNumber }))
+  if (skipNumIndex !== true) {
+    ops.push(DBOp.set(DBTarget.NumberToHash, blockHash, { blockNumber }))
+  }
 
   const blockNumber8Bytes = bufBE8(blockNumber)
   ops.push(
