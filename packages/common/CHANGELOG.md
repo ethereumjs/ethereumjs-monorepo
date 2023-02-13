@@ -23,6 +23,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
 #### Changes
 
 - Added final Shanghai EIPs to HF file, PR [#2459](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2459)
+- Added `timestamp` and `forkHash` for the Sepolia Shanghai HF, PR [#2527](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2527)
 - Updated `forkHash` calculation for timebased hardforks, PR [#2458](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2458)
 - Updated `setForkHashes()` to update timebased hardfork `forkHash` values, PR [#2461](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2461)
 
