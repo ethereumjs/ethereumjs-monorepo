@@ -67,7 +67,7 @@
     "@ethereumjs/trie": "5.0.3",
     "@ethereumjs/tx": "4.1.0",
     "@ethereumjs/util": "8.0.4",
-    "@ethereumjs/vm": "6.3.0",
+    "@ethereumjs/vm": "6.4.0",
     "abstract-level": "^1.0.3",
     "body-parser": "^1.19.2",
     "chalk": "^4.1.2",

@@ -174,6 +174,32 @@ Currently supported EIPs:
 - [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations
 - [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022
 
+### EIP-4844 Shard Blob Transactions Support (experimental)
+
+This library supports an experimental version of the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023) starting with `v1.3.0`.
+
+#### Initialization
+
+To run EVM related EIP-4844 functionality you have to active the EIP in the associated `@ethereumjs/common` library:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+```
+
+EIP-4844 comes with a new opcode `DATAHASH` and adds a new point evaluation precompile at address `0x14`. This precompile needs to have a working `kzg` library installation in the global namespace adhering to the [Kzg](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/depInterfaces.ts) interface defined in the `@ethereumjs/tx` library.
+
+The EthereumJS libraries have been tested with the [c-kzg](https://github.com/ethereum/c-kzg-4844) library which can be installed with `npm install c-kzg`.
+
+This library then needs to be imported along the other library imports:
+
+```typescript
+import { Common, Hardfork } from '@ethereumjs/common'
+import * as kzg from 'c-kzg'
+import { EVM } from '@ethereumjs/evm'
+```
+
 ### Tracing Events
 
 Our `TypeScript` EVM is implemented as an [AsyncEventEmitter](https://github.com/ahultgren/async-eventemitter) and events are submitted along major execution steps which you can listen to.
