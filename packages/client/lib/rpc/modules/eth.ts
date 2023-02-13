@@ -737,10 +737,11 @@ export class Eth {
             block.header.baseFeePerGas! +
             block.header.baseFeePerGas!
         : (tx as Transaction).gasPrice
+
+      const vmCopy = await this._vm!.copy()
+      vmCopy._common.setHardfork(tx.common.hardfork())
       // Run tx through copied vm to get tx gasUsed and createdAddress
-      const runBlockResult = await (
-        await this._vm!.copy()
-      ).runBlock({
+      const runBlockResult = await vmCopy.runBlock({
         block,
         root: parentBlock.header.stateRoot,
         skipBlockValidation: true,
