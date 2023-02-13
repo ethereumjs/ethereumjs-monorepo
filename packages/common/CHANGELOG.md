@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 3.1.0 - 2023-02-14
+## 3.1.0 - 2023-02-16
 
 ### Functional Shanghai Support
 
