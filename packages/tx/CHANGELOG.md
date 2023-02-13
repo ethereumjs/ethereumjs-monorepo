@@ -22,18 +22,27 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
 
 ### Experimental EIP-4844 Shard Blob Transactions Support
 
-This release supports an experimental version of [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) Shard Blob Transactions as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023), see PR [#2349](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2349) and follow-up PRs [#2501](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2501) and [#2499](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2499).
+This release supports an experimental version of the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023), see PR [#2349](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2349).
 
-See the following code snipped for an example on how to instantiate a blob transaction together with a matching `@ethereumjs/common` instance.
+This transaction type requires additional dependencies that are not installed by default to limit bundle size.
 
-Please note you must first call `initKZG` and pass in a KZG library object (defaulting to [c-kzg](https://github.com/ethereum/c-kzg-4844) which is added as an optional peer dependency in `package.json` and must be manually installed via NPM).
+##### Configuration
+
+There are two additional configuration steps needed to work with blob transactions.
+
+1. Install an additional dependency that supports the `kzg` interface defined in [the kzg interface](./src/kzg/kzg.ts). You can install the default option [c-kzg](https://github.com/ethereum/c-kzg-4844) by simply running `npm install c-kzg`.
+2. Download the trusted setup required for the KZG module. It can be found [here](../client/lib/trustedSetups/trusted_setup.txt) within the client package.
+
+##### Usage
+
+See the following code snipped for an example on how to instantiate (using the `c-kzg` module for our KZG dependency).
 
 ```typescript
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction, initKZG } from '@ethereumjs/tx'
-import * as kzg from 'c-kzg' // import { myKzgLibrary } from 'myKzgLibrary'
+import { BlobEIP4844Transaction, initKzg } from '@ethereumjs/tx'
+import * as kzg from 'c-kzg'
 
-initKZG(kzg, 'path/to/my/trusted_setup.txt') // Download from https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx
+initKzg(kzg, 'path/to/my/trusted_setup.txt')
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
 
 const txData = {

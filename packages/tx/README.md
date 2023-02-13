@@ -85,7 +85,7 @@ This transaction type requires additional dependencies that are not installed by
 There are two additional configuration steps needed to work with blob transactions.
 
 1. Install an additional dependency that supports the `kzg` interface defined in [the kzg interface](./src/kzg/kzg.ts). You can install the default option [c-kzg](https://github.com/ethereum/c-kzg-4844) by simply running `npm install c-kzg`.
-2. Download the trusted setup required for the KZG module. It can be found [here](../client/lib/trustedSetups/trusted_setup.txt).
+2. Download the trusted setup required for the KZG module. It can be found [here](../client/lib/trustedSetups/trusted_setup.txt) within the client package.
 
 ##### Usage
 
