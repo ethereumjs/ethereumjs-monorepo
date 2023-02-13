@@ -398,7 +398,6 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const dataGasCost = totalDataGas * dataGasPrice
   fromAccount.balance -= txCost
   fromAccount.balance -= dataGasCost
-  debug(`txCost ${txCost} -- ${dataGasCost}`)
   if (opts.skipBalance === true && fromAccount.balance < BigInt(0)) {
     fromAccount.balance = BigInt(0)
   }
