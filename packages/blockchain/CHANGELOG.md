@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.2.0 - 2023-02-16
+
+### Experimental EIP-4844 Shard Blob Transactions Support
+
+This release supports an experimental version of the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023), see PR [#2349](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2349) as well as PRs [#2522](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2522) and [#2526](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2526).
+
+The blockchain library now allows for blob transactions to be validated and included in a chain where EIP-4844 activated either by hardfork or standalone EIP (see latest tx library release for additional details).
+
+### Block Interface getBlock() Signature Fix
+
+Always a bit tricky, but we felt that we needed to do this. We had a misalignment of our blockchain implementation of the `Blockchain.getBlock()` method and the definition of the associated interface:
+
+- Blockchain class: `async getBlock(blockId: Buffer | number | bigint): Promise<Block>`
+- Blockchain interface: `getBlock(blockId: Buffer | number | bigint): Promise<Block | null>`
+
+So the Blockchain interface was - falsely - claiming that there would be the possibility of a `null` value returned in the case of a block not being found while the actual implementation was throwing an error in such a case.
+
+We now fixed this by removing the `null` from the interface return values - see PR [#2524](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2524), after exploring the other way around as well (and the reverting), see PR [#2516](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2516).
+
+While this might lead to breaking code constallations on the TypeScript level if this `null` value is picked up we felt this is the right thing to do since this divergence would otherwise continue to "trick" people into assuming and dealing with `null` values for non-existing-block assumptions in their code and continue to produce eventual bugs (we actually fell over this ourselves).
+
+A bit on the verge of breaking vs. bug fixing, sorry if you are eventually affected, but we just can't do a single breaking release update for a fix on that level.
+
 ## 6.1.0 - 2022-12-09
 
 ### Experimental EIP-4895 Beacon Chain Withdrawals Support
