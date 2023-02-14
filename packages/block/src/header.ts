@@ -405,6 +405,7 @@ export class BlockHeader {
         error = true
       }
       if (number !== BigInt(0)) {
+        // Skip difficulty and extraData check for PoS genesis block as genesis block may have non-zero difficulty (if TD is > 0)
         if (difficulty !== BigInt(0)) {
           errorMsg += `, difficulty: ${difficulty} (expected: 0)`
           error = true
