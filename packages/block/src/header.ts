@@ -405,7 +405,7 @@ export class BlockHeader {
         error = true
       }
       if (number !== BigInt(0)) {
-        // Skip difficulty and extraData check for PoS genesis block as genesis block may have non-zero difficulty (if TD is > 0)
+        // Skip difficulty, nonce, and extraData check for PoS genesis block as genesis block may have non-zero difficulty (if TD is > 0)
         if (difficulty !== BigInt(0)) {
           errorMsg += `, difficulty: ${difficulty} (expected: 0)`
           error = true
@@ -416,10 +416,10 @@ export class BlockHeader {
           )} (cannot exceed 32 bytes length, received ${extraData.length} bytes)`
           error = true
         }
-      }
-      if (!nonce.equals(zeros(8))) {
-        errorMsg += `, nonce: ${nonce.toString('hex')} (expected: ${zeros(8).toString('hex')})`
-        error = true
+        if (!nonce.equals(zeros(8))) {
+          errorMsg += `, nonce: ${nonce.toString('hex')} (expected: ${zeros(8).toString('hex')})`
+          error = true
+        }
       }
       if (error) {
         const msg = this._errorMsg(`Invalid PoS block${errorMsg}`)

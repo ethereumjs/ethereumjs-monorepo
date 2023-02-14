@@ -60,7 +60,7 @@ tape(`${method}: call with known payload`, async (t) => {
     engine: true,
     hardfork: Hardfork.ShardingForkDev,
   })
-  common.setHardfork(Hardfork.Merge)
+  common.setHardfork(Hardfork.ShardingForkDev)
   const pkey = Buffer.from(
     '9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355',
     'hex'
