@@ -169,20 +169,9 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
       block: null,
     }
 
-    // If any of the genesis block require merge, then we need merge just right after genesis
-    const isMergeJustPostGenesis: boolean = params.hardforks
-      .filter((hf: ConfigHardfork) => hf.block === 0)
-      .reduce(
-        (acc: boolean, hf: ConfigHardfork) => acc || forkMap[hf.name]?.postMerge === true,
-        false
-      )
-
-    // Merge hardfork has to be placed before first non-zero block hardfork that is dependent
-    // on merge or first non zero block hardfork if any of genesis hardforks require merge
+    // Merge hardfork has to be placed before first hardfork that is dependent on merge
     const postMergeIndex = params.hardforks.findIndex(
-      (hf: any) =>
-        (isMergeJustPostGenesis || forkMap[hf.name]?.postMerge === true) &&
-        (hf.block > 0 || (hf.timestamp ?? 0) > 0)
+      (hf: any) => forkMap[hf.name]?.postMerge === true
     )
     if (postMergeIndex !== -1) {
       params.hardforks.splice(postMergeIndex, 0, mergeConfig as unknown as ConfigHardfork)

@@ -181,7 +181,7 @@ tape('EIP4895 tests', (t) => {
 
   t.test('should build a block correctly with withdrawals', async (st) => {
     const common = Common.fromGethGenesis(genesisJSON, { chain: 'custom' })
-    common.setHardforkByBlockNumber(0)
+    common.setHardfork(Hardfork.Shanghai)
     const genesisState = parseGethGenesisState(genesisJSON)
     const blockchain = await Blockchain.create({
       common,

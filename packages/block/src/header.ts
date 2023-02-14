@@ -347,7 +347,7 @@ export class BlockHeader {
    * @throws if any check fails
    */
   _consensusFormatValidation() {
-    const { nonce, uncleHash, difficulty, extraData } = this
+    const { nonce, uncleHash, difficulty, extraData, number } = this
     const hardfork = this._common.hardfork()
 
     // Consensus type dependent checks
@@ -404,19 +404,22 @@ export class BlockHeader {
         )} (expected: ${KECCAK256_RLP_ARRAY.toString('hex')})`
         error = true
       }
-      if (difficulty !== BigInt(0)) {
-        errorMsg += `, difficulty: ${difficulty} (expected: 0)`
-        error = true
-      }
-      if (extraData.length > 32) {
-        errorMsg += `, extraData: ${extraData.toString(
-          'hex'
-        )} (cannot exceed 32 bytes length, received ${extraData.length} bytes)`
-        error = true
-      }
-      if (!nonce.equals(zeros(8))) {
-        errorMsg += `, nonce: ${nonce.toString('hex')} (expected: ${zeros(8).toString('hex')})`
-        error = true
+      if (number !== BigInt(0)) {
+        // Skip difficulty, nonce, and extraData check for PoS genesis block as genesis block may have non-zero difficulty (if TD is > 0)
+        if (difficulty !== BigInt(0)) {
+          errorMsg += `, difficulty: ${difficulty} (expected: 0)`
+          error = true
+        }
+        if (extraData.length > 32) {
+          errorMsg += `, extraData: ${extraData.toString(
+            'hex'
+          )} (cannot exceed 32 bytes length, received ${extraData.length} bytes)`
+          error = true
+        }
+        if (!nonce.equals(zeros(8))) {
+          errorMsg += `, nonce: ${nonce.toString('hex')} (expected: ${zeros(8).toString('hex')})`
+          error = true
+        }
       }
       if (error) {
         const msg = this._errorMsg(`Invalid PoS block${errorMsg}`)
