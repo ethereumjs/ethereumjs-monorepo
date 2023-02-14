@@ -121,7 +121,7 @@ export class DBManager {
     const blockData = [header.raw(), ...body] as BlockBuffer
     const opts: BlockOptions = { common: this._common }
     if (number === BigInt(0)) {
-      opts.hardforkByBlockNumber = true
+      opts.hardforkByTTD = await this.getTotalDifficulty(hash, BigInt(0))
     } else {
       opts.hardforkByTTD = await this.getTotalDifficulty(header.parentHash, number - BigInt(1))
     }
@@ -145,7 +145,7 @@ export class DBManager {
 
     const opts: BlockOptions = { common: this._common }
     if (blockNumber === BigInt(0)) {
-      opts.hardforkByBlockNumber = true
+      opts.hardforkByTTD = await this.getTotalDifficulty(blockHash, BigInt(0))
     } else {
       // Lets fetch the parent hash but not by number since this block might not
       // be in canonical chain
