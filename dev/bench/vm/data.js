@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1676031313600,
+  "lastUpdate": 1676396540884,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "2036b55d0720e090441a606115e6a7285c9f8d63",
-          "message": "Implement EIP-4844 (#2349)\n\nAdd first round of EIP-4844\r\nCo-authored-by: harkamal <develop@g11tech.io>",
-          "timestamp": "2023-01-19T14:56:29-05:00",
-          "tree_id": "c5d67d6d3e5700c5cc861a19708695ffbd6c47f9",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2036b55d0720e090441a606115e6a7285c9f8d63"
-        },
-        "date": 1674158361138,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18035,
-            "range": "±2.83%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17333,
-            "range": "±6.67%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 17554,
-            "range": "±1.98%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 16635,
-            "range": "±6.01%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 15932,
-            "range": "±11.02%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±10.52%",
             "unit": "ops/sec",
             "extra": "72 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0cf96546bab7c752114f3d03209add9429a4f1ba",
+          "message": "allforks: Hive withdrawal fixes (#2529)\n\n* allforks: Hive fixes regarding withdrawal test vectors\r\n\r\n* check if newPayloadV2 withdrawals is null\r\n\r\n* add check for null on withdrawals and excessdatagas\r\n\r\n* fix sendtransaction hf setting\r\n\r\n* skip updating number to hash index on runWithoutSetHead\r\n\r\n* Fix setting the hardfork on vm in getTransactionReceipt\r\n\r\n* Remove bad console logs\r\n\r\n* Fix vm.copy\r\n\r\n* Correctly copy common in evm and eei copy\r\n\r\n* Remove unused client subdirectories\r\n\r\n* fix loading block/header which might not be in canonical chain\r\n\r\n* improv\r\n\r\n* add EEI.copy tests\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-02-14T23:09:29+05:30",
+          "tree_id": "7f625a155a9b6a55633bb1d06be01288c7beb0c4",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0cf96546bab7c752114f3d03209add9429a4f1ba"
+        },
+        "date": 1676396539651,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15814,
+            "range": "±2.25%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 15348,
+            "range": "±4.27%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15833,
+            "range": "±1.62%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15423,
+            "range": "±1.83%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 14232,
+            "range": "±7.07%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
           }
         ]
       }
