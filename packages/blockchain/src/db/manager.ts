@@ -1,4 +1,4 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Block, BlockHeader,valuesArrayToHeaderData } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import { KECCAK256_RLP, arrToBufArr, bufferToBigInt } from '@ethereumjs/util'
 
@@ -141,14 +141,17 @@ export class DBManager {
    */
   async getHeader(blockHash: Buffer, blockNumber: bigint) {
     const encodedHeader = await this.get(DBTarget.Header, { blockHash, blockNumber })
+    const headerValues = arrToBufArr(RLP.decode(Uint8Array.from(encodedHeader)))
+    const headerData = valuesArrayToHeaderData(headerValues as Buffer[])
+
     const opts: BlockOptions = { common: this._common }
     if (blockNumber === BigInt(0)) {
       opts.hardforkByBlockNumber = true
     } else {
-      const parentHash = await this.numberToHash(blockNumber - BigInt(1))
+      const parentHash = headerData.parentHash as Buffer;
       opts.hardforkByTTD = await this.getTotalDifficulty(parentHash, blockNumber - BigInt(1))
     }
-    return BlockHeader.fromRLPSerializedHeader(encodedHeader, opts)
+    return BlockHeader.fromValuesArray(headerValues as Buffer[], opts)
   }
 
   /**
