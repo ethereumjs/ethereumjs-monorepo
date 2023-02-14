@@ -86,6 +86,7 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
     try {
       const headerData = {
         nonce: Buffer.alloc(8).fill(1),
+        number: 1n,
       }
       BlockHeader.fromHeaderData(headerData, { common })
       st.fail('should throw')
