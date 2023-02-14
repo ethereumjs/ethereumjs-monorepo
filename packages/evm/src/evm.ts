@@ -696,7 +696,6 @@ export class EVM implements EVMInterface {
         gasPrice: opts.gasPrice ?? BigInt(0),
         origin: opts.origin ?? opts.caller ?? Address.zero(),
       }
-
       const caller = opts.caller ?? Address.zero()
 
       const value = opts.value ?? BigInt(0)
@@ -948,11 +947,15 @@ export class EVM implements EVMInterface {
   }
 
   public copy(): EVMInterface {
+    const common = this._common.copy()
+    common.setHardfork(this._common.hardfork())
+
     const opts = {
       ...this._optsCached,
-      common: this._common.copy(),
+      common,
       eei: this.eei.copy(),
     }
+    ;(opts.eei as any)._common = common
     return new EVM(opts)
   }
 }

@@ -154,10 +154,10 @@ export class CLConnectionManager {
       payload.payload.baseFeePerGas
     )} txs=${payload.payload.transactions.length}`
 
-    if ('withdrawals' in payload.payload) {
+    if ('withdrawals' in payload.payload && payload.payload.withdrawals !== null) {
       msg += ` withdrawals=${(payload.payload as ExecutionPayloadV2).withdrawals.length}`
     }
-    if ('excessDataGas' in payload.payload) {
+    if ('excessDataGas' in payload.payload && payload.payload.excessDataGas !== null) {
       msg += ` excessDataGas=${(payload.payload as ExecutionPayloadV3).excessDataGas}`
     }
     return msg

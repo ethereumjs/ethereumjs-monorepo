@@ -640,8 +640,6 @@ async function run() {
       mergeForkIdPostMerge: args.mergeForkIdPostMerge,
     })
     customGenesisState = parseGethGenesisState(genesisFile)
-    // Set hardfork by block number 0
-    common.setHardforkByBlockNumber(0)
   }
 
   if (args.mine === true && accounts.length === 0) {
