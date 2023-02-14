@@ -243,8 +243,15 @@ export class VM {
    * Returns a copy of the {@link VM} instance.
    */
   async copy(): Promise<VM> {
-    const evmCopy = this.evm.copy()
-    const eeiCopy: EEIInterface = evmCopy.eei
+    const common = this._common.copy()
+    common.setHardfork(this._common.hardfork())
+    const eeiCopy = new EEI(this.stateManager.copy(), common, this.blockchain.copy())
+    const evmOpts = {
+      ...(this.evm as any)._optsCached,
+      common,
+      eei: eeiCopy,
+    }
+    const evmCopy = new EVM(evmOpts)
     return VM.create({
       stateManager: (eeiCopy as any)._stateManager,
       blockchain: (eeiCopy as any)._blockchain,

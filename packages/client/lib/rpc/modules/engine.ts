@@ -631,7 +631,7 @@ export class Engine {
         }
       }
     } else if (parseInt(params[0].timestamp) >= shanghaiTimestamp) {
-      if (!('withdrawals' in params[0])) {
+      if (!('withdrawals' in params[0]) || params[0].withdrawals === null) {
         throw {
           code: INVALID_PARAMS,
           message: 'ExecutionPayloadV2 MUST be used after Shanghai is activated',

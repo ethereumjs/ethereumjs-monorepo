@@ -150,7 +150,8 @@ export class VMExecution extends Execution {
         DBSetTD(td, num, hash),
         ...DBSetBlockOrHeader(block),
         DBSetHashToNumber(hash, num),
-        ...DBSaveLookups(hash, num),
+        // Skip the op for number to hash to not alter canonical chain
+        ...DBSaveLookups(hash, num, true),
       ])
     })
   }
