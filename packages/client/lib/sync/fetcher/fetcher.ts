@@ -141,6 +141,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     _task: JobTask | BlockFetcherJobTask
   ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint }
 
+  abstract jobStr(job: Job<JobTask, JobResult, StorageItem>, withIndex?: boolean): string
+
   /**
    * Generate list of tasks to fetch
    */
@@ -349,7 +351,10 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       }, this.timeout)
       this.request(job, peer)
         .then((result?: JobResult) => this.success(job, result))
-        .catch((error: Error) => this.failure(job, error))
+        .catch((error: Error) => {
+          const { banPeer } = this.processStoreError(error, job.task)
+          this.failure(job, error, false, false, banPeer)
+        })
         .finally(() => clearTimeout(timeout))
       return job
     } else {
@@ -412,14 +417,16 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
           error,
           jobItems[0].task
         )
-        if (!destroyFetcher && this.isBlockFetcherJobTask(jobItems[0].task)) {
+        if (!destroyFetcher) {
           // Non-fatal error: ban peer and re-enqueue job.
           // Modify the first job so that it is enqueued from safeReorgDistance as most likely
           // this is because of a reorg.
-          this.debug(`Possible reorg, stepping back ${stepBack} blocks and requeuing jobs.`)
-          jobItems[0].task.first -= stepBack
-          jobItems[0].task.count += Number(stepBack)
-          // This will requeue the jobs as we are marking this failure as non-fatal.
+          if (this.isBlockFetcherJobTask(jobItems[0].task)) {
+            this.debug(`Possible reorg, stepping back ${stepBack} blocks and requeuing jobs.`)
+            jobItems[0].task.first -= stepBack
+            jobItems[0].task.count += Number(stepBack)
+            // This will requeue the jobs as we are marking this failure as non-fatal.
+          }
           this.failure(jobItems, error, false, true, banPeer)
           cb()
           return
@@ -510,32 +517,6 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
 
   async wait(delay?: number) {
     await new Promise((resolve) => setTimeout(resolve, delay ?? this.interval))
-  }
-
-  /**
-   * Job log format helper.
-   * @param job
-   * @param withIndex pass true to additionally output job.index
-   */
-  private jobStr(job: Job<JobTask, JobResult, StorageItem>, withIndex = false) {
-    let str = ''
-    if (withIndex) {
-      str += `index=${job.index} `
-    }
-    if (this.isBlockFetcherJobTask(job.task)) {
-      let { first, count } = job.task
-      let partialResult = ''
-      if (job.partialResult) {
-        first = first + BigInt(job.partialResult.length)
-        count -= job.partialResult.length
-        partialResult = ` partialResults=${job.partialResult.length}`
-      }
-      str += `first=${first} count=${count}${partialResult}`
-      if ('reverse' in this) {
-        str += ` reverse=${(this as any).reverse}`
-      }
-    }
-    return str
   }
 
   /**

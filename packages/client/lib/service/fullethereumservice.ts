@@ -193,6 +193,7 @@ export class FullEthereumService extends EthereumService {
         config: this.config,
         chain: this.chain,
         timeout: this.timeout,
+        convertSlimBody: true,
       }),
     ]
     if (this.config.lightserv) {

@@ -19,6 +19,9 @@ class FetcherTest extends Fetcher<any, any, any> {
   processStoreError(error: any, _job: any) {
     return error
   }
+  jobStr(_job: any, _withIndex: any) {
+    return ''
+  }
 }
 
 tape('[Fetcher]', (t) => {

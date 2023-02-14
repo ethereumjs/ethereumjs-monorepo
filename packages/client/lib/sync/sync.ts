@@ -7,7 +7,7 @@ import type { Chain } from '../blockchain'
 import type { Config } from '../config'
 import type { Peer } from '../net/peer/peer'
 import type { PeerPool } from '../net/peerpool'
-import type { BlockFetcher, HeaderFetcher, ReverseBlockFetcher } from './fetcher'
+import type { AccountFetcher, BlockFetcher, HeaderFetcher, ReverseBlockFetcher } from './fetcher'
 
 export interface SynchronizerOptions {
   /* Config */
@@ -39,7 +39,7 @@ export abstract class Synchronizer {
   protected interval: number
   protected forceSync: boolean
 
-  public _fetcher: BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null
+  public _fetcher: AccountFetcher | BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null
   public opened: boolean
   public running: boolean
   public startingBlock: bigint
@@ -82,11 +82,11 @@ export abstract class Synchronizer {
     return 'sync'
   }
 
-  get fetcher(): BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null {
+  get fetcher(): AccountFetcher | BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null {
     return this._fetcher
   }
 
-  set fetcher(fetcher: BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null) {
+  set fetcher(fetcher: AccountFetcher | BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null) {
     this._fetcher = fetcher
   }
 

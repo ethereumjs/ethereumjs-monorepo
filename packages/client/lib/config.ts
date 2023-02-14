@@ -259,6 +259,9 @@ export interface ConfigOptions {
    */
   skeletonSubchainMergeMinimum?: number
 
+  maxRangeBytes?: number
+
+  maxAccountRange?: bigint
   /**
    * The time after which synced state is downgraded to unsynced
    */
@@ -288,6 +291,9 @@ export class Config {
   public static readonly SAFE_REORG_DISTANCE = 100
   public static readonly SKELETON_FILL_CANONICAL_BACKSTEP = 100
   public static readonly SKELETON_SUBCHAIN_MERGE_MINIMUM = 1000
+  public static readonly MAX_RANGE_BYTES = 50000
+  // This should get like 100 accounts in this range
+  public static readonly MAX_ACCOUNT_RANGE = BigInt(2) ** BigInt(256) / BigInt(1_000_000)
   public static readonly SYNCED_STATE_REMOVAL_PERIOD = 60000
 
   public readonly logger: Logger
@@ -320,6 +326,8 @@ export class Config {
   public readonly safeReorgDistance: number
   public readonly skeletonFillCanonicalBackStep: number
   public readonly skeletonSubchainMergeMinimum: number
+  public readonly maxRangeBytes: number
+  public readonly maxAccountRange: bigint
   public readonly syncedStateRemovalPeriod: number
 
   public readonly disableBeaconSync: boolean
@@ -370,6 +378,8 @@ export class Config {
       options.skeletonFillCanonicalBackStep ?? Config.SKELETON_FILL_CANONICAL_BACKSTEP
     this.skeletonSubchainMergeMinimum =
       options.skeletonSubchainMergeMinimum ?? Config.SKELETON_SUBCHAIN_MERGE_MINIMUM
+    this.maxRangeBytes = options.maxRangeBytes ?? Config.MAX_RANGE_BYTES
+    this.maxAccountRange = options.maxAccountRange ?? Config.MAX_ACCOUNT_RANGE
     this.syncedStateRemovalPeriod =
       options.syncedStateRemovalPeriod ?? Config.SYNCED_STATE_REMOVAL_PERIOD
 
