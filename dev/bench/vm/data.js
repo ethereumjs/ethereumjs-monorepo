@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1676396540884,
+  "lastUpdate": 1676401256225,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f93a38a970b53e3ac7754d6f56015fa21e254c12",
-          "message": "Fix bug in how precompiles activated by EIP are identified (#2489)\n\n* Move eip 2537 test to EVM",
-          "timestamp": "2023-01-20T09:42:13-05:00",
-          "tree_id": "ded8238aa5915fcae930b0c00e9822556e88b37a",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f93a38a970b53e3ac7754d6f56015fa21e254c12"
-        },
-        "date": 1674225900877,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18717,
-            "range": "±2.58%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18159,
-            "range": "±4.80%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18301,
-            "range": "±1.86%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 16158,
-            "range": "±10.00%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18456,
-            "range": "±1.59%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±7.07%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a1ca97339cf27fe4f119de50beabd4166811b777",
+          "message": "client: create snap sync fetcher to sync accounts (#2107)\n\n* Add account fetcher base\r\n\r\n* Add accountfetcher import\r\n\r\n* Add AccountFetcher as possible type for Synchronizer.fetcher\r\n\r\n* Place call to getAccountRange inside of fetcher\r\n\r\n* Place call to getAccountRange() in accountfetcher and comment it out\r\n\r\n* Add account fetcher base\r\n\r\n* Add accountfetcher import\r\n\r\n* add account fetcher getter setter in snapsync\r\n\r\n* Change order of importing accountfetcher in index file\r\n\r\n* Change bytes parameter to be per task\r\n\r\n* Remove root and bytes from task inputs and make them fetcher variables\r\n\r\n* Correct log message\r\n\r\n* Add debug console log statement\r\n\r\n* Fix linting issues\r\n\r\n* Add account to mpt and check validity with root and proof\r\n\r\n* Set root of trie\r\n\r\n* Add checks to fetcher.request()\r\n\r\n* client/snap: fix getAccountRange return type\r\n\r\n* client/snap: pass first proof\r\n\r\n* client/snap: add utility to convert slim account to a normal RLPd account\r\n\r\n* client/snap: implement account range db dump\r\n\r\n* Update to use verifyRangeProof\r\n\r\n* Correct some messages\r\n\r\n* Update verifyProofRange input for first account hash to be fetcher origin\r\n\r\n* Fix linting issues\r\n\r\n* Store accounts in store phase\r\n\r\n* Add logic for dividing hash ranges and adding them as tasks\r\n\r\n* Increment count by 1 before next iteration\r\n\r\n* client/snap: remove unnecessary account fetcher logic\r\n\r\n* client/snap: correctly feed the right values to verifyRangeProof\r\n\r\n* lint fixes\r\n\r\n* small cleanup\r\n\r\n* fix account fetcher with previous fixes\r\n\r\n* overhaul and simplify the fetcher and add partial results handling\r\n\r\n* cleanup comments\r\n\r\n* fix fetch spec tests\r\n\r\n* Check if right range is missing using return value from verifyRangeProof\r\n\r\n* Add accountfetcher tests\r\n\r\n* Remove request test\r\n\r\n* Correct return type\r\n\r\n* Add request test\r\n\r\n* Add account fetcher base\r\n\r\n* Add accountfetcher import\r\n\r\n* Add AccountFetcher as possible type for Synchronizer.fetcher\r\n\r\n* Place call to getAccountRange inside of fetcher\r\n\r\n* Place call to getAccountRange() in accountfetcher and comment it out\r\n\r\n* Add account fetcher base\r\n\r\n* Add accountfetcher import\r\n\r\n* add account fetcher getter setter in snapsync\r\n\r\n* Change order of importing accountfetcher in index file\r\n\r\n* Change bytes parameter to be per task\r\n\r\n* Remove root and bytes from task inputs and make them fetcher variables\r\n\r\n* Correct log message\r\n\r\n* Add debug console log statement\r\n\r\n* Fix linting issues\r\n\r\n* Add account to mpt and check validity with root and proof\r\n\r\n* Set root of trie\r\n\r\n* Add checks to fetcher.request()\r\n\r\n* client/snap: fix getAccountRange return type\r\n\r\n* client/snap: pass first proof\r\n\r\n* client/snap: add utility to convert slim account to a normal RLPd account\r\n\r\n* client/snap: implement account range db dump\r\n\r\n* Update to use verifyRangeProof\r\n\r\n* Correct some messages\r\n\r\n* Update verifyProofRange input for first account hash to be fetcher origin\r\n\r\n* Fix linting issues\r\n\r\n* Store accounts in store phase\r\n\r\n* Add logic for dividing hash ranges and adding them as tasks\r\n\r\n* Increment count by 1 before next iteration\r\n\r\n* client/snap: remove unnecessary account fetcher logic\r\n\r\n* client/snap: correctly feed the right values to verifyRangeProof\r\n\r\n* lint fixes\r\n\r\n* small cleanup\r\n\r\n* fix account fetcher with previous fixes\r\n\r\n* overhaul and simplify the fetcher and add partial results handling\r\n\r\n* cleanup comments\r\n\r\n* fix fetch spec tests\r\n\r\n* Check if right range is missing using return value from verifyRangeProof\r\n\r\n* Add accountfetcher tests\r\n\r\n* Remove request test\r\n\r\n* Correct return type\r\n\r\n* Add request test\r\n\r\n* Add test for proof verification\r\n\r\n* Fix linting issues\r\n\r\n* Fix test\r\n\r\n* Update comment\r\n\r\n* reduce diff\r\n\r\n---------\r\n\r\nCo-authored-by: harkamal <gajinder@g11.in>\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2023-02-15T00:28:11+05:30",
+          "tree_id": "a87eced4289441d3ef2627858fdf57367be0dd48",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a1ca97339cf27fe4f119de50beabd4166811b777"
+        },
+        "date": 1676401254661,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15884,
+            "range": "±3.75%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 15460,
+            "range": "±4.03%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15947,
+            "range": "±1.61%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15447,
+            "range": "±1.76%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 14469,
+            "range": "±6.94%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
           }
         ]
       }
