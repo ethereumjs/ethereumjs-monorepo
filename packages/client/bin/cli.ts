@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
+import { Block } from '@ethereumjs/block'
 import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { initKZG } from '@ethereumjs/tx'
-import { Address, toBuffer } from '@ethereumjs/util'
+import { Address, arrToBufArr, toBuffer } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import { existsSync, writeFileSync } from 'fs'
@@ -25,6 +27,7 @@ import type { Logger } from '../lib/logging'
 import type { FullEthereumService } from '../lib/service'
 import type { ClientOpts } from '../lib/types'
 import type { RPCArgs } from './startRpc'
+import type { BlockBuffer } from '@ethereumjs/block'
 import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
 import type { AbstractLevel } from 'abstract-level'
 
@@ -292,6 +295,10 @@ const args: ClientOpts = yargs(hideBin(process.argv))
       'To run client in single node configuration without need to discover the sync height from peer. Particularly useful in test configurations. This flag is automically activated in the "dev" mode',
     boolean: true,
   })
+  .option('loadBlocksFromRlp', {
+    describe: 'path to a file of RLP encoded blocks',
+    string: true,
+  })
   // strict() ensures that yargs throws when an invalid arg is provided
   .strict().argv
 
@@ -414,7 +421,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
     await startBlock(client)
   }
 
-  await client.open()
+  if (typeof args.loadBlocksFromRlp === 'string') await client.open()
   // update client's sync status and start txpool if synchronized
   client.config.updateSynchronizedState(client.chain.headers.latest)
   if (client.config.synchronized) {
@@ -422,6 +429,17 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
     // The service might not be FullEthereumService even if we cast it as one,
     // so txPool might not exist on it
     ;(fullService as FullEthereumService).txPool?.checkRunState()
+  }
+
+  if (args.loadBlocksFromRlp !== undefined) {
+    // Specifically for Hive simulator, preload a first block provided in RLP format
+    const blockRlp = readFileSync(args.loadBlocksFromRlp)
+    const decodedBlock = RLP.decode(blockRlp)
+    const block = Block.fromValuesArray(arrToBufArr(decodedBlock) as BlockBuffer, {
+      common: config.chainCommon,
+      skipConsensusFormatValidation: true,
+    })
+    await client.chain.putBlocks([block])
   }
 
   if (args.executeBlocks !== undefined) {
