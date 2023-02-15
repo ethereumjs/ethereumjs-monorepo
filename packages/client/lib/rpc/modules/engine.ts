@@ -462,8 +462,9 @@ export class Engine {
       () => this.connectionManager.updateStatus()
     )
 
-    this.exchangeCapabilities = cmMiddleware(middleware(this.exchangeCapabilities.bind(this), 0, []), () =>
-      this.connectionManager.updateStatus()
+    this.exchangeCapabilities = cmMiddleware(
+      middleware(this.exchangeCapabilities.bind(this), 0, []),
+      () => this.connectionManager.updateStatus()
     )
 
     this.getPayloadBodiesByHashV1 = cmMiddleware(
