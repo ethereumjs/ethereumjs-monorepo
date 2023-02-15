@@ -38,6 +38,9 @@ export enum MethodConfig {
   EngineOnly = 'engineonly',
 }
 
+/** Allowed drift for jwt token issuance is 60 seconds */
+const ALLOWED_DRIFT = 60_000
+
 /**
  * Internal util to pretty print params for logging.
  */
@@ -153,8 +156,9 @@ function checkHeaderAuth(req: any, jwtSecret: Buffer): void {
   const token = header.trim().split(' ')[1]
   if (!token) throw Error(`Missing jwt token`)
   const claims = decode(token.trim(), jwtSecret as never as string, false, algorithm)
-  if (Math.abs(new Date().getTime() - claims.iat * 1000 ?? 0) > 5000) {
-    throw Error('Stale jwt token')
+  const drift = Math.abs(new Date().getTime() - claims.iat * 1000 ?? 0)
+  if (drift > ALLOWED_DRIFT) {
+    throw Error(`Stale jwt token drift=${drift}, allowed=${ALLOWED_DRIFT}`)
   }
 }
 
