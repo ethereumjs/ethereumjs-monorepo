@@ -462,8 +462,9 @@ export class Engine {
       () => this.connectionManager.updateStatus()
     )
 
-    this.getCapabilities = cmMiddleware(middleware(this.getCapabilities.bind(this), 0, []), () =>
-      this.connectionManager.updateStatus()
+    this.exchangeCapabilities = cmMiddleware(
+      middleware(this.exchangeCapabilities.bind(this), 0, []),
+      () => this.connectionManager.updateStatus()
     )
 
     this.getPayloadBodiesByHashV1 = cmMiddleware(
@@ -1012,9 +1013,9 @@ export class Engine {
   /**
    * Returns a list of engine API endpoints supported by the client
    */
-  private getCapabilities(_params: []): string[] {
+  private exchangeCapabilities(_params: []): string[] {
     const caps = Object.getOwnPropertyNames(Engine.prototype)
-    const engineMethods = caps.filter((el) => el !== 'constructor' && el !== 'getCapabilities')
+    const engineMethods = caps.filter((el) => el !== 'constructor' && el !== 'exchangeCapabilities')
     return engineMethods.map((el) => 'engine_' + el)
   }
 
