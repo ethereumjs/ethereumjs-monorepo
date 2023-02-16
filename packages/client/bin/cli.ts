@@ -431,6 +431,14 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
     ;(fullService as FullEthereumService).txPool?.checkRunState()
   }
 
+  if (args.executeBlocks !== undefined) {
+    // Special block execution debug mode (does not change any state)
+    await executeBlocks(client)
+  } else {
+    // Regular client start
+    await client.start()
+  }
+
   if (args.loadBlocksFromRlp !== undefined) {
     // Specifically for Hive simulator, preload a first block provided in RLP format
     const blockRlp = readFileSync(args.loadBlocksFromRlp)
@@ -439,15 +447,16 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
       common: config.chainCommon,
       skipConsensusFormatValidation: true,
     })
+    if (!client.chain.opened) {
+      await client.chain.open()
+    }
     await client.chain.putBlocks([block])
-  }
-
-  if (args.executeBlocks !== undefined) {
-    // Special block execution debug mode (does not change any state)
-    await executeBlocks(client)
-  } else {
-    // Regular client start
-    await client.start()
+    const service = client.service('eth') as FullEthereumService
+    await service.execution.open()
+    const executedBlocks = await service.execution.run()
+    config.logger.info(
+      `Executed ${executedBlocks} on startup. Current head is ${service.chain.headers.height}`
+    )
   }
   return client
 }
