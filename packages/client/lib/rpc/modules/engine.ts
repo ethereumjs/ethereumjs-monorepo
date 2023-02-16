@@ -153,7 +153,7 @@ const payloadAttributesFieldValidatorsV1 = {
 }
 const payloadAttributesFieldValidatorsV2 = {
   ...payloadAttributesFieldValidatorsV1,
-  withdrawals: validators.array(validators.withdrawal()),
+  withdrawals: validators.optional(validators.array(validators.withdrawal())),
 }
 /**
  * Formats a block to {@link ExecutionPayloadV1}.
@@ -895,7 +895,8 @@ export class Engine {
     if (payloadAttributes !== undefined && payloadAttributes !== null) {
       const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
       const ts = BigInt(payloadAttributes.timestamp)
-      if ('withdrawals' in payloadAttributes) {
+      const withdrawals = (payloadAttributes as PayloadAttributesV2).withdrawals
+      if (withdrawals !== undefined && withdrawals !== null) {
         if (ts < shanghaiTimestamp!) {
           throw {
             code: INVALID_PARAMS,
@@ -996,13 +997,10 @@ export class Engine {
     const payloadId = params[0]
 
     const bundle = this.pendingBlock.blobBundles.get(payloadId)
-
     if (bundle === undefined) {
       throw EngineError.UnknownPayload
     }
 
-    // Remove built blocks once retrieved by CL layer
-    this.pendingBlock.blobBundles.delete(payloadId)
     return {
       blockHash: bundle.blockHash,
       kzgs: bundle.kzgCommitments.map((commitment) => '0x' + commitment.toString('hex')),
