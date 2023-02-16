@@ -32,10 +32,10 @@ See the following code snipped for an example on how to instantiate.
 
 ```typescript
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction, initKzg } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, initKZG } from '@ethereumjs/tx'
 import * as kzg from 'c-kzg'
 
-initKzg(kzg, 'path/to/my/trusted_setup.txt')
+initKZG(kzg, 'path/to/my/trusted_setup.txt')
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
 
 const txData = {
