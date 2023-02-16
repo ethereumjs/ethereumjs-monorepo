@@ -13,6 +13,16 @@ import type { VM } from './vm'
 import type { HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
 
+export enum BuildStatus {
+  Reverted = 'reverted',
+  Build = 'build',
+  Pending = 'pending',
+}
+
+type BlockStatus =
+  | { status: BuildStatus.Pending | BuildStatus.Reverted }
+  | { status: BuildStatus.Build; block: Block }
+
 export class BlockBuilder {
   /**
    * The cumulative gas used by the transactions added to the block.
@@ -35,8 +45,7 @@ export class BlockBuilder {
   private transactionResults: RunTxResult[] = []
   private withdrawals?: Withdrawal[]
   private checkpointed = false
-  private reverted = false
-  private built = false
+  private blockStatus: BlockStatus = { status: BuildStatus.Pending }
 
   get transactionReceipts() {
     return this.transactionResults.map((result) => result.receipt)
@@ -70,12 +79,16 @@ export class BlockBuilder {
    * Throws if the block has already been built or reverted.
    */
   private checkStatus() {
-    if (this.built) {
+    if (this.blockStatus.status === BuildStatus.Build) {
       throw new Error('Block has already been built')
     }
-    if (this.reverted) {
+    if (this.blockStatus.status === BuildStatus.Reverted) {
       throw new Error('State has already been reverted')
     }
+  }
+
+  public getStatus(): BlockStatus {
+    return this.blockStatus
   }
 
   /**
@@ -219,7 +232,7 @@ export class BlockBuilder {
     this.checkStatus()
     if (this.checkpointed) {
       await this.vm.stateManager.revert()
-      this.reverted = true
+      this.blockStatus = { status: BuildStatus.Reverted }
     }
   }
 
@@ -301,7 +314,7 @@ export class BlockBuilder {
       await this.vm.blockchain.putBlock(block)
     }
 
-    this.built = true
+    this.blockStatus = { status: BuildStatus.Build, block }
     if (this.checkpointed) {
       await this.vm.stateManager.commit()
       this.checkpointed = false

@@ -1,6 +1,7 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { TypeOutput, bigIntToUnpaddedBuffer, bufferToHex, toBuffer, toType } from '@ethereumjs/util'
+import { BuildStatus } from '@ethereumjs/vm/dist/buildBlock'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import type { Config } from '../config'
@@ -81,14 +82,18 @@ export class PendingBlock {
     withdrawals?: WithdrawalData[]
   ) {
     const number = parentBlock.header.number + BigInt(1)
-    const { timestamp } = headerData
+    const { timestamp, mixHash } = headerData
     const { gasLimit } = parentBlock.header
 
     // payload is uniquely defined by timestamp, gasLimit and the header
     const timestampBuf = bigIntToUnpaddedBuffer(toType(timestamp, TypeOutput.BigInt))
     const gasLimitBuf = bigIntToUnpaddedBuffer(gasLimit)
+    const mixHashBuf = toType(mixHash!, TypeOutput.Buffer)
     const payloadIdBuffer = toBuffer(
-      keccak256(Buffer.concat([parentBlock.hash(), timestampBuf, gasLimitBuf])).slice(0, 8)
+      keccak256(Buffer.concat([parentBlock.hash(), mixHashBuf, timestampBuf, gasLimitBuf])).slice(
+        0,
+        8
+      )
     )
     const payloadId = bufferToHex(payloadIdBuffer)
 
@@ -230,6 +235,10 @@ export class PendingBlock {
     const builder = this.pendingPayloads.get(payloadId)
     if (!builder) {
       return
+    }
+    const blockStatus = builder.getStatus()
+    if (blockStatus.status === BuildStatus.Build) {
+      return [blockStatus.block, builder.transactionReceipts, builder.minerValue]
     }
     const { vm, headerData } = builder as any
 
