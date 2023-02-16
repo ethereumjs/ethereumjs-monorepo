@@ -421,7 +421,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
     await startBlock(client)
   }
 
-  if (typeof args.loadBlocksFromRlp === 'string') await client.open()
+  await client.open()
   // update client's sync status and start txpool if synchronized
   client.config.updateSynchronizedState(client.chain.headers.latest)
   if (client.config.synchronized) {
