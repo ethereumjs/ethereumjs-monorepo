@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 3.1.0 - 2023-02-16
+## 3.1.0 - 2023-02-21
 
 ### Functional Shanghai Support
 
@@ -44,6 +44,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, e
 - Added `eips` option to `Common.fromGethGenesis()` constructor options, PR [#2469](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2469)
 - Set alternative default HF in `Common.fromGethGenesis()` if `mergeForkBlock` not present, PR [#2414](https://github.com/ethereumjs/ethereumjs-monorepo/issues/2414)
 - Fixed some minor custom chain bugs, PR [#2448](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2448)
+- Allow genesis to be post merge in `Common.fromGethGenesis()`, PR [#2530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2530)
 
 ## 3.0.2 - 2022-12-09
 

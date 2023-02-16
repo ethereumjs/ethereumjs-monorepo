@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 1.3.0 - 2023-02-16
+## 1.3.0 - 2023-02-21
 
 ### Functional Shanghai Support
 
@@ -49,6 +49,7 @@ The EVM now integrates a new point evaluation precompile at address `0x14` to "v
 ### Other Changes
 
 - Fix bug in how precompiles activated by EIP are identified, PR [#2489](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2489)
+- EVM copy fixes, PR [#2529](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2529)
 
 ## 1.2.3 - 2022-12-09
 

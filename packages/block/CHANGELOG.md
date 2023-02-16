@@ -40,6 +40,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, e
 
 - Handle hardfork defaults consistently, PR [#2467](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2467)
 - New `generateWithdrawalsSSZRoot()` method, PR [#2488](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2488)
+- Allow genesis to be post merge, PR [#2530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2530)
 
 ## 4.1.0 - 2022-12-09
 

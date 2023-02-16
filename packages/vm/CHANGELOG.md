@@ -52,6 +52,7 @@ The Block Builder API (see [README](https://github.com/ethereumjs/ethereumjs-mon
 - New option `skipHardforkValidation` for `VM.runTx()` and `VM.runBlock()`, PR [#2486](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2486)
 - **Breaking** (for experimental feature): Changes withdrawal amount representation from WEI to GWEI, see PR [#2483](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2483)
 - More flexible logic to execute pre-/post Merge txs with `VM.runTx()` when exact HF is not known, see PR [#2505](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2505)
+- VM/EEI copy fixes, PR [#2529](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2529)
 
 ## 6.3.0 - 2022-12-09
 
