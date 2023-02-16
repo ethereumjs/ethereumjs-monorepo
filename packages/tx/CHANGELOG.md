@@ -24,30 +24,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
 
 This release supports an experimental version of the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023), see PR [#2349](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2349) as well as PRs [#2522](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2522) and [#2526](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2526).
 
-This transaction type requires additional dependencies that are not installed by default to limit bundle size.
-
-##### KZG Setup
-
-For blob transactions and other KZG related proof functionality (e.g. for EVM precompiles) KZG has to be manually installed and initialized once in a global scope. The functionality is then available for all KZG usages throughout different libraries (Transaction, Block, EVM).
-
-###### Installation
-
-The following two manul installation steps for a KZG library and the trusted setup are needed.
-
-1. Install an additional dependency that supports the `kzg` interface defined in [the kzg interface](./src/kzg/kzg.ts). You can install the default option [c-kzg](https://github.com/ethereum/c-kzg-4844) by simply running `npm install c-kzg`.
-2. Download the trusted setup required for the KZG module. It can be found [here](../client/lib/trustedSetups/trusted_setup.txt) within the client package.
-
-###### Global Initialization
-
-Global initialization can then be done like this (using the `c-kzg` module for our KZG dependency):
-
-```typescript
-// Make the kzg library available globally
-import * as kzg from 'c-kzg'
-
-// Initialize the trusted setup
-initKzg(kzg, 'path/to/my/trusted_setup.txt')
-```
+**Note:** This functionality needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
 ##### Usage
 

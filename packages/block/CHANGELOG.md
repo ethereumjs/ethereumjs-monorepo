@@ -26,7 +26,7 @@ This release supports an experimental version of the blob transaction type intro
 
 #### Initialization
 
-To create block tx including blocks you have to active EIP-4844 in the associated `@ethereumjs/common` library:
+To create blocks which include blob transactions you have to active EIP-4844 in the associated `@ethereumjs/common` library:
 
 ```typescript
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
@@ -34,17 +34,7 @@ import { Common, Chain, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
 ```
 
-The underlying `@ethereumjs/tx` library needs to have a working `kzg` library installation in the global namespace adhering to the [Kzg](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/depInterfaces.ts) interface defined in the `@ethereumjs/tx` library.
-
-The EthereumJS libraries have been tested with the [c-kzg](https://github.com/ethereum/c-kzg-4844) library which can be installed with `npm install c-kzg`.
-
-This library then needs to be imported along the other library imports:
-
-```typescript
-import { Common, Hardfork } from '@ethereumjs/common'
-import * as kzg from 'c-kzg'
-import { VM } from '@ethereumjs/vm'
-```
+**Note:** Working with blob transactions needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
 ### Other Changes
 

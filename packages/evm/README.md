@@ -21,6 +21,8 @@ This package provides the core Ethereum Virtual Machine (EVM) implementation whi
 
 Note that this package atm cannot be run in a standalone mode but needs to be executed via the `VM` package which provides an outer Ethereum `mainnet` compatible execution context. Standalone functionality will be added along a future non-breaking release.
 
+**Note:** If you want to work with `EIP-4844` related functionality, you will have additional manual installation steps for the **KZG setup**, see related section below.
+
 ## Usage
 
 ```typescript
@@ -188,17 +190,9 @@ import { Common, Chain, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
 ```
 
-EIP-4844 comes with a new opcode `DATAHASH` and adds a new point evaluation precompile at address `0x14`. This precompile needs to have a working `kzg` library installation in the global namespace adhering to the [Kzg](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/depInterfaces.ts) interface defined in the `@ethereumjs/tx` library.
+EIP-4844 comes with a new opcode `DATAHASH` and adds a new point evaluation precompile at address `0x14`.
 
-The EthereumJS libraries have been tested with the [c-kzg](https://github.com/ethereum/c-kzg-4844) library which can be installed with `npm install c-kzg`.
-
-This library then needs to be imported along the other library imports:
-
-```typescript
-import { Common, Hardfork } from '@ethereumjs/common'
-import * as kzg from 'c-kzg'
-import { EVM } from '@ethereumjs/evm'
-```
+**Note:** Usage of the point evaluation precompile needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
 ### Tracing Events
 
