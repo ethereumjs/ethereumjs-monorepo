@@ -115,7 +115,7 @@ tape('[PendingBlock]', async (t) => {
     const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
-    t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
+    t.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
     await txPool.add(txB01)
     const built = await pendingBlock.build(payloadId)
     if (!built) return t.fail('pendingBlock did not return')
@@ -123,7 +123,8 @@ tape('[PendingBlock]', async (t) => {
     t.equal(block?.header.number, BigInt(1), 'should have built block number 1')
     t.equal(block?.transactions.length, 3, 'should include txs from pool')
     t.equal(receipts.length, 3, 'receipts should match number of transactions')
-    t.equal(pendingBlock.pendingPayloads.length, 0, 'should reset the pending payload after build')
+    pendingBlock.pruneSetToMax(0)
+    t.equal(pendingBlock.pendingPayloads.size, 0, 'should reset the pending payload after build')
     t.end()
   })
 
@@ -140,7 +141,7 @@ tape('[PendingBlock]', async (t) => {
     const pendingBlock = new PendingBlock({ config, txPool })
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
-    t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
+    t.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
     t.equal(txPool.txsInPool, 0, 'tx should have been removed from pool')
 
     txB011.common.setHardfork(Hardfork.Merge)
@@ -152,7 +153,8 @@ tape('[PendingBlock]', async (t) => {
     t.equal(block?.header.number, BigInt(1), 'should have built block number 1')
     t.equal(block?.transactions.length, 0, 'should include txs from pool')
     t.equal(txPool.txsInPool, 0, 'txs should have been removed from pool')
-    t.equal(pendingBlock.pendingPayloads.length, 0, 'should reset the pending payload after build')
+    pendingBlock.pruneSetToMax(0)
+    t.equal(pendingBlock.pendingPayloads.size, 0, 'should reset the pending payload after build')
     t.end()
   })
 
@@ -164,13 +166,9 @@ tape('[PendingBlock]', async (t) => {
     await setBalance(vm, A.address, BigInt(5000000000000000))
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
-    t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
+    t.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
     pendingBlock.stop(payloadId)
-    t.equal(
-      pendingBlock.pendingPayloads.length,
-      0,
-      'should reset the pending payload after stopping'
-    )
+    t.equal(pendingBlock.pendingPayloads.size, 0, 'should reset the pending payload after stopping')
     t.end()
   })
 
@@ -194,14 +192,15 @@ tape('[PendingBlock]', async (t) => {
     await setBalance(vm, A.address, BigInt(5000000000000000))
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
-    t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
+    t.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
     const built = await pendingBlock.build(payloadId)
     if (!built) return t.fail('pendingBlock did not return')
     const [block, receipts] = built
     t.equal(block?.header.number, BigInt(1), 'should have built block number 1')
     t.equal(block?.transactions.length, 2, 'should include txs from pool that fit in the block')
     t.equal(receipts.length, 2, 'receipts should match number of transactions')
-    t.equal(pendingBlock.pendingPayloads.length, 0, 'should reset the pending payload after build')
+    pendingBlock.pruneSetToMax(0)
+    t.equal(pendingBlock.pendingPayloads.size, 0, 'should reset the pending payload after build')
     t.end()
   })
 
@@ -212,7 +211,7 @@ tape('[PendingBlock]', async (t) => {
     const vm = await VM.create({ common })
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
-    t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
+    t.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
     const built = await pendingBlock.build(payloadId)
     if (!built) return t.fail('pendingBlock did not return')
     const [block, receipts] = built
@@ -223,7 +222,8 @@ tape('[PendingBlock]', async (t) => {
       'should not include tx with sender that has insufficient funds'
     )
     t.equal(receipts.length, 0, 'receipts should match number of transactions')
-    t.equal(pendingBlock.pendingPayloads.length, 0, 'should reset the pending payload after build')
+    pendingBlock.pruneSetToMax(0)
+    t.equal(pendingBlock.pendingPayloads.size, 0, 'should reset the pending payload after build')
     t.end()
   })
 

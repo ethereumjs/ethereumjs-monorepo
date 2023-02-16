@@ -1,6 +1,13 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
-import { TypeOutput, bigIntToUnpaddedBuffer, bufferToHex, toBuffer, toType } from '@ethereumjs/util'
+import {
+  TypeOutput,
+  bigIntToUnpaddedBuffer,
+  bufferToHex,
+  toBuffer,
+  toType,
+  zeros,
+} from '@ethereumjs/util'
 import { BuildStatus } from '@ethereumjs/vm/dist/buildBlock'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
@@ -86,9 +93,9 @@ export class PendingBlock {
     const { gasLimit } = parentBlock.header
 
     // payload is uniquely defined by timestamp, gasLimit and the header
-    const timestampBuf = bigIntToUnpaddedBuffer(toType(timestamp, TypeOutput.BigInt))
+    const timestampBuf = bigIntToUnpaddedBuffer(toType(timestamp ?? 0, TypeOutput.BigInt))
     const gasLimitBuf = bigIntToUnpaddedBuffer(gasLimit)
-    const mixHashBuf = toType(mixHash!, TypeOutput.Buffer)
+    const mixHashBuf = toType(mixHash!, TypeOutput.Buffer) ?? zeros(32)
     const payloadIdBuffer = toBuffer(
       keccak256(Buffer.concat([parentBlock.hash(), mixHashBuf, timestampBuf, gasLimitBuf])).slice(
         0,
