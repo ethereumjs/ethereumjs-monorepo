@@ -229,7 +229,6 @@ export class BlockBuilder {
    * Reverts the checkpoint on the StateManager to reset the state from any transactions that have been run.
    */
   async revert() {
-    this.checkStatus()
     if (this.checkpointed) {
       await this.vm.stateManager.revert()
       this.blockStatus = { status: BuildStatus.Reverted }
