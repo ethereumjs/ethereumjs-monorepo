@@ -99,13 +99,13 @@ tape('runTx() -> successful API parameter usage', async (t) => {
     await vm.eei.putAccount(caller, acc)
     const block = Block.fromBlockData({}, { common: vm._common.copy() })
 
-    tx.common.setHardfork(Hardfork.Merge)
+    block._common.setHardfork(Hardfork.Merge)
     try {
       await vm.runTx({ tx, block })
-      st.fail('vm/tx mismatched hardfork should have failed')
+      st.fail('vm/block mismatched hardfork should have failed')
     } catch (e) {
       st.equal(
-        (e as Error).message.includes('tx has a different hardfork than the vm'),
+        (e as Error).message.includes('block has a different hardfork than the vm'),
         true,
         'block has a different hardfork than the vm'
       )
