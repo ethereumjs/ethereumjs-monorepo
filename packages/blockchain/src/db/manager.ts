@@ -1,6 +1,6 @@
 import { Block, BlockHeader, valuesArrayToHeaderData } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
-import { KECCAK256_RLP, arrToBufArr, bufferToBigInt } from '@ethereumjs/util'
+import { KECCAK256_RLP, KECCAK256_RLP_ARRAY, arrToBufArr, bufferToBigInt } from '@ethereumjs/util'
 
 import { Cache } from './cache'
 import { DBOp, DBTarget } from './operation'
@@ -106,18 +106,32 @@ export class DBManager {
     }
 
     const header = await this.getHeader(hash, number)
-    let body: BlockBodyBuffer = [[], []]
+    let body: BlockBodyBuffer
     try {
       body = await this.getBody(hash, number)
     } catch (error: any) {
       if (error.code !== 'LEVEL_NOT_FOUND') {
         throw error
       }
+
+      // Do extra validations on the header since we are assuming empty transactions and uncles
+      if (
+        !header.transactionsTrie.equals(KECCAK256_RLP) ||
+        !header.uncleHash.equals(KECCAK256_RLP_ARRAY)
+      ) {
+        throw error
+      }
+      body = [[], []]
       // If this block had empty withdrawals push an empty array in body
-      if (header.withdrawalsRoot !== undefined && header.withdrawalsRoot.equals(KECCAK256_RLP)) {
+      if (header.withdrawalsRoot !== undefined) {
+        // Do extra validations for withdrawal before assuming empty withdrawals
+        if (!header.withdrawalsRoot.equals(KECCAK256_RLP)) {
+          throw error
+        }
         body.push([])
       }
     }
+
     const blockData = [header.raw(), ...body] as BlockBuffer
     const opts: BlockOptions = { common: this._common }
     if (number === BigInt(0)) {
