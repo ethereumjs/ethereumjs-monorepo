@@ -213,10 +213,14 @@ tape('[Miner]', async (t) => {
 
     // disable consensus to skip PoA block signer validation
     ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
-    // tx as at Harfork.Berlin so lets change the vm's hardfork
+
     chain.putBlocks = (blocks: Block[]) => {
-      t.equal(blocks[0].transactions.length, 0, 'new block should not include tx')
-      t.equal(txPool.txsInPool, 0, 'transaction should also have been removed from pool')
+      t.equal(
+        blocks[0].transactions.length,
+        0,
+        'new block should not include tx due to hardfork mismatch'
+      )
+      t.equal(txPool.txsInPool, 1, 'transaction should remain in pool')
       miner.stop()
       txPool.stop()
     }
