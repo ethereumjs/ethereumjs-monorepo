@@ -21,7 +21,6 @@ tape('[StorageFetcher]', async (t) => {
       config,
       pool,
       root: Buffer.from(''),
-      accounts: [Buffer.from('')],
       first: BigInt(1),
       count: BigInt(10),
     })
@@ -44,7 +43,6 @@ tape('[StorageFetcher]', async (t) => {
       config,
       pool,
       root: Buffer.from(''),
-      accounts: [Buffer.from('')],
       first: BigInt(1),
       count: BigInt(10),
     })
@@ -69,7 +67,6 @@ tape('[StorageFetcher]', async (t) => {
       config,
       pool,
       root: Buffer.from(''),
-      accounts: [Buffer.from('')],
       first: BigInt(1),
       count: BigInt(10),
     })
@@ -78,7 +75,16 @@ tape('[StorageFetcher]', async (t) => {
       { slots: [[{ hash: Buffer.from(''), body: Buffer.from('') }]], proof: Buffer.from('') },
     ]
     StorageDataResponse.completed = false
-    const task = { count: BigInt(3), first: BigInt(1) }
+    const task = {
+      storageRequests: [
+        {
+          accountHash: Buffer.from(''),
+          storageRoot: Buffer.from(''),
+          first: BigInt(1),
+          count: BigInt(10),
+        },
+      ],
+    }
     ;(fetcher as any).running = true
     fetcher.enqueueTask(task)
     const job = (fetcher as any).in.peek()
@@ -104,7 +110,6 @@ tape('[StorageFetcher]', async (t) => {
       config,
       pool,
       root: Buffer.from(''),
-      accounts: [Buffer.from('')],
       first: BigInt(1),
       count: BigInt(10),
     })
