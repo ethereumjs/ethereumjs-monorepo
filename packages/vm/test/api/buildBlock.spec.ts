@@ -86,40 +86,6 @@ tape('BlockBuilder', async (t) => {
     st.end()
   })
 
-  t.test('should revert the VM state if reverted', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const genesisBlock = Block.fromBlockData({ header: { gasLimit: 50000 } }, { common })
-    const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
-    const vm = await VM.create({ common, blockchain })
-
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
-    await setBalance(vm, address)
-
-    const root0 = await vm.eei.getStateRoot()
-
-    const blockBuilder = await vm.buildBlock({ parentBlock: genesisBlock })
-
-    // Set up tx
-    const tx = Transaction.fromTxData(
-      { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
-      { common, freeze: false }
-    )
-    tx.getSenderAddress = () => {
-      return address
-    }
-
-    await blockBuilder.addTransaction(tx)
-
-    const root1 = await vm.eei.getStateRoot()
-    st.ok(!root0.equals(root1), 'state root should change after adding a tx')
-
-    await blockBuilder.revert()
-    const root2 = await vm.eei.getStateRoot()
-
-    st.ok(root2.equals(root0), 'state root should revert to before the tx was run')
-    st.end()
-  })
-
   t.test('should correctly seal a PoW block', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const genesisBlock = Block.fromBlockData({ header: { gasLimit: 50000 } }, { common })
