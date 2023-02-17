@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1676460713110,
+  "lastUpdate": 1676631540740,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "79352c430ea7538b88ea5373f6efbc0cb47acd96",
-          "message": "Interop 4844 Docs Preparation & Alignment (#2493)\n\n* Align EOF and 4844 sim README naming\r\n\r\n* Moved EIP-4844 Interop prysm instructions out of sim folder, prepare for multi-client instructions, generalized documentation\r\n\r\n* Added .eslintignore for TS files in devnets folder\r\n\r\n* Modified Prysm start script to solely concentrate on genesis generation, extracted start command to docs\r\n\r\n* Extracted Prysm validator start command out of script, deleted script file\r\n\r\n* Remove leftover unused test data file\r\n\r\n* Clean up txGenerator\r\n\r\n* More INTEROP reorganization\r\n\r\n* Add WIP lighthouse setup\r\n\r\n* Remove extra echo\r\n\r\n* Generalize lighthouse instructions\r\n\r\n* Add bootnode script for lighthouse\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-01-22T16:21:34+01:00",
-          "tree_id": "53a45433e7720ec435d6efdcaed96e4148b5a59b",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/79352c430ea7538b88ea5373f6efbc0cb47acd96"
-        },
-        "date": 1674401094012,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 9892,
-            "range": "±3.31%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 10169,
-            "range": "±2.19%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 9611,
-            "range": "±6.18%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 10080,
-            "range": "±2.19%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 10198,
-            "range": "±2.26%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 12481,
             "range": "±2.60%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e9de55f488c59fb54ed2eaa07bcf63ec8d4c15e7",
+          "message": "blockchain: Add extra validations for assuming nil bodies in getBlock (#2534)\n\n* blockchain: Add extra validations for assuming nil bodies in getBlock\r\n\r\n* coverage",
+          "timestamp": "2023-02-17T11:55:46+01:00",
+          "tree_id": "30068b1023fd775f05e0e8819ecb1bee75c57287",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e9de55f488c59fb54ed2eaa07bcf63ec8d4c15e7"
+        },
+        "date": 1676631539298,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 12605,
+            "range": "±5.11%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 12634,
+            "range": "±2.57%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 12297,
+            "range": "±7.33%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 12656,
+            "range": "±2.52%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 12233,
+            "range": "±2.72%",
             "unit": "ops/sec",
             "extra": "83 samples"
           }
