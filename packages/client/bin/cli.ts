@@ -5,7 +5,7 @@ import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { initKZG } from '@ethereumjs/tx'
-import { Address, arrToBufArr, toBuffer } from '@ethereumjs/util'
+import { Address, arrToBufArr, short, toBuffer } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import { existsSync, writeFileSync } from 'fs'
@@ -442,21 +442,41 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
   if (args.loadBlocksFromRlp !== undefined) {
     // Specifically for Hive simulator, preload a first block provided in RLP format
     const blockRlp = readFileSync(args.loadBlocksFromRlp)
-    const decodedBlock = RLP.decode(blockRlp)
-    const block = Block.fromValuesArray(arrToBufArr(decodedBlock) as BlockBuffer, {
-      common: config.chainCommon,
-      skipConsensusFormatValidation: true,
-    })
-    if (!client.chain.opened) {
-      await client.chain.open()
+    const blocks: Block[] = []
+    let buf = RLP.decode(blockRlp, true)
+    let done = false
+    while (!done) {
+      try {
+        const block = Block.fromValuesArray(arrToBufArr(buf.data) as unknown as BlockBuffer, {
+          common: config.chainCommon,
+          hardforkByBlockNumber: true,
+        })
+        blocks.push(block)
+        buf = RLP.decode(buf.remainder, true)
+        config.logger.info(
+          `Preloading block 0x${short(block.header.hash().toString('hex'))} - ${
+            block.header.number
+          }`
+        )
+      } catch {
+        config.logger.info('Encountered invalid block while preloading chain')
+        done = true
+      }
     }
-    await client.chain.putBlocks([block])
-    const service = client.service('eth') as FullEthereumService
-    await service.execution.open()
-    const executedBlocks = await service.execution.run()
-    config.logger.info(
-      `Executed ${executedBlocks} on startup. Current head is ${service.chain.headers.height}`
-    )
+
+    if (blocks.length > 0) {
+      if (!client.chain.opened) {
+        await client.chain.open()
+      }
+
+      await client.chain.putBlocks(blocks)
+      const service = client.service('eth') as FullEthereumService
+      await service.execution.open()
+      const executedBlocks = await service.execution.run()
+      config.logger.info(
+        `Executed ${executedBlocks} on startup. Current head is ${service.chain.headers.height}`
+      )
+    }
   }
   return client
 }
