@@ -20,6 +20,8 @@ import { PendingBlock } from '../../lib/miner'
 import { TxPool } from '../../lib/service/txpool'
 import { mockBlockchain } from '../rpc/mockBlockchain'
 
+import type { TypedTransaction } from '@ethereumjs/tx'
+
 const A = {
   address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
   privateKey: Buffer.from(
@@ -128,7 +130,7 @@ tape('[PendingBlock]', async (t) => {
     t.end()
   })
 
-  t.test('should filterout hf mismatching txs', async (t) => {
+  t.test('should include txs with mismatching hardforks that can still be executed', async (t) => {
     const { txPool } = setup()
     const vm = await VM.create({ common })
     await setBalance(vm, A.address, BigInt(5000000000000000))
@@ -142,17 +144,30 @@ tape('[PendingBlock]', async (t) => {
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
-    t.equal(txPool.txsInPool, 0, 'tx should have been removed from pool')
+    const payload = pendingBlock.pendingPayloads.get(bufferToHex(payloadId))
+    t.equal(
+      (payload as any).transactions.filter(
+        (tx: TypedTransaction) => bufferToHex(tx.hash()) === bufferToHex(txA011.hash())
+      ).length,
+      1,
+      'txA011 should be in block'
+    )
 
     txB011.common.setHardfork(Hardfork.Merge)
     await txPool.add(txB011)
-    t.equal(txPool.txsInPool, 1, '1 txB011 should be added')
+    t.equal(txPool.txsInPool, 2, '1 txB011 should be added')
     const built = await pendingBlock.build(payloadId)
     if (!built) return t.fail('pendingBlock did not return')
     const [block] = built
     t.equal(block?.header.number, BigInt(1), 'should have built block number 1')
-    t.equal(block?.transactions.length, 0, 'should include txs from pool')
-    t.equal(txPool.txsInPool, 0, 'txs should have been removed from pool')
+    t.equal(block?.transactions.length, 2, 'should include txs from pool')
+    t.equal(
+      (payload as any).transactions.filter(
+        (tx: TypedTransaction) => bufferToHex(tx.hash()) === bufferToHex(txB011.hash())
+      ).length,
+      1,
+      'txB011 should be in block'
+    )
     pendingBlock.pruneSetToMax(0)
     t.equal(pendingBlock.pendingPayloads.size, 0, 'should reset the pending payload after build')
     t.end()
