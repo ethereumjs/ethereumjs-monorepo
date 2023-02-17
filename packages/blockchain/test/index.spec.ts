@@ -475,6 +475,32 @@ tape('blockchain test', (t) => {
     st.end()
   })
 
+  t.test('should test nil bodies / throw', async (st) => {
+    const blocks = generateBlocks(3)
+    const blockchain = await Blockchain.create({
+      validateBlocks: false,
+      validateConsensus: false,
+      genesisBlock: blocks[0],
+    })
+    await blockchain.putHeader(blocks[1].header)
+    // Should be able to get the block
+    await blockchain.getBlock(BigInt(1))
+
+    const block2HeaderValuesArray = blocks[2].header.raw()
+    block2HeaderValuesArray[1] = Buffer.alloc(32)
+    const block2Header = BlockHeader.fromValuesArray(block2HeaderValuesArray, {
+      common: blocks[2]._common,
+    })
+    await blockchain.putHeader(block2Header)
+    try {
+      await blockchain.getBlock(BigInt(2))
+      st.fail('block should not be constucted')
+    } catch (e) {
+      st.pass('block not constructed from empty bodies')
+    }
+    st.end()
+  })
+
   t.test('should put multiple blocks at once', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blocks: Block[] = []
