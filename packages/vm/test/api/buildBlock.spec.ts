@@ -235,13 +235,9 @@ tape('BlockBuilder', async (t) => {
 
     try {
       await blockBuilder.revert()
-      st.fail('should throw error')
+      st.equal(blockBuilder.getStatus().status, 'reverted', 'block should be in reverted status')
     } catch (error: any) {
-      if ((error.message as string).includes('Block has already been built')) {
-        st.pass('correct error thrown')
-      } else {
-        st.fail('wrong error thrown')
-      }
+      st.fail('shoud not throw')
     }
 
     blockBuilder = await vm.buildBlock({ parentBlock: genesisBlock })
@@ -259,13 +255,9 @@ tape('BlockBuilder', async (t) => {
 
     try {
       await blockBuilder.revert()
-      st.fail('should throw error')
+      st.equal(blockBuilder.getStatus().status, 'reverted', 'block should be in reverted status')
     } catch (error: any) {
-      if ((error.message as string).includes('State has already been reverted')) {
-        st.pass('correct error thrown')
-      } else {
-        st.fail('wrong error thrown')
-      }
+      st.fail('shoud not throw')
     }
 
     st.end()
