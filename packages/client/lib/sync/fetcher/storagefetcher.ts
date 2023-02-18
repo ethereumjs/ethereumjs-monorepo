@@ -144,7 +144,6 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
   private async verifySlots(slots: StorageData[], root: Buffer): Promise<boolean> {
     try {
       this.debug(`verify ${slots.length} slots`)
-      // TODO see if you can deduplicate monotonicity check
       for (let i = 0; i < slots.length - 1; i++) {
         // ensure the range is monotonically increasing
         if (slots[i].hash.compare(slots[i + 1].hash) === 1) {
@@ -448,7 +447,6 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     let myFirst = first
     let myCount = count
     if (this.storageRequests.length > 0) {
-      // if multiple accounts are requested, first and count is ignored by peer
       this.debug(
         `Number of accounts requested as a part of a multi-account request: ${this.storageRequests.length}`
       )
@@ -510,7 +508,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     // If we started with where this.first was, i.e. there are no gaps and hence
     // we can move this.first to where its now, and reduce count by pushedCount
     if (myCount !== BigInt(0) && startedWith === whereFirstwas) {
-      // create new singleAccountRequest to keep track of where to start building the next set of tasks for fetching the same account
+      // create new fragmented request to keep track of where to start building the next set of tasks for fetching the same account
       this.fragmentedRequests.unshift({
         accountHash: storageRequest?.accountHash,
         storageRoot: storageRequest?.storageRoot,
