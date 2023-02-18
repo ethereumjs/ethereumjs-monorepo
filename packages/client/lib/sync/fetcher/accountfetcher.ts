@@ -206,29 +206,6 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         } else {
           completed = true
         }
-
-        // queue accounts that have a storage component to them for storage fetching
-        const storageFetchRequests: StorageRequest[] = []
-        for (const account of rangeResult.accounts) {
-          const storageRoot: Buffer =
-            account.body[2] instanceof Buffer ? account.body[2] : Buffer.from(account.body[2])
-          if (storageRoot.compare(KECCAK256_RLP) !== 0) {
-            storageFetchRequests.push({
-              accountHash: account.hash,
-              storageRoot,
-              first: BigInt(0),
-              count: BigInt(2) ** BigInt(256) - BigInt(1),
-            })
-          }
-        }
-
-        // TODO have to redesign task functions to be able to enqueue a single task here
-        // TODO we may need to make the enqueue method bellow async and await it here so
-        //      that concurrent fetches to add fetch requests for the same account multiple times
-        // UPDATE just move this to the process phase where things are synchronous by nature
-        if (storageFetchRequests.length > 0)
-          this.storageFetcher.enqueueByStorageRequestList(storageFetchRequests)
-
         return Object.assign([], rangeResult.accounts, { completed })
       } catch (err) {
         throw Error(`InvalidAccountRange: ${err}`)
@@ -247,7 +224,6 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     job: Job<JobTask, AccountData[], AccountData>,
     result: AccountDataResponse
   ): AccountData[] | undefined {
-    // TODO this seems like a good spot to enqueue tasks for storage and byte code fetching
     const fullResult = (job.partialResult ?? []).concat(result)
     job.partialResult = undefined
     if (result.completed === true) {
@@ -264,6 +240,22 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    */
   async store(result: AccountData[]): Promise<void> {
     this.debug(`Stored ${result.length} accounts in account trie`)
+
+    const storageFetchRequests: StorageRequest[] = []
+    for (const account of result) {
+      const storageRoot: Buffer =
+        account.body[2] instanceof Buffer ? account.body[2] : Buffer.from(account.body[2])
+      if (storageRoot.compare(KECCAK256_RLP) !== 0) {
+        storageFetchRequests.push({
+          accountHash: account.hash,
+          storageRoot,
+          first: BigInt(0),
+          count: BigInt(2) ** BigInt(256) - BigInt(1),
+        })
+      }
+    }
+    if (storageFetchRequests.length > 0)
+      this.storageFetcher.enqueueByStorageRequestList(storageFetchRequests)
   }
 
   /**
@@ -275,7 +267,8 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    */
 
   tasks(first = this.first, count = this.count, maxTasks = this.config.maxFetcherJobs): JobTask[] {
-    const max = this.config.maxAccountRange
+    // const max = this.config.maxAccountRange
+    const max = BigInt(2) ** BigInt(256) / BigInt(7)
     const tasks: JobTask[] = []
     let debugStr = `origin=${short(setLengthLeft(bigIntToBuffer(first), 32))}`
     let pushedCount = BigInt(0)
