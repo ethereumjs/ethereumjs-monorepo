@@ -267,8 +267,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    */
 
   tasks(first = this.first, count = this.count, maxTasks = this.config.maxFetcherJobs): JobTask[] {
-    // const max = this.config.maxAccountRange
-    const max = BigInt(2) ** BigInt(256) / BigInt(7)
+    const max = this.config.maxAccountRange
     const tasks: JobTask[] = []
     let debugStr = `origin=${short(setLengthLeft(bigIntToBuffer(first), 32))}`
     let pushedCount = BigInt(0)
