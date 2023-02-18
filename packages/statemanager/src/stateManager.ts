@@ -69,7 +69,7 @@ export const idToHash = function (accountId: AccountId): Buffer {
     return accountId
   }
   // hash and return
-  return keccak256(accountId.buf) as Buffer
+  return keccak256(new Uint8Array(accountId.buf)) as Buffer
 }
 
 /**
