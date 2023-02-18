@@ -11,13 +11,11 @@ interface SnapSynchronizerOptions extends SynchronizerOptions {}
 export class SnapSynchronizer extends Synchronizer {
   public running = false
 
-  // accountTrie: Trie
-  stateManager: DefaultStateManager // is the data for the backing stores persisted anywhere by default?
+  stateManager: DefaultStateManager
 
   constructor(options: SnapSynchronizerOptions) {
     super(options)
 
-    // this.accountTrie = new Trie({ db: new LevelDB() })
     this.stateManager = new DefaultStateManager()
   }
 
@@ -103,6 +101,8 @@ export class SnapSynchronizer extends Synchronizer {
       )
     }
 
+    // For convenient testing
+    //
     // this.fetcher = new StorageFetcher({
     //   config: this.config,
     //   pool: this.pool,
