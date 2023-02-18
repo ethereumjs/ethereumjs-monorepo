@@ -176,17 +176,12 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
   }
 
   /**
-   * Creates a storage trie from the primary storage trie
-   * for an account and saves this in the storage cache.
+   * Creates a new storage trie and rerturns it
    * @private
    */
   async _lookupStorageTrie(address: AccountId): Promise<Trie> {
     // from state trie
     const account = await this.getAccount(idToHash(address))
-    // const storageTrie = this._trie.copy(false)
-    // storageTrie.root(account.storageRoot)
-    // storageTrie.flushCheckpoints()
-    // return storageTrie
     const newTrie = new Trie({ useKeyHashing: true })
     newTrie.root(account.storageRoot)
     return newTrie
