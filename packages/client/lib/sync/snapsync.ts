@@ -1,7 +1,6 @@
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 
 import { AccountFetcher } from './fetcher'
-import { StorageFetcher } from './fetcher/storagefetcher'
 import { Synchronizer } from './sync'
 
 import type { Peer } from '../net/peer/peer'

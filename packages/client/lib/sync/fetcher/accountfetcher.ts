@@ -86,7 +86,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       first: BigInt(1),
       destroyWhenDone: false,
     })
-    this.storageFetcher.fetch()
+    void this.storageFetcher.fetch()
 
     const fullJob = { task: { first: this.first, count: this.count } } as Job<
       JobTask,

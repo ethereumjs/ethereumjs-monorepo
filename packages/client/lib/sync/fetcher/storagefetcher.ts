@@ -290,7 +290,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
           // all but the last returned slot array must include all slots for the requested account
           const proof = i === rangeResult.slots.length - 1 ? rangeResult.proof : undefined
           if (proof === undefined || proof.length === 0) {
-            const valid = this.verifySlots(accountSlots, root)
+            const valid = await this.verifySlots(accountSlots, root)
             if (!valid) return undefined
             if (proof?.length === 0)
               return Object.assign([], [rangeResult.slots], { completed: true })
@@ -542,9 +542,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     // this strategy is open to change, but currently, multi-account requests are greedily prioritized over single-account requests
     try {
       if (this.in.length === 0) {
-        let fullJob,
-          origin,
-          limit = undefined
+        let fullJob = undefined
         if (this.storageRequests.length > 0) {
           fullJob = {
             task: { storageRequests: this.storageRequests },
@@ -559,8 +557,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
           this.debug('No requests left to queue')
           return
         }
-        origin = this.getOrigin(fullJob as any)
-        limit = this.getLimit(fullJob as any)
+        const origin = this.getOrigin(fullJob as any)
+        const limit = this.getLimit(fullJob as any)
         const tasks = this.tasks()
         for (const task of tasks) {
           this.enqueueTask(task, true)
