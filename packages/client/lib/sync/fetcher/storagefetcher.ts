@@ -539,7 +539,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       this.debug(`\tCount: ${bigIntToHex(r.count)}`)
       this.debug('\t---')
     }
-    // this strategy is open to change, but currently, multi-account requests are greedily prioritized over single-account requests
+    // this strategy is open to change, but currently, multi-account requests are greedily prioritized over fragmented requests
     try {
       if (this.in.length === 0) {
         let fullJob = undefined
