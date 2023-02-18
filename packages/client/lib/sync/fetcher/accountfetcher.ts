@@ -210,7 +210,8 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         // queue accounts that have a storage component to them for storage fetching
         const storageFetchRequests: StorageRequest[] = []
         for (const account of rangeResult.accounts) {
-          const storageRoot: Buffer = account.body[2] as Buffer
+          const storageRoot: Buffer =
+            account.body[2] instanceof Buffer ? account.body[2] : Buffer.from(account.body[2])
           if (storageRoot.compare(KECCAK256_RLP) !== 0) {
             storageFetchRequests.push({
               accountHash: account.hash,
