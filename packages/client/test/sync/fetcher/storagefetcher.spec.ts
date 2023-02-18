@@ -21,13 +21,26 @@ tape('[StorageFetcher]', async (t) => {
       config,
       pool,
       root: Buffer.from(''),
-      first: BigInt(1),
-      count: BigInt(10),
     })
     fetcher.next = () => false
     t.notOk((fetcher as any).running, 'not started')
+    t.equals((fetcher as any).in.length, 0, 'No storageRequests have yet been added')
+    fetcher.enqueueByStorageRequestList([
+      {
+        accountHash: Buffer.from(
+          'e9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1',
+          'hex'
+        ),
+        storageRoot: Buffer.from(
+          '69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92',
+          'hex'
+        ),
+        first: BigInt(0),
+        count: BigInt(2) ** BigInt(256) - BigInt(1),
+      },
+    ])
+    t.equals((fetcher as any).in.length, 1, 'A new task has been queued')
     void fetcher.fetch()
-    t.equals((fetcher as any).in.length, 1, 'added 1 tasks')
     await wait(100)
     t.ok((fetcher as any).running, 'started')
     fetcher.destroy()
@@ -47,15 +60,42 @@ tape('[StorageFetcher]', async (t) => {
       count: BigInt(10),
     })
     const fullResult: any = [
-      { slots: [[{ hash: Buffer.from(''), body: Buffer.from('') }]], proof: Buffer.from('') },
-      { slots: [[{ hash: Buffer.from(''), body: Buffer.from('') }]], proof: Buffer.from('') },
+      [
+        [{ hash: Buffer.from(''), body: Buffer.from('') }],
+        [{ hash: Buffer.from(''), body: Buffer.from('') }],
+      ],
     ]
     const StorageDataResponse: any = [
-      { slots: [[{ hash: Buffer.from(''), body: Buffer.from('') }]], proof: Buffer.from('') },
-      { slots: [[{ hash: Buffer.from(''), body: Buffer.from('') }]], proof: Buffer.from('') },
+      [
+        [{ hash: Buffer.from(''), body: Buffer.from('') }],
+        [{ hash: Buffer.from(''), body: Buffer.from('') }],
+      ],
     ]
     StorageDataResponse.completed = true
-    t.deepEquals(fetcher.process({} as any, StorageDataResponse), fullResult, 'got results')
+    const task = {
+      storageRequests: [
+        {
+          accountHash: Buffer.from(
+            'e9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1',
+            'hex'
+          ),
+          storageRoot: Buffer.from(
+            '69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92',
+            'hex'
+          ),
+          first: BigInt(0),
+          count: BigInt(2) ** BigInt(256) - BigInt(1),
+        },
+      ],
+    }
+    ;(fetcher as any).running = true
+    fetcher.enqueueTask(task)
+    const job = (fetcher as any).in.peek()
+    t.deepEquals(
+      (fetcher.process(job, StorageDataResponse) as any)[0],
+      fullResult[0],
+      'got results'
+    )
     t.notOk(fetcher.process({} as any, { StorageDataResponse: [] } as any), 'bad results')
     t.end()
   })
@@ -67,21 +107,27 @@ tape('[StorageFetcher]', async (t) => {
       config,
       pool,
       root: Buffer.from(''),
-      first: BigInt(1),
-      count: BigInt(10),
     })
     const StorageDataResponse: any = [
-      { slots: [[{ hash: Buffer.from(''), body: Buffer.from('') }]], proof: Buffer.from('') },
-      { slots: [[{ hash: Buffer.from(''), body: Buffer.from('') }]], proof: Buffer.from('') },
+      [
+        [{ hash: Buffer.from(''), body: Buffer.from('') }],
+        [{ hash: Buffer.from(''), body: Buffer.from('') }],
+      ],
     ]
     StorageDataResponse.completed = false
     const task = {
       storageRequests: [
         {
-          accountHash: Buffer.from(''),
-          storageRoot: Buffer.from(''),
-          first: BigInt(1),
-          count: BigInt(10),
+          accountHash: Buffer.from(
+            'e9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1',
+            'hex'
+          ),
+          storageRoot: Buffer.from(
+            '69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92',
+            'hex'
+          ),
+          first: BigInt(0),
+          count: BigInt(2) ** BigInt(256) - BigInt(1),
         },
       ],
     }
@@ -90,16 +136,18 @@ tape('[StorageFetcher]', async (t) => {
     const job = (fetcher as any).in.peek()
     let results = fetcher.process(job as any, StorageDataResponse)
     t.equal((fetcher as any).in.length, 1, 'Fetcher should still have same job')
-    t.equal(job?.partialResult?.length, 2, 'Should have two partial results')
+    t.equal(job?.partialResult[0].length, 2, 'Should have two partial results')
     t.equal(results, undefined, 'Process should not return full results yet')
-
     const remainingStorageData: any = [
-      { slots: [[{ hash: Buffer.from(''), body: Buffer.from('') }]], proof: Buffer.from('') },
+      [
+        [{ hash: Buffer.from(''), body: Buffer.from('') }],
+        [{ hash: Buffer.from(''), body: Buffer.from('') }],
+        [{ hash: Buffer.from(''), body: Buffer.from('') }],
+      ],
     ]
     remainingStorageData.completed = true
     results = fetcher.process(job as any, remainingStorageData)
-    t.equal(results?.length, 3, 'Should return full results')
-
+    t.equal((results as any)[0].length, 5, 'Should return full results')
     t.end()
   })
 
