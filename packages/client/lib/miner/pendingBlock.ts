@@ -304,8 +304,6 @@ export class PendingBlock {
       this.constructBlobsBundle(payloadId, blobTxs, block.header.hash())
     }
 
-    // Remove from pendingPayloads
-    // this.pendingPayloads = this.pendingPayloads.filter((p) => !p[0].equals(payloadId))
 
     return [block, builder.transactionReceipts, builder.minerValue]
   }
