@@ -422,9 +422,11 @@ export class Blockchain implements BlockchainInterface {
         canonicalHead > BigInt(0)
           ? await this.getTotalDifficulty(header.hash(), canonicalHead)
           : header.difficulty
+
       const dbOps: DBOp[] = []
-      await this._rebuildCanonical(header, dbOps)
+      await this._deleteCanonicalChainReferences(canonicalHead + BigInt(1), hash, dbOps)
       const ops = dbOps.concat(this._saveHeadOps())
+
       await this.dbManager.batch(ops)
       await this.checkAndTransitionHardForkByNumber(canonicalHead, td, header.timestamp)
     })
@@ -1078,6 +1080,10 @@ export class Blockchain implements BlockchainInterface {
       // reset stale headBlock to current canonical
       if (this._headBlockHash?.equals(hash) === true) {
         this._headBlockHash = headHash
+      }
+      // reset stale headBlock to current canonical
+      if (this._headHeaderHash?.equals(hash) === true) {
+        this._headHeaderHash = headHash
       }
 
       blockNumber++

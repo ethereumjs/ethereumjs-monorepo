@@ -231,6 +231,13 @@ tape('blockchain test', (t) => {
     st.equal(getBlocks!.length, 5)
     st.equal(blocks[0].header.number, getBlocks[0].header.number)
     st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
+
+    let canonicalHeader = await blockchain.getCanonicalHeadHeader()
+    st.equal(canonicalHeader.number, BigInt(24), 'block 24 should be canonical header')
+    await blockchain.resetCanonicalHead(BigInt(4))
+    canonicalHeader = await blockchain.getCanonicalHeadHeader()
+    st.equal(canonicalHeader.number, BigInt(4), 'block 4 should be new canonical header')
+
     st.end()
   })
 
