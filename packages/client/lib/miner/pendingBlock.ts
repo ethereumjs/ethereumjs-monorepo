@@ -92,7 +92,8 @@ export class PendingBlock {
     const { timestamp, mixHash } = headerData
     const { gasLimit } = parentBlock.header
 
-    // payload is uniquely defined by timestamp, gasLimit and the header
+    // payload is uniquely defined by timestamp, parent and mixHash, gasLimit can also be
+    // potentially included in the fcU in future and can be safely added in uniqueness calc
     const timestampBuf = bigIntToUnpaddedBuffer(toType(timestamp ?? 0, TypeOutput.BigInt))
     const gasLimitBuf = bigIntToUnpaddedBuffer(gasLimit)
     const mixHashBuf = toType(mixHash!, TypeOutput.Buffer) ?? zeros(32)
@@ -211,7 +212,7 @@ export class PendingBlock {
     const payloadId =
       typeof payloadIdBuffer !== 'string' ? bufferToHex(payloadIdBuffer) : payloadIdBuffer
     const builder = this.pendingPayloads.get(payloadId)
-    if (!builder) return
+    if (builder === undefined) return
     // Revert blockBuilder
     void builder.revert()
     // Remove from pendingPayloads
@@ -303,7 +304,6 @@ export class PendingBlock {
     if (block._common.isActivatedEIP(4844)) {
       this.constructBlobsBundle(payloadId, blobTxs, block.header.hash())
     }
-
 
     return [block, builder.transactionReceipts, builder.minerValue]
   }
