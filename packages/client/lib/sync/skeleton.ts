@@ -622,6 +622,7 @@ export class Skeleton extends MetaDBManager {
         `Resetting canonicalHead for fillCanonicalChain from=${canonicalHead} to=${newHead}`
       )
       canonicalHead = newHead
+      await this.chain.resetCanonicalHead(canonicalHead)
       this.status.canonicalHeadReset = false
     }
 

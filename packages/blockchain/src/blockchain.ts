@@ -276,7 +276,7 @@ export class Blockchain implements BlockchainInterface {
     if (this._hardforkByHeadBlockNumber) {
       const latestHeader = await this._getHeader(this._headHeaderHash)
       const td = await this.getTotalDifficulty(this._headHeaderHash)
-      this.checkAndTransitionHardForkByNumber(latestHeader.number, td, latestHeader.timestamp)
+      await this.checkAndTransitionHardForkByNumber(latestHeader.number, td, latestHeader.timestamp)
     }
 
     this._isInitialized = true
@@ -414,6 +414,22 @@ export class Blockchain implements BlockchainInterface {
     await this._putBlockOrHeader(header)
   }
 
+  async resetCanonicalHead(canonicalHead: bigint) {
+    await this.runWithLock<void>(async () => {
+      const hash = await this.dbManager.numberToHash(canonicalHead)
+      const header = await this._getHeader(hash, canonicalHead)
+      const td =
+        canonicalHead > BigInt(0)
+          ? await this.getTotalDifficulty(header.hash(), canonicalHead)
+          : header.difficulty
+      const dbOps: DBOp[] = []
+      await this._rebuildCanonical(header, dbOps)
+      const ops = dbOps.concat(this._saveHeadOps())
+      await this.dbManager.batch(ops)
+      await this.checkAndTransitionHardForkByNumber(canonicalHead, td, header.timestamp)
+    })
+  }
+
   /**
    * Entrypoint for putting any block or block header. Verifies this block,
    * checks the total TD: if this TD is higher than the current highest TD, we
@@ -487,7 +503,7 @@ export class Blockchain implements BlockchainInterface {
       // if total difficulty is higher than current, add it to canonical chain
       if (
         block.isGenesis() ||
-        (block._common.consensusType() !== ConsensusType.ProofOfStake && td > currentTd.header) ||
+        td > currentTd.header ||
         block._common.consensusType() === ConsensusType.ProofOfStake
       ) {
         const foundCommon = await this.findCommonAncestor(header)
@@ -499,7 +515,7 @@ export class Blockchain implements BlockchainInterface {
           this._headBlockHash = blockHash
         }
         if (this._hardforkByHeadBlockNumber) {
-          this.checkAndTransitionHardForkByNumber(blockNumber, td, header.timestamp)
+          await this.checkAndTransitionHardForkByNumber(blockNumber, td, header.timestamp)
         }
 
         // delete higher number assignments and overwrite stale canonical chain
@@ -1184,11 +1200,11 @@ export class Blockchain implements BlockchainInterface {
     return this.dbManager.getHeader(hash, number)
   }
 
-  protected checkAndTransitionHardForkByNumber(
+  async checkAndTransitionHardForkByNumber(
     number: bigint,
     td?: BigIntLike,
     timestamp?: BigIntLike
-  ): void {
+  ): Promise<void> {
     this._common.setHardforkByBlockNumber(number, td, timestamp)
 
     // If custom consensus algorithm is used, skip merge hardfork consensus checks
@@ -1214,6 +1230,7 @@ export class Blockchain implements BlockchainInterface {
       default:
         throw new Error(`consensus algorithm ${this._common.consensusAlgorithm()} not supported`)
     }
+    await this.consensus.setup({ blockchain: this })
   }
 
   /**

@@ -195,6 +195,12 @@ export class Chain {
     this.opened = false
   }
 
+  async resetCanonicalHead(canonicalHead: bigint): Promise<boolean | void> {
+    if (!this.opened) return false
+    await this.blockchain.resetCanonicalHead(canonicalHead)
+    return this.update(false)
+  }
+
   /**
    * Update blockchain properties (latest block, td, height, etc...)
    * @param emit Emit a `CHAIN_UPDATED` event
