@@ -609,9 +609,9 @@ export class Skeleton extends MetaDBManager {
     let canonicalHead = this.chain.blocks.height
     const subchain = this.status.progress.subchains[0]!
     if (this.status.canonicalHeadReset) {
-      if (subchain.tail > canonicalHead) {
+      if (subchain.tail > canonicalHead + BigInt(1)) {
         throw Error(
-          `Canonical head should already be on or ahead subchain tial canonicalHead=${canonicalHead} tail=${subchain.tail}`
+          `Canonical head should already be on or ahead subchain tail canonicalHead=${canonicalHead} tail=${subchain.tail}`
         )
       }
       let newHead = subchain.tail - BigInt(1)

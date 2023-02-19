@@ -1,11 +1,10 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 
 import { Event } from '../types'
 
 import type { Config } from '../config'
-import type { Block } from '@ethereumjs/block'
 import type { AbstractLevel } from 'abstract-level'
 
 /**
@@ -277,7 +276,7 @@ export class Chain {
     if (blocks.length === 0) return 0
 
     let numAdded = 0
-    for (const [i, block] of blocks.entries()) {
+    for (const [i, b] of blocks.entries()) {
       if (!fromEngine && this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
         if (i > 0) {
           // emitOnLast below won't be reached, so run an update here
@@ -285,6 +284,21 @@ export class Chain {
         }
         break
       }
+
+      let td = this.headers.td
+      if (b.header.number <= this.headers.height) {
+        td = await this.blockchain.getTotalDifficulty(b.header.parentHash)
+        ;(this.blockchain as any).checkAndTransitionHardForkByNumber(
+          b.header.number - BigInt(1),
+          td
+        )
+        await this.blockchain.consensus.setup({ blockchain: this.blockchain })
+      }
+
+      const block = Block.fromValuesArray(b.raw(), {
+        common: this.config.chainCommon,
+        hardforkByTTD: td,
+      })
 
       await this.blockchain.putBlock(block)
       numAdded++
