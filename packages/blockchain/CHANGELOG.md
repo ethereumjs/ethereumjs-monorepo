@@ -45,6 +45,7 @@ A bit on the verge of breaking vs. bug fixing, sorry if you are eventually affec
 
 - Timestamp-related `Blockchain.createGenesisBlock()` fix, PR [#2529](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2529)
 - Allow genesis to be post merge, PR [#2530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2530)
+- Add extra validations for assuming nil bodies in `getBlock()`, PR [#2534](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2534)
 
 ## 6.1.0 - 2022-12-09
 

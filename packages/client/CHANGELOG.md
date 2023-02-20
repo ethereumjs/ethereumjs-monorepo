@@ -27,6 +27,7 @@ ethereumjs --network=sepolia
 - Engine-api-validators, newPayloadV2 and newPayloadV3 updates, PR [#2504](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2504)
 - Add new shanghai engine apis (getCapabilties, getPayloadBodiesByHashV1, getPayloadBodiesByRangeV1), PR [#2509](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2509)
 - getPayloadBodiesByRange fixes, PR [#2518](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2518)
+- Changes engine_forkchoiceUpdatedV2 withdrawals parameter to `optional` to ensure we return the correct error message if a preShanghai payload is sent, PR [#2533](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2533)
 
 ### EIP-4844 Shard Blob Transactions Support (experimental)
 
@@ -52,11 +53,13 @@ Log output is now a lot more concise and adequate to the respective client post-
 - New client ci run, PR [#2515](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2515)
 - Add and use execHardfork while running a tx, PR [#2505](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2505)
 - Hive withdrawal and general client fixes, PR [#2529](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2529)
+- Use client ID from Client for client HELLO message exchange (previously devp2p default ID was used), PR [#2538](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2538)
 
 ### Block Building / Tx Pool
 
 - Build block fixes, PR [#2452](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2452)
 - Apply correct hf to peer fetched txs as well as filter and remove mismatching hf txs while building blocks, PR [#2486](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2486)
+- Adds some caching logic for pending payloads so as to prune pending block payloads once one is built and provided to the CL, PR [#2533](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2533)
 
 ### CLI
 

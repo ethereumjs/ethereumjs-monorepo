@@ -18,6 +18,11 @@ import { Common, Chain, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
 ```
 
+### Other Changes
+
+- Removed outdated Parity DPT ping/pong hack, PR [#2538](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2538)
+- Improved devp2p HELLO logging message (added protocol version and client ID), PR [#2538](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2538)
+
 ## 5.0.2 - 2022-12-09
 
 ### Hardfork-By-Time Support
