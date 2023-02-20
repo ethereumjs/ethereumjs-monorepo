@@ -1,6 +1,7 @@
 import { DPT as Devp2pDPT, RLPx as Devp2pRLPx } from '@ethereumjs/devp2p'
 
 import { Event } from '../../types'
+import { getClientVersion } from '../../util'
 import { RlpxPeer } from '../peer/rlpxpeer'
 
 import { Server } from './server'
@@ -238,6 +239,7 @@ export class RlpxServer extends Server {
   private async initRlpx() {
     return new Promise<void>((resolve) => {
       this.rlpx = new Devp2pRLPx(this.key, {
+        clientId: Buffer.from(getClientVersion()),
         dpt: this.dpt!,
         maxPeers: this.config.maxPeers,
         capabilities: RlpxPeer.capabilities(Array.from(this.protocols)),
