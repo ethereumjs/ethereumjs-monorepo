@@ -440,12 +440,11 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
   }
 
   if (args.loadBlocksFromRlp !== undefined) {
-    // Specifically for Hive simulator, preload a first block provided in RLP format
+    // Specifically for Hive simulator, preload blocks provided in RLP format
     const blockRlp = readFileSync(args.loadBlocksFromRlp)
     const blocks: Block[] = []
     let buf = RLP.decode(blockRlp, true)
-    let done = false
-    while (!done) {
+    while (buf.data?.length > 0 || buf.remainder?.length > 0) {
       try {
         const block = Block.fromValuesArray(arrToBufArr(buf.data) as unknown as BlockBuffer, {
           common: config.chainCommon,
@@ -454,13 +453,15 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
         blocks.push(block)
         buf = RLP.decode(buf.remainder, true)
         config.logger.info(
-          `Preloading block 0x${short(block.header.hash().toString('hex'))} - ${
+          `Preloading block hash=0x${short(block.header.hash().toString('hex'))} number=${
             block.header.number
           }`
         )
-      } catch {
-        config.logger.info('Encountered invalid block while preloading chain')
-        done = true
+      } catch (err: any) {
+        config.logger.info(
+          `Encountered error while while preloading chain data  error=${err.message}`
+        )
+        break
       }
     }
 
@@ -472,10 +473,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
       await client.chain.putBlocks(blocks)
       const service = client.service('eth') as FullEthereumService
       await service.execution.open()
-      const executedBlocks = await service.execution.run()
-      config.logger.info(
-        `Executed ${executedBlocks} on startup. Current head is ${service.chain.headers.height}`
-      )
+      await service.execution.run()
     }
   }
   return client
