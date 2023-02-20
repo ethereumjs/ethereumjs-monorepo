@@ -231,6 +231,7 @@ export class BlockBuilder {
   async revert() {
     if (this.checkpointed) {
       await this.vm.stateManager.revert()
+      this.checkpointed = false
     }
     this.blockStatus = { status: BuildStatus.Reverted }
   }
