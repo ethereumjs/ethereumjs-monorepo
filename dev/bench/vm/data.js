@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1676889215280,
+  "lastUpdate": 1676894118241,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a06fede7fd1cf851237ed9a8c057142901ab4e24",
-          "message": "Interop Client CLI Improvements (#2497)\n\n* Added the chain ID to client start-up log output\r\n\r\n* Added custom genesis state account information log message\r\n\r\n* Some EVM, networking and sync startup log rewording to better align with actions taken and better reflect post-merge client behavior\r\n\r\n* Switched CL client needed log message from WARN to INFO level (expected behavior)\r\n\r\n* Added genesis timestamp to chain initialization log message, added timestamp-in-the-future warning log message\r\n\r\n* Added some more prominent post-Merge client mode message, added warnign if running post-Merge without Engine API\r\n\r\n* Moved timestamp warning log message further down the instantiation line due to race condition issues (mainnet)\r\n\r\n* Moved beacon sync skeleton put block and VM execution warn msgs to debug log level to avoid CLI overloading, moved fillLogIndex in skeleton to be class based, down-leveled interval log from 50 to 10\r\n\r\n* Moved skeleton announcement before tail msg to debug level\r\n\r\n* Added withdrawal number and excess data gas to last consensus payload log msg\r\n\r\n* fix tsDiff\r\n\r\n* Removed timestamp-in-future warning due to race conditions leading to test failures\r\n\r\n* fix loglevel parameter usage\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-01-24T00:17:45+01:00",
-          "tree_id": "90f248d779ca55fd1f45760e1cd2945928a12cc7",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a06fede7fd1cf851237ed9a8c057142901ab4e24"
-        },
-        "date": 1674516026656,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18914,
-            "range": "±2.59%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18526,
-            "range": "±4.36%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18779,
-            "range": "±1.73%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 16683,
-            "range": "±9.42%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19397,
-            "range": "±1.36%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±8.69%",
             "unit": "ops/sec",
             "extra": "77 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2153e1c09c7923b15ad9a3a65bb9dbc751523dbe",
+          "message": "withdrawals and transaction inclusion logic updates (#2533)\n\n* client: Modify pending block retention to cache size limit based\r\n\r\n* cache the block in builder\r\n\r\n* do not throw on double revert\r\n\r\n* update tx hf than throwing on mismatch on txRun\r\n\r\n* fix pendingblock issues\r\n\r\n* fix pendingBlock tests\r\n\r\n* Fix miner test\r\n\r\n* Fix runTx test.  Remove invalid tx hf branch\r\n\r\n* Fix withdrawals test\r\n\r\n* Fix buildBlock tests and revert logic\r\n\r\n* Change revert logic\r\n\r\n* Remove meaningless test\r\n\r\n* cleanup comments\r\n\r\n* apply feedback and lint\r\n\r\n* revert statemanager on buildblock revert\r\n\r\n* fix test\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-02-20T12:52:37+01:00",
+          "tree_id": "188bf83ac7a61fb99061b40185583ad6c5eb1f5a",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2153e1c09c7923b15ad9a3a65bb9dbc751523dbe"
+        },
+        "date": 1676894117525,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 16114,
+            "range": "±1.69%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 15421,
+            "range": "±4.52%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 16044,
+            "range": "±1.59%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15413,
+            "range": "±1.69%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 14368,
+            "range": "±7.33%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
           }
         ]
       }
