@@ -4,7 +4,7 @@ import { EventEmitter } from 'events'
 import LRUCache = require('lru-cache')
 import ms = require('ms')
 
-import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util'
+import { createDeferred, devp2pDebug, formatLogId, keccak256, pk2id } from '../util'
 
 import { decode, encode } from './message'
 
@@ -46,6 +46,7 @@ export class Server extends EventEmitter {
   _timeout: number
   _endpoint: PeerInfo
   _requests: Map<string, any>
+  _parityRequestMap: Map<string, string>
   _requestsCache: LRUCache<string, Promise<any>>
   _socket: DgramSocket | null
   _debug: Debugger
@@ -59,6 +60,7 @@ export class Server extends EventEmitter {
     this._timeout = options.timeout ?? ms('10s')
     this._endpoint = options.endpoint ?? { address: '0.0.0.0', udpPort: null, tcpPort: null }
     this._requests = new Map()
+    this._parityRequestMap = new Map()
     this._requestsCache = new LRUCache({ max: 1000, maxAge: ms('1s'), stale: false })
 
     const createSocket = options.createSocket ?? dgram.createSocket.bind(null, { type: 'udp4' })
@@ -147,7 +149,20 @@ export class Server extends EventEmitter {
     this.debug(typename, debugMsg)
 
     const msg = encode(typename, data, this._privateKey)
-
+    // Parity hack
+    // There is a bug in Parity up to at lease 1.8.10 not echoing the hash from
+    // discovery spec (hash: sha3(signature || packet-type || packet-data))
+    // but just hashing the RLP-encoded packet data (see discovery.rs, on_ping())
+    // 2018-02-28
+    if (typename === 'ping') {
+      const rkeyParity = keccak256(msg.slice(98)).toString('hex')
+      this._parityRequestMap.set(rkeyParity, msg.slice(0, 32).toString('hex'))
+      setTimeout(() => {
+        if (this._parityRequestMap.get(rkeyParity) !== undefined) {
+          this._parityRequestMap.delete(rkeyParity)
+        }
+      }, this._timeout)
+    }
     if (this._socket && typeof peer.udpPort === 'number')
       this._socket.send(msg, 0, msg.length, peer.udpPort, peer.address)
     return msg.slice(0, 32) // message id
@@ -186,7 +201,12 @@ export class Server extends EventEmitter {
       }
 
       case 'pong': {
-        const rkey = info.data.hash.toString('hex')
+        let rkey = info.data.hash.toString('hex')
+        const rkeyParity = this._parityRequestMap.get(rkey)
+        if (typeof rkeyParity === 'string') {
+          rkey = rkeyParity
+          this._parityRequestMap.delete(rkeyParity)
+        }
         const request = this._requests.get(rkey)
         if (request !== undefined) {
           this._requests.delete(rkey)
