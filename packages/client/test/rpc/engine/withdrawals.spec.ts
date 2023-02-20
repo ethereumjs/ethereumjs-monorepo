@@ -113,7 +113,7 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
     let expectRes = checkError(
       t,
       INVALID_PARAMS,
-      "invalid argument 1 for key 'withdrawals': argument is not array"
+      'PayloadAttributesV2 MUST be used after Shanghai is activated'
     )
     await baseRequest(t, server, req, 200, expectRes, false)
 

@@ -1,6 +1,15 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
-import { randomBytes } from 'crypto'
+import {
+  TypeOutput,
+  bigIntToUnpaddedBuffer,
+  bufferToHex,
+  toBuffer,
+  toType,
+  zeros,
+} from '@ethereumjs/util'
+import { BuildStatus } from '@ethereumjs/vm/dist/buildBlock'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import type { Config } from '../config'
 import type { TxPool } from '../service/txpool'
@@ -33,18 +42,40 @@ interface BlobBundle {
  * For now this simple implementation just adds txs from the pool when
  * started and called.
  */
+
+// Max two payload to be cached
+const MAX_PAYLOAD_CACHE = 2
+
 export class PendingBlock {
   config: Config
   txPool: TxPool
-  pendingPayloads: [payloadId: Buffer, builder: BlockBuilder][] = []
-  blobBundles: Map<string, BlobBundle>
+
+  pendingPayloads: Map<string, BlockBuilder> = new Map()
+  blobBundles: Map<string, BlobBundle> = new Map()
+
   private skipHardForkValidation?: boolean
 
   constructor(opts: PendingBlockOpts) {
     this.config = opts.config
     this.txPool = opts.txPool
-    this.blobBundles = new Map()
     this.skipHardForkValidation = opts.skipHardForkValidation
+  }
+
+  pruneSetToMax(maxItems: number): number {
+    let itemsToDelete = this.pendingPayloads.size - maxItems
+    const deletedItems = Math.max(0, itemsToDelete)
+
+    if (itemsToDelete > 0) {
+      // keys are in fifo order
+      for (const payloadId of this.pendingPayloads.keys()) {
+        this.stop(payloadId)
+        itemsToDelete--
+        if (itemsToDelete <= 0) {
+          break
+        }
+      }
+    }
+    return deletedItems
   }
 
   /**
@@ -58,8 +89,29 @@ export class PendingBlock {
     withdrawals?: WithdrawalData[]
   ) {
     const number = parentBlock.header.number + BigInt(1)
-    const { timestamp } = headerData
+    const { timestamp, mixHash } = headerData
     const { gasLimit } = parentBlock.header
+
+    // payload is uniquely defined by timestamp, parent and mixHash, gasLimit can also be
+    // potentially included in the fcU in future and can be safely added in uniqueness calc
+    const timestampBuf = bigIntToUnpaddedBuffer(toType(timestamp ?? 0, TypeOutput.BigInt))
+    const gasLimitBuf = bigIntToUnpaddedBuffer(gasLimit)
+    const mixHashBuf = toType(mixHash!, TypeOutput.Buffer) ?? zeros(32)
+    const payloadIdBuffer = toBuffer(
+      keccak256(Buffer.concat([parentBlock.hash(), mixHashBuf, timestampBuf, gasLimitBuf])).slice(
+        0,
+        8
+      )
+    )
+    const payloadId = bufferToHex(payloadIdBuffer)
+
+    // If payload has already been triggered, then return the payloadid
+    if (this.pendingPayloads.get(payloadId)) {
+      return payloadIdBuffer
+    }
+
+    // Prune the builders and blobbundles
+    this.pruneSetToMax(MAX_PAYLOAD_CACHE)
 
     if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
       throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
@@ -92,8 +144,7 @@ export class PendingBlock {
       },
     })
 
-    const payloadId = randomBytes(8)
-    this.pendingPayloads.push([payloadId, builder])
+    this.pendingPayloads.set(payloadId, builder)
 
     // Add current txs in pool
     const txs = await this.txPool.txsByPriceAndNonce(vm, baseFeePerGas)
@@ -122,18 +173,6 @@ export class PendingBlock {
               `Pending: Assembled block full (gasLeft: ${gasLimit - builder.gasUsed})`
             )
           }
-        } else if ((error as Error).message.includes('tx has a different hardfork than the vm')) {
-          // We can here decide to keep a tx in pool if it belongs to future hf
-          // but for simplicity just remove the tx as the sender can always retransmit
-          // the tx
-          this.txPool.removeByHash(txs[index].hash().toString('hex'))
-          this.config.logger.error(
-            `Pending: Removed from txPool tx 0x${txs[index]
-              .hash()
-              .toString('hex')} having different hf=${txs[
-              index
-            ].common.hardfork()} than block vm hf=${vm._common.hardfork()}`
-          )
         } else {
           // If there is an error adding a tx, it will be skipped
           this.config.logger.debug(
@@ -163,33 +202,40 @@ export class PendingBlock {
       )
       this.constructBlobsBundle(payloadId, blobTxs, header.hash())
     }
-    return payloadId
+    return payloadIdBuffer
   }
 
   /**
    * Stops a pending payload
    */
-  stop(payloadId: Buffer) {
-    const payload = this.pendingPayloads.find((p) => p[0].equals(payloadId))
-    if (!payload) return
+  stop(payloadIdBuffer: Buffer | string) {
+    const payloadId =
+      typeof payloadIdBuffer !== 'string' ? bufferToHex(payloadIdBuffer) : payloadIdBuffer
+    const builder = this.pendingPayloads.get(payloadId)
+    if (builder === undefined) return
     // Revert blockBuilder
-    void payload[1].revert()
+    void builder.revert()
     // Remove from pendingPayloads
-    this.pendingPayloads = this.pendingPayloads.filter((p) => !p[0].equals(payloadId))
-    this.blobBundles.delete('0x' + payloadId.toString())
+    this.pendingPayloads.delete(payloadId)
+    this.blobBundles.delete(payloadId)
   }
 
   /**
    * Returns the completed block
    */
   async build(
-    payloadId: Buffer
+    payloadIdBuffer: Buffer | string
   ): Promise<void | [block: Block, receipts: TxReceipt[], value: bigint]> {
-    const payload = this.pendingPayloads.find((p) => p[0].equals(payloadId))
-    if (!payload) {
+    const payloadId =
+      typeof payloadIdBuffer !== 'string' ? bufferToHex(payloadIdBuffer) : payloadIdBuffer
+    const builder = this.pendingPayloads.get(payloadId)
+    if (!builder) {
       return
     }
-    const builder = payload[1]
+    const blockStatus = builder.getStatus()
+    if (blockStatus.status === BuildStatus.Build) {
+      return [blockStatus.block, builder.transactionReceipts, builder.minerValue]
+    }
     const { vm, headerData } = builder as any
 
     // Add new txs that the pool received
@@ -259,9 +305,6 @@ export class PendingBlock {
       this.constructBlobsBundle(payloadId, blobTxs, block.header.hash())
     }
 
-    // Remove from pendingPayloads
-    this.pendingPayloads = this.pendingPayloads.filter((p) => !p[0].equals(payloadId))
-
     return [block, builder.transactionReceipts, builder.minerValue]
   }
 
@@ -272,13 +315,13 @@ export class PendingBlock {
    * @param blockHash the blockhash of the pending block (computed from the header data provided)
    */
   private constructBlobsBundle = (
-    payloadId: Buffer,
+    payloadId: string,
     txs: BlobEIP4844Transaction[],
     blockHash: Buffer
   ) => {
     let blobs: Buffer[] = []
     let kzgCommitments: Buffer[] = []
-    const bundle = this.blobBundles.get('0x' + payloadId.toString('hex'))
+    const bundle = this.blobBundles.get(payloadId)
     if (bundle !== undefined) {
       blobs = bundle.blobs
       kzgCommitments = bundle.kzgCommitments
@@ -291,7 +334,7 @@ export class PendingBlock {
         kzgCommitments = kzgCommitments.concat(tx.kzgCommitments!)
       }
     }
-    this.blobBundles.set('0x' + payloadId.toString('hex'), {
+    this.blobBundles.set(payloadId, {
       blockHash: '0x' + blockHash.toString('hex'),
       blobs,
       kzgCommitments,
