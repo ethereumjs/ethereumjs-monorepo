@@ -2,7 +2,7 @@ import { randomBytes } from 'crypto'
 import { Chain, Common } from '@ethereumjs/common'
 import * as devp2p from '../src/index'
 
-const PEER_ADDRESS = '172.105.167.71'
+const PEER_ADDRESS = '[ADD_REMOTE_PEER_IP]'
 const PEER_PORT = 30303
 const ETH_PROTOCOL = devp2p.ETH.eth66
 
