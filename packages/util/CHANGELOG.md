@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 - Removed `async` library dependency, PR [#2514](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2514)
 - New `GWEI_TO_WEI` constant in a newly created `units` module, PR [#2483](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2483)
-- Change withdrawal amount representation from Wei to Gwei (see EIP-4895 PR [#6325](https://github.com/ethereum/EIPs/pull/6325)) in `withdrawal` module `Withdrawal` class, PR [#2483](Change withdrawal amount representation from Wei to Gwei
+- Change withdrawal amount representation from Wei to Gwei (see EIP-4895 PR [#6325](https://github.com/ethereum/EIPs/pull/6325)) in `withdrawal` module `Withdrawal` class, PR [#2483](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2483)
   )
 - Added `@chainsafe/ssz` dependency, new prepartory `ssz` container module, PR [#2488](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2488)
 - Use literal value instead of formula for `MAX_INTEGER_BIGINT`, PR [#2536](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2536)
