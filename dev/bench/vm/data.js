@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1676894118241,
+  "lastUpdate": 1676897307848,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "91fca3babf5e7dcf46568c8a1844b621e90f2317",
-          "message": "tx: Handle json fields in fromTxData for eip4844 tx (#2499)\n\n* tx: Handle json fields in fromTxData for eip4844 tx\r\n\r\n* cleanup the serialization code\r\n\r\n* fix spec\r\n\r\n* make ssz types more readable\r\n\r\n* fixes\r\n\r\n* Add bufferlike for other blob txdata fields\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-01-24T20:52:06+05:30",
-          "tree_id": "978a810c5cc18ef07f552d94c6e310dd447b4098",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/91fca3babf5e7dcf46568c8a1844b621e90f2317"
-        },
-        "date": 1674573900296,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18983,
-            "range": "±3.28%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18639,
-            "range": "±4.18%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18732,
-            "range": "±1.60%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 16722,
-            "range": "±8.72%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19541,
-            "range": "±1.38%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±7.33%",
             "unit": "ops/sec",
             "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "zgayjjf@qq.com",
+            "name": "Jeff Jing",
+            "username": "zgayjjf"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4d4631366f8373e672863cb87a3ca14425d9f321",
+          "message": "Use literal value instead of formular for MAX_INTEGER_BIGINT (#2536)\n\n* feat: use static BigInt instead of calculated\r\n\r\n* chore: add description\r\n\r\n* Lint fix\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-02-20T13:45:42+01:00",
+          "tree_id": "10ffc647e2d6c2d6b41531542ceca363aa4da86e",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4d4631366f8373e672863cb87a3ca14425d9f321"
+        },
+        "date": 1676897306373,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15935,
+            "range": "±3.24%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 15664,
+            "range": "±3.54%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15817,
+            "range": "±1.71%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15396,
+            "range": "±1.82%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 14298,
+            "range": "±7.72%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
           }
         ]
       }
