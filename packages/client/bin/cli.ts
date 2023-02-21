@@ -398,6 +398,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
   const dbs = initDBs(config)
 
   let blockchain
+  console.log(customGenesisState)
   if (customGenesisState !== undefined) {
     const validateConsensus = config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique
     blockchain = await Blockchain.create({
@@ -411,7 +412,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
     config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
   }
 
-  const client = new EthereumClient({
+  const client = await EthereumClient.create({
     config,
     blockchain,
     ...dbs,
@@ -424,7 +425,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
   await client.open()
   // update client's sync status and start txpool if synchronized
   client.config.updateSynchronizedState(client.chain.headers.latest)
-  if (client.config.synchronized) {
+  if (client.config.synchronized === true) {
     const fullService = client.services.find((s) => s.name === 'eth')
     // The service might not be FullEthereumService even if we cast it as one,
     // so txPool might not exist on it
