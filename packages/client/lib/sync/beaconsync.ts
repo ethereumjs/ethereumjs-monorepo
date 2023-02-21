@@ -257,14 +257,16 @@ export class BeaconSynchronizer extends Synchronizer {
       count = first
     }
 
-    if (count > BigInt(0) && (this.fetcher === null || this.fetcher.errored !== undefined)) {
+    if (count > BigInt(0) && (this.fetcher === null || this.fetcher.syncErrored !== undefined)) {
       this.config.logger.debug(
         `syncWithPeer - new ReverseBlockFetcher peer=${
           peer?.id
         } subChainTail=${tail} first=${first} count=${count} chainHeight=${
           this.chain.blocks.height
         } ${
-          this.fetcher === null ? '' : 'previous fetcher errored=' + this.fetcher.errored?.message
+          this.fetcher === null
+            ? ''
+            : 'previous fetcher errored=' + this.fetcher.syncErrored?.message
         }`
       )
       this.fetcher = new ReverseBlockFetcher({
