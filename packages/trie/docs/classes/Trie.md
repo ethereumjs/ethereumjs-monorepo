@@ -3,8 +3,6 @@
 # Class: Trie
 
 The basic trie interface, use with `import { Trie } from '@ethereumjs/trie'`.
-In Ethereum applications stick with the SecureTrie overlay.
-The API for the base and the secure interface are about the same.
 
 ## Table of contents
 
@@ -49,13 +47,13 @@ The API for the base and the secure interface are about the same.
 
 • **new Trie**(`opts?`)
 
-Create a new trie
+Creates a new trie.
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `opts?` | [`TrieOpts`](../interfaces/TrieOpts.md) | Options for instantiating the trie |
+| `opts?` | [`TrieOpts`](../interfaces/TrieOpts.md) | Options for instantiating the trie  Note: in most cases, the static [create](Trie.md#create) constructor should be used.  It uses the same API but provides sensible defaults |
 
 #### Defined in
 
@@ -71,7 +69,7 @@ The root for an empty trie
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L47)
+[packages/trie/src/trie/trie.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L45)
 
 ## Methods
 

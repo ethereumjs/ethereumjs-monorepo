@@ -95,7 +95,7 @@ ___
 
 ### getBlock
 
-▸ **getBlock**(`blockId`): `Promise`<``null`` \| `Block`\>
+▸ **getBlock**(`blockId`): `Promise`<`Block`\>
 
 Returns a block by its hash or number.
 
@@ -107,7 +107,7 @@ Returns a block by its hash or number.
 
 #### Returns
 
-`Promise`<``null`` \| `Block`\>
+`Promise`<`Block`\>
 
 #### Defined in
 

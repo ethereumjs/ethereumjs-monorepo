@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
+import { Block } from '@ethereumjs/block'
 import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { initKZG } from '@ethereumjs/tx'
-import { Address, toBuffer } from '@ethereumjs/util'
+import { Address, arrToBufArr, short, toBuffer } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import { existsSync, writeFileSync } from 'fs'
@@ -25,6 +27,7 @@ import type { Logger } from '../lib/logging'
 import type { FullEthereumService } from '../lib/service'
 import type { ClientOpts } from '../lib/types'
 import type { RPCArgs } from './startRpc'
+import type { BlockBuffer } from '@ethereumjs/block'
 import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
 import type { AbstractLevel } from 'abstract-level'
 
@@ -292,6 +295,10 @@ const args: ClientOpts = yargs(hideBin(process.argv))
       'To run client in single node configuration without need to discover the sync height from peer. Particularly useful in test configurations. This flag is automically activated in the "dev" mode',
     boolean: true,
   })
+  .option('loadBlocksFromRlp', {
+    describe: 'path to a file of RLP encoded blocks',
+    string: true,
+  })
   // strict() ensures that yargs throws when an invalid arg is provided
   .strict().argv
 
@@ -361,18 +368,14 @@ async function executeBlocks(client: EthereumClient) {
 async function startBlock(client: EthereumClient) {
   if (args.startBlock === undefined) return
   const startBlock = BigInt(args.startBlock)
-  const { blockchain } = client.chain
-  const height = (await blockchain.getCanonicalHeadHeader()).number
-  if (height === startBlock) return
+  const height = client.chain.headers.height
   if (height < startBlock) {
     logger.error(`Cannot start chain higher than current height ${height}`)
     process.exit()
   }
   try {
-    const headBlock = await blockchain.getBlock(startBlock)
-    const delBlock = await blockchain.getBlock(startBlock + BigInt(1))
-    await blockchain.delBlock(delBlock.hash())
-    logger.info(`Chain height reset to ${headBlock.header.number}`)
+    await client.chain.resetCanonicalHead(startBlock)
+    logger.info(`Chain height reset to ${client.chain.headers.height}`)
   } catch (err: any) {
     logger.error(`Error setting back chain in startBlock: ${err}`)
     process.exit()
@@ -404,20 +407,20 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
     config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
   }
 
-  const client = new EthereumClient({
+  const client = await EthereumClient.create({
     config,
     blockchain,
     ...dbs,
   })
+  await client.open()
 
   if (typeof args.startBlock === 'number') {
     await startBlock(client)
   }
 
-  await client.open()
   // update client's sync status and start txpool if synchronized
   client.config.updateSynchronizedState(client.chain.headers.latest)
-  if (client.config.synchronized) {
+  if (client.config.synchronized === true) {
     const fullService = client.services.find((s) => s.name === 'eth')
     // The service might not be FullEthereumService even if we cast it as one,
     // so txPool might not exist on it
@@ -430,6 +433,44 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
   } else {
     // Regular client start
     await client.start()
+  }
+
+  if (args.loadBlocksFromRlp !== undefined) {
+    // Specifically for Hive simulator, preload blocks provided in RLP format
+    const blockRlp = readFileSync(args.loadBlocksFromRlp)
+    const blocks: Block[] = []
+    let buf = RLP.decode(blockRlp, true)
+    while (buf.data?.length > 0 || buf.remainder?.length > 0) {
+      try {
+        const block = Block.fromValuesArray(arrToBufArr(buf.data) as unknown as BlockBuffer, {
+          common: config.chainCommon,
+          hardforkByBlockNumber: true,
+        })
+        blocks.push(block)
+        buf = RLP.decode(buf.remainder, true)
+        config.logger.info(
+          `Preloading block hash=0x${short(block.header.hash().toString('hex'))} number=${
+            block.header.number
+          }`
+        )
+      } catch (err: any) {
+        config.logger.info(
+          `Encountered error while while preloading chain data  error=${err.message}`
+        )
+        break
+      }
+    }
+
+    if (blocks.length > 0) {
+      if (!client.chain.opened) {
+        await client.chain.open()
+      }
+
+      await client.chain.putBlocks(blocks)
+      const service = client.service('eth') as FullEthereumService
+      await service.execution.open()
+      await service.execution.run()
+    }
   }
   return client
 }

@@ -40,7 +40,7 @@ export interface RlpxPeerOptions extends Omit<PeerOptions, 'address' | 'transpor
  * import { Chain } from './lib/blockchain'
  * import { EthProtocol } from './lib/net/protocol'
  *
- * const chain = new Chain()
+ * const chain = await Chain.create()
  * const protocols = [ new EthProtocol({ chain })]
  * const id = '70180a7fcca96aa013a3609fe7c23cc5c349ba82652c077be6f05b8419040560a622a4fc197a450e5e2f5f28fe6227637ccdbb3f9ba19220d1fb607505ffb455'
  * const host = '192.0.2.1'

@@ -34,7 +34,7 @@ tape('[LightEthereumService]', async (t) => {
 
   t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
     t.ok(service.synchronizer instanceof LightSynchronizer, 'light sync')
     t.equals(service.name, 'eth', 'got name')
@@ -43,7 +43,7 @@ tape('[LightEthereumService]', async (t) => {
 
   t.test('should get protocols', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
     t.ok(service.protocols[0] instanceof LesProtocol, 'light protocols')
     t.end()
@@ -53,7 +53,7 @@ tape('[LightEthereumService]', async (t) => {
     t.plan(3)
     const server = td.object() as any
     const config = new Config({ servers: [server] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
     await service.open()
     td.verify(service.synchronizer.open())
@@ -74,7 +74,7 @@ tape('[LightEthereumService]', async (t) => {
   t.test('should start/stop', async (t) => {
     const server = td.object() as any
     const config = new Config({ servers: [server] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
     await service.start()
     td.verify(service.synchronizer.start())

@@ -22,7 +22,7 @@ tape('[BlockFetcher]', async (t) => {
   t.test('should start/stop', async (t) => {
     const config = new Config({ maxPerRequest: 5, transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
       config,
       pool,
@@ -46,7 +46,7 @@ tape('[BlockFetcher]', async (t) => {
   t.test('enqueueByNumberList()', async (t) => {
     const config = new Config({ maxPerRequest: 5, transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
       config,
       pool,
@@ -93,10 +93,10 @@ tape('[BlockFetcher]', async (t) => {
     t.end()
   })
 
-  t.test('should process', (t) => {
+  t.test('should process', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
       config,
       pool,
@@ -110,10 +110,10 @@ tape('[BlockFetcher]', async (t) => {
     t.end()
   })
 
-  t.test('should adopt correctly', (t) => {
+  t.test('should adopt correctly', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
       config,
       pool,
@@ -141,7 +141,7 @@ tape('[BlockFetcher]', async (t) => {
   t.test('should find a fetchable peer', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
       config,
       pool,
@@ -157,7 +157,7 @@ tape('[BlockFetcher]', async (t) => {
   t.test('should request correctly', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
       config,
       pool,
@@ -203,7 +203,7 @@ tape('[BlockFetcher]', async (t) => {
       Hardfork.Shanghai
     )
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
       config,
       pool,
@@ -238,7 +238,7 @@ tape('[BlockFetcher]', async (t) => {
 
     const config = new Config({ maxPerRequest: 5, transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     chain.putBlocks = td.func<any>()
     const fetcher = new BlockFetcher({
       config,
