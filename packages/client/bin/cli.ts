@@ -368,18 +368,14 @@ async function executeBlocks(client: EthereumClient) {
 async function startBlock(client: EthereumClient) {
   if (args.startBlock === undefined) return
   const startBlock = BigInt(args.startBlock)
-  const { blockchain } = client.chain
-  const height = (await blockchain.getCanonicalHeadHeader()).number
-  if (height === startBlock) return
+  const height = client.chain.headers.height;
   if (height < startBlock) {
     logger.error(`Cannot start chain higher than current height ${height}`)
     process.exit()
   }
   try {
-    const headBlock = await blockchain.getBlock(startBlock)
-    const delBlock = await blockchain.getBlock(startBlock + BigInt(1))
-    await blockchain.delBlock(delBlock.hash())
-    logger.info(`Chain height reset to ${headBlock.header.number}`)
+    await client.chain.resetCanonicalHead(startBlock)
+    logger.info(`Chain height reset to ${client.chain.headers.height}`)
   } catch (err: any) {
     logger.error(`Error setting back chain in startBlock: ${err}`)
     process.exit()
