@@ -15,7 +15,7 @@ const config = new Config()
 
 tape('[Chain]', (t) => {
   t.test('should test blockchain DB is initialized', async (t) => {
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
 
     const db = chain.chainDB
     const testKey = 'name'
@@ -28,7 +28,7 @@ tape('[Chain]', (t) => {
   })
 
   t.test('should retrieve chain properties', async (t) => {
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     await chain.open()
     t.equal(chain.networkId, BigInt(1), 'get chain.networkId')
     t.equal(chain.blocks.td.toString(10), '17179869184', 'get chain.blocks.td')
@@ -48,7 +48,7 @@ tape('[Chain]', (t) => {
       validateBlocks: false,
       validateConsensus: false,
     })
-    const chain = new Chain({ config, blockchain })
+    const chain = await Chain.create({ config, blockchain })
     const headerData: HeaderData = {
       number: BigInt(1),
       difficulty: BigInt(0xabcdffff),
@@ -122,7 +122,7 @@ tape('[Chain]', (t) => {
       validateBlocks: false,
       validateConsensus: false,
     })
-    const chain = new Chain({ config, blockchain })
+    const chain = await Chain.create({ config, blockchain })
     await chain.open()
     const headerData: HeaderData = {
       number: BigInt(1),

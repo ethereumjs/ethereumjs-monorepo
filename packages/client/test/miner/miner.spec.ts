@@ -432,7 +432,7 @@ tape('[Miner]', async (t) => {
     const common = Common.custom(customChainParams, { baseChain: CommonChain.Rinkeby })
     common.setHardforkByBlockNumber(0)
     const config = new Config({ transports: [], accounts, mine: true, common })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     await chain.open()
     const service = new FullEthereumService({
       config,
@@ -499,7 +499,7 @@ tape('[Miner]', async (t) => {
     const common = new Common({ chain: CommonChain.Ropsten, hardfork: Hardfork.Istanbul })
     ;(common as any)._chainParams['genesis'].difficulty = 1
     const config = new Config({ transports: [], accounts, mine: true, common })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     await chain.open()
     const service = new FullEthereumService({
       config,

@@ -368,18 +368,14 @@ async function executeBlocks(client: EthereumClient) {
 async function startBlock(client: EthereumClient) {
   if (args.startBlock === undefined) return
   const startBlock = BigInt(args.startBlock)
-  const { blockchain } = client.chain
-  const height = (await blockchain.getCanonicalHeadHeader()).number
-  if (height === startBlock) return
+  const height = client.chain.headers.height
   if (height < startBlock) {
     logger.error(`Cannot start chain higher than current height ${height}`)
     process.exit()
   }
   try {
-    const headBlock = await blockchain.getBlock(startBlock)
-    const delBlock = await blockchain.getBlock(startBlock + BigInt(1))
-    await blockchain.delBlock(delBlock.hash())
-    logger.info(`Chain height reset to ${headBlock.header.number}`)
+    await client.chain.resetCanonicalHead(startBlock)
+    logger.info(`Chain height reset to ${client.chain.headers.height}`)
   } catch (err: any) {
     logger.error(`Error setting back chain in startBlock: ${err}`)
     process.exit()
@@ -411,20 +407,20 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
     config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
   }
 
-  const client = new EthereumClient({
+  const client = await EthereumClient.create({
     config,
     blockchain,
     ...dbs,
   })
+  await client.open()
 
   if (typeof args.startBlock === 'number') {
     await startBlock(client)
   }
 
-  await client.open()
   // update client's sync status and start txpool if synchronized
   client.config.updateSynchronizedState(client.chain.headers.latest)
-  if (client.config.synchronized) {
+  if (client.config.synchronized === true) {
     const fullService = client.services.find((s) => s.name === 'eth')
     // The service might not be FullEthereumService even if we cast it as one,
     // so txPool might not exist on it

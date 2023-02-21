@@ -166,7 +166,7 @@ tape('[AccountFetcher]', async (t) => {
 
   t.test('should verify proof correctly', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     const pool = new PeerPool() as any
     const fetcher = new AccountFetcher({

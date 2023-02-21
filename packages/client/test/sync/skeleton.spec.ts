@@ -195,7 +195,7 @@ tape('[Skeleton] / initSync', async (t) => {
         transports: [],
         logger: getLogger({ loglevel: 'debug' }),
       })
-      const chain = new Chain({ config })
+      const chain = await Chain.create({ config })
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       await skeleton.open()
 
@@ -309,7 +309,7 @@ tape('[Skeleton] / setHead', async (t) => {
         transports: [],
         logger: getLogger({ loglevel: 'debug' }),
       })
-      const chain = new Chain({ config })
+      const chain = await Chain.create({ config })
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       await skeleton.open()
       for (const block of testCase.blocks ?? []) {
@@ -376,7 +376,7 @@ tape('[Skeleton] / setHead', async (t) => {
     }
     const common = Common.fromGethGenesis(genesis, { chain: 'merge-not-set' })
     const config = new Config({ common, transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
     try {
       new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -388,7 +388,7 @@ tape('[Skeleton] / setHead', async (t) => {
 
   t.test('should init/setHead properly from genesis', async (st) => {
     const config = new Config({ common, transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     await chain.open()
@@ -492,7 +492,7 @@ tape('[Skeleton] / setHead', async (t) => {
 
   t.test('should fill the canonical chain after being linked to genesis', async (st) => {
     const config = new Config({ common, transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     await chain.open()
@@ -562,7 +562,7 @@ tape('[Skeleton] / setHead', async (t) => {
     'should fill the canonical chain after being linked to a canonical block past genesis',
     async (st) => {
       const config = new Config({ common, transports: [] })
-      const chain = new Chain({ config })
+      const chain = await Chain.create({ config })
       ;(chain.blockchain as any)._validateBlocks = false
 
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -649,7 +649,7 @@ tape('[Skeleton] / setHead', async (t) => {
         transports: [],
         common,
       })
-      const chain = new Chain({ config })
+      const chain = await Chain.create({ config })
       ;(chain.blockchain as any)._validateBlocks = false
       await chain.open()
       const genesisBlock = await chain.getBlock(BigInt(0))
@@ -754,7 +754,7 @@ tape('[Skeleton] / setHead', async (t) => {
         transports: [],
         common,
       })
-      const chain = new Chain({ config })
+      const chain = await Chain.create({ config })
       ;(chain.blockchain as any)._validateBlocks = false
       ;(chain.blockchain as any)._validateConsensus = false
       await chain.open()
@@ -818,7 +818,7 @@ tape('[Skeleton] / setHead', async (t) => {
         logger: getLogger({ loglevel: 'debug' }),
       })
 
-      const chain = new Chain({ config })
+      const chain = await Chain.create({ config })
       ;(chain.blockchain as any)._validateConsensus = false
       // Only add td validations to the validateBlock
       chain.blockchain.validateBlock = async (block: Block) => {

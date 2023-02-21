@@ -33,7 +33,7 @@ tape('[FullSynchronizer]', async (t) => {
   t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const sync = new FullSynchronizer({ config, pool, chain, txPool, execution })
     t.equals(sync.type, 'full', 'full type')
     t.end()
@@ -42,7 +42,7 @@ tape('[FullSynchronizer]', async (t) => {
   t.test('should open', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const sync = new FullSynchronizer({
       config,
       pool,
@@ -62,7 +62,7 @@ tape('[FullSynchronizer]', async (t) => {
   t.test('should get height', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const sync = new FullSynchronizer({ config, pool, chain, txPool, execution })
     const peer = { eth: { getBlockHeaders: td.func(), status: { bestHash: 'hash' } } }
     const headers = [{ number: BigInt(5) }]
@@ -77,7 +77,7 @@ tape('[FullSynchronizer]', async (t) => {
   t.test('should find best', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const sync = new FullSynchronizer({
       config,
       interval: 1,
@@ -111,7 +111,7 @@ tape('[FullSynchronizer]', async (t) => {
     t.plan(3)
     const config = new Config({ transports: [], safeReorgDistance: 0 })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const sync = new FullSynchronizer({
       config,
       interval: 1,
@@ -150,7 +150,7 @@ tape('[FullSynchronizer]', async (t) => {
   t.test('should send NewBlock/NewBlockHashes to right peers', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const sync = new FullSynchronizer({
       config,
       interval: 1,
