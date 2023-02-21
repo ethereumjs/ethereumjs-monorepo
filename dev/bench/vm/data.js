@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1676965845522,
+  "lastUpdate": 1676979966935,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "7d7b0ad0915b560093a7e1ac5802432e40f436f5",
-          "message": "Add checks for replacement data gas too low for blob txs (#2503)",
-          "timestamp": "2023-01-24T22:17:06+01:00",
-          "tree_id": "8e8df3ac647974c5b425d20f13d9f0ffe9b3e531",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/7d7b0ad0915b560093a7e1ac5802432e40f436f5"
-        },
-        "date": 1674595196964,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18423,
-            "range": "±3.50%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17786,
-            "range": "±5.93%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18263,
-            "range": "±1.80%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 16402,
-            "range": "±9.10%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18654,
-            "range": "±1.42%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±7.93%",
             "unit": "ops/sec",
             "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8cd95e51513781e1d4f540a75d3745b4162e98c1",
+          "message": "Various Hive related fixes (#2532)\n\n* add block preload parameter\r\n\r\n* Skip extradata check on genesis pow blocks\r\n\r\n* Reconfigure block preloading\r\n\r\n* open client\r\n\r\n* Fix chain rlp loading\r\n\r\n* fix resetting canonical head on reorg scenarios\r\n\r\n* remove unnecessary hf setting in chain putblocks\r\n\r\n* add and use reset canonical head for chain\r\n\r\n* fix blockchain test\r\n\r\n* fix breaking skeleton spec\r\n\r\n* fix reset canonical header and add fix\r\n\r\n* Adjust loop exit check and logging\r\n\r\n* add jsdoc\r\n\r\n---------\r\n\r\nCo-authored-by: harkamal <gajinder@g11.in>",
+          "timestamp": "2023-02-21T12:38:07+01:00",
+          "tree_id": "5670386a8a4ea0d3dc9e880663c6462553368419",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8cd95e51513781e1d4f540a75d3745b4162e98c1"
+        },
+        "date": 1676979965449,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 8405,
+            "range": "±3.32%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 8433,
+            "range": "±6.23%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 8145,
+            "range": "±4.64%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 8336,
+            "range": "±2.84%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 8252,
+            "range": "±2.54%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
           }
         ]
       }
