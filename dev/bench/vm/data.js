@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1676982939805,
+  "lastUpdate": 1677009466770,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "5283b8821a017e7349dd53be26187363589cabf0",
-          "message": "More Interop Improvements (#2506)\n\n* Fewer tx pool statistics\r\n\r\n* Only emit synchronized event if synchronized status change, explicitly set synchronized to false in non-synced case\r\n\r\n* Switch from interval to sequential payload and forkchoice logging after chain sync completed, added missing synchronized message\r\n\r\n* Adjusted skeleton canonical chain fill status log interval\r\n\r\n* Reduce RLPx server restarts in a post-Merge world\r\n\r\n* Lint fix\r\n\r\n* Test fixes\r\n\r\n* Test fixes",
-          "timestamp": "2023-01-25T14:31:05+01:00",
-          "tree_id": "0d4f9f90a1138c4ef375c44be63486c361ad574e",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5283b8821a017e7349dd53be26187363589cabf0"
-        },
-        "date": 1674653697785,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19224,
-            "range": "±2.12%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18672,
-            "range": "±3.35%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18849,
-            "range": "±1.49%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 17181,
-            "range": "±8.07%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19215,
-            "range": "±1.21%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 14283,
             "range": "±7.53%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ernestognw@gmail.com",
+            "name": "Ernesto García",
+            "username": "ernestognw"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "535cd8d6ce289064a7834fed740d87aeb139ef57",
+          "message": "Fix broken URL to `packages/statemanager` (#2539)\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-02-21T14:54:25-05:00",
+          "tree_id": "3a792515f4a7c850e73cf2bdf5d0ff4dfdcb414c",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/535cd8d6ce289064a7834fed740d87aeb139ef57"
+        },
+        "date": 1677009465574,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15752,
+            "range": "±2.87%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 15208,
+            "range": "±4.37%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15633,
+            "range": "±1.62%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15249,
+            "range": "±1.88%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 14093,
+            "range": "±8.67%",
             "unit": "ops/sec",
             "extra": "79 samples"
           }
