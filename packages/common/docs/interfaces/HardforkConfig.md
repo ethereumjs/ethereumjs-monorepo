@@ -9,6 +9,7 @@
 - [block](HardforkConfig.md#block)
 - [forkHash](HardforkConfig.md#forkhash)
 - [name](HardforkConfig.md#name)
+- [timestamp](HardforkConfig.md#timestamp)
 - [ttd](HardforkConfig.md#ttd)
 
 ## Properties
@@ -29,7 +30,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/types.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L51)
+[packages/common/src/types.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L52)
 
 ___
 
@@ -40,6 +41,16 @@ ___
 #### Defined in
 
 [packages/common/src/types.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L48)
+
+___
+
+### timestamp
+
+• `Optional` **timestamp**: `string` \| `number`
+
+#### Defined in
+
+[packages/common/src/types.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L51)
 
 ___
 

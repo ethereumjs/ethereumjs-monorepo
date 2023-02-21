@@ -239,10 +239,11 @@ library supported:
 - `berlin` (`Hardfork.Berlin`) (since `v2.2.0`)
 - `london` (`Hardfork.London`) (since `v2.4.0`)
 - `merge` (`Hardfork.Merge`) (`DEFAULT_HARDFORK`) (since `v2.5.0`)
+- `shanghai` (`Hardfork.Shanghai`) (since `v3.1.0`)
 
 ### Future Hardforks
 
-The next upcoming HF `Hardfork.Shanghai` is currently not yet supported by this library.
+The next upcoming HF `Hardfork.Cancun` is currently not yet supported by this library.
 
 ### Parameter Access
 
@@ -253,6 +254,7 @@ you can use the following `topics`:
 - `gasPrices`
 - `vm`
 - `pow`
+- `sharding`
 
 See one of the hardfork files like `byzantium.json` in the `hardforks` directory
 for an overview. For consistency, the chain start (`chainstart`) is considered an own
@@ -285,12 +287,14 @@ The following EIPs are currently supported:
 - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541): Reject new contracts starting with the 0xEF byte
 - [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554): Difficulty Bomb Delay to December 2021 (only PoW networks)
 - [EIP-3607](https://eips.ethereum.org/EIPS/eip-3607): Reject transactions from senders with deployed code
+- [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651): Warm COINBASE (Shanghai)
 - [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670): EOF - Code Validation (`experimental`)
-- [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675): Upgrade consensus to Proof-of-Stake (`experimental`)
-- [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855): Push0 opcode (`v2.6.1`+)
-- [EIP-3860](https://eips.ethereum.org/EIPS/eip-3855): Limit and meter initcode (`experimental`)
+- [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675): Upgrade consensus to Proof-of-Stake
+- [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855): Push0 opcode (Shanghai)
+- [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860): Limit and meter initcode (Shanghai)
 - [EIP-4345](https://eips.ethereum.org/EIPS/eip-4345): Difficulty Bomb Delay to June 2022
 - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399): Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
+- [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895): Beacon chain push withdrawals as operations (Shanghai)
 
 ### Bootstrap Nodes
 

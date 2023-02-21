@@ -19,6 +19,8 @@ To obtain the latest version, simply require the project using `npm`:
 npm install @ethereumjs/block
 ```
 
+**Note:** If you want to work with `EIP-4844` related functionality, you will have additional manual installation steps for the **KZG setup**, see related section below.
+
 ## Usage
 
 ### Introduction
@@ -138,6 +140,22 @@ const block = Block.fromBlockData(
 ```
 
 Validation of the withdrawals trie can be manually triggered with the newly introduced async `Block.validateWithdrawalsTrie()` method.
+
+### EIP-4844 Shard Blob Transaction Blocks (experimental)
+
+This library supports an experimental version of the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023) starting with `v4.2.0`.
+
+#### Initialization
+
+To create blocks which include blob transactions you have to active EIP-4844 in the associated `@ethereumjs/common` library:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+```
+
+**Note:** Working with blob transactions needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
 ### Consensus Types
 

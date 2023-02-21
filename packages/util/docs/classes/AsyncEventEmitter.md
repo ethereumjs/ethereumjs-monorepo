@@ -174,7 +174,7 @@ EventEmitter.addListener
 
 #### Defined in
 
-[packages/util/src/asyncEventEmitter.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L164)
+[packages/util/src/asyncEventEmitter.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L173)
 
 ___
 
@@ -202,7 +202,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/asyncEventEmitter.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L118)
+[packages/util/src/asyncEventEmitter.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L127)
 
 ___
 
@@ -230,7 +230,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/asyncEventEmitter.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L114)
+[packages/util/src/asyncEventEmitter.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L123)
 
 ___
 
@@ -261,7 +261,7 @@ EventEmitter.emit
 
 #### Defined in
 
-[packages/util/src/asyncEventEmitter.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L20)
+[packages/util/src/asyncEventEmitter.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L50)
 
 ___
 
@@ -279,7 +279,7 @@ EventEmitter.eventNames
 
 #### Defined in
 
-[packages/util/src/asyncEventEmitter.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L184)
+[packages/util/src/asyncEventEmitter.ts:193](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L193)
 
 ___
 
@@ -306,7 +306,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/asyncEventEmitter.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L96)
+[packages/util/src/asyncEventEmitter.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L105)
 
 ___
 
@@ -324,7 +324,7 @@ EventEmitter.getMaxListeners
 
 #### Defined in
 
-[packages/util/src/asyncEventEmitter.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L196)
+[packages/util/src/asyncEventEmitter.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L205)
 
 ___
 
@@ -348,7 +348,7 @@ EventEmitter.listenerCount
 
 #### Defined in
 
-[packages/util/src/asyncEventEmitter.ts:192](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L192)
+[packages/util/src/asyncEventEmitter.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L201)
 
 ___
 
@@ -378,7 +378,7 @@ EventEmitter.listeners
 
 #### Defined in
 
-[packages/util/src/asyncEventEmitter.ts:188](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L188)
+[packages/util/src/asyncEventEmitter.ts:197](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L197)
 
 ___
 
@@ -440,7 +440,7 @@ EventEmitter.on
 
 #### Defined in
 
-[packages/util/src/asyncEventEmitter.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L160)
+[packages/util/src/asyncEventEmitter.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L169)
 
 ___
 
@@ -471,7 +471,7 @@ EventEmitter.once
 
 #### Defined in
 
-[packages/util/src/asyncEventEmitter.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L70)
+[packages/util/src/asyncEventEmitter.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L79)
 
 ___
 
@@ -502,7 +502,7 @@ EventEmitter.prependListener
 
 #### Defined in
 
-[packages/util/src/asyncEventEmitter.ts:168](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L168)
+[packages/util/src/asyncEventEmitter.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L177)
 
 ___
 
@@ -533,7 +533,7 @@ EventEmitter.prependOnceListener
 
 #### Defined in
 
-[packages/util/src/asyncEventEmitter.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L172)
+[packages/util/src/asyncEventEmitter.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L181)
 
 ___
 
@@ -612,7 +612,7 @@ EventEmitter.removeAllListeners
 
 #### Defined in
 
-[packages/util/src/asyncEventEmitter.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L176)
+[packages/util/src/asyncEventEmitter.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L185)
 
 ___
 
@@ -643,7 +643,7 @@ EventEmitter.removeListener
 
 #### Defined in
 
-[packages/util/src/asyncEventEmitter.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L180)
+[packages/util/src/asyncEventEmitter.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L189)
 
 ___
 
@@ -667,7 +667,7 @@ EventEmitter.setMaxListeners
 
 #### Defined in
 
-[packages/util/src/asyncEventEmitter.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L200)
+[packages/util/src/asyncEventEmitter.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/asyncEventEmitter.ts#L209)
 
 ___
 
