@@ -135,6 +135,11 @@ tape('[Fetcher]', (t) => {
     }, 20)
   })
 
+  t.test('should reset td', (st) => {
+    td.reset()
+    st.end()
+  })
+
   t.test('should handle fatal errors correctly', (st) => {
     const config = new Config({ transports: [] })
     const fetcher = new FetcherTest({ config, pool: td.object(), timeout: 5000 })
@@ -144,10 +149,7 @@ tape('[Fetcher]', (t) => {
     fetcher.error({ name: 'VeryBadError', message: 'Something very bad happened' }, job, true)
     st.equals(fetcher.syncErrored?.name, 'VeryBadError', 'fatal error has correct name')
     st.equals((fetcher as any).in.length, 0, 'fatal error clears job queue')
-  })
-
-  t.test('should reset td', (t) => {
-    td.reset()
-    t.end()
+    fetcher.clear()
+    st.end()
   })
 })
