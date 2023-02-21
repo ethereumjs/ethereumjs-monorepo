@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1676979966935,
+  "lastUpdate": 1676982939805,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "66335769+ScottyPoi@users.noreply.github.com",
-            "name": "Scotty",
-            "username": "ScottyPoi"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f38bf6076c5a72513c9c3dcd82c43177355adbb6",
-          "message": "engine-api-validators (#2504)\n\n* client/RPC: add validators for bytevectors\r\n\r\n* client/RPC: update validators for bytevectors\r\n\r\n* client/RPC: include typenames for bytevectors\r\n\r\n* client/RPC: make updates to newPayloadV2 method and validation\r\n\r\n* client/rpc: include tests for new validators\r\n\r\n* client/rpc: fix bytevector validators\r\n\r\n* client/rpc: allow '0x' for variableBytes32\r\n\r\n* client/rpc: flip conditional order in newPayloadV2\r\n\r\n* client/rpc: include status restriction in newPayloadV2\r\n\r\n* client/rpc: update engine_newPayloadV3 to spec\r\n\r\n* client/rpc: update validators for engine_newPayloadV3\r\n\r\n* client/rpc: alter order of bytevector validator checks\r\n\r\n* client/rpc: update bytevector validator tests\r\n\r\n* client/rpc: check for null hardfork timestamp\r\n\r\n* client/rpc: test newPayloadV2 with executionPayloadV1 test vectors\r\n\r\n* client/rpc: begin writing test for newPayloadv3\r\n\r\n* lib/rpc/validation: generalize uint/bytes validation\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
-          "timestamp": "2023-01-25T13:48:02+01:00",
-          "tree_id": "5a00836a7c08da61164078d7a2b214ee30bacd5e",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f38bf6076c5a72513c9c3dcd82c43177355adbb6"
-        },
-        "date": 1674651046387,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19357,
-            "range": "±1.87%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18519,
-            "range": "±5.21%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18878,
-            "range": "±1.54%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 17350,
-            "range": "±7.37%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19337,
-            "range": "±1.19%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.54%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0f0a2dc96ca0b5520ba630d83ffbb57faa082b71",
+          "message": "Client: Move to async Blockchain constructor / fix --startBlock option bug (#2540)\n\n* Move EthereumClient class to an async initialization via create() (clean Blockchain initialization)\r\n\r\n* Move to async Client Chain.create() constructor for safe Blockchain initialization\r\n\r\n* Minor\r\n\r\n* use resetCanonicalHead for startblock\r\n\r\n* lint\r\n\r\n---------\r\n\r\nCo-authored-by: harkamal <gajinder@g11.in>",
+          "timestamp": "2023-02-21T13:32:56+01:00",
+          "tree_id": "92d9e3d08f01b08bf85c5162d9581ba455cc4fa5",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0f0a2dc96ca0b5520ba630d83ffbb57faa082b71"
+        },
+        "date": 1676982939066,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 16173,
+            "range": "±1.60%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 15527,
+            "range": "±4.94%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15966,
+            "range": "±1.57%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15442,
+            "range": "±1.76%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 14283,
+            "range": "±7.53%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
           }
         ]
       }
