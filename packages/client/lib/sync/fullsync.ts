@@ -174,7 +174,7 @@ export class FullSynchronizer extends Synchronizer {
         : BigInt(1)
     const count = height - first + BigInt(1)
     if (count < BigInt(0)) return false
-    if (!this.fetcher || this.fetcher.errored) {
+    if (!this.fetcher || this.fetcher.syncErrored) {
       this.fetcher = new BlockFetcher({
         config: this.config,
         pool: this.pool,
@@ -354,7 +354,7 @@ export class FullSynchronizer extends Synchronizer {
    * @param data new block hash announcements
    */
   handleNewBlockHashes(data: [Buffer, bigint][]) {
-    if (!data.length || !this.fetcher || this.fetcher.errored) return
+    if (!data.length || !this.fetcher || this.fetcher.syncErrored) return
     let min = BigInt(-1)
     let newSyncHeight: [Buffer, bigint] | undefined
     const blockNumberList: bigint[] = []

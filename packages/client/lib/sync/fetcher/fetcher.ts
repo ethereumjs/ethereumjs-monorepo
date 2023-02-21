@@ -60,7 +60,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   protected running: boolean
   protected reading: boolean
   protected destroyWhenDone: boolean // Destroy the fetcher once we are finished processing each task.
-  errored?: Error
+  syncErrored?: Error
 
   private _readableState?: {
     // This property is inherited from Readable. We only need `length`.
@@ -190,7 +190,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param autoRestart
    */
   enqueueTask(task: JobTask, autoRestart = false) {
-    if (this.errored || (!this.running && !autoRestart)) {
+    if (this.syncErrored || (!this.running && !autoRestart)) {
       return
     }
     const job: Job<JobTask, JobResult, StorageItem> = {
@@ -389,7 +389,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     }
     if (irrecoverable === true) {
       this.running = false
-      this.errored = error
+      this.syncErrored = error
       this.clear()
     }
   }
@@ -489,7 +489,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     if (this.destroyWhenDone) {
       this.destroy()
     }
-    if (this.errored) throw this.errored
+    if (this.syncErrored) throw this.syncErrored
   }
 
   /**
