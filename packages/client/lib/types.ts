@@ -156,4 +156,5 @@ export interface ClientOpts {
   startBlock?: number
   isSingleNode?: boolean
   opened: boolean
+  loadBlocksFromRlp?: string
 }

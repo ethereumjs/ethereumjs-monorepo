@@ -195,6 +195,15 @@ export class Chain {
   }
 
   /**
+   * Resets the chain to canonicalHead number
+   */
+  async resetCanonicalHead(canonicalHead: bigint): Promise<boolean | void> {
+    if (!this.opened) return false
+    await this.blockchain.resetCanonicalHead(canonicalHead)
+    return this.update(false)
+  }
+
+  /**
    * Update blockchain properties (latest block, td, height, etc...)
    * @param emit Emit a `CHAIN_UPDATED` event
    * @returns false if chain is closed, otherwise void
@@ -278,10 +287,22 @@ export class Chain {
         }
         break
       }
+
+      let td = this.headers.td
+      if (b.header.number <= this.headers.height) {
+        td = await this.blockchain.getTotalDifficulty(b.header.parentHash)
+        ;(this.blockchain as any).checkAndTransitionHardForkByNumber(
+          b.header.number - BigInt(1),
+          td
+        )
+        await this.blockchain.consensus.setup({ blockchain: this.blockchain })
+      }
+
       const block = Block.fromValuesArray(b.raw(), {
         common: this.config.chainCommon,
-        hardforkByTTD: this.headers.td,
+        hardforkByTTD: td,
       })
+
       await this.blockchain.putBlock(block)
       numAdded++
       const emitOnLast = blocks.length === numAdded

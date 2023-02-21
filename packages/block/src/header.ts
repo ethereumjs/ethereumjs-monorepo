@@ -354,8 +354,10 @@ export class BlockHeader {
     if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Ethash) {
       // PoW/Ethash
       if (
+        number > BigInt(0) &&
         this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)
       ) {
+        // Check length of data on all post-genesis blocks
         const msg = this._errorMsg('invalid amount of extra data')
         throw new Error(msg)
       }
