@@ -414,6 +414,14 @@ export class Blockchain implements BlockchainInterface {
     await this._putBlockOrHeader(header)
   }
 
+  /**
+   * Resets the canonical chain to canonicalHead number
+   *
+   * This updates the head hashes (if affected) to the hash corresponding to
+   * canonicalHead and cleans up canonical references greater than canonicalHead
+   * @param canonicalHead - The number to which chain should be reset to
+   */
+
   async resetCanonicalHead(canonicalHead: bigint) {
     await this.runWithLock<void>(async () => {
       const hash = await this.dbManager.numberToHash(canonicalHead)

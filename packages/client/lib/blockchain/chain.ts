@@ -194,6 +194,9 @@ export class Chain {
     this.opened = false
   }
 
+  /**
+   * Resets the chain to canonicalHead number
+   */
   async resetCanonicalHead(canonicalHead: bigint): Promise<boolean | void> {
     if (!this.opened) return false
     await this.blockchain.resetCanonicalHead(canonicalHead)
