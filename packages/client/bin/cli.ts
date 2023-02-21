@@ -368,7 +368,7 @@ async function executeBlocks(client: EthereumClient) {
 async function startBlock(client: EthereumClient) {
   if (args.startBlock === undefined) return
   const startBlock = BigInt(args.startBlock)
-  const height = client.chain.headers.height;
+  const height = client.chain.headers.height
   if (height < startBlock) {
     logger.error(`Cannot start chain higher than current height ${height}`)
     process.exit()
