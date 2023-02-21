@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1677009466770,
+  "lastUpdate": 1677010957123,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "7fa64079578b24e791c62be3fe3d6e634bb10f13",
-          "message": "4844 Engine API Fixes (#2508)\n\n* Fix HF names in Engine API calls\r\n\r\n* Fix forkchoiceUpdatedV2 error cases",
-          "timestamp": "2023-01-25T16:59:41-05:00",
-          "tree_id": "02dc88a2044507da7cb5c321ff7ac2d6f664ed23",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/7fa64079578b24e791c62be3fe3d6e634bb10f13"
-        },
-        "date": 1674684141823,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19551,
-            "range": "±1.89%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 19017,
-            "range": "±4.42%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 19224,
-            "range": "±1.50%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 17700,
-            "range": "±7.36%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19541,
-            "range": "±1.34%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±8.67%",
             "unit": "ops/sec",
             "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "70d93fd51ce5020143926ef45b4f85ed47cc019f",
+          "message": "Fix the fetcher errored property colliding with Readable class (#2541)\n\n* Fix the fetcher errored property colliding with Readable class\r\n\r\n* Add unit test for error\r\n\r\n* Move test\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-02-21T21:19:32+01:00",
+          "tree_id": "768cc7fc9ad7d087334d9ba62b96958703e48e95",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/70d93fd51ce5020143926ef45b4f85ed47cc019f"
+        },
+        "date": 1677010956385,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15812,
+            "range": "±2.04%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 15286,
+            "range": "±3.95%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15809,
+            "range": "±1.55%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15388,
+            "range": "±1.83%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 14199,
+            "range": "±7.07%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
           }
         ]
       }
