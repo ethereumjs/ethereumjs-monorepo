@@ -30,7 +30,7 @@ tape('[Synchronizer]', async (t) => {
     const config = new Config({ transports: [] })
     config.syncTargetHeight = BigInt(1)
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const sync = new SynchronizerTest({ config, pool, chain })
     ;(sync as any).sync = td.func()
     td.when((sync as any).sync()).thenResolve(true)

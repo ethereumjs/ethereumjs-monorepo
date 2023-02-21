@@ -86,7 +86,7 @@ tape('[Integration:Merge]', async (t) => {
       mine: true,
       accounts,
     })
-    const chain = new Chain({ config: serviceConfig, blockchain })
+    const chain = await Chain.create({ config: serviceConfig, blockchain })
     // attach server to centralized event bus
     ;(server.config as any).events = serviceConfig.events
     const service = new FullEthereumService({

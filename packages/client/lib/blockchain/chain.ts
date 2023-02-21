@@ -90,25 +90,41 @@ export class Chain {
   }
 
   /**
-   * Create new chain
+   * Safe creation of a Chain object awaiting the initialization
+   * of the underlying Blockchain object.
+   *
    * @param options
    */
-  constructor(options: ChainOptions) {
-    this.config = options.config
+  public static async create(options: ChainOptions) {
     let validateConsensus = false
-    if (this.config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
+    if (options.config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       validateConsensus = true
     }
 
-    this.blockchain =
+    options.blockchain =
       options.blockchain ??
       new (Blockchain as any)({
         db: options.chainDB,
-        common: this.config.chainCommon,
+        common: options.config.chainCommon,
         hardforkByHeadBlockNumber: true,
         validateBlocks: true,
         validateConsensus,
       })
+
+    return new this(options)
+  }
+
+  /**
+   * Creates new chain
+   *
+   * Do not use directly but instead use the static async `create()` constructor
+   * for concurrency safe initialization.
+   *
+   * @param options
+   */
+  protected constructor(options: ChainOptions) {
+    this.config = options.config
+    this.blockchain = options.blockchain!
 
     this.chainDB = this.blockchain.db
     this.opened = false

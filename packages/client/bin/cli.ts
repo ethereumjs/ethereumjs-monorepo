@@ -417,12 +417,12 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
     blockchain,
     ...dbs,
   })
+  await client.open()
 
   if (typeof args.startBlock === 'number') {
     await startBlock(client)
   }
 
-  await client.open()
   // update client's sync status and start txpool if synchronized
   client.config.updateSynchronizedState(client.chain.headers.latest)
   if (client.config.synchronized === true) {

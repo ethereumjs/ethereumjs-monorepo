@@ -26,7 +26,7 @@ tape('[LightSynchronizer]', async (t) => {
   t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const sync = new LightSynchronizer({ config, pool, chain })
     t.equals(sync.type, 'light', 'light type')
     t.end()
@@ -35,7 +35,7 @@ tape('[LightSynchronizer]', async (t) => {
   t.test('should find best', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const sync = new LightSynchronizer({
       config,
       interval: 1,
@@ -64,7 +64,7 @@ tape('[LightSynchronizer]', async (t) => {
     t.plan(3)
     const config = new Config({ transports: [], safeReorgDistance: 0 })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const sync = new LightSynchronizer({
       config,
       interval: 1,
@@ -101,7 +101,7 @@ tape('[LightSynchronizer]', async (t) => {
     st.plan(1)
     const config = new Config({ transports: [], safeReorgDistance: 0 })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const sync = new LightSynchronizer({
       config,
       interval: 1,
@@ -135,7 +135,7 @@ tape('[LightSynchronizer]', async (t) => {
     st.plan(1)
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const sync = new LightSynchronizer({
       config,
       interval: 1,

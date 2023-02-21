@@ -71,7 +71,7 @@ export class EthereumClient {
    * of the underlying Blockchain object.
    */
   public static async create(options: EthereumClientOptions) {
-    const chain = new Chain(options)
+    const chain = await Chain.create(options)
     return new this(chain, options)
   }
 
