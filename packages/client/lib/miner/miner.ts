@@ -333,7 +333,7 @@ export class Miner {
     if (interrupt) return
     // Build block, sealing it
     const block = await blockBuilder.build(this.nextSolution)
-    if(this.config.saveReceipts) {
+    if (this.config.saveReceipts) {
       await this.execution.receiptsManager?.saveReceipts(block, receipts)
     }
     this.config.logger.info(
