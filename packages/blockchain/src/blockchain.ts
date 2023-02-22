@@ -275,7 +275,10 @@ export class Blockchain implements BlockchainInterface {
 
     if (this._hardforkByHeadBlockNumber) {
       const latestHeader = await this._getHeader(this._headHeaderHash)
-      const td = await this.getTotalDifficulty(latestHeader.parentHash)
+      const td =
+        latestHeader.number === BigInt(0)
+          ? latestHeader.difficulty
+          : await this.getTotalDifficulty(latestHeader.parentHash)
       await this.checkAndTransitionHardForkByNumber(latestHeader.number, td, latestHeader.timestamp)
     }
 
