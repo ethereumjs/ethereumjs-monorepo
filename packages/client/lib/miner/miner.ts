@@ -12,6 +12,7 @@ import type { FullSynchronizer } from '../sync'
 import type { CliqueConsensus } from '@ethereumjs/blockchain'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { Miner as EthashMiner, Solution } from '@ethereumjs/ethash'
+import type { TxReceipt } from '@ethereumjs/vm'
 
 export interface MinerOptions {
   /* Config */
@@ -286,11 +287,13 @@ export class Miner {
     )
     let index = 0
     let blockFull = false
+    const receipts: TxReceipt[] = []
     while (index < txs.length && !blockFull && !interrupt) {
       try {
-        await blockBuilder.addTransaction(txs[index], {
+        const txResult = await blockBuilder.addTransaction(txs[index], {
           skipHardForkValidation: this.skipHardForkValidation,
         })
+        this.config.saveReceipts && receipts.push(txResult.receipt)
       } catch (error) {
         if (
           (error as Error).message ===
