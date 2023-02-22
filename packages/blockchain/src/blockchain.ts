@@ -275,7 +275,7 @@ export class Blockchain implements BlockchainInterface {
 
     if (this._hardforkByHeadBlockNumber) {
       const latestHeader = await this._getHeader(this._headHeaderHash)
-      const td = await this.getTotalDifficulty(this._headHeaderHash)
+      const td = await this.getTotalDifficulty(latestHeader.parentHash)
       await this.checkAndTransitionHardForkByNumber(latestHeader.number, td, latestHeader.timestamp)
     }
 
@@ -428,7 +428,7 @@ export class Blockchain implements BlockchainInterface {
       const header = await this._getHeader(hash, canonicalHead)
       const td =
         canonicalHead > BigInt(0)
-          ? await this.getTotalDifficulty(header.hash(), canonicalHead)
+          ? await this.getTotalDifficulty(header.parentHash)
           : header.difficulty
 
       const dbOps: DBOp[] = []
@@ -525,7 +525,7 @@ export class Blockchain implements BlockchainInterface {
           this._headBlockHash = blockHash
         }
         if (this._hardforkByHeadBlockNumber) {
-          await this.checkAndTransitionHardForkByNumber(blockNumber, td, header.timestamp)
+          await this.checkAndTransitionHardForkByNumber(blockNumber, parentTd, header.timestamp)
         }
 
         // delete higher number assignments and overwrite stale canonical chain

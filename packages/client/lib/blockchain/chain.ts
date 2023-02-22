@@ -245,6 +245,7 @@ export class Chain {
     blocks.height = blocks.latest.header.number
 
     headers.td = await this.getTd(headers.latest.hash(), headers.height)
+    const parentTd = await this.getTd(headers.latest.parentHash, headers.height - 1n)
     blocks.td = await this.getTd(blocks.latest.hash(), blocks.height)
 
     this._headers = headers
@@ -252,7 +253,7 @@ export class Chain {
 
     this.config.chainCommon.setHardforkByBlockNumber(
       headers.latest.number,
-      headers.td,
+      parentTd,
       headers.latest.timestamp
     )
 
@@ -304,9 +305,8 @@ export class Chain {
         break
       }
 
-      let td = this.headers.td
+      const td = await this.blockchain.getTotalDifficulty(b.header.parentHash)
       if (b.header.number <= this.headers.height) {
-        td = await this.blockchain.getTotalDifficulty(b.header.parentHash)
         ;(this.blockchain as any).checkAndTransitionHardForkByNumber(
           b.header.number - BigInt(1),
           td
