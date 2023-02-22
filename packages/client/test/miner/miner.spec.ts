@@ -273,7 +273,7 @@ tape('[Miner]', async (t) => {
     }
   )
   t.test('assembleBlocks() -> with saveReceipts', async (t) => {
-    t.plan(7)
+    t.plan(9)
     const chain = new FakeChain() as any
     const config = new Config({ transports: [], accounts, mine: true, common, saveReceipts: true })
     const service = new FullEthereumService({
