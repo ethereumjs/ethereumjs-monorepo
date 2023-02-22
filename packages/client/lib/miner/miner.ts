@@ -293,7 +293,9 @@ export class Miner {
         const txResult = await blockBuilder.addTransaction(txs[index], {
           skipHardForkValidation: this.skipHardForkValidation,
         })
-        this.config.saveReceipts && receipts.push(txResult.receipt)
+        if (this.config.saveReceipts) {
+          receipts.push(txResult.receipt)
+        }
       } catch (error) {
         if (
           (error as Error).message ===
@@ -331,8 +333,9 @@ export class Miner {
     if (interrupt) return
     // Build block, sealing it
     const block = await blockBuilder.build(this.nextSolution)
-    this.config.saveReceipts &&
-      (await this.execution.receiptsManager?.saveReceipts(block, receipts))
+    if(this.config.saveReceipts) {
+      await this.execution.receiptsManager?.saveReceipts(block, receipts)
+    }
     this.config.logger.info(
       `Miner: Sealed block with ${block.transactions.length} txs ${
         this.config.chainCommon.consensusType() === ConsensusType.ProofOfWork
