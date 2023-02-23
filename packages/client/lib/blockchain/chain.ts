@@ -257,9 +257,23 @@ export class Chain {
         undefined
       )
       if (this.config.chainCommon.hardforkGteHardfork(nextBlockHf, Hardfork.Merge)) {
+        this.config.logger.info('*'.repeat(85))
         this.config.logger.info(
           `Merge hardfork reached 🐼 👉 👈 🐼 ! block=${headers.height} td=${headers.td}`
         )
+        this.config.logger.info('-'.repeat(85))
+        this.config.logger.info(' ')
+        this.config.logger.info('Consensus layer client (CL) needed for continued sync:')
+        this.config.logger.info(
+          'https://ethereum.org/en/developers/docs/nodes-and-clients/#consensus-clients'
+        )
+        this.config.logger.info(' ')
+        this.config.logger.info(
+          'Make sure to have the JSON RPC (--rpc) and Engine API (--rpcEngine) endpoints exposed'
+        )
+        this.config.logger.info('and JWL authentication configured (see client README).')
+        this.config.logger.info(' ')
+        this.config.logger.info('*'.repeat(85))
         this.config.logger.info(
           `Transitioning to PoS! First block for CL-framed execution: block=${
             headers.height + BigInt(1)

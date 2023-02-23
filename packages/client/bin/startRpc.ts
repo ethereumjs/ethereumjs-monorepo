@@ -38,24 +38,20 @@ export type RPCArgs = {
 function parseJwtSecret(config: Config, jwtFilePath?: string): Buffer {
   let jwtSecret: Buffer
   const defaultJwtPath = `${config.datadir}/jwtsecret`
+  const usedJwtPath = jwtFilePath !== undefined ? jwtFilePath : defaultJwtPath
 
   // If jwtFilePath is provided, it should exist
-  if (typeof jwtFilePath === 'string' && !existsSync(jwtFilePath)) {
+  if (jwtFilePath !== undefined && !existsSync(jwtFilePath)) {
     throw new Error(`No file exists at provided jwt secret path=${jwtFilePath}`)
   }
 
-  if (typeof jwtFilePath === 'string' || existsSync(defaultJwtPath)) {
+  if (jwtFilePath !== undefined || existsSync(defaultJwtPath)) {
     const jwtSecretContents = readFileSync(jwtFilePath ?? defaultJwtPath, 'utf-8').trim()
     const hexPattern = new RegExp(/^(0x|0X)?(?<jwtSecret>[a-fA-F0-9]+)$/, 'g')
     const jwtSecretHex = hexPattern.exec(jwtSecretContents)?.groups?.jwtSecret
     if (jwtSecretHex === undefined || jwtSecretHex.length !== 64) {
       throw Error('Need a valid 256 bit hex encoded secret')
     }
-    config.logger.debug(
-      `Read a hex encoded jwt secret from ${
-        typeof jwtFilePath === 'string' ? `path=${jwtFilePath}` : `default path=${defaultJwtPath}`
-      }`
-    )
     jwtSecret = Buffer.from(jwtSecretHex, 'hex')
   } else {
     const folderExists = existsSync(config.datadir)
@@ -65,8 +61,9 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Buffer {
 
     jwtSecret = Buffer.from(Array.from({ length: 32 }, () => Math.round(Math.random() * 255)))
     writeFileSync(defaultJwtPath, jwtSecret.toString('hex'), {})
-    config.logger.info(`Wrote a hex encoded random jwt secret to path=${defaultJwtPath}`)
+    config.logger.info(`New Engine API JWT token created path=${defaultJwtPath}`)
   }
+  config.logger.info(`Using Engine API with JWT token authentication path=${usedJwtPath}`)
   return jwtSecret
 }
 
