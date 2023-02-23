@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1677153144009,
+  "lastUpdate": 1677155625765,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "02ec8920352776e7d8a3a94fef6e8bdc75694085",
-          "message": "client: add new shanghai  engine apis (#2509)\n\n* add getCapabilities engine endpoint\r\n\r\n* add engine_getPayloadBodiesByHashV1\r\n\r\n* add getPayloadBodiesByRangeV1\r\n\r\n* Add tests and fix validatoring logic\r\n\r\n* remove console log\r\n\r\n* WIP building blocks\r\n\r\n* Add tests for new endpoints\r\n\r\n* Remove tape.only\r\n\r\n* Add tests for pre-shanghai blocks\r\n\r\n* Improve getCapabilities implementation\r\n\r\n* Fix vaildation\r\n\r\n* remove logging\r\n\r\n* Add getPayloadBody helper\r\n\r\n* Simplify getPayloadBody\r\n\r\n* Use `chain.headers.height` for latest block number",
-          "timestamp": "2023-01-30T22:48:18+05:30",
-          "tree_id": "a126694a7bc54a4b31bd4fa339dbc92dfc77138c",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/02ec8920352776e7d8a3a94fef6e8bdc75694085"
-        },
-        "date": 1675099812181,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19711,
-            "range": "±1.47%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 19431,
-            "range": "±2.49%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18033,
-            "range": "±7.34%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19672,
-            "range": "±1.12%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19042,
-            "range": "±1.44%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±7.25%",
             "unit": "ops/sec",
             "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d085ab71f8a4e632b1a80b4a654b5513fc076fe8",
+          "message": "Small Client UX Improvements (#2547)\n\n* Added more prominent Merge transition message with CL client notice and setup reference\r\n\r\n* Improve client Engine API JWT authentication logging\r\n\r\n* Additional mention of JSON RPC endpoint\r\n\r\n* Minor",
+          "timestamp": "2023-02-23T13:30:57+01:00",
+          "tree_id": "b9b0a0e0a35f998cfbc9bbcf1406e780c236222b",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d085ab71f8a4e632b1a80b4a654b5513fc076fe8"
+        },
+        "date": 1677155625107,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15253,
+            "range": "±3.00%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 14357,
+            "range": "±5.25%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15407,
+            "range": "±1.85%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 14838,
+            "range": "±2.20%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 12889,
+            "range": "±9.26%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
           }
         ]
       }
