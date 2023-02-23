@@ -269,7 +269,7 @@ export class Chain {
         )
         this.config.logger.info(' ')
         this.config.logger.info(
-          'Make sure to have the JSON RPC (--rpc) and Engine API endpoints exposed (--rpcEngine)'
+          'Make sure to have the JSON RPC (--rpc) and Engine API (--rpcEngine) endpoints exposed'
         )
         this.config.logger.info('and JWL authentication configured (see client README).')
         this.config.logger.info(' ')
