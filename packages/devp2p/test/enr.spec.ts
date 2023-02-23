@@ -114,6 +114,15 @@ test('ENR (enr): should convert an Ethereum Name Record string', (t) => {
   t.end()
 })
 
+test('ENR (enr): should convert non-padded Ethereum Name Record string', (t) => {
+  const { address, tcpPort, udpPort } = ENR.parseAndVerifyRecord(dns.enrUnpadded)
+
+  t.equal(address, '64.227.79.242', 'returns correct address')
+  t.equal(tcpPort, 30303, 'returns correct tcpPort')
+  t.equal(udpPort, 30303, 'returns correct udpPort')
+  t.end()
+})
+
 test('ENR (enr): should return correct multiaddr conversion codes for ipv6', (t) => {
   const expected = { ipCode: 41, tcpCode: 6, udpCode: 273 }
   const protocolId = Buffer.from('v6')

@@ -52,8 +52,15 @@ export class ENR {
     if (!enr.startsWith(this.RECORD_PREFIX))
       throw new Error(`String encoded ENR must start with '${this.RECORD_PREFIX}'`)
 
-    // ENRs are RLP encoded and written to DNS TXT entries as base64 url-safe strings
-    const base64BufferEnr = Buffer.from(base64url.decode(enr.slice(this.RECORD_PREFIX.length)))
+    // ENRs are RLP encoded and written to DNS TXT entries as base64 url-safe strings respectively
+    // RawURLEncoding, which is the unpadded alternate base64 encoding defined in RFC 4648
+    // Records need to prepared like the following: replace - wth +, replace _ with / and add padding
+    let enrMod = enr.slice(this.RECORD_PREFIX.length)
+    enr = enrMod.replace('-', '+').replace('_', '/')
+    while (enrMod.length % 4 !== 0) {
+      enrMod = enrMod + '='
+    }
+    const base64BufferEnr = Buffer.from(base64url.decode(enrMod))
     const decoded = arrToBufArr(RLP.decode(Uint8Array.from(base64BufferEnr))) as Buffer[]
     const [signature, seq, ...kvs] = decoded
 
