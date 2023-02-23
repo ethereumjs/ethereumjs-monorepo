@@ -4,6 +4,7 @@ import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
+import { AbstractLevel } from 'abstract-level'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 import * as td from 'testdouble'
@@ -233,6 +234,9 @@ tape('[Miner]', async (t) => {
     async (t) => {
       t.plan(4)
       const chain = new FakeChain() as any
+      const _config = {
+        ...config,
+      }
       const service = new FullEthereumService({
         config,
         chain,
@@ -268,6 +272,57 @@ tape('[Miner]', async (t) => {
       await wait(500)
     }
   )
+  t.test('assembleBlocks() -> with saveReceipts', async (t) => {
+    t.plan(9)
+    const chain = new FakeChain() as any
+    const config = new Config({ transports: [], accounts, mine: true, common, saveReceipts: true })
+    const service = new FullEthereumService({
+      config,
+      chain,
+      metaDB: new AbstractLevel({
+        encodings: { utf8: true, buffer: true },
+      }),
+    })
+    const miner = new Miner({ config, service, skipHardForkValidation: true })
+    const { txPool } = service
+    const { vm, receiptsManager } = service.execution
+    txPool.start()
+    miner.start()
+
+    t.ok(receiptsManager, 'receiptsManager should be initialized')
+
+    await setBalance(vm, A.address, BigInt('400000000000001'))
+    await setBalance(vm, B.address, BigInt('400000000000001'))
+
+    // add txs
+    await txPool.add(txA01)
+    await txPool.add(txA02)
+    await txPool.add(txA03)
+    await txPool.add(txB01)
+
+    // disable consensus to skip PoA block signer validation
+    ;(vm.blockchain as any)._validateConsensus = false
+
+    chain.putBlocks = async (blocks: Block[]) => {
+      const msg = 'txs in block should be properly ordered by gasPrice and nonce'
+      const expectedOrder = [txB01, txA01, txA02, txA03]
+      for (const [index, tx] of expectedOrder.entries()) {
+        t.ok(blocks[0].transactions[index]?.hash().equals(tx.hash()), msg)
+      }
+      miner.stop()
+      txPool.stop()
+    }
+    await (miner as any).queueNextAssembly(0)
+    let receipt = await receiptsManager!.getReceipts(txB01.hash())
+    t.ok(receipt, 'receipt should be saved')
+    receipt = await receiptsManager!.getReceipts(txA01.hash())
+    t.ok(receipt, 'receipt should be saved')
+    receipt = await receiptsManager!.getReceipts(txA02.hash())
+    t.ok(receipt, 'receipt should be saved')
+    receipt = await receiptsManager!.getReceipts(txA03.hash())
+    t.ok(receipt, 'receipt should be saved')
+    await wait(500)
+  })
 
   t.test('assembleBlocks() -> should not include tx under the baseFee', async (t) => {
     t.plan(1)
