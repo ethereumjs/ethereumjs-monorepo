@@ -657,6 +657,7 @@ export class Skeleton extends MetaDBManager {
       } catch (e) {
         this.config.logger.error(`fillCanonicalChain putBlock error=${(e as Error).message}`)
         if (resetHead === true && oldHead !== null) {
+          // Put original canonical head block back if reorg fails
           await this.chain.putBlocks([oldHead], true)
         }
       }
