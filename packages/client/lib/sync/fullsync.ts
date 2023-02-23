@@ -40,10 +40,8 @@ export class FullSynchronizer extends Synchronizer {
     this.newBlocksKnownByPeer = new Map()
 
     this.processBlocks = this.processBlocks.bind(this)
+    this.runExecution = this.runExecution.bind(this)
     this.stop = this.stop.bind(this)
-
-    this.config.events.on(Event.SYNC_FETCHED_BLOCKS, this.processBlocks)
-    this.config.events.on(Event.SYNC_EXECUTION_VM_ERROR, this.stop)
 
     void this.chain.update()
   }
@@ -70,8 +68,13 @@ export class FullSynchronizer extends Synchronizer {
    * Open synchronizer. Must be called before sync() is called
    */
   async open(): Promise<void> {
+    if (this.opened) return
     await super.open()
     await this.chain.open()
+
+    this.config.events.on(Event.SYNC_FETCHED_BLOCKS, this.processBlocks)
+    this.config.events.on(Event.SYNC_EXECUTION_VM_ERROR, this.stop)
+    this.config.events.on(Event.CHAIN_UPDATED, this.runExecution)
 
     await this.pool.open()
     const { height: number, td } = this.chain.blocks
@@ -255,12 +258,6 @@ export class FullSynchronizer extends Synchronizer {
     this.txPool.removeNewBlockTxs(blocks)
 
     if (!this.running) return
-    // Batch the execution if we are not close to the head
-    const shouldRunOnlyBatched =
-      typeof this.config.syncTargetHeight === 'bigint' &&
-      this.config.syncTargetHeight !== BigInt(0) &&
-      this.chain.blocks.height <= this.config.syncTargetHeight - BigInt(50)
-    await this.execution.run(true, shouldRunOnlyBatched)
     this.txPool.checkRunState()
     return true
   }
@@ -385,9 +382,24 @@ export class FullSynchronizer extends Synchronizer {
     }
   }
 
+  /**
+   * Runs vm execution on {@link Event.CHAIN_UPDATED}
+   */
+  async runExecution(): Promise<void> {
+    // Batch the execution if we are not close to the head
+    const shouldRunOnlyBatched =
+      typeof this.config.syncTargetHeight === 'bigint' &&
+      this.config.syncTargetHeight !== BigInt(0) &&
+      this.chain.blocks.height <= this.config.syncTargetHeight - BigInt(50)
+    this.execution.run(true, shouldRunOnlyBatched).catch((e) => {
+      this.config.logger.error(`Full sync execution trigger erored`, {}, e)
+    })
+  }
+
   async stop(): Promise<boolean> {
     this.config.events.removeListener(Event.SYNC_FETCHED_BLOCKS, this.processBlocks)
     this.config.events.removeListener(Event.SYNC_EXECUTION_VM_ERROR, this.stop)
+    this.config.events.removeListener(Event.CHAIN_UPDATED, this.runExecution)
     return super.stop()
   }
 
