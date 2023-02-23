@@ -186,16 +186,8 @@ export class Chain {
     await this.update(false)
 
     this.config.chainCommon.on('hardforkChanged', async (hardfork: string) => {
-      if (hardfork !== Hardfork.Merge) {
-        const block = this.config.chainCommon.hardforkBlock()
-        this.config.logger.info(`New hardfork reached 🪢 ! hardfork=${hardfork} block=${block}`)
-      } else {
-        const block = await this.getCanonicalHeadBlock()
-        const num = block.header.number
-        const td = await this.blockchain.getTotalDifficulty(block.hash(), num)
-        this.config.logger.info(`Merge hardfork reached 🐼 👉 👈 🐼 ! block=${num} td=${td}`)
-        this.config.logger.info(`First block for CL-framed execution: block=${num + BigInt(1)}`)
-      }
+      const block = this.config.chainCommon.hardforkBlock()
+      this.config.logger.info(`New hardfork reached 🪢 ! hardfork=${hardfork} block=${block}`)
     })
   }
 
@@ -250,11 +242,31 @@ export class Chain {
     this._headers = headers
     this._blocks = blocks
 
+    const parentTd = await this.blockchain.getParentTD(headers.latest)
     this.config.chainCommon.setHardforkByBlockNumber(
       headers.latest.number,
-      headers.td,
+      parentTd,
       headers.latest.timestamp
     )
+
+    // Check and log if this is a terminal block and next block could be merge
+    if (!this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+      const nextBlockHf = this.config.chainCommon.getHardforkByBlockNumber(
+        headers.height + BigInt(1),
+        headers.td,
+        undefined
+      )
+      if (this.config.chainCommon.hardforkGteHardfork(nextBlockHf, Hardfork.Merge)) {
+        this.config.logger.info(
+          `Merge hardfork reached 🐼 👉 👈 🐼 ! block=${headers.height} td=${headers.td}`
+        )
+        this.config.logger.info(
+          `Transitioning to PoS! First block for CL-framed execution: block=${
+            headers.height + BigInt(1)
+          }`
+        )
+      }
+    }
 
     if (emit) {
       this.config.events.emit(Event.CHAIN_UPDATED)
@@ -304,13 +316,9 @@ export class Chain {
         break
       }
 
-      let td = this.headers.td
+      const td = await this.blockchain.getParentTD(b.header)
       if (b.header.number <= this.headers.height) {
-        td = await this.blockchain.getTotalDifficulty(b.header.parentHash)
-        ;(this.blockchain as any).checkAndTransitionHardForkByNumber(
-          b.header.number - BigInt(1),
-          td
-        )
+        ;(this.blockchain as any).checkAndTransitionHardForkByNumber(b.header.number, td)
         await this.blockchain.consensus.setup({ blockchain: this.blockchain })
       }
 

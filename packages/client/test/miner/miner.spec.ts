@@ -336,7 +336,7 @@ tape('[Miner]', async (t) => {
     const block = Block.fromBlockData({}, { common })
     Object.defineProperty(chain, 'headers', {
       get() {
-        return { latest: block.header }
+        return { latest: block.header, height: block.header.number }
       },
     })
     Object.defineProperty(chain, 'blocks', {

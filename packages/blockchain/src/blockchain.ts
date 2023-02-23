@@ -275,7 +275,7 @@ export class Blockchain implements BlockchainInterface {
 
     if (this._hardforkByHeadBlockNumber) {
       const latestHeader = await this._getHeader(this._headHeaderHash)
-      const td = await this.getTotalDifficulty(this._headHeaderHash)
+      const td = await this.getParentTD(latestHeader)
       await this.checkAndTransitionHardForkByNumber(latestHeader.number, td, latestHeader.timestamp)
     }
 
@@ -426,10 +426,7 @@ export class Blockchain implements BlockchainInterface {
     await this.runWithLock<void>(async () => {
       const hash = await this.dbManager.numberToHash(canonicalHead)
       const header = await this._getHeader(hash, canonicalHead)
-      const td =
-        canonicalHead > BigInt(0)
-          ? await this.getTotalDifficulty(header.hash(), canonicalHead)
-          : header.difficulty
+      const td = await this.getParentTD(header)
 
       const dbOps: DBOp[] = []
       await this._deleteCanonicalChainReferences(canonicalHead + BigInt(1), hash, dbOps)
@@ -496,11 +493,10 @@ export class Blockchain implements BlockchainInterface {
       }
 
       // calculate the total difficulty of the new block
-      let parentTd = BigInt(0)
+      const parentTd = await this.getParentTD(header)
       if (!block.isGenesis()) {
-        parentTd = await this.getTotalDifficulty(header.parentHash, blockNumber - BigInt(1))
+        td += parentTd
       }
-      td += parentTd
 
       // save total difficulty to the database
       dbOps = dbOps.concat(DBSetTD(td, blockNumber, blockHash))
@@ -525,7 +521,7 @@ export class Blockchain implements BlockchainInterface {
           this._headBlockHash = blockHash
         }
         if (this._hardforkByHeadBlockNumber) {
-          await this.checkAndTransitionHardForkByNumber(blockNumber, td, header.timestamp)
+          await this.checkAndTransitionHardForkByNumber(blockNumber, parentTd, header.timestamp)
         }
 
         // delete higher number assignments and overwrite stale canonical chain
@@ -753,6 +749,16 @@ export class Blockchain implements BlockchainInterface {
       number = await this.dbManager.hashToNumber(hash)
     }
     return this.dbManager.getTotalDifficulty(hash, number)
+  }
+
+  /**
+   * Gets total difficulty for a header's parent, helpful for determining terminal block
+   * @param header - Block header whose parent td is desired
+   */
+  public async getParentTD(header: BlockHeader): Promise<bigint> {
+    return header.number === BigInt(0)
+      ? header.difficulty
+      : this.getTotalDifficulty(header.parentHash, header.number - BigInt(1))
   }
 
   /**
