@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1677147670491,
+  "lastUpdate": 1677153144009,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "mpetrunic@users.noreply.github.com",
-            "name": "Marin Petrunić",
-            "username": "mpetrunic"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "d986218ad598d2a133cf8db9784c6e3a23bb6c2e",
-          "message": "chore: reduce number of ethers dependencies (#2513)",
-          "timestamp": "2023-01-27T15:22:48-05:00",
-          "tree_id": "4eac04531bc8e5ef59dd70db5adf2ed49aebb1c6",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d986218ad598d2a133cf8db9784c6e3a23bb6c2e"
-        },
-        "date": 1674851130640,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19626,
-            "range": "±1.95%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 19210,
-            "range": "±3.66%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 19139,
-            "range": "±1.41%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 17812,
-            "range": "±7.02%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19761,
-            "range": "±1.20%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.45%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "98f5712639e27484ca35cee790a564b48807fc42",
+          "message": "Blockchain/Client: Total difficulty related HF switch fixes (#2545)\n\n* Total difficulty related HF switch fixes\r\n\r\n* Blockchain test fix\r\n\r\n* update parentTD usage and conditions\r\n\r\n* run execution on startup\r\n\r\n* stop miner at merge\r\n\r\n* fix miner spec\r\n\r\n---------\r\n\r\nCo-authored-by: harkamal <gajinder@g11.in>",
+          "timestamp": "2023-02-23T12:49:43+01:00",
+          "tree_id": "00daf99dfd4ffcce8484b7758359456601f19220",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/98f5712639e27484ca35cee790a564b48807fc42"
+        },
+        "date": 1677153143233,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 16238,
+            "range": "±1.70%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 15554,
+            "range": "±3.85%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 16130,
+            "range": "±1.44%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15719,
+            "range": "±1.64%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 14424,
+            "range": "±7.25%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
           }
         ]
       }
