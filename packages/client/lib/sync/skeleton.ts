@@ -607,8 +607,11 @@ export class Skeleton extends MetaDBManager {
     this.filling = true
 
     let canonicalHead = this.chain.blocks.height
+    let oldHead = null
+    let resetHead = false
     const subchain = this.status.progress.subchains[0]!
     if (this.status.canonicalHeadReset) {
+      oldHead = this.chain.blocks.latest // Grab previous head block in case of resettng canonical head
       if (subchain.tail > canonicalHead + BigInt(1)) {
         throw Error(
           `Canonical head should already be on or ahead subchain tail canonicalHead=${canonicalHead} tail=${subchain.tail}`
@@ -624,6 +627,7 @@ export class Skeleton extends MetaDBManager {
       canonicalHead = newHead
       await this.chain.resetCanonicalHead(canonicalHead)
       this.status.canonicalHeadReset = false
+      resetHead = true
     }
 
     const start = canonicalHead
@@ -652,6 +656,9 @@ export class Skeleton extends MetaDBManager {
         numBlocksInserted = await this.chain.putBlocks([block], true)
       } catch (e) {
         this.config.logger.error(`fillCanonicalChain putBlock error=${(e as Error).message}`)
+        if (resetHead === true && oldHead !== null) {
+          await this.chain.putBlocks([oldHead], true)
+        }
       }
       if (numBlocksInserted !== 1) {
         this.config.logger.error(
