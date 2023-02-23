@@ -84,7 +84,14 @@ export class Miner {
     if (!this.running) {
       return
     }
-    if (this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
+
+    // Check if the new block to be minted isn't PoS
+    const nextBlockHf = this.config.chainCommon.getHardforkByBlockNumber(
+      this.service.chain.headers.height + BigInt(1),
+      this.service.chain.headers.td,
+      undefined
+    )
+    if (this.config.chainCommon.hardforkGteHardfork(nextBlockHf, Hardfork.Merge)) {
       this.config.logger.info('Miner: reached merge hardfork - stopping')
       this.stop()
       return
