@@ -232,12 +232,42 @@ tape('blockchain test', (t) => {
     st.equal(blocks[0].header.number, getBlocks[0].header.number)
     st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
 
-    let canonicalHeader = await blockchain.getCanonicalHeadHeader()
-    st.equal(canonicalHeader.number, BigInt(24), 'block 24 should be canonical header')
+    const canonicalHeaderOriginal = await blockchain.getCanonicalHeadHeader()
+    st.equal(canonicalHeaderOriginal.number, BigInt(24), 'block 24 should be canonical header')
+    const block22 = await blockchain.getBlock(22)
+    st.equal(block22.header.number, BigInt(22), 'should fetch block by number')
+
     await blockchain.resetCanonicalHead(BigInt(4))
-    canonicalHeader = await blockchain.getCanonicalHeadHeader()
+    let canonicalHeader = await blockchain.getCanonicalHeadHeader()
     st.equal(canonicalHeader.number, BigInt(4), 'block 4 should be new canonical header')
 
+    try {
+      await blockchain.getBlock(22)
+      st.fail('canonical references should have been deleted')
+    } catch {
+      st.pass('canonical references correctly deleted')
+    }
+
+    try {
+      await blockchain.getCanonicalHeader(BigInt(22))
+      st.fail('canonical references should have been deleted')
+    } catch {
+      st.pass('canonical references correctly deleted')
+    }
+
+    await blockchain.putHeader(canonicalHeaderOriginal)
+    canonicalHeader = await blockchain.getCanonicalHeadHeader()
+    st.equal(canonicalHeader.number, BigInt(24), 'block 24 should be new canonical header')
+
+    const newblock22 = await blockchain.getBlock(22)
+    st.equal(newblock22.header.number, BigInt(22), 'canonical references should be restored')
+    st.equal(
+      newblock22.hash().toString('hex'),
+      newblock22.hash().toString('hex'),
+      'fetched block should match'
+    )
+    const newheader22 = await blockchain.getCanonicalHeader(BigInt(22))
+    st.equal(newheader22.number, BigInt(22), 'canonical references should be restored')
     st.end()
   })
 
