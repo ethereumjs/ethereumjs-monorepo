@@ -20,6 +20,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
 
 ### Other Changes
 
+- Fixed DNS Discovery ENR record decoding (better connectivity, avoids loosing DNS peer suggestions), PR [#2546](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2546)
 - Removed outdated Parity DPT ping/pong hack, PR [#2538](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2538)
 - Improved devp2p HELLO logging message (added protocol version and client ID), PR [#2538](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2538)
 

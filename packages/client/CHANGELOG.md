@@ -54,6 +54,9 @@ Log output is now a lot more concise and adequate to the respective client post-
 - Add and use execHardfork while running a tx, PR [#2505](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2505)
 - Hive withdrawal and general client fixes, PR [#2529](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2529)
 - Use client ID from Client for client HELLO message exchange (previously devp2p default ID was used), PR [#2538](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2538)
+- Fixed the fetcher errored property colliding with Readable class (broke client on error handling), PR [#2541](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2541)
+- Support receipts when mining/sealing blocks, PR [#2544](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2544)
+- Total difficulty related HF switch fixes, PR [#2545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2545)
 
 ### Block Building / Tx Pool
 
@@ -66,12 +69,16 @@ Log output is now a lot more concise and adequate to the respective client post-
 - **Breaking**: Reuse jwt-token from default path, PR [#2474](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2474)
 - **Breaking**: Validate CLI args (client start with non-existing argument now fails), PR [#2490](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2490)
 - **Breaking**: Change client CLI params to camelCase, PR [#2495](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2495)
+- Fixed `--startBlock` option bug, PR [#2540](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2540)
 
 ### Sync Fixes and Improvements
 
 - Handle withdrawal bodies in the blockfetcher and skeleton sync fixes, PR [#2462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2462)
 - Fix client's sync state on startup or while mining or single node (test) runs, PR [#2519](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2519)
 - Allow genesis to be post merge, PR [#2530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2530)
+- New `--loadBlocksFromRlp` CLI parameter (mainly for testing purposes), PR [#2532](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2532)
+- Better handling of reorgs that go pre-merge, PR [#2532](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2532)
+- Fixed invalid head block reset bug, PR [#2550](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2550)
 
 ### Engine API
 

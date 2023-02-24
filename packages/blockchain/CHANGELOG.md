@@ -46,6 +46,10 @@ A bit on the verge of breaking vs. bug fixing, sorry if you are eventually affec
 - Timestamp-related `Blockchain.createGenesisBlock()` fix, PR [#2529](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2529)
 - Allow genesis to be post merge, PR [#2530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2530)
 - Add extra validations for assuming nil bodies in `getBlock()`, PR [#2534](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2534)
+- New method `resetCanonicalHead(canonicalHead: bigint)`, PR [#2532](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2532)
+- Made `checkAndTransitionHardForkByNumber()` async and public, PR [#2532](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2532)
+- Total difficulty related HF switch fixes, PR [#2545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2545)
+- Revert to previous sane heads if block or header put fails, PR [#2548](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2548)
 
 ## 6.1.0 - 2022-12-09
 
