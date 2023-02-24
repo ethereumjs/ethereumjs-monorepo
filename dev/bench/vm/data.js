@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1677160829068,
+  "lastUpdate": 1677222127534,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "52dbfc2026ae42ba6e607d287d616a23aa21bbe5",
-          "message": "New client ci run (#2515)\n\n* Temporarily disable CI runs\r\n\r\n* Add mainnet test run to sim test\r\n\r\n* switch client ci run\r\n\r\n* Update single run script\r\n\r\n* small cleanup\r\n\r\n* further cleanup\r\n\r\n* add block inclusion check in beacon\r\n\r\n* Turn ci jobs back on\r\n\r\n---------\r\n\r\nCo-authored-by: harkamal <develop@g11tech.io>",
-          "timestamp": "2023-01-31T22:37:49+05:30",
-          "tree_id": "1d79c417c1f0adf8c69ec84b1628c465f6d315cf",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/52dbfc2026ae42ba6e607d287d616a23aa21bbe5"
-        },
-        "date": 1675185030790,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19624,
-            "range": "±1.92%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18986,
-            "range": "±3.70%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 19146,
-            "range": "±1.36%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 17782,
-            "range": "±6.50%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19656,
-            "range": "±1.14%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 14395,
             "range": "±6.08%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ac78762268e2966d20446c9bdb31e5d8a50e7e22",
+          "message": "Fix invalid head block reset bug (#2550)\n\n* Put original head back on failed reorg\r\n\r\n* Add comments\r\n\r\n* Update packages/client/lib/sync/skeleton.ts\r\n\r\nCo-authored-by: g11tech <gajinder@g11.in>\r\n\r\n* Update packages/client/lib/sync/skeleton.ts\r\n\r\nCo-authored-by: g11tech <gajinder@g11.in>\r\n\r\n* fix build\r\n\r\n* add tests for canonical references\r\n\r\n---------\r\n\r\nCo-authored-by: g11tech <gajinder@g11.in>",
+          "timestamp": "2023-02-24T07:58:36+01:00",
+          "tree_id": "9509188fb4ee19f3d68ccace30f93c0481af25fb",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ac78762268e2966d20446c9bdb31e5d8a50e7e22"
+        },
+        "date": 1677222126177,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 7733,
+            "range": "±2.72%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 8138,
+            "range": "±3.28%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 8564,
+            "range": "±1.70%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 7923,
+            "range": "±6.55%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 8203,
+            "range": "±2.24%",
             "unit": "ops/sec",
             "extra": "82 samples"
           }
