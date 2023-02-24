@@ -34,7 +34,7 @@
     "src"
   ],
   "scripts": {
-    "build": "../../config/cli/ts-build.sh && mkdir -p dist/kzg && cp ./src/kzg/* ./dist/kzg",
+    "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "../../config/cli/coverage.sh",
     "docs:build": "typedoc --options typedoc.js",
