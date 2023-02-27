@@ -6,7 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.2.1 - 2023-02-27
+
+- Pinned `@ethereumjs/util` `@chainsafe/ssz` dependency to `v0.9.4` due to ES2021 features used in `v0.10.+` causing compatibility issues, PR [#2555](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2555)
+- Fixed `kzg` imports in `@ethereumjs/tx`, PR [#2552](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2552)
+
 ## 4.2.0 - 2023-01-16
+
+**DEPRECATED**: Release is deprecated due to broken dependencies, please update to the subsequent bugfix release version.
 
 ### Functional Shanghai Support
 

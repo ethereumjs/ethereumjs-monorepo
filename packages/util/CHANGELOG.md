@@ -6,7 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 8.0.5 - 2023-02-27
+
+- Pinned `@chainsafe/ssz` dependency to `v0.9.4` due to ES2021 features used in `v0.10.+` causing compatibility issues, PR [#2555](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2555)
+
 ## 8.0.4 - 2023-02-21
+
+**DEPRECATED**: Release is deprecated due to broken dependencies, please update to the subsequent bugfix release version.
 
 - Removed `async` library dependency, PR [#2514](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2514)
 - New `GWEI_TO_WEI` constant in a newly created `units` module, PR [#2483](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2483)

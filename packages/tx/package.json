@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/tx",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "description": "A simple module for creating, manipulating and signing Ethereum transactions",
   "keywords": [
     "ethereum",
@@ -52,9 +52,9 @@
   },
   "dependencies": {
     "@chainsafe/ssz": "0.9.4",
-    "@ethereumjs/common": "^3.1.0",
+    "@ethereumjs/common": "^3.1.1",
     "@ethereumjs/rlp": "^4.0.1",
-    "@ethereumjs/util": "^8.0.4",
+    "@ethereumjs/util": "^8.0.5",
     "ethereum-cryptography": "^1.1.2",
     "@ethersproject/providers": "^5.7.2"
   },
