@@ -53,7 +53,7 @@ tape('[Integration:Miner]', async (t) => {
       validateConsensus: false,
     })
     ;(blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [accounts[0][0]] // stub
-    const chain = new Chain({ config, blockchain })
+    const chain = await Chain.create({ config, blockchain })
     const serviceConfig = new Config({
       common,
       servers: [server as any],

@@ -85,7 +85,9 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
         values.push(withdrawalsData)
       }
       // Supply the common from the corresponding block header already set on correct fork
-      blocks.push(Block.fromValuesArray(values, { common: headers[i]._common }))
+      const block = Block.fromValuesArray(values, { common: headers[i]._common })
+      await block.validateData()
+      blocks.push(block)
     }
     this.debug(
       `Returning blocks=${blocksRange} from ${peerInfo} (received: ${headers.length} headers / ${bodies.length} bodies)`

@@ -4,6 +4,11 @@
 export * from './constants'
 
 /**
+ * Units helpers
+ */
+export * from './units'
+
+/**
  * Account class and helper functions
  */
 export * from './account'
@@ -27,6 +32,11 @@ export * from './signature'
  * Utilities for manipulating Buffers, byte arrays, etc.
  */
 export * from './bytes'
+
+/**
+ * SSZ containers
+ */
+export * as ssz from './ssz'
 
 /**
  * Helpful TypeScript types

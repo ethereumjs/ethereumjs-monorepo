@@ -2,7 +2,7 @@
 
 - https://github.com/ethereumjs/ethereumjs-monorepo/issues/2298
 
-This sim test is to setup a single ethereumjs<>lodestar instance to allow executing testvectors for the EIPs targetting Shanghai hardfork.
+This sim test is to setup a single ethereumjs<>lodestar instance to allow executing testvectors for the EIPs targeting Shanghai hardfork.
 
 ### EIP(s) testing
 
@@ -20,7 +20,7 @@ Target EIPs are: `3540,3651,3670,3855,3860`
 2. `cd packages/client`
 3. `docker pull chainsafe/lodestar:latest`, for MAC users: `npm install -g @chainsafe/lodestar:latest`
 4. Install linux package `jq` is not installed
-5. Create a data directory `data/eof` (or any other place convinient for you).
+5. Create a data directory `data/eof` (or any other place convenient for you).
 
 There are three ways to run tests with varying degree of automation:
 

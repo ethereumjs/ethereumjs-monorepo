@@ -57,7 +57,7 @@ export class FullEthereumService extends EthereumService {
 
     // This flag is just to run and test snap sync, when fully ready, this needs to
     // be replaced by a more sophisticated condition based on how far back we are
-    // from the head, and how to run it in conjuction with the beacon sync
+    // from the head, and how to run it in conjunction with the beacon sync
     if (this.config.forceSnapSync) {
       this.synchronizer = new SnapSynchronizer({
         config: this.config,
@@ -70,6 +70,7 @@ export class FullEthereumService extends EthereumService {
         if (!this.config.disableBeaconSync) {
           void this.switchToBeaconSync()
         }
+        this.config.logger.info(`Post-merge 🐼 client mode: run with CL client.`)
       } else {
         this.synchronizer = new FullSynchronizer({
           config: this.config,
@@ -128,9 +129,9 @@ export class FullEthereumService extends EthereumService {
 
   async open() {
     this.config.logger.info(
-      `Opening FullEthereumService with ${
+      `Preparing for sync using FullEthereumService with ${
         this.synchronizer instanceof BeaconSynchronizer ? 'BeaconSynchronizer' : 'FullSynchronizer'
-      } `
+      }.`
     )
     await super.open()
     await this.execution.open()
@@ -151,6 +152,9 @@ export class FullEthereumService extends EthereumService {
     }
     await super.start()
     this.miner?.start()
+    if (!this.config.execCommon.gteHardfork(Hardfork.Merge)) {
+      void this.execution.run(true, true)
+    }
     return true
   }
 
@@ -163,6 +167,7 @@ export class FullEthereumService extends EthereumService {
     }
     this.txPool.stop()
     this.miner?.stop()
+    await this.synchronizer.stop()
     await this.execution.stop()
     await super.stop()
     return true
@@ -191,6 +196,7 @@ export class FullEthereumService extends EthereumService {
         config: this.config,
         chain: this.chain,
         timeout: this.timeout,
+        convertSlimBody: true,
       }),
     ]
     if (this.config.lightserv) {

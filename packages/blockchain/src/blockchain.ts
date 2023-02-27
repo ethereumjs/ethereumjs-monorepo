@@ -8,6 +8,7 @@ import { DBOp, DBSaveLookups, DBSetBlockOrHeader, DBSetHashToNumber, DBSetTD } f
 import { DBManager } from './db/manager'
 import { DBTarget } from './db/operation'
 import { genesisStateRoot } from './genesisStates'
+import {} from './utils'
 
 import type { Consensus } from './consensus'
 import type { GenesisState } from './genesisStates'
@@ -274,8 +275,8 @@ export class Blockchain implements BlockchainInterface {
 
     if (this._hardforkByHeadBlockNumber) {
       const latestHeader = await this._getHeader(this._headHeaderHash)
-      const td = await this.getTotalDifficulty(this._headHeaderHash)
-      this.checkAndTransitionHardForkByNumber(latestHeader.number, td, latestHeader.timestamp)
+      const td = await this.getParentTD(latestHeader)
+      await this.checkAndTransitionHardForkByNumber(latestHeader.number, td, latestHeader.timestamp)
     }
 
     this._isInitialized = true
@@ -414,6 +415,29 @@ export class Blockchain implements BlockchainInterface {
   }
 
   /**
+   * Resets the canonical chain to canonicalHead number
+   *
+   * This updates the head hashes (if affected) to the hash corresponding to
+   * canonicalHead and cleans up canonical references greater than canonicalHead
+   * @param canonicalHead - The number to which chain should be reset to
+   */
+
+  async resetCanonicalHead(canonicalHead: bigint) {
+    await this.runWithLock<void>(async () => {
+      const hash = await this.dbManager.numberToHash(canonicalHead)
+      const header = await this._getHeader(hash, canonicalHead)
+      const td = await this.getParentTD(header)
+
+      const dbOps: DBOp[] = []
+      await this._deleteCanonicalChainReferences(canonicalHead + BigInt(1), hash, dbOps)
+      const ops = dbOps.concat(this._saveHeadOps())
+
+      await this.dbManager.batch(ops)
+      await this.checkAndTransitionHardForkByNumber(canonicalHead, td, header.timestamp)
+    })
+  }
+
+  /**
    * Entrypoint for putting any block or block header. Verifies this block,
    * checks the total TD: if this TD is higher than the current highest TD, we
    * have thus found a new canonical block and have to rewrite the canonical
@@ -427,101 +451,113 @@ export class Blockchain implements BlockchainInterface {
    */
   private async _putBlockOrHeader(item: Block | BlockHeader) {
     await this.runWithLock<void>(async () => {
-      const block =
-        item instanceof BlockHeader
-          ? new Block(item, undefined, undefined, {
-              common: item._common,
-            })
-          : item
-      const isGenesis = block.isGenesis()
+      // Save the current sane state incase _putBlockOrHeader midway with some
+      // dirty changes in head trackers
+      const oldHeads = Object.assign({}, this._heads)
+      const oldHeadHeaderHash = this._headHeaderHash
+      const oldHeadBlockHash = this._headBlockHash
+      try {
+        const block =
+          item instanceof BlockHeader
+            ? new Block(item, undefined, undefined, {
+                common: item._common,
+              })
+            : item
+        const isGenesis = block.isGenesis()
 
-      // we cannot overwrite the Genesis block after initializing the Blockchain
-      if (isGenesis) {
-        throw new Error('Cannot put a genesis block: create a new Blockchain')
-      }
-
-      const { header } = block
-      const blockHash = header.hash()
-      const blockNumber = header.number
-      let td = header.difficulty
-      const currentTd = { header: BigInt(0), block: BigInt(0) }
-      let dbOps: DBOp[] = []
-
-      if (block._common.chainId() !== this._common.chainId()) {
-        throw new Error('Chain mismatch while trying to put block or header')
-      }
-
-      if (this._validateBlocks && !isGenesis) {
-        // this calls into `getBlock`, which is why we cannot lock yet
-        await this.validateBlock(block)
-      }
-
-      if (this._validateConsensus) {
-        await this.consensus.validateConsensus(block)
-      }
-
-      // set total difficulty in the current context scope
-      if (this._headHeaderHash) {
-        currentTd.header = await this.getTotalDifficulty(this._headHeaderHash)
-      }
-      if (this._headBlockHash) {
-        currentTd.block = await this.getTotalDifficulty(this._headBlockHash)
-      }
-
-      // calculate the total difficulty of the new block
-      let parentTd = BigInt(0)
-      if (!block.isGenesis()) {
-        parentTd = await this.getTotalDifficulty(header.parentHash, blockNumber - BigInt(1))
-      }
-      td += parentTd
-
-      // save total difficulty to the database
-      dbOps = dbOps.concat(DBSetTD(td, blockNumber, blockHash))
-
-      // save header/block to the database
-      dbOps = dbOps.concat(DBSetBlockOrHeader(block))
-
-      let commonAncestor: undefined | BlockHeader
-      let ancestorHeaders: undefined | BlockHeader[]
-      // if total difficulty is higher than current, add it to canonical chain
-      if (
-        block.isGenesis() ||
-        (block._common.consensusType() !== ConsensusType.ProofOfStake && td > currentTd.header) ||
-        block._common.consensusType() === ConsensusType.ProofOfStake
-      ) {
-        const foundCommon = await this.findCommonAncestor(header)
-        commonAncestor = foundCommon.commonAncestor
-        ancestorHeaders = foundCommon.ancestorHeaders
-
-        this._headHeaderHash = blockHash
-        if (item instanceof Block) {
-          this._headBlockHash = blockHash
-        }
-        if (this._hardforkByHeadBlockNumber) {
-          this.checkAndTransitionHardForkByNumber(blockNumber, td, header.timestamp)
+        // we cannot overwrite the Genesis block after initializing the Blockchain
+        if (isGenesis) {
+          throw new Error('Cannot put a genesis block: create a new Blockchain')
         }
 
-        // delete higher number assignments and overwrite stale canonical chain
-        await this._deleteCanonicalChainReferences(blockNumber + BigInt(1), blockHash, dbOps)
-        // from the current header block, check the blockchain in reverse (i.e.
-        // traverse `parentHash`) until `numberToHash` matches the current
-        // number/hash in the canonical chain also: overwrite any heads if these
-        // heads are stale in `_heads` and `_headBlockHash`
-        await this._rebuildCanonical(header, dbOps)
-      } else {
-        // the TD is lower than the current highest TD so we will add the block
-        // to the DB, but will not mark it as the canonical chain.
-        if (td > currentTd.block && item instanceof Block) {
-          this._headBlockHash = blockHash
+        const { header } = block
+        const blockHash = header.hash()
+        const blockNumber = header.number
+        let td = header.difficulty
+        const currentTd = { header: BigInt(0), block: BigInt(0) }
+        let dbOps: DBOp[] = []
+
+        if (block._common.chainId() !== this._common.chainId()) {
+          throw new Error('Chain mismatch while trying to put block or header')
         }
-        // save hash to number lookup info even if rebuild not needed
-        dbOps.push(DBSetHashToNumber(blockHash, blockNumber))
+
+        if (this._validateBlocks && !isGenesis) {
+          // this calls into `getBlock`, which is why we cannot lock yet
+          await this.validateBlock(block)
+        }
+
+        if (this._validateConsensus) {
+          await this.consensus.validateConsensus(block)
+        }
+
+        // set total difficulty in the current context scope
+        if (this._headHeaderHash) {
+          currentTd.header = await this.getTotalDifficulty(this._headHeaderHash)
+        }
+        if (this._headBlockHash) {
+          currentTd.block = await this.getTotalDifficulty(this._headBlockHash)
+        }
+
+        // calculate the total difficulty of the new block
+        const parentTd = await this.getParentTD(header)
+        if (!block.isGenesis()) {
+          td += parentTd
+        }
+
+        // save total difficulty to the database
+        dbOps = dbOps.concat(DBSetTD(td, blockNumber, blockHash))
+
+        // save header/block to the database
+        dbOps = dbOps.concat(DBSetBlockOrHeader(block))
+
+        let commonAncestor: undefined | BlockHeader
+        let ancestorHeaders: undefined | BlockHeader[]
+        // if total difficulty is higher than current, add it to canonical chain
+        if (
+          block.isGenesis() ||
+          td > currentTd.header ||
+          block._common.consensusType() === ConsensusType.ProofOfStake
+        ) {
+          const foundCommon = await this.findCommonAncestor(header)
+          commonAncestor = foundCommon.commonAncestor
+          ancestorHeaders = foundCommon.ancestorHeaders
+
+          this._headHeaderHash = blockHash
+          if (item instanceof Block) {
+            this._headBlockHash = blockHash
+          }
+          if (this._hardforkByHeadBlockNumber) {
+            await this.checkAndTransitionHardForkByNumber(blockNumber, parentTd, header.timestamp)
+          }
+
+          // delete higher number assignments and overwrite stale canonical chain
+          await this._deleteCanonicalChainReferences(blockNumber + BigInt(1), blockHash, dbOps)
+          // from the current header block, check the blockchain in reverse (i.e.
+          // traverse `parentHash`) until `numberToHash` matches the current
+          // number/hash in the canonical chain also: overwrite any heads if these
+          // heads are stale in `_heads` and `_headBlockHash`
+          await this._rebuildCanonical(header, dbOps)
+        } else {
+          // the TD is lower than the current highest TD so we will add the block
+          // to the DB, but will not mark it as the canonical chain.
+          if (td > currentTd.block && item instanceof Block) {
+            this._headBlockHash = blockHash
+          }
+          // save hash to number lookup info even if rebuild not needed
+          dbOps.push(DBSetHashToNumber(blockHash, blockNumber))
+        }
+
+        const ops = dbOps.concat(this._saveHeadOps())
+        await this.dbManager.batch(ops)
+
+        await this.consensus.newBlock(block, commonAncestor, ancestorHeaders)
+      } catch (e) {
+        // restore head to the previouly sane state
+        this._heads = oldHeads
+        this._headHeaderHash = oldHeadHeaderHash
+        this._headBlockHash = oldHeadBlockHash
+        throw e
       }
-
-      const ops = dbOps.concat(this._saveHeadOps())
-      await this.dbManager.batch(ops)
-
-      await this.consensus.newBlock(block, commonAncestor, ancestorHeaders)
     })
   }
 
@@ -605,8 +641,11 @@ export class Blockchain implements BlockchainInterface {
     await this.validateHeader(block.header)
     await this._validateUncleHeaders(block)
     await block.validateData(false)
+    // TODO: Rethink how validateHeader vs validateBlobTransactions works since the parentHeader is retrieved multiple times
+    // (one for each uncle header and then for validateBlobTxs).
+    const parentBlock = await this.getBlock(block.header.parentHash)
+    block.validateBlobTransactions(parentBlock.header)
   }
-
   /**
    * The following rules are checked in this method:
    * Uncle Header is a valid header.
@@ -649,9 +688,6 @@ export class Blockchain implements BlockchainInterface {
     let parentHash = block.header.parentHash
     for (let i = 0; i < getBlocks; i++) {
       const parentBlock = await this.getBlock(parentHash)
-      if (parentBlock === undefined) {
-        throw new Error(`could not find parent block ${block.errorStr()}`)
-      }
       canonicalBlockMap.push(parentBlock)
 
       // mark block hash as part of the canonical chain
@@ -704,7 +740,18 @@ export class Blockchain implements BlockchainInterface {
     // in the `VM` if we encounter a `BLOCKHASH` opcode: then a bigint is used we
     // need to then read the block from the canonical chain Q: is this safe? We
     // know it is OK if we call it from the iterator... (runBlock)
-    return this.dbManager.getBlock(blockId)
+    try {
+      return await this.dbManager.getBlock(blockId)
+    } catch (error: any) {
+      if (error.code === 'LEVEL_NOT_FOUND') {
+        if (typeof blockId === 'object') {
+          error.message = `Block with hash ${blockId.toString('hex')} not found in DB (NotFound)`
+        } else {
+          error.message = `Block number ${blockId} not found in DB (NotFound)`
+        }
+      }
+      throw error
+    }
   }
 
   /**
@@ -715,6 +762,16 @@ export class Blockchain implements BlockchainInterface {
       number = await this.dbManager.hashToNumber(hash)
     }
     return this.dbManager.getTotalDifficulty(hash, number)
+  }
+
+  /**
+   * Gets total difficulty for a header's parent, helpful for determining terminal block
+   * @param header - Block header whose parent td is desired
+   */
+  public async getParentTD(header: BlockHeader): Promise<bigint> {
+    return header.number === BigInt(0)
+      ? header.difficulty
+      : this.getTotalDifficulty(header.parentHash, header.number - BigInt(1))
   }
 
   /**
@@ -1051,6 +1108,10 @@ export class Blockchain implements BlockchainInterface {
       if (this._headBlockHash?.equals(hash) === true) {
         this._headBlockHash = headHash
       }
+      // reset stale headBlock to current canonical
+      if (this._headHeaderHash?.equals(hash) === true) {
+        this._headHeaderHash = headHash
+      }
 
       blockNumber++
 
@@ -1172,11 +1233,11 @@ export class Blockchain implements BlockchainInterface {
     return this.dbManager.getHeader(hash, number)
   }
 
-  protected checkAndTransitionHardForkByNumber(
+  async checkAndTransitionHardForkByNumber(
     number: bigint,
     td?: BigIntLike,
     timestamp?: BigIntLike
-  ): void {
+  ): Promise<void> {
     this._common.setHardforkByBlockNumber(number, td, timestamp)
 
     // If custom consensus algorithm is used, skip merge hardfork consensus checks
@@ -1202,6 +1263,7 @@ export class Blockchain implements BlockchainInterface {
       default:
         throw new Error(`consensus algorithm ${this._common.consensusAlgorithm()} not supported`)
     }
+    await this.consensus.setup({ blockchain: this })
   }
 
   /**
@@ -1244,13 +1306,18 @@ export class Blockchain implements BlockchainInterface {
    */
   createGenesisBlock(stateRoot: Buffer): Block {
     const common = this._common.copy()
-    common.setHardforkByBlockNumber(0)
+    common.setHardforkByBlockNumber(
+      0,
+      BigInt(common.genesis().difficulty),
+      common.genesis().timestamp
+    )
 
     const header: BlockData['header'] = {
       ...common.genesis(),
       number: 0,
       stateRoot,
       withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
+      excessDataGas: common.isActivatedEIP(4844) ? BigInt(0) : undefined,
     }
     if (common.consensusType() === 'poa') {
       if (common.genesis().extraData) {

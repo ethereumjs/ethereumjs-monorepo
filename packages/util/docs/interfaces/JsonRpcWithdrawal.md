@@ -2,7 +2,8 @@
 
 # Interface: JsonRpcWithdrawal
 
-JSON RPC interface for EIP-4895 withdrawal data
+JSON RPC interface for EIP-4895 withdrawal data with amount in Gwei to
+match CL representation and for eventual ssz withdrawalsRoot
 
 ## Table of contents
 
@@ -21,7 +22,7 @@ JSON RPC interface for EIP-4895 withdrawal data
 
 #### Defined in
 
-[packages/util/src/withdrawal.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L23)
+[packages/util/src/withdrawal.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L25)
 
 ___
 
@@ -31,7 +32,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/withdrawal.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L24)
+[packages/util/src/withdrawal.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L26)
 
 ___
 
@@ -41,7 +42,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/withdrawal.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L21)
+[packages/util/src/withdrawal.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L23)
 
 ___
 
@@ -51,4 +52,4 @@ ___
 
 #### Defined in
 
-[packages/util/src/withdrawal.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L22)
+[packages/util/src/withdrawal.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L24)

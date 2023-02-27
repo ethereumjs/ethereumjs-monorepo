@@ -67,7 +67,7 @@ export interface BlockOptions {
    * It also enables block hash caching when the `hash()` method is called multiple times.
    *
    * If you need to deactivate the block freeze - e.g. because you want to subclass block and
-   * add aditional properties - it is strongly encouraged that you do the freeze yourself
+   * add additional properties - it is strongly encouraged that you do the freeze yourself
    * within your code instead.
    *
    * Default: true
@@ -109,6 +109,7 @@ export interface HeaderData {
   nonce?: BufferLike
   baseFeePerGas?: BigIntLike
   withdrawalsRoot?: BufferLike
+  excessDataGas?: BigIntLike
   /**
    * Verkle Proof Data (experimental)
    * Fake-EIP 999001 (see Common library)
@@ -181,6 +182,7 @@ export interface JsonHeader {
   nonce?: string
   baseFeePerGas?: string
   withdrawalsRoot?: string
+  excessDataGas?: string
 }
 
 /*
@@ -209,4 +211,5 @@ export interface JsonRpcBlock {
   uncles: string[] // Array of uncle hashes
   baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
   withdrawals?: Array<JsonRpcWithdrawal> // If EIP-4895 is enabled for this block, array of withdrawals
+  excessDataGas?: string // If EIP-4844 is enabled for this block, returns the excess data gas for the block
 }

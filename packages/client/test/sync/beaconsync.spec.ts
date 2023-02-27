@@ -6,7 +6,6 @@ import * as td from 'testdouble'
 import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
 import { Skeleton } from '../../lib/sync'
-import { wait } from '../integration/util'
 
 tape('[BeaconSynchronizer]', async (t) => {
   const execution: any = { run: () => {} }
@@ -45,7 +44,7 @@ tape('[BeaconSynchronizer]', async (t) => {
   t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     t.equal(sync.type, 'beacon', 'beacon type')
@@ -55,7 +54,7 @@ tape('[BeaconSynchronizer]', async (t) => {
   t.test('should open', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     ;(sync as any).pool.open = td.func<PeerPool['open']>()
@@ -70,7 +69,7 @@ tape('[BeaconSynchronizer]', async (t) => {
   t.test('should get height', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     const peer = { eth: { getBlockHeaders: td.func(), status: { bestHash: 'hash' } } }
@@ -86,7 +85,7 @@ tape('[BeaconSynchronizer]', async (t) => {
   t.test('should find best', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     ;(sync as any).running = true
@@ -110,14 +109,15 @@ tape('[BeaconSynchronizer]', async (t) => {
     t.end()
   })
 
-  t.test('should sync to next subchain head or chain height', async (t) => {
+  t.test('should sync to next subchain head or chain height', async (st) => {
+    st.plan(3)
     const config = new Config({
       transports: [],
       safeReorgDistance: 0,
       skeletonSubchainMergeMinimum: 0,
     })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     skeleton['getSyncStatus'] = td.func<typeof skeleton['getSyncStatus']>()
     await skeleton.open()
@@ -137,33 +137,38 @@ tape('[BeaconSynchronizer]', async (t) => {
     ;(sync as any).chain = {
       blocks: { height: BigInt(0) },
     }
-    void sync.sync()
-    await wait(50)
-    t.equal(sync.fetcher!.first, BigInt(5), 'should sync block 5 and 4')
-    t.equal(sync.fetcher!.count, BigInt(5), 'should target syncing all the way to chain')
-    await wait(51)
+    sync.config.logger.addListener('data', (data: any) => {
+      if ((data.message as string).includes('first=5 count=5'))
+        st.pass('should sync block 5 and target chain start')
+    })
+    await sync.sync()
+    sync.config.logger.removeAllListeners()
+    sync.config.logger.addListener('data', (data: any) => {
+      if ((data.message as string).includes('first=1 count=1'))
+        st.pass('should sync block 1 and target chain start')
+    })
     ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(2) }]
-    void sync.sync()
-    await wait(50)
-    t.equal(sync.fetcher!.first, BigInt(1), 'should sync block 1')
-    t.equal(sync.fetcher!.count, BigInt(1), 'should target syncing all the way to chain')
-    await wait(51)
+    await sync.sync()
+    sync.config.logger.removeAllListeners()
     ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(6) }]
     ;(sync as any).chain = { blocks: { height: BigInt(4) } }
-    void sync.sync()
-    await wait(50)
-    t.equal(sync.fetcher!.first, BigInt(5), 'should sync block 5')
-    t.equal(sync.fetcher!.count, BigInt(1), 'should sync block 5')
+    sync.config.logger.addListener('data', (data: any) => {
+      if ((data.message as string).includes('first=5 count=1'))
+        st.pass('should sync block 5 with count 1')
+    })
+    await sync.sync()
+    sync.config.logger.removeAllListeners()
   })
 
-  t.test('should not sync pre-genesis', async (t) => {
+  t.test('should not sync pre-genesis', async (st) => {
+    st.plan(1)
     const config = new Config({
       transports: [],
       safeReorgDistance: 0,
       skeletonSubchainMergeMinimum: 1000,
     })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     skeleton['getSyncStatus'] = td.func<typeof skeleton['getSyncStatus']>()
     await skeleton.open()
@@ -181,16 +186,18 @@ tape('[BeaconSynchronizer]', async (t) => {
       // Make height > tail so that skeletonSubchainMergeMinimum is triggered
       blocks: { height: BigInt(100) },
     }
-    void sync.sync()
-    await wait(50)
-    t.equal(sync.fetcher!.first, BigInt(5), 'should sync block 5 and 4')
-    t.equal(sync.fetcher!.count, BigInt(5), 'should target syncing all the way to chain')
+    sync.config.logger.addListener('data', (data: any) => {
+      if ((data.message as string).includes('first=5 count=5'))
+        st.pass('should sync block 5 and target chain start')
+    })
+    await sync.sync()
+    sync.config.logger.removeAllListeners()
   })
 
   t.test('should extend and set with a valid head', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     const head = Block.fromBlockData({ header: { number: BigInt(15) } })
@@ -219,7 +226,7 @@ tape('[BeaconSynchronizer]', async (t) => {
   t.test('syncWithPeer should return early if skeleton is already linked', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     skeleton.isLinked = () => true // stub
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })

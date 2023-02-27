@@ -5,7 +5,7 @@ import { Withdrawal, bigIntToHex, bufferToHex, toBuffer, zeros } from '@ethereum
 
 import { PendingBlock } from '../../miner'
 import { short } from '../../util'
-import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
+import { INTERNAL_ERROR, INVALID_PARAMS, TOO_LARGE_REQUEST } from '../error-code'
 import { CLConnectionManager, middleware as cmMiddleware } from '../util/CLConnectionManager'
 import { middleware, validators } from '../validation'
 
@@ -25,43 +25,56 @@ export enum Status {
   VALID = 'VALID',
 }
 
+type Bytes8 = string
+type Bytes20 = string
+type Bytes32 = string
+// type Root = Bytes32
+type Blob = Bytes32
+type Bytes48 = string
+type Bytes256 = string
+type VariableBytes32 = string
+type Uint64 = string
+type Uint256 = string
+
 export type WithdrawalV1 = {
-  index: string // Quantity, 8 Bytes
-  validatorIndex: string // Quantity, 8 bytes
-  address: string // DATA, 20 bytes
-  amount: string // Quantity, 32 bytes
+  index: Bytes8 // Quantity, 8 Bytes
+  validatorIndex: Bytes8 // Quantity, 8 bytes
+  address: Bytes20 // DATA, 20 bytes
+  amount: Bytes32 // Quantity, 32 bytes
 }
 
 export type ExecutionPayload = {
-  parentHash: string // DATA, 32 Bytes
-  feeRecipient: string // DATA, 20 Bytes
-  stateRoot: string // DATA, 32 Bytes
-  receiptsRoot: string // DATA, 32 bytes
-  logsBloom: string // DATA, 256 Bytes
-  prevRandao: string // DATA, 32 Bytes
-  blockNumber: string // QUANTITY, 64 Bits
-  gasLimit: string // QUANTITY, 64 Bits
-  gasUsed: string // QUANTITY, 64 Bits
-  timestamp: string // QUANTITY, 64 Bits
-  extraData: string // DATA, 0 to 32 Bytes
-  baseFeePerGas: string // QUANTITY, 256 Bits
-  blockHash: string // DATA, 32 Bytes
+  parentHash: Bytes32 // DATA, 32 Bytes
+  feeRecipient: Bytes20 // DATA, 20 Bytes
+  stateRoot: Bytes32 // DATA, 32 Bytes
+  receiptsRoot: Bytes32 // DATA, 32 bytes
+  logsBloom: Bytes256 // DATA, 256 Bytes
+  prevRandao: Bytes32 // DATA, 32 Bytes
+  blockNumber: Uint64 // QUANTITY, 64 Bits
+  gasLimit: Uint64 // QUANTITY, 64 Bits
+  gasUsed: Uint64 // QUANTITY, 64 Bits
+  timestamp: Uint64 // QUANTITY, 64 Bits
+  extraData: VariableBytes32 // DATA, 0 to 32 Bytes
+  baseFeePerGas: Uint256 // QUANTITY, 256 Bits
+  excessDataGas?: Uint256 // QUANTITY, 256 Bits
+  blockHash: Bytes32 // DATA, 32 Bytes
   transactions: string[] // Array of DATA - Array of transaction rlp strings,
   withdrawals?: WithdrawalV1[] // Array of withdrawal objects
 }
-export type ExecutionPayloadV1 = Omit<ExecutionPayload, 'withdrawals'>
+export type ExecutionPayloadV1 = Omit<ExecutionPayload, 'withdrawals' | 'excessDataGas'>
 export type ExecutionPayloadV2 = ExecutionPayload & { withdrawals: WithdrawalV1[] }
+export type ExecutionPayloadV3 = ExecutionPayload & { excessDataGas: Uint256 }
 
 export type ForkchoiceStateV1 = {
-  headBlockHash: string
-  safeBlockHash: string
-  finalizedBlockHash: string
+  headBlockHash: Bytes32
+  safeBlockHash: Bytes32
+  finalizedBlockHash: Bytes32
 }
 
 type PayloadAttributes = {
-  timestamp: string
-  prevRandao: string
-  suggestedFeeRecipient: string
+  timestamp: Uint64
+  prevRandao: Bytes32
+  suggestedFeeRecipient: Bytes20
   withdrawals?: WithdrawalV1[]
 }
 type PayloadAttributesV1 = Omit<PayloadAttributes, 'withdrawals'>
@@ -69,19 +82,30 @@ type PayloadAttributesV2 = PayloadAttributes & { withdrawals: WithdrawalV1[] }
 
 export type PayloadStatusV1 = {
   status: Status
-  latestValidHash: string | null
+  latestValidHash: Bytes32 | null
   validationError: string | null
 }
 
 export type ForkchoiceResponseV1 = {
   payloadStatus: PayloadStatusV1
-  payloadId: string | null
+  payloadId: Bytes8 | null
 }
 
 type TransitionConfigurationV1 = {
-  terminalTotalDifficulty: string
-  terminalBlockHash: string
-  terminalBlockNumber: string
+  terminalTotalDifficulty: Uint256
+  terminalBlockHash: Bytes32
+  terminalBlockNumber: Uint64
+}
+
+type BlobsBundleV1 = {
+  blockHash: string
+  kzgs: Bytes48[]
+  blobs: Blob[]
+}
+
+type ExecutionPayloadBodyV1 = {
+  transactions: string[]
+  withdrawals: WithdrawalV1[] | null
 }
 
 const EngineError = {
@@ -94,22 +118,26 @@ const EngineError = {
 const executionPayloadV1FieldValidators = {
   parentHash: validators.blockHash,
   feeRecipient: validators.address,
-  stateRoot: validators.hex,
-  receiptsRoot: validators.hex,
-  logsBloom: validators.hex,
-  prevRandao: validators.hex,
-  blockNumber: validators.hex,
-  gasLimit: validators.hex,
-  gasUsed: validators.hex,
-  timestamp: validators.hex,
-  extraData: validators.hex,
-  baseFeePerGas: validators.hex,
+  stateRoot: validators.bytes32,
+  receiptsRoot: validators.bytes32,
+  logsBloom: validators.bytes256,
+  prevRandao: validators.bytes32,
+  blockNumber: validators.uint64,
+  gasLimit: validators.uint64,
+  gasUsed: validators.uint64,
+  timestamp: validators.uint64,
+  extraData: validators.variableBytes32,
+  baseFeePerGas: validators.uint256,
   blockHash: validators.blockHash,
   transactions: validators.array(validators.hex),
 }
 const executionPayloadV2FieldValidators = {
   ...executionPayloadV1FieldValidators,
   withdrawals: validators.array(validators.withdrawal()),
+}
+const executionPayloadV3FieldValidators = {
+  ...executionPayloadV2FieldValidators,
+  excessDataGas: validators.uint256,
 }
 
 const forkchoiceFieldValidators = {
@@ -119,13 +147,13 @@ const forkchoiceFieldValidators = {
 }
 
 const payloadAttributesFieldValidatorsV1 = {
-  timestamp: validators.hex,
-  prevRandao: validators.hex,
+  timestamp: validators.uint64,
+  prevRandao: validators.bytes32,
   suggestedFeeRecipient: validators.address,
 }
 const payloadAttributesFieldValidatorsV2 = {
   ...payloadAttributesFieldValidatorsV1,
-  withdrawals: validators.array(validators.withdrawal()),
+  withdrawals: validators.optional(validators.array(validators.withdrawal())),
 }
 /**
  * Formats a block to {@link ExecutionPayloadV1}.
@@ -148,6 +176,7 @@ const blockToExecutionPayload = (block: Block, value: bigint) => {
     timestamp: header.timestamp!,
     extraData: header.extraData!,
     baseFeePerGas: header.baseFeePerGas!,
+    excessDataGas: header.excessDataGas,
     blockHash: bufferToHex(block.hash()),
     prevRandao: header.mixHash!,
     transactions,
@@ -291,6 +320,16 @@ const assembleBlock = async (
   return { block }
 }
 
+const getPayloadBody = (block: Block): ExecutionPayloadBodyV1 => {
+  const transactions = block.transactions.map((tx) => bufferToHex(tx.serialize()))
+  const withdrawals = block.withdrawals?.map((wt) => wt.toJSON()) ?? null
+
+  return {
+    transactions,
+    withdrawals,
+  }
+}
+
 /**
  * engine_* RPC module
  * @memberof module:rpc/modules
@@ -305,6 +344,9 @@ export class Engine {
   private pendingBlock: PendingBlock
   private remoteBlocks: Map<String, Block>
   private connectionManager: CLConnectionManager
+
+  private lastNewPayloadHF: string = ''
+  private lastForkchoiceUpdatedHF: string = ''
 
   /**
    * Create engine_* RPC module
@@ -333,7 +375,25 @@ export class Engine {
 
     this.newPayloadV2 = cmMiddleware(
       middleware(this.newPayloadV2.bind(this), 1, [
-        [validators.object(executionPayloadV2FieldValidators)],
+        [
+          validators.either(
+            validators.object(executionPayloadV1FieldValidators),
+            validators.object(executionPayloadV2FieldValidators)
+          ),
+        ],
+      ]),
+      ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
+    )
+
+    this.newPayloadV3 = cmMiddleware(
+      middleware(this.newPayloadV3.bind(this), 1, [
+        [
+          validators.either(
+            validators.object(executionPayloadV1FieldValidators),
+            validators.object(executionPayloadV2FieldValidators),
+            validators.object(executionPayloadV3FieldValidators)
+          ),
+        ],
       ]),
       ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
     )
@@ -370,12 +430,17 @@ export class Engine {
     )
 
     this.getPayloadV1 = cmMiddleware(
-      middleware(this.getPayloadV1.bind(this), 1, [[validators.hex]]),
+      middleware(this.getPayloadV1.bind(this), 1, [[validators.bytes8]]),
       () => this.connectionManager.updateStatus()
     )
 
     this.getPayloadV2 = cmMiddleware(
-      middleware(this.getPayloadV2.bind(this), 1, [[validators.hex]]),
+      middleware(this.getPayloadV2.bind(this), 1, [[validators.bytes8]]),
+      () => this.connectionManager.updateStatus()
+    )
+
+    this.getPayloadV3 = cmMiddleware(
+      middleware(this.getPayloadV3.bind(this), 1, [[validators.bytes8]]),
       () => this.connectionManager.updateStatus()
     )
 
@@ -383,11 +448,36 @@ export class Engine {
       middleware(this.exchangeTransitionConfigurationV1.bind(this), 1, [
         [
           validators.object({
-            terminalTotalDifficulty: validators.hex,
-            terminalBlockHash: validators.hex,
-            terminalBlockNumber: validators.hex,
+            terminalTotalDifficulty: validators.uint256,
+            terminalBlockHash: validators.bytes32,
+            terminalBlockNumber: validators.uint64,
           }),
         ],
+      ]),
+      () => this.connectionManager.updateStatus()
+    )
+
+    this.getBlobsBundleV1 = cmMiddleware(
+      middleware(this.getBlobsBundleV1.bind(this), 1, [[validators.bytes8]]),
+      () => this.connectionManager.updateStatus()
+    )
+
+    this.exchangeCapabilities = cmMiddleware(
+      middleware(this.exchangeCapabilities.bind(this), 0, []),
+      () => this.connectionManager.updateStatus()
+    )
+
+    this.getPayloadBodiesByHashV1 = cmMiddleware(
+      middleware(this.getPayloadBodiesByHashV1.bind(this), 1, [
+        [validators.array(validators.bytes32)],
+      ]),
+      () => this.connectionManager.updateStatus()
+    )
+
+    this.getPayloadBodiesByRangeV1 = cmMiddleware(
+      middleware(this.getPayloadBodiesByRangeV1.bind(this), 2, [
+        [validators.bytes8],
+        [validators.bytes8],
       ]),
       () => this.connectionManager.updateStatus()
     )
@@ -412,6 +502,9 @@ export class Engine {
    */
   private async newPayload(params: [ExecutionPayload]): Promise<PayloadStatusV1> {
     const [payload] = params
+    if (this.config.synchronized) {
+      this.connectionManager.newPayloadLog()
+    }
     const { parentHash, blockHash } = payload
     const { block, error } = await assembleBlock(payload, this.chain)
     if (!block || error) {
@@ -425,8 +518,20 @@ export class Engine {
       return response
     }
 
+    this.connectionManager.updatePayloadStats(block)
+
+    const hardfork = block._common.hardfork()
+    if (hardfork !== this.lastNewPayloadHF && this.lastNewPayloadHF !== '') {
+      this.config.logger.info(
+        `Hardfork change along new payload block number=${block.header.number} hash=${short(
+          block.hash()
+        )} old=${this.lastNewPayloadHF} new=${hardfork}`
+      )
+    }
+    this.lastNewPayloadHF = hardfork
+
     // This optimistic lookup keeps skeleton updated even if for e.g. beacon sync might not have
-    // been intialized here but a batch of blocks new payloads arrive, most likely during sync
+    // been initialized here but a batch of blocks new payloads arrive, most likely during sync
     // We still can't switch to beacon sync here especially if the chain is pre merge and there
     // is pow block which this client would like to mint and attempt proposing it
     const optimisticLookup = await this.service.beaconSync?.extendChain(block)
@@ -517,8 +622,69 @@ export class Engine {
     return this.newPayload(params)
   }
 
-  async newPayloadV2(params: [ExecutionPayloadV2]): Promise<PayloadStatusV1> {
-    return this.newPayload(params)
+  async newPayloadV2(params: [ExecutionPayloadV2 | ExecutionPayloadV1]): Promise<PayloadStatusV1> {
+    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
+    const withdrawals = (params[0] as ExecutionPayloadV2).withdrawals
+
+    if (shanghaiTimestamp === null || parseInt(params[0].timestamp) < shanghaiTimestamp) {
+      if (withdrawals !== undefined && withdrawals !== null) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'ExecutionPayloadV1 MUST be used before Shanghai is activated',
+        }
+      }
+    } else if (parseInt(params[0].timestamp) >= shanghaiTimestamp) {
+      if (withdrawals === undefined || withdrawals === null) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'ExecutionPayloadV2 MUST be used after Shanghai is activated',
+        }
+      }
+    }
+    const newPayload = await this.newPayload(params)
+    if (newPayload.status === Status.INVALID_BLOCK_HASH) {
+      newPayload.status = Status.INVALID
+    }
+    return newPayload
+  }
+
+  async newPayloadV3(
+    params: [ExecutionPayloadV3 | ExecutionPayloadV2 | ExecutionPayloadV1]
+  ): Promise<PayloadStatusV1> {
+    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
+    const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp(
+      Hardfork.ShardingForkDev
+    )
+    if (shanghaiTimestamp === null || parseInt(params[0].timestamp) < shanghaiTimestamp) {
+      if ('withdrawals' in params[0]) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'ExecutionPayloadV1 MUST be used before Shanghai is activated',
+        }
+      }
+    } else if (
+      parseInt(params[0].timestamp) >= shanghaiTimestamp &&
+      (eip4844Timestamp === null || parseInt(params[0].timestamp) < eip4844Timestamp)
+    ) {
+      if (!('extraDataGas' in params[0])) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'ExecutionPayloadV2 MUST be used if Shanghai is activated and EIP-4844 is not',
+        }
+      }
+    } else if (eip4844Timestamp === null || parseInt(params[0].timestamp) >= eip4844Timestamp) {
+      if (!('extraData' in params[0])) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'ExecutionPayloadV3 MUST be used after EIP-4844 is activated',
+        }
+      }
+    }
+    const newPayload = await this.newPayload(params)
+    if (newPayload.status === Status.INVALID_BLOCK_HASH) {
+      newPayload.status = Status.INVALID
+    }
+    return newPayload
   }
 
   /**
@@ -545,7 +711,11 @@ export class Engine {
     const { headBlockHash, finalizedBlockHash, safeBlockHash } = params[0]
     const payloadAttributes = params[1]
 
-    // It is possible that newPayload didnt start beacon sync as the payload it was asked to
+    if (this.config.synchronized) {
+      this.connectionManager.newForkchoiceLog()
+    }
+
+    // It is possible that newPayload didn't start beacon sync as the payload it was asked to
     // evaluate didn't require syncing beacon. This can happen if the EL<>CL starts and CL
     // starts from a bit behind like how lodestar does
     if (!this.service.beaconSync && !this.config.disableBeaconSync) {
@@ -575,6 +745,16 @@ export class Engine {
         this.remoteBlocks.delete(headBlockHash.slice(2))
       }
     }
+
+    const hardfork = headBlock._common.hardfork()
+    if (hardfork !== this.lastForkchoiceUpdatedHF && this.lastForkchoiceUpdatedHF !== '') {
+      this.config.logger.info(
+        `Hardfork change along forkchoice head block update number=${
+          headBlock.header.number
+        } hash=${short(headBlock.hash())} old=${this.lastForkchoiceUpdatedHF} new=${hardfork}`
+      )
+    }
+    this.lastForkchoiceUpdatedHF = hardfork
 
     // Always keep beaconSync skeleton updated so that it stays updated with any skeleton sync
     // requirements that might come later because of reorg or CL restarts
@@ -639,16 +819,9 @@ export class Engine {
       await this.execution.setHead(blocks)
       this.service.txPool.removeNewBlockTxs(blocks)
 
-      const timeDiff = new Date().getTime() / 1000 - Number(headBlock.header.timestamp)
-      if (
-        (typeof this.config.syncTargetHeight !== 'bigint' ||
-          this.config.syncTargetHeight === BigInt(0) ||
-          this.config.syncTargetHeight < headBlock.header.number) &&
-        timeDiff < 30
-      ) {
-        this.config.synchronized = true
-        this.config.lastSyncDate = Date.now()
-        this.config.syncTargetHeight = headBlock.header.number
+      const isPrevSynced = this.chain.config.synchronized
+      this.config.updateSynchronizedState(headBlock.header)
+      if (!isPrevSynced && this.chain.config.synchronized) {
         this.service.txPool.checkRunState()
       }
     }
@@ -715,8 +888,33 @@ export class Engine {
   }
 
   private async forkchoiceUpdatedV2(
-    params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV2 | undefined]
+    params: [
+      forkchoiceState: ForkchoiceStateV1,
+      payloadAttributes: PayloadAttributesV1 | PayloadAttributesV2 | undefined
+    ]
   ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
+    const payloadAttributes = params[1]
+    if (payloadAttributes !== undefined && payloadAttributes !== null) {
+      const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
+      const ts = BigInt(payloadAttributes.timestamp)
+      const withdrawals = (payloadAttributes as PayloadAttributesV2).withdrawals
+      if (withdrawals !== undefined && withdrawals !== null) {
+        if (ts < shanghaiTimestamp!) {
+          throw {
+            code: INVALID_PARAMS,
+            message: 'PayloadAttributesV1 MUST be used before Shanghai is activated',
+          }
+        }
+      } else {
+        if (ts >= shanghaiTimestamp!) {
+          throw {
+            code: INVALID_PARAMS,
+            message: 'PayloadAttributesV2 MUST be used after Shanghai is activated',
+          }
+        }
+      }
+    }
+
     return this.forkchoiceUpdated(params)
   }
 
@@ -728,7 +926,7 @@ export class Engine {
    *   1. payloadId: DATA, 8 bytes - identifier of the payload building process
    * @returns Instance of {@link ExecutionPayloadV1} or an error
    */
-  private async getPayload(params: [string]) {
+  private async getPayload(params: [Bytes8]) {
     const payloadId = toBuffer(params[0])
     try {
       const built = await this.pendingBlock.build(payloadId)
@@ -749,12 +947,16 @@ export class Engine {
     }
   }
 
-  async getPayloadV1(params: [string]) {
+  async getPayloadV1(params: [Bytes8]) {
     const { executionPayload } = await this.getPayload(params)
     return executionPayload
   }
 
-  async getPayloadV2(params: [string]) {
+  async getPayloadV2(params: [Bytes8]) {
+    return this.getPayload(params)
+  }
+
+  async getPayloadV3(params: [Bytes8]) {
     return this.getPayload(params)
   }
   /**
@@ -786,5 +988,108 @@ export class Engine {
     // Note: our client does not yet support block whitelisting (terminalBlockHash/terminalBlockNumber)
     // since we are not yet fast enough to run along tip-of-chain mainnet execution
     return { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber }
+  }
+
+  /**
+   *
+   * @param params a payloadId for a pending block
+   * @returns a BlobsBundle consisting of the blockhash, the blobs, and the corresponding kzg commitments
+   */
+  private async getBlobsBundleV1(params: [Bytes8]): Promise<BlobsBundleV1> {
+    const payloadId = params[0]
+
+    const bundle = this.pendingBlock.blobBundles.get(payloadId)
+    if (bundle === undefined) {
+      throw EngineError.UnknownPayload
+    }
+
+    return {
+      blockHash: bundle.blockHash,
+      kzgs: bundle.kzgCommitments.map((commitment) => '0x' + commitment.toString('hex')),
+      blobs: bundle.blobs.map((blob) => '0x' + blob.toString('hex')),
+    }
+  }
+
+  /**
+   * Returns a list of engine API endpoints supported by the client
+   */
+  private exchangeCapabilities(_params: []): string[] {
+    const caps = Object.getOwnPropertyNames(Engine.prototype)
+    const engineMethods = caps.filter((el) => el !== 'constructor' && el !== 'exchangeCapabilities')
+    return engineMethods.map((el) => 'engine_' + el)
+  }
+
+  /**
+   *
+   * @param params a list of block hashes as hex prefixed strings
+   * @returns an array of ExecutionPayloadBodyV1 objects or null if a given execution payload isn't stored locally
+   */
+  private async getPayloadBodiesByHashV1(
+    params: [[Bytes32]]
+  ): Promise<(ExecutionPayloadBodyV1 | null)[]> {
+    if (params[0].length > 32) {
+      throw {
+        code: TOO_LARGE_REQUEST,
+        message: 'More than 32 execution payload bodies requested',
+      }
+    }
+    const hashes = params[0].map((hash) => toBuffer(hash))
+    const blocks: (ExecutionPayloadBodyV1 | null)[] = []
+    for (const hash of hashes) {
+      try {
+        const block = await this.chain.getBlock(hash)
+        const payloadBody = getPayloadBody(block)
+        blocks.push(payloadBody)
+      } catch {
+        blocks.push(null)
+      }
+    }
+    return blocks
+  }
+
+  /**
+   *
+   * @param params an array of 2 parameters
+   *    1.  start: Bytes8 - the first block in the range
+   *    2.  count: Bytes8 - the number of blocks requested
+   * @returns an array of ExecutionPayloadBodyV1 objects or null if a given execution payload isn't stored locally
+   */
+  private async getPayloadBodiesByRangeV1(
+    params: [Bytes8, Bytes8]
+  ): Promise<(ExecutionPayloadBodyV1 | null)[]> {
+    const start = BigInt(params[0])
+    let count = BigInt(params[1])
+    if (count > BigInt(32)) {
+      throw {
+        code: TOO_LARGE_REQUEST,
+        message: 'More than 32 execution payload bodies requested',
+      }
+    }
+
+    if (count < BigInt(1) || start < BigInt(1)) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'Start and Count parameters cannot be less than 1',
+      }
+    }
+    const currentChainHeight = this.chain.headers.height
+    if (start > currentChainHeight) {
+      return []
+    }
+
+    if (start + count > currentChainHeight) {
+      count = currentChainHeight - start + BigInt(1)
+    }
+    const blocks = await this.chain.getBlocks(start, Number(count))
+    const payloads: (ExecutionPayloadBodyV1 | null)[] = []
+    for (const block of blocks) {
+      try {
+        const payloadBody = getPayloadBody(block)
+        payloads.push(payloadBody)
+      } catch {
+        payloads.push(null)
+      }
+    }
+    return payloads
   }
 }

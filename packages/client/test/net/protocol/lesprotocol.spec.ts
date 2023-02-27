@@ -5,9 +5,9 @@ import { Config } from '../../../lib/config'
 import { FlowControl, LesProtocol } from '../../../lib/net/protocol'
 
 tape('[LesProtocol]', (t) => {
-  t.test('should get properties', (t) => {
+  t.test('should get properties', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new LesProtocol({ config, chain })
     t.ok(typeof p.name === 'string', 'get name')
     t.ok(Array.isArray(p.versions), 'get versions')
@@ -17,7 +17,7 @@ tape('[LesProtocol]', (t) => {
 
   t.test('should open correctly', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new LesProtocol({ config, chain })
     await p.open()
     t.ok(p.opened, 'opened is true')
@@ -25,9 +25,9 @@ tape('[LesProtocol]', (t) => {
     t.end()
   })
 
-  t.test('should encode/decode status', (t) => {
+  t.test('should encode/decode status', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const flow = new FlowControl({
       bl: 1000,
       mrr: 10,

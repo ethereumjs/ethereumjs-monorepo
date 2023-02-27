@@ -54,6 +54,7 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
     try {
       const headerData = {
         difficulty: BigInt(123456),
+        number: 1n,
       }
       BlockHeader.fromHeaderData(headerData, { common })
       st.fail('should throw')
@@ -64,6 +65,7 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
     try {
       const headerData = {
         extraData: Buffer.alloc(33).fill(1),
+        number: 1n,
       }
       BlockHeader.fromHeaderData(headerData, { common })
       st.fail('should throw')
@@ -84,6 +86,7 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
     try {
       const headerData = {
         nonce: Buffer.alloc(8).fill(1),
+        number: 1n,
       }
       BlockHeader.fromHeaderData(headerData, { common })
       st.fail('should throw')

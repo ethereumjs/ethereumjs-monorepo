@@ -53,6 +53,7 @@ export class BlockHeader {
   public readonly nonce: Buffer
   public readonly baseFeePerGas?: bigint
   public readonly withdrawalsRoot?: Buffer
+  public readonly excessDataGas?: bigint
   /**
    * Verkle Proof Data (experimental)
    * Fake-EIP 999001 (see Common library)
@@ -145,6 +146,7 @@ export class BlockHeader {
     }
 
     const skipValidateConsensusFormat = options.skipConsensusFormatValidation ?? false
+
     const defaults = {
       parentHash: zeros(32),
       uncleHash: KECCAK256_RLP_ARRAY,
@@ -200,6 +202,7 @@ export class BlockHeader {
           : BigInt(7)
         : undefined,
       withdrawalsRoot: this._common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
+      excessDataGas: this._common.isActivatedEIP(4844) ? BigInt(0) : undefined,
     }
 
     if (this._common.isActivatedEIP(999001)) {
@@ -215,6 +218,8 @@ export class BlockHeader {
       toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? hardforkDefaults.baseFeePerGas
     const withdrawalsRoot =
       toType(headerData.withdrawalsRoot, TypeOutput.Buffer) ?? hardforkDefaults.withdrawalsRoot
+    const excessDataGas =
+      toType(headerData.excessDataGas, TypeOutput.BigInt) ?? hardforkDefaults.excessDataGas
 
     if (!this._common.isActivatedEIP(1559) && baseFeePerGas !== undefined) {
       throw new Error('A base fee for a block can only be set with EIP1559 being activated')
@@ -222,8 +227,12 @@ export class BlockHeader {
 
     if (!this._common.isActivatedEIP(4895) && withdrawalsRoot !== undefined) {
       throw new Error(
-        'A withdrawalsRoot for a header can only be provied with EIP4895 being activated'
+        'A withdrawalsRoot for a header can only be provided with EIP4895 being activated'
       )
+    }
+
+    if (!this._common.isActivatedEIP(4844) && headerData.excessDataGas !== undefined) {
+      throw new Error('excess data gas can only be provided with EIP4844 activated')
     }
 
     this.parentHash = parentHash
@@ -245,7 +254,7 @@ export class BlockHeader {
     this.verkleProof = verkleProof
     this.verklePreState = verklePreState
     this.withdrawalsRoot = withdrawalsRoot
-
+    this.excessDataGas = excessDataGas
     this._genericFormatValidation()
     this._validateDAOExtraData()
 
@@ -375,15 +384,17 @@ export class BlockHeader {
    * @throws if any check fails
    */
   _consensusFormatValidation() {
-    const { nonce, uncleHash, difficulty, extraData } = this
+    const { nonce, uncleHash, difficulty, extraData, number } = this
     const hardfork = this._common.hardfork()
 
     // Consensus type dependent checks
     if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Ethash) {
       // PoW/Ethash
       if (
+        number > BigInt(0) &&
         this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)
       ) {
+        // Check length of data on all post-genesis blocks
         const msg = this._errorMsg('invalid amount of extra data')
         throw new Error(msg)
       }
@@ -432,19 +443,22 @@ export class BlockHeader {
         )} (expected: ${KECCAK256_RLP_ARRAY.toString('hex')})`
         error = true
       }
-      if (difficulty !== BigInt(0)) {
-        errorMsg += `, difficulty: ${difficulty} (expected: 0)`
-        error = true
-      }
-      if (extraData.length > 32) {
-        errorMsg += `, extraData: ${extraData.toString(
-          'hex'
-        )} (cannot exceed 32 bytes length, received ${extraData.length} bytes)`
-        error = true
-      }
-      if (!nonce.equals(zeros(8))) {
-        errorMsg += `, nonce: ${nonce.toString('hex')} (expected: ${zeros(8).toString('hex')})`
-        error = true
+      if (number !== BigInt(0)) {
+        // Skip difficulty, nonce, and extraData check for PoS genesis block as genesis block may have non-zero difficulty (if TD is > 0)
+        if (difficulty !== BigInt(0)) {
+          errorMsg += `, difficulty: ${difficulty} (expected: 0)`
+          error = true
+        }
+        if (extraData.length > 32) {
+          errorMsg += `, extraData: ${extraData.toString(
+            'hex'
+          )} (cannot exceed 32 bytes length, received ${extraData.length} bytes)`
+          error = true
+        }
+        if (!nonce.equals(zeros(8))) {
+          errorMsg += `, nonce: ${nonce.toString('hex')} (expected: ${zeros(8).toString('hex')})`
+          error = true
+        }
       }
       if (error) {
         const msg = this._errorMsg(`Invalid PoS block${errorMsg}`)
@@ -570,6 +584,9 @@ export class BlockHeader {
 
     if (this._common.isActivatedEIP(4895) === true) {
       rawItems.push(this.withdrawalsRoot!)
+    }
+    if (this._common.isActivatedEIP(4844) === true) {
+      rawItems.push(bigIntToUnpaddedBuffer(this.excessDataGas!))
     }
 
     return rawItems
@@ -833,6 +850,9 @@ export class BlockHeader {
     }
     if (this._common.isActivatedEIP(1559) === true) {
       jsonDict.baseFeePerGas = bigIntToHex(this.baseFeePerGas!)
+    }
+    if (this._common.isActivatedEIP(4844) === true) {
+      jsonDict.excessDataGas = bigIntToHex(this.excessDataGas!)
     }
     return jsonDict
   }

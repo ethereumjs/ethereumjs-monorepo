@@ -90,25 +90,41 @@ export class Chain {
   }
 
   /**
-   * Create new chain
+   * Safe creation of a Chain object awaiting the initialization
+   * of the underlying Blockchain object.
+   *
    * @param options
    */
-  constructor(options: ChainOptions) {
-    this.config = options.config
+  public static async create(options: ChainOptions) {
     let validateConsensus = false
-    if (this.config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
+    if (options.config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       validateConsensus = true
     }
 
-    this.blockchain =
+    options.blockchain =
       options.blockchain ??
       new (Blockchain as any)({
         db: options.chainDB,
-        common: this.config.chainCommon,
+        common: options.config.chainCommon,
         hardforkByHeadBlockNumber: true,
         validateBlocks: true,
         validateConsensus,
       })
+
+    return new this(options)
+  }
+
+  /**
+   * Creates new chain
+   *
+   * Do not use directly but instead use the static async `create()` constructor
+   * for concurrency safe initialization.
+   *
+   * @param options
+   */
+  protected constructor(options: ChainOptions) {
+    this.config = options.config
+    this.blockchain = options.blockchain!
 
     this.chainDB = this.blockchain.db
     this.opened = false
@@ -170,16 +186,8 @@ export class Chain {
     await this.update(false)
 
     this.config.chainCommon.on('hardforkChanged', async (hardfork: string) => {
-      if (hardfork !== Hardfork.Merge) {
-        const block = this.config.chainCommon.hardforkBlock()
-        this.config.logger.info(`New hardfork reached 🪢 ! hardfork=${hardfork} block=${block}`)
-      } else {
-        const block = await this.getCanonicalHeadBlock()
-        const num = block.header.number
-        const td = await this.blockchain.getTotalDifficulty(block.hash(), num)
-        this.config.logger.info(`Merge hardfork reached 🐼 👉 👈 🐼 ! block=${num} td=${td}`)
-        this.config.logger.info(`First block for CL-framed execution: block=${num + BigInt(1)}`)
-      }
+      const block = this.config.chainCommon.hardforkBlock()
+      this.config.logger.info(`New hardfork reached 🪢 ! hardfork=${hardfork} block=${block}`)
     })
   }
 
@@ -192,6 +200,15 @@ export class Chain {
     this.reset()
     await this.blockchain.db.close()
     this.opened = false
+  }
+
+  /**
+   * Resets the chain to canonicalHead number
+   */
+  async resetCanonicalHead(canonicalHead: bigint): Promise<boolean | void> {
+    if (!this.opened) return false
+    await this.blockchain.resetCanonicalHead(canonicalHead)
+    return this.update(false)
   }
 
   /**
@@ -225,11 +242,45 @@ export class Chain {
     this._headers = headers
     this._blocks = blocks
 
+    const parentTd = await this.blockchain.getParentTD(headers.latest)
     this.config.chainCommon.setHardforkByBlockNumber(
       headers.latest.number,
-      headers.td,
+      parentTd,
       headers.latest.timestamp
     )
+
+    // Check and log if this is a terminal block and next block could be merge
+    if (!this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+      const nextBlockHf = this.config.chainCommon.getHardforkByBlockNumber(
+        headers.height + BigInt(1),
+        headers.td,
+        undefined
+      )
+      if (this.config.chainCommon.hardforkGteHardfork(nextBlockHf, Hardfork.Merge)) {
+        this.config.logger.info('*'.repeat(85))
+        this.config.logger.info(
+          `Merge hardfork reached 🐼 👉 👈 🐼 ! block=${headers.height} td=${headers.td}`
+        )
+        this.config.logger.info('-'.repeat(85))
+        this.config.logger.info(' ')
+        this.config.logger.info('Consensus layer client (CL) needed for continued sync:')
+        this.config.logger.info(
+          'https://ethereum.org/en/developers/docs/nodes-and-clients/#consensus-clients'
+        )
+        this.config.logger.info(' ')
+        this.config.logger.info(
+          'Make sure to have the JSON RPC (--rpc) and Engine API (--rpcEngine) endpoints exposed'
+        )
+        this.config.logger.info('and JWT authentication configured (see client README).')
+        this.config.logger.info(' ')
+        this.config.logger.info('*'.repeat(85))
+        this.config.logger.info(
+          `Transitioning to PoS! First block for CL-framed execution: block=${
+            headers.height + BigInt(1)
+          }`
+        )
+      }
+    }
 
     if (emit) {
       this.config.events.emit(Event.CHAIN_UPDATED)
@@ -278,10 +329,18 @@ export class Chain {
         }
         break
       }
+
+      const td = await this.blockchain.getParentTD(b.header)
+      if (b.header.number <= this.headers.height) {
+        ;(this.blockchain as any).checkAndTransitionHardForkByNumber(b.header.number, td)
+        await this.blockchain.consensus.setup({ blockchain: this.blockchain })
+      }
+
       const block = Block.fromValuesArray(b.raw(), {
         common: this.config.chainCommon,
-        hardforkByTTD: this.headers.td,
+        hardforkByTTD: td,
       })
+
       await this.blockchain.putBlock(block)
       numAdded++
       const emitOnLast = blocks.length === numAdded

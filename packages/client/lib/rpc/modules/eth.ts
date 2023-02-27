@@ -1,6 +1,5 @@
-import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Capability, TransactionFactory } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
   Address,
   TypeOutput,
@@ -117,6 +116,7 @@ const jsonRpcBlock = async (
     uncles: block.uncleHeaders.map((uh) => bufferToHex(uh.hash())),
     baseFeePerGas: header.baseFeePerGas,
     ...withdrawalsAttr,
+    excessDataGas: header.excessDataGas,
   }
 }
 
@@ -737,10 +737,11 @@ export class Eth {
             block.header.baseFeePerGas! +
             block.header.baseFeePerGas!
         : (tx as Transaction).gasPrice
+
+      const vmCopy = await this._vm!.copy()
+      vmCopy._common.setHardfork(tx.common.hardfork())
       // Run tx through copied vm to get tx gasUsed and createdAddress
-      const runBlockResult = await (
-        await this._vm!.copy()
-      ).runBlock({
+      const runBlockResult = await vmCopy.runBlock({
         block,
         root: parentBlock.header.stateRoot,
         skipBlockValidation: true,
@@ -868,26 +869,31 @@ export class Eth {
   async sendRawTransaction(params: [string]) {
     const [serializedTx] = params
 
-    const common = this.client.config.chainCommon.copy()
     const { syncTargetHeight } = this.client.config
-    if (
-      (syncTargetHeight === undefined || syncTargetHeight === BigInt(0)) &&
-      !this.client.config.mine
-    ) {
+    if (!this.client.config.synchronized) {
       throw {
         code: INTERNAL_ERROR,
         message: `client is not aware of the current chain height yet (give sync some more time)`,
       }
     }
-    // Set the tx common to an appropriate HF to create a tx
-    // with matching HF rules
-    if (typeof syncTargetHeight === 'bigint' && syncTargetHeight !== BigInt(0)) {
-      common.setHardforkByBlockNumber(syncTargetHeight, undefined, Math.floor(Date.now() / 1000))
+    const common = this.client.config.chainCommon.copy()
+    const chainHeight = this.client.chain.headers.height
+    let txTargetHeight = syncTargetHeight ?? BigInt(0)
+    // Following step makes sure txTargetHeight > 0
+    if (txTargetHeight <= chainHeight) {
+      txTargetHeight = chainHeight + BigInt(1)
     }
+    common.setHardforkByBlockNumber(txTargetHeight, undefined, Math.floor(Date.now() / 1000))
 
     let tx
     try {
-      tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), { common })
+      const txBuf = toBuffer(serializedTx)
+      if (txBuf[0] === 0x05) {
+        // Blob Transactions sent over RPC are expected to be in Network Wrapper format
+        tx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txBuf, { common })
+      } else {
+        tx = TransactionFactory.fromSerializedData(txBuf, { common })
+      }
     } catch (e: any) {
       throw {
         code: PARSE_ERROR,
@@ -903,10 +909,11 @@ export class Eth {
     }
 
     // Add the tx to own tx pool
-    const { txPool } = this.service as FullEthereumService
+    const { txPool, pool } = this.service as FullEthereumService
 
     try {
       await txPool.add(tx, true)
+      await txPool.sendNewTxHashes([tx.hash()], pool.peers)
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,
@@ -918,7 +925,7 @@ export class Eth {
     if (
       peerPool.peers.length === 0 &&
       !this.client.config.mine &&
-      this._chain.config.chainCommon.consensusType() !== ConsensusType.ProofOfStake
+      this.client.config.isSingleNode === false
     ) {
       throw {
         code: INTERNAL_ERROR,
@@ -1006,7 +1013,7 @@ export class Eth {
 
   /**
    * Returns the transaction count for a block given by the block number.
-   * @param params An array of one paramater:
+   * @param params An array of one parameter:
    *  1. integer of a block number, or the string "latest", "earliest" or "pending"
    */
   async getBlockTransactionCountByNumber(params: [string]) {

@@ -19,9 +19,9 @@ export interface ChainConfig {
   name: string
   chainId: number | bigint
   networkId: number | bigint
-  defaultHardfork: string
-  comment: string
-  url: string
+  defaultHardfork?: string
+  comment?: string
+  url?: string
   genesis: GenesisBlockConfig
   hardforks: HardforkConfig[]
   bootstrapNodes: BootstrapNodeConfig[]

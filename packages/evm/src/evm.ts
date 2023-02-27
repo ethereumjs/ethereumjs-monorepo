@@ -76,10 +76,11 @@ export interface EVMOpts {
    * - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
    *   [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) - Warm COINBASE (`experimental`)
    * - [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`experimental`)
-   * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
-   * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
+   * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction
+   * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode
    * - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge)
-   *   [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations (`experimental`)
+   * - [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (`experimental`)
+   * - [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations
    * - [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022
    *
    * *Annotations:*
@@ -157,6 +158,7 @@ export class EVM implements EVMInterface {
     Hardfork.MergeForkIdTransition,
     Hardfork.Merge,
     Hardfork.Shanghai,
+    Hardfork.ShardingForkDev,
   ]
   protected _tx?: {
     gasPrice: bigint
@@ -256,7 +258,7 @@ export class EVM implements EVMInterface {
     // Supported EIPs
     const supportedEIPs = [
       1153, 1559, 2315, 2537, 2565, 2718, 2929, 2930, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
-      3670, 3855, 3860, 4399, 4895, 5133, 999001,
+      3670, 3855, 3860, 4399, 4844, 4895, 5133, 999001,
     ]
 
     for (const eip of this._common.eips()) {
@@ -601,7 +603,7 @@ export class EVM implements EVMInterface {
       if (!this._common.gteHardfork(Hardfork.Homestead)) {
         // Pre-Homestead behavior; put an empty contract.
         // This contract would be considered "DEAD" in later hard forks.
-        // It is thus an unecessary default item, which we have to save to dik
+        // It is thus an unnecessary default item, which we have to save to dik
         // It does change the state root, but it only wastes storage.
         //await this._state.putContractCode(message.to, result.returnValue)
         const account = await this.eei.getAccount(message.to)
@@ -638,6 +640,7 @@ export class EVM implements EVMInterface {
       codeAddress: message.codeAddress,
       gasRefund: message.gasRefund,
       containerCode: message.containerCode,
+      versionedHashes: message.versionedHashes ?? [],
     }
 
     const interpreter = new Interpreter(this, this.eei, env, message.gasLimit)
@@ -694,7 +697,6 @@ export class EVM implements EVMInterface {
         gasPrice: opts.gasPrice ?? BigInt(0),
         origin: opts.origin ?? opts.caller ?? Address.zero(),
       }
-
       const caller = opts.caller ?? Address.zero()
 
       const value = opts.value ?? BigInt(0)
@@ -720,6 +722,7 @@ export class EVM implements EVMInterface {
         salt: opts.salt,
         selfdestruct: opts.selfdestruct ?? {},
         delegatecall: opts.delegatecall,
+        versionedHashes: opts.versionedHashes,
       })
     }
 
@@ -840,6 +843,7 @@ export class EVM implements EVMInterface {
       depth: opts.depth,
       selfdestruct: opts.selfdestruct ?? {},
       isStatic: opts.isStatic,
+      versionedHashes: opts.versionedHashes,
     })
 
     return this.runInterpreter(message, { pc: opts.pc })
@@ -944,11 +948,15 @@ export class EVM implements EVMInterface {
   }
 
   public copy(): EVMInterface {
+    const common = this._common.copy()
+    common.setHardfork(this._common.hardfork())
+
     const opts = {
       ...this._optsCached,
-      common: this._common.copy(),
+      common,
       eei: this.eei.copy(),
     }
+    ;(opts.eei as any)._common = common
     return new EVM(opts)
   }
 }
