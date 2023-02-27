@@ -6,7 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.1.1 - 2023-02-27
+
+- Pinned `@ethereumjs/util` `@chainsafe/ssz` dependency to `v0.9.4` due to ES2021 features used in `v0.10.+` causing compatibility issues, PR [#2555](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2555)
+
 ## 5.1.0 - 2023-02-21
+
+**DEPRECATED**: Release is deprecated due to broken dependencies, please update to the subsequent bugfix release version.
 
 This release updates the underlying `@ethereumjs/common` dependency version to make the library ready for the upcoming `Shanghai` hardfork (scheduled for early 2023) regarding the `forkHash` related fork switch logic, see PR [#2521](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2521). Note that a `timestamp` to trigger the `Shanghai` fork update is only added to Common for the `sepolia` testnet and not yet for `goerli` or `mainnet`.
 
