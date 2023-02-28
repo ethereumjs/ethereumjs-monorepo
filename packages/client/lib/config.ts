@@ -279,7 +279,7 @@ export class Config {
   public static readonly SYNCMODE_DEFAULT = SyncMode.Full
   public static readonly LIGHTSERV_DEFAULT = false
   public static readonly DATADIR_DEFAULT = `./datadir`
-  public static readonly TRANSPORTS_DEFAULT = ['rlpx', 'libp2p']
+  public static readonly TRANSPORTS_DEFAULT = ['rlpx']
   public static readonly PORT_DEFAULT = 30303
   public static readonly MAXPERREQUEST_DEFAULT = 50
   public static readonly MAXFETCHERJOBS_DEFAULT = 100
