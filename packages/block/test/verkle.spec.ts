@@ -5,7 +5,7 @@ import * as tape from 'tape'
 
 import { Block } from '../src'
 
-import * as testnetVerkleJSON from './testdata/testnetVerkle.json'
+import * as testnetVerkleJSON from './testdata/testnetVerkleBeverlyHills.json'
 import * as verkleBlockJSON from './testdata/verkleBlock.json'
 import * as verkleBlockRawJSON from './testdata/verkleBlockRaw.json'
 
