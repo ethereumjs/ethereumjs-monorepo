@@ -7,7 +7,7 @@ import * as tape from 'tape'
 import { VM } from '../../src/vm'
 
 import * as testnetVerkle from './testdata/testnetVerkleBeverlyHills.json'
-import * as verkleBlockJSON from './testdata/verkleBeverlyHillsBlock86466.json'
+import * as verkleBlockJSON from './testdata/verkleBeverlyHillsBlock93261.json'
 import * as simpleVerkleBlockJSON from './testdata/verkleSampleBlock.json'
 
 tape('Verkle-enabled VM', async (t) => {
@@ -46,8 +46,8 @@ tape('Verkle-enabled VM', async (t) => {
       block,
       skipHeaderValidation: true,
       skipBlockValidation: true,
-      // skipBalance: true,
-      // skipNonce: true,
+      skipBalance: true,
+      skipNonce: true,
     })
 
     st.pass('Should run verkle block successfully')
