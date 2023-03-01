@@ -181,6 +181,7 @@ export class Common extends EventEmitter {
     const genesisParams = parseGethGenesis(genesisJson, chain, mergeForkIdPostMerge)
     const common = new Common({
       chain: genesisParams.name ?? 'custom',
+      customChains: [genesisParams],
       eips,
       hardfork: hardfork ?? genesisParams.hardfork,
     })
