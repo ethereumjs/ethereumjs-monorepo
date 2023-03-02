@@ -1,8 +1,8 @@
 import * as tape from 'tape'
 
 import {
-  bigIntToBuffer,
-  bufferToBigInt,
+  bigIntToBytes,
+  bytesToBigInt,
   ecrecover,
   ecsign,
   fromRpcSig,
@@ -88,7 +88,7 @@ tape('ecsign', function (t) {
       )
       const expectedSigV = BigInt('68361967398315795')
 
-      const sigBuffer = ecsign(echash, ecprivkey, bufferToBigInt(chainIDBuffer))
+      const sigBuffer = ecsign(echash, ecprivkey, bytesToBigInt(chainIDBuffer))
       st.ok(sigBuffer.r.equals(expectedSigR))
       st.ok(sigBuffer.s.equals(expectedSigS))
       st.equal(sigBuffer.v, expectedSigV)
@@ -242,7 +242,7 @@ tape('isValidSignature', function (t) {
     )
 
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
-    const s = bigIntToBuffer(SECP256K1_N_DIV_2 + BigInt(1))
+    const s = bigIntToBytes(SECP256K1_N_DIV_2 + BigInt(1))
 
     const v = BigInt(27)
     st.notOk(isValidSignature(v, r, s, true))
@@ -254,7 +254,7 @@ tape('isValidSignature', function (t) {
     )
 
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
-    const s = bigIntToBuffer(SECP256K1_N_DIV_2 + BigInt(1))
+    const s = bigIntToBytes(SECP256K1_N_DIV_2 + BigInt(1))
     const v = BigInt(27)
     st.ok(isValidSignature(v, r, s, false))
     st.end()

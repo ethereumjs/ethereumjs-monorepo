@@ -1,6 +1,6 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { computeVersionedHash, initKZG } from '@ethereumjs/tx'
-import { bigIntToBuffer, bufferToBigInt, unpadBuffer } from '@ethereumjs/util'
+import { bigIntToBytes, bytesToBigInt, unpadBuffer } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import * as tape from 'tape'
 
@@ -58,7 +58,7 @@ tape('Precompiles: point evaluation', async (t) => {
 
   let res = await pointEvaluation(opts)
   t.equal(
-    bufferToBigInt(unpadBuffer(res.returnValue.slice(32))),
+    bytesToBigInt(unpadBuffer(res.returnValue.slice(32))),
     BLS_MODULUS,
     'point evaluation precompile returned expected output'
   )
@@ -67,7 +67,7 @@ tape('Precompiles: point evaluation', async (t) => {
     data: Buffer.concat([
       versionedHash,
       testCase.InputPoint,
-      bigIntToBuffer(BLS_MODULUS + 5n),
+      bigIntToBytes(BLS_MODULUS + 5n),
       testCase.Commitment,
       testCase.Proof,
     ]),

@@ -1,4 +1,4 @@
-import { bufferToBigInt, padToEven } from '@ethereumjs/util'
+import { bytesToBigInt, padToEven } from '@ethereumjs/util'
 
 import { ERROR, EvmError } from '../../exceptions'
 
@@ -290,7 +290,7 @@ function BLS12_381_ToFrPoint(input: Buffer, mcl: any): any {
 
 function BLS12_381_ToFpPoint(fpCoordinate: Buffer, mcl: any): any {
   // check if point is in field
-  if (bufferToBigInt(fpCoordinate) >= fieldModulus) {
+  if (bytesToBigInt(fpCoordinate) >= fieldModulus) {
     throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
   }
 
@@ -306,10 +306,10 @@ function BLS12_381_ToFpPoint(fpCoordinate: Buffer, mcl: any): any {
 
 function BLS12_381_ToFp2Point(fpXCoordinate: Buffer, fpYCoordinate: Buffer, mcl: any): any {
   // check if the coordinates are in the field
-  if (bufferToBigInt(fpXCoordinate) >= fieldModulus) {
+  if (bytesToBigInt(fpXCoordinate) >= fieldModulus) {
     throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
   }
-  if (bufferToBigInt(fpYCoordinate) >= fieldModulus) {
+  if (bytesToBigInt(fpYCoordinate) >= fieldModulus) {
     throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
   }
 

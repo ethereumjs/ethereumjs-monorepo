@@ -1,5 +1,5 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
-import { MAX_UINT64, bigIntToHex, bufferToBigInt, intToHex } from '@ethereumjs/util'
+import { MAX_UINT64, bigIntToHex, bytesToBigInt, intToHex } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { EOF } from './eof'
@@ -567,7 +567,7 @@ export class Interpreter {
    * that is directly responsible for this execution.
    */
   getCaller(): bigint {
-    return bufferToBigInt(this._env.caller.buf)
+    return bytesToBigInt(this._env.caller.buf)
   }
 
   /**
@@ -629,7 +629,7 @@ export class Interpreter {
    * non-empty associated code.
    */
   getTxOrigin(): bigint {
-    return bufferToBigInt(this._env.origin.buf)
+    return bytesToBigInt(this._env.origin.buf)
   }
 
   /**
@@ -649,7 +649,7 @@ export class Interpreter {
     } else {
       coinbase = this._env.block.header.coinbase
     }
-    return bufferToBigInt(coinbase.toBuffer())
+    return bytesToBigInt(coinbase.toBytes())
   }
 
   /**
@@ -670,7 +670,7 @@ export class Interpreter {
    * Returns the block's prevRandao field.
    */
   getBlockPrevRandao(): bigint {
-    return bufferToBigInt(this._env.block.header.prevRandao)
+    return bytesToBigInt(this._env.block.header.prevRandao)
   }
 
   /**
@@ -922,7 +922,7 @@ export class Interpreter {
       this._runState.gasRefund = results.execResult.gasRefund ?? BigInt(0)
       if (results.createdAddress) {
         // push the created address to the stack
-        return bufferToBigInt(results.createdAddress.buf)
+        return bytesToBigInt(results.createdAddress.buf)
       }
     }
 

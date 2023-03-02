@@ -1,4 +1,4 @@
-import { Account, Address, toBuffer } from '@ethereumjs/util'
+import { Account, Address, toBytes } from '@ethereumjs/util'
 import { Common } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { StateManager, DefaultStateManager } from '@ethereumjs/statemanager'
@@ -29,18 +29,18 @@ export async function getPreState(
   const state = new DefaultStateManager()
   await state.checkpoint()
   for (const k in pre) {
-    const address = new Address(toBuffer(k))
+    const address = new Address(toBytes(k))
     const { nonce, balance, code, storage } = pre[k]
     const account = new Account(BigInt(nonce), BigInt(balance))
     await state.putAccount(address, account)
-    await state.putContractCode(address, toBuffer(code))
+    await state.putContractCode(address, toBytes(code))
     for (const sk in storage) {
       const sv = storage[sk]
-      const valueBuffer = toBuffer(sv)
+      const valueBuffer = toBytes(sv)
       // verify if this value buffer is not a zero buffer. if so, we should not write it...
       const zeroBufferEquivalent = Buffer.alloc(valueBuffer.length, 0)
       if (!zeroBufferEquivalent.equals(valueBuffer)) {
-        await state.putContractStorage(address, toBuffer(sk), toBuffer(sv))
+        await state.putContractStorage(address, toBytes(sk), toBytes(sv))
       }
     }
   }
@@ -52,7 +52,7 @@ export function getBlockchain(blockhashes: any): Mockchain {
   let mockchain = new Mockchain()
   for (const blockNum in blockhashes) {
     const hash = blockhashes[blockNum]
-    mockchain.putBlockHash(BigInt(blockNum), toBuffer(hash))
+    mockchain.putBlockHash(BigInt(blockNum), toBytes(hash))
   }
   return mockchain
 }

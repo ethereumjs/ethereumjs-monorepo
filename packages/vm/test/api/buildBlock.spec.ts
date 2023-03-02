@@ -138,7 +138,7 @@ tape('BlockBuilder', async (t) => {
 
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Istanbul })
     // extraData: [vanity, activeSigner, seal]
-    const extraData = Buffer.concat([Buffer.alloc(32), signer.address.toBuffer(), Buffer.alloc(65)])
+    const extraData = Buffer.concat([Buffer.alloc(32), signer.address.toBytes(), Buffer.alloc(65)])
     const cliqueSigner = signer.privateKey
     const genesisBlock = Block.fromBlockData(
       { header: { gasLimit: 50000, extraData } },

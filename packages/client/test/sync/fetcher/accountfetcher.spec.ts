@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bufferToBigInt } from '@ethereumjs/util'
+import { bytesToBigInt } from '@ethereumjs/util'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
@@ -176,10 +176,10 @@ tape('[AccountFetcher]', async (t) => {
       config,
       pool,
       root: Buffer.from('39ed8daab7679c0b1b7cf3667c50108185d4d9d1431c24a1c35f696a58277f8f', 'hex'),
-      first: bufferToBigInt(
+      first: bytesToBigInt(
         Buffer.from('0000000000000000000000000000000000000000000000000000000000000001', 'hex')
       ),
-      count: bufferToBigInt(
+      count: bytesToBigInt(
         Buffer.from('000010c6f7a0b5ed8d36b4c7f34938583621fafc8b0079a2834d26fa3fcc9ea9', 'hex')
       ),
     })

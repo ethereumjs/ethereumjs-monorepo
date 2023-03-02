@@ -1,5 +1,5 @@
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
-import { bufferToHex } from '@ethereumjs/util'
+import { bytesToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import {
@@ -31,10 +31,10 @@ tape(`${method}: call with legacy tx`, async (t) => {
   await runBlockWithTxs(chain, execution, [tx])
 
   // get the tx
-  const req = params(method, [bufferToHex(tx.hash())])
+  const req = params(method, [bytesToHex(tx.hash())])
   const expectRes = (res: any) => {
     const msg = 'should return the correct tx'
-    t.equal(res.body.result.transactionHash, bufferToHex(tx.hash()), msg)
+    t.equal(res.body.result.transactionHash, bytesToHex(tx.hash()), msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
@@ -59,10 +59,10 @@ tape(`${method}: call with 1559 tx`, async (t) => {
   await runBlockWithTxs(chain, execution, [tx])
 
   // get the tx
-  const req = params(method, [bufferToHex(tx.hash())])
+  const req = params(method, [bytesToHex(tx.hash())])
   const expectRes = (res: any) => {
     const msg = 'should return the correct tx'
-    t.equal(res.body.result.transactionHash, bufferToHex(tx.hash()), msg)
+    t.equal(res.body.result.transactionHash, bytesToHex(tx.hash()), msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })

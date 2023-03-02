@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { ripemdPrecompileAddress } from '@ethereumjs/evm/dist/precompiles'
-import { Account, Address, toBuffer } from '@ethereumjs/util'
+import { Account, Address, toBytes } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { Journaling } from './journaling'
@@ -256,11 +256,11 @@ export class VmState implements EVMStateAccess {
         const account = Account.fromAccountData({ balance })
         await this.putAccount(addr, account)
         if (code !== undefined) {
-          await this.putContractCode(addr, toBuffer(code))
+          await this.putContractCode(addr, toBytes(code))
         }
         if (storage !== undefined) {
           for (const [key, value] of storage) {
-            await this.putContractStorage(addr, toBuffer(key), toBuffer(value))
+            await this.putContractStorage(addr, toBytes(key), toBytes(value))
           }
         }
       }

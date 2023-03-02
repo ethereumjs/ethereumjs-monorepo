@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, bufferToHex } from '@ethereumjs/util'
+import { Address, bytesToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { isRunningInKarma } from '../../../vm/test/util'
@@ -114,7 +114,7 @@ tape('EIP-2537 BLS tests', (t) => {
 
     st.deepEqual(
       testVectorResult,
-      bufferToHex(result.returnValue),
+      bytesToHex(result.returnValue),
       'return value should match testVectorResult'
     )
     st.end()

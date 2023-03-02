@@ -4,8 +4,8 @@ import {
   MAX_INTEGER,
   MAX_UINT64,
   SECP256K1_ORDER_DIV_2,
-  bufferToBigInt,
-  bufferToHex,
+  bytesToBigInt,
+  bytesToHex,
   privateToAddress,
 } from '@ethereumjs/util'
 import * as tape from 'tape'
@@ -169,8 +169,8 @@ tape(
       for (const txType of txTypes) {
         const access: AccessList = [
           {
-            address: bufferToHex(validAddress),
-            storageKeys: [bufferToHex(validSlot)],
+            address: bytesToHex(validAddress),
+            storageKeys: [bytesToHex(validSlot)],
           },
         ]
         const txn = txType.class.fromTxData(
@@ -500,7 +500,7 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
       nonce: 0x00,
       to: new Address(Buffer.from('df0a88b2b68c673713a8ec826003676f272e3573', 'hex')),
       value: 0x01,
-      chainId: bufferToBigInt(Buffer.from('796f6c6f763378', 'hex')),
+      chainId: bytesToBigInt(Buffer.from('796f6c6f763378', 'hex')),
       accessList: <any>[[address, [slot1]]],
     }
 
@@ -532,10 +532,10 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
       'hex'
     )
     const v = BigInt(0)
-    const r = bufferToBigInt(
+    const r = bytesToBigInt(
       Buffer.from('294ac94077b35057971e6b4b06dfdf55a6fbed819133a6c1d31e187f1bca938d', 'hex')
     )
-    const s = bufferToBigInt(
+    const s = bytesToBigInt(
       Buffer.from('0be950468ba1c25a5cb50e9f6d8aa13c8cd21f24ba909402775b262ac76d374d', 'hex')
     )
 

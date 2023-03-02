@@ -4,12 +4,12 @@ import { ERROR } from '@ethereumjs/evm/dist/exceptions'
 import { Transaction } from '@ethereumjs/tx'
 import {
   Address,
-  bigIntToBuffer,
-  bufferToBigInt,
+  bigIntToBytes,
+  bytesToBigInt,
   ecsign,
   privateToAddress,
   setLengthLeft,
-  toBuffer,
+  toBytes,
   zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -68,7 +68,7 @@ const STORECALLER = Buffer.from('5A60015533600055600035600255366000600037366000F
 function signMessage(commitUnpadded: Buffer, address: Address, privateKey: Buffer) {
   const commit = setLengthLeft(commitUnpadded, 32)
   const paddedInvokerAddress = setLengthLeft(address.buf, 32)
-  const chainId = setLengthLeft(bigIntToBuffer(common.chainId()), 32)
+  const chainId = setLengthLeft(bigIntToBytes(common.chainId()), 32)
   const message = Buffer.concat([Buffer.from('03', 'hex'), chainId, paddedInvokerAddress, commit])
   const msgHash = Buffer.from(keccak256(message))
   return ecsign(msgHash, privateKey)
@@ -94,7 +94,7 @@ function getAuthCode(
   } else if (signature.v === BigInt(28)) {
     v = setLengthLeft(Buffer.from('01', 'hex'), 32)
   } else {
-    v = setLengthLeft(toBuffer(signature.v), 32)
+    v = setLengthLeft(toBytes(signature.v), 32)
   }
 
   const PUSH32 = Buffer.from('7F', 'hex')
@@ -169,14 +169,14 @@ function MSTORE(position: Buffer, value: Buffer) {
  * @returns - The bytecode to execute AUTHCALL
  */
 function getAuthCallCode(data: AuthcallData) {
-  const gasLimitBuffer = setLengthLeft(bigIntToBuffer(data.gasLimit ?? BigInt(0)), 32)
+  const gasLimitBuffer = setLengthLeft(bigIntToBytes(data.gasLimit ?? BigInt(0)), 32)
   const addressBuffer = setLengthLeft(data.address.buf, 32)
-  const valueBuffer = setLengthLeft(bigIntToBuffer(data.value ?? BigInt(0)), 32)
-  const valueExtBuffer = setLengthLeft(bigIntToBuffer(data.valueExt ?? BigInt(0)), 32)
-  const argsOffsetBuffer = setLengthLeft(bigIntToBuffer(data.argsOffset ?? BigInt(0)), 32)
-  const argsLengthBuffer = setLengthLeft(bigIntToBuffer(data.argsLength ?? BigInt(0)), 32)
-  const retOffsetBuffer = setLengthLeft(bigIntToBuffer(data.retOffset ?? BigInt(0)), 32)
-  const retLengthBuffer = setLengthLeft(bigIntToBuffer(data.retLength ?? BigInt(0)), 32)
+  const valueBuffer = setLengthLeft(bigIntToBytes(data.value ?? BigInt(0)), 32)
+  const valueExtBuffer = setLengthLeft(bigIntToBytes(data.valueExt ?? BigInt(0)), 32)
+  const argsOffsetBuffer = setLengthLeft(bigIntToBytes(data.argsOffset ?? BigInt(0)), 32)
+  const argsLengthBuffer = setLengthLeft(bigIntToBytes(data.argsLength ?? BigInt(0)), 32)
+  const retOffsetBuffer = setLengthLeft(bigIntToBytes(data.retOffset ?? BigInt(0)), 32)
+  const retLengthBuffer = setLengthLeft(bigIntToBytes(data.retLength ?? BigInt(0)), 32)
   const PUSH32 = Buffer.from('7f', 'hex')
   const AUTHCALL = Buffer.from('f7', 'hex')
   const order = [
@@ -201,7 +201,7 @@ function getAuthCallCode(data: AuthcallData) {
 // This flips the signature: the result is a signature which has the same public key upon key recovery,
 // But the s-value is now > N_DIV_2
 function flipSignature(signature: any) {
-  const s = bufferToBigInt(signature.s)
+  const s = bytesToBigInt(signature.s)
   const flipped = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n - s
 
   if (signature.v === 27) {
@@ -209,7 +209,7 @@ function flipSignature(signature: any) {
   } else {
     signature.v = 27
   }
-  signature.s = setLengthLeft(bigIntToBuffer(flipped), 32)
+  signature.s = setLengthLeft(bigIntToBytes(flipped), 32)
   return signature
 }
 
@@ -477,7 +477,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       contractStorageAddress,
       Buffer.from('00'.repeat(31) + '01', 'hex')
     )
-    const gasBigInt = bufferToBigInt(gasUsed)
+    const gasBigInt = bytesToBigInt(gasUsed)
     const preGas =
       gas! -
       common.param('gasPrices', 'warmstorageread')! -
@@ -520,7 +520,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       contractStorageAddress,
       Buffer.from('00'.repeat(31) + '01', 'hex')
     )
-    const gasBigInt = bufferToBigInt(gasUsed)
+    const gasBigInt = bytesToBigInt(gasUsed)
     const preGas = gas! - common.param('gasPrices', 'warmstorageread')!
     const expected = preGas - preGas / 64n - 2n
     st.equal(gasBigInt, expected, 'forwarded max call gas')
@@ -610,7 +610,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
         contractStorageAddress,
         Buffer.from('00'.repeat(31) + '01', 'hex')
       )
-      const gasBigInt = bufferToBigInt(gasUsed)
+      const gasBigInt = bytesToBigInt(gasUsed)
       const preGas =
         gas! -
         common.param('gasPrices', 'warmstorageread')! -
@@ -768,7 +768,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       contractStorageAddress,
       Buffer.from('00'.repeat(31) + '01', 'hex')
     )
-    const gasBigInt = bufferToBigInt(gas)
+    const gasBigInt = bytesToBigInt(gas)
     st.equals(gasBigInt, BigInt(700000 - 2), 'forwarded the right amount of gas') // The 2 is subtracted due to the GAS opcode base fee
   })
 

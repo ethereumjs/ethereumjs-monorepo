@@ -4,11 +4,11 @@ import {
   MAX_INTEGER,
   MAX_UINT64,
   SECP256K1_ORDER_DIV_2,
-  bufferToBigInt,
-  bufferToHex,
+  bytesToBigInt,
+  bytesToHex,
   ecsign,
   publicToAddress,
-  toBuffer,
+  toBytes,
   unpadBuffer,
 } from '@ethereumjs/util'
 
@@ -91,24 +91,24 @@ export abstract class BaseTransaction<TransactionObject> {
 
   constructor(txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData, opts: TxOptions) {
     const { nonce, gasLimit, to, value, data, v, r, s, type } = txData
-    this._type = Number(bufferToBigInt(toBuffer(type)))
+    this._type = Number(bytesToBigInt(toBytes(type)))
 
     this.txOptions = opts
 
-    const toB = toBuffer(to === '' ? '0x' : to)
-    const vB = toBuffer(v === '' ? '0x' : v)
-    const rB = toBuffer(r === '' ? '0x' : r)
-    const sB = toBuffer(s === '' ? '0x' : s)
+    const toB = toBytes(to === '' ? '0x' : to)
+    const vB = toBytes(v === '' ? '0x' : v)
+    const rB = toBytes(r === '' ? '0x' : r)
+    const sB = toBytes(s === '' ? '0x' : s)
 
-    this.nonce = bufferToBigInt(toBuffer(nonce === '' ? '0x' : nonce))
-    this.gasLimit = bufferToBigInt(toBuffer(gasLimit === '' ? '0x' : gasLimit))
+    this.nonce = bytesToBigInt(toBytes(nonce === '' ? '0x' : nonce))
+    this.gasLimit = bytesToBigInt(toBytes(gasLimit === '' ? '0x' : gasLimit))
     this.to = toB.length > 0 ? new Address(toB) : undefined
-    this.value = bufferToBigInt(toBuffer(value === '' ? '0x' : value))
-    this.data = toBuffer(data === '' ? '0x' : data)
+    this.value = bytesToBigInt(toBytes(value === '' ? '0x' : value))
+    this.data = toBytes(data === '' ? '0x' : data)
 
-    this.v = vB.length > 0 ? bufferToBigInt(vB) : undefined
-    this.r = rB.length > 0 ? bufferToBigInt(rB) : undefined
-    this.s = sB.length > 0 ? bufferToBigInt(sB) : undefined
+    this.v = vB.length > 0 ? bytesToBigInt(vB) : undefined
+    this.r = rB.length > 0 ? bytesToBigInt(rB) : undefined
+    this.s = sB.length > 0 ? bytesToBigInt(sB) : undefined
 
     this._validateCannotExceedMaxInteger({ value: this.value, r: this.r, s: this.s })
 
@@ -370,7 +370,7 @@ export abstract class BaseTransaction<TransactionObject> {
   protected _getCommon(common?: Common, chainId?: BigIntLike) {
     // Chain ID provided
     if (chainId !== undefined) {
-      const chainIdBigInt = bufferToBigInt(toBuffer(chainId))
+      const chainIdBigInt = bytesToBigInt(toBytes(chainId))
       if (common) {
         if (common.chainId() !== chainIdBigInt) {
           const msg = this._errorMsg('The chain ID does not match the chain ID of Common')
@@ -504,7 +504,7 @@ export abstract class BaseTransaction<TransactionObject> {
   protected _getSharedErrorPostfix() {
     let hash = ''
     try {
-      hash = this.isSigned() ? bufferToHex(this.hash()) : 'not available (unsigned)'
+      hash = this.isSigned() ? bytesToHex(this.hash()) : 'not available (unsigned)'
     } catch (e: any) {
       hash = 'error'
     }

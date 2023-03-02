@@ -5,22 +5,22 @@ import {
   addHexPrefix,
   arrToBufArr,
   baToJSON,
-  bigIntToBuffer,
+  bigIntToBytes,
   bigIntToHex,
   bigIntToUnpaddedBuffer,
   bufArrToArr,
-  bufferToBigInt,
-  bufferToHex,
-  bufferToInt,
+  bytesToBigInt,
+  bytesToHex,
+  bytesToInt,
   fromSigned,
-  intToBuffer,
+  intToBytes,
   intToHex,
   intToUnpaddedBuffer,
   isZeroAddress,
   setLengthLeft,
   setLengthRight,
   short,
-  toBuffer,
+  toBytes,
   toUnsigned,
   toUtf8,
   unpadArray,
@@ -67,9 +67,9 @@ tape('is zero address', function (t) {
 
 tape('unpadBuffer', function (t) {
   t.test('should unpad a Buffer', function (st) {
-    const buf = toBuffer('0x0000000006600')
+    const buf = toBytes('0x0000000006600')
     const r = unpadBuffer(buf)
-    st.ok(r.equals(toBuffer('0x6600')))
+    st.ok(r.equals(toBytes('0x6600')))
     st.end()
   })
   t.test('should throw if input is not a Buffer', function (st) {
@@ -89,7 +89,7 @@ tape('unpadArray', function (t) {
   })
   t.test('should throw if input is not an Array', function (st) {
     st.throws(function () {
-      unpadArray((<unknown>toBuffer([0, 0, 0, 1])) as number[])
+      unpadArray((<unknown>toBytes([0, 0, 0, 1])) as number[])
     })
     st.end()
   })
@@ -152,31 +152,31 @@ tape('setLengthRight', function (t) {
   })
 })
 
-tape('bufferToHex', function (t) {
+tape('bytesToHex', function (t) {
   t.test('should convert a buffer to hex', function (st) {
     const buf = Buffer.from('5b9ac8', 'hex')
-    const hex = bufferToHex(buf)
+    const hex = bytesToHex(buf)
     st.equal(hex, '0x5b9ac8')
     st.end()
   })
   t.test('empty buffer', function (st) {
     const buf = Buffer.alloc(0)
-    const hex = bufferToHex(buf)
+    const hex = bytesToHex(buf)
     st.strictEqual(hex, '0x')
     st.end()
   })
 })
 
-tape('bufferToInt', function (t) {
+tape('bytesToInt', function (t) {
   t.test('should convert an int to hex', function (st) {
     const buf = Buffer.from('5b9ac8', 'hex')
-    const i = bufferToInt(buf)
+    const i = bytesToInt(buf)
     st.equal(i, 6003400)
-    st.equal(bufferToInt(Buffer.allocUnsafe(0)), 0)
+    st.equal(bytesToInt(Buffer.allocUnsafe(0)), 0)
     st.end()
   })
   t.test('should convert empty input to 0', function (st) {
-    st.equal(bufferToInt(Buffer.allocUnsafe(0)), 0)
+    st.equal(bytesToInt(Buffer.allocUnsafe(0)), 0)
     st.end()
   })
 })
@@ -273,27 +273,27 @@ tape('toUtf8', function (t) {
   })
 })
 
-tape('toBuffer', function (t) {
+tape('toBytes', function (t) {
   t.test('should work', function (st) {
     // Buffer
-    st.ok(toBuffer(Buffer.allocUnsafe(0)).equals(Buffer.allocUnsafe(0)))
+    st.ok(toBytes(Buffer.allocUnsafe(0)).equals(Buffer.allocUnsafe(0)))
     // Array
-    st.ok(toBuffer([]).equals(Buffer.allocUnsafe(0)))
+    st.ok(toBytes([]).equals(Buffer.allocUnsafe(0)))
     // String
-    st.ok(toBuffer('0x11').equals(Buffer.from([17])))
-    st.equal(toBuffer('0x1234').toString('hex'), '1234')
-    st.ok(toBuffer('0x').equals(Buffer.from([])))
+    st.ok(toBytes('0x11').equals(Buffer.from([17])))
+    st.equal(toBytes('0x1234').toString('hex'), '1234')
+    st.ok(toBytes('0x').equals(Buffer.from([])))
     // Number
-    st.ok(toBuffer(1).equals(Buffer.from([1])))
+    st.ok(toBytes(1).equals(Buffer.from([1])))
     // null
-    st.ok(toBuffer(null).equals(Buffer.allocUnsafe(0)))
+    st.ok(toBytes(null).equals(Buffer.allocUnsafe(0)))
     // undefined
-    st.ok(toBuffer(undefined).equals(Buffer.allocUnsafe(0)))
+    st.ok(toBytes(undefined).equals(Buffer.allocUnsafe(0)))
     // BigInt
-    st.ok(toBuffer(BigInt(1)).equals(Buffer.from([1])))
+    st.ok(toBytes(BigInt(1)).equals(Buffer.from([1])))
     // 'toArray'
     st.ok(
-      toBuffer({
+      toBytes({
         toArray(): any {
           return [1]
         },
@@ -303,28 +303,28 @@ tape('toBuffer', function (t) {
   })
   t.test('should fail', function (st) {
     st.throws(function () {
-      toBuffer({ test: 1 } as any)
+      toBytes({ test: 1 } as any)
     })
     st.throws(function () {
-      toBuffer(BigInt(-10))
+      toBytes(BigInt(-10))
     })
     st.end()
   })
 
   t.test('should fail with non 0x-prefixed hex strings', function (st) {
-    st.throws(() => toBuffer('11'), '11')
-    st.throws(() => toBuffer(''))
-    st.throws(() => toBuffer('0xR'), '0xR')
+    st.throws(() => toBytes('11'), '11')
+    st.throws(() => toBytes(''))
+    st.throws(() => toBytes('0xR'), '0xR')
     st.end()
   })
 
   t.test(
-    'should convert a TransformableToBuffer like the Address class (i.e. provides a toBuffer method)',
+    'should convert a TransformabletoBytes like the Address class (i.e. provides a toBytes method)',
     function (st) {
       const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
       const address = Address.fromString(str)
-      const addressBuf = toBuffer(address)
-      st.ok(addressBuf.equals(address.toBuffer()))
+      const addressBuf = toBytes(address)
+      st.ok(addressBuf.equals(address.toBytes()))
       st.end()
     }
   )
@@ -342,23 +342,23 @@ tape('baToJSON', function (t) {
   })
 })
 
-tape('intToBuffer', function (st) {
-  st.throws(() => intToBuffer(<any>'test'), 'throws on string')
-  st.throws(() => intToBuffer(<any>Infinity), 'throws on +Infinity')
-  st.throws(() => intToBuffer(<any>-Infinity), 'throws on -Infinity')
-  st.throws(() => intToBuffer(<any>NaN), 'throws on NaN')
-  st.throws(() => intToBuffer(<any>undefined), 'throws on undefined')
-  st.throws(() => intToBuffer(<any>null), 'throws on null')
-  st.throws(() => intToBuffer(<any>-1), 'throws on negative numbers')
-  st.throws(() => intToBuffer(<any>1.05), 'throws on decimal numbers')
-  st.throws(() => intToBuffer(<any>{}), 'throws on objects')
-  st.throws(() => intToBuffer(<any>true), 'throws on true')
-  st.throws(() => intToBuffer(<any>false), 'throws on false')
-  st.throws(() => intToBuffer(<any>[]), 'throws on arrays')
-  st.throws(() => intToBuffer(<any>(() => {})), 'throws on arrays')
-  st.throws(() => intToBuffer(Number.MAX_SAFE_INTEGER + 1), 'throws on unsafe integers')
-  st.ok(intToBuffer(0).equals(Buffer.from('00', 'hex')), 'correctly converts 0 to a buffer')
-  st.ok(intToBuffer(1).equals(Buffer.from('01', 'hex')), 'correctly converts 1 to a buffer')
+tape('intToBytes', function (st) {
+  st.throws(() => intToBytes(<any>'test'), 'throws on string')
+  st.throws(() => intToBytes(<any>Infinity), 'throws on +Infinity')
+  st.throws(() => intToBytes(<any>-Infinity), 'throws on -Infinity')
+  st.throws(() => intToBytes(<any>NaN), 'throws on NaN')
+  st.throws(() => intToBytes(<any>undefined), 'throws on undefined')
+  st.throws(() => intToBytes(<any>null), 'throws on null')
+  st.throws(() => intToBytes(<any>-1), 'throws on negative numbers')
+  st.throws(() => intToBytes(<any>1.05), 'throws on decimal numbers')
+  st.throws(() => intToBytes(<any>{}), 'throws on objects')
+  st.throws(() => intToBytes(<any>true), 'throws on true')
+  st.throws(() => intToBytes(<any>false), 'throws on false')
+  st.throws(() => intToBytes(<any>[]), 'throws on arrays')
+  st.throws(() => intToBytes(<any>(() => {})), 'throws on arrays')
+  st.throws(() => intToBytes(Number.MAX_SAFE_INTEGER + 1), 'throws on unsafe integers')
+  st.ok(intToBytes(0).equals(Buffer.from('00', 'hex')), 'correctly converts 0 to a buffer')
+  st.ok(intToBytes(1).equals(Buffer.from('01', 'hex')), 'correctly converts 1 to a buffer')
   st.end()
 })
 
@@ -384,19 +384,19 @@ tape('intToHex', function (st) {
 
 tape('validateNoLeadingZeroes', function (st) {
   const noLeadingZeroes = {
-    a: toBuffer('0x123'),
+    a: toBytes('0x123'),
   }
   const noleadingZeroBytes = {
-    a: toBuffer('0x01'),
+    a: toBytes('0x01'),
   }
   const leadingZeroBytes = {
-    a: toBuffer('0x001'),
+    a: toBytes('0x001'),
   }
   const onlyZeroes = {
-    a: toBuffer('0x0'),
+    a: toBytes('0x0'),
   }
   const emptyBuffer = {
-    a: toBuffer('0x'),
+    a: toBytes('0x'),
   }
 
   const undefinedValue = {
@@ -468,15 +468,15 @@ tape('bufArrToArr', function (st) {
   st.end()
 })
 
-tape('bufferToBigInt', (st) => {
-  const buf = toBuffer('0x123')
-  st.equal(BigInt(0x123), bufferToBigInt(buf))
+tape('bytesToBigInt', (st) => {
+  const buf = toBytes('0x123')
+  st.equal(BigInt(0x123), bytesToBigInt(buf))
   st.end()
 })
 
-tape('bigIntToBuffer', (st) => {
+tape('bigIntToBytes', (st) => {
   const num = BigInt(0x123)
-  st.deepEqual(toBuffer('0x123'), bigIntToBuffer(num))
+  st.deepEqual(toBytes('0x123'), bigIntToBytes(num))
   st.end()
 })
 

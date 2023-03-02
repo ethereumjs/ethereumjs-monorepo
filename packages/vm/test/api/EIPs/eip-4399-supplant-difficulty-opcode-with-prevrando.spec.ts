@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { bufferToBigInt } from '@ethereumjs/util'
+import { bytesToBigInt } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -40,7 +40,7 @@ tape('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', (t) => {
     st.equal(stack[0], block.header.difficulty, '0x44 returns DIFFICULTY (London)')
 
     common.setHardfork(Hardfork.Merge)
-    const prevRandao = bufferToBigInt(Buffer.alloc(32, 1))
+    const prevRandao = bytesToBigInt(Buffer.alloc(32, 1))
     block = Block.fromBlockData(
       {
         header: {

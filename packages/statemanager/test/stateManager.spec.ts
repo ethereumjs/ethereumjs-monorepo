@@ -3,7 +3,7 @@ import {
   Address,
   KECCAK256_RLP,
   KECCAK256_RLP_S,
-  toBuffer,
+  toBytes,
   unpadBuffer,
   zeros,
 } from '@ethereumjs/util'
@@ -73,7 +73,7 @@ tape('StateManager', (t) => {
 
     // test contract storage cache
     await stateManager.checkpoint()
-    const key = toBuffer('0x1234567890123456789012345678901234567890123456789012345678901234')
+    const key = toBytes('0x1234567890123456789012345678901234567890123456789012345678901234')
     const value = Buffer.from('0x1234')
     await stateManager.putContractStorage(address, key, value)
 
@@ -253,8 +253,8 @@ tape('StateManager', (t) => {
 
     await stateManager.putAccount(address, account)
 
-    const key = toBuffer('0x1234567890123456789012345678901234567890123456789012345678901234')
-    const value = toBuffer('0x0a') // We used this value as its RLP encoding is also 0a
+    const key = toBytes('0x1234567890123456789012345678901234567890123456789012345678901234')
+    const value = toBytes('0x0a') // We used this value as its RLP encoding is also 0a
     await stateManager.putContractStorage(address, key, value)
 
     const data = await stateManager.dumpStorage(address)
@@ -268,7 +268,7 @@ tape('StateManager', (t) => {
     const stateManager = new DefaultStateManager()
     const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
     try {
-      await stateManager.putContractStorage(address, Buffer.alloc(12), toBuffer('0x1231'))
+      await stateManager.putContractStorage(address, Buffer.alloc(12), toBytes('0x1231'))
     } catch (e: any) {
       st.equal(e.message, 'Storage key must be 32 bytes long')
       st.end()

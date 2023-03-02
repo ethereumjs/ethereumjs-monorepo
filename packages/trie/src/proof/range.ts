@@ -1,5 +1,5 @@
 import { BranchNode, ExtensionNode, LeafNode, Trie } from '../trie'
-import { nibblesCompare, nibblesToBuffer } from '../util/nibbles'
+import { nibblesCompare, nibblestoBytes } from '../util/nibbles'
 
 import type { HashKeysFunction, Nibbles, TrieNode } from '../types'
 
@@ -437,7 +437,7 @@ export async function verifyRangeProof(
   if (proof === null && firstKey === null && lastKey === null) {
     const trie = new Trie({ useKeyHashingFunction })
     for (let i = 0; i < keys.length; i++) {
-      await trie.put(nibblesToBuffer(keys[i]), values[i])
+      await trie.put(nibblestoBytes(keys[i]), values[i])
     }
     if (rootHash.compare(trie.root()) !== 0) {
       throw new Error('invalid all elements proof: root mismatch')
@@ -455,7 +455,7 @@ export async function verifyRangeProof(
   if (keys.length === 0) {
     const { trie, value } = await verifyProof(
       rootHash,
-      nibblesToBuffer(firstKey),
+      nibblestoBytes(firstKey),
       proof,
       useKeyHashingFunction
     )
@@ -471,7 +471,7 @@ export async function verifyRangeProof(
   if (keys.length === 1 && nibblesCompare(firstKey, lastKey) === 0) {
     const { trie, value } = await verifyProof(
       rootHash,
-      nibblesToBuffer(firstKey),
+      nibblestoBytes(firstKey),
       proof,
       useKeyHashingFunction
     )
@@ -507,7 +507,7 @@ export async function verifyRangeProof(
 
   // Put all elements to the trie
   for (let i = 0; i < keys.length; i++) {
-    await trie.put(nibblesToBuffer(keys[i]), values[i])
+    await trie.put(nibblestoBytes(keys[i]), values[i])
   }
 
   // Compare rootHash

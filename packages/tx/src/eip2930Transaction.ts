@@ -5,9 +5,9 @@ import {
   bigIntToHex,
   bigIntToUnpaddedBuffer,
   bufArrToArr,
-  bufferToBigInt,
+  bytesToBigInt,
   ecrecover,
-  toBuffer,
+  toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -110,7 +110,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
 
     return new AccessListEIP2930Transaction(
       {
-        chainId: bufferToBigInt(chainId),
+        chainId: bytesToBigInt(chainId),
         nonce,
         gasPrice,
         gasLimit,
@@ -118,7 +118,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
         value,
         data,
         accessList: accessList ?? emptyAccessList,
-        v: v !== undefined ? bufferToBigInt(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
+        v: v !== undefined ? bytesToBigInt(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
         r,
         s,
       },
@@ -153,7 +153,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
     // Verify the access list format.
     AccessLists.verifyAccessList(this.accessList)
 
-    this.gasPrice = bufferToBigInt(toBuffer(gasPrice === '' ? '0x' : gasPrice))
+    this.gasPrice = bytesToBigInt(toBytes(gasPrice === '' ? '0x' : gasPrice))
 
     this._validateCannotExceedMaxInteger({
       gasPrice: this.gasPrice,
@@ -350,8 +350,8 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
         data: this.data,
         accessList: this.accessList,
         v: v - BigInt(27), // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
-        r: bufferToBigInt(r),
-        s: bufferToBigInt(s),
+        r: bytesToBigInt(r),
+        s: bytesToBigInt(s),
       },
       opts
     )

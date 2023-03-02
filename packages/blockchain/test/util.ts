@@ -1,7 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { bufArrToArr, toBuffer } from '@ethereumjs/util'
+import { bufArrToArr, toBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { MemoryLevel } from 'memory-level'
 
@@ -165,7 +165,7 @@ export const createTestDB = async (): Promise<[Level<any, any>, Block]> => {
       ),
       keyEncoding: 'buffer',
       valueEncoding: 'buffer',
-      value: Buffer.from(RLP.encode(Uint8Array.from(toBuffer(17179869184)))),
+      value: Buffer.from(RLP.encode(Uint8Array.from(toBytes(17179869184)))),
     },
     {
       type: 'put',

@@ -3,7 +3,7 @@ import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
-import { Address, GWEI_TO_WEI, TypeOutput, Withdrawal, toBuffer, toType } from '@ethereumjs/util'
+import { Address, GWEI_TO_WEI, TypeOutput, Withdrawal, toBytes, toType } from '@ethereumjs/util'
 
 import { Bloom } from './bloom'
 import { calculateMinerReward, encodeReceipt, rewardAccount } from './runBlock'
@@ -131,7 +131,7 @@ export class BlockBuilder {
     const reward = calculateMinerReward(minerReward, 0)
     const coinbase =
       this.headerData.coinbase !== undefined
-        ? new Address(toBuffer(this.headerData.coinbase))
+        ? new Address(toBytes(this.headerData.coinbase))
         : Address.zero()
     await rewardAccount(this.vm.eei, coinbase, reward)
   }
@@ -271,7 +271,7 @@ export class BlockBuilder {
     if (this.vm._common.isActivatedEIP(4844)) {
       let parentHeader = null
       if (this.headerData.parentHash !== undefined) {
-        parentHeader = await this.vm.blockchain.getBlock(toBuffer(this.headerData.parentHash))
+        parentHeader = await this.vm.blockchain.getBlock(toBytes(this.headerData.parentHash))
       }
       if (parentHeader !== null && parentHeader.header._common.isActivatedEIP(4844)) {
         // Compute total number of blobs in block

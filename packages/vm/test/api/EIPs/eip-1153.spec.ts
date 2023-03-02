@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { Account, Address, bufferToInt, privateToAddress } from '@ethereumjs/util'
+import { Account, Address, bytesToInt, privateToAddress } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -164,7 +164,7 @@ tape('EIP 1153: transient storage', (t) => {
 
     const [result1, result2] = await runTest(test, st)
     st.equal(result1.execResult.exceptionError, undefined)
-    st.equal(bufferToInt(result2.execResult.returnValue), 0)
+    st.equal(bytesToInt(result2.execResult.returnValue), 0)
     st.end()
   })
 
@@ -659,7 +659,7 @@ tape('EIP 1153: transient storage', (t) => {
     }
 
     const [result] = await runTest(test, st)
-    st.equal(bufferToInt(result.execResult.returnValue), 0xaa)
+    st.equal(bytesToInt(result.execResult.returnValue), 0xaa)
     st.end()
   })
 })

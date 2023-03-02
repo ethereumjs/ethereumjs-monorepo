@@ -4,7 +4,7 @@ import {
   AsyncEventEmitter,
   KECCAK256_NULL,
   MAX_INTEGER,
-  bigIntToBuffer,
+  bigIntToBytes,
   generateAddress,
   generateAddress2,
   short,
@@ -904,7 +904,7 @@ export class EVM implements EVMInterface {
     } else {
       const acc = await this.eei.getAccount(message.caller)
       const newNonce = acc.nonce - BigInt(1)
-      addr = generateAddress(message.caller.buf, bigIntToBuffer(newNonce))
+      addr = generateAddress(message.caller.buf, bigIntToBytes(newNonce))
     }
     return new Address(addr)
   }

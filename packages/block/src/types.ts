@@ -10,7 +10,7 @@ import type {
 import type {
   AddressLike,
   BigIntLike,
-  BufferLike,
+  BytesLike,
   JsonRpcWithdrawal,
   WithdrawalBuffer,
   WithdrawalData,
@@ -87,23 +87,23 @@ export interface BlockOptions {
  * A block header's data.
  */
 export interface HeaderData {
-  parentHash?: BufferLike
-  uncleHash?: BufferLike
+  parentHash?: BytesLike
+  uncleHash?: BytesLike
   coinbase?: AddressLike
-  stateRoot?: BufferLike
-  transactionsTrie?: BufferLike
-  receiptTrie?: BufferLike
-  logsBloom?: BufferLike
+  stateRoot?: BytesLike
+  transactionsTrie?: BytesLike
+  receiptTrie?: BytesLike
+  logsBloom?: BytesLike
   difficulty?: BigIntLike
   number?: BigIntLike
   gasLimit?: BigIntLike
   gasUsed?: BigIntLike
   timestamp?: BigIntLike
-  extraData?: BufferLike
-  mixHash?: BufferLike
-  nonce?: BufferLike
+  extraData?: BytesLike
+  mixHash?: BytesLike
+  nonce?: BytesLike
   baseFeePerGas?: BigIntLike
-  withdrawalsRoot?: BufferLike
+  withdrawalsRoot?: BytesLike
   excessDataGas?: BigIntLike
 }
 

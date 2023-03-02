@@ -1,3 +1,5 @@
+import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
+
 import {
   generateAddress,
   generateAddress2,
@@ -5,19 +7,19 @@ import {
   privateToAddress,
   pubToAddress,
 } from './account'
-import { bigIntToBuffer, bufferToBigInt, toBuffer, zeros } from './bytes'
+import { bigIntToBytes, bytesToBigInt, toBytes, zeros } from './bytes'
 
 /**
  * Handling and generating Ethereum addresses
  */
 export class Address {
-  public readonly buf: Buffer
+  public readonly bytes: Uint8Array
 
-  constructor(buf: Buffer) {
-    if (buf.length !== 20) {
+  constructor(bytes: Uint8Array) {
+    if (bytes.length !== 20) {
       throw new Error('Invalid address length')
     }
-    this.buf = buf
+    this.bytes = bytes
   }
 
   /**
@@ -35,7 +37,7 @@ export class Address {
     if (!isValidAddress(str)) {
       throw new Error('Invalid address')
     }
-    return new Address(toBuffer(str))
+    return new Address(toBytes(str))
   }
 
   /**
@@ -71,7 +73,7 @@ export class Address {
     if (typeof nonce !== 'bigint') {
       throw new Error('Expected nonce to be a bigint')
     }
-    return new Address(generateAddress(from.buf, bigIntToBuffer(nonce)))
+    return new Address(generateAddress(from.bytes, bigIntToBytes(nonce)))
   }
 
   /**
@@ -87,14 +89,14 @@ export class Address {
     if (!Buffer.isBuffer(initCode)) {
       throw new Error('Expected initCode to be a Buffer')
     }
-    return new Address(generateAddress2(from.buf, salt, initCode))
+    return new Address(generateAddress2(from.bytes, salt, initCode))
   }
 
   /**
    * Is address equal to another.
    */
   equals(address: Address): boolean {
-    return this.buf.equals(address.buf)
+    return equalsBytes(this.bytes, address.bytes)
   }
 
   /**
@@ -109,7 +111,7 @@ export class Address {
    * by EIP-1352
    */
   isPrecompileOrSystemAddress(): boolean {
-    const address = bufferToBigInt(this.buf)
+    const address = bytesToBigInt(this.bytes)
     const rangeMin = BigInt(0)
     const rangeMax = BigInt('0xffff')
     return address >= rangeMin && address <= rangeMax
@@ -119,13 +121,13 @@ export class Address {
    * Returns hex encoding of address.
    */
   toString(): string {
-    return '0x' + this.buf.toString('hex')
+    return bytesToHex(this.bytes)
   }
 
   /**
    * Returns Buffer representation of address.
    */
-  toBuffer(): Buffer {
-    return Buffer.from(this.buf)
+  toBytes(): Buffer {
+    return Buffer.from(this.bytes)
   }
 }

@@ -29,8 +29,8 @@ const timestamp = {
 
 const address = {
   encode(value: string) {
-    if (ip.isV4Format(value)) return ip.toBuffer(value)
-    if (ip.isV6Format(value)) return ip.toBuffer(value)
+    if (ip.isV4Format(value)) return ip.toBytes(value)
+    if (ip.isV6Format(value)) return ip.toBytes(value)
     throw new Error(`Invalid address: ${value}`)
   },
   decode(buffer: Buffer) {

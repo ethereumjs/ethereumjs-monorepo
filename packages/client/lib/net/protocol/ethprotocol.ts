@@ -6,8 +6,8 @@ import {
   arrToBufArr,
   bigIntToUnpaddedBuffer,
   bufArrToArr,
-  bufferToBigInt,
-  bufferToInt,
+  bytesToBigInt,
+  bytesToInt,
   intToUnpaddedBuffer,
 } from '@ethereumjs/util'
 import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
@@ -87,7 +87,7 @@ export class EthProtocol extends Protocol {
       name: 'NewBlockHashes',
       code: 0x01,
       encode: (hashes: any[]) => hashes.map((hn) => [hn[0], bigIntToUnpaddedBuffer(hn[1])]),
-      decode: (hashes: any[]) => hashes.map((hn) => [hn[0], bufferToBigInt(hn[1])]),
+      decode: (hashes: any[]) => hashes.map((hn) => [hn[0], bytesToBigInt(hn[1])]),
     },
     {
       name: 'Transactions',
@@ -129,11 +129,11 @@ export class EthProtocol extends Protocol {
         ],
       ],
       decode: ([reqId, [block, max, skip, reverse]]: any) => ({
-        reqId: bufferToBigInt(reqId),
-        block: block.length === 32 ? block : bufferToBigInt(block),
-        max: bufferToInt(max),
-        skip: bufferToInt(skip),
-        reverse: bufferToInt(reverse) === 0 ? false : true,
+        reqId: bytesToBigInt(reqId),
+        block: block.length === 32 ? block : bytesToBigInt(block),
+        max: bytesToInt(max),
+        skip: bytesToInt(skip),
+        reverse: bytesToInt(reverse) === 0 ? false : true,
       }),
     },
     {
@@ -144,7 +144,7 @@ export class EthProtocol extends Protocol {
         headers.map((h) => h.raw()),
       ],
       decode: ([reqId, headers]: [Buffer, BlockHeaderBuffer[]]) => [
-        bufferToBigInt(reqId),
+        bytesToBigInt(reqId),
         headers.map((h) => {
           const headerData = valuesArrayToHeaderData(h)
           const difficulty = getDifficulty(headerData)!
@@ -170,7 +170,7 @@ export class EthProtocol extends Protocol {
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
-        reqId: bufferToBigInt(reqId),
+        reqId: bytesToBigInt(reqId),
         hashes,
       }),
     },
@@ -181,7 +181,7 @@ export class EthProtocol extends Protocol {
         bigIntToUnpaddedBuffer(reqId),
         bodies,
       ],
-      decode: ([reqId, bodies]: [Buffer, BlockBodyBuffer[]]) => [bufferToBigInt(reqId), bodies],
+      decode: ([reqId, bodies]: [Buffer, BlockBodyBuffer[]]) => [bytesToBigInt(reqId), bodies],
     },
     {
       name: 'NewBlock',
@@ -210,7 +210,7 @@ export class EthProtocol extends Protocol {
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
-        reqId: bufferToBigInt(reqId),
+        reqId: bytesToBigInt(reqId),
         hashes,
       }),
     },
@@ -245,7 +245,7 @@ export class EthProtocol extends Protocol {
           this.chain.headers.latest?.timestamp ?? Math.floor(Date.now() / 1000)
         )
         return [
-          bufferToBigInt(reqId),
+          bytesToBigInt(reqId),
           txs.map((txData) => {
             if (txData[0] === 5) {
               // Blob transactions are deserialized with network wrapper
@@ -265,7 +265,7 @@ export class EthProtocol extends Protocol {
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
-        reqId: bufferToBigInt(reqId),
+        reqId: bytesToBigInt(reqId),
         hashes,
       }),
     },
@@ -281,20 +281,20 @@ export class EthProtocol extends Protocol {
         return [bigIntToUnpaddedBuffer(reqId), serializedReceipts]
       },
       decode: ([reqId, receipts]: [Buffer, Buffer[]]) => [
-        bufferToBigInt(reqId),
+        bytesToBigInt(reqId),
         receipts.map((r) => {
           // Legacy receipt if r[0] >= 0xc0, otherwise typed receipt with first byte as TransactionType
           const decoded = arrToBufArr(RLP.decode(bufArrToArr(r[0] >= 0xc0 ? r : r.slice(1)))) as any
           const [stateRootOrStatus, cumulativeGasUsed, logsBloom, logs] = decoded
           const receipt = {
-            cumulativeBlockGasUsed: bufferToBigInt(cumulativeGasUsed),
+            cumulativeBlockGasUsed: bytesToBigInt(cumulativeGasUsed),
             bitvector: logsBloom,
             logs,
           } as TxReceipt
           if (stateRootOrStatus.length === 32) {
             ;(receipt as PreByzantiumTxReceipt).stateRoot = stateRootOrStatus
           } else {
-            ;(receipt as PostByzantiumTxReceipt).status = bufferToInt(stateRootOrStatus) as 0 | 1
+            ;(receipt as PostByzantiumTxReceipt).status = bytesToInt(stateRootOrStatus) as 0 | 1
           }
           return receipt
         }),
@@ -366,8 +366,8 @@ export class EthProtocol extends Protocol {
    */
   decodeStatus(status: any): any {
     return {
-      networkId: bufferToBigInt(status.networkId),
-      td: bufferToBigInt(status.td),
+      networkId: bytesToBigInt(status.networkId),
+      td: bytesToBigInt(status.td),
       bestHash: status.bestHash,
       genesisHash: status.genesisHash,
     }

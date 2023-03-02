@@ -3,7 +3,7 @@ import * as tape from 'tape'
 
 import {
   Account,
-  bufferToBigInt,
+  bytesToBigInt,
   generateAddress,
   generateAddress2,
   importPublic,
@@ -14,7 +14,7 @@ import {
   privateToAddress,
   privateToPublic,
   publicToAddress,
-  toBuffer,
+  toBytes,
   toChecksumAddress,
 } from '../src'
 
@@ -47,7 +47,7 @@ tape('Account', function (t) {
       '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', // storageRoot
       '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470', // codeHash
     ]
-    const account = Account.fromValuesArray(raw.map(toBuffer))
+    const account = Account.fromValuesArray(raw.map(toBytes))
     st.equal(account.nonce, BigInt(2), 'should have correct nonce')
     st.equal(account.balance, BigInt(900), 'should have correct balance')
     st.equal(
@@ -422,7 +422,7 @@ tape('Utility Functions', function (t) {
   t.test('generateAddress', function (st) {
     const addr = generateAddress(
       Buffer.from('990ccf8a0de58091c028d6ff76bb235ee67c1c39', 'utf8'),
-      toBuffer(14)
+      toBytes(14)
     )
     st.equal(
       addr.toString('hex'),
@@ -433,10 +433,7 @@ tape('Utility Functions', function (t) {
   })
 
   t.test('generateAddress wt.testh hex prefix', function (st) {
-    const addr = generateAddress(
-      toBuffer('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
-      toBuffer(14)
-    )
+    const addr = generateAddress(toBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'), toBytes(14))
     st.equal(
       addr.toString('hex'),
       'd658a4b8247c14868f3c512fa5cbb6e458e4a989',
@@ -446,10 +443,7 @@ tape('Utility Functions', function (t) {
   })
 
   t.test('generateAddress wt.testh nonce 0 (special case)', function (st) {
-    const addr = generateAddress(
-      toBuffer('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
-      toBuffer(0)
-    )
+    const addr = generateAddress(toBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'), toBytes(0))
     st.equal(
       addr.toString('hex'),
       'bfa69ba91385206bfdd2d8b9c1a5d6c10097a85b',
@@ -460,17 +454,11 @@ tape('Utility Functions', function (t) {
 
   t.test('generateAddress wt.testh non-buffer inputs', function (st) {
     st.throws(function () {
-      generateAddress(
-        (<unknown>'0x990ccf8a0de58091c028d6ff76bb235ee67c1c39') as Buffer,
-        toBuffer(0)
-      )
+      generateAddress((<unknown>'0x990ccf8a0de58091c028d6ff76bb235ee67c1c39') as Buffer, toBytes(0))
     }, 'should throw if address is not Buffer')
 
     st.throws(function () {
-      generateAddress(
-        toBuffer('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
-        (<unknown>0) as Buffer
-      )
+      generateAddress(toBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'), (<unknown>0) as Buffer)
     }, 'should throw if nonce is not Buffer')
     st.end()
   })
@@ -478,7 +466,7 @@ tape('Utility Functions', function (t) {
   t.test('generateAddress2: EIP-1014 testdata examples', function (st) {
     for (const testdata of eip1014Testdata) {
       const { address, comment, result, salt, initCode } = testdata
-      const addr = generateAddress2(toBuffer(address), toBuffer(salt), toBuffer(initCode))
+      const addr = generateAddress2(toBytes(address), toBytes(salt), toBytes(initCode))
       st.equal(
         '0x' + addr.toString('hex'),
         result,
@@ -492,15 +480,15 @@ tape('Utility Functions', function (t) {
     const { address, salt, initCode } = eip1014Testdata[0]
 
     st.throws(function () {
-      generateAddress2((<unknown>address) as Buffer, toBuffer(salt), toBuffer(initCode))
+      generateAddress2((<unknown>address) as Buffer, toBytes(salt), toBytes(initCode))
     }, 'should throw if address is not Buffer')
 
     st.throws(function () {
-      generateAddress2(toBuffer(address), (<unknown>salt) as Buffer, toBuffer(initCode))
+      generateAddress2(toBytes(address), (<unknown>salt) as Buffer, toBytes(initCode))
     }, 'should throw if salt is not Buffer')
 
     st.throws(function () {
-      generateAddress2(toBuffer(address), toBuffer(salt), (<unknown>initCode) as Buffer)
+      generateAddress2(toBytes(address), toBytes(salt), (<unknown>initCode) as Buffer)
     }, 'should throw if initCode is not Buffer')
     st.end()
   })
@@ -589,7 +577,7 @@ tape('Utility Functions', function (t) {
         const addr = '0x88021160C5C792225E4E5452585947470010289D'
         const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
         st.equal(toChecksumAddress(addr.toLowerCase(), chainIDBuffer), addr)
-        st.equal(toChecksumAddress(addr.toLowerCase(), bufferToBigInt(chainIDBuffer)), addr)
+        st.equal(toChecksumAddress(addr.toLowerCase(), bytesToBigInt(chainIDBuffer)), addr)
         st.equal(toChecksumAddress(addr.toLowerCase(), '0x' + chainIDBuffer.toString('hex')), addr)
         const chainIDNumber = parseInt(chainIDBuffer.toString('hex'), 16)
         st.throws(() => {

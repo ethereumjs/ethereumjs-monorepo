@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Address, KECCAK256_RLP, KECCAK256_RLP_ARRAY, toBuffer, zeros } from '@ethereumjs/util'
+import { Address, KECCAK256_RLP, KECCAK256_RLP_ARRAY, toBytes, zeros } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Block } from '../src'
@@ -333,7 +333,7 @@ tape('[Block]: Header functions', function (t) {
     const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Istanbul })
     const blockchain = new Mockchain()
 
-    const genesisRlp = toBuffer(testDataPreLondon.genesisRLP)
+    const genesisRlp = toBytes(testDataPreLondon.genesisRLP)
     const block = Block.fromRLPSerializedBlock(genesisRlp, { common })
     await blockchain.putBlock(block)
 
@@ -445,9 +445,9 @@ tape('[Block]: Header functions', function (t) {
     const bcBlockGasLimitTestData = testData.BlockGasLimit2p63m1
 
     for (const key of Object.keys(bcBlockGasLimitTestData)) {
-      const genesisRlp = toBuffer(bcBlockGasLimitTestData[key].genesisRLP)
+      const genesisRlp = toBytes(bcBlockGasLimitTestData[key].genesisRLP)
       const parentBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
-      const blockRlp = toBuffer(bcBlockGasLimitTestData[key].blocks[0].rlp)
+      const blockRlp = toBytes(bcBlockGasLimitTestData[key].blocks[0].rlp)
       const block = Block.fromRLPSerializedBlock(blockRlp, { common })
       st.doesNotThrow(() => block.validateGasLimit(parentBlock))
     }

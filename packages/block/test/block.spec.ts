@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { toBuffer, zeros } from '@ethereumjs/util'
+import { toBytes, zeros } from '@ethereumjs/util'
 import * as tape from 'tape'
 // explicitly import util, needed for karma-typescript bundling
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, simple-import-sort/imports
@@ -163,7 +163,7 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should test block validation on pow chain', async function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const blockRlp = toBuffer(testDataPreLondon.blocks[0].rlp)
+    const blockRlp = toBytes(testDataPreLondon.blocks[0].rlp)
     try {
       Block.fromRLPSerializedBlock(blockRlp, { common })
       st.pass('should pass')
@@ -189,7 +189,7 @@ tape('[Block]: block functions', function (t) {
   }
 
   t.test('should test transaction validation', async function (st) {
-    const blockRlp = toBuffer(testDataPreLondon.blocks[0].rlp)
+    const blockRlp = toBytes(testDataPreLondon.blocks[0].rlp)
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     await testTransactionValidation(st, block)
@@ -209,7 +209,7 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should test transaction validation with legacy tx in london', async function (st) {
     const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.London })
-    const blockRlp = toBuffer(testDataPreLondon.blocks[0].rlp)
+    const blockRlp = toBytes(testDataPreLondon.blocks[0].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     await testTransactionValidation(st, block)
     ;(block.transactions[0] as any).gasPrice = BigInt(0)
@@ -222,7 +222,7 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should test uncles hash validation', async function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const blockRlp = toBuffer(testDataPreLondon2.blocks[2].rlp)
+    const blockRlp = toBytes(testDataPreLondon2.blocks[2].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     st.equal(block.validateUnclesHash(), true)
     ;(block.header as any).uncleHash = Buffer.alloc(32)
@@ -272,7 +272,7 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should return the same block data from raw()', function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const block = Block.fromRLPSerializedBlock(toBuffer(testDataPreLondon2.blocks[2].rlp), {
+    const block = Block.fromRLPSerializedBlock(toBytes(testDataPreLondon2.blocks[2].rlp), {
       common,
     })
     const blockFromRaw = Block.fromValuesArray(block.raw(), { common })
@@ -282,7 +282,7 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should test toJSON', function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const block = Block.fromRLPSerializedBlock(toBuffer(testDataPreLondon2.blocks[2].rlp), {
+    const block = Block.fromRLPSerializedBlock(toBytes(testDataPreLondon2.blocks[2].rlp), {
       common,
     })
     st.equal(typeof block.toJSON(), 'object')

@@ -7,7 +7,7 @@ import {
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { Lock, bufferToHex } from '@ethereumjs/util'
+import { Lock, bytesToHex } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
 import { Event } from '../types'
@@ -510,7 +510,7 @@ export class VMExecution extends Execution {
         // Useful e.g. to trace slow txs
         const allTxs = txHashes.length === 1 && txHashes[0] === '*' ? true : false
         for (const tx of block.transactions) {
-          const txHash = bufferToHex(tx.hash())
+          const txHash = bytesToHex(tx.hash())
           if (allTxs || txHashes.includes(txHash)) {
             const res = await vm.runTx({ block, tx })
             this.config.logger.info(

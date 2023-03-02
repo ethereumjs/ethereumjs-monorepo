@@ -1,7 +1,7 @@
 import { Block, getDataGasPrice } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
-import { Address, KECCAK256_NULL, short, toBuffer } from '@ethereumjs/util'
+import { Address, KECCAK256_NULL, short, toBytes } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { Bloom } from './bloom'
@@ -145,10 +145,10 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const castedTx = <AccessListEIP2930Transaction>opts.tx
 
     for (const accessListItem of castedTx.AccessListJSON) {
-      const address = toBuffer(accessListItem.address)
+      const address = toBytes(accessListItem.address)
       state.addWarmedAddress(address)
       for (const storageKey of accessListItem.storageKeys) {
-        state.addWarmedStorage(address, toBuffer(storageKey))
+        state.addWarmedStorage(address, toBytes(storageKey))
       }
     }
   }

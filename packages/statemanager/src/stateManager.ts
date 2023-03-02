@@ -5,10 +5,10 @@ import {
   KECCAK256_NULL,
   KECCAK256_RLP,
   bigIntToHex,
-  bufferToHex,
+  bytesToHex,
   setLengthLeft,
   short,
-  toBuffer,
+  toBytes,
   unpadBuffer,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -330,19 +330,19 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
   async getProof(address: Address, storageSlots: Buffer[] = []): Promise<Proof> {
     const account = await this.getAccount(address)
     const accountProof: PrefixedHexString[] = (await this._trie.createProof(address.buf)).map((p) =>
-      bufferToHex(p)
+      bytesToHex(p)
     )
     const storageProof: StorageProof[] = []
     const storageTrie = await this._getStorageTrie(address)
 
     for (const storageKey of storageSlots) {
-      const proof = (await storageTrie.createProof(storageKey)).map((p) => bufferToHex(p))
-      let value = bufferToHex(await this.getContractStorage(address, storageKey))
+      const proof = (await storageTrie.createProof(storageKey)).map((p) => bytesToHex(p))
+      let value = bytesToHex(await this.getContractStorage(address, storageKey))
       if (value === '0x') {
         value = '0x0'
       }
       const proofItem: StorageProof = {
-        key: bufferToHex(storageKey),
+        key: bytesToHex(storageKey),
         value,
         proof,
       }
@@ -352,9 +352,9 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     const returnValue: Proof = {
       address: address.toString(),
       balance: bigIntToHex(account.balance),
-      codeHash: bufferToHex(account.codeHash),
+      codeHash: bytesToHex(account.codeHash),
       nonce: bigIntToHex(account.nonce),
-      storageHash: bufferToHex(account.storageRoot),
+      storageHash: bytesToHex(account.storageRoot),
       accountProof,
       storageProof,
     }
@@ -366,10 +366,10 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * @param proof the proof to prove
    */
   async verifyProof(proof: Proof): Promise<boolean> {
-    const rootHash = Buffer.from(keccak256(toBuffer(proof.accountProof[0])))
-    const key = toBuffer(proof.address)
+    const rootHash = Buffer.from(keccak256(toBytes(proof.accountProof[0])))
+    const key = toBytes(proof.address)
     const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
-      toBuffer(rlpString)
+      toBytes(rlpString)
     )
 
     // This returns the account if the proof is valid.
@@ -380,19 +380,19 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       // Verify that the account is empty in the proof.
       const emptyBuffer = Buffer.from('')
       const notEmptyErrorMsg = 'Invalid proof provided: account is not empty'
-      const nonce = unpadBuffer(toBuffer(proof.nonce))
+      const nonce = unpadBuffer(toBytes(proof.nonce))
       if (!nonce.equals(emptyBuffer)) {
         throw new Error(`${notEmptyErrorMsg} (nonce is not zero)`)
       }
-      const balance = unpadBuffer(toBuffer(proof.balance))
+      const balance = unpadBuffer(toBytes(proof.balance))
       if (!balance.equals(emptyBuffer)) {
         throw new Error(`${notEmptyErrorMsg} (balance is not zero)`)
       }
-      const storageHash = toBuffer(proof.storageHash)
+      const storageHash = toBytes(proof.storageHash)
       if (!storageHash.equals(KECCAK256_RLP)) {
         throw new Error(`${notEmptyErrorMsg} (storageHash does not equal KECCAK256_RLP)`)
       }
-      const codeHash = toBuffer(proof.codeHash)
+      const codeHash = toBytes(proof.codeHash)
       if (!codeHash.equals(KECCAK256_NULL)) {
         throw new Error(`${notEmptyErrorMsg} (codeHash does not equal KECCAK256_NULL)`)
       }
@@ -406,20 +406,20 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       if (balance !== BigInt(proof.balance)) {
         throw new Error(`${invalidErrorMsg} balance does not match`)
       }
-      if (!storageRoot.equals(toBuffer(proof.storageHash))) {
+      if (!storageRoot.equals(toBytes(proof.storageHash))) {
         throw new Error(`${invalidErrorMsg} storageHash does not match`)
       }
-      if (!codeHash.equals(toBuffer(proof.codeHash))) {
+      if (!codeHash.equals(toBytes(proof.codeHash))) {
         throw new Error(`${invalidErrorMsg} codeHash does not match`)
       }
     }
 
-    const storageRoot = toBuffer(proof.storageHash)
+    const storageRoot = toBytes(proof.storageHash)
 
     for (const stProof of proof.storageProof) {
-      const storageProof = stProof.proof.map((value: PrefixedHexString) => toBuffer(value))
-      const storageValue = setLengthLeft(toBuffer(stProof.value), 32)
-      const storageKey = toBuffer(stProof.key)
+      const storageProof = stProof.proof.map((value: PrefixedHexString) => toBytes(value))
+      const storageValue = setLengthLeft(toBytes(stProof.value), 32)
+      const storageKey = toBytes(stProof.key)
       const proofValue = await new Trie({ useKeyHashing: true }).verifyProof(
         storageRoot,
         storageKey,

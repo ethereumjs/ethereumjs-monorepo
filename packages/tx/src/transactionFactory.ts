@@ -1,4 +1,4 @@
-import { bufferToBigInt, toBuffer } from '@ethereumjs/util'
+import { bytesToBigInt, toBytes } from '@ethereumjs/util'
 import { JsonRpcProvider } from '@ethersproject/providers'
 
 import { FeeMarketEIP1559Transaction } from './eip1559Transaction'
@@ -34,7 +34,7 @@ export class TransactionFactory {
       // Assume legacy transaction
       return Transaction.fromTxData(<TxData>txData, txOptions)
     } else {
-      const txType = Number(bufferToBigInt(toBuffer(txData.type)))
+      const txType = Number(bytesToBigInt(toBytes(txData.type)))
       if (txType === 0) {
         return Transaction.fromTxData(<TxData>txData, txOptions)
       } else if (txType === 1) {

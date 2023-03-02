@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { Address, bigIntToHex, bufferToHex, toBuffer } from '@ethereumjs/util'
+import { Address, bigIntToHex, bytesToHex, toBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
@@ -123,7 +123,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   // verify storage of pos1 is accurate
   // pos1["0xccfd725760a68823ff1e062f4cc97e1360e8d997"]
-  const key = toBuffer(
+  const key = toBytes(
     keccak256(
       Buffer.from(
         '000000000000000000000000ccfd725760a68823ff1e062f4cc97e1360e8d997' +
@@ -132,7 +132,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
       )
     )
   )
-  req = params(method, [createdAddress!.toString(), bufferToHex(key), 'latest'])
+  req = params(method, [createdAddress!.toString(), bytesToHex(key), 'latest'])
   expectRes = (res: any) => {
     const msg = 'should return the correct storage value (pos1)'
     t.equal(

@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { ERROR } from '@ethereumjs/evm/dist/exceptions'
-import { Address, bufferToBigInt } from '@ethereumjs/util'
+import { Address, bytesToBigInt } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -38,7 +38,7 @@ tape('Istanbul: EIP-1884', async (t) => {
           st.equal(res.exceptionError?.error, testCase.err)
         } else {
           st.assert(res.exceptionError === undefined)
-          st.assert(BigInt(testCase.selfbalance) === bufferToBigInt(res.returnValue))
+          st.assert(BigInt(testCase.selfbalance) === bytesToBigInt(res.returnValue))
         }
       } catch (e: any) {
         st.fail(e.message)

@@ -68,17 +68,17 @@ tape('Withdrawal', (t) => {
   // gethWithdrawals8Rlp is rlp encoded block with withdrawals in the 4th element of the top array
   const gethWithdrawalsBuffer = decode(Buffer.from(gethWithdrawals8BlockRlp, 'hex'))[3]!
   const gethWithdrawalsRlp = Buffer.from(encode(gethWithdrawalsBuffer)).toString('hex')
-  t.test('fromWithdrawalData and toBufferArray', (st) => {
+  t.test('fromWithdrawalData and toBytesArray', (st) => {
     const withdrawals = withdrawalsGethVector.map(Withdrawal.fromWithdrawalData)
-    const withdrawalsToBufferArr = withdrawals.map((wt) => wt.raw())
-    const withdrawalsToRlp = Buffer.from(encode(withdrawalsToBufferArr)).toString('hex')
+    const withdrawalstoBytesArr = withdrawals.map((wt) => wt.raw())
+    const withdrawalsToRlp = Buffer.from(encode(withdrawalstoBytesArr)).toString('hex')
     st.equal(gethWithdrawalsRlp, withdrawalsToRlp, 'The withdrawals to buffer should match')
     st.end()
   })
 
-  t.test('toBufferArray from withdrawalData', (st) => {
-    const withdrawalsDataToBufferArr = withdrawalsGethVector.map(Withdrawal.toBufferArray)
-    const withdrawalsDataToRlp = Buffer.from(encode(withdrawalsDataToBufferArr)).toString('hex')
+  t.test('toBytesArray from withdrawalData', (st) => {
+    const withdrawalsDatatoBytesArr = withdrawalsGethVector.map(Withdrawal.toBytesArray)
+    const withdrawalsDataToRlp = Buffer.from(encode(withdrawalsDatatoBytesArr)).toString('hex')
     st.equal(gethWithdrawalsRlp, withdrawalsDataToRlp, 'The withdrawals to buffer should match')
     st.end()
   })

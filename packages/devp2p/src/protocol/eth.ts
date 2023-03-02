@@ -1,10 +1,10 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
   arrToBufArr,
-  bigIntToBuffer,
+  bigIntToBytes,
   bufArrToArr,
-  bufferToBigInt,
-  bufferToHex,
+  bytesToBigInt,
+  bytesToHex,
 } from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 
@@ -119,8 +119,8 @@ export class ETH extends Protocol {
   _validateForkId(forkId: Buffer[]) {
     const c = this._peer._common
 
-    const peerForkHash = bufferToHex(forkId[0])
-    const peerNextFork = bufferToBigInt(forkId[1])
+    const peerForkHash = bytesToHex(forkId[0])
+    const peerNextFork = bytesToBigInt(forkId[1])
 
     if (this._forkHash === peerForkHash) {
       // There is a known next fork
@@ -246,14 +246,14 @@ export class ETH extends Protocol {
     if (this._status !== null) return
     this._status = [
       int2buffer(this._version),
-      bigIntToBuffer(this._peer._common.chainId()),
+      bigIntToBytes(this._peer._common.chainId()),
       status.td,
       status.bestHash,
       status.genesisHash,
     ]
     if (this._version >= 64) {
       if (status.latestBlock) {
-        const latestBlock = bufferToBigInt(status.latestBlock)
+        const latestBlock = bytesToBigInt(status.latestBlock)
         if (latestBlock < this._latestBlock) {
           throw new Error(
             'latest block provided is not matching the HF setting of the Common instance (Rlpx)'
@@ -266,7 +266,7 @@ export class ETH extends Protocol {
       const nextForkB =
         this._nextForkBlock === BigInt(0)
           ? Buffer.from('', 'hex')
-          : bigIntToBuffer(this._nextForkBlock)
+          : bigIntToBytes(this._nextForkBlock)
 
       this._status.push([forkHashB, nextForkB])
     }

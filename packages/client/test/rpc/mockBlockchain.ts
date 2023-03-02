@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Transaction } from '@ethereumjs/tx'
-import { toBuffer } from '@ethereumjs/util'
+import { toBytes } from '@ethereumjs/util'
 
 import { dummy } from './helpers'
 
@@ -10,7 +10,7 @@ export function mockBlockchain(options: any = {}) {
     options.hash ?? '0x910abca1728c53e8d6df870dd7af5352e974357dc58205dea1676be17ba6becf'
   const transactions = options.transactions ?? [Transaction.fromTxData({}).sign(dummy.privKey)]
   const block = {
-    hash: () => toBuffer(blockHash),
+    hash: () => toBytes(blockHash),
     header: {
       number: BigInt(number),
     },

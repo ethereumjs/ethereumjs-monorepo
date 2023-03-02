@@ -1,4 +1,4 @@
-import { setLengthLeft, toBuffer } from '@ethereumjs/util'
+import { setLengthLeft, toBytes } from '@ethereumjs/util'
 import * as crypto from 'crypto'
 import * as tape from 'tape'
 
@@ -21,8 +21,8 @@ async function randomTrie(db: DB, addKey: boolean = true) {
 
   if (addKey) {
     for (let i = 0; i < 100; i++) {
-      const key = setLengthLeft(toBuffer(i), 32)
-      const val = toBuffer(i)
+      const key = setLengthLeft(toBytes(i), 32)
+      const val = toBytes(i)
       await trie.put(key, val)
       entries.push([key, val])
     }
@@ -55,7 +55,7 @@ function getRandomIntInclusive(min: number, max: number): number {
 function decreaseKey(key: Buffer) {
   for (let i = key.length - 1; i >= 0; i--) {
     if (key[i] > 0) {
-      return Buffer.concat([key.slice(0, i), toBuffer(key[i] - 1), key.slice(i + 1)])
+      return Buffer.concat([key.slice(0, i), toBytes(key[i] - 1), key.slice(i + 1)])
     }
   }
 }
@@ -63,7 +63,7 @@ function decreaseKey(key: Buffer) {
 function increaseKey(key: Buffer) {
   for (let i = key.length - 1; i >= 0; i--) {
     if (key[i] < 255) {
-      return Buffer.concat([key.slice(0, i), toBuffer(key[i] + 1), key.slice(i + 1)])
+      return Buffer.concat([key.slice(0, i), toBytes(key[i] + 1), key.slice(i + 1)])
     }
   }
 }
@@ -308,8 +308,8 @@ tape('simple merkle range proofs generation and verification', function (tester)
     const trie = new Trie()
     const entries: [Buffer, Buffer][] = []
     for (let i = 0; i < 10; i++) {
-      const key = setLengthLeft(toBuffer(i), 32)
-      const val = toBuffer(i)
+      const key = setLengthLeft(toBytes(i), 32)
+      const val = toBytes(i)
       await trie.put(key, val)
       entries.push([key, val])
     }

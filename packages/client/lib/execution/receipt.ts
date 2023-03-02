@@ -1,11 +1,11 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
   arrToBufArr,
-  bigIntToBuffer,
+  bigIntToBytes,
   bufArrToArr,
-  bufferToBigInt,
-  bufferToInt,
-  intToBuffer,
+  bytesToBigInt,
+  bytesToInt,
+  intToBytes,
 } from '@ethereumjs/util'
 import { Bloom } from '@ethereumjs/vm'
 
@@ -313,8 +313,8 @@ export class ReceiptsManager extends MetaDBManager {
               bufArrToArr(
                 value.map((r) => [
                   (r as PreByzantiumTxReceipt).stateRoot ??
-                    intToBuffer((r as PostByzantiumTxReceipt).status),
-                  bigIntToBuffer(r.cumulativeBlockGasUsed),
+                    intToBytes((r as PostByzantiumTxReceipt).status),
+                  bigIntToBytes(r.cumulativeBlockGasUsed),
                   this.rlp(RlpConvert.Encode, RlpType.Logs, r.logs),
                 ])
               )
@@ -329,14 +329,14 @@ export class ReceiptsManager extends MetaDBManager {
               // Pre-Byzantium Receipt
               return {
                 stateRoot: r[0],
-                cumulativeBlockGasUsed: bufferToBigInt(gasUsed),
+                cumulativeBlockGasUsed: bytesToBigInt(gasUsed),
                 logs,
               } as PreByzantiumTxReceipt
             } else {
               // Post-Byzantium Receipt
               return {
-                status: bufferToInt(r[0]),
-                cumulativeBlockGasUsed: bufferToBigInt(gasUsed),
+                status: bytesToInt(r[0]),
+                cumulativeBlockGasUsed: bytesToBigInt(gasUsed),
                 logs,
               } as PostByzantiumTxReceipt
             }
@@ -351,12 +351,12 @@ export class ReceiptsManager extends MetaDBManager {
       case RlpType.TxHash:
         if (conversion === RlpConvert.Encode) {
           const [blockHash, txIndex] = value as TxHashIndex
-          return Buffer.from(RLP.encode(bufArrToArr([blockHash, intToBuffer(txIndex)])))
+          return Buffer.from(RLP.encode(bufArrToArr([blockHash, intToBytes(txIndex)])))
         } else {
           const [blockHash, txIndex] = arrToBufArr(
             RLP.decode(Uint8Array.from(value as Buffer))
           ) as rlpTxHash
-          return [blockHash, bufferToInt(txIndex)] as TxHashIndex
+          return [blockHash, bytesToInt(txIndex)] as TxHashIndex
         }
       default:
         throw new Error('Unknown rlp conversion')

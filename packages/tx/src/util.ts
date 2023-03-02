@@ -1,4 +1,4 @@
-import { bufferToHex, setLengthLeft, toBuffer } from '@ethereumjs/util'
+import { bytesToHex, setLengthLeft, toBytes } from '@ethereumjs/util'
 
 import { isAccessList } from './types'
 
@@ -28,10 +28,10 @@ export class AccessLists {
 
       for (let i = 0; i < accessList.length; i++) {
         const item: AccessListItem = accessList[i]
-        const addressBuffer = toBuffer(item.address)
+        const addressBuffer = toBytes(item.address)
         const storageItems: Buffer[] = []
         for (let index = 0; index < item.storageKeys.length; index++) {
-          storageItems.push(toBuffer(item.storageKeys[index]))
+          storageItems.push(toBytes(item.storageKeys[index]))
         }
         newAccessList.push([addressBuffer, storageItems])
       }
@@ -42,10 +42,10 @@ export class AccessLists {
       const json: AccessList = []
       for (let i = 0; i < bufferAccessList.length; i++) {
         const data = bufferAccessList[i]
-        const address = bufferToHex(data[0])
+        const address = bytesToHex(data[0])
         const storageKeys: string[] = []
         for (let item = 0; item < data[1].length; item++) {
-          storageKeys.push(bufferToHex(data[1][item]))
+          storageKeys.push(bytesToHex(data[1][item]))
         }
         const jsonItem: AccessListItem = {
           address,
@@ -120,7 +120,7 @@ export class AccessLists {
 export const blobTxToNetworkWrapperDataFormat = (tx: BlobEIP4844Transaction) => {
   const to = {
     selector: tx.to !== undefined ? 1 : 0,
-    value: tx.to?.toBuffer() ?? null,
+    value: tx.to?.toBytes() ?? null,
   }
   return {
     message: {

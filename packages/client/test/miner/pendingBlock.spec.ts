@@ -6,7 +6,7 @@ import {
   commitmentsToVersionedHashes,
   getBlobs,
 } from '@ethereumjs/tx/dist/utils/blobHelpers'
-import { Account, Address, bufferToHex } from '@ethereumjs/util'
+import { Account, Address, bytesToHex } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
 import * as kzg from 'c-kzg'
@@ -144,10 +144,10 @@ tape('[PendingBlock]', async (t) => {
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
-    const payload = pendingBlock.pendingPayloads.get(bufferToHex(payloadId))
+    const payload = pendingBlock.pendingPayloads.get(bytesToHex(payloadId))
     t.equal(
       (payload as any).transactions.filter(
-        (tx: TypedTransaction) => bufferToHex(tx.hash()) === bufferToHex(txA011.hash())
+        (tx: TypedTransaction) => bytesToHex(tx.hash()) === bytesToHex(txA011.hash())
       ).length,
       1,
       'txA011 should be in block'
@@ -163,7 +163,7 @@ tape('[PendingBlock]', async (t) => {
     t.equal(block?.transactions.length, 2, 'should include txs from pool')
     t.equal(
       (payload as any).transactions.filter(
-        (tx: TypedTransaction) => bufferToHex(tx.hash()) === bufferToHex(txB011.hash())
+        (tx: TypedTransaction) => bytesToHex(tx.hash()) === bytesToHex(txB011.hash())
       ).length,
       1,
       'txB011 should be in block'
@@ -296,7 +296,7 @@ tape('[PendingBlock]', async (t) => {
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     await pendingBlock.build(payloadId)
-    st.ok(pendingBlock.blobBundles.get(bufferToHex(payloadId))?.blobs[0].equals(blobs[0]))
+    st.ok(pendingBlock.blobBundles.get(bytesToHex(payloadId))?.blobs[0].equals(blobs[0]))
     kzg.freeTrustedSetup()
     st.end()
   })

@@ -5,9 +5,9 @@ import {
   bigIntToHex,
   bigIntToUnpaddedBuffer,
   bufArrToArr,
-  bufferToBigInt,
+  bytesToBigInt,
   ecrecover,
-  toBuffer,
+  toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -122,7 +122,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
 
     return new FeeMarketEIP1559Transaction(
       {
-        chainId: bufferToBigInt(chainId),
+        chainId: bytesToBigInt(chainId),
         nonce,
         maxPriorityFeePerGas,
         maxFeePerGas,
@@ -131,7 +131,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
         value,
         data,
         accessList: accessList ?? [],
-        v: v !== undefined ? bufferToBigInt(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
+        v: v !== undefined ? bytesToBigInt(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
         r,
         s,
       },
@@ -165,9 +165,9 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
     // Verify the access list format.
     AccessLists.verifyAccessList(this.accessList)
 
-    this.maxFeePerGas = bufferToBigInt(toBuffer(maxFeePerGas === '' ? '0x' : maxFeePerGas))
-    this.maxPriorityFeePerGas = bufferToBigInt(
-      toBuffer(maxPriorityFeePerGas === '' ? '0x' : maxPriorityFeePerGas)
+    this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas === '' ? '0x' : maxFeePerGas))
+    this.maxPriorityFeePerGas = bytesToBigInt(
+      toBytes(maxPriorityFeePerGas === '' ? '0x' : maxPriorityFeePerGas)
     )
 
     this._validateCannotExceedMaxInteger({
@@ -381,8 +381,8 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
         data: this.data,
         accessList: this.accessList,
         v: v - BigInt(27), // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
-        r: bufferToBigInt(r),
-        s: bufferToBigInt(s),
+        r: bytesToBigInt(r),
+        s: bytesToBigInt(s),
       },
       opts
     )

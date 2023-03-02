@@ -6,9 +6,9 @@ import {
   Account,
   Address,
   GWEI_TO_WEI,
-  bigIntToBuffer,
+  bigIntToBytes,
   bufArrToArr,
-  intToBuffer,
+  intToBytes,
   short,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
@@ -412,7 +412,7 @@ export function encodeReceipt(receipt: TxReceipt, txType: number) {
           ((receipt as PostByzantiumTxReceipt).status === 0
             ? Buffer.from([])
             : Buffer.from('01', 'hex')),
-        bigIntToBuffer(receipt.cumulativeBlockGasUsed),
+        bigIntToBytes(receipt.cumulativeBlockGasUsed),
         receipt.bitvector,
         receipt.logs,
       ])
@@ -425,7 +425,7 @@ export function encodeReceipt(receipt: TxReceipt, txType: number) {
 
   // Serialize receipt according to EIP-2718:
   // `typed-receipt = tx-type || receipt-data`
-  return Buffer.concat([intToBuffer(txType), encoded])
+  return Buffer.concat([intToBytes(txType), encoded])
 }
 
 /**

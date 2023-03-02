@@ -1,4 +1,4 @@
-import { intToBuffer } from '@ethereumjs/util'
+import { intToBytes } from '@ethereumjs/util'
 
 import type { Chain } from '../blockchain'
 import type { Config } from '../config'
@@ -47,7 +47,7 @@ export class MetaDBManager {
   }
 
   private dbKey(type: DBKey, key: Buffer) {
-    return Buffer.concat([intToBuffer(type), key])
+    return Buffer.concat([intToBytes(type), key])
   }
 
   async put(type: DBKey, hash: Buffer, value: Buffer) {

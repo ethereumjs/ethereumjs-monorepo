@@ -1,5 +1,5 @@
 import { Common } from '@ethereumjs/common'
-import { toBuffer } from '@ethereumjs/util'
+import { toBytes } from '@ethereumjs/util'
 import * as minimist from 'minimist'
 import * as tape from 'tape'
 
@@ -62,7 +62,7 @@ tape('TransactionTests', async (t) => {
           const shouldBeInvalid = forkTestData.exception !== undefined
 
           try {
-            const rawTx = toBuffer(testData.txbytes)
+            const rawTx = toBytes(testData.txbytes)
             const hardfork = forkNameMap[forkName]
             const common = new Common({ chain: 1, hardfork })
             const activateEIPs = EIPs[forkName]

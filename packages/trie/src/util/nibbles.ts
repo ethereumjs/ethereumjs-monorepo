@@ -24,7 +24,7 @@ export function bufferToNibbles(key: Buffer): Nibbles {
  * @private
  * @param arr - Nibble array
  */
-export function nibblesToBuffer(arr: Nibbles): Buffer {
+export function nibblestoBytes(arr: Nibbles): Buffer {
   const buf = Buffer.alloc(arr.length / 2)
   for (let i = 0; i < buf.length; i++) {
     let q = i * 2

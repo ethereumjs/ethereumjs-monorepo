@@ -5,9 +5,9 @@ import {
   bigIntToHex,
   bigIntToUnpaddedBuffer,
   bufArrToArr,
-  bufferToBigInt,
+  bytesToBigInt,
   ecrecover,
-  toBuffer,
+  toBytes,
   unpadBuffer,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
@@ -109,7 +109,7 @@ export class Transaction extends BaseTransaction<Transaction> {
 
     this.common = this._validateTxV(this.v, opts.common)
 
-    this.gasPrice = bufferToBigInt(toBuffer(txData.gasPrice === '' ? '0x' : txData.gasPrice))
+    this.gasPrice = bytesToBigInt(toBytes(txData.gasPrice === '' ? '0x' : txData.gasPrice))
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
       const msg = this._errorMsg('gas limit * gasPrice cannot exceed MAX_INTEGER (2^256-1)')
@@ -196,9 +196,9 @@ export class Transaction extends BaseTransaction<Transaction> {
     ]
 
     if (this.supports(Capability.EIP155ReplayProtection)) {
-      values.push(toBuffer(this.common.chainId()))
-      values.push(unpadBuffer(toBuffer(0)))
-      values.push(unpadBuffer(toBuffer(0)))
+      values.push(toBytes(this.common.chainId()))
+      values.push(unpadBuffer(toBytes(0)))
+      values.push(unpadBuffer(toBytes(0)))
     }
 
     return values
@@ -333,8 +333,8 @@ export class Transaction extends BaseTransaction<Transaction> {
         value: this.value,
         data: this.data,
         v,
-        r: bufferToBigInt(r),
-        s: bufferToBigInt(s),
+        r: bytesToBigInt(r),
+        s: bytesToBigInt(s),
       },
       opts
     )

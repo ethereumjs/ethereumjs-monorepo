@@ -2,7 +2,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { bufArrToArr } from '@ethereumjs/util'
 
 import { addHexPrefix, removeHexPrefix } from '../../util/hex'
-import { nibblesToBuffer } from '../../util/nibbles'
+import { nibblestoBytes } from '../../util/nibbles'
 
 import type { Nibbles } from '../../types'
 
@@ -46,7 +46,7 @@ export class Node {
   }
 
   raw(): [Buffer, Buffer] {
-    return [nibblesToBuffer(this.encodedKey()), this._value]
+    return [nibblestoBytes(this.encodedKey()), this._value]
   }
 
   serialize(): Buffer {

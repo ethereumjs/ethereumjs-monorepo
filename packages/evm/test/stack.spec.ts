@@ -1,4 +1,4 @@
-import { Account, Address, bigIntToBuffer, setLengthLeft } from '@ethereumjs/util'
+import { Account, Address, bigIntToBytes, setLengthLeft } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { EVM } from '../src'
@@ -132,7 +132,7 @@ tape('Stack', (t) => {
     const evm = await EVM.create({ eei })
     const account = createAccount(BigInt(0), BigInt(0))
     const code = '60008080808060013382F15060005260206000F3'
-    const expectedReturnValue = setLengthLeft(bigIntToBuffer(BigInt(0)), 32)
+    const expectedReturnValue = setLengthLeft(bigIntToBytes(BigInt(0)), 32)
     /*
       code:             remarks: (top of the stack is at the zero index)
           PUSH1 0x00

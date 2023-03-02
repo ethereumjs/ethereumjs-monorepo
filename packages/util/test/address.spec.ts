@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 
-import { Address, toBuffer } from '../src'
+import { Address, toBytes } from '../src'
 
 const eip1014Testdata = require('./testdata/eip1014Examples.json')
 
@@ -12,14 +12,14 @@ tape('Address', (t) => {
     st.throws(() => Address.fromString(str))
     const shortStr = '0x2f015c60e0be116b1f0cd534704db9c92118fb'
     st.throws(() => Address.fromString(shortStr))
-    const buf = toBuffer(str)
+    const buf = toBytes(str)
     st.throws(() => new Address(buf))
     st.end()
   })
 
   t.test('should generate a zero address', (st) => {
     const addr = Address.zero()
-    st.deepEqual(addr.buf, toBuffer(ZERO_ADDR_S))
+    st.deepEqual(addr.buf, toBytes(ZERO_ADDR_S))
     st.equal(addr.toString(), ZERO_ADDR_S)
     st.end()
   })
@@ -89,7 +89,7 @@ tape('Address', (t) => {
     for (const testdata of eip1014Testdata) {
       const { address, salt, initCode, result } = testdata
       const from = Address.fromString(address)
-      const addr = Address.generate2(from, toBuffer(salt), toBuffer(initCode))
+      const addr = Address.generate2(from, toBytes(salt), toBytes(initCode))
       st.equal(addr.toString(), result)
     }
     st.end()
@@ -98,7 +98,7 @@ tape('Address', (t) => {
   t.test('should provide a buffer that does not mutate the original address', (st) => {
     const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
     const address = Address.fromString(str)
-    const addressBuf = address.toBuffer()
+    const addressBuf = address.toBytes()
     addressBuf.fill(0)
     st.equal(address.toString(), str)
     st.end()

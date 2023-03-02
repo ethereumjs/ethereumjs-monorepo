@@ -4,7 +4,7 @@ import {
   KECCAK256_NULL,
   KECCAK256_RLP,
   accountBodyToRLP,
-  bigIntToBuffer,
+  bigIntToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -67,7 +67,7 @@ tape('[SnapProtocol]', (t) => {
     )
 
     t.ok(
-      JSON.stringify(payload[0]) === JSON.stringify(bigIntToBuffer(BigInt(1))),
+      JSON.stringify(payload[0]) === JSON.stringify(bigIntToBytes(BigInt(1))),
       'correctly encoded reqId'
     )
     t.ok(
@@ -77,7 +77,7 @@ tape('[SnapProtocol]', (t) => {
     t.ok(JSON.stringify(payload[2]) === JSON.stringify(origin), 'correctly encoded origin')
     t.ok(JSON.stringify(payload[3]) === JSON.stringify(limit), 'correctly encoded limit')
     t.ok(
-      JSON.stringify(payload[4]) === JSON.stringify(bigIntToBuffer(bytes)),
+      JSON.stringify(payload[4]) === JSON.stringify(bigIntToBytes(bytes)),
       'correctly encoded bytes'
     )
     t.ok(payload)
@@ -253,7 +253,7 @@ tape('[SnapProtocol]', (t) => {
     )
 
     t.ok(
-      JSON.stringify(payload[0]) === JSON.stringify(bigIntToBuffer(BigInt(1))),
+      JSON.stringify(payload[0]) === JSON.stringify(bigIntToBytes(BigInt(1))),
       'correctly encoded reqId'
     )
     t.ok(
@@ -264,7 +264,7 @@ tape('[SnapProtocol]', (t) => {
     t.ok(JSON.stringify(payload[3]) === JSON.stringify(origin), 'correctly encoded origin')
     t.ok(JSON.stringify(payload[4]) === JSON.stringify(limit), 'correctly encoded limit')
     t.ok(
-      JSON.stringify(payload[5]) === JSON.stringify(bigIntToBuffer(bytes)),
+      JSON.stringify(payload[5]) === JSON.stringify(bigIntToBytes(bytes)),
       'correctly encoded bytes'
     )
     t.ok(payload)
@@ -383,12 +383,12 @@ tape('[SnapProtocol]', (t) => {
     })
 
     t.ok(
-      JSON.stringify(payload[0]) === JSON.stringify(bigIntToBuffer(BigInt(1))),
+      JSON.stringify(payload[0]) === JSON.stringify(bigIntToBytes(BigInt(1))),
       'correctly encoded reqId'
     )
     t.ok(JSON.stringify(payload[1]) === JSON.stringify(hashes), 'correctly encoded hashes')
     t.ok(
-      JSON.stringify(payload[2]) === JSON.stringify(bigIntToBuffer(bytes)),
+      JSON.stringify(payload[2]) === JSON.stringify(bigIntToBytes(bytes)),
       'correctly encoded bytes'
     )
     t.ok(payload)

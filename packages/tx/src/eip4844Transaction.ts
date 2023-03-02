@@ -4,10 +4,10 @@ import {
   MAX_INTEGER,
   bigIntToHex,
   bigIntToUnpaddedBuffer,
-  bufferToBigInt,
-  bufferToHex,
+  bytesToBigInt,
+  bytesToHex,
   ecrecover,
-  toBuffer,
+  toBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
@@ -111,9 +111,9 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     // Verify the access list format.
     AccessLists.verifyAccessList(this.accessList)
 
-    this.maxFeePerGas = bufferToBigInt(toBuffer(maxFeePerGas === '' ? '0x' : maxFeePerGas))
-    this.maxPriorityFeePerGas = bufferToBigInt(
-      toBuffer(maxPriorityFeePerGas === '' ? '0x' : maxPriorityFeePerGas)
+    this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas === '' ? '0x' : maxFeePerGas))
+    this.maxPriorityFeePerGas = bytesToBigInt(
+      toBytes(maxPriorityFeePerGas === '' ? '0x' : maxPriorityFeePerGas)
     )
 
     this._validateCannotExceedMaxInteger({
@@ -135,11 +135,11 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       throw new Error(msg)
     }
 
-    this.maxFeePerDataGas = bufferToBigInt(
-      toBuffer((maxFeePerDataGas ?? '') === '' ? '0x' : maxFeePerDataGas)
+    this.maxFeePerDataGas = bytesToBigInt(
+      toBytes((maxFeePerDataGas ?? '') === '' ? '0x' : maxFeePerDataGas)
     )
 
-    this.versionedHashes = (txData.versionedHashes ?? []).map((vh) => toBuffer(vh))
+    this.versionedHashes = (txData.versionedHashes ?? []).map((vh) => toBytes(vh))
     this._validateYParity()
     this._validateHighS()
 
@@ -165,9 +165,9 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       throw new Error(msg)
     }
 
-    this.blobs = txData.blobs?.map((blob) => toBuffer(blob))
-    this.kzgCommitments = txData.kzgCommitments?.map((commitment) => toBuffer(commitment))
-    this.aggregateKzgProof = toBuffer(txData.kzgProof)
+    this.blobs = txData.blobs?.map((blob) => toBytes(blob))
+    this.kzgCommitments = txData.kzgCommitments?.map((commitment) => toBytes(commitment))
+    this.aggregateKzgProof = toBytes(txData.kzgProof)
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -233,7 +233,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     const to =
       decodedTx.to.value === null
         ? undefined
-        : Address.fromString(bufferToHex(Buffer.from(decodedTx.to.value)))
+        : Address.fromString(bytesToHex(Buffer.from(decodedTx.to.value)))
 
     const versionedHashes = decodedTx.blobVersionedHashes.map((el) => Buffer.from(el))
     const commitments = wrapper.blobKzgs.map((el) => Buffer.from(el))
@@ -275,7 +275,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       accessList.push(accessListItem)
     }
     const to =
-      tx.to.value === null ? undefined : Address.fromString(bufferToHex(Buffer.from(tx.to.value)))
+      tx.to.value === null ? undefined : Address.fromString(bytesToHex(Buffer.from(tx.to.value)))
     const versionedHashes = tx.blobVersionedHashes.map((el) => Buffer.from(el))
     const txData = {
       ...tx,
@@ -315,7 +315,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
   toValue(): ValueOf<typeof SignedBlobTransactionType> {
     const to = {
       selector: this.to !== undefined ? 1 : 0,
-      value: this.to?.toBuffer() ?? null,
+      value: this.to?.toBytes() ?? null,
     }
     return {
       message: {
@@ -366,7 +366,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     }
     const to = {
       selector: this.to !== undefined ? 1 : 0,
-      value: this.to?.toBuffer() ?? null,
+      value: this.to?.toBytes() ?? null,
     }
 
     const blobArrays = this.blobs?.map((blob) => Uint8Array.from(blob)) ?? []
@@ -444,7 +444,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       r: this.r !== undefined ? bigIntToHex(this.r) : undefined,
       s: this.s !== undefined ? bigIntToHex(this.s) : undefined,
       maxFeePerDataGas: bigIntToHex(this.maxFeePerDataGas),
-      versionedHashes: this.versionedHashes.map((hash) => bufferToHex(hash)),
+      versionedHashes: this.versionedHashes.map((hash) => bytesToHex(hash)),
     }
   }
 
@@ -463,8 +463,8 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
         data: this.data,
         accessList: this.accessList,
         v: v - BigInt(27), // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
-        r: bufferToBigInt(r),
-        s: bufferToBigInt(s),
+        r: bytesToBigInt(r),
+        s: bytesToBigInt(s),
         maxFeePerDataGas: this.maxFeePerDataGas,
         versionedHashes: this.versionedHashes,
         blobs: this.blobs,

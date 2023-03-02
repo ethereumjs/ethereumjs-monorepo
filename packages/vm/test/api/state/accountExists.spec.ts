@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, toBuffer } from '@ethereumjs/util'
+import { Address, toBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -72,7 +72,7 @@ tape(
     const emptyAddress = new Address(Buffer.from('f48a1bdc65d9ccb4b569ffd4bffff415b90783d6', 'hex'))
     const emptyAccount = await vm.stateManager.getAccount(emptyAddress)
     //@ts-ignore
-    vm.stateManager._trie.put(toBuffer(emptyAddress), emptyAccount.serialize())
+    vm.stateManager._trie.put(toBytes(emptyAddress), emptyAccount.serialize())
     await vm.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
     await vm.stateManager.putContractStorage(
       contractAddress,

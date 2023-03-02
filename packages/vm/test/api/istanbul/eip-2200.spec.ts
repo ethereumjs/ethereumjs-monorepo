@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, setLengthLeft, toBuffer } from '@ethereumjs/util'
+import { Address, setLengthLeft, toBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -45,7 +45,7 @@ tape('Istanbul: EIP-2200', async (t) => {
   t.test('net-metering SSTORE', async (st) => {
     const caller = new Address(Buffer.from('0000000000000000000000000000000000000000', 'hex'))
     const addr = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
-    const key = setLengthLeft(toBuffer('0x' + BigInt(0).toString(16)), 32)
+    const key = setLengthLeft(toBytes('0x' + BigInt(0).toString(16)), 32)
 
     for (const testCase of testCases) {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
@@ -58,7 +58,7 @@ tape('Istanbul: EIP-2200', async (t) => {
         await vm.stateManager.putContractStorage(
           addr,
           key,
-          toBuffer('0x' + testCase.original.toString(16))
+          toBytes('0x' + testCase.original.toString(16))
         )
       }
 

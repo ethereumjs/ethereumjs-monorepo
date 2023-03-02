@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { arrToBufArr, toBuffer } from '@ethereumjs/util'
+import { arrToBufArr, toBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 import * as tape from 'tape'
 
@@ -36,7 +36,7 @@ tape('Verify POW for valid and invalid blocks', async function (t) {
   t.ok(!invalidBlockResult, 'should be invalid')
 
   const testData = require('./block_tests_data.json')
-  const blockRlp = toBuffer(testData.blocks[0].rlp)
+  const blockRlp = toBytes(testData.blocks[0].rlp)
   const block = Block.fromRLPSerializedBlock(blockRlp, { common })
   const uncleBlockResult = await e.verifyPOW(block)
   t.ok(uncleBlockResult, 'should be valid')

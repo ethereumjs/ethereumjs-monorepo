@@ -1,4 +1,4 @@
-import { bufferToBigInt } from '@ethereumjs/util'
+import { bytesToBigInt } from '@ethereumjs/util'
 
 import { VmState } from './vmState'
 
@@ -66,7 +66,7 @@ export class EEI extends VmState implements EEIInterface {
    */
   async getBlockHash(num: bigint): Promise<bigint> {
     const block = await this._blockchain.getBlock(Number(num))
-    return bufferToBigInt(block!.hash())
+    return bytesToBigInt(block!.hash())
   }
 
   /**

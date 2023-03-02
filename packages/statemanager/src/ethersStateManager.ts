@@ -2,10 +2,10 @@ import { Trie } from '@ethereumjs/trie'
 import {
   Account,
   bigIntToHex,
-  bufferToBigInt,
-  bufferToHex,
+  bytesToBigInt,
+  bytesToHex,
   setLengthLeft,
-  toBuffer,
+  toBytes,
 } from '@ethereumjs/util'
 import { debug } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -102,7 +102,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     let codeBuffer = this.contractCache.get(address.toString())
     if (codeBuffer !== undefined) return codeBuffer
     const code = await this.provider.getCode(address.toString(), this.blockTag)
-    codeBuffer = toBuffer(code)
+    codeBuffer = toBytes(code)
     this.contractCache.set(address.toString(), codeBuffer)
     return codeBuffer
   }
@@ -143,10 +143,10 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     // Retrieve storage slot from provider if not found in cache
     storage = await this.provider.getStorageAt(
       address.toString(),
-      bufferToBigInt(key),
+      bytesToBigInt(key),
       this.blockTag
     )
-    const value = toBuffer(storage)
+    const value = toBytes(storage)
 
     await this.putContractStorage(address, key, value)
     return value
@@ -190,7 +190,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     const dump: StorageDump = {}
     if (addressStorage !== undefined) {
       for (const slot of addressStorage) {
-        dump[slot[0]] = bufferToHex(slot[1])
+        dump[slot[0]] = bytesToHex(slot[1])
       }
     }
     return Promise.resolve(dump)
@@ -208,7 +208,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     // Get merkle proof for `address` from provider
     const proof = await this.provider.send('eth_getProof', [address.toString(), [], this.blockTag])
 
-    const proofBuf = proof.accountProof.map((proofNode: string) => toBuffer(proofNode))
+    const proofBuf = proof.accountProof.map((proofNode: string) => toBytes(proofNode))
 
     const trie = new Trie({ useKeyHashing: true })
     const verified = await trie.verifyProof(
@@ -246,8 +246,8 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     const account = Account.fromAccountData({
       balance: BigInt(accountData.balance),
       nonce: BigInt(accountData.nonce),
-      codeHash: toBuffer(accountData.codeHash),
-      storageRoot: toBuffer(accountData.storageHash),
+      codeHash: toBytes(accountData.codeHash),
+      storageRoot: toBytes(accountData.storageHash),
     })
     return account
   }
@@ -270,7 +270,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   async getProof(address: Address, storageSlots: Buffer[] = []): Promise<Proof> {
     const proof = await this.provider.send('eth_getProof', [
       address.toString(),
-      [storageSlots.map((slot) => bufferToHex(slot))],
+      [storageSlots.map((slot) => bytesToHex(slot))],
       this.blockTag,
     ])
 

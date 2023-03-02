@@ -6,12 +6,12 @@ import {
   KECCAK256_RLP_ARRAY,
   TypeOutput,
   arrToBufArr,
-  bigIntToBuffer,
+  bigIntToBytes,
   bigIntToHex,
   bigIntToUnpaddedBuffer,
   bufArrToArr,
-  bufferToBigInt,
-  bufferToHex,
+  bytesToBigInt,
+  bytesToHex,
   ecrecover,
   ecsign,
   toType,
@@ -108,7 +108,7 @@ export class BlockHeader {
     const { number, baseFeePerGas } = headerData
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (opts.common?.isActivatedEIP(1559) && baseFeePerGas === undefined) {
-      const eip1559ActivationBlock = bigIntToBuffer(opts.common?.eipBlock(1559)!)
+      const eip1559ActivationBlock = bigIntToBytes(opts.common?.eipBlock(1559)!)
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
       if (eip1559ActivationBlock && eip1559ActivationBlock.equals(number! as Buffer)) {
         throw new Error('invalid header. baseFeePerGas should be provided')
@@ -712,7 +712,7 @@ export class BlockHeader {
     const signatureB = Buffer.concat([
       signature.r,
       signature.s,
-      bigIntToBuffer(signature.v - BigInt(27)),
+      bigIntToBytes(signature.v - BigInt(27)),
     ])
 
     const extraDataWithoutSeal = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
@@ -774,7 +774,7 @@ export class BlockHeader {
     }
     const r = extraSeal.slice(0, 32)
     const s = extraSeal.slice(32, 64)
-    const v = bufferToBigInt(extraSeal.slice(64, 65)) + BigInt(27)
+    const v = bytesToBigInt(extraSeal.slice(64, 65)) + BigInt(27)
     const pubKey = ecrecover(this.cliqueSigHash(), v, r, s)
     return Address.fromPublicKey(pubKey)
   }
@@ -847,7 +847,7 @@ export class BlockHeader {
   public errorStr() {
     let hash = ''
     try {
-      hash = bufferToHex(this.hash())
+      hash = bytesToHex(this.hash())
     } catch (e: any) {
       hash = 'error'
     }

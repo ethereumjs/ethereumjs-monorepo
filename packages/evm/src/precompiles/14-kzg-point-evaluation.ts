@@ -1,5 +1,5 @@
 import { computeVersionedHash, kzg } from '@ethereumjs/tx'
-import { bigIntToBuffer, bufferToBigInt, bufferToHex, setLengthLeft, short } from '@ethereumjs/util'
+import { bigIntToBytes, bytesToBigInt, bytesToHex, setLengthLeft } from '@ethereumjs/util'
 
 import { EvmErrorResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
@@ -29,16 +29,16 @@ export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
   const commitment = opts.data.slice(96, 144)
   const kzgProof = opts.data.slice(144, 192)
 
-  if (bufferToBigInt(z) >= BLS_MODULUS || bufferToBigInt(y) >= BLS_MODULUS) {
+  if (bytesToBigInt(z) >= BLS_MODULUS || bytesToBigInt(y) >= BLS_MODULUS) {
     if (opts._debug) {
       opts._debug(`KZG_POINT_EVALUATION (0x14) failed: POINT_GREATER_THAN_BLS_MODULUS`)
     }
+
     return EvmErrorResult(new EvmError(ERROR.POINT_GREATER_THAN_BLS_MODULUS), opts.gasLimit)
   }
 
   if (
-    bufferToHex(Buffer.from(computeVersionedHash(commitment, version))) !==
-    bufferToHex(versionedHash)
+    bytesToHex(Buffer.from(computeVersionedHash(commitment, version))) !== bytesToHex(versionedHash)
   ) {
     if (opts._debug) {
       opts._debug(`KZG_POINT_EVALUATION (0x14) failed: INVALID_COMMITMENT`)
@@ -56,8 +56,8 @@ export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
   kzg.verifyKzgProof(commitment, z, y, kzgProof)
 
   // Return value - FIELD_ELEMENTS_PER_BLOB and BLS_MODULUS as padded 32 byte big endian values
-  const fieldElements = setLengthLeft(bigIntToBuffer(fieldElementsPerBlob), 32)
-  const modulus = setLengthLeft(bigIntToBuffer(BLS_MODULUS), 32)
+  const fieldElementsBuffer = setLengthLeft(bigIntToBytes(fieldElementsPerBlob), 32)
+  const modulusBuffer = setLengthLeft(bigIntToBytes(BLS_MODULUS), 32)
 
   if (opts._debug) {
     opts._debug(

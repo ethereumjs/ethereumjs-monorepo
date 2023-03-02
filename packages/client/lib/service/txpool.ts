@@ -1,5 +1,5 @@
 import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
-import { Address, bufferToHex } from '@ethereumjs/util'
+import { Address, bytesToHex } from '@ethereumjs/util'
 import Heap = require('qheap')
 
 import type { Config } from '../config'
@@ -280,7 +280,7 @@ export class TxPool {
       const existingTxn = inPool.find((poolObj) => poolObj.tx.nonce === tx.nonce)
       if (existingTxn) {
         if (existingTxn.tx.hash().equals(tx.hash())) {
-          throw new Error(`${bufferToHex(tx.hash())}: this transaction is already in the TxPool`)
+          throw new Error(`${bytesToHex(tx.hash())}: this transaction is already in the TxPool`)
         }
         this.validateTxGasBump(existingTxn.tx, tx)
       }
@@ -506,7 +506,7 @@ export class TxPool {
         newTxHashes.push(tx.hash())
       } catch (error: any) {
         this.config.logger.debug(
-          `Error adding tx to TxPool: ${error.message} (tx hash: ${bufferToHex(tx.hash())})`
+          `Error adding tx to TxPool: ${error.message} (tx hash: ${bytesToHex(tx.hash())})`
         )
       }
     }
@@ -565,7 +565,7 @@ export class TxPool {
         await this.add(tx)
       } catch (error: any) {
         this.config.logger.debug(
-          `Error adding tx to TxPool: ${error.message} (tx hash: ${bufferToHex(tx.hash())})`
+          `Error adding tx to TxPool: ${error.message} (tx hash: ${bytesToHex(tx.hash())})`
         )
       }
       newTxHashes.push(tx.hash())

@@ -2,7 +2,7 @@ import {
   accountBodyFromSlim,
   accountBodyToSlim,
   bigIntToUnpaddedBuffer,
-  bufferToBigInt,
+  bytesToBigInt,
   setLengthLeft,
 } from '@ethereumjs/util'
 
@@ -118,11 +118,11 @@ export class SnapProtocol extends Protocol {
       },
       decode: ([reqId, root, origin, limit, bytes]: any) => {
         return {
-          reqId: bufferToBigInt(reqId),
+          reqId: bytesToBigInt(reqId),
           root,
           origin,
           limit,
-          bytes: bufferToBigInt(bytes),
+          bytes: bytesToBigInt(bytes),
         }
       },
     },
@@ -150,7 +150,7 @@ export class SnapProtocol extends Protocol {
       },
       decode: ([reqId, accounts, proof]: any) => {
         return {
-          reqId: bufferToBigInt(reqId),
+          reqId: bytesToBigInt(reqId),
           accounts: accounts.map(
             ([hash, body]: any) =>
               ({
@@ -179,12 +179,12 @@ export class SnapProtocol extends Protocol {
       },
       decode: ([reqId, root, accounts, origin, limit, bytes]: any) => {
         return {
-          reqId: bufferToBigInt(reqId),
+          reqId: bytesToBigInt(reqId),
           root,
           accounts,
           origin,
           limit,
-          bytes: bufferToBigInt(bytes),
+          bytes: bytesToBigInt(bytes),
         }
       },
     },
@@ -211,7 +211,7 @@ export class SnapProtocol extends Protocol {
       },
       decode: ([reqId, slots, proof]: any) => {
         return {
-          reqId: bufferToBigInt(reqId),
+          reqId: bytesToBigInt(reqId),
           slots: slots.map((accSlots: any) =>
             accSlots.map(([hash, body]: any) => ({ hash, body } as StorageData))
           ),
@@ -233,9 +233,9 @@ export class SnapProtocol extends Protocol {
       },
       decode: ([reqId, hashes, bytes]: any) => {
         return {
-          reqId: bufferToBigInt(reqId),
+          reqId: bytesToBigInt(reqId),
           hashes,
-          bytes: bufferToBigInt(bytes),
+          bytes: bytesToBigInt(bytes),
         }
       },
     },
@@ -248,7 +248,7 @@ export class SnapProtocol extends Protocol {
       },
       decode: ([reqId, codes]: any) => {
         return {
-          reqId: bufferToBigInt(reqId),
+          reqId: bytesToBigInt(reqId),
           codes,
         }
       },
@@ -268,10 +268,10 @@ export class SnapProtocol extends Protocol {
       },
       decode: ([reqId, root, paths, bytes]: any) => {
         return {
-          reqId: bufferToBigInt(reqId),
+          reqId: bytesToBigInt(reqId),
           root,
           paths,
-          bytes: bufferToBigInt(bytes),
+          bytes: bytesToBigInt(bytes),
         }
       },
     },
@@ -284,7 +284,7 @@ export class SnapProtocol extends Protocol {
       },
       decode: ([reqId, nodes]: any) => {
         return {
-          reqId: bufferToBigInt(reqId),
+          reqId: bytesToBigInt(reqId),
           nodes,
         }
       },

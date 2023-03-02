@@ -3,8 +3,8 @@ import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
   TypeOutput,
   bigIntToUnpaddedBuffer,
-  bufferToHex,
-  toBuffer,
+  bytesToHex,
+  toBytes,
   toType,
   zeros,
 } from '@ethereumjs/util'
@@ -97,13 +97,13 @@ export class PendingBlock {
     const timestampBuf = bigIntToUnpaddedBuffer(toType(timestamp ?? 0, TypeOutput.BigInt))
     const gasLimitBuf = bigIntToUnpaddedBuffer(gasLimit)
     const mixHashBuf = toType(mixHash!, TypeOutput.Buffer) ?? zeros(32)
-    const payloadIdBuffer = toBuffer(
+    const payloadIdBuffer = toBytes(
       keccak256(Buffer.concat([parentBlock.hash(), mixHashBuf, timestampBuf, gasLimitBuf])).slice(
         0,
         8
       )
     )
-    const payloadId = bufferToHex(payloadIdBuffer)
+    const payloadId = bytesToHex(payloadIdBuffer)
 
     // If payload has already been triggered, then return the payloadid
     if (this.pendingPayloads.get(payloadId)) {
@@ -210,7 +210,7 @@ export class PendingBlock {
    */
   stop(payloadIdBuffer: Buffer | string) {
     const payloadId =
-      typeof payloadIdBuffer !== 'string' ? bufferToHex(payloadIdBuffer) : payloadIdBuffer
+      typeof payloadIdBuffer !== 'string' ? bytesToHex(payloadIdBuffer) : payloadIdBuffer
     const builder = this.pendingPayloads.get(payloadId)
     if (builder === undefined) return
     // Revert blockBuilder
@@ -227,7 +227,7 @@ export class PendingBlock {
     payloadIdBuffer: Buffer | string
   ): Promise<void | [block: Block, receipts: TxReceipt[], value: bigint]> {
     const payloadId =
-      typeof payloadIdBuffer !== 'string' ? bufferToHex(payloadIdBuffer) : payloadIdBuffer
+      typeof payloadIdBuffer !== 'string' ? bytesToHex(payloadIdBuffer) : payloadIdBuffer
     const builder = this.pendingPayloads.get(payloadId)
     if (!builder) {
       return

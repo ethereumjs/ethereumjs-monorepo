@@ -4,10 +4,10 @@ import {
   Address,
   TypeOutput,
   bigIntToHex,
-  bufferToHex,
+  bytesToHex,
   intToHex,
   setLengthLeft,
-  toBuffer,
+  toBytes,
   toType,
 } from '@ethereumjs/util'
 
@@ -83,7 +83,7 @@ const jsonRpcBlock = async (
   const json = block.toJSON()
   const header = json!.header!
   const transactions = block.transactions.map((tx, txIndex) =>
-    includeTransactions ? jsonRpcTx(tx, block, txIndex) : bufferToHex(tx.hash())
+    includeTransactions ? jsonRpcTx(tx, block, txIndex) : bytesToHex(tx.hash())
   )
   const withdrawalsAttr =
     header.withdrawalsRoot !== undefined
@@ -95,7 +95,7 @@ const jsonRpcBlock = async (
   const td = await chain.getTd(block.hash(), block.header.number)
   return {
     number: header.number!,
-    hash: bufferToHex(block.hash()),
+    hash: bytesToHex(block.hash()),
     parentHash: header.parentHash!,
     mixHash: header.mixHash,
     nonce: header.nonce!,
@@ -113,7 +113,7 @@ const jsonRpcBlock = async (
     gasUsed: header.gasUsed!,
     timestamp: header.timestamp!,
     transactions,
-    uncles: block.uncleHeaders.map((uh) => bufferToHex(uh.hash())),
+    uncles: block.uncleHeaders.map((uh) => bytesToHex(uh.hash())),
     baseFeePerGas: header.baseFeePerGas,
     ...withdrawalsAttr,
     excessDataGas: header.excessDataGas,
@@ -133,12 +133,12 @@ const jsonRpcLog = async (
   removed: false, // TODO implement
   logIndex: logIndex !== undefined ? intToHex(logIndex) : null,
   transactionIndex: txIndex !== undefined ? intToHex(txIndex) : null,
-  transactionHash: tx ? bufferToHex(tx.hash()) : null,
-  blockHash: block ? bufferToHex(block.hash()) : null,
+  transactionHash: tx ? bytesToHex(tx.hash()) : null,
+  blockHash: block ? bytesToHex(block.hash()) : null,
   blockNumber: block ? bigIntToHex(block.header.number) : null,
-  address: bufferToHex(log[0]),
-  topics: log[1].map((t) => bufferToHex(t as Buffer)),
-  data: bufferToHex(log[2]),
+  address: bytesToHex(log[0]),
+  topics: log[1].map((t) => bytesToHex(t as Buffer)),
+  data: bytesToHex(log[2]),
 })
 
 /**
@@ -154,9 +154,9 @@ const jsonRpcReceipt = async (
   logIndex: number,
   contractAddress?: Address
 ): Promise<JsonRpcReceipt> => ({
-  transactionHash: bufferToHex(tx.hash()),
+  transactionHash: bytesToHex(tx.hash()),
   transactionIndex: intToHex(txIndex),
-  blockHash: bufferToHex(block.hash()),
+  blockHash: bytesToHex(block.hash()),
   blockNumber: bigIntToHex(block.header.number),
   from: tx.getSenderAddress().toString(),
   to: tx.to?.toString() ?? null,
@@ -167,9 +167,9 @@ const jsonRpcReceipt = async (
   logs: await Promise.all(
     receipt.logs.map((l, i) => jsonRpcLog(l, block, tx, txIndex, logIndex + i))
   ),
-  logsBloom: bufferToHex(receipt.bitvector),
+  logsBloom: bytesToHex(receipt.bitvector),
   root: Buffer.isBuffer((receipt as PreByzantiumTxReceipt).stateRoot)
-    ? bufferToHex((receipt as PreByzantiumTxReceipt).stateRoot)
+    ? bytesToHex((receipt as PreByzantiumTxReceipt).stateRoot)
     : undefined,
   status: Buffer.isBuffer((receipt as PostByzantiumTxReceipt).status)
     ? intToHex((receipt as PostByzantiumTxReceipt).status)
@@ -401,10 +401,10 @@ export class Eth {
         gasLimit: toType(gasLimit, TypeOutput.BigInt),
         gasPrice: toType(gasPrice, TypeOutput.BigInt),
         value: toType(value, TypeOutput.BigInt),
-        data: data !== undefined ? toBuffer(data) : undefined,
+        data: data !== undefined ? toBytes(data) : undefined,
       }
       const { execResult } = await vm.evm.runCall(runCallOpts)
-      return bufferToHex(execResult.returnValue)
+      return bytesToHex(execResult.returnValue)
     } catch (error: any) {
       throw {
         code: INTERNAL_ERROR,
@@ -527,7 +527,7 @@ export class Eth {
     const [blockHash, includeTransactions] = params
 
     try {
-      const block = await this._chain.getBlock(toBuffer(blockHash))
+      const block = await this._chain.getBlock(toBytes(blockHash))
       return await jsonRpcBlock(block, this._chain, includeTransactions)
     } catch (error) {
       throw {
@@ -556,7 +556,7 @@ export class Eth {
   async getBlockTransactionCountByHash(params: [string]) {
     const [blockHash] = params
     try {
-      const block = await this._chain.getBlock(toBuffer(blockHash))
+      const block = await this._chain.getBlock(toBytes(blockHash))
       return intToHex(block.transactions.length)
     } catch (error) {
       throw {
@@ -585,7 +585,7 @@ export class Eth {
 
     const address = Address.fromString(addressHex)
     const code = await vm.stateManager.getContractCode(address)
-    return bufferToHex(code)
+    return bytesToHex(code)
   }
 
   /**
@@ -608,10 +608,10 @@ export class Eth {
 
     const address = Address.fromString(addressHex)
     const storageTrie = await (vm.stateManager as any)._getStorageTrie(address)
-    const position = setLengthLeft(toBuffer(positionHex), 32)
+    const position = setLengthLeft(toBytes(positionHex), 32)
     const storage = await storageTrie.get(position)
     return storage !== null && storage !== undefined
-      ? bufferToHex(
+      ? bytesToHex(
           setLengthLeft(Buffer.from(RLP.decode(Uint8Array.from(storage)) as Uint8Array), 32)
         )
       : '0x'
@@ -627,7 +627,7 @@ export class Eth {
     try {
       const [blockHash, txIndexHex] = params
       const txIndex = parseInt(txIndexHex, 16)
-      const block = await this._chain.getBlock(toBuffer(blockHash))
+      const block = await this._chain.getBlock(toBytes(blockHash))
       if (block.transactions.length <= txIndex) {
         return null
       }
@@ -652,7 +652,7 @@ export class Eth {
 
     try {
       if (!this.receiptsManager) throw new Error('missing receiptsManager')
-      const result = await this.receiptsManager.getReceiptByTxHash(toBuffer(txHash))
+      const result = await this.receiptsManager.getReceiptByTxHash(toBytes(txHash))
       if (!result) return null
       const [_receipt, blockHash, txIndex] = result
       const block = await this._chain.getBlock(blockHash)
@@ -732,7 +732,7 @@ export class Eth {
 
     try {
       if (!this.receiptsManager) throw new Error('missing receiptsManager')
-      const result = await this.receiptsManager.getReceiptByTxHash(toBuffer(txHash))
+      const result = await this.receiptsManager.getReceiptByTxHash(toBytes(txHash))
       if (!result) return null
       const [receipt, blockHash, txIndex, logIndex] = result
       const block = await this._chain.getBlock(blockHash)
@@ -791,7 +791,7 @@ export class Eth {
     let from: Block, to: Block
     if (blockHash !== undefined) {
       try {
-        from = to = await this._chain.getBlock(toBuffer(blockHash))
+        from = to = await this._chain.getBlock(toBytes(blockHash))
       } catch (error: any) {
         throw {
           code: INVALID_PARAMS,
@@ -842,17 +842,17 @@ export class Eth {
         if (t === null) {
           return null
         } else if (Array.isArray(t)) {
-          return t.map((x) => toBuffer(x))
+          return t.map((x) => toBytes(x))
         } else {
-          return toBuffer(t)
+          return toBytes(t)
         }
       })
       let addrs
       if (address !== undefined) {
         if (Array.isArray(address)) {
-          addrs = address.map((a) => toBuffer(a))
+          addrs = address.map((a) => toBytes(a))
         } else {
-          addrs = [toBuffer(address)]
+          addrs = [toBytes(address)]
         }
       }
       const logs = await this.receiptsManager.getLogs(from, to, addrs, formattedTopics)
@@ -896,7 +896,7 @@ export class Eth {
 
     let tx
     try {
-      const txBuf = toBuffer(serializedTx)
+      const txBuf = toBytes(serializedTx)
       if (txBuf[0] === 0x05) {
         // Blob Transactions sent over RPC are expected to be in Network Wrapper format
         tx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txBuf, { common })
@@ -943,7 +943,7 @@ export class Eth {
     }
     txPool.sendTransactions([tx], peerPool.peers)
 
-    return bufferToHex(tx.hash())
+    return bytesToHex(tx.hash())
   }
 
   /**
@@ -970,7 +970,7 @@ export class Eth {
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = Address.fromString(addressHex)
-    const slots = slotsHex.map((slotHex) => setLengthLeft(toBuffer(slotHex), 32))
+    const slots = slotsHex.map((slotHex) => setLengthLeft(toBytes(slotHex), 32))
     const proof = await vm.stateManager.getProof!(address, slots)
     return proof
   }

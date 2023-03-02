@@ -4,10 +4,10 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   Lock,
   arrToBufArr,
-  bigIntToBuffer,
-  bufferToBigInt,
-  bufferToInt,
-  intToBuffer,
+  bigIntToBytes,
+  bytesToBigInt,
+  bytesToInt,
+  intToBytes,
   zeros,
 } from '@ethereumjs/util'
 
@@ -730,11 +730,11 @@ export class Skeleton extends MetaDBManager {
   private async putBlock(block: Block): Promise<boolean> {
     // Serialize the block with its hardfork so that its easy to load the block latter
     const rlp = this.serialize({ hardfork: block._common.hardfork(), blockRLP: block.serialize() })
-    await this.put(DBKey.SkeletonBlock, bigIntToBuffer(block.header.number), rlp)
+    await this.put(DBKey.SkeletonBlock, bigIntToBytes(block.header.number), rlp)
     await this.put(
       DBKey.SkeletonBlockHashToNumber,
       block.hash(),
-      bigIntToBuffer(block.header.number)
+      bigIntToBytes(block.header.number)
     )
     return true
   }
@@ -744,7 +744,7 @@ export class Skeleton extends MetaDBManager {
    */
   async getBlock(number: bigint, onlySkeleton = false): Promise<Block | undefined> {
     try {
-      const rlp = await this.get(DBKey.SkeletonBlock, bigIntToBuffer(number))
+      const rlp = await this.get(DBKey.SkeletonBlock, bigIntToBytes(number))
       const { hardfork, blockRLP } = this.deserialize(rlp!)
       const common = this.config.chainCommon.copy()
       common.setHardfork(hardfork)
@@ -771,7 +771,7 @@ export class Skeleton extends MetaDBManager {
   async getBlockByHash(hash: Buffer, onlySkeleton?: boolean): Promise<Block | undefined> {
     const number = await this.get(DBKey.SkeletonBlockHashToNumber, hash)
     if (number) {
-      return this.getBlock(bufferToBigInt(number), onlySkeleton)
+      return this.getBlock(bytesToBigInt(number), onlySkeleton)
     } else {
       if (onlySkeleton === true || !this.status.linked) {
         return undefined
@@ -790,7 +790,7 @@ export class Skeleton extends MetaDBManager {
    */
   async deleteBlock(block: Block): Promise<boolean> {
     try {
-      await this.delete(DBKey.SkeletonBlock, bigIntToBuffer(block.header.number))
+      await this.delete(DBKey.SkeletonBlock, bigIntToBytes(block.header.number))
       await this.delete(DBKey.SkeletonBlockHashToNumber, block.hash())
       return true
     } catch (error: any) {
@@ -834,17 +834,17 @@ export class Skeleton extends MetaDBManager {
    */
   private statusToRLP(): Buffer {
     const subchains: SkeletonSubchainRLP[] = this.status.progress.subchains.map((subchain) => [
-      bigIntToBuffer(subchain.head),
-      bigIntToBuffer(subchain.tail),
+      bigIntToBytes(subchain.head),
+      bigIntToBytes(subchain.tail),
       subchain.next,
     ])
     return Buffer.from(
       RLP.encode([
         subchains,
         // linked
-        intToBuffer(this.status.linked ? 1 : 0),
+        intToBytes(this.status.linked ? 1 : 0),
         // canonocalHeadReset
-        intToBuffer(this.status.canonicalHeadReset ? 1 : 0),
+        intToBytes(this.status.canonicalHeadReset ? 1 : 0),
       ])
     )
   }
@@ -864,13 +864,13 @@ export class Skeleton extends MetaDBManager {
       Buffer
     ]
     const subchains: SkeletonSubchain[] = rawStatus[0].map((raw) => ({
-      head: bufferToBigInt(raw[0]),
-      tail: bufferToBigInt(raw[1]),
+      head: bytesToBigInt(raw[0]),
+      tail: bytesToBigInt(raw[1]),
       next: raw[2],
     }))
     status.progress.subchains = subchains
-    status.linked = bufferToInt(rawStatus[1]) === 1
-    status.canonicalHeadReset = bufferToInt(rawStatus[2]) === 1
+    status.linked = bytesToInt(rawStatus[1]) === 1
+    status.canonicalHeadReset = bytesToInt(rawStatus[2]) === 1
     return status
   }
 }

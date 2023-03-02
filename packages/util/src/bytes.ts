@@ -1,4 +1,6 @@
-import { assertIsArray, assertIsBuffer, assertIsHexString } from './helpers'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
+
+import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers'
 import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal'
 
 import type {
@@ -6,7 +8,7 @@ import type {
   NestedUint8Array,
   PrefixedHexString,
   TransformableToArray,
-  TransformableToBuffer,
+  TransformabletoBuffer,
 } from './types'
 
 /**
@@ -26,9 +28,9 @@ export const intToHex = function (i: number) {
  * @param {Number} i
  * @return {Buffer}
  */
-export const intToBuffer = function (i: number) {
+export const intToBytes = function (i: number) {
   const hex = intToHex(i)
-  return Buffer.from(padToEven(hex.slice(2)), 'hex')
+  return hexToBytes(padToEven(hex.slice(2)))
 }
 
 /**
@@ -72,7 +74,7 @@ const setLength = function (msg: Buffer, length: number, right: boolean) {
  * @return (Buffer)
  */
 export const setLengthLeft = function (msg: Buffer, length: number) {
-  assertIsBuffer(msg)
+  assertIsBytes(msg)
   return setLength(msg, length, false)
 }
 
@@ -84,16 +86,16 @@ export const setLengthLeft = function (msg: Buffer, length: number) {
  * @return (Buffer)
  */
 export const setLengthRight = function (msg: Buffer, length: number) {
-  assertIsBuffer(msg)
+  assertIsBytes(msg)
   return setLength(msg, length, true)
 }
 
 /**
- * Trims leading zeros from a `Buffer`, `String` or `Number[]`.
+ * Trims leading zeros from a `Uint8Array`, `String` or `Number[]`.
  * @param a (Buffer|Array|String)
  * @return (Buffer|Array|String)
  */
-const stripZeros = function (a: any): Buffer | number[] | string {
+const stripZeros = function (a: any): Uint8Array | number[] | string {
   let first = a[0]
   while (a.length > 0 && first.toString() === '0') {
     a = a.slice(1)
@@ -107,9 +109,9 @@ const stripZeros = function (a: any): Buffer | number[] | string {
  * @param a (Buffer)
  * @return (Buffer)
  */
-export const unpadBuffer = function (a: Buffer): Buffer {
-  assertIsBuffer(a)
-  return stripZeros(a) as Buffer
+export const unpadBytes = function (a: Uint8Array): Uint8Array {
+  assertIsBytes(a)
+  return stripZeros(a) as Uint8Array
 }
 
 /**
@@ -133,7 +135,7 @@ export const unpadHexString = function (a: string): string {
   return ('0x' + stripZeros(a)) as string
 }
 
-export type ToBufferInputTypes =
+export type ToBytesInputTypes =
   | PrefixedHexString
   | number
   | bigint
@@ -141,40 +143,41 @@ export type ToBufferInputTypes =
   | Uint8Array
   | number[]
   | TransformableToArray
-  | TransformableToBuffer
+  | TransformabletoBuffer
   | null
   | undefined
 
 /**
  * Attempts to turn a value into a `Buffer`.
  * Inputs supported: `Buffer`, `String` (hex-prefixed), `Number`, null/undefined, `BigInt` and other objects
- * with a `toArray()` or `toBuffer()` method.
+ * with a `toArray()` or `toBytes()` method.
  * @param v the value
  */
-export const toBuffer = function (v: ToBufferInputTypes): Buffer {
+
+export const toBytes = function (v: ToBytesInputTypes): Uint8Array {
   if (v === null || v === undefined) {
-    return Buffer.allocUnsafe(0)
+    return new Uint8Array()
   }
 
   if (Buffer.isBuffer(v)) {
-    return Buffer.from(v)
+    return Uint8Array.from(v)
   }
 
   if (Array.isArray(v) || v instanceof Uint8Array) {
-    return Buffer.from(v as Uint8Array)
+    return Uint8Array.from(v)
   }
 
   if (typeof v === 'string') {
     if (!isHexString(v)) {
       throw new Error(
-        `Cannot convert string to buffer. toBuffer only supports 0x-prefixed hex strings and this string was given: ${v}`
+        `Cannot convert string to buffer. toBytes only supports 0x-prefixed hex strings and this string was given: ${v}`
       )
     }
-    return Buffer.from(padToEven(stripHexPrefix(v)), 'hex')
+    return hexToBytes(v)
   }
 
   if (typeof v === 'number') {
-    return intToBuffer(v)
+    return intToBytes(v)
   }
 
   if (typeof v === 'bigint') {
@@ -186,32 +189,23 @@ export const toBuffer = function (v: ToBufferInputTypes): Buffer {
     return Buffer.from(n, 'hex')
   }
 
-  if (v.toArray) {
-    // converts a BN to a Buffer
-    return Buffer.from(v.toArray())
+  if (v.toArray !== undefined) {
+    // converts a BN to a Uint8Array
+    return v.toArray()
   }
 
-  if (v.toBuffer) {
-    return Buffer.from(v.toBuffer())
+  if (v.toBuffer !== undefined) {
+    return Uint8Array.from(v.toBuffer())
   }
 
   throw new Error('invalid type')
 }
 
 /**
- * Converts a `Buffer` into a `0x`-prefixed hex `String`.
- * @param buf `Buffer` object to convert
+ * Converts a {@link Uint8Array} to a {@link bigint}
  */
-export const bufferToHex = function (buf: Buffer): string {
-  buf = toBuffer(buf)
-  return '0x' + buf.toString('hex')
-}
-
-/**
- * Converts a {@link Buffer} to a {@link bigint}
- */
-export function bufferToBigInt(buf: Buffer) {
-  const hex = bufferToHex(buf)
+export function bytesToBigInt(bytes: Uint8Array) {
+  const hex = bytesToHex(bytes)
   if (hex === '0x') {
     return BigInt(0)
   }
@@ -219,37 +213,37 @@ export function bufferToBigInt(buf: Buffer) {
 }
 
 /**
- * Converts a {@link bigint} to a {@link Buffer}
+ * Converts a {@link bigint} to a {@link Uint8Array}
  */
-export function bigIntToBuffer(num: bigint) {
-  return toBuffer('0x' + num.toString(16))
+export const bigIntToBytes = (num: bigint) => {
+  return toBytes('0x' + num.toString(16))
 }
 
 /**
- * Converts a `Buffer` to a `Number`.
- * @param buf `Buffer` object to convert
+ * Converts a `Uint8Array` to a `Number`.
+ * @param bytes `Uint8Array` object to convert
  * @throws If the input number exceeds 53 bits.
  */
-export const bufferToInt = function (buf: Buffer): number {
-  const res = Number(bufferToBigInt(buf))
+export const bytesToInt = function (bytes: Uint8Array): number {
+  const res = Number(bytesToBigInt(bytes))
   if (!Number.isSafeInteger(res)) throw new Error('Number exceeds 53 bits')
   return res
 }
 
 /**
- * Interprets a `Buffer` as a signed integer and returns a `BigInt`. Assumes 256-bit numbers.
+ * Interprets a `Uint8Array` as a signed integer and returns a `BigInt`. Assumes 256-bit numbers.
  * @param num Signed integer value
  */
-export const fromSigned = function (num: Buffer): bigint {
-  return BigInt.asIntN(256, bufferToBigInt(num))
+export const fromSigned = function (num: Uint8Array): bigint {
+  return BigInt.asIntN(256, bytesToBigInt(num))
 }
 
 /**
- * Converts a `BigInt` to an unsigned integer and returns it as a `Buffer`. Assumes 256-bit numbers.
+ * Converts a `BigInt` to an unsigned integer and returns it as a `Uint8Array`. Assumes 256-bit numbers.
  * @param num
  */
-export const toUnsigned = function (num: bigint): Buffer {
-  return bigIntToBuffer(BigInt.asUintN(256, num))
+export const toUnsigned = function (num: bigint): Uint8Array {
+  return bigIntToBytes(BigInt.asUintN(256, num))
 }
 
 /**
@@ -379,14 +373,14 @@ export const bigIntToHex = (num: bigint) => {
 }
 
 /**
- * Convert value from bigint to an unpadded Buffer
+ * Convert value from bigint to an unpadded Uint8Array
  * (useful for RLP transport)
  * @param value value to convert
  */
-export function bigIntToUnpaddedBuffer(value: bigint): Buffer {
-  return unpadBuffer(bigIntToBuffer(value))
+export function bigIntToUnpaddedBuffer(value: bigint): Uint8Array {
+  return unpadBytes(bigIntToBytes(value))
 }
 
-export function intToUnpaddedBuffer(value: number): Buffer {
-  return unpadBuffer(intToBuffer(value))
+export function intToUnpaddedBytes(value: number): Uint8Array {
+  return unpadBytes(intToBytes(value))
 }

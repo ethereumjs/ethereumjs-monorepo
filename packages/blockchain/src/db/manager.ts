@@ -1,6 +1,6 @@
 import { Block, BlockHeader, valuesArrayToHeaderData } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
-import { KECCAK256_RLP, KECCAK256_RLP_ARRAY, arrToBufArr, bufferToBigInt } from '@ethereumjs/util'
+import { KECCAK256_RLP, KECCAK256_RLP_ARRAY, arrToBufArr, bytesToBigInt } from '@ethereumjs/util'
 
 import { Cache } from './cache'
 import { DBOp, DBTarget } from './operation'
@@ -175,7 +175,7 @@ export class DBManager {
    */
   async getTotalDifficulty(blockHash: Buffer, blockNumber: bigint): Promise<bigint> {
     const td = await this.get(DBTarget.TotalDifficulty, { blockHash, blockNumber })
-    return bufferToBigInt(Buffer.from(RLP.decode(Uint8Array.from(td)) as Uint8Array))
+    return bytesToBigInt(Buffer.from(RLP.decode(Uint8Array.from(td)) as Uint8Array))
   }
 
   /**
@@ -183,7 +183,7 @@ export class DBManager {
    */
   async hashToNumber(blockHash: Buffer): Promise<bigint> {
     const value = await this.get(DBTarget.HashToNumber, { blockHash })
-    return bufferToBigInt(value)
+    return bytesToBigInt(value)
   }
 
   /**

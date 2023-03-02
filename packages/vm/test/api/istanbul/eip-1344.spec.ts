@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { ERROR } from '@ethereumjs/evm/dist/exceptions'
-import { bufferToBigInt } from '@ethereumjs/util'
+import { bytesToBigInt } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -31,7 +31,7 @@ tape('Istanbul: EIP-1344', async (t) => {
           st.equal(res.exceptionError?.error, testCase.err)
         } else {
           st.assert(res.exceptionError === undefined)
-          st.equal(testCase.chainId, bufferToBigInt(res.returnValue))
+          st.equal(testCase.chainId, bytesToBigInt(res.returnValue))
         }
       } catch (e: any) {
         st.fail(e.message)

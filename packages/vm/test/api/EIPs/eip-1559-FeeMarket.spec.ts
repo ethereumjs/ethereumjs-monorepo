@@ -5,7 +5,7 @@ import {
   FeeMarketEIP1559Transaction,
   Transaction,
 } from '@ethereumjs/tx'
-import { Address, bigIntToBuffer, privateToAddress, setLengthLeft } from '@ethereumjs/util'
+import { Address, bigIntToBytes, privateToAddress, setLengthLeft } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -196,7 +196,7 @@ tape('EIP1559 tests', (t) => {
     const returnValue = result.execResult.returnValue
 
     const expectedCost = GWEI * BigInt(3)
-    const expectedReturn = setLengthLeft(bigIntToBuffer(expectedCost), 32)
+    const expectedReturn = setLengthLeft(bigIntToBytes(expectedCost), 32)
 
     st.ok(returnValue.equals(expectedReturn))
     st.end()

@@ -2,10 +2,13 @@ import { Trie } from '@ethereumjs/trie'
 import {
   KECCAK256_RLP,
   accountBodyToRLP,
+  accountBodyToRLP,
   bigIntToBuffer,
+  bigIntToBytes,
   bufArrToArr,
-  bufferToBigInt,
   bufferToHex,
+  bytesToBigInt,
+  setLengthLeft,
   setLengthLeft,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
@@ -187,15 +190,15 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const { first } = task
     // Snap protocol will automatically pad it with 32 bytes left, so we don't need to worry
     const origin = partialResult
-      ? bigIntToBuffer(bufferToBigInt(partialResult[partialResult.length - 1].hash) + BigInt(1))
-      : bigIntToBuffer(first)
+      ? bigIntToBytes(bytesToBigInt(partialResult[partialResult.length - 1].hash) + BigInt(1))
+      : bigIntToBytes(first)
     return setLengthLeft(origin, 32)
   }
 
   private getLimit(job: Job<JobTask, AccountData[], AccountData>): Buffer {
     const { task } = job
     const { first, count } = task
-    const limit = bigIntToBuffer(first + BigInt(count) - BigInt(1))
+    const limit = bigIntToBytes(first + BigInt(count) - BigInt(1))
     return setLengthLeft(limit, 32)
   }
 
@@ -345,7 +348,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   tasks(first = this.first, count = this.count, maxTasks = this.config.maxFetcherJobs): JobTask[] {
     const max = this.config.maxAccountRange
     const tasks: JobTask[] = []
-    let debugStr = `origin=${short(setLengthLeft(bigIntToBuffer(first), 32))}`
+    let debugStr = `origin=${short(setLengthLeft(bigIntToBytes(first), 32))}`
     let pushedCount = BigInt(0)
     const startedWith = first
 
@@ -370,7 +373,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     }
 
     debugStr += ` limit=${short(
-      setLengthLeft(bigIntToBuffer(startedWith + pushedCount - BigInt(1)), 32)
+      setLengthLeft(bigIntToBytes(startedWith + pushedCount - BigInt(1)), 32)
     )}`
     this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)
     return tasks

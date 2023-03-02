@@ -1,5 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
-import { bigIntToBuffer, setLengthLeft, setLengthRight } from '@ethereumjs/util'
+import { bigIntToBytes, setLengthLeft, setLengthRight } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 
@@ -36,9 +36,9 @@ export function trap(err: string) {
 /**
  * Converts bigint address (they're stored like this on the stack) to buffer address
  */
-export function addressToBuffer(address: bigint | Buffer) {
+export function addresstoBytes(address: bigint | Buffer) {
   if (Buffer.isBuffer(address)) return address
-  return setLengthLeft(bigIntToBuffer(address & MASK_160), 20)
+  return setLengthLeft(bigIntToBytes(address & MASK_160), 20)
 }
 
 /**

@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { Account, isHexPrefixed, toBuffer, unpadBuffer } from '@ethereumjs/util'
+import { Account, isHexPrefixed, toBytes, unpadBuffer } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -23,7 +23,7 @@ export interface GenesisState {
 export async function genesisStateRoot(genesisState: GenesisState) {
   const trie = new Trie({ useKeyHashing: true })
   for (const [key, value] of Object.entries(genesisState)) {
-    const address = isHexPrefixed(key) ? toBuffer(key) : Buffer.from(key, 'hex')
+    const address = isHexPrefixed(key) ? toBytes(key) : Buffer.from(key, 'hex')
     const account = new Account()
     if (typeof value === 'string') {
       account.balance = BigInt(value)
@@ -33,16 +33,16 @@ export async function genesisStateRoot(genesisState: GenesisState) {
         account.balance = BigInt(balance)
       }
       if (code !== undefined) {
-        account.codeHash = Buffer.from(keccak256(toBuffer(code)))
+        account.codeHash = Buffer.from(keccak256(toBytes(code)))
       }
       if (storage !== undefined) {
         const storageTrie = new Trie({ useKeyHashing: true })
         for (const [k, val] of storage) {
-          const storageKey = isHexPrefixed(k) ? toBuffer(k) : Buffer.from(k, 'hex')
+          const storageKey = isHexPrefixed(k) ? toBytes(k) : Buffer.from(k, 'hex')
           const storageVal = Buffer.from(
             RLP.encode(
               Uint8Array.from(
-                unpadBuffer(isHexPrefixed(val) ? toBuffer(val) : Buffer.from(val, 'hex'))
+                unpadBuffer(isHexPrefixed(val) ? toBytes(val) : Buffer.from(val, 'hex'))
               )
             )
           )

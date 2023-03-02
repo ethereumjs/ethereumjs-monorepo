@@ -24,7 +24,7 @@ import type { AccessListEIP2930Transaction } from './eip2930Transaction'
 import type { BlobEIP4844Transaction } from './eip4844Transaction'
 import type { Transaction } from './legacyTransaction'
 import type { Common } from '@ethereumjs/common'
-import type { AddressLike, BigIntLike, BufferLike, PrefixedHexString } from '@ethereumjs/util'
+import type { AddressLike, BigIntLike, BytesLike, PrefixedHexString } from '@ethereumjs/util'
 
 const Bytes20 = new ByteVectorType(20)
 const Bytes32 = new ByteVectorType(32)
@@ -175,7 +175,7 @@ export type TxData = {
   /**
    * This will contain the data of the message or the init of a contract.
    */
-  data?: BufferLike
+  data?: BytesLike
 
   /**
    * EC recovery ID.
@@ -240,7 +240,7 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   /**
    * The versioned hashes used to validate the blobs attached to a transaction
    */
-  versionedHashes?: BufferLike[]
+  versionedHashes?: BytesLike[]
   /**
    * The maximum fee per data gas paid for the transaction
    */
@@ -248,15 +248,15 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   /**
    * The blobs associated with a transaction
    */
-  blobs?: BufferLike[]
+  blobs?: BytesLike[]
   /**
    * The KZG commitments corresponding to the versioned hashes for each blob
    */
-  kzgCommitments?: BufferLike[]
+  kzgCommitments?: BytesLike[]
   /**
    * The aggregate KZG proof associated with the transaction
    */
-  kzgProof?: BufferLike
+  kzgProof?: BytesLike
 }
 
 /**

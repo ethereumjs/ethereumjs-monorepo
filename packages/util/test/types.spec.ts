@@ -2,13 +2,13 @@ import * as tape from 'tape'
 
 import {
   TypeOutput,
-  bigIntToBuffer,
+  bigIntToBytes,
   bigIntToHex,
-  bufferToBigInt,
-  bufferToHex,
-  intToBuffer,
+  bytesToBigInt,
+  bytesToHex,
+  intToBytes,
   intToHex,
-  toBuffer,
+  toBytes,
   toType,
 } from '../src'
 
@@ -38,12 +38,12 @@ tape('toType', function (t) {
     })
     st.test('should convert to Buffer', function (st) {
       const result = toType(num, TypeOutput.Buffer)
-      st.ok(result.equals(intToBuffer(num)))
+      st.ok(result.equals(intToBytes(num)))
       st.end()
     })
     st.test('should convert to PrefixedHexString', function (st) {
       const result = toType(num, TypeOutput.PrefixedHexString)
-      st.strictEqual(result, bufferToHex(bigIntToBuffer(BigInt(num))))
+      st.strictEqual(result, bytesToHex(bigIntToBytes(BigInt(num))))
       st.end()
     })
     st.test('should throw an error if greater than MAX_SAFE_INTEGER', function (st) {
@@ -68,12 +68,12 @@ tape('toType', function (t) {
     })
     st.test('should convert to Buffer', function (st) {
       const result = toType(num, TypeOutput.Buffer)
-      st.ok(result.equals(bigIntToBuffer(num)))
+      st.ok(result.equals(bigIntToBytes(num)))
       st.end()
     })
     st.test('should convert to PrefixedHexString', function (st) {
       const result = toType(num, TypeOutput.PrefixedHexString)
-      st.strictEqual(result, bufferToHex(bigIntToBuffer(num)))
+      st.strictEqual(result, bytesToHex(bigIntToBytes(num)))
       st.end()
     })
     st.test(
@@ -88,15 +88,15 @@ tape('toType', function (t) {
     )
   })
   t.test('from Buffer', function (st) {
-    const num = intToBuffer(1000)
+    const num = intToBytes(1000)
     st.test('should convert to Number', function (st) {
       const result = toType(num, TypeOutput.Number)
-      st.ok(intToBuffer(result).equals(num))
+      st.ok(intToBytes(result).equals(num))
       st.end()
     })
     st.test('should convert to BigInt', function (st) {
       const result = toType(num, TypeOutput.BigInt)
-      st.equal(result, bufferToBigInt(num))
+      st.equal(result, bytesToBigInt(num))
       st.end()
     })
     st.test('should convert to Buffer', function (st) {
@@ -106,7 +106,7 @@ tape('toType', function (t) {
     })
     st.test('should convert to PrefixedHexString', function (st) {
       const result = toType(num, TypeOutput.PrefixedHexString)
-      st.strictEqual(result, bufferToHex(num))
+      st.strictEqual(result, bytesToHex(num))
       st.end()
     })
   })
@@ -124,7 +124,7 @@ tape('toType', function (t) {
     })
     st.test('should convert to Buffer', function (st) {
       const result = toType(num, TypeOutput.Buffer)
-      st.ok(result.equals(toBuffer(num)))
+      st.ok(result.equals(toBytes(num)))
       st.end()
     })
     st.test('should throw an error if is not 0x-prefixed', function (st) {

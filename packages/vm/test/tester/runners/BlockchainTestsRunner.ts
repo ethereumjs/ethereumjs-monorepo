@@ -4,7 +4,7 @@ import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { bufferToBigInt, isHexPrefixed, stripHexPrefix, toBuffer } from '@ethereumjs/util'
+import { bytesToBigInt, isHexPrefixed, stripHexPrefix, toBytes } from '@ethereumjs/util'
 import { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
 
@@ -55,7 +55,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   const genesisBlock = Block.fromBlockData(blockData, { common })
 
   if (typeof testData.genesisRLP === 'string') {
-    const rlp = toBuffer(testData.genesisRLP)
+    const rlp = toBytes(testData.genesisRLP)
     t.ok(genesisBlock.serialize().equals(rlp), 'correct genesis RLP')
   }
 
@@ -117,7 +117,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     try {
       const blockRlp = Buffer.from((raw.rlp as string).slice(2), 'hex')
       const decodedRLP: any = RLP.decode(Uint8Array.from(blockRlp))
-      currentBlock = bufferToBigInt(decodedRLP[0][8])
+      currentBlock = bytesToBigInt(decodedRLP[0][8])
     } catch (e: any) {
       await handleError(e, expectException)
       continue
@@ -132,7 +132,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         const decoded: any = RLP.decode(blockRlp)
         const parentHash = decoded[0][0]
         TD = await blockchain.getTotalDifficulty(parentHash)
-        timestamp = bufferToBigInt(decoded[0][11])
+        timestamp = bytesToBigInt(decoded[0][11])
         // eslint-disable-next-line no-empty
       } catch (e) {}
 

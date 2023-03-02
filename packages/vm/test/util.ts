@@ -9,13 +9,13 @@ import {
 import {
   Account,
   Address,
-  bigIntToBuffer,
-  bufferToBigInt,
-  bufferToHex,
+  bigIntToBytes,
+  bytesToBigInt,
+  bytesToHex,
   isHexPrefixed,
   setLengthLeft,
   stripHexPrefix,
-  toBuffer,
+  toBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
@@ -65,8 +65,8 @@ export function dumpState(state: any, cb: Function) {
       results.push(result)
     }
     for (let i = 0; i < results.length; i++) {
-      console.log("SHA3'd address: " + bufferToHex(results[i].address))
-      console.log('\tstorage root: ' + bufferToHex(results[i].storageRoot))
+      console.log("SHA3'd address: " + bytesToHex(results[i].address))
+      console.log('\tstorage root: ' + bytesToHex(results[i].storageRoot))
       console.log('\tstorage: ')
       for (const storageKey in results[i].storage) {
         console.log('\t\t' + storageKey + ': ' + results[i].storage[storageKey])
@@ -89,7 +89,7 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
     a = Buffer.from(a, 'hex')
   } else if (!isHex) {
     try {
-      a = bigIntToBuffer(BigInt(a))
+      a = bigIntToBytes(BigInt(a))
     } catch {
       // pass
     }
@@ -125,7 +125,7 @@ export function makeTx(
   }
 
   if (txData.secretKey !== undefined) {
-    const privKey = toBuffer(txData.secretKey)
+    const privKey = toBytes(txData.secretKey)
     return tx.sign(privKey)
   }
 
@@ -191,16 +191,14 @@ export function verifyAccountPostConditions(
     t.comment('Account: ' + address)
     if (!format(account.balance, true).equals(format(acctData.balance, true))) {
       t.comment(
-        `Expected balance of ${bufferToBigInt(format(acctData.balance, true))}, but got ${
+        `Expected balance of ${bytesToBigInt(format(acctData.balance, true))}, but got ${
           account.balance
         }`
       )
     }
     if (!format(account.nonce, true).equals(format(acctData.nonce, true))) {
       t.comment(
-        `Expected nonce of ${bufferToBigInt(format(acctData.nonce, true))}, but got ${
-          account.nonce
-        }`
+        `Expected nonce of ${bytesToBigInt(format(acctData.nonce, true))}, but got ${account.nonce}`
       )
     }
 

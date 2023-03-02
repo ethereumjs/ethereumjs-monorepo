@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { arrToBufArr, bufArrToArr, bufferToInt, intToBuffer } from '@ethereumjs/util'
+import { arrToBufArr, bufArrToArr, bytesToInt, intToBytes } from '@ethereumjs/util'
 import * as pipe from 'it-pipe'
 import * as pushable from 'it-pushable'
 
@@ -45,7 +45,7 @@ export class Libp2pSender extends Sender {
         const data: Buffer = bl.slice()
         try {
           const [codeBuf, payload]: any = arrToBufArr(RLP.decode(Uint8Array.from(data)))
-          const code = bufferToInt(codeBuf)
+          const code = bytesToInt(codeBuf)
           if (code === 0) {
             const status: any = {}
             for (const [k, v] of payload.values()) {
@@ -68,7 +68,7 @@ export class Libp2pSender extends Sender {
    */
   sendStatus(status: any) {
     const payload: any = Object.entries(status).map(([k, v]) => [Buffer.from(k), v])
-    this.pushable.push(Buffer.from(RLP.encode(bufArrToArr([intToBuffer(0), payload]))))
+    this.pushable.push(Buffer.from(RLP.encode(bufArrToArr([intToBytes(0), payload]))))
   }
 
   /**
@@ -77,6 +77,6 @@ export class Libp2pSender extends Sender {
    * @param data message payload
    */
   sendMessage(code: number, data: any) {
-    this.pushable.push(Buffer.from(RLP.encode(bufArrToArr([intToBuffer(code), data]))))
+    this.pushable.push(Buffer.from(RLP.encode(bufArrToArr([intToBytes(code), data]))))
   }
 }

@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
-import { bigIntToBuffer, bufferToBigInt } from '@ethereumjs/util'
+import { bigIntToBytes, bytesToBigInt } from '@ethereumjs/util'
 import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
@@ -87,14 +87,14 @@ tape('[EthProtocol]', (t) => {
     const block = Block.fromBlockData({}, { common: config.chainCommon })
     const res = p.decode(p.messages.filter((message) => message.name === 'NewBlock')[0], [
       block.raw(),
-      bigIntToBuffer(td),
+      bigIntToBytes(td),
     ])
     const res2 = p.encode(p.messages.filter((message) => message.name === 'NewBlock')[0], [
       block,
       td,
     ])
     t.deepEquals(res[0].hash(), block.hash(), 'correctly decoded block')
-    t.equal(bufferToBigInt(res2[1]), td, 'correctly encoded td')
+    t.equal(bytesToBigInt(res2[1]), td, 'correctly encoded td')
     t.end()
   })
 
@@ -113,7 +113,7 @@ tape('[EthProtocol]', (t) => {
     })
     t.equal(res.reqId, BigInt(1), 'correctly decoded reqId')
     t.ok(res.hashes[0].equals(block.hash()), 'correctly decoded blockHash')
-    t.equal(bufferToBigInt(res2[0]), BigInt(1), 'correctly encoded reqId')
+    t.equal(bytesToBigInt(res2[0]), BigInt(1), 'correctly encoded reqId')
     t.ok(res2[1][0].equals(block.hash()), 'correctly encoded blockHash')
     t.end()
   })
@@ -138,7 +138,7 @@ tape('[EthProtocol]', (t) => {
       reqId: BigInt(1),
       txs: [tx],
     })
-    t.equal(bufferToBigInt(res[0]), BigInt(1), 'correctly encoded reqId')
+    t.equal(bytesToBigInt(res[0]), BigInt(1), 'correctly encoded reqId')
     t.deepEqual(res[1][0], tx.serialize(), 'EIP1559 transaction correctly encoded')
     t.end()
   })
@@ -172,7 +172,7 @@ tape('[EthProtocol]', (t) => {
       reqId: BigInt(1),
       receipts,
     })
-    t.equal(bufferToBigInt(res[0]), BigInt(1), 'correctly encoded reqId')
+    t.equal(bytesToBigInt(res[0]), BigInt(1), 'correctly encoded reqId')
     const expectedSerializedReceipts = [
       Buffer.from(
         '02f9016d0164b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f866f864940000000000000000000000000000000000000000f842a00000000000000000000000000000000000000000000000000000000000000000a001010101010101010101010101010101010101010101010101010101010101018a00000000000000000000',

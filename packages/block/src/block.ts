@@ -8,7 +8,7 @@ import {
   arrToBufArr,
   bigIntToHex,
   bufArrToArr,
-  bufferToHex,
+  bytesToHex,
   intToHex,
   isHexPrefixed,
   ssz,
@@ -562,7 +562,7 @@ export class Block {
   public errorStr() {
     let hash = ''
     try {
-      hash = bufferToHex(this.hash())
+      hash = bytesToHex(this.hash())
     } catch (e: any) {
       hash = 'error'
     }

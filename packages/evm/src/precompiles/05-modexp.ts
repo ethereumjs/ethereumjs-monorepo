@@ -1,10 +1,4 @@
-import {
-  bigIntToBuffer,
-  bufferToBigInt,
-  setLengthLeft,
-  setLengthRight,
-  short,
-} from '@ethereumjs/util'
+import { bigIntToBytes, bytesToBigInt, setLengthLeft, setLengthRight } from '@ethereumjs/util'
 
 import { OOGResult } from '../evm'
 
@@ -37,15 +31,15 @@ function multComplexityEIP2565(x: bigint): bigint {
 function getAdjustedExponentLength(data: Buffer): bigint {
   let expBytesStart
   try {
-    const baseLen = bufferToBigInt(data.slice(0, 32))
+    const baseLen = bytesToBigInt(data.slice(0, 32))
     expBytesStart = 96 + Number(baseLen) // 96 for base length, then exponent length, and modulus length, then baseLen for the base data, then exponent bytes start
   } catch (e: any) {
     expBytesStart = Number.MAX_SAFE_INTEGER - 32
   }
-  const expLen = bufferToBigInt(data.slice(32, 64))
+  const expLen = bytesToBigInt(data.slice(32, 64))
   let firstExpBytes = Buffer.from(data.slice(expBytesStart, expBytesStart + 32)) // first word of the exponent data
   firstExpBytes = setLengthRight(firstExpBytes, 32) // reading past the data reads virtual zeros
-  let firstExpBigInt = bufferToBigInt(firstExpBytes)
+  let firstExpBigInt = bytesToBigInt(firstExpBytes)
   let max32expLen = 0
   if (expLen < BigInt(32)) {
     max32expLen = 32 - Number(expLen)
@@ -90,9 +84,9 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     adjustedELen = BigInt(1)
   }
 
-  const bLen = bufferToBigInt(data.slice(0, 32))
-  const eLen = bufferToBigInt(data.slice(32, 64))
-  const mLen = bufferToBigInt(data.slice(64, 96))
+  const bLen = bytesToBigInt(data.slice(0, 32))
+  const eLen = bytesToBigInt(data.slice(32, 64))
+  const mLen = bytesToBigInt(data.slice(64, 96))
 
   let maxLen = bLen
   if (maxLen < mLen) {
@@ -134,7 +128,7 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   if (bLen === BigInt(0)) {
     return {
       executionGasUsed: gasUsed,
-      returnValue: setLengthLeft(bigIntToBuffer(BigInt(0)), Number(mLen)),
+      returnValue: setLengthLeft(bigIntToBytes(BigInt(0)), Number(mLen)),
     }
   }
 
@@ -155,9 +149,9 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  const B = bufferToBigInt(setLengthRight(data.slice(Number(bStart), Number(bEnd)), Number(bLen)))
-  const E = bufferToBigInt(setLengthRight(data.slice(Number(eStart), Number(eEnd)), Number(eLen)))
-  const M = bufferToBigInt(setLengthRight(data.slice(Number(mStart), Number(mEnd)), Number(mLen)))
+  const B = bytesToBigInt(setLengthRight(data.slice(Number(bStart), Number(bEnd)), Number(bLen)))
+  const E = bytesToBigInt(setLengthRight(data.slice(Number(eStart), Number(eEnd)), Number(eLen)))
+  const M = bytesToBigInt(setLengthRight(data.slice(Number(mStart), Number(mEnd)), Number(mLen)))
 
   if (mEnd > maxInt) {
     if (opts._debug) {
@@ -180,6 +174,6 @@ export function precompile05(opts: PrecompileInput): ExecResult {
 
   return {
     executionGasUsed: gasUsed,
-    returnValue: res,
+    returnValue: setLengthLeft(bigIntToBytes(R), Number(mLen)),
   }
 }

@@ -6,7 +6,7 @@
 // 4. Puts the blocks from ../utils/blockchain-mock-data "blocks" attribute into the Blockchain
 // 5. Runs the Blockchain on the VM.
 
-import { Account, Address, toBuffer, setLengthLeft } from '@ethereumjs/util'
+import { Account, Address, toBytes, setLengthLeft } from '@ethereumjs/util'
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Common, ConsensusType } from '@ethereumjs/common'
@@ -72,7 +72,7 @@ async function setupPreConditions(vm: VM, data: typeof testData) {
 
 async function putBlocks(blockchain: Blockchain, common: Common, data: typeof testData) {
   for (const blockData of data.blocks) {
-    const blockRlp = toBuffer(blockData.rlp)
+    const blockRlp = toBytes(blockData.rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
     await blockchain.putBlock(block)
   }

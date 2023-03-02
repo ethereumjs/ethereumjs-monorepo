@@ -1,4 +1,4 @@
-import { bigIntToHex, bufferToHex, toBuffer } from '@ethereumjs/util'
+import { bigIntToHex, bytesToHex, toBytes } from '@ethereumjs/util'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
 import { middleware, validators } from '../validation'
@@ -101,7 +101,7 @@ export class Debug {
 
     try {
       const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
-        toBuffer(txHash)
+        toBytes(txHash)
       )
       if (!result) return null
       const [_, blockHash, txIndex] = result
@@ -131,7 +131,7 @@ export class Debug {
         }
         if (opts.enableMemory === true) {
           for (let x = 0; x < step.memoryWordCount; x++) {
-            const word = bufferToHex(step.memory.slice(x * 32, 32))
+            const word = bytesToHex(step.memory.slice(x * 32, 32))
             memory.push(word)
           }
         }
@@ -162,7 +162,7 @@ export class Debug {
       const res = await vmCopy.runTx({ tx, block })
       trace.gas = bigIntToHex(res.totalGasSpent)
       trace.failed = res.execResult.exceptionError !== undefined
-      trace.returnValue = bufferToHex(res.execResult.returnValue)
+      trace.returnValue = bytesToHex(res.execResult.returnValue)
       return trace
     } catch (err: any) {
       throw {

@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
-import { Address, bigIntToBuffer, setLengthLeft } from '@ethereumjs/util'
+import { Address, bigIntToBytes, setLengthLeft } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import { BaseProvider, JsonRpcProvider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import * as tape from 'tape'
@@ -77,18 +77,18 @@ tape('Ethers State Manager API tests', async (t) => {
 
     const storageSlot = await state.getContractStorage(
       UNIerc20ContractAddress,
-      setLengthLeft(bigIntToBuffer(1n), 32)
+      setLengthLeft(bigIntToBytes(1n), 32)
     )
     t.ok(storageSlot.length > 0, 'was able to retrieve storage slot 1 for the UNI contract')
 
     await state.putContractStorage(
       UNIerc20ContractAddress,
-      setLengthLeft(bigIntToBuffer(2n), 32),
+      setLengthLeft(bigIntToBytes(2n), 32),
       Buffer.from('abcd')
     )
     const slotValue = await state.getContractStorage(
       UNIerc20ContractAddress,
-      setLengthLeft(bigIntToBuffer(2n), 32)
+      setLengthLeft(bigIntToBytes(2n), 32)
     )
     t.ok(slotValue.equals(Buffer.from('abcd')), 'should retrieve slot 2 value')
 
@@ -99,13 +99,13 @@ tape('Ethers State Manager API tests', async (t) => {
 
     t.doesNotThrow(
       async () =>
-        state.getContractStorage(UNIerc20ContractAddress, setLengthLeft(bigIntToBuffer(2n), 32)),
+        state.getContractStorage(UNIerc20ContractAddress, setLengthLeft(bigIntToBytes(2n), 32)),
       'should not call provider.getStorageAt'
     )
 
     await state.putContractStorage(
       UNIerc20ContractAddress,
-      setLengthLeft(bigIntToBuffer(2n), 32),
+      setLengthLeft(bigIntToBytes(2n), 32),
       Buffer.from('')
     )
 
@@ -126,7 +126,7 @@ tape('Ethers State Manager API tests', async (t) => {
 
     const deletedSlot = await state.getContractStorage(
       UNIerc20ContractAddress,
-      setLengthLeft(bigIntToBuffer(2n), 32)
+      setLengthLeft(bigIntToBytes(2n), 32)
     )
 
     t.equal(deletedSlot.length, 0, 'deleted slot from storage cache')

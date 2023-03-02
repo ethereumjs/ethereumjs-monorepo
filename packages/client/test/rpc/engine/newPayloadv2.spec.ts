@@ -1,6 +1,6 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Address, bufferToHex, zeros } from '@ethereumjs/util'
+import { Address, bytesToHex, zeros } from '@ethereumjs/util'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
@@ -147,7 +147,7 @@ tape(`${method}: call with executionPayloadV1`, (v1) => {
     const req = params(method, [blockData, null])
     const expectRes = (res: any) => {
       t.equal(res.body.result.status, 'INVALID')
-      t.equal(res.body.result.latestValidHash, bufferToHex(zeros(32)))
+      t.equal(res.body.result.latestValidHash, bytesToHex(zeros(32)))
     }
     await baseRequest(t, server, req, 200, expectRes)
   })

@@ -2,10 +2,10 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   arrToBufArr,
-  bufferToBigInt,
-  bufferToHex,
-  intToBuffer,
-  toBuffer,
+  bytesToBigInt,
+  bytesToHex,
+  intToBytes,
+  toBytes,
   unpadBuffer,
 } from '@ethereumjs/util'
 import { Buffer } from 'buffer'
@@ -62,22 +62,22 @@ tape('[Transaction]', function (t) {
       'should initialize on a pre-Berlin Harfork (EIP-2930 not activated)'
     )
 
-    const txData = txFixtures[3].raw.map(toBuffer)
-    txData[6] = intToBuffer(45) // v with 0-parity and chain ID 5
+    const txData = txFixtures[3].raw.map(toBytes)
+    txData[6] = intToBytes(45) // v with 0-parity and chain ID 5
     let tx = Transaction.fromValuesArray(txData)
     st.ok(
       tx.common.chainId() === BigInt(5),
       'should initialize Common with chain ID (supported) derived from v value (v with 0-parity)'
     )
 
-    txData[6] = intToBuffer(46) // v with 1-parity and chain ID 5
+    txData[6] = intToBytes(46) // v with 1-parity and chain ID 5
     tx = Transaction.fromValuesArray(txData)
     st.ok(
       tx.common.chainId() === BigInt(5),
       'should initialize Common with chain ID (supported) derived from v value (v with 1-parity)'
     )
 
-    txData[6] = intToBuffer(2033) // v with 0-parity and chain ID 999
+    txData[6] = intToBytes(2033) // v with 0-parity and chain ID 999
     tx = Transaction.fromValuesArray(txData)
     st.equal(
       tx.common.chainId(),
@@ -85,7 +85,7 @@ tape('[Transaction]', function (t) {
       'should initialize Common with chain ID (unsupported) derived from v value (v with 0-parity)'
     )
 
-    txData[6] = intToBuffer(2034) // v with 1-parity and chain ID 999
+    txData[6] = intToBytes(2034) // v with 1-parity and chain ID 999
     tx = Transaction.fromValuesArray(txData)
     st.equal(
       tx.common.chainId(),
@@ -97,18 +97,18 @@ tape('[Transaction]', function (t) {
 
   t.test('Initialization -> decode with fromValuesArray()', function (st) {
     for (const tx of txFixtures.slice(0, 4)) {
-      const txData = tx.raw.map(toBuffer)
+      const txData = tx.raw.map(toBytes)
       const pt = Transaction.fromValuesArray(txData)
 
-      st.equal(bufferToHex(unpadBuffer(toBuffer(pt.nonce))), tx.raw[0])
-      st.equal(bufferToHex(toBuffer(pt.gasPrice)), tx.raw[1])
-      st.equal(bufferToHex(toBuffer(pt.gasLimit)), tx.raw[2])
+      st.equal(bytesToHex(unpadBuffer(toBytes(pt.nonce))), tx.raw[0])
+      st.equal(bytesToHex(toBytes(pt.gasPrice)), tx.raw[1])
+      st.equal(bytesToHex(toBytes(pt.gasLimit)), tx.raw[2])
       st.equal(pt.to?.toString(), tx.raw[3])
-      st.equal(bufferToHex(unpadBuffer(toBuffer(pt.value))), tx.raw[4])
+      st.equal(bytesToHex(unpadBuffer(toBytes(pt.value))), tx.raw[4])
       st.equal('0x' + pt.data.toString('hex'), tx.raw[5])
-      st.equal(bufferToHex(toBuffer(pt.v)), tx.raw[6])
-      st.equal(bufferToHex(toBuffer(pt.r)), tx.raw[7])
-      st.equal(bufferToHex(toBuffer(pt.s)), tx.raw[8])
+      st.equal(bytesToHex(toBytes(pt.v)), tx.raw[6])
+      st.equal(bytesToHex(toBytes(pt.r)), tx.raw[7])
+      st.equal(bytesToHex(toBytes(pt.s)), tx.raw[8])
 
       transactions.push(pt)
     }
@@ -116,7 +116,7 @@ tape('[Transaction]', function (t) {
   })
 
   t.test('Initialization -> should accept lesser r values', function (st) {
-    const tx = Transaction.fromTxData({ r: bufferToBigInt(toBuffer('0x0005')) })
+    const tx = Transaction.fromTxData({ r: bytesToBigInt(toBytes('0x0005')) })
     st.equal(tx.r!.toString(16), '5')
     st.end()
   })
@@ -164,10 +164,10 @@ tape('[Transaction]', function (t) {
     let tx = Transaction.fromTxData({})
     st.equal(tx.getDataFee(), BigInt(0))
 
-    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer))
+    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBytes))
     st.equal(tx.getDataFee(), BigInt(1716))
 
-    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), { freeze: false })
+    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBytes), { freeze: false })
     st.equal(tx.getDataFee(), BigInt(1716))
 
     st.end()
@@ -178,7 +178,7 @@ tape('[Transaction]', function (t) {
     let tx = Transaction.fromTxData({}, { common })
     st.equal(tx.getDataFee(), BigInt(0))
 
-    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), {
+    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBytes), {
       common,
     })
     st.equal(tx.getDataFee(), BigInt(1716))
@@ -188,7 +188,7 @@ tape('[Transaction]', function (t) {
 
   t.test('getDataFee() -> should invalidate cached value on hardfork change', function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
-    const tx = Transaction.fromValuesArray(txFixtures[0].raw.map(toBuffer), {
+    const tx = Transaction.fromValuesArray(txFixtures[0].raw.map(toBytes), {
       common,
     })
     st.equal(tx.getDataFee(), BigInt(656))
@@ -220,7 +220,7 @@ tape('[Transaction]', function (t) {
     const tx = Transaction.fromTxData({ value: 5000 })
     const s1 = tx.serialize()
 
-    const s1Rlp = toBuffer('0x' + s1.toString('hex'))
+    const s1Rlp = toBytes('0x' + s1.toString('hex'))
     const tx2 = Transaction.fromSerializedTx(s1Rlp)
     const s2 = tx2.serialize()
 
@@ -234,13 +234,13 @@ tape('[Transaction]', function (t) {
       hardfork: Hardfork.TangerineWhistle,
     })
 
-    let tx = Transaction.fromValuesArray(txFixtures[3].raw.slice(0, 6).map(toBuffer), {
+    let tx = Transaction.fromValuesArray(txFixtures[3].raw.slice(0, 6).map(toBytes), {
       common,
     })
     st.throws(() => {
       tx.hash()
     }, 'should throw calling hash with unsigned tx')
-    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), {
+    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBytes), {
       common,
     })
     st.deepEqual(
@@ -260,7 +260,7 @@ tape('[Transaction]', function (t) {
   })
 
   t.test('hash() -> with defined chainId', function (st) {
-    const tx = Transaction.fromValuesArray(txFixtures[4].raw.map(toBuffer))
+    const tx = Transaction.fromValuesArray(txFixtures[4].raw.map(toBytes))
     st.equal(
       tx.hash().toString('hex'),
       '0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4'
@@ -280,7 +280,7 @@ tape('[Transaction]', function (t) {
     "getMessageToSign(), getSenderPublicKey() (implicit call) -> verify EIP155 signature based on Vitalik's tests",
     function (st) {
       for (const tx of txFixturesEip155) {
-        const pt = Transaction.fromSerializedTx(toBuffer(tx.rlp))
+        const pt = Transaction.fromSerializedTx(toBytes(tx.rlp))
         st.equal(pt.getMessageToSign().toString('hex'), tx.hash)
         st.equal('0x' + pt.serialize().toString('hex'), tx.rlp)
         st.equal(pt.getSenderAddress().toString(), '0x' + tx.sender)
@@ -305,7 +305,7 @@ tape('[Transaction]', function (t) {
         '4646464646464646464646464646464646464646464646464646464646464646',
         'hex'
       )
-      const pt = Transaction.fromValuesArray(txRaw.map(toBuffer))
+      const pt = Transaction.fromValuesArray(txRaw.map(toBytes))
 
       // Note that Vitalik's example has a very similar value denoted "signing data".
       // It's not the output of `serialize()`, but the pre-image of the hash returned by `tx.hash(false)`.
@@ -332,7 +332,7 @@ tape('[Transaction]', function (t) {
     function (st) {
       const common = new Common({ chain: 1, hardfork: Hardfork.Petersburg })
       for (const txData of txFixtures.slice(0, 3)) {
-        const tx = Transaction.fromValuesArray(txData.raw.slice(0, 6).map(toBuffer), {
+        const tx = Transaction.fromValuesArray(txData.raw.slice(0, 6).map(toBytes), {
           common,
         })
 
@@ -366,7 +366,7 @@ tape('[Transaction]', function (t) {
         'hex'
       )
       const common = new Common({ chain: 3 })
-      const tx = Transaction.fromValuesArray(txRaw.map(toBuffer), { common })
+      const tx = Transaction.fromValuesArray(txRaw.map(toBytes), { common })
       const signedTx = tx.sign(privateKey)
       st.equal(
         signedTx.serialize().toString('hex'),

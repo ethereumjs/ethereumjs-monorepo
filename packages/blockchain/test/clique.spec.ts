@@ -113,7 +113,7 @@ tape('Clique: Initialization', (t) => {
 
     const extraData = Buffer.concat([
       Buffer.alloc(32),
-      ...signers.map((s) => s.address.toBuffer()),
+      ...signers.map((s) => s.address.toBytes()),
       Buffer.alloc(65),
     ])
     const genesisBlock = Block.fromBlockData(
@@ -154,7 +154,7 @@ tape('Clique: Initialization', (t) => {
     } else if (checkpointSigners) {
       extraData = Buffer.concat([
         Buffer.alloc(32),
-        ...checkpointSigners.map((s) => s.address.toBuffer()),
+        ...checkpointSigners.map((s) => s.address.toBytes()),
         Buffer.alloc(65),
       ])
     }
@@ -197,8 +197,8 @@ tape('Clique: Initialization', (t) => {
     const unauthorizedSigner = Address.fromString('0x00a839de7922491683f547a67795204763ff8237')
     const extraData = Buffer.concat([
       Buffer.alloc(32),
-      A.address.toBuffer(),
-      unauthorizedSigner.toBuffer(),
+      A.address.toBytes(),
+      unauthorizedSigner.toBytes(),
       Buffer.alloc(65),
     ])
     const block = Block.fromBlockData(

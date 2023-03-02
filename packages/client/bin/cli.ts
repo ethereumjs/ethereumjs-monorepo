@@ -5,7 +5,7 @@ import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { initKZG } from '@ethereumjs/tx'
-import { Address, arrToBufArr, short, toBuffer } from '@ethereumjs/util'
+import { Address, arrToBufArr, short, toBytes } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import { existsSync, writeFileSync } from 'fs'
@@ -574,7 +574,7 @@ async function inputAccounts() {
           `Please enter the 0x-prefixed private key to unlock ${address}:\n`
         )
         ;(rl as any).history = (rl as any).history.slice(1)
-        const privKey = toBuffer(inputKey)
+        const privKey = toBytes(inputKey)
         const derivedAddress = Address.fromPrivateKey(privKey)
         if (address.equals(derivedAddress)) {
           accounts.push([address, privKey])

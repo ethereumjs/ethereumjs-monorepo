@@ -2,9 +2,9 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
   TWO_POW256,
-  bigIntToBuffer,
+  bigIntToBytes,
   bufArrToArr,
-  bufferToBigInt,
+  bytesToBigInt,
   setLengthLeft,
   zeros,
 } from '@ethereumjs/util'
@@ -122,10 +122,10 @@ export class Miner {
       // Without this, for high-difficulty blocks JS never jumps out of the Promise
       const solution: Solution | null = await new Promise((resolve) => {
         setTimeout(() => {
-          const nonce = setLengthLeft(bigIntToBuffer(this.currentNonce), 8)
+          const nonce = setLengthLeft(bigIntToBytes(this.currentNonce), 8)
 
           const a = this.ethash.run(headerHash, nonce)
-          const result = bufferToBigInt(a.hash)
+          const result = bytesToBigInt(a.hash)
 
           if (TWO_POW256 / difficulty > result) {
             const solution: Solution = {
@@ -350,7 +350,7 @@ export class Ethash {
 
     await this.loadEpoc(number)
     const a = this.run(headerHash, nonce)
-    const result = bufferToBigInt(a.hash)
+    const result = bytesToBigInt(a.hash)
 
     return a.mix.equals(mixHash) && TWO_POW256 / difficulty > result
   }

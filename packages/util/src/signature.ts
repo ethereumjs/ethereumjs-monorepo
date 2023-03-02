@@ -1,14 +1,15 @@
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { recoverPublicKey, signSync } from 'ethereum-cryptography/secp256k1'
+import { bytesToHex } from 'ethereum-cryptography/utils'
 
-import { bufferToBigInt, bufferToHex, bufferToInt, setLengthLeft, toBuffer } from './bytes'
+import { bytesToBigInt, bytesToInt, setLengthLeft, toBytes } from './bytes'
 import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants'
-import { assertIsBuffer } from './helpers'
+import { assertIsBytes } from './helpers'
 
 export interface ECDSASignature {
   v: bigint
-  r: Buffer
-  s: Buffer
+  r: Uint8Array
+  s: Uint8Array
 }
 
 /**
@@ -78,7 +79,7 @@ export const toRpcSig = function (v: bigint, r: Buffer, s: Buffer, chainId?: big
   }
 
   // geth (and the RPC eth_sign method) uses the 65 byte format used by Bitcoin
-  return bufferToHex(Buffer.concat([setLengthLeft(r, 32), setLengthLeft(s, 32), toBuffer(v)]))
+  return bytesToHex(Buffer.concat([setLengthLeft(r, 32), setLengthLeft(s, 32), toBytes(v)]))
 }
 
 /**
@@ -98,7 +99,7 @@ export const toCompactSig = function (v: bigint, r: Buffer, s: Buffer, chainId?:
     ss[0] |= 0x80
   }
 
-  return bufferToHex(Buffer.concat([setLengthLeft(r, 32), setLengthLeft(ss, 32)]))
+  return bytesToHex(Buffer.concat([setLengthLeft(r, 32), setLengthLeft(ss, 32)]))
 }
 
 /**
@@ -110,20 +111,20 @@ export const toCompactSig = function (v: bigint, r: Buffer, s: Buffer, chainId?:
  * it's a signed message (EIP-191 or EIP-712) adding `27` at the end. Remove if needed.
  */
 export const fromRpcSig = function (sig: string): ECDSASignature {
-  const buf: Buffer = toBuffer(sig)
+  const bytes: Uint8Array = toBytes(sig)
 
-  let r: Buffer
-  let s: Buffer
+  let r: Uint8Array
+  let s: Uint8Array
   let v: bigint
-  if (buf.length >= 65) {
-    r = buf.slice(0, 32)
-    s = buf.slice(32, 64)
-    v = bufferToBigInt(buf.slice(64))
-  } else if (buf.length === 64) {
+  if (bytes.length >= 65) {
+    r = bytes.slice(0, 32)
+    s = bytes.slice(32, 64)
+    v = bytesToBigInt(bytes.slice(64))
+  } else if (bytes.length === 64) {
     // Compact Signature Representation (https://eips.ethereum.org/EIPS/eip-2098)
-    r = buf.slice(0, 32)
-    s = buf.slice(32, 64)
-    v = BigInt(bufferToInt(buf.slice(32, 33)) >> 7)
+    r = bytes.slice(0, 32)
+    s = bytes.slice(32, 64)
+    v = BigInt(bytesToInt(bytes.slice(32, 33)) >> 7)
     s[0] &= 0x7f
   } else {
     throw new Error('Invalid signature length')
@@ -161,8 +162,8 @@ export const isValidSignature = function (
     return false
   }
 
-  const rBigInt = bufferToBigInt(r)
-  const sBigInt = bufferToBigInt(s)
+  const rBigInt = bytesToBigInt(r)
+  const sBigInt = bytesToBigInt(s)
 
   if (
     rBigInt === BigInt(0) ||
@@ -187,7 +188,7 @@ export const isValidSignature = function (
  * used to produce the signature.
  */
 export const hashPersonalMessage = function (message: Buffer): Buffer {
-  assertIsBuffer(message)
+  assertIsBytes(message)
   const prefix = Buffer.from(`\u0019Ethereum Signed Message:\n${message.length}`, 'utf-8')
   return Buffer.from(keccak256(Buffer.concat([prefix, message])))
 }

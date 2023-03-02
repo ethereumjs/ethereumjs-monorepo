@@ -15,9 +15,9 @@ export const assertIsHexString = function (input: string): void {
  * Throws if input is not a buffer
  * @param {Buffer} input value to check
  */
-export const assertIsBuffer = function (input: Buffer): void {
-  if (!Buffer.isBuffer(input)) {
-    const msg = `This method only supports Buffer but input was: ${input}`
+export const assertIsBytes = function (input: Uint8Array): void {
+  if (!(input instanceof Uint8Array)) {
+    const msg = `This method only supports Uint8Array but input was: ${input}`
     throw new Error(msg)
   }
 }

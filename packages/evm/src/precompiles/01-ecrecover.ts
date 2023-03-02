@@ -1,5 +1,5 @@
 import {
-  bufferToBigInt,
+  bytesToBigInt,
   ecrecover,
   publicToAddress,
   setLengthLeft,
@@ -33,7 +33,7 @@ export function precompile01(opts: PrecompileInput): ExecResult {
 
   const msgHash = data.slice(0, 32)
   const v = data.slice(32, 64)
-  const vBigInt = bufferToBigInt(v)
+  const vBigInt = bytesToBigInt(v)
 
   // Guard against util's `ecrecover`: without providing chainId this will return
   // a signature in most of the cases in the cases that `v=0` or `v=1`
@@ -60,7 +60,7 @@ export function precompile01(opts: PrecompileInput): ExecResult {
         )} r=${r.toString('hex')}s=${s.toString('hex')}}`
       )
     }
-    publicKey = ecrecover(msgHash, bufferToBigInt(v), r, s)
+    publicKey = ecrecover(msgHash, bytesToBigInt(v), r, s)
   } catch (e: any) {
     if (opts._debug) {
       opts._debug(`ECRECOVER (0x01) failed: PK recovery failed`)

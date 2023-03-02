@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
-import { Account, Address, bufferToHex } from '@ethereumjs/util'
+import { Account, Address, bytesToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -25,8 +25,8 @@ tape('EIP-2930 Optional Access Lists tests', (t) => {
   t.test('VM should charge the right gas when using access list transactions', async (st) => {
     const access = [
       {
-        address: bufferToHex(validAddress),
-        storageKeys: [bufferToHex(validSlot)],
+        address: bytesToHex(validAddress),
+        storageKeys: [bytesToHex(validSlot)],
       },
     ]
     const txnWithAccessList = AccessListEIP2930Transaction.fromTxData(
