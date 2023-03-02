@@ -3,6 +3,7 @@ import { FlowControl } from '../net/protocol/flowcontrol'
 
 import { Service } from './service'
 
+import type { LMDB } from '../blockchain'
 import type { Synchronizer } from '../sync'
 import type { ServiceOptions } from './service'
 import type { AbstractLevel } from 'abstract-level'
@@ -15,7 +16,7 @@ export interface EthereumServiceOptions extends ServiceOptions {
   chainDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
 
   /* State database */
-  stateDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  stateDB: LMDB
 
   /* Meta database (receipts, logs, indexes) */
   metaDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>

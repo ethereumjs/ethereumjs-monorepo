@@ -2,9 +2,10 @@ import { version as packageVersion } from '../package.json'
 
 import { Chain } from './blockchain'
 import { SyncMode } from './config'
-import { FullEthereumService, LightEthereumService } from './service'
+import { FullEthereumService } from './service'
 import { Event } from './types'
 
+import type { LMDB } from './blockchain'
 import type { Config } from './config'
 import type { MultiaddrLike } from './types'
 import type { Blockchain } from '@ethereumjs/blockchain'
@@ -31,7 +32,7 @@ export interface EthereumClientOptions {
    *
    * Default: Database created by the Trie class
    */
-  stateDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  stateDB: LMDB
 
   /**
    * Database to store tx receipts, logs, and indexes.
@@ -59,7 +60,7 @@ export interface EthereumClientOptions {
 export class EthereumClient {
   public config: Config
   public chain: Chain
-  public services: (FullEthereumService | LightEthereumService)[]
+  public services!: FullEthereumService[]
 
   public opened: boolean
   public started: boolean
@@ -92,7 +93,8 @@ export class EthereumClient {
           chain,
         }),
       ]
-    } else {
+    }
+    /* else {
       this.services = [
         new LightEthereumService({
           config: this.config,
@@ -100,7 +102,7 @@ export class EthereumClient {
           chain,
         }),
       ]
-    }
+    } */
 
     this.opened = false
     this.started = false

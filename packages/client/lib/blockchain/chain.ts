@@ -1,11 +1,59 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
+import * as lmdb from 'lmdb'
 
 import { Event } from '../types'
 
 import type { Config } from '../config'
+import type { BatchDBOp } from '@ethereumjs/trie'
 import type { AbstractLevel } from 'abstract-level'
+
+export class LMDB {
+  path: string
+  database: lmdb.RootDatabase
+
+  constructor(path: string) {
+    this.path = path
+    this.database = lmdb.open({
+      compression: true,
+      name: 'ethereumjs-client-state',
+      path,
+    })
+  }
+
+  async get(key: Buffer) {
+    return this.database.get(key)
+  }
+
+  async put(key: Buffer, val: Buffer) {
+    await this.database.put(key, val)
+  }
+
+  async del(key: Buffer) {
+    await this.database.remove(key)
+  }
+
+  async batch(opStack: BatchDBOp[]) {
+    for (const op of opStack) {
+      if (op.type === 'put') {
+        await this.put(op.key, op.value)
+      }
+
+      if (op.type === 'del') {
+        await this.del(op.key)
+      }
+    }
+  }
+
+  copy() {
+    return new LMDB(this.path)
+  }
+
+  async close() {
+    await this.database.close()
+  }
+}
 
 /**
  * The options that the Blockchain constructor can receive.

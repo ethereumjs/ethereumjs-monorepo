@@ -15,6 +15,7 @@ import { homedir } from 'os'
 import * as path from 'path'
 import * as readline from 'readline'
 
+import { LMDB } from '../lib/blockchain'
 import { EthereumClient } from '../lib/client'
 import { Config, DataDirectory, SyncMode } from '../lib/config'
 import { getLogger } from '../lib/logging'
@@ -307,7 +308,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
  */
 function initDBs(config: Config): {
   chainDB: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
-  stateDB: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  stateDB: LMDB
   metaDB: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
 } {
   // Chain DB
@@ -318,7 +319,7 @@ function initDBs(config: Config): {
   // State DB
   const stateDataDir = config.getDataDirectory(DataDirectory.State)
   ensureDirSync(stateDataDir)
-  const stateDB = new Level<string | Buffer, string | Buffer>(stateDataDir)
+  const stateDB = new LMDB(stateDataDir)
 
   // Meta DB (receipts, logs, indexes, skeleton chain)
   const metaDataDir = config.getDataDirectory(DataDirectory.Meta)

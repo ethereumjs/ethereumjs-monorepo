@@ -15,7 +15,6 @@ import { short } from '../util'
 import { debugCodeReplayBlock } from '../util/debug'
 
 import { Execution } from './execution'
-import { LevelDB } from './level'
 import { ReceiptsManager } from './receipt'
 
 import type { ExecutionOptions } from './execution'
@@ -42,7 +41,7 @@ export class VMExecution extends Execution {
 
     if (this.config.vm === undefined) {
       const trie = new Trie({
-        db: new LevelDB(this.stateDB),
+        db: this.stateDB,
         useKeyHashing: true,
       })
 
@@ -402,7 +401,7 @@ export class VMExecution extends Execution {
     // midway and we can safely close
     await this.runWithLock<void>(async () => {
       this.vmPromise = undefined
-      await this.stateDB?.close()
+      await this.stateDB.close()
     })
     return true
   }
