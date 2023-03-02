@@ -86,7 +86,8 @@
     {
       "name": "shanghai",
       "block": null,
-      "forkHash": null
+      "timestamp": "1678857936",
+      "forkHash": "0xaf163d6f"
     }
   ],
   "bootstrapNodes": [
