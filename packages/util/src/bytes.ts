@@ -1,4 +1,4 @@
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers'
 import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal'
@@ -10,6 +10,45 @@ import type {
   TransformableToArray,
   TransformabletoBuffer,
 } from './types'
+
+/****************  Borrowed from @chainsafe/ssz */
+// Caching this info costs about ~1000 bytes and speeds up toHexString() by x6
+const hexByByte = new Array<string>(256)
+
+export const bytesToPrefixedHexString = (bytes: Uint8Array): string => {
+  let hex = '0x'
+  for (const byte of bytes) {
+    if (!hexByByte[byte]) {
+      hexByByte[byte] = byte < 16 ? '0' + byte.toString(16) : byte.toString(16)
+    }
+    hex += hexByByte[byte]
+  }
+  return hex
+}
+
+export const hexStringToBytes = (hex: string): Uint8Array => {
+  if (typeof hex !== 'string') {
+    throw new Error(`hex argument type ${typeof hex} must be of type string`)
+  }
+
+  if (hex.startsWith('0x')) {
+    hex = hex.slice(2)
+  }
+
+  if (hex.length % 2 !== 0) {
+    throw new Error(`hex string length ${hex.length} must be multiple of 2`)
+  }
+
+  const byteLen = hex.length / 2
+  const bytes = new Uint8Array(byteLen)
+  for (let i = 0; i < byteLen; i++) {
+    const byte = parseInt(hex.slice(i * 2, (i + 1) * 2), 16)
+    bytes[i] = byte
+  }
+  return bytes
+}
+
+/******************************************/
 
 /**
  * Converts a `Number` into a hex `String`
@@ -149,7 +188,7 @@ export type ToBytesInputTypes =
 
 /**
  * Attempts to turn a value into a `Buffer`.
- * Inputs supported: `Buffer`, `String` (hex-prefixed), `Number`, null/undefined, `BigInt` and other objects
+ * Inputs supported: `Buffer`, `Uint8Array`, `String` (hex-prefixed), `Number`, null/undefined, `BigInt` and other objects
  * with a `toArray()` or `toBytes()` method.
  * @param v the value
  */
@@ -173,7 +212,7 @@ export const toBytes = function (v: ToBytesInputTypes): Uint8Array {
         `Cannot convert string to buffer. toBytes only supports 0x-prefixed hex strings and this string was given: ${v}`
       )
     }
-    return hexToBytes(v)
+    return hexStringToBytes(v)
   }
 
   if (typeof v === 'number') {
@@ -205,7 +244,7 @@ export const toBytes = function (v: ToBytesInputTypes): Uint8Array {
  * Converts a {@link Uint8Array} to a {@link bigint}
  */
 export function bytesToBigInt(bytes: Uint8Array) {
-  const hex = bytesToHex(bytes)
+  const hex = bytesToPrefixedHexString(bytes)
   if (hex === '0x') {
     return BigInt(0)
   }
@@ -216,7 +255,7 @@ export function bytesToBigInt(bytes: Uint8Array) {
  * Converts a {@link bigint} to a {@link Uint8Array}
  */
 export const bigIntToBytes = (num: bigint) => {
-  return toBytes('0x' + num.toString(16))
+  return toBytes('0x' + padToEven(num.toString(16)))
 }
 
 /**
@@ -340,19 +379,6 @@ export const validateNoLeadingZeroes = function (values: { [key: string]: Buffer
 }
 
 /**
- * Converts a {@link Uint8Array} or {@link NestedUint8Array} to {@link Buffer} or {@link NestedBufferArray}
- */
-export function arrToBufArr(arr: Uint8Array): Buffer
-export function arrToBufArr(arr: NestedUint8Array): NestedBufferArray
-export function arrToBufArr(arr: Uint8Array | NestedUint8Array): Buffer | NestedBufferArray
-export function arrToBufArr(arr: Uint8Array | NestedUint8Array): Buffer | NestedBufferArray {
-  if (!Array.isArray(arr)) {
-    return Buffer.from(arr)
-  }
-  return arr.map((a) => arrToBufArr(a))
-}
-
-/**
  * Converts a {@link Buffer} or {@link NestedBufferArray} to {@link Uint8Array} or {@link NestedUint8Array}
  */
 export function bufArrToArr(arr: Buffer): Uint8Array
@@ -377,7 +403,7 @@ export const bigIntToHex = (num: bigint) => {
  * (useful for RLP transport)
  * @param value value to convert
  */
-export function bigIntToUnpaddedBuffer(value: bigint): Uint8Array {
+export function bigIntToUnpaddedBytes(value: bigint): Uint8Array {
   return unpadBytes(bigIntToBytes(value))
 }
 
