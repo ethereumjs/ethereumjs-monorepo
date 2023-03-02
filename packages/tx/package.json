@@ -55,14 +55,17 @@
     "@ethereumjs/common": "^3.1.1",
     "@ethereumjs/rlp": "^4.0.1",
     "@ethereumjs/util": "^8.0.5",
-    "ethereum-cryptography": "^1.1.2",
-    "@ethersproject/providers": "^5.7.2"
+    "ethereum-cryptography": "^1.1.2"
   },
   "peerDependencies": {
-    "c-kzg": "^1.0.8"
+    "c-kzg": "^1.0.8",
+    "ethers": "^6.0.8"
   },
   "peerDependenciesMeta": {
     "c-kzg": {
+      "optional": true
+    },
+    "ethers": {
       "optional": true
     }
   },

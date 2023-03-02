@@ -45,7 +45,7 @@
     "@ethereumjs/rlp": "^4.0.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.1.2",
-    "ethers": "^5.7.1",
+    "ethers": "^6.0.8",
     "js-sdsl": "^4.1.4"
   },
   "devDependencies": {

@@ -71,7 +71,7 @@
     "rustbn.js": "~0.2.0"
   },
   "devDependencies": {
-    "@ethersproject/abi": "^5.0.12",
+    "ethers": "^6.0.8",
     "@types/benchmark": "^1.0.33",
     "@types/core-js": "^2.5.0",
     "@types/lru-cache": "^5.1.0",
