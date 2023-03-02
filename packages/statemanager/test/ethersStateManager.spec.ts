@@ -3,7 +3,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
 import { Address, bigIntToBuffer, setLengthLeft } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
-import { BaseProvider, JsonRpcProvider, StaticJsonRpcProvider } from '@ethersproject/providers'
+import { FallbackProvider, JsonRpcProvider } from 'ethers'
 import * as tape from 'tape'
 
 import { EthersStateManager } from '../src/ethersStateManager'
@@ -18,6 +18,7 @@ const isBrowser = new Function('try {return this===window;}catch(e){ return fals
 // `PROVIDER=https://mainnet.infura.io/v3/[mySuperS3cretproviderKey] npm run tape -- 'test/ethersStateManager.spec.ts'
 tape('Ethers State Manager initialization tests', (t) => {
   const provider = new MockProvider()
+
   let state = new EthersStateManager({ provider, blockTag: 1n })
   t.ok(
     state instanceof EthersStateManager,
@@ -31,7 +32,7 @@ tape('Ethers State Manager initialization tests', (t) => {
   state = new EthersStateManager({ provider: 'http://localhost:8545', blockTag: 1n })
   t.ok(state instanceof EthersStateManager, 'was able to instantiate state manager with valid url')
 
-  const invalidProvider = new BaseProvider('mainnet')
+  const invalidProvider = new FallbackProvider([], 'mainnet')
   t.throws(
     () => new EthersStateManager({ provider: invalidProvider as any, blockTag: 1n }),
     'cannot instantiate state manager with invalid provider'
@@ -46,7 +47,7 @@ tape('Ethers State Manager API tests', async (t) => {
   } else {
     const provider =
       process.env.PROVIDER !== undefined
-        ? new StaticJsonRpcProvider(process.env.PROVIDER, 1)
+        ? new JsonRpcProvider(process.env.PROVIDER, 1)
         : new MockProvider()
     const state = new EthersStateManager({ provider, blockTag: 1n })
     const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
@@ -175,7 +176,7 @@ tape('runTx custom transaction test', async (t) => {
     const common = new Common({ chain: Chain.Mainnet })
     const provider =
       process.env.PROVIDER !== undefined
-        ? new StaticJsonRpcProvider(process.env.PROVIDER, 1)
+        ? new JsonRpcProvider(process.env.PROVIDER, 1)
         : new MockProvider()
     const state = new EthersStateManager({ provider, blockTag: 1n })
     const vm = await VM.create({ common, stateManager: state })

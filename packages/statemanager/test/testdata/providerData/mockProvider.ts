@@ -1,4 +1,4 @@
-import { JsonRpcProvider } from '@ethersproject/providers'
+import { JsonRpcProvider } from 'ethers'
 
 export class MockProvider extends JsonRpcProvider {
   send = async (method: string, params: Array<any>) => {

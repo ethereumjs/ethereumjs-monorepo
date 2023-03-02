@@ -9,7 +9,7 @@ import {
 } from '@ethereumjs/util'
 import { debug } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { ethers } from 'ethers'
+import { JsonRpcProvider } from 'ethers'
 
 import { Cache } from './cache'
 
@@ -23,12 +23,12 @@ import type { Address } from '@ethereumjs/util'
 const log = debug('statemanager')
 
 export interface EthersStateManagerOpts {
-  provider: string | ethers.providers.StaticJsonRpcProvider | ethers.providers.JsonRpcProvider
+  provider: string | JsonRpcProvider
   blockTag: bigint | 'earliest'
 }
 
 export class EthersStateManager extends BaseStateManager implements StateManager {
-  private provider: ethers.providers.StaticJsonRpcProvider | ethers.providers.JsonRpcProvider
+  private provider: JsonRpcProvider
   private contractCache: Map<string, Buffer>
   private storageCache: Map<string, Map<string, Buffer>>
   private blockTag: string
@@ -37,8 +37,8 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   constructor(opts: EthersStateManagerOpts) {
     super({})
     if (typeof opts.provider === 'string') {
-      this.provider = new ethers.providers.StaticJsonRpcProvider(opts.provider)
-    } else if (opts.provider instanceof ethers.providers.JsonRpcProvider) {
+      this.provider = new JsonRpcProvider(opts.provider)
+    } else if (opts.provider instanceof JsonRpcProvider) {
       this.provider = opts.provider
     } else {
       throw new Error(`valid JsonRpcProvider or url required; got ${opts.provider}`)
@@ -141,11 +141,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     }
 
     // Retrieve storage slot from provider if not found in cache
-    storage = await this.provider.getStorageAt(
-      address.toString(),
-      bufferToBigInt(key),
-      this.blockTag
-    )
+    storage = await this.provider.getStorage(address.toString(), bufferToBigInt(key), this.blockTag)
     const value = toBuffer(storage)
 
     await this.putContractStorage(address, key, value)
