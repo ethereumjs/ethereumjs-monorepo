@@ -1,6 +1,6 @@
-import { ethers } from 'ethers'
+import { JsonRpcProvider } from 'ethers'
 
-export class MockProvider extends ethers.providers.JsonRpcProvider {
+export class MockProvider extends JsonRpcProvider {
   send = async (method: string, params: Array<any>) => {
     switch (method) {
       case 'eth_getBlockByHash':

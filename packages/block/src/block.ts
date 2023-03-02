@@ -14,7 +14,7 @@ import {
   ssz,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { ethers } from 'ethers'
+import { JsonRpcProvider } from 'ethers'
 
 import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
@@ -220,13 +220,12 @@ export class Block {
    * @returns the block specified by `blockTag`
    */
   public static fromEthersProvider = async (
-    provider: ethers.providers.JsonRpcProvider | string,
+    provider: JsonRpcProvider | string,
     blockTag: string | bigint,
     opts: BlockOptions
   ) => {
     let blockData
-    const prov =
-      typeof provider === 'string' ? new ethers.providers.JsonRpcProvider(provider) : provider
+    const prov = typeof provider === 'string' ? new JsonRpcProvider(provider) : provider
     if (typeof blockTag === 'string' && blockTag.length === 66) {
       blockData = await prov.send('eth_getBlockByHash', [blockTag, true])
     } else if (typeof blockTag === 'bigint') {
