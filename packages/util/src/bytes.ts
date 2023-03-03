@@ -1,4 +1,4 @@
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, bytesToUtf8, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers'
 import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal'
@@ -7,8 +7,7 @@ import type {
   NestedBufferArray,
   NestedUint8Array,
   PrefixedHexString,
-  TransformableToArray,
-  TransformabletoBuffer,
+  TransformabletoBytes,
 } from './types'
 
 /****************  Borrowed from @chainsafe/ssz */
@@ -76,63 +75,60 @@ export const intToBytes = function (i: number) {
  * Returns a buffer filled with 0s.
  * @param bytes the number of bytes the buffer should be
  */
-export const zeros = function (bytes: number): Buffer {
-  return Buffer.allocUnsafe(bytes).fill(0)
+export const zeros = function (bytes: number): Uint8Array {
+  return new Uint8Array(bytes).fill(0)
 }
 
 /**
- * Pads a `Buffer` with zeros till it has `length` bytes.
+ * Pads a `Uint8Array` with zeros till it has `length` bytes.
  * Truncates the beginning or end of input if its length exceeds `length`.
- * @param msg the value to pad (Buffer)
+ * @param msg the value to pad (Uint8Array)
  * @param length the number of bytes the output should be
  * @param right whether to start padding form the left or right
  * @return (Buffer)
  */
-const setLength = function (msg: Buffer, length: number, right: boolean) {
-  const buf = zeros(length)
+const setLength = function (msg: Uint8Array, length: number, right: boolean) {
   if (right) {
     if (msg.length < length) {
-      msg.copy(buf)
-      return buf
+      return new Uint8Array([...msg, ...zeros(length - msg.length)])
     }
     return msg.slice(0, length)
   } else {
     if (msg.length < length) {
-      msg.copy(buf, length - msg.length)
-      return buf
+      return new Uint8Array([...zeros(length - msg.length), ...msg])
     }
     return msg.slice(-length)
   }
 }
 
 /**
- * Left Pads a `Buffer` with leading zeros till it has `length` bytes.
+ * Left Pads a `Uint8Array` with leading zeros till it has `length` bytes.
  * Or it truncates the beginning if it exceeds.
  * @param msg the value to pad (Buffer)
  * @param length the number of bytes the output should be
- * @return (Buffer)
+ * @return (Uint8Array)
  */
-export const setLengthLeft = function (msg: Buffer, length: number) {
+export const setLengthLeft = function (msg: Uint8Array, length: number) {
   assertIsBytes(msg)
   return setLength(msg, length, false)
 }
 
 /**
- * Right Pads a `Buffer` with trailing zeros till it has `length` bytes.
+ * Right Pads a `Uint8Array` with trailing zeros till it has `length` bytes.
  * it truncates the end if it exceeds.
- * @param msg the value to pad (Buffer)
+ * @param msg the value to pad (Uint8Array)
  * @param length the number of bytes the output should be
- * @return (Buffer)
+ * @return (Uint8Array)
  */
-export const setLengthRight = function (msg: Buffer, length: number) {
+export const setLengthRight = function (msg: Uint8Array, length: number) {
   assertIsBytes(msg)
   return setLength(msg, length, true)
 }
 
 /**
  * Trims leading zeros from a `Uint8Array`, `String` or `Number[]`.
- * @param a (Buffer|Array|String)
- * @return (Buffer|Array|String)
+ * @param a (Uint8Array|Array|String)
+ * @return (Uint8Array|Array|String)
  */
 const stripZeros = function (a: any): Uint8Array | number[] | string {
   let first = a[0]
@@ -144,9 +140,9 @@ const stripZeros = function (a: any): Uint8Array | number[] | string {
 }
 
 /**
- * Trims leading zeros from a `Buffer`.
- * @param a (Buffer)
- * @return (Buffer)
+ * Trims leading zeros from a `Uint8Array`.
+ * @param a (Uint8Array)
+ * @return (Uint8Array)
  */
 export const unpadBytes = function (a: Uint8Array): Uint8Array {
   assertIsBytes(a)
@@ -181,13 +177,12 @@ export type ToBytesInputTypes =
   | Buffer
   | Uint8Array
   | number[]
-  | TransformableToArray
-  | TransformabletoBuffer
+  | TransformabletoBytes
   | null
   | undefined
 
 /**
- * Attempts to turn a value into a `Buffer`.
+ * Attempts to turn a value into a `Uint8Array`.
  * Inputs supported: `Buffer`, `Uint8Array`, `String` (hex-prefixed), `Number`, null/undefined, `BigInt` and other objects
  * with a `toArray()` or `toBytes()` method.
  * @param v the value
@@ -209,10 +204,10 @@ export const toBytes = function (v: ToBytesInputTypes): Uint8Array {
   if (typeof v === 'string') {
     if (!isHexString(v)) {
       throw new Error(
-        `Cannot convert string to buffer. toBytes only supports 0x-prefixed hex strings and this string was given: ${v}`
+        `Cannot convert string to Uint8Array. toBytes only supports 0x-prefixed hex strings and this string was given: ${v}`
       )
     }
-    return hexStringToBytes(v)
+    return hexToBytes(padToEven(v.slice(2)))
   }
 
   if (typeof v === 'number') {
@@ -221,20 +216,16 @@ export const toBytes = function (v: ToBytesInputTypes): Uint8Array {
 
   if (typeof v === 'bigint') {
     if (v < BigInt(0)) {
-      throw new Error(`Cannot convert negative bigint to buffer. Given: ${v}`)
+      throw new Error(`Cannot convert negative bigint to Uint8Array. Given: ${v}`)
     }
     let n = v.toString(16)
     if (n.length % 2) n = '0' + n
-    return Buffer.from(n, 'hex')
+    return hexToBytes(n)
   }
 
-  if (v.toArray !== undefined) {
-    // converts a BN to a Uint8Array
-    return v.toArray()
-  }
-
-  if (v.toBuffer !== undefined) {
-    return Uint8Array.from(v.toBuffer())
+  if (v.toBytes !== undefined) {
+    // converts a `TransformableToBytes` object to a Uint8Array
+    return v.toBytes()
   }
 
   throw new Error('invalid type')
@@ -297,19 +288,19 @@ export const addHexPrefix = function (str: string): string {
 }
 
 /**
- * Shortens a string  or buffer's hex string representation to maxLength (default 50).
+ * Shortens a string  or Uint8Array's hex string representation to maxLength (default 50).
  *
  * Examples:
  *
  * Input:  '657468657265756d000000000000000000000000000000000000000000000000'
  * Output: '657468657265756d0000000000000000000000000000000000…'
  */
-export function short(buffer: Buffer | string, maxLength: number = 50): string {
-  const bufferStr = Buffer.isBuffer(buffer) ? buffer.toString('hex') : buffer
-  if (bufferStr.length <= maxLength) {
-    return bufferStr
+export function short(bytes: Uint8Array | string, maxLength: number = 50): string {
+  const byteStr = bytes instanceof Uint8Array ? bytesToHex(bytes) : bytes
+  if (byteStr.length <= maxLength) {
+    return byteStr
   }
-  return bufferStr.slice(0, maxLength) + '…'
+  return byteStr.slice(0, maxLength) + '…'
 }
 
 /**
@@ -335,19 +326,19 @@ export const toUtf8 = function (hex: string): string {
   if (hex.length % 2 !== 0) {
     throw new Error('Invalid non-even hex string input for toUtf8() provided')
   }
-  const bufferVal = Buffer.from(hex.replace(zerosRegexp, ''), 'hex')
+  const bytesVal = hexToBytes(hex.replace(zerosRegexp, ''))
 
-  return bufferVal.toString('utf8')
+  return bytesToUtf8(bytesVal)
 }
 
 /**
- * Converts a `Buffer` or `Array` to JSON.
- * @param ba (Buffer|Array)
- * @return (Array|String|null)
+ * Converts a `Uint8Array` or `Array` to JSON.
+ * @param ba (Uint8Array|Array)
+ * @return (Uint8Array|String|null)
  */
 export const baToJSON = function (ba: any): any {
-  if (Buffer.isBuffer(ba)) {
-    return `0x${ba.toString('hex')}`
+  if (ba instanceof Uint8Array) {
+    return bytesToPrefixedHexString(ba)
   } else if (ba instanceof Array) {
     const array = []
     for (let i = 0; i < ba.length; i++) {
@@ -358,7 +349,7 @@ export const baToJSON = function (ba: any): any {
 }
 
 /**
- * Checks provided Buffers for leading zeroes and throws if found.
+ * Checks provided Uint8Array for leading zeroes and throws if found.
  *
  * Examples:
  *
@@ -370,10 +361,12 @@ export const baToJSON = function (ba: any): any {
  * @param values An object containing string keys and Buffer values
  * @throws if any provided value is found to have leading zero bytes
  */
-export const validateNoLeadingZeroes = function (values: { [key: string]: Buffer | undefined }) {
+export const validateNoLeadingZeroes = function (values: {
+  [key: string]: Uint8Array | undefined
+}) {
   for (const [k, v] of Object.entries(values)) {
     if (v !== undefined && v.length > 0 && v[0] === 0) {
-      throw new Error(`${k} cannot have leading zeroes, received: ${v.toString('hex')}`)
+      throw new Error(`${k} cannot have leading zeroes, received: ${bytesToHex(v)}`)
     }
   }
 }

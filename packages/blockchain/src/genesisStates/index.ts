@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { Account, isHexPrefixed, toBytes, unpadBuffer } from '@ethereumjs/util'
+import { Account, isHexPrefixed, toBytes, unpadBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -42,7 +42,7 @@ export async function genesisStateRoot(genesisState: GenesisState) {
           const storageVal = Buffer.from(
             RLP.encode(
               Uint8Array.from(
-                unpadBuffer(isHexPrefixed(val) ? toBytes(val) : Buffer.from(val, 'hex'))
+                unpadBytes(isHexPrefixed(val) ? toBytes(val) : Buffer.from(val, 'hex'))
               )
             )
           )

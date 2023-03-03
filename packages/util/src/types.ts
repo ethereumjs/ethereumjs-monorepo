@@ -20,8 +20,7 @@ export type BytesLike =
   | number[]
   | number
   | bigint
-  | TransformabletoBuffer
-  | TransformableToArray
+  | TransformabletoBytes
   | PrefixedHexString
 
 /*
@@ -34,20 +33,8 @@ export type PrefixedHexString = string
  */
 export type AddressLike = Address | Uint8Array | PrefixedHexString
 
-/*
- * A type that represents an object that has a `toArray()` method.
- */
-export interface TransformableToArray {
-  toArray(): Uint8Array
-  toBuffer?(): Buffer
-}
-
-/*
- * A type that represents an object that has a `toBuffer()` method.
- */
-export interface TransformabletoBuffer {
-  toBuffer(): Buffer
-  toArray?(): Uint8Array
+export interface TransformabletoBytes {
+  toBytes?(): Uint8Array
 }
 
 export type NestedUint8Array = Array<Uint8Array | NestedUint8Array>

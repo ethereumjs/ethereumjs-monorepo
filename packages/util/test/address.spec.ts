@@ -1,6 +1,7 @@
+import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
-import { Address, toBytes } from '../src'
+import { Address, hexStringToBytes, toBytes } from '../src'
 
 const eip1014Testdata = require('./testdata/eip1014Examples.json')
 
@@ -19,7 +20,7 @@ tape('Address', (t) => {
 
   t.test('should generate a zero address', (st) => {
     const addr = Address.zero()
-    st.deepEqual(addr.buf, toBytes(ZERO_ADDR_S))
+    st.deepEqual(addr.bytes, toBytes(ZERO_ADDR_S))
     st.equal(addr.toString(), ZERO_ADDR_S)
     st.end()
   })
@@ -39,9 +40,8 @@ tape('Address', (t) => {
   })
 
   t.test('should instantiate from public key', (st) => {
-    const pubKey = Buffer.from(
-      '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
-      'hex'
+    const pubKey = hexToBytes(
+      '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
     )
     const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
     const addr = Address.fromPublicKey(pubKey)
@@ -50,9 +50,8 @@ tape('Address', (t) => {
   })
 
   t.test('should fail to instantiate from invalid public key', (st) => {
-    const pubKey = Buffer.from(
-      '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744',
-      'hex'
+    const pubKey = hexToBytes(
+      '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744'
     )
     st.throws(() => Address.fromPublicKey(pubKey))
     st.end()
@@ -95,11 +94,11 @@ tape('Address', (t) => {
     st.end()
   })
 
-  t.test('should provide a buffer that does not mutate the original address', (st) => {
+  t.test('should provide a Uint8Array that does not mutate the original address', (st) => {
     const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
     const address = Address.fromString(str)
-    const addressBuf = address.toBytes()
-    addressBuf.fill(0)
+    const addressBytes = address.toBytes()
+    addressBytes.fill(0)
     st.equal(address.toString(), str)
     st.end()
   })
@@ -107,9 +106,9 @@ tape('Address', (t) => {
   t.test('should compare equality properly', (st) => {
     const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
     const address1 = Address.fromString(str)
-    const address2 = new Address(Buffer.from(str.slice(2), 'hex'))
+    const address2 = new Address(hexStringToBytes(str))
     st.ok(address1.equals(address2))
-    st.ok(address1.buf.equals(address2.buf))
+    st.ok(equalsBytes(address1.bytes, address2.bytes))
 
     const str2 = '0xcd4EC7b66fbc029C116BA9Ffb3e59351c20B5B06'
     const address3 = Address.fromString(str2)

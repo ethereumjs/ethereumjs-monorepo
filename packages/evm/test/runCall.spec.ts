@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Account, Address, MAX_UINT64, padToEven, unpadBuffer } from '@ethereumjs/util'
+import { Account, Address, MAX_UINT64, padToEven, unpadBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
@@ -596,7 +596,7 @@ tape('runCall() => use DATAHASH opcode from EIP 4844', async (t) => {
   }
   const res = await evm.runCall(runCallArgs)
   t.equal(
-    unpadBuffer(res.execResult.returnValue).toString('hex'),
+    unpadBytes(res.execResult.returnValue).toString('hex'),
     'ab',
     'retrieved correct versionedHash from runState'
   )
@@ -610,7 +610,7 @@ tape('runCall() => use DATAHASH opcode from EIP 4844', async (t) => {
   }
   const res2 = await evm.runCall(runCall2Args)
   t.equal(
-    unpadBuffer(res2.execResult.returnValue).toString('hex'),
+    unpadBytes(res2.execResult.returnValue).toString('hex'),
     '',
     'retrieved no versionedHash when specified versionedHash does not exist in runState'
   )

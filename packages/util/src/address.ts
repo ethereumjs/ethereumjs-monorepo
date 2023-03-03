@@ -1,4 +1,4 @@
-import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
+import { equalsBytes } from 'ethereum-cryptography/utils'
 
 import {
   generateAddress,
@@ -7,7 +7,7 @@ import {
   privateToAddress,
   pubToAddress,
 } from './account'
-import { bigIntToBytes, bytesToBigInt, toBytes, zeros } from './bytes'
+import { bigIntToBytes, bytesToBigInt, bytesToPrefixedHexString, toBytes, zeros } from './bytes'
 
 /**
  * Handling and generating Ethereum addresses
@@ -44,24 +44,24 @@ export class Address {
    * Returns an address for a given public key.
    * @param pubKey The two points of an uncompressed key
    */
-  static fromPublicKey(pubKey: Buffer): Address {
-    if (!Buffer.isBuffer(pubKey)) {
-      throw new Error('Public key should be Buffer')
+  static fromPublicKey(pubKey: Uint8Array): Address {
+    if (!(pubKey instanceof Uint8Array)) {
+      throw new Error('Public key should be Uint8Array')
     }
-    const buf = pubToAddress(pubKey)
-    return new Address(buf)
+    const bytes = pubToAddress(pubKey)
+    return new Address(bytes)
   }
 
   /**
    * Returns an address for a given private key.
    * @param privateKey A private key must be 256 bits wide
    */
-  static fromPrivateKey(privateKey: Buffer): Address {
-    if (!Buffer.isBuffer(privateKey)) {
-      throw new Error('Private key should be Buffer')
+  static fromPrivateKey(privateKey: Uint8Array): Address {
+    if (!(privateKey instanceof Uint8Array)) {
+      throw new Error('Private key should be Uint8Array')
     }
-    const buf = privateToAddress(privateKey)
-    return new Address(buf)
+    const bytes = privateToAddress(privateKey)
+    return new Address(bytes)
   }
 
   /**
@@ -82,12 +82,12 @@ export class Address {
    * @param salt A salt
    * @param initCode The init code of the contract being created
    */
-  static generate2(from: Address, salt: Buffer, initCode: Buffer): Address {
-    if (!Buffer.isBuffer(salt)) {
-      throw new Error('Expected salt to be a Buffer')
+  static generate2(from: Address, salt: Uint8Array, initCode: Uint8Array): Address {
+    if (!(salt instanceof Uint8Array)) {
+      throw new Error('Expected salt to be a Uint8Array')
     }
-    if (!Buffer.isBuffer(initCode)) {
-      throw new Error('Expected initCode to be a Buffer')
+    if (!(initCode instanceof Uint8Array)) {
+      throw new Error('Expected initCode to be a Uint8Array')
     }
     return new Address(generateAddress2(from.bytes, salt, initCode))
   }
@@ -121,13 +121,13 @@ export class Address {
    * Returns hex encoding of address.
    */
   toString(): string {
-    return bytesToHex(this.bytes)
+    return bytesToPrefixedHexString(this.bytes)
   }
 
   /**
-   * Returns Buffer representation of address.
+   * Returns a new Uint8Array representation of address.
    */
-  toBytes(): Buffer {
-    return Buffer.from(this.bytes)
+  toBytes(): Uint8Array {
+    return new Uint8Array(this.bytes)
   }
 }

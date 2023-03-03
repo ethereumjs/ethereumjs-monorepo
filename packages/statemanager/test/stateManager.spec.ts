@@ -4,7 +4,7 @@ import {
   KECCAK256_RLP,
   KECCAK256_RLP_S,
   toBytes,
-  unpadBuffer,
+  unpadBytes,
   zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -466,14 +466,14 @@ tape('StateManager - Contract storage', (tester) => {
 
     const key0 = zeros(32)
     const value0 = Buffer.from('00' + 'aa'.repeat(30), 'hex') // put a value of 31-bytes length with a leading zero byte
-    const expect0 = unpadBuffer(value0)
+    const expect0 = unpadBytes(value0)
     await stateManager.putContractStorage(address, key0, value0)
     const slot0 = await stateManager.getContractStorage(address, key0)
     t.ok(slot0.equals(expect0), 'value of 31 bytes padded correctly')
 
     const key1 = Buffer.concat([zeros(31), Buffer.from('01', 'hex')])
     const value1 = Buffer.from('0000' + 'aa'.repeat(1), 'hex') // put a value of 1-byte length with two leading zero bytes
-    const expect1 = unpadBuffer(value1)
+    const expect1 = unpadBytes(value1)
     await stateManager.putContractStorage(address, key1, value1)
     const slot1 = await stateManager.getContractStorage(address, key1)
 

@@ -9,7 +9,7 @@ import {
   setLengthLeft,
   short,
   toBytes,
-  unpadBuffer,
+  unpadBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
@@ -259,7 +259,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       throw new Error('Storage value cannot be longer than 32 bytes')
     }
 
-    value = unpadBuffer(value)
+    value = unpadBytes(value)
 
     await this._modifyContractStorage(address, async (storageTrie, done) => {
       if (Buffer.isBuffer(value) && value.length) {
@@ -380,11 +380,11 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       // Verify that the account is empty in the proof.
       const emptyBuffer = Buffer.from('')
       const notEmptyErrorMsg = 'Invalid proof provided: account is not empty'
-      const nonce = unpadBuffer(toBytes(proof.nonce))
+      const nonce = unpadBytes(toBytes(proof.nonce))
       if (!nonce.equals(emptyBuffer)) {
         throw new Error(`${notEmptyErrorMsg} (nonce is not zero)`)
       }
-      const balance = unpadBuffer(toBytes(proof.balance))
+      const balance = unpadBytes(toBytes(proof.balance))
       if (!balance.equals(emptyBuffer)) {
         throw new Error(`${notEmptyErrorMsg} (balance is not zero)`)
       }

@@ -9,10 +9,16 @@ import {
   utf8ToBytes,
 } from 'ethereum-cryptography/utils'
 
-import { bigIntToUnpaddedBytes, bufArrToArr, bytesToBigInt, toBytes, zeros } from './bytes'
+import {
+  bigIntToUnpaddedBytes,
+  bytesToBigInt,
+  bytesToPrefixedHexString,
+  toBytes,
+  zeros,
+} from './bytes'
 import { KECCAK256_NULL, KECCAK256_RLP } from './constants'
 import { assertIsBytes, assertIsHexString, assertIsString } from './helpers'
-import { padToEven, stripHexPrefix } from './internal'
+import { stripHexPrefix } from './internal'
 
 import type { BigIntLike, BytesLike } from './types'
 
@@ -327,7 +333,7 @@ export const importPublic = function (publicKey: Uint8Array): Uint8Array {
 export const zeroAddress = function (): string {
   const addressLength = 20
   const addr = zeros(addressLength)
-  return bytesToHex(addr)
+  return bytesToPrefixedHexString(addr)
 }
 
 /**

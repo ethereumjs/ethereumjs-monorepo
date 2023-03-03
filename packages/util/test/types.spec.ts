@@ -5,7 +5,6 @@ import {
   bigIntToBytes,
   bigIntToHex,
   bytesToBigInt,
-  bytesToHex,
   intToBytes,
   intToHex,
   toBytes,
@@ -16,11 +15,11 @@ tape('toType', function (t) {
   t.test('from null and undefined', function (st) {
     st.equal(toType(null, TypeOutput.Number), null)
     st.equal(toType(null, TypeOutput.BigInt), null)
-    st.equal(toType(null, TypeOutput.Buffer), null)
+    st.equal(toType(null, TypeOutput.Uint8Array), null)
     st.equal(toType(null, TypeOutput.PrefixedHexString), null)
     st.equal(toType(undefined, TypeOutput.Number), undefined)
     st.equal(toType(undefined, TypeOutput.BigInt), undefined)
-    st.equal(toType(undefined, TypeOutput.Buffer), undefined)
+    st.equal(toType(undefined, TypeOutput.Uint8Array), undefined)
     st.equal(toType(undefined, TypeOutput.PrefixedHexString), undefined)
     st.end()
   })

@@ -1,21 +1,21 @@
+import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import {
   Address,
   addHexPrefix,
-  arrToBufArr,
   baToJSON,
   bigIntToBytes,
   bigIntToHex,
-  bigIntToUnpaddedBuffer,
+  bigIntToUnpaddedBytes,
   bufArrToArr,
   bytesToBigInt,
-  bytesToHex,
   bytesToInt,
+  bytesToPrefixedHexString,
   fromSigned,
   intToBytes,
   intToHex,
-  intToUnpaddedBuffer,
+  intToUnpaddedBytes,
   isZeroAddress,
   setLengthLeft,
   setLengthRight,
@@ -24,7 +24,7 @@ import {
   toUnsigned,
   toUtf8,
   unpadArray,
-  unpadBuffer,
+  unpadBytes,
   unpadHexString,
   validateNoLeadingZeroes,
   zeroAddress,
@@ -35,7 +35,7 @@ tape('zeros function', function (t) {
   t.test('should produce lots of 0s', function (st) {
     const z60 = zeros(30)
     const zs60 = '000000000000000000000000000000000000000000000000000000000000'
-    st.equal(z60.toString('hex'), zs60)
+    st.equal(bytesToHex(z60), zs60)
     st.end()
   })
 })
@@ -65,16 +65,16 @@ tape('is zero address', function (t) {
   })
 })
 
-tape('unpadBuffer', function (t) {
-  t.test('should unpad a Buffer', function (st) {
-    const buf = toBytes('0x0000000006600')
-    const r = unpadBuffer(buf)
-    st.ok(r.equals(toBytes('0x6600')))
+tape('unpadBytes', function (t) {
+  t.test('should unpad a Uint8Array', function (st) {
+    const bytes = toBytes('0x0000000006600')
+    const r = unpadBytes(bytes)
+    st.deepEquals(r, toBytes('0x6600'))
     st.end()
   })
-  t.test('should throw if input is not a Buffer', function (st) {
+  t.test('should throw if input is not a Uint8Array', function (st) {
     st.throws(function () {
-      unpadBuffer((<unknown>'0000000006600') as Buffer)
+      unpadBytes((<unknown>'0000000006600') as Uint8Array)
     })
     st.end()
   })
@@ -111,19 +111,19 @@ tape('unpadHexString', function (t) {
 })
 
 tape('setLengthLeft', function (t) {
-  t.test('should left pad a Buffer', function (st) {
-    const buf = Buffer.from([9, 9])
-    const padded = setLengthLeft(buf, 3)
-    st.equal(padded.toString('hex'), '000909')
+  t.test('should left pad a Uint8Array', function (st) {
+    const bytes = new Uint8Array([9, 9])
+    const padded = setLengthLeft(bytes, 3)
+    st.equal(bytesToHex(padded), '000909')
     st.end()
   })
-  t.test('should left truncate a Buffer', function (st) {
-    const buf = Buffer.from([9, 0, 9])
-    const padded = setLengthLeft(buf, 2)
-    st.equal(padded.toString('hex'), '0009')
+  t.test('should left truncate a Uint8Array', function (st) {
+    const bytes = new Uint8Array([9, 0, 9])
+    const padded = setLengthLeft(bytes, 2)
+    st.equal(bytesToHex(padded), '0009')
     st.end()
   })
-  t.test('should throw if input is not a Buffer', function (st) {
+  t.test('should throw if input is not a Uint8Array', function (st) {
     st.throws(function () {
       setLengthLeft((<unknown>[9, 9]) as Buffer, 3)
     })
@@ -132,36 +132,36 @@ tape('setLengthLeft', function (t) {
 })
 
 tape('setLengthRight', function (t) {
-  t.test('should right pad a Buffer', function (st) {
-    const buf = Buffer.from([9, 9])
-    const padded = setLengthRight(buf, 3)
-    st.equal(padded.toString('hex'), '090900')
+  t.test('should right pad a Uint8Array', function (st) {
+    const bytes = new Uint8Array([9, 9])
+    const padded = setLengthRight(bytes, 3)
+    st.equal(bytesToHex(padded), '090900')
     st.end()
   })
-  t.test('should right truncate a Buffer', function (st) {
-    const buf = Buffer.from([9, 0, 9])
-    const padded = setLengthRight(buf, 2)
-    st.equal(padded.toString('hex'), '0900')
+  t.test('should right truncate a Uint8Array', function (st) {
+    const bytes = new Uint8Array([9, 0, 9])
+    const padded = setLengthRight(bytes, 2)
+    st.equal(bytesToHex(padded), '0900')
     st.end()
   })
-  t.test('should throw if input is not a Buffer', function (st) {
+  t.test('should throw if input is not a Uint8Array', function (st) {
     st.throws(function () {
-      setLengthRight((<unknown>[9, 9]) as Buffer, 3)
+      setLengthRight((<unknown>[9, 9]) as Uint8Array, 3)
     })
     st.end()
   })
 })
 
-tape('bytesToHex', function (t) {
-  t.test('should convert a buffer to hex', function (st) {
-    const buf = Buffer.from('5b9ac8', 'hex')
-    const hex = bytesToHex(buf)
+tape('bytesToPrefixedHexString', function (t) {
+  t.test('should convert a Uint8Array to a prefixed hex string', function (st) {
+    const bytes = hexToBytes('5b9ac8')
+    const hex = bytesToPrefixedHexString(bytes)
     st.equal(hex, '0x5b9ac8')
     st.end()
   })
-  t.test('empty buffer', function (st) {
-    const buf = Buffer.alloc(0)
-    const hex = bytesToHex(buf)
+  t.test('empty Uint8Array', function (st) {
+    const bytes = new Uint8Array()
+    const hex = bytesToPrefixedHexString(bytes)
     st.strictEqual(hex, '0x')
     st.end()
   })
@@ -169,33 +169,33 @@ tape('bytesToHex', function (t) {
 
 tape('bytesToInt', function (t) {
   t.test('should convert an int to hex', function (st) {
-    const buf = Buffer.from('5b9ac8', 'hex')
-    const i = bytesToInt(buf)
+    const bytes = hexToBytes('5b9ac8')
+    const i = bytesToInt(bytes)
     st.equal(i, 6003400)
-    st.equal(bytesToInt(Buffer.allocUnsafe(0)), 0)
+    st.equal(bytesToInt(new Uint8Array()), 0)
     st.end()
   })
   t.test('should convert empty input to 0', function (st) {
-    st.equal(bytesToInt(Buffer.allocUnsafe(0)), 0)
+    st.equal(bytesToInt(new Uint8Array()), 0)
     st.end()
   })
 })
 
 tape('fromSigned', function (t) {
-  t.test('should convert an unsigned (negative) buffer to a signed number', function (st) {
+  t.test('should convert an unsigned (negative) Uint8Array to a signed number', function (st) {
     const neg = '-452312848583266388373324160190187140051835877600158453279131187530910662656'
-    const buf = Buffer.allocUnsafe(32).fill(0)
-    buf[0] = 255
+    const bytes = zeros(32)
+    bytes[0] = 255
 
-    st.equal(fromSigned(buf).toString(), neg)
+    st.equal(fromSigned(bytes).toString(), neg)
     st.end()
   })
-  t.test('should convert an unsigned (positive) buffer to a signed number', function (st) {
+  t.test('should convert an unsigned (positive) Uint8Array to a signed number', function (st) {
     const neg = '452312848583266388373324160190187140051835877600158453279131187530910662656'
-    const buf = Buffer.allocUnsafe(32).fill(0)
-    buf[0] = 1
+    const bytes = zeros(32)
+    bytes[0] = 1
 
-    st.equal(fromSigned(buf).toString(), neg)
+    st.equal(fromSigned(bytes).toString(), neg)
     st.end()
   })
 })
@@ -206,7 +206,7 @@ tape('toUnsigned', function (t) {
     const hex = 'ff00000000000000000000000000000000000000000000000000000000000000'
     const num = BigInt(neg)
 
-    st.equal(toUnsigned(num).toString('hex'), hex)
+    st.equal(bytesToHex(toUnsigned(num)), hex)
     st.end()
   })
 
@@ -215,7 +215,7 @@ tape('toUnsigned', function (t) {
     const hex = '0100000000000000000000000000000000000000000000000000000000000000'
     const num = BigInt(neg)
 
-    st.equal(toUnsigned(num).toString('hex'), hex)
+    st.equal(bytesToHex(toUnsigned(num)), hex)
     st.end()
   })
 })
@@ -241,22 +241,22 @@ tape('short', function (t) {
     st.end()
   })
   t.test('should short buffer', function (st) {
-    st.equal(short(Buffer.from(string, 'hex')), shortened)
+    st.equal(short(hexToBytes(string)), shortened)
     st.end()
   })
   t.test('should short buffer to 10 chars', function (st) {
-    st.equal(short(Buffer.from(string, 'hex'), 10), shortenedToTen)
+    st.equal(short(hexToBytes(string), 10), shortenedToTen)
     st.end()
   })
 })
 
 tape('toUtf8', function (t) {
   t.test('toUtf8', (st) => {
-    let input = Buffer.from('hello').toString('hex') // '68656c6c6f'
+    let input = bytesToHex(utf8ToBytes('hello')) // '68656c6c6f'
     st.equal(toUtf8(input), 'hello', 'should convert a non-hex-prefixed value')
     st.equal(toUtf8(`0x${input}`), 'hello', 'should convert a hex-prefixed value')
 
-    input = Buffer.from('bip').toString('hex') // '626970'
+    input = bytesToHex(utf8ToBytes('bip')) // '626970'
     st.equal(toUtf8(input), 'bip', 'should handle trailing single 0s correctly')
 
     input = '657468657265756d000000000000000000000000000000000000000000000000'
@@ -276,28 +276,29 @@ tape('toUtf8', function (t) {
 tape('toBytes', function (t) {
   t.test('should work', function (st) {
     // Buffer
-    st.ok(toBytes(Buffer.allocUnsafe(0)).equals(Buffer.allocUnsafe(0)))
+    st.ok(equalsBytes(toBytes(Buffer.allocUnsafe(0)), new Uint8Array()))
     // Array
-    st.ok(toBytes([]).equals(Buffer.allocUnsafe(0)))
+    st.ok(equalsBytes(toBytes([]), new Uint8Array()))
     // String
-    st.ok(toBytes('0x11').equals(Buffer.from([17])))
-    st.equal(toBytes('0x1234').toString('hex'), '1234')
-    st.ok(toBytes('0x').equals(Buffer.from([])))
+    st.ok(equalsBytes(toBytes('0x11'), Uint8Array.from([17])))
+    st.equal(bytesToHex(toBytes('0x1234')), '1234')
+    st.ok(equalsBytes(toBytes('0x'), Uint8Array.from([])))
     // Number
-    st.ok(toBytes(1).equals(Buffer.from([1])))
+    st.ok(equalsBytes(toBytes(1), Uint8Array.from([1])))
     // null
-    st.ok(toBytes(null).equals(Buffer.allocUnsafe(0)))
+    st.ok(equalsBytes(toBytes(null), new Uint8Array(0)))
     // undefined
-    st.ok(toBytes(undefined).equals(Buffer.allocUnsafe(0)))
+    st.deepEquals(toBytes(undefined), new Uint8Array(0))
     // BigInt
-    st.ok(toBytes(BigInt(1)).equals(Buffer.from([1])))
+    st.deepEquals(toBytes(BigInt(1)), Uint8Array.from([1]))
     // 'toArray'
-    st.ok(
+    st.deepEquals(
       toBytes({
-        toArray(): any {
-          return [1]
+        toBytes(): any {
+          return Uint8Array.from([1])
         },
-      }).equals(Buffer.from([1]))
+      }),
+      Uint8Array.from([1])
     )
     st.end()
   })
@@ -323,8 +324,8 @@ tape('toBytes', function (t) {
     function (st) {
       const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
       const address = Address.fromString(str)
-      const addressBuf = toBytes(address)
-      st.ok(addressBuf.equals(address.toBytes()))
+      const addressBytes = toBytes(address)
+      st.deepEquals(addressBytes, address.toBytes())
       st.end()
     }
   )
@@ -357,8 +358,8 @@ tape('intToBytes', function (st) {
   st.throws(() => intToBytes(<any>[]), 'throws on arrays')
   st.throws(() => intToBytes(<any>(() => {})), 'throws on arrays')
   st.throws(() => intToBytes(Number.MAX_SAFE_INTEGER + 1), 'throws on unsafe integers')
-  st.ok(intToBytes(0).equals(Buffer.from('00', 'hex')), 'correctly converts 0 to a buffer')
-  st.ok(intToBytes(1).equals(Buffer.from('01', 'hex')), 'correctly converts 1 to a buffer')
+  st.deepEquals(intToBytes(0), hexToBytes('00'), 'correctly converts 0 to a Uint8Array')
+  st.deepEquals(intToBytes(1), hexToBytes('01'), 'correctly converts 1 to a Uint8Array')
   st.end()
 })
 
@@ -424,28 +425,6 @@ tape('validateNoLeadingZeroes', function (st) {
   st.end()
 })
 
-tape('arrToBufArr', function (st) {
-  const uint8 = Uint8Array.from([0, 1, 2])
-  const uint8Arr = [
-    Uint8Array.from([1, 2, 3]),
-    Uint8Array.from([4, 5, 6]),
-    [Uint8Array.from([7, 8, 9]), Uint8Array.from([1, 0, 0]), [Uint8Array.from([1, 1, 1])]],
-  ]
-  const buf = Buffer.from(uint8)
-  const bufArr = [
-    Buffer.from(Uint8Array.from([1, 2, 3])),
-    Buffer.from(Uint8Array.from([4, 5, 6])),
-    [
-      Buffer.from(Uint8Array.from([7, 8, 9])),
-      Buffer.from(Uint8Array.from([1, 0, 0])),
-      [Buffer.from(Uint8Array.from([1, 1, 1]))],
-    ],
-  ]
-  st.deepEqual(arrToBufArr(uint8), buf)
-  st.deepEqual(arrToBufArr(uint8Arr), bufArr)
-  st.end()
-})
-
 tape('bufArrToArr', function (st) {
   const buf = Buffer.from('123', 'hex')
   const bufArr = [
@@ -480,18 +459,18 @@ tape('bigIntToBytes', (st) => {
   st.end()
 })
 
-tape('bigIntToUnpaddedBuffer', function (t) {
+tape('bigIntToUnpaddedBytes', function (t) {
   t.test('should equal unpadded buffer value', function (st) {
-    st.ok(bigIntToUnpaddedBuffer(BigInt(0)).equals(Buffer.from([])))
-    st.ok(bigIntToUnpaddedBuffer(BigInt(100)).equals(Buffer.from('64', 'hex')))
+    st.deepEquals(bigIntToUnpaddedBytes(BigInt(0)), Uint8Array.from([]))
+    st.deepEquals(bigIntToUnpaddedBytes(BigInt(100)), hexToBytes('64'))
     st.end()
   })
 })
 
-tape('intToUnpaddedBuffer', function (t) {
+tape('intToUnpaddedBytes', function (t) {
   t.test('should equal unpadded buffer value', function (st) {
-    st.ok(intToUnpaddedBuffer(0).equals(Buffer.from([])))
-    st.ok(intToUnpaddedBuffer(100).equals(Buffer.from('64', 'hex')))
+    st.deepEquals(intToUnpaddedBytes(0), Uint8Array.from([]))
+    st.deepEquals(intToUnpaddedBytes(100), hexToBytes('64'))
     st.end()
   })
 })

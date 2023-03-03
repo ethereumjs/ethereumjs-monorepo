@@ -9,7 +9,7 @@ import {
   ecsign,
   publicToAddress,
   toBytes,
-  unpadBuffer,
+  unpadBytes,
 } from '@ethereumjs/util'
 
 import { Capability } from './types'
@@ -289,7 +289,7 @@ export abstract class BaseTransaction<TransactionObject> {
     try {
       // Main signature verification is done in `getSenderPublicKey()`
       const publicKey = this.getSenderPublicKey()
-      return unpadBuffer(publicKey).length !== 0
+      return unpadBytes(publicKey).length !== 0
     } catch (e: any) {
       return false
     }

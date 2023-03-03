@@ -8,7 +8,7 @@ import {
   bytesToBigInt,
   ecrecover,
   toBytes,
-  unpadBuffer,
+  unpadBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -197,8 +197,8 @@ export class Transaction extends BaseTransaction<Transaction> {
 
     if (this.supports(Capability.EIP155ReplayProtection)) {
       values.push(toBytes(this.common.chainId()))
-      values.push(unpadBuffer(toBytes(0)))
-      values.push(unpadBuffer(toBytes(0)))
+      values.push(unpadBytes(toBytes(0)))
+      values.push(unpadBytes(toBytes(0)))
     }
 
     return values

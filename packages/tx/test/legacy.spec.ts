@@ -6,7 +6,7 @@ import {
   bytesToHex,
   intToBytes,
   toBytes,
-  unpadBuffer,
+  unpadBytes,
 } from '@ethereumjs/util'
 import { Buffer } from 'buffer'
 import * as tape from 'tape'
@@ -100,11 +100,11 @@ tape('[Transaction]', function (t) {
       const txData = tx.raw.map(toBytes)
       const pt = Transaction.fromValuesArray(txData)
 
-      st.equal(bytesToHex(unpadBuffer(toBytes(pt.nonce))), tx.raw[0])
+      st.equal(bytesToHex(unpadBytes(toBytes(pt.nonce))), tx.raw[0])
       st.equal(bytesToHex(toBytes(pt.gasPrice)), tx.raw[1])
       st.equal(bytesToHex(toBytes(pt.gasLimit)), tx.raw[2])
       st.equal(pt.to?.toString(), tx.raw[3])
-      st.equal(bytesToHex(unpadBuffer(toBytes(pt.value))), tx.raw[4])
+      st.equal(bytesToHex(unpadBytes(toBytes(pt.value))), tx.raw[4])
       st.equal('0x' + pt.data.toString('hex'), tx.raw[5])
       st.equal(bytesToHex(toBytes(pt.v)), tx.raw[6])
       st.equal(bytesToHex(toBytes(pt.r)), tx.raw[7])
