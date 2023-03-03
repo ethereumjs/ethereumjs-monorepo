@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import {
@@ -396,7 +396,7 @@ tape('Utility Functions', function (t) {
 
   t.test('generateAddress', function (st) {
     const addr = generateAddress(
-      hexToBytes('990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
+      utf8ToBytes('990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
       toBytes(14)
     )
     st.equal(
