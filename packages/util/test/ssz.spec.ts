@@ -1,3 +1,4 @@
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { Withdrawal, ssz } from '../src'
@@ -56,16 +57,12 @@ tape('ssz', (t) => {
   t.test('withdrawals', (st) => {
     const withdrawals = withdrawalsData.map((wt) => Withdrawal.fromWithdrawalData(wt))
     const withdrawalsValue = withdrawals.map((wt) => wt.toValue())
-    const sszValues = ssz.Withdrawals.toViewDU(withdrawalsData)
-      .toValue()
-      .map((wt) => {
-        wt.address = Buffer.from(wt.address)
-        return wt
-      })
+    const sszValues = ssz.Withdrawals.toViewDU(withdrawalsData).toValue()
+
     st.deepEqual(sszValues, withdrawalsValue, 'sszValues should be same as withdrawalsValue')
     const withdrawalsRoot = ssz.Withdrawals.hashTreeRoot(withdrawalsValue)
     st.equal(
-      Buffer.from(withdrawalsRoot).toString('hex'),
+      bytesToHex(withdrawalsRoot),
       'bd97f65e513f870484e85927510acb291fcfb3e593c05ab7f21f206921264946',
       'ssz root should match'
     )
@@ -77,7 +74,7 @@ tape('ssz', (t) => {
     {
       index: BigInt('17107150653359250726'),
       validatorIndex: BigInt('1906681273455760070'),
-      address: Buffer.from('02ab1379b6334b58df82c85d50ff1214663cba20', 'hex'),
+      address: hexToBytes('02ab1379b6334b58df82c85d50ff1214663cba20'),
       amount: BigInt('5055030296454530815'),
     },
   ]
@@ -85,7 +82,7 @@ tape('ssz', (t) => {
   t.test('match spec v1.3.0-rc.1', (st) => {
     const withdrawalsRoot = ssz.Withdrawal.hashTreeRoot(specWithdrawals[0])
     st.equal(
-      Buffer.from(withdrawalsRoot).toString('hex'),
+      bytesToHex(withdrawalsRoot),
       'ed9cec6fb8ee22b146059d02c38940cca1dd22a00d0132b000999b983fceff95',
       'ssz root should match'
     )

@@ -1,8 +1,14 @@
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { recoverPublicKey, signSync } from 'ethereum-cryptography/secp256k1'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { concatBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 
-import { bytesToBigInt, bytesToInt, setLengthLeft, toBytes } from './bytes'
+import {
+  bytesToBigInt,
+  bytesToInt,
+  bytesToPrefixedHexString,
+  setLengthLeft,
+  toBytes,
+} from './bytes'
 import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants'
 import { assertIsBytes } from './helpers'
 
@@ -18,11 +24,15 @@ export interface ECDSASignature {
  * If `chainId` is provided assume an EIP-155-style signature and calculate the `v` value
  * accordingly, otherwise return a "static" `v` just derived from the `recovery` bit
  */
-export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: bigint): ECDSASignature {
+export function ecsign(
+  msgHash: Uint8Array,
+  privateKey: Uint8Array,
+  chainId?: bigint
+): ECDSASignature {
   const [signature, recovery] = signSync(msgHash, privateKey, { recovered: true, der: false })
 
-  const r = Buffer.from(signature.slice(0, 32))
-  const s = Buffer.from(signature.slice(32, 64))
+  const r = signature.slice(0, 32)
+  const s = signature.slice(32, 64)
 
   const v =
     chainId === undefined
@@ -51,20 +61,20 @@ function isValidSigRecovery(recovery: bigint): boolean {
  * @returns Recovered public key
  */
 export const ecrecover = function (
-  msgHash: Buffer,
+  msgHash: Uint8Array,
   v: bigint,
-  r: Buffer,
-  s: Buffer,
+  r: Uint8Array,
+  s: Uint8Array,
   chainId?: bigint
-): Buffer {
-  const signature = Buffer.concat([setLengthLeft(r, 32), setLengthLeft(s, 32)], 64)
+): Uint8Array {
+  const signature = concatBytes(setLengthLeft(r, 32), setLengthLeft(s, 32))
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
   }
 
   const senderPubKey = recoverPublicKey(msgHash, signature, Number(recovery))
-  return Buffer.from(senderPubKey.slice(1))
+  return senderPubKey.slice(1)
 }
 
 /**
@@ -72,14 +82,22 @@ export const ecrecover = function (
  * NOTE: Accepts `v === 0 | v === 1` for EIP1559 transactions
  * @returns Signature
  */
-export const toRpcSig = function (v: bigint, r: Buffer, s: Buffer, chainId?: bigint): string {
+export const toRpcSig = function (
+  v: bigint,
+  r: Uint8Array,
+  s: Uint8Array,
+  chainId?: bigint
+): string {
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
   }
 
   // geth (and the RPC eth_sign method) uses the 65 byte format used by Bitcoin
-  return bytesToHex(Buffer.concat([setLengthLeft(r, 32), setLengthLeft(s, 32), toBytes(v)]))
+
+  return bytesToPrefixedHexString(
+    concatBytes(setLengthLeft(r, 32), setLengthLeft(s, 32), toBytes(v))
+  )
 }
 
 /**
@@ -87,19 +105,23 @@ export const toRpcSig = function (v: bigint, r: Buffer, s: Buffer, chainId?: big
  * NOTE: Accepts `v === 0 | v === 1` for EIP1559 transactions
  * @returns Signature
  */
-export const toCompactSig = function (v: bigint, r: Buffer, s: Buffer, chainId?: bigint): string {
+export const toCompactSig = function (
+  v: bigint,
+  r: Uint8Array,
+  s: Uint8Array,
+  chainId?: bigint
+): string {
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
   }
 
-  let ss = s
+  const ss = Uint8Array.from([...s])
   if ((v > BigInt(28) && v % BigInt(2) === BigInt(1)) || v === BigInt(1) || v === BigInt(28)) {
-    ss = Buffer.from(s)
     ss[0] |= 0x80
   }
 
-  return bytesToHex(Buffer.concat([setLengthLeft(r, 32), setLengthLeft(ss, 32)]))
+  return bytesToPrefixedHexString(concatBytes(setLengthLeft(r, 32), setLengthLeft(ss, 32)))
 }
 
 /**
@@ -123,7 +145,7 @@ export const fromRpcSig = function (sig: string): ECDSASignature {
   } else if (bytes.length === 64) {
     // Compact Signature Representation (https://eips.ethereum.org/EIPS/eip-2098)
     r = bytes.slice(0, 32)
-    s = bytes.slice(32, 64)
+    s = Uint8Array.from(bytes.slice(32, 64))
     v = BigInt(bytesToInt(bytes.slice(32, 33)) >> 7)
     s[0] &= 0x7f
   } else {
@@ -149,8 +171,8 @@ export const fromRpcSig = function (sig: string): ECDSASignature {
  */
 export const isValidSignature = function (
   v: bigint,
-  r: Buffer,
-  s: Buffer,
+  r: Uint8Array,
+  s: Uint8Array,
   homesteadOrLater: boolean = true,
   chainId?: bigint
 ): boolean {
@@ -187,8 +209,8 @@ export const isValidSignature = function (
  * call for a given `message`, or fed to `ecrecover` along with a signature to recover the public key
  * used to produce the signature.
  */
-export const hashPersonalMessage = function (message: Buffer): Buffer {
+export const hashPersonalMessage = function (message: Uint8Array): Uint8Array {
   assertIsBytes(message)
-  const prefix = Buffer.from(`\u0019Ethereum Signed Message:\n${message.length}`, 'utf-8')
-  return Buffer.from(keccak256(Buffer.concat([prefix, message])))
+  const prefix = utf8ToBytes(`\u0019Ethereum Signed Message:\n${message.length}`)
+  return keccak256(concatBytes(prefix, message))
 }

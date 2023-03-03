@@ -1,3 +1,4 @@
+import { bytesToHex } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import {
@@ -35,9 +36,9 @@ tape('toType', function (t) {
       st.equal(result, BigInt(num))
       st.end()
     })
-    st.test('should convert to Buffer', function (st) {
-      const result = toType(num, TypeOutput.Buffer)
-      st.ok(result.equals(intToBytes(num)))
+    st.test('should convert to Uint8Array', function (st) {
+      const result = toType(num, TypeOutput.Uint8Array)
+      st.deepEquals(result, intToBytes(num))
       st.end()
     })
     st.test('should convert to PrefixedHexString', function (st) {
@@ -65,9 +66,9 @@ tape('toType', function (t) {
       st.equal(result, num)
       st.end()
     })
-    st.test('should convert to Buffer', function (st) {
-      const result = toType(num, TypeOutput.Buffer)
-      st.ok(result.equals(bigIntToBytes(num)))
+    st.test('should convert to Uint8Array', function (st) {
+      const result = toType(num, TypeOutput.Uint8Array)
+      st.deepEquals(result, bigIntToBytes(num))
       st.end()
     })
     st.test('should convert to PrefixedHexString', function (st) {
@@ -86,11 +87,11 @@ tape('toType', function (t) {
       }
     )
   })
-  t.test('from Buffer', function (st) {
+  t.test('from Uint8Array', function (st) {
     const num = intToBytes(1000)
     st.test('should convert to Number', function (st) {
       const result = toType(num, TypeOutput.Number)
-      st.ok(intToBytes(result).equals(num))
+      st.deepEquals(intToBytes(result), num)
       st.end()
     })
     st.test('should convert to BigInt', function (st) {
@@ -98,9 +99,9 @@ tape('toType', function (t) {
       st.equal(result, bytesToBigInt(num))
       st.end()
     })
-    st.test('should convert to Buffer', function (st) {
-      const result = toType(num, TypeOutput.Buffer)
-      st.ok(result.equals(num))
+    st.test('should convert to Uint8Array', function (st) {
+      const result = toType(num, TypeOutput.Uint8Array)
+      st.deepEquals(result, num)
       st.end()
     })
     st.test('should convert to PrefixedHexString', function (st) {
@@ -121,9 +122,9 @@ tape('toType', function (t) {
       st.strictEqual(bigIntToHex(result), num)
       st.end()
     })
-    st.test('should convert to Buffer', function (st) {
-      const result = toType(num, TypeOutput.Buffer)
-      st.ok(result.equals(toBytes(num)))
+    st.test('should convert to Uint8Array', function (st) {
+      const result = toType(num, TypeOutput.Uint8Array)
+      st.deepEquals(result, toBytes(num))
       st.end()
     })
     st.test('should throw an error if is not 0x-prefixed', function (st) {

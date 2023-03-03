@@ -1,7 +1,7 @@
 import { bytesToHex } from 'ethereum-cryptography/utils'
 
 import { Address } from './address'
-import { bigIntToHex, toBytes } from './bytes'
+import { bigIntToHex, bytesToPrefixedHexString, toBytes } from './bytes'
 import { TypeOutput, toType } from './types'
 
 import type { AddressLike, BigIntLike } from './types'
@@ -115,7 +115,7 @@ export class Withdrawal {
     return {
       index: bigIntToHex(this.index),
       validatorIndex: bigIntToHex(this.validatorIndex),
-      address: bytesToHex(this.address.bytes),
+      address: bytesToPrefixedHexString(this.address.bytes),
       amount: bigIntToHex(this.amount),
     }
   }
