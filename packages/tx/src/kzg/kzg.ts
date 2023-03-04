@@ -9,9 +9,9 @@ export let kzg: Kzg = {
   freeTrustedSetup: kzgNotLoaded,
   loadTrustedSetup: kzgNotLoaded,
   blobToKzgCommitment: kzgNotLoaded,
-  computeAggregateKzgProof: kzgNotLoaded,
+  computeBlobKzgProof: kzgNotLoaded,
   verifyKzgProof: kzgNotLoaded,
-  verifyAggregateKzgProof: kzgNotLoaded,
+  verifyBlobKzgProofBatch: kzgNotLoaded,
 }
 
 /**

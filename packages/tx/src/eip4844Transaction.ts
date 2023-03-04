@@ -44,14 +44,14 @@ const validateBlobTransactionNetworkWrapper = (
   versionedHashes: Uint8Array[],
   blobs: Uint8Array[],
   commitments: Uint8Array[],
-  kzgProof: Uint8Array,
+  kzgProofs: Uint8Array[],
   version: number
 ) => {
   if (!(versionedHashes.length === blobs.length && blobs.length === commitments.length)) {
     throw new Error('Number of versionedHashes, blobs, and commitments not all equal')
   }
   try {
-    kzg.verifyAggregateKzgProof(blobs, commitments, kzgProof)
+    kzg.verifyBlobKzgProofBatch(blobs, commitments, kzgProofs)
   } catch (e) {
     throw new Error('KZG proof cannot be verified from blobs/commitments')
   }
@@ -82,7 +82,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
   public versionedHashes: Uint8Array[]
   blobs?: Uint8Array[] // This property should only be populated when the transaction is in the "Network Wrapper" format
   kzgCommitments?: Uint8Array[] // This property should only be populated when the transaction is in the "Network Wrapper" format
-  aggregateKzgProof?: Uint8Array // This property should only be populated when the transaction is in the "Network Wrapper" format
+  kzgProofs?: Uint8Array[] // This property should only be populated when the transaction is in the "Network Wrapper" format
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
@@ -165,7 +165,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
 
     this.blobs = txData.blobs?.map((blob) => toBytes(blob))
     this.kzgCommitments = txData.kzgCommitments?.map((commitment) => toBytes(commitment))
-    this.aggregateKzgProof = toBytes(txData.kzgProof)
+    this.kzgProofs = txData.kzgProofs?.map((proof) => toBytes(proof))
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -216,7 +216,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       decodedTx.blobVersionedHashes,
       wrapper.blobs,
       wrapper.blobKzgs,
-      wrapper.kzgAggregatedProof,
+      wrapper.blobKzgProofs,
       version
     )
 
@@ -237,9 +237,9 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
         versionedHashes: decodedTx.blobVersionedHashes,
         accessList,
         to,
-        blobs: wrapper.blobKzgs,
+        blobs: wrapper.blobs,
         kzgCommitments: wrapper.blobKzgs,
-        kzgProof: wrapper.kzgAggregatedProof,
+        kzgProofs: wrapper.blobKzgProofs,
         r: wrapper.tx.signature.r,
         s: wrapper.tx.signature.s,
         v: BigInt(wrapper.tx.signature.yParity),
@@ -348,10 +348,10 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     if (
       this.blobs === undefined ||
       this.kzgCommitments === undefined ||
-      this.aggregateKzgProof === undefined
+      this.kzgProofs === undefined
     ) {
       throw new Error(
-        'cannot serialize network wrapper without blobs, KZG commitments and aggregate KZG proof provided'
+        'cannot serialize network wrapper without blobs, KZG commitments and KZG proofs provided'
       )
     }
     const to = {
@@ -364,7 +364,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       blobs: blobArrays,
       blobKzgs: this.kzgCommitments?.map((commitment) => Uint8Array.from(commitment)) ?? [],
       tx: { ...blobTxToNetworkWrapperDataFormat(this), ...to },
-      kzgAggregatedProof: Uint8Array.from(this.aggregateKzgProof ?? []),
+      blobKzgProofs: this.kzgProofs?.map((proof) => Uint8Array.from(proof)) ?? [],
     })
     return concatBytes(new Uint8Array([0x05]), serializedTxWrapper)
   }
@@ -459,7 +459,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
         versionedHashes: this.versionedHashes,
         blobs: this.blobs,
         kzgCommitments: this.kzgCommitments,
-        kzgProof: this.aggregateKzgProof,
+        kzgProofs: this.kzgProofs,
       },
       opts
     )

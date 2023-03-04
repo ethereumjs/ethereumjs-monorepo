@@ -232,14 +232,14 @@ tape('blob EIP 4844 transaction', async (t) => {
   const blobs = getBlobs('hello world')
   const commitments = blobsToCommitments(blobs)
   const versionedHashes = commitmentsToVersionedHashes(commitments)
-  const proof = kzg.computeAggregateKzgProof(blobs.map((blob) => Uint8Array.from(blob)))
+  const proofs = blobs.map((blob) => kzg.computeBlobKzgProof(blob))
   const pk = randomBytes(32)
   const tx = BlobEIP4844Transaction.fromTxData(
     {
       versionedHashes,
       blobs,
       kzgCommitments: commitments,
-      kzgProof: proof,
+      kzgProofs: proofs,
       maxFeePerDataGas: 1000000n,
       gasLimit: 0xffffn,
       maxFeePerGas: 10000000n,
@@ -254,7 +254,7 @@ tape('blob EIP 4844 transaction', async (t) => {
       versionedHashes,
       blobs,
       kzgCommitments: commitments,
-      kzgProof: proof,
+      kzgProofs: proofs,
       maxFeePerDataGas: 1000000n,
       gasLimit: 0xfffffn,
       maxFeePerGas: 100000000n,

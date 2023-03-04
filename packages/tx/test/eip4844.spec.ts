@@ -12,6 +12,7 @@ import * as tape from 'tape'
 import { BlobEIP4844Transaction, TransactionFactory, initKZG } from '../src'
 import {
   blobsToCommitments,
+  blobsToProofs,
   commitmentsToVersionedHashes,
   getBlobs,
 } from '../src/utils/blobHelpers'
@@ -160,13 +161,13 @@ tape('Network wrapper tests', async (t) => {
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(blobs)
     const versionedHashes = commitmentsToVersionedHashes(commitments)
-    const proof = kzg.computeAggregateKzgProof(blobs)
+    const proofs = blobsToProofs(blobs)
     const unsignedTx = BlobEIP4844Transaction.fromTxData(
       {
         versionedHashes,
         blobs,
         kzgCommitments: commitments,
-        kzgProof: proof,
+        kzgProofs: proofs,
         maxFeePerDataGas: 100000000n,
         gasLimit: 0xffffffn,
         to: randomBytes(20),
@@ -204,6 +205,7 @@ tape('Network wrapper tests', async (t) => {
         versionedHashes,
         blobs: blobs.slice(1),
         kzgCommitments: commitments,
+        kzgProofs: proofs,
         maxFeePerDataGas: 100000000n,
         gasLimit: 0xffffffn,
         to: randomBytes(20),
@@ -230,6 +232,7 @@ tape('Network wrapper tests', async (t) => {
         versionedHashes,
         blobs,
         kzgCommitments: commitments,
+        kzgProofs: proofs,
         maxFeePerDataGas: 100000000n,
         gasLimit: 0xffffffn,
         to: randomBytes(20),
@@ -255,7 +258,7 @@ tape('Network wrapper tests', async (t) => {
         versionedHashes,
         blobs,
         kzgCommitments: commitments,
-        kzgProof: proof,
+        kzgProofs: proofs,
         maxFeePerDataGas: 100000000n,
         gasLimit: 0xffffffn,
         to: randomBytes(20),

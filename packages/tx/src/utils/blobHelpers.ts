@@ -63,6 +63,14 @@ export const blobsToCommitments = (blobs: Uint8Array[]) => {
   return commitments
 }
 
+export const blobsToProofs = (blobs: Uint8Array[]) => {
+  const proofs = []
+  for (const blob of blobs) {
+    proofs.push(kzg.computeBlobKzgProof(blob))
+  }
+  return proofs
+}
+
 /**
  * Converts a vector commitment for a given data blob to its versioned hash.  For 4844, this version
  * number will be 0x01 for KZG vector commitments but could be different if future vector commitment
