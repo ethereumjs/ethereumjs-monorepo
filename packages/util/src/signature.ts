@@ -145,7 +145,7 @@ export const fromRpcSig = function (sig: string): ECDSASignature {
   } else if (bytes.length === 64) {
     // Compact Signature Representation (https://eips.ethereum.org/EIPS/eip-2098)
     r = bytes.slice(0, 32)
-    s = Uint8Array.from(bytes.slice(32, 64))
+    s = bytes.slice(32, 64)
     v = BigInt(bytesToInt(bytes.slice(32, 33)) >> 7)
     s[0] &= 0x7f
   } else {
