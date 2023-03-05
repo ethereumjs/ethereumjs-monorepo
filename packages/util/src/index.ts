@@ -29,7 +29,7 @@ export * from './withdrawal'
 export * from './signature'
 
 /**
- * Utilities for manipulating Buffers, byte arrays, etc.
+ * Utilities for manipulating bytes, Uint8Arrays, etc.
  */
 export * from './bytes'
 
