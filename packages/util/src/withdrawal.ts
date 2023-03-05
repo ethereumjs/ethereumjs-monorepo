@@ -1,5 +1,3 @@
-import { bytesToHex } from 'ethereum-cryptography/utils'
-
 import { Address } from './address'
 import { bigIntToHex, bytesToPrefixedHexString, toBytes } from './bytes'
 import { TypeOutput, toType } from './types'
