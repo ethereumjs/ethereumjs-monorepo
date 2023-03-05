@@ -3,7 +3,7 @@ import {
   MAX_INTEGER,
   arrToBufArr,
   bigIntToHex,
-  bigIntToUnpaddedBuffer,
+  bigIntToUnpaddedBytes,
   bufArrToArr,
   bytesToBigInt,
   ecrecover,
@@ -160,15 +160,15 @@ export class Transaction extends BaseTransaction<Transaction> {
    */
   raw(): TxValuesArray {
     return [
-      bigIntToUnpaddedBuffer(this.nonce),
-      bigIntToUnpaddedBuffer(this.gasPrice),
-      bigIntToUnpaddedBuffer(this.gasLimit),
+      bigIntToUnpaddedBytes(this.nonce),
+      bigIntToUnpaddedBytes(this.gasPrice),
+      bigIntToUnpaddedBytes(this.gasLimit),
       this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bigIntToUnpaddedBuffer(this.value),
+      bigIntToUnpaddedBytes(this.value),
       this.data,
-      this.v !== undefined ? bigIntToUnpaddedBuffer(this.v) : Buffer.from([]),
-      this.r !== undefined ? bigIntToUnpaddedBuffer(this.r) : Buffer.from([]),
-      this.s !== undefined ? bigIntToUnpaddedBuffer(this.s) : Buffer.from([]),
+      this.v !== undefined ? bigIntToUnpaddedBytes(this.v) : Buffer.from([]),
+      this.r !== undefined ? bigIntToUnpaddedBytes(this.r) : Buffer.from([]),
+      this.s !== undefined ? bigIntToUnpaddedBytes(this.s) : Buffer.from([]),
     ]
   }
 
@@ -187,11 +187,11 @@ export class Transaction extends BaseTransaction<Transaction> {
 
   private _getMessageToSign() {
     const values = [
-      bigIntToUnpaddedBuffer(this.nonce),
-      bigIntToUnpaddedBuffer(this.gasPrice),
-      bigIntToUnpaddedBuffer(this.gasLimit),
+      bigIntToUnpaddedBytes(this.nonce),
+      bigIntToUnpaddedBytes(this.gasPrice),
+      bigIntToUnpaddedBytes(this.gasLimit),
       this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bigIntToUnpaddedBuffer(this.value),
+      bigIntToUnpaddedBytes(this.value),
       this.data,
     ]
 
@@ -304,8 +304,8 @@ export class Transaction extends BaseTransaction<Transaction> {
       return ecrecover(
         msgHash,
         v!,
-        bigIntToUnpaddedBuffer(r!),
-        bigIntToUnpaddedBuffer(s!),
+        bigIntToUnpaddedBytes(r!),
+        bigIntToUnpaddedBytes(s!),
         this.supports(Capability.EIP155ReplayProtection) ? this.common.chainId() : undefined
       )
     } catch (e: any) {

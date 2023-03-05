@@ -4,7 +4,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { BlobEIP4844Transaction, TransactionFactory } from '@ethereumjs/tx'
 import {
   arrToBufArr,
-  bigIntToUnpaddedBuffer,
+  bigIntToUnpaddedBytes,
   bufArrToArr,
   bytesToBigInt,
   bytesToInt,
@@ -86,7 +86,7 @@ export class EthProtocol extends Protocol {
     {
       name: 'NewBlockHashes',
       code: 0x01,
-      encode: (hashes: any[]) => hashes.map((hn) => [hn[0], bigIntToUnpaddedBuffer(hn[1])]),
+      encode: (hashes: any[]) => hashes.map((hn) => [hn[0], bigIntToUnpaddedBytes(hn[1])]),
       decode: (hashes: any[]) => hashes.map((hn) => [hn[0], bytesToBigInt(hn[1])]),
     },
     {
@@ -120,9 +120,9 @@ export class EthProtocol extends Protocol {
       code: 0x03,
       response: 0x04,
       encode: ({ reqId, block, max, skip = 0, reverse = false }: GetBlockHeadersOpts) => [
-        bigIntToUnpaddedBuffer(reqId ?? ++this.nextReqId),
+        bigIntToUnpaddedBytes(reqId ?? ++this.nextReqId),
         [
-          typeof block === 'bigint' ? bigIntToUnpaddedBuffer(block) : block,
+          typeof block === 'bigint' ? bigIntToUnpaddedBytes(block) : block,
           intToUnpaddedBuffer(max),
           intToUnpaddedBuffer(skip),
           intToUnpaddedBuffer(!reverse ? 0 : 1),
@@ -140,7 +140,7 @@ export class EthProtocol extends Protocol {
       name: 'BlockHeaders',
       code: 0x04,
       encode: ({ reqId, headers }: { reqId: bigint; headers: BlockHeader[] }) => [
-        bigIntToUnpaddedBuffer(reqId),
+        bigIntToUnpaddedBytes(reqId),
         headers.map((h) => h.raw()),
       ],
       decode: ([reqId, headers]: [Buffer, BlockHeaderBuffer[]]) => [
@@ -166,7 +166,7 @@ export class EthProtocol extends Protocol {
       code: 0x05,
       response: 0x06,
       encode: ({ reqId, hashes }: GetBlockBodiesOpts) => [
-        bigIntToUnpaddedBuffer(reqId ?? ++this.nextReqId),
+        bigIntToUnpaddedBytes(reqId ?? ++this.nextReqId),
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
@@ -178,7 +178,7 @@ export class EthProtocol extends Protocol {
       name: 'BlockBodies',
       code: 0x06,
       encode: ({ reqId, bodies }: { reqId: bigint; bodies: BlockBodyBuffer[] }) => [
-        bigIntToUnpaddedBuffer(reqId),
+        bigIntToUnpaddedBytes(reqId),
         bodies,
       ],
       decode: ([reqId, bodies]: [Buffer, BlockBodyBuffer[]]) => [bytesToBigInt(reqId), bodies],
@@ -186,7 +186,7 @@ export class EthProtocol extends Protocol {
     {
       name: 'NewBlock',
       code: 0x07,
-      encode: ([block, td]: [Block, bigint]) => [block.raw(), bigIntToUnpaddedBuffer(td)],
+      encode: ([block, td]: [Block, bigint]) => [block.raw(), bigIntToUnpaddedBytes(td)],
       decode: ([block, td]: [BlockBuffer, Buffer]) => [
         Block.fromValuesArray(block, {
           common: this.config.chainCommon,
@@ -206,7 +206,7 @@ export class EthProtocol extends Protocol {
       code: 0x09,
       response: 0x0a,
       encode: ({ reqId, hashes }: GetPooledTransactionsOpts) => [
-        bigIntToUnpaddedBuffer(reqId ?? ++this.nextReqId),
+        bigIntToUnpaddedBytes(reqId ?? ++this.nextReqId),
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
@@ -232,7 +232,7 @@ export class EthProtocol extends Protocol {
               break
           }
         }
-        return [bigIntToUnpaddedBuffer(reqId), serializedTxs]
+        return [bigIntToUnpaddedBytes(reqId), serializedTxs]
       },
       decode: ([reqId, txs]: [Buffer, any[]]) => {
         const common = this.config.chainCommon.copy()
@@ -261,7 +261,7 @@ export class EthProtocol extends Protocol {
       code: 0x0f,
       response: 0x10,
       encode: ({ reqId, hashes }: { reqId: bigint; hashes: Buffer[] }) => [
-        bigIntToUnpaddedBuffer(reqId ?? ++this.nextReqId),
+        bigIntToUnpaddedBytes(reqId ?? ++this.nextReqId),
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
@@ -278,7 +278,7 @@ export class EthProtocol extends Protocol {
           const encodedReceipt = encodeReceipt(receipt, receipt.txType)
           serializedReceipts.push(encodedReceipt)
         }
-        return [bigIntToUnpaddedBuffer(reqId), serializedReceipts]
+        return [bigIntToUnpaddedBytes(reqId), serializedReceipts]
       },
       decode: ([reqId, receipts]: [Buffer, Buffer[]]) => [
         bytesToBigInt(reqId),
@@ -352,11 +352,11 @@ export class EthProtocol extends Protocol {
    */
   encodeStatus(): any {
     return {
-      networkId: bigIntToUnpaddedBuffer(this.chain.networkId),
-      td: bigIntToUnpaddedBuffer(this.chain.blocks.td),
+      networkId: bigIntToUnpaddedBytes(this.chain.networkId),
+      td: bigIntToUnpaddedBytes(this.chain.blocks.td),
       bestHash: this.chain.blocks.latest!.hash(),
       genesisHash: this.chain.genesis.hash(),
-      latestBlock: bigIntToUnpaddedBuffer(this.chain.blocks.latest!.header.number),
+      latestBlock: bigIntToUnpaddedBytes(this.chain.blocks.latest!.header.number),
     }
   }
 

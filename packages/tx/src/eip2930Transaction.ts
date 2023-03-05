@@ -3,7 +3,7 @@ import {
   MAX_INTEGER,
   arrToBufArr,
   bigIntToHex,
-  bigIntToUnpaddedBuffer,
+  bigIntToUnpaddedBytes,
   bufArrToArr,
   bytesToBigInt,
   ecrecover,
@@ -222,17 +222,17 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
    */
   raw(): AccessListEIP2930ValuesArray {
     return [
-      bigIntToUnpaddedBuffer(this.chainId),
-      bigIntToUnpaddedBuffer(this.nonce),
-      bigIntToUnpaddedBuffer(this.gasPrice),
-      bigIntToUnpaddedBuffer(this.gasLimit),
+      bigIntToUnpaddedBytes(this.chainId),
+      bigIntToUnpaddedBytes(this.nonce),
+      bigIntToUnpaddedBytes(this.gasPrice),
+      bigIntToUnpaddedBytes(this.gasLimit),
       this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bigIntToUnpaddedBuffer(this.value),
+      bigIntToUnpaddedBytes(this.value),
       this.data,
       this.accessList,
-      this.v !== undefined ? bigIntToUnpaddedBuffer(this.v) : Buffer.from([]),
-      this.r !== undefined ? bigIntToUnpaddedBuffer(this.r) : Buffer.from([]),
-      this.s !== undefined ? bigIntToUnpaddedBuffer(this.s) : Buffer.from([]),
+      this.v !== undefined ? bigIntToUnpaddedBytes(this.v) : Buffer.from([]),
+      this.r !== undefined ? bigIntToUnpaddedBytes(this.r) : Buffer.from([]),
+      this.s !== undefined ? bigIntToUnpaddedBytes(this.s) : Buffer.from([]),
     ]
   }
 
@@ -327,8 +327,8 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
       return ecrecover(
         msgHash,
         v! + BigInt(27), // Recover the 27 which was stripped from ecsign
-        bigIntToUnpaddedBuffer(r!),
-        bigIntToUnpaddedBuffer(s!)
+        bigIntToUnpaddedBytes(r!),
+        bigIntToUnpaddedBytes(s!)
       )
     } catch (e: any) {
       const msg = this._errorMsg('Invalid Signature')

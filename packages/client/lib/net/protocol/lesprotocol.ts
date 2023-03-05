@@ -1,5 +1,5 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { bigIntToUnpaddedBuffer, bytesToBigInt, bytesToInt, intToBytes } from '@ethereumjs/util'
+import { bigIntToUnpaddedBytes, bytesToBigInt, bytesToInt, intToBytes } from '@ethereumjs/util'
 
 import { Protocol } from './protocol'
 
@@ -56,8 +56,8 @@ export class LesProtocol extends Protocol {
       encode: ({ headHash, headNumber, headTd, reorgDepth }: any) => [
         // TO DO: handle state changes
         headHash,
-        bigIntToUnpaddedBuffer(headNumber),
-        bigIntToUnpaddedBuffer(headTd),
+        bigIntToUnpaddedBytes(headNumber),
+        bigIntToUnpaddedBytes(headTd),
         intToBytes(reorgDepth),
       ],
       decode: ([headHash, headNumber, headTd, reorgDepth]: any) => ({
@@ -73,9 +73,9 @@ export class LesProtocol extends Protocol {
       code: 0x02,
       response: 0x03,
       encode: ({ reqId, block, max, skip = 0, reverse = false }: GetBlockHeadersOpts) => [
-        bigIntToUnpaddedBuffer(reqId ?? ++this.nextReqId),
+        bigIntToUnpaddedBytes(reqId ?? ++this.nextReqId),
         [
-          typeof block === 'bigint' ? bigIntToUnpaddedBuffer(block) : block,
+          typeof block === 'bigint' ? bigIntToUnpaddedBytes(block) : block,
           max,
           skip,
           !reverse ? 0 : 1,
@@ -93,8 +93,8 @@ export class LesProtocol extends Protocol {
       name: 'BlockHeaders',
       code: 0x03,
       encode: ({ reqId, bv, headers }: any) => [
-        bigIntToUnpaddedBuffer(reqId),
-        bigIntToUnpaddedBuffer(bv),
+        bigIntToUnpaddedBytes(reqId),
+        bigIntToUnpaddedBytes(bv),
         headers.map((h: BlockHeader) => h.raw()),
       ],
       decode: ([reqId, bv, headers]: any) => ({
@@ -183,13 +183,13 @@ export class LesProtocol extends Protocol {
     const nextFork = this.config.chainCommon.nextHardforkBlockOrTimestamp(
       this.config.chainCommon.hardfork()
     )
-    const forkID = [Buffer.from(forkHash.slice(2), 'hex'), bigIntToUnpaddedBuffer(nextFork ?? 0n)]
+    const forkID = [Buffer.from(forkHash.slice(2), 'hex'), bigIntToUnpaddedBytes(nextFork ?? 0n)]
 
     return {
-      networkId: bigIntToUnpaddedBuffer(this.chain.networkId),
-      headTd: bigIntToUnpaddedBuffer(this.chain.headers.td),
+      networkId: bigIntToUnpaddedBytes(this.chain.networkId),
+      headTd: bigIntToUnpaddedBytes(this.chain.headers.td),
       headHash: this.chain.headers.latest?.hash(),
-      headNum: bigIntToUnpaddedBuffer(this.chain.headers.height),
+      headNum: bigIntToUnpaddedBytes(this.chain.headers.height),
       genesisHash: this.chain.genesis.hash(),
       forkID,
       recentTxLookup: intToBytes(1),

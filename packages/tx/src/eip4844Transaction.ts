@@ -3,7 +3,7 @@ import {
   Address,
   MAX_INTEGER,
   bigIntToHex,
-  bigIntToUnpaddedBuffer,
+  bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
   ecrecover,
@@ -419,8 +419,8 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       return ecrecover(
         msgHash,
         v! + BigInt(27), // Recover the 27 which was stripped from ecsign
-        bigIntToUnpaddedBuffer(r!),
-        bigIntToUnpaddedBuffer(s!)
+        bigIntToUnpaddedBytes(r!),
+        bigIntToUnpaddedBytes(s!)
       )
     } catch (e: any) {
       const msg = this._errorMsg('Invalid Signature')

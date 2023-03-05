@@ -2,7 +2,7 @@ import { BlockHeader } from '@ethereumjs/block'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
   TypeOutput,
-  bigIntToUnpaddedBuffer,
+  bigIntToUnpaddedBytes,
   bytesToHex,
   toBytes,
   toType,
@@ -94,8 +94,8 @@ export class PendingBlock {
 
     // payload is uniquely defined by timestamp, parent and mixHash, gasLimit can also be
     // potentially included in the fcU in future and can be safely added in uniqueness calc
-    const timestampBuf = bigIntToUnpaddedBuffer(toType(timestamp ?? 0, TypeOutput.BigInt))
-    const gasLimitBuf = bigIntToUnpaddedBuffer(gasLimit)
+    const timestampBuf = bigIntToUnpaddedBytes(toType(timestamp ?? 0, TypeOutput.BigInt))
+    const gasLimitBuf = bigIntToUnpaddedBytes(gasLimit)
     const mixHashBuf = toType(mixHash!, TypeOutput.Buffer) ?? zeros(32)
     const payloadIdBuffer = toBytes(
       keccak256(Buffer.concat([parentBlock.hash(), mixHashBuf, timestampBuf, gasLimitBuf])).slice(

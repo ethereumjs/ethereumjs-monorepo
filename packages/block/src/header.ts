@@ -8,7 +8,7 @@ import {
   arrToBufArr,
   bigIntToBytes,
   bigIntToHex,
-  bigIntToUnpaddedBuffer,
+  bigIntToUnpaddedBytes,
   bufArrToArr,
   bytesToBigInt,
   bytesToHex,
@@ -531,25 +531,25 @@ export class BlockHeader {
       this.transactionsTrie,
       this.receiptTrie,
       this.logsBloom,
-      bigIntToUnpaddedBuffer(this.difficulty),
-      bigIntToUnpaddedBuffer(this.number),
-      bigIntToUnpaddedBuffer(this.gasLimit),
-      bigIntToUnpaddedBuffer(this.gasUsed),
-      bigIntToUnpaddedBuffer(this.timestamp ?? BigInt(0)),
+      bigIntToUnpaddedBytes(this.difficulty),
+      bigIntToUnpaddedBytes(this.number),
+      bigIntToUnpaddedBytes(this.gasLimit),
+      bigIntToUnpaddedBytes(this.gasUsed),
+      bigIntToUnpaddedBytes(this.timestamp ?? BigInt(0)),
       this.extraData,
       this.mixHash,
       this.nonce,
     ]
 
     if (this._common.isActivatedEIP(1559) === true) {
-      rawItems.push(bigIntToUnpaddedBuffer(this.baseFeePerGas!))
+      rawItems.push(bigIntToUnpaddedBytes(this.baseFeePerGas!))
     }
 
     if (this._common.isActivatedEIP(4895) === true) {
       rawItems.push(this.withdrawalsRoot!)
     }
     if (this._common.isActivatedEIP(4844) === true) {
-      rawItems.push(bigIntToUnpaddedBuffer(this.excessDataGas!))
+      rawItems.push(bigIntToUnpaddedBytes(this.excessDataGas!))
     }
 
     return rawItems
