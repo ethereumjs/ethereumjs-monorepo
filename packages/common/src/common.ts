@@ -1,4 +1,4 @@
-import { TypeOutput, intToBytes, toType } from '@ethereumjs/util'
+import { TypeOutput, bytesToHex, intToBytes, toType } from '@ethereumjs/util'
 import { buf as crc32Buffer } from 'crc-32'
 import { EventEmitter } from 'events'
 
@@ -858,7 +858,7 @@ export class Common extends EventEmitter {
 
     // CRC32 delivers result as signed (negative) 32-bit integer,
     // convert to hex string
-    const forkhash = intToBytes(crc32Buffer(inputBuffer) >>> 0).toString('hex')
+    const forkhash = bytesToHex(intToBytes(crc32Buffer(inputBuffer) >>> 0))
     return `0x${forkhash}`
   }
 
