@@ -404,19 +404,6 @@ export function bufArrToArr(arr: Buffer | NestedBufferArray): Uint8Array | Neste
 }
 
 /**
- * Converts a {@link Uint8Array} or {@link NestedUint8Array} to {@link Buffer} or {@link NestedBufferArray}
- */
-export function arrToBufArr(arr: Uint8Array): Buffer
-export function arrToBufArr(arr: NestedUint8Array): NestedBufferArray
-export function arrToBufArr(arr: Uint8Array | NestedUint8Array): Buffer | NestedBufferArray
-export function arrToBufArr(arr: Uint8Array | NestedUint8Array): Buffer | NestedBufferArray {
-  if (!Array.isArray(arr)) {
-    return Buffer.from(arr)
-  }
-  return arr.map((a) => arrToBufArr(a))
-}
-
-/**
  * Converts a {@link bigint} to a `0x` prefixed hex string
  */
 export const bigIntToHex = (num: bigint) => {
@@ -436,4 +423,10 @@ export function intToUnpaddedBytes(value: number): Uint8Array {
   return unpadBytes(intToBytes(value))
 }
 
-export { bytesToHex, equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+export {
+  bytesToHex,
+  bytesToUtf8,
+  concatBytes,
+  equalsBytes,
+  utf8ToBytes,
+} from 'ethereum-cryptography/utils'
