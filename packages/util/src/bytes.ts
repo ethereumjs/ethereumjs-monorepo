@@ -243,6 +243,25 @@ export function bytesToBigInt(bytes: Uint8Array) {
 }
 
 /**
+ * Converts a {@link Uint8Array} to a binary {@link string}
+ */
+export const bytesToBinaryString = (bytes: Uint8Array): string => {
+  return bytes.reduce((acc, byte) => acc + String.fromCharCode(parseInt(byte.toString(2))), '')
+}
+
+/**
+ * Converts a binary {@link string} to a {@link Uint8Array}
+ */
+export const binaryStringToBytes = (binaryString: string): Uint8Array => {
+  const bytes = new Uint8Array(binaryString.length / 8)
+  for (let i = 0; i < bytes.length; i++) {
+    const byteStr = binaryString.substr(i * 8, 8)
+    bytes[i] = parseInt(byteStr, 2)
+  }
+  return bytes
+}
+
+/**
  * Converts a {@link bigint} to a {@link Uint8Array}
  */
 export const bigIntToBytes = (num: bigint) => {
@@ -385,6 +404,19 @@ export function bufArrToArr(arr: Buffer | NestedBufferArray): Uint8Array | Neste
 }
 
 /**
+ * Converts a {@link Uint8Array} or {@link NestedUint8Array} to {@link Buffer} or {@link NestedBufferArray}
+ */
+export function arrToBufArr(arr: Uint8Array): Buffer
+export function arrToBufArr(arr: NestedUint8Array): NestedBufferArray
+export function arrToBufArr(arr: Uint8Array | NestedUint8Array): Buffer | NestedBufferArray
+export function arrToBufArr(arr: Uint8Array | NestedUint8Array): Buffer | NestedBufferArray {
+  if (!Array.isArray(arr)) {
+    return Buffer.from(arr)
+  }
+  return arr.map((a) => arrToBufArr(a))
+}
+
+/**
  * Converts a {@link bigint} to a `0x` prefixed hex string
  */
 export const bigIntToHex = (num: bigint) => {
@@ -403,3 +435,5 @@ export function bigIntToUnpaddedBytes(value: bigint): Uint8Array {
 export function intToUnpaddedBytes(value: number): Uint8Array {
   return unpadBytes(intToBytes(value))
 }
+
+export { bytesToHex, equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
