@@ -1,11 +1,11 @@
-import { RLP_EMPTY_STRING } from '@ethereumjs/util'
+import { RLP_EMPTY_STRING, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { CheckpointDB, MapDB } from '../db'
 import { verifyRangeProof } from '../proof/range'
 import { ROOT_DB_KEY } from '../types'
 import { Lock } from '../util/lock'
-import { bufferToNibbles, doKeysMatch, matchingNibbleLength } from '../util/nibbles'
+import { bytesToNibbles, doKeysMatch, matchingNibbleLength } from '../util/nibbles'
 import { TrieReadStream as ReadStream } from '../util/readStream'
 import { WalkController } from '../util/walkController'
 
@@ -42,13 +42,13 @@ export class Trie {
   }
 
   /** The root for an empty trie */
-  EMPTY_TRIE_ROOT: Buffer
+  EMPTY_TRIE_ROOT: Uint8Array
 
   /** The backend DB */
   protected _db!: CheckpointDB
   protected _hashLen: number
   protected _lock = new Lock()
-  protected _root: Buffer
+  protected _root: Uint8Array
 
   /**
    * Creates a new trie.
@@ -76,10 +76,10 @@ export class Trie {
     let key = ROOT_DB_KEY
 
     if (opts?.useKeyHashing === true) {
-      key = (opts?.useKeyHashingFunction ?? keccak256)(ROOT_DB_KEY) as Buffer
+      key = (opts?.useKeyHashingFunction ?? keccak256)(ROOT_DB_KEY) as Uint8Array
     }
 
-    key = Buffer.from(key)
+    key = Uint8Array.from(key)
 
     if (opts?.db !== undefined && opts?.useRootPersistence === true) {
       if (opts?.root === undefined) {
@@ -107,7 +107,7 @@ export class Trie {
   /**
    * Gets and/or Sets the current root of the `trie`
    */
-  root(value?: Buffer | null): Buffer {
+  root(value?: Uint8Array | null): Uint8Array {
     if (value !== undefined) {
       if (value === null) {
         value = this.EMPTY_TRIE_ROOT
@@ -126,7 +126,7 @@ export class Trie {
   /**
    * Checks if a given root exists.
    */
-  async checkRoot(root: Buffer): Promise<boolean> {
+  async checkRoot(root: Uint8Array): Promise<boolean> {
     try {
       const value = await this.lookupNode(root)
       return value !== null
@@ -143,11 +143,11 @@ export class Trie {
    * Gets a value given a `key`
    * @param key - the key to search for
    * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
-   * @returns A Promise that resolves to `Buffer` if a value was found or `null` if no value was found.
+   * @returns A Promise that resolves to `Uint8Array` if a value was found or `null` if no value was found.
    */
-  async get(key: Buffer, throwIfMissing = false): Promise<Buffer | null> {
+  async get(key: Uint8Array, throwIfMissing = false): Promise<Uint8Array | null> {
     const { node, remaining } = await this.findPath(this.appliedKey(key), throwIfMissing)
-    let value: Buffer | null = null
+    let value: Uint8Array | null = null
     if (node && remaining.length === 0) {
       value = node.value()
     }
@@ -161,8 +161,8 @@ export class Trie {
    * @param value
    * @returns A Promise that resolves once value is stored.
    */
-  async put(key: Buffer, value: Buffer): Promise<void> {
-    if (this._opts.useRootPersistence && key.equals(ROOT_DB_KEY)) {
+  async put(key: Uint8Array, value: Uint8Array): Promise<void> {
+    if (this._opts.useRootPersistence && equalsBytes(key, ROOT_DB_KEY) === true) {
       throw new Error(`Attempted to set '${ROOT_DB_KEY.toString()}' key but it is not allowed.`)
     }
 
@@ -173,7 +173,7 @@ export class Trie {
 
     await this._lock.acquire()
     const appliedKey = this.appliedKey(key)
-    if (this.root().equals(this.EMPTY_TRIE_ROOT)) {
+    if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT) === true) {
       // If no root, initialize this trie
       await this._createInitialNode(appliedKey, value)
     } else {
@@ -184,7 +184,7 @@ export class Trie {
         const val = await this.get(key)
         // Only delete keys if it either does not exist, or if it gets updated
         // (The update will update the hash of the node, thus we can delete the original leaf node)
-        if (val === null || !val.equals(value)) {
+        if (val === null || equalsBytes(val, value) === false) {
           // All items of the stack are going to change.
           // (This is the path from the root node to wherever it needs to insert nodes)
           // The items change, because the leaf value is updated, thus all keyhashes in the
@@ -215,7 +215,7 @@ export class Trie {
    * @param key
    * @returns A Promise that resolves once value is deleted.
    */
-  async del(key: Buffer): Promise<void> {
+  async del(key: Uint8Array): Promise<void> {
     await this._lock.acquire()
     const appliedKey = this.appliedKey(key)
     const { node, stack } = await this.findPath(appliedKey)
@@ -250,11 +250,11 @@ export class Trie {
    * @param key - the search key
    * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
    */
-  async findPath(key: Buffer, throwIfMissing = false): Promise<Path> {
+  async findPath(key: Uint8Array, throwIfMissing = false): Promise<Path> {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       const stack: TrieNode[] = []
-      const targetKey = bufferToNibbles(key)
+      const targetKey = bytesToNibbles(key)
 
       const onFound: FoundNodeFunction = async (_, node, keyProgress, walkController) => {
         if (node === null) {
@@ -321,7 +321,7 @@ export class Trie {
    * @param onFound - callback to call when a node is found. This schedules new tasks. If no tasks are available, the Promise resolves.
    * @returns Resolves when finished walking trie.
    */
-  async walkTrie(root: Buffer, onFound: FoundNodeFunction): Promise<void> {
+  async walkTrie(root: Uint8Array, onFound: FoundNodeFunction): Promise<void> {
     await WalkController.newWalk(onFound, this, root)
   }
 
@@ -329,8 +329,8 @@ export class Trie {
    * Creates the initial node from an empty tree.
    * @private
    */
-  async _createInitialNode(key: Buffer, value: Buffer): Promise<void> {
-    const newNode = new LeafNode(bufferToNibbles(key), value)
+  async _createInitialNode(key: Uint8Array, value: Uint8Array): Promise<void> {
+    const newNode = new LeafNode(bytesToNibbles(key), value)
 
     const encoded = newNode.serialize()
     this.root(this.hash(encoded))
@@ -341,13 +341,13 @@ export class Trie {
   /**
    * Retrieves a node from db by hash.
    */
-  async lookupNode(node: Buffer | Buffer[]): Promise<TrieNode | null> {
+  async lookupNode(node: Uint8Array | Uint8Array[]): Promise<TrieNode | null> {
     if (isRawNode(node)) {
-      return decodeRawNode(node as Buffer[])
+      return decodeRawNode(node as Uint8Array[])
     }
     let value = null
     let foundNode = null
-    value = await this._db.get(node as Buffer)
+    value = await this._db.get(node as Uint8Array)
     if (value) {
       foundNode = decodeNode(value)
     } else {
@@ -366,8 +366,8 @@ export class Trie {
    * @param stack
    */
   async _updateNode(
-    k: Buffer,
-    value: Buffer,
+    k: Uint8Array,
+    value: Uint8Array,
     keyRemainder: Nibbles,
     stack: TrieNode[]
   ): Promise<void> {
@@ -378,7 +378,7 @@ export class Trie {
     }
 
     // add the new nodes
-    const key = bufferToNibbles(k)
+    const key = bytesToNibbles(k)
 
     // Check if the last node is a leaf and the key matches to this
     let matchLeaf = false
@@ -468,7 +468,7 @@ export class Trie {
    * Deletes a node from the trie.
    * @private
    */
-  async _deleteNode(k: Buffer, stack: TrieNode[]): Promise<void> {
+  async _deleteNode(k: Uint8Array, stack: TrieNode[]): Promise<void> {
     const processBranchNode = (
       key: Nibbles,
       branchKey: number,
@@ -531,7 +531,7 @@ export class Trie {
     let parentNode = stack.pop()
     const opStack: BatchDBOp[] = []
 
-    let key = bufferToNibbles(k)
+    let key = bytesToNibbles(k)
 
     if (!parentNode) {
       // the root here has to be a leaf.
@@ -575,7 +575,7 @@ export class Trie {
       if (this._opts.useNodePruning) {
         opStack.push({
           type: 'del',
-          key: branchNode as Buffer,
+          key: branchNode as Uint8Array,
         })
       }
 
@@ -628,7 +628,7 @@ export class Trie {
           node.setBranch(branchKey!, lastRoot)
         }
       }
-      lastRoot = this._formatNode(node, stack.length === 0, opStack) as Buffer
+      lastRoot = this._formatNode(node, stack.length === 0, opStack) as Uint8Array
     }
 
     if (lastRoot) {
@@ -653,11 +653,11 @@ export class Trie {
     topLevel: boolean,
     opStack: BatchDBOp[],
     remove: boolean = false
-  ): Buffer | (EmbeddedNode | null)[] {
+  ): Uint8Array | (EmbeddedNode | null)[] {
     const encoded = node.serialize()
 
     if (encoded.length >= 32 || topLevel) {
-      const hashRoot = Buffer.from(this.hash(encoded))
+      const hashRoot = Uint8Array.from(this.hash(encoded))
 
       if (remove) {
         if (this._opts.useNodePruning) {
@@ -685,11 +685,11 @@ export class Trie {
    * (delete operations are only executed on DB with `deleteFromDB` set to `true`)
    * @example
    * const ops = [
-   *    { type: 'del', key: Buffer.from('father') }
-   *  , { type: 'put', key: Buffer.from('name'), value: Buffer.from('Yuri Irsenovich Kim') }
-   *  , { type: 'put', key: Buffer.from('dob'), value: Buffer.from('16 February 1941') }
-   *  , { type: 'put', key: Buffer.from('spouse'), value: Buffer.from('Kim Young-sook') }
-   *  , { type: 'put', key: Buffer.from('occupation'), value: Buffer.from('Clown') }
+   *    { type: 'del', key: Uint8Array.from('father') }
+   *  , { type: 'put', key: Uint8Array.from('name'), value: Uint8Array.from('Yuri Irsenovich Kim') }
+   *  , { type: 'put', key: Uint8Array.from('dob'), value: Uint8Array.from('16 February 1941') }
+   *  , { type: 'put', key: Uint8Array.from('spouse'), value: Uint8Array.from('Kim Young-sook') }
+   *  , { type: 'put', key: Uint8Array.from('occupation'), value: Uint8Array.from('Clown') }
    * ]
    * await trie.batch(ops)
    * @param ops
@@ -716,7 +716,7 @@ export class Trie {
     const opStack = proof.map((nodeValue) => {
       return {
         type: 'put',
-        key: Buffer.from(this.hash(nodeValue)),
+        key: Uint8Array.from(this.hash(nodeValue)),
         value: nodeValue,
       } as PutBatch
     })
@@ -734,7 +734,7 @@ export class Trie {
    * Creates a proof from a trie and key that can be verified using {@link Trie.verifyProof}.
    * @param key
    */
-  async createProof(key: Buffer): Promise<Proof> {
+  async createProof(key: Uint8Array): Promise<Proof> {
     const { stack } = await this.findPath(this.appliedKey(key))
     const p = stack.map((stackElem) => {
       return stackElem.serialize()
@@ -750,7 +750,11 @@ export class Trie {
    * @throws If proof is found to be invalid.
    * @returns The value from the key, or null if valid proof of non-existence.
    */
-  async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
+  async verifyProof(
+    rootHash: Uint8Array,
+    key: Uint8Array,
+    proof: Proof
+  ): Promise<Uint8Array | null> {
     const proofTrie = new Trie({
       root: rootHash,
       useKeyHashingFunction: this._opts.useKeyHashingFunction,
@@ -776,18 +780,18 @@ export class Trie {
    * {@link verifyRangeProof}
    */
   verifyRangeProof(
-    rootHash: Buffer,
-    firstKey: Buffer | null,
-    lastKey: Buffer | null,
-    keys: Buffer[],
-    values: Buffer[],
-    proof: Buffer[] | null
+    rootHash: Uint8Array,
+    firstKey: Uint8Array | null,
+    lastKey: Uint8Array | null,
+    keys: Uint8Array[],
+    values: Uint8Array[],
+    proof: Uint8Array[] | null
   ): Promise<boolean> {
     return verifyRangeProof(
       rootHash,
-      firstKey && bufferToNibbles(this.appliedKey(firstKey)),
-      lastKey && bufferToNibbles(this.appliedKey(lastKey)),
-      keys.map((k) => this.appliedKey(k)).map(bufferToNibbles),
+      firstKey && bytesToNibbles(this.appliedKey(firstKey)),
+      lastKey && bytesToNibbles(this.appliedKey(lastKey)),
+      keys.map((k) => this.appliedKey(k)).map(bytesToNibbles),
       values,
       proof,
       this._opts.useKeyHashingFunction
@@ -799,7 +803,7 @@ export class Trie {
   // (i.e. the Trie is not correctly pruned)
   // If this method returns `true`, the Trie is correctly pruned and all keys are reachable
   async verifyPrunedIntegrity(): Promise<boolean> {
-    const roots = [this.root().toString('hex'), this.appliedKey(ROOT_DB_KEY).toString('hex')]
+    const roots = [bytesToHex(this.root()), bytesToHex(this.appliedKey(ROOT_DB_KEY))]
     for (const dbkey of (<any>this)._db.db._database.keys()) {
       if (roots.includes(dbkey)) {
         // The root key can never be found from the trie, otherwise this would
@@ -818,7 +822,7 @@ export class Trie {
           if (node instanceof BranchNode) {
             for (const item of node._branches) {
               // If one of the branches matches the key, then it is found
-              if (item && item.toString('hex') === dbkey) {
+              if (item !== null && bytesToHex(item as Uint8Array) === dbkey) {
                 found = true
                 return
               }
@@ -828,7 +832,7 @@ export class Trie {
           }
           if (node instanceof ExtensionNode) {
             // If the value of the ExtensionNode points to the dbkey, then it is found
-            if (node.value().toString('hex') === dbkey) {
+            if (bytesToHex(node.value()) === dbkey) {
               found = true
               return
             }
@@ -846,7 +850,7 @@ export class Trie {
   }
 
   /**
-   * The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Buffers.
+   * The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Uint8Arrays.
    * @return Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `trie`
    */
   createReadStream(): ReadStream {
@@ -902,15 +906,15 @@ export class Trie {
    * depending on the `useKeyHashing` option being set or not.
    * @param key
    */
-  protected appliedKey(key: Buffer) {
+  protected appliedKey(key: Uint8Array) {
     if (this._opts.useKeyHashing) {
       return this.hash(key)
     }
     return key
   }
 
-  protected hash(msg: Uint8Array): Buffer {
-    return Buffer.from(this._opts.useKeyHashingFunction(msg))
+  protected hash(msg: Uint8Array): Uint8Array {
+    return Uint8Array.from(this._opts.useKeyHashingFunction(msg))
   }
 
   /**

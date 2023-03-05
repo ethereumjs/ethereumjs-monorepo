@@ -1,5 +1,4 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bufArrToArr } from '@ethereumjs/util'
 
 import { addHexPrefix, removeHexPrefix } from '../../util/hex'
 import { nibblestoBytes } from '../../util/nibbles'
@@ -8,10 +7,10 @@ import type { Nibbles } from '../../types'
 
 export class Node {
   _nibbles: Nibbles
-  _value: Buffer
+  _value: Uint8Array
   _terminator: boolean
 
-  constructor(nibbles: Nibbles, value: Buffer, terminator: boolean) {
+  constructor(nibbles: Nibbles, value: Uint8Array, terminator: boolean) {
     this._nibbles = nibbles
     this._value = value
     this._terminator = terminator
@@ -33,7 +32,7 @@ export class Node {
     return this._nibbles.length
   }
 
-  value(v?: Buffer) {
+  value(v?: Uint8Array) {
     if (v !== undefined) {
       this._value = v
     }
@@ -45,11 +44,11 @@ export class Node {
     return addHexPrefix(this._nibbles.slice(0), this._terminator)
   }
 
-  raw(): [Buffer, Buffer] {
+  raw(): [Uint8Array, Uint8Array] {
     return [nibblestoBytes(this.encodedKey()), this._value]
   }
 
-  serialize(): Buffer {
-    return Buffer.from(RLP.encode(bufArrToArr(this.raw())))
+  serialize(): Uint8Array {
+    return RLP.encode(this.raw())
   }
 }

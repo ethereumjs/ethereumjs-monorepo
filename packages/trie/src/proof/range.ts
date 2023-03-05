@@ -1,3 +1,5 @@
+import { equalsBytes } from 'ethereum-cryptography/utils'
+
 import { BranchNode, ExtensionNode, LeafNode, Trie } from '../trie'
 import { nibblesCompare, nibblestoBytes } from '../util/nibbles'
 
@@ -160,8 +162,8 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
       }
 
       // Stop searching if `left` and `right` are not equal
-      if (!(leftNode instanceof Buffer)) {
-        if (rightNode instanceof Buffer) {
+      if (!(leftNode instanceof Uint8Array)) {
+        if (rightNode instanceof Uint8Array) {
           break
         }
 
@@ -171,7 +173,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
 
         let abort = false
         for (let i = 0; i < leftNode.length; i++) {
-          if (leftNode[i].compare(rightNode[i]) !== 0) {
+          if (!equalsBytes(leftNode[i], rightNode[i])) {
             abort = true
             break
           }
@@ -180,11 +182,11 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
           break
         }
       } else {
-        if (!(rightNode instanceof Buffer)) {
+        if (!(rightNode instanceof Uint8Array)) {
           break
         }
 
-        if (leftNode.compare(rightNode) !== 0) {
+        if (!equalsBytes(leftNode, rightNode)) {
           break
         }
       }
@@ -314,11 +316,11 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
  * @returns The value from the key, or null if valid proof of non-existence.
  */
 async function verifyProof(
-  rootHash: Buffer,
-  key: Buffer,
-  proof: Buffer[],
+  rootHash: Uint8Array,
+  key: Uint8Array,
+  proof: Uint8Array[],
   useKeyHashingFunction: HashKeysFunction
-): Promise<{ value: Buffer | null; trie: Trie }> {
+): Promise<{ value: Uint8Array | null; trie: Trie }> {
   const proofTrie = new Trie({ root: rootHash, useKeyHashingFunction })
   try {
     await proofTrie.fromProof(proof)
@@ -408,12 +410,12 @@ async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
  * @returns a flag to indicate whether there exists more trie node in the trie
  */
 export async function verifyRangeProof(
-  rootHash: Buffer,
+  rootHash: Uint8Array,
   firstKey: Nibbles | null,
   lastKey: Nibbles | null,
   keys: Nibbles[],
-  values: Buffer[],
-  proof: Buffer[] | null,
+  values: Uint8Array[],
+  proof: Uint8Array[] | null,
   useKeyHashingFunction: HashKeysFunction
 ): Promise<boolean> {
   if (keys.length !== values.length) {
@@ -439,7 +441,7 @@ export async function verifyRangeProof(
     for (let i = 0; i < keys.length; i++) {
       await trie.put(nibblestoBytes(keys[i]), values[i])
     }
-    if (rootHash.compare(trie.root()) !== 0) {
+    if (!equalsBytes(rootHash, trie.root())) {
       throw new Error('invalid all elements proof: root mismatch')
     }
     return false
@@ -479,7 +481,7 @@ export async function verifyRangeProof(
     if (nibblesCompare(firstKey, keys[0]) !== 0) {
       throw new Error('invalid one element proof: firstKey should be equal to keys[0]')
     }
-    if (value === null || value.compare(values[0]) !== 0) {
+    if (value === null || !equalsBytes(value, values[0])) {
       throw new Error('invalid one element proof: value mismatch')
     }
 
@@ -511,7 +513,7 @@ export async function verifyRangeProof(
   }
 
   // Compare rootHash
-  if (trie.root().compare(rootHash) !== 0) {
+  if (!equalsBytes(trie.root(), rootHash)) {
     throw new Error('invalid two edge elements proof: root mismatch')
   }
 

@@ -7,12 +7,12 @@ export type Nibbles = number[]
 
 // Branch and extension nodes might store
 // hash to next node, or embed it if its len < 32
-export type EmbeddedNode = Buffer | Buffer[]
+export type EmbeddedNode = Uint8Array | Uint8Array[]
 
-export type Proof = Buffer[]
+export type Proof = Uint8Array[]
 
 export type FoundNodeFunction = (
-  nodeRef: Buffer,
+  nodeRef: Uint8Array,
   node: TrieNode | null,
   key: Nibbles,
   walkController: WalkController
@@ -27,9 +27,9 @@ export interface TrieOpts {
   db?: DB
 
   /**
-   * A `Buffer` for the root of a previously stored trie
+   * A `Uint8Array` for the root of a previously stored trie
    */
-  root?: Buffer
+  root?: Uint8Array
 
   /**
    * Create as a secure Trie where the keys are automatically hashed using the
@@ -73,35 +73,35 @@ export type BatchDBOp = PutBatch | DelBatch
 
 export interface PutBatch {
   type: 'put'
-  key: Buffer
-  value: Buffer
+  key: Uint8Array
+  value: Uint8Array
 }
 
 export interface DelBatch {
   type: 'del'
-  key: Buffer
+  key: Uint8Array
 }
 
 export interface DB {
   /**
    * Retrieves a raw value from leveldb.
    * @param key
-   * @returns A Promise that resolves to `Buffer` if a value is found or `null` if no value is found.
+   * @returns A Promise that resolves to `Uint8Array` if a value is found or `null` if no value is found.
    */
-  get(key: Buffer): Promise<Buffer | null>
+  get(key: Uint8Array): Promise<Uint8Array | null>
 
   /**
    * Writes a value directly to leveldb.
-   * @param key The key as a `Buffer`
+   * @param key The key as a `Uint8Array`
    * @param value The value to be stored
    */
-  put(key: Buffer, val: Buffer): Promise<void>
+  put(key: Uint8Array, val: Uint8Array): Promise<void>
 
   /**
    * Removes a raw value in the underlying leveldb.
    * @param keys
    */
-  del(key: Buffer): Promise<void>
+  del(key: Uint8Array): Promise<void>
 
   /**
    * Performs a batch operation on db.
@@ -117,10 +117,10 @@ export interface DB {
 }
 
 export type Checkpoint = {
-  // We cannot use a Buffer => Buffer map directly. If you create two Buffers with the same internal value,
+  // We cannot use a Uint8Array => Uint8Array map directly. If you create two Uint8Arrays with the same internal value,
   // then when setting a value on the Map, it actually creates two indices.
-  keyValueMap: Map<string, Buffer | null>
-  root: Buffer
+  keyValueMap: Map<string, Uint8Array | null>
+  root: Uint8Array
 }
 
-export const ROOT_DB_KEY = Buffer.from('__root__')
+export const ROOT_DB_KEY = new TextEncoder().encode('__root__')

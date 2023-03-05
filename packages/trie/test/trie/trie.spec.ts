@@ -1,12 +1,8 @@
-import { KECCAK256_RLP } from '@ethereumjs/util'
+import { KECCAK256_RLP, bytesToHex } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
 import { ROOT_DB_KEY as BASE_DB_KEY, MapDB, Trie } from '../../src'
-
-function bytesToHex(bytes: Buffer | null) {
-  return bytes?.toString('hex')
-}
 
 for (const { constructor, defaults, title } of [
   {
@@ -23,9 +19,9 @@ for (const { constructor, defaults, title } of [
 ]) {
   const IS_SECURE_TRIE = title === 'SecureTrie'
 
-  let ROOT_DB_KEY: Buffer
+  let ROOT_DB_KEY: Uint8Array
   if (IS_SECURE_TRIE) {
-    ROOT_DB_KEY = Buffer.from(keccak256(BASE_DB_KEY))
+    ROOT_DB_KEY = keccak256(BASE_DB_KEY)
   } else {
     ROOT_DB_KEY = BASE_DB_KEY
   }

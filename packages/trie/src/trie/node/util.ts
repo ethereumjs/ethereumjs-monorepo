@@ -1,18 +1,17 @@
 import { RLP } from '@ethereumjs/rlp'
-import { arrToBufArr } from '@ethereumjs/util'
 
 import { isTerminator } from '../../util/hex'
-import { bufferToNibbles } from '../../util/nibbles'
+import { bytesToNibbles } from '../../util/nibbles'
 
 import { BranchNode } from './branch'
 import { ExtensionNode } from './extension'
 import { LeafNode } from './leaf'
 
-export function decodeRawNode(raw: Buffer[]) {
+export function decodeRawNode(raw: Uint8Array[]) {
   if (raw.length === 17) {
     return BranchNode.fromArray(raw)
   } else if (raw.length === 2) {
-    const nibbles = bufferToNibbles(raw[0])
+    const nibbles = bytesToNibbles(raw[0])
     if (isTerminator(nibbles)) {
       return new LeafNode(LeafNode.decodeKey(nibbles), raw[1])
     }
@@ -22,8 +21,8 @@ export function decodeRawNode(raw: Buffer[]) {
   }
 }
 
-export function decodeNode(raw: Buffer) {
-  const des = arrToBufArr(RLP.decode(Uint8Array.from(raw))) as Buffer[]
+export function decodeNode(raw: Uint8Array) {
+  const des = RLP.decode(Uint8Array.from(raw)) as Uint8Array[]
   if (!Array.isArray(des)) {
     throw new Error('Invalid node')
   }
@@ -31,5 +30,5 @@ export function decodeNode(raw: Buffer) {
 }
 
 export function isRawNode(n: any) {
-  return Array.isArray(n) && !Buffer.isBuffer(n)
+  return Array.isArray(n) && !(n instanceof Uint8Array)
 }
