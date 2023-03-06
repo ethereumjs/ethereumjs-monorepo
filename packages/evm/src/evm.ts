@@ -745,7 +745,7 @@ export class EVM implements EVMInterface {
     }
 
     await this.eei.checkpoint()
-    this._transientStorage.checkpoint()
+    if (this._common.isActivatedEIP(1153)) this._transientStorage.checkpoint()
     if (this.DEBUG) {
       debug('-'.repeat(100))
       debug(`message checkpoint`)
@@ -795,13 +795,13 @@ export class EVM implements EVMInterface {
     ) {
       result.execResult.logs = []
       await this.eei.revert()
-      this._transientStorage.revert()
+      if (this._common.isActivatedEIP(1153)) this._transientStorage.revert()
       if (this.DEBUG) {
         debug(`message checkpoint reverted`)
       }
     } else {
       await this.eei.commit()
-      this._transientStorage.commit()
+      if (this._common.isActivatedEIP(1153)) this._transientStorage.commit()
       if (this.DEBUG) {
         debug(`message checkpoint committed`)
       }
