@@ -32,6 +32,7 @@ tape('[Integration:Merge]', async (t) => {
         },
       },
       hardforks: [
+        { name: 'chainstart', block: 0 },
         { name: 'london', block: 0 },
         {
           name: 'merge',
@@ -52,6 +53,7 @@ tape('[Integration:Merge]', async (t) => {
         extraData: '0x3535353535353535353535353535353535353535353535353535353535353535',
       },
       hardforks: [
+        { name: 'chainstart', block: 0 },
         { name: 'london', block: 0 },
         {
           name: 'merge',
@@ -84,7 +86,7 @@ tape('[Integration:Merge]', async (t) => {
       mine: true,
       accounts,
     })
-    const chain = new Chain({ config: serviceConfig, blockchain })
+    const chain = await Chain.create({ config: serviceConfig, blockchain })
     // attach server to centralized event bus
     ;(server.config as any).events = serviceConfig.events
     const service = new FullEthereumService({

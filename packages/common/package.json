@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/common",
-  "version": "3.0.0-rc.1",
+  "version": "3.1.1",
   "description": "Resources common to all Ethereum implementations",
   "keywords": [
     "ethereum",
@@ -44,11 +44,11 @@
     "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
-    "test:node": "npm run tape -- ./tests/*.spec.ts",
+    "test:node": "npm run tape -- ./test/*.spec.ts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/util": "8.0.0-rc.1",
+    "@ethereumjs/util": "^8.0.5",
     "crc-32": "^1.2.0"
   }
 }

@@ -116,6 +116,7 @@ export class Transaction extends BaseTransaction<Transaction> {
       throw new Error(msg)
     }
     this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
+    BaseTransaction._validateNotArray(txData)
 
     if (this.common.gteHardfork('spuriousDragon')) {
       if (!this.isSigned()) {

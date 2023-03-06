@@ -19,9 +19,9 @@ export interface ChainConfig {
   name: string
   chainId: number | bigint
   networkId: number | bigint
-  defaultHardfork: string
-  comment: string
-  url: string
+  defaultHardfork?: string
+  comment?: string
+  url?: string
   genesis: GenesisBlockConfig
   hardforks: HardforkConfig[]
   bootstrapNodes: BootstrapNodeConfig[]
@@ -48,6 +48,7 @@ export interface HardforkConfig {
   name: Hardfork | string
   block: number | null // null is used for hardforks that should not be applied -- since `undefined` isn't a valid value in JSON
   ttd?: bigint | string
+  timestamp?: number | string
   forkHash?: string | null
 }
 
@@ -112,4 +113,10 @@ export interface CustomCommonOpts extends BaseOpts {
    * a standard chain used to base the custom chain params on.
    */
   baseChain?: string | number | Chain | bigint
+}
+
+export interface GethConfigOpts extends BaseOpts {
+  chain?: string
+  genesisHash?: Buffer
+  mergeForkIdPostMerge?: boolean
 }

@@ -19,7 +19,7 @@ export async function debugCodeReplayBlock(execution: VMExecution, block: Block)
  * Block: ${block.header.number}
  * Hardfork: ${execution.hardfork}
  *
- * Run with: DEBUG=vm:*:*,vm:*,-vm:ops:* ts-node [SCRIPT_NAME].ts
+ * Run with: DEBUG=ethjs,vm:*:*,vm:*,-vm:ops:* ts-node [SCRIPT_NAME].ts
  *
  */
 

@@ -1,11 +1,15 @@
 import { bufferToBigInt, toBuffer } from '@ethereumjs/util'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 import { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 import { AccessListEIP2930Transaction } from './eip2930Transaction'
+import { BlobEIP4844Transaction } from './eip4844Transaction'
+import { normalizeTxParams } from './fromRpc'
 import { Transaction } from './legacyTransaction'
 
 import type {
   AccessListEIP2930TxData,
+  BlobEIP4844TxData,
   FeeMarketEIP1559TxData,
   TxData,
   TxOptions,
@@ -23,7 +27,7 @@ export class TransactionFactory {
    * @param txOptions - Options to pass on to the constructor of the transaction
    */
   public static fromTxData(
-    txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData,
+    txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData | BlobEIP4844TxData,
     txOptions: TxOptions = {}
   ): TypedTransaction {
     if (!('type' in txData) || txData.type === undefined) {
@@ -37,6 +41,8 @@ export class TransactionFactory {
         return AccessListEIP2930Transaction.fromTxData(<AccessListEIP2930TxData>txData, txOptions)
       } else if (txType === 2) {
         return FeeMarketEIP1559Transaction.fromTxData(<FeeMarketEIP1559TxData>txData, txOptions)
+      } else if (txType === 5) {
+        return BlobEIP4844Transaction.fromTxData(<BlobEIP4844TxData>txData, txOptions)
       } else {
         throw new Error(`Tx instantiation with type ${txType} not supported`)
       }
@@ -52,22 +58,15 @@ export class TransactionFactory {
   public static fromSerializedData(data: Buffer, txOptions: TxOptions = {}): TypedTransaction {
     if (data[0] <= 0x7f) {
       // Determine the type.
-      let EIP: number
       switch (data[0]) {
         case 1:
-          EIP = 2930
-          break
+          return AccessListEIP2930Transaction.fromSerializedTx(data, txOptions)
         case 2:
-          EIP = 1559
-          break
+          return FeeMarketEIP1559Transaction.fromSerializedTx(data, txOptions)
+        case 5:
+          return BlobEIP4844Transaction.fromSerializedTx(data, txOptions)
         default:
           throw new Error(`TypedTransaction with ID ${data[0]} unknown`)
-      }
-      if (EIP === 1559) {
-        return FeeMarketEIP1559Transaction.fromSerializedTx(data, txOptions)
-      } else {
-        // EIP === 2930
-        return AccessListEIP2930Transaction.fromSerializedTx(data, txOptions)
       }
     } else {
       return Transaction.fromSerializedTx(data, txOptions)
@@ -92,5 +91,23 @@ export class TransactionFactory {
     } else {
       throw new Error('Cannot decode transaction: unknown type input')
     }
+  }
+
+  /**
+   *  Method to retrieve a transaction from the provider
+   * @param provider - An Ethers JsonRPCProvider
+   * @param txHash - Transaction hash
+   * @param txOptions - The transaction options
+   * @returns the transaction specified by `txHash`
+   */
+  public static async fromEthersProvider(
+    provider: string | JsonRpcProvider,
+    txHash: string,
+    txOptions?: TxOptions
+  ) {
+    const prov = typeof provider === 'string' ? new JsonRpcProvider(provider) : provider
+    const txData = await prov.send('eth_getTransactionByHash', [txHash])
+    const normedTx = normalizeTxParams(txData)
+    return TransactionFactory.fromTxData(normedTx, txOptions)
   }
 }

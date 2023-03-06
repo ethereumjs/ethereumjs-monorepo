@@ -6,6 +6,41 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 8.0.5 - 2023-02-27
+
+- Pinned `@chainsafe/ssz` dependency to `v0.9.4` due to ES2021 features used in `v0.10.+` causing compatibility issues, PR [#2555](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2555)
+
+## 8.0.4 - 2023-02-21
+
+**DEPRECATED**: Release is deprecated due to broken dependencies, please update to the subsequent bugfix release version.
+
+- Removed `async` library dependency, PR [#2514](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2514)
+- New `GWEI_TO_WEI` constant in a newly created `units` module, PR [#2483](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2483)
+- Change withdrawal amount representation from Wei to Gwei (see EIP-4895 PR [#6325](https://github.com/ethereum/EIPs/pull/6325)) in `withdrawal` module `Withdrawal` class, PR [#2483](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2483)
+  )
+- Added `@chainsafe/ssz` dependency, new prepartory `ssz` container module, PR [#2488](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2488)
+- Use literal value instead of formula for `MAX_INTEGER_BIGINT`, PR [#2536](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2536)
+
+## 8.0.3 - 2022-12-09
+
+- New `withdrawal` module exposing an `EIP-4895` `Withdrawal`-representing class and other withdrawal helpers (input type, JSON RPC interface), PR [#2401](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2401)
+
+## 8.0.2 - 2022-10-21
+
+- Added internalized and reexported modernized version of the [async-eventemitter](https://www.google.com/search?client=firefox-b-d&q=async-eventemitter+github) library, PR [#2376](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2376)
+
+## 8.0.1 - 2022-10-19
+
+- Added new `Lock` functionality, PR [#2308](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2308)
+
+## 8.0.0 - 2022-09-06
+
+Final release - tada 🎉 - of a wider breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2, Beta 3 and Release Candidate (RC) 1 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/CHANGELOG.md)).
+
+### Changes
+
+- Internal refactor: removed ambiguous boolean checks within conditional clauses, PR [#2261](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2261)
+
 ## 8.0.0-rc.1 - 2022-08-29
 
 Release candidate 1 for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 and 3 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/CHANGELOG.md)).

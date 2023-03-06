@@ -6,6 +6,134 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.7.0 - 2023-02-16
+
+This client release comes with finalized `Shanghai` hardfork support, fully integrates with a (non final) version of `EIP-4844` and allows to setup and run respective testnets, substantially improves on post-Merge UX and comes with a ton of bugfixes and (robustness) improvements being done during January 2023 core dev interop in Austria. So we felt this to be worth a minor version bump! 🙂 🎉 ❤️
+
+### Functional Shanghai Support
+
+This release fully supports all EIPs included in the [Shanghai](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/shanghai.md) feature hardfork scheduled for early 2023. Note that a `timestamp` to trigger the `Shanghai` fork update is only added for the `sepolia` testnet and not yet for `goerli` or `mainnet`.
+
+To run the client on the Sepolia network do:
+
+```shell
+ethereumjs --network=sepolia
+```
+
+#### Related Changes
+
+- Change withdrawal amount representation from Wei to Gwei, PR [#2483](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2483)
+- Fix forkchoiceUpdateV2 shanghai, PR [#2502](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2502)
+- Engine-api-validators, newPayloadV2 and newPayloadV3 updates, PR [#2504](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2504)
+- Add new shanghai engine apis (getCapabilties, getPayloadBodiesByHashV1, getPayloadBodiesByRangeV1), PR [#2509](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2509)
+- getPayloadBodiesByRange fixes, PR [#2518](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2518)
+- Changes engine_forkchoiceUpdatedV2 withdrawals parameter to `optional` to ensure we return the correct error message if a preShanghai payload is sent, PR [#2533](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2533)
+
+### EIP-4844 Shard Blob Transactions Support (experimental)
+
+This release supports an experimental version of the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023), see PR [#2349](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2349) as well as PRs [#2522](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2522) and [#2526](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2526).
+
+See Interop EIP-4844 Tracking Issue [#2494](https://github.com/ethereumjs/ethereumjs-monorepo/issues/2494) for information on how to run the client in the context of an EIP-4844 testnet.
+
+#### Related Changes
+
+- Add checks for replacement data gas too low for blob txs, PR [#2503](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2503)
+- 4844 Engine API Fixes, PR [#2508](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2508)
+
+### Post-Merge UX Improvements
+
+The post-Merge client log flow where the EthereumJS client serves as a responsive execution client in combination with a consensus layer client like Lodestar has been completely overhauled, see PRs [#2497](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2497), [#2506](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2506) and [#2510](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2510).
+
+Log output is now a lot more concise and adequate to the respective client post-Merge state, aggregating beacon sync logs when still in sync and giving a more detailed output when the client is synced to the chain and just following along the chain head when getting updated from the consensus layer.
+
+### General Fixes
+
+- Clean stop sync and execution to allow client shutdown, PR [#2477](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2477)
+- Update Dockerfiles to use node 18, PR [#2487](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2487)
+- New client ci run, PR [#2515](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2515)
+- Add and use execHardfork while running a tx, PR [#2505](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2505)
+- Hive withdrawal and general client fixes, PR [#2529](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2529)
+- Use client ID from Client for client HELLO message exchange (previously devp2p default ID was used), PR [#2538](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2538)
+- Fixed the fetcher errored property colliding with Readable class (broke client on error handling), PR [#2541](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2541)
+- Support receipts when mining/sealing blocks, PR [#2544](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2544)
+- Total difficulty related HF switch fixes, PR [#2545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2545)
+
+### Block Building / Tx Pool
+
+- Build block fixes, PR [#2452](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2452)
+- Apply correct hf to peer fetched txs as well as filter and remove mismatching hf txs while building blocks, PR [#2486](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2486)
+- Adds some caching logic for pending payloads so as to prune pending block payloads once one is built and provided to the CL, PR [#2533](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2533)
+
+### CLI
+
+- **Breaking**: Reuse jwt-token from default path, PR [#2474](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2474)
+- **Breaking**: Validate CLI args (client start with non-existing argument now fails), PR [#2490](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2490)
+- **Breaking**: Change client CLI params to camelCase, PR [#2495](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2495)
+- Fixed `--startBlock` option bug, PR [#2540](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2540)
+
+### Sync Fixes and Improvements
+
+- Handle withdrawal bodies in the blockfetcher and skeleton sync fixes, PR [#2462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2462)
+- Fix client's sync state on startup or while mining or single node (test) runs, PR [#2519](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2519)
+- Allow genesis to be post merge, PR [#2530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2530)
+- New `--loadBlocksFromRlp` CLI parameter (mainly for testing purposes), PR [#2532](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2532)
+- Better handling of reorgs that go pre-merge, PR [#2532](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2532)
+- Fixed invalid head block reset bug, PR [#2550](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2550)
+
+### Engine API
+
+- Add `blockValue` to the `getPayload` response, PR [#2457](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2457)
+- Fix engine-auth and engine-exchange-capabilities hive test, PR [#2531](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2531)
+
+## 0.6.6 - 2022-12-09
+
+This releases includes various bug fixes and optimizations discovered and applied along the run of the [Shandong](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2316) Pre-Shanghai testnet (https://github.com/ethereumjs/ethereumjs-monorepo/pull/2316) (now being deprecated) as well as new RPC methods implemented along the way.
+
+Furthermore this client release can now run chain including blocks with `EIP-4895` beacon chain withdrawals respectively execute on EIP-4895 activating hardforks, see PRs [#2353](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2353) and [#2401](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2401).
+
+### New RPC Methods
+
+- `eth_getBlockTransactionCountByNumber`, PR [#2379](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2379)
+- `eth_getTransactionByBlockHashAndIndex`, PR [#2443](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2443)
+- `eth_gasPrice`, PR [#2396](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2396)
+- `txpool_content`, PR [#2410](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2410)
+- `debug_traceTransaction`, PR [#2444](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2444)
+- Miscellaneous tx related fixes, PR [#2411](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2411)
+
+### Hardfork-By-Time Support
+
+The Client is now ready to work with hardforks triggered by timestamp, which will first be applied along the `Shanghai` HF, see PR [#2437](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2437). This is achieved by integrating a new timestamp supporting `@ethereumjs/common` library version.
+
+### Other Changes and Bug Fixes
+
+- Enhanced skeleton sync to process batches of new payloads and fcUs, PR [#2309](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2309)
+- Various tx pool fixes, PR [#2382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2382)
+- Fixed skeleton reset scenario when head announced before subchain 0 tail, PR [#2408](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2408)
+- Handle genesis and genesis extention properly for skeleton, PR [#2420](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2420)
+- Fixed enode to ip4 and write the same to disk, PR [#2407](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2407)
+- Fixed sendTransactions peer loop and enchance txpool logs, PR [#2412](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2412)
+- Used unpadded int/bigint to buffer in net protocols (bug), PR [#2409](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2409)
+- Fixed handling of post-merge genesis blocks, PR [#2427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2427)
+- Fixed logic bug in txPool.validate, PR [#2441](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2441)
+
+## 0.6.5 - 2022-10-19
+
+- Fixes broken release v0.6.4 (wrong @ethereumjs/util dependency)
+
+## 0.6.4 - 2022-10-18
+
+[ BROKEN] (wrong @ethereumjs/util dependency)
+
+- Fixed reorg handling in the underlying `@ethereumjs/blockchain` library `iterator()` function, PR [#2308](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2308)
+- Fixed a bug leading to exclusion of subsequent transactions build on top of previous ones, PR [#2333](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2333)
+- Fixed a bug in the `eth_estimateGas` RPC call where the parameter logic was being applied to an optional parameter when the optional parameter didn't exist, PR [#2358](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2358)
+
+## 0.6.3 - 2022-09-06
+
+This is the official Merge-ready release for the EthereumJS client! 🎉 Note that it is not possible yet to run EthereumJS client on mainnet though. This release nevertheless implements all final Merge specifications and includes Merge-related configuration parameters and is ready for current (`Sepolia`) and future Merge related testnets and development networks.
+
+This release also updates the underlying EthereumJS libraries to the final breaking versions.
+
 ## 0.6.2 - 2022-08-29
 
 This release updates the underlying EthereumJS libraries to the newly released RC 1 versions.

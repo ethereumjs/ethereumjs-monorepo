@@ -65,11 +65,22 @@ export class EthereumClient {
   public started: boolean
 
   /**
+   * Main entrypoint for client initialization.
+   *
+   * Safe creation of a Chain object awaiting the initialization
+   * of the underlying Blockchain object.
+   */
+  public static async create(options: EthereumClientOptions) {
+    const chain = await Chain.create(options)
+    return new this(chain, options)
+  }
+
+  /**
    * Create new node
    */
-  constructor(options: EthereumClientOptions) {
+  protected constructor(chain: Chain, options: EthereumClientOptions) {
     this.config = options.config
-    this.chain = new Chain(options)
+    this.chain = chain
 
     if (this.config.syncmode === SyncMode.Full) {
       this.services = [
@@ -78,7 +89,7 @@ export class EthereumClient {
           chainDB: options.chainDB,
           stateDB: options.stateDB,
           metaDB: options.metaDB,
-          chain: this.chain,
+          chain,
         }),
       ]
     } else {
@@ -86,7 +97,7 @@ export class EthereumClient {
         new LightEthereumService({
           config: this.config,
           chainDB: options.chainDB,
-          chain: this.chain,
+          chain,
         }),
       ]
     }
@@ -102,8 +113,10 @@ export class EthereumClient {
     if (this.opened) {
       return false
     }
+    const name = this.config.chainCommon.chainName()
+    const chainId = this.config.chainCommon.chainId()
     this.config.logger.info(
-      `Initializing Ethereumjs client version=v${packageVersion} network=${this.config.chainCommon.chainName()}`
+      `Initializing Ethereumjs client version=v${packageVersion} network=${name} chainId=${chainId}`
     )
 
     this.config.events.on(Event.SERVER_ERROR, (error) => {
@@ -113,9 +126,6 @@ export class EthereumClient {
       this.config.logger.info(
         `Server listener up transport=${details.transport} url=${details.url}`
       )
-    })
-    this.config.events.on(Event.SYNC_SYNCHRONIZED, (height) => {
-      this.config.logger.info(`Synchronized blockchain at height=${height}`)
     })
 
     await Promise.all(this.services.map((s) => s.open()))
@@ -130,7 +140,7 @@ export class EthereumClient {
     if (this.started) {
       return false
     }
-    this.config.logger.info('Connecting to network and synchronizing blockchain...')
+    this.config.logger.info('Setup networking and services.')
 
     await Promise.all(this.services.map((s) => s.start()))
     await Promise.all(this.config.servers.map((s) => s.start()))

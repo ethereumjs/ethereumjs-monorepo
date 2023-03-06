@@ -15,7 +15,7 @@ import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
 
-import type { BlockBuffer, JsonRpcBlock } from '../src'
+import type { BlockBuffer } from '../src'
 import type { NestedUint8Array } from '@ethereumjs/util'
 
 tape('[Block]: block functions', function (t) {
@@ -176,7 +176,7 @@ tape('[Block]: block functions', function (t) {
     const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
 
     try {
-      blockFromRpc(testDataFromRpcGoerli as unknown as JsonRpcBlock, [], { common })
+      blockFromRpc(testDataFromRpcGoerli, [], { common })
       st.pass('does not throw')
     } catch (error: any) {
       st.fail('error thrown')
@@ -379,6 +379,17 @@ tape('[Block]: block functions', function (t) {
         block_farAhead.header.difficulty > BigInt(0),
         'should allow me to provide a bogus next block to calculate difficulty on when providing a difficulty header'
       )
+      st.end()
+    }
+  )
+
+  t.test(
+    'should be able to initialize shanghai blocks with correct hardfork defaults',
+    function (st) {
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+      const block = Block.fromBlockData({}, { common })
+      st.equal(block._common.hardfork(), Hardfork.Shanghai, 'hardfork should be set to shanghai')
+      st.deepEqual(block.withdrawals, [], 'withdrawals should be set to default empty array')
       st.end()
     }
   )

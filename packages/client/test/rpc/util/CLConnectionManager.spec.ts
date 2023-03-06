@@ -1,10 +1,9 @@
-import { Common } from '@ethereumjs/common'
+import { Common, parseGethGenesis } from '@ethereumjs/common'
 import * as tape from 'tape'
 
 import { Config } from '../../../lib'
 import { CLConnectionManager } from '../../../lib/rpc/util/CLConnectionManager'
 import { Event } from '../../../lib/types'
-import { parseCustomParams } from '../../../lib/util'
 import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
 
 const payload = {
@@ -43,8 +42,9 @@ tape('[CLConnectionManager]', (t) => {
     st.ok(manager.running, 'should start')
     manager.stop()
     st.ok(!manager.running, 'should stop')
+    const prevMergeForkBlock = (genesisJSON.config as any).mergeForkBlock
     ;(genesisJSON.config as any).mergeForkBlock = 0
-    const params = await parseCustomParams(genesisJSON, 'post-merge')
+    const params = parseGethGenesis(genesisJSON, 'post-merge', false)
     let common = new Common({
       chain: params.name,
       customChains: [params],
@@ -70,6 +70,8 @@ tape('[CLConnectionManager]', (t) => {
     })
     config.events.emit(Event.CHAIN_UPDATED)
     config.events.emit(Event.CLIENT_SHUTDOWN)
+    // reset prevMergeForkBlock as it seems to be polluting other tests
+    ;(genesisJSON.config as any).mergeForkBlock = prevMergeForkBlock
   })
 
   t.test('Status updates', async (st) => {

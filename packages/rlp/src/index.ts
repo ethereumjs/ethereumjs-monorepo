@@ -8,7 +8,7 @@ export interface Decoded {
 }
 
 /**
- * RLP Encoding based on https://eth.wiki/en/fundamentals/rlp
+ * RLP Encoding based on https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/
  * This function takes in data, converts it to Uint8Array if not,
  * and adds a length for recursion.
  * @param input Will be converted to Uint8Array
@@ -17,11 +17,13 @@ export interface Decoded {
 export function encode(input: Input): Uint8Array {
   if (Array.isArray(input)) {
     const output: Uint8Array[] = []
+    let outputLength = 0
     for (let i = 0; i < input.length; i++) {
-      output.push(encode(input[i]))
+      const encoded = encode(input[i])
+      output.push(encoded)
+      outputLength += encoded.length
     }
-    const buf = concatBytes(...output)
-    return concatBytes(encodeLength(buf.length, 192), buf)
+    return concatBytes(encodeLength(outputLength, 192), ...output)
   }
   const inputBuf = toBytes(input)
   if (inputBuf.length === 1 && inputBuf[0] < 128) {
@@ -66,7 +68,7 @@ function encodeLength(len: number, offset: number): Uint8Array {
 }
 
 /**
- * RLP Decoding based on https://eth.wiki/en/fundamentals/rlp
+ * RLP Decoding based on https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/
  * @param input Will be converted to Uint8Array
  * @param stream Is the input a stream (false by default)
  * @returns decoded Array of Uint8Arrays containing the original message

@@ -295,6 +295,11 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += accessAddressEIP2929(runState, runState.interpreter.getAddress(), common, false)
         }
 
+        if (common.isActivatedEIP(3860) === true) {
+          gas +=
+            ((length + BigInt(31)) / BigInt(32)) * common.param('gasPrices', 'initCodeWordCost')
+        }
+
         gas += subMemUsage(runState, offset, length, common)
 
         let gasLimit = BigInt(runState.interpreter.getGasLeft()) - gas
@@ -456,6 +461,11 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (common.isActivatedEIP(2929) === true) {
           gas += accessAddressEIP2929(runState, runState.interpreter.getAddress(), common, false)
+        }
+
+        if (common.isActivatedEIP(3860) === true) {
+          gas +=
+            ((length + BigInt(31)) / BigInt(32)) * common.param('gasPrices', 'initCodeWordCost')
         }
 
         gas += common.param('gasPrices', 'sha3Word') * divCeil(length, BigInt(32))

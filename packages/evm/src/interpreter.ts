@@ -47,6 +47,8 @@ export interface Env {
   contract: Account
   codeAddress: Address /* Different than address for DELEGATECALL and CALLCODE */
   gasRefund: bigint /* Current value (at begin of the frame) of the gas refund */
+  containerCode?: Buffer /** Full container code for EOF1 contracts */
+  versionedHashes: Buffer[] /** Versioned hashes for blob transactions */
 }
 
 export interface RunState {
@@ -356,7 +358,7 @@ export class Interpreter {
      * @property {BigInt} memoryWordCount current size of memory in words
      * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
      */
-    return this._evm._emit('step', eventObj)
+    await this._evm._emit('step', eventObj)
   }
 
   // Returns all valid jump and jumpsub destinations.
@@ -572,14 +574,14 @@ export class Interpreter {
    * Returns the size of code running in current environment.
    */
   getCodeSize(): bigint {
-    return BigInt(this._env.code.length)
+    return BigInt(this._env.containerCode ? this._env.containerCode.length : this._env.code.length)
   }
 
   /**
    * Returns the code running in current environment.
    */
   getCode(): Buffer {
-    return this._env.code
+    return this._env.containerCode ?? this._env.code
   }
 
   /**

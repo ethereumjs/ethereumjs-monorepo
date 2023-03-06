@@ -1,19 +1,30 @@
-import { bigIntToBuffer, bufferToBigInt } from '@ethereumjs/util'
+import {
+  accountBodyFromSlim,
+  accountBodyToSlim,
+  bigIntToUnpaddedBuffer,
+  bufferToBigInt,
+  setLengthLeft,
+} from '@ethereumjs/util'
 
 import { Protocol } from './protocol'
 
 import type { Chain } from '../../blockchain'
 import type { Message, ProtocolOptions } from './protocol'
-import type { AccountData as AccountDataBody } from '@ethereumjs/util'
+import type { AccountBodyBuffer } from '@ethereumjs/util'
 
 interface SnapProtocolOptions extends ProtocolOptions {
   /* Blockchain */
   chain: Chain
+  /**
+   * If to convert slim body received of an account to normal while decoding.
+   * Encoding is always converted to slim
+   */
+  convertSlimBody?: boolean
 }
 
-type AccountData = {
+export type AccountData = {
   hash: Buffer
-  body: AccountDataBody
+  body: AccountBodyBuffer
 }
 
 type GetAccountRangeOpts = {
@@ -61,7 +72,7 @@ export interface SnapProtocolMethods {
   ) => Promise<{ reqId: bigint; accounts: AccountData[]; proof: Buffer[] }>
   getStorageRanges: (opts: GetStorageRangesOpts) => Promise<{
     reqId: bigint
-    slots: StorageData[]
+    slots: StorageData[][]
     proof: Buffer[]
   }>
   getByteCodes: (opts: GetByteCodesOpts) => Promise<{ reqId: bigint; codes: Buffer[] }>
@@ -73,6 +84,8 @@ export interface SnapProtocolMethods {
  */
 export class SnapProtocol extends Protocol {
   private chain: Chain
+  /** If to convert slim body received of an account to normal */
+  private convertSlimBody?: boolean
   private nextReqId = BigInt(0)
 
   /* eslint-disable no-invalid-this */
@@ -81,8 +94,15 @@ export class SnapProtocol extends Protocol {
       name: 'GetAccountRange',
       code: 0x00,
       response: 0x01,
+      // [reqID: P, rootHash: B_32, startingHash: B_32, limitHash: B_32, responseBytes: P]
       encode: ({ reqId, root, origin, limit, bytes }: GetAccountRangeOpts) => {
-        return [bigIntToBuffer(reqId ?? ++this.nextReqId), root, origin, limit, bytes]
+        return [
+          bigIntToUnpaddedBuffer(reqId ?? ++this.nextReqId),
+          setLengthLeft(root, 32),
+          setLengthLeft(origin, 32),
+          setLengthLeft(limit, 32),
+          bigIntToUnpaddedBuffer(bytes),
+        ]
       },
       decode: ([reqId, root, origin, limit, bytes]: any) => {
         return {
@@ -97,6 +117,7 @@ export class SnapProtocol extends Protocol {
     {
       name: 'AccountRange',
       code: 0x01,
+      // [reqID: P, accounts: [[accHash: B_32, accBody: B], ...], proof: [node_1: B, node_2, ...]]
       encode: ({
         reqId,
         accounts,
@@ -107,15 +128,24 @@ export class SnapProtocol extends Protocol {
         proof: Buffer[]
       }) => {
         return [
-          bigIntToBuffer(reqId ?? ++this.nextReqId),
-          accounts.map((account) => [account.hash, account.body]),
+          bigIntToUnpaddedBuffer(reqId ?? ++this.nextReqId),
+          accounts.map((account) => [
+            setLengthLeft(account.hash, 32),
+            accountBodyToSlim(account.body),
+          ]),
           proof,
         ]
       },
       decode: ([reqId, accounts, proof]: any) => {
         return {
           reqId: bufferToBigInt(reqId),
-          accounts: accounts.map(([hash, body]: any) => ({ hash, body } as AccountData)),
+          accounts: accounts.map(
+            ([hash, body]: any) =>
+              ({
+                hash,
+                body: this.convertSlimBody === true ? accountBodyFromSlim(body) : body,
+              } as AccountData)
+          ),
           proof,
         }
       },
@@ -124,14 +154,15 @@ export class SnapProtocol extends Protocol {
       name: 'GetStorageRanges',
       code: 0x02,
       response: 0x03,
+      // [reqID: P, rootHash: B_32, accountHashes: [B_32], startingHash: B, limitHash: B, responseBytes: P]
       encode: ({ reqId, root, accounts, origin, limit, bytes }: GetStorageRangesOpts) => {
         return [
-          bigIntToBuffer(reqId ?? ++this.nextReqId),
-          root,
-          accounts,
+          bigIntToUnpaddedBuffer(reqId ?? ++this.nextReqId),
+          setLengthLeft(root, 32),
+          accounts.map((acc) => setLengthLeft(acc, 32)),
           origin,
           limit,
-          bigIntToBuffer(bytes),
+          bigIntToUnpaddedBuffer(bytes),
         ]
       },
       decode: ([reqId, root, accounts, origin, limit, bytes]: any) => {
@@ -148,6 +179,7 @@ export class SnapProtocol extends Protocol {
     {
       name: 'StorageRanges',
       code: 0x03,
+      // [reqID: P, slots: [[[slotHash: B_32, slotData: B], ...], ...], proof: [node_1: B, node_2, ...]]
       encode: ({
         reqId,
         slots,
@@ -158,8 +190,10 @@ export class SnapProtocol extends Protocol {
         proof: Buffer[]
       }) => {
         return [
-          bigIntToBuffer(reqId ?? ++this.nextReqId),
-          slots.map((accSlots) => accSlots.map((slotData) => [slotData.hash, slotData.body])),
+          bigIntToUnpaddedBuffer(reqId ?? ++this.nextReqId),
+          slots.map((accSlots) =>
+            accSlots.map((slotData) => [setLengthLeft(slotData.hash, 32), slotData.body])
+          ),
           proof,
         ]
       },
@@ -177,8 +211,13 @@ export class SnapProtocol extends Protocol {
       name: 'GetByteCodes',
       code: 0x04,
       response: 0x05,
+      // [reqID: P, hashes: [hash1: B_32, hash2: B_32, ...], bytes: P]
       encode: ({ reqId, hashes, bytes }: GetByteCodesOpts) => {
-        return [bigIntToBuffer(reqId ?? ++this.nextReqId), hashes, bigIntToBuffer(bytes)]
+        return [
+          bigIntToUnpaddedBuffer(reqId ?? ++this.nextReqId),
+          hashes.map((hash) => setLengthLeft(hash, 32)),
+          bigIntToUnpaddedBuffer(bytes),
+        ]
       },
       decode: ([reqId, hashes, bytes]: any) => {
         return {
@@ -191,8 +230,9 @@ export class SnapProtocol extends Protocol {
     {
       name: 'ByteCodes',
       code: 0x05,
+      // [reqID: P, codes: [code1: B, code2: B, ...]]
       encode: ({ reqId, codes }: { reqId: bigint; codes: Buffer[] }) => {
-        return [bigIntToBuffer(reqId ?? ++this.nextReqId), codes]
+        return [bigIntToUnpaddedBuffer(reqId ?? ++this.nextReqId), codes]
       },
       decode: ([reqId, codes]: any) => {
         return {
@@ -205,8 +245,14 @@ export class SnapProtocol extends Protocol {
       name: 'GetTrieNodes',
       code: 0x06,
       response: 0x07,
+      // [reqID: P, rootHash: B_32, paths: [[accPath: B, slotPath1: B, slotPath2: B, ...]...], bytes: P]
       encode: ({ reqId, root, paths, bytes }: GetTrieNodesOpts) => {
-        return [bigIntToBuffer(reqId ?? ++this.nextReqId), root, paths, bigIntToBuffer(bytes)]
+        return [
+          bigIntToUnpaddedBuffer(reqId ?? ++this.nextReqId),
+          setLengthLeft(root, 32),
+          paths,
+          bigIntToUnpaddedBuffer(bytes),
+        ]
       },
       decode: ([reqId, root, paths, bytes]: any) => {
         return {
@@ -220,8 +266,9 @@ export class SnapProtocol extends Protocol {
     {
       name: 'TrieNodes',
       code: 0x07,
+      // [reqID: P, nodes: [node1: B, node2: B, ...]]
       encode: ({ reqId, nodes }: { reqId: bigint; nodes: Buffer[] }) => {
-        return [bigIntToBuffer(reqId ?? ++this.nextReqId), nodes]
+        return [bigIntToUnpaddedBuffer(reqId ?? ++this.nextReqId), nodes]
       },
       decode: ([reqId, nodes]: any) => {
         return {
@@ -239,6 +286,7 @@ export class SnapProtocol extends Protocol {
     super(options)
 
     this.chain = options.chain
+    this.convertSlimBody = options.convertSlimBody
   }
 
   /**

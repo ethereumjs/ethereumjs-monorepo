@@ -1,7 +1,7 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain as ChainEnum, Common } from '@ethereumjs/common'
-import { Address } from '@ethereumjs/util'
+import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
+import { Chain as ChainEnum, Common, parseGethGenesis } from '@ethereumjs/common'
+import { Address, KECCAK256_RLP } from '@ethereumjs/util'
 import { Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
 
@@ -13,12 +13,7 @@ import { RlpxServer } from '../../lib/net/server/rlpxserver'
 import { RPCManager as Manager } from '../../lib/rpc'
 import { TxPool } from '../../lib/service/txpool'
 import { Event } from '../../lib/types'
-import {
-  createRPCServerListener,
-  createWsRPCServerListener,
-  parseCustomParams,
-  parseGenesisState,
-} from '../../lib/util'
+import { createRPCServerListener, createWsRPCServerListener } from '../../lib/util'
 
 import { mockBlockchain } from './mockBlockchain'
 
@@ -37,9 +32,20 @@ config.logger = getLogger(config)
 type StartRPCOpts = { port?: number; wsServer?: boolean }
 type WithEngineMiddleware = { jwtSecret: Buffer; unlessFn?: (req: IncomingMessage) => boolean }
 
+type createClientArgs = {
+  includeVM: boolean // Instantiates the VM when creating the test client
+  commonChain: Common
+  enableMetaDB: boolean
+  txLookupLimit: number
+  syncTargetHeight: bigint
+  noPeers: boolean
+  blockchain: Blockchain
+  chain: any // Could be anything that implements a portion of the Chain interface (varies by test)
+  opened: boolean
+}
 export function startRPC(
   methods: any,
-  opts: StartRPCOpts = { port: 3000 },
+  opts: StartRPCOpts = { port: 3001 },
   withEngineMiddleware?: WithEngineMiddleware
 ) {
   const { port, wsServer } = opts
@@ -61,7 +67,7 @@ export function createManager(client: EthereumClient) {
   return new Manager(client, client.config)
 }
 
-export function createClient(clientOpts: any = {}) {
+export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   const common: Common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
   const config = new Config({
     transports: [],
@@ -71,7 +77,8 @@ export function createClient(clientOpts: any = {}) {
   })
   const blockchain = clientOpts.blockchain ?? mockBlockchain()
 
-  const chain = clientOpts.chain ?? new Chain({ config, blockchain })
+  // @ts-ignore TODO Move to async Chain.create() initialization
+  const chain = clientOpts.chain ?? new Chain({ config, blockchain: blockchain as any })
   chain.opened = true
 
   const defaultClientConfig = {
@@ -81,8 +88,11 @@ export function createClient(clientOpts: any = {}) {
   const clientConfig = { ...defaultClientConfig, ...clientOpts }
 
   chain.getTd = async (_hash: Buffer, _num: bigint) => BigInt(1000)
-  if (chain._headers !== undefined) {
-    chain._headers.latest = BlockHeader.fromHeaderData({}, { common })
+  if ((chain as any)._headers !== undefined) {
+    ;(chain as any)._headers.latest = BlockHeader.fromHeaderData(
+      { withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined },
+      { common }
+    )
   }
 
   config.synchronized = true
@@ -108,7 +118,7 @@ export function createClient(clientOpts: any = {}) {
   }
 
   let execution
-  if (clientOpts.includeVM === true) {
+  if (!(clientOpts.includeVM === false)) {
     const metaDB: any = clientOpts.enableMetaDB === true ? new MemoryLevel() : undefined
     execution = new VMExecution({ config, chain, metaDB })
   }
@@ -203,8 +213,8 @@ export async function baseRequest(
  * Sets up a custom chain with metaDB enabled (saving receipts, logs, indexes)
  */
 export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts: any = {}) {
-  const genesisParams = await parseCustomParams(genesisFile, chainName)
-  const genesisState = await parseGenesisState(genesisFile)
+  const genesisParams = parseGethGenesis(genesisFile, chainName)
+  const genesisState = parseGethGenesisState(genesisFile)
 
   const common = new Common({
     chain: chainName,
@@ -232,13 +242,13 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   })
 
   const { chain } = client
-  const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
+  const service = client.services.find((s) => s.name === 'eth') as FullEthereumService
+  const { execution } = service
 
   await chain.open()
   await execution?.open()
   await chain.update()
-
-  return { chain, common, execution: execution!, server }
+  return { chain, common, execution: execution!, server, service }
 }
 
 /**
@@ -247,7 +257,8 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
 export async function runBlockWithTxs(
   chain: Chain,
   execution: VMExecution,
-  txs: TypedTransaction[]
+  txs: TypedTransaction[],
+  fromEngine = false
 ) {
   const { vm } = execution
   // build block with tx
@@ -264,12 +275,12 @@ export async function runBlockWithTxs(
     },
   })
   for (const tx of txs) {
-    await blockBuilder.addTransaction(tx)
+    await blockBuilder.addTransaction(tx, { skipHardForkValidation: true })
   }
   const block = await blockBuilder.build()
 
   // put block into chain and run execution
-  await chain.putBlocks([block])
+  await chain.putBlocks([block], fromEngine)
   await execution.run()
 }
 

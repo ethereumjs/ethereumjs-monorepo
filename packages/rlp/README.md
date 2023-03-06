@@ -6,7 +6,7 @@
 [![Code Coverage][rlp-coverage-badge]][rlp-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-[Recursive Length Prefix](https://eth.wiki/en/fundamentals/rlp) encoding for Node.js and the browser.
+[Recursive Length Prefix](https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp) encoding for Node.js and the browser.
 
 ## Installation
 

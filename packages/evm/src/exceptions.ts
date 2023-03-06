@@ -31,6 +31,10 @@ export enum ERROR {
   BLS_12_381_POINT_NOT_ON_CURVE = 'point not on curve',
   BLS_12_381_INPUT_EMPTY = 'input is empty',
   BLS_12_381_FP_NOT_IN_FIELD = 'fp point not in field',
+
+  // Point Evaluation Errors
+  POINT_GREATER_THAN_BLS_MODULUS = 'point greater than BLS modulus',
+  INVALID_COMMITMENT = 'kzg commitment does not match versioned hash',
 }
 
 export class EvmError {

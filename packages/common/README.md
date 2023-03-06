@@ -127,7 +127,7 @@ The following chain-specific parameters are provided:
 - `bootstrapNodes` list
 - `dnsNetworks` list ([EIP-1459](https://eips.ethereum.org/EIPS/eip-1459)-compliant list of DNS networks for peer discovery)
 
-To get an overview of the different parameters have a look at one of the chain-specifc
+To get an overview of the different parameters have a look at one of the chain-specific
 files like `mainnet.json` in the `chains` directory, or to the `Chain` type in [./src/types.ts](./src/types.ts).
 
 ### Working with private/custom chains
@@ -195,6 +195,22 @@ const common1 = new Common({
 
 Starting with v3 custom genesis states should be passed to the [Blockchain](../blockchain/) library directly.
 
+#### Initialize using Geth's genesis json
+
+For lots of custom chains (for e.g. devnets and testnets), you might come across a genesis json config which
+has both config specification for the chain as well as the genesis state specification. You can derive the
+common from such configuration in the following manner:
+
+```typescript
+import { Common } from '@ethereumjs/common'
+
+// Load geth genesis json file into lets say `genesisJson` and optional `chain` and `genesisHash`
+const common = Common.fromGethGenesis(genesisJson, { chain: 'customChain', genesisHash })
+// If you don't have `genesisHash` while initiating common, you can later configure common (for e.g.
+// post calculating it via `blockchain`)
+common.setForkHashes(genesisHash)
+```
+
 ### Hardforks
 
 The `hardfork` can be set in constructor like this:
@@ -223,10 +239,11 @@ library supported:
 - `berlin` (`Hardfork.Berlin`) (since `v2.2.0`)
 - `london` (`Hardfork.London`) (since `v2.4.0`)
 - `merge` (`Hardfork.Merge`) (`DEFAULT_HARDFORK`) (since `v2.5.0`)
+- `shanghai` (`Hardfork.Shanghai`) (since `v3.1.0`)
 
 ### Future Hardforks
 
-The next upcoming HF `Hardfork.Shanghai` is currently not yet supported by this library.
+The next upcoming HF `Hardfork.Cancun` is currently not yet supported by this library.
 
 ### Parameter Access
 
@@ -237,6 +254,7 @@ you can use the following `topics`:
 - `gasPrices`
 - `vm`
 - `pow`
+- `sharding`
 
 See one of the hardfork files like `byzantium.json` in the `hardforks` directory
 for an overview. For consistency, the chain start (`chainstart`) is considered an own
@@ -262,19 +280,21 @@ The following EIPs are currently supported:
 - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565): ModExp gas cost
 - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2565): Transaction Types
 - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929): gas cost increases for state access opcodes
-- [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930): Optional accesss list tx type
+- [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930): Optional access list tx type
 - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198): Base fee Opcode
 - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529): Reduction in refunds
 - [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`experimental`)
 - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541): Reject new contracts starting with the 0xEF byte
 - [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554): Difficulty Bomb Delay to December 2021 (only PoW networks)
 - [EIP-3607](https://eips.ethereum.org/EIPS/eip-3607): Reject transactions from senders with deployed code
+- [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651): Warm COINBASE (Shanghai)
 - [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670): EOF - Code Validation (`experimental`)
-- [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675): Upgrade consensus to Proof-of-Stake (`experimental`)
-- [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855): Push0 opcode (`v2.6.1`+)
-- [EIP-3860](https://eips.ethereum.org/EIPS/eip-3855): Limit and meter initcode (`experimental`)
+- [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675): Upgrade consensus to Proof-of-Stake
+- [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855): Push0 opcode (Shanghai)
+- [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860): Limit and meter initcode (Shanghai)
 - [EIP-4345](https://eips.ethereum.org/EIPS/eip-4345): Difficulty Bomb Delay to June 2022
 - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399): Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
+- [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895): Beacon chain push withdrawals as operations (Shanghai)
 
 ### Bootstrap Nodes
 

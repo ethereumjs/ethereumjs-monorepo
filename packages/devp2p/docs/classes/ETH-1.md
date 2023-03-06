@@ -16,6 +16,7 @@
 
 ### Properties
 
+- [DEBUG](ETH-1.md#debug)
 - [\_forkHash](ETH-1.md#_forkhash)
 - [\_hardfork](ETH-1.md#_hardfork)
 - [\_latestBlock](ETH-1.md#_latestblock)
@@ -89,6 +90,16 @@ Protocol.constructor
 
 ## Properties
 
+### DEBUG
+
+• **DEBUG**: `boolean` = `false`
+
+#### Defined in
+
+[packages/devp2p/src/protocol/eth.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L21)
+
+___
+
 ### \_forkHash
 
 • **\_forkHash**: `string` = `''`
@@ -135,7 +146,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L21)
+[packages/devp2p/src/protocol/eth.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L20)
 
 ___
 
@@ -145,7 +156,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L20)
+[packages/devp2p/src/protocol/eth.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L19)
 
 ___
 
@@ -230,7 +241,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L45)
+[packages/devp2p/src/protocol/eth.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L48)
 
 ___
 
@@ -249,7 +260,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L46)
+[packages/devp2p/src/protocol/eth.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L49)
 
 ___
 
@@ -268,7 +279,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L47)
+[packages/devp2p/src/protocol/eth.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L50)
 
 ___
 
@@ -287,7 +298,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L48)
+[packages/devp2p/src/protocol/eth.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L51)
 
 ___
 
@@ -306,7 +317,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L49)
+[packages/devp2p/src/protocol/eth.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L52)
 
 ## Methods
 
@@ -326,7 +337,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L204)
+[packages/devp2p/src/protocol/eth.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L217)
 
 ___
 
@@ -346,7 +357,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:212](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L212)
+[packages/devp2p/src/protocol/eth.ts:225](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L225)
 
 ___
 
@@ -367,7 +378,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L51)
+[packages/devp2p/src/protocol/eth.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L54)
 
 ___
 
@@ -381,7 +392,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L149)
+[packages/devp2p/src/protocol/eth.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L162)
 
 ___
 
@@ -401,7 +412,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L208)
+[packages/devp2p/src/protocol/eth.ts:221](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L221)
 
 ___
 
@@ -423,7 +434,7 @@ Eth 64 Fork ID validation (EIP-2124)
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L112)
+[packages/devp2p/src/protocol/eth.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L119)
 
 ___
 
@@ -604,7 +615,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:338](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L338)
+[packages/devp2p/src/protocol/eth.ts:347](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L347)
 
 ___
 
@@ -618,7 +629,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L200)
+[packages/devp2p/src/protocol/eth.ts:213](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L213)
 
 ___
 
@@ -1125,7 +1136,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L283)
+[packages/devp2p/src/protocol/eth.ts:294](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L294)
 
 ___
 
@@ -1145,7 +1156,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:232](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L232)
+[packages/devp2p/src/protocol/eth.ts:245](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L245)
 
 ___
 

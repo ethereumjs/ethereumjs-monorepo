@@ -20,7 +20,7 @@ import type { getCb, putCb } from './cache'
 import type { StateManager, StorageDump } from './interface'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
-type StorageProof = {
+export type StorageProof = {
   key: PrefixedHexString
   proof: PrefixedHexString[]
   value: PrefixedHexString
@@ -42,7 +42,7 @@ export type Proof = {
  *
  * Otherwise the creation of the code hash for the `0x80` contract
  * will be the same as the hash of the empty trie which leads to
- * misbehaviour in the underyling trie library.
+ * misbehaviour in the underlying trie library.
  */
 const CODEHASH_PREFIX = Buffer.from('c')
 
@@ -500,7 +500,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * Checks whether there is a state corresponding to a stateRoot
    */
   async hasStateRoot(root: Buffer): Promise<boolean> {
-    return await this._trie.checkRoot(root)
+    return this._trie.checkRoot(root)
   }
 
   /**

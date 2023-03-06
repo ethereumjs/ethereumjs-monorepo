@@ -1,6 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   Address,
+  AsyncEventEmitter,
   KECCAK256_NULL,
   MAX_INTEGER,
   bigIntToBuffer,
@@ -9,12 +10,11 @@ import {
   short,
   zeros,
 } from '@ethereumjs/util'
-import AsyncEventEmitter = require('async-eventemitter')
 import { debug as createDebugLogger } from 'debug'
 import { promisify } from 'util'
 
 import { EEIDummy } from './eei/eeiDummy'
-import { EOF } from './eof'
+import { EOF, getEOFCode } from './eof'
 import { ERROR, EvmError } from './exceptions'
 import { Interpreter } from './interpreter'
 import { Message } from './message'
@@ -77,9 +77,11 @@ export interface EVMOpts {
    * - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
    *   [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) - Warm COINBASE (`experimental`)
    * - [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`experimental`)
-   * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
-   * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
-   * - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
+   * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction
+   * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode
+   * - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge)
+   * - [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (`experimental`)
+   * - [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations
    * - [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022
    *
    * *Annotations:*
@@ -139,6 +141,26 @@ export interface EVMOpts {
  * @ignore
  */
 export class EVM implements EVMInterface {
+  private static supportedHardforks = [
+    Hardfork.Chainstart,
+    Hardfork.Homestead,
+    Hardfork.Dao,
+    Hardfork.TangerineWhistle,
+    Hardfork.SpuriousDragon,
+    Hardfork.Byzantium,
+    Hardfork.Constantinople,
+    Hardfork.Petersburg,
+    Hardfork.Istanbul,
+    Hardfork.MuirGlacier,
+    Hardfork.Berlin,
+    Hardfork.London,
+    Hardfork.ArrowGlacier,
+    Hardfork.GrayGlacier,
+    Hardfork.MergeForkIdTransition,
+    Hardfork.Merge,
+    Hardfork.Shanghai,
+    Hardfork.ShardingForkDev,
+  ]
   protected _tx?: {
     gasPrice: bigint
     origin: Address
@@ -189,13 +211,6 @@ export class EVM implements EVMInterface {
   protected _isInitialized: boolean = false
 
   /**
-   * Cached emit() function, not for public usage
-   * set to public due to implementation internals
-   * @hidden
-   */
-  public readonly _emit: (topic: string, data: any) => Promise<void>
-
-  /**
    * Pointer to the mcl package, not for public usage
    * set to public due to implementation internals
    * @hidden
@@ -212,6 +227,8 @@ export class EVM implements EVMInterface {
    */
   readonly DEBUG: boolean = false
 
+  public readonly _emit: (topic: string, data: any) => Promise<void>
+
   /**
    * EVM async constructor. Creates engine instance and initializes it.
    *
@@ -224,7 +241,7 @@ export class EVM implements EVMInterface {
   }
 
   constructor(opts: EVMOpts) {
-    this.events = new AsyncEventEmitter<EVMEvents>()
+    this.events = new AsyncEventEmitter()
 
     this._optsCached = opts
 
@@ -242,7 +259,7 @@ export class EVM implements EVMInterface {
     // Supported EIPs
     const supportedEIPs = [
       1153, 1559, 2315, 2537, 2565, 2718, 2929, 2930, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
-      3670, 3855, 3860, 4399, 5133,
+      3670, 3855, 3860, 4399, 4895, 4844, 5133,
     ]
 
     for (const eip of this._common.eips()) {
@@ -251,25 +268,7 @@ export class EVM implements EVMInterface {
       }
     }
 
-    const supportedHardforks = [
-      Hardfork.Chainstart,
-      Hardfork.Homestead,
-      Hardfork.Dao,
-      Hardfork.TangerineWhistle,
-      Hardfork.SpuriousDragon,
-      Hardfork.Byzantium,
-      Hardfork.Constantinople,
-      Hardfork.Petersburg,
-      Hardfork.Istanbul,
-      Hardfork.MuirGlacier,
-      Hardfork.Berlin,
-      Hardfork.London,
-      Hardfork.ArrowGlacier,
-      Hardfork.GrayGlacier,
-      Hardfork.MergeForkIdTransition,
-      Hardfork.Merge,
-    ]
-    if (!supportedHardforks.includes(this._common.hardfork() as Hardfork)) {
+    if (!EVM.supportedHardforks.includes(this._common.hardfork() as Hardfork)) {
       throw new Error(
         `Hardfork ${this._common.hardfork()} not set as supported in supportedHardforks`
       )
@@ -296,16 +295,14 @@ export class EVM implements EVMInterface {
       }
     }
 
-    // Safeguard if "process" is not available (browser)
-    if (typeof process?.env.DEBUG !== 'undefined') {
-      this.DEBUG = true
-    }
-
     // We cache this promisified function as it's called from the main execution loop, and
     // promisifying each time has a huge performance impact.
     this._emit = <(topic: string, data: any) => Promise<void>>(
       promisify(this.events.emit.bind(this.events))
     )
+
+    // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
+    this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
   }
 
   protected async init(): Promise<void> {
@@ -607,7 +604,7 @@ export class EVM implements EVMInterface {
       if (!this._common.gteHardfork(Hardfork.Homestead)) {
         // Pre-Homestead behavior; put an empty contract.
         // This contract would be considered "DEAD" in later hard forks.
-        // It is thus an unecessary default item, which we have to save to dik
+        // It is thus an unnecessary default item, which we have to save to dik
         // It does change the state root, but it only wastes storage.
         //await this._state.putContractCode(message.to, result.returnValue)
         const account = await this.eei.getAccount(message.to)
@@ -643,6 +640,8 @@ export class EVM implements EVMInterface {
       contract: await this.eei.getAccount(message.to ?? Address.zero()),
       codeAddress: message.codeAddress,
       gasRefund: message.gasRefund,
+      containerCode: message.containerCode,
+      versionedHashes: message.versionedHashes ?? [],
     }
 
     const interpreter = new Interpreter(this, this.eei, env, message.gasLimit)
@@ -692,18 +691,18 @@ export class EVM implements EVMInterface {
    */
   async runCall(opts: EVMRunCallOpts): Promise<EVMResult> {
     let message = opts.message
+    let callerAccount
     if (!message) {
       this._block = opts.block ?? defaultBlock()
       this._tx = {
         gasPrice: opts.gasPrice ?? BigInt(0),
         origin: opts.origin ?? opts.caller ?? Address.zero(),
       }
-
       const caller = opts.caller ?? Address.zero()
 
       const value = opts.value ?? BigInt(0)
       if (opts.skipBalance === true) {
-        const callerAccount = await this.eei.getAccount(caller)
+        callerAccount = await this.eei.getAccount(caller)
         if (callerAccount.balance < value) {
           // if skipBalance and balance less than value, set caller balance to `value` to ensure sufficient funds
           callerAccount.balance = value
@@ -724,7 +723,19 @@ export class EVM implements EVMInterface {
         salt: opts.salt,
         selfdestruct: opts.selfdestruct ?? {},
         delegatecall: opts.delegatecall,
+        versionedHashes: opts.versionedHashes,
       })
+    }
+
+    if (message.depth === 0) {
+      if (!callerAccount) {
+        callerAccount = await this.eei.getAccount(message.caller)
+      }
+      callerAccount.nonce++
+      await this.eei.putAccount(message.caller, callerAccount)
+      if (this.DEBUG) {
+        debug(`Update fromAccount (caller) nonce (-> ${callerAccount.nonce}))`)
+      }
     }
 
     await this._emit('beforeMessage', message)
@@ -772,7 +783,10 @@ export class EVM implements EVMInterface {
     const err = result.execResult.exceptionError
     // This clause captures any error which happened during execution
     // If that is the case, then all refunds are forfeited
-    if (err) {
+    // There is one exception: if the CODESTORE_OUT_OF_GAS error is thrown
+    // (this only happens the Frontier/Chainstart fork)
+    // then the error is dismissed
+    if (err && err.error !== ERROR.CODESTORE_OUT_OF_GAS) {
       result.execResult.selfdestruct = {}
       result.execResult.gasRefund = BigInt(0)
     }
@@ -830,6 +844,7 @@ export class EVM implements EVMInterface {
       depth: opts.depth,
       selfdestruct: opts.selfdestruct ?? {},
       isStatic: opts.isStatic,
+      versionedHashes: opts.versionedHashes,
     })
 
     return this.runInterpreter(message, { pc: opts.pc })
@@ -872,8 +887,13 @@ export class EVM implements EVMInterface {
         message.code = precompile
         message.isCompiled = true
       } else {
-        message.code = await this.eei.getContractCode(message.codeAddress)
+        message.containerCode = await this.eei.getContractCode(message.codeAddress)
         message.isCompiled = false
+        if (this._common.isActivatedEIP(3540)) {
+          message.code = getEOFCode(message.containerCode)
+        } else {
+          message.code = message.containerCode
+        }
       }
     }
   }
@@ -884,10 +904,7 @@ export class EVM implements EVMInterface {
       addr = generateAddress2(message.caller.buf, message.salt, message.code as Buffer)
     } else {
       const acc = await this.eei.getAccount(message.caller)
-      let newNonce = acc.nonce
-      if (message.depth > 0) {
-        newNonce--
-      }
+      const newNonce = acc.nonce - BigInt(1)
       addr = generateAddress(message.caller.buf, bigIntToBuffer(newNonce))
     }
     return new Address(addr)
@@ -931,12 +948,16 @@ export class EVM implements EVMInterface {
     if (this._common.isActivatedEIP(1153)) this._transientStorage.clear()
   }
 
-  public copy() {
+  public copy(): EVMInterface {
+    const common = this._common.copy()
+    common.setHardfork(this._common.hardfork())
+
     const opts = {
       ...this._optsCached,
-      common: this._common.copy(),
+      common,
       eei: this.eei.copy(),
     }
+    ;(opts.eei as any)._common = common
     return new EVM(opts)
   }
 }

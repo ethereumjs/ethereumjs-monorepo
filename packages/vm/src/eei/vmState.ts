@@ -47,10 +47,9 @@ export class VmState implements EVMStateAccess {
     this._accessedStorage = [new Map()]
     this._accessedStorageReverted = [new Map()]
 
-    // Safeguard if "process" is not available (browser)
-    if (process !== undefined && typeof process.env.DEBUG !== 'undefined') {
-      this.DEBUG = true
-    }
+    // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
+    this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
+
     this._debug = createDebugLogger('vm:state')
   }
 
@@ -133,7 +132,7 @@ export class VmState implements EVMStateAccess {
   }
 
   async getAccount(address: Address): Promise<Account> {
-    return await this._stateManager.getAccount(address)
+    return this._stateManager.getAccount(address)
   }
 
   async putAccount(address: Address, account: Account): Promise<void> {
@@ -155,15 +154,15 @@ export class VmState implements EVMStateAccess {
   }
 
   async getContractCode(address: Address): Promise<Buffer> {
-    return await this._stateManager.getContractCode(address)
+    return this._stateManager.getContractCode(address)
   }
 
   async putContractCode(address: Address, value: Buffer): Promise<void> {
-    return await this._stateManager.putContractCode(address, value)
+    return this._stateManager.putContractCode(address, value)
   }
 
   async getContractStorage(address: Address, key: Buffer): Promise<Buffer> {
-    return await this._stateManager.getContractStorage(address, key)
+    return this._stateManager.getContractStorage(address, key)
   }
 
   async putContractStorage(address: Address, key: Buffer, value: Buffer) {
@@ -177,22 +176,22 @@ export class VmState implements EVMStateAccess {
   }
 
   async accountExists(address: Address): Promise<boolean> {
-    return await this._stateManager.accountExists(address)
+    return this._stateManager.accountExists(address)
   }
 
   async setStateRoot(stateRoot: Buffer): Promise<void> {
     if (this._checkpointCount !== 0) {
       throw new Error('Cannot set state root with uncommitted checkpoints')
     }
-    return await this._stateManager.setStateRoot(stateRoot)
+    return this._stateManager.setStateRoot(stateRoot)
   }
 
   async getStateRoot(): Promise<Buffer> {
-    return await this._stateManager.getStateRoot()
+    return this._stateManager.getStateRoot()
   }
 
   async hasStateRoot(root: Buffer): Promise<boolean> {
-    return await this._stateManager.hasStateRoot(root)
+    return this._stateManager.hasStateRoot(root)
   }
 
   /**

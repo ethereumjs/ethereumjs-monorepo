@@ -7,6 +7,9 @@ import {
 } from './account'
 import { bigIntToBuffer, bufferToBigInt, toBuffer, zeros } from './bytes'
 
+/**
+ * Handling and generating Ethereum addresses
+ */
 export class Address {
   public readonly buf: Buffer
 

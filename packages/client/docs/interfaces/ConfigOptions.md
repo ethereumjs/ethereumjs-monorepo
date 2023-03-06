@@ -199,7 +199,7 @@ ___
 
 Whether to test and run snapSync. When fully ready, this needs to
 be replaced by a more sophisticated condition based on how far back we are
-from the head, and how to run it in conjuction with the beacon sync
+from the head, and how to run it in conjunction with the beacon sync
 blocks at the head of chain.
 
 Default: false

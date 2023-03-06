@@ -18,7 +18,7 @@ import { ERROR } from '../exceptions'
 import {
   addressToBuffer,
   describeLocation,
-  exponentation,
+  exponentiation,
   fromTwos,
   getDataSlice,
   jumpIsValid,
@@ -178,7 +178,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.stack.push(base)
         return
       }
-      const r = exponentation(base, exponent)
+      const r = exponentiation(base, exponent)
       runState.stack.push(r)
     },
   ],
@@ -455,7 +455,6 @@ export const handlers: Map<number, OpHandler> = new Map([
         const data = getDataSlice(runState.interpreter.getCallData(), dataOffset, dataLength)
         const memOffsetNum = Number(memOffset)
         const dataLengthNum = Number(dataLength)
-        runState.memory.extend(memOffsetNum, dataLengthNum)
         runState.memory.write(memOffsetNum, dataLengthNum, data)
       }
     },
@@ -477,7 +476,6 @@ export const handlers: Map<number, OpHandler> = new Map([
         const data = getDataSlice(runState.interpreter.getCode(), codeOffset, dataLength)
         const memOffsetNum = Number(memOffset)
         const lengthNum = Number(dataLength)
-        runState.memory.extend(memOffsetNum, lengthNum)
         runState.memory.write(memOffsetNum, lengthNum, data)
       }
     },
@@ -505,7 +503,6 @@ export const handlers: Map<number, OpHandler> = new Map([
         const data = getDataSlice(code, codeOffset, dataLength)
         const memOffsetNum = Number(memOffset)
         const lengthNum = Number(dataLength)
-        runState.memory.extend(memOffsetNum, lengthNum)
         runState.memory.write(memOffsetNum, lengthNum, data)
       }
     },
@@ -516,15 +513,13 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState) {
       const addressBigInt = runState.stack.pop()
       const address = new Address(addressToBuffer(addressBigInt))
-      const empty = (await runState.eei.getAccount(address)).isEmpty()
-      if (empty) {
+      const account = await runState.eei.getAccount(address)
+      if (account.isEmpty()) {
         runState.stack.push(BigInt(0))
         return
       }
 
-      const codeHash = (await runState.eei.getAccount(new Address(addressToBuffer(addressBigInt))))
-        .codeHash
-      runState.stack.push(BigInt('0x' + codeHash.toString('hex')))
+      runState.stack.push(BigInt('0x' + account.codeHash.toString('hex')))
     },
   ],
   // 0x3d: RETURNDATASIZE
@@ -548,7 +543,6 @@ export const handlers: Map<number, OpHandler> = new Map([
         )
         const memOffsetNum = Number(memOffset)
         const lengthNum = Number(dataLength)
-        runState.memory.extend(memOffsetNum, lengthNum)
         runState.memory.write(memOffsetNum, lengthNum, data)
       }
     },
@@ -638,6 +632,18 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.stack.push(runState.interpreter.getBlockBaseFee())
     },
   ],
+  // 0x49: DATAHASH
+  [
+    0x49,
+    function (runState) {
+      const index = runState.stack.pop()
+      if (runState.env.versionedHashes.length > Number(index)) {
+        runState.stack.push(bufferToBigInt(runState.env.versionedHashes[Number(index)]))
+      } else {
+        runState.stack.push(BigInt(0))
+      }
+    },
+  ],
   // 0x50 range - 'storage' and execution
   // 0x50: POP
   [
@@ -662,7 +668,6 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [offset, word] = runState.stack.popN(2)
       const buf = setLengthLeft(bigIntToBuffer(word), 32)
       const offsetNum = Number(offset)
-      runState.memory.extend(offsetNum, 32)
       runState.memory.write(offsetNum, 32, buf)
     },
   ],
@@ -674,7 +679,6 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       const buf = bigIntToBuffer(byte & BigInt(0xff))
       const offsetNum = Number(offset)
-      runState.memory.extend(offsetNum, 1)
       runState.memory.write(offsetNum, 1, buf)
     },
   ],
@@ -825,10 +829,9 @@ export const handlers: Map<number, OpHandler> = new Map([
       ) {
         trap(ERROR.OUT_OF_RANGE)
       }
+
       const loaded = bufferToBigInt(
-        runState.interpreter
-          .getCode()
-          .slice(runState.programCounter, runState.programCounter + numToPush)
+        runState.code.slice(runState.programCounter, runState.programCounter + numToPush)
       )
       runState.programCounter += numToPush
       runState.stack.push(loaded)

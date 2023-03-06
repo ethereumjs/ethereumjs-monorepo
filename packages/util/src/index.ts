@@ -4,6 +4,11 @@
 export * from './constants'
 
 /**
+ * Units helpers
+ */
+export * from './units'
+
+/**
  * Account class and helper functions
  */
 export * from './account'
@@ -12,6 +17,11 @@ export * from './account'
  * Address type
  */
 export * from './address'
+
+/**
+ * Withdrawal type
+ */
+export * from './withdrawal'
 
 /**
  * ECDSA signature
@@ -24,6 +34,11 @@ export * from './signature'
 export * from './bytes'
 
 /**
+ * SSZ containers
+ */
+export * as ssz from './ssz'
+
+/**
  * Helpful TypeScript types
  */
 export * from './types'
@@ -31,6 +46,7 @@ export * from './types'
 /**
  * Export ethjs-util methods
  */
+export * from './asyncEventEmitter'
 export {
   arrayContainsArray,
   fromAscii,
@@ -43,3 +59,4 @@ export {
   stripHexPrefix,
   toAscii,
 } from './internal'
+export * from './lock'

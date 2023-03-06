@@ -53,6 +53,8 @@ Read the [API docs](docs/).
   - Helpful TypeScript types
 - [internal](src/internal.ts)
   - Internalized helper methods
+- [withdrawal](src/withdrawal.ts)
+  - Withdrawal class (EIP-4895)
 
 ### BigInt Support
 
