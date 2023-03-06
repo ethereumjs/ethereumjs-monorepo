@@ -9,7 +9,7 @@ import * as tape from 'tape'
 import genesisJSON = require('../../../../client/test/testdata/geth-genesis/withdrawals.json')
 import { VM } from '../../../src/vm'
 
-import type { WithdrawalBuffer, WithdrawalData } from '@ethereumjs/util'
+import type { WithdrawalBytes, WithdrawalData } from '@ethereumjs/util'
 
 const common = new Common({
   chain: Chain.Mainnet,
@@ -127,7 +127,7 @@ tape('EIP4895 tests', (t) => {
     )
 
     const gethBlockBufferArray = decode(Buffer.from(gethWithdrawals8BlockRlp, 'hex'))
-    const withdrawals = (gethBlockBufferArray[3] as WithdrawalBuffer[]).map((wa) =>
+    const withdrawals = (gethBlockBufferArray[3] as WithdrawalBytes[]).map((wa) =>
       Withdrawal.fromValuesArray(wa)
     )
     st.equal(withdrawals[0].amount, BigInt(0), 'withdrawal 0 should have 0 amount')
@@ -201,7 +201,7 @@ tape('EIP4895 tests', (t) => {
     const vmCopy = await vm.copy()
 
     const gethBlockBufferArray = decode(Buffer.from(gethWithdrawals8BlockRlp, 'hex'))
-    const withdrawals = (gethBlockBufferArray[3] as WithdrawalBuffer[]).map((wa) =>
+    const withdrawals = (gethBlockBufferArray[3] as WithdrawalBytes[]).map((wa) =>
       Withdrawal.fromValuesArray(wa)
     )
     const td = await blockchain.getTotalDifficulty(genesisBlock.hash())
