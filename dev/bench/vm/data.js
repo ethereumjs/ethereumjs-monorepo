@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1677858571337,
+  "lastUpdate": 1678115277582,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "562b0ff16662b68a1bbbe0110c941916edc793a6",
-          "message": "Schedule shanghai on sepolia (#2527)\n\n* Schedule shanghai on sepolia\r\n\r\n* format",
-          "timestamp": "2023-02-10T13:11:43+01:00",
-          "tree_id": "8b120b054887833f5be698de02f275a70fad087f",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/562b0ff16662b68a1bbbe0110c941916edc793a6"
-        },
-        "date": 1676031312184,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15549,
-            "range": "±3.35%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 14229,
-            "range": "±7.20%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 15114,
-            "range": "±2.07%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 15046,
-            "range": "±2.45%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 13526,
-            "range": "±10.52%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.87%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e1a2cca1ada35d7d4b7a94bdfa5d62a1195b5f36",
+          "message": "VM: some optimization on the bnadd/bnmul precompiles to only copy over the necessary 128 bytes as input for the WASM call (#2568)",
+          "timestamp": "2023-03-06T10:04:59-05:00",
+          "tree_id": "58d124717f5f4dcecb84fcb5f16a84f96ab5f775",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e1a2cca1ada35d7d4b7a94bdfa5d62a1195b5f36"
+        },
+        "date": 1678115276197,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15641,
+            "range": "±2.34%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 15098,
+            "range": "±4.81%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15698,
+            "range": "±1.71%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15083,
+            "range": "±2.12%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 13527,
+            "range": "±7.44%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
           }
         ]
       }
