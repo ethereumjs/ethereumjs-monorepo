@@ -1,4 +1,4 @@
-import { bytesToHex, bytesToUtf8, hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, bytesToUtf8, crypto, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers'
 import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal'
@@ -243,25 +243,6 @@ export function bytesToBigInt(bytes: Uint8Array) {
 }
 
 /**
- * Converts a {@link Uint8Array} to a binary {@link string}
- */
-export const bytesToBinaryString = (bytes: Uint8Array): string => {
-  return bytes.reduce((acc, byte) => acc + String.fromCharCode(parseInt(byte.toString(2))), '')
-}
-
-/**
- * Converts a binary {@link string} to a {@link Uint8Array}
- */
-export const binaryStringToBytes = (binaryString: string): Uint8Array => {
-  const bytes = new Uint8Array(binaryString.length / 8)
-  for (let i = 0; i < bytes.length; i++) {
-    const byteStr = binaryString.substr(i * 8, 8)
-    bytes[i] = parseInt(byteStr, 2)
-  }
-  return bytes
-}
-
-/**
  * Converts a {@link bigint} to a {@link Uint8Array}
  */
 export const bigIntToBytes = (num: bigint) => {
@@ -421,6 +402,41 @@ export function bigIntToUnpaddedBytes(value: bigint): Uint8Array {
 
 export function intToUnpaddedBytes(value: number): Uint8Array {
   return unpadBytes(intToBytes(value))
+}
+
+/**
+ * Compares two Uint8Arrays and returns a number indicating their order in a sorted array.
+ *
+ * @param {Uint8Array} value1 - The first Uint8Array to compare.
+ * @param {Uint8Array} value2 - The second Uint8Array to compare.
+ * @returns {number} A positive number if value1 is larger than value2,
+ *                   A negative number if value1 is smaller than value2,
+ *                   or 0 if value1 and value2 are equal.
+ */
+export function compareBytes(value1: Uint8Array, value2: Uint8Array): number {
+  const bigIntValue1 = bytesToBigInt(value1)
+  const bigIntValue2 = bytesToBigInt(value2)
+  return bigIntValue1 > bigIntValue2 ? 1 : bigIntValue1 < bigIntValue2 ? -1 : 0
+}
+
+/**
+ * Generates a Uint8Array of random bytes of specified length.
+ *
+ * @param {number} length - The length of the Uint8Array.
+ * @returns {Uint8Array} A Uint8Array of random bytes of specified length.
+ */
+export function randomBytes(length: number): Uint8Array {
+  const array = new Uint8Array(length)
+
+  if (crypto.node !== undefined) {
+    crypto.node.getRandomValues(array)
+  } else if (crypto.web) {
+    crypto.web.getRandomValues(array)
+  } else {
+    throw new Error('Unable to find crypto library')
+  }
+
+  return array
 }
 
 export {
