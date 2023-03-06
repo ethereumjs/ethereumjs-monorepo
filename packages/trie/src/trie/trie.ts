@@ -1,4 +1,4 @@
-import { RLP_EMPTY_STRING, bytesToHex, equalsBytes } from '@ethereumjs/util'
+import { RLP_EMPTY_STRING, bytesToHex, bytesToUtf8, equalsBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { CheckpointDB, MapDB } from '../db'
@@ -78,8 +78,6 @@ export class Trie {
     if (opts?.useKeyHashing === true) {
       key = (opts?.useKeyHashingFunction ?? keccak256)(ROOT_DB_KEY) as Uint8Array
     }
-
-    key = Uint8Array.from(key)
 
     if (opts?.db !== undefined && opts?.useRootPersistence === true) {
       if (opts?.root === undefined) {
@@ -163,7 +161,7 @@ export class Trie {
    */
   async put(key: Uint8Array, value: Uint8Array): Promise<void> {
     if (this._opts.useRootPersistence && equalsBytes(key, ROOT_DB_KEY) === true) {
-      throw new Error(`Attempted to set '${ROOT_DB_KEY.toString()}' key but it is not allowed.`)
+      throw new Error(`Attempted to set '${bytesToUtf8(ROOT_DB_KEY)}' key but it is not allowed.`)
     }
 
     // If value is empty, delete
@@ -657,7 +655,7 @@ export class Trie {
     const encoded = node.serialize()
 
     if (encoded.length >= 32 || topLevel) {
-      const hashRoot = Uint8Array.from(this.hash(encoded))
+      const hashRoot = this.hash(encoded)
 
       if (remove) {
         if (this._opts.useNodePruning) {

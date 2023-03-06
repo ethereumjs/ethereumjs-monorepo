@@ -1,3 +1,5 @@
+import { utf8ToBytes } from 'ethereum-cryptography/utils'
+
 import type { BranchNode, ExtensionNode, LeafNode } from './trie'
 import type { WalkController } from './util/walkController'
 
@@ -123,4 +125,4 @@ export type Checkpoint = {
   root: Uint8Array
 }
 
-export const ROOT_DB_KEY = new TextEncoder().encode('__root__')
+export const ROOT_DB_KEY = utf8ToBytes('__root__')

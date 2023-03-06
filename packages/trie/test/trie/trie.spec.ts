@@ -1,4 +1,4 @@
-import { KECCAK256_RLP, bytesToHex } from '@ethereumjs/util'
+import { KECCAK256_RLP, bytesToHex, equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
@@ -100,7 +100,7 @@ for (const { constructor, defaults, title } of [
       // @ts-expect-error
       st.equal(await trie._db.get(ROOT_DB_KEY), null)
 
-      await trie.put(Buffer.from('foo'), Buffer.from('bar'))
+      await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
 
       // @ts-expect-error
       st.equal(bytesToHex(await trie._db.get(ROOT_DB_KEY)), EXPECTED_ROOTS)
@@ -117,12 +117,12 @@ for (const { constructor, defaults, title } of [
       })
 
       // @ts-expect-error
-      st.true((await trie._db.get(ROOT_DB_KEY))?.equals(KECCAK256_RLP))
+      st.ok(equalsBytes((await trie._db.get(ROOT_DB_KEY))!, KECCAK256_RLP))
 
-      await trie.put(Buffer.from('foo'), Buffer.from('bar'))
+      await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
 
       // @ts-expect-error
-      st.false((await trie._db.get(ROOT_DB_KEY))?.equals(KECCAK256_RLP))
+      st.false(equalsBytes((await trie._db.get(ROOT_DB_KEY))!, KECCAK256_RLP))
 
       st.end()
     })
@@ -139,7 +139,7 @@ for (const { constructor, defaults, title } of [
         // @ts-expect-error
         st.equal(await trie._db.get(ROOT_DB_KEY), null)
 
-        await trie.put(Buffer.from('do_not_persist_with_db'), Buffer.from('bar'))
+        await trie.put(utf8ToBytes('do_not_persist_with_db'), utf8ToBytes('bar'))
 
         // @ts-expect-error
         st.equal(await trie._db.get(ROOT_DB_KEY), null)
@@ -154,7 +154,7 @@ for (const { constructor, defaults, title } of [
       // @ts-expect-error
       st.equal(await trie._db.get(ROOT_DB_KEY), null)
 
-      await trie.put(Buffer.from('do_not_persist_without_db'), Buffer.from('bar'))
+      await trie.put(utf8ToBytes('do_not_persist_without_db'), utf8ToBytes('bar'))
 
       // @ts-expect-error
       st.notEqual(await trie._db.get(ROOT_DB_KEY), null)
@@ -168,7 +168,7 @@ for (const { constructor, defaults, title } of [
       const trie = await constructor.create({ ...defaults, db, useRootPersistence: true })
       // @ts-expect-error
       st.equal(await trie._db.get(ROOT_DB_KEY), null)
-      await trie.put(Buffer.from('foo'), Buffer.from('bar'))
+      await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
       // @ts-expect-error
       st.equal(bytesToHex(await trie._db.get(ROOT_DB_KEY)), EXPECTED_ROOTS)
 
@@ -193,7 +193,7 @@ for (const { constructor, defaults, title } of [
       const trie = new constructor({ ...defaults, db: new MapDB(), useRootPersistence: true })
 
       try {
-        await trie.put(BASE_DB_KEY, Buffer.from('bar'))
+        await trie.put(BASE_DB_KEY, utf8ToBytes('bar'))
         st.fail("Attempting to set '__root__' should fail but it did not.")
       } catch ({ message }) {
         st.equal(message, "Attempted to set '__root__' key but it is not allowed.")
