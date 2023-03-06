@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, toBytes } from '@ethereumjs/util'
+import { Address, hexStringToBytes, toBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import {
@@ -153,7 +153,7 @@ tape('[Invalid Array Input values]', (t) => {
     for (const txType of txTypes) {
       let tx = TransactionFactory.fromTxData({ type: txType })
       if (signed) {
-        tx = tx.sign(Buffer.from('42'.repeat(32), 'hex'))
+        tx = tx.sign(hexStringToBytes('42'.repeat(32)))
       }
       const rawValues = tx.raw()
       for (let x = 0; x < rawValues.length; x++) {
@@ -215,14 +215,14 @@ tape('[Invalid Access Lists]', (t) => {
             accessList: <any>invalidAccessListItem,
           })
           if (signed) {
-            tx = tx.sign(Buffer.from('42'.repeat(32), 'hex'))
+            tx = tx.sign(hexStringToBytes('42'.repeat(32)))
           }
           t.fail('did not fail on `fromTxData`')
         } catch (e: any) {
           t.pass('failed ok on decoding in `fromTxData`')
           tx = TransactionFactory.fromTxData({ type: txType })
           if (signed) {
-            tx = tx.sign(Buffer.from('42'.repeat(32), 'hex'))
+            tx = tx.sign(hexStringToBytes('42'.repeat(32)))
           }
         }
         const rawValues = tx!.raw()

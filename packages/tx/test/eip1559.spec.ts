@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { TWO_POW256 } from '@ethereumjs/util'
+import { TWO_POW256, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { FeeMarketEIP1559Transaction } from '../src'
@@ -12,8 +12,8 @@ const common = new Common({
   hardfork: Hardfork.London,
 })
 
-const validAddress = Buffer.from('01'.repeat(20), 'hex')
-const validSlot = Buffer.from('01'.repeat(32), 'hex')
+const validAddress = hexStringToBytes('01'.repeat(20))
+const validSlot = hexStringToBytes('01'.repeat(32))
 const chainId = BigInt(4)
 
 tape('[FeeMarketEIP1559Transaction]', function (t) {
@@ -92,12 +92,12 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
   t.test('sign()', function (st) {
     for (let index = 0; index < testdata.length; index++) {
       const data = testdata[index]
-      const pkey = Buffer.from(data.privateKey.slice(2), 'hex')
+      const pkey = hexStringToBytes(data.privateKey)
       const txn = FeeMarketEIP1559Transaction.fromTxData(data, { common })
       const signed = txn.sign(pkey)
-      const rlpSerialized = Buffer.from(RLP.encode(Uint8Array.from(signed.serialize())))
+      const rlpSerialized = RLP.encode(Uint8Array.from(signed.serialize()))
       st.ok(
-        rlpSerialized.equals(Buffer.from(data.signedTransactionRLP.slice(2), 'hex')),
+        equalsBytes(rlpSerialized, hexStringToBytes(data.signedTransactionRLP)),
         'Should sign txs correctly'
       )
     }
@@ -106,23 +106,25 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
 
   t.test('hash()', function (st) {
     const data = testdata[0]
-    const pkey = Buffer.from(data.privateKey.slice(2), 'hex')
+    const pkey = hexStringToBytes(data.privateKey)
     let txn = FeeMarketEIP1559Transaction.fromTxData(data, { common })
     let signed = txn.sign(pkey)
-    const expectedHash = Buffer.from(
-      '2e564c87eb4b40e7f469b2eec5aa5d18b0b46a24e8bf0919439cfb0e8fcae446',
-      'hex'
+    const expectedHash = hexStringToBytes(
+      '2e564c87eb4b40e7f469b2eec5aa5d18b0b46a24e8bf0919439cfb0e8fcae446'
     )
-    st.ok(signed.hash().equals(expectedHash), 'Should provide the correct hash when frozen')
+    st.ok(equalsBytes(signed.hash(), expectedHash), 'Should provide the correct hash when frozen')
     txn = FeeMarketEIP1559Transaction.fromTxData(data, { common, freeze: false })
     signed = txn.sign(pkey)
-    st.ok(signed.hash().equals(expectedHash), 'Should provide the correct hash when not frozen')
+    st.ok(
+      equalsBytes(signed.hash(), expectedHash),
+      'Should provide the correct hash when not frozen'
+    )
     st.end()
   })
 
   t.test('freeze property propagates from unsigned tx to signed tx', function (st) {
     const data = testdata[0]
-    const pkey = Buffer.from(data.privateKey.slice(2), 'hex')
+    const pkey = hexStringToBytes(data.privateKey)
     const txn = FeeMarketEIP1559Transaction.fromTxData(data, { common, freeze: false })
     st.notOk(Object.isFrozen(txn), 'tx object is not frozen')
     const signedTxn = txn.sign(pkey)
@@ -132,7 +134,7 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
 
   t.test('common propagates from the common of tx, not the common in TxOptions', function (st) {
     const data = testdata[0]
-    const pkey = Buffer.from(data.privateKey.slice(2), 'hex')
+    const pkey = hexStringToBytes(data.privateKey)
     const txn = FeeMarketEIP1559Transaction.fromTxData(data, { common, freeze: false })
     const newCommon = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London, eips: [2537] })
     st.notDeepEqual(newCommon, common, 'new common is different than original common')
@@ -149,22 +151,20 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
   t.test('unsigned tx -> getMessageToSign()', function (t) {
     const unsignedTx = FeeMarketEIP1559Transaction.fromTxData(
       {
-        data: Buffer.from('010200', 'hex'),
+        data: hexStringToBytes('010200'),
         to: validAddress,
         accessList: [[validAddress, [validSlot]]],
         chainId,
       },
       { common }
     )
-    const expectedHash = Buffer.from(
-      'fa81814f7dd57bad435657a05eabdba2815f41e3f15ddd6139027e7db56b0dea',
-      'hex'
+    const expectedHash = hexStringToBytes(
+      'fa81814f7dd57bad435657a05eabdba2815f41e3f15ddd6139027e7db56b0dea'
     )
     t.deepEqual(unsignedTx.getMessageToSign(true), expectedHash), 'correct hashed version'
 
-    const expectedSerialization = Buffer.from(
-      '02f85904808080809401010101010101010101010101010101010101018083010200f838f7940101010101010101010101010101010101010101e1a00101010101010101010101010101010101010101010101010101010101010101',
-      'hex'
+    const expectedSerialization = hexStringToBytes(
+      '02f85904808080809401010101010101010101010101010101010101018083010200f838f7940101010101010101010101010101010101010101e1a00101010101010101010101010101010101010101010101010101010101010101'
     )
     t.deepEqual(
       unsignedTx.getMessageToSign(false),
@@ -177,7 +177,7 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
 
   t.test('toJSON()', function (st) {
     const data = testdata[0]
-    const pkey = Buffer.from(data.privateKey.slice(2), 'hex')
+    const pkey = hexStringToBytes(data.privateKey)
     const txn = FeeMarketEIP1559Transaction.fromTxData(data, { common })
     const signed = txn.sign(pkey)
 

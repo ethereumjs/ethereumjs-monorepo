@@ -1,14 +1,15 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
-  arrToBufArr,
   bytesToBigInt,
   bytesToHex,
+  bytesToPrefixedHexString,
+  equalsBytes,
+  hexStringToBytes,
   intToBytes,
   toBytes,
   unpadBytes,
 } from '@ethereumjs/util'
-import { Buffer } from 'buffer'
 import * as tape from 'tape'
 
 import { Transaction } from '../src'
@@ -100,15 +101,15 @@ tape('[Transaction]', function (t) {
       const txData = tx.raw.map(toBytes)
       const pt = Transaction.fromValuesArray(txData)
 
-      st.equal(bytesToHex(unpadBytes(toBytes(pt.nonce))), tx.raw[0])
-      st.equal(bytesToHex(toBytes(pt.gasPrice)), tx.raw[1])
-      st.equal(bytesToHex(toBytes(pt.gasLimit)), tx.raw[2])
+      st.equal(bytesToPrefixedHexString(unpadBytes(toBytes(pt.nonce))), tx.raw[0])
+      st.equal(bytesToPrefixedHexString(toBytes(pt.gasPrice)), tx.raw[1])
+      st.equal(bytesToPrefixedHexString(toBytes(pt.gasLimit)), tx.raw[2])
       st.equal(pt.to?.toString(), tx.raw[3])
-      st.equal(bytesToHex(unpadBytes(toBytes(pt.value))), tx.raw[4])
-      st.equal('0x' + pt.data.toString('hex'), tx.raw[5])
-      st.equal(bytesToHex(toBytes(pt.v)), tx.raw[6])
-      st.equal(bytesToHex(toBytes(pt.r)), tx.raw[7])
-      st.equal(bytesToHex(toBytes(pt.s)), tx.raw[8])
+      st.equal(bytesToPrefixedHexString(unpadBytes(toBytes(pt.value))), tx.raw[4])
+      st.equal(bytesToPrefixedHexString(pt.data), tx.raw[5])
+      st.equal(bytesToPrefixedHexString(toBytes(pt.v)), tx.raw[6])
+      st.equal(bytesToPrefixedHexString(toBytes(pt.r)), tx.raw[7])
+      st.equal(bytesToPrefixedHexString(toBytes(pt.s)), tx.raw[8])
 
       transactions.push(pt)
     }
@@ -127,7 +128,7 @@ tape('[Transaction]', function (t) {
       let common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Petersburg })
       let tx = Transaction.fromTxData({}, { common })
       st.equal(tx.common.chainId(), BigInt(5))
-      const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
+      const privKey = hexStringToBytes(txFixtures[0].privateKey)
       tx = tx.sign(privKey)
       const serialized = tx.serialize()
       common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
@@ -210,8 +211,8 @@ tape('[Transaction]', function (t) {
   t.test('serialize()', function (st) {
     for (const [i, tx] of transactions.entries()) {
       const s1 = tx.serialize()
-      const s2 = Buffer.from(RLP.encode(txFixtures[i].raw))
-      st.ok(s1.equals(s2))
+      const s2 = RLP.encode(txFixtures[i].raw)
+      st.ok(equalsBytes(s1, s2))
     }
     st.end()
   })
@@ -220,11 +221,10 @@ tape('[Transaction]', function (t) {
     const tx = Transaction.fromTxData({ value: 5000 })
     const s1 = tx.serialize()
 
-    const s1Rlp = toBytes('0x' + s1.toString('hex'))
-    const tx2 = Transaction.fromSerializedTx(s1Rlp)
+    const tx2 = Transaction.fromSerializedTx(s1)
     const s2 = tx2.serialize()
 
-    st.ok(s1.equals(s2))
+    st.ok(equalsBytes(s1, s2))
     st.end()
   })
 
@@ -245,16 +245,16 @@ tape('[Transaction]', function (t) {
     })
     st.deepEqual(
       tx.hash(),
-      Buffer.from('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa', 'hex')
+      hexStringToBytes('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa')
     )
     st.deepEqual(
       tx.getMessageToSign(),
-      Buffer.from('61e1ec33764304dddb55348e7883d4437426f44ab3ef65e6da1e025734c03ff0', 'hex')
+      hexStringToBytes('61e1ec33764304dddb55348e7883d4437426f44ab3ef65e6da1e025734c03ff0')
     )
     st.equal(tx.getMessageToSign(false).length, 6)
     st.deepEqual(
       tx.hash(),
-      Buffer.from('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa', 'hex')
+      hexStringToBytes('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa')
     )
     st.end()
   })
@@ -262,15 +262,15 @@ tape('[Transaction]', function (t) {
   t.test('hash() -> with defined chainId', function (st) {
     const tx = Transaction.fromValuesArray(txFixtures[4].raw.map(toBytes))
     st.equal(
-      tx.hash().toString('hex'),
+      bytesToHex(tx.hash()),
       '0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4'
     )
     st.equal(
-      tx.hash().toString('hex'),
+      bytesToHex(tx.hash()),
       '0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4'
     )
     st.equal(
-      tx.getMessageToSign().toString('hex'),
+      bytesToHex(tx.getMessageToSign()),
       'f97c73fdca079da7652dbc61a46cd5aeef804008e057be3e712c43eac389aaf0'
     )
     st.end()
@@ -281,8 +281,8 @@ tape('[Transaction]', function (t) {
     function (st) {
       for (const tx of txFixturesEip155) {
         const pt = Transaction.fromSerializedTx(toBytes(tx.rlp))
-        st.equal(pt.getMessageToSign().toString('hex'), tx.hash)
-        st.equal('0x' + pt.serialize().toString('hex'), tx.rlp)
+        st.equal(bytesToHex(pt.getMessageToSign()), tx.hash)
+        st.equal(bytesToPrefixedHexString(pt.serialize()), tx.rlp)
         st.equal(pt.getSenderAddress().toString(), '0x' + tx.sender)
       }
       st.end()
@@ -301,9 +301,8 @@ tape('[Transaction]', function (t) {
         '0x0de0b6b3a7640000',
         '0x',
       ]
-      const privateKey = Buffer.from(
-        '4646464646464646464646464646464646464646464646464646464646464646',
-        'hex'
+      const privateKey = hexStringToBytes(
+        '4646464646464646464646464646464646464646464646464646464646464646'
       )
       const pt = Transaction.fromValuesArray(txRaw.map(toBytes))
 
@@ -311,16 +310,16 @@ tape('[Transaction]', function (t) {
       // It's not the output of `serialize()`, but the pre-image of the hash returned by `tx.hash(false)`.
       // We don't have a getter for such a value in Transaction.
       st.equal(
-        pt.serialize().toString('hex'),
+        bytesToHex(pt.serialize()),
         'ec098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a764000080808080'
       )
       const signedTx = pt.sign(privateKey)
       st.equal(
-        signedTx.getMessageToSign().toString('hex'),
+        bytesToHex(signedTx.getMessageToSign()),
         'daf5a779ae972f972197303d7b574746c7ef83eadac0f2791ad23db92e4c8e53'
       )
       st.equal(
-        signedTx.serialize().toString('hex'),
+        bytesToHex(signedTx.serialize()),
         'f86c098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a76400008025a028ef61340bd939bc2195fe537567866003e1a15d3c71ff63e1590620aa636276a067cbe9d8997f761aecb703304b3800ccf555c9f3dc64214b297fb1966a3b6d83'
       )
       st.end()
@@ -336,7 +335,7 @@ tape('[Transaction]', function (t) {
           common,
         })
 
-        const privKey = Buffer.from(txData.privateKey, 'hex')
+        const privKey = hexStringToBytes(txData.privateKey)
         const txSigned = tx.sign(privKey)
 
         st.equal(
@@ -361,15 +360,14 @@ tape('[Transaction]', function (t) {
         '0x0de0b6b3a7640000',
         '0x',
       ]
-      const privateKey = Buffer.from(
-        'DE3128752F183E8930D7F00A2AAA302DCB5E700B2CBA2D8CA5795660F07DEFD5',
-        'hex'
+      const privateKey = hexStringToBytes(
+        'DE3128752F183E8930D7F00A2AAA302DCB5E700B2CBA2D8CA5795660F07DEFD5'
       )
       const common = new Common({ chain: 3 })
       const tx = Transaction.fromValuesArray(txRaw.map(toBytes), { common })
       const signedTx = tx.sign(privateKey)
       st.equal(
-        signedTx.serialize().toString('hex'),
+        bytesToHex(signedTx.serialize()),
         'f86c018502540be40082520894d7250824390ec5c8b71d856b5de895e271170d9d880de0b6b3a76400008029a0d3512c68099d184ccf54f44d9d6905bff303128574b663dcf10b4c726ddd8133a0628acc8f481dea593f13309dfc5f0340f83fdd40cf9fbe47f782668f6f3aec74'
       )
 
@@ -389,9 +387,8 @@ tape('[Transaction]', function (t) {
         value: '0x0',
       }
 
-      const privateKey = Buffer.from(
-        '4646464646464646464646464646464646464646464646464646464646464646',
-        'hex'
+      const privateKey = hexStringToBytes(
+        '4646464646464646464646464646464646464646464646464646464646464646'
       )
 
       const common = new Common({
@@ -436,7 +433,7 @@ tape('[Transaction]', function (t) {
       st.true(
         signedWithoutEIP155.v?.toString(16) === '1c' ||
           signedWithoutEIP155.v?.toString(16) === '1b',
-        "v shouldn' be EIP155 encoded"
+        "v shouldn't be EIP155 encoded"
       )
 
       st.end()
@@ -469,7 +466,7 @@ tape('[Transaction]', function (t) {
     let tx = Transaction.fromTxData({}, { common })
     st.equal(tx.common.chainId(), BigInt(5))
 
-    const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
+    const privKey = hexStringToBytes(txFixtures[0].privateKey)
     tx = tx.sign(privKey)
 
     const serialized = tx.serialize()
@@ -484,7 +481,7 @@ tape('[Transaction]', function (t) {
   t.test('freeze property propagates from unsigned tx to signed tx', function (st) {
     const tx = Transaction.fromTxData({}, { freeze: false })
     st.notOk(Object.isFrozen(tx), 'tx object is not frozen')
-    const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
+    const privKey = hexStringToBytes(txFixtures[0].privateKey)
     const signedTxn = tx.sign(privKey)
     st.notOk(Object.isFrozen(signedTxn), 'tx object is not frozen')
     st.end()
@@ -492,7 +489,7 @@ tape('[Transaction]', function (t) {
 
   t.test('common propagates from the common of tx, not the common in TxOptions', function (st) {
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
-    const pkey = Buffer.from(txFixtures[0].privateKey, 'hex')
+    const pkey = hexStringToBytes(txFixtures[0].privateKey)
     const txn = Transaction.fromTxData({}, { common, freeze: false })
     const newCommon = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London, eips: [2537] })
     st.notDeepEqual(newCommon, common, 'new common is different than original common')
@@ -518,9 +515,8 @@ tape('[Transaction]', function (t) {
       to: '0xd9024df085d09398ec76fbed18cac0e1149f50dc',
       value: '0x0',
     }
-    const privateKey = Buffer.from(
-      '4646464646464646464646464646464646464646464646464646464646464646',
-      'hex'
+    const privateKey = hexStringToBytes(
+      '4646464646464646464646464646464646464646464646464646464646464646'
     )
     tx = Transaction.fromTxData(txData)
     st.notOk(tx.isSigned())
@@ -541,7 +537,7 @@ tape('[Transaction]', function (t) {
     tx = Transaction.fromSerializedTx(rawSigned)
     st.ok(tx.isSigned())
 
-    const signedValues = arrToBufArr(RLP.decode(Uint8Array.from(rawSigned))) as Buffer[]
+    const signedValues = RLP.decode(Uint8Array.from(rawSigned)) as Uint8Array[]
     tx = Transaction.fromValuesArray(signedValues)
     st.ok(tx.isSigned())
     tx = Transaction.fromValuesArray(signedValues.slice(0, 6))

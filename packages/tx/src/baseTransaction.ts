@@ -28,7 +28,7 @@ import type {
 import type { BigIntLike } from '@ethereumjs/util'
 
 interface TransactionCache {
-  hash: Buffer | undefined
+  hash: Uint8Array | undefined
   dataFee?: {
     value: bigint
     hardfork: string | Hardfork
@@ -49,7 +49,7 @@ export abstract class BaseTransaction<TransactionObject> {
   public readonly gasLimit: bigint
   public readonly to?: Address
   public readonly value: bigint
-  public readonly data: Buffer
+  public readonly data: Uint8Array
 
   public readonly v?: bigint
   public readonly r?: bigint
@@ -242,16 +242,16 @@ export abstract class BaseTransaction<TransactionObject> {
    * If the tx's `to` is to the creation address
    */
   toCreationAddress(): boolean {
-    return this.to === undefined || this.to.buf.length === 0
+    return this.to === undefined || this.to.bytes.length === 0
   }
 
   /**
-   * Returns a Buffer Array of the raw Buffers of this transaction, in order.
+   * Returns a Uint8Array Array of the raw Bytes of this transaction, in order.
    *
    * Use {@link BaseTransaction.serialize} to add a transaction to a block
    * with {@link Block.fromValuesArray}.
    *
-   * For an unsigned tx this method uses the empty Buffer values for the
+   * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
    * representation for external signing use {@link BaseTransaction.getMessageToSign}.
    */
@@ -260,18 +260,18 @@ export abstract class BaseTransaction<TransactionObject> {
   /**
    * Returns the encoding of the transaction.
    */
-  abstract serialize(): Buffer
+  abstract serialize(): Uint8Array
 
   // Returns the unsigned tx (hashed or raw), which is used to sign the transaction.
   //
   // Note: do not use code docs here since VS Studio is then not able to detect the
   // comments from the inherited methods
-  abstract getMessageToSign(hashMessage: false): Buffer | Buffer[]
-  abstract getMessageToSign(hashMessage?: true): Buffer
+  abstract getMessageToSign(hashMessage: false): Uint8Array | Uint8Array[]
+  abstract getMessageToSign(hashMessage?: true): Uint8Array
 
-  abstract hash(): Buffer
+  abstract hash(): Uint8Array
 
-  abstract getMessageToVerifySignature(): Buffer
+  abstract getMessageToVerifySignature(): Uint8Array
 
   public isSigned(): boolean {
     const { v, r, s } = this
@@ -305,7 +305,7 @@ export abstract class BaseTransaction<TransactionObject> {
   /**
    * Returns the public key of the sender
    */
-  abstract getSenderPublicKey(): Buffer
+  abstract getSenderPublicKey(): Uint8Array
 
   /**
    * Signs a transaction.
@@ -316,7 +316,7 @@ export abstract class BaseTransaction<TransactionObject> {
    * const signedTx = tx.sign(privateKey)
    * ```
    */
-  sign(privateKey: Buffer): TransactionObject {
+  sign(privateKey: Uint8Array): TransactionObject {
     if (privateKey.length !== 32) {
       const msg = this._errorMsg('Private key must be 32 bytes in length.')
       throw new Error(msg)
@@ -357,7 +357,7 @@ export abstract class BaseTransaction<TransactionObject> {
   abstract toJSON(): JsonTx
 
   // Accept the v,r,s values from the `sign` method, and convert this into a TransactionObject
-  protected abstract _processSignature(v: bigint, r: Buffer, s: Buffer): TransactionObject
+  protected abstract _processSignature(v: bigint, r: Uint8Array, s: Uint8Array): TransactionObject
 
   /**
    * Does chain ID checks on common and returns a common
