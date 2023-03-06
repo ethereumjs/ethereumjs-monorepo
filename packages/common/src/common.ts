@@ -1,4 +1,11 @@
-import { TypeOutput, bytesToHex, intToBytes, toType } from '@ethereumjs/util'
+import {
+  TypeOutput,
+  bytesToHex,
+  concatBytes,
+  hexStringToBytes,
+  intToBytes,
+  toType,
+} from '@ethereumjs/util'
 import { buf as crc32Buffer } from 'crc-32'
 import { EventEmitter } from 'events'
 
@@ -828,8 +835,8 @@ export class Common extends EventEmitter {
    * @param genesisHash Genesis block hash of the chain
    * @returns Fork hash as hex string
    */
-  _calcForkHash(hardfork: string | Hardfork, genesisHash: Buffer) {
-    let hfBuffer = Buffer.alloc(0)
+  _calcForkHash(hardfork: string | Hardfork, genesisHash: Uint8Array) {
+    let hfBytes = new Uint8Array(0)
     let prevBlockOrTime = 0
     for (const hf of this.hardforks()) {
       const { block, timestamp, name } = hf
@@ -847,18 +854,18 @@ export class Common extends EventEmitter {
         blockOrTime !== prevBlockOrTime &&
         name !== Hardfork.Merge
       ) {
-        const hfBlockBuffer = Buffer.from(blockOrTime.toString(16).padStart(16, '0'), 'hex')
-        hfBuffer = Buffer.concat([hfBuffer, hfBlockBuffer])
+        const hfBlockBytes = hexStringToBytes(blockOrTime.toString(16).padStart(16, '0'))
+        hfBytes = concatBytes(hfBytes, hfBlockBytes)
         prevBlockOrTime = blockOrTime
       }
 
       if (hf.name === hardfork) break
     }
-    const inputBuffer = Buffer.concat([genesisHash, hfBuffer])
+    const inputBytes = concatBytes(genesisHash, hfBytes)
 
     // CRC32 delivers result as signed (negative) 32-bit integer,
     // convert to hex string
-    const forkhash = bytesToHex(intToBytes(crc32Buffer(inputBuffer) >>> 0))
+    const forkhash = bytesToHex(intToBytes(crc32Buffer(inputBytes) >>> 0))
     return `0x${forkhash}`
   }
 
@@ -867,7 +874,7 @@ export class Common extends EventEmitter {
    * @param hardfork Hardfork name, optional if HF set
    * @param genesisHash Genesis block hash of the chain, optional if already defined and not needed to be calculated
    */
-  forkHash(hardfork?: string | Hardfork, genesisHash?: Buffer): string {
+  forkHash(hardfork?: string | Hardfork, genesisHash?: Uint8Array): string {
     hardfork = hardfork ?? this._hardfork
     const data = this._getHardfork(hardfork)
     if (
@@ -901,7 +908,7 @@ export class Common extends EventEmitter {
    * @param common The {@link Common} to set the forkHashes for
    * @param genesisHash The genesis block hash
    */
-  setForkHashes(genesisHash: Buffer) {
+  setForkHashes(genesisHash: Uint8Array) {
     for (const hf of this.hardforks()) {
       const blockOrTime = hf.timestamp ?? hf.block
       if (
