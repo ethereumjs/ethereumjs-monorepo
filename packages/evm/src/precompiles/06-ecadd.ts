@@ -6,7 +6,7 @@ import type { PrecompileInput } from './types'
 const bn128 = require('rustbn.js')
 
 export function precompile06(opts: PrecompileInput): ExecResult {
-  const inputData = opts.data
+  const inputData = opts.data.slice(0, 128)
 
   const gasUsed = opts._common.param('gasPrices', 'ecAdd')
   if (opts.gasLimit < gasUsed) {
