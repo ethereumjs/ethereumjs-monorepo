@@ -789,25 +789,15 @@ export class EVM implements EVMInterface {
       result.execResult.selfdestruct = {}
       result.execResult.gasRefund = BigInt(0)
     }
-    if (err) {
-      if (
-        this._common.gteHardfork(Hardfork.Homestead) ||
-        err.error !== ERROR.CODESTORE_OUT_OF_GAS
-      ) {
-        result.execResult.logs = []
-        await this.eei.revert()
-        this._transientStorage.revert()
-        if (this.DEBUG) {
-          debug(`message checkpoint reverted`)
-        }
-      } else {
-        // we are in chainstart and the error was the code deposit error
-        // we do like nothing happened.
-        await this.eei.commit()
-        this._transientStorage.commit()
-        if (this.DEBUG) {
-          debug(`message checkpoint committed`)
-        }
+    if (
+      err &&
+      !(this._common.hardfork() === Hardfork.Chainstart && err.error === ERROR.CODESTORE_OUT_OF_GAS)
+    ) {
+      result.execResult.logs = []
+      await this.eei.revert()
+      this._transientStorage.revert()
+      if (this.DEBUG) {
+        debug(`message checkpoint reverted`)
       }
     } else {
       await this.eei.commit()
