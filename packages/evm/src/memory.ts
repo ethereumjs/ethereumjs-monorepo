@@ -70,7 +70,7 @@ export class Memory {
     const returnBuffer = Buffer.allocUnsafe(size)
     // Copy the stored "buffer" from memory into the return Buffer
 
-    const loaded = Buffer.from(this._store.slice(offset, offset + size))
+    const loaded = this._store.slice(offset, offset + size)
     returnBuffer.fill(loaded, 0, loaded.length)
 
     if (loaded.length < size) {
