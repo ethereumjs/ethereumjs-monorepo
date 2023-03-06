@@ -3,7 +3,6 @@ import {
   bytesToPrefixedHexString,
   hexStringToBytes,
   setLengthLeft,
-  toBytes,
 } from '@ethereumjs/util'
 
 import { isAccessList } from './types'
