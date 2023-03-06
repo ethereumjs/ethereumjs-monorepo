@@ -202,12 +202,7 @@ export const toBytes = function (v: ToBytesInputTypes): Uint8Array {
   }
 
   if (typeof v === 'string') {
-    if (!isHexString(v)) {
-      throw new Error(
-        `Cannot convert string to Uint8Array. toBytes only supports 0x-prefixed hex strings and this string was given: ${v}`
-      )
-    }
-    return hexToBytes(padToEven(v.slice(2)))
+    hexStringToBytes(v)
   }
 
   if (typeof v === 'number') {
