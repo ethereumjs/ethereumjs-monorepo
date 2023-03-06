@@ -364,13 +364,13 @@ export class EVM implements EVMInterface {
     if (!message.code || message.code.length === 0) {
       exit = true
       if (this.DEBUG) {
-        debug(`Exit early on no code`)
+        debug(`Exit early on no code (CALL)`)
       }
     }
     if (errorMessage !== undefined) {
       exit = true
       if (this.DEBUG) {
-        debug(`Exit early on value transfer overflowed`)
+        debug(`Exit early on value transfer overflowed (CALL)`)
       }
     }
     if (exit) {
@@ -482,13 +482,13 @@ export class EVM implements EVMInterface {
     if (message.code === undefined || message.code.length === 0) {
       exit = true
       if (this.DEBUG) {
-        debug(`Exit early on no code`)
+        debug(`Exit early on no code (CREATE)`)
       }
     }
     if (errorMessage !== undefined) {
       exit = true
       if (this.DEBUG) {
-        debug(`Exit early on value transfer overflowed`)
+        debug(`Exit early on value transfer overflowed (CREATE)`)
       }
     }
     if (exit) {
