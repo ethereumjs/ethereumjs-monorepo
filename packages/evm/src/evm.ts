@@ -40,7 +40,7 @@ import type {
 } from './types'
 import type { Account } from '@ethereumjs/util'
 
-const debug = createDebugLogger('evm')
+const debug = createDebugLogger('evm:evm')
 const debugGas = createDebugLogger('evm:gas')
 
 // very ugly way to detect if we are running in a browser
