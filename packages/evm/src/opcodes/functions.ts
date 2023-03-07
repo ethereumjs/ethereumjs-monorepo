@@ -918,7 +918,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (length !== BigInt(0)) {
-        data = runState.memory.read(Number(offset), Number(length))
+        data = runState.memory.read(Number(offset), Number(length), true)
       }
 
       const ret = await runState.interpreter.create(gasLimit, value, data)
