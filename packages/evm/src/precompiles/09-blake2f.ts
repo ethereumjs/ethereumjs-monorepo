@@ -227,6 +227,10 @@ export function precompile09(opts: PrecompileInput): ExecResult {
     output.writeUInt32LE(h[i], i * 4)
   }
 
+  if (opts._debug) {
+    opts._debug(`BLAKE2F (0x09) return hash=${output.toString('hex')}`)
+  }
+
   return {
     executionGasUsed: gasUsed,
     returnValue: output,

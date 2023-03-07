@@ -173,8 +173,13 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     R = expmod(B, E, M)
   }
 
+  const res = setLengthLeft(bigIntToBuffer(R), Number(mLen))
+  if (opts._debug) {
+    opts._debug(`MODEXP (0x05) return value=${res.toString('hex')}`)
+  }
+
   return {
     executionGasUsed: gasUsed,
-    returnValue: setLengthLeft(bigIntToBuffer(R), Number(mLen)),
+    returnValue: res,
   }
 }

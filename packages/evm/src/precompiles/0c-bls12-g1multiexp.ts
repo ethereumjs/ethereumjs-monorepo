@@ -113,6 +113,10 @@ export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
 
   const returnValue = BLS12_381_FromG1Point(result)
 
+  if (opts._debug) {
+    opts._debug(`BLS12MULTIEXP (0x0c) return value=${returnValue.toString('hex')}`)
+  }
+
   return {
     executionGasUsed: gasUsed,
     returnValue,

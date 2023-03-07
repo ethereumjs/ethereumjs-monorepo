@@ -76,6 +76,10 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
 
   const returnValue = BLS12_381_FromG1Point(result)
 
+  if (opts._debug) {
+    opts._debug(`BLS12G1MUL (0x0b) return value=${returnValue.toString('hex')}`)
+  }
+
   return {
     executionGasUsed: gasUsed,
     returnValue,

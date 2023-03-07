@@ -35,6 +35,10 @@ export function precompile07(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
+  if (opts._debug) {
+    opts._debug(`ECMUL (0x07) return value=${returnData.toString('hex')}`)
+  }
+
   return {
     executionGasUsed: gasUsed,
     returnValue: returnData,

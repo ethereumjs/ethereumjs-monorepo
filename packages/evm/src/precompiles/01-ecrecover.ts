@@ -70,9 +70,12 @@ export function precompile01(opts: PrecompileInput): ExecResult {
       returnValue: Buffer.alloc(0),
     }
   }
-
+  const address = setLengthLeft(publicToAddress(publicKey), 32)
+  if (opts._debug) {
+    opts._debug(`ECRECOVER (0x01) return address=${address.toString('hex')}`)
+  }
   return {
     executionGasUsed: gasUsed,
-    returnValue: setLengthLeft(publicToAddress(publicKey), 32),
+    returnValue: address,
   }
 }

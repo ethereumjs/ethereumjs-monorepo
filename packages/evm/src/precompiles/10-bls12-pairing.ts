@@ -131,6 +131,10 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
     returnValue = zeroBuffer
   }
 
+  if (opts._debug) {
+    opts._debug(`BLS12PAIRING (0x10) return value=${returnValue.toString('hex')}`)
+  }
+
   return {
     executionGasUsed: gasUsed,
     returnValue,

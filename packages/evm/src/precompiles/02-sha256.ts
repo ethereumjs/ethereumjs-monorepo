@@ -27,8 +27,13 @@ export function precompile02(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
+  const hash = toBuffer(sha256(data))
+  if (opts._debug) {
+    opts._debug(`KECCAK256 (0x02) return address=${hash.toString('hex')}`)
+  }
+
   return {
     executionGasUsed: gasUsed,
-    returnValue: toBuffer(sha256(data)),
+    returnValue: hash,
   }
 }

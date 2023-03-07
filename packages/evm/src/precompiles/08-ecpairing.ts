@@ -40,6 +40,10 @@ export function precompile08(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
+  if (opts._debug) {
+    opts._debug(`ECPAIRING (0x08) return value=${returnData.toString('hex')}`)
+  }
+
   return {
     executionGasUsed: gasUsed,
     returnValue: returnData,

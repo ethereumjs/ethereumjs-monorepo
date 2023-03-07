@@ -70,6 +70,10 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
 
   const returnValue = BLS12_381_FromG2Point(result)
 
+  if (opts._debug) {
+    opts._debug(`BLS12MAPFP2TOG2 (0x12) return value=${returnValue.toString('hex')}`)
+  }
+
   return {
     executionGasUsed: gasUsed,
     returnValue,

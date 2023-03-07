@@ -25,6 +25,10 @@ export function precompile04(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
+  if (opts._debug) {
+    opts._debug(`IDENTITY (0x04) return data=${short(opts.data)}`)
+  }
+
   return {
     executionGasUsed: gasUsed,
     returnValue: data,

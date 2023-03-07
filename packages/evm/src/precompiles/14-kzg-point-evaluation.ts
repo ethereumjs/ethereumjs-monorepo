@@ -56,10 +56,19 @@ export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
   kzg.verifyKzgProof(commitment, z, y, kzgProof)
 
   // Return value - FIELD_ELEMENTS_PER_BLOB and BLS_MODULUS as padded 32 byte big endian values
-  const fieldElementsBuffer = setLengthLeft(bigIntToBuffer(fieldElementsPerBlob), 32)
-  const modulusBuffer = setLengthLeft(bigIntToBuffer(BLS_MODULUS), 32)
+  const fieldElements = setLengthLeft(bigIntToBuffer(fieldElementsPerBlob), 32)
+  const modulus = setLengthLeft(bigIntToBuffer(BLS_MODULUS), 32)
+
+  if (opts._debug) {
+    opts._debug(
+      `KZG_POINT_EVALUATION (0x14) return fieldElements=${fieldElements.toString(
+        'hex'
+      )} modulus=${modulus.toString('hex')}`
+    )
+  }
+
   return {
     executionGasUsed: gasUsed,
-    returnValue: Buffer.concat([fieldElementsBuffer, modulusBuffer]),
+    returnValue: Buffer.concat([fieldElements, modulus]),
   }
 }

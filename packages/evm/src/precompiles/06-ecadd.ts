@@ -25,7 +25,7 @@ export function precompile06(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  const returnData = bn128.add(inputData)
+  const returnData: Buffer = bn128.add(inputData)
 
   // check ecadd success or failure by comparing the output length
   if (returnData.length !== 64) {
@@ -33,6 +33,10 @@ export function precompile06(opts: PrecompileInput): ExecResult {
       opts._debug(`ECADD (0x06) failed: OOG`)
     }
     return OOGResult(opts.gasLimit)
+  }
+
+  if (opts._debug) {
+    opts._debug(`ECADD (0x06) return value=${returnData.toString('hex')}`)
   }
 
   return {
