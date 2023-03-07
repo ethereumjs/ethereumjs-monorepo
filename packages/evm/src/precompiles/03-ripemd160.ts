@@ -1,4 +1,4 @@
-import { setLengthLeft, toBuffer } from '@ethereumjs/util'
+import { setLengthLeft, short, toBuffer } from '@ethereumjs/util'
 import { ripemd160 } from 'ethereum-cryptography/ripemd160'
 
 import { OOGResult } from '../evm'
@@ -12,7 +12,18 @@ export function precompile03(opts: PrecompileInput): ExecResult {
   let gasUsed = opts._common.param('gasPrices', 'ripemd160')
   gasUsed += opts._common.param('gasPrices', 'ripemd160Word') * BigInt(Math.ceil(data.length / 32))
 
+  if (opts._debug) {
+    opts._debug(
+      `Run RIPEMD160 (0x03) precompile data=${short(opts.data)} length=${
+        opts.data.length
+      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`
+    )
+  }
+
   if (opts.gasLimit < gasUsed) {
+    if (opts._debug) {
+      opts._debug(`RIPEMD160 (0x03) failed: OOG`)
+    }
     return OOGResult(opts.gasLimit)
   }
 

@@ -1,4 +1,10 @@
-import { bigIntToBuffer, bufferToBigInt, setLengthLeft, setLengthRight } from '@ethereumjs/util'
+import {
+  bigIntToBuffer,
+  bufferToBigInt,
+  setLengthLeft,
+  setLengthRight,
+  short,
+} from '@ethereumjs/util'
 
 import { OOGResult } from '../evm'
 
@@ -110,8 +116,18 @@ export function precompile05(opts: PrecompileInput): ExecResult {
       gasUsed = BigInt(200)
     }
   }
+  if (opts._debug) {
+    opts._debug(
+      `Run MODEXP (0x05) precompile data=${short(opts.data)} length=${opts.data.length} gasLimit=${
+        opts.gasLimit
+      } gasUsed=${gasUsed}`
+    )
+  }
 
   if (opts.gasLimit < gasUsed) {
+    if (opts._debug) {
+      opts._debug(`MODEXP (0x05) failed: OOG`)
+    }
     return OOGResult(opts.gasLimit)
   }
 
@@ -133,6 +149,9 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   const maxSize = BigInt(2147483647) // @ethereumjs/util setLengthRight limitation
 
   if (bLen > maxSize || eLen > maxSize || mLen > maxSize) {
+    if (opts._debug) {
+      opts._debug(`MODEXP (0x05) failed: OOG`)
+    }
     return OOGResult(opts.gasLimit)
   }
 
@@ -141,6 +160,9 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   const M = bufferToBigInt(setLengthRight(data.slice(Number(mStart), Number(mEnd)), Number(mLen)))
 
   if (mEnd > maxInt) {
+    if (opts._debug) {
+      opts._debug(`MODEXP (0x05) failed: OOG`)
+    }
     return OOGResult(opts.gasLimit)
   }
 

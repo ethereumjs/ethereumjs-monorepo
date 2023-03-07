@@ -1,3 +1,5 @@
+import { short } from '@ethereumjs/util'
+
 import { EvmErrorResult, OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
 
@@ -13,6 +15,13 @@ export async function precompile0d(opts: PrecompileInput): Promise<ExecResult> {
 
   // note: the gas used is constant; even if the input is incorrect.
   const gasUsed = opts._common.paramByEIP('gasPrices', 'Bls12381G2AddGas', 2537) ?? BigInt(0)
+  if (opts._debug) {
+    opts._debug(
+      `Run BLS12G2ADD (0x0d) precompile data=${short(opts.data)} length=${
+        opts.data.length
+      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`
+    )
+  }
 
   if (opts.gasLimit < gasUsed) {
     return OOGResult(opts.gasLimit)

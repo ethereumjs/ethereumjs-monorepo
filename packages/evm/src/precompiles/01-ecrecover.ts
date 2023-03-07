@@ -13,15 +13,14 @@ import type { ExecResult } from '../evm'
 import type { PrecompileInput } from './types'
 
 export function precompile01(opts: PrecompileInput): ExecResult {
+  const gasUsed = opts._common.param('gasPrices', 'ecRecover')
   if (opts._debug) {
     opts._debug(
       `Run ECRECOVER (0x01) precompile data=${short(opts.data)} length=${
         opts.data.length
-      } gasLimit=${opts.gasLimit}`
+      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`
     )
   }
-
-  const gasUsed = opts._common.param('gasPrices', 'ecRecover')
 
   if (opts.gasLimit < gasUsed) {
     if (opts._debug) {

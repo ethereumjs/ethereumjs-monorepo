@@ -1,3 +1,5 @@
+import { short } from '@ethereumjs/util'
+
 import { EvmErrorResult, OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
 
@@ -24,6 +26,13 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
     opts._common.paramByEIP('gasPrices', 'Bls12381PairingPerPairGas', 2537) ?? BigInt(0)
 
   const gasUsed = baseGas + gasUsedPerPair * BigInt(Math.floor(inputData.length / 384))
+  if (opts._debug) {
+    opts._debug(
+      `Run BLS12PAIRING (0x10) precompile data=${short(opts.data)} length=${
+        opts.data.length
+      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`
+    )
+  }
 
   if (inputData.length % 384 !== 0) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
