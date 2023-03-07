@@ -28,10 +28,16 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   if (opts.gasLimit < gasUsed) {
+    if (opts._debug) {
+      opts._debug(`BLS12G2MUL (0x0e) failed: OOG`)
+    }
     return OOGResult(opts.gasLimit)
   }
 
   if (inputData.length !== 288) {
+    if (opts._debug) {
+      opts._debug(`BLS12G2MUL (0x0e) failed: Invalid input length length=${inputData.length}`)
+    }
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
@@ -47,6 +53,9 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
   for (const index in zeroByteCheck) {
     const slicedBuffer = opts.data.slice(zeroByteCheck[index][0], zeroByteCheck[index][1])
     if (!slicedBuffer.equals(zeroBytes16)) {
+      if (opts._debug) {
+        opts._debug(`BLS12G2MUL (0x0e) failed: Point not on curve`)
+      }
       return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
     }
   }
@@ -58,6 +67,9 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
   try {
     mclPoint = BLS12_381_ToG2Point(opts.data.slice(0, 256), mcl)
   } catch (e: any) {
+    if (opts._debug) {
+      opts._debug(`BLS12G2MUL (0x0e) failed: ${e.message}`)
+    }
     return EvmErrorResult(e, opts.gasLimit)
   }
 

@@ -24,16 +24,25 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   if (opts.gasLimit < gasUsed) {
+    if (opts._debug) {
+      opts._debug(`BLS12MAPFPTOG1 (0x11) failed: OOG`)
+    }
     return OOGResult(opts.gasLimit)
   }
 
   if (inputData.length !== 64) {
+    if (opts._debug) {
+      opts._debug(`BLS12MAPFPTOG1 (0x11) failed: Invalid input length length=${inputData.length}`)
+    }
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
   // check if some parts of input are zero bytes.
   const zeroBytes16 = Buffer.alloc(16, 0)
   if (!opts.data.slice(0, 16).equals(zeroBytes16)) {
+    if (opts._debug) {
+      opts._debug(`BLS12MAPFPTOG1 (0x11) failed: Point not on curve`)
+    }
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
   }
 
@@ -43,6 +52,9 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
   try {
     Fp1Point = BLS12_381_ToFpPoint(opts.data.slice(0, 64), mcl)
   } catch (e: any) {
+    if (opts._debug) {
+      opts._debug(`BLS12MAPFPTOG1 (0x11) failed: ${e.message}`)
+    }
     return EvmErrorResult(e, opts.gasLimit)
   }
 
