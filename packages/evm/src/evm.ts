@@ -42,6 +42,7 @@ import type { Account } from '@ethereumjs/util'
 
 const debug = createDebugLogger('evm:evm')
 const debugGas = createDebugLogger('evm:gas')
+const debugPrecompiles = createDebugLogger('evm:precompiles')
 
 // very ugly way to detect if we are running in a browser
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
@@ -386,9 +387,6 @@ export class EVM implements EVMInterface {
 
     let result: ExecResult
     if (message.isCompiled) {
-      if (this.DEBUG) {
-        debug(`Run precompile`)
-      }
       result = await this.runPrecompile(
         message.code as PrecompileFunc,
         message.data,
@@ -864,6 +862,7 @@ export class EVM implements EVMInterface {
       gasLimit,
       _common: this._common,
       _EVM: this,
+      _debug: this.DEBUG ? debugPrecompiles : undefined,
     }
 
     return code(opts)
