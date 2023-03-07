@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1678115277582,
+  "lastUpdate": 1678185371946,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "0cf96546bab7c752114f3d03209add9429a4f1ba",
-          "message": "allforks: Hive withdrawal fixes (#2529)\n\n* allforks: Hive fixes regarding withdrawal test vectors\r\n\r\n* check if newPayloadV2 withdrawals is null\r\n\r\n* add check for null on withdrawals and excessdatagas\r\n\r\n* fix sendtransaction hf setting\r\n\r\n* skip updating number to hash index on runWithoutSetHead\r\n\r\n* Fix setting the hardfork on vm in getTransactionReceipt\r\n\r\n* Remove bad console logs\r\n\r\n* Fix vm.copy\r\n\r\n* Correctly copy common in evm and eei copy\r\n\r\n* Remove unused client subdirectories\r\n\r\n* fix loading block/header which might not be in canonical chain\r\n\r\n* improv\r\n\r\n* add EEI.copy tests\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-02-14T23:09:29+05:30",
-          "tree_id": "7f625a155a9b6a55633bb1d06be01288c7beb0c4",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0cf96546bab7c752114f3d03209add9429a4f1ba"
-        },
-        "date": 1676396539651,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15814,
-            "range": "±2.25%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 15348,
-            "range": "±4.27%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 15833,
-            "range": "±1.62%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 15423,
-            "range": "±1.83%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 14232,
-            "range": "±7.07%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±7.44%",
             "unit": "ops/sec",
             "extra": "78 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6cd35aac660f82d831799830db7f7fd438dd0c96",
+          "message": "EVM: Memory Fix & Other Optimizations (#2570)\n\n* EVM: Rename evm debug logger to evm:evm (one for package, one for class), consistency, also, logger will otherwise be left out when run with evm:*\r\n\r\n* VM: Rename message checkpoint to state checkpoint in debug message (there is a dedicated message checkpoint msg along msg logging)\r\n\r\n* EVM: CALL/CREATE debug exit msg differentiation\r\n\r\n* EVM: avoid buffer copy in memory read (performance)\r\n\r\n* EVM: Rewrite runCall() checkpoint/revert conditional for readability/simplification\r\n\r\n* EVM: Added EIP check for transient storage checkpointing",
+          "timestamp": "2023-03-07T11:32:33+01:00",
+          "tree_id": "78b158a5afae36bf2a20695935c3e556c5192b34",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6cd35aac660f82d831799830db7f7fd438dd0c96"
+        },
+        "date": 1678185370605,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 7819,
+            "range": "±2.62%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 7458,
+            "range": "±2.81%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 7894,
+            "range": "±2.39%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 7405,
+            "range": "±5.38%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 7255,
+            "range": "±2.44%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
           }
         ]
       }
