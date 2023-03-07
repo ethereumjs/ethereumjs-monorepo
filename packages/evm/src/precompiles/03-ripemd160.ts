@@ -29,7 +29,7 @@ export function precompile03(opts: PrecompileInput): ExecResult {
 
   const hash = setLengthLeft(toBuffer(ripemd160(data)), 32)
   if (opts._debug) {
-    opts._debug(`KECCAK256 (0x02) return address=${hash.toString('hex')}`)
+    opts._debug(`RIPEMD160 (0x03) return hash=${hash.toString('hex')}`)
   }
 
   return {
