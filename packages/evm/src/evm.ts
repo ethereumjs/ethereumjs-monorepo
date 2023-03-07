@@ -40,7 +40,7 @@ import type {
 } from './types'
 import type { Account } from '@ethereumjs/util'
 
-const debug = createDebugLogger('evm')
+const debug = createDebugLogger('evm:evm')
 const debugGas = createDebugLogger('evm:gas')
 
 // very ugly way to detect if we are running in a browser
@@ -364,13 +364,13 @@ export class EVM implements EVMInterface {
     if (!message.code || message.code.length === 0) {
       exit = true
       if (this.DEBUG) {
-        debug(`Exit early on no code`)
+        debug(`Exit early on no code (CALL)`)
       }
     }
     if (errorMessage !== undefined) {
       exit = true
       if (this.DEBUG) {
-        debug(`Exit early on value transfer overflowed`)
+        debug(`Exit early on value transfer overflowed (CALL)`)
       }
     }
     if (exit) {
@@ -482,13 +482,13 @@ export class EVM implements EVMInterface {
     if (message.code === undefined || message.code.length === 0) {
       exit = true
       if (this.DEBUG) {
-        debug(`Exit early on no code`)
+        debug(`Exit early on no code (CREATE)`)
       }
     }
     if (errorMessage !== undefined) {
       exit = true
       if (this.DEBUG) {
-        debug(`Exit early on value transfer overflowed`)
+        debug(`Exit early on value transfer overflowed (CREATE)`)
       }
     }
     if (exit) {
@@ -745,7 +745,7 @@ export class EVM implements EVMInterface {
     }
 
     await this.eei.checkpoint()
-    this._transientStorage.checkpoint()
+    if (this._common.isActivatedEIP(1153)) this._transientStorage.checkpoint()
     if (this.DEBUG) {
       debug('-'.repeat(100))
       debug(`message checkpoint`)
@@ -789,29 +789,19 @@ export class EVM implements EVMInterface {
       result.execResult.selfdestruct = {}
       result.execResult.gasRefund = BigInt(0)
     }
-    if (err) {
-      if (
-        this._common.gteHardfork(Hardfork.Homestead) ||
-        err.error !== ERROR.CODESTORE_OUT_OF_GAS
-      ) {
-        result.execResult.logs = []
-        await this.eei.revert()
-        this._transientStorage.revert()
-        if (this.DEBUG) {
-          debug(`message checkpoint reverted`)
-        }
-      } else {
-        // we are in chainstart and the error was the code deposit error
-        // we do like nothing happened.
-        await this.eei.commit()
-        this._transientStorage.commit()
-        if (this.DEBUG) {
-          debug(`message checkpoint committed`)
-        }
+    if (
+      err &&
+      !(this._common.hardfork() === Hardfork.Chainstart && err.error === ERROR.CODESTORE_OUT_OF_GAS)
+    ) {
+      result.execResult.logs = []
+      await this.eei.revert()
+      if (this._common.isActivatedEIP(1153)) this._transientStorage.revert()
+      if (this.DEBUG) {
+        debug(`message checkpoint reverted`)
       }
     } else {
       await this.eei.commit()
-      this._transientStorage.commit()
+      if (this._common.isActivatedEIP(1153)) this._transientStorage.commit()
       if (this.DEBUG) {
         debug(`message checkpoint committed`)
       }
