@@ -1264,6 +1264,7 @@ export class Blockchain implements BlockchainInterface {
         throw new Error(`consensus algorithm ${this._common.consensusAlgorithm()} not supported`)
     }
     await this.consensus.setup({ blockchain: this })
+    await this.consensus.genesisInit(this.genesisBlock)
   }
 
   /**
