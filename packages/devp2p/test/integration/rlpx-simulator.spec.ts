@@ -1,3 +1,4 @@
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as test from 'tape'
 
 import { DISCONNECT_REASONS } from '../../src/rlpx/peer'
@@ -22,7 +23,7 @@ test('RLPX: ban node with missing tcp port', (t) => {
 
   rlpxs[0].on('peer:added', async () => {
     const peer = {
-      id: Buffer.from('abcd', 'hex'),
+      id: hexToBytes('abcd'),
       address: '127.0.0.1',
       udpPort: 30308,
       tcpPort: null,

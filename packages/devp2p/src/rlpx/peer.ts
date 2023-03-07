@@ -1,12 +1,12 @@
 import { RLP } from '@ethereumjs/rlp'
-import { arrToBufArr, bufArrToArr } from '@ethereumjs/util'
-import BufferList = require('bl')
+import { bytesToHex, concatBytes, equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
+import { bytesToUtf8, hexToBytes } from 'ethereum-cryptography/utils'
 import { EventEmitter } from 'events'
 import ms = require('ms')
 import * as snappy from 'snappyjs'
 
-import { buffer2int, devp2pDebug, formatLogData, int2buffer } from '../util'
+import { bytes2int, devp2pDebug, formatLogData, int2bytes } from '../util'
 
 import { ECIES } from './ecies'
 
@@ -47,11 +47,11 @@ export enum DISCONNECT_REASONS {
 }
 
 export type HelloMsg = {
-  0: Buffer
-  1: Buffer
-  2: Buffer[][]
-  3: Buffer
-  4: Buffer
+  0: Uint8Array
+  1: Uint8Array
+  2: Uint8Array[][]
+  3: Uint8Array
+  4: Uint8Array
   length: 5
 }
 
@@ -77,25 +77,25 @@ export interface Hello {
   clientId: string
   capabilities: Capabilities[]
   port: number
-  id: Buffer
+  id: Uint8Array
 }
 
 export class Peer extends EventEmitter {
-  _clientId: Buffer
+  _clientId: Uint8Array
   _capabilities?: Capabilities[]
   _common: Common
   _port: number
-  _id: Buffer
+  _id: Uint8Array
   _remoteClientIdFilter: any
-  _remoteId: Buffer
-  _EIP8: Buffer | boolean
+  _remoteId: Uint8Array
+  _EIP8: Uint8Array | boolean
   _eciesSession: ECIES
   _state: string
   _weHello: HelloMsg | null
   _hello: Hello | null
   _nextPacketSize: number
   _socket: Socket
-  _socketData: BufferList
+  _socketData: Uint8Array
   _pingIntervalId: NodeJS.Timeout | null
   _pingTimeoutId: NodeJS.Timeout | null
   _closed: boolean
@@ -135,7 +135,7 @@ export class Peer extends EventEmitter {
 
     // socket
     this._socket = options.socket
-    this._socketData = new BufferList()
+    this._socketData = new Uint8Array()
     this._socket.on('data', this._onSocketData.bind(this))
     this._socket.on('error', (err: Error) => this.emit('error', err))
     this._socket.once('close', this._onSocketClose.bind(this))
@@ -208,10 +208,10 @@ export class Peer extends EventEmitter {
    * @param code
    * @param data
    */
-  _sendMessage(code: number, data: Buffer) {
+  _sendMessage(code: number, data: Uint8Array) {
     if (this._closed) return false
 
-    const msg = Buffer.concat([Buffer.from(RLP.encode(code)), data])
+    const msg = concatBytes(RLP.encode(code), data)
     const header = this._eciesSession.createHeader(msg.length)
     if (!header || this._socket.destroyed) return
     this._socket.write(header)
@@ -236,22 +236,19 @@ export class Peer extends EventEmitter {
       // TODO: Remove when we can also serve snap requests from other peers
       .filter((c) => c.name !== 'snap')
       .map((c) => `${c.name}${c.version}`)
-      .join(',')} clientId=${this._clientId}`
+      .join(',')} clientId=${bytesToUtf8(this._clientId)}`
     this.debug('HELLO', debugMsg)
     const payload: HelloMsg = [
-      int2buffer(BASE_PROTOCOL_VERSION),
+      int2bytes(BASE_PROTOCOL_VERSION),
       this._clientId,
-      this._capabilities!.map((c) => [Buffer.from(c.name), int2buffer(c.version)]),
-      this._port === null ? Buffer.allocUnsafe(0) : int2buffer(this._port),
+      this._capabilities!.map((c) => [utf8ToBytes(c.name), int2bytes(c.version)]),
+      this._port === null ? new Uint8Array(0) : int2bytes(this._port),
       this._id,
     ]
 
     if (!this._closed) {
       if (
-        this._sendMessage(
-          PREFIXES.HELLO,
-          Buffer.from(RLP.encode(bufArrToArr(payload as unknown as Buffer[])))
-        ) === true
+        this._sendMessage(PREFIXES.HELLO, RLP.encode(payload as never as Uint8Array[])) === true
       ) {
         this._weHello = payload
       }
@@ -269,7 +266,7 @@ export class Peer extends EventEmitter {
     const reasonName = this.getDisconnectPrefix(reason)
     const debugMsg = `Send DISCONNECT to ${this._socket.remoteAddress}:${this._socket.remotePort} (reason: ${reasonName})`
     this.debug('DISCONNECT', debugMsg, reasonName)
-    const data = Buffer.from(RLP.encode(reason))
+    const data = RLP.encode(reason)
     if (this._sendMessage(PREFIXES.DISCONNECT, data) !== true) return
 
     this._disconnectReason = reason
@@ -284,9 +281,9 @@ export class Peer extends EventEmitter {
   _sendPing() {
     const debugMsg = `Send PING to ${this._socket.remoteAddress}:${this._socket.remotePort}`
     this.debug('PING', debugMsg)
-    let data = Buffer.from(RLP.encode([]))
+    let data = RLP.encode([])
     if (this._hello !== null && this._hello.protocolVersion >= 5) {
-      data = snappy.compress(data)
+      data = Uint8Array.from(snappy.compress(Buffer.from(data)))
     }
 
     if (this._sendMessage(PREFIXES.PING, data) !== true) return
@@ -303,10 +300,10 @@ export class Peer extends EventEmitter {
   _sendPong() {
     const debugMsg = `Send PONG to ${this._socket.remoteAddress}:${this._socket.remotePort}`
     this.debug('PONG', debugMsg)
-    let data = Buffer.from(RLP.encode([]))
+    let data = RLP.encode([])
 
     if (this._hello !== null && this._hello.protocolVersion >= 5) {
-      data = snappy.compress(data)
+      data = Uint8Array.from(snappy.compress(Buffer.from(data)))
     }
     this._sendMessage(PREFIXES.PONG, data)
   }
@@ -318,11 +315,11 @@ export class Peer extends EventEmitter {
     const bytesCount = this._nextPacketSize
     const parseData = this._socketData.slice(0, bytesCount)
     if (!this._eciesSession._gotEIP8Auth) {
-      if (parseData.slice(0, 1) === Buffer.from('04', 'hex')) {
+      if (parseData.slice(0, 1) === hexToBytes('04')) {
         this._eciesSession.parseAuthPlain(parseData)
       } else {
         this._eciesSession._gotEIP8Auth = true
-        this._nextPacketSize = buffer2int(this._socketData.slice(0, 2)) + 2
+        this._nextPacketSize = bytes2int(this._socketData.slice(0, 2)) + 2
         return
       }
     } else {
@@ -331,7 +328,7 @@ export class Peer extends EventEmitter {
     this._state = 'Header'
     this._nextPacketSize = 32
     process.nextTick(() => this._sendAck())
-    this._socketData.consume(bytesCount)
+    this._socketData = this._socketData.subarray(bytesCount)
   }
 
   /**
@@ -339,16 +336,16 @@ export class Peer extends EventEmitter {
    */
   _handleAck() {
     const bytesCount = this._nextPacketSize
-    const parseData = this._socketData.slice(0, bytesCount)
+    const parseData = this._socketData.subarray(0, bytesCount)
     if (!this._eciesSession._gotEIP8Ack) {
-      if (parseData.slice(0, 1) === Buffer.from('04', 'hex')) {
+      if (parseData.slice(0, 1) === hexToBytes('04')) {
         this._eciesSession.parseAckPlain(parseData)
         this._logger(
           `Received ack (old format) from ${this._socket.remoteAddress}:${this._socket.remotePort}`
         )
       } else {
         this._eciesSession._gotEIP8Ack = true
-        this._nextPacketSize = buffer2int(this._socketData.slice(0, 2)) + 2
+        this._nextPacketSize = bytes2int(this._socketData.slice(0, 2)) + 2
         return
       }
     } else {
@@ -360,7 +357,7 @@ export class Peer extends EventEmitter {
     this._state = 'Header'
     this._nextPacketSize = 32
     process.nextTick(() => this._sendHello())
-    this._socketData.consume(bytesCount)
+    this._socketData = this._socketData.subarray(bytesCount)
   }
 
   /**
@@ -368,12 +365,12 @@ export class Peer extends EventEmitter {
    */
   _handleHello(payload: any) {
     this._hello = {
-      protocolVersion: buffer2int(payload[0]),
-      clientId: payload[1].toString(),
+      protocolVersion: bytes2int(payload[0]),
+      clientId: bytesToUtf8(payload[1]),
       capabilities: payload[2].map((item: any) => {
-        return { name: item[0].toString(), version: buffer2int(item[1]) }
+        return { name: bytesToUtf8(item[0]), version: bytes2int(item[1]) }
       }),
-      port: buffer2int(payload[3]),
+      port: bytes2int(payload[3]),
       id: payload[4],
     }
 
@@ -385,8 +382,8 @@ export class Peer extends EventEmitter {
     this.debug('HELLO', debugMsg)
 
     if (this._remoteId === null) {
-      this._remoteId = Buffer.from(this._hello.id)
-    } else if (!this._remoteId.equals(this._hello.id)) {
+      this._remoteId = this._hello.id
+    } else if (!equalsBytes(this._remoteId, this._hello.id)) {
       return this.disconnect(DISCONNECT_REASONS.INVALID_IDENTITY)
     }
 
@@ -418,7 +415,7 @@ export class Peer extends EventEmitter {
         // The send method handed over to the subprotocol object (e.g. an `ETH` instance).
         // The subprotocol is then calling into the lower level method
         // (e.g. `ETH` calling into `Peer._sendMessage()`).
-        const sendMethod = (code: number, data: Buffer) => {
+        const sendMethod = (code: number, data: Uint8Array) => {
           if (code > obj.length) throw new Error('Code out of range')
           this._sendMessage(_offset + code, data)
         }
@@ -447,10 +444,11 @@ export class Peer extends EventEmitter {
    */
   _handleDisconnect(payload: any) {
     this._closed = true
-    // When `payload` is from rlpx it is `Buffer` and when from subprotocol it is `[Buffer]`
-    this._disconnectReason = Buffer.isBuffer(payload)
-      ? buffer2int(payload)
-      : buffer2int(payload[0] ?? Buffer.from([0]))
+    // When `payload` is from rlpx it is `Uint8Array` and when from subprotocol it is `[Uint8Array]`
+    this._disconnectReason =
+      payload instanceof Uint8Array
+        ? bytes2int(payload)
+        : bytes2int(payload[0] ?? Uint8Array.from([0]))
     const reason = DISCONNECT_REASONS[this._disconnectReason as number]
     const debugMsg = `DISCONNECT reason: ${reason} ${this._socket.remoteAddress}:${this._socket.remotePort}`
     this.debug('DISCONNECT', debugMsg, reason)
@@ -477,7 +475,7 @@ export class Peer extends EventEmitter {
    * @param code
    * @param msg
    */
-  _handleMessage(code: PREFIXES, msg: Buffer) {
+  _handleMessage(code: PREFIXES, msg: Uint8Array) {
     switch (code) {
       case PREFIXES.HELLO:
         this._handleHello(msg)
@@ -510,7 +508,7 @@ export class Peer extends EventEmitter {
     this._state = 'Body'
     this._nextPacketSize = size + 16
     if (size % 16 > 0) this._nextPacketSize += 16 - (size % 16)
-    this._socketData.consume(bytesCount)
+    this._socketData = this._socketData.subarray(bytesCount)
   }
 
   /**
@@ -518,7 +516,7 @@ export class Peer extends EventEmitter {
    */
   _handleBody() {
     const bytesCount = this._nextPacketSize
-    const parseData = this._socketData.slice(0, bytesCount)
+    const parseData = this._socketData.subarray(0, bytesCount)
     const body = this._eciesSession.parseBody(parseData)
     if (!body) {
       this._logger('empty body!')
@@ -526,7 +524,7 @@ export class Peer extends EventEmitter {
     }
     this._logger(
       `Received body ${this._socket.remoteAddress}:${this._socket.remotePort} ${formatLogData(
-        body.toString('hex'),
+        bytesToHex(body),
         verbose
       )}`
     )
@@ -582,13 +580,13 @@ export class Peer extends EventEmitter {
       //
       if (protocolName === 'Peer') {
         try {
-          payload = arrToBufArr(RLP.decode(Uint8Array.from(payload)))
+          payload = RLP.decode(Uint8Array.from(payload))
         } catch (e: any) {
           if (msgCode === PREFIXES.DISCONNECT) {
             if (compressed) {
-              payload = arrToBufArr(RLP.decode(Uint8Array.from(origPayload)))
+              payload = RLP.decode(Uint8Array.from(origPayload))
             } else {
-              payload = arrToBufArr(RLP.decode(Uint8Array.from(snappy.uncompress(payload))))
+              payload = RLP.decode(Uint8Array.from(snappy.uncompress(payload)))
             }
           } else {
             throw new Error(e)
@@ -601,16 +599,16 @@ export class Peer extends EventEmitter {
       this._logger(`Error on peer subprotocol message handling: ${err}`)
       this.emit('error', err)
     }
-    this._socketData.consume(bytesCount)
+    this._socketData = this._socketData.subarray(bytesCount)
   }
 
   /**
    * Process socket data
    * @param data
    */
-  _onSocketData(data: Buffer) {
+  _onSocketData(data: Uint8Array) {
     if (this._closed) return
-    this._socketData.append(data)
+    this._socketData = concatBytes(this._socketData, data)
     try {
       while (this._socketData.length >= this._nextPacketSize) {
         switch (this._state) {
@@ -660,7 +658,7 @@ export class Peer extends EventEmitter {
 
   getId() {
     if (this._remoteId === null) return null
-    return Buffer.from(this._remoteId)
+    return this._remoteId
   }
 
   getHelloMessage() {

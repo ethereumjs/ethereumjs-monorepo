@@ -10,6 +10,7 @@ import ms = require('ms')
 
 import * as devp2p from '../src/index'
 import { ETH, Peer } from '../src/index'
+import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 const PRIVATE_KEY = randomBytes(32)
 
@@ -88,15 +89,9 @@ rlpx.on('peer:added', (peer) => {
   )
 
   eth.sendStatus({
-    td: devp2p.int2buffer(17179869184), // total difficulty in genesis block
-    bestHash: Buffer.from(
-      'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-      'hex'
-    ),
-    genesisHash: Buffer.from(
-      'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-      'hex'
-    ),
+    td: devp2p.int2bytes(17179869184), // total difficulty in genesis block
+    bestHash: hexToBytes('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'),
+    genesisHash: hexToBytes('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'),
   })
 
   // check CHECK_BLOCK
@@ -104,8 +99,13 @@ rlpx.on('peer:added', (peer) => {
   let forkVerified = false
   eth.once('status', () => {
     eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [
-      Buffer.from([1]),
-      [devp2p.int2buffer(CHECK_BLOCK_NR), Buffer.from([1]), Buffer.from([]), Buffer.from([])],
+      Uint8Array.from([1]),
+      [
+        devp2p.int2bytes(CHECK_BLOCK_NR),
+        Uint8Array.from([1]),
+        Uint8Array.from([]),
+        Uint8Array.from([]),
+      ],
     ])
     forkDrop = setTimeout(() => {
       peer.disconnect(devp2p.DISCONNECT_REASONS.USELESS_PEER)
@@ -126,11 +126,11 @@ rlpx.on('peer:added', (peer) => {
 
         for (const item of payload) {
           const blockHash = item[0]
-          if (blocksCache.has(blockHash.toString('hex'))) continue
+          if (blocksCache.has(bytesToHex(blockHash))) continue
           setTimeout(() => {
             eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [
-              Buffer.from([2]),
-              [blockHash, Buffer.from([1]), Buffer.from([]), Buffer.from([])],
+              Uint8Array.from([2]),
+              [blockHash, Uint8Array.from([1]), Uint8Array.from([]), Uint8Array.from([])],
             ])
             requests.headers.push(blockHash)
           }, ms('0.1s'))
@@ -150,7 +150,7 @@ rlpx.on('peer:added', (peer) => {
       case devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS: {
         const headers = []
         // hack
-        if (devp2p.buffer2int(payload[1][0]) === CHECK_BLOCK_NR) {
+        if (devp2p.bytes2int(payload[1][0]) === CHECK_BLOCK_NR) {
           headers.push(CHECK_BLOCK_HEADER)
         }
 
@@ -174,7 +174,7 @@ rlpx.on('peer:added', (peer) => {
 
           const expectedHash = CHECK_BLOCK
           const header = BlockHeader.fromValuesArray(payload[1][0], { common })
-          if (header.hash().toString('hex') === expectedHash) {
+          if (bytesToHex(header.hash()) === expectedHash) {
             console.log(`${addr} verified to be on the same side of the ${CHECK_BLOCK_TITLE}`)
             clearTimeout(forkDrop)
             forkVerified = true
@@ -191,11 +191,11 @@ rlpx.on('peer:added', (peer) => {
           const header = BlockHeader.fromValuesArray(payload[1][0], { common })
           while (requests.headers.length > 0) {
             const blockHash = requests.headers.shift()
-            if (header.hash().equals(blockHash)) {
+            if (equalsBytes(header.hash(), blockHash)) {
               isValidPayload = true
               setTimeout(() => {
                 eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_BODIES, [
-                  Buffer.from([3]),
+                  Uint8Array.from([3]),
                   [blockHash],
                 ])
                 requests.bodies.push(header)
@@ -205,7 +205,7 @@ rlpx.on('peer:added', (peer) => {
           }
 
           if (!isValidPayload) {
-            console.log(`${addr} received wrong block header ${header.hash().toString('hex')}`)
+            console.log(`${addr} received wrong block header ${bytesToHex(header.hash())}`)
           }
         }
 
@@ -338,7 +338,7 @@ dpt.addPeer({ address: '127.0.0.1', udpPort: 30303, tcpPort: 30303 })
 
 const txCache = new LRUCache({ max: 1000 })
 function onNewTx(tx: TypedTransaction, peer: Peer) {
-  const txHashHex = tx.hash().toString('hex')
+  const txHashHex = bytesToHex(tx.hash())
   if (txCache.has(txHashHex)) return
 
   txCache.set(txHashHex, true)
@@ -347,7 +347,7 @@ function onNewTx(tx: TypedTransaction, peer: Peer) {
 
 const blocksCache = new LRUCache({ max: 100 })
 function onNewBlock(block: Block, peer: Peer) {
-  const blockHashHex = block.hash().toString('hex')
+  const blockHashHex = bytesToHex(block.hash())
   const blockNumber = block.header.number
   if (blocksCache.has(blockHashHex)) return
 

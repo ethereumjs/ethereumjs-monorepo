@@ -1,10 +1,10 @@
 import { RLP } from '@ethereumjs/rlp'
-import { arrToBufArr, bigIntToBytes, bufArrToArr } from '@ethereumjs/util'
+import { bigIntToBytes, bytesToHex, bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 import ms = require('ms')
 import * as snappy from 'snappyjs'
 
 import { DISCONNECT_REASONS } from '../rlpx/peer'
-import { assertEq, buffer2int, formatLogData, int2buffer } from '../util'
+import { assertEq, bytes2int, formatLogData, int2bytes } from '../util'
 
 import { EthProtocol, Protocol } from './protocol'
 
@@ -30,12 +30,11 @@ export class LES extends Protocol {
   static les4 = { name: 'les', version: 4, length: 23, constructor: LES }
 
   _handleMessage(code: LES.MESSAGE_CODES, data: any) {
-    const payload = arrToBufArr(RLP.decode(bufArrToArr(data)))
+    const payload = RLP.decode(data)
     const messageName = this.getMsgPrefix(code)
     const debugMsg = `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}`
-
     if (code !== LES.MESSAGE_CODES.STATUS) {
-      const logData = formatLogData(data.toString('hex'), this._verbose)
+      const logData = formatLogData(bytesToHex(data), this._verbose)
       this.debug(messageName, `${debugMsg}: ${logData}`)
     }
     switch (code) {
@@ -49,7 +48,7 @@ export class LES extends Protocol {
         )
         const statusArray: any = {}
         for (const value of payload as any) {
-          statusArray[value[0].toString()] = value[1]
+          statusArray[bytesToUtf8(value[0])] = value[1]
         }
         this._peerStatus = statusArray
         const peerStatusMsg = `${this._peerStatus ? this._getStatusString(this._peerStatus) : ''}`
@@ -130,27 +129,27 @@ export class LES extends Protocol {
   }
 
   _getStatusString(status: LES.Status) {
-    let sStr = `[V:${buffer2int(status['protocolVersion'])}, `
-    sStr += `NID:${buffer2int(status['networkId'] as Buffer)}, HTD:${buffer2int(
+    let sStr = `[V:${bytes2int(status['protocolVersion'])}, `
+    sStr += `NID:${bytes2int(status['networkId'] as Uint8Array)}, HTD:${bytes2int(
       status['headTd']
     )}, `
-    sStr += `HeadH:${status['headHash'].toString('hex')}, HeadN:${buffer2int(status['headNum'])}, `
-    sStr += `GenH:${status['genesisHash'].toString('hex')}`
+    sStr += `HeadH:${bytesToHex(status['headHash'])}, HeadN:${bytes2int(status['headNum'])}, `
+    sStr += `GenH:${bytesToHex(status['genesisHash'])}`
     if (status['serveHeaders'] !== undefined) sStr += `, serveHeaders active`
     if (status['serveChainSince'] !== undefined)
-      sStr += `, ServeCS: ${buffer2int(status['serveChainSince'])}`
+      sStr += `, ServeCS: ${bytes2int(status['serveChainSince'])}`
     if (status['serveStateSince'] !== undefined)
-      sStr += `, ServeSS: ${buffer2int(status['serveStateSince'])}`
+      sStr += `, ServeSS: ${bytes2int(status['serveStateSince'])}`
     if (status['txRelay'] !== undefined) sStr += `, txRelay active`
     if (status['flowControl/BL)'] !== undefined) sStr += `, flowControl/BL set`
     if (status['flowControl/MRR)'] !== undefined) sStr += `, flowControl/MRR set`
     if (status['flowControl/MRC)'] !== undefined) sStr += `, flowControl/MRC set`
     if (status['forkID'] !== undefined)
-      sStr += `, forkID: [crc32: ${status['forkID'][0].toString('hex')}, nextFork: ${buffer2int(
+      sStr += `, forkID: [crc32: ${bytesToHex(status['forkID'][0])}, nextFork: ${bytes2int(
         status['forkID'][1]
       )}]`
     if (status['recentTxLookup'] !== undefined)
-      sStr += `, recentTxLookup: ${buffer2int(status['recentTxLookup'])}`
+      sStr += `, recentTxLookup: ${bytes2int(status['recentTxLookup'])}`
     sStr += `]`
     return sStr
   }
@@ -159,16 +158,16 @@ export class LES extends Protocol {
     if (this._status !== null) return
 
     if (status.announceType === undefined) {
-      status['announceType'] = int2buffer(DEFAULT_ANNOUNCE_TYPE)
+      status['announceType'] = int2bytes(DEFAULT_ANNOUNCE_TYPE)
     }
-    status['protocolVersion'] = int2buffer(this._version)
+    status['protocolVersion'] = int2bytes(this._version)
     status['networkId'] = bigIntToBytes(this._peer._common.chainId())
 
     this._status = status
 
     const statusList: any[][] = []
     for (const key of Object.keys(status)) {
-      statusList.push([Buffer.from(key), status[key]])
+      statusList.push([utf8ToBytes(key), status[key]])
     }
 
     this.debug(
@@ -178,11 +177,11 @@ export class LES extends Protocol {
       } (les${this._version}): ${this._getStatusString(this._status)}`
     )
 
-    let payload = Buffer.from(RLP.encode(bufArrToArr(statusList)))
+    let payload = RLP.encode(statusList)
 
     // Use snappy compression if peer supports DevP2P >=v5
     if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
-      payload = snappy.compress(payload)
+      payload = Uint8Array.from(snappy.compress(Buffer.from(payload)))
     }
 
     this._send(LES.MESSAGE_CODES.STATUS, payload)
@@ -196,10 +195,7 @@ export class LES extends Protocol {
    */
   sendMessage(code: LES.MESSAGE_CODES, payload: any) {
     const messageName = this.getMsgPrefix(code)
-    const logData = formatLogData(
-      Buffer.from(RLP.encode(bufArrToArr(payload))).toString('hex'),
-      this._verbose
-    )
+    const logData = formatLogData(bytesToHex(RLP.encode(payload)), this._verbose)
     const debugMsg = `Send ${messageName} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${logData}`
 
     this.debug(messageName, debugMsg)
@@ -241,11 +237,11 @@ export class LES extends Protocol {
         throw new Error(`Unknown code ${code}`)
     }
 
-    payload = Buffer.from(RLP.encode(payload))
+    payload = RLP.encode(payload)
 
     // Use snappy compression if peer supports DevP2P >=v5
     if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
-      payload = snappy.compress(payload)
+      payload = Uint8Array.from(snappy.compress(Buffer.from(payload)))
     }
 
     this._send(code, payload)
@@ -259,22 +255,22 @@ export class LES extends Protocol {
 export namespace LES {
   export interface Status {
     [key: string]: any
-    protocolVersion: Buffer
-    networkId: Buffer
-    headTd: Buffer
-    headHash: Buffer
-    headNum: Buffer
-    genesisHash: Buffer
-    serveHeaders: Buffer
-    serveChainSince: Buffer
-    serveStateSince: Buffer
-    txRelay: Buffer
-    'flowControl/BL': Buffer
-    'flowControl/MRR': Buffer
-    'flowControl/MRC': Buffer
-    announceType: Buffer
-    forkID: [Buffer, Buffer]
-    recentTxLookup: Buffer
+    protocolVersion: Uint8Array
+    networkId: Uint8Array
+    headTd: Uint8Array
+    headHash: Uint8Array
+    headNum: Uint8Array
+    genesisHash: Uint8Array
+    serveHeaders: Uint8Array
+    serveChainSince: Uint8Array
+    serveStateSince: Uint8Array
+    txRelay: Uint8Array
+    'flowControl/BL': Uint8Array
+    'flowControl/MRR': Uint8Array
+    'flowControl/MRC': Uint8Array
+    announceType: Uint8Array
+    forkID: [Uint8Array, Uint8Array]
+    recentTxLookup: Uint8Array
   }
 
   export enum MESSAGE_CODES {

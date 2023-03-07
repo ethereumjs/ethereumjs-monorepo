@@ -1,16 +1,18 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bufArrToArr } from '@ethereumjs/util'
+import { concatBytes } from '@ethereumjs/util'
 import * as crypto from 'crypto'
 import { debug as createDebugLogger } from 'debug'
+import { getRandomBytesSync } from 'ethereum-cryptography/random'
 import { getPublicKey } from 'ethereum-cryptography/secp256k1'
 import { ecdh, ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import {
   assertEq,
-  buffer2int,
+  bytes2int,
   genPrivateKey,
   id2pk,
-  int2buffer,
+  int2bytes,
   keccak256,
   pk2id,
   unstrictDecode,
@@ -23,7 +25,7 @@ type Decipher = crypto.Decipher
 
 const debug = createDebugLogger('devp2p:rlpx:peer')
 
-function ecdhX(publicKey: Buffer, privateKey: Buffer) {
+function ecdhX(publicKey: Uint8Array, privateKey: Uint8Array) {
   // return (publicKey * privateKey).x
   function hashfn(x: Uint8Array, y: Uint8Array) {
     const pubKey = new Uint8Array(33)
@@ -31,7 +33,7 @@ function ecdhX(publicKey: Buffer, privateKey: Buffer) {
     pubKey.set(x, 1)
     return pubKey.slice(1)
   }
-  return Buffer.from(ecdh(publicKey, privateKey, { hashfn }, Buffer.alloc(32)))
+  return ecdh(publicKey, privateKey, { hashfn }, new Uint8Array(32))
 }
 
 // a straight rip from python interop w/go ecies implementation
@@ -41,51 +43,56 @@ function ecdhX(publicKey: Buffer, privateKey: Buffer) {
 // https://github.com/ethereum/pydevp2p/blob/master/devp2p/crypto.py#L295
 // https://github.com/ethereum/go-ethereum/blob/fe532a98f9f32bb81ef0d8d013cf44327830d11e/crypto/ecies/ecies.go#L165
 // https://github.com/ethereum/cpp-ethereum/blob/develop/libdevcrypto/CryptoPP.cpp#L36
-function concatKDF(keyMaterial: Buffer, keyLength: number) {
+function concatKDF(keyMaterial: Uint8Array, keyLength: number) {
   const SHA256BlockSize = 64
   const reps = ((keyLength + 7) * 8) / (SHA256BlockSize * 8)
 
-  const buffers = []
-  for (let counter = 0, tmp = Buffer.allocUnsafe(4); counter <= reps; ) {
+  const bytes = []
+  for (let counter = 0, tmp = new Uint8Array(4); counter <= reps; ) {
     counter += 1
-    tmp.writeUInt32BE(counter, 0)
-    buffers.push(crypto.createHash('sha256').update(tmp).update(keyMaterial).digest())
+    new DataView(tmp.buffer).setUint32(0, counter)
+    bytes.push(
+      Uint8Array.from(crypto.createHash('sha256').update(tmp).update(keyMaterial).digest())
+    )
   }
 
-  return Buffer.concat(buffers).slice(0, keyLength)
+  return concatBytes(...bytes).slice(0, keyLength)
 }
 
 export class ECIES {
-  _privateKey: Buffer
-  _publicKey: Buffer
-  _remotePublicKey: Buffer | null
-  _nonce: Buffer
-  _remoteNonce: Buffer | null = null
-  _initMsg: Buffer | null | undefined = null
-  _remoteInitMsg: Buffer | null = null
+  _privateKey: Uint8Array
+  _publicKey: Uint8Array
+  _remotePublicKey: Uint8Array | null
+  _nonce: Uint8Array
+  _remoteNonce: Uint8Array | null = null
+  _initMsg: Uint8Array | null | undefined = null
+  _remoteInitMsg: Uint8Array | null = null
   _gotEIP8Auth: boolean = false
   _gotEIP8Ack: boolean = false
   _ingressAes: Decipher | null = null
   _egressAes: Decipher | null = null
   _ingressMac: MAC | null = null
   _egressMac: MAC | null = null
-  _ephemeralPrivateKey: Buffer
-  _ephemeralPublicKey: Buffer
-  _remoteEphemeralPublicKey: Buffer | null = null // we don't need store this key, but why don't?
-  _ephemeralSharedSecret: Buffer | null = null
+  _ephemeralPrivateKey: Uint8Array
+  _ephemeralPublicKey: Uint8Array
+  _remoteEphemeralPublicKey: Uint8Array | null = null // we don't need store this key, but why don't?
+  _ephemeralSharedSecret: Uint8Array | null = null
   _bodySize: number | null = null
 
-  constructor(privateKey: Buffer, id: Buffer, remoteId: Buffer) {
+  constructor(privateKey: Uint8Array, id: Uint8Array, remoteId: Uint8Array) {
     this._privateKey = privateKey
     this._publicKey = id2pk(id)
     this._remotePublicKey = remoteId !== null ? id2pk(remoteId) : null
 
-    this._nonce = crypto.randomBytes(32)
+    this._nonce = getRandomBytesSync(32)
     this._ephemeralPrivateKey = genPrivateKey()
-    this._ephemeralPublicKey = Buffer.from(getPublicKey(this._ephemeralPrivateKey, false))
+    this._ephemeralPublicKey = getPublicKey(this._ephemeralPrivateKey, false)
   }
 
-  _encryptMessage(data: Buffer, sharedMacData: Buffer | null = null): Buffer | undefined {
+  _encryptMessage(
+    data: Uint8Array,
+    sharedMacData: Uint8Array | null = null
+  ): Uint8Array | undefined {
     const privateKey = genPrivateKey()
     if (!this._remotePublicKey) return
     const x = ecdhX(this._remotePublicKey, privateKey)
@@ -94,28 +101,27 @@ export class ECIES {
     const mkey = crypto.createHash('sha256').update(key.slice(16, 32)).digest() // MAC key
 
     // encrypt
-    const IV = crypto.randomBytes(16)
+    const IV = getRandomBytesSync(16)
     const cipher = crypto.createCipheriv('aes-128-ctr', ekey, IV)
-    const encryptedData = cipher.update(data)
-    const dataIV = Buffer.concat([IV, encryptedData])
+    const encryptedData = Uint8Array.from(cipher.update(data))
+    const dataIV = concatBytes(IV, encryptedData)
 
     // create tag
     if (!sharedMacData) {
-      sharedMacData = Buffer.from([])
+      sharedMacData = Uint8Array.from([])
     }
-    const tag = crypto
-      .createHmac('sha256', mkey)
-      .update(Buffer.concat([dataIV, sharedMacData]))
-      .digest()
+    const tag = Uint8Array.from(
+      crypto.createHmac('sha256', mkey).update(concatBytes(dataIV, sharedMacData)).digest()
+    )
 
     const publicKey = getPublicKey(privateKey, false)
-    return Buffer.concat([publicKey, dataIV, tag])
+    return concatBytes(publicKey, dataIV, tag)
   }
 
-  _decryptMessage(data: Buffer, sharedMacData: Buffer | null = null): Buffer {
+  _decryptMessage(data: Uint8Array, sharedMacData: Uint8Array | null = null): Uint8Array {
     assertEq(
       data.slice(0, 1),
-      Buffer.from('04', 'hex'),
+      hexToBytes('04'),
       'wrong ecies header (possible cause: EIP8 upgrade)',
       debug
     )
@@ -128,15 +134,15 @@ export class ECIES {
     const x = ecdhX(publicKey, this._privateKey)
     const key = concatKDF(x, 32)
     const ekey = key.slice(0, 16) // encryption key
-    const mkey = crypto.createHash('sha256').update(key.slice(16, 32)).digest() // MAC key
+    const mkey = Uint8Array.from(crypto.createHash('sha256').update(key.slice(16, 32)).digest()) // MAC key
 
     // check the tag
     if (!sharedMacData) {
-      sharedMacData = Buffer.from([])
+      sharedMacData = Uint8Array.from([])
     }
     const _tag = crypto
       .createHmac('sha256', mkey)
-      .update(Buffer.concat([dataIV, sharedMacData]))
+      .update(concatBytes(dataIV, sharedMacData))
       .digest()
     assertEq(_tag, tag, 'should have valid tag', debug)
 
@@ -144,18 +150,18 @@ export class ECIES {
     const IV = dataIV.slice(0, 16)
     const encryptedData = dataIV.slice(16)
     const decipher = crypto.createDecipheriv('aes-128-ctr', ekey, IV)
-    return decipher.update(encryptedData)
+    return Uint8Array.from(decipher.update(encryptedData))
   }
 
-  _setupFrame(remoteData: Buffer, incoming: boolean): void {
+  _setupFrame(remoteData: Uint8Array, incoming: boolean): void {
     if (!this._remoteNonce) return
     const nonceMaterial = incoming
-      ? Buffer.concat([this._nonce, this._remoteNonce])
-      : Buffer.concat([this._remoteNonce, this._nonce])
+      ? concatBytes(this._nonce, this._remoteNonce)
+      : concatBytes(this._remoteNonce, this._nonce)
     const hNonce = keccak256(nonceMaterial)
 
     if (!this._ephemeralSharedSecret) return
-    const IV = Buffer.allocUnsafe(16).fill(0x00)
+    const IV = new Uint8Array(16).fill(0x00)
     const sharedSecret = keccak256(this._ephemeralSharedSecret, hNonce)
 
     const aesSecret = keccak256(this._ephemeralSharedSecret, sharedSecret)
@@ -164,11 +170,11 @@ export class ECIES {
 
     const macSecret = keccak256(this._ephemeralSharedSecret, aesSecret)
     this._ingressMac = new MAC(macSecret)
-    this._ingressMac.update(Buffer.concat([xor(macSecret, this._nonce), remoteData]))
+    this._ingressMac.update(concatBytes(xor(macSecret, this._nonce), remoteData))
     this._egressMac = new MAC(macSecret)
 
     if (this._initMsg === null || this._initMsg === undefined) return
-    this._egressMac.update(Buffer.concat([xor(macSecret, this._remoteNonce), this._initMsg]))
+    this._egressMac.update(concatBytes(xor(macSecret, this._remoteNonce), this._initMsg))
   }
 
   createAuthEIP8() {
@@ -176,44 +182,47 @@ export class ECIES {
     const x = ecdhX(this._remotePublicKey, this._privateKey)
     const sig = ecdsaSign(xor(x, this._nonce), this._ephemeralPrivateKey)
     const data = [
-      Buffer.concat([Buffer.from(sig.signature), Buffer.from([sig.recid])]),
+      concatBytes(sig.signature, Uint8Array.from([sig.recid])),
       // keccak256(pk2id(this._ephemeralPublicKey)),
       pk2id(this._publicKey),
       this._nonce,
-      Buffer.from([0x04]),
+      Uint8Array.from([0x04]),
     ]
 
-    const dataRLP = Buffer.from(RLP.encode(bufArrToArr(data)))
-    const pad = crypto.randomBytes(100 + Math.floor(Math.random() * 151)) // Random padding between 100, 250
-    const authMsg = Buffer.concat([dataRLP, pad])
+    const dataRLP = RLP.encode(data)
+    const pad = getRandomBytesSync(100 + Math.floor(Math.random() * 151)) // Random padding between 100, 250
+    const authMsg = concatBytes(dataRLP, pad)
     const overheadLength = 113
-    const sharedMacData = int2buffer(authMsg.length + overheadLength)
+    const sharedMacData = int2bytes(authMsg.length + overheadLength)
     const encryptedMsg = this._encryptMessage(authMsg, sharedMacData)
     if (!encryptedMsg) return
-    this._initMsg = Buffer.concat([sharedMacData, encryptedMsg])
+    this._initMsg = concatBytes(sharedMacData, encryptedMsg)
     return this._initMsg
   }
 
-  createAuthNonEIP8(): Buffer | undefined {
+  createAuthNonEIP8(): Uint8Array | undefined {
     if (!this._remotePublicKey) return
     const x = ecdhX(this._remotePublicKey, this._privateKey)
     const sig = ecdsaSign(xor(x, this._nonce), this._ephemeralPrivateKey)
-    const data = Buffer.concat([
-      Buffer.from(sig.signature),
-      Buffer.from([sig.recid]),
+    const data = concatBytes(
+      sig.signature,
+      Uint8Array.from([sig.recid]),
       keccak256(pk2id(this._ephemeralPublicKey)),
       pk2id(this._publicKey),
       this._nonce,
-      Buffer.from([0x00]),
-    ])
+      Uint8Array.from([0x00])
+    )
 
     this._initMsg = this._encryptMessage(data)
     return this._initMsg
   }
 
-  parseAuthPlain(data: Buffer, sharedMacData: Buffer | null = null): Buffer | undefined {
-    const prefix = sharedMacData !== null ? sharedMacData : Buffer.from([])
-    this._remoteInitMsg = Buffer.concat([prefix, data])
+  parseAuthPlain(
+    data: Uint8Array,
+    sharedMacData: Uint8Array | null = null
+  ): Uint8Array | undefined {
+    const prefix = sharedMacData !== null ? sharedMacData : new Uint8Array()
+    this._remoteInitMsg = concatBytes(prefix, data)
     const decrypted = this._decryptMessage(data, sharedMacData)
 
     let signature = null
@@ -231,7 +240,7 @@ export class ECIES {
       remotePublicKey = id2pk(decrypted.slice(97, 161))
       nonce = decrypted.slice(161, 193)
     } else {
-      const decoded = unstrictDecode(decrypted) as Buffer[]
+      const decoded = unstrictDecode(decrypted) as Uint8Array[]
 
       signature = decoded[0].slice(0, 64)
       recoveryId = decoded[0][64]
@@ -249,8 +258,11 @@ export class ECIES {
     if (this._remoteNonce === null) {
       return
     }
-    this._remoteEphemeralPublicKey = Buffer.from(
-      ecdsaRecover(signature, recoveryId, xor(x, this._remoteNonce), false)
+    this._remoteEphemeralPublicKey = ecdsaRecover(
+      signature,
+      recoveryId,
+      xor(x, this._remoteNonce),
+      false
     )
 
     if (this._remoteEphemeralPublicKey === null) return
@@ -265,31 +277,31 @@ export class ECIES {
     }
   }
 
-  parseAuthEIP8(data: Buffer): void {
-    const size = buffer2int(data.slice(0, 2)) + 2
+  parseAuthEIP8(data: Uint8Array): void {
+    const size = bytes2int(data.slice(0, 2)) + 2
     assertEq(data.length, size, 'message length different from specified size (EIP8)', debug)
     this.parseAuthPlain(data.slice(2), data.slice(0, 2))
   }
 
-  createAckEIP8(): Buffer | undefined {
-    const data = [pk2id(this._ephemeralPublicKey), this._nonce, Buffer.from([0x04])]
+  createAckEIP8(): Uint8Array | undefined {
+    const data = [pk2id(this._ephemeralPublicKey), this._nonce, Uint8Array.from([0x04])]
 
-    const dataRLP = Buffer.from(RLP.encode(bufArrToArr(data)))
-    const pad = crypto.randomBytes(100 + Math.floor(Math.random() * 151)) // Random padding between 100, 250
-    const ackMsg = Buffer.concat([dataRLP, pad])
+    const dataRLP = RLP.encode(data)
+    const pad = getRandomBytesSync(100 + Math.floor(Math.random() * 151)) // Random padding between 100, 250
+    const ackMsg = concatBytes(dataRLP, pad)
     const overheadLength = 113
-    const sharedMacData = int2buffer(ackMsg.length + overheadLength)
+    const sharedMacData = int2bytes(ackMsg.length + overheadLength)
     const encryptedMsg = this._encryptMessage(ackMsg, sharedMacData)
     if (!encryptedMsg) return
-    this._initMsg = Buffer.concat([sharedMacData, encryptedMsg])
+    this._initMsg = concatBytes(sharedMacData, encryptedMsg)
 
     if (!this._remoteInitMsg) return
     this._setupFrame(this._remoteInitMsg, true)
     return this._initMsg
   }
 
-  createAckOld(): Buffer | undefined {
-    const data = Buffer.concat([pk2id(this._ephemeralPublicKey), this._nonce, Buffer.from([0x00])])
+  createAckOld(): Uint8Array | undefined {
+    const data = concatBytes(pk2id(this._ephemeralPublicKey), this._nonce, new Uint8Array([0x00]))
 
     this._initMsg = this._encryptMessage(data)
 
@@ -298,7 +310,7 @@ export class ECIES {
     return this._initMsg
   }
 
-  parseAckPlain(data: Buffer, sharedMacData: Buffer | null = null): void {
+  parseAckPlain(data: Uint8Array, sharedMacData: Uint8Array | null = null): void {
     const decrypted = this._decryptMessage(data, sharedMacData)
 
     let remoteEphemeralPublicKey = null
@@ -311,7 +323,7 @@ export class ECIES {
       remoteEphemeralPublicKey = id2pk(decrypted.slice(0, 64))
       remoteNonce = decrypted.slice(64, 96)
     } else {
-      const decoded = unstrictDecode(decrypted) as Buffer[]
+      const decoded = unstrictDecode(decrypted) as Uint8Array[]
 
       remoteEphemeralPublicKey = id2pk(decoded[0])
       remoteNonce = decoded[1]
@@ -323,60 +335,60 @@ export class ECIES {
 
     this._ephemeralSharedSecret = ecdhX(this._remoteEphemeralPublicKey, this._ephemeralPrivateKey)
     if (!sharedMacData) {
-      sharedMacData = Buffer.from([])
+      sharedMacData = Uint8Array.from([])
     }
-    this._setupFrame(Buffer.concat([sharedMacData, data]), false)
+    this._setupFrame(concatBytes(sharedMacData, data), false)
   }
 
-  parseAckEIP8(data: Buffer): void {
-    const size = buffer2int(data.slice(0, 2)) + 2
+  parseAckEIP8(data: Uint8Array): void {
+    const size = bytes2int(data.slice(0, 2)) + 2
     assertEq(data.length, size, 'message length different from specified size (EIP8)', debug)
     this.parseAckPlain(data.slice(2), data.slice(0, 2))
   }
 
-  createHeader(size: number): Buffer | undefined {
-    const bufSize = zfill(int2buffer(size), 3)
-    const headerData = Buffer.from(RLP.encode([0, 0])) // [capability-id, context-id] (currently unused in spec)
-    let header = Buffer.concat([bufSize, headerData])
+  createHeader(size: number): Uint8Array | undefined {
+    const bufSize = zfill(int2bytes(size), 3)
+    const headerData = RLP.encode([0, 0]) // [capability-id, context-id] (currently unused in spec)
+    let header = concatBytes(bufSize, headerData)
     header = zfill(header, 16, false)
     if (!this._egressAes) return
-    header = this._egressAes.update(header)
+    header = Uint8Array.from(this._egressAes.update(header))
 
     if (!this._egressMac) return
     this._egressMac.updateHeader(header)
-    const tag = this._egressMac.digest()
+    const tag = Uint8Array.from(this._egressMac.digest())
 
-    return Buffer.concat([header, tag])
+    return concatBytes(header, tag)
   }
 
-  parseHeader(data: Buffer): number | undefined {
+  parseHeader(data: Uint8Array): number | undefined {
     // parse header
     let header = data.slice(0, 16)
     const mac = data.slice(16, 32)
 
     if (!this._ingressMac) return
     this._ingressMac.updateHeader(header)
-    const _mac = this._ingressMac.digest()
+    const _mac = Uint8Array.from(this._ingressMac.digest())
     assertEq(_mac, mac, 'Invalid MAC', debug)
 
     if (!this._ingressAes) return
-    header = this._ingressAes.update(header)
-    this._bodySize = buffer2int(header.slice(0, 3))
+    header = Uint8Array.from(this._ingressAes.update(header))
+    this._bodySize = bytes2int(header.slice(0, 3))
     return this._bodySize
   }
 
-  createBody(data: Buffer): Buffer | undefined {
+  createBody(data: Uint8Array): Uint8Array | undefined {
     data = zfill(data, Math.ceil(data.length / 16) * 16, false)
     if (!this._egressAes) return
-    const encryptedData = this._egressAes.update(data)
+    const encryptedData = Uint8Array.from(this._egressAes.update(data))
 
     if (!this._egressMac) return
     this._egressMac.updateBody(encryptedData)
-    const tag = this._egressMac.digest()
-    return Buffer.concat([encryptedData, tag])
+    const tag = Uint8Array.from(this._egressMac.digest())
+    return concatBytes(encryptedData, tag)
   }
 
-  parseBody(data: Buffer): Buffer | undefined {
+  parseBody(data: Uint8Array): Uint8Array | undefined {
     if (this._bodySize === null) throw new Error('need to parse header first')
 
     const body = data.slice(0, -16)
@@ -384,13 +396,13 @@ export class ECIES {
 
     if (!this._ingressMac) return
     this._ingressMac.updateBody(body)
-    const _mac = this._ingressMac.digest()
+    const _mac = Uint8Array.from(this._ingressMac.digest())
     assertEq(_mac, mac, 'Invalid MAC', debug)
 
     const size = this._bodySize
     this._bodySize = null
 
     if (!this._ingressAes) return
-    return this._ingressAes.update(body).slice(0, size)
+    return Uint8Array.from(this._ingressAes.update(body)).slice(0, size)
   }
 }

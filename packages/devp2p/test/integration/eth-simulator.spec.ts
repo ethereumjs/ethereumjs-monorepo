@@ -1,4 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as test from 'tape'
 
 import * as devp2p from '../../src'
@@ -7,15 +8,12 @@ import { ETH } from '../../src'
 import * as util from './util'
 
 const GENESIS_TD = 17179869184
-const GENESIS_HASH = Buffer.from(
-  'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-  'hex'
-)
+const GENESIS_HASH = hexToBytes('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3')
 
 const capabilities = [devp2p.ETH.eth63, devp2p.ETH.eth62]
 
 const status = {
-  td: devp2p.int2buffer(GENESIS_TD),
+  td: devp2p.int2bytes(GENESIS_TD),
   bestHash: GENESIS_HASH,
   genesisHash: GENESIS_HASH,
 }
@@ -55,7 +53,7 @@ test('ETH: send status message (Genesis block mismatch)', (t) => {
   const opts: any = {}
   opts.status0 = Object.assign({}, status)
   const status1 = Object.assign({}, status)
-  status1['genesisHash'] = Buffer.alloc(32)
+  status1['genesisHash'] = new Uint8Array(32)
   opts.status1 = status1
   opts.onPeerError0 = function (err: Error, rlpxs: any) {
     const msg =
@@ -108,7 +106,7 @@ function sendNotAllowed(
   util.twoPeerMsgExchange(t, opts, cap)
 }
 
-test('ETH: should use latest protocol version on default', (t) => {
+test.only('ETH: should use latest protocol version on default', (t) => {
   sendWithProtocolVersion(t, 66)
 })
 

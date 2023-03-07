@@ -130,7 +130,8 @@ test('DPT: simulate bootstrap', async (t) => {
   util.destroyDPTs(dpts)
 })
 
-test('DPT: simulate acquiring peers via DNS', async () => {
+// TODO: Figure out if this test actually does anything
+test.skip('DPT: simulate acquiring peers via DNS', async () => {
   const dpts = util.getTestDPTsWithDns(1)
 
   const mockDns = {

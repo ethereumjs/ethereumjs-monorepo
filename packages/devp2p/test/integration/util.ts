@@ -185,7 +185,7 @@ export function twoPeerMsgExchange2(
       clientId: 'fakePeer',
       capabilities: [ETH.eth66],
       port: 30303,
-      id: Buffer.alloc(12),
+      id: new Uint8Array(12),
     }
     // Set peer's devp2p protocol version to 4
     protocol._peer._hello = v4Hello

@@ -1,3 +1,4 @@
+import { bytesToHex, utf8ToBytes } from 'ethereum-cryptography/utils'
 import { EventEmitter } from 'events'
 import _KBucket = require('k-bucket')
 
@@ -7,14 +8,14 @@ const KBUCKET_SIZE = 16
 const KBUCKET_CONCURRENCY = 3
 
 export interface CustomContact extends PeerInfo {
-  id: Uint8Array | Buffer
+  id: Uint8Array
   vectorClock: number
 }
 
 export class KBucket extends EventEmitter {
   _peers: Map<string, PeerInfo> = new Map()
   _kbucket: _KBucket
-  constructor(localNodeId: Buffer) {
+  constructor(localNodeId: Uint8Array) {
     super()
 
     this._kbucket = new _KBucket<CustomContact>({
@@ -42,12 +43,12 @@ export class KBucket extends EventEmitter {
     })
   }
 
-  static getKeys(obj: Buffer | string | PeerInfo): string[] {
-    if (Buffer.isBuffer(obj)) return [obj.toString('hex')]
+  static getKeys(obj: Uint8Array | string | PeerInfo): string[] {
+    if (obj instanceof Uint8Array) return [bytesToHex(obj)]
     if (typeof obj === 'string') return [obj]
 
     const keys = []
-    if (Buffer.isBuffer(obj.id)) keys.push(obj.id.toString('hex'))
+    if (obj.id instanceof Uint8Array) keys.push(bytesToHex(obj.id))
     if (obj.address !== undefined && typeof obj.tcpPort === 'number')
       keys.push(`${obj.address}:${obj.tcpPort}`)
     return keys
@@ -58,7 +59,7 @@ export class KBucket extends EventEmitter {
     if (!isExists) this._kbucket.add(peer as CustomContact)
   }
 
-  get(obj: Buffer | string | PeerInfo) {
+  get(obj: Uint8Array | string | PeerInfo) {
     for (const key of KBucket.getKeys(obj)) {
       const peer = this._peers.get(key)
       if (peer !== undefined) return peer
@@ -71,11 +72,11 @@ export class KBucket extends EventEmitter {
     return this._kbucket.toArray()
   }
 
-  closest(id: string): PeerInfo[] {
-    return this._kbucket.closest(Buffer.from(id), KBUCKET_SIZE)
+  closest(id: Uint8Array): PeerInfo[] {
+    return this._kbucket.closest(id, KBUCKET_SIZE)
   }
 
-  remove(obj: Buffer | string | PeerInfo) {
+  remove(obj: Uint8Array | string | PeerInfo) {
     const peer = this.get(obj)
     if (peer !== null) this._kbucket.remove((peer as CustomContact).id)
   }

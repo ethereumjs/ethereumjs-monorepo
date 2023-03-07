@@ -1,68 +1,68 @@
 import { RLP } from '@ethereumjs/rlp'
-import { arrToBufArr } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { keccak256 as _keccak256 } from 'ethereum-cryptography/keccak'
 import { utils } from 'ethereum-cryptography/secp256k1'
 import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat'
+import { bytesToHex, concatBytes, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import type { ETH } from './protocol/eth'
 import type { LES } from './protocol/les'
 
 export const devp2pDebug = createDebugLogger('devp2p')
 
-export function keccak256(...buffers: Buffer[]) {
-  const buffer = Buffer.concat(buffers)
-  return Buffer.from(_keccak256(buffer))
+export function keccak256(...bytes: Uint8Array[]) {
+  const allBytes = concatBytes(...bytes)
+  return _keccak256(allBytes)
 }
 
-export function genPrivateKey(): Buffer {
+export function genPrivateKey(): Uint8Array {
   const privateKey = utils.randomPrivateKey()
-  return utils.isValidPrivateKey(privateKey) ? Buffer.from(privateKey) : genPrivateKey()
+  return utils.isValidPrivateKey(privateKey) ? privateKey : genPrivateKey()
 }
 
-export function pk2id(pk: Buffer): Buffer {
+export function pk2id(pk: Uint8Array): Uint8Array {
   if (pk.length === 33) {
-    pk = Buffer.from(publicKeyConvert(pk, false))
+    pk = publicKeyConvert(pk, false)
   }
   return pk.slice(1)
 }
 
-export function id2pk(id: Buffer): Buffer {
-  return Buffer.concat([Buffer.from([0x04]), id])
+export function id2pk(id: Uint8Array): Uint8Array {
+  return concatBytes(Uint8Array.from([0x04]), id)
 }
 
-export function int2buffer(v: number | null): Buffer {
+export function int2bytes(v: number | null): Uint8Array {
   if (v === null) {
-    return Buffer.alloc(0)
+    return new Uint8Array(0)
   }
   let hex = v.toString(16)
   if (hex.length % 2 === 1) hex = '0' + hex
-  return Buffer.from(hex, 'hex')
+  return hexToBytes(hex)
 }
 
-export function buffer2int(buffer: Buffer): number {
-  if (buffer.length === 0) return NaN
+export function bytes2int(bytes: Uint8Array): number {
+  if (bytes.length === 0) return NaN
 
   let n = 0
-  for (let i = 0; i < buffer.length; ++i) n = n * 256 + buffer[i]
+  for (let i = 0; i < bytes.length; ++i) n = n * 256 + bytes[i]
   return n
 }
 
-export function zfill(buffer: Buffer, size: number, leftpad: boolean = true): Buffer {
-  if (buffer.length >= size) return buffer
+export function zfill(bytes: Uint8Array, size: number, leftpad: boolean = true): Uint8Array {
+  if (bytes.length >= size) return bytes
   if (leftpad === undefined) leftpad = true
-  const pad = Buffer.allocUnsafe(size - buffer.length).fill(0x00)
-  return leftpad ? Buffer.concat([pad, buffer]) : Buffer.concat([buffer, pad])
+  const pad = new Uint8Array(size - bytes.length).fill(0x00)
+  return leftpad ? concatBytes(pad, bytes) : concatBytes(bytes, pad)
 }
 
-export function xor(a: Buffer, b: any): Buffer {
+export function xor(a: Uint8Array, b: any): Uint8Array {
   const length = Math.min(a.length, b.length)
-  const buffer = Buffer.allocUnsafe(length)
-  for (let i = 0; i < length; ++i) buffer[i] = a[i] ^ b[i]
-  return buffer
+  const bytes = new Uint8Array(length)
+  for (let i = 0; i < length; ++i) bytes[i] = a[i] ^ b[i]
+  return bytes
 }
 
-type assertInput = Buffer | Buffer[] | ETH.StatusMsg | LES.Status | number | null
+type assertInput = Uint8Array | Uint8Array[] | ETH.StatusMsg | LES.Status | number | null
 
 export function assertEq(
   expected: assertInput,
@@ -72,9 +72,10 @@ export function assertEq(
   messageName?: string
 ): void {
   let fullMsg
-  if (Buffer.isBuffer(expected) && Buffer.isBuffer(actual)) {
-    if (expected.equals(actual)) return
-    fullMsg = `${msg}: ${expected.toString('hex')} / ${actual.toString('hex')}`
+
+  if (expected instanceof Uint8Array && actual instanceof Uint8Array) {
+    if (equalsBytes(expected, actual)) return
+    fullMsg = `${msg}: ${bytesToHex(expected)} / ${bytesToHex(actual)}`
     const debugMsg = `[ERROR] ${fullMsg}`
     if (messageName !== undefined) {
       debug(messageName, debugMsg)
@@ -128,10 +129,10 @@ export function createDeferred<T>(): Deferred<T> {
   return new Deferred()
 }
 
-export function unstrictDecode(value: Buffer) {
+export function unstrictDecode(value: Uint8Array) {
   // rlp library throws on remainder.length !== 0
   // this utility function bypasses that
-  return arrToBufArr(RLP.decode(Uint8Array.from(value), true).data)
+  return RLP.decode(value, true).data
 }
 
 // multiaddr 8.0.0 expects an Uint8Array with internal buffer starting at 0 offset
