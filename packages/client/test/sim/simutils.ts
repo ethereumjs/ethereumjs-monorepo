@@ -2,6 +2,7 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction, initKZG } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
+  blobsToProofs,
   commitmentsToVersionedHashes,
   getBlobs,
 } from '@ethereumjs/tx/dist/utils/blobHelpers'
@@ -22,6 +23,7 @@ import { EthereumClient } from '../../lib/client'
 import { Config } from '../../lib/config'
 
 import type { Common } from '@ethereumjs/common'
+import type { TxOptions } from '@ethereumjs/tx'
 import type { ChildProcessWithoutNullStreams } from 'child_process'
 import type { Client } from 'jayson/promise'
 
@@ -297,10 +299,12 @@ export const runBlobTx = async (
   blobSize: number,
   pkey: Uint8Array,
   to?: string,
-  value?: bigint
+  value?: bigint,
+  opts?: TxOptions
 ) => {
   const blobs = getBlobs(bytesToHex(randomBytes(blobSize)))
   const commitments = blobsToCommitments(blobs)
+  const proofs = blobsToProofs(blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
 
   const sender = Address.fromPrivateKey(pkey)
@@ -311,6 +315,7 @@ export const runBlobTx = async (
     chainId: '0x1',
     blobs,
     kzgCommitments: commitments,
+    kzgProofs: proofs,
     versionedHashes: hashes,
     gas: undefined,
     maxFeePerDataGas: undefined,
@@ -327,7 +332,7 @@ export const runBlobTx = async (
   txData['gasLimit'] = BigInt(1000000) as any
   const nonce = await client.request('eth_getTransactionCount', [sender.toString(), 'latest'], 2.0)
   txData['nonce'] = BigInt(nonce.result) as any
-  const blobTx = BlobEIP4844Transaction.fromTxData(txData).sign(pkey)
+  const blobTx = BlobEIP4844Transaction.fromTxData(txData, opts).sign(pkey)
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 
@@ -359,12 +364,14 @@ export const createBlobTxs = async (
   blobSize = 2 ** 17 - 1,
   pkey: Uint8Array,
   to?: string,
-  value?: bigint
+  value?: bigint,
+  opts?: TxOptions
 ) => {
   const txHashes: any = []
 
   const blobs = getBlobs(bytesToHex(randomBytes(blobSize)))
   const commitments = blobsToCommitments(blobs)
+  const proofs = blobsToProofs(blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
 
   for (let x = 1; x <= numTxs; x++) {
@@ -376,6 +383,7 @@ export const createBlobTxs = async (
       chainId: '0x1',
       blobs,
       kzgCommitments: commitments,
+      kzgProofs: proofs,
       versionedHashes: hashes,
       gas: undefined,
       maxFeePerDataGas: undefined,
@@ -391,7 +399,7 @@ export const createBlobTxs = async (
     txData['maxFeePerDataGas'] = BigInt(1000) as any
     txData['gasLimit'] = BigInt(1000000) as any
 
-    const blobTx = BlobEIP4844Transaction.fromTxData(txData).sign(pkey)
+    const blobTx = BlobEIP4844Transaction.fromTxData(txData, opts).sign(pkey)
 
     const serializedWrapper = blobTx.serializeNetworkWrapper()
     await fs.appendFile('./blobs.txt', bytesToPrefixedHexString(serializedWrapper) + '\n')

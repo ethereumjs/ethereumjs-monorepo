@@ -28,6 +28,9 @@ export async function runTx(data: string, to?: string, value?: bigint) {
 }
 
 tape('sharding/eip4844 hardfork tests', async (t) => {
+  if (process.env.EXTRA_CL_PARAMS === undefined) {
+    process.env.EXTRA_CL_PARAMS = '--params.CAPELLA_FORK_EPOCH 0 --params.EIP4844_FORK_EPOCH 0'
+  }
   const { teardownCallBack, result } = await startNetwork(network, client, {
     filterKeywords,
     filterOutWords,
@@ -55,7 +58,9 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
       client,
       2 ** 14,
       pkey,
-      '0x3dA33B9A0894b908DdBb00d96399e506515A1009'
+      '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
+      undefined,
+      { common }
     )
 
     const eth2res = await (await fetch('http://127.0.0.1:9596/eth/v1/beacon/headers')).json()
