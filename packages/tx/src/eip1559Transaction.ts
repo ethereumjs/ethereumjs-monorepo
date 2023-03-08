@@ -192,7 +192,8 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
     this._validateYParity()
     this._validateHighS()
 
-    if (this.common.isActivatedEIP(3860)) {
+    const createContract = txData.to === undefined || txData.to === null
+    if (createContract && this.common.isActivatedEIP(3860)) {
       checkMaxInitCodeSize(this.common, this.data.length)
     }
 
