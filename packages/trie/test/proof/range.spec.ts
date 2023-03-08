@@ -199,10 +199,12 @@ tape('simple merkle range proofs generation and verification', function (tester)
 
     // Test the mini trie with only a single element.
     const tinyTrie = new Trie()
-    const tinyEntries: [Buffer, Buffer][] = [[crypto.randomBytes(32), crypto.randomBytes(20)]]
+    const tinyEntries: [Uint8Array, Uint8Array][] = [
+      [crypto.randomBytes(32), crypto.randomBytes(20)],
+    ]
     await tinyTrie.put(tinyEntries[0][0], tinyEntries[0][1])
 
-    const tinyStartKey = Buffer.from('00'.repeat(32), 'hex')
+    const tinyStartKey = hexStringToBytes('00'.repeat(32))
     t.equal(await verify(tinyTrie, tinyEntries, 0, 0, tinyStartKey), false)
   })
 
@@ -231,15 +233,15 @@ tape('simple merkle range proofs generation and verification', function (tester)
         entries,
         0,
         entries.length - 1,
-        Buffer.from('00'.repeat(32), 'hex'),
-        Buffer.from('ff'.repeat(32), 'hex')
+        hexStringToBytes('00'.repeat(32)),
+        hexStringToBytes('ff'.repeat(32))
       ),
       false
     )
   })
 
   it('create a single side range proof and verify it', async (t) => {
-    const startKey = Buffer.from('00'.repeat(32), 'hex')
+    const startKey = hexStringToBytes('00'.repeat(32))
     const { trie, entries } = await randomTrie(new MapDB(), false)
 
     const cases = [0, 1, 200, entries.length - 1]
@@ -249,7 +251,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('create a revert single side range proof and verify it', async (t) => {
-    const endKey = Buffer.from('ff'.repeat(32), 'hex')
+    const endKey = hexStringToBytes('ff'.repeat(32))
     const { trie, entries } = await randomTrie(new MapDB(), false)
 
     const cases = [0, 1, 200, entries.length - 1]

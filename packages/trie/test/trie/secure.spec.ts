@@ -49,9 +49,9 @@ tape('SecureTrie', function (t) {
       for (const row of jsonTests.emptyValues.in) {
         const val =
           row[1] !== undefined && row[1] !== null
-            ? Buffer.from(row[1])
-            : (null as unknown as Buffer)
-        await trie.put(Buffer.from(row[0]), val)
+            ? utf8ToBytes(row[1])
+            : (null as unknown as Uint8Array)
+        await trie.put(utf8ToBytes(row[0]), val)
       }
       t.equal(bytesToPrefixedHexString(trie.root()), jsonTests.emptyValues.root)
       t.end()
@@ -62,9 +62,9 @@ tape('SecureTrie', function (t) {
       for (const row of jsonTests.branchingTests.in) {
         const val =
           row[1] !== undefined && row[1] !== null
-            ? Buffer.from(row[1])
-            : (null as unknown as Buffer)
-        await trie.put(Buffer.from(row[0]), val)
+            ? utf8ToBytes(row[1])
+            : (null as unknown as Uint8Array)
+        await trie.put(utf8ToBytes(row[0]), val)
       }
       t.equal(bytesToPrefixedHexString(trie.root()), jsonTests.branchingTests.root)
       t.end()
@@ -74,9 +74,9 @@ tape('SecureTrie', function (t) {
       for (const row of jsonTests.jeff.in) {
         let val = row[1]
         if (val !== undefined && val !== null) {
-          val = Buffer.from(row[1].slice(2), 'hex')
+          val = hexStringToBytes(row[1].slice(2))
         }
-        await trie.put(Buffer.from(row[0].slice(2), 'hex'), val)
+        await trie.put(hexStringToBytes(row[0].slice(2)), val)
       }
       t.equal(bytesToPrefixedHexString(trie.root()), jsonTests.jeff.root.toString('hex'))
       t.end()

@@ -6,7 +6,6 @@ import {
   hexStringToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { Buffer } from 'buffer'
 import { blake2b } from 'ethereum-cryptography/blake2b'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToUtf8, concatBytes } from 'ethereum-cryptography/utils'
@@ -307,9 +306,8 @@ tape('setting back state root (deleteFromDB)', async (t) => {
   const k2 = utf8ToBytes('2')
   const v2 = utf8ToBytes('this-is-some-longer-value-to-test-the-delete-operation-value2')
 
-  const rootAfterK1 = Buffer.from(
-    '809e75931f394603657e113eb7244794f35b8d326cff99407111d600722e9425',
-    'hex'
+  const rootAfterK1 = hexStringToBytes(
+    '809e75931f394603657e113eb7244794f35b8d326cff99407111d600722e9425'
   )
 
   const trieSetup = {
