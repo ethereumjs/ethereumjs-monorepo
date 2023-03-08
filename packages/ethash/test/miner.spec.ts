@@ -66,7 +66,6 @@ tape('Check if it is possible to mine Blocks and BlockHeaders', async function (
     },
     { common }
   )
-
   const miner = e.getMiner(block.header)
   const solution = <BlockHeader>await miner.mine(-1)
 
@@ -95,7 +94,6 @@ tape('Check if it is possible to stop the miner', async function (t) {
     },
     { common }
   )
-
   const miner = e.getMiner(block.header)
   setTimeout(function () {
     miner.stop()

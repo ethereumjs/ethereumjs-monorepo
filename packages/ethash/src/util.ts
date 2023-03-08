@@ -44,13 +44,13 @@ export function getEpoc(blockNumber: bigint) {
  * Generates a seed give the end epoc and optional the beginning epoc and the
  * beginning epoc seed
  * @method getSeed
- * @param seed Buffer
+ * @param seed Uint8Array
  * @param begin Number
  * @param end Number
  */
-export function getSeed(seed: Buffer, begin: number, end: number) {
+export function getSeed(seed: Uint8Array, begin: number, end: number) {
   for (let i = begin; i < end; i++) {
-    seed = Buffer.from(keccak256(seed))
+    seed = keccak256(seed)
   }
   return seed
 }
@@ -59,19 +59,19 @@ export function fnv(x: number, y: number) {
   return ((((x * 0x01000000) | 0) + ((x * 0x193) | 0)) ^ y) >>> 0
 }
 
-export function fnvBuffer(a: Buffer, b: Buffer) {
-  const r = Buffer.alloc(a.length)
+export function fnvBytes(a: Uint8Array, b: Uint8Array) {
+  const r = new Uint8Array(a.length)
+  const rView = new DataView(r.buffer)
   for (let i = 0; i < a.length; i = i + 4) {
-    r.writeUInt32LE(fnv(a.readUInt32LE(i), b.readUInt32LE(i)), i)
+    rView.setUint32(
+      i,
+      fnv(new DataView(a.buffer).getUint32(i, true), new DataView(b.buffer).getUint32(i, true)),
+      true
+    )
   }
   return r
 }
 
-export function bufReverse(a: Buffer) {
-  const length = a.length
-  const b = Buffer.alloc(length)
-  for (let i = 0; i < length; i++) {
-    b[i] = a[length - i - 1]
-  }
-  return b
+export function bytesReverse(a: Uint8Array) {
+  return a.reverse()
 }
