@@ -439,6 +439,26 @@ export function randomBytes(length: number): Uint8Array {
   return array
 }
 
+/**
+ * This mirrors the functionality of the `ethereum-cryptography` export except
+ * it skips the check to validate that every element of `arrays` is indead a `uint8Array`
+ * Can give small performance gains on large arrays
+ * @param arrays an array of Uint8Arrays
+ * @returns one Uint8Array with all the elements of the original set
+ * works like `Buffer.concat`
+ */
+export const concatBytesUnsafe = (...arrays: Uint8Array[]) => {
+  if (arrays.length === 1) return arrays[0]
+  const length = arrays.reduce((a, arr) => a + arr.length, 0)
+  const result = new Uint8Array(length)
+  for (let i = 0, pad = 0; i < arrays.length; i++) {
+    const arr = arrays[i]
+    result.set(arr, pad)
+    pad += arr.length
+  }
+  return result
+}
+
 export {
   bytesToHex,
   bytesToUtf8,
