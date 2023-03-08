@@ -72,15 +72,10 @@ export class Memory {
     // Copy the stored "buffer" from memory into the return Buffer
 
     const loaded = this._store.slice(offset, offset + size)
-    if (avoidCopy === true && loaded.length === size) {
+    if (avoidCopy === true) {
       return loaded
     }
     returnBuffer.fill(loaded, 0, loaded.length)
-
-    if (loaded.length < size) {
-      // fill the remaining part of the Buffer with zeros
-      returnBuffer.fill(0, loaded.length, size)
-    }
 
     return returnBuffer
   }
