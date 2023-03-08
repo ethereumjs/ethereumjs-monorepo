@@ -76,7 +76,7 @@ export const intToBytes = function (i: number) {
  * @param bytes the number of bytes the buffer should be
  */
 export const zeros = function (bytes: number): Uint8Array {
-  return new Uint8Array(bytes).fill(0)
+  return new Uint8Array(bytes)
 }
 
 /**
