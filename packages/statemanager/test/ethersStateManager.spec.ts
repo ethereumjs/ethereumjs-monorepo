@@ -1,7 +1,14 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
-import { Address, bigIntToBytes, setLengthLeft } from '@ethereumjs/util'
+import {
+  Address,
+  bigIntToBytes,
+  equalsBytes,
+  hexStringToBytes,
+  setLengthLeft,
+  utf8ToBytes,
+} from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import { BaseProvider, JsonRpcProvider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import * as tape from 'tape'
@@ -84,13 +91,13 @@ tape('Ethers State Manager API tests', async (t) => {
     await state.putContractStorage(
       UNIerc20ContractAddress,
       setLengthLeft(bigIntToBytes(2n), 32),
-      Buffer.from('abcd')
+      utf8ToBytes('abcd')
     )
     const slotValue = await state.getContractStorage(
       UNIerc20ContractAddress,
       setLengthLeft(bigIntToBytes(2n), 32)
     )
-    t.ok(slotValue.equals(Buffer.from('abcd')), 'should retrieve slot 2 value')
+    t.ok(equalsBytes(slotValue, utf8ToBytes('abcd')), 'should retrieve slot 2 value')
 
     // Verify that provider is not called for cached data
     ;(provider as any).getStorageAt = function () {
@@ -106,7 +113,7 @@ tape('Ethers State Manager API tests', async (t) => {
     await state.putContractStorage(
       UNIerc20ContractAddress,
       setLengthLeft(bigIntToBytes(2n), 32),
-      Buffer.from('')
+      new Uint8Array(0)
     )
 
     // Verify that provider is not called
@@ -181,9 +188,8 @@ tape('runTx custom transaction test', async (t) => {
     const vm = await VM.create({ common, stateManager: state })
 
     const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
-    const privateKey = Buffer.from(
-      'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-      'hex'
+    const privateKey = hexStringToBytes(
+      'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
     )
     const tx = FeeMarketEIP1559Transaction.fromTxData(
       { to: vitalikDotEth, value: '0x100', gasLimit: 500000n, maxFeePerGas: 7 },

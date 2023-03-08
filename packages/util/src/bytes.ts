@@ -35,7 +35,7 @@ export const hexStringToBytes = (hex: string): Uint8Array => {
   }
 
   if (hex.length % 2 !== 0) {
-    throw new Error(`hex string length ${hex.length} must be multiple of 2`)
+    hex = padToEven(hex)
   }
 
   const byteLen = hex.length / 2

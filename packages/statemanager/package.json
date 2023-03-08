@@ -52,6 +52,7 @@
     "@ethereumjs/block": "^4.2.1",
     "@ethereumjs/trie": "^5.0.4",
     "@ethereumjs/util": "^8.0.5",
+    "@ethereumjs/vm": "^6.4.1",
     "@types/node": "^16.11.7",
     "@types/tape": "^4.13.2",
     "debug": "^4.3.3",
