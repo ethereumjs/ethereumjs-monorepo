@@ -2,6 +2,7 @@ import { Common } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { bytesToPrefixedHexString, hexStringToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
+import * as fs from 'node:fs'
 import * as tape from 'tape'
 
 import {
@@ -100,24 +101,28 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
     st.end()
   })
 
-  t.test('data gas fee market tests', async (st) => {
-    const res = await runBlobTxsFromFile(client, './test/sim/configs/blobs.txt')
-    let done = false
-    let txReceipt
-    while (!done) {
-      txReceipt = await client.request('eth_getTransactionReceipt', [res[0]], 2.0)
-      if (txReceipt.result !== null) {
-        done = true
+  t.test(
+    'data gas fee market tests',
+    { skip: !fs.existsSync('./test/sim/configs/blobs.txt') },
+    async (st) => {
+      const res = await runBlobTxsFromFile(client, './test/sim/configs/blobs.txt')
+      let done = false
+      let txReceipt
+      while (!done) {
+        txReceipt = await client.request('eth_getTransactionReceipt', [res[0]], 2.0)
+        if (txReceipt.result !== null) {
+          done = true
+        }
+        await sleep(2000)
       }
-      await sleep(2000)
+      const block1 = await client.request(
+        'eth_getBlockByHash',
+        [txReceipt.result.blockHash, false],
+        2.0
+      )
+      st.ok(BigInt(block1.result.excessDataGas) > 0n, 'block1 has excess data gas > 0')
     }
-    const block1 = await client.request(
-      'eth_getBlockByHash',
-      [txReceipt.result.blockHash, false],
-      2.0
-    )
-    st.ok(BigInt(block1.result.excessDataGas) > 0n, 'block1 has excess data gas > 0')
-  })
+  )
 
   t.test('point precompile contract test', async (st) => {
     const nonce = await client.request(
