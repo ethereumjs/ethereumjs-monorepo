@@ -24,14 +24,14 @@ case $MULTIPEER in
   syncpeer)
     echo "setting up to run as a sync only peer to peer1 (bootnode)..."
     DATADIR="$DATADIR/syncpeer"
-    EL_PORT_ARGS="--port 30305 --rpcEnginePort 8553 --rpcport 8947 --multiaddrs /ip4/127.0.0.1/tcp/50582/ws --logLevel debug"
-    CL_PORT_ARGS="--genesisValidators 8 --enr.tcp 9002 --port 9002 --execution.urls http://localhost:8553  --rest.port 9598 --server http://localhost:9598 --network.connectToDiscv5Bootnodes true"
+    EL_PORT_ARGS="--port 30305 --rpcEnginePort 8553 --rpcPort 8947 --multiaddrs /ip4/127.0.0.1/tcp/50582/ws --logLevel debug"
+    CL_PORT_ARGS="--genesisValidators 8 --enr.tcp 9002 --port 9002 --execution.urls http://localhost:8553  --rest.port 9598 --server http://localhost:9598 --network.connectToDiscv5Bootnodes true --logLevel debug"
     ;;
 
   peer2 )
     echo "setting up peer2 to run with peer1 (bootnode)..."
     DATADIR="$DATADIR/peer2"
-    EL_PORT_ARGS="--port 30304 --rpcEnginePort 8552 --rpcport 8946 --multiaddrs /ip4/127.0.0.1/tcp/50581/ws --bootnodes $elBootnode --logLevel debug"
+    EL_PORT_ARGS="--port 30304 --rpcEnginePort 8552 --rpcPort 8946 --multiaddrs /ip4/127.0.0.1/tcp/50581/ws --bootnodes $elBootnode --logLevel debug"
     CL_PORT_ARGS="--genesisValidators 8 --startValidators 4..7 --enr.tcp 9001 --port 9001 --execution.urls http://localhost:8552  --rest.port 9597 --server http://localhost:9597 --network.connectToDiscv5Bootnodes true --bootnodes $bootEnrs"
     ;;
 
@@ -159,7 +159,7 @@ else
   EL_PORT_ARGS="$EL_PORT_ARGS --bootnodes $elBootnode"
   CL_PORT_ARGS="$CL_PORT_ARGS --bootnodes $bootEnrs"
 
-  GENESIS_HASH=$(cat "$origDataDir/geneisHash")
+  GENESIS_HASH=$(cat "$origDataDir/genesisHash")
   genTime=$(cat "$origDataDir/genesisTime")
 
 
