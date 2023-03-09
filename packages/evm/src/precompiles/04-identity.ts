@@ -31,6 +31,6 @@ export function precompile04(opts: PrecompileInput): ExecResult {
 
   return {
     executionGasUsed: gasUsed,
-    returnValue: data,
+    returnValue: Buffer.from(data), // Copy the memory (`Buffer.from()`)
   }
 }
