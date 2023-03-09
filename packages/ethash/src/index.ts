@@ -344,11 +344,11 @@ export class Ethash {
       )
     } else {
       this.cache = data.cache.map((a: Uint8Array) => {
-        return a
+        return Uint8Array.from(a)
       })
       this.cacheSize = data.cacheSize
       this.fullSize = data.fullSize
-      this.seed = data.seed
+      this.seed = Uint8Array.from(data.seed)
     }
   }
 
