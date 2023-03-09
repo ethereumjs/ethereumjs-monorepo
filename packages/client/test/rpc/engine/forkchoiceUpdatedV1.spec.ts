@@ -271,7 +271,7 @@ tape(`${method}: latest block after reorg`, async (t) => {
   ])
 
   expectRes = (res: any) => {
-    t.equal(res.body.result.payloadStatus.latestValidHash, blocks[1].blockHash)
+    t.equal(res.body.error.code, -32602)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
