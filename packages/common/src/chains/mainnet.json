@@ -122,18 +122,18 @@
       "comment": "bootnode-aws-us-east-1-001"
     },
     {
-      "ip": "34.255.23.113",
+      "ip": "65.108.70.101",
       "port": 30303,
-      "id": "ca6de62fce278f96aea6ec5a2daadb877e51651247cb96ee310a318def462913b653963c155a0ef6c7d50048bba6e6cea881130857413d9f50a621546b590758",
+      "id": "2b252ab6a1d0f971d9722cb839a42cb81db019ba44c08754628ab4a823487071b5695317c8ccd085219c3a03af063495b2f1da8d18218da2d6a82981b45e6ffc",
       "location": "eu-west-1-001",
-      "comment": "bootnode-aws-eu-west-1-001"
+      "comment": "bootnode-hetzner-hel"
     },
     {
-      "ip": "35.158.244.151",
+      "ip": "157.90.35.166",
       "port": 30303,
-      "id": "279944d8dcd428dffaa7436f25ca0ca43ae19e7bcf94a8fb7d1641651f92d121e972ac2e8f381414b80cc8e5555811c2ec6e1a99bb009b3f53c4c69923e11bd8",
+      "id": "4aeb4ab6c14b23e2c4cfdce879c04b0748a20d8e9b59e25ded2a08143e265c6c25936e74cbc8e641e3312ca288673d91f2f93f8e277de3cfa444ecdaaf982052",
       "location": "eu-central-1-001",
-      "comment": "bootnode-aws-eu-central-1-001"
+      "comment": "bootnode-hetzner-fsn"
     }
   ],
   "dnsNetworks": [
