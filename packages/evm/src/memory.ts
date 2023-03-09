@@ -68,15 +68,11 @@ export class Memory {
   read(offset: number, size: number, avoidCopy?: boolean): Buffer {
     this.extend(offset, size)
 
-    const returnBuffer = Buffer.allocUnsafe(size)
-    // Copy the stored "buffer" from memory into the return Buffer
-
     const loaded = this._store.slice(offset, offset + size)
     if (avoidCopy === true) {
       return loaded
     }
-    returnBuffer.fill(loaded, 0, loaded.length)
 
-    return returnBuffer
+    return Buffer.from(loaded)
   }
 }
