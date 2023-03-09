@@ -833,7 +833,11 @@ export class Engine {
     const safe = toBuffer(safeBlockHash)
     if (!safe.equals(headBlock.hash()) && !safe.equals(zeroBlockHash)) {
       try {
-        await this.chain.getBlock(safe)
+        const safeBlock = await this.chain.getBlock(safe)
+        const canonical = await this.chain.getBlock(safeBlock.header.number)
+        if (!canonical.hash().equals(safe)) {
+          throw new Error('Safe block not in canonical chain')
+        }
       } catch (error) {
         const message = 'safe block not available'
         throw {
@@ -846,6 +850,11 @@ export class Engine {
     if (!finalized.equals(zeroBlockHash)) {
       try {
         await this.chain.getBlock(finalized)
+        const finalizedBlock = await this.chain.getBlock(safe)
+        const canonical = await this.chain.getBlock(finalizedBlock.header.number)
+        if (!canonical.hash().equals(finalized)) {
+          throw new Error('Final block not in canonical chain')
+        }
       } catch (error) {
         throw {
           message: 'finalized block not available',
