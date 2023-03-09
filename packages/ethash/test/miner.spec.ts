@@ -7,11 +7,10 @@ import { Ethash } from '../src'
 
 import type { BlockHeader } from '@ethereumjs/block'
 
-const cacheDB = new MemoryLevel()
 const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Petersburg })
 
 tape('Check if miner works as expected', async function (t) {
-  const e = new Ethash(cacheDB as any)
+  const e = new Ethash(new MemoryLevel())
 
   const block = Block.fromBlockData(
     {
@@ -55,7 +54,7 @@ tape('Check if miner works as expected', async function (t) {
 })
 
 tape('Check if it is possible to mine Blocks and BlockHeaders', async function (t) {
-  const e = new Ethash(cacheDB as any)
+  const e = new Ethash(new MemoryLevel())
 
   const block = Block.fromBlockData(
     {
@@ -83,7 +82,7 @@ tape('Check if it is possible to mine Blocks and BlockHeaders', async function (
 })
 
 tape('Check if it is possible to stop the miner', async function (t) {
-  const e = new Ethash(cacheDB as any)
+  const e = new Ethash(new MemoryLevel())
 
   const block = Block.fromBlockData(
     {
@@ -105,7 +104,7 @@ tape('Check if it is possible to stop the miner', async function (t) {
 })
 
 tape('Check if it is possible to stop the miner', async function (t) {
-  const e = new Ethash(cacheDB as any)
+  const e = new Ethash(new MemoryLevel())
 
   const block: any = {}
 
@@ -117,7 +116,7 @@ tape('Check if it is possible to stop the miner', async function (t) {
 })
 
 tape('Should keep common when mining blocks or headers', async function (t) {
-  const e = new Ethash(cacheDB as any)
+  const e = new Ethash(new MemoryLevel())
 
   const block = Block.fromBlockData(
     {
