@@ -1,7 +1,8 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Address, arrToBufArr, bigIntToBytes, bufArrToArr, bytesToBigInt } from '@ethereumjs/util'
+import { Address, TypeOutput, bigIntToBytes, bytesToBigInt, toType } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
+import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import type { Blockchain } from '..'
 import type { Consensus, ConsensusOptions } from './interface'
@@ -11,9 +12,9 @@ import type { CliqueConfig } from '@ethereumjs/common'
 const debug = createDebugLogger('blockchain:clique')
 
 // Magic nonce number to vote on adding a new signer
-export const CLIQUE_NONCE_AUTH = Buffer.from('ffffffffffffffff', 'hex')
+export const CLIQUE_NONCE_AUTH = hexToBytes('ffffffffffffffff')
 // Magic nonce number to vote on removing a signer.
-export const CLIQUE_NONCE_DROP = Buffer.alloc(8)
+export const CLIQUE_NONCE_DROP = new Uint8Array(8)
 
 const CLIQUE_SIGNERS_KEY = 'CliqueSigners'
 const CLIQUE_VOTES_KEY = 'CliqueVotes'
@@ -25,8 +26,8 @@ export const CLIQUE_DIFF_INTURN = BigInt(2)
 export const CLIQUE_DIFF_NOTURN = BigInt(1)
 
 const DB_OPTS = {
-  keyEncoding: 'buffer',
-  valueEncoding: 'buffer',
+  keyEncoding: 'view',
+  valueEncoding: 'view',
 }
 
 // Clique Signer State
@@ -36,7 +37,7 @@ type CliqueLatestSignerStates = CliqueSignerState[]
 // Clique Vote
 type CliqueVote = [
   blockNumber: bigint,
-  vote: [signer: Address, beneficiary: Address, cliqueNonce: Buffer]
+  vote: [signer: Address, beneficiary: Address, cliqueNonce: Uint8Array]
 ]
 type CliqueLatestVotes = CliqueVote[]
 
@@ -237,11 +238,7 @@ export class CliqueConsensus implements Consensus {
       bigIntToBytes(state[0]),
       state[1].map((a) => a.toBytes()),
     ])
-    await this.blockchain!.db.put(
-      CLIQUE_SIGNERS_KEY,
-      Buffer.from(RLP.encode(bufArrToArr(formatted))),
-      DB_OPTS
-    )
+    await this.blockchain!.db.put(CLIQUE_SIGNERS_KEY, RLP.encode(formatted), DB_OPTS)
     // Output active signers for debugging purposes
     let i = 0
     for (const signer of this.cliqueActiveSigners()) {
@@ -281,7 +278,7 @@ export class CliqueConsensus implements Consensus {
             vote[0] >= BigInt(lastEpochBlockNumber) &&
             !vote[1][0].equals(signer) &&
             vote[1][1].equals(beneficiary) &&
-            vote[1][2].equals(CLIQUE_NONCE_AUTH)
+            equalsBytes(vote[1][2], CLIQUE_NONCE_AUTH)
           )
         })
         const beneficiaryVotesAUTH: Address[] = []
@@ -294,7 +291,7 @@ export class CliqueConsensus implements Consensus {
           }
         }
         let numBeneficiaryVotesAUTH = beneficiaryVotesAUTH.length
-        if (round === 2 && nonce.equals(CLIQUE_NONCE_AUTH)) {
+        if (round === 2 && equalsBytes(nonce, CLIQUE_NONCE_AUTH)) {
           numBeneficiaryVotesAUTH += 1
         }
         // Majority consensus
@@ -303,8 +300,14 @@ export class CliqueConsensus implements Consensus {
           // Authorize new signer
           activeSigners.push(beneficiary)
           activeSigners.sort((a, b) => {
-            // Sort by buffer size
-            return a.toBytes().compare(b.toBytes())
+            // Sort by array size
+            const result =
+              toType(a.toString(), TypeOutput.BigInt) < toType(b.toString(), TypeOutput.BigInt)
+            if (result) {
+              return -1
+            } else {
+              return 1
+            }
           })
           // Discard votes for added signer
           this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
@@ -318,7 +321,7 @@ export class CliqueConsensus implements Consensus {
             vote[0] >= BigInt(lastEpochBlockNumber) &&
             !vote[1][0].equals(signer) &&
             vote[1][1].equals(beneficiary) &&
-            vote[1][2].equals(CLIQUE_NONCE_DROP)
+            equalsBytes(vote[1][2], CLIQUE_NONCE_DROP)
           )
         })
         const beneficiaryVotesDROP: Address[] = []
@@ -332,7 +335,7 @@ export class CliqueConsensus implements Consensus {
         }
         let numBeneficiaryVotesDROP = beneficiaryVotesDROP.length
 
-        if (round === 2 && nonce.equals(CLIQUE_NONCE_DROP)) {
+        if (round === 2 && equalsBytes(nonce, CLIQUE_NONCE_DROP)) {
           numBeneficiaryVotesDROP += 1
         }
         // Majority consensus
@@ -352,7 +355,7 @@ export class CliqueConsensus implements Consensus {
           this._cliqueLatestVotes.push(latestVote)
           debug(
             `[Block ${header.number}] New clique vote: ${signer} -> ${beneficiary} ${
-              nonce.equals(CLIQUE_NONCE_AUTH) ? 'AUTH' : 'DROP'
+              equalsBytes(nonce, CLIQUE_NONCE_AUTH) ? 'AUTH' : 'DROP'
             }`
           )
         }
@@ -391,11 +394,7 @@ export class CliqueConsensus implements Consensus {
       bigIntToBytes(v[0]),
       [v[1][0].toBytes(), v[1][1].toBytes(), v[1][2]],
     ])
-    await this.blockchain!.db.put(
-      CLIQUE_VOTES_KEY,
-      Buffer.from(RLP.encode(bufArrToArr(formatted))),
-      DB_OPTS
-    )
+    await this.blockchain!.db.put(CLIQUE_VOTES_KEY, RLP.encode(formatted), DB_OPTS)
   }
 
   /**
@@ -499,11 +498,7 @@ export class CliqueConsensus implements Consensus {
       bigIntToBytes(b[0]),
       b[1].toBytes(),
     ])
-    await this.blockchain!.db.put(
-      CLIQUE_BLOCK_SIGNERS_SNAPSHOT_KEY,
-      Buffer.from(RLP.encode(bufArrToArr(formatted))),
-      DB_OPTS
-    )
+    await this.blockchain!.db.put(CLIQUE_BLOCK_SIGNERS_SNAPSHOT_KEY, RLP.encode(formatted), DB_OPTS)
   }
 
   /**
@@ -512,14 +507,14 @@ export class CliqueConsensus implements Consensus {
    */
   private async getCliqueLatestSignerStates(): Promise<CliqueLatestSignerStates> {
     try {
-      const signerStates = await this.blockchain!.db.get<string, Buffer>(
+      const signerStates = await this.blockchain!.db.get<string, Uint8Array>(
         CLIQUE_SIGNERS_KEY,
         DB_OPTS
       )
-      const states = arrToBufArr(RLP.decode(Uint8Array.from(signerStates))) as [Buffer, Buffer[]]
+      const states = RLP.decode(signerStates) as [Uint8Array, Uint8Array[]]
       return states.map((state) => {
-        const blockNum = bytesToBigInt(state[0] as Buffer)
-        const addrs = (<any>state[1]).map((buf: Buffer) => new Address(buf))
+        const blockNum = bytesToBigInt(state[0] as Uint8Array)
+        const addrs = (<any>state[1]).map((bytes: Uint8Array) => new Address(bytes))
         return [blockNum, addrs]
       }) as CliqueLatestSignerStates
     } catch (error: any) {
@@ -536,13 +531,13 @@ export class CliqueConsensus implements Consensus {
    */
   private async getCliqueLatestVotes(): Promise<CliqueLatestVotes> {
     try {
-      const signerVotes = await this.blockchain!.db.get<string, Buffer>(CLIQUE_VOTES_KEY, DB_OPTS)
-      const votes = arrToBufArr(RLP.decode(Uint8Array.from(signerVotes))) as [
-        Buffer,
-        [Buffer, Buffer, Buffer]
-      ]
+      const signerVotes = await this.blockchain!.db.get<string, Uint8Array>(
+        CLIQUE_VOTES_KEY,
+        DB_OPTS
+      )
+      const votes = RLP.decode(signerVotes) as [Uint8Array, [Uint8Array, Uint8Array, Uint8Array]]
       return votes.map((vote) => {
-        const blockNum = bytesToBigInt(vote[0] as Buffer)
+        const blockNum = bytesToBigInt(vote[0] as Uint8Array)
         const signer = new Address((vote[1] as any)[0])
         const beneficiary = new Address((vote[1] as any)[1])
         const nonce = (vote[1] as any)[2]
@@ -562,13 +557,13 @@ export class CliqueConsensus implements Consensus {
    */
   private async getCliqueLatestBlockSigners(): Promise<CliqueLatestBlockSigners> {
     try {
-      const blockSigners = await this.blockchain!.db.get<string, Buffer>(
+      const blockSigners = await this.blockchain!.db.get<string, Uint8Array>(
         CLIQUE_BLOCK_SIGNERS_SNAPSHOT_KEY,
         DB_OPTS
       )
-      const signers = arrToBufArr(RLP.decode(Uint8Array.from(blockSigners))) as [Buffer, Buffer][]
+      const signers = RLP.decode(blockSigners) as [Uint8Array, Uint8Array][]
       return signers.map((s) => {
-        const blockNum = bytesToBigInt(s[0] as Buffer)
+        const blockNum = bytesToBigInt(s[0] as Uint8Array)
         const signer = new Address(s[1] as any)
         return [blockNum, signer]
       }) as CliqueLatestBlockSigners

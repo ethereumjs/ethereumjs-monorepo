@@ -1,8 +1,9 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { bufArrToArr, toBytes } from '@ethereumjs/util'
+import { toBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import { MemoryLevel } from 'memory-level'
 
 import { Blockchain } from '../src'
@@ -110,7 +111,7 @@ export const isConsecutive = (blocks: Block[]) => {
     }
     const { parentHash } = block.header
     const lastBlockHash = blocks[index - 1].hash()
-    return !parentHash.equals(lastBlockHash)
+    return !equalsBytes(parentHash, lastBlockHash)
   })
 }
 
@@ -121,67 +122,64 @@ export const createTestDB = async (): Promise<[Level<any, any>, Block]> => {
   await db.batch([
     {
       type: 'put',
-      key: Buffer.from('6800000000000000006e', 'hex'),
-      keyEncoding: 'buffer',
-      valueEncoding: 'buffer',
+      key: hexToBytes('6800000000000000006e'),
+      keyEncoding: 'view',
+      valueEncoding: 'view',
       value: genesis.hash(),
     },
     {
       type: 'put',
-      key: Buffer.from('48d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3', 'hex'),
-      keyEncoding: 'buffer',
-      valueEncoding: 'buffer',
-      value: Buffer.from('00', 'hex'),
+      key: hexToBytes('48d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'),
+      keyEncoding: 'view',
+      valueEncoding: 'view',
+      value: hexToBytes('00'),
     },
     {
       type: 'put',
       key: 'LastHeader',
-      keyEncoding: 'buffer',
-      valueEncoding: 'buffer',
+      keyEncoding: 'view',
+      valueEncoding: 'view',
       value: genesis.hash(),
     },
     {
       type: 'put',
       key: 'LastBlock',
-      keyEncoding: 'buffer',
-      valueEncoding: 'buffer',
+      keyEncoding: 'view',
+      valueEncoding: 'view',
       value: genesis.hash(),
     },
     {
       type: 'put',
-      key: Buffer.from(
-        '680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-        'hex'
+      key: hexToBytes(
+        '680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
       ),
-      keyEncoding: 'buffer',
-      valueEncoding: 'buffer',
+      keyEncoding: 'view',
+      valueEncoding: 'view',
       value: genesis.header.serialize(),
     },
     {
       type: 'put',
-      key: Buffer.from(
-        '680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa374',
-        'hex'
+      key: hexToBytes(
+        '680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa374'
       ),
-      keyEncoding: 'buffer',
-      valueEncoding: 'buffer',
-      value: Buffer.from(RLP.encode(Uint8Array.from(toBytes(17179869184)))),
+      keyEncoding: 'view',
+      valueEncoding: 'view',
+      value: RLP.encode(toBytes(17179869184)),
     },
     {
       type: 'put',
-      key: Buffer.from(
-        '620000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-        'hex'
+      key: hexToBytes(
+        '620000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
       ),
-      keyEncoding: 'buffer',
-      valueEncoding: 'buffer',
-      value: Buffer.from(RLP.encode(bufArrToArr(genesis.raw()).slice(1))),
+      keyEncoding: 'view',
+      valueEncoding: 'view',
+      value: RLP.encode(genesis.raw().slice(1)),
     },
     {
       type: 'put',
       key: 'heads',
       valueEncoding: 'json',
-      value: { head0: { type: 'Buffer', data: [171, 205] } },
+      value: { head0: [171, 205] },
     },
   ])
   return [db as any, genesis]
@@ -209,7 +207,7 @@ function createBlock(
   const number = parentBlock.header.number + BigInt(1)
   const timestamp = parentBlock.header.timestamp + BigInt(1)
 
-  const uncleHash = keccak256(RLP.encode(bufArrToArr(uncles.map((uh) => uh.raw()))))
+  const uncleHash = keccak256(RLP.encode(uncles.map((uh) => uh.raw())))
 
   const londonHfBlock = common.hardforkBlock(Hardfork.London)
   const baseFeePerGas =
@@ -224,7 +222,7 @@ function createBlock(
         parentHash: parentBlock.hash(),
         timestamp,
         gasLimit: parentBlock.header.gasLimit,
-        extraData: Buffer.from(extraData),
+        extraData: utf8ToBytes(extraData),
         uncleHash,
         baseFeePerGas,
       },
