@@ -203,10 +203,9 @@ export class Ethash {
   calcDatasetItem(i: number): Uint8Array {
     const n = this.cache.length
     const r = Math.floor(params.HASH_BYTES / params.WORD_BYTES)
-    let mix = this.cache[i % n]
-
+    let mix = new Uint8Array(this.cache[i % n])
     const mixView = new DataView(mix.buffer)
-    mixView.setInt32(0, mixView.getUint32(0, true) ^ i, true)
+    mixView.setUint32(0, mixView.getUint32(0, true) ^ i, true)
     mix = keccak512(mix)
     for (let j = 0; j < params.DATASET_PARENTS; j++) {
       const cacheIndex = fnv(i ^ j, mixView.getUint32((j % r) * 4, true))
@@ -245,20 +244,19 @@ export class Ethash {
       mix = fnvBytes(mix, concatBytes(...newdata))
     }
 
-    const cmix = new DataView(new Uint8Array(mix.length / 4).buffer)
+    const cmix = new Uint8Array(mix.length / 4)
+    const cmixView = new DataView(cmix.buffer)
     const mixView = new DataView(mix.buffer)
     for (i = 0; i < mix.length / 4; i = i + 4) {
       const a = fnv(mixView.getUint32(i * 4, true), mixView.getUint32((i + 1) * 4, true))
       const b = fnv(a, mixView.getUint32((i + 2) * 4, true))
       const c = fnv(b, mixView.getUint32((i + 3) * 4, true))
-      cmix.setUint32(i, c, true)
+      cmixView.setUint32(i, c, true)
     }
 
-    const cmixBytes = new Uint8Array(cmix.buffer)
-
     return {
-      mix: cmixBytes,
-      hash: keccak256(concatBytes(s, cmixBytes)),
+      mix: cmix,
+      hash: keccak256(concatBytes(s, cmix)),
     }
   }
 
