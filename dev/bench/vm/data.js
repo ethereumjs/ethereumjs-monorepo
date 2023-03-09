@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1678367443714,
+  "lastUpdate": 1678370008056,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "282d1c24c489f826181b4c758f66671201962782",
-          "message": "client: Fix engine-auth and engine-exchange-capabilities hive test (#2531)\n\n* client: Increase allowed drift for engine auth staleness check\n\n* rename getcapabilities to exchangecapabilities\n\n* spec fixes\n\n* rename spec test\n\n* move to correct loc\n\n* lint",
-          "timestamp": "2023-02-15T06:28:39-05:00",
-          "tree_id": "634ff423d80baa2d5c18a1f0afaef4d298f03546",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/282d1c24c489f826181b4c758f66671201962782"
-        },
-        "date": 1676460711769,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 13097,
-            "range": "±4.53%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 13104,
-            "range": "±2.47%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 12519,
-            "range": "±5.94%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 12627,
-            "range": "±2.67%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 12481,
-            "range": "±2.60%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 7850,
             "range": "±2.98%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "572a2e5d3339f0a56fed40c9c3b589c120fc58bf",
+          "message": "EVM: Avoid memory.read() Memory Copy (#2573)\n\n* EVM: added avoidCopy parameter to memory.read() function, first test on CREATE opcode\r\n\r\n* EVM: Add direct memory read to all calling opcodes\r\n\r\n* EVM: Copy over memory on IDENTITY precompile\r\n\r\n* EVM: remove length checks and return buffer 0-filling in Memory.read() (memory is uncoditionally being extended properly anyhow)\r\n\r\n* Some optimizations",
+          "timestamp": "2023-03-09T14:50:09+01:00",
+          "tree_id": "87127feaf245fc5a242a9afcc69fef40b3be7456",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/572a2e5d3339f0a56fed40c9c3b589c120fc58bf"
+        },
+        "date": 1678370006713,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 8763,
+            "range": "±2.54%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 8593,
+            "range": "±5.02%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 8777,
+            "range": "±2.43%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 8742,
+            "range": "±2.33%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 8146,
+            "range": "±6.66%",
             "unit": "ops/sec",
             "extra": "79 samples"
           }
