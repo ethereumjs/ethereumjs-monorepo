@@ -42,21 +42,21 @@ const block = Block.fromBlockData(
   { common }
 )
 
-const callerPrivateKey = Buffer.from('44'.repeat(32), 'hex')
+const callerPrivateKey = hexToBytes('44'.repeat(32), 'hex')
 const callerAddress = new Address(privateToAddress(callerPrivateKey))
 const PREBALANCE = BigInt(10000000)
 
 const address = new Address(privateToAddress(privateKey))
-const contractAddress = new Address(Buffer.from('ff'.repeat(20), 'hex'))
-const contractStorageAddress = new Address(Buffer.from('ee'.repeat(20), 'hex'))
+const contractAddress = new Address(hexToBytes('ff'.repeat(20), 'hex'))
+const contractStorageAddress = new Address(hexToBytes('ee'.repeat(20), 'hex'))
 
 // Bytecode to exit call frame and return the topmost stack item
-const RETURNTOP = Buffer.from('60005260206000F3', 'hex')
+const RETURNTOP = hexToBytes('60005260206000F3', 'hex')
 //Bytecode to exit call frame and return the current memory size
-const RETURNMEMSIZE = Buffer.from('5960005260206000F3', 'hex')
+const RETURNMEMSIZE = hexToBytes('5960005260206000F3', 'hex')
 // Bytecode to store CALLER in slot 0 and GAS in slot 1 and the first 32 bytes of the input in slot 2
 // Returns the entire input as output
-const STORECALLER = Buffer.from('5A60015533600055600035600255366000600037366000F3', 'hex')
+const STORECALLER = hexToBytes('5A60015533600055600035600255366000600037366000F3', 'hex')
 
 /**
  * This signs a message to be used for AUTH opcodes
@@ -69,7 +69,7 @@ function signMessage(commitUnpadded: Buffer, address: Address, privateKey: Buffe
   const commit = setLengthLeft(commitUnpadded, 32)
   const paddedInvokerAddress = setLengthLeft(address.buf, 32)
   const chainId = setLengthLeft(bigIntToBytes(common.chainId()), 32)
-  const message = Buffer.concat([Buffer.from('03', 'hex'), chainId, paddedInvokerAddress, commit])
+  const message = Buffer.concat([hexToBytes('03', 'hex'), chainId, paddedInvokerAddress, commit])
   const msgHash = Buffer.from(keccak256(message))
   return ecsign(msgHash, privateKey)
 }
@@ -90,20 +90,20 @@ function getAuthCode(
   const commit = setLengthLeft(commitUnpadded, 32)
   let v: Buffer
   if (signature.v === BigInt(27)) {
-    v = setLengthLeft(Buffer.from('00', 'hex'), 32)
+    v = setLengthLeft(hexToBytes('00', 'hex'), 32)
   } else if (signature.v === BigInt(28)) {
-    v = setLengthLeft(Buffer.from('01', 'hex'), 32)
+    v = setLengthLeft(hexToBytes('01', 'hex'), 32)
   } else {
     v = setLengthLeft(toBytes(signature.v), 32)
   }
 
-  const PUSH32 = Buffer.from('7F', 'hex')
-  const AUTH = Buffer.from('F6', 'hex')
-  const MSTORE = Buffer.from('52', 'hex')
+  const PUSH32 = hexToBytes('7F', 'hex')
+  const AUTH = hexToBytes('F6', 'hex')
+  const MSTORE = hexToBytes('52', 'hex')
   const mslot0 = zeros(32)
-  const mslot1 = Buffer.concat([zeros(31), Buffer.from('20', 'hex')])
-  const mslot2 = Buffer.concat([zeros(31), Buffer.from('40', 'hex')])
-  const mslot3 = Buffer.concat([zeros(31), Buffer.from('60', 'hex')])
+  const mslot1 = Buffer.concat([zeros(31), hexToBytes('20', 'hex')])
+  const mslot2 = Buffer.concat([zeros(31), hexToBytes('40', 'hex')])
+  const mslot3 = Buffer.concat([zeros(31), hexToBytes('60', 'hex')])
   const addressBuffer = setLengthLeft(address.buf, 32)
   // This bytecode setups the stack to be used for AUTH
   return Buffer.concat([
@@ -127,9 +127,9 @@ function getAuthCode(
     PUSH32,
     mslot3,
     MSTORE,
-    Buffer.from('60', 'hex'),
-    msizeBuffer ?? Buffer.from('80', 'hex'),
-    Buffer.from('6000', 'hex'),
+    hexToBytes('60', 'hex'),
+    msizeBuffer ?? hexToBytes('80', 'hex'),
+    hexToBytes('6000', 'hex'),
     PUSH32,
     addressBuffer,
     AUTH,
@@ -155,11 +155,11 @@ type AuthcallData = {
  */
 function MSTORE(position: Buffer, value: Buffer) {
   return Buffer.concat([
-    Buffer.from('7F', 'hex'),
+    hexToBytes'7F', 'hex'),
     setLengthLeft(value, 32),
-    Buffer.from('7F', 'hex'),
+    hexToBytes('7F', 'hex'),
     setLengthLeft(position, 32),
-    Buffer.from('52', 'hex'),
+    hexToBytes('52', 'hex'),
   ])
 }
 
@@ -177,8 +177,8 @@ function getAuthCallCode(data: AuthcallData) {
   const argsLengthBuffer = setLengthLeft(bigIntToBytes(data.argsLength ?? BigInt(0)), 32)
   const retOffsetBuffer = setLengthLeft(bigIntToBytes(data.retOffset ?? BigInt(0)), 32)
   const retLengthBuffer = setLengthLeft(bigIntToBytes(data.retLength ?? BigInt(0)), 32)
-  const PUSH32 = Buffer.from('7f', 'hex')
-  const AUTHCALL = Buffer.from('f7', 'hex')
+  const PUSH32 = hexToBytes('7f', 'hex')
+  const AUTHCALL = hexToBytes('f7', 'hex')
   const order = [
     retLengthBuffer,
     retOffsetBuffer,
@@ -216,7 +216,7 @@ function flipSignature(signature: any) {
 tape('EIP-3074 AUTH', (t) => {
   t.test('Should execute AUTH correctly', async (st) => {
     const vm = await VM.create({ common })
-    const message = Buffer.from('01', 'hex')
+    const message = hexToBytes('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = Buffer.concat([getAuthCode(message, signature, authAddress), RETURNTOP])
 
@@ -233,12 +233,12 @@ tape('EIP-3074 AUTH', (t) => {
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue.slice(31)
-    st.ok(buf.equals(Buffer.from('01', 'hex')), 'auth should return 1')
+    st.ok(buf.equals(hexToBytes('01', 'hex')), 'auth should return 1')
   })
 
   t.test('Should not set AUTH if signature is invalid', async (st) => {
     const vm = await VM.create({ common })
-    const message = Buffer.from('01', 'hex')
+    const message = hexToBytes('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     signature.r = signature.s
     const code = Buffer.concat([getAuthCode(message, signature, authAddress), RETURNTOP])
@@ -261,7 +261,7 @@ tape('EIP-3074 AUTH', (t) => {
 
   t.test('Should not set AUTH if reported address is invalid', async (st) => {
     const vm = await VM.create({ common })
-    const message = Buffer.from('01', 'hex')
+    const message = hexToBytes('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     signature.r = signature.s
     // use the contractAddress instead of authAddress for the expected address (this should fail)
@@ -285,7 +285,7 @@ tape('EIP-3074 AUTH', (t) => {
 
   t.test('Should throw if signature s > N_DIV_2', async (st) => {
     const vm = await VM.create({ common })
-    const message = Buffer.from('01', 'hex')
+    const message = hexToBytes('01', 'hex')
     const signature = flipSignature(signMessage(message, contractAddress, privateKey))
     const code = Buffer.concat([getAuthCode(message, signature, authAddress), RETURNTOP])
 
@@ -306,7 +306,7 @@ tape('EIP-3074 AUTH', (t) => {
 
   t.test('Should be able to call AUTH multiple times', async (st) => {
     const vm = await VM.create({ common })
-    const message = Buffer.from('01', 'hex')
+    const message = hexToBytes('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     const signature2 = signMessage(message, contractAddress, callerPrivateKey)
     const code = Buffer.concat([
@@ -328,15 +328,15 @@ tape('EIP-3074 AUTH', (t) => {
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue.slice(31)
-    st.ok(buf.equals(Buffer.from('01', 'hex')), 'auth returned right address')
+    st.ok(buf.equals(hexToBytes('01', 'hex')), 'auth returned right address')
   })
 
   t.test('Should use zeros in case that memory size < 128', async (st) => {
     const vm = await VM.create({ common })
-    const message = Buffer.from('00', 'hex')
+    const message = hexToBytes('00', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = Buffer.concat([
-      getAuthCode(message, signature, authAddress, Buffer.from('60', 'hex')),
+      getAuthCode(message, signature, authAddress, hexToBytes('60', 'hex')),
       RETURNTOP,
     ])
 
@@ -353,12 +353,12 @@ tape('EIP-3074 AUTH', (t) => {
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue.slice(31)
-    st.ok(buf.equals(Buffer.from('01', 'hex')), 'auth returned right address')
+    st.ok(buf.equals(hexToBytes('01', 'hex')), 'auth returned right address')
   })
 
   t.test('Should charge memory expansion gas if the memory size > 128', async (st) => {
     const vm = await VM.create({ common })
-    const message = Buffer.from('00', 'hex')
+    const message = hexToBytes('00', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = Buffer.concat([getAuthCode(message, signature, authAddress), RETURNMEMSIZE])
 
@@ -376,13 +376,13 @@ tape('EIP-3074 AUTH', (t) => {
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
 
     st.ok(
-      result.execResult.returnValue.slice(31).equals(Buffer.from('80', 'hex')),
+      result.execResult.returnValue.slice(31).equals(hexToBytes('80', 'hex')),
       'reported msize is correct'
     )
     const gas = result.execResult.executionGasUsed
 
     const code2 = Buffer.concat([
-      getAuthCode(message, signature, authAddress, Buffer.from('90', 'hex')),
+      getAuthCode(message, signature, authAddress, hexToBytes('90', 'hex')),
       RETURNMEMSIZE,
     ])
 
@@ -399,7 +399,7 @@ tape('EIP-3074 AUTH', (t) => {
     // the memory size in AUTH is 0x90 (so extra 16 bytes), but memory expands with words (32 bytes)
     // so the correct amount of msize is 0xa0, not 0x90
     st.ok(
-      result2.execResult.returnValue.slice(31).equals(Buffer.from('a0', 'hex')),
+      result2.execResult.returnValue.slice(31).equals(hexToBytes('a0', 'hex')),
       'reported msize is correct'
     )
     st.ok(result2.execResult.executionGasUsed > gas, 'charged more gas for memory expansion')
@@ -420,7 +420,7 @@ async function setupVM(code: Buffer) {
 
 tape('EIP-3074 AUTHCALL', (t) => {
   t.test('Should execute AUTHCALL correctly', async (st) => {
-    const message = Buffer.from('01', 'hex')
+    const message = hexToBytes('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = Buffer.concat([
       getAuthCode(message, signature, authAddress),
@@ -440,14 +440,14 @@ tape('EIP-3074 AUTHCALL', (t) => {
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
 
     const buf = result.execResult.returnValue.slice(31)
-    st.ok(buf.equals(Buffer.from('01', 'hex')), 'authcall success')
+    st.ok(buf.equals(hexToBytes('01', 'hex')), 'authcall success')
 
     const storage = await vm.stateManager.getContractStorage(contractStorageAddress, zeros(32))
     st.ok(storage.equals(address.buf), 'caller set correctly')
   })
 
   t.test('Should forward max call gas when gas set to 0', async (st) => {
-    const message = Buffer.from('01', 'hex')
+    const message = hexToBytes('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = Buffer.concat([
       getAuthCode(message, signature, authAddress),
@@ -475,7 +475,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
 
     const gasUsed = await vm.stateManager.getContractStorage(
       contractStorageAddress,
-      Buffer.from('00'.repeat(31) + '01', 'hex')
+      hexToBytes('00'.repeat(31) + '01', 'hex')
     )
     const gasBigInt = bytesToBigInt(gasUsed)
     const preGas =
@@ -487,7 +487,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
   })
 
   t.test('Should forward max call gas when gas set to 0 - warm account', async (st) => {
-    const message = Buffer.from('01', 'hex')
+    const message = hexToBytes('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = Buffer.concat([
       getAuthCode(message, signature, authAddress),
@@ -518,7 +518,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
 
     const gasUsed = await vm.stateManager.getContractStorage(
       contractStorageAddress,
-      Buffer.from('00'.repeat(31) + '01', 'hex')
+      hexToBytes('00'.repeat(31) + '01', 'hex')
     )
     const gasBigInt = bytesToBigInt(gasUsed)
     const preGas = gas! - common.param('gasPrices', 'warmstorageread')!
@@ -529,12 +529,12 @@ tape('EIP-3074 AUTHCALL', (t) => {
   t.test(
     'Should forward max call gas when gas set to 0 - cold account, nonzero transfer, create new account',
     async (st) => {
-      const message = Buffer.from('01', 'hex')
+      const message = hexToBytes('01', 'hex')
       const signature = signMessage(message, contractAddress, privateKey)
       const code = Buffer.concat([
         getAuthCode(message, signature, authAddress),
         getAuthCallCode({
-          address: new Address(Buffer.from('cc'.repeat(20), 'hex')),
+          address: new Address(hexToBytes('cc'.repeat(20), 'hex')),
           value: 1n,
         }),
         RETURNTOP,
@@ -575,7 +575,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
   t.test(
     'Should charge value transfer gas when transferring and transfer from contract, not authcall address',
     async (st) => {
-      const message = Buffer.from('01', 'hex')
+      const message = hexToBytes('01', 'hex')
       const signature = signMessage(message, contractAddress, privateKey)
       const code = Buffer.concat([
         getAuthCode(message, signature, authAddress),
@@ -608,7 +608,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
 
       const gasUsed = await vm.stateManager.getContractStorage(
         contractStorageAddress,
-        Buffer.from('00'.repeat(31) + '01', 'hex')
+        hexToBytes('00'.repeat(31) + '01', 'hex')
       )
       const gasBigInt = bytesToBigInt(gasUsed)
       const preGas =
@@ -657,7 +657,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
   })
 
   t.test('Should unset AUTH in case of invalid signature', async (st) => {
-    const message = Buffer.from('01', 'hex')
+    const message = hexToBytes('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     const signature2 = {
       v: signature.v,
@@ -693,7 +693,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
   })
 
   t.test('Should throw if not enough gas is available', async (st) => {
-    const message = Buffer.from('01', 'hex')
+    const message = hexToBytes('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = Buffer.concat([
       getAuthCode(message, signature, authAddress),
@@ -717,7 +717,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
   })
 
   t.test('Should throw if valueExt is nonzero', async (st) => {
-    const message = Buffer.from('01', 'hex')
+    const message = hexToBytes('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = Buffer.concat([
       getAuthCode(message, signature, authAddress),
@@ -745,7 +745,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
   })
 
   t.test('Should forward the right amount of gas', async (st) => {
-    const message = Buffer.from('01', 'hex')
+    const message = hexToBytes('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = Buffer.concat([
       getAuthCode(message, signature, authAddress),
@@ -766,19 +766,19 @@ tape('EIP-3074 AUTHCALL', (t) => {
     await vm.runTx({ tx, block, skipHardForkValidation: true })
     const gas = await vm.stateManager.getContractStorage(
       contractStorageAddress,
-      Buffer.from('00'.repeat(31) + '01', 'hex')
+      hexToBytes('00'.repeat(31) + '01', 'hex')
     )
     const gasBigInt = bytesToBigInt(gas)
     st.equals(gasBigInt, BigInt(700000 - 2), 'forwarded the right amount of gas') // The 2 is subtracted due to the GAS opcode base fee
   })
 
   t.test('Should set input and output correctly', async (st) => {
-    const message = Buffer.from('01', 'hex')
+    const message = hexToBytes('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
-    const input = Buffer.from('aa'.repeat(32), 'hex')
+    const input = hexToBytes('aa'.repeat(32), 'hex')
     const code = Buffer.concat([
       getAuthCode(message, signature, authAddress),
-      MSTORE(Buffer.from('20', 'hex'), input),
+      MSTORE(hexToBytes('20', 'hex'), input),
       getAuthCallCode({
         address: contractStorageAddress,
         argsOffset: 32n,
@@ -786,7 +786,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
         retOffset: 64n,
         retLength: 32n,
       }),
-      Buffer.from('60206040F3', 'hex'), // PUSH 32 PUSH 64 RETURN -> This returns the 32 bytes at memory position 64
+      hexToBytes('60206040F3', 'hex'), // PUSH 32 PUSH 64 RETURN -> This returns the 32 bytes at memory position 64
     ])
     const vm = await setupVM(code)
 
@@ -799,7 +799,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const callInput = await vm.stateManager.getContractStorage(
       contractStorageAddress,
-      Buffer.from('00'.repeat(31) + '02', 'hex')
+      hexToBytes('00'.repeat(31) + '02', 'hex')
     )
     st.ok(callInput.equals(input), 'authcall input ok')
     st.ok(result.execResult.returnValue.equals(input), 'authcall output ok')

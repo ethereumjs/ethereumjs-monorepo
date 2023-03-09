@@ -99,7 +99,7 @@ tape('VM initialized with custom state', (t) => {
 
     const callResult = await vm.evm.runCall({
       to: Address.fromString(contractAddress),
-      data: Buffer.from(sigHash.slice(2), 'hex'),
+      data: hexToBytes(sigHash.slice(2), 'hex'),
       caller: Address.fromPrivateKey(privateKey),
     })
 

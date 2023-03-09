@@ -44,8 +44,8 @@ tape('[Integration:Miner]', async (t) => {
   )
   const accounts: [Address, Buffer][] = [
     [
-      new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
-      Buffer.from('64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993', 'hex'),
+      new Address(hexToBytes('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
+      hexToBytes('64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993', 'hex'),
     ],
   ]
   async function minerSetup(): Promise<[MockServer, FullEthereumService]> {

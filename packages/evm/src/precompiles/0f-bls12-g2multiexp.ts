@@ -68,7 +68,7 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
 
   // prepare pairing list and check for mandatory zero bytes
 
-  const zeroBytes16 = Buffer.alloc(16, 0)
+  const zeroBytes16 = new Uint8Array(16, 0)
   const zeroByteCheck = [
     [0, 16],
     [64, 80],

@@ -11,8 +11,8 @@ const common = new Common({
   hardfork: Hardfork.Berlin,
 })
 
-const validAddress = Buffer.from('00000000000000000000000000000000000000ff', 'hex')
-const validSlot = Buffer.from('00'.repeat(32), 'hex')
+const validAddress = hexToBytes('00000000000000000000000000000000000000ff', 'hex')
+const validSlot = hexToBytes('00'.repeat(32), 'hex')
 
 // setup the accounts for this test
 const privateKey = Buffer.from(
@@ -51,7 +51,7 @@ tape('EIP-2930 Optional Access Lists tests', (t) => {
     const vm = await VM.create({ common })
 
     // contract code PUSH1 0x00 SLOAD STOP
-    await vm.stateManager.putContractCode(contractAddress, Buffer.from('60005400', 'hex'))
+    await vm.stateManager.putContractCode(contractAddress, hexToBytes('60005400', 'hex'))
 
     const address = Address.fromPrivateKey(privateKey)
     const initialBalance = BigInt(10) ** BigInt(18)

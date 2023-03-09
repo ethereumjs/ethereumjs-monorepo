@@ -12,7 +12,7 @@ tape('Istanbul: EIP-1108 tests', (t) => {
     const ECADD = getActivePrecompiles(common).get(address)!
 
     const result = await ECADD({
-      data: Buffer.alloc(0),
+      data: new Uint8Array(0),
       gasLimit: BigInt(0xffff),
       _common: common,
       _EVM: vm.evm,
@@ -29,7 +29,7 @@ tape('Istanbul: EIP-1108 tests', (t) => {
     const ECMUL = getActivePrecompiles(common).get(address)!
 
     const result = await ECMUL({
-      data: Buffer.alloc(0),
+      data: new Uint8Array(0),
       gasLimit: BigInt(0xffff),
       _common: common,
       _EVM: vm.evm,

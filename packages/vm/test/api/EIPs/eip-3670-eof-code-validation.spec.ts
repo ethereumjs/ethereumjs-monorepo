@@ -5,7 +5,7 @@ import { Address, privateToAddress } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
-const pkey = Buffer.from('20'.repeat(32), 'hex')
+const pkey = hexToBytes('20'.repeat(32), 'hex')
 const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
 
@@ -111,7 +111,7 @@ tape('EIP 3670 tests', (t) => {
 
     const codes = [codeValid, codeInvalid]
     const returnValues = [
-      Buffer.from('000000000000000000000000000000000000000000000000000000000000002a', 'hex'),
+      hexToBytes('000000000000000000000000000000000000000000000000000000000000002a', 'hex'),
       Buffer.from(''),
     ]
     const expectedErrors = [false, true]
@@ -119,10 +119,10 @@ tape('EIP 3670 tests', (t) => {
     let nonce = 0n
 
     for (let i = 0; i < codes.length; i++) {
-      const calldata = Buffer.from('f8a8fd6d', 'hex')
+      const calldata = hexToBytes('f8a8fd6d', 'hex')
 
-      const addr = new Address(Buffer.from('20'.repeat(20), 'hex'))
-      const pkey = Buffer.from('42'.repeat(32), 'hex')
+      const addr = new Address(hexToBytes('20'.repeat(20), 'hex'))
+      const pkey = hexToBytes('42'.repeat(32), 'hex')
 
       const code = codes[i]
 

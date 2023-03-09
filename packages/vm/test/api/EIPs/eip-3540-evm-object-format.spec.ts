@@ -6,7 +6,7 @@ import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
 
-const pkey = Buffer.from('20'.repeat(32), 'hex')
+const pkey = hexToBytes('20'.repeat(32), 'hex')
 const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
 

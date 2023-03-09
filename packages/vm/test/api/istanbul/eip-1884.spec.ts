@@ -15,9 +15,9 @@ const testCases = [
 const code = ['47', '60', '00', '53', '60', '01', '60', '00', 'f3']
 tape('Istanbul: EIP-1884', async (t) => {
   t.test('SELFBALANCE', async (st) => {
-    const addr = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
+    const addr = new Address(hexToBytes('00000000000000000000000000000000000000ff', 'hex'))
     const runCodeArgs = {
-      code: Buffer.from(code.join(''), 'hex'),
+      code: hexToBytes(code.join(''), 'hex'),
       gasLimit: BigInt(0xffff),
       address: addr,
     }

@@ -15,7 +15,7 @@ import { Client } from 'jayson/promise'
 const clientPort = parseInt(process.argv[2]) // EL client port number
 const input = process.argv[3] // text to generate blob from
 const genesisJson = require(process.argv[4]) // Genesis parameters
-const pkey = Buffer.from(process.argv[5], 'hex') // private key of tx sender as unprefixed hex string
+const pkey = hexToBytes(process.argv[5], 'hex') // private key of tx sender as unprefixed hex string
 
 initKZG(kzg, __dirname + '/../../../lib/trustedSetups/devnet4.txt')
 

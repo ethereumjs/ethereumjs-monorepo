@@ -834,7 +834,7 @@ export class BlockHeader {
     if (DAOActivationBlock === null || this.number < DAOActivationBlock) {
       return
     }
-    const DAO_ExtraData = Buffer.from('64616f2d686172642d666f726b', 'hex')
+    const DAO_ExtraData = hexToBytes('64616f2d686172642d666f726b', 'hex')
     const DAO_ForceExtraDataRange = BigInt(9)
     const drift = this.number - DAOActivationBlock
     if (drift <= DAO_ForceExtraDataRange && !equalsBytes(this.extraData, DAO_ExtraData)) {

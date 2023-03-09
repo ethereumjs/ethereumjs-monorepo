@@ -18,12 +18,12 @@ tape('getEOFCode()', (t) => {
   const invalidEofCode = generateInvalidEOFCode(code)
 
   t.equal(
-    getEOFCode(Buffer.from(validEofCode.slice(2), 'hex')).toString('hex'),
+    getEOFCode(hexToBytes(validEofCode.slice(2), 'hex')).toString('hex'),
     code,
     'returned just code section of EOF container'
   )
   t.equal(
-    getEOFCode(Buffer.from(invalidEofCode.slice(2), 'hex')).toString('hex'),
+    getEOFCode(hexToBytes(invalidEofCode.slice(2), 'hex')).toString('hex'),
     invalidEofCode.toLowerCase().slice(2),
     'returns entire code string for non EOF code'
   )

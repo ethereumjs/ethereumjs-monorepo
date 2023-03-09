@@ -14,7 +14,7 @@ const INITIAL_GREETING = 'Hello, World!'
 const SECOND_GREETING = 'Hola, Mundo!'
 
 const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Istanbul })
-const block = Block.fromBlockData({ header: { extraData: Buffer.alloc(97) } }, { common })
+const block = Block.fromBlockData({ header: { extraData: new Uint8Array(97) } }, { common })
 
 /**
  * This function creates the input for the Solidity compiler.
@@ -144,7 +144,7 @@ async function getGreeting(vm: VM, contractAddress: Address, caller: Address) {
     to: contractAddress,
     caller: caller,
     origin: caller, // The tx.origin is also the caller here
-    data: Buffer.from(sigHash.slice(2), 'hex'),
+    data: hexToBytes(sigHash.slice(2), 'hex'),
     block,
   })
 

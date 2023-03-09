@@ -30,8 +30,8 @@ common.hardforkBlock = function (hardfork: string | undefined) {
   return BigInt(0)
 }
 
-const coinbase = new Address(Buffer.from('11'.repeat(20), 'hex'))
-const pkey = Buffer.from('20'.repeat(32), 'hex')
+const coinbase = new Address(hexToBytes('11'.repeat(20), 'hex'))
+const pkey = hexToBytes('20'.repeat(32), 'hex')
 const sender = new Address(privateToAddress(pkey))
 
 /**

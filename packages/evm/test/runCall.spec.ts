@@ -12,7 +12,7 @@ import type { EVMRunCallOpts } from '../src/types'
 
 // Non-protected Create2Address generator. Does not check if buffers have the right padding.
 function create2address(sourceAddress: Address, codeHash: Buffer, salt: Buffer): Address {
-  const rlp_proc_buffer = Buffer.from('ff', 'hex')
+  const rlp_proc_buffer = hexToBytes('ff', 'hex')
   const hashBuffer = Buffer.concat([rlp_proc_buffer, sourceAddress.buf, salt, codeHash])
   return new Address(Buffer.from(keccak256(hashBuffer)).slice(12))
 }
@@ -40,10 +40,8 @@ tape('Create where FROM account nonce is 0', async (t) => {
 
 tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', async (t) => {
   // setup the accounts for this test
-  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
-  const contractAddress = new Address(
-    Buffer.from('00000000000000000000000000000000000000ff', 'hex')
-  ) // contract address
+  const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee', 'hex')) // caller address
+  const contractAddress = new Address(hexToBytes('00000000000000000000000000000000000000ff', 'hex')) // contract address
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
   const eei = await getEEI()
@@ -63,7 +61,7 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
         RETURN          [0x00, 0x20]
     */
 
-  await eei.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
+  await eei.putContractCode(contractAddress, hexToBytes(code, 'hex')) // setup the contract code
   await eei.putAccount(caller, new Account(BigInt(0), BigInt(0x11111111))) // give the calling account a big balance so we don't run out of funds
   const codeHash = Buffer.from(keccak256(Buffer.from('')))
   for (let value = 0; value <= 1000; value += 20) {
@@ -76,11 +74,11 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
     }
 
     const hexString = padToEven(value.toString(16))
-    let valueBuffer = Buffer.from(hexString, 'hex')
+    let valueBuffer = hexToBytes(hexString, 'hex')
     // pad buffer
     if (valueBuffer.length < 32) {
       const diff = 32 - valueBuffer.length
-      valueBuffer = Buffer.concat([Buffer.alloc(diff), valueBuffer])
+      valueBuffer = Buffer.concat([new Uint8Array(diff), valueBuffer])
     }
     // calculate expected CREATE2 address
     const expectedAddress = create2address(contractAddress, codeHash, valueBuffer)
@@ -101,10 +99,8 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
 tape('Byzantium cannot access Constantinople opcodes', async (t) => {
   t.plan(2)
   // setup the accounts for this test
-  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
-  const contractAddress = new Address(
-    Buffer.from('00000000000000000000000000000000000000ff', 'hex')
-  ) // contract address
+  const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee', 'hex')) // caller address
+  const contractAddress = new Address(hexToBytes('00000000000000000000000000000000000000ff', 'hex')) // contract address
   // setup the evm
   const eeiByzantium = await getEEI()
   const eeiConstantinople = await getEEI()
@@ -125,8 +121,8 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
         STOP
     */
 
-  await eeiByzantium.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
-  await eeiConstantinople.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
+  await eeiByzantium.putContractCode(contractAddress, hexToBytes(code, 'hex')) // setup the contract code
+  await eeiConstantinople.putContractCode(contractAddress, hexToBytes(code, 'hex')) // setup the contract code
 
   const runCallArgs = {
     caller, // call address
@@ -152,8 +148,8 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
 
 tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', async (t) => {
   // setup the accounts for this test
-  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
-  const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
+  const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee', 'hex')) // caller address
+  const address = new Address(hexToBytes('00000000000000000000000000000000000000ff', 'hex'))
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
   const eei = await getEEI()
@@ -180,11 +176,11 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
 
     */
 
-  await eei.putContractCode(address, Buffer.from(code, 'hex'))
+  await eei.putContractCode(address, hexToBytes(code, 'hex'))
   await eei.putContractStorage(
     address,
-    Buffer.alloc(32, 0),
-    Buffer.from('00'.repeat(31) + '01', 'hex')
+    new Uint8Array(32, 0),
+    hexToBytes('00'.repeat(31) + '01', 'hex')
   )
 
   // setup the call arguments
@@ -204,8 +200,8 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
 
 tape('ensure correct gas for pre-constantinople sstore', async (t) => {
   // setup the accounts for this test
-  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
-  const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
+  const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee', 'hex')) // caller address
+  const address = new Address(hexToBytes('00000000000000000000000000000000000000ff', 'hex'))
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
   const eei = await getEEI()
@@ -213,7 +209,7 @@ tape('ensure correct gas for pre-constantinople sstore', async (t) => {
   // push 1 push 0 sstore stop
   const code = '600160015500'
 
-  await eei.putContractCode(address, Buffer.from(code, 'hex'))
+  await eei.putContractCode(address, hexToBytes(code, 'hex'))
 
   // setup the call arguments
   const runCallArgs = {
@@ -232,8 +228,8 @@ tape('ensure correct gas for pre-constantinople sstore', async (t) => {
 
 tape('ensure correct gas for calling non-existent accounts in homestead', async (t) => {
   // setup the accounts for this test
-  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
-  const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
+  const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee', 'hex')) // caller address
+  const address = new Address(hexToBytes('00000000000000000000000000000000000000ff', 'hex'))
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
   const eei = await getEEI()
@@ -241,7 +237,7 @@ tape('ensure correct gas for calling non-existent accounts in homestead', async 
   // code to call 0x00..00dd, which does not exist
   const code = '6000600060006000600060DD61FFFF5A03F100'
 
-  await eei.putContractCode(address, Buffer.from(code, 'hex'))
+  await eei.putContractCode(address, hexToBytes(code, 'hex'))
 
   // setup the call arguments
   const runCallArgs = {
@@ -264,8 +260,8 @@ tape(
   'ensure callcode goes OOG if the gas argument is more than the gas left in the homestead fork',
   async (t) => {
     // setup the accounts for this test
-    const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
-    const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
+    const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee', 'hex')) // caller address
+    const address = new Address(hexToBytes('00000000000000000000000000000000000000ff', 'hex'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
     const eei = await getEEI()
@@ -274,7 +270,7 @@ tape(
     // but using too much memory
     const code = '61FFFF60FF60006000600060EE6000F200'
 
-    await eei.putContractCode(address, Buffer.from(code, 'hex'))
+    await eei.putContractCode(address, hexToBytes(code, 'hex'))
 
     // setup the call arguments
     const runCallArgs = {
@@ -295,8 +291,8 @@ tape(
 
 tape('ensure selfdestruct pays for creating new accounts', async (t) => {
   // setup the accounts for this test
-  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
-  const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
+  const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee', 'hex')) // caller address
+  const address = new Address(hexToBytes('00000000000000000000000000000000000000ff', 'hex'))
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.TangerineWhistle })
   const eei = await getEEI()
@@ -306,7 +302,7 @@ tape('ensure selfdestruct pays for creating new accounts', async (t) => {
   // this should thus go OOG
   const code = '60FEFF'
 
-  await eei.putContractCode(address, Buffer.from(code, 'hex'))
+  await eei.putContractCode(address, hexToBytes(code, 'hex'))
 
   // setup the call arguments
   const runCallArgs = {
@@ -326,8 +322,8 @@ tape('ensure selfdestruct pays for creating new accounts', async (t) => {
 
 tape('ensure that sstores pay for the right gas costs pre-byzantium', async (t) => {
   // setup the accounts for this test
-  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
-  const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
+  const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee', 'hex')) // caller address
+  const address = new Address(hexToBytes('00000000000000000000000000000000000000ff', 'hex'))
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
   const eei = await getEEI()
@@ -337,7 +333,7 @@ tape('ensure that sstores pay for the right gas costs pre-byzantium', async (t) 
   // this should thus go OOG
   const code = '3460005500'
 
-  await eei.putContractCode(address, Buffer.from(code, 'hex'))
+  await eei.putContractCode(address, hexToBytes(code, 'hex'))
 
   const account = await eei.getAccount(caller)
   account.balance = BigInt(100)
@@ -395,9 +391,9 @@ tape(
   'Ensure that contracts cannot exceed nonce of MAX_UINT64 when creating new contracts (EIP-2681)',
   async (t) => {
     // setup the accounts for this test
-    const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
-    const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
-    const slot = Buffer.from('00'.repeat(32), 'hex')
+    const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee', 'hex')) // caller address
+    const address = new Address(hexToBytes('00000000000000000000000000000000000000ff', 'hex'))
+    const slot = hexToBytes('00'.repeat(32), 'hex')
     const emptyBuffer = Buffer.from('')
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
@@ -416,7 +412,7 @@ tape(
           STOP
     */
 
-    await eei.putContractCode(address, Buffer.from(code, 'hex'))
+    await eei.putContractCode(address, hexToBytes(code, 'hex'))
 
     const account = await eei.getAccount(address)
     account.nonce = MAX_UINT64 - BigInt(1)
@@ -453,7 +449,7 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
   // Exploit post-mortem: https://github.com/ethereum/go-ethereum/blob/master/docs/postmortems/2021-08-22-split-postmortem.md
   // Permalink: https://github.com/ethereum/go-ethereum/blob/90987db7334c1d10eb866ca550efedb66dea8a20/docs/postmortems/2021-08-22-split-postmortem.md
   // setup the accounts for this test
-  const caller = new Address(Buffer.from('1a02a619e51cc5f8a2a61d2a60f6c80476ee8ead', 'hex')) // caller address
+  const caller = new Address(hexToBytes('1a02a619e51cc5f8a2a61d2a60f6c80476ee8ead', 'hex')) // caller address
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
   const eei = await getEEI()
@@ -469,7 +465,7 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
   const runCallArgs = {
     caller, // call address
     gasLimit: BigInt(150000),
-    data: Buffer.from(code, 'hex'),
+    data: hexToBytes(code, 'hex'),
     gasPrice: BigInt(70000000000),
   }
 
@@ -514,7 +510,7 @@ tape('runCall() -> skipBalance behavior', async (t) => {
   const evm = await EVM.create({ common, eei })
 
   // runCall against a contract to reach `_reduceSenderBalance`
-  const contractCode = Buffer.from('00', 'hex') // 00: STOP
+  const contractCode = hexToBytes('00', 'hex') // 00: STOP
   const contractAddress = Address.fromString('0x000000000000000000000000636F6E7472616374')
   await eei.putContractCode(contractAddress, contractCode)
   const senderKey = Buffer.from(
@@ -554,7 +550,7 @@ tape('runCall() -> skipBalance behavior', async (t) => {
 
 tape('runCall() => allows to detect for max code size deposit errors', async (t) => {
   // setup the accounts for this test
-  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
+  const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee', 'hex')) // caller address
   // setup the evm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
   const eei = await getEEI()
@@ -567,7 +563,7 @@ tape('runCall() => allows to detect for max code size deposit errors', async (t)
     // Simple test, PUSH <big number> PUSH 0 RETURN
     // It tries to deploy a contract too large, where the code is all zeros
     // (since memory which is not allocated/resized to yet is always defaulted to 0)
-    data: Buffer.from('62FFFFFF6000F3', 'hex'),
+    data: hexToBytes('62FFFFFF6000F3', 'hex'),
   }
 
   const result = await evm.runCall(runCallArgs)
@@ -591,8 +587,8 @@ tape('runCall() => use DATAHASH opcode from EIP 4844', async (t) => {
   const runCallArgs: EVMRunCallOpts = {
     gasLimit: BigInt(0xffffffffff),
     // calldata -- retrieves the versioned hash at index 0 and returns it from memory
-    data: Buffer.from('60004960005260206000F3', 'hex'),
-    versionedHashes: [Buffer.from('ab', 'hex')],
+    data: hexToBytes('60004960005260206000F3', 'hex'),
+    versionedHashes: [hexToBytes('ab', 'hex')],
   }
   const res = await evm.runCall(runCallArgs)
   t.equal(
@@ -605,8 +601,8 @@ tape('runCall() => use DATAHASH opcode from EIP 4844', async (t) => {
   const runCall2Args: EVMRunCallOpts = {
     gasLimit: BigInt(0xffffffffff),
     // calldata -- tries to retrieve the versioned hash at index 1 and return it from memory
-    data: Buffer.from('60014960005260206000F3', 'hex'),
-    versionedHashes: [Buffer.from('ab', 'hex')],
+    data: hexToBytes('60014960005260206000F3', 'hex'),
+    versionedHashes: [hexToBytes('ab', 'hex')],
   }
   const res2 = await evm.runCall(runCall2Args)
   t.equal(

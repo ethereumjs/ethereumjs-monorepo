@@ -175,18 +175,18 @@ tape('[AccountFetcher]', async (t) => {
     const fetcher = new AccountFetcher({
       config,
       pool,
-      root: Buffer.from('39ed8daab7679c0b1b7cf3667c50108185d4d9d1431c24a1c35f696a58277f8f', 'hex'),
+      root: hexToBytes('39ed8daab7679c0b1b7cf3667c50108185d4d9d1431c24a1c35f696a58277f8f', 'hex'),
       first: bytesToBigInt(
-        Buffer.from('0000000000000000000000000000000000000000000000000000000000000001', 'hex')
+        hexToBytes('0000000000000000000000000000000000000000000000000000000000000001', 'hex')
       ),
       count: bytesToBigInt(
-        Buffer.from('000010c6f7a0b5ed8d36b4c7f34938583621fafc8b0079a2834d26fa3fcc9ea9', 'hex')
+        hexToBytes('000010c6f7a0b5ed8d36b4c7f34938583621fafc8b0079a2834d26fa3fcc9ea9', 'hex')
       ),
     })
     t.ok(fetcher.storageFetcher !== undefined, 'storageFetcher should be created')
 
     const task = { count: 3, first: BigInt(1) }
-    const resData = RLP.decode(Buffer.from(_accountRangeRLP, 'hex')) as unknown
+    const resData = RLP.decode(hexToBytes(_accountRangeRLP, 'hex')) as unknown
     const { accounts, proof } = p.decode(
       p.messages.filter((message) => message.name === 'AccountRange')[0],
       resData

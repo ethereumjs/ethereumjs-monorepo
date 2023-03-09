@@ -219,7 +219,7 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
     const block = Block.fromBlockData({
       header: {
         ...testData.blocks[0].header,
-        gasLimit: Buffer.from('8000000000000000', 'hex'),
+        gasLimit: hexToBytes('8000000000000000', 'hex'),
       },
     })
     await vm
@@ -298,19 +298,19 @@ tape('runBlock() -> runtime behavior', async (t) => {
     const fundBalance1 = BigInt('0x1111')
     const accountFunded1 = createAccount(BigInt(0), fundBalance1)
     const DAOFundedContractAddress1 = new Address(
-      Buffer.from('d4fe7bc31cedb7bfb8a345f31e668033056b2728', 'hex')
+      hexToBytes('d4fe7bc31cedb7bfb8a345f31e668033056b2728', 'hex')
     )
     await vm.stateManager.putAccount(DAOFundedContractAddress1, accountFunded1)
 
     const fundBalance2 = BigInt('0x2222')
     const accountFunded2 = createAccount(BigInt(0), fundBalance2)
     const DAOFundedContractAddress2 = new Address(
-      Buffer.from('b3fb0e5aba0e20e5c49d252dfd30e102b171a425', 'hex')
+      hexToBytes('b3fb0e5aba0e20e5c49d252dfd30e102b171a425', 'hex')
     )
     await vm.stateManager.putAccount(DAOFundedContractAddress2, accountFunded2)
 
     const DAORefundAddress = new Address(
-      Buffer.from('bf4ed7b27f1d666546e30d74d50d173d20bca754', 'hex')
+      hexToBytes('bf4ed7b27f1d666546e30d74d50d173d20bca754', 'hex')
     )
     const fundBalanceRefund = BigInt('0x4444')
     const accountRefund = createAccount(BigInt(0), fundBalanceRefund)
@@ -339,7 +339,7 @@ tape('runBlock() -> runtime behavior', async (t) => {
     const vm = await setupVM({ common })
 
     const signer = {
-      address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
+      address: new Address(hexToBytes('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
       privateKey: Buffer.from(
         '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
         'hex'
@@ -351,7 +351,7 @@ tape('runBlock() -> runtime behavior', async (t) => {
     }
 
     const otherUser = {
-      address: new Address(Buffer.from('6f62d8382bf2587361db73ceca28be91b2acb6df', 'hex')),
+      address: new Address(hexToBytes('6f62d8382bf2587361db73ceca28be91b2acb6df', 'hex')),
       privateKey: Buffer.from(
         '2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6',
         'hex'
@@ -371,7 +371,7 @@ tape('runBlock() -> runtime behavior', async (t) => {
 
     // create block with the signer and txs
     const block = Block.fromBlockData(
-      { header: { extraData: Buffer.alloc(97) }, transactions: [tx, tx] },
+      { header: { extraData: new Uint8Array(97) }, transactions: [tx, tx] },
       { common, cliqueSigner: signer.privateKey }
     )
 
@@ -409,7 +409,7 @@ tape('should correctly reflect generated fields', async (t) => {
   // filled with 0s and no txs. Once we run it we should
   // get a receipt trie root of for the empty receipts set,
   // which is a well known constant.
-  const buffer32Zeros = Buffer.alloc(32, 0)
+  const buffer32Zeros = new Uint8Array(32, 0)
   const block = Block.fromBlockData({
     header: { receiptTrie: buffer32Zeros, transactionsTrie: buffer32Zeros, gasUsed: BigInt(1) },
   })
@@ -456,7 +456,7 @@ tape('runBlock() -> API return values', async (t) => {
     res = await runWithHf('spuriousDragon')
     t.deepEqual(
       (res.receipts[0] as PreByzantiumTxReceipt).stateRoot,
-      Buffer.from('4477e2cfaf9fd2eed4f74426798b55d140f6a9612da33413c4745f57d7a97fcc', 'hex'),
+      hexToBytes('4477e2cfaf9fd2eed4f74426798b55d140f6a9612da33413c4745f57d7a97fcc', 'hex'),
       'should return correct pre-Byzantium receipt format'
     )
   })

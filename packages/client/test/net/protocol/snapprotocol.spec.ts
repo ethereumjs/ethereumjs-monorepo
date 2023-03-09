@@ -104,7 +104,7 @@ tape('[SnapProtocol]', (t) => {
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     /* eslint-disable @typescript-eslint/no-use-before-define */
-    const data = RLP.decode(Buffer.from(contractAccountRangeRLP, 'hex')) as unknown
+    const data = RLP.decode(hexToBytes(contractAccountRangeRLP, 'hex')) as unknown
     const { reqId, accounts, proof } = p.decode(
       p.messages.filter((message) => message.name === 'AccountRange')[0],
       data
@@ -136,7 +136,7 @@ tape('[SnapProtocol]', (t) => {
       })
     )
     t.ok(
-      contractAccountRangeRLP === Buffer.from(payload).toString('hex'),
+      contractAccountRangeRLP === hexToBytes(payload).toString('hex'),
       'Re-encoded payload should match with original'
     )
     t.end()
@@ -148,7 +148,7 @@ tape('[SnapProtocol]', (t) => {
     const pSlim = new SnapProtocol({ config, chain })
     const pFull = new SnapProtocol({ config, chain, convertSlimBody: true })
     // accountRangeRLP is the corresponding response to getAccountRangeRLP
-    const resData = RLP.decode(Buffer.from(accountRangeRLP, 'hex')) as unknown
+    const resData = RLP.decode(hexToBytes(accountRangeRLP, 'hex')) as unknown
 
     const fullData = pFull.decode(
       pFull.messages.filter((message) => message.name === 'AccountRange')[0],
@@ -186,13 +186,13 @@ tape('[SnapProtocol]', (t) => {
     const p = new SnapProtocol({ config, chain })
 
     /* eslint-disable @typescript-eslint/no-use-before-define */
-    const reqData = RLP.decode(Buffer.from(getAccountRangeRLP, 'hex'))
+    const reqData = RLP.decode(hexToBytes(getAccountRangeRLP, 'hex'))
     const { root: stateRoot } = p.decode(
       p.messages.filter((message) => message.name === 'GetAccountRange')[0],
       reqData
     )
     // accountRangeRLP is the corresponding response to getAccountRangeRLP
-    const resData = RLP.decode(Buffer.from(accountRangeRLP, 'hex')) as unknown
+    const resData = RLP.decode(hexToBytes(accountRangeRLP, 'hex')) as unknown
     const { accounts, proof } = p.decode(
       p.messages.filter((message) => message.name === 'AccountRange')[0],
       resData
@@ -214,7 +214,7 @@ tape('[SnapProtocol]', (t) => {
       t.fail(`AccountRange proof verification failed with message=${(e as Error).message}`)
     }
     t.ok(
-      Buffer.from(keccak256(proof[0])).toString('hex') === stateRoot.toString('hex'),
+      hexToBytes(keccak256(proof[0])).toString('hex') === stateRoot.toString('hex'),
       'Proof should link to the requested stateRoot'
     )
     t.end()
@@ -236,8 +236,8 @@ tape('[SnapProtocol]', (t) => {
     )
     const bytes = BigInt(5000000)
     const accounts = [
-      Buffer.from(keccak256(Buffer.from('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'hex'))),
-      Buffer.from('0000000000000000000000000f00000000000000000000000000000000000010', 'hex'),
+      hexToBytes(keccak256(hexToBytes('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'hex'))),
+      hexToBytes('0000000000000000000000000f00000000000000000000000000000000000010', 'hex'),
     ]
 
     const payload = p.encode(
@@ -292,7 +292,7 @@ tape('[SnapProtocol]', (t) => {
     const p = new SnapProtocol({ config, chain })
 
     /* eslint-disable @typescript-eslint/no-use-before-define */
-    const data = RLP.decode(Buffer.from(storageRangesRLP, 'hex')) as unknown
+    const data = RLP.decode(hexToBytes(storageRangesRLP, 'hex')) as unknown
     const { reqId, slots, proof } = p.decode(
       p.messages.filter((message) => message.name === 'StorageRanges')[0],
       data
@@ -326,7 +326,7 @@ tape('[SnapProtocol]', (t) => {
     const p = new SnapProtocol({ config, chain })
 
     // Get the handle on the data for the account for which storageRanges has been fetched
-    const accountsData = RLP.decode(Buffer.from(contractAccountRangeRLP, 'hex')) as unknown
+    const accountsData = RLP.decode(hexToBytes(contractAccountRangeRLP, 'hex')) as unknown
     const { accounts } = p.decode(
       p.messages.filter((message) => message.name === 'AccountRange')[0],
       accountsData
@@ -334,7 +334,7 @@ tape('[SnapProtocol]', (t) => {
     const lastAccount = accounts[accounts.length - 1]
 
     /* eslint-disable @typescript-eslint/no-use-before-define */
-    const data = RLP.decode(Buffer.from(storageRangesRLP, 'hex')) as unknown
+    const data = RLP.decode(hexToBytes(storageRangesRLP, 'hex')) as unknown
     const { proof, slots } = p.decode(
       p.messages.filter((message) => message.name === 'StorageRanges')[0],
       data
@@ -359,7 +359,7 @@ tape('[SnapProtocol]', (t) => {
       t.fail(`StorageRange proof verification failed with message=${(e as Error).message}`)
     }
     t.ok(
-      Buffer.from(keccak256(proof[0])).toString('hex') === lastAccountStorageRoot.toString('hex'),
+      hexToBytes(keccak256(proof[0])).toString('hex') === lastAccountStorageRoot.toString('hex'),
       'Proof should link to the accounts storageRoot'
     )
     t.end()
@@ -371,8 +371,8 @@ tape('[SnapProtocol]', (t) => {
     const p = new SnapProtocol({ config, chain })
     const reqId = BigInt(1)
     const hashes = [
-      Buffer.from(keccak256(Buffer.from('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'hex'))),
-      Buffer.from('0000000000000000000000000f00000000000000000000000000000000000010', 'hex'),
+      hexToBytes(keccak256(hexToBytes('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'hex'))),
+      hexToBytes('0000000000000000000000000f00000000000000000000000000000000000010', 'hex'),
     ]
     const bytes = BigInt(5000000)
 
@@ -410,7 +410,7 @@ tape('[SnapProtocol]', (t) => {
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
-    const codesRes = RLP.decode(Buffer.from(byteCodesRLP, 'hex')) as unknown
+    const codesRes = RLP.decode(hexToBytes(byteCodesRLP, 'hex')) as unknown
     const { reqId, codes } = p.decode(
       p.messages.filter((message) => message.name === 'ByteCodes')[0],
       codesRes
@@ -438,13 +438,13 @@ tape('[SnapProtocol]', (t) => {
     const p = new SnapProtocol({ config, chain })
 
     /* eslint-disable @typescript-eslint/no-use-before-define */
-    const codesReq = RLP.decode(Buffer.from(getByteCodesRLP, 'hex')) as unknown
+    const codesReq = RLP.decode(hexToBytes(getByteCodesRLP, 'hex')) as unknown
     const { hashes } = p.decode(
       p.messages.filter((message) => message.name === 'GetByteCodes')[0],
       codesReq
     )
     const codeHash = hashes[0]
-    const codesRes = RLP.decode(Buffer.from(byteCodesRLP, 'hex')) as unknown
+    const codesRes = RLP.decode(hexToBytes(byteCodesRLP, 'hex')) as unknown
     const { codes } = p.decode(
       p.messages.filter((message) => message.name === 'ByteCodes')[0],
       codesRes
@@ -469,7 +469,7 @@ const accountRangeRLP =
 //     '27be64f6a1510e4166b35201a920e543e0579df3b947b8743458736e51549f0c',
 //     'hex'
 //   ),
-//   limit: Buffer.from('f000000000000000000000000f00000000000000000000000000000000000010', 'hex'),
+//   limit: hexToBytes('f000000000000000000000000f00000000000000000000000000000000000010', 'hex'),
 //   bytes: BigInt(100),
 // })
 const contractAccountRangeRLP =
@@ -480,13 +480,13 @@ const contractAccountRangeRLP =
 //  await peer!.snap!.getStorageRanges({
 //   root: stateRoot,
 //   accounts: [
-//     Buffer.from('27be7c29a7a7d6da542205ed52b91990e625039a545702874be74db9f40fb215', 'hex'),
+//     hexToBytes('27be7c29a7a7d6da542205ed52b91990e625039a545702874be74db9f40fb215', 'hex'),
 //   ],
-//   origin: Buffer.from(
+//   origin: hexToBytes(
 //     '0000000000000000000000000f00000000000000000000000000000000000000',
 //     'hex'
 //   ),
-//   limit: Buffer.from('f000000000000000000000000f00000000000000000000000000000000000010', 'hex'),
+//   limit: hexToBytes('f000000000000000000000000f00000000000000000000000000000000000010', 'hex'),
 //   bytes: BigInt(100),
 // })
 const _getStorageRangesRLP =
@@ -496,7 +496,7 @@ const storageRangesRLP =
 
 // await peer!.snap!.getByteCodes({
 //   hashes: [
-//     Buffer.from('e68fe0bb7c4a483affd0f19cc2b989105242bd6b256c6de3afd738f8acd80c66', 'hex'),
+//     hexToBytes('e68fe0bb7c4a483affd0f19cc2b989105242bd6b256c6de3afd738f8acd80c66', 'hex'),
 //   ],
 //   bytes: BigInt(50000),
 // })

@@ -305,5 +305,5 @@ export function gethGenesisStartLondon(gethGenesis: any) {
  */
 export const dummy = {
   addr: Address.fromString('0xcde098d93535445768e8a2345a2f869139f45641'),
-  privKey: Buffer.from('5831aac354d13ff96a0c051af0d44c0931c2a20bdacee034ffbaa2354d84f5f8', 'hex'),
+  privKey: hexToBytes('5831aac354d13ff96a0c051af0d44c0931c2a20bdacee034ffbaa2354d84f5f8', 'hex'),
 }

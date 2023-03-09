@@ -4,7 +4,7 @@ import { Address, privateToAddress } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
-const pkey = Buffer.from('20'.repeat(32), 'hex')
+const pkey = hexToBytes('20'.repeat(32), 'hex')
 const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
 
@@ -22,7 +22,7 @@ tape('EIP 3860 tests', (t) => {
     account.balance = balance
     await vm.stateManager.putAccount(sender, account)
 
-    const buffer = Buffer.allocUnsafe(1000000).fill(0x60)
+    const buffer = new Uint8ArrayUnsafe(1000000).fill(0x60)
     const tx = FeeMarketEIP1559Transaction.fromTxData({
       data:
         '0x7F6000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060005260206000F3' +

@@ -7,8 +7,8 @@ import { VM } from '../../../src/vm'
 
 import type { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
 
-const address = new Address(Buffer.from('11'.repeat(20), 'hex'))
-const pkey = Buffer.from('20'.repeat(32), 'hex')
+const address = new Address(hexToBytes('11'.repeat(20), 'hex'))
+const pkey = hexToBytes('20'.repeat(32), 'hex')
 
 const testCases = [
   {
@@ -125,15 +125,15 @@ tape('EIP-3529 tests', (t) => {
     })
 
     const gasLimit = BigInt(100000)
-    const key = Buffer.from('00'.repeat(32), 'hex')
+    const key = hexToBytes('00'.repeat(32), 'hex')
 
     for (const testCase of testCases) {
-      const code = Buffer.from((testCase.code + '00').slice(2), 'hex') // add a STOP opcode (0 gas) so we can find the gas used / effective gas
+      const code = hexToBytes((testCase.code + '00').slice(2), 'hex') // add a STOP opcode (0 gas) so we can find the gas used / effective gas
 
       await vm.stateManager.putContractStorage(
         address,
         key,
-        Buffer.from(testCase.original.toString().padStart(64, '0'), 'hex')
+        hexToBytes(testCase.original.toString().padStart(64, '0'), 'hex')
       )
 
       await vm.stateManager.getContractStorage(address, key)
@@ -194,14 +194,14 @@ tape('EIP-3529 tests', (t) => {
       }
     })
 
-    const address = new Address(Buffer.from('20'.repeat(20), 'hex'))
+    const address = new Address(hexToBytes('20'.repeat(20), 'hex'))
 
-    const value = Buffer.from('01'.repeat(32), 'hex')
+    const value = hexToBytes('01'.repeat(32), 'hex')
 
     let code = ''
 
     for (let i = 0; i < 100; i++) {
-      const key = Buffer.from(i.toString(16).padStart(64, '0'), 'hex')
+      const key = hexToBytes(i.toString(16).padStart(64, '0'), 'hex')
       await vm.stateManager.putContractStorage(address, key, value)
       const hex = i.toString(16).padStart(2, '0')
       // push 0 push <hex> sstore
@@ -210,7 +210,7 @@ tape('EIP-3529 tests', (t) => {
 
     code += '00'
 
-    await vm.stateManager.putContractCode(address, Buffer.from(code, 'hex'))
+    await vm.stateManager.putContractCode(address, hexToBytes(code, 'hex'))
 
     const tx = Transaction.fromTxData({
       to: address,

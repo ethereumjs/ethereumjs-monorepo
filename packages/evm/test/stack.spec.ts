@@ -126,8 +126,8 @@ tape('Stack', (t) => {
   })
 
   t.test('stack items should not change if they are DUPed', async (st) => {
-    const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex'))
-    const addr = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
+    const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee', 'hex'))
+    const addr = new Address(hexToBytes('00000000000000000000000000000000000000ff', 'hex'))
     const eei = await getEEI()
     const evm = await EVM.create({ eei })
     const account = createAccount(BigInt(0), BigInt(0))
@@ -152,7 +152,7 @@ tape('Stack', (t) => {
           RETURN        stack: [0, 0x20] (we thus return the stack item which was originally pushed as 0, and then DUPed)
     */
     await eei.putAccount(addr, account)
-    await eei.putContractCode(addr, Buffer.from(code, 'hex'))
+    await eei.putContractCode(addr, hexToBytes(code, 'hex'))
     await eei.putAccount(caller, new Account(BigInt(0), BigInt(0x11)))
     const runCallArgs = {
       caller,

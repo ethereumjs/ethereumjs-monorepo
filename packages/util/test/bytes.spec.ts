@@ -276,7 +276,7 @@ tape('toUtf8', function (t) {
 tape('toBytes', function (t) {
   t.test('should work', function (st) {
     // Buffer
-    st.ok(equalsBytes(toBytes(Buffer.allocUnsafe(0)), new Uint8Array()))
+    st.ok(equalsBytes(toBytes(new Uint8ArrayUnsafe(0)), new Uint8Array()))
     // Array
     st.ok(equalsBytes(toBytes([]), new Uint8Array()))
     // String
@@ -430,16 +430,16 @@ tape('bufArrToArr', function (st) {
   const bufArr = [
     Buffer.from('123', 'hex'),
     Buffer.from('456', 'hex'),
-    [Buffer.from('789', 'hex'), Buffer.from('100', 'hex'), [Buffer.from('111', 'hex')]],
+    [hexToBytes'789', 'hex'), hexToBytes('100', 'hex'), [hexToBytes('111', 'hex')]],
   ]
   const uint8 = Uint8Array.from(buf)
   const uint8Arr = [
-    Uint8Array.from(Buffer.from('123', 'hex')),
-    Uint8Array.from(Buffer.from('456', 'hex')),
+    Uint8Array.from(hexToBytes('123', 'hex')),
+    Uint8Array.from(hexToBytes('456', 'hex')),
     [
-      Uint8Array.from(Buffer.from('789', 'hex')),
-      Uint8Array.from(Buffer.from('100', 'hex')),
-      [Uint8Array.from(Buffer.from('111', 'hex'))],
+      Uint8Array.from(hexToBytes('789', 'hex')),
+      Uint8Array.from(hexToBytes('100', 'hex')),
+      [Uint8Array.from(hexToBytes('111', 'hex'))],
     ],
   ]
   st.deepEqual(bufArrToArr(buf), uint8)

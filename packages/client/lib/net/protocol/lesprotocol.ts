@@ -183,7 +183,7 @@ export class LesProtocol extends Protocol {
     const nextFork = this.config.chainCommon.nextHardforkBlockOrTimestamp(
       this.config.chainCommon.hardfork()
     )
-    const forkID = [Buffer.from(forkHash.slice(2), 'hex'), bigIntToUnpaddedBytes(nextFork ?? 0n)]
+    const forkID = [hexToBytes(forkHash.slice(2), 'hex'), bigIntToUnpaddedBytes(nextFork ?? 0n)]
 
     return {
       networkId: bigIntToUnpaddedBytes(this.chain.networkId),

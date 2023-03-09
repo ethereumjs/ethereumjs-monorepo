@@ -17,7 +17,7 @@ const common = new Common({
   eips: [4895],
 })
 
-const pkey = Buffer.from('20'.repeat(32), 'hex')
+const pkey = hexToBytes('20'.repeat(32), 'hex')
 const gethWithdrawals8BlockRlp =
   'f903e1f90213a0fe950635b1bd2a416ff6283b0bbd30176e1b1125ad06fa729da9f3f4c1c61710a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d4934794aa00000000000000000000000000000000000000a07f7510a0cb6203f456e34ec3e2ce30d6c5590ded42c10a9cf3f24784119c5afba056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b901000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080018401c9c380802f80a0ff0000000000000000000000000000000000000000000000000000000000000088000000000000000007a0b695b29ec7ee934ef6a68838b13729f2d49fffe26718de16a1a9ed94a4d7d06dc0c0f901c6da8082ffff94000000000000000000000000000000000000000080f83b0183010000940100000000000000000000000000000000000000a00100000000000000000000000000000000000000000000000000000000000000f83b0283010001940200000000000000000000000000000000000000a00200000000000000000000000000000000000000000000000000000000000000f83b0383010002940300000000000000000000000000000000000000a00300000000000000000000000000000000000000000000000000000000000000f83b0483010003940400000000000000000000000000000000000000a00400000000000000000000000000000000000000000000000000000000000000f83b0583010004940500000000000000000000000000000000000000a00500000000000000000000000000000000000000000000000000000000000000f83b0683010005940600000000000000000000000000000000000000a00600000000000000000000000000000000000000000000000000000000000000f83b0783010006940700000000000000000000000000000000000000a00700000000000000000000000000000000000000000000000000000000000000'
 
@@ -35,12 +35,12 @@ tape('EIP4895 tests', (t) => {
         SSTORE
       If code is ran, this stores "2" at slot "0". Check if withdrawal operations do not invoke this code
     */
-    const withdrawalCheckAddress = new Address(Buffer.from('fe'.repeat(20), 'hex'))
+    const withdrawalCheckAddress = new Address(hexToBytes('fe'.repeat(20), 'hex'))
     const withdrawalCode = Buffer.from('6002600055')
 
     await vm.stateManager.putContractCode(withdrawalCheckAddress, withdrawalCode)
 
-    const contractAddress = new Address(Buffer.from('ff'.repeat(20), 'hex'))
+    const contractAddress = new Address(hexToBytes('ff'.repeat(20), 'hex'))
 
     /*
         PUSH <addresses[0]>
@@ -52,7 +52,7 @@ tape('EIP4895 tests', (t) => {
         RETURN // Return the balance
     */
     const contract = '73' + addresses[0] + '3160005260206000F3'
-    await vm.stateManager.putContractCode(contractAddress, Buffer.from(contract, 'hex'))
+    await vm.stateManager.putContractCode(contractAddress, hexToBytes(contract, 'hex'))
 
     const transaction = FeeMarketEIP1559Transaction.fromTxData({
       to: contractAddress,
@@ -71,7 +71,7 @@ tape('EIP4895 tests', (t) => {
       withdrawals.push({
         index,
         validatorIndex: index,
-        address: new Address(Buffer.from(addresses[i], 'hex')),
+        address: new Address(hexToBytes(addresses[i], 'hex')),
         amount: amounts[i],
       })
       index++
@@ -103,7 +103,7 @@ tape('EIP4895 tests', (t) => {
     await vm.runBlock({ block, generate: true })
 
     for (let i = 0; i < addresses.length; i++) {
-      const address = new Address(Buffer.from(addresses[i], 'hex'))
+      const address = new Address(hexToBytes(addresses[i], 'hex'))
       const amount = amounts[i]
       const balance = (await vm.stateManager.getAccount(address)).balance
       st.equals(BigInt(amount) * GWEI_TO_WEI, balance, 'balance ok')
@@ -126,7 +126,7 @@ tape('EIP4895 tests', (t) => {
       'preState should be correct'
     )
 
-    const gethBlockBufferArray = decode(Buffer.from(gethWithdrawals8BlockRlp, 'hex'))
+    const gethBlockBufferArray = decode(hexToBytes(gethWithdrawals8BlockRlp, 'hex'))
     const withdrawals = (gethBlockBufferArray[3] as WithdrawalBytes[]).map((wa) =>
       Withdrawal.fromValuesArray(wa)
     )
@@ -200,7 +200,7 @@ tape('EIP4895 tests', (t) => {
     await vm.eei.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
     const vmCopy = await vm.copy()
 
-    const gethBlockBufferArray = decode(Buffer.from(gethWithdrawals8BlockRlp, 'hex'))
+    const gethBlockBufferArray = decode(hexToBytes(gethWithdrawals8BlockRlp, 'hex'))
     const withdrawals = (gethBlockBufferArray[3] as WithdrawalBytes[]).map((wa) =>
       Withdrawal.fromValuesArray(wa)
     )

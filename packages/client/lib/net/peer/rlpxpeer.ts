@@ -111,7 +111,7 @@ export class RlpxPeer extends Peer {
       common: this.config.chainCommon,
     })
     await this.rlpx.connect({
-      id: Buffer.from(this.id, 'hex'),
+      id: hexToBytes(this.id, 'hex'),
       address: this.host,
       tcpPort: this.port,
     })

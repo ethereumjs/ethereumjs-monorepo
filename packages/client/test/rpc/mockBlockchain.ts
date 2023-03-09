@@ -25,7 +25,7 @@ export function mockBlockchain(options: any = {}) {
   return {
     blocks: { latest: block },
     getBlock: async (val: any) => {
-      if (Buffer.isBuffer(val) && val.equals(Buffer.alloc(32))) {
+      if (Buffer.isBuffer(val) && val.equals(new Uint8Array(32))) {
         throw Error
       }
       return block

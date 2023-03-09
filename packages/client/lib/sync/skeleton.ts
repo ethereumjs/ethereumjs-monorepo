@@ -716,7 +716,7 @@ export class Skeleton extends MetaDBManager {
 
   serialize({ hardfork, blockRLP }: { hardfork: Hardfork | string; blockRLP: Buffer }): Buffer {
     const skeletonArr = [Buffer.from(hardfork), blockRLP]
-    return Buffer.from(RLP.encode(skeletonArr))
+    return RLP.encode(skeletonArr))
   }
 
   deserialize(rlp: Buffer): { hardfork: Hardfork | string; blockRLP: Buffer } {
@@ -814,7 +814,7 @@ export class Skeleton extends MetaDBManager {
   private async writeSyncStatus(): Promise<boolean> {
     this.logSyncStatus('Writing')
     const encodedStatus = this.statusToRLP()
-    await this.put(DBKey.SkeletonStatus, Buffer.alloc(0), encodedStatus)
+    await this.put(DBKey.SkeletonStatus, new Uint8Array(0), encodedStatus)
     return true
   }
 
@@ -822,7 +822,7 @@ export class Skeleton extends MetaDBManager {
    * Reads the {@link SkeletonStatus} from db
    */
   private async getSyncStatus(): Promise<SkeletonStatus | undefined> {
-    const rawStatus = await this.get(DBKey.SkeletonStatus, Buffer.alloc(0))
+    const rawStatus = await this.get(DBKey.SkeletonStatus, new Uint8Array(0))
     if (!rawStatus) return
     const status = this.statusRLPtoObject(rawStatus)
     this.status = status

@@ -14,7 +14,7 @@ tape('[Libp2pSender]', (t) => {
       t.equal(receiver.status.id.toString('hex'), '05', 'status getter')
       t.end()
     })
-    sender.sendStatus({ id: Buffer.from('05', 'hex') })
+    sender.sendStatus({ id: hexToBytes('05', 'hex') })
   })
 
   t.test('should send/receive message', (t) => {
@@ -26,7 +26,7 @@ tape('[Libp2pSender]', (t) => {
       t.equal(message.payload.toString('hex'), '05', 'message received (payload)')
       t.end()
     })
-    sender.sendMessage(1, Buffer.from('05', 'hex'))
+    sender.sendMessage(1, hexToBytes('05', 'hex'))
   })
 
   t.test('should catch errors', (t) => {

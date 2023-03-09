@@ -5,7 +5,7 @@ import * as tape from 'tape'
 import { EVM } from '../../src'
 import { getEEI } from '../utils'
 
-const pkey = Buffer.from('20'.repeat(32), 'hex')
+const pkey = hexToBytes('20'.repeat(32), 'hex')
 const sender = new Address(privateToAddress(pkey))
 
 tape('EIP 3860 tests', (t) => {
@@ -18,7 +18,7 @@ tape('EIP 3860 tests', (t) => {
     const eei = await getEEI()
     const evm = await EVM.create({ common, eei })
 
-    const buffer = Buffer.allocUnsafe(1000000).fill(0x60)
+    const buffer = new Uint8ArrayUnsafe(1000000).fill(0x60)
 
     // setup the call arguments
     const runCallArgs = {

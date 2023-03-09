@@ -17,7 +17,7 @@ const code = ['46', '60', '00', '53', '60', '01', '60', '00', 'f3']
 tape('Istanbul: EIP-1344', async (t) => {
   t.test('CHAINID', async (st) => {
     const runCodeArgs = {
-      code: Buffer.from(code.join(''), 'hex'),
+      code: hexToBytes(code.join(''), 'hex'),
       gasLimit: BigInt(0xffff),
     }
 

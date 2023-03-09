@@ -276,7 +276,7 @@ export class VmState implements EVMStateAccess {
     if (this._common.gteHardfork(Hardfork.SpuriousDragon) === true) {
       const touchedArray = Array.from(this.touchedJournal.journal)
       for (const addressHex of touchedArray) {
-        const address = new Address(Buffer.from(addressHex, 'hex'))
+        const address = new Address(hexToBytes(addressHex, 'hex'))
         const empty = await this.accountIsEmpty(address)
         if (empty) {
           await this._stateManager.deleteAccount(address)

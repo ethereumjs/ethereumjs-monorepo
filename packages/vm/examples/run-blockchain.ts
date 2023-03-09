@@ -53,17 +53,17 @@ async function setupPreConditions(vm: VM, data: typeof testData) {
   for (const [addr, acct] of Object.entries(data.pre)) {
     const { nonce, balance, storage, code } = acct
 
-    const address = new Address(Buffer.from(addr.slice(2), 'hex'))
+    const address = new Address(hexToBytes(addr.slice(2), 'hex'))
     const account = Account.fromAccountData({ nonce, balance })
     await vm.stateManager.putAccount(address, account)
 
     for (const [key, val] of Object.entries(storage)) {
-      const storageKey = setLengthLeft(Buffer.from(key, 'hex'), 32)
-      const storageVal = Buffer.from(val as string, 'hex')
+      const storageKey = setLengthLeft(hexToBytes(key, 'hex'), 32)
+      const storageVal = hexToBytes(val as string, 'hex')
       await vm.stateManager.putContractStorage(address, storageKey, storageVal)
     }
 
-    const codeBuf = Buffer.from(code.slice(2), 'hex')
+    const codeBuf = hexToBytes(code.slice(2), 'hex')
     await vm.stateManager.putContractCode(address, codeBuf)
   }
 

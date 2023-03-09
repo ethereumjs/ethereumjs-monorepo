@@ -8,10 +8,10 @@ import { getEEI } from './utils'
 import type { ExecResult } from '../src/evm'
 import type { PrecompileInput } from '../src/precompiles'
 
-const sender = new Address(Buffer.from('44'.repeat(20), 'hex'))
-const newPrecompile = new Address(Buffer.from('ff'.repeat(20), 'hex'))
-const shaAddress = new Address(Buffer.from('0000000000000000000000000000000000000002', 'hex'))
-const expectedReturn = Buffer.from('1337', 'hex')
+const sender = new Address(hexToBytes('44'.repeat(20), 'hex'))
+const newPrecompile = new Address(hexToBytes('ff'.repeat(20), 'hex'))
+const shaAddress = new Address(hexToBytes('0000000000000000000000000000000000000002', 'hex'))
+const expectedReturn = hexToBytes('1337', 'hex')
 const expectedGas = BigInt(10)
 
 function customPrecompile(_input: PrecompileInput): ExecResult {

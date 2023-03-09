@@ -27,13 +27,13 @@ tape('EIP-2537 BLS tests', (t) => {
     const evm = await EVM.create({ common, eei })
 
     for (const address of precompiles) {
-      const to = new Address(Buffer.from(address, 'hex'))
+      const to = new Address(hexToBytes(address, 'hex'))
       const result = await evm.runCall({
         caller: Address.zero(),
         gasLimit: BigInt(0xffffffffff),
         to,
         value: BigInt(0),
-        data: Buffer.alloc(0),
+        data: new Uint8Array(0),
       })
 
       if (result.execResult.executionGasUsed !== BigInt(0)) {
@@ -59,13 +59,13 @@ tape('EIP-2537 BLS tests', (t) => {
     const evm = await EVM.create({ common, eei })
 
     for (const address of precompiles) {
-      const to = new Address(Buffer.from(address, 'hex'))
+      const to = new Address(hexToBytes(address, 'hex'))
       const result = await evm.runCall({
         caller: Address.zero(),
         gasLimit: BigInt(0xffffffffff),
         to,
         value: BigInt(0),
-        data: Buffer.alloc(0),
+        data: new Uint8Array(0),
       })
 
       if (result.execResult.executionGasUsed !== BigInt(0xffffffffff)) {

@@ -17,7 +17,7 @@ export class Memory {
   _store: Buffer
 
   constructor() {
-    this._store = Buffer.alloc(0)
+    this._store = new Uint8Array(0)
   }
 
   /**
@@ -34,7 +34,7 @@ export class Memory {
     if (sizeDiff > 0) {
       this._store = Buffer.concat([
         this._store,
-        Buffer.alloc(Math.ceil(sizeDiff / CONTAINER_SIZE) * CONTAINER_SIZE),
+        new Uint8Array(Math.ceil(sizeDiff / CONTAINER_SIZE) * CONTAINER_SIZE),
       ])
     }
   }
@@ -71,6 +71,15 @@ export class Memory {
     const loaded = this._store.slice(offset, offset + size)
     if (avoidCopy === true) {
       return loaded
+    }
+    const returnBuffer = new Uint8ArrayUnsafe(size)
+    // Copy the stored "buffer" from memory into the return Buffer
+
+    returnBuffer.fill(loaded, 0, loaded.length)
+
+    if (loaded.length < size) {
+      // fill the remaining part of the Buffer with zeros
+      returnBuffer.fill(0, loaded.length, size)
     }
 
     return Buffer.from(loaded)

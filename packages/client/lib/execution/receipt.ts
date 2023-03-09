@@ -344,14 +344,14 @@ export class ReceiptsManager extends MetaDBManager {
         }
       case RlpType.Logs:
         if (conversion === RlpConvert.Encode) {
-          return Buffer.from(RLP.encode(bufArrToArr(value as Log[])))
+          return RLP.encode(bufArrToArr(value as Log[])))
         } else {
           return arrToBufArr(RLP.decode(Uint8Array.from(value as Buffer))) as Log[]
         }
       case RlpType.TxHash:
         if (conversion === RlpConvert.Encode) {
           const [blockHash, txIndex] = value as TxHashIndex
-          return Buffer.from(RLP.encode(bufArrToArr([blockHash, intToBytes(txIndex)])))
+          return RLP.encode(bufArrToArr([blockHash, intToBytes(txIndex)])))
         } else {
           const [blockHash, txIndex] = arrToBufArr(
             RLP.decode(Uint8Array.from(value as Buffer))

@@ -38,7 +38,7 @@ export async function getPreState(
       const sv = storage[sk]
       const valueBuffer = toBytes(sv)
       // verify if this value buffer is not a zero buffer. if so, we should not write it...
-      const zeroBufferEquivalent = Buffer.alloc(valueBuffer.length, 0)
+      const zeroBufferEquivalent = new Uint8Array(valueBuffer.length, 0)
       if (!zeroBufferEquivalent.equals(valueBuffer)) {
         await state.putContractStorage(address, toBytes(sk), toBytes(sv))
       }

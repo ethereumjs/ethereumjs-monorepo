@@ -184,7 +184,7 @@ function BLS12_381_FromG1Point(input: any): Buffer {
   const decoded = decodeStr.match(/"?[0-9a-f]+"?/g) // match above pattern.
 
   if (decodeStr === '0') {
-    return Buffer.alloc(128, 0)
+    return new Uint8Array(128, 0)
   }
 
   // note: decoded[0] === 1
@@ -193,8 +193,8 @@ function BLS12_381_FromG1Point(input: any): Buffer {
 
   // convert to buffers.
 
-  const xBuffer = Buffer.concat([Buffer.alloc(64 - xval.length / 2, 0), Buffer.from(xval, 'hex')])
-  const yBuffer = Buffer.concat([Buffer.alloc(64 - yval.length / 2, 0), Buffer.from(yval, 'hex')])
+  const xBuffer = Buffer.concat([new Uint8Array(64 - xval.length / 2, 0), hexToBytes(xval, 'hex')])
+  const yBuffer = Buffer.concat([new Uint8Array(64 - yval.length / 2, 0), hexToBytes(yval, 'hex')])
 
   return Buffer.concat([xBuffer, yBuffer])
 }
@@ -207,7 +207,7 @@ function BLS12_381_ToG2Point(input: Buffer, mcl: any): any {
   const p_y_1 = input.slice(128, 192)
   const p_y_2 = input.slice(192, 256)
 
-  const ZeroBytes64 = Buffer.alloc(64, 0)
+  const ZeroBytes64 = new Uint8Array(64, 0)
   // check if we have to do with a zero point
   if (
     p_x_1.equals(p_x_2) &&
@@ -255,7 +255,7 @@ function BLS12_381_FromG2Point(input: any): Buffer {
   // TODO: figure out if there is a better way to decode these values.
   const decodeStr = input.getStr(16) //return a string of pattern "1 <x_coord_1> <x_coord_2> <y_coord_1> <y_coord_2>"
   if (decodeStr === '0') {
-    return Buffer.alloc(256, 0)
+    return new Uint8Array(256, 0)
   }
   const decoded = decodeStr.match(/"?[0-9a-f]+"?/g) // match above pattern.
 
@@ -267,10 +267,10 @@ function BLS12_381_FromG2Point(input: any): Buffer {
 
   // convert to buffers.
 
-  const xBuffer1 = Buffer.concat([Buffer.alloc(64 - x_1.length / 2, 0), Buffer.from(x_1, 'hex')])
-  const xBuffer2 = Buffer.concat([Buffer.alloc(64 - x_2.length / 2, 0), Buffer.from(x_2, 'hex')])
-  const yBuffer1 = Buffer.concat([Buffer.alloc(64 - y_1.length / 2, 0), Buffer.from(y_1, 'hex')])
-  const yBuffer2 = Buffer.concat([Buffer.alloc(64 - y_2.length / 2, 0), Buffer.from(y_2, 'hex')])
+  const xBuffer1 = Buffer.concat([new Uint8Array(64 - x_1.length / 2, 0), hexToBytes(x_1, 'hex')])
+  const xBuffer2 = Buffer.concat([new Uint8Array(64 - x_2.length / 2, 0), hexToBytes(x_2, 'hex')])
+  const yBuffer1 = Buffer.concat([new Uint8Array(64 - y_1.length / 2, 0), hexToBytes(y_1, 'hex')])
+  const yBuffer2 = Buffer.concat([new Uint8Array(64 - y_2.length / 2, 0), hexToBytes(y_2, 'hex')])
 
   return Buffer.concat([xBuffer1, xBuffer2, yBuffer1, yBuffer2])
 }

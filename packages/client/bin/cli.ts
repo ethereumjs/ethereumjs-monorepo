@@ -587,7 +587,7 @@ async function inputAccounts() {
       }
     } else {
       const acc = readFileSync(path.resolve(args.unlock!), 'utf-8')
-      const privKey = Buffer.from(acc, 'hex')
+      const privKey = hexToBytes(acc, 'hex')
       const derivedAddress = Address.fromPrivateKey(privKey)
       accounts.push([derivedAddress, privKey])
     }

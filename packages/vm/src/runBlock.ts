@@ -317,7 +317,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     // Add receipt to trie to later calculate receipt root
     receipts.push(txRes.receipt)
     const encodedReceipt = encodeReceipt(txRes.receipt, tx.type)
-    await receiptTrie.put(Buffer.from(RLP.encode(txIdx)), encodedReceipt)
+    await receiptTrie.put(RLP.encode(txIdx)), encodedReceipt)
   }
 
   return {
@@ -411,7 +411,7 @@ export function encodeReceipt(receipt: TxReceipt, txType: number) {
         (receipt as PreByzantiumTxReceipt).stateRoot ??
           ((receipt as PostByzantiumTxReceipt).status === 0
             ? Buffer.from([])
-            : Buffer.from('01', 'hex')),
+            : hexToBytes('01', 'hex')),
         bigIntToBytes(receipt.cumulativeBlockGasUsed),
         receipt.bitvector,
         receipt.logs,
@@ -432,7 +432,7 @@ export function encodeReceipt(receipt: TxReceipt, txType: number) {
  * Apply the DAO fork changes to the VM
  */
 async function _applyDAOHardfork(state: EVMStateAccess) {
-  const DAORefundContractAddress = new Address(Buffer.from(DAORefundContract, 'hex'))
+  const DAORefundContractAddress = new Address(hexToBytes(DAORefundContract, 'hex'))
   if ((await state.accountExists(DAORefundContractAddress)) === false) {
     await state.putAccount(DAORefundContractAddress, new Account())
   }
@@ -440,7 +440,7 @@ async function _applyDAOHardfork(state: EVMStateAccess) {
 
   for (const addr of DAOAccountList) {
     // retrieve the account and add it to the DAO's Refund accounts' balance.
-    const address = new Address(Buffer.from(addr, 'hex'))
+    const address = new Address(hexToBytes(addr, 'hex'))
     const account = await state.getAccount(address)
     DAORefundAccount.balance += account.balance
     // clear the accounts' balance
@@ -455,7 +455,7 @@ async function _applyDAOHardfork(state: EVMStateAccess) {
 async function _genTxTrie(block: Block) {
   const trie = new Trie()
   for (const [i, tx] of block.transactions.entries()) {
-    await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
+    await trie.put(RLP.encode(i)), tx.serialize())
   }
   return trie.root()
 }

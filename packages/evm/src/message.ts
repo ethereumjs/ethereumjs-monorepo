@@ -5,7 +5,7 @@ import type { PrecompileFunc } from './precompiles'
 const defaults = {
   value: BigInt(0),
   caller: Address.zero(),
-  data: Buffer.alloc(0),
+  data: new Uint8Array(0),
   depth: 0,
   isStatic: false,
   isCompiled: false,

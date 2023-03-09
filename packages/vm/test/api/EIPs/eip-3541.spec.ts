@@ -7,7 +7,7 @@ import { VM } from '../../../src/vm'
 import type { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
 import type { Address } from '@ethereumjs/util'
 
-const pkey = Buffer.from('20'.repeat(32), 'hex')
+const pkey = hexToBytes('20'.repeat(32), 'hex')
 
 tape('EIP 3541 tests', (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [3541] })

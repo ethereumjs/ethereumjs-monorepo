@@ -51,7 +51,7 @@ tape('[RlpxServer]', async (t) => {
       key: 'abcd',
     })
     t.equals(server.name, 'rlpx', 'get name')
-    t.ok(server.key!.equals(Buffer.from('abcd', 'hex')), 'key parse')
+    t.ok(server.key!.equals(hexToBytes('abcd', 'hex')), 'key parse')
     t.deepEquals(
       server.bootnodes,
       [multiaddr('/ip4/10.0.0.1/tcp/1234'), multiaddr('/ip4/10.0.0.2/tcp/1234')],
@@ -248,7 +248,7 @@ tape('[RlpxServer]', async (t) => {
     ;(server as any).peers.set('01', { id: '01' } as any)
     server.rlpx!.emit('peer:removed', rlpxPeer)
     server.rlpx!.emit('peer:error', rlpxPeer, new Error('err0'))
-    server.rlpx!._id = Buffer.from('ff', 'hex')
+    server.rlpx!._id = hexToBytes('ff', 'hex')
     server.rlpx!.emit('listening')
   })
 

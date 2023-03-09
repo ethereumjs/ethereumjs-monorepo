@@ -44,7 +44,7 @@ export function precompile01(opts: PrecompileInput): ExecResult {
     }
     return {
       executionGasUsed: gasUsed,
-      returnValue: Buffer.alloc(0),
+      returnValue: new Uint8Array(0),
     }
   }
 
@@ -67,7 +67,7 @@ export function precompile01(opts: PrecompileInput): ExecResult {
     }
     return {
       executionGasUsed: gasUsed,
-      returnValue: Buffer.alloc(0),
+      returnValue: new Uint8Array(0),
     }
   }
   const address = setLengthLeft(publicToAddress(publicKey), 32)

@@ -43,8 +43,8 @@ const testCases = [
 
 tape('Istanbul: EIP-2200', async (t) => {
   t.test('net-metering SSTORE', async (st) => {
-    const caller = new Address(Buffer.from('0000000000000000000000000000000000000000', 'hex'))
-    const addr = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
+    const caller = new Address(hexToBytes('0000000000000000000000000000000000000000', 'hex'))
+    const addr = new Address(hexToBytes('00000000000000000000000000000000000000ff', 'hex'))
     const key = setLengthLeft(toBytes('0x' + BigInt(0).toString(16)), 32)
 
     for (const testCase of testCases) {
@@ -53,7 +53,7 @@ tape('Istanbul: EIP-2200', async (t) => {
 
       const account = createAccount(BigInt(0), BigInt(0))
       await vm.stateManager.putAccount(addr, account)
-      await vm.stateManager.putContractCode(addr, Buffer.from(testCase.code, 'hex'))
+      await vm.stateManager.putContractCode(addr, hexToBytes(testCase.code, 'hex'))
       if (testCase.original !== BigInt(0)) {
         await vm.stateManager.putContractStorage(
           addr,

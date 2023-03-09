@@ -32,7 +32,7 @@ import {
 import type { RunState } from '../interpreter'
 import type { Common } from '@ethereumjs/common'
 
-const EIP3074MAGIC = Buffer.from('03', 'hex')
+const EIP3074MAGIC = hexToBytes('03', 'hex')
 
 export interface SyncOpHandler {
   (runState: RunState, common: Common): void
@@ -369,7 +369,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x20,
     function (runState) {
       const [offset, length] = runState.stack.popN(2)
-      let data = Buffer.alloc(0)
+      let data = new Uint8Array(0)
       if (length !== BigInt(0)) {
         data = runState.memory.read(Number(offset), Number(length))
       }
@@ -866,7 +866,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         return setLengthLeft(bigIntToBytes(a), 32)
       })
 
-      let mem = Buffer.alloc(0)
+      let mem = new Uint8Array(0)
       if (memLength !== BigInt(0)) {
         mem = runState.memory.read(Number(memOffset), Number(memLength))
       }
@@ -916,7 +916,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const gasLimit = runState.messageGasLimit!
       runState.messageGasLimit = undefined
 
-      let data = Buffer.alloc(0)
+      let data = new Uint8Array(0)
       if (length !== BigInt(0)) {
         data = runState.memory.read(Number(offset), Number(length), true)
       }
@@ -938,7 +938,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const gasLimit = runState.messageGasLimit!
       runState.messageGasLimit = undefined
 
-      let data = Buffer.alloc(0)
+      let data = new Uint8Array(0)
       if (length !== BigInt(0)) {
         data = runState.memory.read(Number(offset), Number(length), true)
       }
@@ -960,7 +960,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.stack.popN(7)
       const toAddress = new Address(addresstoBytes(toAddr))
 
-      let data = Buffer.alloc(0)
+      let data = new Uint8Array(0)
       if (inLength !== BigInt(0)) {
         data = runState.memory.read(Number(inOffset), Number(inLength), true)
       }
@@ -985,7 +985,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const gasLimit = runState.messageGasLimit!
       runState.messageGasLimit = undefined
 
-      let data = Buffer.alloc(0)
+      let data = new Uint8Array(0)
       if (inLength !== BigInt(0)) {
         data = runState.memory.read(Number(inOffset), Number(inLength), true)
       }
@@ -1005,7 +1005,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.stack.popN(6)
       const toAddress = new Address(addresstoBytes(toAddr))
 
-      let data = Buffer.alloc(0)
+      let data = new Uint8Array(0)
       if (inLength !== BigInt(0)) {
         data = runState.memory.read(Number(inOffset), Number(inLength), true)
       }
@@ -1096,7 +1096,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const gasLimit = runState.messageGasLimit!
       runState.messageGasLimit = undefined
 
-      let data = Buffer.alloc(0)
+      let data = new Uint8Array(0)
       if (argsLength !== BigInt(0)) {
         data = runState.memory.read(Number(argsOffset), Number(argsLength))
       }
@@ -1119,7 +1119,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const gasLimit = runState.messageGasLimit!
       runState.messageGasLimit = undefined
 
-      let data = Buffer.alloc(0)
+      let data = new Uint8Array(0)
       if (inLength !== BigInt(0)) {
         data = runState.memory.read(Number(inOffset), Number(inLength), true)
       }
@@ -1135,7 +1135,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0xf3,
     function (runState) {
       const [offset, length] = runState.stack.popN(2)
-      let returnData = Buffer.alloc(0)
+      let returnData = new Uint8Array(0)
       if (length !== BigInt(0)) {
         returnData = runState.memory.read(Number(offset), Number(length))
       }
@@ -1147,7 +1147,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0xfd,
     function (runState) {
       const [offset, length] = runState.stack.popN(2)
-      let returnData = Buffer.alloc(0)
+      let returnData = new Uint8Array(0)
       if (length !== BigInt(0)) {
         returnData = runState.memory.read(Number(offset), Number(length))
       }

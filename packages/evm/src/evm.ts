@@ -388,7 +388,7 @@ export class EVM implements EVMInterface {
           gasRefund: message.gasRefund,
           executionGasUsed: BigInt(0),
           exceptionError: errorMessage, // Only defined if addToBalance failed
-          returnValue: Buffer.alloc(0),
+          returnValue: new Uint8Array(0),
         },
       }
     }
@@ -430,7 +430,7 @@ export class EVM implements EVMInterface {
         return {
           createdAddress: message.to,
           execResult: {
-            returnValue: Buffer.alloc(0),
+            returnValue: new Uint8Array(0),
             exceptionError: new EvmError(ERROR.INITCODE_SIZE_VIOLATION),
             executionGasUsed: message.gasLimit,
           },
@@ -439,7 +439,7 @@ export class EVM implements EVMInterface {
     }
 
     message.code = message.data
-    message.data = Buffer.alloc(0)
+    message.data = new Uint8Array(0)
     message.to = await this._generateAddress(message)
     if (this.DEBUG) {
       debug(`Generated CREATE contract address ${message.to}`)
@@ -457,7 +457,7 @@ export class EVM implements EVMInterface {
       return {
         createdAddress: message.to,
         execResult: {
-          returnValue: Buffer.alloc(0),
+          returnValue: new Uint8Array(0),
           exceptionError: new EvmError(ERROR.CREATE_COLLISION),
           executionGasUsed: message.gasLimit,
         },
@@ -507,7 +507,7 @@ export class EVM implements EVMInterface {
           executionGasUsed: BigInt(0),
           gasRefund: message.gasRefund,
           exceptionError: errorMessage, // only defined if addToBalance failed
-          returnValue: Buffer.alloc(0),
+          returnValue: new Uint8Array(0),
         },
       }
     }
@@ -688,7 +688,7 @@ export class EVM implements EVMInterface {
       gas: interpreterRes.runState?.gasLeft,
       executionGasUsed: gasUsed,
       gasRefund: interpreterRes.runState!.gasRefund,
-      returnValue: result.returnValue ? result.returnValue : Buffer.alloc(0),
+      returnValue: result.returnValue ? result.returnValue : new Uint8Array(0),
     }
   }
 
@@ -1012,7 +1012,7 @@ export interface ExecResult {
 
 export function OOGResult(gasLimit: bigint): ExecResult {
   return {
-    returnValue: Buffer.alloc(0),
+    returnValue: new Uint8Array(0),
     executionGasUsed: gasLimit,
     exceptionError: new EvmError(ERROR.OUT_OF_GAS),
   }
@@ -1020,7 +1020,7 @@ export function OOGResult(gasLimit: bigint): ExecResult {
 // CodeDeposit OOG Result
 export function COOGResult(gasUsedCreateCode: bigint): ExecResult {
   return {
-    returnValue: Buffer.alloc(0),
+    returnValue: new Uint8Array(0),
     executionGasUsed: gasUsedCreateCode,
     exceptionError: new EvmError(ERROR.CODESTORE_OUT_OF_GAS),
   }
@@ -1028,7 +1028,7 @@ export function COOGResult(gasUsedCreateCode: bigint): ExecResult {
 
 export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
   return {
-    returnValue: Buffer.alloc(0),
+    returnValue: new Uint8Array(0),
     executionGasUsed: gasLimit,
     exceptionError: new EvmError(ERROR.INVALID_BYTECODE_RESULT),
   }
@@ -1036,7 +1036,7 @@ export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
 
 export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
   return {
-    returnValue: Buffer.alloc(0),
+    returnValue: new Uint8Array(0),
     executionGasUsed: gasLimit,
     exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
   }
@@ -1044,7 +1044,7 @@ export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
 
 export function CodesizeExceedsMaximumError(gasUsed: bigint): ExecResult {
   return {
-    returnValue: Buffer.alloc(0),
+    returnValue: new Uint8Array(0),
     executionGasUsed: gasUsed,
     exceptionError: new EvmError(ERROR.CODESIZE_EXCEEDS_MAXIMUM),
   }
@@ -1052,7 +1052,7 @@ export function CodesizeExceedsMaximumError(gasUsed: bigint): ExecResult {
 
 export function EvmErrorResult(error: EvmError, gasUsed: bigint): ExecResult {
   return {
-    returnValue: Buffer.alloc(0),
+    returnValue: new Uint8Array(0),
     executionGasUsed: gasUsed,
     exceptionError: error,
   }

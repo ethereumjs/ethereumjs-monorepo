@@ -131,7 +131,7 @@ export class Interpreter {
       highestMemCost: BigInt(0),
       stack: new Stack(),
       returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
-      code: Buffer.alloc(0),
+      code: new Uint8Array(0),
       validJumps: Uint8Array.from([]),
       eei: this._eei,
       env,
@@ -139,7 +139,7 @@ export class Interpreter {
       interpreter: this,
       gasRefund: env.gasRefund,
       gasLeft,
-      returnBuffer: Buffer.alloc(0),
+      returnBuffer: new Uint8Array(0),
     }
     this._env = env
     this._result = {
@@ -808,7 +808,7 @@ export class Interpreter {
     msg.gasRefund = this._runState.gasRefund
 
     // empty the return data buffer
-    this._runState.returnBuffer = Buffer.alloc(0)
+    this._runState.returnBuffer = new Uint8Array(0)
 
     // Check if account has enough ether and max depth not exceeded
     if (
@@ -856,7 +856,7 @@ export class Interpreter {
     const depth = this._env.depth + 1
 
     // empty the return data buffer
-    this._runState.returnBuffer = Buffer.alloc(0)
+    this._runState.returnBuffer = new Uint8Array(0)
 
     // Check if account has enough ether and max depth not exceeded
     if (

@@ -63,7 +63,7 @@ async function runTransition(argsIn: any) {
 
   const block = makeBlockFromEnv(inputEnv, { common })
 
-  const txsData = arrToBufArr(RLP.decode(Buffer.from(rlpTxs.slice(2), 'hex')))
+  const txsData = arrToBufArr(RLP.decode(hexToBytes(rlpTxs.slice(2), 'hex')))
 
   const headerData = block.header.toJSON()
   headerData.difficulty = inputEnv.parentDifficulty

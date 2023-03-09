@@ -33,14 +33,14 @@ tape('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', (t) => {
     })
 
     const runCodeArgs = {
-      code: Buffer.from('4400', 'hex'),
+      code: hexToBytes('4400', 'hex'),
       gasLimit: BigInt(0xffff),
     }
     await vm.evm.runCode!({ ...runCodeArgs, block })
     st.equal(stack[0], block.header.difficulty, '0x44 returns DIFFICULTY (London)')
 
     common.setHardfork(Hardfork.Merge)
-    const prevRandao = bytesToBigInt(Buffer.alloc(32, 1))
+    const prevRandao = bytesToBigInt(new Uint8Array(32, 1))
     block = Block.fromBlockData(
       {
         header: {

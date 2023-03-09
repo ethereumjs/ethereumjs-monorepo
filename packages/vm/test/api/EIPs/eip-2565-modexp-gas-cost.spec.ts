@@ -14,13 +14,13 @@ tape('EIP-2565 ModExp gas cost tests', (t) => {
 
     for (const test of testData) {
       const testName = test.Name
-      const to = new Address(Buffer.from('0000000000000000000000000000000000000005', 'hex'))
+      const to = new Address(hexToBytes('0000000000000000000000000000000000000005', 'hex'))
       const result = await vm.evm.runCall({
         caller: Address.zero(),
         gasLimit: BigInt(0xffffffffff),
         to,
         value: BigInt(0),
-        data: Buffer.from(test.Input, 'hex'),
+        data: hexToBytes(test.Input, 'hex'),
       })
 
       if (result.execResult.executionGasUsed !== BigInt(test.Gas)) {
@@ -35,7 +35,7 @@ tape('EIP-2565 ModExp gas cost tests', (t) => {
         continue
       }
 
-      if (!result.execResult.returnValue.equals(Buffer.from(test.Expected, 'hex'))) {
+      if (!result.execResult.returnValue.equals(hexToBytes(test.Expected, 'hex'))) {
         st.fail(
           `[${testName}]: Return value not the expected value (expected: ${
             test.Expected

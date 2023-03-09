@@ -191,7 +191,7 @@ export const blockToExecutionPayload = (block: Block, value: bigint) => {
  * Recursively finds parent blocks starting from the parentHash.
  */
 const recursivelyFindParents = async (vmHeadHash: Buffer, parentHash: Buffer, chain: Chain) => {
-  if (parentHash.equals(vmHeadHash) || parentHash.equals(Buffer.alloc(32))) {
+  if (parentHash.equals(vmHeadHash) || parentHash.equals(new Uint8Array(32))) {
     return []
   }
   const parentBlocks = []

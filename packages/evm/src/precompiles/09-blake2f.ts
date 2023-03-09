@@ -164,7 +164,7 @@ export function precompile09(opts: PrecompileInput): ExecResult {
       opts._debug(`BLAKE2F (0x09) failed: OUT_OF_RANGE dataLength=${data.length}`)
     }
     return {
-      returnValue: Buffer.alloc(0),
+      returnValue: new Uint8Array(0),
       executionGasUsed: opts.gasLimit,
       exceptionError: new EvmError(ERROR.OUT_OF_RANGE),
     }
@@ -175,7 +175,7 @@ export function precompile09(opts: PrecompileInput): ExecResult {
       opts._debug(`BLAKE2F (0x09) failed: OUT_OF_RANGE lastByte=${lastByte}`)
     }
     return {
-      returnValue: Buffer.alloc(0),
+      returnValue: new Uint8Array(0),
       executionGasUsed: opts.gasLimit,
       exceptionError: new EvmError(ERROR.OUT_OF_RANGE),
     }
@@ -222,7 +222,7 @@ export function precompile09(opts: PrecompileInput): ExecResult {
 
   F(h, m, t, f, rounds)
 
-  const output = Buffer.alloc(64)
+  const output = new Uint8Array(64)
   for (let i = 0; i < 16; i++) {
     output.writeUInt32LE(h[i], i * 4)
   }

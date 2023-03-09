@@ -55,17 +55,17 @@ tape('[EthProtocol]', (t) => {
     t.deepEquals(
       p.encodeStatus(),
       {
-        networkId: Buffer.from('01', 'hex'),
-        td: Buffer.from('64', 'hex'),
+        networkId: hexToBytes('01', 'hex'),
+        td: hexToBytes('64', 'hex'),
         bestHash: '0xaa',
         genesisHash: '0xbb',
-        latestBlock: Buffer.from('0a', 'hex'),
+        latestBlock: hexToBytes('0a', 'hex'),
       },
       'encode status'
     )
     const status = p.decodeStatus({
       networkId: [0x01],
-      td: Buffer.from('64', 'hex'),
+      td: hexToBytes('64', 'hex'),
       bestHash: '0xaa',
       genesisHash: '0xbb',
     })
@@ -154,15 +154,23 @@ tape('[EthProtocol]', (t) => {
       {
         status: 1 as 0 | 1,
         cumulativeBlockGasUsed: BigInt(100),
-        bitvector: Buffer.alloc(256),
-        logs: [[Buffer.alloc(20), [Buffer.alloc(32), Buffer.alloc(32, 1)], Buffer.alloc(10)]],
+        bitvector: new Uint8Array(256),
+        logs: [
+          [new Uint8Array(20), [new Uint8Array(32), new Uint8Array(32, 1)], new Uint8Array(10)],
+        ],
         txType: 2,
       },
       {
         status: 0 as 0 | 1,
         cumulativeBlockGasUsed: BigInt(1000),
-        bitvector: Buffer.alloc(256, 1),
-        logs: [[Buffer.alloc(20, 1), [Buffer.alloc(32, 1), Buffer.alloc(32, 1)], Buffer.alloc(10)]],
+        bitvector: new Uint8Array(256, 1),
+        logs: [
+          [
+            new Uint8Array(20, 1),
+            [new Uint8Array(32, 1), new Uint8Array(32, 1)],
+            new Uint8Array(10),
+          ],
+        ],
         txType: 0,
       },
     ]

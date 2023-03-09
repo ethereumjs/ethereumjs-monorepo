@@ -8,7 +8,7 @@ import { VM } from '../../../src/vm'
 // Test cases source: https://gist.github.com/holiman/174548cad102096858583c6fbbb0649a
 tape('EIP 2929: gas cost tests', (t) => {
   const initialGas = BigInt(0xffffffffff)
-  const address = new Address(Buffer.from('000000000000000000000000636F6E7472616374', 'hex'))
+  const address = new Address(hexToBytes('000000000000000000000000636F6E7472616374', 'hex'))
   const senderKey = Buffer.from(
     'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
     'hex'
@@ -48,7 +48,7 @@ tape('EIP 2929: gas cost tests', (t) => {
       i++
     })
 
-    await vm.stateManager.putContractCode(address, Buffer.from(test.code, 'hex'))
+    await vm.stateManager.putContractCode(address, hexToBytes(test.code, 'hex'))
 
     const unsignedTx = Transaction.fromTxData({
       gasLimit: initialGas, // ensure we pass a lot of gas, so we do not run out of gas
@@ -71,13 +71,13 @@ tape('EIP 2929: gas cost tests', (t) => {
       'hex'
     )
     const contractAddress = new Address(
-      Buffer.from('00000000000000000000000000000000000000ff', 'hex')
+      hexToBytes('00000000000000000000000000000000000000ff', 'hex')
     )
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
     const vm = await VM.create({ common })
 
-    await vm.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
+    await vm.stateManager.putContractCode(contractAddress, hexToBytes(code, 'hex')) // setup the contract code
 
     // setup the call arguments
     const unsignedTx = Transaction.fromTxData({

@@ -17,9 +17,9 @@ const MASK_160 = (BigInt(1) << BigInt(160)) - BigInt(1)
  * @param value Buffer which we want to pad
  */
 export function setLengthLeftStorage(value: Buffer) {
-  if (value.equals(Buffer.alloc(value.length, 0))) {
+  if (value.equals(new Uint8Array(value.length, 0))) {
     // return the empty buffer (the value is zero)
-    return Buffer.alloc(0)
+    return new Uint8Array(0)
   } else {
     return setLengthLeft(value, 32)
   }

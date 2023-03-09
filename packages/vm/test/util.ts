@@ -80,13 +80,13 @@ export function dumpState(state: any, cb: Function) {
 
 export function format(a: any, toZero: boolean = false, isHex: boolean = false): Buffer {
   if (a === '') {
-    return Buffer.alloc(0)
+    return new Uint8Array(0)
   }
 
   if (typeof a === 'string' && isHexPrefixed(a)) {
     a = a.slice(2)
     if (a.length % 2) a = '0' + a
-    a = Buffer.from(a, 'hex')
+    a = hexToBytes(a, 'hex')
   } else if (!isHex) {
     try {
       a = bigIntToBytes(BigInt(a))
@@ -95,7 +95,7 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
     }
   } else {
     if (a.length % 2) a = '0' + a
-    a = Buffer.from(a, 'hex')
+    a = hexToBytes(a, 'hex')
   }
 
   if (toZero && a.toString('hex') === '') {
@@ -138,7 +138,7 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
     const keyMap: any = {}
 
     for (const key in testData) {
-      const hash = bytesToHex(keccak256(Buffer.from(stripHexPrefix(key), 'hex')))
+      const hash = bytesToHex(keccak256(hexToBytes(stripHexPrefix(key), 'hex')))
       hashedAccounts[hash] = testData[key]
       keyMap[hash] = key
     }
@@ -207,7 +207,7 @@ export function verifyAccountPostConditions(
 
     const hashedStorage: any = {}
     for (const key in acctData.storage) {
-      hashedStorage[bytesToHex(keccak256(setLengthLeft(Buffer.from(key.slice(2), 'hex'), 32)))] =
+      hashedStorage[bytesToHex(keccak256(setLengthLeft(hexToBytes(key.slice(2), 'hex'), 32)))] =
         acctData.storage[key]
     }
 

@@ -11,7 +11,7 @@ import {
   waitForELStart,
 } from './simutils'
 
-const pkey = Buffer.from('ae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e', 'hex')
+const pkey = hexToBytes('ae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e', 'hex')
 const sender = '0x' + privateToAddress(pkey).toString('hex')
 const client = Client.http({ port: 8545 })
 

@@ -19,11 +19,11 @@ const MAX_USEFUL_BYTES_PER_TX = USEFUL_BYTES_PER_BLOB * MAX_BLOBS_PER_TX - 1
 const BLOB_SIZE = BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB
 
 initKZG(kzg, __dirname + '/../../lib/trustedSetup/devnet4.txt')
-const pkey = Buffer.from('45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8', 'hex')
+const pkey = hexToBytes('45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8', 'hex')
 const sender = Address.fromPrivateKey(pkey)
 
 function get_padded(data: any, blobs_len: number) {
-  const pdata = Buffer.alloc(blobs_len * USEFUL_BYTES_PER_BLOB)
+  const pdata = new Uint8Array(blobs_len * USEFUL_BYTES_PER_BLOB)
   const datalen = Buffer.byteLength(data)
   pdata.fill(data, 0, datalen)
   // TODO: if data already fits in a pad, then ka-boom
@@ -32,9 +32,9 @@ function get_padded(data: any, blobs_len: number) {
 }
 
 function get_blob(data: any) {
-  const blob = Buffer.alloc(BLOB_SIZE, 'binary')
+  const blob = new Uint8Array(BLOB_SIZE, 'binary')
   for (let i = 0; i < FIELD_ELEMENTS_PER_BLOB; i++) {
-    const chunk = Buffer.alloc(32, 'binary')
+    const chunk = new Uint8Array(32, 'binary')
     chunk.fill(data.subarray(i * 31, (i + 1) * 31), 0, 31)
     blob.fill(chunk, i * 32, (i + 1) * 32)
   }

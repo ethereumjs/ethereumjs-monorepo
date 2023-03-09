@@ -89,7 +89,7 @@ tape('[TxPool]', async (t) => {
   DefaultStateManager.prototype.setStateRoot = (): any => {}
 
   const A = {
-    address: Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex'),
+    address: hexToBytes('0b90087d864e82a284dca15923f3776de6bb016f', 'hex'),
     privateKey: Buffer.from(
       '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
       'hex'
@@ -97,7 +97,7 @@ tape('[TxPool]', async (t) => {
   }
 
   const B = {
-    address: Buffer.from('6f62d8382bf2587361db73ceca28be91b2acb6df', 'hex'),
+    address: hexToBytes('6f62d8382bf2587361db73ceca28be91b2acb6df', 'hex'),
     privateKey: Buffer.from(
       '2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6',
       'hex'
@@ -247,7 +247,7 @@ tape('[TxPool]', async (t) => {
     const hashes = []
     for (let i = 1; i <= TX_RETRIEVAL_LIMIT + 1; i++) {
       // One more than TX_RETRIEVAL_LIMIT
-      hashes.push(Buffer.from(i.toString().padStart(64, '0'), 'hex')) // '0000000000000000000000000000000000000000000000000000000000000001',...
+      hashes.push(hexToBytes(i.toString().padStart(64, '0'), 'hex')) // '0000000000000000000000000000000000000000000000000000000000000001',...
     }
 
     await pool.handleAnnouncedTxHashes(hashes, peer as any, peerPool)
@@ -397,8 +397,8 @@ tape('[TxPool]', async (t) => {
     const txs = []
     for (let account = 0; account < 51; account++) {
       const pkey = Buffer.concat([
-        Buffer.from('aa'.repeat(31), 'hex'),
-        Buffer.from(account.toString(16).padStart(2, '0'), 'hex'),
+        hexToBytes('aa'.repeat(31), 'hex'),
+        hexToBytes(account.toString(16).padStart(2, '0'), 'hex'),
       ])
       const from = {
         address: privateToAddress(pkey),

@@ -100,7 +100,7 @@ tape('EEI', (t) => {
       )
     }
 
-    const address = new Address(Buffer.from('02E815899482f27C899fB266319dE7cc97F72E87', 'hex'))
+    const address = new Address(hexToBytes('02E815899482f27C899fB266319dE7cc97F72E87', 'hex'))
     void eei.putAccount(address, Account.fromAccountData({ nonce: 5, balance: '0x123' }))
     const vm = await VM.create({ evm })
     const accountFromEEI = await vm.eei.getAccount(address)

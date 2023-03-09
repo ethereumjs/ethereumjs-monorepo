@@ -29,7 +29,7 @@ const main = async () => {
 
   evm
     .runCode({
-      code: Buffer.from(code.join(''), 'hex'),
+      code: hexToBytes(code.join(''), 'hex'),
       gasLimit: BigInt(0xffff),
     })
     .then((results) => {

@@ -218,7 +218,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // Add origin and precompiles to warm addresses
     const activePrecompiles = this.evm.precompiles
     for (const [addressStr] of activePrecompiles.entries()) {
-      state.addWarmedAddress(Buffer.from(addressStr, 'hex'))
+      state.addWarmedAddress(hexToBytes(addressStr, 'hex'))
     }
     state.addWarmedAddress(caller.buf)
     if (tx.to) {
@@ -518,7 +518,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (results.execResult.selfdestruct) {
     const keys = Object.keys(results.execResult.selfdestruct)
     for (const k of keys) {
-      const address = new Address(Buffer.from(k, 'hex'))
+      const address = new Address(hexToBytes(k, 'hex'))
       await state.deleteAccount(address)
       if (this.DEBUG) {
         debug(`tx selfdestruct on address=${address}`)

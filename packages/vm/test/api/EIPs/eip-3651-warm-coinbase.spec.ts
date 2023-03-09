@@ -5,11 +5,11 @@ import { Address, privateToAddress } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
-const pkey = Buffer.from('20'.repeat(32), 'hex')
+const pkey = hexToBytes('20'.repeat(32), 'hex')
 const GWEI = BigInt(1000000000)
 const sender = new Address(privateToAddress(pkey))
 
-const coinbase = new Address(Buffer.from('ff'.repeat(20), 'hex'))
+const coinbase = new Address(hexToBytes('ff'.repeat(20), 'hex'))
 
 const common = new Common({
   chain: Chain.Mainnet,
@@ -27,8 +27,8 @@ const block = Block.fromBlockData(
   { common }
 )
 
-const code = Buffer.from('60008080806001415AF100', 'hex')
-const contractAddress = new Address(Buffer.from('ee'.repeat(20), 'hex'))
+const code = hexToBytes('60008080806001415AF100', 'hex')
+const contractAddress = new Address(hexToBytes('ee'.repeat(20), 'hex'))
 
 async function getVM(common: Common) {
   const vm = await VM.create({ common })

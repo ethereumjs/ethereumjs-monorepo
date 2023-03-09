@@ -25,7 +25,7 @@ tape('EIP 3541 tests', (t) => {
     })
 
     const result = await vm.evm.runCode!({
-      code: Buffer.from('5F', 'hex'),
+      code: hexToBytes('5F', 'hex'),
       gasLimit: BigInt(10),
     })
 
@@ -45,7 +45,7 @@ tape('EIP 3541 tests', (t) => {
     const depth = Number(common.param('vm', 'stackLimit'))
 
     const result = await vm.evm.runCode!({
-      code: Buffer.from('5F'.repeat(depth), 'hex'),
+      code: hexToBytes('5F'.repeat(depth), 'hex'),
       gasLimit: BigInt(10000),
     })
 
@@ -65,7 +65,7 @@ tape('EIP 3541 tests', (t) => {
     const depth = Number(common.param('vm', 'stackLimit')!) + 1
 
     const result = await vm.evm.runCode!({
-      code: Buffer.from('5F'.repeat(depth), 'hex'),
+      code: hexToBytes('5F'.repeat(depth), 'hex'),
       gasLimit: BigInt(10000),
     })
 
@@ -77,7 +77,7 @@ tape('EIP 3541 tests', (t) => {
     const vm = await VM.create({ common: commonNoEIP3855 })
 
     const result = await vm.evm.runCode!({
-      code: Buffer.from('5F', 'hex'),
+      code: hexToBytes('5F', 'hex'),
       gasLimit: BigInt(10000),
     })
 

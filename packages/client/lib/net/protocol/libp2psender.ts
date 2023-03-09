@@ -68,7 +68,7 @@ export class Libp2pSender extends Sender {
    */
   sendStatus(status: any) {
     const payload: any = Object.entries(status).map(([k, v]) => [Buffer.from(k), v])
-    this.pushable.push(Buffer.from(RLP.encode(bufArrToArr([intToBytes(0), payload]))))
+    this.pushable.push(RLP.encode(bufArrToArr([intToBytes(0), payload]))))
   }
 
   /**
@@ -77,6 +77,6 @@ export class Libp2pSender extends Sender {
    * @param data message payload
    */
   sendMessage(code: number, data: any) {
-    this.pushable.push(Buffer.from(RLP.encode(bufArrToArr([intToBytes(code), data]))))
+    this.pushable.push(RLP.encode(bufArrToArr([intToBytes(code), data]))))
   }
 }

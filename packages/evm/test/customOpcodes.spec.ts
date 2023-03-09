@@ -38,7 +38,7 @@ tape('VM: custom opcodes', (t) => {
       }
     })
     const res = await evm.runCode({
-      code: Buffer.from('21', 'hex'),
+      code: hexToBytes('21', 'hex'),
       gasLimit: BigInt(gas),
     })
     st.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')
@@ -53,7 +53,7 @@ tape('VM: custom opcodes', (t) => {
     })
     const gas = BigInt(123456)
     const res = await evm.runCode({
-      code: Buffer.from('20', 'hex'),
+      code: hexToBytes('20', 'hex'),
       gasLimit: BigInt(gas),
     })
     st.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
@@ -68,7 +68,7 @@ tape('VM: custom opcodes', (t) => {
     })
     const gas = BigInt(123456)
     const res = await evm.runCode({
-      code: Buffer.from('01', 'hex'),
+      code: hexToBytes('01', 'hex'),
       gasLimit: BigInt(gas),
     })
     st.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
@@ -85,10 +85,10 @@ tape('VM: custom opcodes', (t) => {
     // PUSH 1F // RETURNDATA offset
     // RETURN  // Returns 0x05
     const result = await evmDefault.runCode!({
-      code: Buffer.from('60046001016000526001601FF3', 'hex'),
+      code: hexToBytes('60046001016000526001601FF3', 'hex'),
       gasLimit: BigInt(gas),
     })
-    st.ok(result.returnValue.equals(Buffer.from('05', 'hex')))
+    st.ok(result.returnValue.equals(hexToBytes('05', 'hex')))
   })
 
   t.test('should override opcodes in the EVM', async (st) => {
@@ -99,7 +99,7 @@ tape('VM: custom opcodes', (t) => {
     })
     const gas = 123456
     const res = await evm.runCode({
-      code: Buffer.from('20', 'hex'),
+      code: hexToBytes('20', 'hex'),
       gasLimit: BigInt(gas),
     })
     st.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')

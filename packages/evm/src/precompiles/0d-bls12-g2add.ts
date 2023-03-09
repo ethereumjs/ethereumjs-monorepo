@@ -38,7 +38,7 @@ export async function precompile0d(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   // check if some parts of input are zero bytes.
-  const zeroBytes16 = Buffer.alloc(16, 0)
+  const zeroBytes16 = new Uint8Array(16, 0)
   const zeroByteCheck = [
     [0, 16],
     [64, 80],

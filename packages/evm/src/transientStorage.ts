@@ -33,11 +33,11 @@ export class TransientStorage implements TransientStorageInterface {
   public get(addr: Address, key: Buffer): Buffer {
     const map = this._storage.get(addr.toString())
     if (!map) {
-      return Buffer.alloc(32)
+      return new Uint8Array(32)
     }
     const value = map.get(key.toString('hex'))
     if (!value) {
-      return Buffer.alloc(32)
+      return new Uint8Array(32)
     }
     return value
   }
@@ -64,7 +64,7 @@ export class TransientStorage implements TransientStorageInterface {
     const map = this._storage.get(addrString)!
 
     const keyStr = key.toString('hex')
-    const prevValue = map.get(keyStr) ?? Buffer.alloc(32)
+    const prevValue = map.get(keyStr) ?? new Uint8Array(32)
 
     this._changeJournal.push({
       addr: addrString,

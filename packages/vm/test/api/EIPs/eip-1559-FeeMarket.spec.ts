@@ -32,7 +32,7 @@ common.hardforkBlock = function (hardfork: string | undefined) {
   return BigInt(0)
 }
 
-const coinbase = new Address(Buffer.from('11'.repeat(20), 'hex'))
+const coinbase = new Address(hexToBytes('11'.repeat(20), 'hex'))
 const pkey = Buffer.from('20'.repeat(32), 'hex')
 const sender = new Address(privateToAddress(pkey))
 
@@ -162,7 +162,7 @@ tape('EIP1559 tests', (t) => {
   })
 
   t.test('gasPrice uses the effective gas price', async (st) => {
-    const contractAddress = new Address(Buffer.from('20'.repeat(20), 'hex'))
+    const contractAddress = new Address(hexToBytes('20'.repeat(20), 'hex'))
     const tx = new FeeMarketEIP1559Transaction(
       {
         maxFeePerGas: GWEI * BigInt(5),
@@ -189,7 +189,7 @@ tape('EIP1559 tests', (t) => {
      */
 
     // (This code returns the reported GASPRICE)
-    const code = Buffer.from('3A60005260206000F3', 'hex')
+    const code = hexToBytes('3A60005260206000F3', 'hex')
     await vm.stateManager.putContractCode(contractAddress, code)
 
     const result = await vm.runTx({ tx: block.transactions[0], block })

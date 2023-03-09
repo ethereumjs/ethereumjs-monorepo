@@ -38,7 +38,7 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   // check if some parts of input are zero bytes.
-  const zeroBytes16 = Buffer.alloc(16, 0)
+  const zeroBytes16 = new Uint8Array(16, 0)
   if (!opts.data.slice(0, 16).equals(zeroBytes16)) {
     if (opts._debug) {
       opts._debug(`BLS12MAPFPTOG1 (0x11) failed: Point not on curve`)

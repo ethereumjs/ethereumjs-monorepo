@@ -115,7 +115,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     // Here we decode the rlp to extract the block number
     // The block library cannot be used, as this throws on certain EIP1559 blocks when trying to convert
     try {
-      const blockRlp = Buffer.from((raw.rlp as string).slice(2), 'hex')
+      const blockRlp = hexToBytes((raw.rlp as string).slice(2), 'hex')
       const decodedRLP: any = RLP.decode(Uint8Array.from(blockRlp))
       currentBlock = bytesToBigInt(decodedRLP[0][8])
     } catch (e: any) {
@@ -124,7 +124,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     }
 
     try {
-      const blockRlp = Buffer.from((raw.rlp as string).slice(2), 'hex')
+      const blockRlp = hexToBytes((raw.rlp as string).slice(2), 'hex')
       // Update common HF
       let TD: bigint | undefined = undefined
       let timestamp: bigint | undefined = undefined
@@ -153,7 +153,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         >[]) {
           const shouldFail = txData.valid === 'false'
           try {
-            const txRLP = Buffer.from(txData.rawBytes.slice(2), 'hex')
+            const txRLP = hexToBytes(txData.rawBytes.slice(2), 'hex')
             const tx = TransactionFactory.fromSerializedData(txRLP, { common })
             await blockBuilder.addTransaction(tx)
             if (shouldFail) {

@@ -62,19 +62,19 @@ tape('vmState', (t) => {
     const chains: [Chain, Buffer][] = [
       [
         Chain.Ropsten,
-        Buffer.from('217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b', 'hex'),
+        hexToBytes('217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b', 'hex'),
       ],
       [
         Chain.Rinkeby,
-        Buffer.from('53580584816f617295ea26c0e17641e0120cab2f0a8ffb53a866fd53aa8e8c2d', 'hex'),
+        hexToBytes('53580584816f617295ea26c0e17641e0120cab2f0a8ffb53a866fd53aa8e8c2d', 'hex'),
       ],
       [
         Chain.Goerli,
-        Buffer.from('5d6cded585e73c4e322c30c2f782a336316f17dd85a4863b9d838d2d4b8b3008', 'hex'),
+        hexToBytes('5d6cded585e73c4e322c30c2f782a336316f17dd85a4863b9d838d2d4b8b3008', 'hex'),
       ],
       [
         Chain.Sepolia,
-        Buffer.from('5eb6e371a698b8d68f665192350ffcecbbbf322916f4b51bd79bb6887da3f494', 'hex'),
+        hexToBytes('5eb6e371a698b8d68f665192350ffcecbbbf322916f4b51bd79bb6887da3f494', 'hex'),
       ],
     ]
 
@@ -100,20 +100,20 @@ tape('Original storage cache', async (t) => {
   const stateManager = new DefaultStateManager()
   const vmState = new VmState({ stateManager })
 
-  const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+  const address = new Address(hexToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
   const account = createAccount()
   await vmState.putAccount(address, account)
 
-  const key = Buffer.from('1234567890123456789012345678901234567890123456789012345678901234', 'hex')
-  const value = Buffer.from('1234', 'hex')
+  const key = hexToBytes('1234567890123456789012345678901234567890123456789012345678901234', 'hex')
+  const value = hexToBytes('1234', 'hex')
 
   t.test('should initially have empty storage value', async (st) => {
     await vmState.checkpoint()
     const res = await vmState.getContractStorage(address, key)
-    st.deepEqual(res, Buffer.alloc(0))
+    st.deepEqual(res, new Uint8Array(0))
 
     const origRes = await (<any>vmState).getOriginalContractStorage(address, key)
-    st.deepEqual(origRes, Buffer.alloc(0))
+    st.deepEqual(origRes, new Uint8Array(0))
 
     await vmState.commit()
 
@@ -135,7 +135,7 @@ tape('Original storage cache', async (t) => {
   })
 
   t.test('should return correct original value after modification', async (st) => {
-    const newValue = Buffer.from('1235', 'hex')
+    const newValue = hexToBytes('1235', 'hex')
     await vmState.putContractStorage(address, key, newValue)
     const res = await vmState.getContractStorage(address, key)
     st.deepEqual(res, newValue)
@@ -150,8 +150,8 @@ tape('Original storage cache', async (t) => {
       '0000000000000000000000000000000000000000000000000000000000000012',
       'hex'
     )
-    const value2 = Buffer.from('12', 'hex')
-    const value3 = Buffer.from('123', 'hex')
+    const value2 = hexToBytes('12', 'hex')
+    const value3 = hexToBytes('123', 'hex')
     await vmState.putContractStorage(address, key2, value2)
 
     let res = await vmState.getContractStorage(address, key2)
@@ -168,7 +168,7 @@ tape('Original storage cache', async (t) => {
 
     // Check previous key
     res = await vmState.getContractStorage(address, key)
-    st.deepEqual(res, Buffer.from('1235', 'hex'))
+    st.deepEqual(res, hexToBytes('1235', 'hex'))
     origRes = await (<any>vmState).getOriginalContractStorage(address, key)
     st.deepEqual(origRes, value)
 
@@ -177,7 +177,7 @@ tape('Original storage cache', async (t) => {
 
   t.test("getOriginalContractStorage should validate the key's length", async (st) => {
     try {
-      await (<any>vmState).getOriginalContractStorage(address, Buffer.alloc(12))
+      await (<any>vmState).getOriginalContractStorage(address, new Uint8Array(12))
     } catch (e: any) {
       st.equal(e.message, 'Storage key must be 32 bytes long')
       st.end()
@@ -194,12 +194,12 @@ tape('StateManager - generateAccessList', (tester) => {
 
   // Only use 0..9
   function a(n: number) {
-    return Buffer.from(`ff${'00'.repeat(18)}0${n}`, 'hex')
+    return hexToBytes(`ff${'00'.repeat(18)}0${n}`, 'hex')
   }
 
   // Only use 0..9
   function s(n: number) {
-    return Buffer.from(`${'00'.repeat(31)}0${n}`, 'hex')
+    return hexToBytes(`${'00'.repeat(31)}0${n}`, 'hex')
   }
 
   function getStateManagerAliases() {

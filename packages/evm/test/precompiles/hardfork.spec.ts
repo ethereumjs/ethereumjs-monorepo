@@ -9,7 +9,7 @@ import { getEEI } from '../utils'
 tape('Precompiles: hardfork availability', (t) => {
   t.test('Test ECPAIRING availability', async (st) => {
     const ECPAIR_AddressStr = '0000000000000000000000000000000000000008'
-    const ECPAIR_Address = new Address(Buffer.from(ECPAIR_AddressStr, 'hex'))
+    const ECPAIR_Address = new Address(hexToBytes(ECPAIR_AddressStr, 'hex'))
 
     // ECPAIR was introduced in Byzantium; check if available from Byzantium.
     const commonByzantium = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })

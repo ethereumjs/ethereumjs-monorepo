@@ -135,7 +135,7 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   if (mLen === BigInt(0)) {
     return {
       executionGasUsed: gasUsed,
-      returnValue: Buffer.alloc(0),
+      returnValue: new Uint8Array(0),
     }
   }
 

@@ -112,8 +112,8 @@ tape('BlockBuilder', async (t) => {
     await blockBuilder.addTransaction(tx)
 
     const sealOpts = {
-      mixHash: Buffer.alloc(32),
-      nonce: Buffer.alloc(8),
+      mixHash: new Uint8Array(32),
+      nonce: new Uint8Array(8),
     }
     const block = await blockBuilder.build(sealOpts)
 
@@ -125,7 +125,7 @@ tape('BlockBuilder', async (t) => {
 
   t.test('should correctly seal a PoA block', async (st) => {
     const signer = {
-      address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
+      address: new Address(hexToBytes('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
       privateKey: Buffer.from(
         '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
         'hex'
@@ -138,7 +138,11 @@ tape('BlockBuilder', async (t) => {
 
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Istanbul })
     // extraData: [vanity, activeSigner, seal]
-    const extraData = Buffer.concat([Buffer.alloc(32), signer.address.toBytes(), Buffer.alloc(65)])
+    const extraData = Buffer.concat([
+      new Uint8Array(32),
+      signer.address.toBytes(),
+      new Uint8Array(65),
+    ])
     const cliqueSigner = signer.privateKey
     const genesisBlock = Block.fromBlockData(
       { header: { gasLimit: 50000, extraData } },
@@ -152,7 +156,7 @@ tape('BlockBuilder', async (t) => {
 
     const blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,
-      headerData: { difficulty: 2, extraData: Buffer.alloc(97) },
+      headerData: { difficulty: 2, extraData: new Uint8Array(97) },
       blockOpts: { cliqueSigner, freeze: false },
     })
 

@@ -227,23 +227,23 @@ tape('[FullEthereumService]', async (t) => {
     service.execution = {
       receiptsManager: { getReceipts: td.func<any>() },
     } as any
-    const blockHash = Buffer.alloc(32, 1)
+    const blockHash = new Uint8Array(32, 1)
     const receipts = [
       {
         status: 1 as 0 | 1,
         cumulativeBlockGasUsed: BigInt(100),
-        bitvector: Buffer.alloc(256),
+        bitvector: new Uint8Array(256),
         logs: [
-          [Buffer.alloc(20), [Buffer.alloc(32), Buffer.alloc(32, 1)], Buffer.alloc(10)],
+          [new Uint8Array(20), [new Uint8Array(32), new Uint8Array(32, 1)], new Uint8Array(10)],
         ] as Log[],
         txType: 2,
       },
       {
         status: 0 as 0 | 1,
         cumulativeBlockGasUsed: BigInt(1000),
-        bitvector: Buffer.alloc(256, 1),
+        bitvector: new Uint8Array(256, 1),
         logs: [
-          [Buffer.alloc(20, 1), [Buffer.alloc(32, 1), Buffer.alloc(32, 1)], Buffer.alloc(10)],
+          [new Uint8Array(20, 1), [new Uint8Array(32, 1), new Uint8Array(32, 1)], new Uint8Array(10)],
         ] as Log[],
         txType: 0,
       },
@@ -285,7 +285,7 @@ tape('[FullEthereumService]', async (t) => {
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     service.txPool.handleAnnouncedTxHashes = async (msg, _peer, _pool) => {
-      st.deepEqual(msg[0], Buffer.from('0xabcd', 'hex'), 'handled NewPooledTransactionhashes')
+      st.deepEqual(msg[0], hexToBytes('0xabcd', 'hex'), 'handled NewPooledTransactionhashes')
       st.end()
     }
 

@@ -91,7 +91,7 @@ tape('Istanbul: EIP-152', (t) => {
     for (const testCase of failingTestCases) {
       st.comment(testCase.name)
       const res = precompile09({
-        data: Buffer.from(testCase.input, 'hex'),
+        data: hexToBytes(testCase.input, 'hex'),
         gasLimit: BigInt(20),
         _common: common,
         _EVM: vm.evm,
@@ -102,7 +102,7 @@ tape('Istanbul: EIP-152', (t) => {
     for (const testCase of testCases) {
       st.comment(testCase.name)
       const res = precompile09({
-        data: Buffer.from(testCase.input, 'hex'),
+        data: hexToBytes(testCase.input, 'hex'),
         gasLimit: BigInt(10000000),
         _common: common,
         _EVM: vm.evm,
