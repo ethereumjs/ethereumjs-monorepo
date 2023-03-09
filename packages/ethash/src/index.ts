@@ -208,7 +208,7 @@ export class Ethash {
     mixView.setUint32(0, mixView.getUint32(0, true) ^ i, true)
     mix = keccak512(mix)
     for (let j = 0; j < params.DATASET_PARENTS; j++) {
-      const cacheIndex = fnv(i ^ j, mixView.getUint32((j % r) * 4, true))
+      const cacheIndex = fnv(i ^ j, new DataView(mix.buffer).getUint32((j % r) * 4, true))
       mix = fnvBytes(mix, this.cache[cacheIndex % n])
     }
     return keccak512(mix)
