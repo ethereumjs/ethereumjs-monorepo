@@ -136,7 +136,7 @@ export function runNetwork(
         console.log('')
         lastPrintedDot = false
       }
-      process.stdout.write(`${runProcPrefix}:el<>cl: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
+      process.stdout.write(`data:${runProcPrefix}: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
     } else {
       if (str.includes('Synchronized')) {
         process.stdout.write('.')
@@ -148,9 +148,10 @@ export function runNetwork(
   })
   runProc.stderr.on('data', (chunk) => {
     const str = Buffer.from(chunk).toString('utf8')
+    const filterStr = filterKeywords.reduce((acc, next) => acc || str.includes(next), false)
     const filterOutStr = filterOutWords.reduce((acc, next) => acc || str.includes(next), false)
-    if (!filterOutStr) {
-      process.stderr.write(`${runProcPrefix}:el<>cl: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
+    if (filterStr && !filterOutStr) {
+      process.stderr.write(`stderr:${runProcPrefix}: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
     }
   })
 
