@@ -14,14 +14,14 @@ const cacheDB = new MemoryLevel()
 
 const { validBlockRlp, invalidBlockRlp } = require('./ethash_block_rlp_tests.json')
 
-tape.only('Verify POW for valid and invalid blocks', async function (t) {
+tape('Verify POW for valid and invalid blocks', async function (t) {
   const e = new Ethash(cacheDB as any)
 
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 
   const genesis = Block.fromBlockData({}, { common })
-  //  const genesisResult = await e.verifyPOW(genesis)
-  //  t.ok(genesisResult, 'genesis block should be valid')
+  const genesisResult = await e.verifyPOW(genesis)
+  t.ok(genesisResult, 'genesis block should be valid')
 
   const validRlp = hexToBytes(validBlockRlp)
   const validBlock = Block.fromRLPSerializedBlock(validRlp, { common })
