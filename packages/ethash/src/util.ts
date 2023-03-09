@@ -73,5 +73,10 @@ export function fnvBytes(a: Uint8Array, b: Uint8Array) {
 }
 
 export function bytesReverse(a: Uint8Array) {
-  return a.reverse()
+  const length = a.length
+  const b = new Uint8Array(length)
+  for (let i = 0; i < length; i++) {
+    b[i] = a[length - i - 1]
+  }
+  return b
 }
