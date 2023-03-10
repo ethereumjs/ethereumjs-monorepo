@@ -47,10 +47,10 @@ export class AccessLists {
       const json: AccessList = []
       for (let i = 0; i < bufferAccessList.length; i++) {
         const data = bufferAccessList[i]
-        const address = bytesToHex(data[0])
+        const address = bytesToPrefixedHexString(data[0])
         const storageKeys: string[] = []
         for (let item = 0; item < data[1].length; item++) {
-          storageKeys.push(bytesToHex(data[1][item]))
+          storageKeys.push(bytesToPrefixedHexString(data[1][item]))
         }
         const jsonItem: AccessListItem = {
           address,

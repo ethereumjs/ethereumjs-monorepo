@@ -1,7 +1,7 @@
 import { Block, getDataGasPrice } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
-import { Address, KECCAK256_NULL, short, toBytes } from '@ethereumjs/util'
+import { Address, KECCAK256_NULL, short, stripHexPrefix, toBytes } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 

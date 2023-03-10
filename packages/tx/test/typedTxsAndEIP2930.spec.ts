@@ -6,6 +6,7 @@ import {
   SECP256K1_ORDER_DIV_2,
   bytesToBigInt,
   bytesToHex,
+  bytesToPrefixedHexString,
   concatBytes,
   equalsBytes,
   hexStringToBytes,
@@ -172,8 +173,8 @@ tape(
       for (const txType of txTypes) {
         const access: AccessList = [
           {
-            address: bytesToHex(validAddress),
-            storageKeys: [bytesToHex(validSlot)],
+            address: bytesToPrefixedHexString(validAddress),
+            storageKeys: [bytesToPrefixedHexString(validSlot)],
           },
         ]
         const txn = txType.class.fromTxData(

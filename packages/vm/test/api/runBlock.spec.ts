@@ -40,9 +40,10 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     //@ts-ignore
     await setupPreConditions(vm.eei, testData)
 
-    st.ok(
+    st.deepEquals(
       //@ts-ignore
-      vm.stateManager._trie.root().equals(genesis.header.stateRoot),
+      vm.stateManager._trie.root(),
+      genesis.header.stateRoot,
       'genesis state root should match calculated state root'
     )
 
