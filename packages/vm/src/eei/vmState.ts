@@ -32,6 +32,10 @@ export class VmState implements EVMStateAccess {
   // Each call level tracks their access themselves.
   // In case of a commit, copy everything if the value does not exist, to the level above
   // In case of a revert, discard any warm slots.
+  //
+  // TODO: Switch to diff based version similar to _touchedStack
+  // (_accessStorage representing the actual state, separate _accessedStorageStack dictionary
+  // tracking the access diffs per commit)
   protected _accessedStorage: Map<string, Set<string>>[]
 
   // Backup structure for address/storage tracker frames on reverts
@@ -66,7 +70,9 @@ export class VmState implements EVMStateAccess {
    * Partial implementation, called from the subclass.
    */
   async checkpoint(): Promise<void> {
-    this._accessedStorage.push(new Map())
+    if (this._common.gteHardfork(Hardfork.Berlin)) {
+      this._accessedStorage.push(new Map())
+    }
     await this._stateManager.checkpoint()
     this._checkpointCount++
 
@@ -83,10 +89,12 @@ export class VmState implements EVMStateAccess {
       delete this._touchedStack[height]
     }
 
-    // Copy the contents of the map of the current level to a map higher.
-    const storageMap = this._accessedStorage.pop()
-    if (storageMap) {
-      this._accessedStorageMerge(this._accessedStorage, storageMap)
+    if (this._common.gteHardfork(Hardfork.Berlin)) {
+      // Copy the contents of the map of the current level to a map higher.
+      const storageMap = this._accessedStorage.pop()
+      if (storageMap) {
+        this._accessedStorageMerge(this._accessedStorage, storageMap)
+      }
     }
     await this._stateManager.commit()
     this._checkpointCount--
@@ -108,10 +116,12 @@ export class VmState implements EVMStateAccess {
    * Partial implementation , called from the subclass.
    */
   async revert(): Promise<void> {
-    // setup cache checkpointing
-    const lastItem = this._accessedStorage.pop()
-    if (lastItem) {
-      this._accessedStorageReverted.push(lastItem)
+    if (this._common.gteHardfork(Hardfork.Berlin)) {
+      // setup cache checkpointing
+      const lastItem = this._accessedStorage.pop()
+      if (lastItem) {
+        this._accessedStorageReverted.push(lastItem)
+      }
     }
 
     // Revert touched accounts during checkpoint
