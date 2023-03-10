@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, privateToAddress } from '@ethereumjs/util'
+import { Address, concatBytesUnsafe, privateToAddress } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
@@ -28,12 +28,12 @@ tape('EIP 3860 tests', (t) => {
       // Simple test, PUSH <big number> PUSH 0 RETURN
       // It tries to deploy a contract too large, where the code is all zeros
       // (since memory which is not allocated/resized to yet is always defaulted to 0)
-      data: Buffer.concat([
+      data: concatBytesUnsafe(
         hexToBytes(
           '0x7F6000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060005260206000F3'
         ),
-        buffer,
-      ]),
+        buffer
+      ),
     }
     const result = await evm.runCall(runCallArgs)
     st.ok(

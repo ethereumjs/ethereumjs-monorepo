@@ -29,7 +29,7 @@ export function precompile08(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  const returnData = bn128.pairing(inputData)
+  const returnData = bn128.pairing(Buffer.from(inputData))
 
   // check ecpairing success or failure by comparing the output length
   if (returnData.length !== 32) {

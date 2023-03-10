@@ -8,7 +8,7 @@ import {
   unpadBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { EVM } from '../src'
@@ -590,7 +590,7 @@ tape('runCall() => use DATAHASH opcode from EIP 4844', async (t) => {
     gasLimit: BigInt(0xffffffffff),
     // calldata -- retrieves the versioned hash at index 0 and returns it from memory
     data: hexToBytes('60004960005260206000F3'),
-    versionedHashes: [utf8ToBytes('ab')],
+    versionedHashes: [hexToBytes('ab')],
   }
   const res = await evm.runCall(runCallArgs)
   t.equal(

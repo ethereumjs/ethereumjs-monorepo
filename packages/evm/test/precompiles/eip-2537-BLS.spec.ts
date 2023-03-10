@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, bytesToHex } from '@ethereumjs/util'
+import { Address, bytesToPrefixedHexString } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
@@ -115,7 +115,7 @@ tape('EIP-2537 BLS tests', (t) => {
 
     st.deepEqual(
       testVectorResult,
-      bytesToHex(result.returnValue),
+      bytesToPrefixedHexString(result.returnValue),
       'return value should match testVectorResult'
     )
     st.end()

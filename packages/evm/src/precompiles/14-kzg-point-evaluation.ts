@@ -1,5 +1,11 @@
 import { computeVersionedHash, kzg } from '@ethereumjs/tx'
-import { bigIntToBytes, bytesToBigInt, bytesToHex, setLengthLeft } from '@ethereumjs/util'
+import {
+  bigIntToBytes,
+  bytesToBigInt,
+  bytesToHex,
+  concatBytesUnsafe,
+  setLengthLeft,
+} from '@ethereumjs/util'
 
 import { EvmErrorResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
@@ -59,14 +65,14 @@ export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
 
   if (opts._debug) {
     opts._debug(
-      `KZG_POINT_EVALUATION (0x14) return fieldElements=${fieldElements.toString(
-        'hex'
-      )} modulus=${modulus.toString('hex')}`
+      `KZG_POINT_EVALUATION (0x14) return fieldElements=${bytesToHex(
+        fieldElementsBuffer
+      )} modulus=${bytesToHex(modulusBuffer)}`
     )
   }
 
   return {
     executionGasUsed: gasUsed,
-    returnValue: Buffer.concat([fieldElements, modulus]),
+    returnValue: concatBytesUnsafe(fieldElementsBuffer, modulusBuffer),
   }
 }

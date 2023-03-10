@@ -1,5 +1,5 @@
 import { bytesToBigInt, concatBytesUnsafe, padToEven } from '@ethereumjs/util'
-import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, concatBytes, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { ERROR, EvmError } from '../../exceptions'
 
@@ -197,7 +197,7 @@ function BLS12_381_FromG1Point(input: any): Uint8Array {
   const xBuffer = concatBytesUnsafe(new Uint8Array(64 - xval.length / 2), hexToBytes(xval))
   const yBuffer = concatBytesUnsafe(new Uint8Array(64 - yval.length / 2), hexToBytes(yval))
 
-  return Buffer.concat([xBuffer, yBuffer])
+  return concatBytesUnsafe(xBuffer, yBuffer)
 }
 
 // convert an input Buffer to a mcl G2 point
@@ -273,7 +273,7 @@ function BLS12_381_FromG2Point(input: any): Uint8Array {
   const yBuffer1 = concatBytesUnsafe(new Uint8Array(64 - y_1.length / 2), hexToBytes(y_1))
   const yBuffer2 = concatBytesUnsafe(new Uint8Array(64 - y_2.length / 2), hexToBytes(y_2))
 
-  return Buffer.concat([xBuffer1, xBuffer2, yBuffer1, yBuffer2])
+  return concatBytesUnsafe(xBuffer1, xBuffer2, yBuffer1, yBuffer2)
 }
 
 // input: a 32-byte hex scalar Buffer

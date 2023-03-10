@@ -12,7 +12,7 @@ import type { PrecompileInput } from '../src/precompiles'
 const sender = new Address(hexToBytes('44'.repeat(20)))
 const newPrecompile = new Address(hexToBytes('ff'.repeat(20)))
 const shaAddress = new Address(hexToBytes('0000000000000000000000000000000000000002'))
-const expectedReturn = hexToBytes('1337')
+const expectedReturn = utf8ToBytes('1337')
 const expectedGas = BigInt(10)
 
 function customPrecompile(_input: PrecompileInput): ExecResult {
@@ -36,9 +36,10 @@ tape('EVM -> custom precompiles', (t) => {
     const result = await EVMOverride.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
-      data: hexToBytes(''),
+      data: utf8ToBytes(''),
       caller: sender,
     })
+
     st.deepEquals(result.execResult.returnValue, expectedReturn, 'return value is correct')
     st.equals(result.execResult.executionGasUsed, expectedGas, 'gas used is correct')
   })

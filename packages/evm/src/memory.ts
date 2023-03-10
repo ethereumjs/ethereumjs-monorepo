@@ -57,7 +57,7 @@ export class Memory {
     if (value.length !== size) throw new Error('Invalid value size')
     if (offset + size > this._store.length) throw new Error('Value exceeds memory capacity')
 
-    new Uint8Array(this._store, offset)
+    this._store.set(value, offset)
   }
 
   /**

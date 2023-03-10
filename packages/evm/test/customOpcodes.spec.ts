@@ -1,4 +1,4 @@
-import { equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { EVM } from '../src/evm'
@@ -89,7 +89,7 @@ tape('VM: custom opcodes', (t) => {
       code: hexToBytes('60046001016000526001601FF3'),
       gasLimit: BigInt(gas),
     })
-    st.ok(equalsBytes(result.returnValue, utf8ToBytes('05')))
+    st.ok(equalsBytes(result.returnValue, hexToBytes('05')))
   })
 
   t.test('should override opcodes in the EVM', async (st) => {

@@ -25,7 +25,9 @@ export function precompile07(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  const returnData = bn128.mul(inputData)
+  // TODO - fix precompile inputs
+  const returnData = bn128.mul(Buffer.from(inputData))
+
   // check ecmul success or failure by comparing the output length
   if (returnData.length !== 64) {
     if (opts._debug) {

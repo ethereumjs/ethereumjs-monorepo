@@ -1,6 +1,6 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { computeVersionedHash, initKZG } from '@ethereumjs/tx'
-import { bigIntToBytes, bytesToBigInt, unpadBytes } from '@ethereumjs/util'
+import { bigIntToBytes, bytesToBigInt, concatBytesUnsafe, unpadBytes } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
@@ -37,13 +37,13 @@ tape('Precompiles: point evaluation', async (t) => {
   const versionedHash = computeVersionedHash(testCase.Commitment, 1)
 
   const opts: PrecompileInput = {
-    data: Buffer.concat([
+    data: concatBytesUnsafe(
       versionedHash,
       testCase.InputPoint,
       testCase.ClaimedValue,
       testCase.Commitment,
-      testCase.Proof,
-    ]),
+      testCase.Proof
+    ),
     gasLimit: 0xfffffffffn,
     _EVM: evm,
     _common: common,
@@ -57,13 +57,13 @@ tape('Precompiles: point evaluation', async (t) => {
   )
 
   const optsWithBigNumbers: PrecompileInput = {
-    data: Buffer.concat([
+    data: concatBytesUnsafe(
       versionedHash,
       testCase.InputPoint,
       bigIntToBytes(BLS_MODULUS + 5n),
       testCase.Commitment,
-      testCase.Proof,
-    ]),
+      testCase.Proof
+    ),
     gasLimit: 0xfffffffffn,
     _EVM: evm,
     _common: common,
@@ -77,13 +77,13 @@ tape('Precompiles: point evaluation', async (t) => {
   )
 
   const optsWithInvalidCommitment: PrecompileInput = {
-    data: Buffer.concat([
-      Buffer.concat([Uint8Array.from([0]), versionedHash.slice(1)]),
+    data: concatBytesUnsafe(
+      concatBytesUnsafe(Uint8Array.from([0]), versionedHash.slice(1)),
       testCase.InputPoint,
       testCase.ClaimedValue,
       testCase.Commitment,
-      testCase.Proof,
-    ]),
+      testCase.Proof
+    ),
     gasLimit: 0xfffffffffn,
     _EVM: evm,
     _common: common,
