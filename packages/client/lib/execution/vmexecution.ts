@@ -6,7 +6,7 @@ import {
 } from '@ethereumjs/blockchain/dist/db/helpers'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Trie } from '@ethereumjs/trie'
+import { PersistentCheckpointDB, Trie } from '@ethereumjs/trie'
 import { Lock, bufferToHex } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
@@ -41,8 +41,9 @@ export class VMExecution extends Execution {
     super(options)
 
     if (this.config.vm === undefined) {
+      const db = new LevelDB(this.stateDB)
       const trie = new Trie({
-        db: new LevelDB(this.stateDB),
+        db: new PersistentCheckpointDB(db),
         useKeyHashing: true,
       })
 

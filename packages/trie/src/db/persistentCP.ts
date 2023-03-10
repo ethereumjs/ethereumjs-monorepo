@@ -1,4 +1,4 @@
-import type { BatchDBOp, Checkpoint, DB } from '../types'
+import type { BatchDBOp, DB } from '../types'
 
 /**
  * Checkpointing Mechanism where node put operations
@@ -28,7 +28,8 @@ import type { BatchDBOp, Checkpoint, DB } from '../types'
  * option.
  */
 export class PersistentCheckpointDB implements DB {
-  public checkpoints: Checkpoint[]
+  // Buffer array with roots for revert
+  public checkpoints: Buffer[]
   public db: DB
 
   /**
@@ -44,15 +45,8 @@ export class PersistentCheckpointDB implements DB {
    * Flush the checkpoints and use the given checkpoints instead.
    * @param {Checkpoint[]} checkpoints
    */
-  setCheckpoints(checkpoints: Checkpoint[]) {
-    this.checkpoints = []
-
-    for (let i = 0; i < checkpoints.length; i++) {
-      this.checkpoints.push({
-        root: checkpoints[i].root,
-        keyValueMap: new Map(checkpoints[i].keyValueMap),
-      })
-    }
+  setCheckpoints(checkpoints: Buffer[]) {
+    this.checkpoints = checkpoints
   }
 
   /**
@@ -67,69 +61,28 @@ export class PersistentCheckpointDB implements DB {
    * @param root
    */
   checkpoint(root: Buffer) {
-    this.checkpoints.push({ keyValueMap: new Map<string, Buffer>(), root })
+    this.checkpoints.push(root)
   }
 
   /**
    * Commits the latest checkpoint
    */
   async commit() {
-    const { keyValueMap } = this.checkpoints.pop()!
-    if (!this.hasCheckpoints()) {
-      // This was the final checkpoint, we should now commit and flush everything to disk
-      const batchOp: BatchDBOp[] = []
-      for (const [key, value] of keyValueMap.entries()) {
-        if (value === null) {
-          batchOp.push({
-            type: 'del',
-            key: Buffer.from(key, 'binary'),
-          })
-        } else {
-          batchOp.push({
-            type: 'put',
-            key: Buffer.from(key, 'binary'),
-            value,
-          })
-        }
-      }
-      await this.batch(batchOp)
-    } else {
-      // dump everything into the current (higher level) cache
-      const currentKeyValueMap = this.checkpoints[this.checkpoints.length - 1].keyValueMap
-      for (const [key, value] of keyValueMap.entries()) {
-        currentKeyValueMap.set(key, value)
-      }
-    }
+    this.checkpoints.pop()!
   }
 
   /**
    * Reverts the latest checkpoint
    */
   async revert() {
-    const { root } = this.checkpoints.pop()!
-    return root
+    return this.checkpoints.pop()!
   }
 
   /**
    * @inheritDoc
    */
   async get(key: Buffer): Promise<Buffer | null> {
-    // Lookup the value in our cache. We return the latest checkpointed value (which should be the value on disk)
-    for (let index = this.checkpoints.length - 1; index >= 0; index--) {
-      const value = this.checkpoints[index].keyValueMap.get(key.toString('binary'))
-      if (value !== undefined) {
-        return value
-      }
-    }
-    // Nothing has been found in cache, look up from disk
-
-    const value = await this.db.get(key)
-    if (this.hasCheckpoints()) {
-      // Since we are a checkpoint, put this value in cache, so future `get` calls will not look the key up again from disk.
-      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), value)
-    }
-
-    return value
+    return this.db.get(key)
   }
 
   /**
@@ -137,11 +90,9 @@ export class PersistentCheckpointDB implements DB {
    */
   async put(key: Buffer, val: Buffer): Promise<void> {
     if (this.hasCheckpoints()) {
-      // put value in cache
-      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), val)
-    } else {
-      await this.db.put(key, val)
+      // TODO: Store key for eventual revert
     }
+    await this.db.put(key, val)
   }
 
   /**
@@ -149,8 +100,7 @@ export class PersistentCheckpointDB implements DB {
    */
   async del(key: Buffer): Promise<void> {
     if (this.hasCheckpoints()) {
-      // delete the value in the current cache
-      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), null)
+      throw new Error(`CP mechanism not compatible with DB deletes`)
     } else {
       // delete the value on disk
       await this.db.del(key)
@@ -166,7 +116,7 @@ export class PersistentCheckpointDB implements DB {
         if (op.type === 'put') {
           await this.put(op.key, op.value)
         } else if (op.type === 'del') {
-          await this.del(op.key)
+          throw new Error(`CP mechanism not compatible with DB deletes`)
         }
       }
     } else {
