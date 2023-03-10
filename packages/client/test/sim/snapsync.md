@@ -15,6 +15,10 @@ EXTERNAL_RUN=true TARGET_PEER=true  DATADIR=/usr/app/ethereumjs/packages/client/
 ```bash
 EXTERNAL_RUN=true SNAP_SYNC=true  DATADIR=/usr/app/ethereumjs/packages/client/data npm run tape -- test/sim/snapsync.spec.ts
 ```
+you may add `DEBUG_SNAP=client:*` to see client fetcher snap sync debug logs i.e.
+```bash
+EXTERNAL_RUN=true SNAP_SYNC=true DEBUG_SNAP=client:* DATADIR=/usr/app/ethereumjs/packages/client/data npm run tape -- test/sim/snapsync.spec.ts
+```
 
 ## Combinations
 
