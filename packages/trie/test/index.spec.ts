@@ -290,7 +290,7 @@ tape('it should create the genesis state root from ethereum', function (tester) 
   })
 })
 
-tape('setting back state root (deleteFromDB)', async (t) => {
+tape('setting back state root (useNodePruning)', async (t) => {
   const k1 = Buffer.from('1')
   /* Testing with longer value due to `rlpNode.length >= 32` check in `_formatNode()`
    * Reasoning from https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/:
@@ -309,7 +309,7 @@ tape('setting back state root (deleteFromDB)', async (t) => {
   const trieSetup = {
     trie: new Trie(),
     expected: v1,
-    msg: 'should return v1 when setting back the state root when deleteFromDB=false',
+    msg: 'should return v1 when setting back the state root when useNodePruning=false',
   }
 
   await trieSetup.trie.put(k1, v1)
@@ -318,7 +318,7 @@ tape('setting back state root (deleteFromDB)', async (t) => {
   t.equal(
     await trieSetup.trie.get(k1),
     null,
-    'should return null on latest state root independently from deleteFromDB setting'
+    'should return null on latest state root independently from useNodePruning setting'
   )
 
   trieSetup.trie.root(rootAfterK1)

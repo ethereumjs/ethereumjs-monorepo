@@ -156,7 +156,7 @@ export class Trie {
 
   /**
    * Stores a given `value` at the given `key` or do a delete if `value` is empty
-   * (delete operations are only executed on DB with `deleteFromDB` set to `true`)
+   * (delete operations are only executed on DB with `useNodePruning` set to `true`)
    * @param key
    * @param value
    * @returns A Promise that resolves once value is stored.
@@ -211,7 +211,7 @@ export class Trie {
 
   /**
    * Deletes a value given a `key` from the trie
-   * (delete operations are only executed on DB with `deleteFromDB` set to `true`)
+   * (delete operations are only executed on DB with `useNodePruning` set to `true`)
    * @param key
    * @returns A Promise that resolves once value is deleted.
    */
@@ -682,7 +682,7 @@ export class Trie {
 
   /**
    * The given hash of operations (key additions or deletions) are executed on the trie
-   * (delete operations are only executed on DB with `deleteFromDB` set to `true`)
+   * (delete operations are only executed on DB with `useNodePruning` set to `true`)
    * @example
    * const ops = [
    *    { type: 'del', key: Buffer.from('father') }

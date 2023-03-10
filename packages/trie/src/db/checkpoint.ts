@@ -1,8 +1,16 @@
 import type { BatchDBOp, Checkpoint, DB } from '../types'
 
 /**
- * DB is a thin wrapper around the underlying levelup db,
- * which validates inputs and sets encoding type.
+ * Default Trie Checkpointing Mechanism where a new
+ * in-memory JavaScript Map is created for each new
+ * checkpoint.
+ *
+ * This mechanism has limits when a lot of checkpoints with a
+ * substantial amount of keys are created subsequently
+ * and not yet committed to DB or reverted.
+ *
+ * Mechanism works well with key deletion using the Trie
+ * `useNodePruning` option.
  */
 export class CheckpointDB implements DB {
   public checkpoints: Checkpoint[]
