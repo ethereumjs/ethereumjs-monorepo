@@ -304,7 +304,7 @@ export class Block {
    * Returns a Uint8Array Array of the raw Bytes of this block, in order.
    */
   raw(): BlockBytes {
-    const bufferArray = <BlockBytes>[
+    const bytesArray = <BlockBytes>[
       this.header.raw(),
       this.transactions.map((tx) =>
         tx.supports(Capability.EIP2718TypedTransaction) ? tx.serialize() : tx.raw()
@@ -313,9 +313,9 @@ export class Block {
     ]
     const withdrawalsRaw = this.withdrawals?.map((wt) => wt.raw())
     if (withdrawalsRaw) {
-      bufferArray.push(withdrawalsRaw)
+      bytesArray.push(withdrawalsRaw)
     }
-    return bufferArray
+    return bytesArray
   }
 
   /**

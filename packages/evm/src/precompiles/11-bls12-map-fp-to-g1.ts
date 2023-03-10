@@ -1,4 +1,5 @@
 import { short } from '@ethereumjs/util'
+import { equalsBytes } from 'ethereum-cryptography/utils'
 
 import { EvmErrorResult, OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
@@ -38,8 +39,8 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   // check if some parts of input are zero bytes.
-  const zeroBytes16 = new Uint8Array(16, 0)
-  if (!opts.data.slice(0, 16).equals(zeroBytes16)) {
+  const zeroBytes16 = new Uint8Array(16)
+  if (!equalsBytes(opts.data.slice(0, 16), zeroBytes16)) {
     if (opts._debug) {
       opts._debug(`BLS12MAPFPTOG1 (0x11) failed: Point not on curve`)
     }

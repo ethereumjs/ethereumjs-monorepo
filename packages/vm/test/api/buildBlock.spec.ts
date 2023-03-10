@@ -2,7 +2,8 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
-import { Account, Address } from '@ethereumjs/util'
+import { Account, Address, concatBytesUnsafe } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../src/vm'
@@ -50,9 +51,9 @@ tape('BlockBuilder', async (t) => {
     }
     const result = await vmCopy.runBlock({ block })
     st.equal(result.gasUsed, block.header.gasUsed)
-    st.ok(result.receiptsRoot.equals(block.header.receiptTrie))
-    st.ok(result.stateRoot.equals(block.header.stateRoot))
-    st.ok(result.logsBloom.equals(block.header.logsBloom))
+    st.deepEquals(result.receiptsRoot, block.header.receiptTrie)
+    st.deepEquals(result.stateRoot, block.header.stateRoot)
+    st.deepEquals(result.logsBloom, block.header.logsBloom)
     st.end()
   })
 
@@ -117,32 +118,28 @@ tape('BlockBuilder', async (t) => {
     }
     const block = await blockBuilder.build(sealOpts)
 
-    st.ok(block.header.mixHash.equals(sealOpts.mixHash))
-    st.ok(block.header.nonce.equals(sealOpts.nonce))
+    st.deepEquals(block.header.mixHash, sealOpts.mixHash)
+    st.deepEquals(block.header.nonce, sealOpts.nonce)
     st.doesNotThrow(async () => vm.blockchain.consensus.validateDifficulty(block.header))
     st.end()
   })
 
   t.test('should correctly seal a PoA block', async (st) => {
     const signer = {
-      address: new Address(hexToBytes('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
-      privateKey: Buffer.from(
-        '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
-        'hex'
-      ),
-      publicKey: Buffer.from(
-        '40b2ebdf4b53206d2d3d3d59e7e2f13b1ea68305aec71d5d24cefe7f24ecae886d241f9267f04702d7f693655eb7b4aa23f30dcd0c3c5f2b970aad7c8a828195',
-        'hex'
+      address: new Address(hexToBytes('0b90087d864e82a284dca15923f3776de6bb016f')),
+      privateKey: hexToBytes('64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
+      publicKey: hexToBytes(
+        '40b2ebdf4b53206d2d3d3d59e7e2f13b1ea68305aec71d5d24cefe7f24ecae886d241f9267f04702d7f693655eb7b4aa23f30dcd0c3c5f2b970aad7c8a828195'
       ),
     }
 
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Istanbul })
     // extraData: [vanity, activeSigner, seal]
-    const extraData = Buffer.concat([
+    const extraData = concatBytesUnsafe(
       new Uint8Array(32),
       signer.address.toBytes(),
-      new Uint8Array(65),
-    ])
+      new Uint8Array(65)
+    )
     const cliqueSigner = signer.privateKey
     const genesisBlock = Block.fromBlockData(
       { header: { gasLimit: 50000, extraData } },
@@ -171,8 +168,9 @@ tape('BlockBuilder', async (t) => {
     const block = await blockBuilder.build()
 
     st.ok(block.header.cliqueVerifySignature([signer.address]), 'should verify signature')
-    st.ok(
-      block.header.cliqueSigner().equals(signer.address),
+    st.deepEquals(
+      block.header.cliqueSigner(),
+      signer.address,
       'should recover the correct signer address'
     )
     st.end()
@@ -250,9 +248,9 @@ tape('BlockBuilder', async (t) => {
     // block should successfully execute with VM.runBlock and have same outputs
     const result = await vmCopy.runBlock({ block })
     st.equal(result.gasUsed, block.header.gasUsed)
-    st.ok(result.receiptsRoot.equals(block.header.receiptTrie))
-    st.ok(result.stateRoot.equals(block.header.stateRoot))
-    st.ok(result.logsBloom.equals(block.header.logsBloom))
+    st.deepEquals(result.receiptsRoot, block.header.receiptTrie)
+    st.deepEquals(result.stateRoot, block.header.stateRoot)
+    st.deepEquals(result.logsBloom, block.header.logsBloom)
     st.end()
   })
 
@@ -346,9 +344,9 @@ tape('BlockBuilder', async (t) => {
     }
     const result = await vmCopy.runBlock({ block })
     st.equal(result.gasUsed, block.header.gasUsed)
-    st.ok(result.receiptsRoot.equals(block.header.receiptTrie))
-    st.ok(result.stateRoot.equals(block.header.stateRoot))
-    st.ok(result.logsBloom.equals(block.header.logsBloom))
+    st.deepEquals(result.receiptsRoot, block.header.receiptTrie)
+    st.deepEquals(result.stateRoot, block.header.stateRoot)
+    st.deepEquals(result.logsBloom, block.header.logsBloom)
     st.end()
   })
 })

@@ -181,7 +181,7 @@ export function precompile09(opts: PrecompileInput): ExecResult {
     }
   }
 
-  const rounds = data.slice(0, 4).readUInt32BE(0)
+  const rounds = new DataView(data.slice(0, 4).buffer).getUint32(0)
   const hRaw = data.slice(4, 68)
   const mRaw = data.slice(68, 196)
   const tRaw = data.slice(196, 212)
@@ -207,24 +207,25 @@ export function precompile09(opts: PrecompileInput): ExecResult {
 
   const h = new Uint32Array(16)
   for (let i = 0; i < 16; i++) {
-    h[i] = hRaw.readUInt32LE(i * 4)
+    h[i] = new DataView(hRaw.buffer).getUint32(i * 4, true)
   }
 
   const m = new Uint32Array(32)
   for (let i = 0; i < 32; i++) {
-    m[i] = mRaw.readUInt32LE(i * 4)
+    m[i] = new DataView(mRaw.buffer).getUint32(i * 4, true)
   }
 
   const t = new Uint32Array(4)
   for (let i = 0; i < 4; i++) {
-    t[i] = tRaw.readUInt32LE(i * 4)
+    t[i] = new DataView(tRaw.buffer).getUint32(i * 4, true)
   }
 
   F(h, m, t, f, rounds)
 
   const output = new Uint8Array(64)
+  const outputView = new DataView(output.buffer)
   for (let i = 0; i < 16; i++) {
-    output.writeUInt32LE(h[i], i * 4)
+    outputView.setUint32(i * 4, h[i], true)
   }
 
   if (opts._debug) {

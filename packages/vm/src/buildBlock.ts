@@ -118,7 +118,7 @@ export class BlockBuilder {
     for (const [i, txResult] of this.transactionResults.entries()) {
       const tx = this.transactions[i]
       const encodedReceipt = encodeReceipt(txResult.receipt, tx.type)
-      await receiptTrie.put(RLP.encode(i)), encodedReceipt)
+      await receiptTrie.put(RLP.encode(i), encodedReceipt)
     }
     return receiptTrie.root()
   }
@@ -192,7 +192,9 @@ export class BlockBuilder {
         throw new Error('block data gas limit reached')
       }
 
-      const parentHeader = await this.vm.blockchain.getBlock(this.headerData.parentHash! as Buffer)
+      const parentHeader = await this.vm.blockchain.getBlock(
+        this.headerData.parentHash! as Uint8Array
+      )
       excessDataGas = calcExcessDataGas(
         parentHeader!.header,
         (tx as BlobEIP4844Transaction).blobs?.length ?? 0
@@ -273,7 +275,7 @@ export class BlockBuilder {
       if (this.headerData.parentHash !== undefined) {
         parentHeader = await this.vm.blockchain.getBlock(toBytes(this.headerData.parentHash))
       }
-      if (parentHeader !== null && parentHeader.header._common.isActivatedEIP(4844)) {
+      if (parentHeader !== null && parentHeader.header._common.isActivatedEIP(4844) === true) {
         // Compute total number of blobs in block
         const blobTxns = this.transactions.filter((tx) => tx instanceof BlobEIP4844Transaction)
         let newBlobs = 0

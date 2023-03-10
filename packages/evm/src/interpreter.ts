@@ -1,5 +1,5 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
-import { MAX_UINT64, bigIntToHex, bytesToBigInt, intToHex } from '@ethereumjs/util'
+import { MAX_UINT64, bigIntToHex, bytesToBigInt, bytesToHex, intToHex } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { EOF } from './eof'
@@ -26,19 +26,19 @@ export interface InterpreterOpts {
  */
 export interface RunResult {
   logs: Log[]
-  returnValue?: Buffer
+  returnValue?: Uint8Array
   /**
    * A map from the accounts that have self-destructed to the addresses to send their funds to
    */
-  selfdestruct: { [k: string]: Buffer }
+  selfdestruct: { [k: string]: Uint8Array }
 }
 
 export interface Env {
   address: Address
   caller: Address
-  callData: Buffer
+  callData: Uint8Array
   callValue: bigint
-  code: Buffer
+  code: Uint8Array
   isStatic: boolean
   depth: number
   gasPrice: bigint
@@ -47,8 +47,8 @@ export interface Env {
   contract: Account
   codeAddress: Address /* Different than address for DELEGATECALL and CALLCODE */
   gasRefund: bigint /* Current value (at begin of the frame) of the gas refund */
-  containerCode?: Buffer /** Full container code for EOF1 contracts */
-  versionedHashes: Buffer[] /** Versioned hashes for blob transactions */
+  containerCode?: Uint8Array /** Full container code for EOF1 contracts */
+  versionedHashes: Uint8Array[] /** Versioned hashes for blob transactions */
 }
 
 export interface RunState {
@@ -59,7 +59,7 @@ export interface RunState {
   highestMemCost: bigint
   stack: Stack
   returnStack: Stack
-  code: Buffer
+  code: Uint8Array
   shouldDoJumpAnalysis: boolean
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
   eei: EEIInterface
@@ -69,7 +69,7 @@ export interface RunState {
   gasRefund: bigint // Tracks the current refund
   gasLeft: bigint // Current gas left
   auth?: Address /** EIP-3074 AUTH parameter */
-  returnBuffer: Buffer /* Current bytes in the return buffer. Cleared each time a CALL/CREATE is made in the current frame. */
+  returnBytes: Uint8Array /* Current bytes in the return Uint8Array. Cleared each time a CALL/CREATE is made in the current frame. */
 }
 
 export interface InterpreterResult {
@@ -93,7 +93,7 @@ export interface InterpreterStep {
   }
   account: Account
   address: Address
-  memory: Buffer
+  memory: Uint8Array
   memoryWordCount: bigint
   codeAddress: Address
 }
@@ -139,7 +139,7 @@ export class Interpreter {
       interpreter: this,
       gasRefund: env.gasRefund,
       gasLeft,
-      returnBuffer: new Uint8Array(0),
+      returnBytes: new Uint8Array(0),
     }
     this._env = env
     this._result = {
@@ -149,7 +149,7 @@ export class Interpreter {
     }
   }
 
-  async run(code: Buffer, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
+  async run(code: Uint8Array, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
     if (!this._common.isActivatedEIP(3540) || code[0] !== EOF.FORMAT) {
       // EIP-3540 isn't active and first byte is not 0xEF - treat as legacy bytecode
       this._runState.code = code
@@ -349,12 +349,12 @@ export class Interpreter {
      * @property {BigInt} gasLeft amount of gasLeft
      * @property {BigInt} gasRefund gas refund
      * @property {StateManager} stateManager a {@link StateManager} instance
-     * @property {Array} stack an `Array` of `Buffers` containing the stack
+     * @property {Array} stack an `Array` of `Uint8Arrays` containing the stack
      * @property {Array} returnStack the return stack
      * @property {Account} account the Account which owns the code running
      * @property {Address} address the address of the `account`
      * @property {Number} depth the current number of calls deep the contract is
-     * @property {Buffer} memory the memory of the EVM as a `buffer`
+     * @property {Uint8Array} memory the memory of the EVM as a `Uint8Array`
      * @property {BigInt} memoryWordCount current size of memory in words
      * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
      */
@@ -362,7 +362,7 @@ export class Interpreter {
   }
 
   // Returns all valid jump and jumpsub destinations.
-  _getValidJumpDests(code: Buffer) {
+  _getValidJumpDests(code: Uint8Array) {
     const jumps = new Uint8Array(code.length).fill(0)
 
     for (let i = 0; i < code.length; i++) {
@@ -471,7 +471,7 @@ export class Interpreter {
   /**
    * Store 256-bit a value in memory to persistent storage.
    */
-  async storageStore(key: Buffer, value: Buffer): Promise<void> {
+  async storageStore(key: Uint8Array, value: Uint8Array): Promise<void> {
     await this._eei.storageStore(this._env.address, key, value)
     const account = await this._eei.getAccount(this._env.address)
     this._env.contract = account
@@ -482,7 +482,7 @@ export class Interpreter {
    * @param key - Storage key
    * @param original - If true, return the original storage value (default: false)
    */
-  async storageLoad(key: Buffer, original = false): Promise<Buffer> {
+  async storageLoad(key: Uint8Array, original = false): Promise<Uint8Array> {
     return this._eei.storageLoad(this._env.address, key, original)
   }
 
@@ -492,7 +492,7 @@ export class Interpreter {
    * @param key Storage key
    * @param value Storage value
    */
-  transientStorageStore(key: Buffer, value: Buffer): void {
+  transientStorageStore(key: Uint8Array, value: Uint8Array): void {
     return this._evm._transientStorage.put(this._env.address, key, value)
   }
 
@@ -501,7 +501,7 @@ export class Interpreter {
    * @param address Address to use
    * @param key Storage key
    */
-  transientStorageLoad(key: Buffer): Buffer {
+  transientStorageLoad(key: Uint8Array): Uint8Array {
     return this._evm._transientStorage.get(this._env.address, key)
   }
 
@@ -509,7 +509,7 @@ export class Interpreter {
    * Set the returning output data for the execution.
    * @param returnData - Output data to return
    */
-  finish(returnData: Buffer): void {
+  finish(returnData: Uint8Array): void {
     this._result.returnValue = returnData
     trap(ERROR.STOP)
   }
@@ -519,7 +519,7 @@ export class Interpreter {
    * execution immediately and set the execution result to "reverted".
    * @param returnData - Output data to return
    */
-  revert(returnData: Buffer): void {
+  revert(returnData: Uint8Array): void {
     this._result.returnValue = returnData
     trap(ERROR.REVERT)
   }
@@ -550,7 +550,7 @@ export class Interpreter {
    * Returns input data in current environment. This pertains to the input
    * data passed with the message call instruction or transaction.
    */
-  getCallData(): Buffer {
+  getCallData(): Uint8Array {
     return this._env.callData
   }
 
@@ -567,7 +567,7 @@ export class Interpreter {
    * that is directly responsible for this execution.
    */
   getCaller(): bigint {
-    return bytesToBigInt(this._env.caller.buf)
+    return bytesToBigInt(this._env.caller.bytes)
   }
 
   /**
@@ -580,7 +580,7 @@ export class Interpreter {
   /**
    * Returns the code running in current environment.
    */
-  getCode(): Buffer {
+  getCode(): Uint8Array {
     return this._env.containerCode ?? this._env.code
   }
 
@@ -597,7 +597,7 @@ export class Interpreter {
    * Note: create only fills the return data buffer in case of a failure.
    */
   getReturnDataSize(): bigint {
-    return BigInt(this._runState.returnBuffer.length)
+    return BigInt(this._runState.returnBytes.length)
   }
 
   /**
@@ -605,8 +605,8 @@ export class Interpreter {
    * from last executed call, callCode, callDelegate, callStatic or create.
    * Note: create only fills the return data buffer in case of a failure.
    */
-  getReturnData(): Buffer {
-    return this._runState.returnBuffer
+  getReturnData(): Uint8Array {
+    return this._runState.returnBytes
   }
 
   /**
@@ -629,7 +629,7 @@ export class Interpreter {
    * non-empty associated code.
    */
   getTxOrigin(): bigint {
-    return bytesToBigInt(this._env.origin.buf)
+    return bytesToBigInt(this._env.origin.bytes)
   }
 
   /**
@@ -703,7 +703,7 @@ export class Interpreter {
   /**
    * Sends a message with arbitrary data to a given address path.
    */
-  async call(gasLimit: bigint, address: Address, value: bigint, data: Buffer): Promise<bigint> {
+  async call(gasLimit: bigint, address: Address, value: bigint, data: Uint8Array): Promise<bigint> {
     const msg = new Message({
       caller: this._env.address,
       gasLimit,
@@ -720,7 +720,12 @@ export class Interpreter {
   /**
    * Sends a message with arbitrary data to a given address path.
    */
-  async authcall(gasLimit: bigint, address: Address, value: bigint, data: Buffer): Promise<bigint> {
+  async authcall(
+    gasLimit: bigint,
+    address: Address,
+    value: bigint,
+    data: Uint8Array
+  ): Promise<bigint> {
     const msg = new Message({
       caller: this._runState.auth,
       gasLimit,
@@ -738,7 +743,12 @@ export class Interpreter {
   /**
    * Message-call into this account with an alternative account's code.
    */
-  async callCode(gasLimit: bigint, address: Address, value: bigint, data: Buffer): Promise<bigint> {
+  async callCode(
+    gasLimit: bigint,
+    address: Address,
+    value: bigint,
+    data: Uint8Array
+  ): Promise<bigint> {
     const msg = new Message({
       caller: this._env.address,
       gasLimit,
@@ -762,7 +772,7 @@ export class Interpreter {
     gasLimit: bigint,
     address: Address,
     value: bigint,
-    data: Buffer
+    data: Uint8Array
   ): Promise<bigint> {
     const msg = new Message({
       caller: this._env.address,
@@ -785,7 +795,7 @@ export class Interpreter {
     gasLimit: bigint,
     address: Address,
     value: bigint,
-    data: Buffer
+    data: Uint8Array
   ): Promise<bigint> {
     const msg = new Message({
       caller: this._env.caller,
@@ -807,8 +817,8 @@ export class Interpreter {
     msg.selfdestruct = selfdestruct
     msg.gasRefund = this._runState.gasRefund
 
-    // empty the return data buffer
-    this._runState.returnBuffer = new Uint8Array(0)
+    // empty the return data Uint8Array
+    this._runState.returnBytes = new Uint8Array(0)
 
     // Check if account has enough ether and max depth not exceeded
     if (
@@ -833,7 +843,7 @@ export class Interpreter {
       (!results.execResult.exceptionError ||
         results.execResult.exceptionError.error === ERROR.REVERT)
     ) {
-      this._runState.returnBuffer = results.execResult.returnValue
+      this._runState.returnBytes = results.execResult.returnValue
     }
 
     if (!results.execResult.exceptionError) {
@@ -850,13 +860,18 @@ export class Interpreter {
   /**
    * Creates a new contract with a given value.
    */
-  async create(gasLimit: bigint, value: bigint, data: Buffer, salt?: Buffer): Promise<bigint> {
+  async create(
+    gasLimit: bigint,
+    value: bigint,
+    data: Uint8Array,
+    salt?: Uint8Array
+  ): Promise<bigint> {
     const selfdestruct = { ...this._result.selfdestruct }
     const caller = this._env.address
     const depth = this._env.depth + 1
 
     // empty the return data buffer
-    this._runState.returnBuffer = new Uint8Array(0)
+    this._runState.returnBytes = new Uint8Array(0)
 
     // Check if account has enough ether and max depth not exceeded
     if (
@@ -908,7 +923,7 @@ export class Interpreter {
       results.execResult.exceptionError &&
       results.execResult.exceptionError.error === ERROR.REVERT
     ) {
-      this._runState.returnBuffer = results.execResult.returnValue
+      this._runState.returnBytes = results.execResult.returnValue
     }
 
     if (
@@ -922,7 +937,7 @@ export class Interpreter {
       this._runState.gasRefund = results.execResult.gasRefund ?? BigInt(0)
       if (results.createdAddress) {
         // push the created address to the stack
-        return bytesToBigInt(results.createdAddress.buf)
+        return bytesToBigInt(results.createdAddress.bytes)
       }
     }
 
@@ -933,7 +948,12 @@ export class Interpreter {
    * Creates a new contract with a given value. Generates
    * a deterministic address via CREATE2 rules.
    */
-  async create2(gasLimit: bigint, value: bigint, data: Buffer, salt: Buffer): Promise<bigint> {
+  async create2(
+    gasLimit: bigint,
+    value: bigint,
+    data: Uint8Array,
+    salt: Uint8Array
+  ): Promise<bigint> {
     return this.create(gasLimit, value, data, salt)
   }
 
@@ -949,11 +969,11 @@ export class Interpreter {
 
   async _selfDestruct(toAddress: Address): Promise<void> {
     // only add to refund if this is the first selfdestruct for the address
-    if (this._result.selfdestruct[this._env.address.buf.toString('hex')] === undefined) {
+    if (this._result.selfdestruct[bytesToHex(this._env.address.bytes)] === undefined) {
       this.refundGas(this._common.param('gasPrices', 'selfdestructRefund'))
     }
 
-    this._result.selfdestruct[this._env.address.buf.toString('hex')] = toAddress.buf
+    this._result.selfdestruct[bytesToHex(this._env.address.bytes)] = toAddress.bytes
 
     // Add to beneficiary balance
     const toAccount = await this._eei.getAccount(toAddress)
@@ -971,7 +991,7 @@ export class Interpreter {
   /**
    * Creates a new log in the current environment.
    */
-  log(data: Buffer, numberOfTopics: number, topics: Buffer[]): void {
+  log(data: Uint8Array, numberOfTopics: number, topics: Uint8Array[]): void {
     if (numberOfTopics < 0 || numberOfTopics > 4) {
       trap(ERROR.OUT_OF_RANGE)
     }
@@ -980,7 +1000,7 @@ export class Interpreter {
       trap(ERROR.INTERNAL_ERROR)
     }
 
-    const log: Log = [this._env.address.buf, topics, data]
+    const log: Log = [this._env.address.bytes, topics, data]
     this._result.logs.push(log)
   }
 

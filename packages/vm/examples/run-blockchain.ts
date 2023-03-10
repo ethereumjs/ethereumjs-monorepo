@@ -6,12 +6,19 @@
 // 4. Puts the blocks from ../utils/blockchain-mock-data "blocks" attribute into the Blockchain
 // 5. Runs the Blockchain on the VM.
 
-import { Account, Address, toBytes, setLengthLeft } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  toBytes,
+  setLengthLeft,
+  bytesToPrefixedHexString,
+} from '@ethereumjs/util'
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Common, ConsensusType } from '@ethereumjs/common'
 import { VM } from '../'
 import { testData } from './helpers/blockchain-mock-data'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 
 async function main() {
   const common = new Common({ chain: 1, hardfork: testData.network.toLowerCase() })
@@ -43,7 +50,7 @@ async function main() {
   const blockchainHead = await vm.blockchain.getIteratorHead!()
 
   console.log('--- Finished processing the Blockchain ---')
-  console.log('New head:', '0x' + blockchainHead.hash().toString('hex'))
+  console.log('New head:', bytesToPrefixedHexString(blockchainHead.hash()))
   console.log('Expected:', testData.lastblockhash)
 }
 
@@ -53,17 +60,17 @@ async function setupPreConditions(vm: VM, data: typeof testData) {
   for (const [addr, acct] of Object.entries(data.pre)) {
     const { nonce, balance, storage, code } = acct
 
-    const address = new Address(hexToBytes(addr.slice(2), 'hex'))
+    const address = new Address(hexToBytes(addr.slice(2)))
     const account = Account.fromAccountData({ nonce, balance })
     await vm.stateManager.putAccount(address, account)
 
     for (const [key, val] of Object.entries(storage)) {
-      const storageKey = setLengthLeft(hexToBytes(key, 'hex'), 32)
-      const storageVal = hexToBytes(val as string, 'hex')
+      const storageKey = setLengthLeft(hexToBytes(key), 32)
+      const storageVal = hexToBytes(val as string)
       await vm.stateManager.putContractStorage(address, storageKey, storageVal)
     }
 
-    const codeBuf = hexToBytes(code.slice(2), 'hex')
+    const codeBuf = hexToBytes(code.slice(2))
     await vm.stateManager.putContractCode(address, codeBuf)
   }
 

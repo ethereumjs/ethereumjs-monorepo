@@ -37,9 +37,7 @@ export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
     return EvmErrorResult(new EvmError(ERROR.POINT_GREATER_THAN_BLS_MODULUS), opts.gasLimit)
   }
 
-  if (
-    bytesToHex(Buffer.from(computeVersionedHash(commitment, version))) !== bytesToHex(versionedHash)
-  ) {
+  if (bytesToHex(computeVersionedHash(commitment, version)) !== bytesToHex(versionedHash)) {
     if (opts._debug) {
       opts._debug(`KZG_POINT_EVALUATION (0x14) failed: INVALID_COMMITMENT`)
     }

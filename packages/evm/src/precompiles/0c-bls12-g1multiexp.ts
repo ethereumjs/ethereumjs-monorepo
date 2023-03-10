@@ -1,4 +1,5 @@
 import { short } from '@ethereumjs/util'
+import { equalsBytes } from 'ethereum-cryptography/utils'
 
 import { EvmErrorResult, OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
@@ -70,7 +71,7 @@ export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
 
   // prepare pairing list and check for mandatory zero bytes
 
-  const zeroBytes16 = new Uint8Array(16, 0)
+  const zeroBytes16 = new Uint8Array(16)
   const zeroByteCheck = [
     [0, 16],
     [64, 80],
@@ -87,7 +88,7 @@ export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
         zeroByteCheck[index][0] + pairStart,
         zeroByteCheck[index][1] + pairStart
       )
-      if (!slicedBuffer.equals(zeroBytes16)) {
+      if (!(equalsBytes(slicedBuffer, zeroBytes16) === true)) {
         if (opts._debug) {
           opts._debug(`BLS12MULTIEXP (0x0c) failed: Point not on curve`)
         }

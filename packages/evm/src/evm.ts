@@ -5,6 +5,8 @@ import {
   KECCAK256_NULL,
   MAX_INTEGER,
   bigIntToBytes,
+  bytesToHex,
+  equalsBytes,
   generateAddress,
   generateAddress2,
   short,
@@ -449,7 +451,7 @@ export class EVM implements EVMInterface {
     // Check for collision
     if (
       (toAccount.nonce && toAccount.nonce > BigInt(0)) ||
-      !toAccount.codeHash.equals(KECCAK256_NULL)
+      !(equalsBytes(toAccount.codeHash, KECCAK256_NULL) === true)
     ) {
       if (this.DEBUG) {
         debug(`Returning on address collision`)
@@ -637,9 +639,9 @@ export class EVM implements EVMInterface {
     const env = {
       address: message.to ?? Address.zero(),
       caller: message.caller ?? Address.zero(),
-      callData: message.data ?? Buffer.from([0]),
+      callData: message.data ?? Uint8Array.from([0]),
       callValue: message.value ?? BigInt(0),
-      code: message.code as Buffer,
+      code: message.code as Uint8Array,
       isStatic: message.isStatic ?? false,
       depth: message.depth ?? 0,
       gasPrice: this._tx!.gasPrice,
@@ -654,10 +656,10 @@ export class EVM implements EVMInterface {
 
     const interpreter = new Interpreter(this, this.eei, env, message.gasLimit)
     if (message.selfdestruct) {
-      interpreter._result.selfdestruct = message.selfdestruct as { [key: string]: Buffer }
+      interpreter._result.selfdestruct = message.selfdestruct as { [key: string]: Uint8Array }
     }
 
-    const interpreterRes = await interpreter.run(message.code as Buffer, opts)
+    const interpreterRes = await interpreter.run(message.code as Uint8Array, opts)
 
     let result = interpreter._result
     let gasUsed = message.gasLimit - interpreterRes.runState!.gasLeft
@@ -750,7 +752,7 @@ export class EVM implements EVMInterface {
 
     if (!message.to && this._common.isActivatedEIP(2929) === true) {
       message.code = message.data
-      this.eei.addWarmedAddress((await this._generateAddress(message)).buf)
+      this.eei.addWarmedAddress((await this._generateAddress(message)).bytes)
     }
 
     await this.eei.checkpoint()
@@ -853,7 +855,7 @@ export class EVM implements EVMInterface {
    * if no such precompile exists.
    */
   getPrecompile(address: Address): PrecompileFunc | undefined {
-    return this.precompiles.get(address.buf.toString('hex'))
+    return this.precompiles.get(bytesToHex(address.bytes))
   }
 
   /**
@@ -861,7 +863,7 @@ export class EVM implements EVMInterface {
    */
   protected runPrecompile(
     code: PrecompileFunc,
-    data: Buffer,
+    data: Uint8Array,
     gasLimit: bigint
   ): Promise<ExecResult> | ExecResult {
     if (typeof code !== 'function') {
@@ -900,11 +902,11 @@ export class EVM implements EVMInterface {
   protected async _generateAddress(message: Message): Promise<Address> {
     let addr
     if (message.salt) {
-      addr = generateAddress2(message.caller.buf, message.salt, message.code as Buffer)
+      addr = generateAddress2(message.caller.bytes, message.salt, message.code as Uint8Array)
     } else {
       const acc = await this.eei.getAccount(message.caller)
       const newNonce = acc.nonce - BigInt(1)
-      addr = generateAddress(message.caller.buf, bigIntToBytes(newNonce))
+      addr = generateAddress(message.caller.bytes, bigIntToBytes(newNonce))
     }
     return new Address(addr)
   }
@@ -995,7 +997,7 @@ export interface ExecResult {
   /**
    * Return value from the contract
    */
-  returnValue: Buffer
+  returnValue: Uint8Array
   /**
    * Array of logs that the contract emitted
    */
@@ -1003,7 +1005,7 @@ export interface ExecResult {
   /**
    * A map from the accounts that have self-destructed to the addresses to send their funds to
    */
-  selfdestruct?: { [k: string]: Buffer }
+  selfdestruct?: { [k: string]: Uint8Array }
   /**
    * The gas refund counter
    */

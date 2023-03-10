@@ -1,4 +1,5 @@
-import { bytesToBigInt, padToEven } from '@ethereumjs/util'
+import { bytesToBigInt, concatBytesUnsafe, padToEven } from '@ethereumjs/util'
+import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { ERROR, EvmError } from '../../exceptions'
 
@@ -141,9 +142,9 @@ export const gasDiscountPairs = [
 // convert an input Buffer to a mcl G1 point
 // this does /NOT/ do any input checks. the input Buffer needs to be of length 128
 // it does raise an error if the point is not on the curve.
-function BLS12_381_ToG1Point(input: Buffer, mcl: any): any {
-  const p_x = input.slice(16, 64).toString('hex')
-  const p_y = input.slice(80, 128).toString('hex')
+function BLS12_381_ToG1Point(input: Uint8Array, mcl: any): any {
+  const p_x = bytesToHex(input.slice(16, 64))
+  const p_y = bytesToHex(input.slice(80, 128))
 
   const ZeroString48Bytes = '0'.repeat(96)
   if (p_x === p_y && p_x === ZeroString48Bytes) {
@@ -178,13 +179,13 @@ function BLS12_381_ToG1Point(input: Buffer, mcl: any): any {
 
 // input: a mcl G1 point
 // output: a 128-byte Buffer
-function BLS12_381_FromG1Point(input: any): Buffer {
+function BLS12_381_FromG1Point(input: any): Uint8Array {
   // TODO: figure out if there is a better way to decode these values.
   const decodeStr = input.getStr(16) //return a string of pattern "1 <x_coord> <y_coord>"
   const decoded = decodeStr.match(/"?[0-9a-f]+"?/g) // match above pattern.
 
   if (decodeStr === '0') {
-    return new Uint8Array(128, 0)
+    return new Uint8Array(128)
   }
 
   // note: decoded[0] === 1
@@ -193,27 +194,27 @@ function BLS12_381_FromG1Point(input: any): Buffer {
 
   // convert to buffers.
 
-  const xBuffer = Buffer.concat([new Uint8Array(64 - xval.length / 2, 0), hexToBytes(xval, 'hex')])
-  const yBuffer = Buffer.concat([new Uint8Array(64 - yval.length / 2, 0), hexToBytes(yval, 'hex')])
+  const xBuffer = concatBytesUnsafe(new Uint8Array(64 - xval.length / 2), hexToBytes(xval))
+  const yBuffer = concatBytesUnsafe(new Uint8Array(64 - yval.length / 2), hexToBytes(yval))
 
   return Buffer.concat([xBuffer, yBuffer])
 }
 
 // convert an input Buffer to a mcl G2 point
 // this does /NOT/ do any input checks. the input Buffer needs to be of length 256
-function BLS12_381_ToG2Point(input: Buffer, mcl: any): any {
+function BLS12_381_ToG2Point(input: Uint8Array, mcl: any): any {
   const p_x_1 = input.slice(0, 64)
   const p_x_2 = input.slice(64, 128)
   const p_y_1 = input.slice(128, 192)
   const p_y_2 = input.slice(192, 256)
 
-  const ZeroBytes64 = new Uint8Array(64, 0)
+  const ZeroBytes64 = new Uint8Array(64)
   // check if we have to do with a zero point
   if (
-    p_x_1.equals(p_x_2) &&
-    p_x_1.equals(p_y_1) &&
-    p_x_1.equals(p_y_2) &&
-    p_x_1.equals(ZeroBytes64)
+    equalsBytes(p_x_1, p_x_2) &&
+    equalsBytes(p_x_1, p_y_1) &&
+    equalsBytes(p_x_1, p_y_2) &&
+    equalsBytes(p_x_1, ZeroBytes64)
   ) {
     return new mcl.G2()
   }
@@ -251,11 +252,11 @@ function BLS12_381_ToG2Point(input: Buffer, mcl: any): any {
 
 // input: a mcl G2 point
 // output: a 256-byte Buffer
-function BLS12_381_FromG2Point(input: any): Buffer {
+function BLS12_381_FromG2Point(input: any): Uint8Array {
   // TODO: figure out if there is a better way to decode these values.
   const decodeStr = input.getStr(16) //return a string of pattern "1 <x_coord_1> <x_coord_2> <y_coord_1> <y_coord_2>"
   if (decodeStr === '0') {
-    return new Uint8Array(256, 0)
+    return new Uint8Array(256)
   }
   const decoded = decodeStr.match(/"?[0-9a-f]+"?/g) // match above pattern.
 
@@ -267,10 +268,10 @@ function BLS12_381_FromG2Point(input: any): Buffer {
 
   // convert to buffers.
 
-  const xBuffer1 = Buffer.concat([new Uint8Array(64 - x_1.length / 2, 0), hexToBytes(x_1, 'hex')])
-  const xBuffer2 = Buffer.concat([new Uint8Array(64 - x_2.length / 2, 0), hexToBytes(x_2, 'hex')])
-  const yBuffer1 = Buffer.concat([new Uint8Array(64 - y_1.length / 2, 0), hexToBytes(y_1, 'hex')])
-  const yBuffer2 = Buffer.concat([new Uint8Array(64 - y_2.length / 2, 0), hexToBytes(y_2, 'hex')])
+  const xBuffer1 = concatBytesUnsafe(new Uint8Array(64 - x_1.length / 2), hexToBytes(x_1))
+  const xBuffer2 = concatBytesUnsafe(new Uint8Array(64 - x_2.length / 2), hexToBytes(x_2))
+  const yBuffer1 = concatBytesUnsafe(new Uint8Array(64 - y_1.length / 2), hexToBytes(y_1))
+  const yBuffer2 = concatBytesUnsafe(new Uint8Array(64 - y_2.length / 2), hexToBytes(y_2))
 
   return Buffer.concat([xBuffer1, xBuffer2, yBuffer1, yBuffer2])
 }
@@ -278,8 +279,8 @@ function BLS12_381_FromG2Point(input: any): Buffer {
 // input: a 32-byte hex scalar Buffer
 // output: a mcl Fr point
 
-function BLS12_381_ToFrPoint(input: Buffer, mcl: any): any {
-  const mclHex = mcl.fromHexStr(input.toString('hex'))
+function BLS12_381_ToFrPoint(input: Uint8Array, mcl: any): any {
+  const mclHex = mcl.fromHexStr(bytesToHex(input))
   const Fr = new mcl.Fr()
   Fr.setBigEndianMod(mclHex)
   return Fr
@@ -288,7 +289,7 @@ function BLS12_381_ToFrPoint(input: Buffer, mcl: any): any {
 // input: a 64-byte buffer
 // output: a mcl Fp point
 
-function BLS12_381_ToFpPoint(fpCoordinate: Buffer, mcl: any): any {
+function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array, mcl: any): any {
   // check if point is in field
   if (bytesToBigInt(fpCoordinate) >= fieldModulus) {
     throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
@@ -296,7 +297,7 @@ function BLS12_381_ToFpPoint(fpCoordinate: Buffer, mcl: any): any {
 
   const fp = new mcl.Fp()
 
-  fp.setBigEndianMod(mcl.fromHexStr(fpCoordinate.toString('hex')))
+  fp.setBigEndianMod(mcl.fromHexStr(bytesToHex(fpCoordinate)))
 
   return fp
 }
@@ -304,7 +305,7 @@ function BLS12_381_ToFpPoint(fpCoordinate: Buffer, mcl: any): any {
 // input: two 64-byte buffers
 // output: a mcl Fp2 point
 
-function BLS12_381_ToFp2Point(fpXCoordinate: Buffer, fpYCoordinate: Buffer, mcl: any): any {
+function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array, mcl: any): any {
   // check if the coordinates are in the field
   if (bytesToBigInt(fpXCoordinate) >= fieldModulus) {
     throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
@@ -317,8 +318,8 @@ function BLS12_381_ToFp2Point(fpXCoordinate: Buffer, fpYCoordinate: Buffer, mcl:
   const fp_y = new mcl.Fp()
 
   const fp2 = new mcl.Fp2()
-  fp_x.setStr(fpXCoordinate.slice(16).toString('hex'), 16)
-  fp_y.setStr(fpYCoordinate.slice(16).toString('hex'), 16)
+  fp_x.setStr(bytesToHex(fpXCoordinate.slice(16)), 16)
+  fp_y.setStr(bytesToHex(fpYCoordinate.slice(16)), 16)
 
   fp2.set_a(fp_x)
   fp2.set_b(fp_y)

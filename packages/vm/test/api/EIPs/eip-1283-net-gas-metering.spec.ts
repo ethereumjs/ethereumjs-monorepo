@@ -1,5 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, bigIntToBytes, setLengthLeft } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -31,8 +32,8 @@ const testCases = [
 
 tape('Constantinople: EIP-1283', async (t) => {
   t.test('net-metering SSTORE', async (st) => {
-    const caller = new Address(hexToBytes('0000000000000000000000000000000000000000', 'hex'))
-    const addr = new Address(hexToBytes('00000000000000000000000000000000000000ff', 'hex'))
+    const caller = new Address(hexToBytes('0000000000000000000000000000000000000000'))
+    const addr = new Address(hexToBytes('00000000000000000000000000000000000000ff'))
     const key = setLengthLeft(bigIntToBytes(BigInt(0)), 32)
     for (const testCase of testCases) {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
@@ -40,7 +41,7 @@ tape('Constantinople: EIP-1283', async (t) => {
 
       const account = createAccount(BigInt(0), BigInt(0))
       await vm.stateManager.putAccount(addr, account)
-      await vm.stateManager.putContractCode(addr, hexToBytes(testCase.code, 'hex'))
+      await vm.stateManager.putContractCode(addr, hexToBytes(testCase.code))
       if (testCase.original !== BigInt(0)) {
         await vm.stateManager.putContractStorage(addr, key, bigIntToBytes(testCase.original))
       }

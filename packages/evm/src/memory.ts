@@ -1,3 +1,5 @@
+import { concatBytesUnsafe } from '@ethereumjs/util'
+
 const ceil = (value: number, ceiling: number): number => {
   const r = value % ceiling
   if (r === 0) {
@@ -14,7 +16,7 @@ const CONTAINER_SIZE = 8192
  * for the ethereum virtual machine.
  */
 export class Memory {
-  _store: Buffer
+  _store: Uint8Array
 
   constructor() {
     this._store = new Uint8Array(0)
@@ -32,10 +34,10 @@ export class Memory {
     const newSize = ceil(offset + size, 32)
     const sizeDiff = newSize - this._store.length
     if (sizeDiff > 0) {
-      this._store = Buffer.concat([
+      this._store = concatBytesUnsafe(
         this._store,
-        new Uint8Array(Math.ceil(sizeDiff / CONTAINER_SIZE) * CONTAINER_SIZE),
-      ])
+        new Uint8Array(Math.ceil(sizeDiff / CONTAINER_SIZE) * CONTAINER_SIZE)
+      )
     }
   }
 
@@ -45,7 +47,7 @@ export class Memory {
    * @param size - How many bytes to write
    * @param value - Value
    */
-  write(offset: number, size: number, value: Buffer) {
+  write(offset: number, size: number, value: Uint8Array) {
     if (size === 0) {
       return
     }
@@ -55,11 +57,11 @@ export class Memory {
     if (value.length !== size) throw new Error('Invalid value size')
     if (offset + size > this._store.length) throw new Error('Value exceeds memory capacity')
 
-    value.copy(this._store, offset)
+    new Uint8Array(this._store, offset)
   }
 
   /**
-   * Reads a slice of memory from `offset` till `offset + size` as a `Buffer`.
+   * Reads a slice of memory from `offset` till `offset + size` as a `Uint8Array`.
    * It fills up the difference between memory's length and `offset + size` with zeros.
    * @param offset - Starting position
    * @param size - How many bytes to read
@@ -72,16 +74,16 @@ export class Memory {
     if (avoidCopy === true) {
       return loaded
     }
-    const returnBuffer = new Uint8ArrayUnsafe(size)
+    const returnBytes = new Uint8ArrayUnsafe(size)
     // Copy the stored "buffer" from memory into the return Buffer
 
-    returnBuffer.fill(loaded, 0, loaded.length)
+    returnBytes.set(loaded, 0)
 
     if (loaded.length < size) {
-      // fill the remaining part of the Buffer with zeros
-      returnBuffer.fill(0, loaded.length, size)
+      // fill the remaining part of the Uint8Array with zeros
+      returnBytes.fill(0, loaded.length, size)
     }
 
-    return Buffer.from(loaded)
+    return returnBytes
   }
 }

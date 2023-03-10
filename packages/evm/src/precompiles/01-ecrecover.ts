@@ -44,7 +44,7 @@ export function precompile01(opts: PrecompileInput): ExecResult {
     }
     return {
       executionGasUsed: gasUsed,
-      returnValue: new Uint8Array(0),
+      returnValue: new Uint8Array(),
     }
   }
 

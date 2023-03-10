@@ -1,5 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, toBytes } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -10,8 +11,8 @@ tape('correctly apply new account gas fee on pre-Spurious Dragon hardforks', asy
   // This test verifies that issue is now resolved
 
   // setup the accounts for this test
-  const caller = new Address(hexToBytes('1747de68ae74afa4e00f8ef79b9c875a339cda70', 'hex')) // caller address
-  const contractAddress = new Address(hexToBytes('02E815899482f27C899fB266319dE7cc97F72E87', 'hex')) // contract address
+  const caller = new Address(hexToBytes('1747de68ae74afa4e00f8ef79b9c875a339cda70')) // caller address
+  const contractAddress = new Address(hexToBytes('02E815899482f27C899fB266319dE7cc97F72E87')) // contract address
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
   const vm = await VM.create({ common })
@@ -22,19 +23,18 @@ tape('correctly apply new account gas fee on pre-Spurious Dragon hardforks', asy
   const existingAccount = await vm.stateManager.getAccount(existingAddress)
   existingAccount.balance = BigInt(1)
   await vm.stateManager.putAccount(existingAddress, existingAccount)
-  await vm.stateManager.putContractCode(contractAddress, hexToBytes(code, 'hex')) // setup the contract code
+  await vm.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
   await vm.stateManager.putContractStorage(
     contractAddress,
-    hexToBytes('d08f588b94e47566eea77acec87441cecca23f61aea9ed8eb086c062d3837605', 'hex'),
-    hexToBytes('0000000000000000000000000000000000000000000000000000000000000001', 'hex')
+    hexToBytes('d08f588b94e47566eea77acec87441cecca23f61aea9ed8eb086c062d3837605'),
+    hexToBytes('0000000000000000000000000000000000000000000000000000000000000001')
   )
   // setup the call arguments
   const runCallArgs = {
     caller, // call address
     gasLimit: BigInt(174146 - 22872), // tx gas limit minus the tx fee (21000) and data fee (1872) to represent correct gas costs
     data: hexToBytes(
-      'a9059cbb000000000000000000000000f48a1bdc65d9ccb4b569ffd4bffff415b90783d60000000000000000000000000000000000000000000000000000000000000001',
-      'hex'
+      'a9059cbb000000000000000000000000f48a1bdc65d9ccb4b569ffd4bffff415b90783d60000000000000000000000000000000000000000000000000000000000000001'
     ),
     to: contractAddress, // call to the contract address
     value: BigInt(0),
@@ -53,10 +53,8 @@ tape(
   'do not apply new account gas fee for empty account in DB on pre-Spurious Dragon hardforks',
   async (t) => {
     // setup the accounts for this test
-    const caller = new Address(hexToBytes('1747de68ae74afa4e00f8ef79b9c875a339cda70', 'hex')) // caller address
-    const contractAddress = new Address(
-      hexToBytes('02E815899482f27C899fB266319dE7cc97F72E87', 'hex')
-    ) // contract address
+    const caller = new Address(hexToBytes('1747de68ae74afa4e00f8ef79b9c875a339cda70')) // caller address
+    const contractAddress = new Address(hexToBytes('02E815899482f27C899fB266319dE7cc97F72E87')) // contract address
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
     const vm = await VM.create({ common })
@@ -67,23 +65,22 @@ tape(
     existingAccount.balance = BigInt(1)
     await vm.stateManager.putAccount(existingAddress, existingAccount)
     // add empty account to DB
-    const emptyAddress = new Address(hexToBytes('f48a1bdc65d9ccb4b569ffd4bffff415b90783d6', 'hex'))
+    const emptyAddress = new Address(hexToBytes('f48a1bdc65d9ccb4b569ffd4bffff415b90783d6'))
     const emptyAccount = await vm.stateManager.getAccount(emptyAddress)
     //@ts-ignore
     vm.stateManager._trie.put(toBytes(emptyAddress), emptyAccount.serialize())
-    await vm.stateManager.putContractCode(contractAddress, hexToBytes(code, 'hex')) // setup the contract code
+    await vm.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
     await vm.stateManager.putContractStorage(
       contractAddress,
-      hexToBytes('d08f588b94e47566eea77acec87441cecca23f61aea9ed8eb086c062d3837605', 'hex'),
-      hexToBytes('0000000000000000000000000000000000000000000000000000000000000001', 'hex')
+      hexToBytes('d08f588b94e47566eea77acec87441cecca23f61aea9ed8eb086c062d3837605'),
+      hexToBytes('0000000000000000000000000000000000000000000000000000000000000001')
     )
     // setup the call arguments
     const runCallArgs = {
       caller, // call address
       gasLimit: BigInt(174146 - 22872), // tx gas limit minus the tx fee (21000) and data fee (1872) to represent correct gas costs
       data: hexToBytes(
-        'a9059cbb000000000000000000000000f48a1bdc65d9ccb4b569ffd4bffff415b90783d60000000000000000000000000000000000000000000000000000000000000001',
-        'hex'
+        'a9059cbb000000000000000000000000f48a1bdc65d9ccb4b569ffd4bffff415b90783d60000000000000000000000000000000000000000000000000000000000000001'
       ),
       to: contractAddress, // call to the contract address
       value: BigInt(0),

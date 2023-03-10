@@ -8,7 +8,7 @@ export interface PrecompileFunc {
 }
 
 export interface PrecompileInput {
-  data: Buffer
+  data: Uint8Array
   gasLimit: bigint
   _common: Common
   _EVM: EVMInterface

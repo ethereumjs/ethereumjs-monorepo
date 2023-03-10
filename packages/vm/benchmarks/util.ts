@@ -1,4 +1,4 @@
-import { Account, Address, toBytes } from '@ethereumjs/util'
+import { Account, Address, equalsBytes, toBytes } from '@ethereumjs/util'
 import { Common } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { StateManager, DefaultStateManager } from '@ethereumjs/statemanager'
@@ -36,10 +36,10 @@ export async function getPreState(
     await state.putContractCode(address, toBytes(code))
     for (const sk in storage) {
       const sv = storage[sk]
-      const valueBuffer = toBytes(sv)
+      const valueBytes = toBytes(sv)
       // verify if this value buffer is not a zero buffer. if so, we should not write it...
-      const zeroBufferEquivalent = new Uint8Array(valueBuffer.length, 0)
-      if (!zeroBufferEquivalent.equals(valueBuffer)) {
+      const zeroBytesEquivalent = new Uint8Array(valueBytes.length)
+      if (!equalsBytes(zeroBytesEquivalent, valueBytes)) {
         await state.putContractStorage(address, toBytes(sk), toBytes(sv))
       }
     }

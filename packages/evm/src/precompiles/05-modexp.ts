@@ -28,7 +28,7 @@ function multComplexityEIP2565(x: bigint): bigint {
   return words * words
 }
 
-function getAdjustedExponentLength(data: Buffer): bigint {
+function getAdjustedExponentLength(data: Uint8Array): bigint {
   let expBytesStart
   try {
     const baseLen = bytesToBigInt(data.slice(0, 32))
@@ -37,7 +37,7 @@ function getAdjustedExponentLength(data: Buffer): bigint {
     expBytesStart = Number.MAX_SAFE_INTEGER - 32
   }
   const expLen = bytesToBigInt(data.slice(32, 64))
-  let firstExpBytes = Buffer.from(data.slice(expBytesStart, expBytesStart + 32)) // first word of the exponent data
+  let firstExpBytes = data.slice(expBytesStart, expBytesStart + 32) // first word of the exponent data
   firstExpBytes = setLengthRight(firstExpBytes, 32) // reading past the data reads virtual zeros
   let firstExpBigInt = bytesToBigInt(firstExpBytes)
   let max32expLen = 0

@@ -1,6 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { Account, Address, bytesToInt, privateToAddress } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -11,10 +12,7 @@ interface Test {
   transactions: Transaction[]
 }
 
-const senderKey = Buffer.from(
-  'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-  'hex'
-)
+const senderKey = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 
 tape('EIP 1153: transient storage', (t) => {
   const initialGas = BigInt(0xffffffffff)
@@ -54,7 +52,7 @@ tape('EIP 1153: transient storage', (t) => {
     })
 
     for (const { code, address } of test.contracts) {
-      await vm.stateManager.putContractCode(address, hexToBytes(code, 'hex'))
+      await vm.stateManager.putContractCode(address, hexToBytes(code))
     }
 
     const fromAddress = new Address(privateToAddress(senderKey))
@@ -73,7 +71,7 @@ tape('EIP 1153: transient storage', (t) => {
     const returndata = new Uint8Array(32)
     returndata[31] = 0x02
 
-    const address = new Address(hexToBytes('000000000000000000000000636F6E7472616374', 'hex'))
+    const address = new Address(hexToBytes('000000000000000000000000636F6E7472616374'))
     const tx = Transaction.fromTxData({
       gasLimit: BigInt(21000 + 9000),
       to: address,
@@ -112,7 +110,7 @@ tape('EIP 1153: transient storage', (t) => {
     // is 0, then the transient storage is cleared between
     // transactions
     const code = '36600014630000001c5760016300000012575b60ff6000b4600080f35b6000b360005260206000f3'
-    const address = new Address(hexToBytes('000000000000000000000000636F6E7472616374', 'hex'))
+    const address = new Address(hexToBytes('000000000000000000000000636F6E7472616374'))
 
     const test = {
       contracts: [{ address, code }],
@@ -170,9 +168,9 @@ tape('EIP 1153: transient storage', (t) => {
 
   t.test('tload should not keep reverted changes', async (st) => {
     // logic address has a contract with transient storage logic in it
-    const logicAddress = new Address(hexToBytes('EA674fdDe714fd979de3EdF0F56AA9716B898ec8', 'hex'))
+    const logicAddress = new Address(hexToBytes('EA674fdDe714fd979de3EdF0F56AA9716B898ec8'))
     // calling address is the address that calls the logic address
-    const callingAddress = new Address(new Uint8Array(20, 0xff))
+    const callingAddress = new Address(new Uint8Array(20).fill(0xff))
 
     // Perform 3 calls:
     // - TSTORE, return

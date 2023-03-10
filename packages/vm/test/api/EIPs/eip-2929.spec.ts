@@ -1,6 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { Account, Address } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -8,11 +9,8 @@ import { VM } from '../../../src/vm'
 // Test cases source: https://gist.github.com/holiman/174548cad102096858583c6fbbb0649a
 tape('EIP 2929: gas cost tests', (t) => {
   const initialGas = BigInt(0xffffffffff)
-  const address = new Address(hexToBytes('000000000000000000000000636F6E7472616374', 'hex'))
-  const senderKey = Buffer.from(
-    'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-    'hex'
-  )
+  const address = new Address(hexToBytes('000000000000000000000000636F6E7472616374'))
+  const senderKey = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
 
   const runTest = async function (test: any, st: tape.Test) {
@@ -48,7 +46,7 @@ tape('EIP 2929: gas cost tests', (t) => {
       i++
     })
 
-    await vm.stateManager.putContractCode(address, hexToBytes(test.code, 'hex'))
+    await vm.stateManager.putContractCode(address, hexToBytes(test.code))
 
     const unsignedTx = Transaction.fromTxData({
       gasLimit: initialGas, // ensure we pass a lot of gas, so we do not run out of gas
@@ -66,18 +64,15 @@ tape('EIP 2929: gas cost tests', (t) => {
 
   const runCodeTest = async function (code: string, expectedGasUsed: bigint, st: tape.Test) {
     // setup the accounts for this test
-    const privateKey = Buffer.from(
-      'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-      'hex'
+    const privateKey = hexToBytes(
+      'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
     )
-    const contractAddress = new Address(
-      hexToBytes('00000000000000000000000000000000000000ff', 'hex')
-    )
+    const contractAddress = new Address(hexToBytes('00000000000000000000000000000000000000ff'))
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
     const vm = await VM.create({ common })
 
-    await vm.stateManager.putContractCode(contractAddress, hexToBytes(code, 'hex')) // setup the contract code
+    await vm.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
 
     // setup the call arguments
     const unsignedTx = Transaction.fromTxData({

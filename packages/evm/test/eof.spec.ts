@@ -1,3 +1,4 @@
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { getEOFCode } from '../src/eof'
@@ -18,12 +19,12 @@ tape('getEOFCode()', (t) => {
   const invalidEofCode = generateInvalidEOFCode(code)
 
   t.equal(
-    getEOFCode(hexToBytes(validEofCode.slice(2), 'hex')).toString('hex'),
+    bytesToHex(getEOFCode(hexToBytes(validEofCode.slice(2)))),
     code,
     'returned just code section of EOF container'
   )
   t.equal(
-    getEOFCode(hexToBytes(invalidEofCode.slice(2), 'hex')).toString('hex'),
+    bytesToHex(getEOFCode(hexToBytes(invalidEofCode.slice(2)))),
     invalidEofCode.toLowerCase().slice(2),
     'returns entire code string for non EOF code'
   )

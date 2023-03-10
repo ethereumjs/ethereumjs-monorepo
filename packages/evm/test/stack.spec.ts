@@ -1,4 +1,5 @@
 import { Account, Address, bigIntToBytes, setLengthLeft } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { EVM } from '../src'
@@ -126,8 +127,8 @@ tape('Stack', (t) => {
   })
 
   t.test('stack items should not change if they are DUPed', async (st) => {
-    const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee', 'hex'))
-    const addr = new Address(hexToBytes('00000000000000000000000000000000000000ff', 'hex'))
+    const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee'))
+    const addr = new Address(hexToBytes('00000000000000000000000000000000000000ff'))
     const eei = await getEEI()
     const evm = await EVM.create({ eei })
     const account = createAccount(BigInt(0), BigInt(0))
@@ -152,7 +153,7 @@ tape('Stack', (t) => {
           RETURN        stack: [0, 0x20] (we thus return the stack item which was originally pushed as 0, and then DUPed)
     */
     await eei.putAccount(addr, account)
-    await eei.putContractCode(addr, hexToBytes(code, 'hex'))
+    await eei.putContractCode(addr, hexToBytes(code))
     await eei.putAccount(caller, new Account(BigInt(0), BigInt(0x11)))
     const runCallArgs = {
       caller,
@@ -163,7 +164,7 @@ tape('Stack', (t) => {
     try {
       const res = await evm.runCall(runCallArgs)
       const executionReturnValue = res.execResult.returnValue
-      st.assert(executionReturnValue.equals(expectedReturnValue))
+      st.deepEquals(executionReturnValue, expectedReturnValue)
       st.end()
     } catch (e: any) {
       st.fail(e.message)

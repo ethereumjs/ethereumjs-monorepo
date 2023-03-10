@@ -1,4 +1,5 @@
-import { short } from '@ethereumjs/util'
+import { concatBytesUnsafe, short } from '@ethereumjs/util'
+import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { EvmErrorResult, OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
@@ -8,8 +9,8 @@ import type { PrecompileInput } from './types'
 
 const { BLS12_381_ToG1Point, BLS12_381_ToG2Point } = require('./util/bls12_381')
 
-const zeroBuffer = new Uint8Array(32, 0)
-const oneBuffer = Buffer.concat([new Uint8Array(31, 0), Buffer.from('01', 'hex')])
+const zeroBuffer = new Uint8Array(32)
+const oneBuffer = concatBytesUnsafe(new Uint8Array(31), hexToBytes('01'))
 
 export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
   const mcl = (<any>opts._EVM)._mcl!
@@ -55,7 +56,7 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
 
   const pairs = []
 
-  const zeroBytes16 = new Uint8Array(16, 0)
+  const zeroBytes16 = new Uint8Array(16)
   const zeroByteCheck = [
     [0, 16],
     [64, 80],
@@ -73,7 +74,7 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
         zeroByteCheck[index][0] + pairStart,
         zeroByteCheck[index][1] + pairStart
       )
-      if (!slicedBuffer.equals(zeroBytes16)) {
+      if (!equalsBytes(slicedBuffer, zeroBytes16)) {
         if (opts._debug) {
           opts._debug(`BLS12PAIRING (0x10) failed: Point not on curve`)
         }

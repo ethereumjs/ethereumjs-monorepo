@@ -1,6 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { ERROR } from '@ethereumjs/evm/dist/exceptions'
 import { F, precompile09 } from '@ethereumjs/evm/dist/precompiles/09-blake2f'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -91,7 +92,7 @@ tape('Istanbul: EIP-152', (t) => {
     for (const testCase of failingTestCases) {
       st.comment(testCase.name)
       const res = precompile09({
-        data: hexToBytes(testCase.input, 'hex'),
+        data: hexToBytes(testCase.input),
         gasLimit: BigInt(20),
         _common: common,
         _EVM: vm.evm,
@@ -102,12 +103,12 @@ tape('Istanbul: EIP-152', (t) => {
     for (const testCase of testCases) {
       st.comment(testCase.name)
       const res = precompile09({
-        data: hexToBytes(testCase.input, 'hex'),
+        data: hexToBytes(testCase.input),
         gasLimit: BigInt(10000000),
         _common: common,
         _EVM: vm.evm,
       })
-      st.equal(res.returnValue.toString('hex'), testCase.expected)
+      st.equal(bytesToHex(res.returnValue), testCase.expected)
     }
 
     st.end()

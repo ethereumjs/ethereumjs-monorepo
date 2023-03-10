@@ -3,7 +3,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
 import { Account, Address, KECCAK256_RLP } from '@ethereumjs/util'
-import { Buffer } from 'buffer'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -255,10 +255,8 @@ tape('VM -> hardforkByBlockNumber, hardforkByTTD, state (deprecated), blockchain
   })
   tape('Ensure that precompile activation creates non-empty accounts', async (t) => {
     // setup the accounts for this test
-    const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee', 'hex')) // caller address
-    const contractAddress = new Address(
-      hexToBytes('00000000000000000000000000000000000000ff', 'hex')
-    ) // contract address
+    const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee')) // caller address
+    const contractAddress = new Address(hexToBytes('00000000000000000000000000000000000000ff')) // contract address
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const vmNotActivated = await VM.create({ common })
@@ -279,9 +277,9 @@ tape('VM -> hardforkByBlockNumber, hardforkByTTD, state (deprecated), blockchain
           STOP
       */
 
-    await vmNotActivated.stateManager.putContractCode(contractAddress, hexToBytes(code, 'hex')) // setup the contract code
+    await vmNotActivated.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
     await vmNotActivated.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x111))) // give calling account a positive balance
-    await vmActivated.stateManager.putContractCode(contractAddress, hexToBytes(code, 'hex')) // setup the contract code
+    await vmActivated.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
     await vmActivated.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x111))) // give calling account a positive balance
     // setup the call arguments
     const runCallArgs = {

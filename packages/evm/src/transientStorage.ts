@@ -1,12 +1,14 @@
+import { bytesToHex } from '@ethereumjs/util'
+
 import type { TransientStorageInterface } from './types'
 import type { Address } from '@ethereumjs/util'
 
-type TransientStorageCurrent = Map<string, Map<string, Buffer>>
+type TransientStorageCurrent = Map<string, Map<string, Uint8Array>>
 
 interface TransientStorageModification {
   addr: string
   key: string
-  prevValue: Buffer
+  prevValue: Uint8Array
 }
 
 type TransientStorageJournal = TransientStorageModification[]
@@ -30,12 +32,12 @@ export class TransientStorage implements TransientStorageInterface {
    * @param addr the address for which transient storage is accessed
    * @param key the key of the address to get
    */
-  public get(addr: Address, key: Buffer): Buffer {
+  public get(addr: Address, key: Uint8Array): Uint8Array {
     const map = this._storage.get(addr.toString())
     if (!map) {
       return new Uint8Array(32)
     }
-    const value = map.get(key.toString('hex'))
+    const value = map.get(bytesToHex(key))
     if (!value) {
       return new Uint8Array(32)
     }
@@ -48,7 +50,7 @@ export class TransientStorage implements TransientStorageInterface {
    * @param key the slot to set for the address
    * @param value the new value of the transient storage slot to set
    */
-  public put(addr: Address, key: Buffer, value: Buffer) {
+  public put(addr: Address, key: Uint8Array, value: Uint8Array) {
     if (key.length !== 32) {
       throw new Error('Transient storage key must be 32 bytes long')
     }
@@ -63,7 +65,7 @@ export class TransientStorage implements TransientStorageInterface {
     }
     const map = this._storage.get(addrString)!
 
-    const keyStr = key.toString('hex')
+    const keyStr = bytesToHex(key)
     const prevValue = map.get(keyStr) ?? new Uint8Array(32)
 
     this._changeJournal.push({
@@ -113,7 +115,7 @@ export class TransientStorage implements TransientStorageInterface {
     for (const [address, map] of this._storage.entries()) {
       result[address] = {}
       for (const [key, value] of map.entries()) {
-        result[address][key] = value.toString('hex')
+        result[address][key] = bytesToHex(value)
       }
     }
     return result

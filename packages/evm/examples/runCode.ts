@@ -3,6 +3,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { EEI } from '@ethereumjs/vm'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 
 const main = async () => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
@@ -29,11 +30,11 @@ const main = async () => {
 
   evm
     .runCode({
-      code: hexToBytes(code.join(''), 'hex'),
+      code: hexToBytes(code.join('')),
       gasLimit: BigInt(0xffff),
     })
     .then((results) => {
-      console.log(`Returned: ${results.returnValue.toString('hex')}`)
+      console.log(`Returned: ${bytesToHex(results.returnValue)}`)
       console.log(`gasUsed: ${results.executionGasUsed.toString()}`)
     })
     .catch(console.error)

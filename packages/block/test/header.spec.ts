@@ -420,9 +420,8 @@ tape('[Block]: Header functions', function (t) {
     testCase = 'validateCliqueDifficulty() should return true with NOTURN difficulty and one signer'
     headerData.difficulty = BigInt(2)
     const poaBlockchain = new PoaMockchain()
-    const cliqueSigner = Buffer.from(
-      '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
-      'hex'
+    const cliqueSigner = hexToBytes(
+      '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'
     )
     const poaBlock = Block.fromRLPSerializedBlock(genesisRlp, { common, cliqueSigner })
     await poaBlockchain.putBlock(poaBlock)

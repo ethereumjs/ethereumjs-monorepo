@@ -5,6 +5,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { bytesToBigInt, isHexPrefixed, stripHexPrefix, toBytes } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 import { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
 
@@ -56,7 +57,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   if (typeof testData.genesisRLP === 'string') {
     const rlp = toBytes(testData.genesisRLP)
-    t.ok(genesisBlock.serialize().equals(rlp), 'correct genesis RLP')
+    t.deepEquals(genesisBlock.serialize(), rlp, 'correct genesis RLP')
   }
 
   const blockchain = await Blockchain.create({
@@ -115,7 +116,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     // Here we decode the rlp to extract the block number
     // The block library cannot be used, as this throws on certain EIP1559 blocks when trying to convert
     try {
-      const blockRlp = hexToBytes((raw.rlp as string).slice(2), 'hex')
+      const blockRlp = hexToBytes((raw.rlp as string).slice(2))
       const decodedRLP: any = RLP.decode(Uint8Array.from(blockRlp))
       currentBlock = bytesToBigInt(decodedRLP[0][8])
     } catch (e: any) {
@@ -124,7 +125,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     }
 
     try {
-      const blockRlp = hexToBytes((raw.rlp as string).slice(2), 'hex')
+      const blockRlp = hexToBytes((raw.rlp as string).slice(2))
       // Update common HF
       let TD: bigint | undefined = undefined
       let timestamp: bigint | undefined = undefined
@@ -153,7 +154,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         >[]) {
           const shouldFail = txData.valid === 'false'
           try {
-            const txRLP = hexToBytes(txData.rawBytes.slice(2), 'hex')
+            const txRLP = hexToBytes(txData.rawBytes.slice(2))
             const tx = TransactionFactory.fromSerializedData(txRLP, { common })
             await blockBuilder.addTransaction(tx)
             if (shouldFail) {
@@ -222,7 +223,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     }
   }
   t.equal(
-    (blockchain as any)._headHeaderHash.toString('hex'),
+    bytesToHex((blockchain as any)._headHeaderHash),
     testData.lastblockhash,
     'correct last header block'
   )

@@ -1,4 +1,5 @@
 import { short } from '@ethereumjs/util'
+import { equalsBytes } from 'ethereum-cryptography/utils'
 
 import { EvmErrorResult, OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
@@ -42,7 +43,7 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   // check if some parts of input are zero bytes.
-  const zeroBytes16 = new Uint8Array(16, 0)
+  const zeroBytes16 = new Uint8Array(16)
   const zeroByteCheck = [
     [0, 16],
     [64, 80],
@@ -50,7 +51,7 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
 
   for (const index in zeroByteCheck) {
     const slicedBuffer = opts.data.slice(zeroByteCheck[index][0], zeroByteCheck[index][1])
-    if (!slicedBuffer.equals(zeroBytes16)) {
+    if (!(equalsBytes(slicedBuffer, zeroBytes16) === true)) {
       if (opts._debug) {
         opts._debug(`BLS12G1MUL (0x0b) failed: Point not on curve`)
       }

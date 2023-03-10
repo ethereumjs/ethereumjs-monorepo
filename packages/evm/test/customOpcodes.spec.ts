@@ -1,3 +1,4 @@
+import { equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { EVM } from '../src/evm'
@@ -38,7 +39,7 @@ tape('VM: custom opcodes', (t) => {
       }
     })
     const res = await evm.runCode({
-      code: hexToBytes('21', 'hex'),
+      code: hexToBytes('21'),
       gasLimit: BigInt(gas),
     })
     st.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')
@@ -53,7 +54,7 @@ tape('VM: custom opcodes', (t) => {
     })
     const gas = BigInt(123456)
     const res = await evm.runCode({
-      code: hexToBytes('20', 'hex'),
+      code: hexToBytes('20'),
       gasLimit: BigInt(gas),
     })
     st.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
@@ -68,7 +69,7 @@ tape('VM: custom opcodes', (t) => {
     })
     const gas = BigInt(123456)
     const res = await evm.runCode({
-      code: hexToBytes('01', 'hex'),
+      code: hexToBytes('01'),
       gasLimit: BigInt(gas),
     })
     st.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
@@ -85,10 +86,10 @@ tape('VM: custom opcodes', (t) => {
     // PUSH 1F // RETURNDATA offset
     // RETURN  // Returns 0x05
     const result = await evmDefault.runCode!({
-      code: hexToBytes('60046001016000526001601FF3', 'hex'),
+      code: hexToBytes('60046001016000526001601FF3'),
       gasLimit: BigInt(gas),
     })
-    st.ok(result.returnValue.equals(hexToBytes('05', 'hex')))
+    st.ok(equalsBytes(result.returnValue, utf8ToBytes('05')))
   })
 
   t.test('should override opcodes in the EVM', async (st) => {
@@ -99,7 +100,7 @@ tape('VM: custom opcodes', (t) => {
     })
     const gas = 123456
     const res = await evm.runCode({
-      code: hexToBytes('20', 'hex'),
+      code: hexToBytes('20'),
       gasLimit: BigInt(gas),
     })
     st.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')

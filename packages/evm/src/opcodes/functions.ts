@@ -5,13 +5,14 @@ import {
   TWO_POW256,
   bigIntToBytes,
   bytesToBigInt,
+  concatBytesUnsafe,
   ecrecover,
   publicToAddress,
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { ERROR } from '../exceptions'
 
@@ -32,7 +33,7 @@ import {
 import type { RunState } from '../interpreter'
 import type { Common } from '@ethereumjs/common'
 
-const EIP3074MAGIC = hexToBytes('03', 'hex')
+const EIP3074MAGIC = hexToBytes('03')
 
 export interface SyncOpHandler {
   (runState: RunState, common: Common): void
@@ -382,7 +383,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x30,
     function (runState) {
-      const address = bytesToBigInt(runState.interpreter.getAddress().buf)
+      const address = bytesToBigInt(runState.interpreter.getAddress().bytes)
       runState.stack.push(address)
     },
   ],
@@ -429,7 +430,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       const i = Number(pos)
       let loaded = runState.interpreter.getCallData().slice(i, i + 32)
-      loaded = loaded.length ? loaded : Buffer.from([0])
+      loaded = loaded.length ? loaded : Uint8Array.from([0])
       let r = bytesToBigInt(loaded)
       if (loaded.length < 32) {
         r = r << (BigInt(8) * BigInt(32 - loaded.length))
@@ -519,7 +520,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         return
       }
 
-      runState.stack.push(BigInt('0x' + account.codeHash.toString('hex')))
+      runState.stack.push(BigInt('0x' + bytesToHex(account.codeHash)))
     },
   ],
   // 0x3d: RETURNDATASIZE
@@ -703,7 +704,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       // NOTE: this should be the shortest representation
       let value
       if (val === BigInt(0)) {
-        value = Buffer.from([])
+        value = Uint8Array.from([])
       } else {
         value = bigIntToBytes(val)
       }
@@ -898,7 +899,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       // NOTE: this should be the shortest representation
       let value
       if (val === BigInt(0)) {
-        value = Buffer.from([])
+        value = Uint8Array.from([])
       } else {
         value = bigIntToBytes(val)
       }
@@ -1044,10 +1045,10 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(ERROR.AUTH_INVALID_S)
       }
 
-      const paddedInvokerAddress = setLengthLeft(runState.interpreter._env.address.buf, 32)
+      const paddedInvokerAddress = setLengthLeft(runState.interpreter._env.address.bytes, 32)
       const chainId = setLengthLeft(bigIntToBytes(runState.interpreter.getChainId()), 32)
-      const message = Buffer.concat([EIP3074MAGIC, chainId, paddedInvokerAddress, commit])
-      const msgHash = Buffer.from(keccak256(message))
+      const message = concatBytesUnsafe(EIP3074MAGIC, chainId, paddedInvokerAddress, commit)
+      const msgHash = keccak256(message)
 
       let recover
       try {

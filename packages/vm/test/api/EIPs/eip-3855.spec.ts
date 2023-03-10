@@ -1,5 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { ERROR } from '@ethereumjs/evm/dist/exceptions'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -25,7 +26,7 @@ tape('EIP 3541 tests', (t) => {
     })
 
     const result = await vm.evm.runCode!({
-      code: hexToBytes('5F', 'hex'),
+      code: hexToBytes('5F'),
       gasLimit: BigInt(10),
     })
 
@@ -45,7 +46,7 @@ tape('EIP 3541 tests', (t) => {
     const depth = Number(common.param('vm', 'stackLimit'))
 
     const result = await vm.evm.runCode!({
-      code: hexToBytes('5F'.repeat(depth), 'hex'),
+      code: hexToBytes('5F'.repeat(depth)),
       gasLimit: BigInt(10000),
     })
 
@@ -65,7 +66,7 @@ tape('EIP 3541 tests', (t) => {
     const depth = Number(common.param('vm', 'stackLimit')!) + 1
 
     const result = await vm.evm.runCode!({
-      code: hexToBytes('5F'.repeat(depth), 'hex'),
+      code: hexToBytes('5F'.repeat(depth)),
       gasLimit: BigInt(10000),
     })
 
@@ -77,7 +78,7 @@ tape('EIP 3541 tests', (t) => {
     const vm = await VM.create({ common: commonNoEIP3855 })
 
     const result = await vm.evm.runCode!({
-      code: hexToBytes('5F', 'hex'),
+      code: hexToBytes('5F'),
       gasLimit: BigInt(10000),
     })
 

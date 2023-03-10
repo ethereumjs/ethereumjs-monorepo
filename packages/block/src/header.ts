@@ -12,6 +12,7 @@ import {
   bytesToHex,
   bytesToPrefixedHexString,
   concatBytes,
+  concatBytesUnsafe,
   ecrecover,
   ecsign,
   equalsBytes,
@@ -19,6 +20,7 @@ import {
   zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique'
 import { valuesArrayToHeaderData } from './helpers'
@@ -711,14 +713,14 @@ export class BlockHeader {
     this._requireClique('cliqueSealBlock')
 
     const signature = ecsign(this.cliqueSigHash(), privateKey)
-    const signatureB = Buffer.concat([
+    const signatureB = concatBytesUnsafe(
       signature.r,
       signature.s,
-      bigIntToBytes(signature.v - BigInt(27)),
-    ])
+      bigIntToBytes(signature.v - BigInt(27))
+    )
 
     const extraDataWithoutSeal = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
-    const extraData = Buffer.concat([extraDataWithoutSeal, signatureB])
+    const extraData = concatBytesUnsafe(extraDataWithoutSeal, signatureB)
     return extraData
   }
 
@@ -739,12 +741,12 @@ export class BlockHeader {
 
     const start = CLIQUE_EXTRA_VANITY
     const end = this.extraData.length - CLIQUE_EXTRA_SEAL
-    const signerBuffer = this.extraData.slice(start, end)
+    const signerBytes = this.extraData.slice(start, end)
 
     const signerList: Uint8Array[] = []
     const signerLength = 20
-    for (let start = 0; start <= signerBuffer.length - signerLength; start += signerLength) {
-      signerList.push(signerBuffer.slice(start, start + signerLength))
+    for (let start = 0; start <= signerBytes.length - signerLength; start += signerLength) {
+      signerList.push(signerBytes.slice(start, start + signerLength))
     }
     return signerList.map((buf) => new Address(buf))
   }
@@ -834,7 +836,7 @@ export class BlockHeader {
     if (DAOActivationBlock === null || this.number < DAOActivationBlock) {
       return
     }
-    const DAO_ExtraData = hexToBytes('64616f2d686172642d666f726b', 'hex')
+    const DAO_ExtraData = hexToBytes('64616f2d686172642d666f726b')
     const DAO_ForceExtraDataRange = BigInt(9)
     const drift = this.number - DAOActivationBlock
     if (drift <= DAO_ForceExtraDataRange && !equalsBytes(this.extraData, DAO_ExtraData)) {

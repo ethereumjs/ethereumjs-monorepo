@@ -12,7 +12,7 @@ tape('EIP-3607 tests', (t) => {
 
   t.test('should reject txs from senders with deployed code when EIP is enabled', async (st) => {
     const vm = await VM.create({ common })
-    await vm.stateManager.putContractCode(precompileAddr, new Uint8Array(32, 1))
+    await vm.stateManager.putContractCode(precompileAddr, new Uint8Array(32).fill(1))
     const tx = Transaction.fromTxData({ gasLimit: 100000 }, { freeze: false })
     tx.getSenderAddress = () => precompileAddr
     try {
@@ -32,7 +32,7 @@ tape('EIP-3607 tests', (t) => {
     'should not reject txs from senders with deployed code when EIP is not enabled',
     async (st) => {
       const vm = await VM.create({ common: commonNoEIP3607 })
-      await vm.stateManager.putContractCode(precompileAddr, new Uint8Array(32, 1))
+      await vm.stateManager.putContractCode(precompileAddr, new Uint8Array(32).fill(1))
       const tx = Transaction.fromTxData({ gasLimit: 100000 }, { freeze: false })
       tx.getSenderAddress = () => precompileAddr
       try {

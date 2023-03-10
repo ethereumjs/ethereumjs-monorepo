@@ -1,4 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -18,7 +19,7 @@ tape('Berlin: EIP 2315 tests', (t) => {
     })
 
     const result = await vm.evm.runCode!({
-      code: Buffer.from(test.code, 'hex'),
+      code: hexToBytes(test.code),
       gasLimit: BigInt(0xffffffffff),
     })
 

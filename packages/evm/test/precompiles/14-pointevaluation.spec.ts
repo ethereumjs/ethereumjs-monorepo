@@ -2,6 +2,7 @@ import { Common, Hardfork } from '@ethereumjs/common'
 import { computeVersionedHash, initKZG } from '@ethereumjs/tx'
 import { bigIntToBytes, bytesToBigInt, unpadBytes } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { EVM, getActivePrecompiles } from '../../src'
@@ -24,22 +25,14 @@ tape('Precompiles: point evaluation', async (t) => {
   const pointEvaluation = getActivePrecompiles(common).get(addressStr)!
 
   const testCase = {
-    Proof: Buffer.from(
-      '8ad6f539bc7280de6af4c95e7cef39bb6873f18c46ee5eb67299324ee7c6e6da71be2dbd5e2cbafbae4b2d60b40a808c',
-      'hex'
+    Proof: hexToBytes(
+      '8ad6f539bc7280de6af4c95e7cef39bb6873f18c46ee5eb67299324ee7c6e6da71be2dbd5e2cbafbae4b2d60b40a808c'
     ),
-    Commitment: Buffer.from(
-      'abb6bcbe313530ce7779abdf633d5a3594a41fbad9a79f4a9b46b89c0cfe78f6a15948dec92c4404aedac8b5e7dd6059',
-      'hex'
+    Commitment: hexToBytes(
+      'abb6bcbe313530ce7779abdf633d5a3594a41fbad9a79f4a9b46b89c0cfe78f6a15948dec92c4404aedac8b5e7dd6059'
     ),
-    InputPoint: Buffer.from(
-      '0120000000000000000000000000000000000000000000000000000000000000',
-      'hex'
-    ),
-    ClaimedValue: Buffer.from(
-      '48cdd065593bd932707001e88674108ade9dd71d2e849e9a55fa71b70f06690f',
-      'hex'
-    ),
+    InputPoint: hexToBytes('0120000000000000000000000000000000000000000000000000000000000000'),
+    ClaimedValue: hexToBytes('48cdd065593bd932707001e88674108ade9dd71d2e849e9a55fa71b70f06690f'),
   }
   const versionedHash = computeVersionedHash(testCase.Commitment, 1)
 

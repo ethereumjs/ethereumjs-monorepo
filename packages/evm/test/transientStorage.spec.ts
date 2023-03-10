@@ -9,8 +9,8 @@ tape('Transient Storage', (tester) => {
     const transientStorage = new TransientStorage()
 
     const address = Address.fromString('0xff00000000000000000000000000000000000002')
-    const key = new Uint8Array(32, 0xff)
-    const value = new Uint8Array(32, 0x99)
+    const key = new Uint8Array(32).fill(0xff)
+    const value = new Uint8Array(32).fill(0x99)
 
     transientStorage.put(address, key, value)
     const got = transientStorage.get(address, key)
@@ -22,17 +22,17 @@ tape('Transient Storage', (tester) => {
     const transientStorage = new TransientStorage()
 
     const address = Address.fromString('0xff00000000000000000000000000000000000002')
-    const key = new Uint8Array(32, 0xff)
-    const value = new Uint8Array(32, 0x11)
+    const key = new Uint8Array(32).fill(0xff)
+    const value = new Uint8Array(32).fill(0x11)
 
     // No address set
     const got = transientStorage.get(address, key)
-    t.deepEqual(new Uint8Array(32, 0x00), got)
+    t.deepEqual(new Uint8Array(32).fill(0x00), got)
 
     // Address set, no key set
     transientStorage.put(address, key, value)
-    const got2 = transientStorage.get(address, new Uint8Array(32, 0x22))
-    t.deepEqual(new Uint8Array(32, 0x00), got2)
+    const got2 = transientStorage.get(address, new Uint8Array(32).fill(0x22))
+    t.deepEqual(new Uint8Array(32).fill(0x00), got2)
     t.end()
   })
 
@@ -40,14 +40,14 @@ tape('Transient Storage', (tester) => {
     const transientStorage = new TransientStorage()
 
     const address = Address.fromString('0xff00000000000000000000000000000000000002')
-    const key = new Uint8Array(32, 0xff)
-    const value = new Uint8Array(32, 0x99)
+    const key = new Uint8Array(32).fill(0xff)
+    const value = new Uint8Array(32).fill(0x99)
 
     transientStorage.put(address, key, value)
 
     transientStorage.checkpoint()
 
-    const value2 = new Uint8Array(32, 0x22)
+    const value2 = new Uint8Array(32).fill(0x22)
     transientStorage.put(address, key, value2)
     const got = transientStorage.get(address, key)
     t.deepEqual(got, value2)
@@ -63,8 +63,8 @@ tape('Transient Storage', (tester) => {
     const transientStorage = new TransientStorage()
 
     const address = Address.fromString('0xff00000000000000000000000000000000000002')
-    const key = new Uint8Array(32, 0xff)
-    const value = new Uint8Array(32, 0x99)
+    const key = new Uint8Array(32).fill(0xff)
+    const value = new Uint8Array(32).fill(0x99)
 
     transientStorage.put(address, key, value)
 
@@ -96,14 +96,14 @@ tape('Transient Storage', (tester) => {
     const transientStorage = new TransientStorage()
 
     const address = Address.fromString('0xff00000000000000000000000000000000000002')
-    const key = new Uint8Array(32, 0xff)
-    const value = new Uint8Array(32, 0x99)
+    const key = new Uint8Array(32).fill(0xff)
+    const value = new Uint8Array(32).fill(0x99)
 
     transientStorage.put(address, key, value)
     t.deepEqual(
       transientStorage.get(
         Address.fromString('0xff00000000000000000000000000000000000002'),
-        new Uint8Array(32, 0xff)
+        new Uint8Array(32).fill(0xff)
       ),
       value
     )
@@ -114,10 +114,10 @@ tape('Transient Storage', (tester) => {
     const transientStorage = new TransientStorage()
 
     const address = Address.fromString('0xff00000000000000000000000000000000000002')
-    const key = new Uint8Array(32, 0xff)
-    const value1 = new Uint8Array(32, 0x01)
-    const value2 = new Uint8Array(32, 0x02)
-    const value3 = new Uint8Array(32, 0x03)
+    const key = new Uint8Array(32).fill(0xff)
+    const value1 = new Uint8Array(32).fill(0x01)
+    const value2 = new Uint8Array(32).fill(0x02)
+    const value3 = new Uint8Array(32).fill(0x03)
 
     transientStorage.put(address, key, value1)
     transientStorage.checkpoint()
@@ -133,11 +133,11 @@ tape('Transient Storage', (tester) => {
     const transientStorage = new TransientStorage()
 
     const address = Address.fromString('0xff00000000000000000000000000000000000002')
-    const key = new Uint8Array(32, 0xff)
-    const value0 = new Uint8Array(32, 0x00)
-    const value1 = new Uint8Array(32, 0x01)
-    const value2 = new Uint8Array(32, 0x02)
-    const value3 = new Uint8Array(32, 0x03)
+    const key = new Uint8Array(32).fill(0xff)
+    const value0 = new Uint8Array(32).fill(0x00)
+    const value1 = new Uint8Array(32).fill(0x01)
+    const value2 = new Uint8Array(32).fill(0x02)
+    const value3 = new Uint8Array(32).fill(0x03)
 
     transientStorage.put(address, key, value1)
     transientStorage.checkpoint()
@@ -165,10 +165,10 @@ tape('Transient Storage', (tester) => {
     const transientStorage = new TransientStorage()
 
     const address = Address.fromString('0xff00000000000000000000000000000000000002')
-    const key = new Uint8Array(32, 0xff)
-    const value1 = new Uint8Array(32, 0x01)
-    const value2 = new Uint8Array(32, 0x02)
-    const value3 = new Uint8Array(32, 0x03)
+    const key = new Uint8Array(32).fill(0xff)
+    const value1 = new Uint8Array(32).fill(0x01)
+    const value2 = new Uint8Array(32).fill(0x02)
+    const value3 = new Uint8Array(32).fill(0x03)
 
     transientStorage.put(address, key, value1)
     transientStorage.checkpoint()

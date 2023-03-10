@@ -216,18 +216,20 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
         const [key, val] = runState.stack.peek(2)
 
-        const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
+        const keyBytes = setLengthLeft(bigIntToBytes(key), 32)
         // NOTE: this should be the shortest representation
         let value
         if (val === BigInt(0)) {
-          value = Buffer.from([])
+          value = Uint8Array.from([])
         } else {
           value = bigIntToBytes(val)
         }
 
-        const currentStorage = setLengthLeftStorage(await runState.interpreter.storageLoad(keyBuf))
+        const currentStorage = setLengthLeftStorage(
+          await runState.interpreter.storageLoad(keyBytes)
+        )
         const originalStorage = setLengthLeftStorage(
-          await runState.interpreter.storageLoad(keyBuf, true)
+          await runState.interpreter.storageLoad(keyBytes, true)
         )
         if (common.hardfork() === Hardfork.Constantinople) {
           gas += updateSstoreGasEIP1283(
@@ -243,7 +245,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             currentStorage,
             originalStorage,
             setLengthLeftStorage(value),
-            keyBuf,
+            keyBytes,
             common
           )
         } else {
@@ -254,7 +256,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           // We have to do this after the Istanbul (EIP2200) checks.
           // Otherwise, we might run out of gas, due to "sentry check" of 2300 gas,
           // if we deduct extra gas first.
-          gas += accessStorageEIP2929(runState, keyBuf, true, common)
+          gas += accessStorageEIP2929(runState, keyBytes, true, common)
         }
         return gas
       },

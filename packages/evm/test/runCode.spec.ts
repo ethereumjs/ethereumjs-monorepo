@@ -1,3 +1,4 @@
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { EVM } from '../src'
@@ -26,7 +27,7 @@ tape('VM.runCode: initial program counter', async (t) => {
 
   for (const [i, testData] of testCases.entries()) {
     const runCodeArgs = {
-      code: hexToBytes(testData.code.join(''), 'hex'),
+      code: hexToBytes(testData.code.join('')),
       pc: testData.pc,
       gasLimit: BigInt(0xffff),
     }
@@ -62,7 +63,7 @@ tape('VM.runCode: interpreter', (t) => {
 
     const INVALID_opcode = 'fe'
     const runCodeArgs = {
-      code: hexToBytes(INVALID_opcode, 'hex'),
+      code: hexToBytes(INVALID_opcode),
       gasLimit: BigInt(0xffff),
     }
 
@@ -86,7 +87,7 @@ tape('VM.runCode: interpreter', (t) => {
 
     const SSTORE = '55'
     const runCodeArgs = {
-      code: hexToBytes([PUSH1, '01', PUSH1, '05', SSTORE].join(''), 'hex'),
+      code: hexToBytes([PUSH1, '01', PUSH1, '05', SSTORE].join('')),
       gasLimit: BigInt(0xffff),
     }
 

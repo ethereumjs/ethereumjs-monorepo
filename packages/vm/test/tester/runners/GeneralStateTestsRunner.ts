@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { toBytes } from '@ethereumjs/util'
+import { bytesToHex, toBytes } from '@ethereumjs/util'
 
 import { EVM } from '../../../../evm/src'
 import { EEI } from '../../../src'
@@ -123,7 +123,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
         })
         vm.events.on('afterTx', async () => {
           const stateRoot = {
-            stateRoot: vm.stateManager._trie.root.toString('hex'),
+            stateRoot: bytesToHex(vm.stateManager._trie.root),
           }
           t.comment(JSON.stringify(stateRoot))
         })

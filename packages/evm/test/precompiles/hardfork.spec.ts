@@ -1,5 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { EVM } from '../../src'
@@ -9,7 +10,7 @@ import { getEEI } from '../utils'
 tape('Precompiles: hardfork availability', (t) => {
   t.test('Test ECPAIRING availability', async (st) => {
     const ECPAIR_AddressStr = '0000000000000000000000000000000000000008'
-    const ECPAIR_Address = new Address(hexToBytes(ECPAIR_AddressStr, 'hex'))
+    const ECPAIR_Address = new Address(hexToBytes(ECPAIR_AddressStr))
 
     // ECPAIR was introduced in Byzantium; check if available from Byzantium.
     const commonByzantium = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
