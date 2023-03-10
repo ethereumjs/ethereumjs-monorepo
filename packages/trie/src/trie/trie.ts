@@ -95,10 +95,11 @@ export class Trie {
   database(db?: DB) {
     if (db !== undefined) {
       if (db instanceof CheckpointDB) {
-        throw new Error('Cannot pass in an instance of CheckpointDB')
+        this._db = db
+      } else {
+        // Default checkpoint mechanism
+        this._db = new CheckpointDB(db)
       }
-
-      this._db = new CheckpointDB(db)
     }
 
     return this._db

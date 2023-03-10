@@ -2,7 +2,7 @@ import { createHash } from 'crypto'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
-import { MapDB, ROOT_DB_KEY, Trie } from '../../src'
+import { CheckpointDB, MapDB, ROOT_DB_KEY, Trie } from '../../src'
 
 import type { BatchDBOp } from '../../src'
 
@@ -13,6 +13,17 @@ tape('testing checkpoints', function (tester) {
   let trieCopy: Trie
   let preRoot: string
   let postRoot: string
+
+  it('initialization', function (t) {
+    const db = new CheckpointDB(new MapDB())
+    try {
+      trie = new Trie({ db })
+      t.pass('should allow initialization with CheckpointDB')
+    } catch (e) {
+      t.fail('should not throw on initialization with CheckpointDB')
+    }
+    t.end()
+  })
 
   it('setup', async function (t) {
     trie = new Trie()
