@@ -93,6 +93,21 @@ tape(`${method}: call with valid data and synced data`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes)
 })
 
+tape(`${method}: call with invalid timestamp payloadAttributes`, async (t) => {
+  const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+
+  const invalidTimestampPayload: any = [{ ...validPayload[0] }, { ...validPayload[1] }]
+  invalidTimestampPayload[1].timestamp = '0x0'
+
+  const req = params(method, invalidTimestampPayload)
+  const expectRes = checkError(
+    t,
+    INVALID_PARAMS,
+    'invalid timestamp in payloadAttributes, got 0, need at least 1'
+  )
+  await baseRequest(t, server, req, 200, expectRes)
+})
+
 tape(`${method}: call with valid fork choice state without payload attributes`, async (t) => {
   const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
   const req = params(method, [validForkChoiceState])
