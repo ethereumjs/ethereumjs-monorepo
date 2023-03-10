@@ -158,7 +158,7 @@ const payloadAttributesFieldValidatorsV2 = {
 /**
  * Formats a block to {@link ExecutionPayloadV1}.
  */
-const blockToExecutionPayload = (block: Block, value: bigint) => {
+export const blockToExecutionPayload = (block: Block, value: bigint) => {
   const blockJson = block.toJSON()
   const header = blockJson.header!
   const transactions = block.transactions.map((tx) => bufferToHex(tx.serialize())) ?? []
