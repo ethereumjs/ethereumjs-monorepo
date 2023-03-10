@@ -7,6 +7,7 @@ import * as tape from 'tape'
 
 import { Config } from '../../lib/config'
 import { getLogger } from '../../lib/logging'
+import { Event } from '../../lib/types'
 
 import {
   createInlineClient,
@@ -98,20 +99,36 @@ tape('simple mainnet test run', async (t) => {
     st.end()
   })
 
-  t.test('snap sync state', { skip: process.env.SNAP_SYNC === undefined }, async (st) => {
+  t.test('setup snap sync', { skip: process.env.SNAP_SYNC === undefined }, async (st) => {
     // start client inline here for snap sync, no need for beacon
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    ejsClient = await createSnapClient(common, customGenesisState, [nodeInfo.enode]).catch((e) => {
+    const { ejsInlineClient, peerConnectedPromise } = (await createSnapClient(
+      common,
+      customGenesisState,
+      [nodeInfo.enode]
+    ).catch((e) => {
       console.log(e)
       return null
-    })
+    })) ?? { ejsInlineClient: null, peerConnectedPromise: Promise.reject('Client creation error') }
+    ejsClient = ejsInlineClient
     st.ok(ejsClient !== null, 'ethereumjs client started')
+    const peerConnectTimeout = new Promise((_resolve, reject) => setTimeout(reject, 10000))
+    try {
+      await Promise.race([peerConnectedPromise, peerConnectTimeout])
+      st.pass('connected to geth peer')
+    } catch (e) {
+      st.fail('could not connect to geth peer in 10 seconds')
+    }
     st.end()
   })
 
-  t.test('should reset td', async (st) => {
+  t.test('should snap sync and finish', async (st) => {
     try {
       if (ejsClient !== null) {
+        // call sync if not has been called yet
+        await ejsClient.services[0].synchronizer.sync()
+        // wait on the sync promise to complete if it has been called independently
+        await ejsClient.services[0].synchronizer['syncPromise']
         await ejsClient.stop()
       }
       await teardownCallBack()
@@ -127,7 +144,7 @@ tape('simple mainnet test run', async (t) => {
 
 async function createSnapClient(common: any, customGenesisState: any, bootnodes: any) {
   // Turn on `debug` logs, defaults to all client logging
-  debug.enable('devp2p:*')
+  debug.enable(process.env.DEBUG_SNAP ?? '')
   const logger = getLogger({ logLevel: 'debug' })
   const config = new Config({
     common,
@@ -140,7 +157,12 @@ async function createSnapClient(common: any, customGenesisState: any, bootnodes:
     port: 30304,
     forceSnapSync: true,
   })
-  return createInlineClient(config, common, customGenesisState)
+  const peerConnectedPromise = new Promise((resolve) => {
+    config.events.on(Event.PEER_CONNECTED, (peer: any) => resolve(peer))
+  })
+
+  const ejsInlineClient = await createInlineClient(config, common, customGenesisState)
+  return { ejsInlineClient, peerConnectedPromise }
 }
 
 process.on('uncaughtException', (err, origin) => {
