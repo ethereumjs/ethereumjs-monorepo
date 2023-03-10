@@ -1,3 +1,4 @@
+import { Blockchain } from '@ethereumjs/blockchain'
 import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction, initKZG } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
@@ -8,8 +9,12 @@ import { Address } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import * as fs from 'fs/promises'
+import { Level } from 'level'
 import { execSync, spawn } from 'node:child_process'
 import * as net from 'node:net'
+
+import { EthereumClient } from '../../lib/client'
+import { Config } from '../../lib/config'
 
 import type { Common } from '@ethereumjs/common'
 import type { ChildProcessWithoutNullStreams } from 'child_process'
@@ -399,6 +404,34 @@ export const runBlobTxsFromFile = async (client: Client, path: string) => {
     txnHashes.push(res.result)
   }
   return txnHashes
+}
+
+export async function createInlineClient(config: any, common: any, customGenesisState: any) {
+  config.events.setMaxListeners(50)
+  const datadir = Config.DATADIR_DEFAULT
+  const chainDB = new Level<string | Buffer, string | Buffer>(
+    `${datadir}/${common.chainName()}/chainDB`
+  )
+  const stateDB = new Level<string | Buffer, string | Buffer>(
+    `${datadir}/${common.chainName()}/stateDB`
+  )
+  const metaDB = new Level<string | Buffer, string | Buffer>(
+    `${datadir}/${common.chainName()}/metaDB`
+  )
+
+  const blockchain = await Blockchain.create({
+    db: chainDB,
+    genesisState: customGenesisState,
+    common: config.chainCommon,
+    hardforkByHeadBlockNumber: true,
+    validateBlocks: true,
+    validateConsensus: false,
+  })
+  config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
+  const inlineClient = await EthereumClient.create({ config, blockchain, chainDB, stateDB, metaDB })
+  await inlineClient.open()
+  await inlineClient.start()
+  return inlineClient
 }
 
 // To minimise noise on the spec run, selective filteration is applied to let the important events
