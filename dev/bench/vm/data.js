@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1678472287174,
+  "lastUpdate": 1678479345719,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b7ebab96a5c114974c2fd6477b1e0fecf33e807e",
-          "message": "Revert \"Isolating single peer run (#2535)\" (#2537)\n\nThis reverts commit 9c85aea08dcf6538292c9ad69553c2477e16a2c7.",
-          "timestamp": "2023-02-20T16:00:45+05:30",
-          "tree_id": "30068b1023fd775f05e0e8819ecb1bee75c57287",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b7ebab96a5c114974c2fd6477b1e0fecf33e807e"
-        },
-        "date": 1676889214105,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15264,
-            "range": "±2.09%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 14593,
-            "range": "±4.62%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 15407,
-            "range": "±2.00%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 14806,
-            "range": "±2.24%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 13334,
-            "range": "±8.69%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±8.19%",
             "unit": "ops/sec",
             "extra": "77 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2e1826e4a14fda708857f7d3243c2b897e4a10fa",
+          "message": "client/engine: ensure payload has a valid timestamp forkchoiceUpdated (#2579)",
+          "timestamp": "2023-03-10T21:12:51+01:00",
+          "tree_id": "26ce1f662c356bb930b532650db8bc14e3b89898",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2e1826e4a14fda708857f7d3243c2b897e4a10fa"
+        },
+        "date": 1678479345043,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 14916,
+            "range": "±2.84%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 14607,
+            "range": "±4.54%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 14782,
+            "range": "±2.31%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 13448,
+            "range": "±9.12%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 14871,
+            "range": "±2.08%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
