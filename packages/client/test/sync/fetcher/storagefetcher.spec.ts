@@ -160,7 +160,7 @@ tape('[StorageFetcher]', async (t) => {
 
   t.test('should request correctly', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const pool = new PeerPool() as any
     const p = new SnapProtocol({ config, chain })
     const fetcher = new StorageFetcher({
@@ -226,7 +226,7 @@ tape('[StorageFetcher]', async (t) => {
 
   t.test('should verify proof correctly', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const pool = new PeerPool() as any
     const p = new SnapProtocol({ config, chain })
     const fetcher = new StorageFetcher({
