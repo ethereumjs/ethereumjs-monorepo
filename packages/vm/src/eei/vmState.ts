@@ -17,7 +17,12 @@ export class VmState implements EVMStateAccess {
   protected _checkpointCount: number
   protected _stateManager: StateManager
   protected _touched: Set<AddressHex>
-  protected _touchedStack: Set<AddressHex>[]
+  // Stack keeping track of additional touched accounts
+  // If no additions no key is written
+  // 0: No checkpoint
+  // 1: Checkpoint 1
+  // 4: Checkpoint 4
+  protected _touchedStack: { [key: number]: Set<AddressHex> }
 
   // EIP-2929 address/storage trackers.
   // This maps both the accessed accounts and the accessed storage slots.
@@ -42,7 +47,7 @@ export class VmState implements EVMStateAccess {
     this._stateManager = stateManager
     this._common = common ?? new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     this._touched = new Set()
-    this._touchedStack = []
+    this._touchedStack = {}
     this._originalStorageCache = new Map()
     this._accessedStorage = [new Map()]
     this._accessedStorageReverted = [new Map()]
@@ -61,7 +66,6 @@ export class VmState implements EVMStateAccess {
    * Partial implementation, called from the subclass.
    */
   async checkpoint(): Promise<void> {
-    this._touchedStack.push(new Set(Array.from(this._touched)))
     this._accessedStorage.push(new Map())
     await this._stateManager.checkpoint()
     this._checkpointCount++
@@ -73,8 +77,12 @@ export class VmState implements EVMStateAccess {
   }
 
   async commit(): Promise<void> {
-    // setup cache checkpointing
-    this._touchedStack.pop()
+    // Remove cache items
+    const height = this._checkpointCount
+    if (height in this._touchedStack) {
+      delete this._touchedStack[height]
+    }
+
     // Copy the contents of the map of the current level to a map higher.
     const storageMap = this._accessedStorage.pop()
     if (storageMap) {
@@ -105,18 +113,26 @@ export class VmState implements EVMStateAccess {
     if (lastItem) {
       this._accessedStorageReverted.push(lastItem)
     }
-    const touched = this._touchedStack.pop()
-    if (!touched) {
-      throw new Error('Reverting to invalid state checkpoint failed')
+
+    // Revert touched accounts during checkpoint
+    const height = this._checkpointCount
+    if (height in this._touchedStack) {
+      for (const address of this._touchedStack[height]) {
+        // Exceptional case due to consensus issue in Geth and Parity.
+        // See [EIP issue #716](https://github.com/ethereum/EIPs/issues/716) for context.
+        // The RIPEMD precompile has to remain *touched* even when the call reverts,
+        // and be considered for deletion.
+        if (address === ripemdPrecompileAddress) {
+          continue
+        }
+
+        if (this._touched.has(address)) {
+          this._touched.delete(address)
+        }
+      }
+      delete this._touchedStack[height]
     }
-    // Exceptional case due to consensus issue in Geth and Parity.
-    // See [EIP issue #716](https://github.com/ethereum/EIPs/issues/716) for context.
-    // The RIPEMD precompile has to remain *touched* even when the call reverts,
-    // and be considered for deletion.
-    if (this._touched.has(ripemdPrecompileAddress)) {
-      touched.add(ripemdPrecompileAddress)
-    }
-    this._touched = touched
+
     await this._stateManager.revert()
 
     this._checkpointCount--
@@ -202,6 +218,12 @@ export class VmState implements EVMStateAccess {
    * at the end of the tx.
    */
   touchAccount(address: Address): void {
+    const height = this._checkpointCount
+    if (!(height in this._touchedStack)) {
+      this._touchedStack[height] = new Set()
+    }
+    this._touchedStack[height].add(address.buf.toString('hex'))
+
     this._touched.add(address.buf.toString('hex'))
   }
 
