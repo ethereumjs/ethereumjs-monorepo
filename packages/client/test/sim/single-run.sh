@@ -34,8 +34,13 @@ then
         echo "ELCLIENT=$ELCLIENT using local ethereumjs binary from packages/client"
         ;;
       geth)
+        if [ ! -n "$NETWORKID" ]
+        then
+          echo "geth requires NETWORKID to be passed in env, exiting..."
+          exit;
+        fi;
         ELCLIENT_IMAGE="ethereum/client-go:stable"
-        echo "ELCLIENT=$ELCLIENT using ELCLIENT_IMAGE=$ELCLIENT_IMAGE"
+        echo "ELCLIENT=$ELCLIENT using ELCLIENT_IMAGE=$ELCLIENT_IMAGE NETWORKID=$NETWORKID"
         ;;
       *)
         echo "ELCLIENT=$ELCLIENT not implemented"
@@ -94,7 +99,7 @@ case $MULTIPEER in
         ;;
       geth)
         # geth will be mounted in docker with DATADIR to /data
-        EL_PORT_ARGS="--datadir /data/geth --authrpc.jwtsecret /data/jwtsecret --http --http.api engine,net,eth,web3,debug --http.corsdomain \"*\" --http.port 8545 --http.addr 0.0.0.0 --http.vhosts \"*\" --authrpc.addr 0.0.0.0 --authrpc.vhosts \"*\" --authrpc.port=8551 --syncmode full"
+        EL_PORT_ARGS="--datadir /data/geth --authrpc.jwtsecret /data/jwtsecret --http --http.api engine,net,eth,web3,debug,admin --http.corsdomain \"*\" --http.port 8545 --http.addr 0.0.0.0 --http.vhosts \"*\" --authrpc.addr 0.0.0.0 --authrpc.vhosts \"*\" --authrpc.port=8551 --syncmode full --networkid $NETWORKID"
         ;;
       *)
         echo "ELCLIENT=$ELCLIENT not implemented"

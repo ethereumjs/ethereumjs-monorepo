@@ -415,5 +415,6 @@ export const filterKeywords = [
   'pid',
   'Synced - slot: 0 -',
   'TxPool started',
+  'number=0',
 ]
 export const filterOutWords = ['duties', 'Low peer count', 'MaxListenersExceededWarning']
