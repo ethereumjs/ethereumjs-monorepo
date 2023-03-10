@@ -63,41 +63,45 @@ tape('simple mainnet test run', async (t) => {
   }
 
   // ------------Sanity checks--------------------------------
-  t.test('add some EOA transfers', { skip: process.env.TARGET_PEER === undefined }, async (st) => {
-    const startBalance = await client.request('eth_getBalance', [
-      '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
-      'latest',
-    ])
-    st.ok(
-      startBalance.result !== undefined,
-      `fetched 0x3dA33B9A0894b908DdBb00d96399e506515A1009 balance=${startBalance.result}`
-    )
-    await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
-    let balance = await client.request('eth_getBalance', [
-      '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
-      'latest',
-    ])
-    st.equal(
-      BigInt(balance.result),
-      BigInt(startBalance.result) + 1000000n,
-      'sent a simple ETH transfer'
-    )
-    await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
-    balance = await client.request('eth_getBalance', [
-      '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
-      'latest',
-    ])
-    balance = await client.request('eth_getBalance', [
-      '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
-      'latest',
-    ])
-    st.equal(
-      BigInt(balance.result),
-      BigInt(startBalance.result) + 2000000n,
-      'sent a simple ETH transfer 2x'
-    )
-    st.end()
-  })
+  t.test(
+    'add some EOA transfers',
+    { skip: process.env.ADD_EOA_STATE === undefined },
+    async (st) => {
+      const startBalance = await client.request('eth_getBalance', [
+        '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
+        'latest',
+      ])
+      st.ok(
+        startBalance.result !== undefined,
+        `fetched 0x3dA33B9A0894b908DdBb00d96399e506515A1009 balance=${startBalance.result}`
+      )
+      await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
+      let balance = await client.request('eth_getBalance', [
+        '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
+        'latest',
+      ])
+      st.equal(
+        BigInt(balance.result),
+        BigInt(startBalance.result) + 1000000n,
+        'sent a simple ETH transfer'
+      )
+      await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
+      balance = await client.request('eth_getBalance', [
+        '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
+        'latest',
+      ])
+      balance = await client.request('eth_getBalance', [
+        '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
+        'latest',
+      ])
+      st.equal(
+        BigInt(balance.result),
+        BigInt(startBalance.result) + 2000000n,
+        'sent a simple ETH transfer 2x'
+      )
+      st.end()
+    }
+  )
 
   t.test('setup snap sync', { skip: process.env.SNAP_SYNC === undefined }, async (st) => {
     // start client inline here for snap sync, no need for beacon
