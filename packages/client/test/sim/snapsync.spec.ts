@@ -138,6 +138,7 @@ async function createSnapClient(common: any, customGenesisState: any, bootnodes:
     discDns: false,
     discV4: false,
     port: 30304,
+    forceSnapSync: true,
   })
   return createInlineClient(config, common, customGenesisState)
 }
