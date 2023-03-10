@@ -1,5 +1,6 @@
-import { blobToKzgCommitment } from 'c-kzg'
 import { sha256 } from 'ethereum-cryptography/sha256'
+
+import { kzg } from '../kzg/kzg'
 
 /**
  * These utilities for constructing blobs are borrowed from https://github.com/Inphi/eip4844-interop.git
@@ -57,7 +58,7 @@ export const getBlobs = (input: string) => {
 export const blobsToCommitments = (blobs: Buffer[]) => {
   const commitments = []
   for (const blob of blobs) {
-    commitments.push(Buffer.from(blobToKzgCommitment(blob)))
+    commitments.push(Buffer.from(kzg.blobToKzgCommitment(blob)))
   }
   return commitments
 }

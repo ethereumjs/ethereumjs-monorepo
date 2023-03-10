@@ -64,18 +64,18 @@ tape('[FullEthereumService]', async (t) => {
   td.replace('@ethereumjs/block', { Block })
   const { FullEthereumService } = await import('../../lib/service/fullethereumservice')
 
-  t.test('should initialize correctly', (t) => {
+  t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     t.ok(service.synchronizer instanceof FullSynchronizer, 'full mode')
     t.equals(service.name, 'eth', 'got name')
     t.end()
   })
 
-  t.test('should get protocols', (t) => {
+  t.test('should get protocols', async (t) => {
     let config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     let service = new FullEthereumService({ config, chain })
     t.ok(service.protocols.filter((p) => p instanceof EthProtocol).length > 0, 'full protocol')
     t.notOk(
@@ -96,7 +96,7 @@ tape('[FullEthereumService]', async (t) => {
     t.plan(3)
     const server = td.object() as any
     const config = new Config({ servers: [server] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     await service.open()
     td.verify(service.synchronizer.open())
@@ -117,7 +117,7 @@ tape('[FullEthereumService]', async (t) => {
   t.test('should start/stop', async (t) => {
     const server = td.object() as any
     const config = new Config({ servers: [server] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
 
     await service.start()
@@ -131,7 +131,7 @@ tape('[FullEthereumService]', async (t) => {
 
   t.test('should correctly handle GetBlockHeaders', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     chain.getHeaders = () => [{ number: 1n }] as any
     const service = new FullEthereumService({ config, chain })
     await service.handle(
@@ -181,7 +181,7 @@ tape('[FullEthereumService]', async (t) => {
     'should call handleNewBlock on NewBlock and handleNewBlockHashes on NewBlockHashes',
     async (t) => {
       const config = new Config({ transports: [] })
-      const chain = new Chain({ config })
+      const chain = await Chain.create({ config })
       const service = new FullEthereumService({ config, chain })
       await service.handle({ name: 'NewBlock', data: [{}, BigInt(1)] }, 'eth', undefined as any)
       td.verify((service.synchronizer as any).handleNewBlock({}, undefined))
@@ -210,7 +210,7 @@ tape('[FullEthereumService]', async (t) => {
     t.plan(2)
     const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Merge })
     const config = new Config({ common, transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     service.pool.ban = () => {
       t.pass('banned peer when NewBlock/NewBlockHashes announced after Merge')
@@ -222,7 +222,7 @@ tape('[FullEthereumService]', async (t) => {
 
   t.test('should send Receipts on GetReceipts', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     service.execution = {
       receiptsManager: { getReceipts: td.func<any>() },
@@ -259,7 +259,7 @@ tape('[FullEthereumService]', async (t) => {
 
   t.test('should handle Transactions', async (st) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     service.txPool.handleAnnouncedTxs = async (msg, _peer, _pool) => {
       st.deepEqual(
@@ -282,7 +282,7 @@ tape('[FullEthereumService]', async (t) => {
 
   t.test('should handle NewPooledTransactionHashes', async (st) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     service.txPool.handleAnnouncedTxHashes = async (msg, _peer, _pool) => {
       st.deepEqual(msg[0], Buffer.from('0xabcd', 'hex'), 'handled NewPooledTransactionhashes')
@@ -301,7 +301,7 @@ tape('[FullEthereumService]', async (t) => {
 
   t.test('should handle GetPooledTransactions', async (st) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     ;(service.txPool as any).validate = () => {}
 
@@ -326,7 +326,7 @@ tape('[FullEthereumService]', async (t) => {
     const common = Common.fromGethGenesis(genesisJSON, { chain: 'post-merge' })
     common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
     const config = new Config({ transports: [], common })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     let service = new FullEthereumService({ config, chain })
     t.ok(service.beaconSync, 'beacon sync should be available')
     const configDisableBeaconSync = new Config({ transports: [], common, disableBeaconSync: true })

@@ -40,8 +40,9 @@ import type {
 } from './types'
 import type { Account } from '@ethereumjs/util'
 
-const debug = createDebugLogger('evm')
+const debug = createDebugLogger('evm:evm')
 const debugGas = createDebugLogger('evm:gas')
+const debugPrecompiles = createDebugLogger('evm:precompiles')
 
 // very ugly way to detect if we are running in a browser
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
@@ -76,10 +77,11 @@ export interface EVMOpts {
    * - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
    *   [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) - Warm COINBASE (`experimental`)
    * - [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`experimental`)
-   * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
-   * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
+   * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction
+   * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode
    * - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge)
-   *   [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations (`experimental`)
+   * - [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (`experimental`)
+   * - [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations
    * - [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022
    *
    * *Annotations:*
@@ -363,13 +365,13 @@ export class EVM implements EVMInterface {
     if (!message.code || message.code.length === 0) {
       exit = true
       if (this.DEBUG) {
-        debug(`Exit early on no code`)
+        debug(`Exit early on no code (CALL)`)
       }
     }
     if (errorMessage !== undefined) {
       exit = true
       if (this.DEBUG) {
-        debug(`Exit early on value transfer overflowed`)
+        debug(`Exit early on value transfer overflowed (CALL)`)
       }
     }
     if (exit) {
@@ -385,9 +387,6 @@ export class EVM implements EVMInterface {
 
     let result: ExecResult
     if (message.isCompiled) {
-      if (this.DEBUG) {
-        debug(`Run precompile`)
-      }
       result = await this.runPrecompile(
         message.code as PrecompileFunc,
         message.data,
@@ -481,13 +480,13 @@ export class EVM implements EVMInterface {
     if (message.code === undefined || message.code.length === 0) {
       exit = true
       if (this.DEBUG) {
-        debug(`Exit early on no code`)
+        debug(`Exit early on no code (CREATE)`)
       }
     }
     if (errorMessage !== undefined) {
       exit = true
       if (this.DEBUG) {
-        debug(`Exit early on value transfer overflowed`)
+        debug(`Exit early on value transfer overflowed (CREATE)`)
       }
     }
     if (exit) {
@@ -744,7 +743,7 @@ export class EVM implements EVMInterface {
     }
 
     await this.eei.checkpoint()
-    this._transientStorage.checkpoint()
+    if (this._common.isActivatedEIP(1153)) this._transientStorage.checkpoint()
     if (this.DEBUG) {
       debug('-'.repeat(100))
       debug(`message checkpoint`)
@@ -788,29 +787,19 @@ export class EVM implements EVMInterface {
       result.execResult.selfdestruct = {}
       result.execResult.gasRefund = BigInt(0)
     }
-    if (err) {
-      if (
-        this._common.gteHardfork(Hardfork.Homestead) ||
-        err.error !== ERROR.CODESTORE_OUT_OF_GAS
-      ) {
-        result.execResult.logs = []
-        await this.eei.revert()
-        this._transientStorage.revert()
-        if (this.DEBUG) {
-          debug(`message checkpoint reverted`)
-        }
-      } else {
-        // we are in chainstart and the error was the code deposit error
-        // we do like nothing happened.
-        await this.eei.commit()
-        this._transientStorage.commit()
-        if (this.DEBUG) {
-          debug(`message checkpoint committed`)
-        }
+    if (
+      err &&
+      !(this._common.hardfork() === Hardfork.Chainstart && err.error === ERROR.CODESTORE_OUT_OF_GAS)
+    ) {
+      result.execResult.logs = []
+      await this.eei.revert()
+      if (this._common.isActivatedEIP(1153)) this._transientStorage.revert()
+      if (this.DEBUG) {
+        debug(`message checkpoint reverted`)
       }
     } else {
       await this.eei.commit()
-      this._transientStorage.commit()
+      if (this._common.isActivatedEIP(1153)) this._transientStorage.commit()
       if (this.DEBUG) {
         debug(`message checkpoint committed`)
       }
@@ -873,6 +862,7 @@ export class EVM implements EVMInterface {
       gasLimit,
       _common: this._common,
       _EVM: this,
+      _debug: this.DEBUG ? debugPrecompiles : undefined,
     }
 
     return code(opts)

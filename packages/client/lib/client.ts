@@ -65,11 +65,22 @@ export class EthereumClient {
   public started: boolean
 
   /**
+   * Main entrypoint for client initialization.
+   *
+   * Safe creation of a Chain object awaiting the initialization
+   * of the underlying Blockchain object.
+   */
+  public static async create(options: EthereumClientOptions) {
+    const chain = await Chain.create(options)
+    return new this(chain, options)
+  }
+
+  /**
    * Create new node
    */
-  constructor(options: EthereumClientOptions) {
+  protected constructor(chain: Chain, options: EthereumClientOptions) {
     this.config = options.config
-    this.chain = new Chain(options)
+    this.chain = chain
 
     if (this.config.syncmode === SyncMode.Full) {
       this.services = [
@@ -78,7 +89,7 @@ export class EthereumClient {
           chainDB: options.chainDB,
           stateDB: options.stateDB,
           metaDB: options.metaDB,
-          chain: this.chain,
+          chain,
         }),
       ]
     } else {
@@ -86,7 +97,7 @@ export class EthereumClient {
         new LightEthereumService({
           config: this.config,
           chainDB: options.chainDB,
-          chain: this.chain,
+          chain,
         }),
       ]
     }

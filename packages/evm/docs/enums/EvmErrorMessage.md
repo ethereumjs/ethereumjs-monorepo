@@ -21,6 +21,7 @@
 - [INTERNAL\_ERROR](EvmErrorMessage.md#internal_error)
 - [INVALID\_BEGINSUB](EvmErrorMessage.md#invalid_beginsub)
 - [INVALID\_BYTECODE\_RESULT](EvmErrorMessage.md#invalid_bytecode_result)
+- [INVALID\_COMMITMENT](EvmErrorMessage.md#invalid_commitment)
 - [INVALID\_EOF\_FORMAT](EvmErrorMessage.md#invalid_eof_format)
 - [INVALID\_JUMP](EvmErrorMessage.md#invalid_jump)
 - [INVALID\_JUMPSUB](EvmErrorMessage.md#invalid_jumpsub)
@@ -28,6 +29,7 @@
 - [INVALID\_RETURNSUB](EvmErrorMessage.md#invalid_returnsub)
 - [OUT\_OF\_GAS](EvmErrorMessage.md#out_of_gas)
 - [OUT\_OF\_RANGE](EvmErrorMessage.md#out_of_range)
+- [POINT\_GREATER\_THAN\_BLS\_MODULUS](EvmErrorMessage.md#point_greater_than_bls_modulus)
 - [REFUND\_EXHAUSTED](EvmErrorMessage.md#refund_exhausted)
 - [REVERT](EvmErrorMessage.md#revert)
 - [STACK\_OVERFLOW](EvmErrorMessage.md#stack_overflow)
@@ -188,6 +190,16 @@ ___
 
 ___
 
+### INVALID\_COMMITMENT
+
+• **INVALID\_COMMITMENT** = ``"kzg commitment does not match versioned hash"``
+
+#### Defined in
+
+[exceptions.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L37)
+
+___
+
 ### INVALID\_EOF\_FORMAT
 
 • **INVALID\_EOF\_FORMAT** = ``"invalid EOF format"``
@@ -255,6 +267,16 @@ ___
 #### Defined in
 
 [exceptions.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L9)
+
+___
+
+### POINT\_GREATER\_THAN\_BLS\_MODULUS
+
+• **POINT\_GREATER\_THAN\_BLS\_MODULUS** = ``"point greater than BLS modulus"``
+
+#### Defined in
+
+[exceptions.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L36)
 
 ___
 

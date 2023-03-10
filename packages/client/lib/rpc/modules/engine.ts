@@ -153,7 +153,7 @@ const payloadAttributesFieldValidatorsV1 = {
 }
 const payloadAttributesFieldValidatorsV2 = {
   ...payloadAttributesFieldValidatorsV1,
-  withdrawals: validators.array(validators.withdrawal()),
+  withdrawals: validators.optional(validators.array(validators.withdrawal())),
 }
 /**
  * Formats a block to {@link ExecutionPayloadV1}.
@@ -624,15 +624,17 @@ export class Engine {
 
   async newPayloadV2(params: [ExecutionPayloadV2 | ExecutionPayloadV1]): Promise<PayloadStatusV1> {
     const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
+    const withdrawals = (params[0] as ExecutionPayloadV2).withdrawals
+
     if (shanghaiTimestamp === null || parseInt(params[0].timestamp) < shanghaiTimestamp) {
-      if ('withdrawals' in params[0]) {
+      if (withdrawals !== undefined && withdrawals !== null) {
         throw {
           code: INVALID_PARAMS,
           message: 'ExecutionPayloadV1 MUST be used before Shanghai is activated',
         }
       }
     } else if (parseInt(params[0].timestamp) >= shanghaiTimestamp) {
-      if (!('withdrawals' in params[0]) || params[0].withdrawals === null) {
+      if (withdrawals === undefined || withdrawals === null) {
         throw {
           code: INVALID_PARAMS,
           message: 'ExecutionPayloadV2 MUST be used after Shanghai is activated',
@@ -895,7 +897,8 @@ export class Engine {
     if (payloadAttributes !== undefined && payloadAttributes !== null) {
       const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
       const ts = BigInt(payloadAttributes.timestamp)
-      if ('withdrawals' in payloadAttributes) {
+      const withdrawals = (payloadAttributes as PayloadAttributesV2).withdrawals
+      if (withdrawals !== undefined && withdrawals !== null) {
         if (ts < shanghaiTimestamp!) {
           throw {
             code: INVALID_PARAMS,
@@ -996,13 +999,10 @@ export class Engine {
     const payloadId = params[0]
 
     const bundle = this.pendingBlock.blobBundles.get(payloadId)
-
     if (bundle === undefined) {
       throw EngineError.UnknownPayload
     }
 
-    // Remove built blocks once retrieved by CL layer
-    this.pendingBlock.blobBundles.delete(payloadId)
     return {
       blockHash: bundle.blockHash,
       kzgs: bundle.kzgCommitments.map((commitment) => '0x' + commitment.toString('hex')),

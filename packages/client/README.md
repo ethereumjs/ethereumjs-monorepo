@@ -112,15 +112,13 @@ The EthereumJS client is tightly integrated with the EthereumJS [Common](../comm
 The main supported networks are:
 
 - `mainnet` (experimental)
-- `rinkeby`
-- `ropsten`
 - `goerli`
 - `sepolia` (`v0.3.0`+)
 
 Use the CLI `--network` option to switch the network:
 
 ```shell
-ethereumjs --network=rinkeby
+ethereumjs --network=sepolia
 ```
 
 The client currently supports `full` sync being set as a default and has experimental support for `light` sync.
@@ -181,6 +179,28 @@ For a testnet chain, you may skip keystore generation and directly provide lodes
 `./lodestar validator --fromMnemonic "lens risk clerk foot verb planet drill roof boost aim salt omit celery tube list permit motor obvious flash demise churn hold wave hollow" --mnemonicIndexes 0..5`
 
 (Modify the mnemonic and range indices as per your validator configuration).
+
+#### Running EthereumJS/Lodestar on Sepolia
+
+A suited network to test the EthereumJS/Lodestar client combination is the Sepolia network, being still somewhat lightweight but nevertheless being actively used with a significant transaction load.
+
+To sync the EthereumJS client pre-Merge run:
+
+```shell
+ethereumjs --network=sepolia
+```
+
+After the Merge you need to expand and start with JSON RPC and Engine API endpoints exposed:
+
+```shell
+ethereumjs --network=sepolia --rpc --rpcEngine
+```
+
+Then start the Lodestar client with:
+
+```shell
+./lodestar beacon --network=sepolia --jwt-secret=[PATH-TO-JWT-SECRET-FROM-ETHEREUMJS-CLIENT]
+```
 
 ## Custom Chains
 

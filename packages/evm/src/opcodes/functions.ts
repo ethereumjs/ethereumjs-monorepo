@@ -918,7 +918,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (length !== BigInt(0)) {
-        data = runState.memory.read(Number(offset), Number(length))
+        data = runState.memory.read(Number(offset), Number(length), true)
       }
 
       const ret = await runState.interpreter.create(gasLimit, value, data)
@@ -940,7 +940,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (length !== BigInt(0)) {
-        data = runState.memory.read(Number(offset), Number(length))
+        data = runState.memory.read(Number(offset), Number(length), true)
       }
 
       const ret = await runState.interpreter.create2(
@@ -962,7 +962,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (inLength !== BigInt(0)) {
-        data = runState.memory.read(Number(inOffset), Number(inLength))
+        data = runState.memory.read(Number(inOffset), Number(inLength), true)
       }
 
       const gasLimit = runState.messageGasLimit!
@@ -987,7 +987,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (inLength !== BigInt(0)) {
-        data = runState.memory.read(Number(inOffset), Number(inLength))
+        data = runState.memory.read(Number(inOffset), Number(inLength), true)
       }
 
       const ret = await runState.interpreter.callCode(gasLimit, toAddress, value, data)
@@ -1007,7 +1007,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (inLength !== BigInt(0)) {
-        data = runState.memory.read(Number(inOffset), Number(inLength))
+        data = runState.memory.read(Number(inOffset), Number(inLength), true)
       }
 
       const gasLimit = runState.messageGasLimit!
@@ -1121,7 +1121,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (inLength !== BigInt(0)) {
-        data = runState.memory.read(Number(inOffset), Number(inLength))
+        data = runState.memory.read(Number(inOffset), Number(inLength), true)
       }
 
       const ret = await runState.interpreter.callStatic(gasLimit, toAddress, value, data)

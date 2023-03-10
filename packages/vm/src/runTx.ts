@@ -48,7 +48,7 @@ function execHardfork(
  */
 export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // create a reasonable default if no block is given
-  opts.block = opts.block ?? Block.fromBlockData({}, { common: opts.tx.common })
+  opts.block = opts.block ?? Block.fromBlockData({}, { common: this._common })
 
   if (opts.skipHardForkValidation !== true) {
     // Find and set preMerge hf for easy access later
@@ -57,15 +57,12 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // If no pre merge hf found, set it to first hf even if its merge
     const preMergeHf = preMergeIndex >= 0 ? hfs[preMergeIndex].name : hfs[0].name
 
+    // If block and tx don't have a same hardfork, set tx hardfork to block
     if (
       execHardfork(opts.tx.common.hardfork(), preMergeHf) !==
-      execHardfork(this._common.hardfork(), preMergeHf)
+      execHardfork(opts.block._common.hardfork(), preMergeHf)
     ) {
-      // If hardforks aren't same then we can posibily try upgrading tx hardfork but it may
-      // be fraught with challenges. Better to just reject the tx and the tx sender can
-      // update the tx as per new hardfork
-      const msg = _errorMsg('tx has a different hardfork than the vm', this, opts.block, opts.tx)
-      throw new Error(msg)
+      opts.tx.common.setHardfork(opts.block._common.hardfork())
     }
     if (
       execHardfork(opts.block._common.hardfork(), preMergeHf) !==

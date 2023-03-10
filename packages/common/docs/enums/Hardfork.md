@@ -12,7 +12,6 @@
 - [Chainstart](Hardfork.md#chainstart)
 - [Constantinople](Hardfork.md#constantinople)
 - [Dao](Hardfork.md#dao)
-- [Eof](Hardfork.md#eof)
 - [GrayGlacier](Hardfork.md#grayglacier)
 - [Homestead](Hardfork.md#homestead)
 - [Istanbul](Hardfork.md#istanbul)
@@ -22,6 +21,7 @@
 - [MuirGlacier](Hardfork.md#muirglacier)
 - [Petersburg](Hardfork.md#petersburg)
 - [Shanghai](Hardfork.md#shanghai)
+- [ShardingForkDev](Hardfork.md#shardingforkdev)
 - [SpuriousDragon](Hardfork.md#spuriousdragon)
 - [TangerineWhistle](Hardfork.md#tangerinewhistle)
 
@@ -84,16 +84,6 @@ ___
 #### Defined in
 
 [packages/common/src/enums.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L12)
-
-___
-
-### Eof
-
-• **Eof** = ``"eof"``
-
-#### Defined in
-
-[packages/common/src/enums.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L26)
 
 ___
 
@@ -180,6 +170,16 @@ ___
 ### Shanghai
 
 • **Shanghai** = ``"shanghai"``
+
+#### Defined in
+
+[packages/common/src/enums.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L26)
+
+___
+
+### ShardingForkDev
+
+• **ShardingForkDev** = ``"shardingFork"``
 
 #### Defined in
 

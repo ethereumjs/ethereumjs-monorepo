@@ -68,7 +68,7 @@ export class VmState implements EVMStateAccess {
 
     if (this.DEBUG) {
       this._debug('-'.repeat(100))
-      this._debug(`message checkpoint`)
+      this._debug(`state checkpoint`)
     }
   }
 
@@ -89,7 +89,7 @@ export class VmState implements EVMStateAccess {
     }
 
     if (this.DEBUG) {
-      this._debug(`message checkpoint committed`)
+      this._debug(`state checkpoint committed`)
     }
   }
 
@@ -127,7 +127,7 @@ export class VmState implements EVMStateAccess {
     }
 
     if (this.DEBUG) {
-      this._debug(`message checkpoint reverted`)
+      this._debug(`state checkpoint reverted`)
     }
   }
 

@@ -4,6 +4,7 @@ import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
+import { AbstractLevel } from 'abstract-level'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 import * as td from 'testdouble'
@@ -213,10 +214,14 @@ tape('[Miner]', async (t) => {
 
     // disable consensus to skip PoA block signer validation
     ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
-    // tx as at Harfork.Berlin so lets change the vm's hardfork
+
     chain.putBlocks = (blocks: Block[]) => {
-      t.equal(blocks[0].transactions.length, 0, 'new block should not include tx')
-      t.equal(txPool.txsInPool, 0, 'transaction should also have been removed from pool')
+      t.equal(
+        blocks[0].transactions.length,
+        0,
+        'new block should not include tx due to hardfork mismatch'
+      )
+      t.equal(txPool.txsInPool, 1, 'transaction should remain in pool')
       miner.stop()
       txPool.stop()
     }
@@ -229,6 +234,9 @@ tape('[Miner]', async (t) => {
     async (t) => {
       t.plan(4)
       const chain = new FakeChain() as any
+      const _config = {
+        ...config,
+      }
       const service = new FullEthereumService({
         config,
         chain,
@@ -264,6 +272,57 @@ tape('[Miner]', async (t) => {
       await wait(500)
     }
   )
+  t.test('assembleBlocks() -> with saveReceipts', async (t) => {
+    t.plan(9)
+    const chain = new FakeChain() as any
+    const config = new Config({ transports: [], accounts, mine: true, common, saveReceipts: true })
+    const service = new FullEthereumService({
+      config,
+      chain,
+      metaDB: new AbstractLevel({
+        encodings: { utf8: true, buffer: true },
+      }),
+    })
+    const miner = new Miner({ config, service, skipHardForkValidation: true })
+    const { txPool } = service
+    const { vm, receiptsManager } = service.execution
+    txPool.start()
+    miner.start()
+
+    t.ok(receiptsManager, 'receiptsManager should be initialized')
+
+    await setBalance(vm, A.address, BigInt('400000000000001'))
+    await setBalance(vm, B.address, BigInt('400000000000001'))
+
+    // add txs
+    await txPool.add(txA01)
+    await txPool.add(txA02)
+    await txPool.add(txA03)
+    await txPool.add(txB01)
+
+    // disable consensus to skip PoA block signer validation
+    ;(vm.blockchain as any)._validateConsensus = false
+
+    chain.putBlocks = async (blocks: Block[]) => {
+      const msg = 'txs in block should be properly ordered by gasPrice and nonce'
+      const expectedOrder = [txB01, txA01, txA02, txA03]
+      for (const [index, tx] of expectedOrder.entries()) {
+        t.ok(blocks[0].transactions[index]?.hash().equals(tx.hash()), msg)
+      }
+      miner.stop()
+      txPool.stop()
+    }
+    await (miner as any).queueNextAssembly(0)
+    let receipt = await receiptsManager!.getReceipts(txB01.hash())
+    t.ok(receipt, 'receipt should be saved')
+    receipt = await receiptsManager!.getReceipts(txA01.hash())
+    t.ok(receipt, 'receipt should be saved')
+    receipt = await receiptsManager!.getReceipts(txA02.hash())
+    t.ok(receipt, 'receipt should be saved')
+    receipt = await receiptsManager!.getReceipts(txA03.hash())
+    t.ok(receipt, 'receipt should be saved')
+    await wait(500)
+  })
 
   t.test('assembleBlocks() -> should not include tx under the baseFee', async (t) => {
     t.plan(1)
@@ -277,7 +336,7 @@ tape('[Miner]', async (t) => {
     const block = Block.fromBlockData({}, { common })
     Object.defineProperty(chain, 'headers', {
       get() {
-        return { latest: block.header }
+        return { latest: block.header, height: block.header.number }
       },
     })
     Object.defineProperty(chain, 'blocks', {
@@ -428,7 +487,7 @@ tape('[Miner]', async (t) => {
     const common = Common.custom(customChainParams, { baseChain: CommonChain.Rinkeby })
     common.setHardforkByBlockNumber(0)
     const config = new Config({ transports: [], accounts, mine: true, common })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     await chain.open()
     const service = new FullEthereumService({
       config,
@@ -495,7 +554,7 @@ tape('[Miner]', async (t) => {
     const common = new Common({ chain: CommonChain.Ropsten, hardfork: Hardfork.Istanbul })
     ;(common as any)._chainParams['genesis'].difficulty = 1
     const config = new Config({ transports: [], accounts, mine: true, common })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     await chain.open()
     const service = new FullEthereumService({
       config,

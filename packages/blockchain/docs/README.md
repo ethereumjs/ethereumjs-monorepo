@@ -41,4 +41,4 @@ Parses the geth genesis state into Blockchain GenesisState
 
 #### Defined in
 
-[utils.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/utils.ts#L8)
+[utils.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/utils.ts#L9)
