@@ -91,7 +91,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   // set up pre-state
   await setupPreConditions(vm.eei, testData)
 
-  t.ok(vm.stateManager._trie.root().equals(genesisBlock.header.stateRoot), 'correct pre stateRoot')
+  t.deepEquals(vm.stateManager._trie.root(), genesisBlock.header.stateRoot, 'correct pre stateRoot')
 
   async function handleError(error: string | undefined, expectException: string | boolean) {
     if (expectException !== false) {
