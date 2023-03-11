@@ -14,7 +14,7 @@ import * as tape from 'tape'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { inherits } from 'util'
 
-import { DefaultStateManager } from '../src'
+import { DefaultStateManager, idToHash } from '../src/stateManager'
 
 import { createAccount } from './util'
 
@@ -106,7 +106,7 @@ tape('StateManager', (t) => {
 
       const res2 = await stateManager.getAccount(address)
 
-      st.equal(stateManager._cache._cache.begin().pointer[0], address.buf.toString('hex'))
+      st.equal(stateManager._cache._cache.begin().pointer[0], idToHash(address).toString('hex'))
       st.ok(res1.serialize().equals(res2.serialize()))
 
       st.end()
