@@ -27,7 +27,7 @@ type CacheEntry = {
 export class Cache {
   _cache: OrderedMap<any, any>
   _cacheEnd: OrderedMapIterator<any, any>
-  _checkpoints: any[]
+  _checkpoints: number
 
   _getCb: getCb
   _putCb: putCb
@@ -39,7 +39,7 @@ export class Cache {
     this._getCb = opts.getCb
     this._putCb = opts.putCb
     this._deleteCb = opts.deleteCb
-    this._checkpoints = []
+    this._checkpoints = 0
   }
 
   /**
@@ -71,8 +71,8 @@ export class Cache {
     const it = this._cache.find(keyStr)
     if (!it.equals(this._cacheEnd)) {
       const om: OrderedMap<number, CacheEntry> = it.pointer[1]
-      const itOM = om.find(0)
-      if (!itOM.equals(om.end())) {
+      if (!om.empty()) {
+        const itOM = om.end().pre()
         const rlp = itOM.pointer[1].val
         const account = Account.fromRlpSerializedAccount(rlp)
         ;(account as any).virtual = itOM.pointer[1].virtual
@@ -90,8 +90,8 @@ export class Cache {
     const it = this._cache.find(keyStr)
     if (!it.equals(this._cacheEnd)) {
       const om: OrderedMap<number, CacheEntry> = it.pointer[1]
-      const itOM = om.find(0)
-      if (!itOM.equals(om.end())) {
+      if (!om.empty()) {
+        const itOM = om.end().pre()
         return itOM.pointer[1].deleted
       }
     }
@@ -128,8 +128,8 @@ export class Cache {
     const it = this._cache.begin()
     while (!it.equals(this._cacheEnd)) {
       const om: OrderedMap<number, CacheEntry> = it.pointer[1]
-      const itOM = om.find(0)
-      if (!itOM.equals(om.end())) {
+      if (!om.empty()) {
+        const itOM = om.end().pre()
         const value = itOM.pointer[1]
         if (value.modified === true) {
           value.modified = false
@@ -154,22 +154,56 @@ export class Cache {
    * later on be reverted or committed.
    */
   checkpoint(): void {
-    this._checkpoints.push(new OrderedMap(this._cache))
+    this._checkpoints += 1
   }
 
   /**
    * Revert changes to cache last checkpoint (no effect on trie).
    */
   revert(): void {
-    this._cache = this._checkpoints.pop()
+    this._checkpoints -= 1
     this._cacheEnd = this._cache.end()
+
+    const it = this._cache.begin()
+    while (!it.equals(this._cacheEnd)) {
+      const om: OrderedMap<number, CacheEntry> = it.pointer[1]
+      if (!om.empty()) {
+        let itOM = om.end().pre()
+        let lastUpdate = itOM.pointer[0]
+        while (!om.empty() && lastUpdate > this._checkpoints) {
+          om.eraseElementByIterator(itOM)
+          if (!om.empty()) {
+            itOM = om.end().pre()
+            lastUpdate = itOM.pointer[0]
+          }
+        }
+      }
+      it.next()
+    }
   }
 
   /**
    * Commits to current state of cache (no effect on trie).
    */
   commit(): void {
-    this._checkpoints.pop()
+    const it = this._cache.begin()
+    while (!it.equals(this._cacheEnd)) {
+      const om: OrderedMap<number, CacheEntry> = it.pointer[1]
+      if (!om.empty()) {
+        const itOM = om.end().pre()
+        const lastUpdate = itOM.pointer[0]
+        if (!om.empty() && lastUpdate === this._checkpoints) {
+          const el = om.getElementByKey(lastUpdate)
+          if (el !== undefined) {
+            om.eraseElementByKey(lastUpdate)
+            om.setElement(lastUpdate - 1, el)
+          }
+        }
+      }
+      it.next()
+    }
+
+    this._checkpoints -= 1
   }
 
   /**
@@ -205,8 +239,14 @@ export class Cache {
   ): void {
     const keyHex = key.buf.toString('hex')
     const val = value.serialize()
-    const om = new OrderedMap()
-    om.setElement(0, { val, modified, deleted, virtual })
-    this._cache.setElement(keyHex, om)
+    const entry: CacheEntry = { val, modified, deleted, virtual }
+    const it = this._cache.find(keyHex)
+    if (!it.equals(this._cacheEnd)) {
+      const om: OrderedMap<number, CacheEntry> = it.pointer[1]
+      om.setElement(this._checkpoints, entry)
+    } else {
+      const om = new OrderedMap()
+      this._cache.setElement(keyHex, om)
+    }
   }
 }
