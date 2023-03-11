@@ -520,8 +520,6 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async accountExists(address: AccountId): Promise<boolean> {
     const account = this._cache.lookup(idToHash(address))
-    console.log('dbg0')
-    console.log(account)
     if (
       account &&
       ((account as any).virtual === undefined || (account as any).virtual === false) &&
