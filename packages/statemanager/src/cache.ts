@@ -14,6 +14,13 @@ export interface CacheOpts {
   deleteCb: deleteCb
 }
 
+type CacheEntry = {
+  val: Buffer
+  modified: boolean
+  deleted: boolean
+  virtual: boolean
+}
+
 /**
  * @ignore
  */
@@ -63,11 +70,14 @@ export class Cache {
 
     const it = this._cache.find(keyStr)
     if (!it.equals(this._cacheEnd)) {
-      const value = it.pointer[1]
-      const rlp = value.val
-      const account = Account.fromRlpSerializedAccount(rlp)
-      ;(account as any).virtual = value.virtual
-      return account
+      const om: OrderedMap<number, CacheEntry> = it.pointer[1]
+      const itOM = om.find(0)
+      if (!itOM.equals(om.end())) {
+        const rlp = itOM.pointer[1].val
+        const account = Account.fromRlpSerializedAccount(rlp)
+        ;(account as any).virtual = itOM.pointer[1].virtual
+        return account
+      }
     }
   }
 
@@ -79,7 +89,11 @@ export class Cache {
     const keyStr = key.buf.toString('hex')
     const it = this._cache.find(keyStr)
     if (!it.equals(this._cacheEnd)) {
-      return it.pointer[1].deleted
+      const om: OrderedMap<number, CacheEntry> = it.pointer[1]
+      const itOM = om.find(0)
+      if (!itOM.equals(om.end())) {
+        return itOM.pointer[1].deleted
+      }
     }
     return false
   }
@@ -113,18 +127,22 @@ export class Cache {
   async flush(): Promise<void> {
     const it = this._cache.begin()
     while (!it.equals(this._cacheEnd)) {
-      const value = it.pointer[1]
-      if (value.modified === true) {
-        value.modified = false
-        const keyBuf = Buffer.from(it.pointer[0], 'hex')
-        if (value.deleted === false) {
-          const accountRlp = value.val
-          await this._putCb(keyBuf, accountRlp)
-        } else {
-          value.deleted = true
-          value.virtual = true
-          value.val = new Account().serialize()
-          await this._deleteCb(keyBuf)
+      const om: OrderedMap<number, CacheEntry> = it.pointer[1]
+      const itOM = om.find(0)
+      if (!itOM.equals(om.end())) {
+        const value = itOM.pointer[1]
+        if (value.modified === true) {
+          value.modified = false
+          const keyBuf = Buffer.from(it.pointer[0], 'hex')
+          if (value.deleted === false) {
+            const accountRlp = value.val
+            await this._putCb(keyBuf, accountRlp)
+          } else {
+            value.deleted = true
+            value.virtual = true
+            value.val = new Account().serialize()
+            await this._deleteCb(keyBuf)
+          }
         }
       }
       it.next()
@@ -187,6 +205,8 @@ export class Cache {
   ): void {
     const keyHex = key.buf.toString('hex')
     const val = value.serialize()
-    this._cache.setElement(keyHex, { val, modified, deleted, virtual })
+    const om = new OrderedMap()
+    om.setElement(0, { val, modified, deleted, virtual })
+    this._cache.setElement(keyHex, om)
   }
 }
