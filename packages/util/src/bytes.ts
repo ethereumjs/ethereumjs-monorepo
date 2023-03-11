@@ -16,6 +16,7 @@ const hexByByte = new Array<string>(256)
 
 export const bytesToPrefixedHexString = (bytes: Uint8Array): string => {
   let hex = '0x'
+  if (bytes === undefined || bytes.length === 0) return hex
   for (const byte of bytes) {
     if (!hexByByte[byte]) {
       hexByByte[byte] = byte < 16 ? '0' + byte.toString(16) : byte.toString(16)

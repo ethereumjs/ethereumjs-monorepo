@@ -52,7 +52,7 @@ tape('EIP 3540 tests', (t) => {
       !(
         EOF.codeAnalysis(
           concatBytesUnsafe(eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00, 0x00]))
-        ) === undefined
+        ) !== undefined
       ),
       'invalid container length (too long)'
     )
@@ -60,7 +60,7 @@ tape('EIP 3540 tests', (t) => {
       !(
         EOF.codeAnalysis(
           concatBytesUnsafe(eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00]))
-        ) === undefined
+        ) !== undefined
       ),
       'invalid container length (too short)'
     )

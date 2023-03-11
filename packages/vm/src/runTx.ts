@@ -1,7 +1,7 @@
 import { Block, getDataGasPrice } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
-import { Address, KECCAK256_NULL, short, stripHexPrefix, toBytes } from '@ethereumjs/util'
+import { Address, KECCAK256_NULL, bytesToPrefixedHexString, short, toBytes } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
@@ -550,7 +550,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (this.DEBUG) {
     debug(
       `tx run finished hash=${
-        opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
+        opts.tx.isSigned() ? bytesToPrefixedHexString(opts.tx.hash()) : 'unsigned'
       } sender=${caller}`
     )
   }
