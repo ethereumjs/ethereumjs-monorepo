@@ -7,13 +7,14 @@ import type { Account, Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 import { keccak256 } from 'ethereum-cryptography/keccak'
+
 const idToHash = function (accountId: AccountId): Buffer {
   if (Buffer.isBuffer(accountId)) {
     // treat as already hashed
     return accountId
   }
   // hash and return
-  return keccak256(new Uint8Array(accountId.buf)) as Buffer
+  return Buffer.from(keccak256(new Uint8Array(accountId.buf)))
 }
 
 /**
