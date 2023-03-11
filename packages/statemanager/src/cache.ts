@@ -118,7 +118,15 @@ export class Cache {
       const value = it.pointer[1]
       if (value.modified === true) {
         value.modified = false
-        const keyBuf = Buffer.from(it.pointer[0], 'hex')
+        let keyBufString = it.pointer[0]
+        let keyBuf = Buffer.from(it.pointer[0], 'hex')
+        if (keyBuf.compare(Buffer.from('')) === 0) {
+          let keyValArray = keyBufString.split(',')
+          keyBuf = Buffer.alloc(keyValArray.length)
+          for (let i = 0; i < keyBuf.length; i++) {
+            keyBuf.writeUintLE(Number(keyValArray[i]), i, 1)
+          }
+        }
         if (value.deleted === false) {
           const accountRlp = value.val
           await this._putCb(keyBuf, accountRlp)
