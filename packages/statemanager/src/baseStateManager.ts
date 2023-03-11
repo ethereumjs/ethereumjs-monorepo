@@ -1,12 +1,11 @@
 import { debug as createDebugLogger } from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import type { Cache } from './cache'
 import type { AccountFields, AccountId } from './interface'
 import type { DefaultStateManagerOpts } from './stateManager'
 import type { Account, Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-
-import { keccak256 } from 'ethereum-cryptography/keccak'
 
 const idToHash = function (accountId: AccountId): Buffer {
   if (Buffer.isBuffer(accountId)) {

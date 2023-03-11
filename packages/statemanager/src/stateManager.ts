@@ -17,8 +17,8 @@ import { BaseStateManager } from './baseStateManager'
 import { Cache } from './cache'
 
 import type { getCb, putCb } from './cache'
-import type { StateManager, StorageDump, AccountId } from './interface'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { AccountId, StateManager, StorageDump } from './interface'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 export type StorageProof = {
   key: PrefixedHexString

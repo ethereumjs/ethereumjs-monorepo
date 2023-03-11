@@ -1,10 +1,8 @@
 import { Account } from '@ethereumjs/util'
 import { OrderedMap } from 'js-sdsl'
 
-import type { Address } from '@ethereumjs/util'
-import type { OrderedMapIterator } from 'js-sdsl'
-
 import type { AccountId } from './interface'
+import type { OrderedMapIterator } from 'js-sdsl'
 
 export type getCb = (address: AccountId) => Promise<Account | undefined>
 export type putCb = (keyBuf: Buffer, accountRlp: Buffer) => Promise<void>
@@ -118,10 +116,10 @@ export class Cache {
       const value = it.pointer[1]
       if (value.modified === true) {
         value.modified = false
-        let keyBufString = it.pointer[0]
+        const keyBufString = it.pointer[0]
         let keyBuf = Buffer.from(it.pointer[0], 'hex')
         if (keyBuf.compare(Buffer.from('')) === 0) {
-          let keyValArray = keyBufString.split(',')
+          const keyValArray = keyBufString.split(',')
           keyBuf = Buffer.alloc(keyValArray.length)
           for (let i = 0; i < keyBuf.length; i++) {
             keyBuf.writeUintLE(Number(keyValArray[i]), i, 1)
