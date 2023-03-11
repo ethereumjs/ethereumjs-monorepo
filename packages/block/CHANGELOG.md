@@ -6,6 +6,97 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.2.1 - 2023-02-27
+
+- Pinned `@ethereumjs/util` `@chainsafe/ssz` dependency to `v0.9.4` due to ES2021 features used in `v0.10.+` causing compatibility issues, PR [#2555](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2555)
+- Fixed `kzg` imports in `@ethereumjs/tx`, PR [#2552](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2552)
+
+## 4.2.0 - 2023-01-16
+
+**DEPRECATED**: Release is deprecated due to broken dependencies, please update to the subsequent bugfix release version.
+
+### Functional Shanghai Support
+
+This release fully supports all EIPs included in the [Shanghai](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/shanghai.md) feature hardfork scheduled for early 2023. Note that a `timestamp` to trigger the `Shanghai` fork update is only added for the `sepolia` testnet and not yet for `goerli` or `mainnet`.
+
+You can instantiate a Shanghai-enabled Common instance for your transactions with:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+```
+
+### EIP-4844 Shard Blob Transactions Support (experimental)
+
+This release supports an experimental version of the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023).
+
+#### Initialization
+
+To create blocks which include blob transactions you have to active EIP-4844 in the associated `@ethereumjs/common` library:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+```
+
+**Note:** Working with blob transactions needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
+
+### Other Changes
+
+- Handle hardfork defaults consistently, PR [#2467](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2467)
+- New `generateWithdrawalsSSZRoot()` method, PR [#2488](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2488)
+- Allow genesis to be post merge, PR [#2530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2530)
+- Skip extradata check on PoW genesis blocks, PR [#2532](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2532)
+
+## 4.1.0 - 2022-12-09
+
+### Experimental EIP-4895 Beacon Chain Withdrawals Support
+
+This release comes with experimental [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals support, see PR [#2353](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2353) for the plain implementation and PR [#2401](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2401) for updated calls for the CL/EL engine API. Also note that there is a new helper module in [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) with a new dedicated `Withdrawal` class together with additional TypeScript types to ease withdrawal handling.
+
+Withdrawals support can be activated by initializing a respective `Common` object, here is an example for a `Block` object initialization:
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import { Common, Chain } from '@ethereumjs/common'
+import { Address } from '@ethereumjs/util'
+import type { WithdrawalData } from '@ethereumjs/util'
+
+const common = new Common({ chain: Chain.Mainnet, eips: [4895] })
+
+const withdrawal = <WithdrawalData>{
+  index: BigInt(0),
+  validatorIndex: BigInt(0),
+  address: new Address(Buffer.from('20'.repeat(20), 'hex')),
+  amount: BigInt(1000),
+}
+
+const block = Block.fromBlockData(
+  {
+    header: {
+      withdrawalsRoot: Buffer.from(
+        '69f28913c562b0d38f8dc81e72eb0d99052444d301bf8158dc1f3f94a4526357',
+        'hex'
+      ),
+    },
+    withdrawals: [withdrawal],
+  },
+  {
+    common,
+  }
+)
+```
+
+There is a new data option `withdrawals` to pass in system-level withdrawal operations, the block header also needs to contain a matching `withdrawalsRoot`, which is mandatory to be passed in when `EIP-4895` is activated.
+
+Validation of the withdrawals trie can be manually triggered with the new async `Block.validateWithdrawalsTrie()` method.
+
+### Hardfork-By-Time Support
+
+The Block library is now ready to work with hardforks triggered by timestamp, which will first be applied along the `Shanghai` HF, see PR [#2437](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2437). This is achieved by integrating a new timestamp supporting `@ethereumjs/common` library version.
+
 ## 4.0.1 - 2022-10-18
 
 ### Support for Geth genesis.json Genesis Format

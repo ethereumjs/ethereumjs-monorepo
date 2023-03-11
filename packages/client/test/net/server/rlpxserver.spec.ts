@@ -109,8 +109,46 @@ tape('[RlpxServer]', async (t) => {
     t.end()
   })
 
-  t.test('should return rlpx server info', async (t) => {
+  t.test('should return rlpx server info with ip4 as default', async (t) => {
     const config = new Config({ transports: [] })
+    const mockId = '123'
+    const server = new RlpxServer({
+      config,
+      bootnodes: '10.0.0.1:1234,10.0.0.2:1234',
+    })
+    ;(server as any).initDpt = td.func<typeof server['initDpt']>()
+    ;(server as any).initRlpx = td.func<typeof server['initRlpx']>()
+    server.dpt = td.object<typeof server['dpt']>()
+    ;(server as any).rlpx = td.object({
+      _id: mockId,
+      destroy: td.func(),
+    })
+    td.when(
+      server.dpt!.bootstrap({ address: '10.0.0.1', udpPort: 1234, tcpPort: 1234 })
+    ).thenResolve(undefined)
+    td.when(
+      (server.dpt! as any).bootstrap({ address: '10.0.0.2', udpPort: '1234', tcpPort: '1234' })
+    ).thenReject(new Error('err0'))
+    config.events.on(Event.SERVER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
+    await server.start()
+    const nodeInfo = server.getRlpxInfo()
+    t.deepEqual(
+      nodeInfo,
+      {
+        enode: `enode://${mockId}@0.0.0.0:30303`,
+        id: mockId,
+        ip: '0.0.0.0',
+        listenAddr: '0.0.0.0:30303',
+        ports: { discovery: 30303, listener: 30303 },
+      },
+      'get nodeInfo'
+    )
+    await server.stop()
+    t.end()
+  })
+
+  t.test('should return rlpx server info with ip6', async (t) => {
+    const config = new Config({ transports: [], extIP: '::' })
     const mockId = '123'
     const server = new RlpxServer({
       config,
@@ -204,7 +242,7 @@ tape('[RlpxServer]', async (t) => {
     config.events.on(Event.PEER_DISCONNECTED, (peer) => t.equals(peer.id, '01', 'disconnected'))
     config.events.on(Event.SERVER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
     config.events.on(Event.SERVER_LISTENING, (info) =>
-      t.deepEquals(info, { transport: 'rlpx', url: 'enode://ff@[::]:30303' }, 'listening')
+      t.deepEquals(info, { transport: 'rlpx', url: 'enode://ff@0.0.0.0:30303' }, 'listening')
     )
     server.rlpx!.emit('peer:added', rlpxPeer)
     ;(server as any).peers.set('01', { id: '01' } as any)

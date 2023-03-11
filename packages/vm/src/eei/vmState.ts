@@ -47,10 +47,9 @@ export class VmState implements EVMStateAccess {
     this._accessedStorage = [new Map()]
     this._accessedStorageReverted = [new Map()]
 
-    // Safeguard if "process" is not available (browser)
-    if (process !== undefined && typeof process.env.DEBUG !== 'undefined') {
-      this.DEBUG = true
-    }
+    // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
+    this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
+
     this._debug = createDebugLogger('vm:state')
   }
 
@@ -69,7 +68,7 @@ export class VmState implements EVMStateAccess {
 
     if (this.DEBUG) {
       this._debug('-'.repeat(100))
-      this._debug(`message checkpoint`)
+      this._debug(`state checkpoint`)
     }
   }
 
@@ -90,7 +89,7 @@ export class VmState implements EVMStateAccess {
     }
 
     if (this.DEBUG) {
-      this._debug(`message checkpoint committed`)
+      this._debug(`state checkpoint committed`)
     }
   }
 
@@ -128,7 +127,7 @@ export class VmState implements EVMStateAccess {
     }
 
     if (this.DEBUG) {
-      this._debug(`message checkpoint reverted`)
+      this._debug(`state checkpoint reverted`)
     }
   }
 

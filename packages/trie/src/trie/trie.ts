@@ -32,8 +32,6 @@ interface Path {
 
 /**
  * The basic trie interface, use with `import { Trie } from '@ethereumjs/trie'`.
- * In Ethereum applications stick with the {@link SecureTrie} overlay.
- * The API for the base and the secure interface are about the same.
  */
 export class Trie {
   private readonly _opts: TrieOptsWithDefaults = {
@@ -53,8 +51,10 @@ export class Trie {
   protected _root: Buffer
 
   /**
-   * Create a new trie
+   * Creates a new trie.
    * @param opts Options for instantiating the trie
+   *
+   * Note: in most cases, the static {@link Trie.create} constructor should be used.  It uses the same API but provides sensible defaults
    */
   constructor(opts?: TrieOpts) {
     if (opts !== undefined) {
@@ -562,7 +562,7 @@ export class Trie {
 
     // if there is only one branch node left, collapse the branch node
     if (branchNodes.length === 1) {
-      // add the one remaing branch node to node above it
+      // add the one remaining branch node to node above it
       const branchNode = branchNodes[0][1]
       const branchNodeKey = branchNodes[0][0]
 
@@ -592,7 +592,7 @@ export class Trie {
         await this._saveStack(key, stack, opStack)
       }
     } else {
-      // simple removing a leaf and recaluclation the stack
+      // simple removing a leaf and recalculation the stack
       if (parentNode) {
         stack.push(parentNode)
       }
@@ -607,7 +607,7 @@ export class Trie {
    * @private
    * @param key - the key. Should follow the stack
    * @param stack - a stack of nodes to the value given by the key
-   * @param opStack - a stack of levelup operations to commit at the end of this funciton
+   * @param opStack - a stack of levelup operations to commit at the end of this function
    */
   async _saveStack(key: Nibbles, stack: TrieNode[], opStack: BatchDBOp[]): Promise<void> {
     let lastRoot

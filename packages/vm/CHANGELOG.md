@@ -6,6 +6,87 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.4.1 - 2023-02-27
+
+- Pinned `@ethereumjs/util` `@chainsafe/ssz` dependency to `v0.9.4` due to ES2021 features used in `v0.10.+` causing compatibility issues, PR [#2555](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2555)
+- Fixed `kzg` imports, PR [#2552](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2552)
+
+## 6.4.0 - 2023-01-16
+
+**DEPRECATED**: Release is deprecated due to broken dependencies, please update to the subsequent bugfix release version.
+
+### Functional Shanghai Support
+
+This release fully supports all EIPs included in the [Shanghai](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/shanghai.md) feature hardfork scheduled for early 2023. Note that a `timestamp` to trigger the `Shanghai` fork update is only added for the `sepolia` testnet and not yet for `goerli` or `mainnet`.
+
+You can instantiate a Shanghai-enabled Common instance for your transactions with:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+```
+
+Note: that this is only a finalizing release by e.g. integrating an updated `@ethereumjs/common` library with an updated Shanghai HF setting and all Shanghai related EIP functionality has been already released in former releases. Do a fulltext search on the EIP numbers in the EVM/VM CHANGELOG files for additional information and usage instructions.
+
+### Experimental EIP-4844 Shard Blob Transactions Support
+
+This release supports an experimental version of the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023), see PR [#2349](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2349) as well as PRs [#2522](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2522) and [#2526](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2526).
+
+#### Initialization
+
+To run VM/EVM related EIP-4844 functionality you have to active the EIP in the associated `@ethereumjs/common` library:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+```
+
+EIP-4844 comes with a new opcode `DATAHASH` and adds a new point evaluation precompile at address `0x14` in the underlying `@ethereumjs/evm` package.
+
+**Note:** Usage of the point evaluation precompile needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
+
+#### Shard Blob Transactions and Block Building
+
+The VM is now capable of running blob-including txs and blocks with `VM.runTx()` and `VM.runBlock()` taking the new gas costs for blob transactions into account. The underlying EVM `v1.3.0` now supports the new `DATAHASH` opcode and the new point evaluation precompile.
+
+The Block Builder API (see [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm)) has been expanded to now also allow for building blocks including shard blob transactions and calculate the correct values for data gas usage.
+
+### Other Changes
+
+- Added `minerValue` as a getter to the `BlockBuilder` and a result value for `RunTxResult`, PR [#2457](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2457)
+- New option `skipHardforkValidation` for `VM.runTx()` and `VM.runBlock()`, PR [#2486](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2486)
+- **Breaking** (for experimental feature): Changes withdrawal amount representation from WEI to GWEI, see PR [#2483](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2483)
+- More flexible logic to execute pre-/post Merge txs with `VM.runTx()` when exact HF is not known, see PR [#2505](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2505)
+- VM/EEI copy fixes, PR [#2529](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2529)
+- Block builder related logic updates in `VM.buildBlock()` and `VM.runTx()`, PR [#2533](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2533)
+
+## 6.3.0 - 2022-12-09
+
+### Experimental EIP-4895 Beacon Chain Withdrawals Support
+
+This release comes with experimental [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals support, see PR [#2353](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2353) for the plain implementation and PR [#2401](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2401) for updated calls for the CL/EL engine API. Also note that there is a new helper module in [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) with a new dedicated `Withdrawal` class together with additional TypeScript types to ease withdrawal handling.
+
+Withdrawals support can be activated by initializing a respective `Common` object, see [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) library README for an example on how to instantiate a withdrawals block:
+
+```typescript
+import { Common, Chain } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet, eips: [4895] })
+```
+
+In the VM withdrawals blocks can now both be executed with `VM.runBlock()` and build with `VM.buildBlock()` (for a more complex example you can have a look at the EIP tests in `test/api/EIPs/eip-4895-withdrawals.spec.ts`).
+
+### Hardfork-By-Time Support
+
+The VM library is now ready to work with hardforks triggered by timestamp, which will first be applied along the `Shanghai` HF, see PR [#2437](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2437). This is achieved by integrating a new timestamp supporting `@ethereumjs/common` library version.
+
+### Bug Fixes and Other Changes
+
+- More correctly timed `nonce` updates in `VM.runTx()` to avoid certain consensus-critical `nonce`/`account` update constallations. PR [#2404](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2404)
+
+A reminder: This package does not contain the core EVM code any more. For EVM related bugfixes see the associated [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) `v1.2.3` release.
+
 ## 6.2.0 - 2022-10-21
 
 This release replaces the `v6.1.0` release from a couple of days ago which now becomes deprecated. The async event emitter library switch from the `async-eventemitter` package to the `eventemitter2` package turned out to be breaking along parts of the functionality.

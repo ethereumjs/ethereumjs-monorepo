@@ -2,6 +2,12 @@
 
 # Class: ExtensionNode
 
+## Hierarchy
+
+- `Node`
+
+  ↳ **`ExtensionNode`**
+
 ## Table of contents
 
 ### Constructors
@@ -11,19 +17,17 @@
 ### Properties
 
 - [\_nibbles](ExtensionNode.md#_nibbles)
+- [\_terminator](ExtensionNode.md#_terminator)
 - [\_value](ExtensionNode.md#_value)
-
-### Accessors
-
-- [key](ExtensionNode.md#key)
-- [keyLength](ExtensionNode.md#keylength)
-- [value](ExtensionNode.md#value)
 
 ### Methods
 
 - [encodedKey](ExtensionNode.md#encodedkey)
+- [key](ExtensionNode.md#key)
+- [keyLength](ExtensionNode.md#keylength)
 - [raw](ExtensionNode.md#raw)
 - [serialize](ExtensionNode.md#serialize)
+- [value](ExtensionNode.md#value)
 - [decodeKey](ExtensionNode.md#decodekey)
 - [encodeKey](ExtensionNode.md#encodekey)
 
@@ -40,9 +44,13 @@
 | `nibbles` | [`Nibbles`](../README.md#nibbles) |
 | `value` | `Buffer` |
 
+#### Overrides
+
+Node.constructor
+
 #### Defined in
 
-[packages/trie/src/trie/node/extension.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/extension.ts#L13)
+[packages/trie/src/trie/node/extension.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/extension.ts#L8)
 
 ## Properties
 
@@ -50,9 +58,27 @@
 
 • **\_nibbles**: [`Nibbles`](../README.md#nibbles)
 
+#### Inherited from
+
+Node.\_nibbles
+
 #### Defined in
 
-[packages/trie/src/trie/node/extension.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/extension.ts#L10)
+[packages/trie/src/trie/node/node.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/node.ts#L10)
+
+___
+
+### \_terminator
+
+• **\_terminator**: `boolean`
+
+#### Inherited from
+
+Node.\_terminator
+
+#### Defined in
+
+[packages/trie/src/trie/node/node.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/node.ts#L12)
 
 ___
 
@@ -60,83 +86,13 @@ ___
 
 • **\_value**: `Buffer`
 
-#### Defined in
+#### Inherited from
 
-[packages/trie/src/trie/node/extension.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/extension.ts#L11)
-
-## Accessors
-
-### key
-
-• `get` **key**(): [`Nibbles`](../README.md#nibbles)
-
-#### Returns
-
-[`Nibbles`](../README.md#nibbles)
+Node.\_value
 
 #### Defined in
 
-[packages/trie/src/trie/node/extension.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/extension.ts#L26)
-
-• `set` **key**(`k`): `void`
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `k` | [`Nibbles`](../README.md#nibbles) |
-
-#### Returns
-
-`void`
-
-#### Defined in
-
-[packages/trie/src/trie/node/extension.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/extension.ts#L30)
-
-___
-
-### keyLength
-
-• `get` **keyLength**(): `number`
-
-#### Returns
-
-`number`
-
-#### Defined in
-
-[packages/trie/src/trie/node/extension.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/extension.ts#L34)
-
-___
-
-### value
-
-• `get` **value**(): `Buffer`
-
-#### Returns
-
-`Buffer`
-
-#### Defined in
-
-[packages/trie/src/trie/node/extension.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/extension.ts#L38)
-
-• `set` **value**(`v`): `void`
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `v` | `Buffer` |
-
-#### Returns
-
-`void`
-
-#### Defined in
-
-[packages/trie/src/trie/node/extension.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/extension.ts#L42)
+[packages/trie/src/trie/node/node.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/node.ts#L11)
 
 ## Methods
 
@@ -148,9 +104,55 @@ ___
 
 [`Nibbles`](../README.md#nibbles)
 
+#### Inherited from
+
+Node.encodedKey
+
 #### Defined in
 
-[packages/trie/src/trie/node/extension.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/extension.ts#L46)
+[packages/trie/src/trie/node/node.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/node.ts#L44)
+
+___
+
+### key
+
+▸ **key**(`k?`): [`Nibbles`](../README.md#nibbles)
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `k?` | [`Nibbles`](../README.md#nibbles) |
+
+#### Returns
+
+[`Nibbles`](../README.md#nibbles)
+
+#### Inherited from
+
+Node.key
+
+#### Defined in
+
+[packages/trie/src/trie/node/node.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/node.ts#L24)
+
+___
+
+### keyLength
+
+▸ **keyLength**(): `number`
+
+#### Returns
+
+`number`
+
+#### Inherited from
+
+Node.keyLength
+
+#### Defined in
+
+[packages/trie/src/trie/node/node.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/node.ts#L32)
 
 ___
 
@@ -162,9 +164,13 @@ ___
 
 [`Buffer`, `Buffer`]
 
+#### Inherited from
+
+Node.raw
+
 #### Defined in
 
-[packages/trie/src/trie/node/extension.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/extension.ts#L50)
+[packages/trie/src/trie/node/node.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/node.ts#L48)
 
 ___
 
@@ -176,9 +182,37 @@ ___
 
 `Buffer`
 
+#### Inherited from
+
+Node.serialize
+
 #### Defined in
 
-[packages/trie/src/trie/node/extension.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/extension.ts#L54)
+[packages/trie/src/trie/node/node.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/node.ts#L52)
+
+___
+
+### value
+
+▸ **value**(`v?`): `Buffer`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `v?` | `Buffer` |
+
+#### Returns
+
+`Buffer`
+
+#### Inherited from
+
+Node.value
+
+#### Defined in
+
+[packages/trie/src/trie/node/node.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/node.ts#L36)
 
 ___
 
@@ -196,9 +230,13 @@ ___
 
 [`Nibbles`](../README.md#nibbles)
 
+#### Inherited from
+
+Node.decodeKey
+
 #### Defined in
 
-[packages/trie/src/trie/node/extension.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/extension.ts#L22)
+[packages/trie/src/trie/node/node.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/node.ts#L20)
 
 ___
 
@@ -218,4 +256,4 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/extension.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/extension.ts#L18)
+[packages/trie/src/trie/node/extension.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/extension.ts#L12)

@@ -7,6 +7,8 @@ const ceil = (value: number, ceiling: number): number => {
   }
 }
 
+const CONTAINER_SIZE = 8192
+
 /**
  * Memory implements a simple memory model
  * for the ethereum virtual machine.
@@ -30,7 +32,10 @@ export class Memory {
     const newSize = ceil(offset + size, 32)
     const sizeDiff = newSize - this._store.length
     if (sizeDiff > 0) {
-      this._store = Buffer.concat([this._store, Buffer.alloc(sizeDiff)])
+      this._store = Buffer.concat([
+        this._store,
+        Buffer.alloc(Math.ceil(sizeDiff / CONTAINER_SIZE) * CONTAINER_SIZE),
+      ])
     }
   }
 
@@ -50,9 +55,7 @@ export class Memory {
     if (value.length !== size) throw new Error('Invalid value size')
     if (offset + size > this._store.length) throw new Error('Value exceeds memory capacity')
 
-    for (let i = 0; i < size; i++) {
-      this._store[offset + i] = value[i]
-    }
+    value.copy(this._store, offset)
   }
 
   /**
@@ -60,21 +63,16 @@ export class Memory {
    * It fills up the difference between memory's length and `offset + size` with zeros.
    * @param offset - Starting position
    * @param size - How many bytes to read
+   * @param avoidCopy - Avoid memory copy if possible for performance reasons (optional)
    */
-  read(offset: number, size: number): Buffer {
+  read(offset: number, size: number, avoidCopy?: boolean): Buffer {
     this.extend(offset, size)
 
-    const returnBuffer = Buffer.allocUnsafe(size)
-    // Copy the stored "buffer" from memory into the return Buffer
-
-    const loaded = Buffer.from(this._store.slice(offset, offset + size))
-    returnBuffer.fill(loaded, 0, loaded.length)
-
-    if (loaded.length < size) {
-      // fill the remaining part of the Buffer with zeros
-      returnBuffer.fill(0, loaded.length, size)
+    const loaded = this._store.slice(offset, offset + size)
+    if (avoidCopy === true) {
+      return loaded
     }
 
-    return returnBuffer
+    return Buffer.from(loaded)
   }
 }

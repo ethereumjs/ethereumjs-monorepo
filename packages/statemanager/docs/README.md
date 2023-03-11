@@ -8,9 +8,11 @@
 
 - [BaseStateManager](classes/BaseStateManager.md)
 - [DefaultStateManager](classes/DefaultStateManager.md)
+- [EthersStateManager](classes/EthersStateManager.md)
 
 ### Interfaces
 
+- [EthersStateManagerOpts](interfaces/EthersStateManagerOpts.md)
 - [StateAccess](interfaces/StateAccess.md)
 - [StateManager](interfaces/StateManager.md)
 
@@ -49,4 +51,4 @@ ___
 
 #### Defined in
 
-[stateManager.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L32)
+[stateManager.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L29)

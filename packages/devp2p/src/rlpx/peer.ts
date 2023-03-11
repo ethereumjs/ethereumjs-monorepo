@@ -231,17 +231,17 @@ export class Peer extends EventEmitter {
   _sendHello() {
     const debugMsg = `Send HELLO to ${this._socket.remoteAddress}:${
       this._socket.remotePort
-    } capabilities=${(this._capabilities ?? [])
+    }  protocolVersion=${BASE_PROTOCOL_VERSION} capabilities=${(this._capabilities ?? [])
       // Filter out snap because we can't yet provide snap endpoints to the peers
       // TODO: Remove when we can also serve snap requests from other peers
       .filter((c) => c.name !== 'snap')
       .map((c) => `${c.name}${c.version}`)
-      .join(',')}`
+      .join(',')} clientId=${this._clientId}`
     this.debug('HELLO', debugMsg)
     const payload: HelloMsg = [
       int2buffer(BASE_PROTOCOL_VERSION),
       this._clientId,
-      this._capabilities!.map((obj: any) => [Buffer.from(obj.name), int2buffer(obj.version)]),
+      this._capabilities!.map((c) => [Buffer.from(c.name), int2buffer(c.version)]),
       this._port === null ? Buffer.allocUnsafe(0) : int2buffer(this._port),
       this._id,
     ]
@@ -379,9 +379,9 @@ export class Peer extends EventEmitter {
 
     const debugMsg = `Received HELLO ${this._socket.remoteAddress}:${
       this._socket.remotePort
-    } capabilities=${(this._hello.capabilities ?? [])
+    } protocolVersion=${this._hello.protocolVersion} capabilities=${(this._hello.capabilities ?? [])
       .map((c) => `${c.name}${c.version}`)
-      .join(',')}`
+      .join(',')} clientId=${this._hello.clientId}`
     this.debug('HELLO', debugMsg)
 
     if (this._remoteId === null) {
@@ -400,10 +400,10 @@ export class Peer extends EventEmitter {
 
     const shared: any = {}
     for (const item of this._hello.capabilities) {
-      for (const obj of this._capabilities!) {
-        if (obj.name !== item.name || obj.version !== item.version) continue
-        if (shared[obj.name] !== undefined && shared[obj.name].version > obj.version) continue
-        shared[obj.name] = obj
+      for (const c of this._capabilities!) {
+        if (c.name !== item.name || c.version !== item.version) continue
+        if (shared[c.name] !== undefined && shared[c.name].version > c.version) continue
+        shared[c.name] = c
       }
     }
 

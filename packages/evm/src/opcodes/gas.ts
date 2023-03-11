@@ -295,6 +295,11 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += accessAddressEIP2929(runState, runState.interpreter.getAddress(), common, false)
         }
 
+        if (common.isActivatedEIP(3860) === true) {
+          gas +=
+            ((length + BigInt(31)) / BigInt(32)) * common.param('gasPrices', 'initCodeWordCost')
+        }
+
         gas += subMemUsage(runState, offset, length, common)
 
         let gasLimit = BigInt(runState.interpreter.getGasLeft()) - gas
@@ -328,11 +333,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (common.gteHardfork(Hardfork.SpuriousDragon)) {
           // We are at or after Spurious Dragon
           // Call new account gas: account is DEAD and we transfer nonzero value
-          if (
-            (await runState.eei.getAccount(toAddress)).isEmpty() &&
-            !(value === BigInt(0)) &&
-            toAddr !== runState.interpreter.getTxOrigin()
-          ) {
+          if ((await runState.eei.getAccount(toAddress)).isEmpty() && !(value === BigInt(0))) {
             gas += common.param('gasPrices', 'callNewAccount')
           }
         } else if (!(await runState.eei.accountExists(toAddress))) {
@@ -462,6 +463,11 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += accessAddressEIP2929(runState, runState.interpreter.getAddress(), common, false)
         }
 
+        if (common.isActivatedEIP(3860) === true) {
+          gas +=
+            ((length + BigInt(31)) / BigInt(32)) * common.param('gasPrices', 'initCodeWordCost')
+        }
+
         gas += common.param('gasPrices', 'sha3Word') * divCeil(length, BigInt(32))
         let gasLimit = runState.interpreter.getGasLeft() - gas
         gasLimit = maxCallGas(gasLimit, gasLimit, runState, common) // CREATE2 is only available after TangerineWhistle (Constantinople introduced this opcode)
@@ -513,7 +519,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (value > BigInt(0)) {
           gas += common.param('gasPrices', 'authcallValueTransfer')
           const account = await runState.eei.getAccount(toAddress)
-          if (account.isEmpty() && addr !== runState.interpreter.getTxOrigin()) {
+          if (account.isEmpty()) {
             gas += common.param('gasPrices', 'callNewAccount')
           }
         }
@@ -589,7 +595,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           if (balance > BigInt(0)) {
             // This technically checks if account is empty or non-existent
             const empty = (await runState.eei.getAccount(selfdestructToAddress)).isEmpty()
-            if (empty && selfdestructToaddressBigInt !== runState.interpreter.getTxOrigin()) {
+            if (empty) {
               deductGas = true
             }
           }

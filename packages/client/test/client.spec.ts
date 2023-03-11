@@ -38,9 +38,9 @@ tape('[EthereumClient]', async (t) => {
 
   const { EthereumClient } = await import('../lib/client')
 
-  t.test('should initialize correctly', (t) => {
+  t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [] })
-    const client = new EthereumClient({ config })
+    const client = await EthereumClient.create({ config })
     t.ok(client.services[0] instanceof FullEthereumService, 'added service')
     t.end()
   })
@@ -49,7 +49,7 @@ tape('[EthereumClient]', async (t) => {
     t.plan(2)
     const servers = [new Server()] as any
     const config = new Config({ servers })
-    const client = new EthereumClient({ config })
+    const client = await EthereumClient.create({ config })
 
     await client.open()
     t.ok(client.opened, 'opened')
@@ -59,7 +59,7 @@ tape('[EthereumClient]', async (t) => {
   t.test('should start/stop', async (t) => {
     const servers = [new Server()] as any
     const config = new Config({ servers })
-    const client = new EthereumClient({ config })
+    const client = await EthereumClient.create({ config })
     await client.start()
     t.ok(client.started, 'started')
     t.equals(await client.start(), false, 'already started')

@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 
 import { RPCManager, saveReceiptsMethods } from '../lib/rpc'
 import * as modules from '../lib/rpc/modules'
@@ -13,10 +13,10 @@ import type { EthereumClient } from '../lib/client'
 import type { Config } from '../lib/config'
 import type { Server as RPCServer } from 'jayson/promise'
 
-type RPCArgs = {
+export type RPCArgs = {
   rpc: boolean
-  rpcaddr: string
-  rpcport: number
+  rpcAddr: string
+  rpcPort: number
   ws: boolean
   wsPort: number
   wsAddr: string
@@ -26,32 +26,44 @@ type RPCArgs = {
   wsEngineAddr: string
   wsEnginePort: number
   rpcDebug: boolean
-  helprpc: boolean
-  'jwt-secret'?: string
+  helpRpc: boolean
+  jwtSecret?: string
   rpcEngineAuth: boolean
   rpcCors: string
 }
 
 /**
- * Returns a jwt secret from a provided file path, otherwise saves a randomly generated one to datadir
+ * Returns a jwt secret from a provided file path, otherwise saves a randomly generated one to datadir if none already exists
  */
 function parseJwtSecret(config: Config, jwtFilePath?: string): Buffer {
-  let jwtSecret
-  if (jwtFilePath !== undefined) {
-    const jwtSecretContents = readFileSync(jwtFilePath, 'utf-8').trim()
+  let jwtSecret: Buffer
+  const defaultJwtPath = `${config.datadir}/jwtsecret`
+  const usedJwtPath = jwtFilePath !== undefined ? jwtFilePath : defaultJwtPath
+
+  // If jwtFilePath is provided, it should exist
+  if (jwtFilePath !== undefined && !existsSync(jwtFilePath)) {
+    throw new Error(`No file exists at provided jwt secret path=${jwtFilePath}`)
+  }
+
+  if (jwtFilePath !== undefined || existsSync(defaultJwtPath)) {
+    const jwtSecretContents = readFileSync(jwtFilePath ?? defaultJwtPath, 'utf-8').trim()
     const hexPattern = new RegExp(/^(0x|0X)?(?<jwtSecret>[a-fA-F0-9]+)$/, 'g')
     const jwtSecretHex = hexPattern.exec(jwtSecretContents)?.groups?.jwtSecret
     if (jwtSecretHex === undefined || jwtSecretHex.length !== 64) {
       throw Error('Need a valid 256 bit hex encoded secret')
     }
-    config.logger.debug(`Read a hex encoded jwt secret from path=${jwtFilePath}`)
     jwtSecret = Buffer.from(jwtSecretHex, 'hex')
   } else {
-    jwtFilePath = `${config.datadir}/jwtsecret`
+    const folderExists = existsSync(config.datadir)
+    if (!folderExists) {
+      mkdirSync(config.datadir, { recursive: true })
+    }
+
     jwtSecret = Buffer.from(Array.from({ length: 32 }, () => Math.round(Math.random() * 255)))
-    writeFileSync(jwtFilePath, jwtSecret.toString('hex'))
-    config.logger.info(`Wrote a hex encoded random jwt secret to path=${jwtFilePath}`)
+    writeFileSync(defaultJwtPath, jwtSecret.toString('hex'), {})
+    config.logger.info(`New Engine API JWT token created path=${defaultJwtPath}`)
   }
+  config.logger.info(`Using Engine API with JWT token authentication path=${usedJwtPath}`)
   return jwtSecret
 }
 
@@ -63,8 +75,8 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
   const servers: RPCServer[] = []
   const {
     rpc,
-    rpcaddr,
-    rpcport,
+    rpcAddr,
+    rpcPort,
     ws,
     wsPort,
     wsAddr,
@@ -73,7 +85,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     rpcEnginePort,
     wsEngineAddr,
     wsEnginePort,
-    'jwt-secret': jwtSecretPath,
+    jwtSecret: jwtSecretPath,
     rpcEngineAuth,
     rpcCors,
     rpcDebug,
@@ -92,7 +104,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
 
   if (rpc || ws) {
     let rpcHttpServer
-    withEngineMethods = rpcEngine && rpcEnginePort === rpcport && rpcEngineAddr === rpcaddr
+    withEngineMethods = rpcEngine && rpcEnginePort === rpcPort && rpcEngineAddr === rpcAddr
 
     const { server, namespaces, methods } = createRPCServer(manager, {
       methodConfig: withEngineMethods ? MethodConfig.WithEngine : MethodConfig.WithoutEngine,
@@ -116,14 +128,14 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
               }
             : undefined,
       })
-      rpcHttpServer.listen(rpcport)
+      rpcHttpServer.listen(rpcPort)
       logger.info(
-        `Started JSON RPC Server address=http://${rpcaddr}:${rpcport} namespaces=${namespaces}${
+        `Started JSON RPC Server address=http://${rpcAddr}:${rpcPort} namespaces=${namespaces}${
           withEngineMethods ? ' rpcEngineAuth=' + rpcEngineAuth.toString() : ''
         }`
       )
       logger.debug(
-        `Methods available at address=http://${rpcaddr}:${rpcport} namespaces=${namespaces} methods=${Object.keys(
+        `Methods available at address=http://${rpcAddr}:${rpcPort} namespaces=${namespaces} methods=${Object.keys(
           methods
         ).join(',')}`
       )
@@ -134,7 +146,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
         server,
         withEngineMiddleware: withEngineMethods && rpcEngineAuth ? { jwtSecret } : undefined,
       }
-      if (rpcaddr === wsAddr && rpcport === wsPort) {
+      if (rpcAddr === wsAddr && rpcPort === wsPort) {
         // We want to load the websocket upgrade request to the same server
         opts.httpServer = rpcHttpServer
       }
@@ -154,7 +166,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     }
   }
 
-  if (rpcEngine && !(rpc && rpcport === rpcEnginePort && rpcaddr === rpcEngineAddr)) {
+  if (rpcEngine && !(rpc && rpcPort === rpcEnginePort && rpcAddr === rpcEngineAddr)) {
     const { server, namespaces, methods } = createRPCServer(manager, {
       methodConfig: MethodConfig.EngineOnly,
       rpcDebug,

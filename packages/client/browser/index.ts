@@ -79,7 +79,7 @@ export async function createClient(args: any) {
     validateBlocks: true,
     validateConsensus: false,
   })
-  return new EthereumClient({ config, blockchain, chainDB })
+  return EthereumClient.create({ config, blockchain, chainDB })
 }
 
 export async function run(args: any) {

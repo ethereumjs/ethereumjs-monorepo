@@ -42,7 +42,7 @@ export type Proof = {
  *
  * Otherwise the creation of the code hash for the `0x80` contract
  * will be the same as the hash of the empty trie which leads to
- * misbehaviour in the underyling trie library.
+ * misbehaviour in the underlying trie library.
  */
 const CODEHASH_PREFIX = Buffer.from('c')
 

@@ -18,7 +18,7 @@ tape('[SnapSynchronizer]', async (t) => {
   t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const sync = new SnapSynchronizer({ config, pool, chain })
     t.equals(sync.type, 'snap', 'snap type')
     t.end()
@@ -27,7 +27,7 @@ tape('[SnapSynchronizer]', async (t) => {
   t.test('should find best', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const sync = new SnapSynchronizer({
       config,
       interval: 1,

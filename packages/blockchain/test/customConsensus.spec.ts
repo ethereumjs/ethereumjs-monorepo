@@ -127,19 +127,30 @@ tape('Custom consensus validation rules', async (t) => {
 })
 
 tape('consensus transition checks', async (t) => {
-  t.plan(2)
   const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Chainstart })
   const consensus = new fibonacciConsensus()
   const blockchain = await Blockchain.create({ common, consensus })
 
-  t.doesNotThrow(
-    () => (blockchain as any).checkAndTransitionHardForkByNumber(5),
-    'checkAndTransitionHardForkByNumber should not throw with custom consensus'
-  )
+  try {
+    await (blockchain as any).checkAndTransitionHardForkByNumber(5)
+    t.pass('checkAndTransitionHardForkByNumber does not throw with custom consensus')
+  } catch (err: any) {
+    t.fail(
+      `checkAndTransitionHardForkByNumber should not throw with custom consensus, error=${err.message}`
+    )
+  }
+
   ;(blockchain as any).consensus = new EthashConsensus()
   ;(blockchain._common as any).consensusAlgorithm = () => 'fibonacci'
-  t.throws(
-    () => (blockchain as any).checkAndTransitionHardForkByNumber(5),
-    'checkAndTransitionHardForkByNumber should throw when using standard consensus (ethash, clique, casper) but consensus algorithm defined in common is different'
-  )
+
+  try {
+    await (blockchain as any).checkAndTransitionHardForkByNumber(5)
+    t.fail(
+      'checkAndTransitionHardForkByNumber should throw when using standard consensus (ethash, clique, casper) but consensus algorithm defined in common is different'
+    )
+  } catch (err: any) {
+    t.pass(
+      `checkAndTransitionHardForkByNumber correctly throws when using standard consensus (ethash, clique, casper) but consensus algorithm defined in common is different, error=${err.message}`
+    )
+  }
 })

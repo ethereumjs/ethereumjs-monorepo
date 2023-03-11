@@ -1,6 +1,5 @@
-import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Capability, Transaction, TransactionFactory } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
   Address,
   TypeOutput,
@@ -13,6 +12,7 @@ import {
 } from '@ethereumjs/util'
 
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
+import { jsonRpcTx } from '../helpers'
 import { middleware, validators } from '../validation'
 
 import type { EthereumClient } from '../..'
@@ -24,7 +24,7 @@ import type { RpcTx } from '../types'
 import type { Block, JsonRpcBlock } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'
-import type { FeeMarketEIP1559Transaction, JsonRpcTx, TypedTransaction } from '@ethereumjs/tx'
+import type { FeeMarketEIP1559Transaction, Transaction, TypedTransaction } from '@ethereumjs/tx'
 import type { Account } from '@ethereumjs/util'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt, VM } from '@ethereumjs/vm'
 
@@ -73,34 +73,6 @@ type JsonRpcLog = {
 }
 
 /**
- * Returns tx formatted to the standard JSON-RPC fields
- */
-const jsonRpcTx = (tx: TypedTransaction, block?: Block, txIndex?: number): JsonRpcTx => {
-  const txJSON = tx.toJSON()
-  return {
-    blockHash: block ? bufferToHex(block.hash()) : null,
-    blockNumber: block ? bigIntToHex(block.header.number) : null,
-    from: tx.getSenderAddress().toString(),
-    gas: txJSON.gasLimit!,
-    gasPrice: txJSON.gasPrice ?? txJSON.maxFeePerGas!,
-    maxFeePerGas: txJSON.maxFeePerGas,
-    maxPriorityFeePerGas: txJSON.maxPriorityFeePerGas,
-    type: intToHex(tx.type),
-    accessList: txJSON.accessList,
-    chainId: txJSON.chainId,
-    hash: bufferToHex(tx.hash()),
-    input: txJSON.data!,
-    nonce: txJSON.nonce!,
-    to: tx.to?.toString() ?? null,
-    transactionIndex: txIndex !== undefined ? intToHex(txIndex) : null,
-    value: txJSON.value!,
-    v: txJSON.v!,
-    r: txJSON.r!,
-    s: txJSON.s!,
-  }
-}
-
-/**
  * Returns block formatted to the standard JSON-RPC fields
  */
 const jsonRpcBlock = async (
@@ -113,6 +85,13 @@ const jsonRpcBlock = async (
   const transactions = block.transactions.map((tx, txIndex) =>
     includeTransactions ? jsonRpcTx(tx, block, txIndex) : bufferToHex(tx.hash())
   )
+  const withdrawalsAttr =
+    header.withdrawalsRoot !== undefined
+      ? {
+          withdrawalsRoot: header.withdrawalsRoot!,
+          withdrawals: json.withdrawals,
+        }
+      : {}
   const td = await chain.getTd(block.hash(), block.header.number)
   return {
     number: header.number!,
@@ -136,6 +115,8 @@ const jsonRpcBlock = async (
     transactions,
     uncles: block.uncleHeaders.map((uh) => bufferToHex(uh.hash())),
     baseFeePerGas: header.baseFeePerGas,
+    ...withdrawalsAttr,
+    excessDataGas: header.excessDataGas,
   }
 }
 
@@ -306,6 +287,12 @@ export class Eth {
       [validators.blockOption],
     ])
 
+    this.getTransactionByBlockHashAndIndex = middleware(
+      this.getTransactionByBlockHashAndIndex.bind(this),
+      2,
+      [[validators.hex, validators.blockHash], [validators.hex]]
+    )
+
     this.getTransactionByHash = middleware(this.getTransactionByHash.bind(this), 1, [
       [validators.hex],
     ])
@@ -360,6 +347,8 @@ export class Eth {
       1,
       [[validators.blockOption]]
     )
+
+    this.gasPrice = middleware(this.gasPrice.bind(this), 0, [])
   }
 
   /**
@@ -438,12 +427,12 @@ export class Eth {
    *       * gasPrice (optional) - Integer of the gasPrice used for each paid gas
    *       * value (optional) - Integer of the value sent with this transaction
    *       * data (optional) - Hash of the method signature and encoded parameters.
-   *   2. integer block number, or the string "latest", "earliest" or "pending"
+   *   2. integer block number, or the string "latest", "earliest" or "pending" (optional)
    * @returns The amount of gas used.
    */
-  async estimateGas(params: [RpcTx, string]) {
+  async estimateGas(params: [RpcTx, string?]) {
     const [transaction, blockOpt] = params
-    const block = await getBlockByOption(blockOpt, this._chain)
+    const block = await getBlockByOption(blockOpt ?? 'latest', this._chain)
 
     if (this._vm === undefined) {
       throw new Error('missing vm')
@@ -458,8 +447,21 @@ export class Eth {
       transaction.gas = latest.gasLimit as any
     }
 
-    const txData = { ...transaction, gasLimit: transaction.gas }
-    const tx = Transaction.fromTxData(txData, { common: vm._common, freeze: false })
+    if (transaction.gasPrice === undefined && transaction.maxFeePerGas === undefined) {
+      // If no gas price or maxFeePerGas provided, use current block base fee for gas estimates
+      if (transaction.type !== undefined && parseInt(transaction.type) === 2) {
+        transaction.maxFeePerGas = '0x' + block.header.baseFeePerGas?.toString(16)
+      } else if (block.header.baseFeePerGas !== undefined) {
+        transaction.gasPrice = '0x' + block.header.baseFeePerGas?.toString(16)
+      }
+    }
+
+    const txData = {
+      ...transaction,
+      gasLimit: transaction.gas,
+    }
+
+    const tx = TransactionFactory.fromTxData(txData, { common: vm._common, freeze: false })
 
     // set from address
     const from =
@@ -474,6 +476,7 @@ export class Eth {
         skipNonce: true,
         skipBalance: true,
         skipBlockGasLimitValidation: true,
+        block,
       })
       return `0x${totalGasSpent.toString(16)}`
     } catch (error: any) {
@@ -606,6 +609,31 @@ export class Eth {
   }
 
   /**
+   * Returns information about a transaction given a block hash and a transaction's index position.
+   * @param params An array of two parameter:
+   *   1. a block hash
+   *   2. an integer of the transaction index position encoded as a hexadecimal.
+   */
+  async getTransactionByBlockHashAndIndex(params: [string, string]) {
+    try {
+      const [blockHash, txIndexHex] = params
+      const txIndex = parseInt(txIndexHex, 16)
+      const block = await this._chain.getBlock(toBuffer(blockHash))
+      if (block.transactions.length <= txIndex) {
+        return null
+      }
+
+      const tx = block.transactions[txIndex]
+      return jsonRpcTx(tx, block, txIndex)
+    } catch (error: any) {
+      throw {
+        code: INVALID_PARAMS,
+        message: error.message.toString(),
+      }
+    }
+  }
+
+  /**
    * Returns the transaction by hash when available within `--txLookupLimit`
    * @param params An array of one parameter:
    *   1. hash of the transaction
@@ -709,10 +737,11 @@ export class Eth {
             block.header.baseFeePerGas! +
             block.header.baseFeePerGas!
         : (tx as Transaction).gasPrice
+
+      const vmCopy = await this._vm!.copy()
+      vmCopy._common.setHardfork(tx.common.hardfork())
       // Run tx through copied vm to get tx gasUsed and createdAddress
-      const runBlockResult = await (
-        await this._vm!.copy()
-      ).runBlock({
+      const runBlockResult = await vmCopy.runBlock({
         block,
         root: parentBlock.header.stateRoot,
         skipBlockValidation: true,
@@ -840,26 +869,31 @@ export class Eth {
   async sendRawTransaction(params: [string]) {
     const [serializedTx] = params
 
-    const common = this.client.config.chainCommon.copy()
     const { syncTargetHeight } = this.client.config
-    if (
-      (syncTargetHeight === undefined || syncTargetHeight === BigInt(0)) &&
-      !this.client.config.mine
-    ) {
+    if (!this.client.config.synchronized) {
       throw {
         code: INTERNAL_ERROR,
         message: `client is not aware of the current chain height yet (give sync some more time)`,
       }
     }
-    // Set the tx common to an appropriate HF to create a tx
-    // with matching HF rules
-    if (typeof syncTargetHeight === 'bigint' && syncTargetHeight !== BigInt(0)) {
-      common.setHardforkByBlockNumber(syncTargetHeight)
+    const common = this.client.config.chainCommon.copy()
+    const chainHeight = this.client.chain.headers.height
+    let txTargetHeight = syncTargetHeight ?? BigInt(0)
+    // Following step makes sure txTargetHeight > 0
+    if (txTargetHeight <= chainHeight) {
+      txTargetHeight = chainHeight + BigInt(1)
     }
+    common.setHardforkByBlockNumber(txTargetHeight, undefined, Math.floor(Date.now() / 1000))
 
     let tx
     try {
-      tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), { common })
+      const txBuf = toBuffer(serializedTx)
+      if (txBuf[0] === 0x05) {
+        // Blob Transactions sent over RPC are expected to be in Network Wrapper format
+        tx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txBuf, { common })
+      } else {
+        tx = TransactionFactory.fromSerializedData(txBuf, { common })
+      }
     } catch (e: any) {
       throw {
         code: PARSE_ERROR,
@@ -875,10 +909,11 @@ export class Eth {
     }
 
     // Add the tx to own tx pool
-    const { txPool } = this.service as FullEthereumService
+    const { txPool, pool } = this.service as FullEthereumService
 
     try {
       await txPool.add(tx, true)
+      await txPool.sendNewTxHashes([tx.hash()], pool.peers)
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,
@@ -890,7 +925,7 @@ export class Eth {
     if (
       peerPool.peers.length === 0 &&
       !this.client.config.mine &&
-      this._chain.config.chainCommon.consensusType() !== ConsensusType.ProofOfStake
+      this.client.config.isSingleNode === false
     ) {
       throw {
         code: INTERNAL_ERROR,
@@ -978,12 +1013,63 @@ export class Eth {
 
   /**
    * Returns the transaction count for a block given by the block number.
-   * @param params An array of one paramater:
+   * @param params An array of one parameter:
    *  1. integer of a block number, or the string "latest", "earliest" or "pending"
    */
   async getBlockTransactionCountByNumber(params: [string]) {
     const [blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
     return intToHex(block.transactions.length)
+  }
+
+  /**
+   * Gas price oracle.
+   *
+   * Returns a suggested gas price.
+   * @returns a hex code of an integer representing the suggested gas price in wei.
+   */
+  async gasPrice() {
+    const minGasPrice: bigint = this._chain.config.chainCommon.param('gasConfig', 'minPrice')
+    let gasPrice = BigInt(0)
+    const latest = await this._chain.getCanonicalHeadHeader()
+    if (this._vm !== undefined && this._vm._common.isActivatedEIP(1559)) {
+      const baseFee = latest.calcNextBaseFee()
+      let priorityFee = BigInt(0)
+      const block = await this._chain.getBlock(latest.number)
+      for (const tx of block.transactions) {
+        const maxPriorityFeePerGas = (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
+        priorityFee += maxPriorityFeePerGas
+      }
+
+      priorityFee =
+        priorityFee !== BigInt(0) ? priorityFee / BigInt(block.transactions.length) : BigInt(1)
+      gasPrice = baseFee + priorityFee > minGasPrice ? baseFee + priorityFee : minGasPrice
+    } else {
+      // For chains that don't support EIP-1559 we iterate over the last 20
+      // blocks to get an average gas price.
+      const blockIterations = 20 < latest.number ? 20 : latest.number
+      let txCount = BigInt(0)
+      for (let i = 0; i < blockIterations; i++) {
+        const block = await this._chain.getBlock(latest.number - BigInt(i))
+        if (block.transactions.length === 0) {
+          continue
+        }
+
+        for (const tx of block.transactions) {
+          const txGasPrice = (tx as Transaction).gasPrice
+          gasPrice += txGasPrice
+          txCount++
+        }
+      }
+
+      if (txCount > 0) {
+        const avgGasPrice = gasPrice / txCount
+        gasPrice = avgGasPrice > minGasPrice ? avgGasPrice : minGasPrice
+      } else {
+        gasPrice = minGasPrice
+      }
+    }
+
+    return bigIntToHex(gasPrice)
   }
 }

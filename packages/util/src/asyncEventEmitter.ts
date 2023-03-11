@@ -7,13 +7,43 @@
  * https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/async-eventemitter
  */
 
-import { eachSeries } from 'async'
 import { EventEmitter } from 'events'
 type AsyncListener<T, R> =
   | ((data: T, callback?: (result?: R) => void) => Promise<R>)
   | ((data: T, callback?: (result?: R) => void) => void)
 export interface EventMap {
   [event: string]: AsyncListener<any, any>
+}
+
+async function runInSeries(
+  context: any,
+  tasks: Array<(data: unknown, callback?: (error?: Error) => void) => void>,
+  data: unknown
+): Promise<void> {
+  let error: Error | undefined
+  for await (const task of tasks) {
+    try {
+      if (task.length < 2) {
+        //sync
+        task.call(context, data)
+      } else {
+        await new Promise<void>((resolve, reject) => {
+          task.call(context, data, (error) => {
+            if (error) {
+              reject(error)
+            } else {
+              resolve()
+            }
+          })
+        })
+      }
+    } catch (e: unknown) {
+      error = e as Error
+    }
+  }
+  if (error) {
+    throw error
+  }
 }
 
 export class AsyncEventEmitter<T extends EventMap> extends EventEmitter {
@@ -41,28 +71,7 @@ export class AsyncEventEmitter<T extends EventMap> extends EventEmitter {
 
     // A single listener is just a function not an array...
     listeners = Array.isArray(listeners) ? listeners : [listeners]
-
-    eachSeries(
-      listeners.slice(),
-      function (fn: any, next) {
-        let err
-
-        // Support synchronous functions
-        if (fn.length < 2) {
-          try {
-            fn.call(self, data)
-          } catch (e: any) {
-            err = e
-          }
-
-          return next(err)
-        }
-
-        // Async
-        fn.call(self, data, next)
-      },
-      callback
-    )
+    runInSeries(self, listeners.slice(), data).then(callback).catch(callback)
 
     return self.listenerCount(event) > 0
   }

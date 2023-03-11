@@ -169,6 +169,7 @@ const normalHardforks = [
   'berlin',
   'london',
   'merge',
+  'shanghai',
   'arrowGlacier', // This network has no tests, but need to add it due to common generation logic
 ]
 

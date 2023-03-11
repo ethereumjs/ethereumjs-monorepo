@@ -17,11 +17,13 @@ export interface Decoded {
 export function encode(input: Input): Uint8Array {
   if (Array.isArray(input)) {
     const output: Uint8Array[] = []
+    let outputLength = 0
     for (let i = 0; i < input.length; i++) {
-      output.push(encode(input[i]))
+      const encoded = encode(input[i])
+      output.push(encoded)
+      outputLength += encoded.length
     }
-    const buf = concatBytes(...output)
-    return concatBytes(encodeLength(buf.length, 192), buf)
+    return concatBytes(encodeLength(outputLength, 192), ...output)
   }
   const inputBuf = toBytes(input)
   if (inputBuf.length === 1 && inputBuf[0] < 128) {

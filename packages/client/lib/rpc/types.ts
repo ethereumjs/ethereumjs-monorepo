@@ -5,4 +5,7 @@ export interface RpcTx {
   gasPrice?: string
   value?: string
   data?: string
+  maxPriorityFeePerGas?: string
+  maxFeePerGas?: string
+  type?: string
 }

@@ -10,6 +10,29 @@ import { EEI } from '../../src/eei/eei'
 
 const ZeroAddress = Address.zero()
 
+tape('EEI.copy()', async (t) => {
+  const eei = new EEI(
+    new StateManager(),
+    new Common({ chain: 'mainnet', hardfork: 'shanghai' }),
+    await Blockchain.create()
+  )
+  const nonEmptyAccount = Account.fromAccountData({ nonce: 1 })
+  await eei.putAccount(ZeroAddress, nonEmptyAccount)
+  await eei.checkpoint()
+  await eei.commit()
+  const copy = eei.copy()
+  t.equal(
+    (eei as any)._common.hardfork(),
+    (copy as any)._common.hardfork(),
+    'copied EEI should have the same hardfork'
+  )
+  t.equal(
+    (await copy.getAccount(ZeroAddress)).nonce,
+    (await eei.getAccount(ZeroAddress)).nonce,
+    'copy should have same State data'
+  )
+})
+
 tape('EEI', (t) => {
   t.test('should return false on non-existing accounts', async (st) => {
     const eei = new EEI(

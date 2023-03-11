@@ -19,9 +19,9 @@ import { SnapProtocol } from '../../../lib/net/protocol'
 }
 
 tape('[SnapProtocol]', (t) => {
-  t.test('should get properties', (t) => {
+  t.test('should get properties', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     t.ok(typeof p.name === 'string', 'get name')
     t.ok(Array.isArray(p.versions), 'get versions')
@@ -31,7 +31,7 @@ tape('[SnapProtocol]', (t) => {
 
   t.test('should open correctly', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     await p.open()
     t.ok(p.opened, 'opened is true')
@@ -39,9 +39,9 @@ tape('[SnapProtocol]', (t) => {
     t.end()
   })
 
-  t.test('GetAccountRange should encode/decode correctly', (t) => {
+  t.test('GetAccountRange should encode/decode correctly', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     const root = Buffer.from([])
     const reqId = BigInt(1)
@@ -99,9 +99,9 @@ tape('[SnapProtocol]', (t) => {
     t.end()
   })
 
-  t.test('AccountRange should encode/decode correctly', (t) => {
+  t.test('AccountRange should encode/decode correctly', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     /* eslint-disable @typescript-eslint/no-use-before-define */
     const data = RLP.decode(Buffer.from(contractAccountRangeRLP, 'hex')) as unknown
@@ -142,9 +142,9 @@ tape('[SnapProtocol]', (t) => {
     t.end()
   })
 
-  t.test('AccountRange encode/decode should handle account slim body correctly', (t) => {
+  t.test('AccountRange encode/decode should handle account slim body correctly', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const pSlim = new SnapProtocol({ config, chain })
     const pFull = new SnapProtocol({ config, chain, convertSlimBody: true })
     // accountRangeRLP is the corresponding response to getAccountRangeRLP
@@ -182,7 +182,7 @@ tape('[SnapProtocol]', (t) => {
 
   t.test('AccountRange should verify a real sample', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
     /* eslint-disable @typescript-eslint/no-use-before-define */
@@ -220,9 +220,9 @@ tape('[SnapProtocol]', (t) => {
     t.end()
   })
 
-  t.test('GetStorageRanges should encode/decode correctly', (t) => {
+  t.test('GetStorageRanges should encode/decode correctly', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     const root = Buffer.from([])
     const reqId = BigInt(1)
@@ -286,9 +286,9 @@ tape('[SnapProtocol]', (t) => {
     t.end()
   })
 
-  t.test('StorageRanges should encode/decode correctly', (t) => {
+  t.test('StorageRanges should encode/decode correctly', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
     /* eslint-disable @typescript-eslint/no-use-before-define */
@@ -322,7 +322,7 @@ tape('[SnapProtocol]', (t) => {
 
   t.test('StorageRanges should verify a real sample', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
     // Get the handle on the data for the account for which storageRanges has been fetched
@@ -365,9 +365,9 @@ tape('[SnapProtocol]', (t) => {
     t.end()
   })
 
-  t.test('GetByteCodes should encode/decode correctly', (t) => {
+  t.test('GetByteCodes should encode/decode correctly', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     const reqId = BigInt(1)
     const hashes = [
@@ -407,7 +407,7 @@ tape('[SnapProtocol]', (t) => {
 
   t.test('ByteCodes should encode/decode correctly', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
     const codesRes = RLP.decode(Buffer.from(byteCodesRLP, 'hex')) as unknown
@@ -434,7 +434,7 @@ tape('[SnapProtocol]', (t) => {
 
   t.test('ByteCodes should verify a real sample', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
     /* eslint-disable @typescript-eslint/no-use-before-define */

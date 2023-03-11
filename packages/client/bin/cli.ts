@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 
+import { Block } from '@ethereumjs/block'
 import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
-import { Address, toBuffer } from '@ethereumjs/util'
+import { RLP } from '@ethereumjs/rlp'
+import { initKZG } from '@ethereumjs/tx'
+import { Address, arrToBufArr, short, toBuffer } from '@ethereumjs/util'
+import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
-import { existsSync } from 'fs'
+import { existsSync, writeFileSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import { Level } from 'level'
 import { homedir } from 'os'
@@ -14,12 +18,16 @@ import * as readline from 'readline'
 import { EthereumClient } from '../lib/client'
 import { Config, DataDirectory, SyncMode } from '../lib/config'
 import { getLogger } from '../lib/logging'
+import { Event } from '../lib/types'
 import { parseMultiaddrs } from '../lib/util'
 
 import { helprpc, startRPCServers } from './startRpc'
 
 import type { Logger } from '../lib/logging'
 import type { FullEthereumService } from '../lib/service'
+import type { ClientOpts } from '../lib/types'
+import type { RPCArgs } from './startRpc'
+import type { BlockBuffer } from '@ethereumjs/block'
 import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
 import type { AbstractLevel } from 'abstract-level'
 
@@ -32,28 +40,28 @@ const networks = Object.entries(Common._getInitializedChains().names)
 
 let logger: Logger
 
-const args = yargs(hideBin(process.argv))
+const args: ClientOpts = yargs(hideBin(process.argv))
   .option('network', {
     describe: 'Network',
     choices: networks.map((n) => n[1]),
     default: 'mainnet',
   })
-  .option('network-id', {
+  .option('networkId', {
     describe: 'Network ID',
     choices: networks.map((n) => parseInt(n[0])),
     default: undefined,
   })
-  .option('syncmode', {
+  .option('syncMode', {
     describe: 'Blockchain sync mode (light sync experimental)',
     choices: Object.values(SyncMode),
     default: Config.SYNCMODE_DEFAULT,
   })
-  .option('lightserv', {
+  .option('lightServe', {
     describe: 'Serve light peer requests',
     boolean: true,
     default: Config.LIGHTSERV_DEFAULT,
   })
-  .option('datadir', {
+  .option('dataDir', {
     describe: 'Data directory for the blockchain',
     default: `${homedir()}/Library/Ethereum/ethereumjs`,
   })
@@ -68,6 +76,12 @@ const args = yargs(hideBin(process.argv))
   .option('gethGenesis', {
     describe: 'Import a geth genesis file for running a custom network',
     coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+  })
+  .option('mergeForkIdPostMerge', {
+    describe:
+      'Place mergeForkIdTransition hardfork before (false) or after (true) Merge hardfork in the custom gethGenesis',
+    boolean: true,
+    default: true,
   })
   .option('transports', {
     describe: 'Network transports',
@@ -94,11 +108,11 @@ const args = yargs(hideBin(process.argv))
     describe: 'Enable the JSON-RPC server with HTTP endpoint',
     boolean: true,
   })
-  .option('rpcport', {
+  .option('rpcPort', {
     describe: 'HTTP-RPC server listening port',
     default: 8545,
   })
-  .option('rpcaddr', {
+  .option('rpcAddr', {
     describe: 'HTTP-RPC server listening interface address',
     default: 'localhost',
   })
@@ -143,15 +157,15 @@ const args = yargs(hideBin(process.argv))
     boolean: true,
     default: true,
   })
-  .option('jwt-secret', {
+  .option('jwtSecret', {
     describe: 'Provide a file containing a hex encoded jwt secret for Engine RPC server',
     coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
   })
-  .option('helprpc', {
+  .option('helpRpc', {
     describe: 'Display the JSON RPC help with a list of all RPC methods implemented (and exit)',
     boolean: true,
   })
-  .option('loglevel', {
+  .option('logLevel', {
     describe: 'Logging verbosity',
     choices: ['error', 'warn', 'info', 'debug'],
     default: 'info',
@@ -233,7 +247,6 @@ const args = yargs(hideBin(process.argv))
   .option('mine', {
     describe: 'Enable private custom network mining (beta)',
     boolean: true,
-    default: false,
   })
   .option('unlock', {
     describe: `Path to file where private key (without 0x) is stored or comma separated list of accounts to unlock -
@@ -276,7 +289,18 @@ const args = yargs(hideBin(process.argv))
     describe:
       'Block number to start syncing from. Must be lower than the local chain tip. Note: this is destructive and removes blocks from the blockchain, please back up your datadir before using.',
     number: true,
-  }).argv
+  })
+  .option('isSingleNode', {
+    describe:
+      'To run client in single node configuration without need to discover the sync height from peer. Particularly useful in test configurations. This flag is automically activated in the "dev" mode',
+    boolean: true,
+  })
+  .option('loadBlocksFromRlp', {
+    describe: 'path to a file of RLP encoded blocks',
+    string: true,
+  })
+  // strict() ensures that yargs throws when an invalid arg is provided
+  .strict().argv
 
 /**
  * Initializes and returns the databases needed for the client
@@ -344,18 +368,14 @@ async function executeBlocks(client: EthereumClient) {
 async function startBlock(client: EthereumClient) {
   if (args.startBlock === undefined) return
   const startBlock = BigInt(args.startBlock)
-  const { blockchain } = client.chain
-  const height = (await blockchain.getCanonicalHeadHeader()).number
-  if (height === startBlock) return
+  const height = client.chain.headers.height
   if (height < startBlock) {
     logger.error(`Cannot start chain higher than current height ${height}`)
     process.exit()
   }
   try {
-    const headBlock = await blockchain.getBlock(startBlock)
-    const delBlock = await blockchain.getBlock(startBlock + BigInt(1))
-    await blockchain.delBlock(delBlock.hash())
-    logger.info(`Chain height reset to ${headBlock.header.number}`)
+    await client.chain.resetCanonicalHead(startBlock)
+    logger.info(`Chain height reset to ${client.chain.headers.height}`)
   } catch (err: any) {
     logger.error(`Error setting back chain in startBlock: ${err}`)
     process.exit()
@@ -381,23 +401,31 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
       genesisState: customGenesisState,
       common: config.chainCommon,
       hardforkByHeadBlockNumber: true,
-      validateBlocks: true,
       validateConsensus,
+      validateBlocks: true,
     })
     config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
   }
 
-  const client = new EthereumClient({
+  const client = await EthereumClient.create({
     config,
     blockchain,
     ...dbs,
   })
+  await client.open()
 
   if (typeof args.startBlock === 'number') {
     await startBlock(client)
   }
 
-  await client.open()
+  // update client's sync status and start txpool if synchronized
+  client.config.updateSynchronizedState(client.chain.headers.latest)
+  if (client.config.synchronized === true) {
+    const fullService = client.services.find((s) => s.name === 'eth')
+    // The service might not be FullEthereumService even if we cast it as one,
+    // so txPool might not exist on it
+    ;(fullService as FullEthereumService).txPool?.checkRunState()
+  }
 
   if (args.executeBlocks !== undefined) {
     // Special block execution debug mode (does not change any state)
@@ -405,6 +433,44 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
   } else {
     // Regular client start
     await client.start()
+  }
+
+  if (args.loadBlocksFromRlp !== undefined) {
+    // Specifically for Hive simulator, preload blocks provided in RLP format
+    const blockRlp = readFileSync(args.loadBlocksFromRlp)
+    const blocks: Block[] = []
+    let buf = RLP.decode(blockRlp, true)
+    while (buf.data?.length > 0 || buf.remainder?.length > 0) {
+      try {
+        const block = Block.fromValuesArray(arrToBufArr(buf.data) as unknown as BlockBuffer, {
+          common: config.chainCommon,
+          hardforkByBlockNumber: true,
+        })
+        blocks.push(block)
+        buf = RLP.decode(buf.remainder, true)
+        config.logger.info(
+          `Preloading block hash=0x${short(block.header.hash().toString('hex'))} number=${
+            block.header.number
+          }`
+        )
+      } catch (err: any) {
+        config.logger.info(
+          `Encountered error while while preloading chain data  error=${err.message}`
+        )
+        break
+      }
+    }
+
+    if (blocks.length > 0) {
+      if (!client.chain.opened) {
+        await client.chain.open()
+      }
+
+      await client.chain.putBlocks(blocks)
+      const service = client.service('eth') as FullEthereumService
+      await service.execution.open()
+      await service.execution.run()
+    }
   }
   return client
 }
@@ -494,7 +560,7 @@ async function inputAccounts() {
   }
 
   try {
-    const addresses = args.unlock.split(',')
+    const addresses = args.unlock!.split(',')
     const isFile = existsSync(path.resolve(addresses[0]))
     if (!isFile) {
       for (const addressString of addresses) {
@@ -515,7 +581,7 @@ async function inputAccounts() {
         }
       }
     } else {
-      const acc = readFileSync(path.resolve(args.unlock), 'utf-8')
+      const acc = readFileSync(path.resolve(args.unlock!), 'utf-8')
       const privKey = Buffer.from(acc, 'hex')
       const derivedAddress = Address.fromPrivateKey(privKey)
       accounts.push([derivedAddress, privKey])
@@ -547,11 +613,14 @@ function generateAccount(): Account {
  * Main entry point to start a client
  */
 async function run() {
-  if (args.helprpc === true) {
+  if (args.helpRpc === true) {
     // Output RPC help and exit
     return helprpc()
   }
 
+  // TODO sharding: Just initialize kzg library now, in future it can be optimized to be
+  // loaded and initialized on the sharding hardfork activation
+  initKZG(kzg, __dirname + '/../lib/trustedSetups/devnet4.txt')
   // Give network id precedence over network name
   const chain = args.networkId ?? args.network ?? Chain.Mainnet
 
@@ -568,7 +637,7 @@ async function run() {
     args.discDns = false
     if (accounts.length === 0) {
       // If generating new keys delete old chain data to prevent genesis block mismatch
-      removeSync(`${args.datadir}/devnet`)
+      removeSync(`${args.dataDir}/devnet`)
       // Create new account
       accounts.push(generateAccount())
     }
@@ -578,10 +647,10 @@ async function run() {
 
   // Configure common based on args given
   if (
-    typeof args.customChainParams === 'string' ||
-    typeof args.customGenesisState === 'string' ||
-    (typeof args.gethGenesis === 'string' &&
-      (args.network !== 'mainnet' || args.networkId !== undefined))
+    (typeof args.customChain === 'string' ||
+      typeof args.customGenesisState === 'string' ||
+      typeof args.gethGenesis === 'string') &&
+    (args.network !== 'mainnet' || args.networkId !== undefined)
   ) {
     console.error('cannot specify both custom chain parameters and preset network ID')
     process.exit()
@@ -607,7 +676,10 @@ async function run() {
     // Use geth genesis parameters file if specified
     const genesisFile = JSON.parse(readFileSync(args.gethGenesis, 'utf-8'))
     const chainName = path.parse(args.gethGenesis).base.split('.')[0]
-    common = Common.fromGethGenesis(genesisFile, { chain: chainName })
+    common = Common.fromGethGenesis(genesisFile, {
+      chain: chainName,
+      mergeForkIdPostMerge: args.mergeForkIdPostMerge,
+    })
     customGenesisState = parseGethGenesisState(genesisFile)
   }
 
@@ -618,13 +690,15 @@ async function run() {
     process.exit()
   }
 
-  const datadir = args.datadir ?? Config.DATADIR_DEFAULT
+  const datadir = args.dataDir ?? Config.DATADIR_DEFAULT
   const configDirectory = `${datadir}/${common.chainName()}/config`
   ensureDirSync(configDirectory)
   const key = await Config.getClientKey(datadir, common)
   logger = getLogger(args)
   const bootnodes = args.bootnodes !== undefined ? parseMultiaddrs(args.bootnodes) : undefined
   const multiaddrs = args.multiaddrs !== undefined ? parseMultiaddrs(args.multiaddrs) : undefined
+  const mine = args.mine !== undefined ? args.mine : args.dev !== undefined
+  const isSingleNode = args.isSingleNode !== undefined ? args.isSingleNode : args.dev !== undefined
   const config = new Config({
     accounts,
     bootnodes,
@@ -637,28 +711,49 @@ async function run() {
     dnsNetworks: args.dnsNetworks,
     extIP: args.extIP,
     key,
-    lightserv: args.lightserv,
+    lightserv: args.lightServe,
     logger,
     maxPeers: args.maxPeers,
     maxPerRequest: args.maxPerRequest,
     maxFetcherJobs: args.maxFetcherJobs,
-    mine: args.mine === true ? args.mine : args.dev,
+    mine,
     minerCoinbase: args.minerCoinbase,
+    isSingleNode,
     minPeers: args.minPeers,
     multiaddrs,
     port: args.port,
     saveReceipts: args.saveReceipts,
-    syncmode: args.syncmode,
+    syncmode: args.syncMode,
     disableBeaconSync: args.disableBeaconSync,
     forceSnapSync: args.forceSnapSync,
     transports: args.transports,
     txLookupLimit: args.txLookupLimit,
   })
   config.events.setMaxListeners(50)
+  config.events.on(Event.SERVER_LISTENING, (details) => {
+    const networkDir = config.getNetworkDirectory()
+    // Write the transport into a file
+    try {
+      writeFileSync(`${networkDir}/${details.transport}`, details.url)
+    } catch (e) {
+      // In case dir is not really setup, mostly to take care of mockserver in test
+      config.logger.error(`Error writing listener details to disk: ${(e as Error).message}`)
+    }
+  })
+  if (customGenesisState) {
+    const numAccounts = Object.keys(customGenesisState).length
+    config.logger.info(`Reading custom genesis state accounts=${numAccounts}`)
+  }
 
   const client = await startClient(config, customGenesisState)
-  const servers = args.rpc === true || args.rpcEngine === true ? startRPCServers(client, args) : []
-
+  const servers =
+    args.rpc === true || args.rpcEngine === true ? startRPCServers(client, args as RPCArgs) : []
+  if (
+    client.config.chainCommon.gteHardfork(Hardfork.Merge) === true &&
+    (args.rpcEngine === false || args.rpcEngine === undefined)
+  ) {
+    config.logger.warn(`Engine RPC endpoint not activated on a post-Merge HF setup.`)
+  }
   process.on('SIGINT', async () => {
     config.logger.info('Caught interrupt signal. Shutting down...')
     for (const s of servers) {
@@ -670,4 +765,7 @@ async function run() {
   })
 }
 
-run().catch((err) => logger?.error(err.message.toString()) ?? console.error(err))
+run().catch((err) => {
+  console.log(err)
+  logger?.error(err.message.toString()) ?? console.error(err)
+})

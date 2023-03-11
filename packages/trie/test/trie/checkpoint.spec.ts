@@ -84,7 +84,7 @@ tape('testing checkpoints', function (tester) {
     t.end()
   })
 
-  it('should revert to the orginal root', async function (t) {
+  it('should revert to the original root', async function (t) {
     t.ok(trie.hasCheckpoints())
     await trie.revert()
     t.equal(trie.root().toString('hex'), preRoot)
@@ -238,7 +238,7 @@ tape('testing checkpoints', function (tester) {
     await MemoryState.put(KEY, Buffer.from('2'))
     await MemoryState.commit()
 
-    // The CommitedState should not change (not the key/value pairs, not the root, and not the root in DB)
+    // The CommittedState should not change (not the key/value pairs, not the root, and not the root in DB)
     t.equal((await CommittedState.get(KEY))?.toString(), '1')
     t.equal(
       // @ts-expect-error

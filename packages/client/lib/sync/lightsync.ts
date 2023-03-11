@@ -121,7 +121,7 @@ export class LightSynchronizer extends Synchronizer {
         : BigInt(1)
     const count = height - first + BigInt(1)
     if (count < BigInt(0)) return false
-    if (!this.fetcher || this.fetcher.errored) {
+    if (!this.fetcher || this.fetcher.syncErrored) {
       this.fetcher = new HeaderFetcher({
         config: this.config,
         pool: this.pool,

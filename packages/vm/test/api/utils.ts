@@ -48,7 +48,8 @@ export function getTransaction(
   txType = 0,
   sign = false,
   value = '0x00',
-  createContract = false
+  createContract = false,
+  nonce = 0
 ) {
   let to: string | undefined = '0x0000000000000000000000000000000000000000'
   let data = '0x7f7465737432000000000000000000000000000000000000000000000000000000600057'
@@ -60,7 +61,7 @@ export function getTransaction(
   }
 
   const txParams: any = {
-    nonce: 0,
+    nonce,
     gasPrice: 100,
     gasLimit: 90000,
     to,
@@ -87,6 +88,11 @@ export function getTransaction(
     txParams['gasPrice'] = undefined
     txParams['maxFeePerGas'] = BigInt(100)
     txParams['maxPriorityFeePerGas'] = BigInt(10)
+  } else if (txType === 5) {
+    txParams['gasPrice'] = undefined
+    txParams['maxFeePerGas'] = BigInt(1000000000)
+    txParams['maxPriorityFeePerGas'] = BigInt(10)
+    txParams['maxFeePerDataGas'] = BigInt(100)
   }
 
   const tx = TransactionFactory.fromTxData(txParams, { common, freeze: false })

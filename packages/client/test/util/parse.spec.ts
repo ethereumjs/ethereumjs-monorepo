@@ -5,7 +5,7 @@ import { parseMultiaddrs, parseTransports } from '../../lib/util'
 
 tape('[Util/Parse]', (t) => {
   t.test('should parse multiaddrs', (t) => {
-    t.plan(7)
+    t.plan(8)
     t.deepEquals(parseMultiaddrs(''), [], 'handle empty')
     t.deepEquals(
       parseMultiaddrs('10.0.0.1:1234'),
@@ -37,6 +37,11 @@ tape('[Util/Parse]', (t) => {
       'parse multiple'
     )
     t.throws(() => parseMultiaddrs(10 as any), /not a function/, 'throws error')
+    t.deepEquals(
+      parseMultiaddrs('[2607:f8b0:4003:c00::6a]:5678'),
+      [multiaddr('/ip6/2607:f8b0:4003:c00::6a/tcp/5678')],
+      'parse ipv6 multiaddr'
+    )
   })
 
   t.test('should parse transports', (t) => {

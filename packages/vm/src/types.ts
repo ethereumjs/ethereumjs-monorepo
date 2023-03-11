@@ -5,7 +5,7 @@ import type { Common } from '@ethereumjs/common'
 import type { EEIInterface, EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
 import type { StateManager } from '@ethereumjs/statemanager'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
-import type { BigIntLike } from '@ethereumjs/util'
+import type { BigIntLike, WithdrawalData } from '@ethereumjs/util'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt
 
 /**
@@ -43,7 +43,7 @@ export interface PreByzantiumTxReceipt extends BaseTxReceipt {
  */
 export interface PostByzantiumTxReceipt extends BaseTxReceipt {
   /**
-   * Status of transaction, `1` if successful, `0` if an exception occured
+   * Status of transaction, `1` if successful, `0` if an exception occurred
    */
   status: 0 | 1
 }
@@ -172,6 +172,7 @@ export interface BuildBlockOpts {
    */
   headerData?: HeaderData
 
+  withdrawals?: WithdrawalData[]
   /**
    * The block and builder options to use.
    */
@@ -220,6 +221,11 @@ export interface RunBlockOpts {
    * the transactions, the transaction trie and the uncle hash.
    */
   skipBlockValidation?: boolean
+  /**
+   * If true, skips the hardfork validation of vm, block
+   * and tx
+   */
+  skipHardForkValidation?: boolean
   /**
    * if true, will skip "Header validation"
    * If the block has been picked from the blockchain to be executed,
@@ -306,6 +312,12 @@ export interface RunTxOpts {
   skipBlockGasLimitValidation?: boolean
 
   /**
+   * If true, skips the hardfork validation of vm, block
+   * and tx
+   */
+  skipHardForkValidation?: boolean
+
+  /**
    * If true, adds a generated EIP-2930 access list
    * to the `RunTxResult` returned.
    *
@@ -358,6 +370,11 @@ export interface RunTxResult extends EVMResult {
    * EIP-2930 access list generated for the tx (see `reportAccessList` option)
    */
   accessList?: AccessList
+
+  /**
+   * The value that accrues to the miner by this transaction
+   */
+  minerValue: bigint
 }
 
 export interface AfterTxEvent extends RunTxResult {
