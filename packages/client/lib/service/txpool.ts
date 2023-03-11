@@ -1,5 +1,5 @@
 import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
-import { Address, bytesToHex, equalsBytes } from '@ethereumjs/util'
+import { Address, bytesToHex, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
 import Heap = require('qheap')
 
 import type { Config } from '../config'
@@ -694,7 +694,7 @@ export class TxPool {
         .map((obj) => obj.tx)
         .sort((a, b) => Number(a.nonce - b.nonce))
       // Check if the account nonce matches the lowest known tx nonce
-      const { nonce } = await vm.eei.getAccount(Address.fromString(address))
+      const { nonce } = await vm.eei.getAccount(new Address(hexStringToBytes(address)))
       if (txsSortedByNonce[0].nonce !== nonce) {
         // Account nonce does not match the lowest known tx nonce,
         // therefore no txs from this address are currently executable

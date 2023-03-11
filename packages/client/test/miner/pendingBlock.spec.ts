@@ -23,12 +23,12 @@ import { mockBlockchain } from '../rpc/mockBlockchain'
 import type { TypedTransaction } from '@ethereumjs/tx'
 
 const A = {
-  address: Address.fromString('0b90087d864e82a284dca15923f3776de6bb016f'),
+  address: new Address(hexStringToBytes('0b90087d864e82a284dca15923f3776de6bb016f')),
   privateKey: hexStringToBytes('64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
 }
 
 const B = {
-  address: Address.fromString('6f62d8382bf2587361db73ceca28be91b2acb6df'),
+  address: new Address(hexStringToBytes('6f62d8382bf2587361db73ceca28be91b2acb6df')),
   privateKey: hexStringToBytes('2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'),
 }
 

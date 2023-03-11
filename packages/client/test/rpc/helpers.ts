@@ -304,6 +304,6 @@ export function gethGenesisStartLondon(gethGenesis: any) {
  * This address has preallocated balance in file `testdata/geth-genesis/pow.json`
  */
 export const dummy = {
-  addr: Address.fromString('0xcde098d93535445768e8a2345a2f869139f45641'),
+  addr: new Address(hexStringToBytes('0xcde098d93535445768e8a2345a2f869139f45641')),
   privKey: hexStringToBytes('5831aac354d13ff96a0c051af0d44c0931c2a20bdacee034ffbaa2354d84f5f8'),
 }

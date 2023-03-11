@@ -1,3 +1,4 @@
+import { bytesToPrefixedHexString } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { EthereumClient } from '../../lib/client'
@@ -31,7 +32,10 @@ tape('[Util/RPC]', (t) => {
           withEngineMiddleware: { jwtSecret: new Uint8Array(32) },
         })
         const req = { id: 1, method: 'eth_getCanonicalHeadBlock', params: [] }
-        const resp = { id: 1, result: { test: '0x' + new Uint8Array(64, 1).toString('hex') } }
+        const resp = {
+          id: 1,
+          result: { test: bytesToPrefixedHexString(new Uint8Array(64).fill(1)) },
+        }
         const reqBulk = [req, req]
         const respBulk = [resp, { id: 2, error: { err0: '456' } }]
         // Valid

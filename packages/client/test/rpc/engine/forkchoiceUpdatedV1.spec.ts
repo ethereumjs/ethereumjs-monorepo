@@ -1,6 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { bytesToHex, zeros } from '@ethereumjs/util'
+import { bytesToHex, bytesToPrefixedHexString, zeros } from '@ethereumjs/util'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
@@ -195,7 +195,7 @@ tape(`${method}: invalid terminal block with 1+ blocks`, async (t) => {
 
   await chain.putBlocks([newBlock])
   const req = params(method, [
-    { ...validForkChoiceState, headBlockHash: '0x' + newBlock.hash().toString('hex') },
+    { ...validForkChoiceState, headBlockHash: bytesToPrefixedHexString(newBlock.hash()) },
     null,
   ])
   const expectRes = (res: any) => {
