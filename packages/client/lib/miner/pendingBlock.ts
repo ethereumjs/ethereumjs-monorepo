@@ -4,6 +4,9 @@ import {
   TypeOutput,
   bigIntToUnpaddedBytes,
   bytesToHex,
+  bytesToPrefixedHexString,
+  concatBytes,
+  equalsBytes,
   toBytes,
   toType,
   zeros,
@@ -32,8 +35,8 @@ interface PendingBlockOpts {
 
 interface BlobBundle {
   blockHash: string
-  blobs: Buffer[]
-  kzgCommitments: Buffer[]
+  blobs: Uint8Array[]
+  kzgCommitments: Uint8Array[]
 }
 /**
  * In the future this class should build a pending block by keeping the
@@ -96,18 +99,15 @@ export class PendingBlock {
     // potentially included in the fcU in future and can be safely added in uniqueness calc
     const timestampBuf = bigIntToUnpaddedBytes(toType(timestamp ?? 0, TypeOutput.BigInt))
     const gasLimitBuf = bigIntToUnpaddedBytes(gasLimit)
-    const mixHashBuf = toType(mixHash!, TypeOutput.Buffer) ?? zeros(32)
-    const payloadIdBuffer = toBytes(
-      keccak256(Buffer.concat([parentBlock.hash(), mixHashBuf, timestampBuf, gasLimitBuf])).slice(
-        0,
-        8
-      )
+    const mixHashBuf = toType(mixHash!, TypeOutput.Uint8Array) ?? zeros(32)
+    const payloadIdBytes = toBytes(
+      keccak256(concatBytes(parentBlock.hash(), mixHashBuf, timestampBuf, gasLimitBuf)).slice(0, 8)
     )
-    const payloadId = bytesToHex(payloadIdBuffer)
+    const payloadId = bytesToHex(payloadIdBytes)
 
     // If payload has already been triggered, then return the payloadid
     if (this.pendingPayloads.get(payloadId)) {
-      return payloadIdBuffer
+      return payloadIdBytes
     }
 
     // Prune the builders and blobbundles
@@ -176,9 +176,9 @@ export class PendingBlock {
         } else {
           // If there is an error adding a tx, it will be skipped
           this.config.logger.debug(
-            `Pending: Skipping tx 0x${txs[index]
-              .hash()
-              .toString('hex')}, error encountered when trying to add tx:\n${error}`
+            `Pending: Skipping tx ${bytesToPrefixedHexString(
+              txs[index].hash()
+            )}, error encountered when trying to add tx:\n${error}`
           )
         }
       }
@@ -202,15 +202,15 @@ export class PendingBlock {
       )
       this.constructBlobsBundle(payloadId, blobTxs, header.hash())
     }
-    return payloadIdBuffer
+    return payloadIdBytes
   }
 
   /**
    * Stops a pending payload
    */
-  stop(payloadIdBuffer: Buffer | string) {
+  stop(payloadIdBytes: Uint8Array | string) {
     const payloadId =
-      typeof payloadIdBuffer !== 'string' ? bytesToHex(payloadIdBuffer) : payloadIdBuffer
+      typeof payloadIdBytes !== 'string' ? bytesToHex(payloadIdBytes) : payloadIdBytes
     const builder = this.pendingPayloads.get(payloadId)
     if (builder === undefined) return
     // Revert blockBuilder
@@ -224,10 +224,10 @@ export class PendingBlock {
    * Returns the completed block
    */
   async build(
-    payloadIdBuffer: Buffer | string
+    payloadIdBytes: Uint8Array | string
   ): Promise<void | [block: Block, receipts: TxReceipt[], value: bigint]> {
     const payloadId =
-      typeof payloadIdBuffer !== 'string' ? bytesToHex(payloadIdBuffer) : payloadIdBuffer
+      typeof payloadIdBytes !== 'string' ? bytesToHex(payloadIdBytes) : payloadIdBytes
     const builder = this.pendingPayloads.get(payloadId)
     if (!builder) {
       return
@@ -241,8 +241,9 @@ export class PendingBlock {
     // Add new txs that the pool received
     const txs = (await this.txPool.txsByPriceAndNonce(vm, headerData.baseFeePerGas)).filter(
       (tx) =>
-        (builder as any).transactions.some((t: TypedTransaction) => t.hash().equals(tx.hash())) ===
-        false
+        (builder as any).transactions.some((t: TypedTransaction) =>
+          equalsBytes(t.hash(), tx.hash())
+        ) === false
     )
     this.config.logger.info(`Pending: Adding ${txs.length} additional eligible txs`)
     let index = 0
@@ -269,11 +270,11 @@ export class PendingBlock {
           // We can here decide to keep a tx in pool if it belongs to future hf
           // but for simplicity just remove the tx as the sender can always retransmit
           // the tx
-          this.txPool.removeByHash(txs[index].hash().toString('hex'))
+          this.txPool.removeByHash(bytesToHex(txs[index].hash()))
           this.config.logger.error(
-            `Pending: Removed from txPool tx 0x${txs[index]
-              .hash()
-              .toString('hex')} having different hf=${txs[
+            `Pending: Removed from txPool tx ${bytesToPrefixedHexString(
+              txs[index].hash()
+            )} having different hf=${txs[
               index
             ].common.hardfork()} than block vm hf=${vm._common.hardfork()}`
           )
@@ -281,9 +282,9 @@ export class PendingBlock {
           skippedByAddErrors++
           // If there is an error adding a tx, it will be skipped
           this.config.logger.debug(
-            `Pending: Skipping tx 0x${txs[index]
-              .hash()
-              .toString('hex')}, error encountered when trying to add tx:\n${error}`
+            `Pending: Skipping tx ${bytesToPrefixedHexString(
+              txs[index].hash()
+            )}, error encountered when trying to add tx:\n${error}`
           )
         }
       }
@@ -295,9 +296,7 @@ export class PendingBlock {
     this.config.logger.info(
       `Pending: Built block number=${block.header.number} txs=${
         block.transactions.length
-      }${withdrawalsStr} skippedByAddErrors=${skippedByAddErrors}  hash=${block
-        .hash()
-        .toString('hex')}`
+      }${withdrawalsStr} skippedByAddErrors=${skippedByAddErrors}  hash=${bytesToHex(block.hash())}`
     )
 
     // Construct blobs bundle
@@ -317,10 +316,10 @@ export class PendingBlock {
   private constructBlobsBundle = (
     payloadId: string,
     txs: BlobEIP4844Transaction[],
-    blockHash: Buffer
+    blockHash: Uint8Array
   ) => {
-    let blobs: Buffer[] = []
-    let kzgCommitments: Buffer[] = []
+    let blobs: Uint8Array[] = []
+    let kzgCommitments: Uint8Array[] = []
     const bundle = this.blobBundles.get(payloadId)
     if (bundle !== undefined) {
       blobs = bundle.blobs
@@ -335,7 +334,7 @@ export class PendingBlock {
       }
     }
     this.blobBundles.set(payloadId, {
-      blockHash: '0x' + blockHash.toString('hex'),
+      blockHash: bytesToPrefixedHexString(blockHash),
       blobs,
       kzgCommitments,
     })

@@ -36,7 +36,7 @@ type AccountDataResponse = AccountData[] & { completed?: boolean }
  */
 export interface AccountFetcherOptions extends FetcherOptions {
   /** Root hash of the account trie to serve */
-  root: Buffer
+  root: Uint8Array
 
   /** The origin to start account fetcher from */
   first: bigint
@@ -95,7 +95,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    * The stateRoot for the fetcher which sorts of pin it to a snapshot.
    * This might eventually be removed as the snapshots are moving and not static
    */
-  root: Buffer
+  root: Uint8Array
 
   /** The origin to start account fetcher from (including), by default starts from 0 (0x0000...) */
   first: bigint
@@ -157,9 +157,9 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   }
 
   private async verifyRangeProof(
-    stateRoot: Buffer,
-    origin: Buffer,
-    { accounts, proof }: { accounts: AccountData[]; proof: Buffer[] }
+    stateRoot: Uint8Array,
+    origin: Uint8Array,
+    { accounts, proof }: { accounts: AccountData[]; proof: Uint8Array[] }
   ): Promise<boolean> {
     this.debug(
       `verifyRangeProof accounts:${accounts.length} first=${bufferToHex(
@@ -169,7 +169,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
     for (let i = 0; i < accounts.length - 1; i++) {
       // ensure the range is monotonically increasing
-      if (accounts[i].hash.compare(accounts[i + 1].hash) === 1) {
+      if (compareBytes(accounts[i].hash, accounts[i + 1].hash) === 1) {
         throw Error(
           `Account hashes not monotonically increasing: ${i} ${accounts[i].hash} vs ${i + 1} ${
             accounts[i + 1].hash
@@ -185,7 +185,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     return trie.verifyRangeProof(stateRoot, origin, keys[keys.length - 1], keys, values, <any>proof)
   }
 
-  private getOrigin(job: Job<JobTask, AccountData[], AccountData>): Buffer {
+  private getOrigin(job: Job<JobTask, AccountData[], AccountData>): Uint8Array {
     const { task, partialResult } = job
     const { first } = task
     // Snap protocol will automatically pad it with 32 bytes left, so we don't need to worry
@@ -195,7 +195,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     return setLengthLeft(origin, 32)
   }
 
-  private getLimit(job: Job<JobTask, AccountData[], AccountData>): Buffer {
+  private getLimit(job: Job<JobTask, AccountData[], AccountData>): Uint8Array {
     const { task } = job
     const { first, count } = task
     const limit = bigIntToBytes(first + BigInt(count) - BigInt(1))

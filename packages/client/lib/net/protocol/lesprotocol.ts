@@ -1,12 +1,18 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { bigIntToUnpaddedBytes, bytesToBigInt, bytesToInt, intToBytes } from '@ethereumjs/util'
+import {
+  bigIntToUnpaddedBytes,
+  bytesToBigInt,
+  bytesToInt,
+  hexStringToBytes,
+  intToBytes,
+} from '@ethereumjs/util'
 
 import { Protocol } from './protocol'
 
 import type { Chain } from '../../blockchain'
 import type { FlowControl } from './flowcontrol'
 import type { Message, ProtocolOptions } from './protocol'
-import type { BlockHeaderBuffer } from '@ethereumjs/block'
+import type { BlockHeaderBytes } from '@ethereumjs/block'
 
 export interface LesProtocolOptions extends ProtocolOptions {
   /* Blockchain */
@@ -20,7 +26,7 @@ type GetBlockHeadersOpts = {
   /* Request id (default: next internal id) */
   reqId?: bigint
   /* The block's number or hash */
-  block: bigint | Buffer
+  block: bigint | Uint8Array
   /* Max number of blocks to return */
   max: number
   /* Number of blocks to skip apart (default: 0) */
@@ -100,7 +106,7 @@ export class LesProtocol extends Protocol {
       decode: ([reqId, bv, headers]: any) => ({
         reqId: bytesToBigInt(reqId),
         bv: bytesToBigInt(bv),
-        headers: headers.map((h: BlockHeaderBuffer) =>
+        headers: headers.map((h: BlockHeaderBytes) =>
           BlockHeader.fromValuesArray(h, {
             hardforkByBlockNumber: true,
             common: this.config.chainCommon, // eslint-disable-line no-invalid-this
@@ -183,7 +189,7 @@ export class LesProtocol extends Protocol {
     const nextFork = this.config.chainCommon.nextHardforkBlockOrTimestamp(
       this.config.chainCommon.hardfork()
     )
-    const forkID = [hexToBytes(forkHash.slice(2), 'hex'), bigIntToUnpaddedBytes(nextFork ?? 0n)]
+    const forkID = [hexStringToBytes(forkHash.slice(2)), bigIntToUnpaddedBytes(nextFork ?? 0n)]
 
     return {
       networkId: bigIntToUnpaddedBytes(this.chain.networkId),

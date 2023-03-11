@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Transaction } from '@ethereumjs/tx'
-import { toBytes } from '@ethereumjs/util'
+import { equalsBytes, toBytes } from '@ethereumjs/util'
 
 import { dummy } from './helpers'
 
@@ -25,7 +25,7 @@ export function mockBlockchain(options: any = {}) {
   return {
     blocks: { latest: block },
     getBlock: async (val: any) => {
-      if (Buffer.isBuffer(val) && val.equals(new Uint8Array(32))) {
+      if (val instanceof Uint8Array && equalsBytes(val, new Uint8Array(32))) {
         throw Error
       }
       return block

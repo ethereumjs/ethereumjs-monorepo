@@ -1,6 +1,8 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
+import { hexStringToBytes } from '@ethereumjs/util'
 import { randomBytes } from 'crypto'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
@@ -227,23 +229,31 @@ tape('[FullEthereumService]', async (t) => {
     service.execution = {
       receiptsManager: { getReceipts: td.func<any>() },
     } as any
-    const blockHash = new Uint8Array(32, 1)
+    const blockHash = new Uint8Array(32).fill(1)
     const receipts = [
       {
         status: 1 as 0 | 1,
         cumulativeBlockGasUsed: BigInt(100),
         bitvector: new Uint8Array(256),
         logs: [
-          [new Uint8Array(20), [new Uint8Array(32), new Uint8Array(32, 1)], new Uint8Array(10)],
+          [
+            new Uint8Array(20),
+            [new Uint8Array(32), new Uint8Array(32).fill(1)],
+            new Uint8Array(10),
+          ],
         ] as Log[],
         txType: 2,
       },
       {
         status: 0 as 0 | 1,
         cumulativeBlockGasUsed: BigInt(1000),
-        bitvector: new Uint8Array(256, 1),
+        bitvector: new Uint8Array(25).fill(1),
         logs: [
-          [new Uint8Array(20, 1), [new Uint8Array(32, 1), new Uint8Array(32, 1)], new Uint8Array(10)],
+          [
+            new Uint8Array(20).fill(1),
+            [new Uint8Array(32).fill(1), new Uint8Array(32).fill(1)],
+            new Uint8Array(10),
+          ],
         ] as Log[],
         txType: 0,
       },
@@ -285,14 +295,14 @@ tape('[FullEthereumService]', async (t) => {
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     service.txPool.handleAnnouncedTxHashes = async (msg, _peer, _pool) => {
-      st.deepEqual(msg[0], hexToBytes('0xabcd', 'hex'), 'handled NewPooledTransactionhashes')
+      st.deepEqual(msg[0], hexStringToBytes('0xabcd'), 'handled NewPooledTransactionhashes')
       st.end()
     }
 
     await service.handle(
       {
         name: 'NewPooledTransactionHashes',
-        data: [Buffer.from('0xabcd', 'hex')],
+        data: [hexToBytes('0xabcd')],
       },
       'eth',
       undefined as any

@@ -1,3 +1,4 @@
+import { utf8ToBytes } from 'ethereum-cryptography/utils'
 import { EventEmitter } from 'events'
 import { multiaddr } from 'multiaddr'
 import * as tape from 'tape'
@@ -50,7 +51,7 @@ tape('[Libp2pServer]', async (t) => {
       config,
       multiaddrs,
       bootnodes: ['0.0.0.0:3030', '1.1.1.1:3031'],
-      key: Buffer.from('abcd'),
+      key: utf8ToBytes('abcd'),
     })
     t.deepEquals((server as any).multiaddrs, multiaddrs, 'multiaddrs correct')
     t.deepEquals(
@@ -96,7 +97,7 @@ tape('[Libp2pServer]', async (t) => {
     t.plan(12)
     const config = new Config({ transports: [], logger: getLogger({ loglevel: 'off' }) })
     const multiaddrs = [multiaddr('/ip4/6.6.6.6')]
-    const server = new Libp2pServer({ config, multiaddrs, key: Buffer.from('4') })
+    const server = new Libp2pServer({ config, multiaddrs, key: utf8ToBytes('4') })
     const protos: any = [
       { name: 'proto', versions: [1] },
       { name: 'proto', versions: [2] },

@@ -1,3 +1,5 @@
+import { hexStringToBytes, randomBytes } from '@ethereumjs/util'
+import { bytesToHex } from 'ethereum-cryptography/utils'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 
 import { RPCManager, saveReceiptsMethods } from '../lib/rpc'
@@ -35,8 +37,8 @@ export type RPCArgs = {
 /**
  * Returns a jwt secret from a provided file path, otherwise saves a randomly generated one to datadir if none already exists
  */
-function parseJwtSecret(config: Config, jwtFilePath?: string): Buffer {
-  let jwtSecret: Buffer
+function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
+  let jwtSecret: Uint8Array
   const defaultJwtPath = `${config.datadir}/jwtsecret`
   const usedJwtPath = jwtFilePath !== undefined ? jwtFilePath : defaultJwtPath
 
@@ -52,15 +54,15 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Buffer {
     if (jwtSecretHex === undefined || jwtSecretHex.length !== 64) {
       throw Error('Need a valid 256 bit hex encoded secret')
     }
-    jwtSecret = hexToBytes(jwtSecretHex, 'hex')
+    jwtSecret = hexStringToBytes(jwtSecretHex)
   } else {
     const folderExists = existsSync(config.datadir)
     if (!folderExists) {
       mkdirSync(config.datadir, { recursive: true })
     }
 
-    jwtSecret = Buffer.from(Array.from({ length: 32 }, () => Math.round(Math.random() * 255)))
-    writeFileSync(defaultJwtPath, jwtSecret.toString('hex'), {})
+    jwtSecret = randomBytes(32)
+    writeFileSync(defaultJwtPath, bytesToHex(jwtSecret), {})
     config.logger.info(`New Engine API JWT token created path=${defaultJwtPath}`)
   }
   config.logger.info(`Using Engine API with JWT token authentication path=${usedJwtPath}`)
@@ -93,7 +95,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
   const manager = new RPCManager(client, config)
   const { logger } = config
   const jwtSecret =
-    rpcEngine && rpcEngineAuth ? parseJwtSecret(config, jwtSecretPath) : Buffer.from([])
+    rpcEngine && rpcEngineAuth ? parseJwtSecret(config, jwtSecretPath) : new Uint8Array(0)
   let withEngineMethods = false
 
   if ((rpc || rpcEngine) && !config.saveReceipts) {

@@ -9,6 +9,7 @@ import {
   setLengthLeft,
   toBytes,
   toType,
+  utf8ToBytes,
 } from '@ethereumjs/util'
 
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
@@ -108,7 +109,7 @@ const jsonRpcBlock = async (
     difficulty: header.difficulty!,
     totalDifficulty: bigIntToHex(td),
     extraData: header.extraData!,
-    size: intToHex(Buffer.byteLength(JSON.stringify(json))),
+    size: intToHex(utf8ToBytes(JSON.stringify(json)).byteLength),
     gasLimit: header.gasLimit!,
     gasUsed: header.gasUsed!,
     timestamp: header.timestamp!,
@@ -137,7 +138,7 @@ const jsonRpcLog = async (
   blockHash: block ? bytesToHex(block.hash()) : null,
   blockNumber: block ? bigIntToHex(block.header.number) : null,
   address: bytesToHex(log[0]),
-  topics: log[1].map((t) => bytesToHex(t as Buffer)),
+  topics: log[1].map((t) => bytesToHex(t)),
   data: bytesToHex(log[2]),
 })
 
@@ -168,12 +169,14 @@ const jsonRpcReceipt = async (
     receipt.logs.map((l, i) => jsonRpcLog(l, block, tx, txIndex, logIndex + i))
   ),
   logsBloom: bytesToHex(receipt.bitvector),
-  root: Buffer.isBuffer((receipt as PreByzantiumTxReceipt).stateRoot)
-    ? bytesToHex((receipt as PreByzantiumTxReceipt).stateRoot)
-    : undefined,
-  status: Buffer.isBuffer((receipt as PostByzantiumTxReceipt).status)
-    ? intToHex((receipt as PostByzantiumTxReceipt).status)
-    : undefined,
+  root:
+    (receipt as PreByzantiumTxReceipt).stateRoot instanceof Uint8Array
+      ? bytesToHex((receipt as PreByzantiumTxReceipt).stateRoot)
+      : undefined,
+  status:
+    ((receipt as PostByzantiumTxReceipt).status as unknown) instanceof Uint8Array
+      ? intToHex((receipt as PostByzantiumTxReceipt).status)
+      : undefined,
 })
 
 /**
@@ -611,9 +614,7 @@ export class Eth {
     const position = setLengthLeft(toBytes(positionHex), 32)
     const storage = await storageTrie.get(position)
     return storage !== null && storage !== undefined
-      ? bytesToHex(
-          setLengthLeft(Buffer.from(RLP.decode(Uint8Array.from(storage)) as Uint8Array), 32)
-        )
+      ? bytesToHex(setLengthLeft(RLP.decode(Uint8Array.from(storage)) as Uint8Array, 32))
       : '0x'
   }
 

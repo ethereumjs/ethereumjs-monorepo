@@ -7,7 +7,7 @@ import {
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { Lock, bytesToHex } from '@ethereumjs/util'
+import { Lock, bytesToHex, bytesToPrefixedHexString, equalsBytes } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
 import { Event } from '../types'
@@ -138,7 +138,7 @@ export class VMExecution extends Execution {
       }
       if (receipts !== undefined) {
         // Save receipts
-        this.pendingReceipts?.set(block.hash().toString('hex'), receipts)
+        this.pendingReceipts?.set(bytesToHex(block.hash()), receipts)
       }
       // Bypass updating head by using blockchain db directly
       const [hash, num] = [block.hash(), block.header.number]
@@ -202,10 +202,10 @@ export class VMExecution extends Execution {
       // skip emitting the chain update event as we will manually do it
       await this.chain.putBlocks(blocks, true, true)
       for (const block of blocks) {
-        const receipts = this.pendingReceipts?.get(block.hash().toString('hex'))
+        const receipts = this.pendingReceipts?.get(bytesToHex(block.hash()))
         if (receipts) {
           void this.receiptsManager?.saveReceipts(block, receipts)
-          this.pendingReceipts?.delete(block.hash().toString('hex'))
+          this.pendingReceipts?.delete(bytesToHex(block.hash()))
         }
       }
 
@@ -255,7 +255,7 @@ export class VMExecution extends Execution {
     )
 
     let headBlock: Block | undefined
-    let parentState: Buffer | undefined
+    let parentState: Uint8Array | undefined
     let errorBlock: Block | undefined
 
     while (
@@ -263,9 +263,10 @@ export class VMExecution extends Execution {
       (!runOnlybatched ||
         (runOnlybatched &&
           canonicalHead.header.number - startHeadBlock.header.number >=
-            BigInt(this.config.numBlocksPerIteration))) &&
-      (numExecuted === undefined || (loop && numExecuted === this.config.numBlocksPerIteration)) &&
-      startHeadBlock.hash().equals(canonicalHead.hash()) === false
+            BigInt(this.config.numBlocksPerIteration) &&
+          (numExecuted === undefined ||
+            (loop && numExecuted === this.config.numBlocksPerIteration)) &&
+          equalsBytes(startHeadBlock.hash(), canonicalHead.hash()) === false))
     ) {
       let txCounter = 0
       headBlock = undefined
@@ -274,10 +275,10 @@ export class VMExecution extends Execution {
       this.vmPromise = blockchain.iterator(
         'vm',
         async (block: Block, reorg: boolean) => {
-          if (errorBlock) return
+          if (errorBlock !== undefined) return
           // determine starting state for block run
           // if we are just starting or if a chain reorg has happened
-          if (!headBlock || reorg) {
+          if (headBlock === undefined || reorg) {
             const headBlock = await blockchain.getBlock(block.header.parentHash)
             parentState = headBlock.header.stateRoot
           }
@@ -496,9 +497,9 @@ export class VMExecution extends Execution {
         const res = await vm.runBlock({ block, skipHeaderValidation: true })
         const afterTS = Date.now()
         const diffSec = Math.round((afterTS - beforeTS) / 1000)
-        const msg = `Executed block num=${blockNumber} hash=0x${block.hash().toString('hex')} txs=${
-          block.transactions.length
-        } gasUsed=${res.gasUsed} time=${diffSec}secs`
+        const msg = `Executed block num=${blockNumber} hash=${bytesToPrefixedHexString(
+          block.hash()
+        )} txs=${block.transactions.length} gasUsed=${res.gasUsed} time=${diffSec}secs`
         if (diffSec <= this.MAX_TOLERATED_BLOCK_TIME) {
           this.config.logger.info(msg)
         } else {

@@ -19,7 +19,7 @@ export interface ChainOptions {
   /**
    * Database to store blocks and metadata. Should be an abstract-leveldown compliant store.
    */
-  chainDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  chainDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   /**
    * Specify a blockchain which implements the Chain interface
@@ -97,7 +97,7 @@ export interface ChainHeaders {
  */
 export class Chain {
   public config: Config
-  public chainDB: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  public chainDB: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
   public blockchain: Blockchain
   public opened: boolean
 
@@ -338,7 +338,12 @@ export class Chain {
    * @param reverse get blocks in reverse
    * @returns an array of the blocks
    */
-  async getBlocks(block: Buffer | bigint, max = 1, skip = 0, reverse = false): Promise<Block[]> {
+  async getBlocks(
+    block: Uint8Array | bigint,
+    max = 1,
+    skip = 0,
+    reverse = false
+  ): Promise<Block[]> {
     if (!this.opened) throw new Error('Chain closed')
     return this.blockchain.getBlocks(block, max, skip, reverse)
   }
@@ -348,7 +353,7 @@ export class Chain {
    * @param block block hash or number
    * @throws if block is not found
    */
-  async getBlock(block: Buffer | bigint): Promise<Block> {
+  async getBlock(block: Uint8Array | bigint): Promise<Block> {
     if (!this.opened) throw new Error('Chain closed')
     return this.blockchain.getBlock(block)
   }
@@ -416,7 +421,7 @@ export class Chain {
    * @returns list of block headers
    */
   async getHeaders(
-    block: Buffer | bigint,
+    block: Uint8Array | bigint,
     max: number,
     skip: number,
     reverse: boolean
@@ -494,7 +499,7 @@ export class Chain {
    * @param num the block number
    * @returns the td
    */
-  async getTd(hash: Buffer, num: bigint): Promise<bigint> {
+  async getTd(hash: Uint8Array, num: bigint): Promise<bigint> {
     if (!this.opened) throw new Error('Chain closed')
     return this.blockchain.getTotalDifficulty(hash, num)
   }

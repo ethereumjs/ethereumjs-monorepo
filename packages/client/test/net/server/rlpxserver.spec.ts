@@ -1,3 +1,4 @@
+import { equalsBytes, hexStringToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { EventEmitter } from 'events'
 import { multiaddr } from 'multiaddr'
 import * as tape from 'tape'
@@ -10,7 +11,7 @@ tape('[RlpxServer]', async (t) => {
   class RlpxPeer extends EventEmitter {
     accept(_: any, _2: any) {}
     getId() {
-      return Buffer.from([1])
+      return new Uint8Array([1])
     }
     getDisconnectPrefix(_: any) {
       return 'MockedReason'
@@ -51,7 +52,7 @@ tape('[RlpxServer]', async (t) => {
       key: 'abcd',
     })
     t.equals(server.name, 'rlpx', 'get name')
-    t.ok(server.key!.equals(hexToBytes('abcd', 'hex')), 'key parse')
+    t.ok(equalsBytes(server.key!, hexStringToBytes('abcd')), 'key parse')
     t.deepEquals(
       server.bootnodes,
       [multiaddr('/ip4/10.0.0.1/tcp/1234'), multiaddr('/ip4/10.0.0.2/tcp/1234')],
@@ -231,7 +232,7 @@ tape('[RlpxServer]', async (t) => {
     const config = new Config({ transports: [] })
     const server = new RlpxServer({ config })
     const rlpxPeer = new RlpxPeer()
-    td.when(rlpxPeer.getId()).thenReturn(Buffer.from([1]))
+    td.when(rlpxPeer.getId()).thenReturn(new Uint8Array([1]))
     td.when(RlpxPeer.prototype.accept(rlpxPeer, td.matchers.isA(RlpxServer))).thenResolve()
     ;(server as any).initRlpx().catch((error: Error) => {
       throw error
@@ -248,7 +249,7 @@ tape('[RlpxServer]', async (t) => {
     ;(server as any).peers.set('01', { id: '01' } as any)
     server.rlpx!.emit('peer:removed', rlpxPeer)
     server.rlpx!.emit('peer:error', rlpxPeer, new Error('err0'))
-    server.rlpx!._id = hexToBytes('ff', 'hex')
+    server.rlpx!._id = hexStringToBytes('ff')
     server.rlpx!.emit('listening')
   })
 
@@ -257,7 +258,7 @@ tape('[RlpxServer]', async (t) => {
     const config = new Config({ transports: [] })
     const server = new RlpxServer({ config })
     const rlpxPeer = new RlpxPeer()
-    td.when(rlpxPeer.getId()).thenReturn(Buffer.from('test'))
+    td.when(rlpxPeer.getId()).thenReturn(utf8ToBytes('test'))
     td.when(RlpxPeer.prototype.accept(rlpxPeer, td.matchers.isA(RlpxServer))).thenResolve()
     ;(server as any).initRlpx().catch((error: Error) => {
       throw error

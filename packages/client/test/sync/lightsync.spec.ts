@@ -76,7 +76,7 @@ tape('[LightSynchronizer]', async (t) => {
     td.when(sync.best()).thenResolve({ les: { status: { headNum: BigInt(2) } } } as any)
     td.when(sync.latest(td.matchers.anything())).thenResolve({
       number: BigInt(2),
-      hash: () => Buffer.from([]),
+      hash: () => new Uint8Array(0),
     })
     td.when(HeaderFetcher.prototype.fetch(), { delay: 20, times: 2 }).thenResolve(undefined)
     ;(sync as any).chain = { headers: { height: BigInt(3) } }
@@ -113,7 +113,7 @@ tape('[LightSynchronizer]', async (t) => {
     td.when(sync.best()).thenResolve({ les: { status: { headNum: BigInt(2) } } } as any)
     td.when(sync.latest(td.matchers.anything())).thenResolve({
       number: BigInt(2),
-      hash: () => Buffer.from([]),
+      hash: () => new Uint8Array(0),
     })
     td.when(HeaderFetcher.prototype.fetch()).thenResolve(undefined)
     td.when(HeaderFetcher.prototype.fetch()).thenDo(() =>
@@ -147,7 +147,7 @@ tape('[LightSynchronizer]', async (t) => {
     td.when(sync.best()).thenResolve({ les: { status: { headNum: BigInt(2) } } } as any)
     td.when(sync.latest(td.matchers.anything())).thenResolve({
       number: BigInt(2),
-      hash: () => Buffer.from([]),
+      hash: () => new Uint8Array(0),
     })
     td.when(HeaderFetcher.prototype.fetch()).thenResolve(undefined)
     td.when(HeaderFetcher.prototype.fetch()).thenDo(() =>

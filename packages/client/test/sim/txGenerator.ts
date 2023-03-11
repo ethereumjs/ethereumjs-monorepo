@@ -4,7 +4,7 @@ import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
 } from '@ethereumjs/tx/test/utils/blobHelpers'
-import { Address } from '@ethereumjs/util'
+import { Address, bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import { Client } from 'jayson/promise'
@@ -19,12 +19,12 @@ const MAX_USEFUL_BYTES_PER_TX = USEFUL_BYTES_PER_BLOB * MAX_BLOBS_PER_TX - 1
 const BLOB_SIZE = BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB
 
 initKZG(kzg, __dirname + '/../../lib/trustedSetup/devnet4.txt')
-const pkey = hexToBytes('45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8', 'hex')
+const pkey = hexStringToBytes('45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
 const sender = Address.fromPrivateKey(pkey)
 
 function get_padded(data: any, blobs_len: number) {
   const pdata = new Uint8Array(blobs_len * USEFUL_BYTES_PER_BLOB)
-  const datalen = Buffer.byteLength(data)
+  const datalen = (data as Uint8Array).byteLength
   pdata.fill(data, 0, datalen)
   // TODO: if data already fits in a pad, then ka-boom
   pdata[datalen] = 0x80
@@ -32,11 +32,11 @@ function get_padded(data: any, blobs_len: number) {
 }
 
 function get_blob(data: any) {
-  const blob = new Uint8Array(BLOB_SIZE, 'binary')
+  const blob = new Uint8Array(BLOB_SIZE)
   for (let i = 0; i < FIELD_ELEMENTS_PER_BLOB; i++) {
-    const chunk = new Uint8Array(32, 'binary')
+    const chunk = new Uint8Array(32)
     chunk.fill(data.subarray(i * 31, (i + 1) * 31), 0, 31)
-    blob.fill(chunk, i * 32, (i + 1) * 32)
+    blob.fill(chunk as any, i * 32, (i + 1) * 32)
   }
 
   return blob
@@ -44,8 +44,8 @@ function get_blob(data: any) {
 
 // ref: https://github.com/asn-d6/blobbers/blob/packing_benchmarks/src/packer_naive.rs
 function get_blobs(data: any) {
-  data = Buffer.from(data, 'binary')
-  const len = Buffer.byteLength(data)
+  data = hexStringToBytes(data)
+  const len = (data as Uint8Array).byteLength
   if (len === 0) {
     throw Error('invalid blob data')
   }
@@ -57,7 +57,7 @@ function get_blobs(data: any) {
 
   const pdata = get_padded(data, blobs_len)
 
-  const blobs: Buffer[] = []
+  const blobs: Uint8Array[] = []
   for (let i = 0; i < blobs_len; i++) {
     const chunk = pdata.subarray(i * USEFUL_BYTES_PER_BLOB, (i + 1) * USEFUL_BYTES_PER_BLOB)
     const blob = get_blob(chunk)
@@ -123,7 +123,7 @@ async function run(data: any) {
 
   const res = await client.request(
     'eth_sendRawTransaction',
-    ['0x' + serializedWrapper.toString('hex')],
+    [bytesToPrefixedHexString(serializedWrapper)],
     2.0
   )
 
@@ -165,8 +165,8 @@ async function run(data: any) {
     return false
   }
 
-  const expected_kzgs = '0x' + blobTx.kzgCommitments![0].toString('hex')
-  if (blob_kzg !== '0x' + blobTx.kzgCommitments![0].toString('hex')) {
+  const expected_kzgs = bytesToPrefixedHexString(blobTx.kzgCommitments![0])
+  if (blob_kzg !== bytesToPrefixedHexString(blobTx.kzgCommitments![0])) {
     console.log(`Unexpected KZG commitment: expected ${expected_kzgs}, got ${blob_kzg}`)
     return false
   } else {

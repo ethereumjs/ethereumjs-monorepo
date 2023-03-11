@@ -1,7 +1,7 @@
 import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { TransactionFactory, initKZG } from '@ethereumjs/tx'
-import { Address } from '@ethereumjs/util'
+import { Address, hexStringToBytes } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import * as tape from 'tape'
 
@@ -61,10 +61,7 @@ tape(`${method}: call with known payload`, async (t) => {
     hardfork: Hardfork.ShardingForkDev,
   })
   common.setHardfork(Hardfork.ShardingForkDev)
-  const pkey = Buffer.from(
-    '9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355',
-    'hex'
-  )
+  const pkey = hexStringToBytes('9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
   const address = Address.fromPrivateKey(pkey)
   const account = await service.execution.vm.stateManager.getAccount(address)
 

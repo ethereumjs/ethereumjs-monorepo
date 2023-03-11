@@ -1,7 +1,15 @@
 import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { Withdrawal, bigIntToHex, bytesToHex, toBytes, zeros } from '@ethereumjs/util'
+import {
+  Withdrawal,
+  bigIntToHex,
+  bytesToHex,
+  bytesToPrefixedHexString,
+  equalsBytes,
+  toBytes,
+  zeros,
+} from '@ethereumjs/util'
 
 import { PendingBlock } from '../../miner'
 import { short } from '../../util'
@@ -190,14 +198,18 @@ export const blockToExecutionPayload = (block: Block, value: bigint) => {
 /**
  * Recursively finds parent blocks starting from the parentHash.
  */
-const recursivelyFindParents = async (vmHeadHash: Buffer, parentHash: Buffer, chain: Chain) => {
-  if (parentHash.equals(vmHeadHash) || parentHash.equals(new Uint8Array(32))) {
+const recursivelyFindParents = async (
+  vmHeadHash: Uint8Array,
+  parentHash: Uint8Array,
+  chain: Chain
+) => {
+  if (equalsBytes(parentHash, vmHeadHash) || equalsBytes(parentHash, new Uint8Array(32))) {
     return []
   }
   const parentBlocks = []
   const block = await chain.getBlock(parentHash)
   parentBlocks.push(block)
-  while (!parentBlocks[parentBlocks.length - 1].hash().equals(parentHash)) {
+  while (!equalsBytes(parentBlocks[parentBlocks.length - 1].hash(), parentHash)) {
     const block: Block = await chain.getBlock(
       parentBlocks[parentBlocks.length - 1].header.parentHash
     )
@@ -209,7 +221,7 @@ const recursivelyFindParents = async (vmHeadHash: Buffer, parentHash: Buffer, ch
 /**
  * Returns the block hash as a 0x-prefixed hex string if found valid in the blockchain, otherwise returns null.
  */
-const validHash = async (hash: Buffer, chain: Chain): Promise<string | null> => {
+const validHash = async (hash: Uint8Array, chain: Chain): Promise<string | null> => {
   try {
     await chain.getBlock(hash)
   } catch (error: any) {
@@ -221,7 +233,7 @@ const validHash = async (hash: Buffer, chain: Chain): Promise<string | null> => 
 /**
  * Returns the block hash as a 0x-prefixed hex string if found valid in the blockchain, otherwise returns null.
  */
-const validBlock = async (hash: Buffer, chain: Chain): Promise<Block | null> => {
+const validBlock = async (hash: Uint8Array, chain: Chain): Promise<Block | null> => {
   try {
     return await chain.getBlock(hash)
   } catch (error: any) {
@@ -302,7 +314,7 @@ const assembleBlock = async (
     // correctly set to the correct hf
     block = Block.fromBlockData({ header, transactions: txs, withdrawals }, { common })
     // Verify blockHash matches payload
-    if (!block.hash().equals(toBytes(payload.blockHash))) {
+    if (!equalsBytes(block.hash(), toBytes(payload.blockHash))) {
       const validationError = `Invalid blockHash, expected: ${
         payload.blockHash
       }, received: ${bytesToHex(block.hash())}`
@@ -575,7 +587,7 @@ export class Engine {
         optimisticLookup === true ? Status.SYNCING : Status.ACCEPTED
       if (status === Status.ACCEPTED) {
         // Stash the block for a potential forced forkchoice update to it later.
-        this.remoteBlocks.set(block.hash().toString('hex'), block)
+        this.remoteBlocks.set(bytesToHex(block.hash()), block)
       }
       const response = { status, validationError: null, latestValidHash: null }
       return response
@@ -620,7 +632,7 @@ export class Engine {
       return response
     }
 
-    this.remoteBlocks.set(block.hash().toString('hex'), block)
+    this.remoteBlocks.set(bytesToHex(block.hash()), block)
 
     const response = {
       status: Status.VALID,
@@ -857,7 +869,7 @@ export class Engine {
     }
 
     const vmHeadHash = this.chain.headers.latest!.hash()
-    if (!vmHeadHash.equals(headBlock.hash())) {
+    if (!equalsBytes(vmHeadHash, headBlock.hash())) {
       let parentBlocks: Block[] = []
       if (this.chain.headers.latest && this.chain.headers.latest.number < headBlock.header.number) {
         try {
@@ -900,7 +912,7 @@ export class Engine {
      */
     const zeroBlockHash = zeros(32)
     const safe = toBytes(safeBlockHash)
-    if (!safe.equals(headBlock.hash()) && !safe.equals(zeroBlockHash)) {
+    if (!equalsBytes(safe, headBlock.hash()) && !equalsBytes(safe, zeroBlockHash)) {
       try {
         await this.chain.getBlock(safe)
       } catch (error) {
@@ -912,7 +924,7 @@ export class Engine {
       }
     }
     const finalized = toBytes(finalizedBlockHash)
-    if (!finalized.equals(zeroBlockHash)) {
+    if (!equalsBytes(finalized, zeroBlockHash)) {
       try {
         await this.chain.getBlock(finalized)
       } catch (error) {
@@ -1085,8 +1097,8 @@ export class Engine {
 
     return {
       blockHash: bundle.blockHash,
-      kzgs: bundle.kzgCommitments.map((commitment) => '0x' + commitment.toString('hex')),
-      blobs: bundle.blobs.map((blob) => '0x' + blob.toString('hex')),
+      kzgs: bundle.kzgCommitments.map(bytesToPrefixedHexString),
+      blobs: bundle.blobs.map(bytesToPrefixedHexString),
     }
   }
 

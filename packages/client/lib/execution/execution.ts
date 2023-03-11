@@ -7,10 +7,10 @@ export interface ExecutionOptions {
   config: Config
 
   /* State database */
-  stateDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  stateDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   /* Meta database (receipts, logs, indexes) */
-  metaDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  metaDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   /** Chain */
   chain: Chain
@@ -19,8 +19,8 @@ export interface ExecutionOptions {
 export abstract class Execution {
   public config: Config
 
-  protected stateDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
-  protected metaDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  protected stateDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+  protected metaDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
   protected chain: Chain
 
   public running: boolean = false

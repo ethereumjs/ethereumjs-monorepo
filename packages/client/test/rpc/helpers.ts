@@ -1,7 +1,7 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common, parseGethGenesis } from '@ethereumjs/common'
-import { Address, KECCAK256_RLP } from '@ethereumjs/util'
+import { Address, KECCAK256_RLP, hexStringToBytes } from '@ethereumjs/util'
 import { Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
 
@@ -30,7 +30,7 @@ const config: any = {}
 config.logger = getLogger(config)
 
 type StartRPCOpts = { port?: number; wsServer?: boolean }
-type WithEngineMiddleware = { jwtSecret: Buffer; unlessFn?: (req: IncomingMessage) => boolean }
+type WithEngineMiddleware = { jwtSecret: Uint8Array; unlessFn?: (req: IncomingMessage) => boolean }
 
 type createClientArgs = {
   includeVM: boolean // Instantiates the VM when creating the test client
@@ -87,7 +87,7 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   }
   const clientConfig = { ...defaultClientConfig, ...clientOpts }
 
-  chain.getTd = async (_hash: Buffer, _num: bigint) => BigInt(1000)
+  chain.getTd = async (_hash: Uint8Array, _num: bigint) => BigInt(1000)
   if ((chain as any)._headers !== undefined) {
     ;(chain as any)._headers.latest = BlockHeader.fromHeaderData(
       { withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined },
@@ -305,5 +305,5 @@ export function gethGenesisStartLondon(gethGenesis: any) {
  */
 export const dummy = {
   addr: Address.fromString('0xcde098d93535445768e8a2345a2f869139f45641'),
-  privKey: hexToBytes('5831aac354d13ff96a0c051af0d44c0931c2a20bdacee034ffbaa2354d84f5f8', 'hex'),
+  privKey: hexStringToBytes('5831aac354d13ff96a0c051af0d44c0931c2a20bdacee034ffbaa2354d84f5f8'),
 }

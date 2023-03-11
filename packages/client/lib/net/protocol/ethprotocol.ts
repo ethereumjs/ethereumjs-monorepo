@@ -3,12 +3,10 @@ import { Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { BlobEIP4844Transaction, TransactionFactory } from '@ethereumjs/tx'
 import {
-  arrToBufArr,
   bigIntToUnpaddedBytes,
-  bufArrToArr,
   bytesToBigInt,
   bytesToInt,
-  intToUnpaddedBuffer,
+  intToUnpaddedBytes,
 } from '@ethereumjs/util'
 import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
 
@@ -17,9 +15,10 @@ import { Protocol } from './protocol'
 import type { Chain } from '../../blockchain'
 import type { TxReceiptWithType } from '../../execution/receipt'
 import type { Message, ProtocolOptions } from './protocol'
-import type { BlockBodyBuffer, BlockBuffer, BlockHeaderBuffer } from '@ethereumjs/block'
+import type { BlockBodyBytes, BlockBytes, BlockHeaderBytes } from '@ethereumjs/block'
+import type { Log } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { BigIntLike } from '@ethereumjs/util'
+import type { BigIntLike, NestedUint8Array } from '@ethereumjs/util'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
 
 interface EthProtocolOptions extends ProtocolOptions {
@@ -31,7 +30,7 @@ type GetBlockHeadersOpts = {
   /* Request id (default: next internal id) */
   reqId?: bigint
   /* The block's number or hash */
-  block: bigint | Buffer
+  block: bigint | Uint8Array
   /* Max number of blocks to return */
   max: number
   /* Number of blocks to skip apart (default: 0) */
@@ -44,21 +43,21 @@ type GetBlockBodiesOpts = {
   /* Request id (default: next internal id) */
   reqId?: bigint
   /* The block hashes */
-  hashes: Buffer[]
+  hashes: Uint8Array[]
 }
 
 type GetPooledTransactionsOpts = {
   /* Request id (default: next internal id) */
   reqId?: bigint
   /* The tx hashes */
-  hashes: Buffer[]
+  hashes: Uint8Array[]
 }
 
 type GetReceiptsOpts = {
   /* Request id (default: next internal id) */
   reqId?: bigint
   /* The block hashes to request receipts for */
-  hashes: Buffer[]
+  hashes: Uint8Array[]
 }
 
 /*
@@ -67,7 +66,7 @@ type GetReceiptsOpts = {
  */
 export interface EthProtocolMethods {
   getBlockHeaders: (opts: GetBlockHeadersOpts) => Promise<[bigint, BlockHeader[]]>
-  getBlockBodies: (opts: GetBlockBodiesOpts) => Promise<[bigint, BlockBodyBuffer[]]>
+  getBlockBodies: (opts: GetBlockBodiesOpts) => Promise<[bigint, BlockBodyBytes[]]>
   getPooledTransactions: (opts: GetPooledTransactionsOpts) => Promise<[bigint, TypedTransaction[]]>
   getReceipts: (opts: GetReceiptsOpts) => Promise<[bigint, TxReceipt[]]>
 }
@@ -101,7 +100,7 @@ export class EthProtocol extends Protocol {
         }
         return serializedTxs
       },
-      decode: (txs: Buffer[]) => {
+      decode: (txs: Uint8Array[]) => {
         if (!this.config.synchronized) return
         const common = this.config.chainCommon.copy()
         common.setHardforkByBlockNumber(
@@ -123,9 +122,9 @@ export class EthProtocol extends Protocol {
         bigIntToUnpaddedBytes(reqId ?? ++this.nextReqId),
         [
           typeof block === 'bigint' ? bigIntToUnpaddedBytes(block) : block,
-          intToUnpaddedBuffer(max),
-          intToUnpaddedBuffer(skip),
-          intToUnpaddedBuffer(!reverse ? 0 : 1),
+          intToUnpaddedBytes(max),
+          intToUnpaddedBytes(skip),
+          intToUnpaddedBytes(!reverse ? 0 : 1),
         ],
       ],
       decode: ([reqId, [block, max, skip, reverse]]: any) => ({
@@ -143,7 +142,7 @@ export class EthProtocol extends Protocol {
         bigIntToUnpaddedBytes(reqId),
         headers.map((h) => h.raw()),
       ],
-      decode: ([reqId, headers]: [Buffer, BlockHeaderBuffer[]]) => [
+      decode: ([reqId, headers]: [Uint8Array, BlockHeaderBytes[]]) => [
         bytesToBigInt(reqId),
         headers.map((h) => {
           const headerData = valuesArrayToHeaderData(h)
@@ -169,7 +168,7 @@ export class EthProtocol extends Protocol {
         bigIntToUnpaddedBytes(reqId ?? ++this.nextReqId),
         hashes,
       ],
-      decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
+      decode: ([reqId, hashes]: [Uint8Array, Uint8Array[]]) => ({
         reqId: bytesToBigInt(reqId),
         hashes,
       }),
@@ -177,17 +176,17 @@ export class EthProtocol extends Protocol {
     {
       name: 'BlockBodies',
       code: 0x06,
-      encode: ({ reqId, bodies }: { reqId: bigint; bodies: BlockBodyBuffer[] }) => [
+      encode: ({ reqId, bodies }: { reqId: bigint; bodies: BlockBodyBytes[] }) => [
         bigIntToUnpaddedBytes(reqId),
         bodies,
       ],
-      decode: ([reqId, bodies]: [Buffer, BlockBodyBuffer[]]) => [bytesToBigInt(reqId), bodies],
+      decode: ([reqId, bodies]: [Uint8Array, BlockBodyBytes[]]) => [bytesToBigInt(reqId), bodies],
     },
     {
       name: 'NewBlock',
       code: 0x07,
       encode: ([block, td]: [Block, bigint]) => [block.raw(), bigIntToUnpaddedBytes(td)],
-      decode: ([block, td]: [BlockBuffer, Buffer]) => [
+      decode: ([block, td]: [BlockBytes, Uint8Array]) => [
         Block.fromValuesArray(block, {
           common: this.config.chainCommon,
           hardforkByBlockNumber: true,
@@ -198,8 +197,8 @@ export class EthProtocol extends Protocol {
     {
       name: 'NewPooledTransactionHashes',
       code: 0x08,
-      encode: (hashes: Buffer[]) => hashes,
-      decode: (hashes: Buffer[]) => hashes,
+      encode: (hashes: Uint8Array[]) => hashes,
+      decode: (hashes: Uint8Array[]) => hashes,
     },
     {
       name: 'GetPooledTransactions',
@@ -209,7 +208,7 @@ export class EthProtocol extends Protocol {
         bigIntToUnpaddedBytes(reqId ?? ++this.nextReqId),
         hashes,
       ],
-      decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
+      decode: ([reqId, hashes]: [Uint8Array, Uint8Array[]]) => ({
         reqId: bytesToBigInt(reqId),
         hashes,
       }),
@@ -234,7 +233,7 @@ export class EthProtocol extends Protocol {
         }
         return [bigIntToUnpaddedBytes(reqId), serializedTxs]
       },
-      decode: ([reqId, txs]: [Buffer, any[]]) => {
+      decode: ([reqId, txs]: [Uint8Array, any[]]) => {
         const common = this.config.chainCommon.copy()
         common.setHardforkByBlockNumber(
           this.chain.headers.latest?.number ?? // Use latest header number if available OR
@@ -260,11 +259,11 @@ export class EthProtocol extends Protocol {
       name: 'GetReceipts',
       code: 0x0f,
       response: 0x10,
-      encode: ({ reqId, hashes }: { reqId: bigint; hashes: Buffer[] }) => [
+      encode: ({ reqId, hashes }: { reqId: bigint; hashes: Uint8Array[] }) => [
         bigIntToUnpaddedBytes(reqId ?? ++this.nextReqId),
         hashes,
       ],
-      decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
+      decode: ([reqId, hashes]: [Uint8Array, Uint8Array[]]) => ({
         reqId: bytesToBigInt(reqId),
         hashes,
       }),
@@ -280,12 +279,17 @@ export class EthProtocol extends Protocol {
         }
         return [bigIntToUnpaddedBytes(reqId), serializedReceipts]
       },
-      decode: ([reqId, receipts]: [Buffer, Buffer[]]) => [
+      decode: ([reqId, receipts]: [Uint8Array, Uint8Array[]]) => [
         bytesToBigInt(reqId),
         receipts.map((r) => {
           // Legacy receipt if r[0] >= 0xc0, otherwise typed receipt with first byte as TransactionType
-          const decoded = arrToBufArr(RLP.decode(bufArrToArr(r[0] >= 0xc0 ? r : r.slice(1)))) as any
-          const [stateRootOrStatus, cumulativeGasUsed, logsBloom, logs] = decoded
+          const decoded = RLP.decode(r[0] >= 0xc0 ? r : r.slice(1)) as NestedUint8Array
+          const [stateRootOrStatus, cumulativeGasUsed, logsBloom, logs] = decoded as [
+            Uint8Array,
+            Uint8Array,
+            Uint8Array,
+            Log[]
+          ]
           const receipt = {
             cumulativeBlockGasUsed: bytesToBigInt(cumulativeGasUsed),
             bitvector: logsBloom,
