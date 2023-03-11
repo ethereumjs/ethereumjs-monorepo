@@ -181,7 +181,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async _lookupStorageTrie(address: AccountId): Promise<Trie> {
     // from state trie
-    const account = await this.getAccount(idToHash(address))
+    const account = await this.getAccount(address)
     const newTrie = new Trie({ useKeyHashing: true })
     newTrie.root(account.storageRoot)
     return newTrie
