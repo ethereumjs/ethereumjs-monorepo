@@ -10,7 +10,6 @@ interface SnapSynchronizerOptions extends SynchronizerOptions {}
 
 export class SnapSynchronizer extends Synchronizer {
   public running = false
-  public finished = false
   constructor(options: SnapSynchronizerOptions) {
     super(options)
   }
@@ -36,7 +35,11 @@ export class SnapSynchronizer extends Synchronizer {
   /**
    * Open synchronizer. Must be called before sync() is called
    */
-  async open(): Promise<void> {}
+  async open(): Promise<void> {
+    await super.open()
+    await this.chain.open()
+    await this.pool.open()
+  }
 
   /**
    * Returns true if peer can be used for syncing
@@ -89,15 +92,13 @@ export class SnapSynchronizer extends Synchronizer {
     const timeout = setTimeout(() => {
       this.forceSync = true
     }, this.interval * 30)
-    while (this.running && !this.finished) {
-      try {
-        await this.sync()
-      } catch (error: any) {
-        this.config.logger.error(`Snap sync error: ${error.message}`)
-        this.config.events.emit(Event.SYNC_ERROR, error)
-      }
-      await new Promise((resolve) => setTimeout(resolve, this.interval))
+    try {
+      await this.sync()
+    } catch (error: any) {
+      this.config.logger.error(`Snap sync error: ${error.message}`)
+      this.config.events.emit(Event.SYNC_ERROR, error)
     }
+    await new Promise((resolve) => setTimeout(resolve, this.interval))
     this.running = false
     clearTimeout(timeout)
   }
