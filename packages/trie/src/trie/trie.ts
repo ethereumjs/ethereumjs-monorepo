@@ -1,7 +1,7 @@
 import { RLP_EMPTY_STRING } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { CheckpointDB, MapDB } from '../db'
+import { CheckpointDB, MapDB, PersistentCheckpointDB } from '../db'
 import { verifyRangeProof } from '../proof/range'
 import { ROOT_DB_KEY } from '../types'
 import { Lock } from '../util/lock'
@@ -45,7 +45,7 @@ export class Trie {
   EMPTY_TRIE_ROOT: Buffer
 
   /** The backend DB */
-  protected _db!: CheckpointDB
+  protected _db!: CheckpointDB | PersistentCheckpointDB
   protected _hashLen: number
   protected _lock = new Lock()
   protected _root: Buffer
@@ -94,7 +94,7 @@ export class Trie {
 
   database(db?: DB) {
     if (db !== undefined) {
-      if (db instanceof CheckpointDB) {
+      if (db instanceof CheckpointDB || db instanceof PersistentCheckpointDB) {
         this._db = db
       } else {
         // Default checkpoint mechanism
@@ -859,14 +859,18 @@ export class Trie {
    * @param includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
    */
   copy(includeCheckpoints = true): Trie {
+    let db
+    if (includeCheckpoints) {
+      db = this._db.copy()
+    } else {
+      db = this._db.db.copy()
+    }
+
     const trie = new Trie({
       ...this._opts,
-      db: this._db.db.copy(),
+      db,
       root: this.root(),
     })
-    if (includeCheckpoints && this.hasCheckpoints()) {
-      trie._db.setCheckpoints(this._db.checkpoints)
-    }
     return trie
   }
 
