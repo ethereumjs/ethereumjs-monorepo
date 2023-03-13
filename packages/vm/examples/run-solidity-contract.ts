@@ -213,10 +213,10 @@ async function main() {
   const createdAccount = await vm.stateManager.getAccount(contractAddress)
 
   console.log('-------results-------')
-  console.log('nonce: ' + createdAccount.nonce.toString())
-  console.log('balance in wei: ', createdAccount.balance.toString())
-  console.log('storageRoot: 0x' + createdAccount.storageRoot.toString('hex'))
-  console.log('codeHash: 0x' + createdAccount.codeHash.toString('hex'))
+  console.log('nonce: ' + createdAccount!.nonce.toString())
+  console.log('balance in wei: ', createdAccount!.balance.toString())
+  console.log('storageRoot: 0x' + createdAccount!.storageRoot.toString('hex'))
+  console.log('codeHash: 0x' + createdAccount!.codeHash.toString('hex'))
   console.log('---------------------')
 
   console.log('Everything ran correctly!')

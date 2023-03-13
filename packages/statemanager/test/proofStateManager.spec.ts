@@ -1,5 +1,5 @@
 import { Trie } from '@ethereumjs/trie'
-import { Address, toBuffer, zeros } from '@ethereumjs/util'
+import { Account, Address, toBuffer, zeros } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
@@ -17,16 +17,17 @@ tape('ProofStateManager', (t) => {
     const code = Buffer.from('6000', 'hex')
     const stateManager = new DefaultStateManager()
     await stateManager.checkpoint()
+    await stateManager.putAccount(address, new Account())
     await stateManager.putContractStorage(address, key, value)
     await stateManager.putContractCode(address, code)
     const account = await stateManager.getAccount(address)
-    account.balance = BigInt(1)
-    account.nonce = BigInt(2)
-    await stateManager.putAccount(address, account)
+    account!.balance = BigInt(1)
+    account!.nonce = BigInt(2)
+    await stateManager.putAccount(address, account!)
     const address2 = new Address(Buffer.from('20'.repeat(20), 'hex'))
     const account2 = await stateManager.getAccount(address2)
-    account.nonce = BigInt(2)
-    await stateManager.putAccount(address2, account2)
+    account!.nonce = BigInt(2)
+    await stateManager.putAccount(address2, account2!)
     await stateManager.commit()
     await stateManager.flush()
 
@@ -41,7 +42,7 @@ tape('ProofStateManager', (t) => {
     // Account: 0xc626553e7c821d0f8308c28d56c60e3c15f8d55a
     // Storage slots: empty list
     const address = Address.fromString('0xc626553e7c821d0f8308c28d56c60e3c15f8d55a')
-    const trie = new Trie({ useKeyHashing: true })
+    const trie = await Trie.create({ useKeyHashing: true })
     const stateManager = new DefaultStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Buffer | undefined
@@ -83,6 +84,7 @@ tape('ProofStateManager', (t) => {
         await trie._db.put(key, bufferData)
       }
       trie.root(stateRoot!)
+      await stateManager.putAccount(address, new Account())
       const proof = await stateManager.getProof(address)
       st.deepEqual(ropsten_nonexistentAccount, proof)
       st.ok(await stateManager.verifyProof(ropsten_nonexistentAccount))

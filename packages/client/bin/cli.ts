@@ -236,6 +236,16 @@ const args: ClientOpts = yargs(hideBin(process.argv))
       'Debug mode for reexecuting existing blocks (no services will be started), allowed input formats: 5,5-10',
     string: true,
   })
+  .option('accountCache', {
+    describe: 'Size for the account cache (max number of accounts)',
+    number: true,
+    default: Config.ACCOUNT_CACHE,
+  })
+  .option('storageCache', {
+    describe: 'Size for the storage cache (max number of contracts)',
+    number: true,
+    default: Config.STORAGE_CACHE,
+  })
   .option('debugCode', {
     describe: 'Generate code for local debugging (internal usage mostly)',
     boolean: true,
@@ -714,6 +724,8 @@ async function run() {
     discV4: args.discV4,
     dnsAddr: args.dnsAddr,
     numBlocksPerIteration: args.numBlocksPerIteration,
+    accountCache: args.accountCache,
+    storageCache: args.storageCache,
     dnsNetworks: args.dnsNetworks,
     extIP: args.extIP,
     key,

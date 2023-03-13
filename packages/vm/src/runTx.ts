@@ -1,7 +1,7 @@
 import { Block, getDataGasPrice } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
-import { Address, KECCAK256_NULL, short, toBuffer } from '@ethereumjs/util'
+import { Account, Address, KECCAK256_NULL, short, toBuffer } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { Bloom } from './bloom'
@@ -261,8 +261,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Check from account's balance and nonce
   let fromAccount = await state.getAccount(caller)
+  if (fromAccount === undefined) {
+    fromAccount = new Account()
+  }
   const { nonce, balance } = fromAccount
-  debug(`Sender's pre-tx balance is ${balance}`)
+  if (this.DEBUG) {
+    debug(`Sender's pre-tx balance is ${balance}`)
+  }
   // EIP-3607: Reject transactions from senders with deployed code
   if (this._common.isActivatedEIP(3607) === true && !fromAccount.codeHash.equals(KECCAK256_NULL)) {
     const msg = _errorMsg('invalid sender address, address is not EOA (EIP-3607)', this, block, tx)
@@ -478,6 +483,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Update sender's balance
   fromAccount = await state.getAccount(caller)
+  if (fromAccount === undefined) {
+    fromAccount = new Account()
+  }
   const actualTxCost = results.totalGasSpent * gasPrice
   const txCostDiff = txCost - actualTxCost
   fromAccount.balance += txCostDiff
@@ -496,7 +504,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     miner = block.header.coinbase
   }
 
-  const minerAccount = await state.getAccount(miner)
+  let minerAccount = await state.getAccount(miner)
+  if (minerAccount === undefined) {
+    minerAccount = new Account()
+  }
   // add the amount spent on gas to the miner's account
   results.minerValue =
     this._common.isActivatedEIP(1559) === true

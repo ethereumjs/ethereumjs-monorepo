@@ -337,11 +337,12 @@ tape('ensure that sstores pay for the right gas costs pre-byzantium', async (t) 
   // this should thus go OOG
   const code = '3460005500'
 
+  await eei.putAccount(caller, new Account())
   await eei.putContractCode(address, Buffer.from(code, 'hex'))
 
   const account = await eei.getAccount(caller)
-  account.balance = BigInt(100)
-  await eei.putAccount(caller, account)
+  account!.balance = BigInt(100)
+  await eei.putAccount(caller, account!)
 
   /*
     Situation:
@@ -419,8 +420,8 @@ tape(
     await eei.putContractCode(address, Buffer.from(code, 'hex'))
 
     const account = await eei.getAccount(address)
-    account.nonce = MAX_UINT64 - BigInt(1)
-    await eei.putAccount(address, account)
+    account!.nonce = MAX_UINT64 - BigInt(1)
+    await eei.putAccount(address, account!)
 
     // setup the call arguments
     const runCallArgs = {
@@ -460,10 +461,10 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
   const evm = await EVM.create({ common, eei })
   const code = '3034526020600760203460045afa602034343e604034f3'
 
-  const account = await eei.getAccount(caller)
-  account.nonce = BigInt(1) // ensure nonce for contract is correct
-  account.balance = BigInt(10000000000000000)
-  await eei.putAccount(caller, account)
+  const account = new Account()
+  account!.nonce = BigInt(1) // ensure nonce for contract is correct
+  account!.balance = BigInt(10000000000000000)
+  await eei.putAccount(caller, account!)
 
   // setup the call arguments
   const runCallArgs = {
@@ -535,7 +536,7 @@ tape('runCall() -> skipBalance behavior', async (t) => {
     await eei.modifyAccountFields(sender, { nonce: BigInt(0), balance })
     const res = await evm.runCall(runCallArgs)
     t.pass('runCall should not throw with no balance and skipBalance')
-    const senderBalance = (await eei.getAccount(sender)).balance
+    const senderBalance = (await eei.getAccount(sender))!.balance
     t.equal(
       senderBalance,
       balance ?? BigInt(0),

@@ -97,11 +97,9 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       skipHardForkValidation: true,
     })
 
-    const uncleReward = (
-      await vm.stateManager.getAccount(
-        Address.fromString('0xb94f5374fce5ed0000000097c15331677e6ebf0b')
-      )
-    ).balance.toString(16)
+    const uncleReward = (await vm.stateManager.getAccount(
+      Address.fromString('0xb94f5374fce5ed0000000097c15331677e6ebf0b')
+    ))!.balance.toString(16)
 
     st.equal(
       `0x${uncleReward}`,
@@ -323,15 +321,15 @@ tape('runBlock() -> runtime behavior', async (t) => {
     })
 
     const DAOFundedContractAccount1 = await vm.stateManager.getAccount(DAOFundedContractAddress1)
-    t.equals(DAOFundedContractAccount1.balance, BigInt(0)) // verify our funded account now has 0 balance
+    t.equals(DAOFundedContractAccount1!.balance, BigInt(0)) // verify our funded account now has 0 balance
     const DAOFundedContractAccount2 = await vm.stateManager.getAccount(DAOFundedContractAddress2)
-    t.equals(DAOFundedContractAccount2.balance, BigInt(0)) // verify our funded account now has 0 balance
+    t.equals(DAOFundedContractAccount2!.balance, BigInt(0)) // verify our funded account now has 0 balance
 
     const DAORefundAccount = await vm.stateManager.getAccount(DAORefundAddress)
     // verify that the refund account gets the summed balance of the original refund account + two child DAO accounts
     const msg =
       'should transfer balance from DAO children to the Refund DAO account in the DAO fork'
-    t.equal(DAORefundAccount.balance, BigInt(0x7777), msg)
+    t.equal(DAORefundAccount!.balance, BigInt(0x7777), msg)
   })
 
   t.test('should allocate to correct clique beneficiary', async (t) => {
@@ -377,7 +375,7 @@ tape('runBlock() -> runtime behavior', async (t) => {
 
     await vm.runBlock({ block, skipNonce: true, skipBlockValidation: true, generate: true })
     const account = await vm.stateManager.getAccount(signer.address)
-    t.equal(account.balance, BigInt(42000), 'beneficiary balance should equal the cost of the txs')
+    t.equal(account!.balance, BigInt(42000), 'beneficiary balance should equal the cost of the txs')
   })
 })
 

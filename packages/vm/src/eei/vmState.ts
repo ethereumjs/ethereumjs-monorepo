@@ -132,7 +132,7 @@ export class VmState implements EVMStateAccess {
     }
   }
 
-  async getAccount(address: Address): Promise<Account> {
+  async getAccount(address: Address): Promise<Account | undefined> {
     return this._stateManager.getAccount(address)
   }
 
@@ -180,11 +180,11 @@ export class VmState implements EVMStateAccess {
     return this._stateManager.accountExists(address)
   }
 
-  async setStateRoot(stateRoot: Buffer): Promise<void> {
+  async setStateRoot(stateRoot: Buffer, clearCache: boolean = true): Promise<void> {
     if (this._checkpointCount !== 0) {
       throw new Error('Cannot set state root with uncommitted checkpoints')
     }
-    return this._stateManager.setStateRoot(stateRoot)
+    return this._stateManager.setStateRoot(stateRoot, clearCache)
   }
 
   async getStateRoot(): Promise<Buffer> {
@@ -266,6 +266,7 @@ export class VmState implements EVMStateAccess {
       }
     }
     await this._stateManager.flush()
+    this.touchedJournal.clear()
   }
 
   /**
@@ -277,7 +278,7 @@ export class VmState implements EVMStateAccess {
       const touchedArray = Array.from(this.touchedJournal.journal)
       for (const addressHex of touchedArray) {
         const address = new Address(Buffer.from(addressHex, 'hex'))
-        const empty = await this.accountIsEmpty(address)
+        const empty = await this.accountIsEmptyOrNonExistent(address)
         if (empty) {
           await this._stateManager.deleteAccount(address)
           if (this.DEBUG) {
@@ -473,7 +474,11 @@ export class VmState implements EVMStateAccess {
    * EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
    * @param address - Address to check
    */
-  async accountIsEmpty(address: Address): Promise<boolean> {
-    return this._stateManager.accountIsEmpty(address)
+  async accountIsEmptyOrNonExistent(address: Address): Promise<boolean> {
+    const account = await this._stateManager.getAccount(address)
+    if (account === undefined || account.isEmpty()) {
+      return true
+    }
+    return false
   }
 }

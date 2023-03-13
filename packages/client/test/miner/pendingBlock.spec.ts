@@ -45,7 +45,13 @@ const setBalance = async (vm: VM, address: Address, balance: bigint) => {
 }
 
 const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berlin })
-const config = new Config({ transports: [], common, logger: getLogger({ loglevel: 'debug' }) })
+const config = new Config({
+  transports: [],
+  common,
+  accountCache: 10000,
+  storageCache: 1000,
+  logger: getLogger({ loglevel: 'debug' }),
+})
 
 const setup = () => {
   const stateManager = {

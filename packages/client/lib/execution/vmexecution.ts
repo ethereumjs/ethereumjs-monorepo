@@ -6,6 +6,7 @@ import {
 } from '@ethereumjs/blockchain/dist/db/helpers'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { CacheType } from '@ethereumjs/statemanager/dist/cache'
 import { Trie } from '@ethereumjs/trie'
 import { Lock, bufferToHex } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
@@ -35,6 +36,12 @@ export class VMExecution extends Execution {
   private MAX_TOLERATED_BLOCK_TIME = 12
 
   /**
+   * Display state cache stats every num blocks
+   */
+  private CACHE_STATS_NUM_BLOCKS = 500
+  private cacheStatsCount = 0
+
+  /**
    * Create new VM execution module
    */
   constructor(options: ExecutionOptions) {
@@ -46,8 +53,20 @@ export class VMExecution extends Execution {
         useKeyHashing: true,
       })
 
+      this.config.logger.info(`Initializing account cache size=${this.config.accountCache}`)
+      this.config.logger.info(`Initializing storage cache size=${this.config.storageCache}`)
       const stateManager = new DefaultStateManager({
         trie,
+        accountCacheOpts: {
+          deactivate: false,
+          type: CacheType.LRU,
+          size: this.config.accountCache,
+        },
+        storageCacheOpts: {
+          deactivate: false,
+          type: CacheType.LRU,
+          size: this.config.storageCache,
+        },
       })
 
       this.vm = new (VM as any)({
@@ -280,6 +299,12 @@ export class VMExecution extends Execution {
           if (!headBlock || reorg) {
             const headBlock = await blockchain.getBlock(block.header.parentHash)
             parentState = headBlock.header.stateRoot
+
+            if (reorg) {
+              this.config.logger.info(
+                `Chain reorg happened, set new head to block number=${headBlock.header.number}, clearing state cache for VM execution.`
+              )
+            }
           }
           // run block, update head if valid
           try {
@@ -314,9 +339,11 @@ export class VMExecution extends Execution {
                 throw Error('Execution stopped')
               }
               const beforeTS = Date.now()
+              this.cacheStats(this.vm)
               const result = await this.vm.runBlock({
                 block,
                 root: parentState,
+                clearCache: reorg ? true : false,
                 skipBlockValidation,
                 skipHeaderValidation: true,
               })
@@ -482,7 +509,7 @@ export class VMExecution extends Execution {
       const block = await vm.blockchain.getBlock(blockNumber)
       const parentBlock = await vm.blockchain.getBlock(block.header.parentHash)
       // Set the correct state root
-      await vm.stateManager.setStateRoot(parentBlock.header.stateRoot)
+      const root = parentBlock.header.stateRoot
       if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
         throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
       }
@@ -493,7 +520,13 @@ export class VMExecution extends Execution {
         // we are skipping header validation because the block has been picked from the
         // blockchain and header should have already been validated while putBlock
         const beforeTS = Date.now()
-        const res = await vm.runBlock({ block, skipHeaderValidation: true })
+        this.cacheStats(vm)
+        const res = await vm.runBlock({
+          block,
+          root,
+          clearCache: false,
+          skipHeaderValidation: true,
+        })
         const afterTS = Date.now()
         const diffSec = Math.round((afterTS - beforeTS) / 1000)
         const msg = `Executed block num=${blockNumber} hash=0x${block.hash().toString('hex')} txs=${
@@ -527,6 +560,21 @@ export class VMExecution extends Execution {
           }
         }
       }
+    }
+  }
+
+  cacheStats(vm: VM) {
+    this.cacheStatsCount += 1
+    if (this.cacheStatsCount === this.CACHE_STATS_NUM_BLOCKS) {
+      let stats = (vm.stateManager as any)._accountCache.stats()
+      this.config.logger.info(
+        `Account cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
+      )
+      stats = (vm.stateManager as any)._storageCache.stats()
+      this.config.logger.info(
+        `Storage cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
+      )
+      this.cacheStatsCount = 0
     }
   }
 }

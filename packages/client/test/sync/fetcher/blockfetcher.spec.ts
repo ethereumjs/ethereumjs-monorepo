@@ -94,7 +94,7 @@ tape('[BlockFetcher]', async (t) => {
   })
 
   t.test('should process', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
@@ -111,7 +111,7 @@ tape('[BlockFetcher]', async (t) => {
   })
 
   t.test('should adopt correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
@@ -139,7 +139,7 @@ tape('[BlockFetcher]', async (t) => {
   })
 
   t.test('should find a fetchable peer', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
@@ -155,7 +155,7 @@ tape('[BlockFetcher]', async (t) => {
   })
 
   t.test('should request correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
@@ -186,7 +186,7 @@ tape('[BlockFetcher]', async (t) => {
   })
 
   t.test('should parse bodies correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     config.chainCommon.getHardforkByBlockNumber =
       td.func<typeof config.chainCommon.getHardforkByBlockNumber>()
     td.when(

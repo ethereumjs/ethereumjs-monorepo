@@ -173,6 +173,8 @@ async function createSnapClient(common: any, customGenesisState: any, bootnodes:
     bootnodes,
     multiaddrs: [],
     logger,
+    accountCache: 10000,
+    storageCache: 1000,
     discDns: false,
     discV4: false,
     port: 30304,

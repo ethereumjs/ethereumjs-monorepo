@@ -20,5 +20,10 @@ export let kzg: Kzg = {
  */
 export function initKZG(kzgLib: Kzg, trustedSetupPath: string) {
   kzg = kzgLib
+  try {
+    // Ensures that kzg doesn't throw an error if not already loaded
+    kzg.freeTrustedSetup()
+    // eslint-disable-next-line no-empty
+  } catch {}
   kzg.loadTrustedSetup(trustedSetupPath)
 }

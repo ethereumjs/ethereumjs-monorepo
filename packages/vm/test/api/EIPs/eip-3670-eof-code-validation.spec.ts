@@ -1,7 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EOF } from '@ethereumjs/evm/dist/eof'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Address, privateToAddress } from '@ethereumjs/util'
+import { Account, Address, privateToAddress } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -59,10 +59,11 @@ tape('EIP 3670 tests', (t) => {
 
   t.test('valid contract code transactions', async (st) => {
     const vm = await VM.create({ common })
+    await vm.stateManager.putAccount(sender, new Account())
     const account = await vm.stateManager.getAccount(sender)
     const balance = GWEI * BigInt(21000) * BigInt(10000000)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
+    account!.balance = balance
+    await vm.stateManager.putAccount(sender, account!)
 
     let data = '0x67EF0001010001000060005260086018F3'
     let res = await runTx(vm, data, 0)
@@ -75,10 +76,11 @@ tape('EIP 3670 tests', (t) => {
 
   t.test('invalid contract code transactions', async (st) => {
     const vm = await VM.create({ common })
+    await vm.stateManager.putAccount(sender, new Account())
     const account = await vm.stateManager.getAccount(sender)
     const balance = GWEI * BigInt(21000) * BigInt(10000000)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
+    account!.balance = balance
+    await vm.stateManager.putAccount(sender, account!)
 
     const data = '0x67EF0001010001006060005260086018F3'
     const res = await runTx(vm, data, 0)
@@ -139,10 +141,13 @@ tape('EIP 3670 tests', (t) => {
 
       const sender = tx.getSenderAddress()
 
+      if (i === 0) {
+        await vm.stateManager.putAccount(sender, new Account())
+      }
       const acc = await vm.stateManager.getAccount(sender)
-      acc.balance = 1000000000n
+      acc!.balance = 1000000000n
 
-      await vm.stateManager.putAccount(sender, acc)
+      await vm.stateManager.putAccount(sender, acc!)
 
       const ret = await vm.runTx({ tx, skipHardForkValidation: true })
       nonce++

@@ -1,5 +1,5 @@
 import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
-import { Address, bufferToHex } from '@ethereumjs/util'
+import { Account, Address, bufferToHex } from '@ethereumjs/util'
 import Heap = require('qheap')
 
 import type { Config } from '../config'
@@ -303,7 +303,10 @@ export class TxPool {
     const vmCopy = await this.vm.copy()
     // Set state root to latest block so that account balance is correct when doing balance check
     await vmCopy.stateManager.setStateRoot(block.stateRoot)
-    const account = await vmCopy.stateManager.getAccount(senderAddress)
+    let account = await vmCopy.stateManager.getAccount(senderAddress)
+    if (account === undefined) {
+      account = new Account()
+    }
     if (account.nonce > tx.nonce) {
       throw new Error(
         `0x${sender} tries to send a tx with nonce ${tx.nonce}, but account has nonce ${account.nonce} (tx nonce too low)`
@@ -694,7 +697,11 @@ export class TxPool {
         .map((obj) => obj.tx)
         .sort((a, b) => Number(a.nonce - b.nonce))
       // Check if the account nonce matches the lowest known tx nonce
-      const { nonce } = await vm.eei.getAccount(new Address(Buffer.from(address, 'hex')))
+      let account = await vm.eei.getAccount(new Address(Buffer.from(address, 'hex')))
+      if (account === undefined) {
+        account = new Account()
+      }
+      const { nonce } = account
       if (txsSortedByNonce[0].nonce !== nonce) {
         // Account nonce does not match the lowest known tx nonce,
         // therefore no txs from this address are currently executable
