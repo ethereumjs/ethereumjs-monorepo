@@ -24,6 +24,8 @@ export class VmState implements EVMStateAccess {
   // 4: Checkpoint 4
   protected _touchedStack: { [key: number]: Set<AddressHex> }
 
+  protected _touchedHeight: Map<string, number>
+
   // EIP-2929 address/storage trackers.
   // This maps both the accessed accounts and the accessed storage slots.
   // It is a Map(Address => StorageSlots)
@@ -52,6 +54,7 @@ export class VmState implements EVMStateAccess {
     this._common = common ?? new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     this._touched = new Set()
     this._touchedStack = {}
+    this._touchedHeight = new Map()
     this._originalStorageCache = new Map()
     this._accessedStorage = [new Map()]
     this._accessedStorageReverted = [new Map()]
@@ -87,11 +90,13 @@ export class VmState implements EVMStateAccess {
     const height = this._checkpointCount
     if (height in this._touchedStack) {
       // Copy the items-to-delete in case of a revert into one level higher
-      if (this._touchedStack[height - 1] === undefined) {
-        this._touchedStack[height - 1] = new Set()
-      }
-      for (const address of this._touchedStack[height]) {
-        this._touchedStack[height - 1].add(address)
+      if (height !== 1) {
+        if (this._touchedStack[height - 1] === undefined) {
+          this._touchedStack[height - 1] = new Set()
+        }
+        for (const address of this._touchedStack[height]) {
+          this._touchedStack[height - 1].add(address)
+        }
       }
       delete this._touchedStack[height]
     }
@@ -143,7 +148,10 @@ export class VmState implements EVMStateAccess {
           continue
         }
 
-        if (this._touched.has(address)) {
+        if (
+          this._touched.has(address) &&
+          this._touchedHeight.get(address) === this._checkpointCount
+        ) {
           this._touched.delete(address)
         }
       }
@@ -239,9 +247,13 @@ export class VmState implements EVMStateAccess {
     if (!(height in this._touchedStack)) {
       this._touchedStack[height] = new Set()
     }
-    this._touchedStack[height].add(address.buf.toString('hex'))
+    const addressStr = address.buf.toString('hex')
+    this._touchedStack[height].add(addressStr)
 
-    this._touched.add(address.buf.toString('hex'))
+    this._touched.add(addressStr)
+    if (this._touchedHeight.get(addressStr) === undefined) {
+      this._touchedHeight.set(addressStr, height)
+    }
   }
 
   /**
@@ -326,6 +338,7 @@ export class VmState implements EVMStateAccess {
     }
     this._touched.clear()
     this._touchedStack = {}
+    this._touchedHeight = new Map()
   }
 
   /**
