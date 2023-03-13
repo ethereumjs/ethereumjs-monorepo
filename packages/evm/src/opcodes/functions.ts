@@ -658,7 +658,6 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const pos = runState.stack.pop()
       const word = runState.memory.read(Number(pos), 32, true)
-      console.log(runState.stack.length)
       runState.stack.push(bufferToBigInt(word))
     },
   ],
