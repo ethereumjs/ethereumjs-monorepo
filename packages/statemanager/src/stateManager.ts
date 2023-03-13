@@ -178,17 +178,6 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
   }
 
   /**
-   * Copies the current instance of the `StateManager`
-   * at the last fully committed point, i.e. as if all current
-   * checkpoints were reverted.
-   */
-  copy(): StateManager {
-    return new DefaultStateManager({
-      trie: this._trie.copy(false),
-    })
-  }
-
-  /**
    * Adds `value` to the state trie as code, and sets `codeHash` on the account
    * corresponding to `address` to reference this.
    * @param address - Address of the `account` to add the `code` for
@@ -600,5 +589,18 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       return true
     }
     return false
+  }
+
+  /**
+   * Copies the current instance of the `StateManager`
+   * at the last fully committed point, i.e. as if all current
+   * checkpoints were reverted.
+   */
+  copy(): StateManager {
+    return new DefaultStateManager({
+      trie: this._trie.copy(false),
+      prefixCodeHashes: this._prefixCodeHashes,
+      deactivateCache: this._deactivateCache,
+    })
   }
 }
