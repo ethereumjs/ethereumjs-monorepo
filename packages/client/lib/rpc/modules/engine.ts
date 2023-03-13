@@ -823,16 +823,18 @@ export class Engine {
     let safeBlock, finalizedBlock
 
     if (!safe.equals(zeroBlockHash)) {
-      try {
-        // Right now only check if the block is available, canonicality check is done
-        // in setHead after chain.putBlocks so as to reflect latest canonical chain
-        safeBlock = await this.chain.getBlock(safe)
-      } catch (error: any) {
-        const msg = 'Safe block not in canonical chain'
-        const message = error.message === msg ? msg : 'safe block not available'
-        throw {
-          code: INVALID_PARAMS,
-          message,
+      if (safe.equals(headBlock.hash())) {
+        safeBlock = headBlock
+      } else {
+        try {
+          // Right now only check if the block is available, canonicality check is done
+          // in setHead after chain.putBlocks so as to reflect latest canonical chain
+          safeBlock = await this.chain.getBlock(safe)
+        } catch (_error: any) {
+          throw {
+            code: INVALID_PARAMS,
+            message: 'safe block not available',
+          }
         }
       }
     } else {
@@ -845,10 +847,8 @@ export class Engine {
         // in setHead after chain.putBlocks so as to reflect latest canonical chain
         finalizedBlock = await this.chain.getBlock(finalized)
       } catch (error: any) {
-        const msg = 'Finalized block not in canonical chain'
-        const message = error.message === msg ? msg : 'finalized block not available'
         throw {
-          message,
+          message: 'finalized block not available',
           code: INVALID_PARAMS,
         }
       }
@@ -881,6 +881,7 @@ export class Engine {
       try {
         await this.execution.setHead(blocks, { safeBlock, finalizedBlock })
       } catch (error) {
+        console.log(error)
         throw {
           message: (error as Error).message,
           code: INVALID_PARAMS,

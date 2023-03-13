@@ -216,7 +216,7 @@ export class VMExecution extends Execution {
         }
         const blockByNumber = await this.chain.getBlock(block.header.number)
         if (!blockByNumber.hash().equals(block.hash())) {
-          throw Error(`${blockName} is not canonical in the chain`)
+          throw Error(`${blockName} not in canonical chain`)
         }
       }
       await this.chain.blockchain.setIteratorHead('vm', vmHeadBlock.hash())
