@@ -352,7 +352,7 @@ tape(`${method}: validate safeBlockHash is part of canonical chain`, async (t) =
 
   const expectRes = (res: any) => {
     t.equal(res.body.error.code, -32602)
-    t.ok(res.body.error.message.includes('Safe'))
+    t.ok(res.body.error.message.includes('safeBlock'))
     t.ok(res.body.error.message.includes('canonical'))
   }
   await baseRequest(t, server, req, 200, expectRes)
@@ -395,7 +395,7 @@ tape(`${method}: validate finalizedBlockHash is part of canonical chain`, async 
 
   const expectRes = (res: any) => {
     t.equal(res.body.error.code, -32602)
-    t.ok(res.body.error.message.includes('Finalized'))
+    t.ok(res.body.error.message.includes('finalizedBlock'))
     t.ok(res.body.error.message.includes('canonical'))
   }
   await baseRequest(t, server, req, 200, expectRes)
