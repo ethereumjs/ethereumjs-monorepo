@@ -1,5 +1,5 @@
 import { getRandomBytesSync } from 'ethereum-cryptography/random'
-import { bytesToHex, bytesToUtf8, crypto, hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, bytesToUtf8, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers'
 import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal'
@@ -371,19 +371,6 @@ export const validateNoLeadingZeroes = function (values: {
       throw new Error(`${k} cannot have leading zeroes, received: ${bytesToHex(v)}`)
     }
   }
-}
-
-/**
- * Converts a {@link Buffer} or {@link NestedBufferArray} to {@link Uint8Array} or {@link NestedUint8Array}
- */
-export function bufArrToArr(arr: Buffer): Uint8Array
-export function bufArrToArr(arr: NestedBufferArray): NestedUint8Array
-export function bufArrToArr(arr: Buffer | NestedBufferArray): Uint8Array | NestedUint8Array
-export function bufArrToArr(arr: Buffer | NestedBufferArray): Uint8Array | NestedUint8Array {
-  if (!Array.isArray(arr)) {
-    return Uint8Array.from(arr ?? [])
-  }
-  return arr.map((a) => bufArrToArr(a))
 }
 
 /**
