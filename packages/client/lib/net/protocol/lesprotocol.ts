@@ -82,9 +82,9 @@ export class LesProtocol extends Protocol {
         bigIntToUnpaddedBytes(reqId ?? ++this.nextReqId),
         [
           typeof block === 'bigint' ? bigIntToUnpaddedBytes(block) : block,
-          max,
-          skip,
-          !reverse ? 0 : 1,
+          intToBytes(max),
+          intToBytes(skip),
+          intToBytes(!reverse ? 0 : 1),
         ],
       ],
       decode: ([reqId, [block, max, skip, reverse]]: any) => ({
@@ -95,6 +95,7 @@ export class LesProtocol extends Protocol {
         reverse: bytesToInt(reverse) === 0 ? false : true,
       }),
     },
+
     {
       name: 'BlockHeaders',
       code: 0x03,
