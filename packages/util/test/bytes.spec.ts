@@ -276,7 +276,7 @@ tape('toUtf8', function (t) {
 tape('toBytes', function (t) {
   t.test('should work', function (st) {
     // Buffer
-    st.ok(equalsBytes(toBytes(new Uint8ArrayUnsafe(0)), new Uint8Array()))
+    st.ok(equalsBytes(toBytes(new Uint8Array(0)), new Uint8Array()))
     // Array
     st.ok(equalsBytes(toBytes([]), new Uint8Array()))
     // String
