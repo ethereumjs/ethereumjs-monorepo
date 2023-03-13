@@ -1,3 +1,4 @@
+import { getRandomBytesSync } from 'ethereum-cryptography/random'
 import { bytesToHex, bytesToUtf8, crypto, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers'
@@ -427,17 +428,7 @@ export function compareBytes(value1: Uint8Array, value2: Uint8Array): number {
  * @returns {Uint8Array} A Uint8Array of random bytes of specified length.
  */
 export function randomBytes(length: number): Uint8Array {
-  const array = new Uint8Array(length)
-
-  if (crypto.node !== undefined) {
-    crypto.node.getRandomValues(array)
-  } else if (crypto.web) {
-    crypto.web.getRandomValues(array)
-  } else {
-    throw new Error('Unable to find crypto library')
-  }
-
-  return array
+  return getRandomBytesSync(length)
 }
 
 /**
