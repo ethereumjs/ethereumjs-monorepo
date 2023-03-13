@@ -112,7 +112,7 @@ tape('[Header]: difficulty tests', (t) => {
             header: {
               timestamp: test.parentTimestamp,
               difficulty: test.parentDifficulty,
-              number: bytesToInt(test.currentBlockNumber) - 1,
+              number: BigInt(test.currentBlockNumber) - BigInt(1),
               uncleHash,
             },
           },
