@@ -788,7 +788,7 @@ export class Skeleton extends MetaDBManager {
   /**
    * Deletes a skeleton block from the db by number
    */
-  private async deleteBlock(block: Block): Promise<boolean> {
+  async deleteBlock(block: Block): Promise<boolean> {
     try {
       await this.delete(DBKey.SkeletonBlock, bigIntToBuffer(block.header.number))
       await this.delete(DBKey.SkeletonBlockHashToNumber, block.hash())
