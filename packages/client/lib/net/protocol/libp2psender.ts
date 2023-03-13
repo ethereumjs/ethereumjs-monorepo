@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToInt, intToBytes, utf8ToBytes } from '@ethereumjs/util'
+import { bytesToInt, bytesToUtf8, intToBytes, utf8ToBytes } from '@ethereumjs/util'
 import * as pipe from 'it-pipe'
 import * as pushable from 'it-pushable'
 
@@ -50,7 +50,7 @@ export class Libp2pSender extends Sender {
           if (code === 0) {
             const status: any = {}
             for (const [k, v] of (payload as NestedUint8Array).values()) {
-              status[k.toString()] = v
+              status[bytesToUtf8(k as Uint8Array)] = v
             }
             this.status = status
           } else {

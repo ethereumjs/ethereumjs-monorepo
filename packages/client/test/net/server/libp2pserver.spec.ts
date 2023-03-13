@@ -1,4 +1,4 @@
-import { utf8ToBytes } from 'ethereum-cryptography/utils'
+import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils'
 import { EventEmitter } from 'events'
 import { multiaddr } from 'multiaddr'
 import * as tape from 'tape'
@@ -59,7 +59,7 @@ tape('[Libp2pServer]', async (t) => {
       [multiaddr('/ip4/0.0.0.0/tcp/3030'), multiaddr('/ip4/1.1.1.1/tcp/3031')],
       'bootnodes split'
     )
-    t.equals(server.key!.toString(), 'abcd', 'key is correct')
+    t.equals(bytesToUtf8(server.key!), 'abcd', 'key is correct')
     t.equals(server.name, 'libp2p', 'get name')
     t.equals(
       (await server.getPeerId()).toB58String(),

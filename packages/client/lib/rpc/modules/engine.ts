@@ -7,6 +7,7 @@ import {
   bytesToHex,
   bytesToPrefixedHexString,
   equalsBytes,
+  hexStringToBytes,
   toBytes,
   zeros,
 } from '@ethereumjs/util'
@@ -171,7 +172,8 @@ const payloadAttributesFieldValidatorsV2 = {
 export const blockToExecutionPayload = (block: Block, value: bigint) => {
   const blockJson = block.toJSON()
   const header = blockJson.header!
-  const transactions = block.transactions.map((tx) => bytesToHex(tx.serialize())) ?? []
+  const transactions =
+    block.transactions.map((tx) => bytesToPrefixedHexString(tx.serialize())) ?? []
   const withdrawalsArr = blockJson.withdrawals ? { withdrawals: blockJson.withdrawals } : {}
 
   const executionPayload: ExecutionPayload = {
@@ -187,7 +189,7 @@ export const blockToExecutionPayload = (block: Block, value: bigint) => {
     extraData: header.extraData!,
     baseFeePerGas: header.baseFeePerGas!,
     excessDataGas: header.excessDataGas,
-    blockHash: bytesToHex(block.hash()),
+    blockHash: bytesToPrefixedHexString(block.hash()),
     prevRandao: header.mixHash!,
     transactions,
     ...withdrawalsArr,
@@ -206,6 +208,7 @@ const recursivelyFindParents = async (
   if (equalsBytes(parentHash, vmHeadHash) || equalsBytes(parentHash, new Uint8Array(32))) {
     return []
   }
+
   const parentBlocks = []
   const block = await chain.getBlock(parentHash)
   parentBlocks.push(block)
@@ -227,7 +230,7 @@ const validHash = async (hash: Uint8Array, chain: Chain): Promise<string | null>
   } catch (error: any) {
     return null
   }
-  return bytesToHex(hash)
+  return bytesToPrefixedHexString(hash)
 }
 
 /**
@@ -284,12 +287,12 @@ const assembleBlock = async (
   const txs = []
   for (const [index, serializedTx] of transactions.entries()) {
     try {
-      const tx = TransactionFactory.fromSerializedData(toBytes(serializedTx), { common })
+      const tx = TransactionFactory.fromSerializedData(hexStringToBytes(serializedTx), { common })
       txs.push(tx)
     } catch (error) {
       const validationError = `Invalid tx at index ${index}: ${error}`
       config.logger.error(validationError)
-      const latestValidHash = await validHash(toBytes(payload.parentHash), chain)
+      const latestValidHash = await validHash(hexStringToBytes(payload.parentHash), chain)
       const response = { status: Status.INVALID, latestValidHash, validationError }
       return { error: response }
     }
@@ -314,10 +317,10 @@ const assembleBlock = async (
     // correctly set to the correct hf
     block = Block.fromBlockData({ header, transactions: txs, withdrawals }, { common })
     // Verify blockHash matches payload
-    if (!equalsBytes(block.hash(), toBytes(payload.blockHash))) {
+    if (!equalsBytes(block.hash(), hexStringToBytes(payload.blockHash))) {
       const validationError = `Invalid blockHash, expected: ${
         payload.blockHash
-      }, received: ${bytesToHex(block.hash())}`
+      }, received: ${bytesToPrefixedHexString(block.hash())}`
       config.logger.debug(validationError)
       const latestValidHash = await validHash(toBytes(header.parentHash), chain)
       const response = { status: Status.INVALID_BLOCK_HASH, latestValidHash, validationError }
@@ -335,7 +338,7 @@ const assembleBlock = async (
 }
 
 const getPayloadBody = (block: Block): ExecutionPayloadBodyV1 => {
-  const transactions = block.transactions.map((tx) => bytesToHex(tx.serialize()))
+  const transactions = block.transactions.map((tx) => bytesToPrefixedHexString(tx.serialize()))
   const withdrawals = block.withdrawals?.map((wt) => wt.toJSON()) ?? null
 
   return {
@@ -526,7 +529,7 @@ export class Engine {
       if (!response) {
         const validationError = `Error assembling block during init`
         this.config.logger.debug(validationError)
-        const latestValidHash = await validHash(toBytes(payload.parentHash), this.chain)
+        const latestValidHash = await validHash(hexStringToBytes(payload.parentHash), this.chain)
         response = { status: Status.INVALID, latestValidHash, validationError }
       }
       return response
@@ -550,7 +553,7 @@ export class Engine {
     // is pow block which this client would like to mint and attempt proposing it
     const optimisticLookup = await this.service.beaconSync?.extendChain(block)
 
-    const blockExists = await validBlock(toBytes(blockHash), this.chain)
+    const blockExists = await validBlock(hexStringToBytes(blockHash), this.chain)
     if (blockExists) {
       const isBlockExecuted = await this.vm.stateManager.hasStateRoot(blockExists.header.stateRoot)
       if (isBlockExecuted) {
@@ -564,14 +567,14 @@ export class Engine {
     }
 
     try {
-      const parent = await this.chain.getBlock(toBytes(parentHash))
+      const parent = await this.chain.getBlock(hexStringToBytes(parentHash))
       if (!parent._common.gteHardfork(Hardfork.Merge)) {
         const validTerminalBlock = await validateTerminalBlock(parent, this.chain)
         if (!validTerminalBlock) {
           const response = {
             status: Status.INVALID,
             validationError: null,
-            latestValidHash: bytesToHex(zeros(32)),
+            latestValidHash: bytesToPrefixedHexString(zeros(32)),
           }
           return response
         }
@@ -636,7 +639,7 @@ export class Engine {
 
     const response = {
       status: Status.VALID,
-      latestValidHash: bytesToHex(block.hash()),
+      latestValidHash: bytesToPrefixedHexString(block.hash()),
       validationError: null,
     }
     return response
@@ -761,10 +764,10 @@ export class Engine {
      */
     let headBlock: Block | undefined
     try {
-      headBlock = await this.chain.getBlock(toBytes(headBlockHash))
+      headBlock = await this.chain.getBlock(hexStringToBytes(headBlockHash))
     } catch (error) {
       headBlock =
-        (await this.service.beaconSync?.skeleton.getBlockByHash(toBytes(headBlockHash))) ??
+        (await this.service.beaconSync?.skeleton.getBlockByHash(hexStringToBytes(headBlockHash))) ??
         this.remoteBlocks.get(headBlockHash.slice(2))
       if (headBlock === undefined) {
         this.config.logger.debug(`Forkchoice requested unknown head hash=${short(headBlockHash)}`)
@@ -808,7 +811,7 @@ export class Engine {
           payloadStatus: {
             status: Status.INVALID,
             validationError: null,
-            latestValidHash: bytesToHex(zeros(32)),
+            latestValidHash: bytesToPrefixedHexString(zeros(32)),
           },
           payloadId: null,
         }
@@ -911,7 +914,7 @@ export class Engine {
      * Allowed to have zero value while transition block is finalizing
      */
     const zeroBlockHash = zeros(32)
-    const safe = toBytes(safeBlockHash)
+    const safe = hexStringToBytes(safeBlockHash)
     if (!equalsBytes(safe, headBlock.hash()) && !equalsBytes(safe, zeroBlockHash)) {
       try {
         await this.chain.getBlock(safe)
@@ -923,7 +926,7 @@ export class Engine {
         }
       }
     }
-    const finalized = toBytes(finalizedBlockHash)
+    const finalized = hexStringToBytes(finalizedBlockHash)
     if (!equalsBytes(finalized, zeroBlockHash)) {
       try {
         await this.chain.getBlock(finalized)
@@ -963,7 +966,7 @@ export class Engine {
       )
       const latestValidHash = await validHash(headBlock.hash(), this.chain)
       const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
-      const response = { payloadStatus, payloadId: bytesToHex(payloadId), headBlock }
+      const response = { payloadStatus, payloadId: bytesToPrefixedHexString(payloadId), headBlock }
       return response
     }
 
@@ -1019,7 +1022,7 @@ export class Engine {
    * @returns Instance of {@link ExecutionPayloadV1} or an error
    */
   private async getPayload(params: [Bytes8]) {
-    const payloadId = toBytes(params[0])
+    const payloadId = hexStringToBytes(params[0])
     try {
       const built = await this.pendingBlock.build(payloadId)
       if (!built) {
@@ -1125,7 +1128,7 @@ export class Engine {
         message: 'More than 32 execution payload bodies requested',
       }
     }
-    const hashes = params[0].map((hash) => toBytes(hash))
+    const hashes = params[0].map(hexStringToBytes)
     const blocks: (ExecutionPayloadBodyV1 | null)[] = []
     for (const hash of hashes) {
       try {

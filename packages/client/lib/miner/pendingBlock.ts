@@ -103,7 +103,7 @@ export class PendingBlock {
     const payloadIdBytes = toBytes(
       keccak256(concatBytes(parentBlock.hash(), mixHashBuf, timestampBuf, gasLimitBuf)).slice(0, 8)
     )
-    const payloadId = bytesToHex(payloadIdBytes)
+    const payloadId = bytesToPrefixedHexString(payloadIdBytes)
 
     // If payload has already been triggered, then return the payloadid
     if (this.pendingPayloads.get(payloadId)) {
@@ -210,7 +210,7 @@ export class PendingBlock {
    */
   stop(payloadIdBytes: Uint8Array | string) {
     const payloadId =
-      typeof payloadIdBytes !== 'string' ? bytesToHex(payloadIdBytes) : payloadIdBytes
+      typeof payloadIdBytes !== 'string' ? bytesToPrefixedHexString(payloadIdBytes) : payloadIdBytes
     const builder = this.pendingPayloads.get(payloadId)
     if (builder === undefined) return
     // Revert blockBuilder
@@ -227,7 +227,7 @@ export class PendingBlock {
     payloadIdBytes: Uint8Array | string
   ): Promise<void | [block: Block, receipts: TxReceipt[], value: bigint]> {
     const payloadId =
-      typeof payloadIdBytes !== 'string' ? bytesToHex(payloadIdBytes) : payloadIdBytes
+      typeof payloadIdBytes !== 'string' ? bytesToPrefixedHexString(payloadIdBytes) : payloadIdBytes
     const builder = this.pendingPayloads.get(payloadId)
     if (!builder) {
       return

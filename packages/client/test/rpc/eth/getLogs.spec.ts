@@ -1,5 +1,5 @@
 import { Transaction } from '@ethereumjs/tx'
-import { Address, bytesToHex, hexStringToBytes } from '@ethereumjs/util'
+import { Address, bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
@@ -204,7 +204,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const latestHeader = chain.headers.latest!
   req = params(method, [
     {
-      blockHash: bytesToHex(latestHeader.hash()),
+      blockHash: bytesToPrefixedHexString(latestHeader.hash()),
     },
   ])
   expectRes = (res: any) => {

@@ -29,8 +29,8 @@ const ignoredErrors = new RegExp(
 
     // DPT message decoding
     'Hash verification failed',
-    'Invalid address buffer',
-    'Invalid timestamp buffer',
+    'Invalid address bytes',
+    'Invalid timestamp bytes',
     'Invalid type',
     'Timeout error: ping', // connection
     'Peer is banned', // connection
@@ -283,7 +283,7 @@ export class RlpxServer extends Server {
       })
 
       this.rlpx.on('peer:error', (rlpxPeer: Devp2pRLPxPeer, error: Error) => {
-        const peerId = rlpxPeer.getId()
+        const peerId = bytesToHex(rlpxPeer.getId() as Uint8Array)
         if (peerId === null) {
           return this.error(error)
         }

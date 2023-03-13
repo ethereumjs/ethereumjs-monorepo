@@ -2,7 +2,7 @@ import { Common, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { hexStringToBytes } from '@ethereumjs/util'
 import { randomBytes } from 'crypto'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
@@ -324,7 +324,7 @@ tape('[FullEthereumService]', async (t) => {
       {
         eth: {
           send: (_: string, data: any): any => {
-            st.ok(data.txs[0].hash().equals(tx.hash()), 'handled getPooledTransactions')
+            st.ok(equalsBytes(data.txs[0].hash(), tx.hash()), 'handled getPooledTransactions')
             st.end()
           },
         } as any,

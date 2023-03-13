@@ -5,9 +5,16 @@ import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { initKZG } from '@ethereumjs/tx'
-import { Address, bytesToHex, hexStringToBytes, short, toBytes } from '@ethereumjs/util'
+import {
+  Address,
+  bytesToHex,
+  bytesToPrefixedHexString,
+  hexStringToBytes,
+  randomBytes,
+  short,
+  toBytes,
+} from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { randomBytes } from 'crypto'
 import { existsSync, writeFileSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import { Level } from 'level'
@@ -608,7 +615,7 @@ function generateAccount(): Account {
   console.log('='.repeat(50))
   console.log('Account generated for mining blocks:')
   console.log(`Address: ${address}`)
-  console.log(`Private key: 0x${privKey.toString('hex')}`)
+  console.log(`Private key: ${bytesToPrefixedHexString(privKey)}`)
   console.log('WARNING: Do not use this account for mainnet funds')
   console.log('='.repeat(50))
   return [address, privKey]

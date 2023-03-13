@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { Address, bigIntToHex, bytesToHex } from '@ethereumjs/util'
+import { Address, bigIntToHex, bytesToPrefixedHexString } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
@@ -36,7 +36,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   /*
     // SPDX-License-Identifier: MIT
     pragma solidity ^0.7.4;
-    
+
     contract HelloWorld {
         function myAddress() public view returns (address addr) {
             return msg.sender;
@@ -98,21 +98,25 @@ tape(`${method}: call with valid arguments`, async (t) => {
   let req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'latest'])
   let expectRes = (res: any) => {
     const msg = 'should return the correct return value'
-    t.equal(res.body.result, bytesToHex(execResult.returnValue), msg)
+    t.equal(res.body.result, bytesToPrefixedHexString(execResult.returnValue), msg)
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
   req = params(method, [{ ...estimateTxData }, 'latest'])
   expectRes = (res: any) => {
     const msg = 'should return the correct return value with no gas limit provided'
-    t.equal(res.body.result, bytesToHex(execResult.returnValue), msg)
+    t.equal(res.body.result, bytesToPrefixedHexString(execResult.returnValue), msg)
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
   req = params(method, [{ gasLimit, data }, 'latest'])
   expectRes = (res: any) => {
     const msg = `should let run call without 'to' for contract creation`
-    t.equal(res.body.result, bytesToHex(result.results[0].execResult.returnValue), msg)
+    t.equal(
+      res.body.result,
+      bytesToPrefixedHexString(result.results[0].execResult.returnValue),
+      msg
+    )
   }
   await baseRequest(t, server, req, 200, expectRes, true)
 })

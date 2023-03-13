@@ -120,12 +120,12 @@ tape('[SnapProtocol]', (t) => {
     t.ok(firstAccount[2].length === 0, 'Slim format storageRoot for first account')
     t.ok(firstAccount[3].length === 0, 'Slim format codehash for first account')
     t.ok(
-      secondAccount[2].toString('hex') ===
+      bytesToHex(secondAccount[2]) ===
         '3dc6d3cfdc6210b8591ea852961d880821298c7891dea399e02d87550af9d40e',
       'storageHash of the second account'
     )
     t.ok(
-      secondAccount[3].toString('hex') ===
+      bytesToHex(secondAccount[3]) ===
         'e68fe0bb7c4a483affd0f19cc2b989105242bd6b256c6de3afd738f8acd80c66',
       'codeHash of the second account'
     )
@@ -158,8 +158,8 @@ tape('[SnapProtocol]', (t) => {
     const { accounts: accountsFull } = fullData
     t.ok(accountsFull.length === 3, '3 accounts should be decoded in accountsFull')
     const accountFull = accountsFull[0].body
-    t.ok(accountFull[2].equals(KECCAK256_RLP), 'storageRoot should be KECCAK256_RLP')
-    t.ok(accountFull[3].equals(KECCAK256_NULL), 'codeHash should be KECCAK256_NULL')
+    t.ok(equalsBytes(accountFull[2], KECCAK256_RLP), 'storageRoot should be KECCAK256_RLP')
+    t.ok(equalsBytes(accountFull[3], KECCAK256_NULL), 'codeHash should be KECCAK256_NULL')
 
     // Lets encode fullData as it should be encoded in slim format and upon decoding
     // we shpuld get slim format
@@ -300,10 +300,10 @@ tape('[SnapProtocol]', (t) => {
     t.ok(slots.length === 1 && slots[0].length === 3, 'correctly decoded slots')
     const { hash, body } = slots[0][2]
     t.ok(
-      hash.toString('hex') === '60264186ee63f748d340388f07b244d96d007fff5cbc397bbd69f8747c421f79',
+      bytesToHex(hash) === '60264186ee63f748d340388f07b244d96d007fff5cbc397bbd69f8747c421f79',
       'Slot 3 key'
     )
-    t.ok(body.toString('hex') === '8462b66ae7', 'Slot 3 value')
+    t.ok(bytesToHex(body) === '8462b66ae7', 'Slot 3 value')
 
     const payload = RLP.encode(
       p.encode(p.messages.filter((message) => message.name === 'StorageRanges')[0], {
@@ -355,7 +355,7 @@ tape('[SnapProtocol]', (t) => {
       t.fail(`StorageRange proof verification failed with message=${(e as Error).message}`)
     }
     t.ok(
-      bytesToHex(keccak256(proof[0])) === bytesToHex(lastAccountStorageRoot),
+      equalsBytes(keccak256(proof[0]), lastAccountStorageRoot),
       'Proof should link to the accounts storageRoot'
     )
     t.end()

@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { Address, bigIntToHex, bytesToHex, hexStringToBytes } from '@ethereumjs/util'
+import { Address, bigIntToHex, bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
@@ -129,7 +129,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
         '0000000000000000000000000000000000000000000000000000000000000001'
     )
   )
-  req = params(method, [createdAddress!.toString(), bytesToHex(key), 'latest'])
+  req = params(method, [createdAddress!.toString(), bytesToPrefixedHexString(key), 'latest'])
   expectRes = (res: any) => {
     const msg = 'should return the correct storage value (pos1)'
     t.equal(

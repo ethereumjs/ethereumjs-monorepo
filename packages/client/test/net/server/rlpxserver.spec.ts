@@ -121,7 +121,7 @@ tape('[RlpxServer]', async (t) => {
     ;(server as any).initRlpx = td.func<typeof server['initRlpx']>()
     server.dpt = td.object<typeof server['dpt']>()
     ;(server as any).rlpx = td.object({
-      _id: mockId,
+      _id: hexStringToBytes(mockId),
       destroy: td.func(),
     })
     td.when(
@@ -137,7 +137,7 @@ tape('[RlpxServer]', async (t) => {
       nodeInfo,
       {
         enode: `enode://${mockId}@0.0.0.0:30303`,
-        id: mockId,
+        id: hexStringToBytes(mockId),
         ip: '0.0.0.0',
         listenAddr: '0.0.0.0:30303',
         ports: { discovery: 30303, listener: 30303 },

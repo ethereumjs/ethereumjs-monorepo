@@ -397,7 +397,7 @@ export class FullSynchronizer extends Synchronizer {
       this.config.syncTargetHeight !== BigInt(0) &&
       this.chain.blocks.height <= this.config.syncTargetHeight - BigInt(50)
     this.execution.run(true, shouldRunOnlyBatched).catch((e) => {
-      this.config.logger.error(`Full sync execution trigger erored`, {}, e)
+      this.config.logger.error(`Full sync execution trigger errored`, {}, e)
     })
   }
 
