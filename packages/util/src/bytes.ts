@@ -4,12 +4,7 @@ import { bytesToHex, bytesToUtf8, hexToBytes } from 'ethereum-cryptography/utils
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers'
 import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal'
 
-import type {
-  NestedBufferArray,
-  NestedUint8Array,
-  PrefixedHexString,
-  TransformabletoBytes,
-} from './types'
+import type { PrefixedHexString, TransformabletoBytes } from './types'
 
 /****************  Borrowed from @chainsafe/ssz */
 // Caching this info costs about ~1000 bytes and speeds up toHexString() by x6
