@@ -13,7 +13,7 @@ import testnet = require('../testdata/common/testnet.json')
 tape('[VMExecution]', async (t) => {
   t.test('Initialization', async (t) => {
     const vm = await VM.create()
-    const config = new Config({ vm, transports: [] })
+    const config = new Config({ vm, transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const exec = new VMExecution({ config, chain })
     t.equals(exec.vm, vm, 'should use vm provided')
@@ -21,7 +21,7 @@ tape('[VMExecution]', async (t) => {
   })
 
   async function testSetup(blockchain: Blockchain, common?: Common) {
-    const config = new Config({ common, transports: [] })
+    const config = new Config({ common, transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config, blockchain })
     const exec = new VMExecution({ config, chain })
     await chain.open()

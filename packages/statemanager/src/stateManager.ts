@@ -2,6 +2,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import {
   Account,
+  Address,
   KECCAK256_NULL,
   KECCAK256_RLP,
   bigIntToHex,
@@ -15,14 +16,15 @@ import {
   unpadBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
+import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 
-import { BaseStateManager } from './baseStateManager'
-import { Cache } from './cache'
+import { AccountCache, CacheType, StorageCache } from './cache'
 
-import type { getCb, putCb } from './cache'
-import type { StateManager, StorageDump } from './interface'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { AccountFields, StateManager, StorageDump } from './interface'
+import type { PrefixedHexString } from '@ethereumjs/util'
+import type { Debugger } from 'debug'
 
 export type StorageProof = {
   key: PrefixedHexString
@@ -38,6 +40,49 @@ export type Proof = {
   storageHash: PrefixedHexString
   accountProof: PrefixedHexString[]
   storageProof: StorageProof[]
+}
+
+type CacheOptions = {
+  /**
+   * Allows for cache deactivation
+   *
+   * Depending on the use case and underlying datastore (and eventual concurrent cache
+   * mechanisms there), usage with or without cache can be faster
+   *
+   * Default: false
+   */
+  deactivate?: boolean
+
+  /**
+   * Cache type to use.
+   *
+   * Available options:
+   *
+   * ORDERED_MAP: Cache with no fixed upper bound and dynamic allocation,
+   * use for dynamic setups like testing or similar.
+   *
+   * LRU: LRU cache with pre-allocation of memory and a fixed size.
+   * Use for larger and more persistent caches.
+   */
+  type?: CacheType
+
+  /**
+   * Size of the cache (only for LRU cache)
+   *
+   * Default: 100000 (account cache) / 20000 (storage cache)
+   *
+   * Note: the cache/trie interplay mechanism is designed in a way that
+   * the theoretical number of max modified accounts between two flush operations
+   * should be smaller than the cache size, otherwise the cache will "forget" the
+   * old modifications resulting in an incomplete set of trie-flushed accounts.
+   */
+  size?: number
+}
+
+type CacheSettings = {
+  deactivate: boolean
+  type: CacheType
+  size: number
 }
 
 /**
@@ -65,6 +110,10 @@ export interface DefaultStateManagerOpts {
    * E.g. by putting the code `0x80` into the empty trie, will lead to a corrupted trie.
    */
   prefixCodeHashes?: boolean
+
+  accountCacheOpts?: CacheOptions
+
+  storageCacheOpts?: CacheOptions
 }
 
 /**
@@ -77,53 +126,159 @@ export interface DefaultStateManagerOpts {
  * The default state manager implementation uses a
  * `@ethereumjs/trie` trie as a data backend.
  */
-export class DefaultStateManager extends BaseStateManager implements StateManager {
+export class DefaultStateManager implements StateManager {
+  _debug: Debugger
+  _accountCache?: AccountCache
+  _storageCache?: StorageCache
+
   _trie: Trie
   _storageTries: { [key: string]: Trie }
+  _codeCache: { [key: string]: Uint8Array }
 
-  private readonly _prefixCodeHashes: boolean
+  protected readonly _prefixCodeHashes: boolean
+  protected readonly _accountCacheSettings: CacheSettings
+  protected readonly _storageCacheSettings: CacheSettings
+
+  /**
+   * StateManager is run in DEBUG mode (default: false)
+   * Taken from DEBUG environment variable
+   *
+   * Safeguards on debug() calls are added for
+   * performance reasons to avoid string literal evaluation
+   * @hidden
+   */
+  protected readonly DEBUG: boolean = false
 
   /**
    * Instantiate the StateManager interface.
    */
   constructor(opts: DefaultStateManagerOpts = {}) {
-    super(opts)
+    // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
+    this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
+
+    this._debug = createDebugLogger('statemanager:statemanager')
 
     this._trie = opts.trie ?? new Trie({ useKeyHashing: true })
     this._storageTries = {}
+    this._codeCache = {}
 
     this._prefixCodeHashes = opts.prefixCodeHashes ?? true
+    this._accountCacheSettings = {
+      deactivate: opts.accountCacheOpts?.deactivate ?? false,
+      type: opts.accountCacheOpts?.type ?? CacheType.ORDERED_MAP,
+      size: opts.accountCacheOpts?.size ?? 100000,
+    }
 
-    /*
-     * For a custom StateManager implementation adopt these
-     * callbacks passed to the `Cache` instantiated to perform
-     * the `get`, `put` and `delete` operations with the
-     * desired backend.
-     */
-    const getCb: getCb = async (address) => {
-      const rlp = await this._trie.get(address.bytes)
-      return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined
+    if (!this._accountCacheSettings.deactivate) {
+      this._accountCache = new AccountCache({
+        size: this._accountCacheSettings.size,
+        type: this._accountCacheSettings.type,
+      })
     }
-    const putCb: putCb = async (keyBuf, accountRlp) => {
-      const trie = this._trie
-      await trie.put(keyBuf, accountRlp)
+
+    this._storageCacheSettings = {
+      deactivate: opts.storageCacheOpts?.deactivate ?? false,
+      type: opts.storageCacheOpts?.type ?? CacheType.ORDERED_MAP,
+      size: opts.storageCacheOpts?.size ?? 20000,
     }
-    const deleteCb = async (keyBuf: Uint8Array) => {
-      const trie = this._trie
-      await trie.del(keyBuf)
+
+    if (!this._storageCacheSettings.deactivate) {
+      this._storageCache = new StorageCache({
+        size: this._storageCacheSettings.size,
+        type: this._storageCacheSettings.type,
+      })
     }
-    this._cache = new Cache({ getCb, putCb, deleteCb })
   }
 
   /**
-   * Copies the current instance of the `StateManager`
-   * at the last fully committed point, i.e. as if all current
-   * checkpoints were reverted.
+   * Gets the account associated with `address` or `undefined` if account does not exist
+   * @param address - Address of the `account` to get
    */
-  copy(): StateManager {
-    return new DefaultStateManager({
-      trie: this._trie.copy(false),
-    })
+  async getAccount(address: Address): Promise<Account | undefined> {
+    if (!this._accountCacheSettings.deactivate) {
+      const elem = this._accountCache!.get(address)
+      if (elem !== undefined) {
+        return elem.accountRLP !== undefined
+          ? Account.fromRlpSerializedAccount(elem.accountRLP)
+          : undefined
+      }
+    }
+
+    const rlp = await this._trie.get(address.bytes)
+    const account = rlp !== null ? Account.fromRlpSerializedAccount(rlp) : undefined
+    if (this.DEBUG) {
+      this._debug(`Get account ${address} from DB (${account ? 'exists' : 'non-existent'})`)
+    }
+    this._accountCache?.put(address, account)
+    return account
+  }
+
+  /**
+   * Saves an account into state under the provided `address`.
+   * @param address - Address under which to store `account`
+   * @param account - The account to store or undefined if to be deleted
+   */
+  async putAccount(address: Address, account: Account | undefined): Promise<void> {
+    if (this.DEBUG) {
+      this._debug(
+        `Save account address=${address} nonce=${account?.nonce} balance=${
+          account?.balance
+        } contract=${account && account.isContract() ? 'yes' : 'no'} empty=${
+          account && account.isEmpty() ? 'yes' : 'no'
+        }`
+      )
+    }
+    if (this._accountCacheSettings.deactivate) {
+      const trie = this._trie
+      if (account !== undefined) {
+        await trie.put(address.bytes, account.serialize())
+      } else {
+        await trie.del(address.bytes)
+      }
+    } else {
+      if (account !== undefined) {
+        this._accountCache!.put(address, account)
+      } else {
+        this._accountCache!.del(address)
+      }
+    }
+  }
+
+  /**
+   * Gets the account associated with `address`, modifies the given account
+   * fields, then saves the account into state. Account fields can include
+   * `nonce`, `balance`, `storageRoot`, and `codeHash`.
+   * @param address - Address of the account to modify
+   * @param accountFields - Object containing account fields and values to modify
+   */
+  async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
+    let account = await this.getAccount(address)
+    if (!account) {
+      account = new Account()
+    }
+    account.nonce = accountFields.nonce ?? account.nonce
+    account.balance = accountFields.balance ?? account.balance
+    account.storageRoot = accountFields.storageRoot ?? account.storageRoot
+    account.codeHash = accountFields.codeHash ?? account.codeHash
+    await this.putAccount(address, account)
+  }
+
+  /**
+   * Deletes an account from state under the provided `address`.
+   * @param address - Address of the account which should be deleted
+   */
+  async deleteAccount(address: Address) {
+    if (this.DEBUG) {
+      this._debug(`Delete account ${address}`)
+    }
+    if (this._accountCacheSettings.deactivate) {
+      await this._trie.del(address.bytes)
+    } else {
+      this._accountCache!.del(address)
+    }
+    if (!this._storageCacheSettings.deactivate) {
+      this._storageCache?.clearContractStorage(address)
+    }
   }
 
   /**
@@ -143,8 +298,14 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     // @ts-expect-error
     await this._trie._db.put(key, value)
 
+    const keyHex = bytesToHex(key)
+    this._codeCache[keyHex] = value
+
     if (this.DEBUG) {
       this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
+    }
+    if (!(await this.getAccount(address))) {
+      await this.putAccount(address, new Account())
     }
     await this.modifyAccountFields(address, { codeHash })
   }
@@ -157,29 +318,25 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async getContractCode(address: Address): Promise<Uint8Array> {
     const account = await this.getAccount(address)
+    if (!account) {
+      return new Uint8Array(0)
+    }
     if (!account.isContract()) {
       return new Uint8Array(0)
     }
     const key = this._prefixCodeHashes
       ? concatBytes(CODEHASH_PREFIX, account.codeHash)
       : account.codeHash
-    // @ts-expect-error
-    const code = await this._trie._db.get(key)
-    return code ?? new Uint8Array(0)
-  }
 
-  /**
-   * Creates a storage trie from the primary storage trie
-   * for an account and saves this in the storage cache.
-   * @private
-   */
-  async _lookupStorageTrie(address: Address): Promise<Trie> {
-    // from state trie
-    const account = await this.getAccount(address)
-    const storageTrie = this._trie.copy(false)
-    storageTrie.root(account.storageRoot)
-    storageTrie.flushCheckpoints()
-    return storageTrie
+    const keyHex = bytesToHex(key)
+    if (keyHex in this._codeCache) {
+      return this._codeCache[keyHex]
+    } else {
+      // @ts-expect-error
+      const code = (await this._trie._db.get(key)) ?? new Uint8Array(0)
+      this._codeCache[keyHex] = code
+      return code
+    }
   }
 
   /**
@@ -187,13 +344,15 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * cache or does a lookup.
    * @private
    */
-  async _getStorageTrie(address: Address): Promise<Trie> {
+  async _getStorageTrie(address: Address, account: Account): Promise<Trie> {
     // from storage cache
     const addressHex = bytesToHex(address.bytes)
-    let storageTrie = this._storageTries[addressHex]
-    if (storageTrie === undefined || storageTrie === null) {
-      // lookup from state
-      storageTrie = await this._lookupStorageTrie(address)
+    const storageTrie = this._storageTries[addressHex]
+    if (storageTrie === undefined) {
+      const storageTrie = this._trie.copy(false)
+      storageTrie.root(account.storageRoot)
+      storageTrie.flushCheckpoints()
+      return storageTrie
     }
     return storageTrie
   }
@@ -203,7 +362,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * the shortest representation of the stored value.
    * @param address -  Address of the account to get the storage for
    * @param key - Key in the account's storage to get the value for. Must be 32 bytes long.
-   * @returns {Promise<Uint8Array>} - The storage value for the account
+   * @returns - The storage value for the account
    * corresponding to the provided address at the provided key.
    * If this does not exist an empty `Uint8Array` is returned.
    */
@@ -211,9 +370,23 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')
     }
+    if (!this._storageCacheSettings.deactivate) {
+      const value = this._storageCache!.get(address, key)
+      if (value !== undefined) {
+        const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
+        return decoded
+      }
+    }
 
-    const trie = await this._getStorageTrie(address)
+    const account = await this.getAccount(address)
+    if (!account) {
+      throw new Error('getContractStorage() called on non-existing account')
+    }
+    const trie = await this._getStorageTrie(address, account)
     const value = await trie.get(key)
+    if (!this._storageCacheSettings.deactivate) {
+      this._storageCache?.put(address, key, value ?? hexStringToBytes('80'))
+    }
     const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
     return decoded
   }
@@ -226,11 +399,12 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async _modifyContractStorage(
     address: Address,
+    account: Account,
     modifyTrie: (storageTrie: Trie, done: Function) => void
   ): Promise<void> {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve) => {
-      const storageTrie = await this._getStorageTrie(address)
+      const storageTrie = await this._getStorageTrie(address, account)
 
       modifyTrie(storageTrie, async () => {
         // update storage cache
@@ -238,34 +412,20 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
         this._storageTries[addressHex] = storageTrie
 
         // update contract storageRoot
-        const contract = this._cache.get(address)
-        contract.storageRoot = storageTrie.root()
-
-        await this.putAccount(address, contract)
+        account.storageRoot = storageTrie.root()
+        await this.putAccount(address, account)
         resolve()
       })
     })
   }
 
-  /**
-   * Adds value to the state trie for the `account`
-   * corresponding to `address` at the provided `key`.
-   * @param address -  Address to set a storage value for
-   * @param key - Key to set the value at. Must be 32 bytes long.
-   * @param value - Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is a empty or filled with zeros, deletes the value.
-   */
-  async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
-    if (key.length !== 32) {
-      throw new Error('Storage key must be 32 bytes long')
-    }
-
-    if (value.length > 32) {
-      throw new Error('Storage value cannot be longer than 32 bytes')
-    }
-
-    value = unpadBytes(value)
-
-    await this._modifyContractStorage(address, async (storageTrie, done) => {
+  async _writeContractStorage(
+    address: Address,
+    account: Account,
+    key: Uint8Array,
+    value: Uint8Array
+  ) {
+    await this._modifyContractStorage(address, account, async (storageTrie, done) => {
       if (value instanceof Uint8Array && value.length) {
         // format input
         const encodedValue = RLP.encode(value)
@@ -285,11 +445,48 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
   }
 
   /**
+   * Adds value to the state trie for the `account`
+   * corresponding to `address` at the provided `key`.
+   * @param address -  Address to set a storage value for
+   * @param key - Key to set the value at. Must be 32 bytes long.
+   * @param value - Value to set at `key` for account corresponding to `address`.
+   * Cannot be more than 32 bytes. Leading zeros are stripped.
+   * If it is a empty or filled with zeros, deletes the value.
+   */
+  async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
+    if (key.length !== 32) {
+      throw new Error('Storage key must be 32 bytes long')
+    }
+
+    if (value.length > 32) {
+      throw new Error('Storage value cannot be longer than 32 bytes')
+    }
+
+    const account = await this.getAccount(address)
+    if (!account) {
+      throw new Error('putContractStorage() called on non-existing account')
+    }
+
+    value = unpadBytes(value)
+    if (!this._storageCacheSettings.deactivate) {
+      const encodedValue = RLP.encode(value)
+      this._storageCache!.put(address, key, encodedValue)
+    } else {
+      await this._writeContractStorage(address, account, key, value)
+    }
+  }
+
+  /**
    * Clears all storage entries for the account corresponding to `address`.
    * @param address -  Address to clear the storage of
    */
   async clearContractStorage(address: Address): Promise<void> {
-    await this._modifyContractStorage(address, (storageTrie, done) => {
+    const account = await this.getAccount(address)
+    if (!account) {
+      throw new Error(`clearContractStorage() called on non-existing account (${address})`)
+    }
+    this._storageCache?.clearContractStorage(address)
+    await this._modifyContractStorage(address, account, (storageTrie, done) => {
       storageTrie.root(storageTrie.EMPTY_TRIE_ROOT)
       done()
     })
@@ -302,7 +499,8 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async checkpoint(): Promise<void> {
     this._trie.checkpoint()
-    await super.checkpoint()
+    this._storageCache?.checkpoint()
+    this._accountCache?.checkpoint()
   }
 
   /**
@@ -312,7 +510,8 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
   async commit(): Promise<void> {
     // setup trie checkpointing
     await this._trie.commit()
-    await super.commit()
+    this._storageCache?.commit()
+    this._accountCache?.commit()
   }
 
   /**
@@ -322,8 +521,46 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
   async revert(): Promise<void> {
     // setup trie checkpointing
     await this._trie.revert()
+    this._storageCache?.revert()
+    this._accountCache?.revert()
     this._storageTries = {}
-    await super.revert()
+    this._codeCache = {}
+  }
+
+  /**
+   * Writes all cache items to the trie
+   */
+  async flush(): Promise<void> {
+    if (!this._storageCacheSettings.deactivate) {
+      const items = await this._storageCache!.flush()
+      for (const item of items) {
+        const address = Address.fromString(`0x${item[0]}`)
+        const keyHex = item[1]
+        const keyBytes = hexToBytes(keyHex)
+        const value = item[2]
+
+        const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
+        const account = await this.getAccount(address)
+        if (account) {
+          await this._writeContractStorage(address, account, keyBytes, decoded)
+        }
+      }
+    }
+    if (!this._accountCacheSettings.deactivate) {
+      const items = await this._accountCache!.flush()
+      for (const item of items) {
+        const addressHex = item[0]
+        const addressBytes = hexToBytes(addressHex)
+        const elem = item[1]
+        if (elem.accountRLP === undefined) {
+          const trie = this._trie
+          await trie.del(addressBytes)
+        } else {
+          const trie = this._trie
+          await trie.put(addressBytes, elem.accountRLP)
+        }
+      }
+    }
   }
 
   /**
@@ -333,20 +570,20 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
     const account = await this.getAccount(address)
+    if (!account) {
+      throw new Error(`getProof() can only be called for an existing account`)
+    }
     const accountProof: PrefixedHexString[] = (await this._trie.createProof(address.bytes)).map(
       (p) => bytesToPrefixedHexString(p)
     )
     const storageProof: StorageProof[] = []
-    const storageTrie = await this._getStorageTrie(address)
+    const storageTrie = await this._getStorageTrie(address, account)
 
     for (const storageKey of storageSlots) {
       const proof = (await storageTrie.createProof(storageKey)).map((p) =>
         bytesToPrefixedHexString(p)
       )
-      let value = bytesToPrefixedHexString(await this.getContractStorage(address, storageKey))
-      if (value === '0x') {
-        value = '0x0'
-      }
+      const value = bytesToPrefixedHexString(await this.getContractStorage(address, storageKey))
       const proofItem: StorageProof = {
         key: bytesToPrefixedHexString(storageKey),
         value,
@@ -386,7 +623,6 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       // Verify that the account is empty in the proof.
       const emptyBytes = new Uint8Array(0)
       const notEmptyErrorMsg = 'Invalid proof provided: account is not empty'
-
       const nonce = unpadBytes(hexStringToBytes(proof.nonce))
       if (!equalsBytes(nonce, emptyBytes)) {
         throw new Error(`${notEmptyErrorMsg} (nonce is not zero)`)
@@ -450,7 +686,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * @returns {Promise<Uint8Array>} - Returns the state-root of the `StateManager`
    */
   async getStateRoot(): Promise<Uint8Array> {
-    await this._cache.flush()
+    await this.flush()
     return this._trie.root()
   }
 
@@ -461,8 +697,8 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * the state trie.
    * @param stateRoot - The state-root to reset the instance to
    */
-  async setStateRoot(stateRoot: Uint8Array): Promise<void> {
-    await this._cache.flush()
+  async setStateRoot(stateRoot: Uint8Array, clearCache: boolean = true): Promise<void> {
+    await this.flush()
 
     if (!equalsBytes(stateRoot, this._trie.EMPTY_TRIE_ROOT)) {
       const hasRoot = await this._trie.checkRoot(stateRoot)
@@ -472,8 +708,14 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     }
 
     this._trie.root(stateRoot)
-    this._cache.clear()
+    if (this._accountCache !== undefined && clearCache) {
+      this._accountCache.clear()
+    }
+    if (this._storageCache !== undefined && clearCache) {
+      this._storageCache.clear()
+    }
     this._storageTries = {}
+    this._codeCache = {}
   }
 
   /**
@@ -484,8 +726,14 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * Both are represented as hex strings without the `0x` prefix.
    */
   async dumpStorage(address: Address): Promise<StorageDump> {
+    await this.flush()
+    const account = await this.getAccount(address)
+    if (!account) {
+      throw new Error(`dumpStorage f() can only be called for an existing account`)
+    }
+
     return new Promise((resolve, reject) => {
-      this._getStorageTrie(address)
+      this._getStorageTrie(address, account)
         .then((trie) => {
           const storage: StorageDump = {}
           const stream = trie.createReadStream()
@@ -516,17 +764,33 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * @param address - Address of the `account` to check
    */
   async accountExists(address: Address): Promise<boolean> {
-    const account = this._cache.lookup(address)
-    if (
-      account &&
-      ((account as any).virtual === undefined || (account as any).virtual === false) &&
-      !this._cache.keyIsDeleted(address)
-    ) {
+    const account = await this.getAccount(address)
+    if (account) {
       return true
+    } else {
+      return false
     }
-    if (await this._trie.get(address.bytes)) {
-      return true
-    }
-    return false
+  }
+
+  /**
+   * Copies the current instance of the `StateManager`
+   * at the last fully committed point, i.e. as if all current
+   * checkpoints were reverted.
+   */
+  copy(): StateManager {
+    return new DefaultStateManager({
+      trie: this._trie.copy(false),
+      prefixCodeHashes: this._prefixCodeHashes,
+      accountCacheOpts: this._accountCacheSettings,
+      storageCacheOpts: this._storageCacheSettings,
+    })
+  }
+
+  /**
+   * Clears all underlying caches
+   */
+  clearCaches() {
+    this._accountCache?.clear()
+    this._storageCache?.clear()
   }
 }

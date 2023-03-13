@@ -209,6 +209,14 @@ export interface RunBlockOpts {
    */
   root?: Uint8Array
   /**
+   * Clearing the StateManager cache.
+   *
+   * If state root is not reset for whatever reason this can be set to `false` for better performance.
+   *
+   * Default: true
+   */
+  clearCache?: boolean
+  /**
    * Whether to generate the stateRoot and other related fields.
    * If `true`, `runBlock` will set the fields `stateRoot`, `receiptTrie`, `gasUsed`, and `bloom` (logs bloom) after running the block.
    * If `false`, `runBlock` throws if any fields do not match.

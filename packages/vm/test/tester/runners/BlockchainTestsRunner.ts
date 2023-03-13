@@ -2,6 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { bytesToBigInt, isHexPrefixed, stripHexPrefix, toBytes } from '@ethereumjs/util'
@@ -42,6 +43,9 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   const cacheDB = new Level('./.cachedb')
   const state = new Trie({ useKeyHashing: true })
+  const stateManager = new DefaultStateManager({
+    trie: state,
+  })
 
   const { common }: { common: Common } = options
   common.setHardforkByBlockNumber(0)
@@ -89,7 +93,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   const begin = Date.now()
 
   const vm = await VM.create({
-    state,
+    stateManager,
     blockchain,
     common,
     hardforkByBlockNumber: true,

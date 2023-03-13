@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { Address } from '@ethereumjs/util'
+import { Account, Address } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
@@ -131,6 +131,7 @@ tape('EIP-3529 tests', (t) => {
     for (const testCase of testCases) {
       const code = hexToBytes((testCase.code + '00').slice(2)) // add a STOP opcode (0 gas) so we can find the gas used / effective gas
 
+      await vm.stateManager.putAccount(address, new Account())
       await vm.stateManager.putContractStorage(
         address,
         key,
@@ -203,6 +204,7 @@ tape('EIP-3529 tests', (t) => {
 
     for (let i = 0; i < 100; i++) {
       const key = hexToBytes(i.toString(16).padStart(64, '0'))
+      await vm.stateManager.putAccount(address, new Account())
       await vm.stateManager.putContractStorage(address, key, value)
       const hex = i.toString(16).padStart(2, '0')
       // push 0 push <hex> sstore
