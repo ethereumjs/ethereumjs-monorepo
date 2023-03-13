@@ -86,6 +86,13 @@ export class VmState implements EVMStateAccess {
     // Remove cache items
     const height = this._checkpointCount
     if (height in this._touchedStack) {
+      // Copy the items-to-delete in case of a revert into one level higher
+      if (this._touchedStack[height - 1] === undefined) {
+        this._touchedStack[height - 1] = new Set()
+      }
+      for (const address of this._touchedStack[height]) {
+        this._touchedStack[height - 1].add(address)
+      }
       delete this._touchedStack[height]
     }
 
@@ -318,6 +325,7 @@ export class VmState implements EVMStateAccess {
       }
     }
     this._touched.clear()
+    this._touchedStack = {}
   }
 
   /**
