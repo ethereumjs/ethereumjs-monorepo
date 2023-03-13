@@ -880,6 +880,17 @@ export class Engine {
      */
     if (payloadAttributes) {
       const { timestamp, prevRandao, suggestedFeeRecipient, withdrawals } = payloadAttributes
+      const timestampBigInt = BigInt(timestamp)
+
+      if (timestampBigInt <= headBlock.header.timestamp) {
+        throw {
+          message: `invalid timestamp in payloadAttributes, got ${timestampBigInt}, need at least ${
+            headBlock.header.timestamp + BigInt(1)
+          }`,
+          code: INVALID_PARAMS,
+        }
+      }
+
       const payloadId = await this.pendingBlock.start(
         await this.vm.copy(),
         headBlock,
