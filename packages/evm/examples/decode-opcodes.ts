@@ -15,7 +15,7 @@ const data =
 nameOpCodes(hexToBytes(data))
 
 function nameOpCodes(raw: Uint8Array) {
-  let pushData
+  let pushData = new Uint8Array()
 
   for (let i = 0; i < raw.length; i++) {
     const pc = i
@@ -27,16 +27,16 @@ function nameOpCodes(raw: Uint8Array) {
       pushData = raw.slice(pc + 1, pc + jumpNum + 1)
       i += jumpNum
     }
-
+    console.log('we pushing', typeof pushData)
     console.log(
       pad(pc, roundLog(raw.length, 10)) +
         '  ' +
         curOpCode +
         ' ' +
-        (pushData !== undefined ? bytesToHex(pushData) : '')
+        (pushData?.length > 0 ? bytesToHex(pushData as Uint8Array) : '')
     )
 
-    pushData = ''
+    pushData = new Uint8Array()
   }
 }
 
