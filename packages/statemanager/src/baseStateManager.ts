@@ -20,7 +20,7 @@ import type { Debugger } from 'debug'
  */
 export abstract class BaseStateManager {
   _debug: Debugger
-  _cache!: Cache
+  _cache?: Cache
 
   /**
    * StateManager is run in DEBUG mode (default: false)
@@ -47,8 +47,12 @@ export abstract class BaseStateManager {
    * @param address - Address of the `account` to get
    */
   async getAccount(address: Address): Promise<Account> {
-    const account = await this._cache.getOrLoad(address)
-    return account
+    if (this._cache) {
+      const account = await this._cache.getOrLoad(address)
+      return account
+    } else {
+      throw 'Cache needs to be activated'
+    }
   }
 
   /**
@@ -57,14 +61,11 @@ export abstract class BaseStateManager {
    * @param account - The account to store
    */
   async putAccount(address: Address, account: Account): Promise<void> {
-    if (this.DEBUG) {
-      this._debug(
-        `Save account address=${address} nonce=${account.nonce} balance=${
-          account.balance
-        } contract=${account.isContract() ? 'yes' : 'no'} empty=${account.isEmpty() ? 'yes' : 'no'}`
-      )
+    if (this._cache) {
+      this._cache.put(address, account)
+    } else {
+      throw 'Cache needs to be activated'
     }
-    this._cache.put(address, account)
   }
 
   /**
@@ -88,10 +89,11 @@ export abstract class BaseStateManager {
    * @param address - Address of the account which should be deleted
    */
   async deleteAccount(address: Address) {
-    if (this.DEBUG) {
-      this._debug(`Delete account ${address}`)
+    if (this._cache) {
+      this._cache.del(address)
+    } else {
+      throw 'Cache needs to be activated'
     }
-    this._cache.del(address)
   }
 
   async accountIsEmpty(address: Address): Promise<boolean> {
@@ -111,7 +113,7 @@ export abstract class BaseStateManager {
    * Partial implementation, called from the subclass.
    */
   async checkpoint(): Promise<void> {
-    this._cache.checkpoint()
+    this._cache?.checkpoint()
   }
 
   /**
@@ -122,7 +124,7 @@ export abstract class BaseStateManager {
    */
   async commit(): Promise<void> {
     // setup cache checkpointing
-    this._cache.commit()
+    this._cache?.commit()
   }
 
   /**
@@ -133,10 +135,10 @@ export abstract class BaseStateManager {
    */
   async revert(): Promise<void> {
     // setup cache checkpointing
-    this._cache.revert()
+    this._cache?.revert()
   }
 
   async flush(): Promise<void> {
-    await this._cache.flush()
+    await this._cache?.flush()
   }
 }
