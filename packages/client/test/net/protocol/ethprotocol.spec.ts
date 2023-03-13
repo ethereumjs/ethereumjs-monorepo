@@ -104,7 +104,7 @@ tape('[EthProtocol]', (t) => {
     const p = new EthProtocol({ config, chain })
     const block = Block.fromBlockData({})
     const res = p.decode(p.messages.filter((message) => message.name === 'GetReceipts')[0], [
-      BigInt(1),
+      bigIntToBytes(1n),
       [block.hash()],
     ])
     const res2 = p.encode(p.messages.filter((message) => message.name === 'GetReceipts')[0], {
@@ -112,9 +112,9 @@ tape('[EthProtocol]', (t) => {
       hashes: [block.hash()],
     })
     t.equal(res.reqId, BigInt(1), 'correctly decoded reqId')
-    t.ok(res.hashes[0].equals(block.hash()), 'correctly decoded blockHash')
+    t.deepEquals(res.hashes[0], block.hash(), 'correctly decoded blockHash')
     t.equal(bytesToBigInt(res2[0]), BigInt(1), 'correctly encoded reqId')
-    t.ok(res2[1][0].equals(block.hash()), 'correctly encoded blockHash')
+    t.deepEquals(res2[1][0], block.hash(), 'correctly encoded blockHash')
     t.end()
   })
 

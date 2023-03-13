@@ -112,7 +112,7 @@ tape('[RlpxServer]', async (t) => {
 
   t.test('should return rlpx server info with ip4 as default', async (t) => {
     const config = new Config({ transports: [] })
-    const mockId = '123'
+    const mockId = '0123'
     const server = new RlpxServer({
       config,
       bootnodes: '10.0.0.1:1234,10.0.0.2:1234',
@@ -121,9 +121,9 @@ tape('[RlpxServer]', async (t) => {
     ;(server as any).initRlpx = td.func<typeof server['initRlpx']>()
     server.dpt = td.object<typeof server['dpt']>()
     ;(server as any).rlpx = td.object({
-      _id: hexStringToBytes(mockId),
       destroy: td.func(),
     })
+    server.rlpx!._id = hexStringToBytes(mockId)
     td.when(
       server.dpt!.bootstrap({ address: '10.0.0.1', udpPort: 1234, tcpPort: 1234 })
     ).thenResolve(undefined)
@@ -131,13 +131,14 @@ tape('[RlpxServer]', async (t) => {
       (server.dpt! as any).bootstrap({ address: '10.0.0.2', udpPort: '1234', tcpPort: '1234' })
     ).thenReject(new Error('err0'))
     config.events.on(Event.SERVER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
+
     await server.start()
     const nodeInfo = server.getRlpxInfo()
     t.deepEqual(
       nodeInfo,
       {
         enode: `enode://${mockId}@0.0.0.0:30303`,
-        id: hexStringToBytes(mockId),
+        id: mockId,
         ip: '0.0.0.0',
         listenAddr: '0.0.0.0:30303',
         ports: { discovery: 30303, listener: 30303 },
@@ -150,7 +151,7 @@ tape('[RlpxServer]', async (t) => {
 
   t.test('should return rlpx server info with ip6', async (t) => {
     const config = new Config({ transports: [], extIP: '::' })
-    const mockId = '123'
+    const mockId = '0123'
     const server = new RlpxServer({
       config,
       bootnodes: '10.0.0.1:1234,10.0.0.2:1234',
@@ -159,9 +160,9 @@ tape('[RlpxServer]', async (t) => {
     ;(server as any).initRlpx = td.func<typeof server['initRlpx']>()
     server.dpt = td.object<typeof server['dpt']>()
     ;(server as any).rlpx = td.object({
-      _id: mockId,
       destroy: td.func(),
     })
+    server.rlpx!._id = hexStringToBytes(mockId)
     td.when(
       server.dpt!.bootstrap({ address: '10.0.0.1', udpPort: 1234, tcpPort: 1234 })
     ).thenResolve(undefined)

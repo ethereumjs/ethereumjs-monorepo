@@ -141,7 +141,6 @@ export class Protocol {
    */
   decode(message: Message, payload: any): any {
     if (message.decode) {
-      console.log('messagedecode', message.decode)
       return message.decode(payload)
     }
     return payload

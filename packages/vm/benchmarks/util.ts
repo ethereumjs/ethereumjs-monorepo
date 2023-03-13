@@ -60,7 +60,7 @@ export function getBlockchain(blockhashes: any): Mockchain {
 export const verifyResult = (block: Block, result: RunBlockResult) => {
   // verify the receipts root, the logs bloom and the gas used after block execution,
   // throw if any of these is not the expected value
-  if (result.receiptsRoot && !result.receiptsRoot.equals(block.header.receiptTrie)) {
+  if (result.receiptsRoot && !equalsBytes(result.receiptsRoot, block.header.receiptTrie)) {
     // there's something wrong here with the receipts trie.
     // if block has receipt data we can check against the expected result of the block
     // and the reported data of the VM in order to isolate the problem
@@ -86,7 +86,7 @@ export const verifyResult = (block: Block, result: RunBlockResult) => {
     }
     throw new Error('invalid receiptTrie')
   }
-  if (!result.logsBloom.equals(block.header.logsBloom)) {
+  if (!equalsBytes(result.logsBloom, block.header.logsBloom)) {
     throw new Error('invalid logsBloom')
   }
   if (block.header.gasUsed !== result.gasUsed) {
