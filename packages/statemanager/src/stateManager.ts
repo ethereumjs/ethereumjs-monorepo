@@ -61,6 +61,14 @@ export interface DefaultStateManagerOpts {
    * E.g. by putting the code `0x80` into the empty trie, will lead to a corrupted trie.
    */
   prefixCodeHashes?: boolean
+
+  /**
+   * Allows for cache deactivation
+   *
+   * Depending on the use case and underlying datastore (and eventual concurrent cache
+   * mechanisms there), usage with or without cache can be faster
+   */
+  deactivateCache?: boolean
 }
 
 /**
@@ -77,7 +85,8 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
   _trie: Trie
   _storageTries: { [key: string]: Trie }
 
-  private readonly _prefixCodeHashes: boolean
+  protected readonly _prefixCodeHashes: boolean
+  protected readonly _deactivateCache: boolean
 
   /**
    * Instantiate the StateManager interface.
@@ -89,26 +98,83 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     this._storageTries = {}
 
     this._prefixCodeHashes = opts.prefixCodeHashes ?? true
+    this._deactivateCache = opts.deactivateCache ?? false
 
-    /*
-     * For a custom StateManager implementation adopt these
-     * callbacks passed to the `Cache` instantiated to perform
-     * the `get`, `put` and `delete` operations with the
-     * desired backend.
-     */
-    const getCb: getCb = async (address) => {
+    if (!this._deactivateCache) {
+      /*
+       * For a custom StateManager implementation adopt these
+       * callbacks passed to the `Cache` instantiated to perform
+       * the `get`, `put` and `delete` operations with the
+       * desired backend.
+       */
+      const getCb: getCb = async (address) => {
+        const rlp = await this._trie.get(address.buf)
+        return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined
+      }
+      const putCb: putCb = async (keyBuf, accountRlp) => {
+        const trie = this._trie
+        await trie.put(keyBuf, accountRlp)
+      }
+      const deleteCb = async (keyBuf: Buffer) => {
+        const trie = this._trie
+        await trie.del(keyBuf)
+      }
+      this._cache = new Cache({ getCb, putCb, deleteCb })
+    }
+  }
+
+  /**
+   * Gets the account associated with `address`. Returns an empty account if the account does not exist.
+   * @param address - Address of the `account` to get
+   */
+  async getAccount(address: Address): Promise<Account> {
+    if (this._deactivateCache) {
       const rlp = await this._trie.get(address.buf)
-      return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined
+      if (rlp) {
+        return Account.fromRlpSerializedAccount(rlp)
+      } else {
+        const account = new Account()
+        return account
+      }
+    } else {
+      return super.getAccount(address)
     }
-    const putCb: putCb = async (keyBuf, accountRlp) => {
+  }
+
+  /**
+   * Saves an account into state under the provided `address`.
+   * @param address - Address under which to store `account`
+   * @param account - The account to store
+   */
+  async putAccount(address: Address, account: Account): Promise<void> {
+    if (this.DEBUG) {
+      this._debug(
+        `Save account address=${address} nonce=${account.nonce} balance=${
+          account.balance
+        } contract=${account.isContract() ? 'yes' : 'no'} empty=${account.isEmpty() ? 'yes' : 'no'}`
+      )
+    }
+    if (this._deactivateCache) {
       const trie = this._trie
-      await trie.put(keyBuf, accountRlp)
+      await trie.put(address.buf, account.serialize())
+    } else {
+      await super.putAccount(address, account)
     }
-    const deleteCb = async (keyBuf: Buffer) => {
-      const trie = this._trie
-      await trie.del(keyBuf)
+  }
+
+  /**
+   * Deletes an account from state under the provided `address`. The account will also be removed from the state trie.
+   * @param address - Address of the account which should be deleted
+   */
+  async deleteAccount(address: Address) {
+    if (this.DEBUG) {
+      this._debug(`Delete account ${address}`)
     }
-    this._cache = new Cache({ getCb, putCb, deleteCb })
+    if (this._deactivateCache) {
+      await this._trie.del(address.buf)
+    } else {
+      await super.deleteAccount(address)
+    }
   }
 
   /**
@@ -234,7 +300,12 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
         this._storageTries[addressHex] = storageTrie
 
         // update contract storageRoot
-        const contract = this._cache.get(address)
+        let contract
+        if (this._cache) {
+          contract = this._cache.get(address)
+        } else {
+          contract = await this.getAccount(address)
+        }
         contract.storageRoot = storageTrie.root()
 
         await this.putAccount(address, contract)
@@ -443,7 +514,9 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * @returns {Promise<Buffer>} - Returns the state-root of the `StateManager`
    */
   async getStateRoot(): Promise<Buffer> {
-    await this._cache.flush()
+    if (this._cache) {
+      await this._cache.flush()
+    }
     return this._trie.root()
   }
 
@@ -455,7 +528,9 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * @param stateRoot - The state-root to reset the instance to
    */
   async setStateRoot(stateRoot: Buffer): Promise<void> {
-    await this._cache.flush()
+    if (this._cache) {
+      await this._cache.flush()
+    }
 
     if (!stateRoot.equals(this._trie.EMPTY_TRIE_ROOT)) {
       const hasRoot = await this._trie.checkRoot(stateRoot)
@@ -465,7 +540,9 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     }
 
     this._trie.root(stateRoot)
-    this._cache.clear()
+    if (this._cache) {
+      this._cache.clear()
+    }
     this._storageTries = {}
   }
 
@@ -509,13 +586,15 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * @param address - Address of the `account` to check
    */
   async accountExists(address: Address): Promise<boolean> {
-    const account = this._cache.lookup(address)
-    if (
-      account &&
-      ((account as any).virtual === undefined || (account as any).virtual === false) &&
-      !this._cache.keyIsDeleted(address)
-    ) {
-      return true
+    if (this._cache) {
+      const account = this._cache.lookup(address)
+      if (
+        account &&
+        ((account as any).virtual === undefined || (account as any).virtual === false) &&
+        !this._cache.keyIsDeleted(address)
+      ) {
+        return true
+      }
     }
     if (await this._trie.get(address.buf)) {
       return true
