@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1678479345719,
+  "lastUpdate": 1678751647142,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "2153e1c09c7923b15ad9a3a65bb9dbc751523dbe",
-          "message": "withdrawals and transaction inclusion logic updates (#2533)\n\n* client: Modify pending block retention to cache size limit based\r\n\r\n* cache the block in builder\r\n\r\n* do not throw on double revert\r\n\r\n* update tx hf than throwing on mismatch on txRun\r\n\r\n* fix pendingblock issues\r\n\r\n* fix pendingBlock tests\r\n\r\n* Fix miner test\r\n\r\n* Fix runTx test.  Remove invalid tx hf branch\r\n\r\n* Fix withdrawals test\r\n\r\n* Fix buildBlock tests and revert logic\r\n\r\n* Change revert logic\r\n\r\n* Remove meaningless test\r\n\r\n* cleanup comments\r\n\r\n* apply feedback and lint\r\n\r\n* revert statemanager on buildblock revert\r\n\r\n* fix test\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-02-20T12:52:37+01:00",
-          "tree_id": "188bf83ac7a61fb99061b40185583ad6c5eb1f5a",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2153e1c09c7923b15ad9a3a65bb9dbc751523dbe"
-        },
-        "date": 1676894117525,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 16114,
-            "range": "±1.69%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 15421,
-            "range": "±4.52%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 16044,
-            "range": "±1.59%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 15413,
-            "range": "±1.69%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 14368,
-            "range": "±7.33%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.08%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9c957b78a1607f3430c905182fcf267792aad2ed",
+          "message": "client/engine: ensure invalid blockhash response matches spec (#2583)",
+          "timestamp": "2023-03-13T19:51:11-04:00",
+          "tree_id": "f24e0eeea6a6085bc66b4db59593182687804015",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9c957b78a1607f3430c905182fcf267792aad2ed"
+        },
+        "date": 1678751646056,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15064,
+            "range": "±2.47%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 14447,
+            "range": "±5.49%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15007,
+            "range": "±2.16%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 14662,
+            "range": "±2.34%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 13116,
+            "range": "±9.75%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
           }
         ]
       }
