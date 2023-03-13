@@ -189,25 +189,36 @@ const getBlockByOption = async (blockOpt: string, chain: Chain) => {
 
   let block: Block
   const latest = chain.blocks.latest ?? (await chain.getCanonicalHeadBlock())
+  const safe = chain.blocks.safe ?? (await chain.getCanonicalSafeBlock())
+  const finalized = chain.blocks.safe ?? (await chain.getCanonicalFinalizedBlock())
 
-  if (blockOpt === 'latest') {
-    block = latest
-  } else if (blockOpt === 'earliest') {
-    block = await chain.getBlock(BigInt(0))
-  } else {
-    const blockNumber = BigInt(blockOpt)
-    if (blockNumber === latest.header.number) {
+  switch (blockOpt) {
+    case 'earliest':
+      block = await chain.getBlock(BigInt(0))
+      break
+    case 'latest':
       block = latest
-    } else if (blockNumber > latest.header.number) {
-      throw {
-        code: INVALID_PARAMS,
-        message: 'specified block greater than current height',
+      break
+    case 'safe':
+      block = safe
+      break
+    case 'finalized':
+      block = finalized
+      break
+    default: {
+      const blockNumber = BigInt(blockOpt)
+      if (blockNumber === latest.header.number) {
+        block = latest
+      } else if (blockNumber > latest.header.number) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'specified block greater than current height',
+        }
+      } else {
+        block = await chain.getBlock(blockNumber)
       }
-    } else {
-      block = await chain.getBlock(blockNumber)
     }
   }
-
   return block
 }
 

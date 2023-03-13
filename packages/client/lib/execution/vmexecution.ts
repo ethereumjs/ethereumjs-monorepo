@@ -161,19 +161,46 @@ export class VMExecution extends Execution {
    * Should only be used after {@link VMExecution.runWithoutSetHead}
    * @param blocks Array of blocks to save pending receipts and set the last block as the head
    */
-  async setHead(blocks: Block[]): Promise<void> {
+  async setHead(
+    blocks: Block[],
+    { finalizedBlock, safeBlock }: { finalizedBlock?: Block; safeBlock?: Block } = {}
+  ): Promise<void> {
     return this.runWithLock<void>(async () => {
       const vmHeadBlock = blocks[blocks.length - 1]
-      if (!(await this.vm.stateManager.hasStateRoot(vmHeadBlock.header.stateRoot))) {
-        // If we set blockchain iterator to somewhere where we don't have stateroot
-        // execution run will always fail
+      const chainPointers: [string, Block | null][] = [
+        ['vmHeadBlock', vmHeadBlock],
+        // if safeBlock is not provided, the current safeBlock of chain should be used
+        // which is genesisBlock if it has never been set for e.g.
+        ['safeBlock', safeBlock ?? this.chain.blocks.safe],
+        ['finalizedBlock', finalizedBlock ?? this.chain.blocks.finalized],
+      ]
+
+      let isSortedDesc = true
+      let lastBlock = vmHeadBlock
+      for (const [blockName, block] of chainPointers) {
+        if (block === null) {
+          continue
+        }
+        if (!(await this.vm.stateManager.hasStateRoot(block.header.stateRoot))) {
+          // If we set blockchain iterator to somewhere where we don't have stateroot
+          // execution run will always fail
+          throw Error(
+            `${blockName}'s stateRoot not found number=${block.header.number} root=${short(
+              block.header.stateRoot
+            )}`
+          )
+        }
+        isSortedDesc = isSortedDesc && lastBlock.header.number >= block.header.number
+        lastBlock = block
+      }
+
+      if (isSortedDesc === false) {
         throw Error(
-          `vmHeadBlock's stateRoot not found number=${vmHeadBlock.header.number} root=${short(
-            vmHeadBlock.header.stateRoot
-          )}`
+          `headBlock=${vmHeadBlock?.header.number} should be >= safeBlock=${safeBlock?.header.number} should be >= finalizedBlock=${finalizedBlock?.header.number}`
         )
       }
-      await this.chain.putBlocks(blocks, true)
+      // skip emitting the chain update event as we will manually do it
+      await this.chain.putBlocks(blocks, true, true)
       for (const block of blocks) {
         const receipts = this.pendingReceipts?.get(block.hash().toString('hex'))
         if (receipts) {
@@ -181,7 +208,25 @@ export class VMExecution extends Execution {
           this.pendingReceipts?.delete(block.hash().toString('hex'))
         }
       }
+
+      // check if the head, safe and finalized are now canonical
+      for (const [blockName, block] of chainPointers) {
+        if (block === null) {
+          continue
+        }
+        const blockByNumber = await this.chain.getBlock(block.header.number)
+        if (!blockByNumber.hash().equals(block.hash())) {
+          throw Error(`${blockName} is not canonical in the chain`)
+        }
+      }
       await this.chain.blockchain.setIteratorHead('vm', vmHeadBlock.hash())
+      if (safeBlock !== undefined) {
+        await this.chain.blockchain.setIteratorHead('safe', safeBlock.hash())
+      }
+      if (finalizedBlock !== undefined) {
+        await this.chain.blockchain.setIteratorHead('finalized', finalizedBlock.hash())
+      }
+      await this.chain.update(true)
     })
   }
 
