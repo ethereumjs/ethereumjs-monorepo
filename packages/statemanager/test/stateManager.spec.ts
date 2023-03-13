@@ -7,7 +7,6 @@ import {
   unpadBytes,
   zeros,
 } from '@ethereumjs/util'
-import { equal } from 'assert'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex, concatBytes, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'

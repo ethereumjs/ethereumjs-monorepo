@@ -1,5 +1,5 @@
 import { bytesToBigInt, concatBytesUnsafe, padToEven } from '@ethereumjs/util'
-import { bytesToHex, concatBytes, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { ERROR, EvmError } from '../../exceptions'
 

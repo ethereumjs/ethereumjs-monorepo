@@ -1,9 +1,4 @@
-import {
-  bytesToHex,
-  bytesToPrefixedHexString,
-  hexStringToBytes,
-  setLengthLeft,
-} from '@ethereumjs/util'
+import { bytesToPrefixedHexString, hexStringToBytes, setLengthLeft } from '@ethereumjs/util'
 
 import { isAccessList } from './types'
 

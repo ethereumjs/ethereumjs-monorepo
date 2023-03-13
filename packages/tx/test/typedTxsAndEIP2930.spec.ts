@@ -5,7 +5,6 @@ import {
   MAX_UINT64,
   SECP256K1_ORDER_DIV_2,
   bytesToBigInt,
-  bytesToHex,
   bytesToPrefixedHexString,
   concatBytes,
   equalsBytes,

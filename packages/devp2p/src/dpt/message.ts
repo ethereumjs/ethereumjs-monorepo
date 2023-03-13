@@ -21,7 +21,6 @@ const timestamp = {
     return bytes
   },
   decode(bytes: Uint8Array) {
-    console.log('bytes', bytes)
     if (bytes.length !== 4) throw new RangeError(`Invalid timestamp bytes :${bytesToHex(bytes)}`)
     return new DataView(bytes.buffer).getUint32(0)
   },
@@ -86,7 +85,6 @@ const ping = {
     ]
   },
   decode(payload: InPing): OutPing {
-    console.log(payload)
     return {
       version: bytes2int(payload[0]),
       from: endpoint.decode(payload[1]),

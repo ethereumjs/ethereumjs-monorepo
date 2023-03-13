@@ -62,7 +62,6 @@ tape(`${method}: call with 1559 tx`, async (t) => {
   const req = params(method, [bytesToPrefixedHexString(tx.hash())])
   const expectRes = (res: any) => {
     const msg = 'should return the correct tx'
-    console.log(res.body.result.transactionHash)
     t.equal(res.body.result.transactionHash, bytesToPrefixedHexString(tx.hash()), msg)
   }
   await baseRequest(t, server, req, 200, expectRes)

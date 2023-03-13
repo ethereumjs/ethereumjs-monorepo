@@ -158,11 +158,7 @@ tape('reorg tests', (t) => {
       await blockchain.putBlocks([block1_high, block2_high, block3_high])
 
       let signerStates = (blockchain.consensus as CliqueConsensus)._cliqueLatestSignerStates
-      console.log(
-        signerStates.find(
-          (s: any) => s[0] === BigInt(2) && s[1].find((a: Address) => a.equals(beneficiary1))
-        )
-      )
+
       t.ok(
         !signerStates.find(
           (s: any) => s[0] === BigInt(2) && s[1].find((a: Address) => a.equals(beneficiary1))

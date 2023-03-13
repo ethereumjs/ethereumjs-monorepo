@@ -1,4 +1,4 @@
-import { bytesToHex, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex } from 'ethereum-cryptography/utils'
 import { EventEmitter } from 'events'
 import _KBucket = require('k-bucket')
 
