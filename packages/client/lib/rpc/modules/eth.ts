@@ -189,8 +189,6 @@ const getBlockByOption = async (blockOpt: string, chain: Chain) => {
 
   let block: Block
   const latest = chain.blocks.latest ?? (await chain.getCanonicalHeadBlock())
-  const safe = chain.blocks.safe ?? (await chain.getCanonicalSafeBlock())
-  const finalized = chain.blocks.safe ?? (await chain.getCanonicalFinalizedBlock())
 
   switch (blockOpt) {
     case 'earliest':
@@ -200,10 +198,10 @@ const getBlockByOption = async (blockOpt: string, chain: Chain) => {
       block = latest
       break
     case 'safe':
-      block = safe
+      block = chain.blocks.safe ?? (await chain.getCanonicalSafeBlock())
       break
     case 'finalized':
-      block = finalized
+      block = chain.blocks.finalized ?? (await chain.getCanonicalFinalizedBlock())
       break
     default: {
       const blockNumber = BigInt(blockOpt)
