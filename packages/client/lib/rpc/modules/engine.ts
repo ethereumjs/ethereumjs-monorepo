@@ -305,7 +305,7 @@ const assembleBlock = async (
         payload.blockHash
       }, received: ${bufferToHex(block.hash())}`
       config.logger.debug(validationError)
-      const latestValidHash = await validHash(toBuffer(header.parentHash), chain)
+      const latestValidHash = null
       const response = { status: Status.INVALID_BLOCK_HASH, latestValidHash, validationError }
       return { error: response }
     }
