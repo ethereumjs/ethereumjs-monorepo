@@ -1,5 +1,4 @@
 import { RLP } from '@ethereumjs/rlp'
-
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
