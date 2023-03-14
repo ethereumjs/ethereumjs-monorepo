@@ -232,7 +232,7 @@ export class PeerPool {
     if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
       NO_PEER_PERIOD_COUNT = 6
     }
-    if (this.size === 0) {
+    if (this.size === 0 && this.config.maxPeers > 0) {
       this.noPeerPeriods += 1
       if (this.noPeerPeriods >= NO_PEER_PERIOD_COUNT) {
         this.noPeerPeriods = 0
