@@ -99,7 +99,7 @@ case $MULTIPEER in
         ;;
       geth)
         # geth will be mounted in docker with DATADIR to /data
-        EL_PORT_ARGS="--datadir /data/geth --authrpc.jwtsecret /data/jwtsecret --http --http.api engine,net,eth,web3,debug,admin --http.corsdomain \"*\" --http.port 8545 --http.addr 0.0.0.0 --http.vhosts \"*\" --authrpc.addr 0.0.0.0 --authrpc.vhosts \"*\" --authrpc.port=8551 --syncmode full --networkid $NETWORKID"
+        EL_PORT_ARGS="--datadir /data/geth --authrpc.jwtsecret /data/jwtsecret --http --http.api engine,net,eth,web3,debug,admin --http.corsdomain \"*\" --http.port 8545 --http.addr 0.0.0.0 --http.vhosts \"*\" --authrpc.addr 0.0.0.0 --authrpc.vhosts \"*\" --authrpc.port=8551 --syncmode full --networkid $NETWORKID --nodiscover"
         ;;
       *)
         echo "ELCLIENT=$ELCLIENT not implemented"

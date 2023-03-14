@@ -19,6 +19,7 @@ import {
 } from './simutils'
 
 import type { EthereumClient } from '../../lib/client'
+import type { RlpxServer } from '../../lib/net/server'
 
 const pkey = Buffer.from('ae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e', 'hex')
 const sender = '0x' + privateToAddress(pkey).toString('hex')
@@ -116,6 +117,11 @@ tape('simple mainnet test run', async (t) => {
     })) ?? { ejsInlineClient: null, peerConnectedPromise: Promise.reject('Client creation error') }
     ejsClient = ejsInlineClient
     st.ok(ejsClient !== null, 'ethereumjs client started')
+
+    const enode = (ejsClient!.server('rlpx') as RlpxServer)!.getRlpxInfo().enode
+    const res = await client.request('admin_addPeer', [enode])
+    st.equal(res.result, true, 'successfully requested Geth add EthereumJS as peer')
+
     const peerConnectTimeout = new Promise((_resolve, reject) => setTimeout(reject, 10000))
     try {
       await Promise.race([peerConnectedPromise, peerConnectTimeout])
