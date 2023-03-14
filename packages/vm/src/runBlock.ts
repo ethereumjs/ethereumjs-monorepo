@@ -154,7 +154,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       const msg = _errorMsg('invalid receiptTrie', this, block)
       throw new Error(msg)
     }
-    if (!equalsBytes(result.bloom.bitvector, block.header.logsBloom)) {
+    if (!(equalsBytes(result.bloom.bitvector, block.header.logsBloom) === true)) {
       if (this.DEBUG) {
         debug(
           `Invalid bloom received=${bytesToHex(result.bloom.bitvector)} expected=${bytesToHex(
@@ -172,7 +172,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       const msg = _errorMsg('invalid gasUsed', this, block)
       throw new Error(msg)
     }
-    if (!equalsBytes(stateRoot, block.header.stateRoot)) {
+    if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
       if (this.DEBUG) {
         debug(
           `Invalid stateRoot received=${bytesToHex(stateRoot)} expected=${bytesToHex(

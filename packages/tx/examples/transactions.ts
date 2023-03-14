@@ -3,7 +3,8 @@
 // Install the dependencies and run `npx ts-node examples/transactions.ts`
 
 import { Transaction } from '../src'
-import { toBytes } from '@ethereumjs/util'
+import { bytesToPrefixedHexString, toBytes } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 
 // We create an unsigned transaction.
 // Notice we don't set the `to` field because we are creating a new contract.
@@ -17,10 +18,7 @@ const tx = Transaction.fromTxData({
 })
 
 // We sign the transaction with this private key.
-const privateKey = Buffer.from(
-  'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-  'hex'
-)
+const privateKey = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 
 const signedTx = tx.sign(privateKey)
 
@@ -33,7 +31,7 @@ console.log('Total Amount of wei needed:' + feeCost.toString())
 // Lets serialize the transaction
 
 console.log('---Serialized TX----')
-console.log(signedTx.serialize().toString('hex'))
+console.log(bytesToPrefixedHexString(signedTx.serialize()))
 console.log('--------------------')
 
 // Parsing & Validating Transactions
