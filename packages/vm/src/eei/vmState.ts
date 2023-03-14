@@ -96,7 +96,13 @@ export class VmState implements EVMStateAccess {
         }
         for (const address of this._touchedStack[height]) {
           this._touchedStack[height - 1].add(address)
+          if (this._touchedHeight.get(address) === height) {
+            this._touchedHeight.set(address, height - 1)
+          }
         }
+      } else {
+        this._touched = new Set()
+        this._touchedHeight = new Map()
       }
       delete this._touchedStack[height]
     }
@@ -150,9 +156,10 @@ export class VmState implements EVMStateAccess {
 
         if (
           this._touched.has(address) &&
-          this._touchedHeight.get(address)! <= this._checkpointCount
+          this._touchedHeight.get(address)! >= this._checkpointCount
         ) {
           this._touched.delete(address)
+          this._touchedHeight.delete(address)
         }
       }
       delete this._touchedStack[height]
