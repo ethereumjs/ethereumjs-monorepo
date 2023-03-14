@@ -34,6 +34,9 @@ export class VMExecution extends Execution {
   /** Number of maximum blocks to run per iteration of {@link VMExecution.run} */
   private NUM_BLOCKS_PER_ITERATION = 50
 
+  /** Maximally tolerated block time before giving a warning on CL */
+  private MAX_TOLERATED_BLOCK_TIME = 12
+
   /**
    * Create new VM execution module
    */
@@ -268,12 +271,25 @@ export class VMExecution extends Execution {
               if (!this.started) {
                 throw Error('Execution stopped')
               }
+              const beforeTS = Date.now()
               const result = await this.vm.runBlock({
                 block,
                 root: parentState,
                 skipBlockValidation,
                 skipHeaderValidation: true,
               })
+              const afterTS = Date.now()
+              const diffSec = Math.round((afterTS - beforeTS) / 1000)
+
+              if (diffSec > this.MAX_TOLERATED_BLOCK_TIME) {
+                const msg = `Slow block execution for block num=${
+                  block.header.number
+                } hash=0x${block.hash().toString('hex')} txs=${block.transactions.length} gasUsed=${
+                  result.gasUsed
+                } time=${diffSec}secs`
+                this.config.logger.warn(msg)
+              }
+
               void this.receiptsManager?.saveReceipts(block, result.receipts)
             })
             txCounter += block.transactions.length
@@ -434,12 +450,18 @@ export class VMExecution extends Execution {
       if (txHashes.length === 0) {
         // we are skipping header validation because the block has been picked from the
         // blockchain and header should have already been validated while putBlock
+        const beforeTS = Date.now()
         const res = await vm.runBlock({ block, skipHeaderValidation: true })
-        this.config.logger.info(
-          `Executed block num=${blockNumber} hash=0x${block.hash().toString('hex')} txs=${
-            block.transactions.length
-          } gasUsed=${res.gasUsed} `
-        )
+        const afterTS = Date.now()
+        const diffSec = Math.round((afterTS - beforeTS) / 1000)
+        const msg = `Executed block num=${blockNumber} hash=0x${block.hash().toString('hex')} txs=${
+          block.transactions.length
+        } gasUsed=${res.gasUsed} time=${diffSec}secs`
+        if (diffSec <= this.MAX_TOLERATED_BLOCK_TIME) {
+          this.config.logger.info(msg)
+        } else {
+          this.config.logger.warn(msg)
+        }
       } else {
         let count = 0
         // Special verbose tx execution mode triggered by BLOCK_NUMBER[*]
