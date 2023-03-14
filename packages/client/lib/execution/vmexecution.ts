@@ -31,9 +31,6 @@ export class VMExecution extends Execution {
   private pendingReceipts?: Map<string, TxReceipt[]>
   private vmPromise?: Promise<number>
 
-  /** Number of maximum blocks to run per iteration of {@link VMExecution.run} */
-  private NUM_BLOCKS_PER_ITERATION = 50
-
   /** Maximally tolerated block time before giving a warning on CL */
   private MAX_TOLERATED_BLOCK_TIME = 12
 
@@ -221,8 +218,8 @@ export class VMExecution extends Execution {
       (!runOnlybatched ||
         (runOnlybatched &&
           canonicalHead.header.number - startHeadBlock.header.number >=
-            BigInt(this.NUM_BLOCKS_PER_ITERATION))) &&
-      (numExecuted === undefined || (loop && numExecuted === this.NUM_BLOCKS_PER_ITERATION)) &&
+            BigInt(this.config.numBlocksPerIteration))) &&
+      (numExecuted === undefined || (loop && numExecuted === this.config.numBlocksPerIteration)) &&
       startHeadBlock.hash().equals(canonicalHead.hash()) === false
     ) {
       let txCounter = 0
@@ -342,7 +339,7 @@ export class VMExecution extends Execution {
             errorBlock = block
           }
         },
-        this.NUM_BLOCKS_PER_ITERATION,
+        this.config.numBlocksPerIteration,
         // release lock on this callback so other blockchain ops can happen while this block is being executed
         true
       )
