@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1678800807196,
+  "lastUpdate": 1678816388108,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "4aa97537c6919eddf6629a762c0a1fa9c12ef97e",
-          "message": "Devp2p Improvements and Clean-Ups / Client ID Integration (#2538)\n\n* devp2p: added singlePeerRun.ts script, new script folder setup structure\r\n\r\n* devp2p: removed outdated Parity DPT server ping response hack\r\n\r\n* devp2p: improved RLPx HELLO message logging (added protocol version and client ID)\r\n\r\n* Client: use client version for RLPx initialization\r\n\r\n* Minor",
-          "timestamp": "2023-02-20T14:53:25+01:00",
-          "tree_id": "469e3bf31e93cd8415c237cb51a9de7c1b82d9e4",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4aa97537c6919eddf6629a762c0a1fa9c12ef97e"
-        },
-        "date": 1676901398017,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 12778,
-            "range": "±3.77%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 12599,
-            "range": "±2.77%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 12495,
-            "range": "±6.70%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 12433,
-            "range": "±2.74%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 12039,
-            "range": "±3.06%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±9.76%",
             "unit": "ops/sec",
             "extra": "74 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b6bb0a22460e1bacd4f7b65274ad573babf5a6fc",
+          "message": "Setup to dev/test snapsync with sim architecture (#2574)\n\n* Setup to dev/test snapsync with sim architecture\r\n\r\n* modfiy single-run to setup a lodestar<>geth node to snapsync from\r\n\r\n* setup an ethereumjs inline client and get it to peer with geth\r\n\r\n* cleanup setup a bit\r\n\r\n* snapsync run spec\r\n\r\n* get the snap testdev sim working\r\n\r\n* finalize the test infra and update usage doc\r\n\r\n* enhance coverage\r\n\r\n* Use geth RPC to connect to ethJS\r\n\r\n* refac wait for snap sync completion\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-03-14T23:20:22+05:30",
+          "tree_id": "9ea0fa5055c4dcfbb109f6b0eef16fdb105c3c66",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b6bb0a22460e1bacd4f7b65274ad573babf5a6fc"
+        },
+        "date": 1678816387217,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15189,
+            "range": "±2.78%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 14779,
+            "range": "±4.85%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15494,
+            "range": "±1.85%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15073,
+            "range": "±2.15%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 13440,
+            "range": "±8.18%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
           }
         ]
       }
