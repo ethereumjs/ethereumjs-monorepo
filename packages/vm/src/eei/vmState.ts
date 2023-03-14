@@ -150,7 +150,7 @@ export class VmState implements EVMStateAccess {
 
         if (
           this._touched.has(address) &&
-          this._touchedHeight.get(address) === this._checkpointCount
+          this._touchedHeight.get(address)! <= this._checkpointCount
         ) {
           this._touched.delete(address)
         }
