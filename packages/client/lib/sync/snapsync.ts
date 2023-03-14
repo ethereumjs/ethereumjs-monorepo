@@ -1,5 +1,7 @@
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 
+import { Event } from '../types'
+
 import { AccountFetcher } from './fetcher'
 import { Synchronizer } from './sync'
 
@@ -40,7 +42,11 @@ export class SnapSynchronizer extends Synchronizer {
   /**
    * Open synchronizer. Must be called before sync() is called
    */
-  async open(): Promise<void> {}
+  async open(): Promise<void> {
+    await super.open()
+    await this.chain.open()
+    await this.pool.open()
+  }
 
   /**
    * Returns true if peer can be used for syncing
@@ -80,6 +86,28 @@ export class SnapSynchronizer extends Synchronizer {
       max: 1,
     })
     return result ? result[1][0] : undefined
+  }
+
+  /**
+   * Start synchronizer.
+   * If passed a block, will initialize sync starting from the block.
+   */
+  async start(): Promise<void> {
+    if (this.running) return
+    this.running = true
+
+    const timeout = setTimeout(() => {
+      this.forceSync = true
+    }, this.interval * 30)
+    try {
+      await this.sync()
+    } catch (error: any) {
+      this.config.logger.error(`Snap sync error: ${error.message}`)
+      this.config.events.emit(Event.SYNC_ERROR, error)
+    }
+    await new Promise((resolve) => setTimeout(resolve, this.interval))
+    this.running = false
+    clearTimeout(timeout)
   }
 
   /**

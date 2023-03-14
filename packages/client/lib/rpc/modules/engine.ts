@@ -158,7 +158,7 @@ const payloadAttributesFieldValidatorsV2 = {
 /**
  * Formats a block to {@link ExecutionPayloadV1}.
  */
-const blockToExecutionPayload = (block: Block, value: bigint) => {
+export const blockToExecutionPayload = (block: Block, value: bigint) => {
   const blockJson = block.toJSON()
   const header = blockJson.header!
   const transactions = block.transactions.map((tx) => bufferToHex(tx.serialize())) ?? []
@@ -832,10 +832,15 @@ export class Engine {
     const zeroBlockHash = zeros(32)
     const safe = toBuffer(safeBlockHash)
     if (!safe.equals(headBlock.hash()) && !safe.equals(zeroBlockHash)) {
+      const msg = 'Safe block not in canonical chain'
       try {
-        await this.chain.getBlock(safe)
-      } catch (error) {
-        const message = 'safe block not available'
+        const safeBlock = await this.chain.getBlock(safe)
+        const canonical = await this.chain.getBlock(safeBlock.header.number)
+        if (!canonical.hash().equals(safe)) {
+          throw new Error(msg)
+        }
+      } catch (error: any) {
+        const message = error.message === msg ? msg : 'safe block not available'
         throw {
           code: INVALID_PARAMS,
           message,
@@ -844,11 +849,17 @@ export class Engine {
     }
     const finalized = toBuffer(finalizedBlockHash)
     if (!finalized.equals(zeroBlockHash)) {
+      const msg = 'Finalized block not in canonical chain'
       try {
-        await this.chain.getBlock(finalized)
-      } catch (error) {
+        const finalizedBlock = await this.chain.getBlock(finalized)
+        const canonical = await this.chain.getBlock(finalizedBlock.header.number)
+        if (!canonical.hash().equals(finalized)) {
+          throw new Error(msg)
+        }
+      } catch (error: any) {
+        const message = error.message === msg ? msg : 'finalized block not available'
         throw {
-          message: 'finalized block not available',
+          message,
           code: INVALID_PARAMS,
         }
       }
@@ -859,6 +870,17 @@ export class Engine {
      */
     if (payloadAttributes) {
       const { timestamp, prevRandao, suggestedFeeRecipient, withdrawals } = payloadAttributes
+      const timestampBigInt = BigInt(timestamp)
+
+      if (timestampBigInt <= headBlock.header.timestamp) {
+        throw {
+          message: `invalid timestamp in payloadAttributes, got ${timestampBigInt}, need at least ${
+            headBlock.header.timestamp + BigInt(1)
+          }`,
+          code: INVALID_PARAMS,
+        }
+      }
+
       const payloadId = await this.pendingBlock.start(
         await this.vm.copy(),
         headBlock,
