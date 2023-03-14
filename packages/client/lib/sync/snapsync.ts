@@ -83,7 +83,6 @@ export class SnapSynchronizer extends Synchronizer {
 
   /**
    * Start synchronizer.
-   * If passed a block, will initialize sync starting from the block.
    */
   async start(): Promise<void> {
     if (this.running) return

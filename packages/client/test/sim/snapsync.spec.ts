@@ -30,6 +30,7 @@ const networkJson = require(`./configs/${network}.json`)
 const common = Common.fromGethGenesis(networkJson, { chain: network })
 const customGenesisState = parseGethGenesisState(networkJson)
 let ejsClient: EthereumClient | null = null
+let snapCompleted: Promise<unknown> | undefined = undefined
 
 export async function runTx(data: string, to?: string, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
@@ -106,16 +107,17 @@ tape('simple mainnet test run', async (t) => {
 
   t.test('setup snap sync', { skip: process.env.SNAP_SYNC === undefined }, async (st) => {
     // start client inline here for snap sync, no need for beacon
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    const { ejsInlineClient, peerConnectedPromise } = (await createSnapClient(
-      common,
-      customGenesisState,
-      [nodeInfo.enode]
-    ).catch((e) => {
-      console.log(e)
-      return null
-    })) ?? { ejsInlineClient: null, peerConnectedPromise: Promise.reject('Client creation error') }
+    const { ejsInlineClient, peerConnectedPromise, snapSyncCompletedPromise } =
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      (await createSnapClient(common, customGenesisState, [nodeInfo.enode]).catch((e) => {
+        console.log(e)
+        return null
+      })) ?? {
+        ejsInlineClient: null,
+        peerConnectedPromise: Promise.reject('Client creation error'),
+      }
     ejsClient = ejsInlineClient
+    snapCompleted = snapSyncCompletedPromise
     st.ok(ejsClient !== null, 'ethereumjs client started')
 
     const enode = (ejsClient!.server('rlpx') as RlpxServer)!.getRlpxInfo().enode
@@ -134,13 +136,22 @@ tape('simple mainnet test run', async (t) => {
 
   t.test('should snap sync and finish', async (st) => {
     try {
-      if (ejsClient !== null) {
+      if (ejsClient !== null && snapCompleted !== undefined) {
         // call sync if not has been called yet
-        await ejsClient.services[0].synchronizer.sync()
+        void ejsClient.services[0].synchronizer.sync()
         // wait on the sync promise to complete if it has been called independently
-        await ejsClient.services[0].synchronizer['syncPromise']
+        const snapSyncTimeout = new Promise((_resolve, reject) => setTimeout(reject, 40000))
+        try {
+          await Promise.race([snapCompleted, snapSyncTimeout])
+          st.pass('completed snap sync')
+        } catch (e) {
+          st.fail('could not complete snap sync in 40 seconds')
+        }
         await ejsClient.stop()
+      } else {
+        st.fail('ethereumjs client not setup properly for snap sync')
       }
+
       await teardownCallBack()
       st.pass('network cleaned')
     } catch (e) {
@@ -168,11 +179,14 @@ async function createSnapClient(common: any, customGenesisState: any, bootnodes:
     forceSnapSync: true,
   })
   const peerConnectedPromise = new Promise((resolve) => {
-    config.events.on(Event.PEER_CONNECTED, (peer: any) => resolve(peer))
+    config.events.once(Event.PEER_CONNECTED, (peer: any) => resolve(peer))
+  })
+  const snapSyncCompletedPromise = new Promise((resolve) => {
+    config.events.once(Event.SYNC_SNAPSYNC_COMPLETE, (stateRoot: any) => resolve(stateRoot))
   })
 
   const ejsInlineClient = await createInlineClient(config, common, customGenesisState)
-  return { ejsInlineClient, peerConnectedPromise }
+  return { ejsInlineClient, peerConnectedPromise, snapSyncCompletedPromise }
 }
 
 process.on('uncaughtException', (err, origin) => {
