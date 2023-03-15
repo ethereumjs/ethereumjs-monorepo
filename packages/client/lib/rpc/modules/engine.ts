@@ -305,7 +305,7 @@ const assembleBlock = async (
         payload.blockHash
       }, received: ${bufferToHex(block.hash())}`
       config.logger.debug(validationError)
-      const latestValidHash = await validHash(toBuffer(header.parentHash), chain)
+      const latestValidHash = null
       const response = { status: Status.INVALID_BLOCK_HASH, latestValidHash, validationError }
       return { error: response }
     }
@@ -590,8 +590,10 @@ export class Engine {
 
     blocks.push(block)
 
+    let lastBlock: Block
     try {
       for (const [i, block] of blocks.entries()) {
+        lastBlock = block
         const root = (i > 0 ? blocks[i - 1] : await this.chain.getBlock(block.header.parentHash))
           .header.stateRoot
         await this.execution.runWithoutSetHead({
@@ -605,6 +607,14 @@ export class Engine {
       this.config.logger.error(validationError)
       const latestValidHash = await validHash(block.header.parentHash, this.chain)
       const response = { status: Status.INVALID, latestValidHash, validationError }
+      try {
+        await this.chain.blockchain.delBlock(lastBlock!.hash())
+        // eslint-disable-next-line no-empty
+      } catch {}
+      try {
+        await this.service.beaconSync?.skeleton.deleteBlock(lastBlock!)
+        // eslint-disable-next-line no-empty
+      } catch {}
       return response
     }
 

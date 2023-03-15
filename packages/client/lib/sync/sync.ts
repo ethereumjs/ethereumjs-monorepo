@@ -198,10 +198,10 @@ export abstract class Synchronizer {
    * Stop synchronizer.
    */
   async stop(): Promise<boolean> {
+    this.clearFetcher()
     if (!this.running) {
       return false
     }
-    this.clearFetcher()
     clearInterval(this._syncedStatusCheckInterval as NodeJS.Timeout)
     await new Promise((resolve) => setTimeout(resolve, this.interval))
     this.running = false
