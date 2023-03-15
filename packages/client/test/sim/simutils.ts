@@ -5,7 +5,13 @@ import {
   commitmentsToVersionedHashes,
   getBlobs,
 } from '@ethereumjs/tx/dist/utils/blobHelpers'
-import { Address, bytesToPrefixedHexString, bytesToUtf8, randomBytes } from '@ethereumjs/util'
+import {
+  Address,
+  bytesToHex,
+  bytesToPrefixedHexString,
+  bytesToUtf8,
+  randomBytes,
+} from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import * as fs from 'fs/promises'
 import { Level } from 'level'
@@ -142,10 +148,10 @@ export function runNetwork(
       }
       process.stdout.write(`data:${runProcPrefix}: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
     } else {
-      if (str.includes('Synchronized')) {
+      if (str.includes('Synchronized') === true) {
         process.stdout.write('.')
         lastPrintedDot = true
-      } else if (str.includes('Synced') && !str.includes('skipped')) {
+      } else if (str.includes('Synced') === true && str.includes('skipped') === false) {
         process.stdout.write('`')
       }
     }
@@ -187,7 +193,7 @@ export function runNetwork(
         }
         process.stdout.write(`${withPeer}:el<>cl: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
       } else {
-        if (str.includes('Synchronized')) {
+        if (str.includes('Synchronized') === true) {
           process.stdout.write('.')
           lastPrintedDot = true
         }
@@ -293,7 +299,7 @@ export const runBlobTx = async (
   to?: string,
   value?: bigint
 ) => {
-  const blobs = getBlobs(randomBytes(blobSize).toString('hex'))
+  const blobs = getBlobs(bytesToHex(randomBytes(blobSize)))
   const commitments = blobsToCommitments(blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
 
@@ -357,7 +363,7 @@ export const createBlobTxs = async (
 ) => {
   const txHashes: any = []
 
-  const blobs = getBlobs(randomBytes(blobSize).toString('hex'))
+  const blobs = getBlobs(bytesToHex(randomBytes(blobSize)))
   const commitments = blobsToCommitments(blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
 
