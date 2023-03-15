@@ -78,7 +78,7 @@ tape('SecureTrie', function (t) {
         }
         await trie.put(hexStringToBytes(row[0].slice(2)), val)
       }
-      t.equal(bytesToPrefixedHexString(trie.root()), jsonTests.jeff.root.toString('hex'))
+      t.equal(bytesToPrefixedHexString(trie.root()), jsonTests.jeff.root)
       t.end()
     })
 

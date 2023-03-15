@@ -17,7 +17,7 @@ tape(`${method}: call with too many hashes`, async (t) => {
   const { server } = baseSetup({ engine: true, includeVM: true })
   const tooManyHashes: string[] = []
   for (let x = 0; x < 35; x++) {
-    tooManyHashes.push('0x' + randomBytes(32).toString('hex'))
+    tooManyHashes.push(bytesToPrefixedHexString(randomBytes(32)))
   }
   const req = params(method, [tooManyHashes])
   const expectRes = checkError(
