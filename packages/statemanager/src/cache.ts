@@ -1,7 +1,9 @@
 import { Account } from '@ethereumjs/util'
+import { debug as createDebugLogger } from 'debug'
 import { OrderedMap } from 'js-sdsl'
 
 import type { Address } from '@ethereumjs/util'
+import type { Debugger } from 'debug'
 
 export type getCb = (address: Address) => Promise<Account | undefined>
 export type putCb = (keyBuf: Buffer, accountRlp: Buffer) => Promise<void>
@@ -33,6 +35,8 @@ type DiffCache = OrderedMap<string, DiffCacheElement>[]
  * @ignore
  */
 export class Cache {
+  _debug: Debugger
+
   _cache: OrderedMap<string, CacheElement>
   _diffCache: DiffCache = []
   _checkpoints = 0
@@ -42,6 +46,8 @@ export class Cache {
   _deleteCb: deleteCb
 
   constructor(opts: CacheOpts) {
+    this._debug = createDebugLogger('statemanager:cache')
+
     this._cache = new OrderedMap()
 
     this._diffCache.push(new OrderedMap())
@@ -51,9 +57,14 @@ export class Cache {
     this._deleteCb = opts.deleteCb
   }
 
-  _savePreState(addressHex: string) {
+  _saveCachePreState(addressHex: string) {
     if (!this._diffCache[this._checkpoints].getElementByKey(addressHex)) {
       const oldElem = this._cache.getElementByKey(addressHex)
+      this._debug(
+        `Save pre cache state ${
+          oldElem ? 'as exists' : 'as non-existent'
+        } for account ${addressHex}`
+      )
       this._diffCache[this._checkpoints].setElement(addressHex, oldElem)
     }
   }
@@ -68,8 +79,9 @@ export class Cache {
     // from any monorepo method, eventually re-evaluate the functionality
     // Holger Drewes, 2023-03-15
     const addressHex = address.buf.toString('hex')
-    this._savePreState(addressHex)
+    this._saveCachePreState(addressHex)
 
+    this._debug(`Put account ${addressHex}`)
     this._cache.setElement(addressHex, { account: account.serialize() })
   }
 
@@ -77,13 +89,27 @@ export class Cache {
    * Returns the queried account or an empty account.
    * @param key - Address of account
    */
-  get(address: Address): Account | undefined {
+  get(address: Address): Account {
     const addressHex = address.buf.toString('hex')
+    this._debug(`Get account ${addressHex}`)
 
     const elem = this._cache.getElementByKey(addressHex)
     if (elem) {
       return Account.fromRlpSerializedAccount(elem['account'])
+    } else {
+      return new Account()
     }
+  }
+
+  /**
+   * Marks address as deleted in cache.
+   * @param key - Address
+   */
+  del(address: Address): void {
+    const addressHex = address.buf.toString('hex')
+    this._saveCachePreState(addressHex)
+    this._debug(`Delete account ${addressHex}`)
+    this._cache.eraseElementByKey(addressHex)
   }
 
   /**
@@ -93,7 +119,7 @@ export class Cache {
   keyIsDeleted(address: Address): boolean {
     const account = this.get(address)
 
-    if (account) {
+    if (account.isEmpty()) {
       return false
     } else {
       return true
@@ -106,12 +132,14 @@ export class Cache {
    * @param key - Address of account
    */
   async getOrLoad(address: Address): Promise<Account> {
-    let account = this.get(address)
+    let account: Account | undefined = this.get(address)
 
-    if (!account) {
+    if (account.isEmpty()) {
+      const addressHex = address.buf.toString('hex')
       account = await this._getCb(address)
+      this._debug(`Get account ${addressHex} from DB (${account ? 'exists' : 'non-existent'})`)
       if (account) {
-        this.put(address, account)
+        this._cache.setElement(addressHex, { account: account.serialize() })
       } else {
         account = new Account()
         ;(account as any).virtual = true
@@ -126,6 +154,8 @@ export class Cache {
    * and removing accounts that have been deleted.
    */
   async flush(): Promise<void> {
+    this._debug(`Flushing cache on checkpoint ${this._checkpoints}`)
+
     const diffMap = this._diffCache[this._checkpoints]!
     const it = diffMap.begin()
 
@@ -136,7 +166,7 @@ export class Cache {
       if (!elem) {
         await this._deleteCb(addressBuf)
       } else {
-        await this._putCb(addressBuf, it.pointer[1]!.account)
+        await this._putCb(addressBuf, elem.account)
       }
       it.next()
     }
@@ -149,6 +179,7 @@ export class Cache {
    */
   checkpoint(): void {
     this._checkpoints += 1
+    this._debug(`New checkpoint ${this._checkpoints}`)
     this._diffCache.push(new OrderedMap())
   }
 
@@ -157,6 +188,7 @@ export class Cache {
    */
   revert(): void {
     this._checkpoints -= 1
+    this._debug(`Revert to checkpoint ${this._checkpoints}`)
     const diffMap = this._diffCache.pop()!
 
     const it = diffMap.begin()
@@ -168,6 +200,7 @@ export class Cache {
       } else {
         this._cache.setElement(addressHex, element)
       }
+      it.next()
     }
   }
 
@@ -176,6 +209,7 @@ export class Cache {
    */
   commit(): void {
     this._checkpoints -= 1
+    this._debug(`Commit to checkpoint ${this._checkpoints}`)
     const diffMap = this._diffCache.pop()!
 
     const it = diffMap.begin()
@@ -183,6 +217,7 @@ export class Cache {
       const addressHex = it.pointer[0]
       const element = it.pointer[1]
       this._diffCache[this._checkpoints].setElement(addressHex, element)
+      it.next()
     }
   }
 
@@ -190,16 +225,7 @@ export class Cache {
    * Clears cache.
    */
   clear(): void {
+    this._debug(`Clear cache`)
     this._cache.clear()
-  }
-
-  /**
-   * Marks address as deleted in cache.
-   * @param key - Address
-   */
-  del(address: Address): void {
-    const addressHex = address.buf.toString('hex')
-    this._savePreState(addressHex)
-    this._cache.eraseElementByKey(addressHex)
   }
 }
