@@ -301,6 +301,19 @@ tape(`${method}: latest block after reorg`, async (t) => {
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
+  // check safe and finalized
+  req = params('eth_getBlockByNumber', ['finalized', false])
+  expectRes = (res: any) => {
+    t.equal(res.body.result.number, '0x0', 'finalized should be set to genesis')
+  }
+  await baseRequest(t, server, req, 200, expectRes, false)
+
+  req = params('eth_getBlockByNumber', ['safe', false])
+  expectRes = (res: any) => {
+    t.equal(res.body.result.number, '0x1', 'safe should be set to first block')
+  }
+  await baseRequest(t, server, req, 200, expectRes, false)
+
   req = params(method, [
     {
       headBlockHash: blocks[1].blockHash,
