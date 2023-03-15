@@ -4,11 +4,11 @@ import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
 import { Address } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { VM } from '../src'
+import { VM } from '@ethereumjs/vm'
 import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder'
 import { getAccountNonce, insertAccount } from './helpers/account-utils'
 import { Block } from '@ethereumjs/block'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 const solc = require('solc')
 
 const INITIAL_GREETING = 'Hello, World!'
@@ -87,12 +87,13 @@ function getGreeterDeploymentBytecode(solcOutput: any): any {
 async function deployContract(
   vm: VM,
   senderPrivateKey: Uint8Array,
-  deploymentBytecode: Uint8Array,
+  deploymentBytecode: string,
   greeting: string
 ): Promise<Address> {
   // Contracts are deployed by sending their deployment bytecode to the address 0
   // The contract params should be abi-encoded and appended to the deployment bytecode.
-  const data = encodeDeployment(bytesToHex(deploymentBytecode), {
+
+  const data = encodeDeployment(deploymentBytecode, {
     types: ['string'],
     values: [greeting],
   })
