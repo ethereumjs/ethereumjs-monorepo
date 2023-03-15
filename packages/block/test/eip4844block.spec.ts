@@ -5,8 +5,8 @@ import {
   commitmentsToVersionedHashes,
   getBlobs,
 } from '@ethereumjs/tx/dist/utils/blobHelpers'
+import { randomBytes } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
 import { Block, calcExcessDataGas, getDataGasPrice } from '../src'
