@@ -353,7 +353,7 @@ export async function setupPreConditions(state: VmState, testData: any) {
   await state.commit()
   // Clear the touched stack, otherwise untouched accounts in the block which are empty (>= SpuriousDragon)
   // will get deleted from the state, resulting in state trie errors
-  ;(<any>state)._touched.clear()
+  ;(<any>state).touchedJournal.clear()
 }
 
 /**
