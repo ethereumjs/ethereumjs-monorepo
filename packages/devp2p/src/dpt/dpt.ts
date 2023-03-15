@@ -1,4 +1,4 @@
-import { randomBytes } from 'crypto'
+import { randomBytes } from '@ethereumjs/util'
 import { getPublicKey } from 'ethereum-cryptography/secp256k1'
 import { EventEmitter } from 'events'
 import ms = require('ms')

@@ -4,9 +4,8 @@ import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
 } from '@ethereumjs/tx/test/utils/blobHelpers'
-import { Address, bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
+import { Address, bytesToPrefixedHexString, hexStringToBytes, randomBytes } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { randomBytes } from 'crypto'
 import { Client } from 'jayson/promise'
 const clientPort = process.argv[2]
 const input = process.argv[3]

@@ -8,7 +8,7 @@ import {
 } from '@ethereumjs/tx/dist/utils/blobHelpers'
 import { Address, bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { randomBytes } from 'crypto'
+import { randomBytes } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 
 // CLI Args

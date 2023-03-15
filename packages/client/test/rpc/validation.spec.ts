@@ -1,5 +1,4 @@
-import { bytesToPrefixedHexString } from '@ethereumjs/util'
-import { randomBytes } from 'crypto'
+import { bytesToPrefixedHexString, randomBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../lib/rpc/error-code'

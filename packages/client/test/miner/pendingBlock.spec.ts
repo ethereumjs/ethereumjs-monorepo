@@ -13,11 +13,11 @@ import {
   bytesToPrefixedHexString,
   equalsBytes,
   hexStringToBytes,
+  randomBytes,
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
 import * as kzg from 'c-kzg'
-import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 

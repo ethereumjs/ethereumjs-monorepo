@@ -1,8 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
-import { bigIntToBytes, bytesToBigInt, hexStringToBytes } from '@ethereumjs/util'
-import { randomBytes } from 'crypto'
+import { bigIntToBytes, bytesToBigInt, hexStringToBytes, randomBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Chain } from '../../../lib/blockchain/chain'

@@ -4,8 +4,7 @@ import {
   RLPx as Devp2pRLPx,
   SNAP as Devp2pSNAP,
 } from '@ethereumjs/devp2p'
-import { hexStringToBytes } from '@ethereumjs/util'
-import { randomBytes } from 'crypto'
+import { hexStringToBytes, randomBytes } from '@ethereumjs/util'
 
 import { Event } from '../../types'
 import { RlpxSender } from '../protocol'

@@ -5,9 +5,8 @@ import {
   commitmentsToVersionedHashes,
   getBlobs,
 } from '@ethereumjs/tx/dist/utils/blobHelpers'
-import { Address, bytesToPrefixedHexString, bytesToUtf8 } from '@ethereumjs/util'
+import { Address, bytesToPrefixedHexString, bytesToUtf8, randomBytes } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { randomBytes } from 'crypto'
 import * as fs from 'fs/promises'
 import { Level } from 'level'
 import { execSync, spawn } from 'node:child_process'

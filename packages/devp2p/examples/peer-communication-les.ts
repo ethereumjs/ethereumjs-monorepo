@@ -1,4 +1,4 @@
-import { randomBytes } from 'crypto'
+import { randomBytes } from '@ethereumjs/util'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { TypedTransaction } from '@ethereumjs/tx'

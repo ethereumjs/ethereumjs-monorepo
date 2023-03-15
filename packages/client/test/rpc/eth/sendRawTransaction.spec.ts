@@ -12,9 +12,8 @@ import {
   commitmentsToVersionedHashes,
   getBlobs,
 } from '@ethereumjs/tx/dist/utils/blobHelpers'
-import { bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
+import { bytesToPrefixedHexString, hexStringToBytes, randomBytes } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../lib/rpc/error-code'
