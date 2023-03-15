@@ -291,7 +291,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
         // update contract storageRoot
         let contract
         if (this._cache) {
-          contract = this._cache.get(address)
+          contract = this._cache.get(address)!
         } else {
           contract = await this.getAccount(address)
         }
@@ -576,12 +576,8 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async accountExists(address: Address): Promise<boolean> {
     if (this._cache) {
-      const account = this._cache.lookup(address)
-      if (
-        account &&
-        ((account as any).virtual === undefined || (account as any).virtual === false) &&
-        !this._cache.keyIsDeleted(address)
-      ) {
+      const account = this._cache.get(address)
+      if (account) {
         return true
       }
     }

@@ -48,7 +48,7 @@ export class VMExecution extends Execution {
 
       const stateManager = new DefaultStateManager({
         trie,
-        deactivateCache: true,
+        deactivateCache: false,
       })
 
       this.vm = new (VM as any)({
