@@ -267,7 +267,8 @@ export class Chain {
     }
 
     headers.latest = await this.getCanonicalHeadHeader()
-    // finalized and safe have to block only since execution has to be valid
+    // finalized and safe are always blocks since they have to have valid execution
+    // before they can be saved in chain
     headers.finalized = (await this.getCanonicalFinalizedBlock()).header
     headers.safe = (await this.getCanonicalSafeBlock()).header
 

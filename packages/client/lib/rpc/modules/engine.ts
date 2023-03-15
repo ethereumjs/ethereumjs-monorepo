@@ -881,7 +881,6 @@ export class Engine {
       try {
         await this.execution.setHead(blocks, { safeBlock, finalizedBlock })
       } catch (error) {
-        console.log(error)
         throw {
           message: (error as Error).message,
           code: INVALID_PARAMS,
