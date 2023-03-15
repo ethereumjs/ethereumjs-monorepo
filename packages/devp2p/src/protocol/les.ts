@@ -181,7 +181,7 @@ export class LES extends Protocol {
 
     // Use snappy compression if peer supports DevP2P >=v5
     if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
-      payload = Uint8Array.from(snappy.compress(Buffer.from(payload)))
+      payload = snappy.compress(payload)
     }
 
     this._send(LES.MESSAGE_CODES.STATUS, payload)
@@ -241,7 +241,7 @@ export class LES extends Protocol {
 
     // Use snappy compression if peer supports DevP2P >=v5
     if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
-      payload = Uint8Array.from(snappy.compress(Buffer.from(payload)))
+      payload = snappy.compress(payload)
     }
 
     this._send(code, payload)

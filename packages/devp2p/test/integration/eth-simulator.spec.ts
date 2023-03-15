@@ -1,4 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { intToBytes } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as test from 'tape'
 
@@ -106,7 +107,7 @@ function sendNotAllowed(
   util.twoPeerMsgExchange(t, opts, cap)
 }
 
-test.only('ETH: should use latest protocol version on default', (t) => {
+test('ETH: should use latest protocol version on default', (t) => {
   sendWithProtocolVersion(t, 66)
 })
 
@@ -114,7 +115,7 @@ test('ETH -> Eth64 -> sendStatus(): should throw on non-matching latest block pr
   const cap = [devp2p.ETH.eth65]
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
   const status0: any = Object.assign({}, status)
-  status0['latestBlock'] = 100000 // lower than Byzantium fork block 4370000
+  status0['latestBlock'] = intToBytes(100000) // lower than Byzantium fork block 4370000
 
   const rlpxs = util.initTwoPeerRLPXSetup(null, cap, common)
   rlpxs[0].on('peer:added', function (peer: any) {
@@ -143,7 +144,7 @@ test('ETH -> Eth64 -> ForkId validation 1a)', (t) => {
   const status0: any = Object.assign({}, status)
   // Take a latest block > next mainnet fork block (constantinople)
   // to trigger validation condition
-  status0['latestBlock'] = 9069000
+  status0['latestBlock'] = intToBytes(9069000)
   opts.status0 = status0
   opts.status1 = Object.assign({}, status)
   opts.onPeerError0 = function (err: Error, rlpxs: any) {

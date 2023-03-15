@@ -1,4 +1,4 @@
 declare module 'snappyjs' {
-  function uncompress(data: Buffer): Buffer
-  function compress(data: Buffer): Buffer
+  function uncompress(data: Uint8Array): Uint8Array
+  function compress(data: Uint8Array): Uint8Array
 }

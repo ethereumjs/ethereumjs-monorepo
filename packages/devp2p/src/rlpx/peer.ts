@@ -283,7 +283,7 @@ export class Peer extends EventEmitter {
     this.debug('PING', debugMsg)
     let data = RLP.encode([])
     if (this._hello !== null && this._hello.protocolVersion >= 5) {
-      data = Uint8Array.from(snappy.compress(Buffer.from(data)))
+      data = snappy.compress(data)
     }
 
     if (this._sendMessage(PREFIXES.PING, data) !== true) return
@@ -586,7 +586,7 @@ export class Peer extends EventEmitter {
             if (compressed) {
               payload = RLP.decode(Uint8Array.from(origPayload))
             } else {
-              payload = RLP.decode(Uint8Array.from(snappy.uncompress(payload)))
+              payload = RLP.decode(snappy.uncompress(payload))
             }
           } else {
             throw new Error(e)
