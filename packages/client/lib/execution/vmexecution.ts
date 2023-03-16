@@ -31,7 +31,7 @@ export class VMExecution extends Execution {
   private pendingReceipts?: Map<string, TxReceipt[]>
   private vmPromise?: Promise<number>
 
-  /** Maximally tolerated block time before giving a warning on CL */
+  /** Maximally tolerated block time before giving a warning on console */
   private MAX_TOLERATED_BLOCK_TIME = 12
 
   /**
