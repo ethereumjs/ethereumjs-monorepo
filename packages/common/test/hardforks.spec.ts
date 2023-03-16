@@ -330,6 +330,13 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.equal(c.forkHash(Hardfork.SpuriousDragon, genesisHash), '0x3edd5b10', msg)
 
     c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+    // unschedule shanghai on it to test
+    c.hardforks()
+      .filter((hf) => hf.name === Hardfork.Shanghai)
+      .map((hf) => {
+        hf.block = null
+        hf.timestamp = undefined
+      })
     let f = () => {
       c.forkHash(Hardfork.Shanghai)
     }
