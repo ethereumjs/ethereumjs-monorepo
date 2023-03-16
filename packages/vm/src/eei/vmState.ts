@@ -117,7 +117,6 @@ export class VmState implements EVMStateAccess {
         this._accessedStorageReverted.push(lastItem)
       }
     }
-
     await this._stateManager.revert()
     this.touchedJournal.revert(ripemdPrecompileAddress)
 
