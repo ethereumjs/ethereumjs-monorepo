@@ -303,7 +303,7 @@ export class Peer extends EventEmitter {
     let data = RLP.encode([])
 
     if (this._hello !== null && this._hello.protocolVersion >= 5) {
-      data = Uint8Array.from(snappy.compress(Buffer.from(data)))
+      data = snappy.compress(data)
     }
     this._sendMessage(PREFIXES.PONG, data)
   }

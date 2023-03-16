@@ -155,7 +155,7 @@ export class Server extends EventEmitter {
   }
 
   _handler(msg: Uint8Array, rinfo: RemoteInfo) {
-    const info = decode(Uint8Array.from(msg)) // Dgram serializes everything to `Buffer`
+    const info = decode(msg) // Dgram serializes everything to `Uint8Array`
     const peerId = pk2id(info.publicKey)
     const debugMsg = `received ${info.typename} from ${rinfo.address}:${
       rinfo.port

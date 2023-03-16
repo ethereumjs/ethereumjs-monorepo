@@ -2,9 +2,18 @@ import { RLP } from '@ethereumjs/rlp'
 import { debug as createDebugLogger } from 'debug'
 import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
 import { bytesToHex, bytesToUtf8, concatBytes } from 'ethereum-cryptography/utils'
-import * as ip from 'ip'
 
-import { assertEq, bytes2int, int2bytes, keccak256, unstrictDecode } from '../util'
+import {
+  assertEq,
+  bytes2int,
+  int2bytes,
+  ipToBytes,
+  ipToString,
+  isV4Format,
+  isV6Format,
+  keccak256,
+  unstrictDecode,
+} from '../util'
 
 import type { PeerInfo } from './dpt'
 
@@ -28,16 +37,16 @@ const timestamp = {
 
 const address = {
   encode(value: string) {
-    if (ip.isV4Format(value)) return Uint8Array.from(ip.toBuffer(value))
-    if (ip.isV6Format(value)) return Uint8Array.from(ip.toBuffer(value))
+    if (isV4Format(value)) return ipToBytes(value)
+    if (isV6Format(value)) return ipToBytes(value)
     throw new Error(`Invalid address: ${value}`)
   },
   decode(bytes: Uint8Array) {
-    if (bytes.length === 4) return ip.toString(Buffer.from(bytes))
-    if (bytes.length === 16) return ip.toString(Buffer.from(bytes))
+    if (bytes.length === 4) return ipToString(bytes)
+    if (bytes.length === 16) return ipToString(bytes)
 
     const str = bytesToUtf8(bytes)
-    if (ip.isV4Format(str) || ip.isV6Format(str)) return str
+    if (isV4Format(str) || isV6Format(str)) return str
 
     // also can be host, but skip it right now (because need async function for resolve)
     throw new Error(`Invalid address bytes: ${bytesToHex(bytes)}`)

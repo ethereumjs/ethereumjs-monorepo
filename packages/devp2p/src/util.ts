@@ -140,3 +140,100 @@ export function toNewUint8Array(buf: Uint8Array): Uint8Array {
   const arrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)
   return new Uint8Array(arrayBuffer)
 }
+
+/*************************** ************************************************************/
+// Methods borrowed from `node-ip` by Fedor Indutny (https://github.com/indutny/node-ip)
+// and modified to use Uint8Arrays instead of Buffers
+export const ipToString = (bytes: Uint8Array, offset?: number, length?: number) => {
+  offset = offset !== undefined ? ~~offset : 0
+  length = length ?? bytes.length - offset
+
+  let result: any = []
+  let i
+  if (length === 4) {
+    // IPv4
+    for (i = 0; i < length; i++) {
+      result.push(bytes[offset + i])
+    }
+    result = result.join('.')
+  } else if (length === 16) {
+    // IPv6
+    for (i = 0; i < length; i += 2) {
+      result.push(new DataView(bytes.buffer).getUint16(offset + i).toString(16))
+    }
+    result = result.join(':')
+    result = result.replace(/(^|:)0(:0)*:0(:|$)/, '$1::$3')
+    result = result.replace(/:{3,4}/, '::')
+  }
+
+  return result
+}
+
+const ipv4Regex = /^(\d{1,3}\.){3,3}\d{1,3}$/
+const ipv6Regex = /^(::)?(((\d{1,3}\.){3}(\d{1,3}){1})?([0-9a-f]){0,4}:{0,2}){1,8}(::)?$/i
+
+export const isV4Format = function (ip: string) {
+  return ipv4Regex.test(ip)
+}
+
+export const isV6Format = function (ip: string) {
+  return ipv6Regex.test(ip)
+}
+
+export const ipToBytes = (ip: string, bytes?: Uint8Array, offset: number = 0) => {
+  offset = ~~offset
+
+  let result
+
+  if (isV4Format(ip)) {
+    result = bytes ?? new Uint8Array(offset + 4)
+    ip.split(/\./g).map((byte) => {
+      result[offset++] = parseInt(byte, 10) & 0xff
+    })
+  } else if (isV6Format(ip)) {
+    const sections = ip.split(':', 8)
+
+    let i
+    for (i = 0; i < sections.length; i++) {
+      const isv4 = isV4Format(sections[i])
+      let v4Bytes: Uint8Array = new Uint8Array([])
+
+      if (isv4) {
+        v4Bytes = ipToBytes(sections[i])
+        sections[i] = bytesToHex(v4Bytes.slice(0, 2))
+      }
+
+      if (v4Bytes.length > 0 && ++i < 8) {
+        sections.splice(i, 0, bytesToHex(v4Bytes.slice(2, 4)))
+      }
+    }
+
+    if (sections[0] === '') {
+      while (sections.length < 8) sections.unshift('0')
+    } else if (sections[sections.length - 1] === '') {
+      while (sections.length < 8) sections.push('0')
+    } else if (sections.length < 8) {
+      for (i = 0; i < sections.length && sections[i] !== ''; i++);
+      const argv: any = [i, 1]
+      for (i = 9 - sections.length; i > 0; i--) {
+        argv.push('0')
+      }
+      sections.splice.apply(sections, argv)
+    }
+
+    result = bytes ?? new Uint8Array(offset + 16)
+    for (i = 0; i < sections.length; i++) {
+      const word = parseInt(sections[i], 16)
+      result[offset++] = (word >> 8) & 0xff
+      result[offset++] = word & 0xff
+    }
+  }
+
+  if (!result) {
+    throw Error(`Invalid ip address: ${ip}`)
+  }
+
+  return result
+}
+
+/************  End of methods borrowed from `node-ip` ***************************/

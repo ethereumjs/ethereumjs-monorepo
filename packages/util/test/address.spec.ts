@@ -59,7 +59,7 @@ tape('Address', (t) => {
 
   t.test('should instantiate from private key', (st) => {
     // prettier-ignore
-    const privateKey = Buffer.from([234, 84, 189, 197, 45, 22, 63, 136, 201, 58, 176, 97, 87, 130, 207, 113, 138, 46, 251, 158, 81, 167, 152, 154, 171, 27, 8, 6, 126, 156, 28, 95])
+    const privateKey = Uint8Array.from([234, 84, 189, 197, 45, 22, 63, 136, 201, 58, 176, 97, 87, 130, 207, 113, 138, 46, 251, 158, 81, 167, 152, 154, 171, 27, 8, 6, 126, 156, 28, 95])
     const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
     const addr = Address.fromPrivateKey(privateKey)
     st.equal(addr.toString(), str)
