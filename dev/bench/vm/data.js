@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1678816388108,
+  "lastUpdate": 1678970981370,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "1a7094d5430751fcf8a73ae00ff02c62eab8cb53",
-          "message": "New Releases (Shanghai Support, EIP-4844 (experimental), Client Improvements) (#2521)\n\n* Added CHANGELOG entry, version bump, updated upstream dependency versions (RLP v4.0.1)\r\n\r\n* Added CHANGELOG entry, version bump, updated upstream dependency versions (@ethereumjs/util v8.0.4)\r\n\r\n* Rebuild documentation (@ethereumjs/util)\r\n\r\n* Added withdrawal module to README (@ethereumjs/util)\r\n\r\n* Added CHANGELOG entry, version bump, updated upstream dependency versions (@ethereumjs/trie v5.0.3)\r\n\r\n* Added CHANGELOG entry, version bump, updated upstream dependency versions (@ethereumjs/common v3.0.3)\r\n\r\n* Rebuild documentation (@ethereumjs/common)\r\n\r\n* Added missing EIPs to README, general updates (@ethereumjs/common)\r\n\r\n* Added CHANGELOG entry, version bump, updated upstream dependency versions (@ethereumjs/statemanager v1.0.3)\r\n\r\n* Added CHANGELOG entry, version bump, updated upstream dependency versions (@ethereumjs/devp2p v5.1.0)\r\n\r\n* Added CHANGELOG entry, version bump, updated upstream dependency versions (@ethereumjs/tx v4.1.0)\r\n\r\n* Added CHANGELOG entry, version bump, updated upstream dependency versions (@ethereumjs/ethash v2.0.3)\r\n\r\n* Tx README/CHANGELOG fixes\r\n\r\n* Additional fixes\r\n\r\n* Even more fixes\r\n\r\n* Added CHANGELOG entry, version bump, updated upstream dependency versions (@ethereumjs/blockchain v6.2.0)\r\n\r\n* Rebuild blockchain documentation\r\n\r\n* Added CHANGELOG entry, version bump, updated upstream dependency versions (@ethereumjs/evm v1.3.0)\r\n\r\n* Rebuild EVM documentation\r\n\r\n* Added CHANGELOG entry, version bump, updated upstream dependency versions (@ethereumjs/vm v6.4.0)\r\n\r\n* Added CHANGELOG entry, version bump, updated upstream dependency versions (@ethereumjs/block v4.2.0)\r\n\r\n* Tx libray KZG setup instruction generalization\r\n\r\n* Create and consolidate KZG setup instructions within a single source of truth, add references\r\n\r\n* Added 4844 and KZG setup instructions and refernces to the Blockchain library\r\n\r\n* Fixes\r\n\r\n* Bumped client version to v0.7.0, added CHANGELOG entry\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Update packages/client/CHANGELOG.md\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* Completed CHANGELOG files\r\n\r\n* Update packages/util/CHANGELOG.md\r\n\r\n* Update packages/client/CHANGELOG.md\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
-          "timestamp": "2023-02-21T08:47:59+01:00",
-          "tree_id": "e5f85bcf24015f9bacf077dd1a9b75fe287fcb9d",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/1a7094d5430751fcf8a73ae00ff02c62eab8cb53"
-        },
-        "date": 1676965844296,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15779,
-            "range": "±2.15%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 15278,
-            "range": "±4.79%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 15656,
-            "range": "±1.69%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 15360,
-            "range": "±1.76%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 13993,
-            "range": "±7.93%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±8.18%",
             "unit": "ops/sec",
             "extra": "77 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0fbfe07b125152fb24543bb6d39f25a5944a835f",
+          "message": "client: Add safe and finalized blockoptions to the chain (#2585)\n\n* client: Add safe and finalized blockoptions to the chain\r\n\r\n* fix tests\r\n\r\n* fix more tests\r\n\r\n* fix remaining\r\n\r\n* cleanup\r\n\r\n* enhance coverage\r\n\r\n* unset scheduled goerli timestamp based hfs colliding with test",
+          "timestamp": "2023-03-16T08:46:54-04:00",
+          "tree_id": "48ae67bf8ef85b144c06c6004f3f924cd03784de",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0fbfe07b125152fb24543bb6d39f25a5944a835f"
+        },
+        "date": 1678970980252,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15800,
+            "range": "±2.49%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 15647,
+            "range": "±3.20%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15660,
+            "range": "±1.74%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15133,
+            "range": "±5.34%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 15292,
+            "range": "±1.86%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
