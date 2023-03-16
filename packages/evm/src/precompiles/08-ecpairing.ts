@@ -1,4 +1,5 @@
 import { short } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { OOGResult } from '../evm'
 
@@ -29,7 +30,7 @@ export function precompile08(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  const returnData = bn128.pairing(Buffer.from(inputData))
+  const returnData = hexToBytes(bn128.pairing(bytesToHex(inputData)))
 
   // check ecpairing success or failure by comparing the output length
   if (returnData.length !== 32) {
