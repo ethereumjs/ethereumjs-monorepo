@@ -37,6 +37,18 @@ export interface ChainBlocks {
   latest: Block | null
 
   /**
+   * The block as signalled `finalized` in the fcU
+   * This corresponds to the last finalized beacon block
+   */
+  finalized: Block | null
+
+  /**
+   * The block as signalled `safe` in the fcU
+   * This corresponds to the last justified beacon block
+   */
+  safe: Block | null
+
+  /**
    * The total difficulty of the blockchain
    */
   td: bigint
@@ -55,6 +67,18 @@ export interface ChainHeaders {
    * The latest header in the chain
    */
   latest: BlockHeader | null
+
+  /**
+   * The block as signalled `finalized` in the fcU
+   * This corresponds to the last finalized beacon block
+   */
+  finalized: BlockHeader | null
+
+  /**
+   * The block as signalled `safe` in the fcU
+   * This corresponds to the last justified beacon block
+   */
+  safe: BlockHeader | null
 
   /**
    * The total difficulty of the headerchain
@@ -79,12 +103,16 @@ export class Chain {
 
   private _headers: ChainHeaders = {
     latest: null,
+    finalized: null,
+    safe: null,
     td: BigInt(0),
     height: BigInt(0),
   }
 
   private _blocks: ChainBlocks = {
     latest: null,
+    finalized: null,
+    safe: null,
     td: BigInt(0),
     height: BigInt(0),
   }
@@ -136,11 +164,15 @@ export class Chain {
   private reset() {
     this._headers = {
       latest: null,
+      finalized: null,
+      safe: null,
       td: BigInt(0),
       height: BigInt(0),
     }
     this._blocks = {
       latest: null,
+      finalized: null,
+      safe: null,
       td: BigInt(0),
       height: BigInt(0),
     }
@@ -221,17 +253,28 @@ export class Chain {
 
     const headers: ChainHeaders = {
       latest: null,
+      finalized: null,
+      safe: null,
       td: BigInt(0),
       height: BigInt(0),
     }
     const blocks: ChainBlocks = {
       latest: null,
+      finalized: null,
+      safe: null,
       td: BigInt(0),
       height: BigInt(0),
     }
 
     headers.latest = await this.getCanonicalHeadHeader()
+    // finalized and safe are always blocks since they have to have valid execution
+    // before they can be saved in chain
+    headers.finalized = (await this.getCanonicalFinalizedBlock()).header
+    headers.safe = (await this.getCanonicalSafeBlock()).header
+
     blocks.latest = await this.getCanonicalHeadBlock()
+    blocks.finalized = await this.getCanonicalFinalizedBlock()
+    blocks.safe = await this.getCanonicalSafeBlock()
 
     headers.height = headers.latest.number
     blocks.height = blocks.latest.header.number
@@ -316,16 +359,31 @@ export class Chain {
    * @param fromEngine pass true to process post-merge blocks, otherwise they will be skipped
    * @returns number of blocks added
    */
-  async putBlocks(blocks: Block[], fromEngine = false): Promise<number> {
+  async putBlocks(blocks: Block[], fromEngine = false, skipUpdateEmit = false): Promise<number> {
     if (!this.opened) throw new Error('Chain closed')
     if (blocks.length === 0) return 0
 
     let numAdded = 0
-    for (const [i, b] of blocks.entries()) {
+    // filter out finalized blocks
+    const newBlocks = []
+    for (const block of blocks) {
+      if (this.headers.finalized !== null && block.header.number <= this.headers.finalized.number) {
+        const canonicalBlock = await this.getBlock(block.header.number)
+        if (!canonicalBlock.hash().equals(block.hash())) {
+          throw Error(
+            `Invalid putBlock for block=${block.header.number} before finalized=${this.headers.finalized.number}`
+          )
+        }
+      } else {
+        newBlocks.push(block)
+      }
+    }
+
+    for (const [i, b] of newBlocks.entries()) {
       if (!fromEngine && this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
         if (i > 0) {
           // emitOnLast below won't be reached, so run an update here
-          await this.update(true)
+          await this.update(!skipUpdateEmit)
         }
         break
       }
@@ -343,8 +401,8 @@ export class Chain {
 
       await this.blockchain.putBlock(block)
       numAdded++
-      const emitOnLast = blocks.length === numAdded
-      await this.update(emitOnLast)
+      const emitOnLast = newBlocks.length === numAdded
+      await this.update(emitOnLast && !skipUpdateEmit)
     }
     return numAdded
   }
@@ -412,6 +470,22 @@ export class Chain {
   async getCanonicalHeadBlock(): Promise<Block> {
     if (!this.opened) throw new Error('Chain closed')
     return this.blockchain.getCanonicalHeadBlock()
+  }
+
+  /**
+   * Gets the latest block in the canonical chain
+   */
+  async getCanonicalSafeBlock(): Promise<Block> {
+    if (!this.opened) throw new Error('Chain closed')
+    return this.blockchain.getIteratorHead('safe')
+  }
+
+  /**
+   * Gets the latest block in the canonical chain
+   */
+  async getCanonicalFinalizedBlock(): Promise<Block> {
+    if (!this.opened) throw new Error('Chain closed')
+    return this.blockchain.getIteratorHead('finalized')
   }
 
   /**
