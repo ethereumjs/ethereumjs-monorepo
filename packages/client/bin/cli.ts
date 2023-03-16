@@ -227,7 +227,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     array: true,
   })
   .option('numBlocksPerIteration', {
-    describe: 'Number of blocks to execute in batch mode and logged to CL',
+    describe: 'Number of blocks to execute in batch mode and logged to console',
     number: true,
     default: Config.NUM_BLOCKS_PER_ITERATION,
   })

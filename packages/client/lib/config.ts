@@ -189,7 +189,7 @@ export interface ConfigOptions {
   dnsNetworks?: string[]
 
   /**
-   * Number of blocks to execute in batch mode and logged to CL
+   * Number of blocks to execute in batch mode and logged to console
    */
   numBlocksPerIteration?: number
 
