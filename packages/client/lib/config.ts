@@ -296,10 +296,9 @@ export class Config {
   public static readonly MAX_RANGE_BYTES = 50000
   // This should get like 100 accounts in this range
   public static readonly MAX_ACCOUNT_RANGE = BigInt(2) ** BigInt(256) / BigInt(1_000_000)
-  public static readonly SYNCED_STATE_REMOVAL_PERIOD = 60000
-
   // Larger ranges used for storage slots since assumption is slots should be much sparser than accounts
   public static readonly MAX_STORAGE_RANGE = (BigInt(2) ** BigInt(256) - BigInt(1)) / BigInt(10)
+  public static readonly SYNCED_STATE_REMOVAL_PERIOD = 60000
 
   public readonly logger: Logger
   public readonly syncmode: SyncMode
@@ -333,8 +332,8 @@ export class Config {
   public readonly skeletonSubchainMergeMinimum: number
   public readonly maxRangeBytes: number
   public readonly maxAccountRange: bigint
-  public readonly syncedStateRemovalPeriod: number
   public readonly maxStorageRange: bigint
+  public readonly syncedStateRemovalPeriod: number
 
   public readonly disableBeaconSync: boolean
   public readonly forceSnapSync: boolean
@@ -386,9 +385,9 @@ export class Config {
       options.skeletonSubchainMergeMinimum ?? Config.SKELETON_SUBCHAIN_MERGE_MINIMUM
     this.maxRangeBytes = options.maxRangeBytes ?? Config.MAX_RANGE_BYTES
     this.maxAccountRange = options.maxAccountRange ?? Config.MAX_ACCOUNT_RANGE
+    this.maxStorageRange = options.maxStorageRange ?? Config.MAX_STORAGE_RANGE
     this.syncedStateRemovalPeriod =
       options.syncedStateRemovalPeriod ?? Config.SYNCED_STATE_REMOVAL_PERIOD
-    this.maxStorageRange = options.maxStorageRange ?? Config.MAX_STORAGE_RANGE
 
     this.disableBeaconSync = options.disableBeaconSync ?? false
     this.forceSnapSync = options.forceSnapSync ?? false
