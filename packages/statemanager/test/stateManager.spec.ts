@@ -18,7 +18,7 @@ import { DefaultStateManager } from '../src'
 
 import { createAccount } from './util'
 
-tape('StateManager', (t) => {
+tape('StateManager -> General', (t) => {
   for (const deactivateCache of [false, true]) {
     t.test('should instantiate', async (st) => {
       const stateManager = new DefaultStateManager({ deactivateCache })
