@@ -10,6 +10,7 @@ import {
 import { debug as createDebugLogger } from 'debug'
 
 import { LevelDB } from '../../execution/level'
+import { Event } from '../../types'
 import { short } from '../../util'
 
 import { Fetcher } from './fetcher'
@@ -182,6 +183,18 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       bytes: BigInt(this.config.maxRangeBytes),
     })
 
+    if (
+      rangeResult.accounts.length === 0 ||
+      limit.compare(bigIntToBuffer(BigInt(2) ** BigInt(256))) === 0
+    ) {
+      // TODO have to check proof of nonexistence -- as a shortcut for now, we can mark as completed if a proof is present
+      if (rangeResult.proof.length > 0) {
+        this.debug(`Data for last range has been received`)
+        // response contains empty object so that task can be terminated in store phase and not reenqueued
+        return Object.assign([], [Object.create(null) as any], { completed: true })
+      }
+    }
+
     const peerInfo = `id=${peer?.id.slice(0, 8)} address=${peer?.address}`
 
     // eslint-disable-next-line eqeqeq
@@ -241,6 +254,15 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   async store(result: AccountData[]): Promise<void> {
     this.debug(`Stored ${result.length} accounts in account trie`)
 
+    // fails to handle case where there is a proof of non existence and returned accounts for last requested range
+    if (JSON.stringify(result[0]) === JSON.stringify(Object.create(null))) {
+      this.debug('Final range received with no elements remaining to the right')
+
+      // TODO change to wait on storage and other auxilery fetchers to emit completion event before emitting before completing sync
+      // TODO include stateRoot in emission once moved over to using MPT's
+      this.config.events.emit(Event.SYNC_SNAPSYNC_COMPLETE, new Uint8Array())
+      return
+    }
     const storageFetchRequests: StorageRequest[] = []
     for (const account of result) {
       const storageRoot: Buffer =
