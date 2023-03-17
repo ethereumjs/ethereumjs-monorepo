@@ -162,7 +162,7 @@ export class SnapSynchronizer extends Synchronizer {
       pool: this.pool,
       root: stateRoot,
       // This needs to be determined from the current state of the MPT dump
-      first: BigInt(1),
+      first: BigInt(0),
     })
 
     return true

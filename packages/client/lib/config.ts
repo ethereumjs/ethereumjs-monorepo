@@ -295,7 +295,8 @@ export class Config {
   public static readonly SKELETON_SUBCHAIN_MERGE_MINIMUM = 1000
   public static readonly MAX_RANGE_BYTES = 50000
   // This should get like 100 accounts in this range
-  public static readonly MAX_ACCOUNT_RANGE = BigInt(2) ** BigInt(256) / BigInt(1_000_000)
+  public static readonly MAX_ACCOUNT_RANGE =
+    (BigInt(2) ** BigInt(256) - BigInt(1)) / BigInt(1_000_000)
   // Larger ranges used for storage slots since assumption is slots should be much sparser than accounts
   public static readonly MAX_STORAGE_RANGE = (BigInt(2) ** BigInt(256) - BigInt(1)) / BigInt(10)
   public static readonly SYNCED_STATE_REMOVAL_PERIOD = 60000
