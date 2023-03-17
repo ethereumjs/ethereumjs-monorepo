@@ -312,7 +312,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     this.nextTasks()
     const job = this.in.peek()
     if (!job) {
-      if (this.finished !== this.total) {
+      if (this.finished >= this.total) {
         // There are still jobs waiting to be processed out in the writer pipe
         this.debug(
           `No job found on next task, skip next job execution finished=${this.finished} total=${this.total}`
