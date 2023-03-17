@@ -576,8 +576,8 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async accountExists(address: Address): Promise<boolean> {
     if (this._cache) {
-      const account = this._cache.get(address)
-      if (!account.isEmpty()) {
+      const account = await this._cache.getOrLoad(address)
+      if ((account as any).exists === true) {
         return true
       }
     }
