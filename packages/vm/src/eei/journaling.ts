@@ -48,7 +48,7 @@ export class Journaling<T> {
     const height = this.height
     if (height in this.journalStack) {
       // Copy the items-to-delete in case of a revert into one level higher
-      if (height !== 1) {
+      if (height > 0) {
         if (this.journalStack[height - 1] === undefined) {
           this.journalStack[height - 1] = new Set()
         }
