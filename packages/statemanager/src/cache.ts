@@ -216,7 +216,10 @@ export class Cache {
     while (!it.equals(diffMap.end())) {
       const addressHex = it.pointer[0]
       const element = it.pointer[1]
-      this._diffCache[this._checkpoints].setElement(addressHex, element)
+      const oldElem = this._diffCache[this._checkpoints].getElementByKey(addressHex)
+      if (!oldElem) {
+        this._diffCache[this._checkpoints].setElement(addressHex, element)
+      }
       it.next()
     }
   }
