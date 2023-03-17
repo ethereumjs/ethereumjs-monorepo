@@ -3,6 +3,8 @@ import { ripemdPrecompileAddress } from '@ethereumjs/evm/dist/precompiles'
 import { Account, Address, toBuffer } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
+import { Journaling } from './journaling'
+
 import type { EVMStateAccess } from '@ethereumjs/evm/dist/types'
 import type { AccountFields, StateManager } from '@ethereumjs/statemanager'
 import type { AccessList, AccessListItem } from '@ethereumjs/tx'
@@ -16,8 +18,6 @@ export class VmState implements EVMStateAccess {
 
   protected _checkpointCount: number
   protected _stateManager: StateManager
-  protected _touched: Set<AddressHex>
-  protected _touchedStack: Set<AddressHex>[]
 
   // EIP-2929 address/storage trackers.
   // This maps both the accessed accounts and the accessed storage slots.
@@ -27,6 +27,10 @@ export class VmState implements EVMStateAccess {
   // Each call level tracks their access themselves.
   // In case of a commit, copy everything if the value does not exist, to the level above
   // In case of a revert, discard any warm slots.
+  //
+  // TODO: Switch to diff based version similar to _touchedStack
+  // (_accessStorage representing the actual state, separate _accessedStorageStack dictionary
+  // tracking the access diffs per commit)
   protected _accessedStorage: Map<string, Set<string>>[]
 
   // Backup structure for address/storage tracker frames on reverts
@@ -35,17 +39,19 @@ export class VmState implements EVMStateAccess {
 
   protected _originalStorageCache: Map<AddressHex, Map<AddressHex, Buffer>>
 
+  protected readonly touchedJournal: Journaling<AddressHex>
+
   protected readonly DEBUG: boolean = false
 
   constructor({ common, stateManager }: { common?: Common; stateManager: StateManager }) {
     this._checkpointCount = 0
     this._stateManager = stateManager
     this._common = common ?? new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    this._touched = new Set()
-    this._touchedStack = []
     this._originalStorageCache = new Map()
     this._accessedStorage = [new Map()]
     this._accessedStorageReverted = [new Map()]
+
+    this.touchedJournal = new Journaling<AddressHex>()
 
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
@@ -61,10 +67,12 @@ export class VmState implements EVMStateAccess {
    * Partial implementation, called from the subclass.
    */
   async checkpoint(): Promise<void> {
-    this._touchedStack.push(new Set(Array.from(this._touched)))
-    this._accessedStorage.push(new Map())
+    if (this._common.gteHardfork(Hardfork.Berlin)) {
+      this._accessedStorage.push(new Map())
+    }
     await this._stateManager.checkpoint()
     this._checkpointCount++
+    this.touchedJournal.checkpoint()
 
     if (this.DEBUG) {
       this._debug('-'.repeat(100))
@@ -73,14 +81,15 @@ export class VmState implements EVMStateAccess {
   }
 
   async commit(): Promise<void> {
-    // setup cache checkpointing
-    this._touchedStack.pop()
-    // Copy the contents of the map of the current level to a map higher.
-    const storageMap = this._accessedStorage.pop()
-    if (storageMap) {
-      this._accessedStorageMerge(this._accessedStorage, storageMap)
+    if (this._common.gteHardfork(Hardfork.Berlin)) {
+      // Copy the contents of the map of the current level to a map higher.
+      const storageMap = this._accessedStorage.pop()
+      if (storageMap) {
+        this._accessedStorageMerge(this._accessedStorage, storageMap)
+      }
     }
     await this._stateManager.commit()
+    this.touchedJournal.commit()
     this._checkpointCount--
 
     if (this._checkpointCount === 0) {
@@ -100,24 +109,16 @@ export class VmState implements EVMStateAccess {
    * Partial implementation , called from the subclass.
    */
   async revert(): Promise<void> {
-    // setup cache checkpointing
-    const lastItem = this._accessedStorage.pop()
-    if (lastItem) {
-      this._accessedStorageReverted.push(lastItem)
+    if (this._common.gteHardfork(Hardfork.Berlin)) {
+      // setup cache checkpointing
+      const lastItem = this._accessedStorage.pop()
+      if (lastItem) {
+        this._accessedStorageReverted.push(lastItem)
+      }
     }
-    const touched = this._touchedStack.pop()
-    if (!touched) {
-      throw new Error('Reverting to invalid state checkpoint failed')
-    }
-    // Exceptional case due to consensus issue in Geth and Parity.
-    // See [EIP issue #716](https://github.com/ethereum/EIPs/issues/716) for context.
-    // The RIPEMD precompile has to remain *touched* even when the call reverts,
-    // and be considered for deletion.
-    if (this._touched.has(ripemdPrecompileAddress)) {
-      touched.add(ripemdPrecompileAddress)
-    }
-    this._touched = touched
+
     await this._stateManager.revert()
+    this.touchedJournal.revert(ripemdPrecompileAddress)
 
     this._checkpointCount--
 
@@ -202,7 +203,7 @@ export class VmState implements EVMStateAccess {
    * at the end of the tx.
    */
   touchAccount(address: Address): void {
-    this._touched.add(address.buf.toString('hex'))
+    this.touchedJournal.addJournalItem(address.buf.toString('hex'))
   }
 
   /**
@@ -273,7 +274,7 @@ export class VmState implements EVMStateAccess {
    */
   async cleanupTouchedAccounts(): Promise<void> {
     if (this._common.gteHardfork(Hardfork.SpuriousDragon) === true) {
-      const touchedArray = Array.from(this._touched)
+      const touchedArray = Array.from(this.touchedJournal.journal)
       for (const addressHex of touchedArray) {
         const address = new Address(Buffer.from(addressHex, 'hex'))
         const empty = await this.accountIsEmpty(address)
@@ -285,7 +286,7 @@ export class VmState implements EVMStateAccess {
         }
       }
     }
-    this._touched.clear()
+    this.touchedJournal.clear()
   }
 
   /**
