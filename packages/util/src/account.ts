@@ -122,7 +122,12 @@ export class Account {
    * "An account is considered empty when it has no code and zero nonce and zero balance."
    */
   isEmpty(): boolean {
-    return this.balance === _0n && this.nonce === _0n && this.codeHash.equals(KECCAK256_NULL)
+    return (
+      this.balance === _0n &&
+      this.nonce === _0n &&
+      this.codeHash.equals(KECCAK256_NULL) &&
+      this.storageRoot.equals(KECCAK256_RLP)
+    )
   }
 }
 
