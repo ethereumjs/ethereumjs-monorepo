@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1679049468580,
+  "lastUpdate": 1679085857522,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "ernestognw@gmail.com",
-            "name": "Ernesto García",
-            "username": "ernestognw"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "535cd8d6ce289064a7834fed740d87aeb139ef57",
-          "message": "Fix broken URL to `packages/statemanager` (#2539)\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-02-21T14:54:25-05:00",
-          "tree_id": "3a792515f4a7c850e73cf2bdf5d0ff4dfdcb414c",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/535cd8d6ce289064a7834fed740d87aeb139ef57"
-        },
-        "date": 1677009465574,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15752,
-            "range": "±2.87%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 15208,
-            "range": "±4.37%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 15633,
-            "range": "±1.62%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 15249,
-            "range": "±1.88%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 14093,
-            "range": "±8.67%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.80%",
             "unit": "ops/sec",
             "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f5ab7fc592ff917fb2048283a61d628b183ffaa6",
+          "message": "VM: Diff-based Touched Accounts Checkpointing (#2581)\n\n* VM: Switched to a more efficient diff-based way of touched account checkpointing\r\n\r\n* VM: move accessed storage inefficient checkpointing problem to berlin, haha\r\n\r\n* EVM: avoid memory copy in MLOAD opcode function\r\n\r\n* Remove console.log() in EVM\r\n\r\n* vmState: ensure touched accounts delete stack gets properly updated on commit\r\n\r\n* vm/eei: save touched height\r\n\r\n* vm/vmState: new possible fix for touched accounts\r\n\r\n* vm/vmState: another attempt to fix touched accounts journaling\r\n\r\n* vm: add journaling\r\n\r\n* Check correct journal height on revert\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-03-17T21:41:34+01:00",
+          "tree_id": "18e1db87bfb5c7edac921db6ed896ffa66415dbb",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f5ab7fc592ff917fb2048283a61d628b183ffaa6"
+        },
+        "date": 1679085855972,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15626,
+            "range": "±4.06%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 16071,
+            "range": "±1.40%",
+            "unit": "ops/sec",
+            "extra": "92 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15087,
+            "range": "±6.39%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15857,
+            "range": "±1.45%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 15358,
+            "range": "±1.80%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
