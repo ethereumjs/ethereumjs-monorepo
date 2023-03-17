@@ -94,7 +94,9 @@ export class Cache {
 
     const elem = this._cache.getElementByKey(addressHex)
     if (elem) {
-      return Account.fromRlpSerializedAccount(elem['account'])
+      const account = Account.fromRlpSerializedAccount(elem['account'])
+      ;(account as any).exists = true
+      return account
     } else {
       return new Account()
     }
@@ -133,15 +135,15 @@ export class Cache {
   async getOrLoad(address: Address): Promise<Account> {
     let account: Account | undefined = this.get(address)
 
-    if (account.isEmpty()) {
+    if ((account as any).exists !== true) {
       const addressHex = address.buf.toString('hex')
       account = await this._getCb(address)
       this._debug(`Get account ${addressHex} from DB (${account ? 'exists' : 'non-existent'})`)
       if (account) {
         this._cache.setElement(addressHex, { account: account.serialize() })
+        ;(account as any).exists = true
       } else {
         account = new Account()
-        ;(account as any).virtual = true
       }
     }
 
