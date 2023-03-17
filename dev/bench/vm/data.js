@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1679009126140,
+  "lastUpdate": 1679049468580,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "0f0a2dc96ca0b5520ba630d83ffbb57faa082b71",
-          "message": "Client: Move to async Blockchain constructor / fix --startBlock option bug (#2540)\n\n* Move EthereumClient class to an async initialization via create() (clean Blockchain initialization)\r\n\r\n* Move to async Client Chain.create() constructor for safe Blockchain initialization\r\n\r\n* Minor\r\n\r\n* use resetCanonicalHead for startblock\r\n\r\n* lint\r\n\r\n---------\r\n\r\nCo-authored-by: harkamal <gajinder@g11.in>",
-          "timestamp": "2023-02-21T13:32:56+01:00",
-          "tree_id": "92d9e3d08f01b08bf85c5162d9581ba455cc4fa5",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0f0a2dc96ca0b5520ba630d83ffbb57faa082b71"
-        },
-        "date": 1676982939066,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 16173,
-            "range": "±1.60%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 15527,
-            "range": "±4.94%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 15966,
-            "range": "±1.57%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 15442,
-            "range": "±1.76%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 14283,
-            "range": "±7.53%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±7.21%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "cbf9a04ac6e8246932d0fbf9bade7a074fbb0dd8",
+          "message": "common: Schedule Shanghai on mainnet! (#2591)\n\n* common: Schedule Shanghai on mainnet!\r\n\r\n* clear hf timestamp for test",
+          "timestamp": "2023-03-17T11:35:03+01:00",
+          "tree_id": "172c05ffe3b01613554fca1c6f1d25cd03e8ab86",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/cbf9a04ac6e8246932d0fbf9bade7a074fbb0dd8"
+        },
+        "date": 1679049467883,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15942,
+            "range": "±1.81%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 15769,
+            "range": "±3.73%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 14937,
+            "range": "±6.09%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15969,
+            "range": "±1.46%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 15265,
+            "range": "±1.80%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
