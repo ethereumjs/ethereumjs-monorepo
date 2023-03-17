@@ -19,11 +19,9 @@ type CacheElement = {
   account: Buffer
 }
 
-type DiffCacheElement =
-  | {
-      account: Buffer
-    }
-  | undefined
+type DiffCacheElement = {
+  account: Buffer | undefined
+}
 
 /**
  * Diff cache collecting modified or deleted
@@ -60,12 +58,13 @@ export class Cache {
   _saveCachePreState(addressHex: string) {
     if (!this._diffCache[this._checkpoints].getElementByKey(addressHex)) {
       const oldElem = this._cache.getElementByKey(addressHex)
+      const account = oldElem ? oldElem.account : undefined
       this._debug(
         `Save pre cache state ${
           oldElem ? 'as exists' : 'as non-existent'
         } for account ${addressHex}`
       )
-      this._diffCache[this._checkpoints].setElement(addressHex, oldElem)
+      this._diffCache[this._checkpoints].setElement(addressHex, { account })
     }
   }
 
@@ -194,11 +193,11 @@ export class Cache {
     const it = diffMap.begin()
     while (!it.equals(diffMap.end())) {
       const addressHex = it.pointer[0]
-      const element = it.pointer[1]
-      if (element === undefined) {
+      const account = it.pointer[1].account
+      if (account === undefined) {
         this._cache.eraseElementByKey(addressHex)
       } else {
-        this._cache.setElement(addressHex, element)
+        this._cache.setElement(addressHex, { account })
       }
       it.next()
     }
