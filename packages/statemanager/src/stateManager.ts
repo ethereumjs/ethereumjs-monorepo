@@ -14,9 +14,9 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BaseStateManager } from './baseStateManager'
-import { Cache } from './cache'
+import { Cache, DEFAULT_CACHE_CLEARING_OPTS } from './cache'
 
-import type { getCb, putCb } from './cache'
+import type { CacheClearingOpts, getCb, putCb } from './cache'
 import type { StateManager, StorageDump } from './interface'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
@@ -516,7 +516,10 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * the state trie.
    * @param stateRoot - The state-root to reset the instance to
    */
-  async setStateRoot(stateRoot: Buffer): Promise<void> {
+  async setStateRoot(
+    stateRoot: Buffer,
+    cacheClearingOpts: CacheClearingOpts = DEFAULT_CACHE_CLEARING_OPTS
+  ): Promise<void> {
     if (this._cache) {
       await this._cache.flush()
     }
@@ -530,7 +533,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
 
     this._trie.root(stateRoot)
     if (this._cache) {
-      this._cache.clear()
+      this._cache.clear(cacheClearingOpts)
     }
     this._storageTries = {}
   }

@@ -48,8 +48,8 @@ tape('cache put and get account', (t) => {
   }
   const cache = new Cache({ getCb, putCb, deleteCb })
 
-  const addr = new Address(Buffer.from('cd2a3d9f938e13cd947ec05abc7fe734df8dd826', 'hex'))
-  const acc = createAccount(BigInt(0), BigInt(0xff11))
+  const addr = new Address(Buffer.from('10'.repeat(20), 'hex'))
+  const acc = createAccount(BigInt(1), BigInt(0xff11))
 
   t.test('should fail to get non-existent account', async (st) => {
     const res = cache.get(addr)
@@ -119,8 +119,12 @@ tape('cache checkpointing', (t) => {
   }
   const cache = new Cache({ getCb, putCb, deleteCb })
 
-  const addr = new Address(Buffer.from('cd2a3d9f938e13cd947ec05abc7fe734df8dd826', 'hex'))
-  const acc = createAccount(BigInt(0), BigInt(0xff11))
+  const addr = new Address(Buffer.from('10'.repeat(20), 'hex'))
+  const acc = createAccount(BigInt(1), BigInt(0xff11))
+
+  const addr2 = new Address(Buffer.from('20'.repeat(20), 'hex'))
+  const acc2 = createAccount(BigInt(2), BigInt(0xff22))
+
   const updatedAcc = createAccount(BigInt(0x00), BigInt(0xff00))
 
   t.test('should revert to correct state', async (st) => {
@@ -135,6 +139,37 @@ tape('cache checkpointing', (t) => {
 
     res = cache.get(addr)
     st.equal(res.balance, acc.balance)
+
+    st.end()
+  })
+
+  t.test('cache clearing', async (st) => {
+    const cache = new Cache({ getCb, putCb, deleteCb })
+    cache.put(addr, acc)
+    cache.clear({ clear: false })
+    st.equal(cache.size(), 1, 'should not delete cache objects with clear=false')
+
+    cache.clear({ clear: true })
+    st.equal(cache.size(), 0, 'should delete cache objects with clear=true')
+
+    cache.clear({
+      clear: false,
+      comparand: BigInt(1),
+    })
+    cache.put(addr, acc)
+    cache.clear({
+      clear: false,
+      comparand: BigInt(2),
+    })
+    cache.put(addr2, acc2)
+    st.equal(cache.size(), 2, 'should put 2 accounts to cache')
+
+    cache.clear({
+      clear: false,
+      useThreshold: BigInt(2),
+      comparand: BigInt(3),
+    })
+    st.equal(cache.size(), 1, 'should delete cache element below threshold value')
 
     st.end()
   })

@@ -15,8 +15,38 @@ export interface CacheOpts {
   deleteCb: deleteCb
 }
 
+export const DEFAULT_CACHE_CLEARING_OPTS: CacheClearingOpts = {
+  clear: true,
+}
+
+export type CacheClearingOpts = {
+  /**
+   * Full cache clearing
+   * (overrides the useThreshold option)
+   *
+   * default: true
+   */
+  clear: boolean
+  /**
+   * Clean up the cache by deleting cache elements
+   * where stored comparand is below the given
+   * threshold.
+   */
+  useThreshold?: bigint
+  /**
+   * Comparand stored along a cache element with a
+   * read or write access.
+   *
+   * This can be a block number, timestamp,
+   * consecutive number or any other bigint
+   * which makes sense as a comparison value.
+   */
+  comparand?: bigint
+}
+
 type CacheElement = {
   account: Buffer
+  comparand: bigint
 }
 
 type DiffCacheElement = {
@@ -38,6 +68,17 @@ export class Cache {
   _cache: OrderedMap<string, CacheElement>
   _diffCache: DiffCache = []
   _checkpoints = 0
+
+  /**
+   * Comparand for cache clearing.
+   *
+   * This value is stored along each cache element along
+   * a write or get operation.
+   *
+   * Cache elements with a comparand lower than a certain
+   * threshold can be deleted by using the clear() operation.
+   */
+  _comparand = BigInt(0)
 
   _getCb: getCb
   _putCb: putCb
@@ -81,7 +122,7 @@ export class Cache {
     this._saveCachePreState(addressHex)
 
     this._debug(`Put account ${addressHex}`)
-    this._cache.setElement(addressHex, { account: account.serialize() })
+    this._cache.setElement(addressHex, { account: account.serialize(), comparand: this._comparand })
   }
 
   /**
@@ -140,7 +181,10 @@ export class Cache {
       account = await this._getCb(address)
       this._debug(`Get account ${addressHex} from DB (${account ? 'exists' : 'non-existent'})`)
       if (account) {
-        this._cache.setElement(addressHex, { account: account.serialize() })
+        this._cache.setElement(addressHex, {
+          account: account.serialize(),
+          comparand: this._comparand,
+        })
         ;(account as any).exists = true
       } else {
         account = new Account()
@@ -199,7 +243,7 @@ export class Cache {
       if (account === undefined) {
         this._cache.eraseElementByKey(addressHex)
       } else {
-        this._cache.setElement(addressHex, { account })
+        this._cache.setElement(addressHex, { account, comparand: this._comparand })
       }
       it.next()
     }
@@ -226,10 +270,35 @@ export class Cache {
   }
 
   /**
+   * Returns the size of the cache
+   * @returns
+   */
+  size() {
+    return this._cache.size()
+  }
+
+  /**
    * Clears cache.
    */
-  clear(): void {
+  clear(cacheClearingOpts: CacheClearingOpts = DEFAULT_CACHE_CLEARING_OPTS): void {
     this._debug(`Clear cache`)
-    this._cache.clear()
+    if (cacheClearingOpts.comparand !== undefined) {
+      // Set new comparand value
+      this._comparand = cacheClearingOpts.comparand
+    }
+    if (cacheClearingOpts.clear) {
+      this._cache.clear()
+      return
+    }
+    if (cacheClearingOpts.useThreshold !== undefined) {
+      const threshold = cacheClearingOpts.useThreshold
+      const it = this._cache.begin()
+      while (!it.equals(this._cache.end())) {
+        if (it.pointer[1].comparand < threshold) {
+          this._cache.eraseElementByKey(it.pointer[0])
+        }
+        it.next()
+      }
+    }
   }
 }
