@@ -104,7 +104,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
   accountTrie: Trie
 
-  // storageTries: Trie[]
+  accountToStorageTrie: Map<String, Trie>
 
   /**
    * Create new block fetcher
@@ -115,7 +115,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     this.first = options.first
     this.count = options.count ?? BigInt(2) ** BigInt(256) - this.first
     this.accountTrie = new Trie({ useKeyHashing: false })
-    // this.storageTries = []
+    this.accountToStorageTrie = new Map()
     this.debug = createDebugLogger('client:AccountFetcher')
     this.storageFetcher = new StorageFetcher({
       config: this.config,
@@ -124,6 +124,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       storageRequests: [],
       first: BigInt(1),
       destroyWhenDone: false,
+      accountToStorageTrie: this.accountToStorageTrie,
     })
     this.storageFetcher.fetch().then(
       () => snapFetchersCompleted(StorageFetcher),

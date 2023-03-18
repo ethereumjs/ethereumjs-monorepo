@@ -50,6 +50,8 @@ export interface StorageFetcherOptions extends FetcherOptions {
 
   /** Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
+
+  accountToStorageTrie?: Map<String, Trie>
 }
 
 export type JobTask = {
@@ -71,18 +73,17 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
   /** Fragmented requests to fetch remaining slot data for */
   fragmentedRequests: StorageRequest[]
 
-  /** Map to keep data in -- Will be replaced with a state manager in the future */
-  data: Map<String, Map<String, Buffer>>
+  accountToStorageTrie: Map<String, Trie>
 
   /**
    * Create new storage fetcher
    */
   constructor(options: StorageFetcherOptions) {
     super(options)
-    this.data = new Map<String, Map<String, Buffer>>()
+    this.fragmentedRequests = []
     this.root = options.root
     this.storageRequests = options.storageRequests ?? []
-    this.fragmentedRequests = []
+    this.accountToStorageTrie = options.accountToStorageTrie ?? new Map()
     this.debug = createDebugLogger('client:StorageFetcher')
     if (this.storageRequests.length > 0) {
       const fullJob = {
@@ -390,22 +391,19 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         )
         return
       }
-      this.debug(`Stored ${result[0].length} storage slot arrays`)
-
+      let slotCount = 0
       result[0].map((slotArray, i) => {
         const accountHash = result.requests[i].accountHash
-        const currentSlots = this.data.get(bufferToHex(accountHash)) ?? new Map<String, Buffer>()
+        const storageTrie =
+          this.accountToStorageTrie.get(bufferToHex(accountHash)) ??
+          new Trie({ useKeyHashing: false })
         for (const slot of slotArray as any) {
-          currentSlots.set(bufferToHex(slot.hash), slot.body)
+          slotCount++
+          void storageTrie.put(slot.hash, slot.body)
         }
-        this.data.set(bufferToHex(accountHash), currentSlots)
+        this.accountToStorageTrie.set(bufferToHex(accountHash), storageTrie)
       })
-
-      let slotCount = 0
-      for (const slotMap of this.data.values()) {
-        slotCount += slotMap.size
-      }
-      this.debug(`So far stored ${slotCount} slot(s) for ${this.data.size} account(s)`)
+      this.debug(`Stored ${slotCount} slot(s)`)
     } catch (err) {
       this.debug(err)
     }
