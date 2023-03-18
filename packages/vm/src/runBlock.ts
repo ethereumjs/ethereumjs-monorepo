@@ -1,6 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
+import { DEFAULT_CACHE_CLEARING_OPTS } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import {
   Account,
@@ -39,8 +40,13 @@ const DAORefundContract = DAOConfig.DAORefundContract
 export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
   const state = this.eei
   const { root } = opts
+  let { cacheClearingOptions } = opts
   let { block } = opts
   const generateFields = opts.generate === true
+
+  if (cacheClearingOptions === undefined) {
+    cacheClearingOptions = DEFAULT_CACHE_CLEARING_OPTS
+  }
 
   /**
    * The `beforeBlock` event.

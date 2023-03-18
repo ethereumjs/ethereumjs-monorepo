@@ -3,6 +3,7 @@ import type { InterpreterStep } from './interpreter'
 import type { Message } from './message'
 import type { OpHandler, OpcodeList } from './opcodes'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
+import type { CacheClearingOpts } from '@ethereumjs/statemanager'
 import type { Account, Address, AsyncEventEmitter, PrefixedHexString } from '@ethereumjs/util'
 
 /**
@@ -273,7 +274,7 @@ interface StateAccess {
   commit(): Promise<void>
   revert(): Promise<void>
   getStateRoot(): Promise<Buffer>
-  setStateRoot(stateRoot: Buffer): Promise<void>
+  setStateRoot(stateRoot: Buffer, cacheClearingOptions?: CacheClearingOpts): Promise<void>
   getProof?(address: Address, storageSlots: Buffer[]): Promise<Proof>
   verifyProof?(proof: Proof): Promise<boolean>
   hasStateRoot(root: Buffer): Promise<boolean>

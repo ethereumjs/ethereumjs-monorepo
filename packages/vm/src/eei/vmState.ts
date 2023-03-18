@@ -6,7 +6,7 @@ import { debug as createDebugLogger } from 'debug'
 import { Journaling } from './journaling'
 
 import type { EVMStateAccess } from '@ethereumjs/evm/dist/types'
-import type { AccountFields, StateManager } from '@ethereumjs/statemanager'
+import type { AccountFields, CacheClearingOpts, StateManager } from '@ethereumjs/statemanager'
 import type { AccessList, AccessListItem } from '@ethereumjs/tx'
 import type { Debugger } from 'debug'
 
@@ -180,11 +180,11 @@ export class VmState implements EVMStateAccess {
     return this._stateManager.accountExists(address)
   }
 
-  async setStateRoot(stateRoot: Buffer): Promise<void> {
+  async setStateRoot(stateRoot: Buffer, cacheClearingOptions?: CacheClearingOpts): Promise<void> {
     if (this._checkpointCount !== 0) {
       throw new Error('Cannot set state root with uncommitted checkpoints')
     }
-    return this._stateManager.setStateRoot(stateRoot)
+    return this._stateManager.setStateRoot(stateRoot, cacheClearingOptions)
   }
 
   async getStateRoot(): Promise<Buffer> {
