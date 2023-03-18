@@ -87,7 +87,7 @@ case $MULTIPEER in
         echo "ELCLIENT=$ELCLIENT not implemented"
     esac
 
-    CL_PORT_ARGS="--genesisValidators 8 --startValidators 4..7 --enr.tcp 9001 --port 9001 --execution.urls http://localhost:8552  --rest.port 9597 --server http://localhost:9597 --network.connectToDiscv5Bootnodes true --bootnodes $bootEnrs"
+    CL_PORT_ARGS="--genesisValidators 8 --startValidators 4..7 --enr.tcp 9001 --port 9001 --execution.urls http://localhost:8552  --rest.port 9597 --server http://127.0.0.1:9597 --network.connectToDiscv5Bootnodes true --bootnodes $bootEnrs"
     ;;
 
   * )
@@ -105,7 +105,7 @@ case $MULTIPEER in
         echo "ELCLIENT=$ELCLIENT not implemented"
     esac
 
-    CL_PORT_ARGS="--enr.ip 127.0.0.1 --enr.tcp 9000 --enr.udp 9000"
+    CL_PORT_ARGS="--sync.isSingleNode --enr.ip 127.0.0.1 --enr.tcp 9000 --enr.udp 9000"
     if [ ! -n "$MULTIPEER" ]
     then
       echo "setting up to run as a solo node..."
