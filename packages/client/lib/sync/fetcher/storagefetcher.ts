@@ -389,6 +389,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         this.debug(
           'Empty result detected - Associated range requested was empty with no elements remaining to the right'
         )
+        this.destroyWhenDone = true
         return
       }
       let slotCount = 0
