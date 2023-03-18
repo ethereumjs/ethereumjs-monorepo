@@ -3,6 +3,7 @@ import {
   KECCAK256_RLP,
   accountBodyToRLP,
   bigIntToBuffer,
+  bufArrToArr,
   bufferToBigInt,
   bufferToHex,
   setLengthLeft,
@@ -18,6 +19,7 @@ import { StorageFetcher } from './storagefetcher'
 
 import type { Peer } from '../../net/peer'
 import type { AccountData } from '../../net/protocol/snapprotocol'
+import type { EventBusType } from '../../types'
 import type { FetcherOptions } from './fetcher'
 import type { StorageRequest } from './storagefetcher'
 import type { Job } from './types'
@@ -51,6 +53,38 @@ export type JobTask = {
   count: bigint
 }
 
+export type FetcherDoneFlags = {
+  storageFetcherDone: boolean
+  accountFetcherDone: boolean
+  eventBus?: EventBusType | undefined
+  stateRoot?: Buffer | undefined
+}
+
+export const fetcherDoneFlags: FetcherDoneFlags = {
+  storageFetcherDone: false,
+  accountFetcherDone: false,
+}
+
+export function snapFetchersCompleted(fetcherType: Object, root?: Buffer, eventBus?: EventBusType) {
+  switch (fetcherType) {
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    case AccountFetcher:
+      fetcherDoneFlags.accountFetcherDone = true
+      fetcherDoneFlags.stateRoot = root
+      fetcherDoneFlags.eventBus = eventBus
+      break
+    case StorageFetcher:
+      fetcherDoneFlags.storageFetcherDone = true
+      break
+  }
+  if (fetcherDoneFlags.accountFetcherDone && fetcherDoneFlags.storageFetcherDone) {
+    fetcherDoneFlags.eventBus!.emit(
+      Event.SYNC_SNAPSYNC_COMPLETE,
+      bufArrToArr(fetcherDoneFlags.stateRoot as Buffer)
+    )
+  }
+}
+
 export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData> {
   protected debug: Debugger
 
@@ -68,17 +102,21 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
   storageFetcher: StorageFetcher
 
+  accountTrie: Trie
+
+  // storageTries: Trie[]
+
   /**
    * Create new block fetcher
    */
   constructor(options: AccountFetcherOptions) {
     super(options)
-
     this.root = options.root
     this.first = options.first
     this.count = options.count ?? BigInt(2) ** BigInt(256) - this.first
+    this.accountTrie = new Trie({ useKeyHashing: false })
+    // this.storageTries = []
     this.debug = createDebugLogger('client:AccountFetcher')
-
     this.storageFetcher = new StorageFetcher({
       config: this.config,
       pool: this.pool,
@@ -87,7 +125,12 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       first: BigInt(1),
       destroyWhenDone: false,
     })
-    void this.storageFetcher.fetch()
+    this.storageFetcher.fetch().then(
+      () => snapFetchersCompleted(StorageFetcher),
+      () => {
+        throw Error('Snap fetcher failed to exit')
+      }
+    )
 
     const fullJob = { task: { first: this.first, count: this.count } } as Job<
       JobTask,
@@ -254,17 +297,20 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   async store(result: AccountData[]): Promise<void> {
     this.debug(`Stored ${result.length} accounts in account trie`)
 
-    // fails to handle case where there is a proof of non existence and returned accounts for last requested range
+    // TODO fails to handle case where there is a proof of non existence and returned accounts for last requested range
     if (JSON.stringify(result[0]) === JSON.stringify(Object.create(null))) {
       this.debug('Final range received with no elements remaining to the right')
 
-      // TODO change to wait on storage and other auxilery fetchers to emit completion event before emitting before completing sync
       // TODO include stateRoot in emission once moved over to using MPT's
-      this.config.events.emit(Event.SYNC_SNAPSYNC_COMPLETE, new Uint8Array())
+      await this.accountTrie.persistRoot()
+      snapFetchersCompleted(AccountFetcher, this.accountTrie.root(), this.config.events)
       return
     }
     const storageFetchRequests: StorageRequest[] = []
     for (const account of result) {
+      await this.accountTrie.put(account.hash, accountBodyToRLP(account.body))
+
+      // build record of accounts that need storage slots to be fetched
       const storageRoot: Buffer =
         account.body[2] instanceof Buffer ? account.body[2] : Buffer.from(account.body[2])
       if (storageRoot.compare(KECCAK256_RLP) !== 0) {
@@ -289,7 +335,8 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    */
 
   tasks(first = this.first, count = this.count, maxTasks = this.config.maxFetcherJobs): JobTask[] {
-    const max = this.config.maxAccountRange
+    // const max = this.config.maxAccountRange
+    const max = (BigInt(2) ** BigInt(256) - BigInt(1)) / BigInt(10)
     const tasks: JobTask[] = []
     let debugStr = `origin=${short(setLengthLeft(bigIntToBuffer(first), 32))}`
     let pushedCount = BigInt(0)
