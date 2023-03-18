@@ -46,6 +46,11 @@ export type CacheClearingOpts = {
 
 type CacheElement = {
   account: Buffer
+  /**
+   * Account is known to be virtual
+   * (doesn't exist on trie)
+   */
+  virtual: boolean
   comparand: bigint
 }
 
@@ -137,7 +142,11 @@ export class Cache {
     this._saveCachePreState(addressHex)
 
     this._debug(`Put account ${addressHex}`)
-    this._cache.setElement(addressHex, { account: account.serialize(), comparand: this._comparand })
+    this._cache.setElement(addressHex, {
+      account: account.serialize(),
+      virtual: false,
+      comparand: this._comparand,
+    })
     this._stats.cache.writes += 1
   }
 
@@ -153,11 +162,14 @@ export class Cache {
     this._stats.cache.reads += 1
     if (elem) {
       const account = Account.fromRlpSerializedAccount(elem['account'])
-      ;(account as any).exists = true
+      ;(account as any).inCache = true
+      ;(account as any).virtual = elem.virtual
       this._stats.cache.hits += 1
       return account
     } else {
-      return new Account()
+      const account = new Account()
+      ;(account as any).inCache = false
+      return account
     }
   }
 
@@ -195,20 +207,24 @@ export class Cache {
   async getOrLoad(address: Address): Promise<Account> {
     let account: Account | undefined = this.get(address)
 
-    if ((account as any).exists !== true) {
+    if ((account as any).inCache === false) {
       const addressHex = address.buf.toString('hex')
       account = await this._getCb(address)
       this._stats.trie.reads += 1
       this._debug(`Get account ${addressHex} from DB (${account ? 'exists' : 'non-existent'})`)
+      let virtual
       if (account) {
-        this._cache.setElement(addressHex, {
-          account: account.serialize(),
-          comparand: this._comparand,
-        })
-        ;(account as any).exists = true
+        virtual = false
+        ;(account as any).inCache = true
       } else {
         account = new Account()
+        virtual = true
       }
+      this._cache.setElement(addressHex, {
+        account: account.serialize(),
+        virtual,
+        comparand: this._comparand,
+      })
     }
 
     return account
@@ -232,8 +248,10 @@ export class Cache {
         await this._deleteCb(addressBuf)
         this._stats.trie.dels += 1
       } else {
-        await this._putCb(addressBuf, elem.account)
-        this._stats.trie.writes += 1
+        if (elem.virtual !== true) {
+          await this._putCb(addressBuf, elem.account)
+          this._stats.trie.writes += 1
+        }
       }
       it.next()
     }
@@ -265,7 +283,7 @@ export class Cache {
       if (account === undefined) {
         this._cache.eraseElementByKey(addressHex)
       } else {
-        this._cache.setElement(addressHex, { account, comparand: this._comparand })
+        this._cache.setElement(addressHex, { account, virtual: false, comparand: this._comparand })
       }
       it.next()
     }
