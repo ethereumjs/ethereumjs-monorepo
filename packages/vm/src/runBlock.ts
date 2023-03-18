@@ -83,7 +83,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     if (this.DEBUG) {
       debug(`Set provided state root ${root.toString('hex')}`)
     }
-    await state.setStateRoot(root)
+    await state.setStateRoot(root, cacheClearingOptions)
   }
 
   // check for DAO support and if we should apply the DAO fork

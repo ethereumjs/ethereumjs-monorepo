@@ -35,6 +35,18 @@ export class VMExecution extends Execution {
   private MAX_TOLERATED_BLOCK_TIME = 12
 
   /**
+   * Delete cache items if not read or modfied by
+   * STATE_CACHE_THRESHOLD_NUM_BLOCKS number of blocks
+   */
+  private STATE_CACHE_THRESHOLD_NUM_BLOCKS = 500
+
+  /**
+   * Display state cache stats every num blocks
+   */
+  private CACHE_STATS_NUM_BLOCKS = 50
+  private cacheStatsCount = 0
+
+  /**
    * Create new VM execution module
    */
   constructor(options: ExecutionOptions) {
@@ -281,6 +293,12 @@ export class VMExecution extends Execution {
           if (!headBlock || reorg) {
             const headBlock = await blockchain.getBlock(block.header.parentHash)
             parentState = headBlock.header.stateRoot
+
+            if (reorg) {
+              this.config.logger.info(
+                `Chain reorg happened, set new head to block number=${headBlock.header.number}, clearing state cache for VM execution.`
+              )
+            }
           }
           // run block, update head if valid
           try {
@@ -318,6 +336,7 @@ export class VMExecution extends Execution {
               const result = await this.vm.runBlock({
                 block,
                 root: parentState,
+                cacheClearingOptions: this.cacheStatsAndOptions(this.vm, number, reorg),
                 skipBlockValidation,
                 skipHeaderValidation: true,
               })
@@ -483,7 +502,7 @@ export class VMExecution extends Execution {
       const block = await vm.blockchain.getBlock(blockNumber)
       const parentBlock = await vm.blockchain.getBlock(block.header.parentHash)
       // Set the correct state root
-      await vm.stateManager.setStateRoot(parentBlock.header.stateRoot)
+      const root = parentBlock.header.stateRoot
       if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
         throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
       }
@@ -494,7 +513,12 @@ export class VMExecution extends Execution {
         // we are skipping header validation because the block has been picked from the
         // blockchain and header should have already been validated while putBlock
         const beforeTS = Date.now()
-        const res = await vm.runBlock({ block, skipHeaderValidation: true })
+        const res = await vm.runBlock({
+          block,
+          root,
+          cacheClearingOptions: this.cacheStatsAndOptions(vm, BigInt(blockNumber), false),
+          skipHeaderValidation: true,
+        })
         const afterTS = Date.now()
         const diffSec = Math.round((afterTS - beforeTS) / 1000)
         const msg = `Executed block num=${blockNumber} hash=0x${block.hash().toString('hex')} txs=${
@@ -529,5 +553,29 @@ export class VMExecution extends Execution {
         }
       }
     }
+  }
+
+  cacheStatsAndOptions(vm: VM, blockNumber: bigint, reorg: boolean) {
+    this.cacheStatsCount += 1
+    if (this.cacheStatsCount === this.CACHE_STATS_NUM_BLOCKS) {
+      const stats = vm.stateManager.cache!.stats()
+      this.config.logger.info(
+        `State cache stats size=${stats.cache.size} reads=${stats.cache.reads} hits=${stats.cache.hits} writes=${stats.cache.writes} | trie reads=${stats.trie.reads} writes=${stats.trie.writes}`
+      )
+      this.cacheStatsCount = 0
+    }
+    // Only apply cache threshold in selected block intervals
+    // for performance reasons (whole cache iteration needed)
+    let useThreshold
+    if (blockNumber % BigInt(100) === BigInt(0)) {
+      useThreshold = blockNumber - BigInt(this.STATE_CACHE_THRESHOLD_NUM_BLOCKS)
+    }
+
+    const cacheClearingOptions = {
+      clear: reorg ? true : false,
+      useThreshold,
+      comparand: blockNumber,
+    }
+    return cacheClearingOptions
   }
 }

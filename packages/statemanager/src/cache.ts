@@ -84,6 +84,21 @@ export class Cache {
   _putCb: putCb
   _deleteCb: deleteCb
 
+  _stats = {
+    cache: {
+      size: 0,
+      reads: 0,
+      hits: 0,
+      writes: 0,
+      dels: 0,
+    },
+    trie: {
+      reads: 0,
+      writes: 0,
+      dels: 0,
+    },
+  }
+
   constructor(opts: CacheOpts) {
     this._debug = createDebugLogger('statemanager:cache')
 
@@ -123,6 +138,7 @@ export class Cache {
 
     this._debug(`Put account ${addressHex}`)
     this._cache.setElement(addressHex, { account: account.serialize(), comparand: this._comparand })
+    this._stats.cache.writes += 1
   }
 
   /**
@@ -134,9 +150,11 @@ export class Cache {
     this._debug(`Get account ${addressHex}`)
 
     const elem = this._cache.getElementByKey(addressHex)
+    this._stats.cache.reads += 1
     if (elem) {
       const account = Account.fromRlpSerializedAccount(elem['account'])
       ;(account as any).exists = true
+      this._stats.cache.hits += 1
       return account
     } else {
       return new Account()
@@ -152,6 +170,7 @@ export class Cache {
     this._saveCachePreState(addressHex)
     this._debug(`Delete account ${addressHex}`)
     this._cache.eraseElementByKey(addressHex)
+    this._stats.cache.dels += 1
   }
 
   /**
@@ -179,6 +198,7 @@ export class Cache {
     if ((account as any).exists !== true) {
       const addressHex = address.buf.toString('hex')
       account = await this._getCb(address)
+      this._stats.trie.reads += 1
       this._debug(`Get account ${addressHex} from DB (${account ? 'exists' : 'non-existent'})`)
       if (account) {
         this._cache.setElement(addressHex, {
@@ -210,8 +230,10 @@ export class Cache {
       const elem = this._cache.getElementByKey(addressHex)
       if (!elem) {
         await this._deleteCb(addressBuf)
+        this._stats.trie.dels += 1
       } else {
         await this._putCb(addressBuf, elem.account)
+        this._stats.trie.writes += 1
       }
       it.next()
     }
@@ -275,6 +297,32 @@ export class Cache {
    */
   size() {
     return this._cache.size()
+  }
+
+  /**
+   * Returns a dict with cache stats
+   * @param reset
+   */
+  stats(reset = true) {
+    const stats = { ...this._stats }
+    stats.cache.size = this.size()
+    if (reset) {
+      this._stats = {
+        cache: {
+          size: 0,
+          reads: 0,
+          hits: 0,
+          writes: 0,
+          dels: 0,
+        },
+        trie: {
+          reads: 0,
+          writes: 0,
+          dels: 0,
+        },
+      }
+    }
+    return stats
   }
 
   /**

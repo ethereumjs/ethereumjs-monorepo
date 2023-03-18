@@ -1,4 +1,4 @@
-import type { CacheClearingOpts } from './cache'
+import type { Cache, CacheClearingOpts } from './cache'
 import type { Proof } from './stateManager'
 import type { Account, Address } from '@ethereumjs/util'
 
@@ -34,6 +34,7 @@ export interface StateAccess {
 }
 
 export interface StateManager extends StateAccess {
+  cache?: Cache
   copy(): StateManager
   flush(): Promise<void>
   dumpStorage(address: Address): Promise<StorageDump>
