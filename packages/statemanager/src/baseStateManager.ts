@@ -43,6 +43,13 @@ export abstract class BaseStateManager {
   }
 
   /**
+   * Returns the StateManager cache
+   */
+  get cache() {
+    return this._cache
+  }
+
+  /**
    * Gets the account associated with `address`. Returns an empty account if the account does not exist.
    * @param address - Address of the `account` to get
    */

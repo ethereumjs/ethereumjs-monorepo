@@ -49,6 +49,10 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       block,
       // @ts-ignore
       root: vm.stateManager._trie.root(),
+      cacheClearingOptions: {
+        clear: true,
+        comparand: BigInt(5),
+      },
       skipBlockValidation: true,
       skipHardForkValidation: true,
     })
@@ -57,6 +61,11 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       res.results[0].totalGasSpent.toString(16),
       '5208',
       'actual gas used should equal blockHeader gasUsed'
+    )
+    st.equal(
+      vm.stateManager.cache!._comparand,
+      BigInt(5),
+      'should pass through the cache clearing options'
     )
   }
 
