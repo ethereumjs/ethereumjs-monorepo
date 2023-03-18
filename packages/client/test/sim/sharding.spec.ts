@@ -30,7 +30,7 @@ export async function runTx(data: string, to?: string, value?: bigint) {
 
 tape('sharding/eip4844 hardfork tests', async (t) => {
   if (process.env.EXTRA_CL_PARAMS === undefined) {
-    process.env.EXTRA_CL_PARAMS = '--params.CAPELLA_FORK_EPOCH 0 --params.EIP4844_FORK_EPOCH 0'
+    process.env.EXTRA_CL_PARAMS = '--params.CAPELLA_FORK_EPOCH 0 --params.DENEB_FORK_EPOCH 0'
   }
   const { teardownCallBack, result } = await startNetwork(network, client, {
     filterKeywords,

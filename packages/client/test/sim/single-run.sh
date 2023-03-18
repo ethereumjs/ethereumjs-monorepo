@@ -247,8 +247,17 @@ else
     responseCmd="curl --location --request GET 'http://localhost:9596/eth/v1/beacon/headers/genesis' --header 'Content-Type: application/json'  2>/dev/null | jq \".data.root\""
     CL_GENESIS_HASH=$(eval "$responseCmd")
   done;
-  # since peer1 is setup get their enr and enode
-  bootEnrs=$(sudo cat "$origDataDir/peer1/lodestar/enr")
+
+  # We should curl and get boot enr
+  while [ ! -n "$bootEnrs" ]
+  do
+    sleep 3
+    echo "Fetching bootEnrs block from peer1/bootnode ..."
+    ejsId=$(( ejsId +1 ))
+    responseCmd="curl --location --request GET 'http://localhost:9596/eth/v1/node/identity' --header 'Content-Type: application/json'  2>/dev/null | jq \".data.enr\""
+    bootEnrs=$(eval "$responseCmd")
+  done;
+
   elBootnode=$(cat "$origDataDir/peer1/ethereumjs/$NETWORK/rlpx");
   EL_PORT_ARGS="$EL_PORT_ARGS --bootnodes $elBootnode"
   CL_PORT_ARGS="$CL_PORT_ARGS --bootnodes $bootEnrs"
