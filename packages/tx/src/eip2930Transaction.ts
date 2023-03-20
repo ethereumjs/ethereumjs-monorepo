@@ -169,6 +169,10 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
     this._validateYParity()
     this._validateHighS()
 
+    const createContract = txData.to === undefined || txData.to === null
+    if (createContract && this.common.isActivatedEIP(3860)) {
+      checkMaxInitCodeSize(this.common, this.data.length)
+    }
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)

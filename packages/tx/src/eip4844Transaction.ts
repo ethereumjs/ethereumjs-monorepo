@@ -143,6 +143,11 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     this._validateYParity()
     this._validateHighS()
 
+    const createContract = txData.to === undefined || txData.to === null
+    if (createContract && this.common.isActivatedEIP(3860)) {
+      checkMaxInitCodeSize(this.common, this.data.length)
+    }
+
     for (const hash of this.versionedHashes) {
       if (hash.length !== 32) {
         const msg = this._errorMsg('versioned hash is invalid length')

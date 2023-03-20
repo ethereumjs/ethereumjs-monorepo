@@ -133,6 +133,11 @@ export class Transaction extends BaseTransaction<Transaction> {
       }
     }
 
+    const createContract = txData.to === undefined || txData.to === null
+    if (createContract && this.common.isActivatedEIP(3860)) {
+      checkMaxInitCodeSize(this.common, this.data.length)
+    }
+
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
