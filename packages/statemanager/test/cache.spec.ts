@@ -13,8 +13,10 @@ tape('cache initialization', (t) => {
     const trie = new Trie({ useKeyHashing: true })
     const getCb: getCb = async (address) => {
       const innerTrie = trie
-      const rlp = await innerTrie.get(address.buf)
-      return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined
+      const res = await innerTrie.get(address.buf)
+      if (res !== null) {
+        return res
+      }
     }
     const putCb: putCb = async (keyBuf, accountRlp) => {
       const innerTrie = trie
@@ -35,8 +37,10 @@ tape('cache put and get account', (t) => {
   const trie = new Trie({ useKeyHashing: true })
   const getCb: getCb = async (address) => {
     const innerTrie = trie
-    const rlp = await innerTrie.get(address.buf)
-    return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined
+    const res = await innerTrie.get(address.buf)
+    if (res !== null) {
+      return res
+    }
   }
   const putCb: putCb = async (keyBuf, accountRlp) => {
     const innerTrie = trie
@@ -49,18 +53,30 @@ tape('cache put and get account', (t) => {
   const cache = new Cache({ getCb, putCb, deleteCb })
 
   const addr = new Address(Buffer.from('10'.repeat(20), 'hex'))
-  const acc = createAccount(BigInt(1), BigInt(0xff11))
+  const acc: Account = createAccount(BigInt(1), BigInt(0xff11))
+  const accRLP = acc.serialize()
 
-  t.test('should fail to get non-existent account', async (st) => {
-    const res = cache.get(addr)
-    st.notEqual(res.balance, acc.balance)
+  t.test(
+    'should return undefined for CacheElement if account not present in the cache',
+    async (st) => {
+      const elem = cache.get(addr)
+      st.ok(elem === undefined)
+      st.end()
+    }
+  )
+
+  t.test('should cache a non-trie account as undefined', async (st) => {
+    await cache.getOrLoad(addr)
+    const elem = cache.get(addr)
+
+    st.ok(elem && elem.accountRLP === undefined)
     st.end()
   })
 
   t.test('should put account', async (st) => {
     cache.put(addr, acc)
-    const res = cache.get(addr)
-    st.equal(res.balance, acc.balance)
+    const elem = cache.get(addr)
+    st.ok(elem && elem.accountRLP && elem.accountRLP.equals(accRLP))
     st.end()
   })
 
@@ -85,8 +101,8 @@ tape('cache put and get account', (t) => {
   t.test('should delete account from cache', async (st) => {
     cache.del(addr)
 
-    const res = cache.get(addr)
-    st.notEqual(res.balance, acc.balance)
+    const elem = cache.get(addr)
+    st.ok(elem && elem.accountRLP === undefined)
     st.end()
   })
 
@@ -106,8 +122,10 @@ tape('cache checkpointing', (t) => {
   const trie = new Trie({ useKeyHashing: true })
   const getCb: getCb = async (address) => {
     const innerTrie = trie
-    const rlp = await innerTrie.get(address.buf)
-    return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined
+    const res = await innerTrie.get(address.buf)
+    if (res !== null) {
+      return res
+    }
   }
   const putCb: putCb = async (keyBuf, accountRlp) => {
     const innerTrie = trie
@@ -121,24 +139,26 @@ tape('cache checkpointing', (t) => {
 
   const addr = new Address(Buffer.from('10'.repeat(20), 'hex'))
   const acc = createAccount(BigInt(1), BigInt(0xff11))
+  const accRLP = acc.serialize()
 
   const addr2 = new Address(Buffer.from('20'.repeat(20), 'hex'))
   const acc2 = createAccount(BigInt(2), BigInt(0xff22))
 
   const updatedAcc = createAccount(BigInt(0x00), BigInt(0xff00))
+  const updatedAccRLP = updatedAcc.serialize()
 
   t.test('should revert to correct state', async (st) => {
     cache.put(addr, acc)
     cache.checkpoint()
     cache.put(addr, updatedAcc)
 
-    let res = cache.get(addr)
-    st.equal(res.balance, updatedAcc.balance)
+    let elem = cache.get(addr)
+    st.ok(elem && elem.accountRLP && elem.accountRLP.equals(updatedAccRLP))
 
     cache.revert()
 
-    res = cache.get(addr)
-    st.equal(res.balance, acc.balance)
+    elem = cache.get(addr)
+    st.ok(elem && elem.accountRLP && elem.accountRLP.equals(accRLP))
 
     st.end()
   })

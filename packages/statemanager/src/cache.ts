@@ -5,7 +5,7 @@ import { OrderedMap } from 'js-sdsl'
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
-export type getCb = (address: Address) => Promise<Account | undefined>
+export type getCb = (address: Address) => Promise<Buffer | undefined>
 export type putCb = (keyBuf: Buffer, accountRlp: Buffer) => Promise<void>
 export type deleteCb = (keyBuf: Buffer) => Promise<void>
 
@@ -44,25 +44,26 @@ export type CacheClearingOpts = {
   comparand?: bigint
 }
 
+/**
+ * account: undefined
+ *
+ * Account is known to not exist in the trie
+ */
 type CacheElement = {
-  account: Buffer
-  /**
-   * Account is known to be virtual
-   * (doesn't exist on trie)
-   */
-  virtual: boolean
+  accountRLP: Buffer | undefined
   comparand: bigint
 }
 
-type DiffCacheElement = {
-  account: Buffer | undefined
-}
-
 /**
- * Diff cache collecting modified or deleted
- * account pre states per checkpoint height
+ * Diff cache collecting the state of the cache
+ * at the beginning of checkpoint height
+ * (respectively: before a first modification)
+ *
+ * If the whole cache element is undefined (in contrast
+ * to the account), the element didn't exist in the cache
+ * before.
  */
-type DiffCache = OrderedMap<string, DiffCacheElement>[]
+type DiffCache = OrderedMap<string, CacheElement | undefined>[]
 
 /**
  * @ignore
@@ -119,58 +120,50 @@ export class Cache {
   _saveCachePreState(addressHex: string) {
     if (!this._diffCache[this._checkpoints].getElementByKey(addressHex)) {
       const oldElem = this._cache.getElementByKey(addressHex)
-      const account = oldElem ? oldElem.account : undefined
       this._debug(
         `Save pre cache state ${
-          oldElem ? 'as exists' : 'as non-existent'
+          oldElem?.accountRLP ? 'as exists' : 'as non-existent'
         } for account ${addressHex}`
       )
-      this._diffCache[this._checkpoints].setElement(addressHex, { account })
+      this._diffCache[this._checkpoints].setElement(addressHex, oldElem)
     }
   }
 
   /**
    * Puts account to cache under its address.
-   * @param key - Address of account
+   * @param key - Address of account or undefined if account doesn't exist in the trie
    * @param val - Account
    */
-  put(address: Address, account: Account): void {
+  put(address: Address, account: Account | undefined): void {
     // TODO: deleted fromTrie parameter since I haven't found any calling
     // from any monorepo method, eventually re-evaluate the functionality
     // Holger Drewes, 2023-03-15
     const addressHex = address.buf.toString('hex')
     this._saveCachePreState(addressHex)
+    const elem = {
+      accountRLP: account !== undefined ? account.serialize() : undefined,
+      comparand: this._comparand,
+    }
 
     this._debug(`Put account ${addressHex}`)
-    this._cache.setElement(addressHex, {
-      account: account.serialize(),
-      virtual: false,
-      comparand: this._comparand,
-    })
+    this._cache.setElement(addressHex, elem)
     this._stats.cache.writes += 1
   }
 
   /**
-   * Returns the queried account or an empty account.
+   * Returns the queried account or undefined if account doesn't exist
    * @param key - Address of account
    */
-  get(address: Address): Account {
+  get(address: Address): CacheElement | undefined {
     const addressHex = address.buf.toString('hex')
     this._debug(`Get account ${addressHex}`)
 
     const elem = this._cache.getElementByKey(addressHex)
     this._stats.cache.reads += 1
     if (elem) {
-      const account = Account.fromRlpSerializedAccount(elem['account'])
-      ;(account as any).inCache = true
-      ;(account as any).virtual = elem.virtual
       this._stats.cache.hits += 1
-      return account
-    } else {
-      const account = new Account()
-      ;(account as any).inCache = false
-      return account
     }
+    return elem
   }
 
   /**
@@ -181,7 +174,10 @@ export class Cache {
     const addressHex = address.buf.toString('hex')
     this._saveCachePreState(addressHex)
     this._debug(`Delete account ${addressHex}`)
-    this._cache.eraseElementByKey(addressHex)
+    this._cache.setElement(addressHex, {
+      accountRLP: undefined,
+      comparand: this._comparand,
+    })
     this._stats.cache.dels += 1
   }
 
@@ -190,12 +186,12 @@ export class Cache {
    * @param key - trie key to lookup
    */
   keyIsDeleted(address: Address): boolean {
-    const account = this.get(address)
+    const elem = this.get(address)
 
-    if (account.isEmpty()) {
-      return false
-    } else {
+    if (elem !== undefined && elem.accountRLP === undefined) {
       return true
+    } else {
+      return false
     }
   }
 
@@ -204,30 +200,22 @@ export class Cache {
    * in the underlying trie.
    * @param key - Address of account
    */
-  async getOrLoad(address: Address): Promise<Account> {
-    let account: Account | undefined = this.get(address)
+  async getOrLoad(address: Address): Promise<Account | undefined> {
+    const addressHex: string = address.buf.toString('hex')
+    const elem = this.get(address)
 
-    if ((account as any).inCache === false) {
-      const addressHex = address.buf.toString('hex')
-      account = await this._getCb(address)
+    if (!elem) {
+      const accountRLP = await this._getCb(address)
       this._stats.trie.reads += 1
-      this._debug(`Get account ${addressHex} from DB (${account ? 'exists' : 'non-existent'})`)
-      let virtual
-      if (account) {
-        virtual = false
-        ;(account as any).inCache = true
-      } else {
-        account = new Account()
-        virtual = true
-      }
+      this._debug(`Get account ${addressHex} from DB (${accountRLP ? 'exists' : 'non-existent'})`)
       this._cache.setElement(addressHex, {
-        account: account.serialize(),
-        virtual,
+        accountRLP,
         comparand: this._comparand,
       })
+      return accountRLP ? Account.fromRlpSerializedAccount(accountRLP) : undefined
+    } else {
+      return elem.accountRLP ? Account.fromRlpSerializedAccount(elem.accountRLP) : undefined
     }
-
-    return account
   }
 
   /**
@@ -244,12 +232,12 @@ export class Cache {
       const addressHex = it.pointer[0]
       const addressBuf = Buffer.from(addressHex, 'hex')
       const elem = this._cache.getElementByKey(addressHex)
-      if (!elem) {
-        await this._deleteCb(addressBuf)
-        this._stats.trie.dels += 1
-      } else {
-        if (elem.virtual !== true) {
-          await this._putCb(addressBuf, elem.account)
+      if (elem) {
+        if (elem.accountRLP === undefined) {
+          await this._deleteCb(addressBuf)
+          this._stats.trie.dels += 1
+        } else {
+          await this._putCb(addressBuf, elem.accountRLP)
           this._stats.trie.writes += 1
         }
       }
@@ -279,11 +267,11 @@ export class Cache {
     const it = diffMap.begin()
     while (!it.equals(diffMap.end())) {
       const addressHex = it.pointer[0]
-      const account = it.pointer[1].account
-      if (account === undefined) {
+      const elem = it.pointer[1]
+      if (elem === undefined) {
         this._cache.eraseElementByKey(addressHex)
       } else {
-        this._cache.setElement(addressHex, { account, virtual: false, comparand: this._comparand })
+        this._cache.setElement(addressHex, elem)
       }
       it.next()
     }
