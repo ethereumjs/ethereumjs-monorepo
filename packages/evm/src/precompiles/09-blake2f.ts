@@ -182,9 +182,9 @@ export function precompile09(opts: PrecompileInput): ExecResult {
   }
 
   const rounds = new DataView(data.subarray(0, 4).buffer).getUint32(0)
-  const hRaw = data.subarray(4, 68)
-  const mRaw = data.subarray(68, 196)
-  const tRaw = data.subarray(196, 212)
+  const hRaw = new DataView(data.buffer, 4, 64)
+  const mRaw = new DataView(data.buffer, 68, 128)
+  const tRaw = new DataView(data.buffer, 196, 16)
   // final
   const f = lastByte === 1
 
@@ -207,17 +207,17 @@ export function precompile09(opts: PrecompileInput): ExecResult {
 
   const h = new Uint32Array(16)
   for (let i = 0; i < 16; i++) {
-    h[i] = new DataView(hRaw.buffer).getUint32(i * 4, true)
+    h[i] = hRaw.getUint32(i * 4, true)
   }
 
   const m = new Uint32Array(32)
   for (let i = 0; i < 32; i++) {
-    m[i] = new DataView(mRaw.buffer).getUint32(i * 4, true)
+    m[i] = mRaw.getUint32(i * 4, true)
   }
 
   const t = new Uint32Array(4)
   for (let i = 0; i < 4; i++) {
-    t[i] = new DataView(tRaw.buffer).getUint32(i * 4, true)
+    t[i] = tRaw.getUint32(i * 4, true)
   }
 
   F(h, m, t, f, rounds)
