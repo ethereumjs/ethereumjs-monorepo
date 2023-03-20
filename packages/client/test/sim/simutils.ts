@@ -414,13 +414,13 @@ export const runBlobTxsFromFile = async (client: Client, path: string) => {
 export async function createInlineClient(config: any, common: any, customGenesisState: any) {
   config.events.setMaxListeners(50)
   const datadir = Config.DATADIR_DEFAULT
-  const chainDB = new Level<string | Buffer, string | Buffer>(
+  const chainDB = new Level<string | Uint8Array, string | Uint8Array>(
     `${datadir}/${common.chainName()}/chainDB`
   )
-  const stateDB = new Level<string | Buffer, string | Buffer>(
+  const stateDB = new Level<string | Uint8Array, string | Uint8Array>(
     `${datadir}/${common.chainName()}/stateDB`
   )
-  const metaDB = new Level<string | Buffer, string | Buffer>(
+  const metaDB = new Level<string | Uint8Array, string | Uint8Array>(
     `${datadir}/${common.chainName()}/metaDB`
   )
 
