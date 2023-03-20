@@ -261,6 +261,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Check from account's balance and nonce
   let fromAccount = await state.getAccount(caller)
+  if (fromAccount === undefined) {
+    throw new Error('from account could not be read')
+  }
   const { nonce, balance } = fromAccount
   debug(`Sender's pre-tx balance is ${balance}`)
   // EIP-3607: Reject transactions from senders with deployed code
@@ -478,6 +481,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Update sender's balance
   fromAccount = await state.getAccount(caller)
+  if (fromAccount === undefined) {
+    throw new Error('from account could not be read')
+  }
   const actualTxCost = results.totalGasSpent * gasPrice
   const txCostDiff = txCost - actualTxCost
   fromAccount.balance += txCostDiff
@@ -497,6 +503,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   const minerAccount = await state.getAccount(miner)
+  if (minerAccount === undefined) {
+    throw new Error('miner account could not be read')
+  }
   // add the amount spent on gas to the miner's account
   results.minerValue =
     this._common.isActivatedEIP(1559) === true

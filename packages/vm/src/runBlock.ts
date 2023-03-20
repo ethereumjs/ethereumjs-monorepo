@@ -402,6 +402,9 @@ export async function rewardAccount(
   reward: bigint
 ): Promise<Account> {
   const account = await state.getAccount(address)
+  if (account === undefined) {
+    throw new Error(`account for reward could not be read`)
+  }
   account.balance += reward
   await state.putAccount(address, account)
   return account
@@ -443,11 +446,17 @@ async function _applyDAOHardfork(state: EVMStateAccess) {
     await state.putAccount(DAORefundContractAddress, new Account())
   }
   const DAORefundAccount = await state.getAccount(DAORefundContractAddress)
+  if (DAORefundAccount === undefined) {
+    throw new Error(`DAO refund account could not be read`)
+  }
 
   for (const addr of DAOAccountList) {
     // retrieve the account and add it to the DAO's Refund accounts' balance.
     const address = new Address(Buffer.from(addr, 'hex'))
     const account = await state.getAccount(address)
+    if (account === undefined) {
+      throw new Error(`account for DAO refund could not be read`)
+    }
     DAORefundAccount.balance += account.balance
     // clear the accounts' balance
     account.balance = BigInt(0)
