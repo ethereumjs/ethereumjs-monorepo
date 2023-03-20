@@ -118,7 +118,8 @@ export class Cache {
   }
 
   _saveCachePreState(addressHex: string) {
-    if (!this._diffCache[this._checkpoints].getElementByKey(addressHex)) {
+    const it = this._diffCache[this._checkpoints].find(addressHex)
+    if (it.equals(this._diffCache[this._checkpoints].end())) {
       const oldElem = this._cache.getElementByKey(addressHex)
       this._debug(
         `Save pre cache state ${
