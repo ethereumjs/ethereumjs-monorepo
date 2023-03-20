@@ -304,6 +304,9 @@ export class TxPool {
     // Set state root to latest block so that account balance is correct when doing balance check
     await vmCopy.stateManager.setStateRoot(block.stateRoot)
     const account = await vmCopy.stateManager.getAccount(senderAddress)
+    if (account === undefined) {
+      throw new Error('sender account could not be read')
+    }
     if (account.nonce > tx.nonce) {
       throw new Error(
         `0x${sender} tries to send a tx with nonce ${tx.nonce}, but account has nonce ${account.nonce} (tx nonce too low)`
@@ -694,7 +697,11 @@ export class TxPool {
         .map((obj) => obj.tx)
         .sort((a, b) => Number(a.nonce - b.nonce))
       // Check if the account nonce matches the lowest known tx nonce
-      const { nonce } = await vm.eei.getAccount(new Address(Buffer.from(address, 'hex')))
+      const account = await vm.eei.getAccount(new Address(Buffer.from(address, 'hex')))
+      if (account === undefined) {
+        throw new Error(`could not read account`)
+      }
+      const { nonce } = account
       if (txsSortedByNonce[0].nonce !== nonce) {
         // Account nonce does not match the lowest known tx nonce,
         // therefore no txs from this address are currently executable

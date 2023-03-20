@@ -178,10 +178,11 @@ export class VM {
       // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
       for (const [addressStr] of getActivePrecompiles(this._common)) {
         const address = new Address(Buffer.from(addressStr, 'hex'))
-        const account = await this.eei.getAccount(address)
+        let account = await this.eei.getAccount(address)
         // Only do this if it is not overridden in genesis
         // Note: in the case that custom genesis has storage fields, this is preserved
-        if (account.isEmpty()) {
+        if (account === undefined) {
+          account = new Account()
           const newAccount = Account.fromAccountData({
             balance: 1,
             storageRoot: account.storageRoot,

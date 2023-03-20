@@ -514,6 +514,9 @@ export class Eth {
     const vm = await this._vm.copy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
     const account = await vm.stateManager.getAccount(address)
+    if (account === undefined) {
+      throw new Error(`could not read account`)
+    }
     return bigIntToHex(account.balance)
   }
 
@@ -684,7 +687,10 @@ export class Eth {
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = Address.fromString(addressHex)
-    const account: Account = await vm.stateManager.getAccount(address)
+    const account = await vm.stateManager.getAccount(address)
+    if (account === undefined) {
+      throw new Error(`could not read account`)
+    }
     return bigIntToHex(account.nonce)
   }
 
