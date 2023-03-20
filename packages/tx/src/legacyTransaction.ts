@@ -15,7 +15,6 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BaseTransaction } from './baseTransaction'
 import { Capability } from './types'
-import { checkMaxInitCodeSize } from './util'
 
 import type { JsonTx, TxData, TxOptions, TxValuesArray } from './types'
 import type { Common } from '@ethereumjs/common'
@@ -132,11 +131,6 @@ export class Transaction extends BaseTransaction<Transaction> {
           this.activeCapabilities.push(Capability.EIP155ReplayProtection)
         }
       }
-    }
-
-    const createContract = txData.to === undefined || txData.to === null
-    if (createContract && this.common.isActivatedEIP(3860)) {
-      checkMaxInitCodeSize(this.common, this.data.length)
     }
 
     const freeze = opts?.freeze ?? true
