@@ -12,7 +12,7 @@ import {
   commitmentsToVersionedHashes,
   getBlobs,
 } from '@ethereumjs/tx/dist/utils/blobHelpers'
-import { toBuffer } from '@ethereumjs/util'
+import { Account, toBuffer } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import * as tape from 'tape'
@@ -45,9 +45,10 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const address = transaction.getSenderAddress()
   const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
 
+  await vm.stateManager.putAccount(address, new Account())
   const account = await vm.stateManager.getAccount(address)
-  account.balance = BigInt('40100000')
-  await vm.stateManager.putAccount(address, account)
+  account!.balance = BigInt('40100000')
+  await vm.stateManager.putAccount(address, account!)
 
   const req = params(method, [txData])
   const expectRes = (res: any) => {
@@ -189,9 +190,10 @@ tape(`${method}: call with no peers`, async (t) => {
   const address = transaction.getSenderAddress()
   const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
 
+  await vm.stateManager.putAccount(address, new Account())
   const account = await vm.stateManager.getAccount(address)
-  account.balance = BigInt('40100000')
-  await vm.stateManager.putAccount(address, account)
+  account!.balance = BigInt('40100000')
+  await vm.stateManager.putAccount(address, account!)
 
   const req = params(method, [txData])
 
@@ -268,9 +270,10 @@ tape('blob EIP 4844 transaction', async (t) => {
     { common }
   ).sign(pk)
   const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
+  await vm.stateManager.putAccount(tx.getSenderAddress(), new Account())
   const account = await vm.stateManager.getAccount(tx.getSenderAddress())
-  account.balance = BigInt(0xfffffffffffff)
-  await vm.stateManager.putAccount(tx.getSenderAddress(), account)
+  account!.balance = BigInt(0xfffffffffffff)
+  await vm.stateManager.putAccount(tx.getSenderAddress(), account!)
 
   const req = params(method, ['0x' + tx.serializeNetworkWrapper().toString('hex')])
   const req2 = params(method, ['0x' + replacementTx.serializeNetworkWrapper().toString('hex')])
