@@ -167,7 +167,8 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
 export function baseSetup(clientOpts: any = {}) {
   const client = createClient(clientOpts)
   const manager = createManager(client)
-  const server = startRPC(manager.getMethods(clientOpts.engine === true))
+  const engineMethods = clientOpts.engine === true ? manager.getMethods(true) : {}
+  const server = startRPC({ ...manager.getMethods(), ...engineMethods })
   server.once('close', () => {
     client.config.events.emit(Event.CLIENT_SHUTDOWN)
   })
@@ -236,7 +237,8 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
     enableMetaDB: true,
   })
   const manager = createManager(client)
-  const server = startRPC(manager.getMethods(clientOpts.engine))
+  const engineMethods = clientOpts.engine === true ? manager.getMethods(true) : {}
+  const server = startRPC({ ...manager.getMethods(), ...engineMethods })
   server.once('close', () => {
     client.config.events.emit(Event.CLIENT_SHUTDOWN)
   })
