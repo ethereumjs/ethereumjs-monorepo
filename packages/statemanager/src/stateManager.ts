@@ -108,8 +108,10 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
        * desired backend.
        */
       const getCb: getCb = async (address) => {
-        const rlp = await this._trie.get(address.buf)
-        return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined
+        const res = await this._trie.get(address.buf)
+        if (res !== null) {
+          return res
+        }
       }
       const putCb: putCb = async (keyBuf, accountRlp) => {
         const trie = this._trie
@@ -124,17 +126,16 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
   }
 
   /**
-   * Gets the account associated with `address`. Returns an empty account if the account does not exist.
+   * Gets the account associated with `address` or `undefined` if account does not exist
    * @param address - Address of the `account` to get
    */
-  async getAccount(address: Address): Promise<Account> {
+  async getAccount(address: Address): Promise<Account | undefined> {
     if (this._deactivateCache) {
       const rlp = await this._trie.get(address.buf)
-      if (rlp) {
+      if (rlp !== null) {
         return Account.fromRlpSerializedAccount(rlp)
       } else {
-        const account = new Account()
-        return account
+        return undefined
       }
     } else {
       return super.getAccount(address)
@@ -197,6 +198,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     if (this.DEBUG) {
       this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
     }
+    await this.putAccount(address, new Account())
     await this.modifyAccountFields(address, { codeHash })
   }
 
@@ -208,12 +210,16 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async getContractCode(address: Address): Promise<Buffer> {
     const account = await this.getAccount(address)
+    if (!account) {
+      return Buffer.alloc(0)
+    }
     if (!account.isContract()) {
       return Buffer.alloc(0)
     }
     const key = this._prefixCodeHashes
       ? Buffer.concat([CODEHASH_PREFIX, account.codeHash])
       : account.codeHash
+
     // @ts-expect-error
     const code = await this._trie._db.get(key)
     return code ?? Buffer.alloc(0)
@@ -227,6 +233,9 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
   async _lookupStorageTrie(address: Address): Promise<Trie> {
     // from state trie
     const account = await this.getAccount(address)
+    if (!account) {
+      throw new Error('_lookupStorageTrie() can only be called for an existing account')
+    }
     const storageTrie = this._trie.copy(false)
     storageTrie.root(account.storageRoot)
     storageTrie.flushCheckpoints()
@@ -289,11 +298,9 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
         this._storageTries[addressHex] = storageTrie
 
         // update contract storageRoot
-        let contract
-        if (this._cache) {
-          contract = this._cache.get(address)
-        } else {
-          contract = await this.getAccount(address)
+        const contract = await this.getAccount(address)
+        if (!contract) {
+          throw new Error('_modifyContractStorage() called on a non-existing contract')
         }
         contract.storageRoot = storageTrie.root()
 
@@ -320,6 +327,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     }
 
     value = unpadBuffer(value)
+    await this.putAccount(address, new Account())
 
     await this._modifyContractStorage(address, async (storageTrie, done) => {
       if (Buffer.isBuffer(value) && value.length) {
@@ -389,6 +397,9 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async getProof(address: Address, storageSlots: Buffer[] = []): Promise<Proof> {
     const account = await this.getAccount(address)
+    if (!account) {
+      throw new Error(`getProof() can only be called for an existing account`)
+    }
     const accountProof: PrefixedHexString[] = (await this._trie.createProof(address.buf)).map((p) =>
       bufferToHex(p)
     )
@@ -580,12 +591,13 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
   async accountExists(address: Address): Promise<boolean> {
     if (this._cache) {
       const account = await this._cache.getOrLoad(address)
-      if ((account as any).exists === true) {
+      if (account) {
         return true
       }
-    }
-    if (await this._trie.get(address.buf)) {
-      return true
+    } else {
+      if (await this._trie.get(address.buf)) {
+        return true
+      }
     }
     return false
   }

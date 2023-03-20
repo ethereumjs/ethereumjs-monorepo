@@ -50,7 +50,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     this.storageCache = new Map()
 
     const getCb: getCb = async (address) => {
-      return this.getAccountFromProvider(address)
+      return (await this.getAccountFromProvider(address)).serialize()
     }
     const putCb: putCb = async (_keyBuf, _accountRlp) => {
       return Promise.resolve()
@@ -204,7 +204,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     log(`Verify if ${address.toString()} exists`)
 
     const localAccount = this._cache.get(address)
-    if (!localAccount.isEmpty()) return true
+    if (localAccount) return true
     // Get merkle proof for `address` from provider
     const proof = await this.provider.send('eth_getProof', [address.toString(), [], this.blockTag])
 
@@ -226,7 +226,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * @returns {Promise<Buffer>} - Resolves with the code corresponding to the provided address.
    * Returns an empty `Buffer` if the account has no associated code.
    */
-  async getAccount(address: Address): Promise<Account> {
+  async getAccount(address: Address): Promise<Account | undefined> {
     const account = this._cache.getOrLoad(address)
 
     return account

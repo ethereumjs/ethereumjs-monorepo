@@ -50,10 +50,10 @@ export abstract class BaseStateManager {
   }
 
   /**
-   * Gets the account associated with `address`. Returns an empty account if the account does not exist.
+   * Gets the account associated with `address` or `undefined` if the account does not exist.
    * @param address - Address of the `account` to get
    */
-  async getAccount(address: Address): Promise<Account> {
+  async getAccount(address: Address): Promise<Account | undefined> {
     if (this._cache) {
       const account = await this._cache.getOrLoad(address)
       return account
@@ -84,6 +84,11 @@ export abstract class BaseStateManager {
    */
   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
     const account = await this.getAccount(address)
+    if (!account) {
+      throw new Error(
+        `modifyAccountFields() called on non existing account (address ${address.toString()})`
+      )
+    }
     account.nonce = accountFields.nonce ?? account.nonce
     account.balance = accountFields.balance ?? account.balance
     account.storageRoot = accountFields.storageRoot ?? account.storageRoot
@@ -101,11 +106,6 @@ export abstract class BaseStateManager {
     } else {
       throw 'Cache needs to be activated'
     }
-  }
-
-  async accountIsEmpty(address: Address): Promise<boolean> {
-    const account = await this.getAccount(address)
-    return account.isEmpty()
   }
 
   abstract putContractCode(address: Address, value: Buffer): Promise<void>
