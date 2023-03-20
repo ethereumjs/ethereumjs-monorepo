@@ -215,7 +215,7 @@ export class VMExecution extends Execution {
           continue
         }
         const blockByNumber = await this.chain.getBlock(block.header.number)
-        if (!blockByNumber.hash().equals(block.hash())) {
+        if (!equalsBytes(blockByNumber.hash(), block.hash())) {
           throw Error(`${blockName} not in canonical chain`)
         }
       }
@@ -263,10 +263,9 @@ export class VMExecution extends Execution {
       (!runOnlybatched ||
         (runOnlybatched &&
           canonicalHead.header.number - startHeadBlock.header.number >=
-            BigInt(this.config.numBlocksPerIteration) &&
-          (numExecuted === undefined ||
-            (loop && numExecuted === this.config.numBlocksPerIteration)) &&
-          equalsBytes(startHeadBlock.hash(), canonicalHead.hash()) === false))
+            BigInt(this.config.numBlocksPerIteration))) &&
+      (numExecuted === undefined || (loop && numExecuted === this.config.numBlocksPerIteration)) &&
+      equalsBytes(startHeadBlock.hash(), canonicalHead.hash()) === false
     ) {
       let txCounter = 0
       headBlock = undefined
@@ -327,7 +326,7 @@ export class VMExecution extends Execution {
               if (diffSec > this.MAX_TOLERATED_BLOCK_TIME) {
                 const msg = `Slow block execution for block num=${
                   block.header.number
-                } hash=0x${block.hash().toString('hex')} txs=${block.transactions.length} gasUsed=${
+                } hash=0x${bytesToHex(block.hash())} txs=${block.transactions.length} gasUsed=${
                   result.gasUsed
                 } time=${diffSec}secs`
                 this.config.logger.warn(msg)

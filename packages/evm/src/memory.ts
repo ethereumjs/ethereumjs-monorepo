@@ -67,14 +67,14 @@ export class Memory {
    * @param size - How many bytes to read
    * @param avoidCopy - Avoid memory copy if possible for performance reasons (optional)
    */
-  read(offset: number, size: number, avoidCopy?: boolean): Buffer {
+  read(offset: number, size: number, avoidCopy?: boolean): Uint8Array {
     this.extend(offset, size)
 
     const loaded = this._store.subarray(offset, offset + size)
     if (avoidCopy === true) {
       return loaded
     }
-    const returnBytes = new Uint8ArrayUnsafe(size)
+    const returnBytes = new Uint8Array(size)
     // Copy the stored "buffer" from memory into the return Buffer
 
     returnBytes.set(loaded, 0)

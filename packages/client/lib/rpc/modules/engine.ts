@@ -738,10 +738,10 @@ export class Engine {
     const { headBlockHash, finalizedBlockHash, safeBlockHash } = params[0]
     const payloadAttributes = params[1]
 
-    const safe = toBuffer(safeBlockHash)
-    const finalized = toBuffer(finalizedBlockHash)
+    const safe = toBytes(safeBlockHash)
+    const finalized = toBytes(finalizedBlockHash)
 
-    if (!finalized.equals(zeroBlockHash) && safe.equals(zeroBlockHash)) {
+    if (!equalsBytes(finalized, zeroBlockHash) && equalsBytes(safe, zeroBlockHash)) {
       throw {
         code: INVALID_PARAMS,
         message: 'safe block can not be zero if finalized is not zero',
@@ -764,10 +764,10 @@ export class Engine {
      */
     let headBlock: Block | undefined
     try {
-      headBlock = await this.chain.getBlock(hexStringToBytes(headBlockHash))
+      headBlock = await this.chain.getBlock(toBytes(headBlockHash))
     } catch (error) {
       headBlock =
-        (await this.service.beaconSync?.skeleton.getBlockByHash(hexStringToBytes(headBlockHash))) ??
+        (await this.service.beaconSync?.skeleton.getBlockByHash(toBytes(headBlockHash))) ??
         this.remoteBlocks.get(headBlockHash.slice(2))
       if (headBlock === undefined) {
         this.config.logger.debug(`Forkchoice requested unknown head hash=${short(headBlockHash)}`)
@@ -811,7 +811,7 @@ export class Engine {
           payloadStatus: {
             status: Status.INVALID,
             validationError: null,
-            latestValidHash: bytesToPrefixedHexString(zeros(32)),
+            latestValidHash: bytesToHex(zeros(32)),
           },
           payloadId: null,
         }
@@ -837,8 +837,8 @@ export class Engine {
      */
     let safeBlock, finalizedBlock
 
-    if (!safe.equals(zeroBlockHash)) {
-      if (safe.equals(headBlock.hash())) {
+    if (!equalsBytes(safe, zeroBlockHash)) {
+      if (equalsBytes(safe, headBlock.hash())) {
         safeBlock = headBlock
       } else {
         try {
@@ -856,7 +856,7 @@ export class Engine {
       safeBlock = undefined
     }
 
-    if (!finalized.equals(zeroBlockHash)) {
+    if (!equalsBytes(finalized, zeroBlockHash)) {
       try {
         // Right now only check if the block is available, canonicality check is done
         // in setHead after chain.putBlocks so as to reflect latest canonical chain
@@ -907,34 +907,6 @@ export class Engine {
       this.config.updateSynchronizedState(headBlock.header)
       if (!isPrevSynced && this.chain.config.synchronized) {
         this.service.txPool.checkRunState()
-      }
-    }
-    /*
-     * Process safe and finalized block
-     * Allowed to have zero value while transition block is finalizing
-     */
-    const zeroBlockHash = zeros(32)
-    const safe = hexStringToBytes(safeBlockHash)
-    if (!equalsBytes(safe, headBlock.hash()) && !equalsBytes(safe, zeroBlockHash)) {
-      try {
-        await this.chain.getBlock(safe)
-      } catch (error) {
-        const message = 'safe block not available'
-        throw {
-          code: INVALID_PARAMS,
-          message,
-        }
-      }
-    }
-    const finalized = hexStringToBytes(finalizedBlockHash)
-    if (!equalsBytes(finalized, zeroBlockHash)) {
-      try {
-        await this.chain.getBlock(finalized)
-      } catch (error) {
-        throw {
-          message: 'finalized block not available',
-          code: INVALID_PARAMS,
-        }
       }
     }
 

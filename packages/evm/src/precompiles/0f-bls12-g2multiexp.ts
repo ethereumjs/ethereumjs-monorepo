@@ -21,7 +21,7 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
   const inputData = opts.data
 
   if (inputData.length === 0) {
-    if (opts._debug) {
+    if (opts._debug !== undefined) {
       opts._debug(`BLS12G2MULTIEXP (0x0f) failed: Empty input`)
     }
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit) // follow Geths implementation
@@ -45,7 +45,7 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   const gasUsed = (gasUsedPerPair * BigInt(numPairs) * BigInt(gasDiscountMultiplier)) / BigInt(1000)
-  if (opts._debug) {
+  if (opts._debug !== undefined) {
     opts._debug(
       `Run BLS12G2MULTIEXP (0x0f) precompile data=${short(opts.data)} length=${
         opts.data.length
@@ -54,14 +54,14 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   if (opts.gasLimit < gasUsed) {
-    if (opts._debug) {
+    if (opts._debug !== undefined) {
       opts._debug(`BLS12G2MULTIEXP (0x0f) failed: OOG`)
     }
     return OOGResult(opts.gasLimit)
   }
 
   if (inputData.length % 288 !== 0) {
-    if (opts._debug) {
+    if (opts._debug !== undefined) {
       opts._debug(`BLS12G2MULTIEXP (0x0f) failed: Invalid input length length=${inputData.length}`)
     }
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
@@ -89,7 +89,7 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
         zeroByteCheck[index][1] + pairStart
       )
       if (!(equalsBytes(slicedBuffer, zeroBytes16) === true)) {
-        if (opts._debug) {
+        if (opts._debug !== undefined) {
           opts._debug(`BLS12G2MULTIEXP (0x0f) failed: Point not on curve`)
         }
         return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
@@ -99,7 +99,7 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
     try {
       G2 = BLS12_381_ToG2Point(opts.data.subarray(pairStart, pairStart + 256), mcl)
     } catch (e: any) {
-      if (opts._debug) {
+      if (opts._debug !== undefined) {
         opts._debug(`BLS12G2MULTIEXP (0x0f) failed: ${e.message}`)
       }
       return EvmErrorResult(e, opts.gasLimit)
@@ -114,7 +114,7 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
 
   const returnValue = BLS12_381_FromG2Point(result)
 
-  if (opts._debug) {
+  if (opts._debug !== undefined) {
     opts._debug(`BLS12G2MULTIEXP (0x0f) return value=${returnValue.toString('hex')}`)
   }
 

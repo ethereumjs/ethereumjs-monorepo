@@ -1,5 +1,5 @@
 import { short } from '@ethereumjs/util'
-import { equalsBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
 
 import { EvmErrorResult, OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
@@ -16,7 +16,7 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
 
   // note: the gas used is constant; even if the input is incorrect.
   const gasUsed = opts._common.paramByEIP('gasPrices', 'Bls12381MapG2Gas', 2537) ?? BigInt(0)
-  if (opts._debug) {
+  if (opts._debug !== undefined) {
     opts._debug(
       `Run BLS12MAPFP2TOG2 (0x12) precompile data=${short(opts.data)} length=${
         opts.data.length
@@ -25,14 +25,14 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   if (opts.gasLimit < gasUsed) {
-    if (opts._debug) {
+    if (opts._debug !== undefined) {
       opts._debug(`BLS12MAPFP2TOG2 (0x12) failed: OOG`)
     }
     return OOGResult(opts.gasLimit)
   }
 
   if (inputData.length !== 128) {
-    if (opts._debug) {
+    if (opts._debug !== undefined) {
       opts._debug(`BLS12MAPFP2TOG2 (0x12) failed: Invalid input length length=${inputData.length}`)
     }
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
@@ -48,7 +48,7 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
   for (const index in zeroByteCheck) {
     const slicedBuffer = opts.data.subarray(zeroByteCheck[index][0], zeroByteCheck[index][1])
     if (!(equalsBytes(slicedBuffer, zeroBytes16) === true)) {
-      if (opts._debug) {
+      if (opts._debug !== undefined) {
         opts._debug(`BLS12MAPFP2TOG2 (0x12) failed: Point not on curve`)
       }
       return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
@@ -61,7 +61,7 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
   try {
     Fp2Point = BLS12_381_ToFp2Point(opts.data.subarray(0, 64), opts.data.subarray(64, 128), mcl)
   } catch (e: any) {
-    if (opts._debug) {
+    if (opts._debug !== undefined) {
       opts._debug(`BLS12MAPFP2TOG2 (0x12) failed: ${e.message}`)
     }
     return EvmErrorResult(e, opts.gasLimit)
@@ -71,8 +71,8 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
 
   const returnValue = BLS12_381_FromG2Point(result)
 
-  if (opts._debug) {
-    opts._debug(`BLS12MAPFP2TOG2 (0x12) return value=${returnValue.toString('hex')}`)
+  if (opts._debug !== undefined) {
+    opts._debug(`BLS12MAPFP2TOG2 (0x12) return value=${bytesToHex(returnValue)}`)
   }
 
   return {

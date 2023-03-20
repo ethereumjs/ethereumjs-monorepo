@@ -1,4 +1,11 @@
-import { bigIntToBytes, bytesToBigInt, setLengthLeft, setLengthRight } from '@ethereumjs/util'
+import {
+  bigIntToBytes,
+  bytesToBigInt,
+  bytesToHex,
+  setLengthLeft,
+  setLengthRight,
+  short,
+} from '@ethereumjs/util'
 
 import { OOGResult } from '../evm'
 
@@ -110,7 +117,7 @@ export function precompile05(opts: PrecompileInput): ExecResult {
       gasUsed = BigInt(200)
     }
   }
-  if (opts._debug) {
+  if (opts._debug !== undefined) {
     opts._debug(
       `Run MODEXP (0x05) precompile data=${short(opts.data)} length=${opts.data.length} gasLimit=${
         opts.gasLimit
@@ -119,7 +126,7 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   }
 
   if (opts.gasLimit < gasUsed) {
-    if (opts._debug) {
+    if (opts._debug !== undefined) {
       opts._debug(`MODEXP (0x05) failed: OOG`)
     }
     return OOGResult(opts.gasLimit)
@@ -143,7 +150,7 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   const maxSize = BigInt(2147483647) // @ethereumjs/util setLengthRight limitation
 
   if (bLen > maxSize || eLen > maxSize || mLen > maxSize) {
-    if (opts._debug) {
+    if (opts._debug !== undefined) {
       opts._debug(`MODEXP (0x05) failed: OOG`)
     }
     return OOGResult(opts.gasLimit)
@@ -154,7 +161,7 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   const M = bytesToBigInt(setLengthRight(data.subarray(Number(mStart), Number(mEnd)), Number(mLen)))
 
   if (mEnd > maxInt) {
-    if (opts._debug) {
+    if (opts._debug !== undefined) {
       opts._debug(`MODEXP (0x05) failed: OOG`)
     }
     return OOGResult(opts.gasLimit)
@@ -167,9 +174,9 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     R = expmod(B, E, M)
   }
 
-  const res = setLengthLeft(bigIntToBuffer(R), Number(mLen))
-  if (opts._debug) {
-    opts._debug(`MODEXP (0x05) return value=${res.toString('hex')}`)
+  const res = setLengthLeft(bigIntToBytes(R), Number(mLen))
+  if (opts._debug !== undefined) {
+    opts._debug(`MODEXP (0x05) return value=${bytesToHex(res)}`)
   }
 
   return {

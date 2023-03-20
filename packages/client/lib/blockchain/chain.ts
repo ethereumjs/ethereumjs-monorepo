@@ -1,6 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
+import { equalsBytes } from 'ethereum-cryptography/utils'
 
 import { Event } from '../types'
 
@@ -374,7 +375,7 @@ export class Chain {
     for (const block of blocks) {
       if (this.headers.finalized !== null && block.header.number <= this.headers.finalized.number) {
         const canonicalBlock = await this.getBlock(block.header.number)
-        if (!canonicalBlock.hash().equals(block.hash())) {
+        if (!equalsBytes(canonicalBlock.hash(), block.hash())) {
           throw Error(
             `Invalid putBlock for block=${block.header.number} before finalized=${this.headers.finalized.number}`
           )

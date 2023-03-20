@@ -5,6 +5,7 @@ import {
   bytesToHex,
   concatBytesUnsafe,
   setLengthLeft,
+  short,
 } from '@ethereumjs/util'
 
 import { EvmErrorResult } from '../evm'
@@ -19,7 +20,7 @@ export const BLS_MODULUS = BigInt(
 
 export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
   const gasUsed = opts._common.param('gasPrices', 'kzgPointEvaluationGasPrecompilePrice')
-  if (opts._debug) {
+  if (opts._debug !== undefined) {
     opts._debug(
       `Run KZG_POINT_EVALUATION (0x14) precompile data=${short(opts.data)} length=${
         opts.data.length
@@ -36,7 +37,7 @@ export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
   const kzgProof = opts.data.subarray(144, 192)
 
   if (bytesToBigInt(z) >= BLS_MODULUS || bytesToBigInt(y) >= BLS_MODULUS) {
-    if (opts._debug) {
+    if (opts._debug !== undefined) {
       opts._debug(`KZG_POINT_EVALUATION (0x14) failed: POINT_GREATER_THAN_BLS_MODULUS`)
     }
 
@@ -44,17 +45,17 @@ export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   if (bytesToHex(computeVersionedHash(commitment, version)) !== bytesToHex(versionedHash)) {
-    if (opts._debug) {
+    if (opts._debug !== undefined) {
       opts._debug(`KZG_POINT_EVALUATION (0x14) failed: INVALID_COMMITMENT`)
     }
     return EvmErrorResult(new EvmError(ERROR.INVALID_COMMITMENT), opts.gasLimit)
   }
 
-  if (opts._debug) {
+  if (opts._debug !== undefined) {
     opts._debug(
-      `KZG_POINT_EVALUATION (0x14): proof verification with commitment=${commitment.toString(
-        'hex'
-      )} z=${z.toString('hex')} y=${y.toString('hex')} kzgProof=${kzgProof.toString('hex')}`
+      `KZG_POINT_EVALUATION (0x14): proof verification with commitment=${bytesToHex(
+        commitment
+      )} z=${bytesToHex(z)} y=${bytesToHex(y)} kzgProof=${bytesToHex(kzgProof)}`
     )
   }
   kzg.verifyKzgProof(commitment, z, y, kzgProof)
@@ -63,7 +64,7 @@ export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
   const fieldElementsBuffer = setLengthLeft(bigIntToBytes(fieldElementsPerBlob), 32)
   const modulusBuffer = setLengthLeft(bigIntToBytes(BLS_MODULUS), 32)
 
-  if (opts._debug) {
+  if (opts._debug !== undefined) {
     opts._debug(
       `KZG_POINT_EVALUATION (0x14) return fieldElements=${bytesToHex(
         fieldElementsBuffer

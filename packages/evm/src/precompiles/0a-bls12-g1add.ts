@@ -16,7 +16,7 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
 
   // note: the gas used is constant; even if the input is incorrect.
   const gasUsed = opts._common.paramByEIP('gasPrices', 'Bls12381G1AddGas', 2537) ?? BigInt(0)
-  if (opts._debug) {
+  if (opts._debug !== undefined) {
     opts._debug(
       `Run BLS12G1ADD (0x0a) precompile data=${short(opts.data)} length=${
         opts.data.length
@@ -25,14 +25,14 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   if (opts.gasLimit < gasUsed) {
-    if (opts._debug) {
+    if (opts._debug !== undefined) {
       opts._debug(`BLS12G1ADD (0x0a) failed: OOG`)
     }
     return OOGResult(opts.gasLimit)
   }
 
   if (inputData.length !== 256) {
-    if (opts._debug) {
+    if (opts._debug !== undefined) {
       opts._debug(`BLS12G1ADD (0x0a) failed: Invalid input length length=${inputData.length}`)
     }
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
@@ -50,7 +50,7 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   for (const index in zeroByteCheck) {
     const slicedBuffer = opts.data.subarray(zeroByteCheck[index][0], zeroByteCheck[index][1])
     if (!(equalsBytes(slicedBuffer, zeroBytes16) === true)) {
-      if (opts._debug) {
+      if (opts._debug !== undefined) {
         opts._debug(`BLS12G1ADD (0x0a) failed: Point not on curve`)
       }
       return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
@@ -64,7 +64,7 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
     mclPoint1 = BLS12_381_ToG1Point(opts.data.subarray(0, 128), mcl)
     mclPoint2 = BLS12_381_ToG1Point(opts.data.subarray(128, 256), mcl)
   } catch (e: any) {
-    if (opts._debug) {
+    if (opts._debug !== undefined) {
       opts._debug(`BLS12G1ADD (0x0a) failed: ${e.message}`)
     }
     return EvmErrorResult(e, opts.gasLimit)
@@ -74,7 +74,7 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
 
   const returnValue = BLS12_381_FromG1Point(result)
 
-  if (opts._debug) {
+  if (opts._debug !== undefined) {
     opts._debug(`BLS12G1ADD (0x0a) return value=${returnValue.toString('hex')}`)
   }
 
