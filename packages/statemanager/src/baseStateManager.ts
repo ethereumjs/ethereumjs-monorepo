@@ -1,9 +1,10 @@
+import { Account } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import type { Cache } from './cache'
 import type { AccountFields } from './interface'
 import type { DefaultStateManagerOpts } from './stateManager'
-import type { Account, Address } from '@ethereumjs/util'
+import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 /**
@@ -83,11 +84,9 @@ export abstract class BaseStateManager {
    * @param accountFields - Object containing account fields and values to modify
    */
   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
-    const account = await this.getAccount(address)
+    let account = await this.getAccount(address)
     if (!account) {
-      throw new Error(
-        `modifyAccountFields() called on non existing account (address ${address.toString()})`
-      )
+      account = new Account()
     }
     account.nonce = accountFields.nonce ?? account.nonce
     account.balance = accountFields.balance ?? account.balance

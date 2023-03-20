@@ -337,6 +337,7 @@ tape('ensure that sstores pay for the right gas costs pre-byzantium', async (t) 
   // this should thus go OOG
   const code = '3460005500'
 
+  await eei.putAccount(caller, new Account())
   await eei.putContractCode(address, Buffer.from(code, 'hex'))
 
   const account = await eei.getAccount(caller)
@@ -460,7 +461,7 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
   const evm = await EVM.create({ common, eei })
   const code = '3034526020600760203460045afa602034343e604034f3'
 
-  const account = await eei.getAccount(caller)
+  const account = new Account()
   account!.nonce = BigInt(1) // ensure nonce for contract is correct
   account!.balance = BigInt(10000000000000000)
   await eei.putAccount(caller, account!)

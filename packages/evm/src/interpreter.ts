@@ -1,5 +1,5 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
-import { MAX_UINT64, bigIntToHex, bufferToBigInt, intToHex } from '@ethereumjs/util'
+import { Account, MAX_UINT64, bigIntToHex, bufferToBigInt, intToHex } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { EOF } from './eof'
@@ -13,7 +13,7 @@ import type { EVM, EVMResult } from './evm'
 import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes'
 import type { Block, EEIInterface, Log } from './types'
 import type { Common } from '@ethereumjs/common'
-import type { Account, Address } from '@ethereumjs/util'
+import type { Address } from '@ethereumjs/util'
 
 const debugGas = createDebugLogger('evm:eei:gas')
 
@@ -969,9 +969,9 @@ export class Interpreter {
     this._result.selfdestruct[this._env.address.buf.toString('hex')] = toAddress.buf
 
     // Add to beneficiary balance
-    const toAccount = await this._eei.getAccount(toAddress)
+    let toAccount = await this._eei.getAccount(toAddress)
     if (!toAccount) {
-      throw new Error('could not read to account')
+      toAccount = new Account()
     }
     toAccount.balance += this._env.contract.balance
     await this._eei.putAccount(toAddress, toAccount)

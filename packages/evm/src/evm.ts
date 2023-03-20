@@ -346,9 +346,9 @@ export class EVM implements EVMInterface {
   }
 
   protected async _executeCall(message: MessageWithTo): Promise<EVMResult> {
-    const account = await this.eei.getAccount(message.authcallOrigin ?? message.caller)
+    let account = await this.eei.getAccount(message.authcallOrigin ?? message.caller)
     if (!account) {
-      throw new Error(`message caller account could not be read`)
+      account = new Account()
     }
     let errorMessage
     // Reduce tx value from sender
@@ -360,9 +360,9 @@ export class EVM implements EVMInterface {
       }
     }
     // Load `to` account
-    const toAccount = await this.eei.getAccount(message.to)
+    let toAccount = await this.eei.getAccount(message.to)
     if (!toAccount) {
-      throw new Error(`to account could not be read`)
+      toAccount = new Account()
     }
     // Add tx value to the `to` account
     if (!message.delegatecall) {
@@ -424,9 +424,9 @@ export class EVM implements EVMInterface {
   }
 
   protected async _executeCreate(message: Message): Promise<EVMResult> {
-    const account = await this.eei.getAccount(message.caller)
+    let account = await this.eei.getAccount(message.caller)
     if (!account) {
-      throw new Error(`message caller account could not be read`)
+      account = new Account()
     }
     // Reduce tx value from sender
     await this._reduceSenderBalance(account, message)
@@ -455,7 +455,7 @@ export class EVM implements EVMInterface {
     }
     let toAccount = await this.eei.getAccount(message.to)
     if (!toAccount) {
-      throw new Error(`to account could not be read`)
+      toAccount = new Account()
     }
 
     // Check for collision
@@ -487,7 +487,7 @@ export class EVM implements EVMInterface {
 
     toAccount = await this.eei.getAccount(message.to)
     if (!toAccount) {
-      throw new Error(`to account could not be read`)
+      toAccount = new Account()
     }
     // EIP-161 on account creation and CREATE execution
     if (this._common.gteHardfork(Hardfork.SpuriousDragon)) {
@@ -651,9 +651,9 @@ export class EVM implements EVMInterface {
     message: Message,
     opts: InterpreterOpts = {}
   ): Promise<ExecResult> {
-    const contract = await this.eei.getAccount(message.to ?? Address.zero())
+    let contract = await this.eei.getAccount(message.to ?? Address.zero())
     if (!contract) {
-      throw new Error(`contract account could not be read`)
+      contract = new Account()
     }
     const env = {
       address: message.to ?? Address.zero(),
@@ -733,7 +733,7 @@ export class EVM implements EVMInterface {
       if (opts.skipBalance === true) {
         callerAccount = await this.eei.getAccount(caller)
         if (!callerAccount) {
-          throw new Error(`caller account could not be read`)
+          callerAccount = new Account()
         }
         if (callerAccount.balance < value) {
           // if skipBalance and balance less than value, set caller balance to `value` to ensure sufficient funds
@@ -764,7 +764,7 @@ export class EVM implements EVMInterface {
         callerAccount = await this.eei.getAccount(message.caller)
       }
       if (!callerAccount) {
-        throw new Error(`caller account could not be read`)
+        callerAccount = new Account()
       }
       callerAccount.nonce++
       await this.eei.putAccount(message.caller, callerAccount)
@@ -929,9 +929,9 @@ export class EVM implements EVMInterface {
     if (message.salt) {
       addr = generateAddress2(message.caller.buf, message.salt, message.code as Buffer)
     } else {
-      const acc = await this.eei.getAccount(message.caller)
+      let acc = await this.eei.getAccount(message.caller)
       if (!acc) {
-        throw new Error(`caller account could not be read`)
+        acc = new Account()
       }
       const newNonce = acc.nonce - BigInt(1)
       addr = generateAddress(message.caller.buf, bigIntToBuffer(newNonce))
@@ -966,9 +966,9 @@ export class EVM implements EVMInterface {
   }
 
   protected async _touchAccount(address: Address): Promise<void> {
-    const account = await this.eei.getAccount(address)
+    let account = await this.eei.getAccount(address)
     if (!account) {
-      throw new Error(`account to mark as touched could not be read`)
+      account = new Account()
     }
     return this.eei.putAccount(address, account)
   }

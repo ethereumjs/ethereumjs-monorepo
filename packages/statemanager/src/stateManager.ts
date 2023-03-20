@@ -234,9 +234,9 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async _lookupStorageTrie(address: Address): Promise<Trie> {
     // from state trie
-    const account = await this.getAccount(address)
+    let account = await this.getAccount(address)
     if (!account) {
-      throw new Error('_lookupStorageTrie() can only be called for an existing account')
+      account = new Account()
     }
     const storageTrie = this._trie.copy(false)
     storageTrie.root(account.storageRoot)
@@ -300,9 +300,9 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
         this._storageTries[addressHex] = storageTrie
 
         // update contract storageRoot
-        const contract = await this.getAccount(address)
+        let contract = await this.getAccount(address)
         if (!contract) {
-          throw new Error('_modifyContractStorage() called on a non-existing contract')
+          contract = new Account()
         }
         contract.storageRoot = storageTrie.root()
 
