@@ -31,8 +31,8 @@ export function ecsign(
 ): ECDSASignature {
   const [signature, recovery] = signSync(msgHash, privateKey, { recovered: true, der: false })
 
-  const r = signature.slice(0, 32)
-  const s = signature.slice(32, 64)
+  const r = signature.subarray(0, 32)
+  const s = signature.subarray(32, 64)
 
   const v =
     chainId === undefined
@@ -74,7 +74,7 @@ export const ecrecover = function (
   }
 
   const senderPubKey = recoverPublicKey(msgHash, signature, Number(recovery))
-  return senderPubKey.slice(1)
+  return senderPubKey.subarray(1)
 }
 
 /**
@@ -139,14 +139,14 @@ export const fromRpcSig = function (sig: string): ECDSASignature {
   let s: Uint8Array
   let v: bigint
   if (bytes.length >= 65) {
-    r = bytes.slice(0, 32)
-    s = bytes.slice(32, 64)
-    v = bytesToBigInt(bytes.slice(64))
+    r = bytes.subarray(0, 32)
+    s = bytes.subarray(32, 64)
+    v = bytesToBigInt(bytes.subarray(64))
   } else if (bytes.length === 64) {
     // Compact Signature Representation (https://eips.ethereum.org/EIPS/eip-2098)
-    r = bytes.slice(0, 32)
-    s = bytes.slice(32, 64)
-    v = BigInt(bytesToInt(bytes.slice(32, 33)) >> 7)
+    r = bytes.subarray(0, 32)
+    s = bytes.subarray(32, 64)
+    v = BigInt(bytesToInt(bytes.subarray(32, 33)) >> 7)
     s[0] &= 0x7f
   } else {
     throw new Error('Invalid signature length')

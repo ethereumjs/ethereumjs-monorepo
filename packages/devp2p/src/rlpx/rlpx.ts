@@ -300,7 +300,7 @@ export class RLPx extends EventEmitter {
 
       // Randomly distributed selector based on peer ID
       // to decide on subdivided execution
-      const selector = bytes2int((item.peer.id! as Uint8Array).slice(0, 1)) % 10
+      const selector = bytes2int((item.peer.id! as Uint8Array).subarray(0, 1)) % 10
       if (selector === this._refillIntervalSelectionCounter) {
         this._connectToPeer(item.peer)
         return false

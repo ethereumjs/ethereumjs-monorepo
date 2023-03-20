@@ -52,7 +52,7 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
   ]
 
   for (const index in zeroByteCheck) {
-    const slicedBuffer = opts.data.slice(zeroByteCheck[index][0], zeroByteCheck[index][1])
+    const slicedBuffer = opts.data.subarray(zeroByteCheck[index][0], zeroByteCheck[index][1])
     if (!(equalsBytes(slicedBuffer, zeroBytes16) === true)) {
       if (opts._debug) {
         opts._debug(`BLS12G2MUL (0x0e) failed: Point not on curve`)
@@ -66,7 +66,7 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
   // convert input to mcl G2 point/Fr point, add them, and convert the output to a Buffer.
   let mclPoint
   try {
-    mclPoint = BLS12_381_ToG2Point(opts.data.slice(0, 256), mcl)
+    mclPoint = BLS12_381_ToG2Point(opts.data.subarray(0, 256), mcl)
   } catch (e: any) {
     if (opts._debug) {
       opts._debug(`BLS12G2MUL (0x0e) failed: ${e.message}`)
@@ -74,7 +74,7 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
     return EvmErrorResult(e, opts.gasLimit)
   }
 
-  const frPoint = BLS12_381_ToFrPoint(opts.data.slice(256, 288), mcl)
+  const frPoint = BLS12_381_ToFrPoint(opts.data.subarray(256, 288), mcl)
 
   const result = mcl.mul(mclPoint, frPoint)
 

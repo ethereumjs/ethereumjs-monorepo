@@ -84,7 +84,7 @@ export function getDataSlice(data: Uint8Array, offset: bigint, length: bigint): 
     end = len
   }
 
-  data = data.slice(Number(offset), Number(end))
+  data = data.subarray(Number(offset), Number(end))
   // Right-pad with zeros to fill dataLength bytes
   data = setLengthRight(data, Number(length))
 

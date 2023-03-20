@@ -98,7 +98,7 @@ export const getEOFCode = (code: Uint8Array) => {
     return code
   } else {
     const codeStart = sectionSizes.data > 0 ? 10 : 7
-    return code.slice(codeStart, codeStart + sectionSizes.code)
+    return code.subarray(codeStart, codeStart + sectionSizes.code)
   }
 }
 

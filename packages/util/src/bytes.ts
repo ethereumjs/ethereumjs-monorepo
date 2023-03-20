@@ -89,12 +89,12 @@ const setLength = function (msg: Uint8Array, length: number, right: boolean) {
     if (msg.length < length) {
       return new Uint8Array([...msg, ...zeros(length - msg.length)])
     }
-    return msg.slice(0, length)
+    return msg.subarray(0, length)
   } else {
     if (msg.length < length) {
       return new Uint8Array([...zeros(length - msg.length), ...msg])
     }
-    return msg.slice(-length)
+    return msg.subarray(-length)
   }
 }
 

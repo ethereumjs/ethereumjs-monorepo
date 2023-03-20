@@ -24,7 +24,7 @@ export function pk2id(pk: Uint8Array): Uint8Array {
   if (pk.length === 33) {
     pk = publicKeyConvert(pk, false)
   }
-  return pk.slice(1)
+  return pk.subarray(1)
 }
 
 export function id2pk(id: Uint8Array): Uint8Array {
@@ -200,11 +200,11 @@ export const ipToBytes = (ip: string, bytes?: Uint8Array, offset: number = 0) =>
 
       if (isv4) {
         v4Bytes = ipToBytes(sections[i])
-        sections[i] = bytesToHex(v4Bytes.slice(0, 2))
+        sections[i] = bytesToHex(v4Bytes.subarray(0, 2))
       }
 
       if (v4Bytes.length > 0 && ++i < 8) {
-        sections.splice(i, 0, bytesToHex(v4Bytes.slice(2, 4)))
+        sections.splice(i, 0, bytesToHex(v4Bytes.subarray(2, 4)))
       }
     }
 

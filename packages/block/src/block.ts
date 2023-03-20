@@ -301,7 +301,7 @@ export class Block {
   }
 
   /**
-   * Returns a Uint8Array Array of the raw Bytes of this block, in order.
+   * Returns a Array of the raw Bytes Arays of this block, in order.
    */
   raw(): BlockBytes {
     const bytesArray = <BlockBytes>[

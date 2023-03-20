@@ -143,8 +143,8 @@ export const gasDiscountPairs = [
 // this does /NOT/ do any input checks. the input Buffer needs to be of length 128
 // it does raise an error if the point is not on the curve.
 function BLS12_381_ToG1Point(input: Uint8Array, mcl: any): any {
-  const p_x = bytesToHex(input.slice(16, 64))
-  const p_y = bytesToHex(input.slice(80, 128))
+  const p_x = bytesToHex(input.subarray(16, 64))
+  const p_y = bytesToHex(input.subarray(80, 128))
 
   const ZeroString48Bytes = '0'.repeat(96)
   if (p_x === p_y && p_x === ZeroString48Bytes) {
@@ -203,10 +203,10 @@ function BLS12_381_FromG1Point(input: any): Uint8Array {
 // convert an input Buffer to a mcl G2 point
 // this does /NOT/ do any input checks. the input Buffer needs to be of length 256
 function BLS12_381_ToG2Point(input: Uint8Array, mcl: any): any {
-  const p_x_1 = input.slice(0, 64)
-  const p_x_2 = input.slice(64, 128)
-  const p_y_1 = input.slice(128, 192)
-  const p_y_2 = input.slice(192, 256)
+  const p_x_1 = input.subarray(0, 64)
+  const p_x_2 = input.subarray(64, 128)
+  const p_y_1 = input.subarray(128, 192)
+  const p_y_2 = input.subarray(192, 256)
 
   const ZeroBytes64 = new Uint8Array(64)
   // check if we have to do with a zero point
@@ -318,8 +318,8 @@ function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Arr
   const fp_y = new mcl.Fp()
 
   const fp2 = new mcl.Fp2()
-  fp_x.setStr(bytesToHex(fpXCoordinate.slice(16)), 16)
-  fp_y.setStr(bytesToHex(fpYCoordinate.slice(16)), 16)
+  fp_x.setStr(bytesToHex(fpXCoordinate.subarray(16)), 16)
+  fp_y.setStr(bytesToHex(fpYCoordinate.subarray(16)), 16)
 
   fp2.set_a(fp_x)
   fp2.set_b(fp_y)

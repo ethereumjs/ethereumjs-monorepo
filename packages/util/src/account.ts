@@ -207,11 +207,11 @@ export const generateAddress = function (from: Uint8Array, nonce: Uint8Array): U
   if (bytesToBigInt(nonce) === BigInt(0)) {
     // in RLP we want to encode null in the case of zero nonce
     // read the RLP documentation for an answer if you dare
-    return keccak256(RLP.encode([from, Uint8Array.from([])])).slice(-20)
+    return keccak256(RLP.encode([from, Uint8Array.from([])])).subarray(-20)
   }
 
   // Only take the lower 160bits of the hash
-  return keccak256(RLP.encode([from, nonce])).slice(-20)
+  return keccak256(RLP.encode([from, nonce])).subarray(-20)
 }
 
 /**
@@ -238,7 +238,7 @@ export const generateAddress2 = function (
 
   const address = keccak256(concatBytes(hexToBytes('ff'), from, salt, keccak256(initCode)))
 
-  return address.slice(-20)
+  return address.subarray(-20)
 }
 
 /**
@@ -288,13 +288,13 @@ export const isValidPublic = function (publicKey: Uint8Array, sanitize: boolean 
 export const pubToAddress = function (pubKey: Uint8Array, sanitize: boolean = false): Uint8Array {
   assertIsBytes(pubKey)
   if (sanitize && pubKey.length !== 64) {
-    pubKey = Point.fromHex(pubKey).toRawBytes(false).slice(1)
+    pubKey = Point.fromHex(pubKey).toRawBytes(false).subarray(1)
   }
   if (pubKey.length !== 64) {
     throw new Error('Expected pubKey to be of length 64')
   }
   // Only take the lower 160bits of the hash
-  return keccak256(pubKey).slice(-20)
+  return keccak256(pubKey).subarray(-20)
 }
 export const publicToAddress = pubToAddress
 
@@ -305,7 +305,7 @@ export const publicToAddress = pubToAddress
 export const privateToPublic = function (privateKey: Uint8Array): Uint8Array {
   assertIsBytes(privateKey)
   // skip the type flag and use the X, Y points
-  return Point.fromPrivateKey(privateKey).toRawBytes(false).slice(1)
+  return Point.fromPrivateKey(privateKey).toRawBytes(false).subarray(1)
 }
 
 /**
@@ -322,7 +322,7 @@ export const privateToAddress = function (privateKey: Uint8Array): Uint8Array {
 export const importPublic = function (publicKey: Uint8Array): Uint8Array {
   assertIsBytes(publicKey)
   if (publicKey.length !== 64) {
-    publicKey = Point.fromHex(publicKey).toRawBytes(false).slice(1)
+    publicKey = Point.fromHex(publicKey).toRawBytes(false).subarray(1)
   }
   return publicKey
 }

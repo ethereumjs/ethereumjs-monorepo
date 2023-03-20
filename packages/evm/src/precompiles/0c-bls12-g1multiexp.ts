@@ -84,7 +84,7 @@ export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
     // zero bytes check
     const pairStart = 160 * k
     for (const index in zeroByteCheck) {
-      const slicedBuffer = opts.data.slice(
+      const slicedBuffer = opts.data.subarray(
         zeroByteCheck[index][0] + pairStart,
         zeroByteCheck[index][1] + pairStart
       )
@@ -97,14 +97,14 @@ export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
     }
     let G1
     try {
-      G1 = BLS12_381_ToG1Point(opts.data.slice(pairStart, pairStart + 128), mcl)
+      G1 = BLS12_381_ToG1Point(opts.data.subarray(pairStart, pairStart + 128), mcl)
     } catch (e: any) {
       if (opts._debug) {
         opts._debug(`BLS12MULTIEXP (0x0c) failed: ${e.message}`)
       }
       return EvmErrorResult(e, opts.gasLimit)
     }
-    const Fr = BLS12_381_ToFrPoint(opts.data.slice(pairStart + 128, pairStart + 160), mcl)
+    const Fr = BLS12_381_ToFrPoint(opts.data.subarray(pairStart + 128, pairStart + 160), mcl)
 
     G1Array.push(G1)
     FrArray.push(Fr)

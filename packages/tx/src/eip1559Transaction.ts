@@ -75,15 +75,15 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
    * accessList, signatureYParity, signatureR, signatureS])`
    */
   public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
-    if (!equalsBytes(serialized.slice(0, 1), TRANSACTION_TYPE_BYTES)) {
+    if (!equalsBytes(serialized.subarray(0, 1), TRANSACTION_TYPE_BYTES)) {
       throw new Error(
         `Invalid serialized tx input: not an EIP-1559 transaction (wrong tx type, expected: ${TRANSACTION_TYPE}, received: ${bytesToHex(
-          serialized.slice(0, 1)
+          serialized.subarray(0, 1)
         )}`
       )
     }
 
-    const values = RLP.decode(serialized.slice(1))
+    const values = RLP.decode(serialized.subarray(1))
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized tx input: must be array')

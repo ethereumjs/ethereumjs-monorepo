@@ -169,7 +169,7 @@ export function precompile09(opts: PrecompileInput): ExecResult {
       exceptionError: new EvmError(ERROR.OUT_OF_RANGE),
     }
   }
-  const lastByte = data.slice(212, 213)[0]
+  const lastByte = data.subarray(212, 213)[0]
   if (lastByte !== 1 && lastByte !== 0) {
     if (opts._debug) {
       opts._debug(`BLAKE2F (0x09) failed: OUT_OF_RANGE lastByte=${lastByte}`)
@@ -181,10 +181,10 @@ export function precompile09(opts: PrecompileInput): ExecResult {
     }
   }
 
-  const rounds = new DataView(data.slice(0, 4).buffer).getUint32(0)
-  const hRaw = data.slice(4, 68)
-  const mRaw = data.slice(68, 196)
-  const tRaw = data.slice(196, 212)
+  const rounds = new DataView(data.subarray(0, 4).buffer).getUint32(0)
+  const hRaw = data.subarray(4, 68)
+  const mRaw = data.subarray(68, 196)
+  const tRaw = data.subarray(196, 212)
   // final
   const f = lastByte === 1
 

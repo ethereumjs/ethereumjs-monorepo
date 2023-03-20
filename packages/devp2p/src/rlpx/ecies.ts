@@ -31,7 +31,7 @@ function ecdhX(publicKey: Uint8Array, privateKey: Uint8Array) {
     const pubKey = new Uint8Array(33)
     pubKey[0] = (y[31] & 1) === 0 ? 0x02 : 0x03
     pubKey.set(x, 1)
-    return pubKey.slice(1)
+    return pubKey.subarray(1)
   }
   return ecdh(publicKey, privateKey, { hashfn }, new Uint8Array(32))
 }
@@ -56,7 +56,7 @@ function concatKDF(keyMaterial: Uint8Array, keyLength: number) {
     )
   }
 
-  return concatBytes(...bytes).slice(0, keyLength)
+  return concatBytes(...bytes).subarray(0, keyLength)
 }
 
 export class ECIES {
@@ -97,8 +97,8 @@ export class ECIES {
     if (!this._remotePublicKey) return
     const x = ecdhX(this._remotePublicKey, privateKey)
     const key = concatKDF(x, 32)
-    const ekey = key.slice(0, 16) // encryption key
-    const mkey = crypto.createHash('sha256').update(key.slice(16, 32)).digest() // MAC key
+    const ekey = key.subarray(0, 16) // encryption key
+    const mkey = crypto.createHash('sha256').update(key.subarray(16, 32)).digest() // MAC key
 
     // encrypt
     const IV = getRandomBytesSync(16)
@@ -120,21 +120,21 @@ export class ECIES {
 
   _decryptMessage(data: Uint8Array, sharedMacData: Uint8Array | null = null): Uint8Array {
     assertEq(
-      data.slice(0, 1),
+      data.subarray(0, 1),
       hexToBytes('04'),
       'wrong ecies header (possible cause: EIP8 upgrade)',
       debug
     )
 
-    const publicKey = data.slice(0, 65)
-    const dataIV = data.slice(65, -32)
-    const tag = data.slice(-32)
+    const publicKey = data.subarray(0, 65)
+    const dataIV = data.subarray(65, -32)
+    const tag = data.subarray(-32)
 
     // derive keys
     const x = ecdhX(publicKey, this._privateKey)
     const key = concatKDF(x, 32)
-    const ekey = key.slice(0, 16) // encryption key
-    const mkey = Uint8Array.from(crypto.createHash('sha256').update(key.slice(16, 32)).digest()) // MAC key
+    const ekey = key.subarray(0, 16) // encryption key
+    const mkey = Uint8Array.from(crypto.createHash('sha256').update(key.subarray(16, 32)).digest()) // MAC key
 
     // check the tag
     if (!sharedMacData) {
@@ -147,8 +147,8 @@ export class ECIES {
     assertEq(_tag, tag, 'should have valid tag', debug)
 
     // decrypt data
-    const IV = dataIV.slice(0, 16)
-    const encryptedData = dataIV.slice(16)
+    const IV = dataIV.subarray(0, 16)
+    const encryptedData = dataIV.subarray(16)
     const decipher = crypto.createDecipheriv('aes-128-ctr', ekey, IV)
     return Uint8Array.from(decipher.update(encryptedData))
   }
@@ -234,15 +234,15 @@ export class ECIES {
     if (!this._gotEIP8Auth) {
       assertEq(decrypted.length, 194, 'invalid packet length', debug)
 
-      signature = decrypted.slice(0, 64)
+      signature = decrypted.subarray(0, 64)
       recoveryId = decrypted[64]
-      heid = decrypted.slice(65, 97) // 32 bytes
-      remotePublicKey = id2pk(decrypted.slice(97, 161))
-      nonce = decrypted.slice(161, 193)
+      heid = decrypted.subarray(65, 97) // 32 bytes
+      remotePublicKey = id2pk(decrypted.subarray(97, 161))
+      nonce = decrypted.subarray(161, 193)
     } else {
       const decoded = unstrictDecode(decrypted) as Uint8Array[]
 
-      signature = decoded[0].slice(0, 64)
+      signature = decoded[0].subarray(0, 64)
       recoveryId = decoded[0][64]
       remotePublicKey = id2pk(decoded[1])
       nonce = decoded[2]
@@ -278,9 +278,9 @@ export class ECIES {
   }
 
   parseAuthEIP8(data: Uint8Array): void {
-    const size = bytes2int(data.slice(0, 2)) + 2
+    const size = bytes2int(data.subarray(0, 2)) + 2
     assertEq(data.length, size, 'message length different from specified size (EIP8)', debug)
-    this.parseAuthPlain(data.slice(2), data.slice(0, 2))
+    this.parseAuthPlain(data.subarray(2), data.subarray(0, 2))
   }
 
   createAckEIP8(): Uint8Array | undefined {
@@ -320,8 +320,8 @@ export class ECIES {
       assertEq(decrypted.length, 97, 'invalid packet length', debug)
       assertEq(decrypted[96], 0, 'invalid postfix', debug)
 
-      remoteEphemeralPublicKey = id2pk(decrypted.slice(0, 64))
-      remoteNonce = decrypted.slice(64, 96)
+      remoteEphemeralPublicKey = id2pk(decrypted.subarray(0, 64))
+      remoteNonce = decrypted.subarray(64, 96)
     } else {
       const decoded = unstrictDecode(decrypted) as Uint8Array[]
 
@@ -341,9 +341,9 @@ export class ECIES {
   }
 
   parseAckEIP8(data: Uint8Array): void {
-    const size = bytes2int(data.slice(0, 2)) + 2
+    const size = bytes2int(data.subarray(0, 2)) + 2
     assertEq(data.length, size, 'message length different from specified size (EIP8)', debug)
-    this.parseAckPlain(data.slice(2), data.slice(0, 2))
+    this.parseAckPlain(data.subarray(2), data.subarray(0, 2))
   }
 
   createHeader(size: number): Uint8Array | undefined {
@@ -363,8 +363,8 @@ export class ECIES {
 
   parseHeader(data: Uint8Array): number | undefined {
     // parse header
-    let header = data.slice(0, 16)
-    const mac = data.slice(16, 32)
+    let header = data.subarray(0, 16)
+    const mac = data.subarray(16, 32)
 
     if (!this._ingressMac) return
     this._ingressMac.updateHeader(header)
@@ -373,7 +373,7 @@ export class ECIES {
 
     if (!this._ingressAes) return
     header = Uint8Array.from(this._ingressAes.update(header))
-    this._bodySize = bytes2int(header.slice(0, 3))
+    this._bodySize = bytes2int(header.subarray(0, 3))
     return this._bodySize
   }
 
@@ -391,8 +391,8 @@ export class ECIES {
   parseBody(data: Uint8Array): Uint8Array | undefined {
     if (this._bodySize === null) throw new Error('need to parse header first')
 
-    const body = data.slice(0, -16)
-    const mac = data.slice(-16)
+    const body = data.subarray(0, -16)
+    const mac = data.subarray(-16)
 
     if (!this._ingressMac) return
     this._ingressMac.updateBody(body)
@@ -403,6 +403,6 @@ export class ECIES {
     this._bodySize = null
 
     if (!this._ingressAes) return
-    return Uint8Array.from(this._ingressAes.update(body)).slice(0, size)
+    return Uint8Array.from(this._ingressAes.update(body)).subarray(0, size)
   }
 }

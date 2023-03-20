@@ -32,6 +32,6 @@ export class MAC {
   }
 
   digest() {
-    return Uint8Array.from(this._hash.clone().digest().slice(0, 16))
+    return Uint8Array.from(this._hash.clone().digest().subarray(0, 16))
   }
 }

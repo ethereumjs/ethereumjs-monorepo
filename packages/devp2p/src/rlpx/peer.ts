@@ -313,13 +313,13 @@ export class Peer extends EventEmitter {
    */
   _handleAuth() {
     const bytesCount = this._nextPacketSize
-    const parseData = this._socketData.slice(0, bytesCount)
+    const parseData = this._socketData.subarray(0, bytesCount)
     if (!this._eciesSession._gotEIP8Auth) {
-      if (parseData.slice(0, 1) === hexToBytes('04')) {
+      if (parseData.subarray(0, 1) === hexToBytes('04')) {
         this._eciesSession.parseAuthPlain(parseData)
       } else {
         this._eciesSession._gotEIP8Auth = true
-        this._nextPacketSize = bytes2int(this._socketData.slice(0, 2)) + 2
+        this._nextPacketSize = bytes2int(this._socketData.subarray(0, 2)) + 2
         return
       }
     } else {
@@ -338,14 +338,14 @@ export class Peer extends EventEmitter {
     const bytesCount = this._nextPacketSize
     const parseData = this._socketData.subarray(0, bytesCount)
     if (!this._eciesSession._gotEIP8Ack) {
-      if (parseData.slice(0, 1) === hexToBytes('04')) {
+      if (parseData.subarray(0, 1) === hexToBytes('04')) {
         this._eciesSession.parseAckPlain(parseData)
         this._logger(
           `Received ack (old format) from ${this._socket.remoteAddress}:${this._socket.remotePort}`
         )
       } else {
         this._eciesSession._gotEIP8Ack = true
-        this._nextPacketSize = bytes2int(this._socketData.slice(0, 2)) + 2
+        this._nextPacketSize = bytes2int(this._socketData.subarray(0, 2)) + 2
         return
       }
     } else {
@@ -497,7 +497,7 @@ export class Peer extends EventEmitter {
    */
   _handleHeader() {
     const bytesCount = this._nextPacketSize
-    const parseData = this._socketData.slice(0, bytesCount)
+    const parseData = this._socketData.subarray(0, bytesCount)
     this._logger(`Received header ${this._socket.remoteAddress}:${this._socket.remotePort}`)
     const size = this._eciesSession.parseHeader(parseData)
     if (size === undefined) {
@@ -555,7 +555,7 @@ export class Peer extends EventEmitter {
     }
 
     try {
-      let payload: any = body.slice(1)
+      let payload: any = body.subarray(1)
 
       // Use snappy uncompression if peer supports DevP2P >=v5
       let compressed = false

@@ -31,13 +31,13 @@ function multComplexityEIP2565(x: bigint): bigint {
 function getAdjustedExponentLength(data: Uint8Array): bigint {
   let expBytesStart
   try {
-    const baseLen = bytesToBigInt(data.slice(0, 32))
+    const baseLen = bytesToBigInt(data.subarray(0, 32))
     expBytesStart = 96 + Number(baseLen) // 96 for base length, then exponent length, and modulus length, then baseLen for the base data, then exponent bytes start
   } catch (e: any) {
     expBytesStart = Number.MAX_SAFE_INTEGER - 32
   }
-  const expLen = bytesToBigInt(data.slice(32, 64))
-  let firstExpBytes = data.slice(expBytesStart, expBytesStart + 32) // first word of the exponent data
+  const expLen = bytesToBigInt(data.subarray(32, 64))
+  let firstExpBytes = data.subarray(expBytesStart, expBytesStart + 32) // first word of the exponent data
   firstExpBytes = setLengthRight(firstExpBytes, 32) // reading past the data reads virtual zeros
   let firstExpBigInt = bytesToBigInt(firstExpBytes)
   let max32expLen = 0
@@ -84,9 +84,9 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     adjustedELen = BigInt(1)
   }
 
-  const bLen = bytesToBigInt(data.slice(0, 32))
-  const eLen = bytesToBigInt(data.slice(32, 64))
-  const mLen = bytesToBigInt(data.slice(64, 96))
+  const bLen = bytesToBigInt(data.subarray(0, 32))
+  const eLen = bytesToBigInt(data.subarray(32, 64))
+  const mLen = bytesToBigInt(data.subarray(64, 96))
 
   let maxLen = bLen
   if (maxLen < mLen) {
@@ -149,9 +149,9 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  const B = bytesToBigInt(setLengthRight(data.slice(Number(bStart), Number(bEnd)), Number(bLen)))
-  const E = bytesToBigInt(setLengthRight(data.slice(Number(eStart), Number(eEnd)), Number(eLen)))
-  const M = bytesToBigInt(setLengthRight(data.slice(Number(mStart), Number(mEnd)), Number(mLen)))
+  const B = bytesToBigInt(setLengthRight(data.subarray(Number(bStart), Number(bEnd)), Number(bLen)))
+  const E = bytesToBigInt(setLengthRight(data.subarray(Number(eStart), Number(eEnd)), Number(eLen)))
+  const M = bytesToBigInt(setLengthRight(data.subarray(Number(mStart), Number(mEnd)), Number(mLen)))
 
   if (mEnd > maxInt) {
     if (opts._debug) {

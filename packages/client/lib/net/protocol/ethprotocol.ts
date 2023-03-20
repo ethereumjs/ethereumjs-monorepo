@@ -283,7 +283,7 @@ export class EthProtocol extends Protocol {
         bytesToBigInt(reqId),
         receipts.map((r) => {
           // Legacy receipt if r[0] >= 0xc0, otherwise typed receipt with first byte as TransactionType
-          const decoded = RLP.decode(r[0] >= 0xc0 ? r : r.slice(1)) as NestedUint8Array
+          const decoded = RLP.decode(r[0] >= 0xc0 ? r : r.subarray(1)) as NestedUint8Array
           const [stateRootOrStatus, cumulativeGasUsed, logsBloom, logs] = decoded as [
             Uint8Array,
             Uint8Array,

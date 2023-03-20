@@ -670,7 +670,7 @@ export class BlockHeader {
   cliqueSigHash() {
     this._requireClique('cliqueSigHash')
     const raw = this.raw()
-    raw[12] = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
+    raw[12] = this.extraData.subarray(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
     return keccak256(RLP.encode(raw))
   }
 
@@ -692,7 +692,7 @@ export class BlockHeader {
    */
   cliqueExtraVanity(): Uint8Array {
     this._requireClique('cliqueExtraVanity')
-    return this.extraData.slice(0, CLIQUE_EXTRA_VANITY)
+    return this.extraData.subarray(0, CLIQUE_EXTRA_VANITY)
   }
 
   /**
@@ -701,7 +701,7 @@ export class BlockHeader {
    */
   cliqueExtraSeal(): Uint8Array {
     this._requireClique('cliqueExtraSeal')
-    return this.extraData.slice(-CLIQUE_EXTRA_SEAL)
+    return this.extraData.subarray(-CLIQUE_EXTRA_SEAL)
   }
 
   /**
@@ -719,7 +719,10 @@ export class BlockHeader {
       bigIntToBytes(signature.v - BigInt(27))
     )
 
-    const extraDataWithoutSeal = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
+    const extraDataWithoutSeal = this.extraData.subarray(
+      0,
+      this.extraData.length - CLIQUE_EXTRA_SEAL
+    )
     const extraData = concatBytesUnsafe(extraDataWithoutSeal, signatureB)
     return extraData
   }
@@ -741,12 +744,12 @@ export class BlockHeader {
 
     const start = CLIQUE_EXTRA_VANITY
     const end = this.extraData.length - CLIQUE_EXTRA_SEAL
-    const signerBytes = this.extraData.slice(start, end)
+    const signerBytes = this.extraData.subarray(start, end)
 
     const signerList: Uint8Array[] = []
     const signerLength = 20
     for (let start = 0; start <= signerBytes.length - signerLength; start += signerLength) {
-      signerList.push(signerBytes.slice(start, start + signerLength))
+      signerList.push(signerBytes.subarray(start, start + signerLength))
     }
     return signerList.map((buf) => new Address(buf))
   }
@@ -776,9 +779,9 @@ export class BlockHeader {
     if (extraSeal.length === 0 || equalsBytes(extraSeal, new Uint8Array(65))) {
       return Address.zero()
     }
-    const r = extraSeal.slice(0, 32)
-    const s = extraSeal.slice(32, 64)
-    const v = bytesToBigInt(extraSeal.slice(64, 65)) + BigInt(27)
+    const r = extraSeal.subarray(0, 32)
+    const s = extraSeal.subarray(32, 64)
+    const v = bytesToBigInt(extraSeal.subarray(64, 65)) + BigInt(27)
     const pubKey = ecrecover(this.cliqueSigHash(), v, r, s)
     return Address.fromPublicKey(pubKey)
   }

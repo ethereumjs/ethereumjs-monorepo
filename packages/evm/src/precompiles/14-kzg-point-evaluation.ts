@@ -29,11 +29,11 @@ export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
 
   const version = Number(opts._common.paramByEIP('sharding', 'blobCommitmentVersionKzg', 4844))
   const fieldElementsPerBlob = opts._common.paramByEIP('sharding', 'fieldElementsPerBlob', 4844)!
-  const versionedHash = opts.data.slice(0, 32)
-  const z = opts.data.slice(32, 64)
-  const y = opts.data.slice(64, 96)
-  const commitment = opts.data.slice(96, 144)
-  const kzgProof = opts.data.slice(144, 192)
+  const versionedHash = opts.data.subarray(0, 32)
+  const z = opts.data.subarray(32, 64)
+  const y = opts.data.subarray(64, 96)
+  const commitment = opts.data.subarray(96, 144)
+  const kzgProof = opts.data.subarray(144, 192)
 
   if (bytesToBigInt(z) >= BLS_MODULUS || bytesToBigInt(y) >= BLS_MODULUS) {
     if (opts._debug) {

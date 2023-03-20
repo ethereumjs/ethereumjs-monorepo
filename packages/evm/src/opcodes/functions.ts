@@ -429,7 +429,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
 
       const i = Number(pos)
-      let loaded = runState.interpreter.getCallData().slice(i, i + 32)
+      let loaded = runState.interpreter.getCallData().subarray(i, i + 32)
       loaded = loaded.length ? loaded : Uint8Array.from([0])
       let r = bytesToBigInt(loaded)
       if (loaded.length < 32) {
@@ -832,7 +832,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
 
       const loaded = bytesToBigInt(
-        runState.code.slice(runState.programCounter, runState.programCounter + numToPush)
+        runState.code.subarray(runState.programCounter, runState.programCounter + numToPush)
       )
       runState.programCounter += numToPush
       runState.stack.push(loaded)
@@ -1037,9 +1037,9 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
 
       const yParity = BigInt(mem[31])
-      const r = mem.slice(32, 64)
-      const s = mem.slice(64, 96)
-      const commit = mem.slice(96, 128)
+      const r = mem.subarray(32, 64)
+      const s = mem.subarray(64, 96)
+      const commit = mem.subarray(96, 128)
 
       if (bytesToBigInt(s) > SECP256K1_ORDER_DIV_2) {
         trap(ERROR.AUTH_INVALID_S)

@@ -189,17 +189,17 @@ export function encode<T>(typename: string, data: T, privateKey: Uint8Array) {
 }
 
 export function decode(bytes: Uint8Array) {
-  const hash = keccak256(bytes.slice(32))
-  assertEq(bytes.slice(0, 32), hash, 'Hash verification failed', debug)
+  const hash = keccak256(bytes.subarray(32))
+  assertEq(bytes.subarray(0, 32), hash, 'Hash verification failed', debug)
 
-  const typedata = bytes.slice(97)
+  const typedata = bytes.subarray(97)
   const type = typedata[0]
   const typename = types.byType[type]
   if (typename === undefined) throw new Error(`Invalid type: ${type}`)
-  const data = messages[typename].decode(unstrictDecode(typedata.slice(1)))
+  const data = messages[typename].decode(unstrictDecode(typedata.subarray(1)))
 
   const sighash = keccak256(typedata)
-  const signature = bytes.slice(32, 96)
+  const signature = bytes.subarray(32, 96)
   const recoverId = bytes[96]
   const publicKey = ecdsaRecover(signature, recoverId, sighash, false)
   return { typename, data, publicKey }

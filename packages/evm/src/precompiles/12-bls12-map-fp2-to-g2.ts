@@ -46,7 +46,7 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
   ]
 
   for (const index in zeroByteCheck) {
-    const slicedBuffer = opts.data.slice(zeroByteCheck[index][0], zeroByteCheck[index][1])
+    const slicedBuffer = opts.data.subarray(zeroByteCheck[index][0], zeroByteCheck[index][1])
     if (!(equalsBytes(slicedBuffer, zeroBytes16) === true)) {
       if (opts._debug) {
         opts._debug(`BLS12MAPFP2TOG2 (0x12) failed: Point not on curve`)
@@ -59,7 +59,7 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
 
   let Fp2Point
   try {
-    Fp2Point = BLS12_381_ToFp2Point(opts.data.slice(0, 64), opts.data.slice(64, 128), mcl)
+    Fp2Point = BLS12_381_ToFp2Point(opts.data.subarray(0, 64), opts.data.subarray(64, 128), mcl)
   } catch (e: any) {
     if (opts._debug) {
       opts._debug(`BLS12MAPFP2TOG2 (0x12) failed: ${e.message}`)

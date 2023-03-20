@@ -74,7 +74,7 @@ export const blobsToCommitments = (blobs: Uint8Array[]) => {
 export const computeVersionedHash = (commitment: Uint8Array, blobCommitmentVersion: number) => {
   const computedVersionedHash = new Uint8Array(32)
   computedVersionedHash.set([blobCommitmentVersion], 0)
-  computedVersionedHash.set(sha256(commitment).slice(1), 1)
+  computedVersionedHash.set(sha256(commitment).subarray(1), 1)
   return computedVersionedHash
 }
 

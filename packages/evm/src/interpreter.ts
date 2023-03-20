@@ -180,10 +180,10 @@ export class Interpreter {
 
       if (codeSections.data) {
         // Set code to EOF container code section which starts at byte position 10 if data section is present
-        this._runState.code = code.slice(10, 10 + codeSections!.code)
+        this._runState.code = code.subarray(10, 10 + codeSections!.code)
       } else {
         // Set code to EOF container code section which starts at byte position 7 if no data section is present
-        this._runState.code = code.slice(7, 7 + codeSections!.code)
+        this._runState.code = code.subarray(7, 7 + codeSections!.code)
       }
     }
     this._runState.programCounter = opts.pc ?? this._runState.programCounter

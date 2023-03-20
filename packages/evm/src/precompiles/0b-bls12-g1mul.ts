@@ -50,7 +50,7 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
   ]
 
   for (const index in zeroByteCheck) {
-    const slicedBuffer = opts.data.slice(zeroByteCheck[index][0], zeroByteCheck[index][1])
+    const slicedBuffer = opts.data.subarray(zeroByteCheck[index][0], zeroByteCheck[index][1])
     if (!(equalsBytes(slicedBuffer, zeroBytes16) === true)) {
       if (opts._debug) {
         opts._debug(`BLS12G1MUL (0x0b) failed: Point not on curve`)
@@ -63,7 +63,7 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
 
   let mclPoint
   try {
-    mclPoint = BLS12_381_ToG1Point(opts.data.slice(0, 128), mcl)
+    mclPoint = BLS12_381_ToG1Point(opts.data.subarray(0, 128), mcl)
   } catch (e: any) {
     if (opts._debug) {
       opts._debug(`BLS12G1MUL (0x0b) failed: ${e.message}`)
@@ -71,7 +71,7 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
     return EvmErrorResult(e, opts.gasLimit)
   }
 
-  const frPoint = BLS12_381_ToFrPoint(opts.data.slice(128, 160), mcl)
+  const frPoint = BLS12_381_ToFrPoint(opts.data.subarray(128, 160), mcl)
 
   const result = mcl.mul(mclPoint, frPoint)
 

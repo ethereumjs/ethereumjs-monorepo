@@ -70,7 +70,7 @@ export class Memory {
   read(offset: number, size: number, avoidCopy?: boolean): Buffer {
     this.extend(offset, size)
 
-    const loaded = this._store.slice(offset, offset + size)
+    const loaded = this._store.subarray(offset, offset + size)
     if (avoidCopy === true) {
       return loaded
     }

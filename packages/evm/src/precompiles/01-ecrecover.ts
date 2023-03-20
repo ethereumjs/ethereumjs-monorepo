@@ -31,8 +31,8 @@ export function precompile01(opts: PrecompileInput): ExecResult {
 
   const data = setLengthRight(opts.data, 128)
 
-  const msgHash = data.slice(0, 32)
-  const v = data.slice(32, 64)
+  const msgHash = data.subarray(0, 32)
+  const v = data.subarray(32, 64)
   const vBigInt = bytesToBigInt(v)
 
   // Guard against util's `ecrecover`: without providing chainId this will return
@@ -48,8 +48,8 @@ export function precompile01(opts: PrecompileInput): ExecResult {
     }
   }
 
-  const r = data.slice(64, 96)
-  const s = data.slice(96, 128)
+  const r = data.subarray(64, 96)
+  const s = data.subarray(96, 128)
 
   let publicKey
   try {

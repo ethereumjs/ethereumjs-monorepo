@@ -48,7 +48,7 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   ]
 
   for (const index in zeroByteCheck) {
-    const slicedBuffer = opts.data.slice(zeroByteCheck[index][0], zeroByteCheck[index][1])
+    const slicedBuffer = opts.data.subarray(zeroByteCheck[index][0], zeroByteCheck[index][1])
     if (!(equalsBytes(slicedBuffer, zeroBytes16) === true)) {
       if (opts._debug) {
         opts._debug(`BLS12G1ADD (0x0a) failed: Point not on curve`)
@@ -61,8 +61,8 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   let mclPoint1
   let mclPoint2
   try {
-    mclPoint1 = BLS12_381_ToG1Point(opts.data.slice(0, 128), mcl)
-    mclPoint2 = BLS12_381_ToG1Point(opts.data.slice(128, 256), mcl)
+    mclPoint1 = BLS12_381_ToG1Point(opts.data.subarray(0, 128), mcl)
+    mclPoint2 = BLS12_381_ToG1Point(opts.data.subarray(128, 256), mcl)
   } catch (e: any) {
     if (opts._debug) {
       opts._debug(`BLS12G1ADD (0x0a) failed: ${e.message}`)

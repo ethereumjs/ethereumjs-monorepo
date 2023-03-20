@@ -151,7 +151,7 @@ export class Server extends EventEmitter {
 
     if (this._socket && typeof peer.udpPort === 'number')
       this._socket.send(msg, 0, msg.length, peer.udpPort, peer.address)
-    return msg.slice(0, 32) // message id
+    return msg.subarray(0, 32) // message id
   }
 
   _handler(msg: Uint8Array, rinfo: RemoteInfo) {
@@ -181,7 +181,7 @@ export class Server extends EventEmitter {
             udpPort: rinfo.port,
             tcpPort: info.data.from.tcpPort,
           },
-          hash: msg.slice(0, 32),
+          hash: msg.subarray(0, 32),
         })
         break
       }

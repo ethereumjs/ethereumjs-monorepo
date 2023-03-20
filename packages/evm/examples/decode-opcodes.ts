@@ -24,7 +24,7 @@ function nameOpCodes(raw: Uint8Array) {
     // no destinations into the middle of PUSH
     if (curOpCode?.slice(0, 4) === 'PUSH') {
       const jumpNum = raw[pc] - 0x5f
-      pushData = raw.slice(pc + 1, pc + jumpNum + 1)
+      pushData = raw.subarray(pc + 1, pc + jumpNum + 1)
       i += jumpNum
     }
     console.log('we pushing', typeof pushData)

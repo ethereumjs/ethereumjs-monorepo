@@ -101,7 +101,10 @@ export class PendingBlock {
     const gasLimitBuf = bigIntToUnpaddedBytes(gasLimit)
     const mixHashBuf = toType(mixHash!, TypeOutput.Uint8Array) ?? zeros(32)
     const payloadIdBytes = toBytes(
-      keccak256(concatBytes(parentBlock.hash(), mixHashBuf, timestampBuf, gasLimitBuf)).slice(0, 8)
+      keccak256(concatBytes(parentBlock.hash(), mixHashBuf, timestampBuf, gasLimitBuf)).subarray(
+        0,
+        8
+      )
     )
     const payloadId = bytesToPrefixedHexString(payloadIdBytes)
 

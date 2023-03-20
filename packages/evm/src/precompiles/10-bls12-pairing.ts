@@ -70,7 +70,7 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
     // zero bytes check
     const pairStart = 384 * k
     for (const index in zeroByteCheck) {
-      const slicedBuffer = opts.data.slice(
+      const slicedBuffer = opts.data.subarray(
         zeroByteCheck[index][0] + pairStart,
         zeroByteCheck[index][1] + pairStart
       )
@@ -83,7 +83,7 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
     }
     let G1
     try {
-      G1 = BLS12_381_ToG1Point(opts.data.slice(pairStart, pairStart + 128), mcl)
+      G1 = BLS12_381_ToG1Point(opts.data.subarray(pairStart, pairStart + 128), mcl)
     } catch (e: any) {
       if (opts._debug) {
         opts._debug(`BLS12PAIRING (0x10) failed: ${e.message}`)
@@ -94,7 +94,7 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
     const g2start = pairStart + 128
     let G2
     try {
-      G2 = BLS12_381_ToG2Point(opts.data.slice(g2start, g2start + 256), mcl)
+      G2 = BLS12_381_ToG2Point(opts.data.subarray(g2start, g2start + 256), mcl)
     } catch (e: any) {
       if (opts._debug) {
         opts._debug(`BLS12PAIRING (0x10) failed: ${e.message}`)
