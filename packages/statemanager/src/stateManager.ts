@@ -198,7 +198,9 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     if (this.DEBUG) {
       this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
     }
-    await this.putAccount(address, new Account())
+    if (!(await this.getAccount(address))) {
+      await this.putAccount(address, new Account())
+    }
     await this.modifyAccountFields(address, { codeHash })
   }
 
@@ -327,7 +329,9 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     }
 
     value = unpadBuffer(value)
-    await this.putAccount(address, new Account())
+    if (!(await this.getAccount(address))) {
+      await this.putAccount(address, new Account())
+    }
 
     await this._modifyContractStorage(address, async (storageTrie, done) => {
       if (Buffer.isBuffer(value) && value.length) {

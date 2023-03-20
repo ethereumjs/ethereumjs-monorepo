@@ -33,7 +33,7 @@ tape('StateManager -> Checkpointing', (t) => {
     st.end()
   })
 
-  t.test('CP -> A1.1 -> Revert -> Flush() (-> Empty)', async (st) => {
+  t.test('CP -> A1.1 -> Revert -> Flush() (-> Undefined)', async (st) => {
     const sm = new DefaultStateManager()
     const address = new Address(Buffer.from('11'.repeat(20), 'hex'))
     const account = Account.fromAccountData({
@@ -44,7 +44,7 @@ tape('StateManager -> Checkpointing', (t) => {
     await sm.putAccount(address, account)
     await sm.revert()
     await sm.flush()
-    st.ok((await sm.getAccount(address))!.isEmpty())
+    st.equal(await sm.getAccount(address), undefined)
 
     st.end()
   })
@@ -158,7 +158,7 @@ tape('StateManager -> Checkpointing', (t) => {
     st.end()
   })
 
-  t.test('CP -> A1.1 -> A1.2 -> Revert -> Flush() (-> Empty)', async (st) => {
+  t.test('CP -> A1.1 -> A1.2 -> Revert -> Flush() (-> Undefined)', async (st) => {
     const sm = new DefaultStateManager()
     const address = new Address(Buffer.from('11'.repeat(20), 'hex'))
     const account = Account.fromAccountData({
@@ -172,7 +172,7 @@ tape('StateManager -> Checkpointing', (t) => {
     await sm.putAccount(address, account)
     await sm.revert()
     await sm.flush()
-    st.ok((await sm.getAccount(address))!.isEmpty())
+    st.equal(await sm.getAccount(address), undefined)
 
     st.end()
   })
