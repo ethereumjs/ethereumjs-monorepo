@@ -51,6 +51,7 @@ export interface EVMStateAccess extends StateAccess {
   clearOriginalStorageCache(): void
   cleanupTouchedAccounts(): Promise<void>
   generateCanonicalGenesis(initState: any): Promise<void>
+  accountIsEmptyOrNonExistent(address: Address): Promise<boolean>
 }
 
 export type DeleteOpcode = {
@@ -260,9 +261,8 @@ type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'storageRoot' |
 
 interface StateAccess {
   accountExists(address: Address): Promise<boolean>
-  getAccount(address: Address): Promise<Account>
+  getAccount(address: Address): Promise<Account | undefined>
   putAccount(address: Address, account: Account): Promise<void>
-  accountIsEmpty(address: Address): Promise<boolean>
   deleteAccount(address: Address): Promise<void>
   modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void>
   putContractCode(address: Address, value: Buffer): Promise<void>

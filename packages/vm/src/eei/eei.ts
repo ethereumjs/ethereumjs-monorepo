@@ -40,6 +40,9 @@ export class EEI extends VmState implements EEIInterface {
    */
   async getExternalBalance(address: Address): Promise<bigint> {
     const account = await this.getAccount(address)
+    if (!account) {
+      throw new Error('account for external balance read not foundx')
+    }
     return account.balance
   }
 
