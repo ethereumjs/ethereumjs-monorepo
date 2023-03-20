@@ -3,7 +3,7 @@ import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { decode } from '@ethereumjs/rlp'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Address, GWEI_TO_WEI, KECCAK256_RLP, Withdrawal, zeros } from '@ethereumjs/util'
+import { Account, Address, GWEI_TO_WEI, KECCAK256_RLP, Withdrawal, zeros } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import genesisJSON = require('../../../../client/test/testdata/geth-genesis/withdrawals.json')
@@ -61,9 +61,10 @@ tape('EIP4895 tests', (t) => {
       gasLimit: BigInt(50000),
     }).sign(pkey)
 
+    await vm.stateManager.putAccount(transaction.getSenderAddress(), new Account())
     const account = await vm.stateManager.getAccount(transaction.getSenderAddress())
-    account.balance = BigInt(1000000)
-    await vm.stateManager.putAccount(transaction.getSenderAddress(), account)
+    account!.balance = BigInt(1000000)
+    await vm.stateManager.putAccount(transaction.getSenderAddress(), account!)
 
     let index = 0
     for (let i = 0; i < addresses.length; i++) {
@@ -105,7 +106,7 @@ tape('EIP4895 tests', (t) => {
     for (let i = 0; i < addresses.length; i++) {
       const address = new Address(Buffer.from(addresses[i], 'hex'))
       const amount = amounts[i]
-      const balance = (await vm.stateManager.getAccount(address)).balance
+      const balance = (await vm.stateManager.getAccount(address))!.balance
       st.equals(BigInt(amount) * GWEI_TO_WEI, balance, 'balance ok')
     }
 
