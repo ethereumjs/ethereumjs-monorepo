@@ -1,4 +1,5 @@
 import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { bytesToHex } from '@ethereumjs/util'
 
 import { Event } from '../types'
 
@@ -123,9 +124,7 @@ export class SnapSynchronizer extends Synchronizer {
     // eslint-disable-next-line eqeqeq
     if (this.config.syncTargetHeight == null || this.config.syncTargetHeight < latest.number) {
       this.config.syncTargetHeight = height
-      this.config.logger.info(
-        `New sync target height=${height} hash=${latest.hash().toString('hex')}`
-      )
+      this.config.logger.info(`New sync target height=${height} hash=${bytesToHex(latest.hash())}`)
     }
 
     // For convenient testing
