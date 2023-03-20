@@ -697,9 +697,9 @@ export class TxPool {
         .map((obj) => obj.tx)
         .sort((a, b) => Number(a.nonce - b.nonce))
       // Check if the account nonce matches the lowest known tx nonce
-      const account = await vm.eei.getAccount(new Address(Buffer.from(address, 'hex')))
+      let account = await vm.eei.getAccount(new Address(Buffer.from(address, 'hex')))
       if (account === undefined) {
-        throw new Error(`could not read account`)
+        account = new Account()
       }
       const { nonce } = account
       if (txsSortedByNonce[0].nonce !== nonce) {
