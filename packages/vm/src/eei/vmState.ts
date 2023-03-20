@@ -132,7 +132,7 @@ export class VmState implements EVMStateAccess {
     }
   }
 
-  async getAccount(address: Address): Promise<Account> {
+  async getAccount(address: Address): Promise<Account | undefined> {
     return this._stateManager.getAccount(address)
   }
 
@@ -277,7 +277,7 @@ export class VmState implements EVMStateAccess {
       const touchedArray = Array.from(this.touchedJournal.journal)
       for (const addressHex of touchedArray) {
         const address = new Address(Buffer.from(addressHex, 'hex'))
-        const empty = await this.accountIsEmpty(address)
+        const empty = await this.accountIsEmptyOrNonExistent(address)
         if (empty) {
           await this._stateManager.deleteAccount(address)
           if (this.DEBUG) {
@@ -473,7 +473,11 @@ export class VmState implements EVMStateAccess {
    * EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
    * @param address - Address to check
    */
-  async accountIsEmpty(address: Address): Promise<boolean> {
-    return this._stateManager.accountIsEmpty(address)
+  async accountIsEmptyOrNonExistent(address: Address): Promise<boolean> {
+    const account = await this._stateManager.getAccount(address)
+    if (account === undefined || account.isEmpty()) {
+      return true
+    }
+    return false
   }
 }

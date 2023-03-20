@@ -465,7 +465,11 @@ export class Interpreter {
       return this._env.contract.balance
     }
 
-    return (await this._eei.getAccount(address)).balance
+    const account = await this._eei.getAccount(address)
+    if (!account) {
+      throw new Error('account for external balance read not foundx')
+    }
+    return account.balance
   }
 
   /**
@@ -474,6 +478,9 @@ export class Interpreter {
   async storageStore(key: Buffer, value: Buffer): Promise<void> {
     await this._eei.storageStore(this._env.address, key, value)
     const account = await this._eei.getAccount(this._env.address)
+    if (!account) {
+      throw new Error('could not read account along persisting memory')
+    }
     this._env.contract = account
   }
 
@@ -840,6 +847,9 @@ export class Interpreter {
       Object.assign(this._result.selfdestruct, selfdestruct)
       // update stateRoot on current contract
       const account = await this._eei.getAccount(this._env.address)
+      if (!account) {
+        throw new Error('could not read contract account')
+      }
       this._env.contract = account
       this._runState.gasRefund = results.execResult.gasRefund ?? BigInt(0)
     }
@@ -918,6 +928,9 @@ export class Interpreter {
       Object.assign(this._result.selfdestruct, selfdestruct)
       // update stateRoot on current contract
       const account = await this._eei.getAccount(this._env.address)
+      if (!account) {
+        throw new Error('could not read contract account')
+      }
       this._env.contract = account
       this._runState.gasRefund = results.execResult.gasRefund ?? BigInt(0)
       if (results.createdAddress) {
@@ -957,6 +970,9 @@ export class Interpreter {
 
     // Add to beneficiary balance
     const toAccount = await this._eei.getAccount(toAddress)
+    if (!toAccount) {
+      throw new Error('could not read to account')
+    }
     toAccount.balance += this._env.contract.balance
     await this._eei.putAccount(toAddress, toAccount)
 

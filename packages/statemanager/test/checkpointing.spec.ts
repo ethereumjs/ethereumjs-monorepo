@@ -12,7 +12,7 @@ tape('StateManager -> Checkpointing', (t) => {
     })
     await sm.putAccount(address, account)
     await sm.flush()
-    st.equal((await sm.getAccount(address)).nonce, 1n)
+    st.equal((await sm.getAccount(address))!.nonce, 1n)
 
     st.end()
   })
@@ -28,7 +28,7 @@ tape('StateManager -> Checkpointing', (t) => {
     await sm.putAccount(address, account)
     await sm.commit()
     await sm.flush()
-    st.equal((await sm.getAccount(address)).nonce, 1n)
+    st.equal((await sm.getAccount(address))!.nonce, 1n)
 
     st.end()
   })
@@ -44,7 +44,7 @@ tape('StateManager -> Checkpointing', (t) => {
     await sm.putAccount(address, account)
     await sm.revert()
     await sm.flush()
-    st.ok((await sm.getAccount(address)).isEmpty())
+    st.ok((await sm.getAccount(address))!.isEmpty())
 
     st.end()
   })
@@ -60,7 +60,7 @@ tape('StateManager -> Checkpointing', (t) => {
     await sm.checkpoint()
     await sm.commit()
     await sm.flush()
-    st.equal((await sm.getAccount(address)).nonce, 1n)
+    st.equal((await sm.getAccount(address))!.nonce, 1n)
 
     st.end()
   })
@@ -76,7 +76,7 @@ tape('StateManager -> Checkpointing', (t) => {
     await sm.checkpoint()
     await sm.revert()
     await sm.flush()
-    st.equal((await sm.getAccount(address)).nonce, 1n)
+    st.equal((await sm.getAccount(address))!.nonce, 1n)
 
     st.end()
   })
@@ -94,7 +94,7 @@ tape('StateManager -> Checkpointing', (t) => {
     await sm.putAccount(address, account)
     await sm.commit()
     await sm.flush()
-    st.equal((await sm.getAccount(address)).nonce, 2n)
+    st.equal((await sm.getAccount(address))!.nonce, 2n)
 
     st.end()
   })
@@ -114,7 +114,7 @@ tape('StateManager -> Checkpointing', (t) => {
     account.nonce = 3n
     await sm.putAccount(address, account)
     await sm.flush()
-    st.equal((await sm.getAccount(address)).nonce, 3n)
+    st.equal((await sm.getAccount(address))!.nonce, 3n)
 
     st.end()
   })
@@ -134,7 +134,7 @@ tape('StateManager -> Checkpointing', (t) => {
     await sm.putAccount(address, account)
     await sm.commit()
     await sm.flush()
-    st.equal((await sm.getAccount(address)).nonce, 3n)
+    st.equal((await sm.getAccount(address))!.nonce, 3n)
 
     st.end()
   })
@@ -153,7 +153,7 @@ tape('StateManager -> Checkpointing', (t) => {
     await sm.putAccount(address, account)
     await sm.commit()
     await sm.flush()
-    st.equal((await sm.getAccount(address)).nonce, 2n)
+    st.equal((await sm.getAccount(address))!.nonce, 2n)
 
     st.end()
   })
@@ -172,7 +172,7 @@ tape('StateManager -> Checkpointing', (t) => {
     await sm.putAccount(address, account)
     await sm.revert()
     await sm.flush()
-    st.ok((await sm.getAccount(address)).isEmpty())
+    st.ok((await sm.getAccount(address))!.isEmpty())
 
     st.end()
   })
@@ -190,7 +190,7 @@ tape('StateManager -> Checkpointing', (t) => {
     await sm.putAccount(address, account)
     await sm.revert()
     await sm.flush()
-    st.equal((await sm.getAccount(address)).nonce, 1n)
+    st.equal((await sm.getAccount(address))!.nonce, 1n)
 
     st.end()
   })
@@ -214,7 +214,7 @@ tape('StateManager -> Checkpointing', (t) => {
       await sm.commit()
       await sm.commit()
       await sm.flush()
-      st.equal((await sm.getAccount(address)).nonce, 3n)
+      st.equal((await sm.getAccount(address))!.nonce, 3n)
 
       st.end()
     }
@@ -239,7 +239,7 @@ tape('StateManager -> Checkpointing', (t) => {
       await sm.commit()
       await sm.revert()
       await sm.flush()
-      st.equal((await sm.getAccount(address)).nonce, 1n)
+      st.equal((await sm.getAccount(address))!.nonce, 1n)
 
       st.end()
     }
@@ -264,7 +264,7 @@ tape('StateManager -> Checkpointing', (t) => {
       await sm.revert()
       await sm.commit()
       await sm.flush()
-      st.equal((await sm.getAccount(address)).nonce, 2n)
+      st.equal((await sm.getAccount(address))!.nonce, 2n)
 
       st.end()
     }
@@ -291,7 +291,7 @@ tape('StateManager -> Checkpointing', (t) => {
       await sm.putAccount(address, account)
       await sm.commit()
       await sm.flush()
-      st.equal((await sm.getAccount(address)).nonce, 4n)
+      st.equal((await sm.getAccount(address))!.nonce, 4n)
 
       st.end()
     }
@@ -322,7 +322,7 @@ tape('StateManager -> Checkpointing', (t) => {
       await sm.commit()
       await sm.commit()
       await sm.flush()
-      st.equal((await sm.getAccount(address)).nonce, 5n)
+      st.equal((await sm.getAccount(address))!.nonce, 5n)
 
       st.end()
     }

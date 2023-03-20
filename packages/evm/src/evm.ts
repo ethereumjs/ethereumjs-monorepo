@@ -1,5 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
+  Account,
   Address,
   AsyncEventEmitter,
   KECCAK256_NULL,
@@ -38,7 +39,6 @@ import type {
   /*ExternalInterfaceFactory,*/
   Log,
 } from './types'
-import type { Account } from '@ethereumjs/util'
 
 const debug = createDebugLogger('evm:evm')
 const debugGas = createDebugLogger('evm:gas')
@@ -347,6 +347,9 @@ export class EVM implements EVMInterface {
 
   protected async _executeCall(message: MessageWithTo): Promise<EVMResult> {
     const account = await this.eei.getAccount(message.authcallOrigin ?? message.caller)
+    if (!account) {
+      throw new Error(`message caller account could not be read`)
+    }
     let errorMessage
     // Reduce tx value from sender
     if (!message.delegatecall) {
@@ -358,6 +361,9 @@ export class EVM implements EVMInterface {
     }
     // Load `to` account
     const toAccount = await this.eei.getAccount(message.to)
+    if (!toAccount) {
+      throw new Error(`to account could not be read`)
+    }
     // Add tx value to the `to` account
     if (!message.delegatecall) {
       try {
@@ -419,6 +425,9 @@ export class EVM implements EVMInterface {
 
   protected async _executeCreate(message: Message): Promise<EVMResult> {
     const account = await this.eei.getAccount(message.caller)
+    if (!account) {
+      throw new Error(`message caller account could not be read`)
+    }
     // Reduce tx value from sender
     await this._reduceSenderBalance(account, message)
 
@@ -445,6 +454,9 @@ export class EVM implements EVMInterface {
       debug(`Generated CREATE contract address ${message.to}`)
     }
     let toAccount = await this.eei.getAccount(message.to)
+    if (!toAccount) {
+      throw new Error(`to account could not be read`)
+    }
 
     // Check for collision
     if (
@@ -474,6 +486,9 @@ export class EVM implements EVMInterface {
     await this._emit('newContract', newContractEvent)
 
     toAccount = await this.eei.getAccount(message.to)
+    if (!toAccount) {
+      throw new Error(`to account could not be read`)
+    }
     // EIP-161 on account creation and CREATE execution
     if (this._common.gteHardfork(Hardfork.SpuriousDragon)) {
       toAccount.nonce += BigInt(1)
@@ -615,8 +630,10 @@ export class EVM implements EVMInterface {
         // It is thus an unnecessary default item, which we have to save to dik
         // It does change the state root, but it only wastes storage.
         //await this._state.putContractCode(message.to, result.returnValue)
-        const account = await this.eei.getAccount(message.to)
-        await this.eei.putAccount(message.to, account)
+        //const account = await this.eei.getAccount(message.to)
+        //
+        // TODO: check if this change is correct
+        await this.eei.putAccount(message.to, new Account())
       }
     }
 
@@ -634,6 +651,10 @@ export class EVM implements EVMInterface {
     message: Message,
     opts: InterpreterOpts = {}
   ): Promise<ExecResult> {
+    const contract = await this.eei.getAccount(message.to ?? Address.zero())
+    if (!contract) {
+      throw new Error(`contract account could not be read`)
+    }
     const env = {
       address: message.to ?? Address.zero(),
       caller: message.caller ?? Address.zero(),
@@ -645,7 +666,7 @@ export class EVM implements EVMInterface {
       gasPrice: this._tx!.gasPrice,
       origin: this._tx!.origin ?? message.caller ?? Address.zero(),
       block: this._block ?? defaultBlock(),
-      contract: await this.eei.getAccount(message.to ?? Address.zero()),
+      contract,
       codeAddress: message.codeAddress,
       gasRefund: message.gasRefund,
       containerCode: message.containerCode,
@@ -711,6 +732,9 @@ export class EVM implements EVMInterface {
       const value = opts.value ?? BigInt(0)
       if (opts.skipBalance === true) {
         callerAccount = await this.eei.getAccount(caller)
+        if (!callerAccount) {
+          throw new Error(`caller account could not be read`)
+        }
         if (callerAccount.balance < value) {
           // if skipBalance and balance less than value, set caller balance to `value` to ensure sufficient funds
           callerAccount.balance = value
@@ -738,6 +762,9 @@ export class EVM implements EVMInterface {
     if (message.depth === 0) {
       if (!callerAccount) {
         callerAccount = await this.eei.getAccount(message.caller)
+      }
+      if (!callerAccount) {
+        throw new Error(`caller account could not be read`)
       }
       callerAccount.nonce++
       await this.eei.putAccount(message.caller, callerAccount)
@@ -903,6 +930,9 @@ export class EVM implements EVMInterface {
       addr = generateAddress2(message.caller.buf, message.salt, message.code as Buffer)
     } else {
       const acc = await this.eei.getAccount(message.caller)
+      if (!acc) {
+        throw new Error(`caller account could not be read`)
+      }
       const newNonce = acc.nonce - BigInt(1)
       addr = generateAddress(message.caller.buf, bigIntToBuffer(newNonce))
     }
@@ -937,6 +967,9 @@ export class EVM implements EVMInterface {
 
   protected async _touchAccount(address: Address): Promise<void> {
     const account = await this.eei.getAccount(address)
+    if (!account) {
+      throw new Error(`account to mark as touched could not be read`)
+    }
     return this.eei.putAccount(address, account)
   }
 
