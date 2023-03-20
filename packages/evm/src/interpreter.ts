@@ -465,9 +465,9 @@ export class Interpreter {
       return this._env.contract.balance
     }
 
-    const account = await this._eei.getAccount(address)
+    let account = await this._eei.getAccount(address)
     if (!account) {
-      throw new Error('account for external balance read not foundx')
+      account = new Account()
     }
     return account.balance
   }

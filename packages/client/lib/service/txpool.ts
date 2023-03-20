@@ -1,5 +1,5 @@
 import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
-import { Address, bufferToHex } from '@ethereumjs/util'
+import { Account, Address, bufferToHex } from '@ethereumjs/util'
 import Heap = require('qheap')
 
 import type { Config } from '../config'
@@ -303,9 +303,9 @@ export class TxPool {
     const vmCopy = await this.vm.copy()
     // Set state root to latest block so that account balance is correct when doing balance check
     await vmCopy.stateManager.setStateRoot(block.stateRoot)
-    const account = await vmCopy.stateManager.getAccount(senderAddress)
+    let account = await vmCopy.stateManager.getAccount(senderAddress)
     if (account === undefined) {
-      throw new Error('sender account could not be read')
+      account = new Account()
     }
     if (account.nonce > tx.nonce) {
       throw new Error(

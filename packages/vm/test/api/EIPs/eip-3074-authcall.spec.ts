@@ -3,6 +3,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { ERROR } from '@ethereumjs/evm/dist/exceptions'
 import { Transaction } from '@ethereumjs/tx'
 import {
+  Account,
   Address,
   bigIntToBuffer,
   bufferToBigInt,
@@ -227,9 +228,10 @@ tape('EIP-3074 AUTH', (t) => {
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
+    await vm.stateManager.putAccount(callerAddress, new Account())
     const account = await vm.stateManager.getAccount(callerAddress)
-    account.balance = BigInt(10000000)
-    await vm.stateManager.putAccount(callerAddress, account)
+    account!.balance = BigInt(10000000)
+    await vm.stateManager.putAccount(callerAddress, account!)
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue.slice(31)
@@ -250,9 +252,10 @@ tape('EIP-3074 AUTH', (t) => {
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
+    await vm.stateManager.putAccount(callerAddress, new Account())
     const account = await vm.stateManager.getAccount(callerAddress)
-    account.balance = BigInt(10000000)
-    await vm.stateManager.putAccount(callerAddress, account)
+    account!.balance = BigInt(10000000)
+    await vm.stateManager.putAccount(callerAddress, account!)
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue
@@ -274,9 +277,10 @@ tape('EIP-3074 AUTH', (t) => {
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
+    await vm.stateManager.putAccount(callerAddress, new Account())
     const account = await vm.stateManager.getAccount(callerAddress)
-    account.balance = BigInt(10000000)
-    await vm.stateManager.putAccount(callerAddress, account)
+    account!.balance = BigInt(10000000)
+    await vm.stateManager.putAccount(callerAddress, account!)
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue
@@ -296,9 +300,10 @@ tape('EIP-3074 AUTH', (t) => {
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
+    await vm.stateManager.putAccount(callerAddress, new Account())
     const account = await vm.stateManager.getAccount(callerAddress)
-    account.balance = BigInt(10000000)
-    await vm.stateManager.putAccount(callerAddress, account)
+    account!.balance = BigInt(10000000)
+    await vm.stateManager.putAccount(callerAddress, account!)
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     st.equal(result.execResult.exceptionError?.error, ERROR.AUTH_INVALID_S, 'threw correct error')
@@ -322,9 +327,10 @@ tape('EIP-3074 AUTH', (t) => {
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
+    await vm.stateManager.putAccount(callerAddress, new Account())
     const account = await vm.stateManager.getAccount(callerAddress)
-    account.balance = BigInt(10000000)
-    await vm.stateManager.putAccount(callerAddress, account)
+    account!.balance = BigInt(10000000)
+    await vm.stateManager.putAccount(callerAddress, account!)
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue.slice(31)
@@ -347,9 +353,10 @@ tape('EIP-3074 AUTH', (t) => {
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
+    await vm.stateManager.putAccount(callerAddress, new Account())
     const account = await vm.stateManager.getAccount(callerAddress)
-    account.balance = BigInt(10000000)
-    await vm.stateManager.putAccount(callerAddress, account)
+    account!.balance = BigInt(10000000)
+    await vm.stateManager.putAccount(callerAddress, account!)
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue.slice(31)
@@ -369,9 +376,10 @@ tape('EIP-3074 AUTH', (t) => {
       gasPrice: 10,
     }).sign(callerPrivateKey)
 
+    await vm.stateManager.putAccount(callerAddress, new Account())
     const account = await vm.stateManager.getAccount(callerAddress)
-    account.balance = BigInt(20000000)
-    await vm.stateManager.putAccount(callerAddress, account)
+    account!.balance = BigInt(20000000)
+    await vm.stateManager.putAccount(callerAddress, account!)
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
 
@@ -412,8 +420,9 @@ async function setupVM(code: Buffer) {
   const vm = await VM.create({ common: common.copy() })
   await vm.stateManager.putContractCode(contractAddress, code)
   await vm.stateManager.putContractCode(contractStorageAddress, STORECALLER)
+  await vm.stateManager.putAccount(callerAddress, new Account())
   const account = await vm.stateManager.getAccount(callerAddress)
-  account.balance = PREBALANCE
+  account!.balance = PREBALANCE
   await vm.stateManager.modifyAccountFields(callerAddress, { balance: PREBALANCE })
   return vm
 }
@@ -622,13 +631,13 @@ tape('EIP-3074 AUTHCALL', (t) => {
       const expectedBalance = PREBALANCE - result.amountSpent - value
       const account = await vm.stateManager.getAccount(callerAddress)
 
-      st.equal(account.balance, expectedBalance, 'caller balance ok')
+      st.equal(account!.balance, expectedBalance, 'caller balance ok')
 
       const contractAccount = await vm.stateManager.getAccount(contractAddress)
-      st.equal(contractAccount.balance, 2n, 'contract balance ok')
+      st.equal(contractAccount!.balance, 2n, 'contract balance ok')
 
       const contractStorageAccount = await vm.stateManager.getAccount(contractStorageAddress)
-      st.equal(contractStorageAccount.balance, 1n, 'storage balance ok')
+      st.equal(contractStorageAccount!.balance, 1n, 'storage balance ok')
     }
   )
 

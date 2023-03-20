@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Address, privateToAddress } from '@ethereumjs/util'
+import { Account, Address, privateToAddress } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -17,10 +17,11 @@ tape('EIP 3860 tests', (t) => {
 
   t.test('EIP-3860 tests', async (st) => {
     const vm = await VM.create({ common })
+    await vm.stateManager.putAccount(sender, new Account())
     const account = await vm.stateManager.getAccount(sender)
     const balance = GWEI * BigInt(21000) * BigInt(10000000)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
+    account!.balance = balance
+    await vm.stateManager.putAccount(sender, account!)
 
     const buffer = Buffer.allocUnsafe(1000000).fill(0x60)
     const tx = FeeMarketEIP1559Transaction.fromTxData({

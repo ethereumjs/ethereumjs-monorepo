@@ -27,8 +27,8 @@ tape('EEI.copy()', async (t) => {
     'copied EEI should have the same hardfork'
   )
   t.equal(
-    (await copy.getAccount(ZeroAddress)).nonce,
-    (await eei.getAccount(ZeroAddress)).nonce,
+    (await copy.getAccount(ZeroAddress))!.nonce,
+    (await eei.getAccount(ZeroAddress))!.nonce,
     'copy should have same State data'
   )
 })
@@ -106,8 +106,8 @@ tape('EEI', (t) => {
     const accountFromEEI = await vm.eei.getAccount(address)
     const accountFromEVM = await vm.evm.eei.getAccount(address)
     st.equal(
-      accountFromEEI.balance,
-      accountFromEVM.balance,
+      accountFromEEI!.balance,
+      accountFromEVM!.balance,
       'vm.eei and evm.eei produce the same accounts'
     )
   })
