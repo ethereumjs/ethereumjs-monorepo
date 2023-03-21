@@ -38,7 +38,7 @@ export class VMExecution extends Execution {
    * Delete cache items if not read or modfied by
    * STATE_CACHE_THRESHOLD_NUM_BLOCKS number of blocks
    */
-  private STATE_CACHE_THRESHOLD_NUM_BLOCKS = 500
+  private STATE_CACHE_THRESHOLD_NUM_BLOCKS = 25000
 
   /**
    * Display state cache stats every num blocks
