@@ -631,9 +631,8 @@ export class EVM implements EVMInterface {
         // It does change the state root, but it only wastes storage.
         //await this._state.putContractCode(message.to, result.returnValue)
         //const account = await this.eei.getAccount(message.to)
-        //
-        // TODO: check if this change is correct
-        await this.eei.putAccount(message.to, new Account())
+        const account = await this.eei.getAccount(message.to)
+        await this.eei.putAccount(message.to, account!)
       }
     }
 
