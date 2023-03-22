@@ -134,14 +134,14 @@ tape('EIP 3860 tests', (t) => {
     st.end()
   })
 
-  t.test('code exceeds max initcode size: allowUnlimitedInitcodeSize active', async (st) => {
+  t.test('code exceeds max initcode size: allowUnlimitedInitCodeSize active', async (st) => {
     const common = new Common({
       chain: Chain.Mainnet,
       hardfork: Hardfork.London,
       eips: [3860],
     })
     const eei = await getEEI()
-    const evm = await EVM.create({ common, eei, allowUnlimitedInitcodeSize: true })
+    const evm = await EVM.create({ common, eei, allowUnlimitedInitCodeSize: true })
 
     const buffer = Buffer.allocUnsafe(1000000).fill(0x60)
 
@@ -160,7 +160,7 @@ tape('EIP 3860 tests', (t) => {
     const result = await evm.runCall(runCallArgs)
     st.ok(
       result.execResult.exceptionError === undefined,
-      'succesfully created a contract with data size > MAX_INITCODE_SIZE and allowUnlimitedInitcodeSize active'
+      'succesfully created a contract with data size > MAX_INITCODE_SIZE and allowUnlimitedInitCodeSize active'
     )
   })
 
@@ -176,12 +176,12 @@ tape('EIP 3860 tests', (t) => {
       const evm = await EVM.create({
         common: commonWith3860,
         eei,
-        allowUnlimitedInitcodeSize: true,
+        allowUnlimitedInitCodeSize: true,
       })
       const evmDisabled = await EVM.create({
         common: commonWith3860,
         eei: eei.copy(),
-        allowUnlimitedInitcodeSize: false,
+        allowUnlimitedInitCodeSize: false,
       })
       const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
       const contractAccount = await evm.eei.getAccount(contractFactory)
@@ -214,11 +214,11 @@ tape('EIP 3860 tests', (t) => {
 
       st.ok(
         !storageActive.equals(Buffer.from('')),
-        'created contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitcodeSize=true'
+        'created contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=true'
       )
       st.ok(
         storageInactive.equals(Buffer.from('')),
-        'did not create contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitcodeSize=false'
+        'did not create contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=false'
       )
 
       // gas check
@@ -240,7 +240,7 @@ tape('EIP 3860 tests', (t) => {
 
       st.ok(
         res.execResult.executionGasUsed > res2.execResult.executionGasUsed,
-        'charged initcode analysis gas cost on both allowUnlimitedCodeSize=true, allowUnlimitedInitcodeSize=false'
+        'charged initcode analysis gas cost on both allowUnlimitedCodeSize=true, allowUnlimitedInitCodeSize=false'
       )
     }
     st.end()

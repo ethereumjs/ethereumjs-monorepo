@@ -102,7 +102,7 @@ export interface EVMOpts {
    * Allows unlimited contract code-size init while debugging. This (partially) disables EIP-3860.
    * Gas cost for initcode size analysis will still be charged. Use with caution.
    */
-  allowUnlimitedInitcodeSize?: boolean
+  allowUnlimitedInitCodeSize?: boolean
 
   /**
    * Override or add custom opcodes to the EVM instruction set
@@ -188,7 +188,7 @@ export class EVM implements EVMInterface {
   _opcodes!: OpcodeList
 
   public readonly _allowUnlimitedContractSize: boolean
-  public readonly _allowUnlimitedInitcodeSize: boolean
+  public readonly _allowUnlimitedInitCodeSize: boolean
 
   protected readonly _customOpcodes?: CustomOpcode[]
   protected readonly _customPrecompiles?: CustomPrecompile[]
@@ -282,7 +282,7 @@ export class EVM implements EVMInterface {
     }
 
     this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false
-    this._allowUnlimitedInitcodeSize = opts.allowUnlimitedInitcodeSize ?? false
+    this._allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
     this._customOpcodes = opts.customOpcodes
     this._customPrecompiles = opts.customPrecompiles
 
@@ -425,7 +425,7 @@ export class EVM implements EVMInterface {
     if (this._common.isActivatedEIP(3860)) {
       if (
         message.data.length > Number(this._common.param('vm', 'maxInitCodeSize')) &&
-        !this._allowUnlimitedInitcodeSize
+        !this._allowUnlimitedInitCodeSize
       ) {
         return {
           createdAddress: message.to,

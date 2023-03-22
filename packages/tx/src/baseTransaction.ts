@@ -119,9 +119,9 @@ export abstract class BaseTransaction<TransactionObject> {
     this._validateCannotExceedMaxInteger({ nonce: this.nonce }, 64, true)
 
     const createContract = txData.to === undefined || txData.to === null
-    const allowUnlimitedInitcodeSize = opts.allowUnlimitedInitcodeSize ?? false
+    const allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
     const common = opts.common ?? this._getCommon()
-    if (createContract && common.isActivatedEIP(3860) && allowUnlimitedInitcodeSize === false) {
+    if (createContract && common.isActivatedEIP(3860) && allowUnlimitedInitCodeSize === false) {
       checkMaxInitCodeSize(common, this.data.length)
     }
   }
