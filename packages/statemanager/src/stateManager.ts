@@ -84,6 +84,7 @@ export interface DefaultStateManagerOpts {
 export class DefaultStateManager extends BaseStateManager implements StateManager {
   _trie: Trie
   _storageTries: { [key: string]: Trie }
+  _codeCache: { [key: string]: Buffer }
 
   protected readonly _prefixCodeHashes: boolean
   protected readonly _deactivateCache: boolean
@@ -96,6 +97,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
 
     this._trie = opts.trie ?? new Trie({ useKeyHashing: true })
     this._storageTries = {}
+    this._codeCache = {}
 
     this._prefixCodeHashes = opts.prefixCodeHashes ?? true
     this._deactivateCache = opts.deactivateCache ?? false
@@ -195,6 +197,9 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     // @ts-expect-error
     await this._trie._db.put(key, value)
 
+    const keyHex = key.toString('hex')
+    this._codeCache[keyHex] = value
+
     if (this.DEBUG) {
       this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
     }
@@ -222,9 +227,15 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       ? Buffer.concat([CODEHASH_PREFIX, account.codeHash])
       : account.codeHash
 
-    // @ts-expect-error
-    const code = await this._trie._db.get(key)
-    return code ?? Buffer.alloc(0)
+    const keyHex = key.toString('hex')
+    if (keyHex in this._codeCache) {
+      return this._codeCache[keyHex]
+    } else {
+      // @ts-expect-error
+      const code = (await this._trie._db.get(key)) ?? Buffer.alloc(0)
+      this._codeCache[keyHex] = code
+      return code
+    }
   }
 
   /**
@@ -391,6 +402,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     // setup trie checkpointing
     await this._trie.revert()
     this._storageTries = {}
+    this._codeCache = {}
     await super.revert()
   }
 
@@ -551,6 +563,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       this._cache.clear(cacheClearingOpts)
     }
     this._storageTries = {}
+    this._codeCache = {}
   }
 
   /**
