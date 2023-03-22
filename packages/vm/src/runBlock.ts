@@ -94,7 +94,9 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     if (this.DEBUG) {
       debug(`Apply DAO hardfork`)
     }
+    await state.checkpoint()
     await _applyDAOHardfork(state)
+    await state.commit()
   }
 
   // Checkpoint state
