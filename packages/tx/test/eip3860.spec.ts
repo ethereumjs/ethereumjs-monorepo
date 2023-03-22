@@ -68,14 +68,14 @@ tape('[EIP3860 tests]', function (t) {
   })
 
   tape(
-    'Should allow txs with MAX_INITCODE_SIZE+1 data if allowUnlimitedInitcodeSize is active',
+    'Should allow txs with MAX_INITCODE_SIZE+1 data if allowUnlimitedInitCodeSize is active',
     (st) => {
       const data = Buffer.alloc(Number(maxInitCodeSize) + 1)
       for (const txType of txTypes) {
         try {
           TransactionFactory.fromTxData(
             { data, type: txType },
-            { common, allowUnlimitedInitcodeSize: true }
+            { common, allowUnlimitedInitCodeSize: true }
           )
           st.ok('Instantiated create tx with MAX_INITCODE_SIZE+1')
         } catch (e) {
@@ -86,16 +86,16 @@ tape('[EIP3860 tests]', function (t) {
     }
   )
 
-  tape('Should charge initcode analysis gas is allowUnlimitedInitcodeSize is active', (st) => {
+  tape('Should charge initcode analysis gas is allowUnlimitedInitCodeSize is active', (st) => {
     const data = Buffer.alloc(Number(maxInitCodeSize))
     for (const txType of txTypes) {
       const eip3860ActiveTx = TransactionFactory.fromTxData(
         { data, type: txType },
-        { common, allowUnlimitedInitcodeSize: true }
+        { common, allowUnlimitedInitCodeSize: true }
       )
       const eip3860DeactivedTx = TransactionFactory.fromTxData(
         { data, type: txType },
-        { common, allowUnlimitedInitcodeSize: false }
+        { common, allowUnlimitedInitCodeSize: false }
       )
       st.ok(
         eip3860ActiveTx.getDataFee() === eip3860DeactivedTx.getDataFee(),

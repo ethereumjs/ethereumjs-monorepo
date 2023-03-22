@@ -877,7 +877,7 @@ export class Interpreter {
     if (this._common.isActivatedEIP(3860)) {
       if (
         data.length > Number(this._common.param('vm', 'maxInitCodeSize')) &&
-        this._evm._allowUnlimitedInitcodeSize === false
+        this._evm._allowUnlimitedInitCodeSize === false
       ) {
         return BigInt(0)
       }
