@@ -130,8 +130,7 @@ test('DPT: simulate bootstrap', async (t) => {
   util.destroyDPTs(dpts)
 })
 
-// TODO: Figure out if this test actually does anything
-test.skip('DPT: simulate acquiring peers via DNS', async () => {
+test('DPT: simulate acquiring peers via DNS', async (t) => {
   const dpts = util.getTestDPTsWithDns(1)
 
   const mockDns = {
@@ -139,10 +138,11 @@ test.skip('DPT: simulate acquiring peers via DNS', async () => {
       return [[testdata.dns.enr]]
     },
   }
-
+  dpts[0]._addPeerBatch = () => {
+    dpts[0].destroy()
+    t.pass('got peer from DNS')
+    t.end()
+  }
   dpts[0].dns.__setNativeDNSModuleResolve(mockDns)
-  dpts[0].refresh()
-  await util.delay(400)
-
-  util.destroyDPTs(dpts)
+  await dpts[0].refresh()
 })
