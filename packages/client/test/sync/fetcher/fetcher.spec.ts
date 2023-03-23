@@ -19,6 +19,9 @@ class FetcherTest extends Fetcher<any, any, any> {
   processStoreError(error: any, _job: any) {
     return error
   }
+  jobStr(_job: any, _withIndex: any) {
+    return ''
+  }
 }
 
 tape('[Fetcher]', (t) => {
@@ -132,8 +135,21 @@ tape('[Fetcher]', (t) => {
     }, 20)
   })
 
-  t.test('should reset td', (t) => {
+  t.test('should reset td', (st) => {
     td.reset()
-    t.end()
+    st.end()
+  })
+
+  t.test('should handle fatal errors correctly', (st) => {
+    const config = new Config({ transports: [] })
+    const fetcher = new FetcherTest({ config, pool: td.object(), timeout: 5000 })
+    const task = { first: BigInt(50), count: 10 }
+    const job: any = { peer: {}, task, state: 'active', index: 0 }
+    ;(fetcher as any).in.insert(job)
+    fetcher.error({ name: 'VeryBadError', message: 'Something very bad happened' }, job, true)
+    st.equals(fetcher.syncErrored?.name, 'VeryBadError', 'fatal error has correct name')
+    st.equals((fetcher as any).in.length, 0, 'fatal error clears job queue')
+    fetcher.clear()
+    st.end()
   })
 })

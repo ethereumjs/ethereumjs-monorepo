@@ -48,6 +48,7 @@ export interface Env {
   codeAddress: Address /* Different than address for DELEGATECALL and CALLCODE */
   gasRefund: bigint /* Current value (at begin of the frame) of the gas refund */
   containerCode?: Buffer /** Full container code for EOF1 contracts */
+  versionedHashes: Buffer[] /** Versioned hashes for blob transactions */
 }
 
 export interface RunState {
@@ -874,7 +875,10 @@ export class Interpreter {
     await this._eei.putAccount(this._env.address, this._env.contract)
 
     if (this._common.isActivatedEIP(3860)) {
-      if (data.length > Number(this._common.param('vm', 'maxInitCodeSize'))) {
+      if (
+        data.length > Number(this._common.param('vm', 'maxInitCodeSize')) &&
+        this._evm._allowUnlimitedInitCodeSize === false
+      ) {
         return BigInt(0)
       }
     }

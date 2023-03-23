@@ -32,6 +32,17 @@ config.logger = getLogger(config)
 type StartRPCOpts = { port?: number; wsServer?: boolean }
 type WithEngineMiddleware = { jwtSecret: Buffer; unlessFn?: (req: IncomingMessage) => boolean }
 
+type createClientArgs = {
+  includeVM: boolean // Instantiates the VM when creating the test client
+  commonChain: Common
+  enableMetaDB: boolean
+  txLookupLimit: number
+  syncTargetHeight: bigint
+  noPeers: boolean
+  blockchain: Blockchain
+  chain: any // Could be anything that implements a portion of the Chain interface (varies by test)
+  opened: boolean
+}
 export function startRPC(
   methods: any,
   opts: StartRPCOpts = { port: 3001 },
@@ -56,7 +67,7 @@ export function createManager(client: EthereumClient) {
   return new Manager(client, client.config)
 }
 
-export function createClient(clientOpts: any = {}) {
+export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   const common: Common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
   const config = new Config({
     transports: [],
@@ -66,7 +77,8 @@ export function createClient(clientOpts: any = {}) {
   })
   const blockchain = clientOpts.blockchain ?? mockBlockchain()
 
-  const chain = clientOpts.chain ?? new Chain({ config, blockchain })
+  // @ts-ignore TODO Move to async Chain.create() initialization
+  const chain = clientOpts.chain ?? new Chain({ config, blockchain: blockchain as any })
   chain.opened = true
 
   const defaultClientConfig = {
@@ -76,8 +88,8 @@ export function createClient(clientOpts: any = {}) {
   const clientConfig = { ...defaultClientConfig, ...clientOpts }
 
   chain.getTd = async (_hash: Buffer, _num: bigint) => BigInt(1000)
-  if (chain._headers !== undefined) {
-    chain._headers.latest = BlockHeader.fromHeaderData(
+  if ((chain as any)._headers !== undefined) {
+    ;(chain as any)._headers.latest = BlockHeader.fromHeaderData(
       { withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined },
       { common }
     )
@@ -155,7 +167,8 @@ export function createClient(clientOpts: any = {}) {
 export function baseSetup(clientOpts: any = {}) {
   const client = createClient(clientOpts)
   const manager = createManager(client)
-  const server = startRPC(manager.getMethods(clientOpts.engine === true))
+  const engineMethods = clientOpts.engine === true ? manager.getMethods(true) : {}
+  const server = startRPC({ ...manager.getMethods(), ...engineMethods })
   server.once('close', () => {
     client.config.events.emit(Event.CLIENT_SHUTDOWN)
   })
@@ -224,19 +237,20 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
     enableMetaDB: true,
   })
   const manager = createManager(client)
-  const server = startRPC(manager.getMethods(clientOpts.engine))
+  const engineMethods = clientOpts.engine === true ? manager.getMethods(true) : {}
+  const server = startRPC({ ...manager.getMethods(), ...engineMethods })
   server.once('close', () => {
     client.config.events.emit(Event.CLIENT_SHUTDOWN)
   })
 
   const { chain } = client
-  const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
+  const service = client.services.find((s) => s.name === 'eth') as FullEthereumService
+  const { execution } = service
 
   await chain.open()
   await execution?.open()
   await chain.update()
-
-  return { chain, common, execution: execution!, server }
+  return { chain, common, execution: execution!, server, service }
 }
 
 /**
@@ -245,7 +259,8 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
 export async function runBlockWithTxs(
   chain: Chain,
   execution: VMExecution,
-  txs: TypedTransaction[]
+  txs: TypedTransaction[],
+  fromEngine = false
 ) {
   const { vm } = execution
   // build block with tx
@@ -262,12 +277,12 @@ export async function runBlockWithTxs(
     },
   })
   for (const tx of txs) {
-    await blockBuilder.addTransaction(tx)
+    await blockBuilder.addTransaction(tx, { skipHardForkValidation: true })
   }
   const block = await blockBuilder.build()
 
   // put block into chain and run execution
-  await chain.putBlocks([block])
+  await chain.putBlocks([block], fromEngine)
   await execution.run()
 }
 

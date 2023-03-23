@@ -23,7 +23,7 @@ tape('[Utils/Parse]', (t) => {
   })
 
   t.test('should import poa network params correctly', async (t) => {
-    t.plan(3)
+    t.plan(4)
     const json = require(`../../client/test/testdata/geth-genesis/poa.json`)
     let params = parseGethGenesis(json, 'poa')
     t.equals(params.genesis.nonce, '0x0000000000000000', 'nonce is formatted correctly')
@@ -39,6 +39,7 @@ tape('[Utils/Parse]', (t) => {
       '0x0000000000000000',
       'non-hex prefixed nonce is formatted correctly'
     )
+    t.equal(params.hardfork, Hardfork.London, 'should correctly infer current hardfork')
   })
 
   t.test(
@@ -91,13 +92,14 @@ tape('[Utils/Parse]', (t) => {
       st.equal(hf.forkHash, kilnForkHashes[hf.name], `${hf.name} forkHash should match`)
     }
 
+    st.equal(common.hardfork(), Hardfork.Merge, 'should correctly infer current hardfork')
+
     // Ok lets schedule shanghai at block 0, this should force merge to be scheduled at just after
     // genesis if even mergeForkIdTransition is not confirmed to be post merge
     // This will also check if the forks are being correctly sorted based on block
-    Object.assign(json.config, { shanghaiBlock: 0 })
+    Object.assign(json.config, { shanghaiTime: Math.floor(Date.now() / 1000) })
     const common1 = Common.fromGethGenesis(json, {
       chain: 'customChain',
-      mergeForkIdPostMerge: false,
     })
     // merge hardfork is now scheduled just after shanghai even if mergeForkIdTransition is not confirmed
     // to be post merge
@@ -114,12 +116,14 @@ tape('[Utils/Parse]', (t) => {
         'istanbul',
         'berlin',
         'london',
-        'shanghai',
         'merge',
         'mergeForkIdTransition',
+        'shanghai',
       ],
       'hardfork parse order should be correct'
     )
+
+    st.equal(common1.hardfork(), Hardfork.Shanghai, 'should correctly infer current hardfork')
   })
 
   t.test('should successfully parse genesis with hardfork scheduled post merge', async (st) => {
@@ -146,19 +150,37 @@ tape('[Utils/Parse]', (t) => {
       ],
       'hardfork parse order should be correct'
     )
+
     st.equal(common.getHardforkByBlockNumber(0), Hardfork.London, 'london at genesis')
     st.equal(common.getHardforkByBlockNumber(1, BigInt(2)), Hardfork.Merge, 'merge at block 1')
-    // shanghai is at 8
-    st.equal(common.getHardforkByBlockNumber(8), Hardfork.Shanghai, 'shanghai at block 8')
+    // shanghai is at timestamp 8
+    st.equal(common.getHardforkByBlockNumber(8), Hardfork.London, 'without timestamp still london')
+    st.equal(
+      common.getHardforkByBlockNumber(8, BigInt(2)),
+      Hardfork.Merge,
+      'without timestamp at merge'
+    )
+    st.equal(
+      common.getHardforkByBlockNumber(8, undefined, 8),
+      Hardfork.Shanghai,
+      'with timestamp at shanghai'
+    )
     // should be post merge at shanghai
-    st.equal(common.getHardforkByBlockNumber(8, BigInt(2)), Hardfork.Shanghai, 'london at genesis')
+    st.equal(
+      common.getHardforkByBlockNumber(8, BigInt(2), 8),
+      Hardfork.Shanghai,
+      'post merge shanghai'
+    )
     // if not post merge, then should error
     try {
-      common.getHardforkByBlockNumber(8, BigInt(1))
-      st.fail('should have failed since merge not compeleted before shanghai')
+      common.getHardforkByBlockNumber(8, BigInt(1), 8)
+      st.fail('should have failed since merge not completed before shanghai')
     } catch (e) {
-      st.pass('correctly fails if merge not compeleted before shanghai')
+      st.pass('correctly fails if merge not completed before shanghai')
     }
+
+    st.equal(common.hardfork(), Hardfork.Shanghai, 'should correctly infer common hardfork')
+
     st.end()
   })
 })

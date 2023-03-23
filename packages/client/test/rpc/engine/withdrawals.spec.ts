@@ -107,13 +107,13 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
       await Block.genWithdrawalsTrieRoot(withdrawals.map(Withdrawal.fromWithdrawalData))
     ).toString('hex')
     t.equal(withdrawalsRoot, computedWithdrawalsRoot, 'withdrawalsRoot compuation should match')
-    const { server, common } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
     let req = params('engine_forkchoiceUpdatedV2', [validForkChoiceState, validPayloadAttributes])
     let expectRes = checkError(
       t,
       INVALID_PARAMS,
-      "invalid argument 1 for key 'withdrawals': argument is not array"
+      'PayloadAttributesV2 MUST be used after Shanghai is activated'
     )
     await baseRequest(t, server, req, 200, expectRes, false)
 
@@ -131,18 +131,19 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
     let payload: ExecutionPayload | undefined = undefined
     req = params('engine_getPayloadV2', [payloadId])
     expectRes = (res: any) => {
-      payload = res.body.result
-      t.equal(payload!.blockNumber, '0x1')
-      t.equal(payload!.withdrawals!.length, withdrawals.length, 'withdrawals should match')
+      const { executionPayload, blockValue } = res.body.result
+      t.equal(executionPayload!.blockNumber, '0x1')
+      t.equal(executionPayload!.withdrawals!.length, withdrawals.length, 'withdrawals should match')
+      t.equal(blockValue, '0x0', 'No value should be returned')
+      payload = executionPayload
     }
     await baseRequest(t, server, req, 200, expectRes, false)
 
     if (gethBlockRlp !== undefined) {
       // check if stateroot matches
-      const gethBlock = Block.fromRLPSerializedBlock(Buffer.from(gethBlockRlp, 'hex'), { common })
       t.equal(
         payload!.stateRoot,
-        `0x${gethBlock.header.stateRoot.toString('hex')}`,
+        '0x23eadd91fca55c0e14034e4d63b2b3ed43f2e807b6bf4d276b784ac245e7fa3f',
         'stateRoot should match'
       )
     }

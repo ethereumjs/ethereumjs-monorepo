@@ -1,3 +1,6 @@
+import { Event } from '../types'
+
+import { AccountFetcher } from './fetcher'
 import { Synchronizer } from './sync'
 
 import type { Peer } from '../net/peer/peer'
@@ -18,10 +21,25 @@ export class SnapSynchronizer extends Synchronizer {
     return 'snap'
   }
 
+  get fetcher(): AccountFetcher | null {
+    if (this._fetcher !== null && !(this._fetcher instanceof AccountFetcher)) {
+      throw Error(`Invalid Fetcher, expected AccountFetcher`)
+    }
+    return this._fetcher
+  }
+
+  set fetcher(fetcher: AccountFetcher | null) {
+    this._fetcher = fetcher
+  }
+
   /**
    * Open synchronizer. Must be called before sync() is called
    */
-  async open(): Promise<void> {}
+  async open(): Promise<void> {
+    await super.open()
+    await this.chain.open()
+    await this.pool.open()
+  }
 
   /**
    * Returns true if peer can be used for syncing
@@ -64,6 +82,27 @@ export class SnapSynchronizer extends Synchronizer {
   }
 
   /**
+   * Start synchronizer.
+   */
+  async start(): Promise<void> {
+    if (this.running) return
+    this.running = true
+
+    const timeout = setTimeout(() => {
+      this.forceSync = true
+    }, this.interval * 30)
+    try {
+      await this.sync()
+    } catch (error: any) {
+      this.config.logger.error(`Snap sync error: ${error.message}`)
+      this.config.events.emit(Event.SYNC_ERROR, error)
+    }
+    await new Promise((resolve) => setTimeout(resolve, this.interval))
+    this.running = false
+    clearTimeout(timeout)
+  }
+
+  /**
    * Called from `sync()` to sync blocks and state from peer starting from current height.
    * @param peer remote peer to sync with
    * @returns a boolean if the setup was successful
@@ -72,34 +111,25 @@ export class SnapSynchronizer extends Synchronizer {
     const latest = peer ? await this.latest(peer) : undefined
     if (!latest) return false
 
-    // Just a small snippet to test out the methods manually
-    // From/for g11tech:
-    //  Clean it up, once we have a full fetcher implemented, else let them
-    //  stay commented for easy reference and manual testing
-    //
-    // const stateRoot = latest.stateRoot
-    // const rangeResult = await peer!.snap!.getAccountRange({
-    //   root: stateRoot,
-    //   origin: Buffer.from(
-    //     '0000000000000000000000000000000000000000000000000000000000000000',
-    //     'hex'
-    //   ),
-    //   limit: Buffer.from('0000000000000000000000000f00000000000000000000000000000000000010', 'hex'),
-    //   bytes: BigInt(5000000),
-    // })
+    const stateRoot = latest.stateRoot
+    const height = latest.number
+    // eslint-disable-next-line eqeqeq
+    if (this.config.syncTargetHeight == null || this.config.syncTargetHeight < latest.number) {
+      this.config.syncTargetHeight = height
+      this.config.logger.info(
+        `New sync target height=${height} hash=${latest.hash().toString('hex')}`
+      )
+    }
 
-    // console.log({ rangeResult: rangeResult?.accounts[0] })
-    // if (rangeResult) {
-    //   process.exit()
-    // }
+    this.fetcher = new AccountFetcher({
+      config: this.config,
+      pool: this.pool,
+      root: stateRoot,
+      // This needs to be determined from the current state of the MPT dump
+      first: BigInt(1),
+    })
 
-    // const height = latest.number
-    // if (!this.config.syncTargetHeight || this.config.syncTargetHeight < latest.number) {
-    //   this.config.syncTargetHeight = height
-    //   this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
-    // }
-
-    return false
+    return true
   }
 
   /**

@@ -1,3 +1,3 @@
 #!/bin/sh
 set -o xtrace
-exec c8 --all --reporter=lcov --reporter=text --reporter=text-lcov npm run test
+exec c8 --all --reporter=lcov --reporter=text npm run test

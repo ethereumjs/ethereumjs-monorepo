@@ -14,7 +14,7 @@ tape('[VMExecution]', async (t) => {
   t.test('Initialization', async (t) => {
     const vm = await VM.create()
     const config = new Config({ vm, transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const exec = new VMExecution({ config, chain })
     t.equals(exec.vm, vm, 'should use vm provided')
     t.end()
@@ -22,7 +22,7 @@ tape('[VMExecution]', async (t) => {
 
   async function testSetup(blockchain: Blockchain, common?: Common) {
     const config = new Config({ common, transports: [] })
-    const chain = new Chain({ config, blockchain })
+    const chain = await Chain.create({ config, blockchain })
     const exec = new VMExecution({ config, chain })
     await chain.open()
     await exec.open()
@@ -54,6 +54,28 @@ tape('[VMExecution]', async (t) => {
     await exec.run()
     t.equal(exec.hardfork, 'byzantium', 'should update HF on block run')
 
+    t.end()
+  })
+
+  t.test('Should fail opening if vmPromise already assigned', async (t) => {
+    const blockchain = await Blockchain.create({
+      validateBlocks: true,
+      validateConsensus: false,
+    })
+    const exec = await testSetup(blockchain)
+    t.equal(exec.started, true, 'execution should be opened')
+    await exec.stop()
+    t.equal(exec.started, false, 'execution should be stopped')
+    exec['vmPromise'] = (async () => 0)()
+    await exec.open()
+    t.equal(exec.started, false, 'execution should be stopped')
+    exec['vmPromise'] = undefined
+    await exec.open()
+    t.equal(exec.started, true, 'execution should be restarted')
+    exec['vmPromise'] = (async () => 0)()
+    await exec.stop()
+    t.equal(exec.started, false, 'execution should be restopped')
+    t.equal(exec['vmPromise'], undefined, 'vmPromise should be reset')
     t.end()
   })
 

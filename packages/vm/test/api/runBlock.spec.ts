@@ -50,6 +50,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       // @ts-ignore
       root: vm.stateManager._trie.root(),
       skipBlockValidation: true,
+      skipHardForkValidation: true,
     })
 
     st.equal(
@@ -73,6 +74,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       // @ts-ignore
       root: vm.stateManager._trie.root(),
       skipBlockValidation: true,
+      skipHardForkValidation: true,
     })
 
     const block2Rlp = toBuffer(testData.blocks[1].rlp)
@@ -82,6 +84,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       // @ts-ignore
       root: vm.stateManager._trie.root(),
       skipBlockValidation: true,
+      skipHardForkValidation: true,
     })
 
     const block3Rlp = toBuffer(testData.blocks[2].rlp)
@@ -91,6 +94,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       // @ts-ignore
       root: vm.stateManager._trie.root(),
       skipBlockValidation: true,
+      skipHardForkValidation: true,
     })
 
     const uncleReward = (
@@ -204,7 +208,7 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
     // The mocked VM uses a mocked runTx
     // which always returns an error.
     await vm
-      .runBlock({ block, skipBlockValidation: true })
+      .runBlock({ block, skipBlockValidation: true, skipHardForkValidation: true })
       .then(() => t.fail('should have returned error'))
       .catch((e) => t.ok(e.message.includes("sender doesn't have enough funds to send tx")))
   })

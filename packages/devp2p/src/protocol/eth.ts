@@ -38,7 +38,7 @@ export class ETH extends Protocol {
       this._latestBlock = c.hardforkBlock(this._hardfork) ?? BigInt(0)
       this._forkHash = c.forkHash(this._hardfork)
       // Next fork block number or 0 if none available
-      this._nextForkBlock = c.nextHardforkBlock(this._hardfork) ?? BigInt(0)
+      this._nextForkBlock = c.nextHardforkBlockOrTimestamp(this._hardfork) ?? BigInt(0)
     }
 
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
@@ -144,7 +144,7 @@ export class ETH extends Protocol {
     }
 
     if (c.hardforkGteHardfork(peerFork.name, this._hardfork) === false) {
-      const nextHardforkBlock = c.nextHardforkBlock(peerFork.name)
+      const nextHardforkBlock = c.nextHardforkBlockOrTimestamp(peerFork.name)
       if (
         peerNextFork === null ||
         nextHardforkBlock === null ||

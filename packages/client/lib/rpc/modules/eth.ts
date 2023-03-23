@@ -1,6 +1,5 @@
-import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Capability, TransactionFactory } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
   Address,
   TypeOutput,
@@ -117,6 +116,7 @@ const jsonRpcBlock = async (
     uncles: block.uncleHeaders.map((uh) => bufferToHex(uh.hash())),
     baseFeePerGas: header.baseFeePerGas,
     ...withdrawalsAttr,
+    excessDataGas: header.excessDataGas,
   }
 }
 
@@ -190,24 +190,33 @@ const getBlockByOption = async (blockOpt: string, chain: Chain) => {
   let block: Block
   const latest = chain.blocks.latest ?? (await chain.getCanonicalHeadBlock())
 
-  if (blockOpt === 'latest') {
-    block = latest
-  } else if (blockOpt === 'earliest') {
-    block = await chain.getBlock(BigInt(0))
-  } else {
-    const blockNumber = BigInt(blockOpt)
-    if (blockNumber === latest.header.number) {
+  switch (blockOpt) {
+    case 'earliest':
+      block = await chain.getBlock(BigInt(0))
+      break
+    case 'latest':
       block = latest
-    } else if (blockNumber > latest.header.number) {
-      throw {
-        code: INVALID_PARAMS,
-        message: 'specified block greater than current height',
+      break
+    case 'safe':
+      block = chain.blocks.safe ?? (await chain.getCanonicalSafeBlock())
+      break
+    case 'finalized':
+      block = chain.blocks.finalized ?? (await chain.getCanonicalFinalizedBlock())
+      break
+    default: {
+      const blockNumber = BigInt(blockOpt)
+      if (blockNumber === latest.header.number) {
+        block = latest
+      } else if (blockNumber > latest.header.number) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'specified block greater than current height',
+        }
+      } else {
+        block = await chain.getBlock(blockNumber)
       }
-    } else {
-      block = await chain.getBlock(blockNumber)
     }
   }
-
   return block
 }
 
@@ -286,6 +295,12 @@ export class Eth {
       [validators.hex],
       [validators.blockOption],
     ])
+
+    this.getTransactionByBlockHashAndIndex = middleware(
+      this.getTransactionByBlockHashAndIndex.bind(this),
+      2,
+      [[validators.hex, validators.blockHash], [validators.hex]]
+    )
 
     this.getTransactionByHash = middleware(this.getTransactionByHash.bind(this), 1, [
       [validators.hex],
@@ -603,6 +618,31 @@ export class Eth {
   }
 
   /**
+   * Returns information about a transaction given a block hash and a transaction's index position.
+   * @param params An array of two parameter:
+   *   1. a block hash
+   *   2. an integer of the transaction index position encoded as a hexadecimal.
+   */
+  async getTransactionByBlockHashAndIndex(params: [string, string]) {
+    try {
+      const [blockHash, txIndexHex] = params
+      const txIndex = parseInt(txIndexHex, 16)
+      const block = await this._chain.getBlock(toBuffer(blockHash))
+      if (block.transactions.length <= txIndex) {
+        return null
+      }
+
+      const tx = block.transactions[txIndex]
+      return jsonRpcTx(tx, block, txIndex)
+    } catch (error: any) {
+      throw {
+        code: INVALID_PARAMS,
+        message: error.message.toString(),
+      }
+    }
+  }
+
+  /**
    * Returns the transaction by hash when available within `--txLookupLimit`
    * @param params An array of one parameter:
    *   1. hash of the transaction
@@ -706,10 +746,11 @@ export class Eth {
             block.header.baseFeePerGas! +
             block.header.baseFeePerGas!
         : (tx as Transaction).gasPrice
+
+      const vmCopy = await this._vm!.copy()
+      vmCopy._common.setHardfork(tx.common.hardfork())
       // Run tx through copied vm to get tx gasUsed and createdAddress
-      const runBlockResult = await (
-        await this._vm!.copy()
-      ).runBlock({
+      const runBlockResult = await vmCopy.runBlock({
         block,
         root: parentBlock.header.stateRoot,
         skipBlockValidation: true,
@@ -837,26 +878,31 @@ export class Eth {
   async sendRawTransaction(params: [string]) {
     const [serializedTx] = params
 
-    const common = this.client.config.chainCommon.copy()
     const { syncTargetHeight } = this.client.config
-    if (
-      (syncTargetHeight === undefined || syncTargetHeight === BigInt(0)) &&
-      !this.client.config.mine
-    ) {
+    if (!this.client.config.synchronized) {
       throw {
         code: INTERNAL_ERROR,
         message: `client is not aware of the current chain height yet (give sync some more time)`,
       }
     }
-    // Set the tx common to an appropriate HF to create a tx
-    // with matching HF rules
-    if (typeof syncTargetHeight === 'bigint' && syncTargetHeight !== BigInt(0)) {
-      common.setHardforkByBlockNumber(syncTargetHeight)
+    const common = this.client.config.chainCommon.copy()
+    const chainHeight = this.client.chain.headers.height
+    let txTargetHeight = syncTargetHeight ?? BigInt(0)
+    // Following step makes sure txTargetHeight > 0
+    if (txTargetHeight <= chainHeight) {
+      txTargetHeight = chainHeight + BigInt(1)
     }
+    common.setHardforkByBlockNumber(txTargetHeight, undefined, Math.floor(Date.now() / 1000))
 
     let tx
     try {
-      tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), { common })
+      const txBuf = toBuffer(serializedTx)
+      if (txBuf[0] === 0x05) {
+        // Blob Transactions sent over RPC are expected to be in Network Wrapper format
+        tx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txBuf, { common })
+      } else {
+        tx = TransactionFactory.fromSerializedData(txBuf, { common })
+      }
     } catch (e: any) {
       throw {
         code: PARSE_ERROR,
@@ -872,10 +918,11 @@ export class Eth {
     }
 
     // Add the tx to own tx pool
-    const { txPool } = this.service as FullEthereumService
+    const { txPool, pool } = this.service as FullEthereumService
 
     try {
       await txPool.add(tx, true)
+      await txPool.sendNewTxHashes([tx.hash()], pool.peers)
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,
@@ -887,7 +934,7 @@ export class Eth {
     if (
       peerPool.peers.length === 0 &&
       !this.client.config.mine &&
-      this._chain.config.chainCommon.consensusType() !== ConsensusType.ProofOfStake
+      this.client.config.isSingleNode === false
     ) {
       throw {
         code: INTERNAL_ERROR,
@@ -975,7 +1022,7 @@ export class Eth {
 
   /**
    * Returns the transaction count for a block given by the block number.
-   * @param params An array of one paramater:
+   * @param params An array of one parameter:
    *  1. integer of a block number, or the string "latest", "earliest" or "pending"
    */
   async getBlockTransactionCountByNumber(params: [string]) {

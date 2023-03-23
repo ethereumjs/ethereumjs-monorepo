@@ -1,4 +1,4 @@
-import { Capability } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
 import { Address, bufferToHex } from '@ethereumjs/util'
 import Heap = require('qheap')
 
@@ -144,7 +144,7 @@ export class TxPool {
   /**
    * Log pool statistics on the given interval
    */
-  private LOG_STATISTICS_INTERVAL = 20000 // ms
+  private LOG_STATISTICS_INTERVAL = 100000 // ms
 
   /**
    * Create new tx pool
@@ -202,16 +202,14 @@ export class TxPool {
    * Checks if tx pool should be started
    */
   checkRunState() {
-    if (
-      this.running ||
-      typeof this.config.syncTargetHeight !== 'bigint' ||
-      this.config.syncTargetHeight === BigInt(0)
-    )
+    if (this.running || !this.config.synchronized) {
       return
+    }
     // If height gte target, we are close enough to the
     // head of the chain that the tx pool can be started
     const target =
-      this.config.syncTargetHeight - BigInt(this.BLOCKS_BEFORE_TARGET_HEIGHT_ACTIVATION)
+      (this.config.syncTargetHeight ?? BigInt(0)) -
+      BigInt(this.BLOCKS_BEFORE_TARGET_HEIGHT_ACTIVATION)
     if (this.service.chain.headers.height >= target) {
       this.start()
     }
@@ -229,6 +227,16 @@ export class TxPool {
       (existingTxGasPrice.maxFee * BigInt(MIN_GAS_PRICE_BUMP_PERCENT)) / BigInt(100)
     if (newGasPrice.tip < minTipCap || newGasPrice.maxFee < minFeeCap) {
       throw new Error('replacement gas too low')
+    }
+
+    if (addedTx instanceof BlobEIP4844Transaction && existingTx instanceof BlobEIP4844Transaction) {
+      const minDataGasFee =
+        (existingTx.maxFeePerDataGas *
+          (existingTx.maxFeePerDataGas * BigInt(MIN_GAS_PRICE_BUMP_PERCENT))) /
+        BigInt(100)
+      if (addedTx.maxFeePerDataGas < minDataGasFee) {
+        throw new Error('replacement data gas too low')
+      }
     }
   }
 
@@ -295,7 +303,7 @@ export class TxPool {
     const vmCopy = await this.vm.copy()
     // Set state root to latest block so that account balance is correct when doing balance check
     await vmCopy.stateManager.setStateRoot(block.stateRoot)
-    const account = await this.vm.stateManager.getAccount(senderAddress)
+    const account = await vmCopy.stateManager.getAccount(senderAddress)
     if (account.nonce > tx.nonce) {
       throw new Error(
         `0x${sender} tries to send a tx with nonce ${tx.nonce}, but account has nonce ${account.nonce} (tx nonce too low)`
@@ -457,8 +465,8 @@ export class TxPool {
         // announcements/re-broadcasts
         const newHashes = this.addToKnownByPeer(hashes, peer)
         const newHashesHex = newHashes.map((txHash) => txHash.toString('hex'))
-        const nexTxs = txs.filter((tx) => newHashesHex.includes(tx.hash().toString('hex')))
-        peer.eth?.request('Transactions', nexTxs).catch((e) => {
+        const newTxs = txs.filter((tx) => newHashesHex.includes(tx.hash().toString('hex')))
+        peer.eth?.request('Transactions', newTxs).catch((e) => {
           this.markFailedSends(peer, newHashes, e as Error)
         })
       }
@@ -650,6 +658,7 @@ export class TxPool {
           tip: (tx as AccessListEIP2930Transaction).gasPrice,
         }
       case 2:
+      case 5:
         return {
           maxFee: (tx as FeeMarketEIP1559Transaction).maxFeePerGas,
           tip: (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas,

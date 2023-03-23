@@ -7,6 +7,7 @@
 ### Methods
 
 - [fromBlockBodyData](TransactionFactory.md#fromblockbodydata)
+- [fromEthersProvider](TransactionFactory.md#fromethersprovider)
 - [fromSerializedData](TransactionFactory.md#fromserializeddata)
 - [fromTxData](TransactionFactory.md#fromtxdata)
 
@@ -34,7 +35,33 @@ This method returns the right transaction.
 
 #### Defined in
 
-[transactionFactory.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L86)
+[transactionFactory.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L88)
+
+___
+
+### fromEthersProvider
+
+▸ `Static` **fromEthersProvider**(`provider`, `txHash`, `txOptions?`): `Promise`<[`TypedTransaction`](../README.md#typedtransaction)\>
+
+Method to retrieve a transaction from the provider
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `provider` | `string` \| `JsonRpcProvider` | An Ethers JsonRPCProvider |
+| `txHash` | `string` | Transaction hash |
+| `txOptions?` | [`TxOptions`](../interfaces/TxOptions.md) | The transaction options |
+
+#### Returns
+
+`Promise`<[`TypedTransaction`](../README.md#typedtransaction)\>
+
+the transaction specified by `txHash`
+
+#### Defined in
+
+[transactionFactory.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L106)
 
 ___
 
@@ -57,7 +84,7 @@ This method tries to decode serialized data.
 
 #### Defined in
 
-[transactionFactory.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L52)
+[transactionFactory.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L54)
 
 ___
 
@@ -80,4 +107,4 @@ Create a transaction from a `txData` object
 
 #### Defined in
 
-[transactionFactory.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L25)
+[transactionFactory.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L27)

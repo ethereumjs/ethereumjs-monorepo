@@ -13,7 +13,7 @@
     "muirGlacierBlock": 0,
     "berlinBlock": 0,
     "londonBlock": 0,
-    "shanghaiBlock": 8,
+    "shanghaiTime": 8,
     "clique": {
       "period": 5,
       "epoch": 30000

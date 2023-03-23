@@ -1,10 +1,12 @@
 import { EventEmitter } from 'events'
 
+import type { SyncMode } from '.'
 import type Connection = require('../../../node_modules/libp2p-interfaces/dist/src/connection/connection')
 import type { MuxedStream } from '../../../node_modules/libp2p-interfaces/dist/src/stream-muxer/types'
 import type { Peer } from './net/peer'
 import type { Server } from './net/server'
 import type { Block, BlockHeader } from '@ethereumjs/block'
+import type { Address } from '@ethereumjs/util'
 import type { Multiaddr } from 'multiaddr'
 
 /**
@@ -20,6 +22,7 @@ export enum Event {
   SYNC_SYNCHRONIZED = 'sync:synchronized',
   SYNC_ERROR = 'sync:error',
   SYNC_FETCHER_ERROR = 'sync:fetcher:error',
+  SYNC_SNAPSYNC_COMPLETE = 'sync:snapsync:complete',
   PEER_CONNECTED = 'peer:connected',
   PEER_DISCONNECTED = 'peer:disconnected',
   PEER_ERROR = 'peer:error',
@@ -38,6 +41,7 @@ export interface EventParams {
   [Event.SYNC_FETCHED_BLOCKS]: [blocks: Block[]]
   [Event.SYNC_FETCHED_HEADERS]: [headers: BlockHeader[]]
   [Event.SYNC_SYNCHRONIZED]: [chainHeight: bigint]
+  [Event.SYNC_SNAPSYNC_COMPLETE]: [stateRoot: Uint8Array]
   [Event.SYNC_ERROR]: [syncError: Error]
   [Event.SYNC_FETCHER_ERROR]: [fetchError: Error, task: any, peer: Peer | null | undefined]
   [Event.PEER_CONNECTED]: [connectedPeer: Peer]
@@ -65,6 +69,7 @@ export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
   EventBus<Event.SYNC_FETCHED_BLOCKS> &
   EventBus<Event.SYNC_FETCHED_HEADERS> &
   EventBus<Event.SYNC_SYNCHRONIZED> &
+  EventBus<Event.SYNC_SNAPSYNC_COMPLETE> &
   EventBus<Event.SYNC_FETCHER_ERROR> &
   EventBus<Event.PEER_CONNECTED> &
   EventBus<Event.PEER_DISCONNECTED> &
@@ -96,3 +101,64 @@ export type DnsNetwork = string
  */
 export type Libp2pConnection = Connection
 export type Libp2pMuxedStream = MuxedStream
+
+export interface ClientOpts {
+  network?: string
+  networkId?: number
+  syncMode?: SyncMode
+  lightServe?: boolean
+  dataDir?: string
+  customChain?: string
+  customGenesisState?: string
+  gethGenesis?: string
+  mergeForkIdPostMerge?: boolean
+  transports?: string[]
+  bootnodes?: string | string[]
+  port?: number
+  extIP?: string
+  multiaddrs?: string | string[]
+  rpc?: boolean
+  rpcPort?: number
+  rpcAddr?: string
+  ws?: boolean
+  wsPort?: number
+  wsAddr?: string
+  rpcEngine?: boolean
+  rpcEnginePort?: number
+  rpcEngineAddr?: string
+  wsEnginePort?: number
+  wsEngineAddr?: string
+  rpcEngineAuth?: boolean
+  jwtSecret?: string
+  helpRpc?: boolean
+  logLevel?: string
+  logFile?: boolean
+  logLevelFile?: string
+  logRotate?: boolean
+  logMaxFiles?: number
+  rpcDebug?: boolean
+  rpcCors?: string
+  maxPerRequest?: number
+  maxFetcherJobs?: number
+  minPeers?: number
+  maxPeers?: number
+  dnsAddr?: string
+  numBlocksPerIteration?: number
+  dnsNetworks?: string[]
+  executeBlocks?: string
+  debugCode?: boolean
+  discDns?: boolean
+  discV4?: boolean
+  mine?: boolean
+  unlock?: string
+  dev?: boolean | string
+  minerCoinbase?: Address
+  saveReceipts?: boolean
+  disableBeaconSync?: boolean
+  forceSnapSync?: boolean
+  txLookupLimit?: number
+  startBlock?: number
+  isSingleNode?: boolean
+  opened: boolean
+  loadBlocksFromRlp?: string
+}

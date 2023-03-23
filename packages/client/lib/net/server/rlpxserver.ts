@@ -1,6 +1,7 @@
 import { DPT as Devp2pDPT, RLPx as Devp2pRLPx } from '@ethereumjs/devp2p'
 
 import { Event } from '../../types'
+import { getClientVersion } from '../../util'
 import { RlpxPeer } from '../peer/rlpxpeer'
 
 import { Server } from './server'
@@ -61,7 +62,7 @@ export class RlpxServer extends Server {
    */
   constructor(options: RlpxServerOptions) {
     super(options)
-    // As of now, the devp2p dpt server listens on the ip4 protocol by default and hence the the ip in the
+    // As of now, the devp2p dpt server listens on the ip4 protocol by default and hence the ip in the
     // bootnode needs to be of ip4 by default
     this.ip = options.config.extIP ?? '0.0.0.0'
     this.discovery = options.config.discV4 || options.config.discDns
@@ -238,6 +239,7 @@ export class RlpxServer extends Server {
   private async initRlpx() {
     return new Promise<void>((resolve) => {
       this.rlpx = new Devp2pRLPx(this.key, {
+        clientId: Buffer.from(getClientVersion()),
         dpt: this.dpt!,
         maxPeers: this.config.maxPeers,
         capabilities: RlpxPeer.capabilities(Array.from(this.protocols)),

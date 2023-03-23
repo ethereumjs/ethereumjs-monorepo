@@ -103,7 +103,7 @@ tape('[HeaderFetcher]', async (t) => {
 
     const config = new Config({ maxPerRequest: 5, transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     chain.putHeaders = td.func<any>()
     const fetcher = new HeaderFetcher({
       config,

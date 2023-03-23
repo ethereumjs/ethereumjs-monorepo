@@ -22,7 +22,7 @@ interface SnapProtocolOptions extends ProtocolOptions {
   convertSlimBody?: boolean
 }
 
-type AccountData = {
+export type AccountData = {
   hash: Buffer
   body: AccountBodyBuffer
 }
@@ -72,7 +72,7 @@ export interface SnapProtocolMethods {
   ) => Promise<{ reqId: bigint; accounts: AccountData[]; proof: Buffer[] }>
   getStorageRanges: (opts: GetStorageRangesOpts) => Promise<{
     reqId: bigint
-    slots: StorageData[]
+    slots: StorageData[][]
     proof: Buffer[]
   }>
   getByteCodes: (opts: GetByteCodesOpts) => Promise<{ reqId: bigint; codes: Buffer[] }>

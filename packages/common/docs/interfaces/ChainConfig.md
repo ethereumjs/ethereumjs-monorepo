@@ -42,7 +42,7 @@ ___
 
 ### comment
 
-• **comment**: `string`
+• `Optional` **comment**: `string`
 
 #### Defined in
 
@@ -72,7 +72,7 @@ ___
 
 ### defaultHardfork
 
-• **defaultHardfork**: `string`
+• `Optional` **defaultHardfork**: `string`
 
 #### Defined in
 
@@ -132,7 +132,7 @@ ___
 
 ### url
 
-• **url**: `string`
+• `Optional` **url**: `string`
 
 #### Defined in
 

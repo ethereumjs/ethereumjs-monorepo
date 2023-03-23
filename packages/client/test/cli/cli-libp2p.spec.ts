@@ -21,7 +21,7 @@ tape('[CLI] rpc', (t) => {
       ...[
         '--transports=libp2p',
         '--dev',
-        '--lightserv=true',
+        '--lightServe=true',
         '--multiaddrs=/ip4/127.0.0.1/tcp/50505/',
       ],
     ])
@@ -43,12 +43,12 @@ tape('[CLI] rpc', (t) => {
           ...[
             '--transports=libp2p',
             `--bootnodes=${bootNodeAddress}`,
-            '--datadir=data2',
+            '--dataDir=data2',
             '--mine=false',
             '--dev',
             '--multiaddrs=/ip4/0.0.0.0/tcp/50506',
-            '--syncmode=light',
-            '--loglevel=debug',
+            '--syncMode=light',
+            '--logLevel=debug',
           ],
         ])
         child2.stdout.on('data', async (data) => {

@@ -18,7 +18,7 @@ import { ERROR } from '../exceptions'
 import {
   addressToBuffer,
   describeLocation,
-  exponentation,
+  exponentiation,
   fromTwos,
   getDataSlice,
   jumpIsValid,
@@ -178,7 +178,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.stack.push(base)
         return
       }
-      const r = exponentation(base, exponent)
+      const r = exponentiation(base, exponent)
       runState.stack.push(r)
     },
   ],
@@ -632,6 +632,18 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.stack.push(runState.interpreter.getBlockBaseFee())
     },
   ],
+  // 0x49: DATAHASH
+  [
+    0x49,
+    function (runState) {
+      const index = runState.stack.pop()
+      if (runState.env.versionedHashes.length > Number(index)) {
+        runState.stack.push(bufferToBigInt(runState.env.versionedHashes[Number(index)]))
+      } else {
+        runState.stack.push(BigInt(0))
+      }
+    },
+  ],
   // 0x50 range - 'storage' and execution
   // 0x50: POP
   [
@@ -645,7 +657,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x51,
     function (runState) {
       const pos = runState.stack.pop()
-      const word = runState.memory.read(Number(pos), 32)
+      const word = runState.memory.read(Number(pos), 32, true)
       runState.stack.push(bufferToBigInt(word))
     },
   ],
@@ -906,7 +918,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (length !== BigInt(0)) {
-        data = runState.memory.read(Number(offset), Number(length))
+        data = runState.memory.read(Number(offset), Number(length), true)
       }
 
       const ret = await runState.interpreter.create(gasLimit, value, data)
@@ -928,7 +940,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (length !== BigInt(0)) {
-        data = runState.memory.read(Number(offset), Number(length))
+        data = runState.memory.read(Number(offset), Number(length), true)
       }
 
       const ret = await runState.interpreter.create2(
@@ -950,7 +962,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (inLength !== BigInt(0)) {
-        data = runState.memory.read(Number(inOffset), Number(inLength))
+        data = runState.memory.read(Number(inOffset), Number(inLength), true)
       }
 
       const gasLimit = runState.messageGasLimit!
@@ -975,7 +987,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (inLength !== BigInt(0)) {
-        data = runState.memory.read(Number(inOffset), Number(inLength))
+        data = runState.memory.read(Number(inOffset), Number(inLength), true)
       }
 
       const ret = await runState.interpreter.callCode(gasLimit, toAddress, value, data)
@@ -995,7 +1007,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (inLength !== BigInt(0)) {
-        data = runState.memory.read(Number(inOffset), Number(inLength))
+        data = runState.memory.read(Number(inOffset), Number(inLength), true)
       }
 
       const gasLimit = runState.messageGasLimit!
@@ -1109,7 +1121,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (inLength !== BigInt(0)) {
-        data = runState.memory.read(Number(inOffset), Number(inLength))
+        data = runState.memory.read(Number(inOffset), Number(inLength), true)
       }
 
       const ret = await runState.interpreter.callStatic(gasLimit, toAddress, value, data)

@@ -2,7 +2,9 @@ import { intToHex, isHexPrefixed, stripHexPrefix } from '@ethereumjs/util'
 
 import { Hardfork } from './enums'
 
-type ConfigHardfork = { name: string; block: number }
+type ConfigHardfork =
+  | { name: string; block: null; timestamp: number }
+  | { name: string; block: number; timestamp?: number }
 /**
  * Transforms Geth formatted nonce (i.e. hex string) to 8 byte 0x-prefixed string used internally
  * @param nonce string parsed from the Geth genesis file
@@ -27,9 +29,27 @@ function formatNonce(nonce: string): string {
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
 function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
-  const { name, config, difficulty, mixHash, gasLimit, coinbase, baseFeePerGas } = json
-  let { extraData, timestamp, nonce } = json
-  const { chainId } = config
+  const {
+    name,
+    config,
+    difficulty,
+    mixHash,
+    gasLimit,
+    coinbase,
+    baseFeePerGas,
+  }: {
+    name: string
+    config: any
+    difficulty: string
+    mixHash: string
+    gasLimit: string
+    coinbase: string
+    baseFeePerGas: string
+  } = json
+  let { extraData, timestamp, nonce }: { extraData: string; timestamp: string; nonce: string } =
+    json
+  const genesisTimestamp = Number(timestamp)
+  const { chainId }: { chainId: number } = config
 
   // geth is not strictly putting empty fields with a 0x prefix
   if (extraData === '') {
@@ -52,7 +72,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     )
   }
 
-  const params: any = {
+  const params = {
     name,
     chainId,
     networkId: chainId,
@@ -66,6 +86,8 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
       coinbase,
       baseFeePerGas,
     },
+    hardfork: undefined as string | undefined,
+    hardforks: [] as ConfigHardfork[],
     bootstrapNodes: [],
     consensus:
       config.clique !== undefined
@@ -87,7 +109,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
           },
   }
 
-  const forkMap: { [key: string]: { name: string; postMerge?: boolean } } = {
+  const forkMap: { [key: string]: { name: string; postMerge?: boolean; isTimestamp?: boolean } } = {
     [Hardfork.Homestead]: { name: 'homesteadBlock' },
     [Hardfork.Dao]: { name: 'daoForkBlock' },
     [Hardfork.TangerineWhistle]: { name: 'eip150Block' },
@@ -100,7 +122,8 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     [Hardfork.Berlin]: { name: 'berlinBlock' },
     [Hardfork.London]: { name: 'londonBlock' },
     [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: mergeForkIdPostMerge },
-    [Hardfork.Shanghai]: { name: 'shanghaiBlock', postMerge: true },
+    [Hardfork.Shanghai]: { name: 'shanghaiTime', postMerge: true, isTimestamp: true },
+    [Hardfork.ShardingForkDev]: { name: 'shardingForkTime', postMerge: true, isTimestamp: true },
   }
 
   // forkMapRev is the map from config field name to Hardfork
@@ -108,20 +131,31 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     acc[forkMap[elem].name] = elem
     return acc
   }, {} as { [key: string]: string })
-  const configHardforkNames = Object.keys(config).filter((key) => forkMapRev[key] !== undefined)
+  const configHardforkNames = Object.keys(config).filter(
+    (key) => forkMapRev[key] !== undefined && config[key] !== undefined && config[key] !== null
+  )
 
   params.hardforks = configHardforkNames
     .map((nameBlock) => ({
       name: forkMapRev[nameBlock],
-      block: config[nameBlock],
+      block:
+        forkMap[forkMapRev[nameBlock]].isTimestamp === true || typeof config[nameBlock] !== 'number'
+          ? null
+          : config[nameBlock],
+      timestamp:
+        forkMap[forkMapRev[nameBlock]].isTimestamp === true && typeof config[nameBlock] === 'number'
+          ? config[nameBlock]
+          : undefined,
     }))
-    .filter((fork) => fork.block !== null && fork.block !== undefined)
+    .filter((fork) => fork.block !== null || fork.timestamp !== undefined) as ConfigHardfork[]
 
-  // sort with block
   params.hardforks.sort(function (a: ConfigHardfork, b: ConfigHardfork) {
-    return a.block - b.block
+    return (a.block ?? Infinity) - (b.block ?? Infinity)
   })
-  params.hardforks.unshift({ name: Hardfork.Chainstart, block: 0 })
+
+  params.hardforks.sort(function (a: ConfigHardfork, b: ConfigHardfork) {
+    return (a.timestamp ?? genesisTimestamp) - (b.timestamp ?? genesisTimestamp)
+  })
 
   if (config.terminalTotalDifficulty !== undefined) {
     // Following points need to be considered for placement of merge hf
@@ -135,25 +169,21 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
       block: null,
     }
 
-    // If any of the genesis block require merge, then we need merge just right after genesis
-    const isMergeJustPostGenesis: boolean = params.hardforks
-      .filter((hf: ConfigHardfork) => hf.block === 0)
-      .reduce(
-        (acc: boolean, hf: ConfigHardfork) => acc || forkMap[hf.name]?.postMerge === true,
-        false
-      )
-
-    // Merge hardfork has to be placed before first non-zero block hardfork that is dependent
-    // on merge or first non zero block hardfork if any of genesis hardforks require merge
+    // Merge hardfork has to be placed before first hardfork that is dependent on merge
     const postMergeIndex = params.hardforks.findIndex(
-      (hf: any) => (isMergeJustPostGenesis || forkMap[hf.name]?.postMerge === true) && hf.block > 0
+      (hf: any) => forkMap[hf.name]?.postMerge === true
     )
     if (postMergeIndex !== -1) {
-      params.hardforks.splice(postMergeIndex, 0, mergeConfig)
+      params.hardforks.splice(postMergeIndex, 0, mergeConfig as unknown as ConfigHardfork)
     } else {
-      params.hardforks.push(mergeConfig)
+      params.hardforks.push(mergeConfig as unknown as ConfigHardfork)
     }
   }
+
+  const latestHardfork = params.hardforks.length > 0 ? params.hardforks.slice(-1)[0] : undefined
+  params.hardfork = latestHardfork?.name
+  params.hardforks.unshift({ name: Hardfork.Chainstart, block: 0 })
+
   return params
 }
 

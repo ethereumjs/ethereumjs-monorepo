@@ -1,7 +1,12 @@
-import { Block } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { FeeMarketEIP1559Transaction, Transaction, TransactionFactory } from '@ethereumjs/tx'
+import {
+  BlobEIP4844Transaction,
+  FeeMarketEIP1559Transaction,
+  Transaction,
+  TransactionFactory,
+} from '@ethereumjs/tx'
 import { Account, Address, KECCAK256_NULL, MAX_INTEGER } from '@ethereumjs/util'
 import * as tape from 'tape'
 
@@ -62,6 +67,91 @@ tape('runTx() -> successful API parameter usage', async (t) => {
       blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),
     })
     await simpleRun(vm, 'rinkeby (PoA), london HF, default SM - should run without errors', st)
+
+    st.end()
+  })
+
+  t.test('test successful hardfork matching', async (st) => {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const vm = await VM.create({
+      common,
+      blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),
+    })
+    const tx = getTransaction(vm._common, 0, true)
+    const caller = tx.getSenderAddress()
+    const acc = createAccount()
+    await vm.eei.putAccount(caller, acc)
+    const block = Block.fromBlockData({}, { common: vm._common.copy() })
+    await vm.runTx({ tx, block })
+    st.pass('matched hardfork should run without throwing')
+    st.end()
+  })
+
+  t.test('test hardfork mismatch', async (st) => {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const vm = await VM.create({
+      common,
+      blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),
+    })
+    const tx = getTransaction(vm._common, 0, true)
+    const caller = tx.getSenderAddress()
+    const acc = createAccount()
+    await vm.eei.putAccount(caller, acc)
+    const block = Block.fromBlockData({}, { common: vm._common.copy() })
+
+    block._common.setHardfork(Hardfork.Merge)
+    try {
+      await vm.runTx({ tx, block })
+      st.fail('vm/block mismatched hardfork should have failed')
+    } catch (e) {
+      st.equal(
+        (e as Error).message.includes('block has a different hardfork than the vm'),
+        true,
+        'block has a different hardfork than the vm'
+      )
+      st.pass('vm/tx mismatched hardfork correctly failed')
+    }
+
+    tx.common.setHardfork(Hardfork.London)
+    block._common.setHardfork(Hardfork.Merge)
+    try {
+      await vm.runTx({ tx, block })
+      st.fail('vm/tx mismatched hardfork should have failed')
+    } catch (e) {
+      st.equal(
+        (e as Error).message.includes('block has a different hardfork than the vm'),
+        true,
+        'block has a different hardfork than the vm'
+      )
+      st.pass('vm/tx mismatched hardfork correctly failed')
+    }
+
+    await vm.runTx({ tx, block, skipHardForkValidation: true })
+    st.pass('runTx should not fail with mismatching hardforks if validation skipped')
+
+    st.end()
+  })
+
+  t.test('should ignore merge in hardfork mismatch', async (st) => {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+    const vm = await VM.create({
+      common,
+      blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),
+    })
+    const tx = getTransaction(vm._common, 0, true)
+    const caller = tx.getSenderAddress()
+    const acc = createAccount()
+    await vm.eei.putAccount(caller, acc)
+    const block = Block.fromBlockData({}, { common: vm._common.copy() })
+
+    tx.common.setHardfork(Hardfork.GrayGlacier)
+    block._common.setHardfork(Hardfork.GrayGlacier)
+    try {
+      await vm.runTx({ tx, block })
+      st.pass('successfully ignored merge hf while hf matching in runTx')
+    } catch (e) {
+      st.fail('should have ignored merge hf while matching in runTx')
+    }
 
     st.end()
   })
@@ -162,7 +252,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
         // calculate expected coinbase balance
         const baseFee = block.header.baseFeePerGas!
         const inclusionFeePerGas =
-          tx instanceof FeeMarketEIP1559Transaction
+          tx instanceof FeeMarketEIP1559Transaction || tx instanceof BlobEIP4844Transaction
             ? tx.maxPriorityFeePerGas < tx.maxFeePerGas - baseFee
               ? tx.maxPriorityFeePerGas
               : tx.maxFeePerGas - baseFee
@@ -205,7 +295,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
     await vm.eei.putAccount(caller, acc)
 
     try {
-      await vm.runTx({ tx })
+      await vm.runTx({ tx, skipHardForkValidation: true })
       // TODO uncomment:
       // t.fail('should throw error')
     } catch (e: any) {
@@ -669,7 +759,7 @@ tape('runTx() -> skipBalance behavior', async (t) => {
       to: Address.zero(),
     }).sign(senderKey)
 
-    const res = await vm.runTx({ tx, skipBalance: true })
+    const res = await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
     t.pass('runTx should not throw with no balance and skipBalance')
     const afterTxBalance = (await vm.stateManager.getAccount(sender)).balance
     t.equal(
@@ -705,7 +795,7 @@ tape(
     const acc = await vm.eei.getAccount(addr)
     acc.balance = BigInt(tx.gasLimit * tx.gasPrice)
     await vm.eei.putAccount(addr, acc)
-    await vm.runTx({ tx })
+    await vm.runTx({ tx, skipHardForkValidation: true })
 
     const hash = await vm.stateManager.getContractStorage(
       codeAddr,
@@ -746,7 +836,11 @@ tape(
     const acc = await vm.eei.getAccount(addr)
     acc.balance = BigInt(tx.gasLimit * tx.gasPrice + tx.value)
     await vm.eei.putAccount(addr, acc)
-    t.equals((await vm.runTx({ tx })).totalGasSpent, BigInt(27818), 'did not charge callNewAccount')
+    t.equals(
+      (await vm.runTx({ tx, skipHardForkValidation: true })).totalGasSpent,
+      BigInt(27818),
+      'did not charge callNewAccount'
+    )
 
     t.end()
   }
@@ -777,8 +871,70 @@ tape(
     const acc = await vm.eei.getAccount(addr)
     acc.balance = BigInt(tx.gasLimit * tx.gasPrice + tx.value)
     await vm.eei.putAccount(addr, acc)
-    t.equals((await vm.runTx({ tx })).totalGasSpent, BigInt(13001), 'did not charge callNewAccount')
+    t.equals(
+      (await vm.runTx({ tx, skipHardForkValidation: true })).totalGasSpent,
+      BigInt(13001),
+      'did not charge callNewAccount'
+    )
 
     t.end()
   }
 )
+
+tape('EIP 4844 transaction tests', async (t) => {
+  const genesisJson = require('../../../block/test/testdata/4844-hardfork.json')
+  const common = Common.fromGethGenesis(genesisJson, {
+    chain: 'customChain',
+    hardfork: Hardfork.ShardingForkDev,
+  })
+  common.setHardfork(Hardfork.ShardingForkDev)
+  const oldGetBlockFunction = Blockchain.prototype.getBlock
+
+  // Stub getBlock to produce a valid parent header under EIP 4844
+  Blockchain.prototype.getBlock = async () => {
+    return Block.fromBlockData(
+      {
+        header: BlockHeader.fromHeaderData(
+          {
+            excessDataGas: 0n,
+            number: 1,
+            parentHash: blockchain.genesisBlock.hash(),
+          },
+          {
+            common,
+            skipConsensusFormatValidation: true,
+          }
+        ),
+      },
+      {
+        common,
+        skipConsensusFormatValidation: true,
+      }
+    )
+  }
+  const blockchain = await Blockchain.create({ validateBlocks: false, validateConsensus: false })
+  const vm = await VM.create({ common, blockchain })
+
+  const tx = getTransaction(common, 5, true)
+
+  const block = Block.fromBlockData(
+    {
+      header: BlockHeader.fromHeaderData(
+        {
+          excessDataGas: 1n,
+          number: 2,
+          parentHash: (await blockchain.getBlock(1n)).hash(), // Faking parent hash with getBlock stub
+        },
+        {
+          common,
+          skipConsensusFormatValidation: true,
+        }
+      ),
+    },
+    { common, skipConsensusFormatValidation: true }
+  )
+  const res = await vm.runTx({ tx, block, skipBalance: true })
+  t.ok(res.execResult.exceptionError === undefined, 'simple blob tx run succeeds')
+  Blockchain.prototype.getBlock = oldGetBlockFunction
+  t.end()
+})

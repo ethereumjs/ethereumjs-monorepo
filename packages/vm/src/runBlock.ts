@@ -2,7 +2,15 @@ import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { Account, Address, bigIntToBuffer, bufArrToArr, intToBuffer, short } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  GWEI_TO_WEI,
+  bigIntToBuffer,
+  bufArrToArr,
+  intToBuffer,
+  short,
+} from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { Bloom } from './bloom'
@@ -50,7 +58,8 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   ) {
     this._common.setHardforkByBlockNumber(
       block.header.number,
-      opts.hardforkByTTD ?? this._hardforkByTTD
+      opts.hardforkByTTD ?? this._hardforkByTTD,
+      block.header.timestamp
     )
   }
 
@@ -281,13 +290,14 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     }
 
     // Run the tx through the VM
-    const { skipBalance, skipNonce } = opts
+    const { skipBalance, skipNonce, skipHardForkValidation } = opts
 
     const txRes = await this.runTx({
       tx,
       block,
       skipBalance,
       skipNonce,
+      skipHardForkValidation,
       blockGasUsed: gasUsed,
     })
     txResults.push(txRes)
@@ -326,7 +336,9 @@ async function assignWithdrawals(this: VM, block: Block): Promise<void> {
     const { address, amount } = withdrawal
     // skip touching account if no amount update
     if (amount === BigInt(0)) continue
-    await rewardAccount(state, address, amount)
+    // Withdrawal amount is represented in Gwei so needs to be
+    // converted to wei
+    await rewardAccount(state, address, amount * GWEI_TO_WEI)
   }
 }
 

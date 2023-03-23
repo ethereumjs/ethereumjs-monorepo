@@ -10,9 +10,9 @@ import { Config } from '../../../lib/config'
 import { EthProtocol } from '../../../lib/net/protocol'
 
 tape('[EthProtocol]', (t) => {
-  t.test('should get properties', (t) => {
+  t.test('should get properties', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     t.ok(typeof p.name === 'string', 'get name')
     t.ok(Array.isArray(p.versions), 'get versions')
@@ -22,7 +22,7 @@ tape('[EthProtocol]', (t) => {
 
   t.test('should open correctly', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     await p.open()
     t.ok(p.opened, 'opened is true')
@@ -30,9 +30,9 @@ tape('[EthProtocol]', (t) => {
     t.end()
   })
 
-  t.test('should encode/decode status', (t) => {
+  t.test('should encode/decode status', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     Object.defineProperty(chain, 'networkId', {
       get: () => {
@@ -79,9 +79,9 @@ tape('[EthProtocol]', (t) => {
     t.end()
   })
 
-  t.test('verify that NewBlock handler encodes/decodes correctly', (t) => {
+  t.test('verify that NewBlock handler encodes/decodes correctly', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     const td = BigInt(100)
     const block = Block.fromBlockData({}, { common: config.chainCommon })
@@ -98,9 +98,9 @@ tape('[EthProtocol]', (t) => {
     t.end()
   })
 
-  t.test('verify that GetReceipts handler encodes/decodes correctly', (t) => {
+  t.test('verify that GetReceipts handler encodes/decodes correctly', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     const block = Block.fromBlockData({})
     const res = p.decode(p.messages.filter((message) => message.name === 'GetReceipts')[0], [
@@ -118,12 +118,12 @@ tape('[EthProtocol]', (t) => {
     t.end()
   })
 
-  t.test('verify that PooledTransactions handler encodes correctly', (t) => {
+  t.test('verify that PooledTransactions handler encodes correctly', async (t) => {
     const config = new Config({
       transports: [],
       common: new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.London }),
     })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     const tx = FeeMarketEIP1559Transaction.fromTxData(
       {
@@ -143,12 +143,12 @@ tape('[EthProtocol]', (t) => {
     t.end()
   })
 
-  t.test('verify that Receipts encode/decode correctly', (t) => {
+  t.test('verify that Receipts encode/decode correctly', async (t) => {
     const config = new Config({
       transports: [],
       common: new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.London }),
     })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     const receipts = [
       {
@@ -196,22 +196,28 @@ tape('[EthProtocol]', (t) => {
     t.end()
   })
 
-  t.test('verify that Transactions handler encodes/decodes correctly', (st) => {
+  t.test('verify that Transactions handler encodes/decodes correctly', async (st) => {
     const config = new Config({
       transports: [],
-      common: new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.London }),
+      common: new Common({
+        chain: Config.CHAIN_DEFAULT,
+        hardfork: Hardfork.Merge,
+        eips: [4895, 4844],
+      }),
     })
     config.synchronized = true
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
 
     const legacyTx = TransactionFactory.fromTxData({ type: 0 })
     const eip2929Tx = TransactionFactory.fromTxData({ type: 1 })
     const eip1559Tx = TransactionFactory.fromTxData({ type: 2 })
+    const blobTx = TransactionFactory.fromTxData({ type: 5 }, { common: config.chainCommon })
     const res = p.encode(p.messages.filter((message) => message.name === 'Transactions')[0], [
       legacyTx,
       eip2929Tx,
       eip1559Tx,
+      blobTx,
     ])
     st.deepEqual(res[0], legacyTx.serialize(), 'legacy tx correctly encoded')
     st.deepEqual(res[1], eip2929Tx.serialize(), 'EIP29292 tx correctly encoded')
@@ -224,15 +230,16 @@ tape('[EthProtocol]', (t) => {
     st.deepEqual(decoded[0].type, legacyTx.type, 'decoded legacy tx correctly')
     st.deepEqual(decoded[1].type, eip2929Tx.type, 'decoded eip2929 tx correctly')
     st.deepEqual(decoded[2].type, eip1559Tx.type, 'decoded EIP1559 tx correctly')
+    st.equal(decoded.length, 3, 'should not include blob transaction')
     st.end()
   })
 
-  t.test('verify that NewPooledTransactionHashes encodes/decodes correctly', (st) => {
+  t.test('verify that NewPooledTransactionHashes encodes/decodes correctly', async (st) => {
     const config = new Config({
       transports: [],
       common: new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.London }),
     })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     const fakeHash = randomBytes(32)
     const res = p.encode(

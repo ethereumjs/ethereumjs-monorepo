@@ -2,6 +2,7 @@ import { Fetcher } from './fetcher'
 
 import type { Chain } from '../../blockchain'
 import type { FetcherOptions } from './fetcher'
+import type { Job } from './types'
 
 export interface BlockFetcherOptions extends FetcherOptions {
   /** Blockchain */
@@ -202,6 +203,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
       this.nextTasks()
     }
   }
+
   processStoreError(
     error: Error,
     task: JobTask
@@ -218,5 +220,29 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
       }
     }
     return { destroyFetcher, banPeer, stepBack }
+  }
+
+  /**
+   * Job log format helper.
+   * @param job
+   * @param withIndex pass true to additionally output job.index
+   */
+  jobStr(job: Job<JobTask, JobResult, StorageItem>, withIndex = false) {
+    let str = ''
+    if (withIndex) {
+      str += `index=${job.index} `
+    }
+    let { first, count } = job.task
+    let partialResult = ''
+    if (job.partialResult) {
+      first = first + BigInt(job.partialResult.length)
+      count -= job.partialResult.length
+      partialResult = ` partialResults=${job.partialResult.length}`
+    }
+    str += `first=${first} count=${count}${partialResult}`
+    if ('reverse' in this) {
+      str += ` reverse=${(this as any).reverse}`
+    }
+    return str
   }
 }

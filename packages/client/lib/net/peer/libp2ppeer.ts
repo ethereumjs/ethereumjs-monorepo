@@ -28,7 +28,7 @@ export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transp
  * import { Chain } from './lib/blockchain'
  * import { EthProtocol } from './lib/net/protocol'
  *
- * const chain = new Chain()
+ * const chain = await Chain.create()
  * const protocols = [new EthProtocol({ chain })]
  * const id = 'QmWYhkpLFDhQBwHCMSWzEebbJ5JzXWBKLJxjEuiL8wGzUu'
  * const multiaddrs = [multiaddr('/ip4/192.0.2.1/tcp/12345')]

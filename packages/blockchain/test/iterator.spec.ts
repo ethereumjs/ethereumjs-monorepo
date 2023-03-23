@@ -46,7 +46,7 @@ tape('blockchain test', (t) => {
               reorgedBlocks.push(reorgedBlock)
               reorgParent = reorgedBlock
             }
-            // we can do putBlocks even though it also aquire lock because we started this
+            // we can do putBlocks even though it also acquire lock because we started this
             // with releaseLockOnCallback=true, so in this callback there are no pending locks
             await blockchain.putBlocks(reorgedBlocks)
           }

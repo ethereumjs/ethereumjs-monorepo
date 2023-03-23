@@ -19,9 +19,15 @@ const [blockData] = blocks
 
 const originalValidate = BlockHeader.prototype._consensusFormatValidation
 
-export const batchBlocks = async (t: Test, server: HttpServer) => {
-  for (let i = 0; i < 3; i++) {
-    const req = params(method, [blocks[i]])
+/**
+ *
+ * @param t Test suite
+ * @param server HttpServer
+ * @param inputBlocks Array of valid ExecutionPayloadV1 data
+ */
+export const batchBlocks = async (t: Test, server: HttpServer, inputBlocks: any[] = blocks) => {
+  for (let i = 0; i < inputBlocks.length; i++) {
+    const req = params('engine_newPayloadV1', [inputBlocks[i]])
     const expectRes = (res: any) => {
       t.equal(res.body.result.status, 'VALID')
     }
