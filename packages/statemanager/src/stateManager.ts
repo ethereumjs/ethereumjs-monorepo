@@ -386,7 +386,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       // Verify that the account is empty in the proof.
       const emptyBytes = new Uint8Array(0)
       const notEmptyErrorMsg = 'Invalid proof provided: account is not empty'
-      console.log('nonce', proof.nonce)
+
       const nonce = unpadBytes(hexStringToBytes(proof.nonce))
       if (!equalsBytes(nonce, emptyBytes)) {
         throw new Error(`${notEmptyErrorMsg} (nonce is not zero)`)

@@ -1,4 +1,4 @@
-import { bytesToHex, short, toBytes } from '@ethereumjs/util'
+import { bytesToHex, short } from '@ethereumjs/util'
 import { sha256 } from 'ethereum-cryptography/sha256'
 
 import { OOGResult } from '../evm'
@@ -34,6 +34,6 @@ export function precompile02(opts: PrecompileInput): ExecResult {
 
   return {
     executionGasUsed: gasUsed,
-    returnValue: toBytes(sha256(data)),
+    returnValue: sha256(data),
   }
 }

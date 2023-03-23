@@ -1,4 +1,4 @@
-import { bigIntToBytes, concatBytesUnsafe, utf8ToBytes } from '@ethereumjs/util'
+import { bigIntToBytes, concatBytesNoTypeCheck, utf8ToBytes } from '@ethereumjs/util'
 
 // Geth compatible DB keys
 
@@ -47,16 +47,18 @@ const BODY_PREFIX = utf8ToBytes('b')
 const bytesBE8 = (n: bigint) => bigIntToBytes(BigInt.asUintN(64, n))
 
 const tdKey = (n: bigint, hash: Uint8Array) =>
-  concatBytesUnsafe(HEADER_PREFIX, bytesBE8(n), hash, TD_SUFFIX)
+  concatBytesNoTypeCheck(HEADER_PREFIX, bytesBE8(n), hash, TD_SUFFIX)
 
 const headerKey = (n: bigint, hash: Uint8Array) =>
-  concatBytesUnsafe(HEADER_PREFIX, bytesBE8(n), hash)
+  concatBytesNoTypeCheck(HEADER_PREFIX, bytesBE8(n), hash)
 
-const bodyKey = (n: bigint, hash: Uint8Array) => concatBytesUnsafe(BODY_PREFIX, bytesBE8(n), hash)
+const bodyKey = (n: bigint, hash: Uint8Array) =>
+  concatBytesNoTypeCheck(BODY_PREFIX, bytesBE8(n), hash)
 
-const numberToHashKey = (n: bigint) => concatBytesUnsafe(HEADER_PREFIX, bytesBE8(n), NUM_SUFFIX)
+const numberToHashKey = (n: bigint) =>
+  concatBytesNoTypeCheck(HEADER_PREFIX, bytesBE8(n), NUM_SUFFIX)
 
-const hashToNumberKey = (hash: Uint8Array) => concatBytesUnsafe(BLOCK_HASH_PEFIX, hash)
+const hashToNumberKey = (hash: Uint8Array) => concatBytesNoTypeCheck(BLOCK_HASH_PEFIX, hash)
 
 /**
  * @hidden

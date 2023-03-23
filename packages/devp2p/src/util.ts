@@ -3,7 +3,7 @@ import { debug as createDebugLogger } from 'debug'
 import { keccak256 as _keccak256 } from 'ethereum-cryptography/keccak'
 import { utils } from 'ethereum-cryptography/secp256k1'
 import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat'
-import { bytesToHex, concatBytes, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, concatBytes, equalsBytes } from 'ethereum-cryptography/utils'
 
 import type { ETH } from './protocol/eth'
 import type { LES } from './protocol/les'
@@ -29,23 +29,6 @@ export function pk2id(pk: Uint8Array): Uint8Array {
 
 export function id2pk(id: Uint8Array): Uint8Array {
   return concatBytes(Uint8Array.from([0x04]), id)
-}
-
-export function int2bytes(v: number | null): Uint8Array {
-  if (v === null) {
-    return new Uint8Array(0)
-  }
-  let hex = v.toString(16)
-  if (hex.length % 2 === 1) hex = '0' + hex
-  return hexToBytes(hex)
-}
-
-export function bytes2int(bytes: Uint8Array): number {
-  if (bytes.length === 0) return NaN
-
-  let n = 0
-  for (let i = 0; i < bytes.length; ++i) n = n * 256 + bytes[i]
-  return n
 }
 
 export function zfill(bytes: Uint8Array, size: number, leftpad: boolean = true): Uint8Array {

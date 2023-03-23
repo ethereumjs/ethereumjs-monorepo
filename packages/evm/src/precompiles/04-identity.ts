@@ -6,7 +6,7 @@ import type { ExecResult } from '../evm'
 import type { PrecompileInput } from './types'
 
 export function precompile04(opts: PrecompileInput): ExecResult {
-  const data = Uint8Array.from(opts.data)
+  const data = opts.data
 
   let gasUsed = opts._common.param('gasPrices', 'identity')
   gasUsed += opts._common.param('gasPrices', 'identityWord') * BigInt(Math.ceil(data.length / 32))
@@ -31,6 +31,6 @@ export function precompile04(opts: PrecompileInput): ExecResult {
 
   return {
     executionGasUsed: gasUsed,
-    returnValue: Buffer.from(data), // Copy the memory (`Buffer.from()`)
+    returnValue: Uint8Array.from(data), // Copy the memory (`Uint8Array.from()`)
   }
 }

@@ -1,3 +1,4 @@
+import { bytesToInt } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { getPublicKey } from 'ethereum-cryptography/secp256k1'
 import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
@@ -7,7 +8,7 @@ import ms = require('ms')
 import * as net from 'net'
 import * as os from 'os'
 
-import { bytes2int, createDeferred, devp2pDebug, formatLogId, pk2id } from '../util'
+import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util'
 
 import { DISCONNECT_REASONS, Peer } from './peer'
 
@@ -300,7 +301,7 @@ export class RLPx extends EventEmitter {
 
       // Randomly distributed selector based on peer ID
       // to decide on subdivided execution
-      const selector = bytes2int((item.peer.id! as Uint8Array).subarray(0, 1)) % 10
+      const selector = bytesToInt((item.peer.id! as Uint8Array).subarray(0, 1)) % 10
       if (selector === this._refillIntervalSelectionCounter) {
         this._connectToPeer(item.peer)
         return false

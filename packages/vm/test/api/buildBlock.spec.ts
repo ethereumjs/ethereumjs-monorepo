@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
-import { Account, Address, concatBytesUnsafe } from '@ethereumjs/util'
+import { Account, Address, concatBytesNoTypeCheck } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
@@ -135,7 +135,7 @@ tape('BlockBuilder', async (t) => {
 
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Istanbul })
     // extraData: [vanity, activeSigner, seal]
-    const extraData = concatBytesUnsafe(
+    const extraData = concatBytesNoTypeCheck(
       new Uint8Array(32),
       signer.address.toBytes(),
       new Uint8Array(65)

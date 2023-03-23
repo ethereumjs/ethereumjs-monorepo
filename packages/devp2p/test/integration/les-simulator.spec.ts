@@ -1,4 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { intToBytes } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as test from 'tape'
 
@@ -12,9 +13,9 @@ const GENESIS_HASH = hexToBytes('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e
 const capabilities = [devp2p.LES.les4]
 
 const status = {
-  headTd: devp2p.int2bytes(GENESIS_TD), // total difficulty in genesis block
+  headTd: intToBytes(GENESIS_TD), // total difficulty in genesis block
   headHash: GENESIS_HASH,
-  headNum: devp2p.int2bytes(0),
+  headNum: intToBytes(0),
   genesisHash: GENESIS_HASH,
 }
 

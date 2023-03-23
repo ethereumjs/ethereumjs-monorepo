@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { concatBytes } from '@ethereumjs/util'
+import { bytesToInt, concatBytes, intToBytes } from '@ethereumjs/util'
 import * as crypto from 'crypto'
 import { debug as createDebugLogger } from 'debug'
 import { getRandomBytesSync } from 'ethereum-cryptography/random'
@@ -9,10 +9,8 @@ import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import {
   assertEq,
-  bytes2int,
   genPrivateKey,
   id2pk,
-  int2bytes,
   keccak256,
   pk2id,
   unstrictDecode,
@@ -193,7 +191,7 @@ export class ECIES {
     const pad = getRandomBytesSync(100 + Math.floor(Math.random() * 151)) // Random padding between 100, 250
     const authMsg = concatBytes(dataRLP, pad)
     const overheadLength = 113
-    const sharedMacData = int2bytes(authMsg.length + overheadLength)
+    const sharedMacData = intToBytes(authMsg.length + overheadLength)
     const encryptedMsg = this._encryptMessage(authMsg, sharedMacData)
     if (!encryptedMsg) return
     this._initMsg = concatBytes(sharedMacData, encryptedMsg)
@@ -278,7 +276,7 @@ export class ECIES {
   }
 
   parseAuthEIP8(data: Uint8Array): void {
-    const size = bytes2int(data.subarray(0, 2)) + 2
+    const size = bytesToInt(data.subarray(0, 2)) + 2
     assertEq(data.length, size, 'message length different from specified size (EIP8)', debug)
     this.parseAuthPlain(data.subarray(2), data.subarray(0, 2))
   }
@@ -290,7 +288,7 @@ export class ECIES {
     const pad = getRandomBytesSync(100 + Math.floor(Math.random() * 151)) // Random padding between 100, 250
     const ackMsg = concatBytes(dataRLP, pad)
     const overheadLength = 113
-    const sharedMacData = int2bytes(ackMsg.length + overheadLength)
+    const sharedMacData = intToBytes(ackMsg.length + overheadLength)
     const encryptedMsg = this._encryptMessage(ackMsg, sharedMacData)
     if (!encryptedMsg) return
     this._initMsg = concatBytes(sharedMacData, encryptedMsg)
@@ -341,13 +339,13 @@ export class ECIES {
   }
 
   parseAckEIP8(data: Uint8Array): void {
-    const size = bytes2int(data.subarray(0, 2)) + 2
+    const size = bytesToInt(data.subarray(0, 2)) + 2
     assertEq(data.length, size, 'message length different from specified size (EIP8)', debug)
     this.parseAckPlain(data.subarray(2), data.subarray(0, 2))
   }
 
   createHeader(size: number): Uint8Array | undefined {
-    const bufSize = zfill(int2bytes(size), 3)
+    const bufSize = zfill(intToBytes(size), 3)
     const headerData = RLP.encode([0, 0]) // [capability-id, context-id] (currently unused in spec)
     let header = concatBytes(bufSize, headerData)
     header = zfill(header, 16, false)
@@ -373,7 +371,7 @@ export class ECIES {
 
     if (!this._ingressAes) return
     header = Uint8Array.from(this._ingressAes.update(header))
-    this._bodySize = bytes2int(header.subarray(0, 3))
+    this._bodySize = bytesToInt(header.subarray(0, 3))
     return this._bodySize
   }
 

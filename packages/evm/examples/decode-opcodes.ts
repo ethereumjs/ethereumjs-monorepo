@@ -27,7 +27,7 @@ function nameOpCodes(raw: Uint8Array) {
       pushData = raw.subarray(pc + 1, pc + jumpNum + 1)
       i += jumpNum
     }
-    console.log('we pushing', typeof pushData)
+
     console.log(
       pad(pc, roundLog(raw.length, 10)) +
         '  ' +

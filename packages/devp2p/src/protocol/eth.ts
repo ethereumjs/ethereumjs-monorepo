@@ -3,12 +3,14 @@ import {
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
+  bytesToInt,
   bytesToPrefixedHexString,
+  intToBytes,
 } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as snappy from 'snappyjs'
 
-import { assertEq, bytes2int, formatLogData, formatLogId, int2bytes } from '../util'
+import { assertEq, formatLogData, formatLogId } from '../util'
 
 import { EthProtocol, Protocol } from './protocol'
 
@@ -219,13 +221,13 @@ export class ETH extends Protocol {
   }
 
   _nextForkFromForkId(forkId: Uint8Array): number {
-    return bytes2int(forkId)
+    return bytesToInt(forkId)
   }
 
   _getStatusString(status: ETH.StatusMsg) {
-    let sStr = `[V:${bytes2int(status[0] as Uint8Array)}, NID:${bytes2int(
+    let sStr = `[V:${bytesToInt(status[0] as Uint8Array)}, NID:${bytesToInt(
       status[1] as Uint8Array
-    )}, TD:${status[2].length === 0 ? 0 : bytes2int(status[2] as Uint8Array)}`
+    )}, TD:${status[2].length === 0 ? 0 : bytesToInt(status[2] as Uint8Array)}`
     sStr += `, BestH:${formatLogId(
       bytesToHex(status[3] as Uint8Array),
       this._verbose
@@ -235,7 +237,7 @@ export class ETH extends Protocol {
         status[5] !== undefined ? bytesToPrefixedHexString(status[5][0] as Uint8Array) : '-'
       }`
       sStr += `, ForkNext: ${
-        (status[5][1] as Uint8Array).length > 0 ? bytes2int(status[5][1] as Uint8Array) : '-'
+        (status[5][1] as Uint8Array).length > 0 ? bytesToInt(status[5][1] as Uint8Array) : '-'
       }`
     }
     sStr += `]`
@@ -245,7 +247,7 @@ export class ETH extends Protocol {
   sendStatus(status: ETH.StatusOpts) {
     if (this._status !== null) return
     this._status = [
-      int2bytes(this._version),
+      intToBytes(this._version),
       bigIntToBytes(this._peer._common.chainId()),
       status.td,
       status.bestHash,

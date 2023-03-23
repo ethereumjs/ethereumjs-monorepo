@@ -3,7 +3,7 @@ import {
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
-  concatBytesUnsafe,
+  concatBytesNoTypeCheck,
   setLengthLeft,
   short,
 } from '@ethereumjs/util'
@@ -74,6 +74,6 @@ export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
 
   return {
     executionGasUsed: gasUsed,
-    returnValue: concatBytesUnsafe(fieldElementsBuffer, modulusBuffer),
+    returnValue: concatBytesNoTypeCheck(fieldElementsBuffer, modulusBuffer),
   }
 }

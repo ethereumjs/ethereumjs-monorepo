@@ -32,7 +32,7 @@
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
-    "tape": "tape -r ts-node/register --stack-size=1500",
+    "tape": "tape -r ts-node/register",
     "test": "tape -r ts-node/register test/*.spec.ts",
     "tsc": "../../config/cli/ts-compile.sh"
   },

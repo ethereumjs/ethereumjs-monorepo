@@ -3,7 +3,7 @@ import {
   Account,
   Address,
   MAX_UINT64,
-  concatBytesUnsafe,
+  concatBytesNoTypeCheck,
   padToEven,
   unpadBytes,
 } from '@ethereumjs/util'
@@ -21,7 +21,7 @@ import type { EVMRunCallOpts } from '../src/types'
 // Non-protected Create2Address generator. Does not check if Uint8Arrays have the right padding.
 function create2address(sourceAddress: Address, codeHash: Uint8Array, salt: Uint8Array): Address {
   const rlp_proc_bytes = hexToBytes('ff')
-  const hashBytes = concatBytesUnsafe(rlp_proc_bytes, sourceAddress.bytes, salt, codeHash)
+  const hashBytes = concatBytesNoTypeCheck(rlp_proc_bytes, sourceAddress.bytes, salt, codeHash)
   return new Address(keccak256(hashBytes).slice(12))
 }
 
@@ -86,7 +86,7 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
     // pad bytes
     if (valueBytes.length < 32) {
       const diff = 32 - valueBytes.length
-      valueBytes = concatBytesUnsafe(new Uint8Array(diff), valueBytes)
+      valueBytes = concatBytesNoTypeCheck(new Uint8Array(diff), valueBytes)
     }
     // calculate expected CREATE2 address
     const expectedAddress = create2address(contractAddress, codeHash, valueBytes)

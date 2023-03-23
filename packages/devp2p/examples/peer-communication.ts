@@ -1,4 +1,4 @@
-import { randomBytes } from '@ethereumjs/util'
+import { bytesToInt, intToBytes, randomBytes } from '@ethereumjs/util'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
@@ -86,7 +86,7 @@ rlpx.on('peer:added', (peer) => {
   )
 
   eth.sendStatus({
-    td: devp2p.int2bytes(17179869184), // total difficulty in genesis block
+    td: intToBytes(17179869184), // total difficulty in genesis block
     bestHash: hexToBytes('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'),
     genesisHash: hexToBytes('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'),
   })
@@ -97,12 +97,7 @@ rlpx.on('peer:added', (peer) => {
   eth.once('status', () => {
     eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [
       Uint8Array.from([1]),
-      [
-        devp2p.int2bytes(CHECK_BLOCK_NR),
-        Uint8Array.from([1]),
-        Uint8Array.from([]),
-        Uint8Array.from([]),
-      ],
+      [intToBytes(CHECK_BLOCK_NR), Uint8Array.from([1]), Uint8Array.from([]), Uint8Array.from([])],
     ])
     forkDrop = setTimeout(() => {
       peer.disconnect(devp2p.DISCONNECT_REASONS.USELESS_PEER)
@@ -147,7 +142,7 @@ rlpx.on('peer:added', (peer) => {
       case devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS: {
         const headers = []
         // hack
-        if (devp2p.bytes2int(payload[1][0]) === CHECK_BLOCK_NR) {
+        if (bytesToInt(payload[1][0]) === CHECK_BLOCK_NR) {
           headers.push(CHECK_BLOCK_HEADER)
         }
 

@@ -1,4 +1,4 @@
-import { concatBytesUnsafe } from '@ethereumjs/util'
+import { concatBytesNoTypeCheck } from '@ethereumjs/util'
 
 const ceil = (value: number, ceiling: number): number => {
   const r = value % ceiling
@@ -34,7 +34,7 @@ export class Memory {
     const newSize = ceil(offset + size, 32)
     const sizeDiff = newSize - this._store.length
     if (sizeDiff > 0) {
-      this._store = concatBytesUnsafe(
+      this._store = concatBytesNoTypeCheck(
         this._store,
         new Uint8Array(Math.ceil(sizeDiff / CONTAINER_SIZE) * CONTAINER_SIZE)
       )
@@ -76,13 +76,7 @@ export class Memory {
     }
     const returnBytes = new Uint8Array(size)
     // Copy the stored "buffer" from memory into the return Buffer
-
-    returnBytes.set(loaded, 0)
-
-    if (loaded.length < size) {
-      // fill the remaining part of the Uint8Array with zeros
-      returnBytes.fill(0, loaded.length, size)
-    }
+    returnBytes.set(loaded)
 
     return returnBytes
   }

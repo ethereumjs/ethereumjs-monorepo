@@ -26,7 +26,6 @@ export function precompile07(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  // TODO - fix precompile inputs
   const returnData = hexToBytes(bn128.mul(inputData))
 
   // check ecmul success or failure by comparing the output length

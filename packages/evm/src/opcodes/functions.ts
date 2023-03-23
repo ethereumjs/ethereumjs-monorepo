@@ -5,7 +5,7 @@ import {
   TWO_POW256,
   bigIntToBytes,
   bytesToBigInt,
-  concatBytesUnsafe,
+  concatBytesNoTypeCheck,
   ecrecover,
   publicToAddress,
   setLengthLeft,
@@ -1047,7 +1047,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       const paddedInvokerAddress = setLengthLeft(runState.interpreter._env.address.bytes, 32)
       const chainId = setLengthLeft(bigIntToBytes(runState.interpreter.getChainId()), 32)
-      const message = concatBytesUnsafe(EIP3074MAGIC, chainId, paddedInvokerAddress, commit)
+      const message = concatBytesNoTypeCheck(EIP3074MAGIC, chainId, paddedInvokerAddress, commit)
       const msgHash = keccak256(message)
 
       let recover

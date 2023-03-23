@@ -1,12 +1,11 @@
 import { RLP } from '@ethereumjs/rlp'
+import { bytesToInt, intToBytes } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
 import { bytesToHex, bytesToUtf8, concatBytes } from 'ethereum-cryptography/utils'
 
 import {
   assertEq,
-  bytes2int,
-  int2bytes,
   ipToBytes,
   ipToString,
   isV4Format,
@@ -61,7 +60,7 @@ const port = {
   },
   decode(bytes: Uint8Array): number | null {
     if (bytes.length === 0) return null
-    return bytes2int(bytes)
+    return bytesToInt(bytes)
   },
 }
 
@@ -87,7 +86,7 @@ type OutPing = { version: number; from: PeerInfo; to: PeerInfo; timestamp: numbe
 const ping = {
   encode(obj: OutPing): InPing {
     return [
-      int2bytes(obj.version),
+      intToBytes(obj.version),
       endpoint.encode(obj.from),
       endpoint.encode(obj.to),
       timestamp.encode(obj.timestamp),
@@ -95,7 +94,7 @@ const ping = {
   },
   decode(payload: InPing): OutPing {
     return {
-      version: bytes2int(payload[0]),
+      version: bytesToInt(payload[0]),
       from: endpoint.decode(payload[1]),
       to: endpoint.decode(payload[2]),
       timestamp: timestamp.decode(payload[3]),

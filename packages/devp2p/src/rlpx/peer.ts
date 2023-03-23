@@ -1,12 +1,19 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToHex, concatBytes, equalsBytes, utf8ToBytes } from '@ethereumjs/util'
+import {
+  bytesToHex,
+  bytesToInt,
+  concatBytes,
+  equalsBytes,
+  intToBytes,
+  utf8ToBytes,
+} from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { bytesToUtf8, hexToBytes } from 'ethereum-cryptography/utils'
 import { EventEmitter } from 'events'
 import ms = require('ms')
 import * as snappy from 'snappyjs'
 
-import { bytes2int, devp2pDebug, formatLogData, int2bytes } from '../util'
+import { devp2pDebug, formatLogData } from '../util'
 
 import { ECIES } from './ecies'
 
@@ -239,10 +246,10 @@ export class Peer extends EventEmitter {
       .join(',')} clientId=${bytesToUtf8(this._clientId)}`
     this.debug('HELLO', debugMsg)
     const payload: HelloMsg = [
-      int2bytes(BASE_PROTOCOL_VERSION),
+      intToBytes(BASE_PROTOCOL_VERSION),
       this._clientId,
-      this._capabilities!.map((c) => [utf8ToBytes(c.name), int2bytes(c.version)]),
-      this._port === null ? new Uint8Array(0) : int2bytes(this._port),
+      this._capabilities!.map((c) => [utf8ToBytes(c.name), intToBytes(c.version)]),
+      this._port === null ? new Uint8Array(0) : intToBytes(this._port),
       this._id,
     ]
 
@@ -319,7 +326,7 @@ export class Peer extends EventEmitter {
         this._eciesSession.parseAuthPlain(parseData)
       } else {
         this._eciesSession._gotEIP8Auth = true
-        this._nextPacketSize = bytes2int(this._socketData.subarray(0, 2)) + 2
+        this._nextPacketSize = bytesToInt(this._socketData.subarray(0, 2)) + 2
         return
       }
     } else {
@@ -345,7 +352,7 @@ export class Peer extends EventEmitter {
         )
       } else {
         this._eciesSession._gotEIP8Ack = true
-        this._nextPacketSize = bytes2int(this._socketData.subarray(0, 2)) + 2
+        this._nextPacketSize = bytesToInt(this._socketData.subarray(0, 2)) + 2
         return
       }
     } else {
@@ -365,12 +372,12 @@ export class Peer extends EventEmitter {
    */
   _handleHello(payload: any) {
     this._hello = {
-      protocolVersion: bytes2int(payload[0]),
+      protocolVersion: bytesToInt(payload[0]),
       clientId: bytesToUtf8(payload[1]),
       capabilities: payload[2].map((item: any) => {
-        return { name: bytesToUtf8(item[0]), version: bytes2int(item[1]) }
+        return { name: bytesToUtf8(item[0]), version: bytesToInt(item[1]) }
       }),
-      port: bytes2int(payload[3]),
+      port: bytesToInt(payload[3]),
       id: payload[4],
     }
 
@@ -447,8 +454,8 @@ export class Peer extends EventEmitter {
     // When `payload` is from rlpx it is `Uint8Array` and when from subprotocol it is `[Uint8Array]`
     this._disconnectReason =
       payload instanceof Uint8Array
-        ? bytes2int(payload)
-        : bytes2int(payload[0] ?? Uint8Array.from([0]))
+        ? bytesToInt(payload)
+        : bytesToInt(payload[0] ?? Uint8Array.from([0]))
     const reason = DISCONNECT_REASONS[this._disconnectReason as number]
     const debugMsg = `DISCONNECT reason: ${reason} ${this._socket.remoteAddress}:${this._socket.remotePort}`
     this.debug('DISCONNECT', debugMsg, reason)

@@ -1,10 +1,10 @@
-import { randomBytes } from '@ethereumjs/util'
+import { bytesToInt, randomBytes } from '@ethereumjs/util'
 import { getPublicKey } from 'ethereum-cryptography/secp256k1'
 import { EventEmitter } from 'events'
 import ms = require('ms')
 
 import { DNS } from '../dns'
-import { bytes2int, devp2pDebug, pk2id } from '../util'
+import { devp2pDebug, pk2id } from '../util'
 
 import { BanList } from './ban-list'
 import { KBucket } from './kbucket'
@@ -258,7 +258,7 @@ export class DPT extends EventEmitter {
       for (const peer of peers) {
         // Randomly distributed selector based on peer ID
         // to decide on subdivided execution
-        const selector = bytes2int((peer.id as Uint8Array).subarray(0, 1)) % 10
+        const selector = bytesToInt((peer.id as Uint8Array).subarray(0, 1)) % 10
         if (selector === this._refreshIntervalSelectionCounter) {
           this._server.findneighbours(peer, randomBytes(64))
         }

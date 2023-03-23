@@ -15,7 +15,6 @@ export type BigIntLike = bigint | PrefixedHexString | number | Uint8Array
  * A type that represents an input that can be converted to a Buffer.
  */
 export type BytesLike =
-  | Buffer
   | Uint8Array
   | number[]
   | number

@@ -171,7 +171,6 @@ export type ToBytesInputTypes =
   | PrefixedHexString
   | number
   | bigint
-  | Buffer
   | Uint8Array
   | number[]
   | TransformabletoBytes
@@ -331,7 +330,7 @@ export const toUtf8 = function (hex: string): string {
 /**
  * Converts a `Uint8Array` or `Array` to JSON.
  * @param ba (Uint8Array|Array)
- * @return (Uint8Array|String|null)
+ * @return (Array|String|null)
  */
 export const baToJSON = function (ba: any): any {
   if (ba instanceof Uint8Array) {
@@ -421,7 +420,7 @@ export function randomBytes(length: number): Uint8Array {
  * @returns one Uint8Array with all the elements of the original set
  * works like `Buffer.concat`
  */
-export const concatBytesUnsafe = (...arrays: Uint8Array[]) => {
+export const concatBytesNoTypeCheck = (...arrays: Uint8Array[]) => {
   if (arrays.length === 1) return arrays[0]
   const length = arrays.reduce((a, arr) => a + arr.length, 0)
   const result = new Uint8Array(length)

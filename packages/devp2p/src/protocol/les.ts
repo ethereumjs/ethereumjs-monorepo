@@ -1,10 +1,17 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bigIntToBytes, bytesToHex, bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
+import {
+  bigIntToBytes,
+  bytesToHex,
+  bytesToInt,
+  bytesToUtf8,
+  intToBytes,
+  utf8ToBytes,
+} from '@ethereumjs/util'
 import ms = require('ms')
 import * as snappy from 'snappyjs'
 
 import { DISCONNECT_REASONS } from '../rlpx/peer'
-import { assertEq, bytes2int, formatLogData, int2bytes } from '../util'
+import { assertEq, formatLogData } from '../util'
 
 import { EthProtocol, Protocol } from './protocol'
 
@@ -129,27 +136,27 @@ export class LES extends Protocol {
   }
 
   _getStatusString(status: LES.Status) {
-    let sStr = `[V:${bytes2int(status['protocolVersion'])}, `
-    sStr += `NID:${bytes2int(status['networkId'] as Uint8Array)}, HTD:${bytes2int(
+    let sStr = `[V:${bytesToInt(status['protocolVersion'])}, `
+    sStr += `NID:${bytesToInt(status['networkId'] as Uint8Array)}, HTD:${bytesToInt(
       status['headTd']
     )}, `
-    sStr += `HeadH:${bytesToHex(status['headHash'])}, HeadN:${bytes2int(status['headNum'])}, `
+    sStr += `HeadH:${bytesToHex(status['headHash'])}, HeadN:${bytesToInt(status['headNum'])}, `
     sStr += `GenH:${bytesToHex(status['genesisHash'])}`
     if (status['serveHeaders'] !== undefined) sStr += `, serveHeaders active`
     if (status['serveChainSince'] !== undefined)
-      sStr += `, ServeCS: ${bytes2int(status['serveChainSince'])}`
+      sStr += `, ServeCS: ${bytesToInt(status['serveChainSince'])}`
     if (status['serveStateSince'] !== undefined)
-      sStr += `, ServeSS: ${bytes2int(status['serveStateSince'])}`
+      sStr += `, ServeSS: ${bytesToInt(status['serveStateSince'])}`
     if (status['txRelay'] !== undefined) sStr += `, txRelay active`
     if (status['flowControl/BL)'] !== undefined) sStr += `, flowControl/BL set`
     if (status['flowControl/MRR)'] !== undefined) sStr += `, flowControl/MRR set`
     if (status['flowControl/MRC)'] !== undefined) sStr += `, flowControl/MRC set`
     if (status['forkID'] !== undefined)
-      sStr += `, forkID: [crc32: ${bytesToHex(status['forkID'][0])}, nextFork: ${bytes2int(
+      sStr += `, forkID: [crc32: ${bytesToHex(status['forkID'][0])}, nextFork: ${bytesToInt(
         status['forkID'][1]
       )}]`
     if (status['recentTxLookup'] !== undefined)
-      sStr += `, recentTxLookup: ${bytes2int(status['recentTxLookup'])}`
+      sStr += `, recentTxLookup: ${bytesToInt(status['recentTxLookup'])}`
     sStr += `]`
     return sStr
   }
@@ -158,9 +165,9 @@ export class LES extends Protocol {
     if (this._status !== null) return
 
     if (status.announceType === undefined) {
-      status['announceType'] = int2bytes(DEFAULT_ANNOUNCE_TYPE)
+      status['announceType'] = intToBytes(DEFAULT_ANNOUNCE_TYPE)
     }
-    status['protocolVersion'] = int2bytes(this._version)
+    status['protocolVersion'] = intToBytes(this._version)
     status['networkId'] = bigIntToBytes(this._peer._common.chainId())
 
     this._status = status

@@ -1,4 +1,4 @@
-import { bytesToHex, setLengthLeft, short, toBytes } from '@ethereumjs/util'
+import { bytesToHex, setLengthLeft, short } from '@ethereumjs/util'
 import { ripemd160 } from 'ethereum-cryptography/ripemd160'
 
 import { OOGResult } from '../evm'
@@ -34,6 +34,6 @@ export function precompile03(opts: PrecompileInput): ExecResult {
 
   return {
     executionGasUsed: gasUsed,
-    returnValue: setLengthLeft(toBytes(ripemd160(data)), 32),
+    returnValue: setLengthLeft(ripemd160(data), 32),
   }
 }

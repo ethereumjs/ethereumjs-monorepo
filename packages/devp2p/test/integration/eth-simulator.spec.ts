@@ -14,7 +14,7 @@ const GENESIS_HASH = hexToBytes('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e
 const capabilities = [devp2p.ETH.eth63, devp2p.ETH.eth62]
 
 const status = {
-  td: devp2p.int2bytes(GENESIS_TD),
+  td: intToBytes(GENESIS_TD),
   bestHash: GENESIS_HASH,
   genesisHash: GENESIS_HASH,
 }

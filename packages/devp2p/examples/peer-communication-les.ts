@@ -1,4 +1,4 @@
-import { randomBytes } from '@ethereumjs/util'
+import { bytesToInt, intToBytes, randomBytes } from '@ethereumjs/util'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { TypedTransaction } from '@ethereumjs/tx'
@@ -77,20 +77,20 @@ rlpx.on('peer:added', (peer) => {
   )
 
   les.sendStatus({
-    headTd: devp2p.int2bytes(GENESIS_TD),
+    headTd: intToBytes(GENESIS_TD),
     headHash: GENESIS_HASH,
     headNum: Uint8Array.from([]),
     genesisHash: GENESIS_HASH,
-    announceType: devp2p.int2bytes(0),
-    recentTxLookup: devp2p.int2bytes(1),
-    forkID: [hexToBytes('3b8e0691'), devp2p.int2bytes(1)],
+    announceType: intToBytes(0),
+    recentTxLookup: intToBytes(1),
+    forkID: [hexToBytes('3b8e0691'), intToBytes(1)],
   })
 
   les.once('status', (status: LES.Status) => {
     const msg = [
       Uint8Array.from([]),
       [
-        devp2p.bytes2int(status['headNum']),
+        bytesToInt(status['headNum']),
         Uint8Array.from([1]),
         Uint8Array.from([]),
         Uint8Array.from([1]),

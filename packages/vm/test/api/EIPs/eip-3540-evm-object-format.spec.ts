@@ -1,7 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EOF } from '@ethereumjs/evm/dist/eof'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Address, concatBytesUnsafe, privateToAddress } from '@ethereumjs/util'
+import { Address, concatBytesNoTypeCheck, privateToAddress } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
@@ -35,13 +35,13 @@ tape('EIP 3540 tests', (t) => {
     const eofHeader = Uint8Array.from([EOF.FORMAT, EOF.MAGIC, EOF.VERSION])
     st.ok(
       EOF.codeAnalysis(
-        concatBytesUnsafe(eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00]))
+        concatBytesNoTypeCheck(eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00]))
       )?.code! > 0,
       'valid code section'
     )
     st.ok(
       EOF.codeAnalysis(
-        concatBytesUnsafe(
+        concatBytesNoTypeCheck(
           eofHeader,
           Uint8Array.from([0x01, 0x00, 0x01, 0x02, 0x00, 0x01, 0x00, 0x00, 0xaa])
         )
@@ -51,7 +51,7 @@ tape('EIP 3540 tests', (t) => {
     st.ok(
       !(
         EOF.codeAnalysis(
-          concatBytesUnsafe(eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00, 0x00]))
+          concatBytesNoTypeCheck(eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00, 0x00]))
         ) !== undefined
       ),
       'invalid container length (too long)'
@@ -59,7 +59,7 @@ tape('EIP 3540 tests', (t) => {
     st.ok(
       !(
         EOF.codeAnalysis(
-          concatBytesUnsafe(eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00]))
+          concatBytesNoTypeCheck(eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00]))
         ) !== undefined
       ),
       'invalid container length (too short)'

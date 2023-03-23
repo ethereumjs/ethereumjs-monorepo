@@ -51,7 +51,7 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
 
   for (const index in zeroByteCheck) {
     const slicedBuffer = opts.data.subarray(zeroByteCheck[index][0], zeroByteCheck[index][1])
-    if (!(equalsBytes(slicedBuffer, zeroBytes16) === true)) {
+    if (!equalsBytes(slicedBuffer, zeroBytes16)) {
       if (opts._debug !== undefined) {
         opts._debug(`BLS12G1MUL (0x0b) failed: Point not on curve`)
       }

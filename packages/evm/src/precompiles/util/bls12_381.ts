@@ -1,4 +1,4 @@
-import { bytesToBigInt, concatBytesUnsafe, padToEven } from '@ethereumjs/util'
+import { bytesToBigInt, concatBytesNoTypeCheck, padToEven } from '@ethereumjs/util'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { ERROR, EvmError } from '../../exceptions'
@@ -194,10 +194,10 @@ function BLS12_381_FromG1Point(input: any): Uint8Array {
 
   // convert to buffers.
 
-  const xBuffer = concatBytesUnsafe(new Uint8Array(64 - xval.length / 2), hexToBytes(xval))
-  const yBuffer = concatBytesUnsafe(new Uint8Array(64 - yval.length / 2), hexToBytes(yval))
+  const xBuffer = concatBytesNoTypeCheck(new Uint8Array(64 - xval.length / 2), hexToBytes(xval))
+  const yBuffer = concatBytesNoTypeCheck(new Uint8Array(64 - yval.length / 2), hexToBytes(yval))
 
-  return concatBytesUnsafe(xBuffer, yBuffer)
+  return concatBytesNoTypeCheck(xBuffer, yBuffer)
 }
 
 // convert an input Buffer to a mcl G2 point
@@ -268,12 +268,12 @@ function BLS12_381_FromG2Point(input: any): Uint8Array {
 
   // convert to buffers.
 
-  const xBuffer1 = concatBytesUnsafe(new Uint8Array(64 - x_1.length / 2), hexToBytes(x_1))
-  const xBuffer2 = concatBytesUnsafe(new Uint8Array(64 - x_2.length / 2), hexToBytes(x_2))
-  const yBuffer1 = concatBytesUnsafe(new Uint8Array(64 - y_1.length / 2), hexToBytes(y_1))
-  const yBuffer2 = concatBytesUnsafe(new Uint8Array(64 - y_2.length / 2), hexToBytes(y_2))
+  const xBuffer1 = concatBytesNoTypeCheck(new Uint8Array(64 - x_1.length / 2), hexToBytes(x_1))
+  const xBuffer2 = concatBytesNoTypeCheck(new Uint8Array(64 - x_2.length / 2), hexToBytes(x_2))
+  const yBuffer1 = concatBytesNoTypeCheck(new Uint8Array(64 - y_1.length / 2), hexToBytes(y_1))
+  const yBuffer2 = concatBytesNoTypeCheck(new Uint8Array(64 - y_2.length / 2), hexToBytes(y_2))
 
-  return concatBytesUnsafe(xBuffer1, xBuffer2, yBuffer1, yBuffer2)
+  return concatBytesNoTypeCheck(xBuffer1, xBuffer2, yBuffer1, yBuffer2)
 }
 
 // input: a 32-byte hex scalar Buffer

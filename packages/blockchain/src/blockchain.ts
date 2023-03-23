@@ -1,6 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
-import { KECCAK256_RLP, Lock, concatBytesUnsafe } from '@ethereumjs/util'
+import { KECCAK256_RLP, Lock, concatBytesNoTypeCheck } from '@ethereumjs/util'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import { MemoryLevel } from 'memory-level'
 
@@ -1333,7 +1333,7 @@ export class Blockchain implements BlockchainInterface {
         header.extraData = common.genesis().extraData
       } else {
         // Add required extraData (32 bytes vanity + 65 bytes filled with zeroes
-        header.extraData = concatBytesUnsafe(new Uint8Array(32), new Uint8Array(65))
+        header.extraData = concatBytesNoTypeCheck(new Uint8Array(32), new Uint8Array(65))
       }
     }
     return Block.fromBlockData(
