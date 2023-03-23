@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1679507702417,
+  "lastUpdate": 1679582805363,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "e244a8b43dd5fd5870de9f2ac3f944ff4c71c14b",
-          "message": "Fix devp2p DNS discovery ENR record decoding (#2546)",
-          "timestamp": "2023-02-23T11:17:57+01:00",
-          "tree_id": "fdb43a85e0ca0831237233973cf095a9ec911ebe",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e244a8b43dd5fd5870de9f2ac3f944ff4c71c14b"
-        },
-        "date": 1677147669749,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 12575,
-            "range": "±2.65%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 12407,
-            "range": "±3.42%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 12462,
-            "range": "±2.47%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 11647,
-            "range": "±7.30%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 12547,
-            "range": "±2.45%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±8.72%",
             "unit": "ops/sec",
             "extra": "75 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "187813+davidmurdoch@users.noreply.github.com",
+            "name": "David Murdoch",
+            "username": "davidmurdoch"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8f989b48447907529524ee6fe3cb215d6bced145",
+          "message": "evm: clamp step event memory to actual size (#2598)\n\n* evm: clamp step event memory to actual size\r\n\r\n* evm: add test for step event\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2023-03-23T10:43:37-04:00",
+          "tree_id": "3c1d7de48db7d3f08f6a7e177f2b6e166f1abebe",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8f989b48447907529524ee6fe3cb215d6bced145"
+        },
+        "date": 1679582803893,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15924,
+            "range": "±1.79%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 15883,
+            "range": "±3.20%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15160,
+            "range": "±4.61%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15923,
+            "range": "±1.44%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 15394,
+            "range": "±1.73%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
