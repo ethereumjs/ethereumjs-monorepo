@@ -616,3 +616,30 @@ tape('runCall() => use DATAHASH opcode from EIP 4844', async (t) => {
   )
   t.end()
 })
+
+tape('step event: ensure EVM memory and not internal memory gets reported', async (t) => {
+  t.plan(5)
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+  const eei = await getEEI()
+  const evm = await EVM.create({ common, eei })
+
+  const contractCode = Buffer.from('600060405200', 'hex') // PUSH 0 PUSH 40 MSTORE STOP
+  const contractAddress = Address.fromString('0x000000000000000000000000636F6E7472616374')
+  await eei.putContractCode(contractAddress, contractCode)
+
+  const runCallArgs = {
+    gasLimit: BigInt(21000),
+    to: contractAddress,
+  }
+
+  let verifyMemoryExpanded = false
+
+  evm.events.on('step', (e) => {
+    t.ok(e.memory.length <= 96)
+    if (e.memory.length > 0) {
+      verifyMemoryExpanded = true
+    }
+  })
+  await evm.runCall(runCallArgs)
+  t.ok(verifyMemoryExpanded, 'memory did expand')
+})
