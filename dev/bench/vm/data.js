@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1679582805363,
+  "lastUpdate": 1679653033544,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "98f5712639e27484ca35cee790a564b48807fc42",
-          "message": "Blockchain/Client: Total difficulty related HF switch fixes (#2545)\n\n* Total difficulty related HF switch fixes\r\n\r\n* Blockchain test fix\r\n\r\n* update parentTD usage and conditions\r\n\r\n* run execution on startup\r\n\r\n* stop miner at merge\r\n\r\n* fix miner spec\r\n\r\n---------\r\n\r\nCo-authored-by: harkamal <gajinder@g11.in>",
-          "timestamp": "2023-02-23T12:49:43+01:00",
-          "tree_id": "00daf99dfd4ffcce8484b7758359456601f19220",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/98f5712639e27484ca35cee790a564b48807fc42"
-        },
-        "date": 1677153143233,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 16238,
-            "range": "±1.70%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 15554,
-            "range": "±3.85%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 16130,
-            "range": "±1.44%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 15719,
-            "range": "±1.64%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 14424,
-            "range": "±7.25%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.73%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "85371573+solimander@users.noreply.github.com",
+            "name": "Solimander",
+            "username": "solimander"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f0166f5eaeae92ade5864c239787c02d3b7be817",
+          "message": "Fix Block Hash Calculation When Creating a New Block Object From JSON RPC (Shanghai) (#2600)\n\n* Fix block hash calculation when creating a new block from JSON RPC\r\n\r\n* Test coverage",
+          "timestamp": "2023-03-24T11:14:24+01:00",
+          "tree_id": "3add456f4c88c6576fe21dbbc751facb168b7ce8",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f0166f5eaeae92ade5864c239787c02d3b7be817"
+        },
+        "date": 1679653032797,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15677,
+            "range": "±1.82%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 14892,
+            "range": "±5.61%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15838,
+            "range": "±1.71%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15210,
+            "range": "±1.95%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 13628,
+            "range": "±9.28%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
           }
         ]
       }
