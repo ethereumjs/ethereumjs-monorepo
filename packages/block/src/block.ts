@@ -140,6 +140,16 @@ export class Block {
       throw new Error('Invalid serialized block input. Must be array')
     }
 
+    if (
+      opts?.common !== undefined &&
+      opts?.common?.isActivatedEIP(4895) &&
+      (values[3] === undefined || !Array.isArray(values[3]))
+    ) {
+      throw new Error(
+        'Invalid serialized block input: EIP-4895 is active, and no withdrawals were provided as array'
+      )
+    }
+
     return Block.fromValuesArray(values, opts)
   }
 
