@@ -332,7 +332,7 @@ export const toUtf8 = function (hex: string): string {
  * @param ba (Uint8Array|Array)
  * @return (Array|String|null)
  */
-export const baToJSON = function (ba: any): any {
+export const baToJSON = function (ba: Uint8Array|Array): Uint8Array|string|null {
   if (ba instanceof Uint8Array) {
     return bytesToPrefixedHexString(ba)
   } else if (ba instanceof Array) {
