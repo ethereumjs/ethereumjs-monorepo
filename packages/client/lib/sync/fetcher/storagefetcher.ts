@@ -426,9 +426,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     this.debug(
       `Number of storage fetch requests added to fetcher queue: ${storageRequestList.length}`
     )
-    if (this.in.length === 0) {
-      this.nextTasks()
-    }
+    this.nextTasks()
   }
 
   /**
@@ -558,6 +556,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         }
         const origin = this.getOrigin(fullJob as any)
         const limit = this.getLimit(fullJob as any)
+
         const tasks = this.tasks()
         for (const task of tasks) {
           this.enqueueTask(task, true)

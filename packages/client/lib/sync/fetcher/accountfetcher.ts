@@ -133,13 +133,13 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       }
     )
 
-    const fullJob = { task: { first: this.first, count: this.count } } as Job<
+    const syncRange = { task: { first: this.first, count: this.count } } as Job<
       JobTask,
       AccountData[],
       AccountData
     >
-    const origin = this.getOrigin(fullJob)
-    const limit = this.getLimit(fullJob)
+    const origin = this.getOrigin(syncRange)
+    const limit = this.getLimit(syncRange)
 
     this.debug(
       `Account fetcher instantiated root=${short(this.root)} origin=${short(origin)} limit=${short(
@@ -336,8 +336,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    */
 
   tasks(first = this.first, count = this.count, maxTasks = this.config.maxFetcherJobs): JobTask[] {
-    // const max = this.config.maxAccountRange
-    const max = (BigInt(2) ** BigInt(256) - BigInt(1)) / BigInt(10)
+    const max = this.config.maxAccountRange
     const tasks: JobTask[] = []
     let debugStr = `origin=${short(setLengthLeft(bigIntToBuffer(first), 32))}`
     let pushedCount = BigInt(0)
@@ -371,14 +370,19 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   }
 
   nextTasks(): void {
-    if (this.in.length === 0 && this.count > BigInt(0)) {
-      const fullJob = { task: { first: this.first, count: this.count } } as Job<
+    if (
+      this.in.length === 0 &&
+      this.count > BigInt(0) &&
+      this.processed - this.finished < this.config.maxFetcherRequests
+    ) {
+      // pendingRange is for which new tasks need to be generated
+      const pendingRange = { task: { first: this.first, count: this.count } } as Job<
         JobTask,
         AccountData[],
         AccountData
       >
-      const origin = this.getOrigin(fullJob)
-      const limit = this.getLimit(fullJob)
+      const origin = this.getOrigin(pendingRange)
+      const limit = this.getLimit(pendingRange)
 
       this.debug(`Fetcher pending with origin=${short(origin)} limit=${short(limit)}`)
       const tasks = this.tasks()

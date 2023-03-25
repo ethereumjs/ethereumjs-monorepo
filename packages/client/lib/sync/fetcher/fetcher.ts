@@ -67,6 +67,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     length: number
   }
 
+  private writer: Writable | null = null
+
   /**
    * Create new fetcher
    */
@@ -312,10 +314,10 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     this.nextTasks()
     const job = this.in.peek()
     if (!job) {
-      if (this.finished >= this.total) {
+      if (this.finished !== this.total) {
         // There are still jobs waiting to be processed out in the writer pipe
         this.debug(
-          `No job found on next task, skip next job execution finished=${this.finished} total=${this.total}`
+          `No job found on next task, skip next job execution processed=${this.processed} finished=${this.finished} total=${this.total}`
         )
       } else {
         // There are no more jobs in the fetcher, so its better to resolve
@@ -399,6 +401,10 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * to support backpressure from storing results.
    */
   write() {
+    // writer is already setup, just return
+    if (this.writer !== null) {
+      return
+    }
     const _write = async (
       job: Job<JobTask, JobResult, StorageItem> | Job<JobTask, JobResult, StorageItem>[],
       encoding: string | null,
@@ -463,6 +469,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         this.error(error, undefined, true)
         writer.destroy()
       })
+    this.writer = writer
     this.debug(`Setup writer pipe.`)
   }
 
@@ -488,6 +495,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     this.running = false
     if (this.destroyWhenDone) {
       this.destroy()
+      this.writer = null
     }
     if (this.syncErrored) throw this.syncErrored
   }
