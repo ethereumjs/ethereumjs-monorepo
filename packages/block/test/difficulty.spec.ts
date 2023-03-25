@@ -56,6 +56,13 @@ tape('[Header]: difficulty tests', (t) => {
       for (const testName in testData) {
         const test = testData[testName]
         const common = new Common({ chain: Chain.Mainnet, hardfork })
+        // Unschedule any timestamp since tests are not configured for timestamps
+        common
+          .hardforks()
+          .filter((hf) => hf.timestamp !== undefined)
+          .map((hf) => {
+            hf.timestamp = undefined
+          })
         const blockOpts = { common }
         const uncleHash = test.parentUncles === '0x00' ? undefined : test.parentUncles
         const parentBlock = Block.fromBlockData(

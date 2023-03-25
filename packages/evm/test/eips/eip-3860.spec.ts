@@ -133,4 +133,116 @@ tape('EIP 3860 tests', (t) => {
     )
     st.end()
   })
+
+  t.test('code exceeds max initcode size: allowUnlimitedInitCodeSize active', async (st) => {
+    const common = new Common({
+      chain: Chain.Mainnet,
+      hardfork: Hardfork.London,
+      eips: [3860],
+    })
+    const eei = await getEEI()
+    const evm = await EVM.create({ common, eei, allowUnlimitedInitCodeSize: true })
+
+    const buffer = Buffer.allocUnsafe(1000000).fill(0x60)
+
+    // setup the call arguments
+    const runCallArgs = {
+      sender, // call address
+      gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
+      // Simple test, PUSH <big number> PUSH 0 RETURN
+      // It tries to deploy a contract too large, where the code is all zeros
+      // (since memory which is not allocated/resized to yet is always defaulted to 0)
+      data: Buffer.concat([
+        Buffer.from('00'.repeat(Number(common.param('vm', 'maxInitCodeSize')) + 1), 'hex'),
+        buffer,
+      ]),
+    }
+    const result = await evm.runCall(runCallArgs)
+    st.ok(
+      result.execResult.exceptionError === undefined,
+      'succesfully created a contract with data size > MAX_INITCODE_SIZE and allowUnlimitedInitCodeSize active'
+    )
+  })
+
+  t.test('CREATE with MAX_INITCODE_SIZE+1, allowUnlimitedContractSize active', async (st) => {
+    const commonWith3860 = new Common({
+      chain: Chain.Mainnet,
+      hardfork: Hardfork.London,
+      eips: [3860],
+    })
+    const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+    for (const code of ['F0', 'F5']) {
+      const eei = await getEEI()
+      const evm = await EVM.create({
+        common: commonWith3860,
+        eei,
+        allowUnlimitedInitCodeSize: true,
+      })
+      const evmDisabled = await EVM.create({
+        common: commonWith3860,
+        eei: eei.copy(),
+        allowUnlimitedInitCodeSize: false,
+      })
+      const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+      const contractAccount = await evm.eei.getAccount(contractFactory)
+      await evm.eei.putAccount(contractFactory, contractAccount)
+      await evmDisabled.eei.putAccount(contractFactory, contractAccount)
+      // This factory code:
+      // -> reads 32 bytes from the calldata (X)
+      // Attempts to create a contract of X size
+      // (the initcode of this contract is just zeros, so STOP opcode
+      // It stores the topmost stack item of this CREATE(2) at slot 0
+      // This is either the contract address if it was succesful, or 0 in case of error
+      const factoryCode = Buffer.from('600060003560006000' + code + '600055', 'hex')
+
+      await evm.eei.putContractCode(contractFactory, factoryCode)
+      await evmDisabled.eei.putContractCode(contractFactory, factoryCode)
+
+      const runCallArgs = {
+        from: caller,
+        to: contractFactory,
+        gasLimit: BigInt(0xfffffffff),
+        data: Buffer.from('00'.repeat(30) + 'C001', 'hex'),
+      }
+
+      await evm.runCall(runCallArgs)
+      await evmDisabled.runCall(runCallArgs)
+
+      const key0 = Buffer.from('00'.repeat(32), 'hex')
+      const storageActive = await evm.eei.getContractStorage(contractFactory, key0)
+      const storageInactive = await evmDisabled.eei.getContractStorage(contractFactory, key0)
+
+      st.ok(
+        !storageActive.equals(Buffer.from('')),
+        'created contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=true'
+      )
+      st.ok(
+        storageInactive.equals(Buffer.from('')),
+        'did not create contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=false'
+      )
+
+      // gas check
+
+      const runCallArgs2 = {
+        from: caller,
+        to: contractFactory,
+        gasLimit: BigInt(0xfffffffff),
+        data: Buffer.from('00'.repeat(30) + 'C000', 'hex'),
+      }
+
+      // Test:
+      // On the `allowUnlimitedInitCodeSize = true`, create contract with MAX_INITCODE_SIZE + 1
+      // On `allowUnlimitedInitCodeSize = false`, create contract with MAX_INITCODE_SIZE
+      // Verify that the gas cost on the prior one is higher than the first one
+
+      const res = await evm.runCall(runCallArgs2)
+      const res2 = await evmDisabled.runCall(runCallArgs)
+
+      st.ok(
+        res.execResult.executionGasUsed > res2.execResult.executionGasUsed,
+        'charged initcode analysis gas cost on both allowUnlimitedCodeSize=true, allowUnlimitedInitCodeSize=false'
+      )
+    }
+    st.end()
+  })
 })

@@ -19,8 +19,7 @@ import type { FetcherOptions } from './fetcher'
 import type { Job } from './types'
 import type { Debugger } from 'debug'
 
-const FIRST = BigInt(0)
-const COUNT = BigInt(2) ** BigInt(256) - BigInt(1)
+const TOTAL_RANGE_END = BigInt(2) ** BigInt(256) - BigInt(1)
 
 type StorageDataResponse = StorageData[][] & { completed?: boolean }
 
@@ -181,7 +180,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     const { task, partialResult } = job
     if (task.storageRequests.length > 1 || task.storageRequests[0].first === BigInt(0)) {
       // peer does not respect origin or limit for multi-account storage fetch
-      return setLengthLeft(bigIntToBuffer(FIRST), 32)
+      return setLengthLeft(bigIntToBuffer(BigInt(0)), 32)
     }
     const { first } = task.storageRequests[0]!
     let origin = undefined
@@ -199,7 +198,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     const { task } = job
     if (task.storageRequests.length > 1) {
       // peer does not respect origin or limit for multi-account storage fetch
-      return setLengthLeft(bigIntToBuffer(FIRST + COUNT), 32)
+      return setLengthLeft(bigIntToBuffer(TOTAL_RANGE_END), 32)
     }
     const { first, count } = task.storageRequests[0]
     const limit = bigIntToBuffer((first + (BigInt(count as any) as any)) as any)
@@ -247,9 +246,9 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     })
 
     // Reject the response if the hash sets and slot sets don't match
-    if (task.storageRequests.length < rangeResult.slots.length) {
+    if (rangeResult === undefined || task.storageRequests.length < rangeResult.slots.length) {
       this.debug(
-        `Slot set is larger than hash set: slotset ${rangeResult.slots.length} hashset ${task.storageRequests.length} `
+        `Slot set is larger than hash set: slotset ${rangeResult?.slots.length} hashset ${task.storageRequests.length} `
       )
       return undefined
     }
@@ -259,7 +258,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     // retrieved was either already pruned remotely, or the peer is not yet
     // synced to our head.
     if (rangeResult.slots.length === 0) {
-      // TODO have to check proof of nonexistence since we are statically partitioning ranges -- as a shortcut for now, we can mark as completed if a proof is present
+      // TODO have to check proof of nonexistence since we are statically partitioning ranges --
+      // as a shortcut for now, we can mark as completed if a proof is present
       if (rangeResult.proof.length > 0) {
         this.debug(`Empty range was requested - Terminating task`)
         // response contains empty object so that task can be terminated in store phase and not reenqueued
@@ -277,79 +277,74 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
 
     const peerInfo = `id=${peer?.id.slice(0, 8)} address=${peer?.address}`
 
-    // eslint-disable-next-line eqeqeq
-    if (rangeResult === undefined) {
-      return undefined
-    } else {
-      // verify data
-      try {
-        let completed: boolean
-        for (let i = 0; i < rangeResult.slots.length; i++) {
-          const accountSlots = rangeResult.slots[i]
-          const root = task.storageRequests[i].storageRoot
+    // verify data
+    try {
+      let completed: boolean
+      for (let i = 0; i < rangeResult.slots.length; i++) {
+        const accountSlots = rangeResult.slots[i]
+        const root = task.storageRequests[i].storageRoot
 
-          // all but the last returned slot array must include all slots for the requested account
-          const proof = i === rangeResult.slots.length - 1 ? rangeResult.proof : undefined
-          if (proof === undefined || proof.length === 0) {
-            const valid = await this.verifySlots(accountSlots, root)
-            if (!valid) return undefined
-            if (proof?.length === 0)
-              return Object.assign([], [rangeResult.slots], { completed: true })
-          } else {
-            // last returned slot array is for fragmented account that must be
-            // verified and requeued to be fetched as single account request
-            const hasRightElement = await this.verifyRangeProof(root, origin, {
-              slots: accountSlots,
-              proof,
-            })
+        // all but the last returned slot array must include all slots for the requested account
+        const proof = i === rangeResult.slots.length - 1 ? rangeResult.proof : undefined
+        if (proof === undefined || proof.length === 0) {
+          const valid = await this.verifySlots(accountSlots, root)
+          if (!valid) return undefined
+          if (proof?.length === 0)
+            return Object.assign([], [rangeResult.slots], { completed: true })
+        } else {
+          // last returned slot array is for fragmented account that must be
+          // verified and requeued to be fetched as single account request
+          const hasRightElement = await this.verifyRangeProof(root, origin, {
+            slots: accountSlots,
+            proof,
+          })
 
-            // single account requests should check if task range is satisfied since origin and limit are being respected
-            if (
-              task.storageRequests.length === 1 &&
-              !(task.storageRequests[0].first === BigInt(0))
-            ) {
-              if (!hasRightElement) {
-                // all data has been fetched for account storage trie
-                completed = true
+          // single account requests should check if task range is satisfied since origin and limit
+          // are being respected
+          if (task.storageRequests.length === 1 && !(task.storageRequests[0].first === BigInt(0))) {
+            if (!hasRightElement) {
+              // all data has been fetched for account storage trie
+              completed = true
+            } else {
+              if (this.isMissingRightRange(limit, rangeResult)) {
+                this.debug(
+                  `Peer ${peerInfo} returned missing right range Slot=${rangeResult.slots[0][
+                    rangeResult.slots.length - 1
+                  ].hash.toString('hex')} limit=${limit.toString('hex')}`
+                )
+                completed = false
               } else {
-                if (this.isMissingRightRange(limit, rangeResult)) {
-                  this.debug(
-                    `Peer ${peerInfo} returned missing right range Slot=${rangeResult.slots[0][
-                      rangeResult.slots.length - 1
-                    ].hash.toString('hex')} limit=${limit.toString('hex')}`
-                  )
-                  completed = false
-                } else {
-                  completed = true
-                }
+                completed = true
               }
-              return Object.assign([], [rangeResult.slots], { completed })
             }
-            if (hasRightElement) {
-              const startingHash = accountSlots[accountSlots.length - 1].hash
-              this.debug(
-                `Account fragmented at ${bufferToHex(startingHash)} as part of multiaccount fetch`
-              )
-              this.fragmentedRequests.unshift({
-                ...task.storageRequests[i],
-                first: bufferToBigInt(startingHash), // start fetching from next hash after last slot hash of last account received
-                count: COUNT - bufferToBigInt(startingHash),
-              } as StorageRequest)
-            }
-            // finally, we have to requeue account requests after fragmented account that were ignored due to response limit
-            const ignoredRequests = task.storageRequests.slice(i + 1)
-            if (ignoredRequests.length > 0) {
-              this.debug(
-                `Number of ignored account requests due to fragmentation: ${ignoredRequests.length}`
-              )
-              this.storageRequests.push(...ignoredRequests)
-            }
+            return Object.assign([], [rangeResult.slots], { completed })
+          }
+          if (hasRightElement) {
+            const startingHash = accountSlots[accountSlots.length - 1].hash
+            this.debug(
+              `Account fragmented at ${bufferToHex(startingHash)} as part of multiaccount fetch`
+            )
+            this.fragmentedRequests.unshift({
+              ...task.storageRequests[i],
+              // start fetching from next hash after last slot hash of last account received
+              first: bufferToBigInt(startingHash),
+              count: TOTAL_RANGE_END - bufferToBigInt(startingHash),
+            } as StorageRequest)
+          }
+          // finally, we have to requeue account requests after fragmented account that were ignored
+          // due to response limit
+          const ignoredRequests = task.storageRequests.slice(i + 1)
+          if (ignoredRequests.length > 0) {
+            this.debug(
+              `Number of ignored account requests due to fragmentation: ${ignoredRequests.length}`
+            )
+            this.storageRequests.push(...ignoredRequests)
           }
         }
-        return Object.assign([], [rangeResult.slots], { completed: true })
-      } catch (err) {
-        throw Error(`InvalidStorageRange: ${err}`)
       }
+      return Object.assign([], [rangeResult.slots], { completed: true })
+    } catch (err) {
+      throw Error(`InvalidStorageRange: ${err}`)
     }
   }
 
@@ -426,9 +421,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     this.debug(
       `Number of storage fetch requests added to fetcher queue: ${storageRequestList.length}`
     )
-    if (this.in.length === 0) {
-      this.nextTasks()
-    }
+    this.nextTasks()
   }
 
   /**
@@ -438,7 +431,11 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
    * Divides the full 256-bit range of hashes into @maxStorageRange ranges
    * and turns each range into a task for the fetcher
    */
-  tasks(first = FIRST, count = COUNT, maxTasks = this.config.maxFetcherJobs): JobTask[] {
+  tasks(
+    first = BigInt(0),
+    count = TOTAL_RANGE_END,
+    maxTasks = this.config.maxFetcherJobs
+  ): JobTask[] {
     const tasks: JobTask[] = []
     let storageRequest = undefined
     let whereFirstwas = first
@@ -558,6 +555,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         }
         const origin = this.getOrigin(fullJob as any)
         const limit = this.getLimit(fullJob as any)
+
         const tasks = this.tasks()
         for (const task of tasks) {
           this.enqueueTask(task, true)

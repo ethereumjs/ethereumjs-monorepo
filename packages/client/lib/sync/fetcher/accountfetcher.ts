@@ -60,12 +60,12 @@ export type FetcherDoneFlags = {
   stateRoot?: Buffer | undefined
 }
 
-export const fetcherDoneFlags: FetcherDoneFlags = {
-  storageFetcherDone: false,
-  accountFetcherDone: false,
-}
-
-export function snapFetchersCompleted(fetcherType: Object, root?: Buffer, eventBus?: EventBusType) {
+export function snapFetchersCompleted(
+  fetcherDoneFlags: FetcherDoneFlags,
+  fetcherType: Object,
+  root?: Buffer,
+  eventBus?: EventBusType
+) {
   switch (fetcherType) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     case AccountFetcher:
@@ -106,6 +106,11 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
   accountToStorageTrie: Map<String, Trie>
 
+  fetcherDoneFlags: FetcherDoneFlags = {
+    storageFetcherDone: false,
+    accountFetcherDone: false,
+  }
+
   /**
    * Create new block fetcher
    */
@@ -127,19 +132,19 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       accountToStorageTrie: this.accountToStorageTrie,
     })
     this.storageFetcher.fetch().then(
-      () => snapFetchersCompleted(StorageFetcher),
+      () => snapFetchersCompleted(this.fetcherDoneFlags, StorageFetcher),
       () => {
         throw Error('Snap fetcher failed to exit')
       }
     )
 
-    const fullJob = { task: { first: this.first, count: this.count } } as Job<
+    const syncRange = { task: { first: this.first, count: this.count } } as Job<
       JobTask,
       AccountData[],
       AccountData
     >
-    const origin = this.getOrigin(fullJob)
-    const limit = this.getLimit(fullJob)
+    const origin = this.getOrigin(syncRange)
+    const limit = this.getLimit(syncRange)
 
     this.debug(
       `Account fetcher instantiated root=${short(this.root)} origin=${short(origin)} limit=${short(
@@ -226,6 +231,9 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       limit,
       bytes: BigInt(this.config.maxRangeBytes),
     })
+    if (rangeResult === undefined) {
+      return undefined
+    }
 
     if (
       rangeResult.accounts.length === 0 ||
@@ -240,33 +248,27 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     }
 
     const peerInfo = `id=${peer?.id.slice(0, 8)} address=${peer?.address}`
+    // validate the proof
+    try {
+      // verifyRangeProof will also verify validate there are no missed states between origin and
+      // response data
+      const isMissingRightRange = await this.verifyRangeProof(this.root, origin, rangeResult)
 
-    // eslint-disable-next-line eqeqeq
-    if (rangeResult === undefined) {
-      return undefined
-    } else {
-      // validate the proof
-      try {
-        // verifyRangeProof will also verify validate there are no missed states between origin and
-        // response data
-        const isMissingRightRange = await this.verifyRangeProof(this.root, origin, rangeResult)
-
-        // Check if there is any pending data to be synced to the right
-        let completed: boolean
-        if (isMissingRightRange && this.isMissingRightRange(limit, rangeResult)) {
-          this.debug(
-            `Peer ${peerInfo} returned missing right range account=${rangeResult.accounts[
-              rangeResult.accounts.length - 1
-            ].hash.toString('hex')} limit=${limit.toString('hex')}`
-          )
-          completed = false
-        } else {
-          completed = true
-        }
-        return Object.assign([], rangeResult.accounts, { completed })
-      } catch (err) {
-        throw Error(`InvalidAccountRange: ${err}`)
+      // Check if there is any pending data to be synced to the right
+      let completed: boolean
+      if (isMissingRightRange && this.isMissingRightRange(limit, rangeResult)) {
+        this.debug(
+          `Peer ${peerInfo} returned missing right range account=${rangeResult.accounts[
+            rangeResult.accounts.length - 1
+          ].hash.toString('hex')} limit=${limit.toString('hex')}`
+        )
+        completed = false
+      } else {
+        completed = true
       }
+      return Object.assign([], rangeResult.accounts, { completed })
+    } catch (err) {
+      throw Error(`InvalidAccountRange: ${err}`)
     }
   }
 
@@ -304,7 +306,12 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
       // TODO include stateRoot in emission once moved over to using MPT's
       await this.accountTrie.persistRoot()
-      snapFetchersCompleted(AccountFetcher, this.accountTrie.root(), this.config.events)
+      snapFetchersCompleted(
+        this.fetcherDoneFlags,
+        AccountFetcher,
+        this.accountTrie.root(),
+        this.config.events
+      )
       return
     }
     const storageFetchRequests: StorageRequest[] = []
@@ -336,8 +343,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    */
 
   tasks(first = this.first, count = this.count, maxTasks = this.config.maxFetcherJobs): JobTask[] {
-    // const max = this.config.maxAccountRange
-    const max = (BigInt(2) ** BigInt(256) - BigInt(1)) / BigInt(10)
+    const max = this.config.maxAccountRange
     const tasks: JobTask[] = []
     let debugStr = `origin=${short(setLengthLeft(bigIntToBuffer(first), 32))}`
     let pushedCount = BigInt(0)
@@ -371,14 +377,19 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   }
 
   nextTasks(): void {
-    if (this.in.length === 0 && this.count > BigInt(0)) {
-      const fullJob = { task: { first: this.first, count: this.count } } as Job<
+    if (
+      this.in.length === 0 &&
+      this.count > BigInt(0) &&
+      this.processed - this.finished < this.config.maxFetcherRequests
+    ) {
+      // pendingRange is for which new tasks need to be generated
+      const pendingRange = { task: { first: this.first, count: this.count } } as Job<
         JobTask,
         AccountData[],
         AccountData
       >
-      const origin = this.getOrigin(fullJob)
-      const limit = this.getLimit(fullJob)
+      const origin = this.getOrigin(pendingRange)
+      const limit = this.getLimit(pendingRange)
 
       this.debug(`Fetcher pending with origin=${short(origin)} limit=${short(limit)}`)
       const tasks = this.tasks()

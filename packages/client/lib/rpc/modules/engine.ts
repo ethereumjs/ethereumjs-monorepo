@@ -17,6 +17,8 @@ import type { FullEthereumService } from '../../service'
 import type { HeaderData } from '@ethereumjs/block'
 import type { VM } from '@ethereumjs/vm'
 
+const zeroBlockHash = zeros(32)
+
 export enum Status {
   ACCEPTED = 'ACCEPTED',
   INVALID = 'INVALID',
@@ -721,6 +723,16 @@ export class Engine {
     const { headBlockHash, finalizedBlockHash, safeBlockHash } = params[0]
     const payloadAttributes = params[1]
 
+    const safe = toBuffer(safeBlockHash)
+    const finalized = toBuffer(finalizedBlockHash)
+
+    if (!finalized.equals(zeroBlockHash) && safe.equals(zeroBlockHash)) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'safe block can not be zero if finalized is not zero',
+      }
+    }
+
     if (this.config.synchronized) {
       this.connectionManager.newForkchoiceLog()
     }
@@ -804,6 +816,46 @@ export class Engine {
       return response
     }
 
+    /*
+     * Process safe and finalized block since headBlock has been found to be executed
+     * Allowed to have zero value while transition block is finalizing
+     */
+    let safeBlock, finalizedBlock
+
+    if (!safe.equals(zeroBlockHash)) {
+      if (safe.equals(headBlock.hash())) {
+        safeBlock = headBlock
+      } else {
+        try {
+          // Right now only check if the block is available, canonicality check is done
+          // in setHead after chain.putBlocks so as to reflect latest canonical chain
+          safeBlock = await this.chain.getBlock(safe)
+        } catch (_error: any) {
+          throw {
+            code: INVALID_PARAMS,
+            message: 'safe block not available',
+          }
+        }
+      }
+    } else {
+      safeBlock = undefined
+    }
+
+    if (!finalized.equals(zeroBlockHash)) {
+      try {
+        // Right now only check if the block is available, canonicality check is done
+        // in setHead after chain.putBlocks so as to reflect latest canonical chain
+        finalizedBlock = await this.chain.getBlock(finalized)
+      } catch (error: any) {
+        throw {
+          message: 'finalized block not available',
+          code: INVALID_PARAMS,
+        }
+      }
+    } else {
+      finalizedBlock = undefined
+    }
+
     const vmHeadHash = this.chain.headers.latest!.hash()
     if (!vmHeadHash.equals(headBlock.hash())) {
       let parentBlocks: Block[] = []
@@ -826,52 +878,20 @@ export class Engine {
       }
 
       const blocks = [...parentBlocks, headBlock]
-      await this.execution.setHead(blocks)
+      try {
+        await this.execution.setHead(blocks, { safeBlock, finalizedBlock })
+      } catch (error) {
+        throw {
+          message: (error as Error).message,
+          code: INVALID_PARAMS,
+        }
+      }
       this.service.txPool.removeNewBlockTxs(blocks)
 
       const isPrevSynced = this.chain.config.synchronized
       this.config.updateSynchronizedState(headBlock.header)
       if (!isPrevSynced && this.chain.config.synchronized) {
         this.service.txPool.checkRunState()
-      }
-    }
-    /*
-     * Process safe and finalized block
-     * Allowed to have zero value while transition block is finalizing
-     */
-    const zeroBlockHash = zeros(32)
-    const safe = toBuffer(safeBlockHash)
-    if (!safe.equals(headBlock.hash()) && !safe.equals(zeroBlockHash)) {
-      const msg = 'Safe block not in canonical chain'
-      try {
-        const safeBlock = await this.chain.getBlock(safe)
-        const canonical = await this.chain.getBlock(safeBlock.header.number)
-        if (!canonical.hash().equals(safe)) {
-          throw new Error(msg)
-        }
-      } catch (error: any) {
-        const message = error.message === msg ? msg : 'safe block not available'
-        throw {
-          code: INVALID_PARAMS,
-          message,
-        }
-      }
-    }
-    const finalized = toBuffer(finalizedBlockHash)
-    if (!finalized.equals(zeroBlockHash)) {
-      const msg = 'Finalized block not in canonical chain'
-      try {
-        const finalizedBlock = await this.chain.getBlock(finalized)
-        const canonical = await this.chain.getBlock(finalizedBlock.header.number)
-        if (!canonical.hash().equals(finalized)) {
-          throw new Error(msg)
-        }
-      } catch (error: any) {
-        const message = error.message === msg ? msg : 'finalized block not available'
-        throw {
-          message,
-          code: INVALID_PARAMS,
-        }
       }
     }
 

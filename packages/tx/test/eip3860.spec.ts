@@ -66,4 +66,42 @@ tape('[EIP3860 tests]', function (t) {
     }
     st.end()
   })
+
+  tape(
+    'Should allow txs with MAX_INITCODE_SIZE+1 data if allowUnlimitedInitCodeSize is active',
+    (st) => {
+      const data = Buffer.alloc(Number(maxInitCodeSize) + 1)
+      for (const txType of txTypes) {
+        try {
+          TransactionFactory.fromTxData(
+            { data, type: txType },
+            { common, allowUnlimitedInitCodeSize: true }
+          )
+          st.ok('Instantiated create tx with MAX_INITCODE_SIZE+1')
+        } catch (e) {
+          st.fail('Did not instantiate tx with MAX_INITCODE_SIZE+1')
+        }
+      }
+      st.end()
+    }
+  )
+
+  tape('Should charge initcode analysis gas is allowUnlimitedInitCodeSize is active', (st) => {
+    const data = Buffer.alloc(Number(maxInitCodeSize))
+    for (const txType of txTypes) {
+      const eip3860ActiveTx = TransactionFactory.fromTxData(
+        { data, type: txType },
+        { common, allowUnlimitedInitCodeSize: true }
+      )
+      const eip3860DeactivedTx = TransactionFactory.fromTxData(
+        { data, type: txType },
+        { common, allowUnlimitedInitCodeSize: false }
+      )
+      st.ok(
+        eip3860ActiveTx.getDataFee() === eip3860DeactivedTx.getDataFee(),
+        'charged initcode analysis gas'
+      )
+    }
+    st.end()
+  })
 })
