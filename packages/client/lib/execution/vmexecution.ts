@@ -31,8 +31,8 @@ export class VMExecution extends Execution {
   private pendingReceipts?: Map<string, TxReceipt[]>
   private vmPromise?: Promise<number>
 
-  /** Number of maximum blocks to run per iteration of {@link VMExecution.run} */
-  private NUM_BLOCKS_PER_ITERATION = 50
+  /** Maximally tolerated block time before giving a warning on console */
+  private MAX_TOLERATED_BLOCK_TIME = 12
 
   /**
    * Create new VM execution module
@@ -161,19 +161,46 @@ export class VMExecution extends Execution {
    * Should only be used after {@link VMExecution.runWithoutSetHead}
    * @param blocks Array of blocks to save pending receipts and set the last block as the head
    */
-  async setHead(blocks: Block[]): Promise<void> {
+  async setHead(
+    blocks: Block[],
+    { finalizedBlock, safeBlock }: { finalizedBlock?: Block; safeBlock?: Block } = {}
+  ): Promise<void> {
     return this.runWithLock<void>(async () => {
       const vmHeadBlock = blocks[blocks.length - 1]
-      if (!(await this.vm.stateManager.hasStateRoot(vmHeadBlock.header.stateRoot))) {
-        // If we set blockchain iterator to somewhere where we don't have stateroot
-        // execution run will always fail
+      const chainPointers: [string, Block | null][] = [
+        ['vmHeadBlock', vmHeadBlock],
+        // if safeBlock is not provided, the current safeBlock of chain should be used
+        // which is genesisBlock if it has never been set for e.g.
+        ['safeBlock', safeBlock ?? this.chain.blocks.safe],
+        ['finalizedBlock', finalizedBlock ?? this.chain.blocks.finalized],
+      ]
+
+      let isSortedDesc = true
+      let lastBlock = vmHeadBlock
+      for (const [blockName, block] of chainPointers) {
+        if (block === null) {
+          continue
+        }
+        if (!(await this.vm.stateManager.hasStateRoot(block.header.stateRoot))) {
+          // If we set blockchain iterator to somewhere where we don't have stateroot
+          // execution run will always fail
+          throw Error(
+            `${blockName}'s stateRoot not found number=${block.header.number} root=${short(
+              block.header.stateRoot
+            )}`
+          )
+        }
+        isSortedDesc = isSortedDesc && lastBlock.header.number >= block.header.number
+        lastBlock = block
+      }
+
+      if (isSortedDesc === false) {
         throw Error(
-          `vmHeadBlock's stateRoot not found number=${vmHeadBlock.header.number} root=${short(
-            vmHeadBlock.header.stateRoot
-          )}`
+          `headBlock=${vmHeadBlock?.header.number} should be >= safeBlock=${safeBlock?.header.number} should be >= finalizedBlock=${finalizedBlock?.header.number}`
         )
       }
-      await this.chain.putBlocks(blocks, true)
+      // skip emitting the chain update event as we will manually do it
+      await this.chain.putBlocks(blocks, true, true)
       for (const block of blocks) {
         const receipts = this.pendingReceipts?.get(block.hash().toString('hex'))
         if (receipts) {
@@ -181,7 +208,25 @@ export class VMExecution extends Execution {
           this.pendingReceipts?.delete(block.hash().toString('hex'))
         }
       }
+
+      // check if the head, safe and finalized are now canonical
+      for (const [blockName, block] of chainPointers) {
+        if (block === null) {
+          continue
+        }
+        const blockByNumber = await this.chain.getBlock(block.header.number)
+        if (!blockByNumber.hash().equals(block.hash())) {
+          throw Error(`${blockName} not in canonical chain`)
+        }
+      }
       await this.chain.blockchain.setIteratorHead('vm', vmHeadBlock.hash())
+      if (safeBlock !== undefined) {
+        await this.chain.blockchain.setIteratorHead('safe', safeBlock.hash())
+      }
+      if (finalizedBlock !== undefined) {
+        await this.chain.blockchain.setIteratorHead('finalized', finalizedBlock.hash())
+      }
+      await this.chain.update(true)
     })
   }
 
@@ -218,8 +263,8 @@ export class VMExecution extends Execution {
       (!runOnlybatched ||
         (runOnlybatched &&
           canonicalHead.header.number - startHeadBlock.header.number >=
-            BigInt(this.NUM_BLOCKS_PER_ITERATION))) &&
-      (numExecuted === undefined || (loop && numExecuted === this.NUM_BLOCKS_PER_ITERATION)) &&
+            BigInt(this.config.numBlocksPerIteration))) &&
+      (numExecuted === undefined || (loop && numExecuted === this.config.numBlocksPerIteration)) &&
       startHeadBlock.hash().equals(canonicalHead.hash()) === false
     ) {
       let txCounter = 0
@@ -268,12 +313,25 @@ export class VMExecution extends Execution {
               if (!this.started) {
                 throw Error('Execution stopped')
               }
+              const beforeTS = Date.now()
               const result = await this.vm.runBlock({
                 block,
                 root: parentState,
                 skipBlockValidation,
                 skipHeaderValidation: true,
               })
+              const afterTS = Date.now()
+              const diffSec = Math.round((afterTS - beforeTS) / 1000)
+
+              if (diffSec > this.MAX_TOLERATED_BLOCK_TIME) {
+                const msg = `Slow block execution for block num=${
+                  block.header.number
+                } hash=0x${block.hash().toString('hex')} txs=${block.transactions.length} gasUsed=${
+                  result.gasUsed
+                } time=${diffSec}secs`
+                this.config.logger.warn(msg)
+              }
+
               void this.receiptsManager?.saveReceipts(block, result.receipts)
             })
             txCounter += block.transactions.length
@@ -326,7 +384,7 @@ export class VMExecution extends Execution {
             errorBlock = block
           }
         },
-        this.NUM_BLOCKS_PER_ITERATION,
+        this.config.numBlocksPerIteration,
         // release lock on this callback so other blockchain ops can happen while this block is being executed
         true
       )
@@ -434,12 +492,18 @@ export class VMExecution extends Execution {
       if (txHashes.length === 0) {
         // we are skipping header validation because the block has been picked from the
         // blockchain and header should have already been validated while putBlock
+        const beforeTS = Date.now()
         const res = await vm.runBlock({ block, skipHeaderValidation: true })
-        this.config.logger.info(
-          `Executed block num=${blockNumber} hash=0x${block.hash().toString('hex')} txs=${
-            block.transactions.length
-          } gasUsed=${res.gasUsed} `
-        )
+        const afterTS = Date.now()
+        const diffSec = Math.round((afterTS - beforeTS) / 1000)
+        const msg = `Executed block num=${blockNumber} hash=0x${block.hash().toString('hex')} txs=${
+          block.transactions.length
+        } gasUsed=${res.gasUsed} time=${diffSec}secs`
+        if (diffSec <= this.MAX_TOLERATED_BLOCK_TIME) {
+          this.config.logger.info(msg)
+        } else {
+          this.config.logger.warn(msg)
+        }
       } else {
         let count = 0
         // Special verbose tx execution mode triggered by BLOCK_NUMBER[*]

@@ -305,7 +305,7 @@ export class Interpreter {
       depth: this._env.depth,
       address: this._env.address,
       account: this._env.contract,
-      memory: this._runState.memory._store,
+      memory: this._runState.memory._store.subarray(0, Number(this._runState.memoryWordCount) * 32),
       memoryWordCount: this._runState.memoryWordCount,
       codeAddress: this._env.codeAddress,
       eei: this._runState.eei,
@@ -875,7 +875,10 @@ export class Interpreter {
     await this._eei.putAccount(this._env.address, this._env.contract)
 
     if (this._common.isActivatedEIP(3860)) {
-      if (data.length > Number(this._common.param('vm', 'maxInitCodeSize'))) {
+      if (
+        data.length > Number(this._common.param('vm', 'maxInitCodeSize')) &&
+        this._evm._allowUnlimitedInitCodeSize === false
+      ) {
         return BigInt(0)
       }
     }

@@ -236,7 +236,7 @@ export const validators = {
 
       const blockOption = params[index]
 
-      if (!['latest', 'earliest', 'pending'].includes(blockOption)) {
+      if (!['latest', 'finalized', 'safe', 'earliest', 'pending'].includes(blockOption)) {
         if (blockOption.substr(0, 2) === '0x') {
           const hash = this.blockHash([blockOption], 0)
           // todo: make integer validator?

@@ -657,7 +657,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x51,
     function (runState) {
       const pos = runState.stack.pop()
-      const word = runState.memory.read(Number(pos), 32)
+      const word = runState.memory.read(Number(pos), 32, true)
       runState.stack.push(bufferToBigInt(word))
     },
   ],

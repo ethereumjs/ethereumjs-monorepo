@@ -226,6 +226,11 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe: 'EIP-1459 ENR tree urls to query for peer discovery targets',
     array: true,
   })
+  .option('numBlocksPerIteration', {
+    describe: 'Number of blocks to execute in batch mode and logged to console',
+    number: true,
+    default: Config.NUM_BLOCKS_PER_ITERATION,
+  })
   .option('executeBlocks', {
     describe:
       'Debug mode for reexecuting existing blocks (no services will be started), allowed input formats: 5,5-10',
@@ -708,6 +713,7 @@ async function run() {
     discDns: args.discDns,
     discV4: args.discV4,
     dnsAddr: args.dnsAddr,
+    numBlocksPerIteration: args.numBlocksPerIteration,
     dnsNetworks: args.dnsNetworks,
     extIP: args.extIP,
     key,
