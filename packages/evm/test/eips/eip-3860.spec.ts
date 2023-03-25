@@ -185,8 +185,8 @@ tape('EIP 3860 tests', (t) => {
       })
       const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
       const contractAccount = await evm.eei.getAccount(contractFactory)
-      await evm.eei.putAccount(contractFactory, contractAccount)
-      await evmDisabled.eei.putAccount(contractFactory, contractAccount)
+      await evm.eei.putAccount(contractFactory, contractAccount!)
+      await evmDisabled.eei.putAccount(contractFactory, contractAccount!)
       // This factory code:
       // -> reads 32 bytes from the calldata (X)
       // Attempts to create a contract of X size
