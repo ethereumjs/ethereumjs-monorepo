@@ -367,7 +367,7 @@ export const createBlobTxs = async (
   value?: bigint,
   opts?: TxOptions
 ) => {
-  const txHashes: any = []
+  const txHashes: string[] = []
 
   const blobs = getBlobs(bytesToHex(randomBytes(blobSize)))
   const commitments = blobsToCommitments(blobs)
