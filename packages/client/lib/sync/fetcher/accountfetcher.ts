@@ -226,6 +226,9 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       limit,
       bytes: BigInt(this.config.maxRangeBytes),
     })
+    if (rangeResult === undefined) {
+      return undefined
+    }
 
     if (
       rangeResult.accounts.length === 0 ||
@@ -240,33 +243,27 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     }
 
     const peerInfo = `id=${peer?.id.slice(0, 8)} address=${peer?.address}`
+    // validate the proof
+    try {
+      // verifyRangeProof will also verify validate there are no missed states between origin and
+      // response data
+      const isMissingRightRange = await this.verifyRangeProof(this.root, origin, rangeResult)
 
-    // eslint-disable-next-line eqeqeq
-    if (rangeResult === undefined) {
-      return undefined
-    } else {
-      // validate the proof
-      try {
-        // verifyRangeProof will also verify validate there are no missed states between origin and
-        // response data
-        const isMissingRightRange = await this.verifyRangeProof(this.root, origin, rangeResult)
-
-        // Check if there is any pending data to be synced to the right
-        let completed: boolean
-        if (isMissingRightRange && this.isMissingRightRange(limit, rangeResult)) {
-          this.debug(
-            `Peer ${peerInfo} returned missing right range account=${rangeResult.accounts[
-              rangeResult.accounts.length - 1
-            ].hash.toString('hex')} limit=${limit.toString('hex')}`
-          )
-          completed = false
-        } else {
-          completed = true
-        }
-        return Object.assign([], rangeResult.accounts, { completed })
-      } catch (err) {
-        throw Error(`InvalidAccountRange: ${err}`)
+      // Check if there is any pending data to be synced to the right
+      let completed: boolean
+      if (isMissingRightRange && this.isMissingRightRange(limit, rangeResult)) {
+        this.debug(
+          `Peer ${peerInfo} returned missing right range account=${rangeResult.accounts[
+            rangeResult.accounts.length - 1
+          ].hash.toString('hex')} limit=${limit.toString('hex')}`
+        )
+        completed = false
+      } else {
+        completed = true
       }
+      return Object.assign([], rangeResult.accounts, { completed })
+    } catch (err) {
+      throw Error(`InvalidAccountRange: ${err}`)
     }
   }
 
