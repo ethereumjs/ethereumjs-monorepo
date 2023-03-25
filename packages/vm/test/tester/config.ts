@@ -426,11 +426,11 @@ const expectedTestsFull: {
     Petersburg: 33128,
     Istanbul: 38773,
     MuirGlacier: 38773,
-    Berlin: 41872,
-    London: 61547,
+    Berlin: 41365,
+    London: 61197,
     ArrowGlacier: 0,
     Merge: 60373,
-    Shanghai: 0, //TODO
+    Shanghai: 61563,
     ByzantiumToConstantinopleFixAt5: 3,
     EIP158ToByzantiumAt5: 3,
     FrontierToHomesteadAt5: 13,
@@ -451,8 +451,8 @@ const expectedTestsFull: {
     MuirGlacier: 12439,
     Berlin: 13214,
     London: 19449,
-    Merge: 0, // TODO
-    Shanghai: 0, // TODO
+    Merge: 19598,
+    Shanghai: 19564,
     ByzantiumToConstantinopleFixAt5: 0,
     EIP158ToByzantiumAt5: 0,
     FrontierToHomesteadAt5: 0,
