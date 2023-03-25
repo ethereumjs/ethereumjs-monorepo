@@ -47,7 +47,6 @@ export abstract class Synchronizer {
   // Time (in ms) after which the synced state is reset
   private SYNCED_STATE_REMOVAL_PERIOD = 60000
   private _syncedStatusCheckInterval: NodeJS.Timeout | undefined /* global NodeJS */
-  private syncPromise: Promise<boolean> | null = null
 
   /**
    * Create new node
@@ -153,13 +152,12 @@ export abstract class Synchronizer {
       numAttempts += 1
     }
 
-    if (this.syncPromise || !(await this.syncWithPeer(peer))) return false
+    if (!(await this.syncWithPeer(peer))) return false
 
     // eslint-disable-next-line no-async-promise-executor
-    this.syncPromise = new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       const resolveSync = (height?: number) => {
         this.clearFetcher()
-        this.syncPromise = null
         resolve(true)
         const heightStr = typeof height === 'number' && height !== 0 ? ` height=${height}` : ''
         this.config.logger.info(`Finishing up sync with the current fetcher ${heightStr}`)
@@ -176,11 +174,9 @@ export abstract class Synchronizer {
           `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`
         )
         this.clearFetcher()
-        this.syncPromise = null
         reject(error)
       }
     })
-    return this.syncPromise
   }
 
   /**
