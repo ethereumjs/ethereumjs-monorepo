@@ -26,22 +26,26 @@ tape('[StorageFetcher]', async (t) => {
     const fetcher = new StorageFetcher({
       config,
       pool,
-            root: Buffer.from('e794e45a596856bcd5412788f46752a559a4aa89fe556ab26a8c2cf0fc24cb5e', 'hex'),
+      root: Buffer.from('e794e45a596856bcd5412788f46752a559a4aa89fe556ab26a8c2cf0fc24cb5e', 'hex'),
       storageRequests: [
         {
-          accountHash: Buffer.from('352a47fc6863b89a6b51890ef3c1550d560886c027141d2058ba1e2d4c66d99a', 'hex'),
-          storageRoot: Buffer.from('556a482068355939c95a3412bdb21213a301483edb1b64402fb66ac9f3583599', 'hex'),
+          accountHash: Buffer.from(
+            '352a47fc6863b89a6b51890ef3c1550d560886c027141d2058ba1e2d4c66d99a',
+            'hex'
+          ),
+          storageRoot: Buffer.from(
+            '556a482068355939c95a3412bdb21213a301483edb1b64402fb66ac9f3583599',
+            'hex'
+          ),
           first: BigInt(0),
-          count: BigInt(2) ** BigInt(256) - BigInt(1)
+          count: BigInt(2) ** BigInt(256) - BigInt(1),
         },
-
       ],
-
     })
     fetcher.next = () => false
     t.notOk((fetcher as any).running, 'not started')
     t.equals((fetcher as any).in.length, 0, 'No jobs have yet been added')
-    t.equal((fetcher as any).storageRequests.length,1,'one storageRequests have been added')
+    t.equal((fetcher as any).storageRequests.length, 1, 'one storageRequests have been added')
     fetcher.enqueueByStorageRequestList([
       {
         accountHash: Buffer.from(
@@ -57,13 +61,13 @@ tape('[StorageFetcher]', async (t) => {
       },
     ])
     t.equals((fetcher as any).in.length, 1, 'A new task has been queued')
-    const job =(fetcher as any).in.peek();
-    t.equal(job!.task.storageRequests.length,2,'two storageRequests are added to job')
+    const job = (fetcher as any).in.peek()
+    t.equal(job!.task.storageRequests.length, 2, 'two storageRequests are added to job')
 
     void fetcher.fetch()
     await wait(100)
     t.ok((fetcher as any).running, 'started')
-    t.ok(fetcher.write() == false, 'fetcher should not setup a new write pipe')
+    t.ok(fetcher.write() === false, 'fetcher should not setup a new write pipe')
     fetcher.destroy()
     await wait(100)
     t.notOk((fetcher as any).running, 'stopped')
