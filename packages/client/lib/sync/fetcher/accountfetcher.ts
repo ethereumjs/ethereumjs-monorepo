@@ -60,12 +60,12 @@ export type FetcherDoneFlags = {
   stateRoot?: Buffer | undefined
 }
 
-export const fetcherDoneFlags: FetcherDoneFlags = {
-  storageFetcherDone: false,
-  accountFetcherDone: false,
-}
-
-export function snapFetchersCompleted(fetcherType: Object, root?: Buffer, eventBus?: EventBusType) {
+export function snapFetchersCompleted(
+  fetcherDoneFlags: FetcherDoneFlags,
+  fetcherType: Object,
+  root?: Buffer,
+  eventBus?: EventBusType
+) {
   switch (fetcherType) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     case AccountFetcher:
@@ -106,6 +106,11 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
   accountToStorageTrie: Map<String, Trie>
 
+  fetcherDoneFlags: FetcherDoneFlags = {
+    storageFetcherDone: false,
+    accountFetcherDone: false,
+  }
+
   /**
    * Create new block fetcher
    */
@@ -127,7 +132,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       accountToStorageTrie: this.accountToStorageTrie,
     })
     this.storageFetcher.fetch().then(
-      () => snapFetchersCompleted(StorageFetcher),
+      () => snapFetchersCompleted(this.fetcherDoneFlags, StorageFetcher),
       () => {
         throw Error('Snap fetcher failed to exit')
       }
@@ -301,7 +306,12 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
       // TODO include stateRoot in emission once moved over to using MPT's
       await this.accountTrie.persistRoot()
-      snapFetchersCompleted(AccountFetcher, this.accountTrie.root(), this.config.events)
+      snapFetchersCompleted(
+        this.fetcherDoneFlags,
+        AccountFetcher,
+        this.accountTrie.root(),
+        this.config.events
+      )
       return
     }
     const storageFetchRequests: StorageRequest[] = []

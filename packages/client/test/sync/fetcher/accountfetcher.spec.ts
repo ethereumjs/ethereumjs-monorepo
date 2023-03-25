@@ -6,6 +6,7 @@ import * as td from 'testdouble'
 import { Chain } from '../../../lib/blockchain'
 import { Config } from '../../../lib/config'
 import { SnapProtocol } from '../../../lib/net/protocol'
+import { Event } from '../../../lib/types'
 import { wait } from '../../integration/util'
 
 const _accountRangeRLP =
@@ -19,7 +20,9 @@ tape('[AccountFetcher]', async (t) => {
   PeerPool.prototype.idle = td.func<any>()
   PeerPool.prototype.ban = td.func<any>()
 
-  const { AccountFetcher } = await import('../../../lib/sync/fetcher/accountfetcher')
+  const { AccountFetcher, snapFetchersCompleted } = await import(
+    '../../../lib/sync/fetcher/accountfetcher'
+  )
 
   t.test('should start/stop', async (t) => {
     const config = new Config({ maxPerRequest: 5, transports: [] })
@@ -180,6 +183,8 @@ tape('[AccountFetcher]', async (t) => {
         Buffer.from('000010c6f7a0b5ed8d36b4c7f34938583621fafc8b0079a2834d26fa3fcc9ea9', 'hex')
       ),
     })
+    t.ok(fetcher.storageFetcher !== undefined, 'storageFetcher should be created')
+
     const task = { count: 3, first: BigInt(1) }
     const resData = RLP.decode(Buffer.from(_accountRangeRLP, 'hex')) as unknown
     const { accounts, proof } = p.decode(
@@ -198,7 +203,41 @@ tape('[AccountFetcher]', async (t) => {
       address: 'random',
     }
     const job = { peer, task }
-    t.ok(await fetcher.request(job as any), 'Proof verification is completed without errors')
+    const results = await fetcher.request(job as any)
+    t.ok(results !== undefined, 'Proof verification is completed without errors')
+    t.ok(
+      fetcher.process(job as any, results!) !== undefined,
+      'Response should be processed properly'
+    )
+
+    // mock storageFetches's enqueue so to not having a hanging storage fetcher
+    fetcher.storageFetcher.enqueueByStorageRequestList = td.func<any>()
+    try {
+      await fetcher.store(results!)
+      t.pass('fetcher stored results successfully')
+    } catch (e) {
+      t.fail(`fetcher failed to store results, Error: ${(e as Error).message}`)
+    }
+    const fetcherDoneFlags = fetcher.fetcherDoneFlags
+
+    const snapCompleted = new Promise((resolve) => {
+      config.events.once(Event.SYNC_SNAPSYNC_COMPLETE, (stateRoot: any) => resolve(stateRoot))
+    })
+    // test snapfetcher complete, since the storage fetcher is already empty it should anyway lead
+    // call to snapFetchersCompleted with storageFetcher
+    snapFetchersCompleted(
+      fetcherDoneFlags,
+      AccountFetcher,
+      fetcher.accountTrie.root(),
+      config.events
+    )
+    const snapSyncTimeout = new Promise((_resolve, reject) => setTimeout(reject, 10000))
+    try {
+      await Promise.race([snapCompleted, snapSyncTimeout])
+      t.pass('completed snap sync')
+    } catch (e) {
+      t.fail('could not complete snap sync in 40 seconds')
+    }
     t.end()
   })
 
