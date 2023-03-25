@@ -24,6 +24,7 @@ import type { FetcherOptions } from './fetcher'
 import type { StorageRequest } from './storagefetcher'
 import type { Job } from './types'
 import type { Debugger } from 'debug'
+import { ByteCodeFetcher } from './bytecodefetcher'
 
 type AccountDataResponse = AccountData[] & { completed?: boolean }
 
@@ -56,6 +57,7 @@ export type JobTask = {
 export type FetcherDoneFlags = {
   storageFetcherDone: boolean
   accountFetcherDone: boolean
+  byteCodeFetcherDone: boolean
   eventBus?: EventBusType | undefined
   stateRoot?: Buffer | undefined
 }
@@ -76,8 +78,15 @@ export function snapFetchersCompleted(
     case StorageFetcher:
       fetcherDoneFlags.storageFetcherDone = true
       break
+    case StorageFetcher:
+      fetcherDoneFlags.byteCodeFetcherDone = true
+      break
   }
-  if (fetcherDoneFlags.accountFetcherDone && fetcherDoneFlags.storageFetcherDone) {
+  if (
+    fetcherDoneFlags.accountFetcherDone &&
+    fetcherDoneFlags.storageFetcherDone &&
+    fetcherDoneFlags.byteCodeFetcherDone
+  ) {
     fetcherDoneFlags.eventBus!.emit(
       Event.SYNC_SNAPSYNC_COMPLETE,
       bufArrToArr(fetcherDoneFlags.stateRoot as Buffer)
@@ -102,6 +111,8 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
   storageFetcher: StorageFetcher
 
+  byteCodeFetcher: ByteCodeFetcher
+
   accountTrie: Trie
 
   accountToStorageTrie: Map<String, Trie>
@@ -109,6 +120,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   fetcherDoneFlags: FetcherDoneFlags = {
     storageFetcherDone: false,
     accountFetcherDone: false,
+    byteCodeFetcherDone: false,
   }
 
   /**
@@ -133,6 +145,18 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     })
     this.storageFetcher.fetch().then(
       () => snapFetchersCompleted(this.fetcherDoneFlags, StorageFetcher),
+      () => {
+        throw Error('Snap fetcher failed to exit')
+      }
+    )
+    this.byteCodeFetcher = new ByteCodeFetcher({
+      config: this.config,
+      pool: this.pool,
+      hashes: [],
+      destroyWhenDone: false,
+    })
+    this.byteCodeFetcher.fetch().then(
+      () => snapFetchersCompleted(this.fetcherDoneFlags, ByteCodeFetcher),
       () => {
         throw Error('Snap fetcher failed to exit')
       }
@@ -314,7 +338,8 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       )
       return
     }
-    const storageFetchRequests: StorageRequest[] = []
+    const storageFetchRequests = new Set()
+    const byteCodeFetchRequests = new Set()
     for (const account of result) {
       await this.accountTrie.put(account.hash, accountBodyToRLP(account.body))
 
@@ -322,16 +347,28 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       const storageRoot: Buffer =
         account.body[2] instanceof Buffer ? account.body[2] : Buffer.from(account.body[2])
       if (storageRoot.compare(KECCAK256_RLP) !== 0) {
-        storageFetchRequests.push({
+        storageFetchRequests.add({
           accountHash: account.hash,
           storageRoot,
           first: BigInt(0),
           count: BigInt(2) ** BigInt(256) - BigInt(1),
         })
       }
+      // build record of accounts that need bytecode to be fetched
+      const codeHash: Buffer =
+        account.body[3] instanceof Buffer ? account.body[3] : Buffer.from(account.body[3])
+      if (codeHash.compare(KECCAK256_RLP) !== 0) {
+        byteCodeFetchRequests.add(codeHash)
+      }
     }
-    if (storageFetchRequests.length > 0)
-      this.storageFetcher.enqueueByStorageRequestList(storageFetchRequests)
+    if (storageFetchRequests.size > 0)
+      this.storageFetcher.enqueueByStorageRequestList(
+        Array.from(storageFetchRequests) as StorageRequest[]
+      )
+    if (byteCodeFetchRequests.size > 0)
+      this.byteCodeFetcher.enqueueByByteCodeRequestList(
+        Array.from(byteCodeFetchRequests) as Buffer[]
+      )
   }
 
   /**

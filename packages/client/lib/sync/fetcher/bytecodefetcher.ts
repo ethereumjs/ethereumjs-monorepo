@@ -183,64 +183,54 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
   }
 
   /**
+   * Create new tasks based on a provided list of block numbers.
+   *
+   * If numbers are sequential the request is created as bulk request.
+   *
+   * If there are no tasks in the fetcher and `min` is behind head,
+   * inserts the requests for the missing blocks first.
+   *
+   * @param numberList List of block numbers
+   * @param min Start block number
+   */
+  enqueueByByteCodeRequestList(byteCodeRequestList: Buffer[]) {
+    this.hashes.push(...byteCodeRequestList)
+    this.debug(
+      `Number of bytecode fetch requests added to fetcher queue: ${byteCodeRequestList.length}`
+    )
+    this.nextTasks()
+  }
+
+  /**
    * Generate list of tasks to fetch. Modifies `first` and `count` to indicate
    * remaining items apart from the tasks it pushes in the queue
    *
    * Divides the full 256-bit range of hashes into ranges of @maxAccountRange
    * size and turnes each range into a task for the fetcher
    */
-
   tasks(maxTasks = this.config.maxFetcherJobs): JobTask[] {
-    return []
-    // // const max = this.config.maxAccountRange
-    // const max = (BigInt(2) ** BigInt(256) - BigInt(1)) / BigInt(10)
-    // const tasks: JobTask[] = []
-    // let debugStr = `origin=${short(setLengthLeft(bigIntToBuffer(first), 32))}`
-    // let pushedCount = BigInt(0)
-    // const startedWith = first
+    const tasks: JobTask[] = []
+    let pushedCount = 0
 
-    // while (count >= BigInt(max) && tasks.length < maxTasks) {
-    //   tasks.push({ first, count: max })
-    //   first += BigInt(max)
-    //   count -= BigInt(max)
-    //   pushedCount += BigInt(max)
-    // }
-    // if (count > BigInt(0) && tasks.length < maxTasks) {
-    //   tasks.push({ first, count })
-    //   first += BigInt(count)
-    //   pushedCount += count
-    //   count = BigInt(0)
-    // }
+    if (this.hashes.length > 0) {
+      tasks.push({ hashes: this.hashes })
+      pushedCount += this.hashes.length
+    }
 
-    // // If we started with where this.first was, i.e. there are no gaps and hence
-    // // we can move this.first to where its now, and reduce count by pushedCount
-    // if (startedWith === this.first) {
-    //   this.first = first
-    //   this.count = this.count - pushedCount
-    // }
-
-    // debugStr += ` limit=${short(
-    //   setLengthLeft(bigIntToBuffer(startedWith + pushedCount - BigInt(1)), 32)
-    // )}`
-    // this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)
-    // return tasks
+    this.debug(`Created new tasks num=${tasks.length}`)
+    return tasks
   }
 
   nextTasks(): void {
-    // if (this.in.length === 0 && this.count > BigInt(0)) {
-    //   const fullJob = { task: { first: this.first, count: this.count } } as Job<
-    //     JobTask,
-    //     AccountData[],
-    //     AccountData
-    //   >
-    //   const origin = this.getOrigin(fullJob)
-    //   const limit = this.getLimit(fullJob)
-    //   this.debug(`Fetcher pending with origin=${short(origin)} limit=${short(limit)}`)
-    //   const tasks = this.tasks()
-    //   for (const task of tasks) {
-    //     this.enqueueTask(task)
-    //   }
-    // }
+    if (this.in.length === 0 && this.hashes.length > 0) {
+      const fullJob = { task: { hashes: this.hashes } } as Job<JobTask, Buffer[], Buffer>
+
+      this.debug(`Fetcher pending with ${this.hashes.length}`)
+      const tasks = this.tasks()
+      for (const task of tasks) {
+        this.enqueueTask(task)
+      }
+    }
   }
 
   /**
