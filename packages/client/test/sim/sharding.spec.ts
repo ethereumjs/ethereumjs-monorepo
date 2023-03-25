@@ -3,7 +3,6 @@ import { TransactionFactory } from '@ethereumjs/tx'
 import { bytesToPrefixedHexString, hexStringToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import { randomBytes } from 'node:crypto'
-import * as fs from 'node:fs'
 import * as tape from 'tape'
 
 import {
@@ -11,7 +10,6 @@ import {
   filterKeywords,
   filterOutWords,
   runBlobTx,
-  runBlobTxsFromFile,
   runTxHelper,
   sleep,
   startNetwork,
@@ -36,7 +34,7 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
   }
   const { teardownCallBack, result } = await startNetwork(network, client, {
     filterKeywords,
-    filterOutWords: [],
+    filterOutWords,
     externalRun: process.env.EXTERNAL_RUN,
     withPeer: process.env.WITH_PEER,
   })
