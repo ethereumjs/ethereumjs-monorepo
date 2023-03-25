@@ -141,7 +141,9 @@ tape('EIP 3670 tests', (t) => {
 
       const sender = tx.getSenderAddress()
 
-      await vm.stateManager.putAccount(sender, new Account())
+      if (i === 0) {
+        await vm.stateManager.putAccount(sender, new Account())
+      }
       const acc = await vm.stateManager.getAccount(sender)
       acc!.balance = 1000000000n
 
