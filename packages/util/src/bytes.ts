@@ -8,15 +8,12 @@ import type { PrefixedHexString, TransformabletoBytes } from './types'
 
 /****************  Borrowed from @chainsafe/ssz */
 // Caching this info costs about ~1000 bytes and speeds up toHexString() by x6
-const hexByByte = new Array<string>(256)
+const hexByByte = Array.from({ length: 256 }, (v, i) => i.toString(16).padStart(2, '0'))
 
 export const bytesToPrefixedHexString = (bytes: Uint8Array): string => {
   let hex = '0x'
   if (bytes === undefined || bytes.length === 0) return hex
   for (const byte of bytes) {
-    if (!hexByByte[byte]) {
-      hexByByte[byte] = byte < 16 ? '0' + byte.toString(16) : byte.toString(16)
-    }
     hex += hexByByte[byte]
   }
   return hex
