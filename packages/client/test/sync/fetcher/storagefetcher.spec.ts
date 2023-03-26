@@ -7,6 +7,8 @@ import { Config } from '../../../lib/config'
 import { SnapProtocol } from '../../../lib/net/protocol'
 import { wait } from '../../integration/util'
 
+import { _accountRangeRLP } from './accountfetcher.spec'
+
 const _storageRangesRLP =
   'f83e0bf83af838f7a0290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5639594053cd080a26cb03d5e6d2956cebb31c56e7660cac0'
 
@@ -310,6 +312,33 @@ tape('[StorageFetcher]', async (t) => {
     } catch (e) {
       t.fail(`fetcher failed to store results, Error: ${(e as Error).message}`)
     }
+
+    // We have not been able to captured valid storage proof yet but we can try invalid
+    // proof for coverage. A valid proof test can be added later
+    const accResData = RLP.decode(Buffer.from(_accountRangeRLP, 'hex')) as unknown
+    const { proof: proofInvalid } = p.decode(
+      p.messages.filter((message) => message.name === 'AccountRange')[0],
+      accResData
+    )
+    const dummyStorageRoot = Buffer.from(
+      '39ed8daab7679c0b1b7cf3667c50108185d4d9d1431c24a1c35f696a58277f8f',
+      'hex'
+    )
+    const dummyOrigin = Buffer.alloc(32)
+    try {
+      await fetcher['verifyRangeProof'](dummyStorageRoot, dummyOrigin, {
+        slots,
+        proof: proofInvalid,
+      })
+      t.fail('verifyRangeProof should have failed for an proofInvalid')
+    } catch (e) {
+      t.pass(`verifyRangeProof correctly failed on invalid proof, Error: ${(e as Error).message}`)
+    }
+
+    // send end of range input to store
+    await fetcher.store(Object.create(null))
+    t.ok(fetcher['destroyWhenDone'] === true, 'should have marked fetcher to close')
+
     t.end()
   })
 
