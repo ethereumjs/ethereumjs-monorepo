@@ -293,7 +293,23 @@ tape('[StorageFetcher]', async (t) => {
       address: 'random',
     }
     const job = { peer, partialResult, task }
-    t.ok(await fetcher.request(job as any), 'Proof verification is completed without errors')
+    let results = await fetcher.request(job as any)
+    t.ok(results !== undefined, 'Proof verification is completed without errors')
+
+    results!.completed = true
+    results = fetcher.process(job as any, results!)
+    t.ok(results !== undefined, 'Response should be processed correctly')
+    t.equal(results![0].length, 3, '3 results should be there with dummy partials')
+    // remove out the dummy partials
+    results![0].splice(0, 2)
+    t.equal(results![0].length, 1, 'valid slot in results')
+
+    try {
+      await fetcher.store(results! as any)
+      t.pass('fetcher stored results successfully')
+    } catch (e) {
+      t.fail(`fetcher failed to store results, Error: ${(e as Error).message}`)
+    }
     t.end()
   })
 
