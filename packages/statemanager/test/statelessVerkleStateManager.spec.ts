@@ -8,16 +8,17 @@ import { StatelessVerkleStateManager } from '../src'
 // import { createAccount, getTransaction } from '../utils'
 
 //import { Address } from 'ethereumjs-util'
-// import * as verkleBlockJSON from './testdata/verkleCondrieuBlock500.json'
-import * as verkleBlockJSON from './testdata/verkleSampleBlock.json'
+import * as verkleBlockJSON from './testdata/verkleBeverlyHillsBlock83.json'
+import * as simpleVerkleBlockJSON from './testdata/verkleSampleBlock.json'
 
 tape('StatelessVerkleStateManager', (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [999001] })
+  const simpleBlock = Block.fromBlockData(simpleVerkleBlockJSON, { common })
   const block = Block.fromBlockData(verkleBlockJSON, { common })
 
   t.test('initPreState()', async (st) => {
     const stateManager = new StatelessVerkleStateManager()
-    stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
+    stateManager.initPreState(simpleBlock.header.verkleProof!, simpleBlock.header.verklePreState!)
 
     const proofStart = '0x000000000600000008'
     st.equal((stateManager as any)._proof.slice(0, 20), proofStart, 'should initialize with proof')
@@ -27,7 +28,7 @@ tape('StatelessVerkleStateManager', (t) => {
   // Test data from https://github.com/gballet/verkle-block-sample/tree/master#block-content
   t.test('getTreeKey()', async (st) => {
     const stateManager = new StatelessVerkleStateManager({ common })
-    stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
+    stateManager.initPreState(simpleBlock.header.verkleProof!, simpleBlock.header.verklePreState!)
 
     const balanceKey = await (stateManager as any).getTreeKeyForBalance(
       Address.fromString('0x0000000000000000000000000000000000000000')
@@ -40,7 +41,7 @@ tape('StatelessVerkleStateManager', (t) => {
 
   t.test('getTreeKey()', async (st) => {
     const stateManager = new StatelessVerkleStateManager({ common })
-    stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
+    stateManager.initPreState(simpleBlock.header.verkleProof!, simpleBlock.header.verklePreState!)
 
     const balanceKey = await (stateManager as any).getTreeKeyForBalance(
       Address.fromString('0x71562b71999873DB5b286dF957af199Ec94617f7')
@@ -53,7 +54,7 @@ tape('StatelessVerkleStateManager', (t) => {
 
   t.test('getAccount()', async (st) => {
     const stateManager = new StatelessVerkleStateManager({ common })
-    stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
+    stateManager.initPreState(simpleBlock.header.verkleProof!, simpleBlock.header.verklePreState!)
 
     const account = await stateManager.getAccount(
       Address.fromString('0x0000000000000000000000000000000000000000')
@@ -74,7 +75,7 @@ tape('StatelessVerkleStateManager', (t) => {
 
   t.test('getAccount()', async (st) => {
     const stateManager = new StatelessVerkleStateManager({ common })
-    stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
+    stateManager.initPreState(simpleBlock.header.verkleProof!, simpleBlock.header.verklePreState!)
 
     const account = await stateManager.getAccount(
       Address.fromString('0x71562b71999873DB5b286dF957af199Ec94617f7')
@@ -83,27 +84,7 @@ tape('StatelessVerkleStateManager', (t) => {
     st.equal(account.nonce, 3n, 'should have correct nonce')
   })
 
-  /**t.test('initPreState()', async (st) => {
-    const stateManager = new StatelessVerkleStateManager()
-
-    // Init pre state (format: address -> RLP serialized account)
-    // Here: Caller address from `const tx = getTransaction(vm._common, 0, true)`
-    const preState = {
-      accounts: {
-        '0xbe862ad9abfe6f22bcb087716c7d89a26051f74c':
-          'f8478083fff384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
-      },
-      code: {},
-      storage: {},
-    }
-    await stateManager.initPreState(preState)
-    const address = Address.fromString('0xbe862ad9abfe6f22bcb087716c7d89a26051f74c')
-    const account = await stateManager.getAccount(address)
-    st.ok(
-      account.balance.toString('hex') === 'fff384',
-      'should provide access to pre-state account'
-    )
-  })
+  /**
 
   t.test('checkpoint() / commit() / revert', async (st) => {
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
