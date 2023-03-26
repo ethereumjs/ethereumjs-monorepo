@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1679653033544,
+  "lastUpdate": 1679841860993,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "d085ab71f8a4e632b1a80b4a654b5513fc076fe8",
-          "message": "Small Client UX Improvements (#2547)\n\n* Added more prominent Merge transition message with CL client notice and setup reference\r\n\r\n* Improve client Engine API JWT authentication logging\r\n\r\n* Additional mention of JSON RPC endpoint\r\n\r\n* Minor",
-          "timestamp": "2023-02-23T13:30:57+01:00",
-          "tree_id": "b9b0a0e0a35f998cfbc9bbcf1406e780c236222b",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d085ab71f8a4e632b1a80b4a654b5513fc076fe8"
-        },
-        "date": 1677155625107,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15253,
-            "range": "±3.00%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 14357,
-            "range": "±5.25%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 15407,
-            "range": "±1.85%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 14838,
-            "range": "±2.20%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 12889,
-            "range": "±9.26%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±9.28%",
             "unit": "ops/sec",
             "extra": "75 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e2ec03c8c47964e5547c2373fea450d37da7d8b6",
+          "message": "client: Add support for storage and bytecode fetching (#2345)\n\n* Add account fetcher base\r\n\r\nAdd accountfetcher import\r\n\r\nAdd AccountFetcher as possible type for Synchronizer.fetcher\r\n\r\nPlace call to getAccountRange inside of fetcher\r\n\r\nPlace call to getAccountRange() in accountfetcher and comment it out\r\n\r\nAdd account fetcher base\r\n\r\nAdd accountfetcher import\r\n\r\nadd account fetcher getter setter in snapsync\r\n\r\nChange order of importing accountfetcher in index file\r\n\r\nChange bytes parameter to be per task\r\n\r\nRemove root and bytes from task inputs and make them fetcher variables\r\n\r\nCorrect log message\r\n\r\nAdd debug console log statement\r\n\r\nFix linting issues\r\n\r\nAdd account to mpt and check validity with root and proof\r\n\r\nSet root of trie\r\n\r\nAdd checks to fetcher.request()\r\n\r\nclient/snap: fix getAccountRange return type\r\n\r\nclient/snap: pass first proof\r\n\r\nclient/snap: add utility to convert slim account to a normal RLPd account\r\n\r\nclient/snap: implement account range db dump\r\n\r\nUpdate to use verifyRangeProof\r\n\r\nCorrect some messages\r\n\r\nUpdate verifyProofRange input for first account hash to be fetcher origin\r\n\r\nFix linting issues\r\n\r\nStore accounts in store phase\r\n\r\nAdd logic for dividing hash ranges and adding them as tasks\r\n\r\nIncrement count by 1 before next iteration\r\n\r\nclient/snap: remove unnecessary account fetcher logic\r\n\r\nclient/snap: correctly feed the right values to verifyRangeProof\r\n\r\nlint fixes\r\n\r\nsmall cleanup\r\n\r\nfix account fetcher with previous fixes\r\n\r\noverhaul and simplify the fetcher and add partial results handling\r\n\r\ncleanup comments\r\n\r\nfix fetch spec tests\r\n\r\nExperiment with putting accounts into DefaultStateManager and CheckpointTrie\r\n\r\nUse return value of verifyRangeProof for checking if there are more accounts left to fetch in the range\r\n\r\nRemove unused function\r\n\r\nExport storage data\r\n\r\nCreate storage fetcher\r\n\r\nRemove comment\r\n\r\nModify debug message\r\n\r\nUpdate comments to reflect specs\r\n\r\nModify comments and change storage fetcher to fetch only single account\r\n\r\nWIP: Queue storage fetches when accounts are received\r\n\r\nWIP:  Continue work on storage fetcher\r\n\r\nAdd storage fetcher tests\r\n\r\nComment out storage fetcher integration until multi-fetcher sync support is added\r\n\r\nWIP: Initialize and run storage fetcher in account fetcher\r\n\r\nAdd account field to JobTask type for storage fetcher and add enqueueByAccountList\r\n\r\nAdd accounts for storage fetching in account fetcher\r\n\r\nEnable single account fetches in storage fetcher\r\n\r\nSave changes so far\r\n\r\nIndex account body for storageRoot for use with storageFetcher\r\n\r\nUpdate comments and print statements\r\n\r\nAdd custom debuggers to new fetchers\r\n\r\nAdd limit check for continueing a task after partial resluts\r\n\r\nAdd limit check for continueing a task after partial resluts and clean up comments\r\n\r\nOptimize by removing invalidated tasks; Terminate using new conditions\r\n\r\nUpdate comments\r\n\r\nWIP: Implement multi-account storage requests\r\n\r\nWIP: Continue development of multi-account fetches and optimizing storage fetcher\r\n\r\nWIP: Impelemnt multi-account fetching\r\n\r\nWIP: Debug task null error\r\n\r\nAdd some checks for peer storage response\r\n\r\nSwitch structure of post-fetch validation\r\n\r\nDebug storage fetcher: Set starting origin to 0 and troubleshoot request logic\r\n\r\nAggregate partial results in embedded array\r\n\r\nUse larger task ranges for storage fetcher\r\n\r\nSet first and count in each task request\r\n\r\nDebug range logic\r\n\r\nCleanup code and fix task generation loop\r\n\r\nFix one-off error\r\n\r\nClean up comments and logging in accountfetcher\r\n\r\nImprove logging\r\n\r\nRefactor and clean up storagefetcher\r\n\r\nAdd commented code snippet for demo\r\n\r\nUse config value for maxRangeBytes\r\n\r\nReturn results in the case of a single, no-proof slot payload\r\n\r\nOnly enqueue storageRequests if more than 0 exist\r\n\r\nRun account fetcher in syncWithPeer\r\n\r\nFix linting issues\r\n\r\n* Update tests\r\n\r\n* Bufferize storage root if it is not a buffer already\r\n\r\n* Update storage fetcher tests\r\n\r\n* Move storage request processing in account fetcher into store phase\r\n\r\n* Update comments\r\n\r\n* Fix linting issues\r\n\r\n* Update comments\r\n\r\n* Update comments\r\n\r\n* Use config value for maxAccountRange\r\n\r\n* Update comment\r\n\r\n* Add tests for requests and proof verification\r\n\r\n* Initialize chain using helper\r\n\r\n* Setup to dev/test snapsync with sim architecture\r\n\r\n* modfiy single-run to setup a lodestar<>geth node to snapsync from\r\n\r\n* setup an ethereumjs inline client and get it to peer with geth\r\n\r\n* cleanup setup a bit\r\n\r\n* snapsync run spec\r\n\r\n* get the snap testdev sim working\r\n\r\n* finalize the test infra and update usage doc\r\n\r\n* enhance coverage\r\n\r\n* Fix lint error\r\n\r\n* Setup to dev/test snapsync with sim architecture\r\n\r\n* modfiy single-run to setup a lodestar<>geth node to snapsync from\r\n\r\n* setup an ethereumjs inline client and get it to peer with geth\r\n\r\n* cleanup setup a bit\r\n\r\n* snapsync run spec\r\n\r\n* get the snap testdev sim working\r\n\r\n* finalize the test infra and update usage doc\r\n\r\n* enhance coverage\r\n\r\n* Use geth RPC to connect to ethJS\r\n\r\n* refac wait for snap sync completion\r\n\r\n* Emit snap sync completion event in accountfetcher\r\n\r\n* Modify fetcher termination condition\r\n\r\n* Cluster snap config items together\r\n\r\n* Index account range starting from 0\r\n\r\n* Sync fetchers using helper\r\n\r\n* Put storage slots into tries\r\n\r\n* Use destroyWhenDone to terminate storage fetcher\r\n\r\n* End fetcher if finished tasks is greater than or equal to total\r\n\r\n* setup writer just once if fetcher not destroyed\r\n\r\n* cleanup and codeflow simplification\r\n\r\n* cleanup\r\n\r\n* fix accountspec\r\n\r\n* increase coverage\r\n\r\n* add some more coverage\r\n\r\n* lint\r\n\r\n* increase storagefetcher coverage\r\n\r\n* further enhance storagefetcher coverage\r\n\r\n* improve cov\r\n\r\n---------\r\n\r\nCo-authored-by: harkamal <gajinder@g11.in>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-03-26T20:11:35+05:30",
+          "tree_id": "ff1e26b7aa3734e9154c75a287bd7d9424ce767c",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e2ec03c8c47964e5547c2373fea450d37da7d8b6"
+        },
+        "date": 1679841860354,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15196,
+            "range": "±2.55%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 14452,
+            "range": "±5.50%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15380,
+            "range": "±1.99%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 14791,
+            "range": "±2.21%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 13180,
+            "range": "±9.00%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
           }
         ]
       }
