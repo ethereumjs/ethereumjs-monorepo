@@ -177,6 +177,9 @@ async function createSnapClient(common: any, customGenesisState: any, bootnodes:
     discV4: false,
     port: 30304,
     forceSnapSync: true,
+    // Keep the single job sync range high as the state is not big
+    maxAccountRange: (BigInt(2) ** BigInt(256) - BigInt(1)) / BigInt(10),
+    maxFetcherJobs: 10,
   })
   const peerConnectedPromise = new Promise((resolve) => {
     config.events.once(Event.PEER_CONNECTED, (peer: any) => resolve(peer))
