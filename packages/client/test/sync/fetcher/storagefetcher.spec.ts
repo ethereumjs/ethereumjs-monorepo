@@ -336,7 +336,8 @@ tape('[StorageFetcher]', async (t) => {
     }
 
     // send end of range input to store
-    await fetcher.store(Object.create(null))
+    ;(fetcher as any)['destroyWhenDone'] = false
+    await fetcher.store([Object.create(null)] as any)
     t.ok(fetcher['destroyWhenDone'] === true, 'should have marked fetcher to close')
 
     t.end()

@@ -238,6 +238,10 @@ tape('[AccountFetcher]', async (t) => {
     } catch (e) {
       t.fail('could not complete snap sync in 40 seconds')
     }
+
+    // send end of range input to store
+    await fetcher.store([Object.create(null)] as any)
+
     t.end()
   })
 
