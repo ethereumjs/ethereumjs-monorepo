@@ -266,6 +266,7 @@ export class VmState implements EVMStateAccess {
       }
     }
     await this._stateManager.flush()
+    this.touchedJournal.clear()
   }
 
   /**
