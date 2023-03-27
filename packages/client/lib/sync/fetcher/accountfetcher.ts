@@ -78,7 +78,7 @@ export function snapFetchersCompleted(
       break
   }
   if (fetcherDoneFlags.accountFetcherDone && fetcherDoneFlags.storageFetcherDone) {
-    fetcherDoneFlags.eventBus!.emit(Event.SYNC_SNAPSYNC_COMPLETE, fetcherDoneFlags.stateRoot)
+    fetcherDoneFlags.eventBus!.emit(Event.SYNC_SNAPSYNC_COMPLETE, fetcherDoneFlags.stateRoot!)
   }
 }
 

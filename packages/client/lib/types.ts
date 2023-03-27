@@ -41,7 +41,7 @@ export interface EventParams {
   [Event.SYNC_FETCHED_BLOCKS]: [blocks: Block[]]
   [Event.SYNC_FETCHED_HEADERS]: [headers: BlockHeader[]]
   [Event.SYNC_SYNCHRONIZED]: [chainHeight: bigint]
-  [Event.SYNC_SNAPSYNC_COMPLETE]: [stateRoot: Uint8Array | undefined]
+  [Event.SYNC_SNAPSYNC_COMPLETE]: [stateRoot: Uint8Array]
   [Event.SYNC_ERROR]: [syncError: Error]
   [Event.SYNC_FETCHER_ERROR]: [fetchError: Error, task: any, peer: Peer | null | undefined]
   [Event.PEER_CONNECTED]: [connectedPeer: Peer]
