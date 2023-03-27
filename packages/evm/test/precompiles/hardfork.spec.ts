@@ -22,7 +22,11 @@ tape('Precompiles: hardfork availability', (t) => {
       st.pass('ECPAIRING available in petersburg')
     }
 
-    let evm = await EVM.create({ common: commonByzantium, stateManager: new DefaultStateManager() })
+    let evm = await EVM.create({
+      common: commonByzantium,
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
     let result = await evm.runCall({
       caller: Address.zero(),
       gasLimit: BigInt(0xffffffffff),
@@ -41,7 +45,11 @@ tape('Precompiles: hardfork availability', (t) => {
       st.pass('ECPAIRING available in petersburg')
     }
 
-    evm = await EVM.create({ common: commonPetersburg, stateManager: new DefaultStateManager() })
+    evm = await EVM.create({
+      common: commonPetersburg,
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
     result = await evm.runCall({
       caller: Address.zero(),
       gasLimit: BigInt(0xffffffffff),
@@ -61,7 +69,11 @@ tape('Precompiles: hardfork availability', (t) => {
       st.pass('ECPAIRING not available in homestead')
     }
 
-    evm = await EVM.create({ common: commonHomestead, stateManager: new DefaultStateManager() })
+    evm = await EVM.create({
+      common: commonHomestead,
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
 
     result = await evm.runCall({
       caller: Address.zero(),

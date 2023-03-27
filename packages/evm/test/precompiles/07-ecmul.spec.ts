@@ -8,7 +8,11 @@ import { getActivePrecompiles } from '../../src/precompiles'
 tape('Precompiles: ECMUL', (t) => {
   t.test('ECMUL', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    const evm = await EVM.create({ common, stateManager: new DefaultStateManager() })
+    const evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
     const ECMUL = getActivePrecompiles(common).get('0000000000000000000000000000000000000007')!
 
     const result = await ECMUL({

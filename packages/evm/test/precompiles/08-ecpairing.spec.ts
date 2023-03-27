@@ -8,7 +8,11 @@ import { getActivePrecompiles } from '../../src/precompiles'
 tape('Precompiles: ECPAIRING', (t) => {
   t.test('ECPAIRING', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    const evm = await EVM.create({ common, stateManager: new DefaultStateManager() })
+    const evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
     const addressStr = '0000000000000000000000000000000000000008'
     const ECPAIRING = getActivePrecompiles(common).get(addressStr)!
 

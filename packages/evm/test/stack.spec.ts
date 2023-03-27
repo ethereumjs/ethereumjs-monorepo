@@ -129,7 +129,10 @@ tape('Stack', (t) => {
   t.test('stack items should not change if they are DUPed', async (st) => {
     const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex'))
     const addr = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
-    const evm = await EVM.create({ stateManager: new DefaultStateManager() })
+    const evm = await EVM.create({
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
     const account = createAccount(BigInt(0), BigInt(0))
     const code = '60008080808060013382F15060005260206000F3'
     const expectedReturnValue = setLengthLeft(bigIntToBuffer(BigInt(0)), 32)

@@ -30,6 +30,7 @@ tape('EVM -> custom precompiles', (t) => {
         },
       ],
       stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
     })
     const result = await EVMOverride.runCall({
       to: shaAddress,
@@ -49,6 +50,7 @@ tape('EVM -> custom precompiles', (t) => {
         },
       ],
       stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
     })
     const result = await EVMOverride.runCall({
       to: shaAddress,
@@ -69,6 +71,7 @@ tape('EVM -> custom precompiles', (t) => {
         },
       ],
       stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
     })
     const result = await EVMOverride.runCall({
       to: newPrecompile,
@@ -81,7 +84,10 @@ tape('EVM -> custom precompiles', (t) => {
   })
 
   t.test('should not persist changes to precompiles', async (st) => {
-    let EVMSha = await EVM.create({ stateManager: new DefaultStateManager() })
+    let EVMSha = await EVM.create({
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
     const shaResult = await EVMSha.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
@@ -96,6 +102,7 @@ tape('EVM -> custom precompiles', (t) => {
         },
       ],
       stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
     })
     const result = await EVMOverride.runCall({
       to: shaAddress,
@@ -106,7 +113,10 @@ tape('EVM -> custom precompiles', (t) => {
     // sanity: check we have overridden
     st.ok(result.execResult.returnValue.equals(expectedReturn), 'return value is correct')
     st.ok(result.execResult.executionGasUsed === expectedGas, 'gas used is correct')
-    EVMSha = await EVM.create({ stateManager: new DefaultStateManager() })
+    EVMSha = await EVM.create({
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
     const shaResult2 = await EVMSha.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
@@ -131,6 +141,7 @@ tape('EVM -> custom precompiles', (t) => {
         },
       ],
       stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
     })
     const evmCopy = evm.copy()
     st.deepEqual(

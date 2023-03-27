@@ -8,7 +8,11 @@ import { getActivePrecompiles } from '../../src/precompiles'
 tape('Precompiles: ECADD', (t) => {
   t.test('ECADD', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    const evm = await EVM.create({ common, stateManager: new DefaultStateManager() })
+    const evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
     const addressStr = '0000000000000000000000000000000000000006'
     const ECADD = getActivePrecompiles(common).get(addressStr)!
 

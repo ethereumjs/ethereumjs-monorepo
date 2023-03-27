@@ -20,7 +20,10 @@ const testCases = [
 ]
 
 tape('VM.runCode: initial program counter', async (t) => {
-  const evm = await EVM.create({ stateManager: new DefaultStateManager() })
+  const evm = await EVM.create({
+    stateManager: new DefaultStateManager(),
+    enableDefaultBlockchain: true,
+  })
 
   for (const [i, testData] of testCases.entries()) {
     const runCodeArgs = {
@@ -55,7 +58,10 @@ tape('VM.runCode: initial program counter', async (t) => {
 
 tape('VM.runCode: interpreter', (t) => {
   t.test('should return a EvmError as an exceptionError on the result', async (st) => {
-    const evm = await EVM.create({ stateManager: new DefaultStateManager() })
+    const evm = await EVM.create({
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
 
     const INVALID_opcode = 'fe'
     const runCodeArgs = {
@@ -75,7 +81,10 @@ tape('VM.runCode: interpreter', (t) => {
   })
 
   t.test('should throw on non-EvmError', async (st) => {
-    const evm = await EVM.create({ stateManager: new DefaultStateManager() })
+    const evm = await EVM.create({
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
     evm.eei.putContractStorage = (..._args) => {
       throw new Error('Test')
     }
@@ -98,7 +107,10 @@ tape('VM.runCode: interpreter', (t) => {
 
 tape('VM.runCode: RunCodeOptions', (t) => {
   t.test('should throw on negative value args', async (st) => {
-    const evm = await EVM.create({ stateManager: new DefaultStateManager() })
+    const evm = await EVM.create({
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
 
     const runCodeArgs = {
       value: BigInt(-10),

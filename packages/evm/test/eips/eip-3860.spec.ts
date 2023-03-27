@@ -15,7 +15,11 @@ tape('EIP 3860 tests', (t) => {
       hardfork: Hardfork.London,
       eips: [3860],
     })
-    const evm = await EVM.create({ common, stateManager: new DefaultStateManager() })
+    const evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
 
     const buffer = Buffer.allocUnsafe(1000000).fill(0x60)
 
@@ -57,10 +61,12 @@ tape('EIP 3860 tests', (t) => {
     const evm = await EVM.create({
       common: commonWith3860,
       stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
     })
     const evmWithout3860 = await EVM.create({
       common: commonWithout3860,
       stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
     })
     const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     const contractAccount = await evm.eei.getAccount(contractFactory)
@@ -108,10 +114,12 @@ tape('EIP 3860 tests', (t) => {
     const evm = await EVM.create({
       common: commonWith3860,
       stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
     })
     const evmWithout3860 = await EVM.create({
       common: commonWithout3860,
       stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
     })
     const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     const contractAccount = await evm.eei.getAccount(contractFactory)
@@ -152,6 +160,7 @@ tape('EIP 3860 tests', (t) => {
     const evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
       allowUnlimitedInitCodeSize: true,
     })
 
@@ -187,11 +196,13 @@ tape('EIP 3860 tests', (t) => {
       const evm = await EVM.create({
         common: commonWith3860,
         stateManager: new DefaultStateManager(),
+        enableDefaultBlockchain: true,
         allowUnlimitedInitCodeSize: true,
       })
       const evmDisabled = await EVM.create({
         common: commonWith3860,
         stateManager: new DefaultStateManager(),
+        enableDefaultBlockchain: true,
         allowUnlimitedInitCodeSize: false,
       })
       const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')

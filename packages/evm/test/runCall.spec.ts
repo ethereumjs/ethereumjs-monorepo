@@ -18,7 +18,11 @@ function create2address(sourceAddress: Address, codeHash: Buffer, salt: Buffer):
 
 tape('Create where FROM account nonce is 0', async (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
-  const evm = await EVM.create({ common, stateManager: new DefaultStateManager() })
+  const evm = await EVM.create({
+    common,
+    stateManager: new DefaultStateManager(),
+    enableDefaultBlockchain: true,
+  })
   const res = await evm.runCall({ to: undefined })
   t.equals(
     res.createdAddress?.toString(),
@@ -44,7 +48,11 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
   ) // contract address
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
-  const evm = await EVM.create({ common, stateManager: new DefaultStateManager() })
+  const evm = await EVM.create({
+    common,
+    stateManager: new DefaultStateManager(),
+    enableDefaultBlockchain: true,
+  })
   const code = '3460008080F560005260206000F3'
   /*
       code:             remarks: (top of the stack is at the zero index)
@@ -106,10 +114,12 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
   const evmByzantium = await EVM.create({
     common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium }),
     stateManager: new DefaultStateManager(),
+    enableDefaultBlockchain: true,
   })
   const evmConstantinople = await EVM.create({
     common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople }),
     stateManager: new DefaultStateManager(),
+    enableDefaultBlockchain: true,
   })
   const code = '600160011B00'
   /*
@@ -151,7 +161,11 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
   const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-  const evm = await EVM.create({ common, stateManager: new DefaultStateManager() })
+  const evm = await EVM.create({
+    common,
+    stateManager: new DefaultStateManager(),
+    enableDefaultBlockchain: true,
+  })
   const code = '61000260005561000160005500'
   /*
       idea: store the original value in the storage slot, except it is now a 1-length buffer instead of a 32-length buffer
@@ -202,7 +216,11 @@ tape('ensure correct gas for pre-constantinople sstore', async (t) => {
   const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-  const evm = await EVM.create({ common, stateManager: new DefaultStateManager() })
+  const evm = await EVM.create({
+    common,
+    stateManager: new DefaultStateManager(),
+    enableDefaultBlockchain: true,
+  })
   // push 1 push 0 sstore stop
   const code = '600160015500'
 
@@ -229,7 +247,11 @@ tape('ensure correct gas for calling non-existent accounts in homestead', async 
   const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
-  const evm = await EVM.create({ common, stateManager: new DefaultStateManager() })
+  const evm = await EVM.create({
+    common,
+    stateManager: new DefaultStateManager(),
+    enableDefaultBlockchain: true,
+  })
   // code to call 0x00..00dd, which does not exist
   const code = '6000600060006000600060DD61FFFF5A03F100'
 
@@ -260,7 +282,11 @@ tape(
     const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
-    const evm = await EVM.create({ common, stateManager: new DefaultStateManager() })
+    const evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
     // code to call back into the calling account (0x00..00EE),
     // but using too much memory
     const code = '61FFFF60FF60006000600060EE6000F200'
@@ -290,7 +316,11 @@ tape('ensure selfdestruct pays for creating new accounts', async (t) => {
   const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.TangerineWhistle })
-  const evm = await EVM.create({ common, stateManager: new DefaultStateManager() })
+  const evm = await EVM.create({
+    common,
+    stateManager: new DefaultStateManager(),
+    enableDefaultBlockchain: true,
+  })
   // code to call 0x00..00fe, with the GAS opcode used as gas
   // this cannot be paid, since we also have to pay for CALL (40 gas)
   // this should thus go OOG
@@ -320,7 +350,11 @@ tape('ensure that sstores pay for the right gas costs pre-byzantium', async (t) 
   const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-  const evm = await EVM.create({ common, stateManager: new DefaultStateManager() })
+  const evm = await EVM.create({
+    common,
+    stateManager: new DefaultStateManager(),
+    enableDefaultBlockchain: true,
+  })
   // code to call 0x00..00fe, with the GAS opcode used as gas
   // this cannot be paid, since we also have to pay for CALL (40 gas)
   // this should thus go OOG
@@ -391,7 +425,11 @@ tape(
     const emptyBuffer = Buffer.from('')
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const evm = await EVM.create({ common, stateManager: new DefaultStateManager() })
+    const evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
     const code = '60008080F060005500'
     /*
       This simple code tries to create an empty contract and then stores the address of the contract in the zero slot.
@@ -445,7 +483,11 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
   const caller = new Address(Buffer.from('1a02a619e51cc5f8a2a61d2a60f6c80476ee8ead', 'hex')) // caller address
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-  const evm = await EVM.create({ common, stateManager: new DefaultStateManager() })
+  const evm = await EVM.create({
+    common,
+    stateManager: new DefaultStateManager(),
+    enableDefaultBlockchain: true,
+  })
   const code = '3034526020600760203460045afa602034343e604034f3'
 
   const account = new Account()
@@ -476,7 +518,11 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
 tape('Throws on negative call value', async (t) => {
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-  const evm = await EVM.create({ common, stateManager: new DefaultStateManager() })
+  const evm = await EVM.create({
+    common,
+    stateManager: new DefaultStateManager(),
+    enableDefaultBlockchain: true,
+  })
 
   // setup the call arguments
   const runCallArgs = {
@@ -497,7 +543,11 @@ tape('Throws on negative call value', async (t) => {
 tape('runCall() -> skipBalance behavior', async (t) => {
   t.plan(7)
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-  const evm = await EVM.create({ common, stateManager: new DefaultStateManager() })
+  const evm = await EVM.create({
+    common,
+    stateManager: new DefaultStateManager(),
+    enableDefaultBlockchain: true,
+  })
 
   // runCall against a contract to reach `_reduceSenderBalance`
   const contractCode = Buffer.from('00', 'hex') // 00: STOP
@@ -543,7 +593,11 @@ tape('runCall() => allows to detect for max code size deposit errors', async (t)
   const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller address
   // setup the evm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-  const evm = await EVM.create({ common, stateManager: new DefaultStateManager() })
+  const evm = await EVM.create({
+    common,
+    stateManager: new DefaultStateManager(),
+    enableDefaultBlockchain: true,
+  })
 
   // setup the call arguments
   const runCallArgs = {
@@ -569,7 +623,11 @@ tape('runCall() => use DATAHASH opcode from EIP 4844', async (t) => {
     chain: 'custom',
     hardfork: Hardfork.ShardingForkDev,
   })
-  const evm = await EVM.create({ common, stateManager: new DefaultStateManager() })
+  const evm = await EVM.create({
+    common,
+    stateManager: new DefaultStateManager(),
+    enableDefaultBlockchain: true,
+  })
 
   // setup the call arguments
   const runCallArgs: EVMRunCallOpts = {
@@ -604,7 +662,11 @@ tape('runCall() => use DATAHASH opcode from EIP 4844', async (t) => {
 tape('step event: ensure EVM memory and not internal memory gets reported', async (t) => {
   t.plan(5)
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-  const evm = await EVM.create({ common, stateManager: new DefaultStateManager() })
+  const evm = await EVM.create({
+    common,
+    stateManager: new DefaultStateManager(),
+    enableDefaultBlockchain: true,
+  })
 
   const contractCode = Buffer.from('600060405200', 'hex') // PUSH 0 PUSH 40 MSTORE STOP
   const contractAddress = Address.fromString('0x000000000000000000000000636F6E7472616374')
