@@ -1,5 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Common, Hardfork } from '@ethereumjs/common'
+import { bytesToHex } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { Blockchain, EthashConsensus } from '../src'
@@ -19,7 +20,7 @@ class fibonacciConsensus implements Consensus {
     return new Promise<void>((resolve) => resolve())
   }
   validateConsensus(_block: Block): Promise<void> {
-    if (_block.header.extraData.toString('hex') !== '12358d') {
+    if (bytesToHex(_block.header.extraData) !== '12358d') {
       throw new Error(
         'header contains invalid extradata - must match first 6 elements of fibonacci sequence'
       )

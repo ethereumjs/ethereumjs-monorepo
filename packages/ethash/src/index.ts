@@ -2,18 +2,19 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
   TWO_POW256,
-  bigIntToBuffer,
-  bufArrToArr,
-  bufferToBigInt,
+  bigIntToBytes,
+  bytesToBigInt,
+  concatBytes,
+  equalsBytes,
   setLengthLeft,
   zeros,
 } from '@ethereumjs/util'
 import { keccak256, keccak512 } from 'ethereum-cryptography/keccak'
 
 import {
-  bufReverse,
+  bytesReverse,
   fnv,
-  fnvBuffer,
+  fnvBytes,
   getCacheSize,
   getEpoc,
   getFullSize,
@@ -24,9 +25,9 @@ import {
 import type { BlockData, HeaderData } from '@ethereumjs/block'
 import type { AbstractLevel } from 'abstract-level'
 
-function xor(a: Buffer, b: Buffer) {
+function xor(a: Uint8Array, b: Uint8Array) {
   const len = Math.max(a.length, b.length)
-  const res = Buffer.alloc(len)
+  const res = new Uint8Array(len)
   for (let i = 0; i < len; i++) {
     res[i] = a[i] ^ b[i]
   }
@@ -34,8 +35,8 @@ function xor(a: Buffer, b: Buffer) {
 }
 
 export type Solution = {
-  mixHash: Buffer
-  nonce: Buffer
+  mixHash: Uint8Array
+  nonce: Uint8Array
 }
 
 export class Miner {
@@ -46,7 +47,7 @@ export class Miner {
   public solution?: Solution
 
   private currentNonce: bigint
-  private headerHash?: Buffer
+  private headerHash?: Uint8Array
   private stopMining: boolean
 
   /**
@@ -122,10 +123,10 @@ export class Miner {
       // Without this, for high-difficulty blocks JS never jumps out of the Promise
       const solution: Solution | null = await new Promise((resolve) => {
         setTimeout(() => {
-          const nonce = setLengthLeft(bigIntToBuffer(this.currentNonce), 8)
+          const nonce = setLengthLeft(bigIntToBytes(this.currentNonce), 8)
 
           const a = this.ethash.run(headerHash, nonce)
-          const result = bufferToBigInt(a.hash)
+          const result = bytesToBigInt(a.hash)
 
           if (TWO_POW256 / difficulty > result) {
             const solution: Solution = {
@@ -152,24 +153,24 @@ export class Miner {
 }
 
 export type EthashCacheDB = AbstractLevel<
-  string | Buffer | Uint8Array,
-  string | Buffer,
+  string | Uint8Array,
+  string | Uint8Array,
   {
-    cache: Buffer[]
+    cache: Uint8Array[]
     fullSize: number
     cacheSize: number
-    seed: Buffer
+    seed: Uint8Array
   }
 >
 
 export class Ethash {
   dbOpts: Object
   cacheDB?: EthashCacheDB
-  cache: Buffer[]
+  cache: Uint8Array[]
   epoc?: number
   fullSize?: number
   cacheSize?: number
-  seed?: Buffer
+  seed?: Uint8Array
 
   constructor(cacheDB?: EthashCacheDB) {
     this.dbOpts = {
@@ -179,20 +180,19 @@ export class Ethash {
     this.cache = []
   }
 
-  mkcache(cacheSize: number, seed: Buffer) {
-    // console.log(`generating cache\nsize: ${cacheSize}\nseed: ${seed.toString('hex')}`)
+  mkcache(cacheSize: number, seed: Uint8Array) {
     const n = Math.floor(cacheSize / params.HASH_BYTES)
-    const o = [Buffer.from(keccak512(seed))]
+    const o = [keccak512(seed)]
 
     let i
     for (i = 1; i < n; i++) {
-      o.push(Buffer.from(keccak512(o[o.length - 1])))
+      o.push(keccak512(o[o.length - 1]))
     }
 
     for (let _ = 0; _ < params.CACHE_ROUNDS; _++) {
       for (i = 0; i < n; i++) {
-        const v = o[i].readUInt32LE(0) % n
-        o[i] = Buffer.from(keccak512(xor(o[(i - 1 + n) % n], o[v])))
+        const v = new DataView(o[i].buffer).getUint32(0, true) % n
+        o[i] = keccak512(xor(o[(i - 1 + n) % n], o[v]))
       }
     }
 
@@ -200,20 +200,21 @@ export class Ethash {
     return this.cache
   }
 
-  calcDatasetItem(i: number): Buffer {
+  calcDatasetItem(i: number): Uint8Array {
     const n = this.cache.length
     const r = Math.floor(params.HASH_BYTES / params.WORD_BYTES)
-    let mix = Buffer.from(this.cache[i % n])
-    mix.writeInt32LE(mix.readUInt32LE(0) ^ i, 0)
-    mix = Buffer.from(keccak512(mix))
+    let mix = new Uint8Array(this.cache[i % n])
+    const mixView = new DataView(mix.buffer)
+    mixView.setUint32(0, mixView.getUint32(0, true) ^ i, true)
+    mix = keccak512(mix)
     for (let j = 0; j < params.DATASET_PARENTS; j++) {
-      const cacheIndex = fnv(i ^ j, mix.readUInt32LE((j % r) * 4))
-      mix = fnvBuffer(mix, this.cache[cacheIndex % n])
+      const cacheIndex = fnv(i ^ j, new DataView(mix.buffer).getUint32((j % r) * 4, true))
+      mix = fnvBytes(mix, this.cache[cacheIndex % n])
     }
-    return Buffer.from(keccak512(mix))
+    return keccak512(mix)
   }
 
-  run(val: Buffer, nonce: Buffer, fullSize?: number) {
+  run(val: Uint8Array, nonce: Uint8Array, fullSize?: number) {
     if (fullSize === undefined) {
       if (this.fullSize === undefined) {
         throw new Error('fullSize needed')
@@ -223,42 +224,59 @@ export class Ethash {
     }
     const n = Math.floor(fullSize / params.HASH_BYTES)
     const w = Math.floor(params.MIX_BYTES / params.WORD_BYTES)
-    const s = Buffer.from(keccak512(Buffer.concat([val, bufReverse(nonce)])))
+    const s = keccak512(concatBytes(val, bytesReverse(nonce)))
     const mixhashes = Math.floor(params.MIX_BYTES / params.HASH_BYTES)
-    let mix = Buffer.concat(Array(mixhashes).fill(s))
+    let mix = concatBytes(...Array(mixhashes).fill(s))
 
     let i
     for (i = 0; i < params.ACCESSES; i++) {
       const p =
-        (fnv(i ^ s.readUInt32LE(0), mix.readUInt32LE((i % w) * 4)) % Math.floor(n / mixhashes)) *
+        (fnv(
+          i ^ new DataView(s.buffer).getUint32(0, true),
+          new DataView(mix.buffer).getUint32((i % w) * 4, true)
+        ) %
+          Math.floor(n / mixhashes)) *
         mixhashes
-      const newdata = []
+      const newdata: Uint8Array[] = []
       for (let j = 0; j < mixhashes; j++) {
         newdata.push(this.calcDatasetItem(p + j))
       }
-      mix = fnvBuffer(mix, Buffer.concat(newdata))
+      mix = fnvBytes(mix, concatBytes(...newdata))
     }
 
-    const cmix = Buffer.alloc(mix.length / 4)
+    const cmix = new Uint8Array(mix.length / 4)
+    const cmixView = new DataView(cmix.buffer)
+    const mixView = new DataView(mix.buffer)
     for (i = 0; i < mix.length / 4; i = i + 4) {
-      const a = fnv(mix.readUInt32LE(i * 4), mix.readUInt32LE((i + 1) * 4))
-      const b = fnv(a, mix.readUInt32LE((i + 2) * 4))
-      const c = fnv(b, mix.readUInt32LE((i + 3) * 4))
-      cmix.writeUInt32LE(c, i)
+      const a = fnv(mixView.getUint32(i * 4, true), mixView.getUint32((i + 1) * 4, true))
+      const b = fnv(a, mixView.getUint32((i + 2) * 4, true))
+      const c = fnv(b, mixView.getUint32((i + 3) * 4, true))
+      cmixView.setUint32(i, c, true)
     }
 
     return {
       mix: cmix,
-      hash: Buffer.from(keccak256(Buffer.concat([s, cmix]))),
+      hash: keccak256(concatBytes(s, cmix)),
     }
   }
 
   cacheHash() {
-    return Buffer.from(keccak256(Buffer.concat(this.cache)))
+    // Concatenate all the cache bytes together
+    // We can't use `concatBytes` because calling `concatBytes(...this.cache)` results
+    // in a `Max call stack size exceeded` error due to the spread operator pushing all
+    // of the array elements onto the stack and the ethash cache can be quite large
+    const length = this.cache.reduce((a, arr) => a + arr.length, 0)
+    const result = new Uint8Array(length)
+    for (let i = 0, pad = 0; i < this.cache.length; i++) {
+      const arr = this.cache[i]
+      result.set(arr, pad)
+      pad += arr.length
+    }
+    return keccak256(result)
   }
 
-  headerHash(rawHeader: Buffer[]) {
-    return Buffer.from(keccak256(RLP.encode(bufArrToArr(rawHeader.slice(0, -2)))))
+  headerHash(rawHeader: Uint8Array[]) {
+    return keccak256(RLP.encode(rawHeader.slice(0, -2)))
   }
 
   /**
@@ -278,7 +296,7 @@ export class Ethash {
     }
 
     // gives the seed the first epoc found
-    const findLastSeed = async (epoc: number): Promise<[Buffer, number]> => {
+    const findLastSeed = async (epoc: number): Promise<[Uint8Array, number]> => {
       if (epoc === 0) {
         return [zeros(32), 0]
       }
@@ -325,12 +343,12 @@ export class Ethash {
         this.dbOpts
       )
     } else {
-      this.cache = data.cache.map((a: Buffer) => {
-        return Buffer.from(a)
+      this.cache = data.cache.map((a: Uint8Array) => {
+        return Uint8Array.from(a)
       })
       this.cacheSize = data.cacheSize
       this.fullSize = data.fullSize
-      this.seed = Buffer.from(data.seed)
+      this.seed = Uint8Array.from(data.seed)
     }
   }
 
@@ -350,9 +368,8 @@ export class Ethash {
 
     await this.loadEpoc(number)
     const a = this.run(headerHash, nonce)
-    const result = bufferToBigInt(a.hash)
-
-    return a.mix.equals(mixHash) && TWO_POW256 / difficulty > result
+    const result = bytesToBigInt(a.hash)
+    return equalsBytes(a.mix, mixHash) && TWO_POW256 / difficulty > result
   }
 
   async verifyPOW(block: Block) {

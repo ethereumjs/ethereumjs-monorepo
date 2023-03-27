@@ -1,12 +1,12 @@
-import { Account } from '@ethereumjs/util'
+import { Account, bytesToHex, hexStringToBytes } from '@ethereumjs/util'
 import { OrderedMap } from 'js-sdsl'
 
 import type { Address } from '@ethereumjs/util'
 import type { OrderedMapIterator } from 'js-sdsl'
 
 export type getCb = (address: Address) => Promise<Account | undefined>
-export type putCb = (keyBuf: Buffer, accountRlp: Buffer) => Promise<void>
-export type deleteCb = (keyBuf: Buffer) => Promise<void>
+export type putCb = (keyBuf: Uint8Array, accountRlp: Uint8Array) => Promise<void>
+export type deleteCb = (keyBuf: Uint8Array) => Promise<void>
 
 export interface CacheOpts {
   getCb: getCb
@@ -59,7 +59,7 @@ export class Cache {
    * @param key - Address of account
    */
   lookup(key: Address): Account | undefined {
-    const keyStr = key.buf.toString('hex')
+    const keyStr = bytesToHex(key.bytes)
 
     const it = this._cache.find(keyStr)
     if (!it.equals(this._cacheEnd)) {
@@ -76,7 +76,7 @@ export class Cache {
    * @param key - trie key to lookup
    */
   keyIsDeleted(key: Address): boolean {
-    const keyStr = key.buf.toString('hex')
+    const keyStr = bytesToHex(key.bytes)
     const it = this._cache.find(keyStr)
     if (!it.equals(this._cacheEnd)) {
       return it.pointer[1].deleted
@@ -116,7 +116,7 @@ export class Cache {
       const value = it.pointer[1]
       if (value.modified === true) {
         value.modified = false
-        const keyBuf = Buffer.from(it.pointer[0], 'hex')
+        const keyBuf = hexStringToBytes(it.pointer[0])
         if (value.deleted === false) {
           const accountRlp = value.val
           await this._putCb(keyBuf, accountRlp)
@@ -185,7 +185,7 @@ export class Cache {
     deleted: boolean,
     virtual = false
   ): void {
-    const keyHex = key.buf.toString('hex')
+    const keyHex = bytesToHex(key.bytes)
     const val = value.serialize()
     this._cache.setElement(keyHex, { val, modified, deleted, virtual })
   }

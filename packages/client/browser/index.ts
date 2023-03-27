@@ -70,7 +70,9 @@ export async function createClient(args: any) {
     discDns: false,
   })
   config.events.setMaxListeners(50)
-  const chainDB = new Level<string | Buffer, string | Buffer>(`${datadir}/${common.chainName()}`)
+  const chainDB = new Level<string | Uint8Array, string | Uint8Array>(
+    `${datadir}/${common.chainName()}`
+  )
 
   const blockchain = await Blockchain.create({
     db: chainDB,

@@ -1,13 +1,16 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
   MAX_INTEGER,
-  arrToBufArr,
   bigIntToHex,
-  bigIntToUnpaddedBuffer,
-  bufArrToArr,
-  bufferToBigInt,
+  bigIntToUnpaddedBytes,
+  bytesToBigInt,
+  bytesToHex,
+  bytesToPrefixedHexString,
+  concatBytes,
   ecrecover,
-  toBuffer,
+  equalsBytes,
+  hexStringToBytes,
+  toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -17,7 +20,7 @@ import { AccessLists } from './util'
 
 import type {
   AccessList,
-  AccessListBuffer,
+  AccessListBytes,
   AccessListEIP2930TxData,
   AccessListEIP2930ValuesArray,
   JsonTx,
@@ -26,7 +29,7 @@ import type {
 import type { Common } from '@ethereumjs/common'
 
 const TRANSACTION_TYPE = 1
-const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')
+const TRANSACTION_TYPE_BYTES = hexStringToBytes(TRANSACTION_TYPE.toString(16).padStart(2, '0'))
 
 /**
  * Typed transaction with optional access lists
@@ -36,7 +39,7 @@ const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padSta
  */
 export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2930Transaction> {
   public readonly chainId: bigint
-  public readonly accessList: AccessListBuffer
+  public readonly accessList: AccessListBytes
   public readonly AccessListJSON: AccessList
   public readonly gasPrice: bigint
 
@@ -70,22 +73,25 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
    * Format: `0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
    * signatureYParity (v), signatureR (r), signatureS (s)])`
    */
-  public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
-    if (!serialized.slice(0, 1).equals(TRANSACTION_TYPE_BUFFER)) {
+  public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
+    if (equalsBytes(serialized.subarray(0, 1), TRANSACTION_TYPE_BYTES) === false) {
       throw new Error(
-        `Invalid serialized tx input: not an EIP-2930 transaction (wrong tx type, expected: ${TRANSACTION_TYPE}, received: ${serialized
-          .slice(0, 1)
-          .toString('hex')}`
+        `Invalid serialized tx input: not an EIP-2930 transaction (wrong tx type, expected: ${TRANSACTION_TYPE}, received: ${bytesToHex(
+          serialized.subarray(0, 1)
+        )}`
       )
     }
 
-    const values = arrToBufArr(RLP.decode(Uint8Array.from(serialized.slice(1))))
+    const values = RLP.decode(Uint8Array.from(serialized.subarray(1)))
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized tx input: must be array')
     }
 
-    return AccessListEIP2930Transaction.fromValuesArray(values as any, opts)
+    return AccessListEIP2930Transaction.fromValuesArray(
+      values as AccessListEIP2930ValuesArray,
+      opts
+    )
   }
 
   /**
@@ -110,7 +116,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
 
     return new AccessListEIP2930Transaction(
       {
-        chainId: bufferToBigInt(chainId),
+        chainId: bytesToBigInt(chainId),
         nonce,
         gasPrice,
         gasLimit,
@@ -118,7 +124,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
         value,
         data,
         accessList: accessList ?? emptyAccessList,
-        v: v !== undefined ? bufferToBigInt(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
+        v: v !== undefined ? bytesToBigInt(v) : undefined, // EIP2930 supports v's with value 0 (empty Uint8Array)
         r,
         s,
       },
@@ -153,7 +159,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
     // Verify the access list format.
     AccessLists.verifyAccessList(this.accessList)
 
-    this.gasPrice = bufferToBigInt(toBuffer(gasPrice === '' ? '0x' : gasPrice))
+    this.gasPrice = bytesToBigInt(toBytes(gasPrice === '' ? '0x' : gasPrice))
 
     this._validateCannotExceedMaxInteger({
       gasPrice: this.gasPrice,
@@ -204,7 +210,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
   }
 
   /**
-   * Returns a Buffer Array of the raw Buffers of the EIP-2930 transaction, in order.
+   * Returns a Uint8Array Array of the raw Bytess of the EIP-2930 transaction, in order.
    *
    * Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
    * signatureYParity (v), signatureR (r), signatureS (s)]`
@@ -212,23 +218,23 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
    * Use {@link AccessListEIP2930Transaction.serialize} to add a transaction to a block
    * with {@link Block.fromValuesArray}.
    *
-   * For an unsigned tx this method uses the empty Buffer values for the
+   * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
    * representation for external signing use {@link AccessListEIP2930Transaction.getMessageToSign}.
    */
   raw(): AccessListEIP2930ValuesArray {
     return [
-      bigIntToUnpaddedBuffer(this.chainId),
-      bigIntToUnpaddedBuffer(this.nonce),
-      bigIntToUnpaddedBuffer(this.gasPrice),
-      bigIntToUnpaddedBuffer(this.gasLimit),
-      this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bigIntToUnpaddedBuffer(this.value),
+      bigIntToUnpaddedBytes(this.chainId),
+      bigIntToUnpaddedBytes(this.nonce),
+      bigIntToUnpaddedBytes(this.gasPrice),
+      bigIntToUnpaddedBytes(this.gasLimit),
+      this.to !== undefined ? this.to.bytes : new Uint8Array(0),
+      bigIntToUnpaddedBytes(this.value),
       this.data,
       this.accessList,
-      this.v !== undefined ? bigIntToUnpaddedBuffer(this.v) : Buffer.from([]),
-      this.r !== undefined ? bigIntToUnpaddedBuffer(this.r) : Buffer.from([]),
-      this.s !== undefined ? bigIntToUnpaddedBuffer(this.s) : Buffer.from([]),
+      this.v !== undefined ? bigIntToUnpaddedBytes(this.v) : new Uint8Array(0),
+      this.r !== undefined ? bigIntToUnpaddedBytes(this.r) : new Uint8Array(0),
+      this.s !== undefined ? bigIntToUnpaddedBytes(this.s) : new Uint8Array(0),
     ]
   }
 
@@ -242,12 +248,9 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
    * valid RLP any more due to the raw tx type preceding and concatenated to
    * the RLP encoding of the values.
    */
-  serialize(): Buffer {
+  serialize(): Uint8Array {
     const base = this.raw()
-    return Buffer.concat([
-      TRANSACTION_TYPE_BUFFER,
-      Buffer.from(RLP.encode(bufArrToArr(base as Buffer[]))),
-    ])
+    return concatBytes(TRANSACTION_TYPE_BYTES, RLP.encode(base))
   }
 
   /**
@@ -263,17 +266,10 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
    *
    * @param hashMessage - Return hashed message if set to true (default: true)
    */
-  getMessageToSign(hashMessage = true): Buffer {
+  getMessageToSign(hashMessage = true): Uint8Array {
     const base = this.raw().slice(0, 8)
-    const message = Buffer.concat([
-      TRANSACTION_TYPE_BUFFER,
-      Buffer.from(RLP.encode(bufArrToArr(base as Buffer[]))),
-    ])
-    if (hashMessage) {
-      return Buffer.from(keccak256(message))
-    } else {
-      return message
-    }
+    const message = concatBytes(TRANSACTION_TYPE_BYTES, RLP.encode(base))
+    return hashMessage ? keccak256(message) : message
   }
 
   /**
@@ -282,7 +278,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
    * This method can only be used for signed txs (it throws otherwise).
    * Use {@link AccessListEIP2930Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
-  public hash(): Buffer {
+  public hash(): Uint8Array {
     if (!this.isSigned()) {
       const msg = this._errorMsg('Cannot call hash method if transaction is not signed')
       throw new Error(msg)
@@ -290,25 +286,25 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
 
     if (Object.isFrozen(this)) {
       if (!this.cache.hash) {
-        this.cache.hash = Buffer.from(keccak256(this.serialize()))
+        this.cache.hash = keccak256(this.serialize())
       }
       return this.cache.hash
     }
 
-    return Buffer.from(keccak256(this.serialize()))
+    return keccak256(this.serialize())
   }
 
   /**
    * Computes a sha3-256 hash which can be used to verify the signature
    */
-  public getMessageToVerifySignature(): Buffer {
+  public getMessageToVerifySignature(): Uint8Array {
     return this.getMessageToSign()
   }
 
   /**
    * Returns the public key of the sender
    */
-  public getSenderPublicKey(): Buffer {
+  public getSenderPublicKey(): Uint8Array {
     if (!this.isSigned()) {
       const msg = this._errorMsg('Cannot call this method if transaction is not signed')
       throw new Error(msg)
@@ -323,8 +319,8 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
       return ecrecover(
         msgHash,
         v! + BigInt(27), // Recover the 27 which was stripped from ecsign
-        bigIntToUnpaddedBuffer(r!),
-        bigIntToUnpaddedBuffer(s!)
+        bigIntToUnpaddedBytes(r!),
+        bigIntToUnpaddedBytes(s!)
       )
     } catch (e: any) {
       const msg = this._errorMsg('Invalid Signature')
@@ -332,7 +328,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
     }
   }
 
-  _processSignature(v: bigint, r: Buffer, s: Buffer) {
+  _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
     const opts = { ...this.txOptions, common: this.common }
 
     return AccessListEIP2930Transaction.fromTxData(
@@ -346,8 +342,8 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
         data: this.data,
         accessList: this.accessList,
         v: v - BigInt(27), // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
-        r: bufferToBigInt(r),
-        s: bufferToBigInt(s),
+        r: bytesToBigInt(r),
+        s: bytesToBigInt(s),
       },
       opts
     )
@@ -366,7 +362,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2
       gasLimit: bigIntToHex(this.gasLimit),
       to: this.to !== undefined ? this.to.toString() : undefined,
       value: bigIntToHex(this.value),
-      data: '0x' + this.data.toString('hex'),
+      data: bytesToPrefixedHexString(this.data),
       accessList: accessListJSON,
       v: this.v !== undefined ? bigIntToHex(this.v) : undefined,
       r: this.r !== undefined ? bigIntToHex(this.r) : undefined,

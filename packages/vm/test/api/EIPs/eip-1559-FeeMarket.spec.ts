@@ -5,7 +5,8 @@ import {
   FeeMarketEIP1559Transaction,
   Transaction,
 } from '@ethereumjs/tx'
-import { Address, bigIntToBuffer, privateToAddress, setLengthLeft } from '@ethereumjs/util'
+import { Address, bigIntToBytes, privateToAddress, setLengthLeft } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -32,8 +33,8 @@ common.hardforkBlock = function (hardfork: string | undefined) {
   return BigInt(0)
 }
 
-const coinbase = new Address(Buffer.from('11'.repeat(20), 'hex'))
-const pkey = Buffer.from('20'.repeat(32), 'hex')
+const coinbase = new Address(hexToBytes('11'.repeat(20)))
+const pkey = hexToBytes('20'.repeat(32))
 const sender = new Address(privateToAddress(pkey))
 
 /**
@@ -162,7 +163,7 @@ tape('EIP1559 tests', (t) => {
   })
 
   t.test('gasPrice uses the effective gas price', async (st) => {
-    const contractAddress = new Address(Buffer.from('20'.repeat(20), 'hex'))
+    const contractAddress = new Address(hexToBytes('20'.repeat(20)))
     const tx = new FeeMarketEIP1559Transaction(
       {
         maxFeePerGas: GWEI * BigInt(5),
@@ -189,16 +190,16 @@ tape('EIP1559 tests', (t) => {
      */
 
     // (This code returns the reported GASPRICE)
-    const code = Buffer.from('3A60005260206000F3', 'hex')
+    const code = hexToBytes('3A60005260206000F3')
     await vm.stateManager.putContractCode(contractAddress, code)
 
     const result = await vm.runTx({ tx: block.transactions[0], block })
     const returnValue = result.execResult.returnValue
 
     const expectedCost = GWEI * BigInt(3)
-    const expectedReturn = setLengthLeft(bigIntToBuffer(expectedCost), 32)
+    const expectedReturn = setLengthLeft(bigIntToBytes(expectedCost), 32)
 
-    st.ok(returnValue.equals(expectedReturn))
+    st.deepEquals(returnValue, expectedReturn)
     st.end()
   })
 })

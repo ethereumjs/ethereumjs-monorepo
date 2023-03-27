@@ -1,7 +1,7 @@
 import { TypeOutput, isHexString, toType } from '@ethereumjs/util'
 
 import type { BlockHeader } from './header'
-import type { BlockHeaderBuffer, HeaderData } from './types'
+import type { BlockHeaderBytes, HeaderData } from './types'
 
 /**
  * Returns a 0x-prefixed hex number string from a hex string or string integer.
@@ -20,7 +20,7 @@ export const numberToHex = function (input?: string) {
   return input
 }
 
-export function valuesArrayToHeaderData(values: BlockHeaderBuffer): HeaderData {
+export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
   const [
     parentHash,
     uncleHash,

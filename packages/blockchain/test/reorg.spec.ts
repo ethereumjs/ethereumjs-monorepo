@@ -1,6 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
+import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { Blockchain } from '../src'
@@ -71,7 +72,7 @@ tape('reorg tests', (t) => {
     async (st) => {
       const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
       const genesisBlock = Block.fromBlockData(
-        { header: { extraData: Buffer.alloc(97) } },
+        { header: { extraData: new Uint8Array(97) } },
         { common }
       )
       const blockchain = await Blockchain.create({
@@ -81,16 +82,15 @@ tape('reorg tests', (t) => {
         genesisBlock,
       })
 
-      const extraData = Buffer.from(
-        '506172697479205465636820417574686f7269747900000000000000000000002bbf886181970654ed46e3fae0ded41ee53fec702c47431988a7ae80e6576f3552684f069af80ba11d36327aaf846d470526e4a1c461601b2fd4ebdcdc2b734a01',
-        'hex'
+      const extraData = hexToBytes(
+        '506172697479205465636820417574686f7269747900000000000000000000002bbf886181970654ed46e3fae0ded41ee53fec702c47431988a7ae80e6576f3552684f069af80ba11d36327aaf846d470526e4a1c461601b2fd4ebdcdc2b734a01'
       ) // from goerli block 1
       const { gasLimit } = genesisBlock.header
       const base = { extraData, gasLimit, difficulty: 1 }
 
       const nonce = CLIQUE_NONCE_AUTH
-      const beneficiary1 = new Address(Buffer.alloc(20).fill(1))
-      const beneficiary2 = new Address(Buffer.alloc(20).fill(2))
+      const beneficiary1 = new Address(new Uint8Array(20).fill(1))
+      const beneficiary2 = new Address(new Uint8Array(20).fill(2))
 
       const block1_low = Block.fromBlockData(
         {
@@ -158,6 +158,7 @@ tape('reorg tests', (t) => {
       await blockchain.putBlocks([block1_high, block2_high, block3_high])
 
       let signerStates = (blockchain.consensus as CliqueConsensus)._cliqueLatestSignerStates
+
       t.ok(
         !signerStates.find(
           (s: any) => s[0] === BigInt(2) && s[1].find((a: Address) => a.equals(beneficiary1))
@@ -172,7 +173,7 @@ tape('reorg tests', (t) => {
             v[0] === BigInt(2) &&
             v[1][0].equals(block1_low.header.cliqueSigner()) &&
             v[1][1].equals(beneficiary1) &&
-            v[1][2].equals(CLIQUE_NONCE_AUTH)
+            equalsBytes(v[1][2], CLIQUE_NONCE_AUTH)
         ),
         'should not find reorged clique vote'
       )

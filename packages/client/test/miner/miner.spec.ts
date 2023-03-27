@@ -2,7 +2,7 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
-import { Address } from '@ethereumjs/util'
+import { Address, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
 import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
 import { AbstractLevel } from 'abstract-level'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -21,19 +21,13 @@ import type { CliqueConsensus } from '@ethereumjs/blockchain'
 import type { VM } from '@ethereumjs/vm'
 
 const A = {
-  address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
-  privateKey: Buffer.from(
-    '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
-    'hex'
-  ),
+  address: new Address(hexStringToBytes('0b90087d864e82a284dca15923f3776de6bb016f')),
+  privateKey: hexStringToBytes('64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
 }
 
 const B = {
-  address: new Address(Buffer.from('6f62d8382bf2587361db73ceca28be91b2acb6df', 'hex')),
-  privateKey: Buffer.from(
-    '2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6',
-    'hex'
-  ),
+  address: new Address(hexStringToBytes('6f62d8382bf2587361db73ceca28be91b2acb6df')),
+  privateKey: hexStringToBytes('2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'),
 }
 
 const setBalance = async (vm: VM, address: Address, balance: bigint) => {
@@ -95,7 +89,7 @@ tape('[Miner]', async (t) => {
 
   const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berlin })
   common.setMaxListeners(50)
-  const accounts: [Address, Buffer][] = [[A.address, A.privateKey]]
+  const accounts: [Address, Uint8Array][] = [[A.address, A.privateKey]]
   const config = new Config({ transports: [], accounts, mine: true, common })
   config.events.setMaxListeners(50)
 
@@ -263,7 +257,8 @@ tape('[Miner]', async (t) => {
         const msg = 'txs in block should be properly ordered by gasPrice and nonce'
         const expectedOrder = [txB01, txA01, txA02, txA03]
         for (const [index, tx] of expectedOrder.entries()) {
-          t.ok(blocks[0].transactions[index]?.hash().equals(tx.hash()), msg)
+          const txHash = blocks[0].transactions[index]?.hash()
+          t.ok(txHash !== undefined && equalsBytes(txHash, tx.hash()), msg)
         }
         miner.stop()
         txPool.stop()
@@ -307,7 +302,8 @@ tape('[Miner]', async (t) => {
       const msg = 'txs in block should be properly ordered by gasPrice and nonce'
       const expectedOrder = [txB01, txA01, txA02, txA03]
       for (const [index, tx] of expectedOrder.entries()) {
-        t.ok(blocks[0].transactions[index]?.hash().equals(tx.hash()), msg)
+        const txHash = blocks[0].transactions[index]?.hash()
+        t.ok(txHash !== undefined && equalsBytes(txHash, tx.hash()), msg)
       }
       miner.stop()
       txPool.stop()
@@ -452,7 +448,7 @@ tape('[Miner]', async (t) => {
     await setBalance(vm, A.address, BigInt('200000000000001'))
 
     // add many txs to slow assembling
-    let privateKey = Buffer.from(keccak256(Buffer.from('')))
+    let privateKey = keccak256(new Uint8Array(0))
     for (let i = 0; i < 1000; i++) {
       // In order not to pollute TxPool with too many txs from the same address
       // (or txs which are already known), keep generating a new address for each tx
@@ -460,7 +456,7 @@ tape('[Miner]', async (t) => {
       await setBalance(vm, address, BigInt('200000000000001'))
       const tx = createTx({ address, privateKey })
       await txPool.add(tx)
-      privateKey = Buffer.from(keccak256(privateKey))
+      privateKey = keccak256(privateKey)
     }
 
     chain.putBlocks = () => {

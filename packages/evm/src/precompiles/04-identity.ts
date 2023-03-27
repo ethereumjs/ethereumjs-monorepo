@@ -10,7 +10,7 @@ export function precompile04(opts: PrecompileInput): ExecResult {
 
   let gasUsed = opts._common.param('gasPrices', 'identity')
   gasUsed += opts._common.param('gasPrices', 'identityWord') * BigInt(Math.ceil(data.length / 32))
-  if (opts._debug) {
+  if (opts._debug !== undefined) {
     opts._debug(
       `Run IDENTITY (0x04) precompile data=${short(opts.data)} length=${
         opts.data.length
@@ -19,18 +19,18 @@ export function precompile04(opts: PrecompileInput): ExecResult {
   }
 
   if (opts.gasLimit < gasUsed) {
-    if (opts._debug) {
+    if (opts._debug !== undefined) {
       opts._debug(`IDENTITY (0x04) failed: OOG`)
     }
     return OOGResult(opts.gasLimit)
   }
 
-  if (opts._debug) {
+  if (opts._debug !== undefined) {
     opts._debug(`IDENTITY (0x04) return data=${short(opts.data)}`)
   }
 
   return {
     executionGasUsed: gasUsed,
-    returnValue: Buffer.from(data), // Copy the memory (`Buffer.from()`)
+    returnValue: Uint8Array.from(data), // Copy the memory (`Uint8Array.from()`)
   }
 }

@@ -2,7 +2,13 @@ import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Account, privateToAddress } from '@ethereumjs/util'
+import {
+  Account,
+  bytesToHex,
+  concatBytes,
+  hexStringToBytes,
+  privateToAddress,
+} from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Config } from '../../lib/config'
@@ -23,7 +29,7 @@ const setup = () => {
       vm: {
         stateManager: {
           getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000')),
-          setStateRoot: async (_root: Buffer) => {},
+          setStateRoot: async (_root: Uint8Array) => {},
         },
         copy: () => service.execution.vm,
       },
@@ -48,7 +54,7 @@ const handleTxs = async (
   try {
     if (stateManager !== undefined) {
       ;(<any>pool).service.execution.vm.stateManager = stateManager
-      ;(<any>pool).service.execution.vm.stateManager.setStateRoot = async (_root: Buffer) => {}
+      ;(<any>pool).service.execution.vm.stateManager.setStateRoot = async (_root: Uint8Array) => {}
     }
 
     pool.open()
@@ -89,18 +95,16 @@ tape('[TxPool]', async (t) => {
   DefaultStateManager.prototype.setStateRoot = (): any => {}
 
   const A = {
-    address: Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex'),
-    privateKey: Buffer.from(
-      '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
-      'hex'
+    address: hexStringToBytes('0b90087d864e82a284dca15923f3776de6bb016f'),
+    privateKey: hexStringToBytes(
+      '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'
     ),
   }
 
   const B = {
-    address: Buffer.from('6f62d8382bf2587361db73ceca28be91b2acb6df', 'hex'),
-    privateKey: Buffer.from(
-      '2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6',
-      'hex'
+    address: hexStringToBytes('6f62d8382bf2587361db73ceca28be91b2acb6df'),
+    privateKey: hexStringToBytes(
+      '2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'
     ),
   }
 
@@ -202,15 +206,15 @@ tape('[TxPool]', async (t) => {
     t.equal((pool as any).knownByPeer.get(peer.id).length, 1, 'one tx added for peer 1')
     t.equal(
       (pool as any).knownByPeer.get(peer.id)[0].hash,
-      txA01.hash().toString('hex'),
+      bytesToHex(txA01.hash()),
       'new known tx hashes entry for announcing peer'
     )
 
     const txs = pool.getByHash([txA01.hash()])
     t.equal(txs.length, 1, 'should get correct number of txs by hash')
     t.equal(
-      txs[0].serialize().toString('hex'),
-      txA01.serialize().toString('hex'),
+      bytesToHex(txs[0].serialize()),
+      bytesToHex(txA01.serialize()),
       'should get correct tx by hash'
     )
 
@@ -247,7 +251,7 @@ tape('[TxPool]', async (t) => {
     const hashes = []
     for (let i = 1; i <= TX_RETRIEVAL_LIMIT + 1; i++) {
       // One more than TX_RETRIEVAL_LIMIT
-      hashes.push(Buffer.from(i.toString().padStart(64, '0'), 'hex')) // '0000000000000000000000000000000000000000000000000000000000000001',...
+      hashes.push(hexStringToBytes(i.toString().padStart(64, '0'))) // '0000000000000000000000000000000000000000000000000000000000000001',...
     }
 
     await pool.handleAnnouncedTxHashes(hashes, peer as any, peerPool)
@@ -291,7 +295,7 @@ tape('[TxPool]', async (t) => {
 
     await pool.handleAnnouncedTxHashes([txA01.hash(), txA02.hash()], peer, peerPool)
     t.equal(pool.pool.size, 1, 'pool size 1')
-    const address = A.address.toString('hex')
+    const address = bytesToHex(A.address)
     const poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 1, 'only one tx')
     t.deepEqual(poolContent[0].tx.hash(), txA02.hash(), 'only later-added tx')
@@ -336,7 +340,7 @@ tape('[TxPool]', async (t) => {
         e.message.includes('replacement gas too low'),
         'successfully failed adding underpriced txn'
       )
-      const poolObject = pool['handled'].get(txA02_Underpriced.hash().toString('hex'))
+      const poolObject = pool['handled'].get(bytesToHex(txA02_Underpriced.hash()))
       t.equal(poolObject?.error, e, 'should have an errored poolObject')
       const poolTxs = pool.getByHash([txA02_Underpriced.hash()])
       t.equal(poolTxs.length, 0, `should not be added in pool`)
@@ -349,7 +353,7 @@ tape('[TxPool]', async (t) => {
       'NewPooledTransactionHashes',
       'should have errored sendObject for NewPooledTransactionHashes broadcast'
     )
-    const address = A.address.toString('hex')
+    const address = bytesToHex(A.address)
     const poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 1, 'only one tx')
     t.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'only later-added tx')
@@ -383,7 +387,7 @@ tape('[TxPool]', async (t) => {
       await pool.handleAnnouncedTxHashes([txA01.hash(), txA02_Underpriced.hash()], peer, peerPool)
 
       t.equal(pool.pool.size, 1, 'pool size 1')
-      const address = A.address.toString('hex')
+      const address = bytesToHex(A.address)
       const poolContent = pool.pool.get(address)!
       t.equal(poolContent.length, 1, 'only one tx')
       t.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'only later-added tx')
@@ -396,10 +400,10 @@ tape('[TxPool]', async (t) => {
     // Setup 5001 txs
     const txs = []
     for (let account = 0; account < 51; account++) {
-      const pkey = Buffer.concat([
-        Buffer.from('aa'.repeat(31), 'hex'),
-        Buffer.from(account.toString(16).padStart(2, '0'), 'hex'),
-      ])
+      const pkey = concatBytes(
+        hexStringToBytes('aa'.repeat(31)),
+        hexStringToBytes(account.toString(16).padStart(2, '0'))
+      )
       const from = {
         address: privateToAddress(pkey),
         privateKey: pkey,
@@ -651,7 +655,7 @@ tape('[TxPool]', async (t) => {
 
     await pool.handleAnnouncedTxs([txA01], peer, peerPool)
     t.equal(pool.pool.size, 1, 'pool size 1')
-    const address = A.address.toString('hex')
+    const address = bytesToHex(A.address)
     const poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 1, 'one tx')
     t.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'correct tx')
@@ -695,7 +699,7 @@ tape('[TxPool]', async (t) => {
     }
     await pool.handleAnnouncedTxHashes([txB01.hash(), txB02.hash()], peer, peerPool)
     t.equal(pool.pool.size, 1, 'pool size 1')
-    const address = B.address.toString('hex')
+    const address = bytesToHex(B.address)
     let poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 2, 'two txs')
 
@@ -770,7 +774,7 @@ tape('[TxPool]', async (t) => {
     knownByPeerObj1.added = Date.now() - pool.POOLED_STORAGE_TIME_LIMIT * 1000 * 60 - 1
     ;(pool as any).knownByPeer.set(peer.id, [knownByPeerObj1, knownByPeerObj2])
 
-    const hash = txB01.hash().toString('hex')
+    const hash = bytesToHex(txB01.hash())
     const handledObj = (pool as any).handled.get(hash)
     handledObj.added = Date.now() - pool.HANDLED_CLEANUP_TIME_LIMIT * 1000 * 60 - 1
     ;(pool as any).handled.set(hash, handledObj)

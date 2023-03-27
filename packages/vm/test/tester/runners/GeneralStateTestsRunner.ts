@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { toBuffer } from '@ethereumjs/util'
+import { bytesToHex, equalsBytes, toBytes } from '@ethereumjs/util'
 
 import { EVM } from '../../../../evm/src'
 import { EEI } from '../../../src'
@@ -123,7 +123,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
         })
         vm.events.on('afterTx', async () => {
           const stateRoot = {
-            stateRoot: vm.stateManager._trie.root.toString('hex'),
+            stateRoot: bytesToHex(vm.stateManager._trie.root),
           }
           t.comment(JSON.stringify(stateRoot))
         })
@@ -140,8 +140,8 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   }
 
   const stateManagerStateRoot = vm.stateManager._trie.root()
-  const testDataPostStateRoot = toBuffer(testData.postStateRoot)
-  const stateRootsAreEqual = stateManagerStateRoot.equals(testDataPostStateRoot)
+  const testDataPostStateRoot = toBytes(testData.postStateRoot)
+  const stateRootsAreEqual = equalsBytes(stateManagerStateRoot, testDataPostStateRoot)
 
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`

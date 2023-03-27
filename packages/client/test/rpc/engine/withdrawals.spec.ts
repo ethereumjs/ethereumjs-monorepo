@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { Withdrawal, bigIntToHex, intToHex } from '@ethereumjs/util'
+import { Withdrawal, bigIntToHex, bytesToHex, intToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
@@ -103,9 +103,9 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
   const validPayloadAttributesWithWithdrawals = { ...validPayloadAttributes, withdrawals }
   tape(name, async (t) => {
     // check withdrawals root computation
-    const computedWithdrawalsRoot = (
+    const computedWithdrawalsRoot = bytesToHex(
       await Block.genWithdrawalsTrieRoot(withdrawals.map(Withdrawal.fromWithdrawalData))
-    ).toString('hex')
+    )
     t.equal(withdrawalsRoot, computedWithdrawalsRoot, 'withdrawalsRoot compuation should match')
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 

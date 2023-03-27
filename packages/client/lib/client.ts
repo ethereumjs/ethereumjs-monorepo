@@ -23,7 +23,7 @@ export interface EthereumClientOptions {
    *
    * Default: Database created by the Blockchain class
    */
-  chainDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  chainDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   /**
    * Database to store the state.
@@ -31,7 +31,7 @@ export interface EthereumClientOptions {
    *
    * Default: Database created by the Trie class
    */
-  stateDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  stateDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   /**
    * Database to store tx receipts, logs, and indexes.
@@ -39,7 +39,7 @@ export interface EthereumClientOptions {
    *
    * Default: Database created in datadir folder
    */
-  metaDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  metaDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   /* List of bootnodes to use for discovery */
   bootnodes?: MultiaddrLike[]

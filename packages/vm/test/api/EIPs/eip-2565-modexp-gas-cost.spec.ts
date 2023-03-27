@@ -1,5 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
+import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -14,13 +15,13 @@ tape('EIP-2565 ModExp gas cost tests', (t) => {
 
     for (const test of testData) {
       const testName = test.Name
-      const to = new Address(Buffer.from('0000000000000000000000000000000000000005', 'hex'))
+      const to = new Address(hexToBytes('0000000000000000000000000000000000000005'))
       const result = await vm.evm.runCall({
         caller: Address.zero(),
         gasLimit: BigInt(0xffffffffff),
         to,
         value: BigInt(0),
-        data: Buffer.from(test.Input, 'hex'),
+        data: hexToBytes(test.Input),
       })
 
       if (result.execResult.executionGasUsed !== BigInt(test.Gas)) {
@@ -30,16 +31,16 @@ tape('EIP-2565 ModExp gas cost tests', (t) => {
         continue
       }
 
-      if (result.execResult.exceptionError) {
+      if (result.execResult.exceptionError !== undefined) {
         st.fail(`[${testName}]: Call should not fail`)
         continue
       }
 
-      if (!result.execResult.returnValue.equals(Buffer.from(test.Expected, 'hex'))) {
+      if (!equalsBytes(result.execResult.returnValue, hexToBytes(test.Expected))) {
         st.fail(
           `[${testName}]: Return value not the expected value (expected: ${
             test.Expected
-          }, received: ${result.execResult.returnValue.toString('hex')})`
+          }, received: ${bytesToHex(result.execResult.returnValue)})`
         )
         continue
       }
