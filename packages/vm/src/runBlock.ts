@@ -38,7 +38,7 @@ const DAORefundContract = DAOConfig.DAORefundContract
  * @ignore
  */
 export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
-  const state = this.eei
+  const state = this.evm.eei
   const { root } = opts
   let { cacheClearingOptions } = opts
   let { block } = opts
@@ -338,7 +338,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
 }
 
 async function assignWithdrawals(this: VM, block: Block): Promise<void> {
-  const state = this.eei
+  const state = this.evm.eei
   const withdrawals = block.withdrawals!
   for (const withdrawal of withdrawals) {
     const { address, amount } = withdrawal
@@ -358,7 +358,7 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
   if (this.DEBUG) {
     debug(`Assign block rewards`)
   }
-  const state = this.eei
+  const state = this.evm.eei
   const minerReward = this._common.param('pow', 'minerReward')
   const ommers = block.uncleHeaders
   // Reward ommers

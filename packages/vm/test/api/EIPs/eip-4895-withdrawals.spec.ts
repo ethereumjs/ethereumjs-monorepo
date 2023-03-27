@@ -119,8 +119,8 @@ tape('EIP4895 tests', (t) => {
   t.test('EIP4895: state updation should exclude 0 amount updates', async (st) => {
     const vm = await VM.create({ common })
 
-    await vm.eei.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
-    const preState = (await vm.eei.getStateRoot()).toString('hex')
+    await vm.evm.eei.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
+    const preState = (await vm.evm.eei.getStateRoot()).toString('hex')
     st.equal(
       preState,
       'ca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
@@ -148,7 +148,7 @@ tape('EIP4895 tests', (t) => {
       },
       { common: vm._common }
     )
-    postState = (await vm.eei.getStateRoot()).toString('hex')
+    postState = (await vm.evm.eei.getStateRoot()).toString('hex')
 
     await vm.runBlock({ block, generate: true })
     st.equal(
@@ -171,7 +171,7 @@ tape('EIP4895 tests', (t) => {
       { common: vm._common }
     )
     await vm.runBlock({ block, generate: true })
-    postState = (await vm.eei.getStateRoot()).toString('hex')
+    postState = (await vm.evm.eei.getStateRoot()).toString('hex')
     st.equal(
       postState,
       '23eadd91fca55c0e14034e4d63b2b3ed43f2e807b6bf4d276b784ac245e7fa3f',
@@ -198,7 +198,7 @@ tape('EIP4895 tests', (t) => {
       'correct state root should be generated'
     )
     const vm = await VM.create({ common, blockchain })
-    await vm.eei.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
+    await vm.evm.eei.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
     const vmCopy = await vm.copy()
 
     const gethBlockBufferArray = decode(Buffer.from(gethWithdrawals8BlockRlp, 'hex'))

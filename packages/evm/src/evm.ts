@@ -280,10 +280,12 @@ export class EVM implements EVMInterface {
 
     if (opts.blockchain === undefined && opts.enableDefaultBlockchain === true) {
       blockchain = new DefaultBlockchain()
-    } else {
+    } else if (opts.blockchain === undefined) {
       throw new Error(
         'Cannot create EVM: no blockchain is provided, and enableDefaultBlockchain is not set to true'
       )
+    } else {
+      blockchain = opts.blockchain
     }
 
     this.eei = new EEI(opts.stateManager, this._common, blockchain)

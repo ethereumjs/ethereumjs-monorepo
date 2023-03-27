@@ -37,7 +37,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
     //@ts-ignore
-    await setupPreConditions(vm.eei, testData)
+    await setupPreConditions(vm.evm.eei, testData)
 
     st.ok(
       //@ts-ignore
@@ -63,7 +63,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       'actual gas used should equal blockHeader gasUsed'
     )
     st.equal(
-      vm.stateManager.cache!._comparand,
+      (<any>vm.stateManager.cache!)._comparand,
       BigInt(5),
       'should pass through the cache clearing options'
     )
@@ -73,7 +73,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     const testData = require('./testdata/uncleData.json')
 
     //@ts-ignore
-    await setupPreConditions(vm.eei, testData)
+    await setupPreConditions(vm.evm.eei, testData)
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const block1Rlp = toBuffer(testData.blocks[0].rlp)
@@ -299,7 +299,7 @@ tape('runBlock() -> runtime behavior', async (t) => {
     block1[0][12] = Buffer.from('dao-hard-fork')
     const block = Block.fromValuesArray(block1, { common })
     // @ts-ignore
-    await setupPreConditions(vm.eei, testData)
+    await setupPreConditions(vm.evm.eei, testData)
 
     // fill two original DAO child-contracts with funds and the recovery account with funds in order to verify that the balance gets summed correctly
     const fundBalance1 = BigInt('0x1111')
@@ -440,7 +440,7 @@ async function runWithHf(hardfork: string) {
   const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
   // @ts-ignore
-  await setupPreConditions(vm.eei, testData)
+  await setupPreConditions(vm.evm.eei, testData)
 
   const res = await vm.runBlock({
     block,
@@ -485,7 +485,7 @@ tape('runBlock() -> tx types', async (t) => {
     }
 
     //@ts-ignore
-    await setupPreConditions(vm.eei, testData)
+    await setupPreConditions(vm.evm.eei, testData)
 
     const res = await vm.runBlock({
       block,

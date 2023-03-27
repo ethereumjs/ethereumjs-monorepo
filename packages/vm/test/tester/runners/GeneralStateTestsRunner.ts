@@ -5,7 +5,6 @@ import { Trie } from '@ethereumjs/trie'
 import { toBuffer } from '@ethereumjs/util'
 
 import { EVM } from '../../../../evm/src'
-import { EEI } from '../../../src'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
 
 import type { InterpreterStep } from '@ethereumjs/evm/dist//interpreter'
@@ -83,11 +82,11 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const stateManager = new DefaultStateManager({
     trie: state,
   })
-  const eei = new EEI(stateManager, common, blockchain)
-  const evm = new EVM({ common, eei })
+
+  const evm = new EVM({ common, stateManager: new DefaultStateManager(), blockchain })
   const vm = await VM.create({ state, stateManager, common, blockchain, evm })
 
-  await setupPreConditions(vm.eei, testData)
+  await setupPreConditions(vm.evm.eei, testData)
 
   let execInfo = ''
   let tx
