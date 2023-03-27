@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, concatBytesNoTypeCheck, privateToAddress } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { EVM } from '../../src'
@@ -205,11 +205,11 @@ tape('EIP 3860 tests', (t) => {
       const storageInactive = await evmDisabled.eei.getContractStorage(contractFactory, key0)
 
       st.ok(
-        !storageActive.equals(Buffer.from('')),
+        !equalsBytes(storageActive, new Uint8Array()),
         'created contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=true'
       )
       st.ok(
-        storageInactive.equals(Buffer.from('')),
+        equalsBytes(storageInactive, new Uint8Array()),
         'did not create contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=false'
       )
 

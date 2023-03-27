@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
-import { equalsBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { blockFromRpc } from '../src/from-rpc'
@@ -128,8 +128,8 @@ tape('[fromRPC]:', function (t) {
     function (st) {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
       const block = blockHeaderFromRpc(blockDataWithWithdrawals, { common })
-      const hash = Buffer.from(blockDataWithWithdrawals.hash.slice(2), 'hex')
-      st.ok(block.hash().equals(hash))
+      const hash = blockDataWithWithdrawals.hash.slice(2)
+      st.equal(bytesToHex(block.hash()), hash)
       st.end()
     }
   )

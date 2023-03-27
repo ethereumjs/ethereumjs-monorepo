@@ -16,7 +16,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BaseTransaction } from './baseTransaction'
-import { AccessLists } from './util'
+import { AccessLists, checkMaxInitCodeSize } from './util'
 
 import type {
   AccessList,
@@ -75,7 +75,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
    * accessList, signatureYParity, signatureR, signatureS])`
    */
   public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
-    if (!equalsBytes(serialized.subarray(0, 1), TRANSACTION_TYPE_BYTES)) {
+    if (equalsBytes(serialized.subarray(0, 1), TRANSACTION_TYPE_BYTES) === false) {
       throw new Error(
         `Invalid serialized tx input: not an EIP-1559 transaction (wrong tx type, expected: ${TRANSACTION_TYPE}, received: ${bytesToHex(
           serialized.subarray(0, 1)

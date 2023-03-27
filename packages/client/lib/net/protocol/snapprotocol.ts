@@ -38,7 +38,7 @@ type GetAccountRangeOpts = {
 
 type GetStorageRangesOpts = {
   reqId?: bigint
-  root: Buffer
+  root: Uint8Array
 
   // If multiple accounts' storage is requested, serving nodes
   // should reply with the entire storage ranges (thus no Merkle
@@ -51,15 +51,15 @@ type GetStorageRangesOpts = {
   // starting hash, up to the last one or until the packet fills
   // up. It the entire storage range is not being returned, a
   // Merkle proof must be attached.
-  accounts: Buffer[]
-  origin: Buffer
-  limit: Buffer
+  accounts: Uint8Array[]
+  origin: Uint8Array
+  limit: Uint8Array
   bytes: bigint
 }
 
 export type StorageData = {
-  hash: Buffer
-  body: Buffer
+  hash: Uint8Array
+  body: Uint8Array
 }
 
 type GetByteCodesOpts = {

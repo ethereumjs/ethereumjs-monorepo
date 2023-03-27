@@ -2,13 +2,10 @@ import { Trie } from '@ethereumjs/trie'
 import {
   KECCAK256_RLP,
   accountBodyToRLP,
-  accountBodyToRLP,
-  bigIntToBuffer,
   bigIntToBytes,
-  bufArrToArr,
-  bufferToHex,
   bytesToBigInt,
-  setLengthLeft,
+  bytesToHex,
+  equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
@@ -60,13 +57,13 @@ export type FetcherDoneFlags = {
   storageFetcherDone: boolean
   accountFetcherDone: boolean
   eventBus?: EventBusType | undefined
-  stateRoot?: Buffer | undefined
+  stateRoot?: Uint8Array | undefined
 }
 
 export function snapFetchersCompleted(
   fetcherDoneFlags: FetcherDoneFlags,
   fetcherType: Object,
-  root?: Buffer,
+  root?: Uint8Array,
   eventBus?: EventBusType
 ) {
   switch (fetcherType) {
@@ -81,10 +78,7 @@ export function snapFetchersCompleted(
       break
   }
   if (fetcherDoneFlags.accountFetcherDone && fetcherDoneFlags.storageFetcherDone) {
-    fetcherDoneFlags.eventBus!.emit(
-      Event.SYNC_SNAPSYNC_COMPLETE,
-      bufArrToArr(fetcherDoneFlags.stateRoot as Buffer)
-    )
+    fetcherDoneFlags.eventBus!.emit(Event.SYNC_SNAPSYNC_COMPLETE, fetcherDoneFlags.stateRoot)
   }
 }
 
@@ -162,14 +156,14 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     { accounts, proof }: { accounts: AccountData[]; proof: Uint8Array[] }
   ): Promise<boolean> {
     this.debug(
-      `verifyRangeProof accounts:${accounts.length} first=${bufferToHex(
+      `verifyRangeProof accounts:${accounts.length} first=${bytesToHex(
         accounts[0].hash
       )} last=${short(accounts[accounts.length - 1].hash)}`
     )
 
     for (let i = 0; i < accounts.length - 1; i++) {
       // ensure the range is monotonically increasing
-      if (compareBytes(accounts[i].hash, accounts[i + 1].hash) === 1) {
+      if (bytesToBigInt(accounts[i].hash) > bytesToBigInt(accounts[i + 1].hash)) {
         throw Error(
           `Account hashes not monotonically increasing: ${i} ${accounts[i].hash} vs ${i + 1} ${
             accounts[i + 1].hash
@@ -203,10 +197,14 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   }
 
   private isMissingRightRange(
-    limit: Buffer,
-    { accounts, proof: _proof }: { accounts: AccountData[]; proof: Buffer[] }
+    limit: Uint8Array,
+    { accounts, proof: _proof }: { accounts: AccountData[]; proof: Uint8Array[] }
   ): boolean {
-    if (accounts.length > 0 && accounts[accounts.length - 1]?.hash.compare(limit) >= 0) {
+    if (
+      accounts.length > 0 &&
+      accounts[accounts.length - 1] !== undefined &&
+      bytesToBigInt(accounts[accounts.length - 1].hash) >= bytesToBigInt(limit)
+    ) {
       return false
     } else {
       // TODO: Check if there is a proof of missing limit in state
@@ -240,7 +238,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
     if (
       rangeResult.accounts.length === 0 ||
-      limit.compare(bigIntToBuffer(BigInt(2) ** BigInt(256))) === 0
+      equalsBytes(limit, bigIntToBytes(BigInt(2) ** BigInt(256))) === true
     ) {
       // TODO have to check proof of nonexistence -- as a shortcut for now, we can mark as completed if a proof is present
       if (rangeResult.proof.length > 0) {
@@ -261,9 +259,9 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       let completed: boolean
       if (isMissingRightRange && this.isMissingRightRange(limit, rangeResult)) {
         this.debug(
-          `Peer ${peerInfo} returned missing right range account=${rangeResult.accounts[
-            rangeResult.accounts.length - 1
-          ].hash.toString('hex')} limit=${limit.toString('hex')}`
+          `Peer ${peerInfo} returned missing right range account=${bytesToHex(
+            rangeResult.accounts[rangeResult.accounts.length - 1].hash
+          )} limit=${bytesToHex(limit)}`
         )
         completed = false
       } else {
