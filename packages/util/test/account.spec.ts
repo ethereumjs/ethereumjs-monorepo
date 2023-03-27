@@ -1,20 +1,26 @@
 import { RLP } from '@ethereumjs/rlp'
+import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import {
   Account,
-  bufferToBigInt,
+  bytesToBigInt,
+  bytesToPrefixedHexString,
   generateAddress,
   generateAddress2,
+  hexStringToBytes,
   importPublic,
+  intToBytes,
+  intToHex,
   isValidAddress,
   isValidChecksumAddress,
   isValidPrivate,
   isValidPublic,
+  padToEven,
   privateToAddress,
   privateToPublic,
   publicToAddress,
-  toBuffer,
+  toBytes,
   toChecksumAddress,
 } from '../src'
 
@@ -28,12 +34,12 @@ tape('Account', function (t) {
     st.equal(account.nonce, _0n, 'should have zero nonce')
     st.equal(account.balance, _0n, 'should have zero balance')
     st.equal(
-      account.storageRoot.toString('hex'),
+      bytesToHex(account.storageRoot),
       '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       'should have storageRoot equal to KECCAK256_RLP'
     )
     st.equal(
-      account.codeHash.toString('hex'),
+      bytesToHex(account.codeHash),
       'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
       'should have codeHash equal to KECCAK256_NULL'
     )
@@ -47,16 +53,17 @@ tape('Account', function (t) {
       '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', // storageRoot
       '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470', // codeHash
     ]
-    const account = Account.fromValuesArray(raw.map(toBuffer))
+    const account = Account.fromValuesArray(raw.map((el) => hexStringToBytes(el)))
+
     st.equal(account.nonce, BigInt(2), 'should have correct nonce')
     st.equal(account.balance, BigInt(900), 'should have correct balance')
     st.equal(
-      account.storageRoot.toString('hex'),
+      bytesToHex(account.storageRoot),
       '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       'should have correct storageRoot'
     )
     st.equal(
-      account.codeHash.toString('hex'),
+      bytesToHex(account.codeHash),
       'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
       'should have correct codeHash'
     )
@@ -74,12 +81,12 @@ tape('Account', function (t) {
     st.equal(account.nonce, BigInt(2), 'should have correct nonce')
     st.equal(account.balance, BigInt(900), 'should have correct balance')
     st.equal(
-      account.storageRoot.toString('hex'),
+      bytesToHex(account.storageRoot),
       '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       'should have correct storageRoot'
     )
     st.equal(
-      account.codeHash.toString('hex'),
+      bytesToHex(account.codeHash),
       'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
       'should have correct codeHash'
     )
@@ -87,20 +94,19 @@ tape('Account', function (t) {
   })
 
   t.test('from RLP data', function (st) {
-    const accountRlp = Buffer.from(
-      'f84602820384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
-      'hex'
+    const accountRlp = hexToBytes(
+      'f84602820384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
     )
     const account = Account.fromRlpSerializedAccount(accountRlp)
     st.equal(account.nonce, BigInt(2), 'should have correct nonce')
     st.equal(account.balance, BigInt(900), 'should have correct balance')
     st.equal(
-      account.storageRoot.toString('hex'),
+      bytesToHex(account.storageRoot),
       '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       'should have correct storageRoot'
     )
     st.equal(
-      account.codeHash.toString('hex'),
+      bytesToHex(account.codeHash),
       'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
       'should have correct codeHash'
     )
@@ -115,17 +121,15 @@ tape('Account', function (t) {
       codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
     const account = Account.fromAccountData(raw)
-    const accountRlp = Buffer.from(
-      RLP.encode([raw.nonce, raw.balance, raw.storageRoot, raw.codeHash])
-    )
-    st.ok(account.serialize().equals(accountRlp), 'should serialize correctly')
+    const accountRlp = RLP.encode([raw.nonce, raw.balance, raw.storageRoot, raw.codeHash])
+
+    st.ok(equalsBytes(account.serialize(), accountRlp), 'should serialize correctly')
     st.end()
   })
 
   t.test('isContract', function (st) {
-    const accountRlp = Buffer.from(
-      'f84602820384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
-      'hex'
+    const accountRlp = hexToBytes(
+      'f84602820384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
     )
     let account = Account.fromRlpSerializedAccount(accountRlp)
     st.notOk(account.isContract(), 'should return false for a non-contract account')
@@ -158,11 +162,11 @@ tape('Account', function (t) {
 
   t.test('validation', function (st) {
     st.throws(() => {
-      new Account(undefined, undefined, Buffer.from('hey'), undefined)
+      new Account(undefined, undefined, hexToBytes('hey'), undefined)
     }, 'should only accept length 32 buffer for storageRoot')
 
     st.throws(() => {
-      new Account(undefined, undefined, undefined, Buffer.from('hey'))
+      new Account(undefined, undefined, undefined, hexToBytes('hey'))
     }, 'should only accept length 32 buffer for codeHash')
 
     const data = { balance: BigInt(5) }
@@ -186,11 +190,11 @@ tape('Utility Functions', function (t) {
     const SECP256K1_N = BigInt('0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141')
 
     let tmp = '0011223344'
-    st.notOk(isValidPrivate(Buffer.from(tmp, 'hex')), 'should fail on short input')
+    st.notOk(isValidPrivate(hexToBytes(tmp)), 'should fail on short input')
 
     tmp =
       '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
-    st.notOk(isValidPrivate(Buffer.from(tmp, 'hex')), 'should fail on too big input')
+    st.notOk(isValidPrivate(hexToBytes(tmp)), 'should fail on too big input')
 
     st.notOk(
       isValidPrivate((<unknown>'WRONG_INPUT_TYPE') as Buffer),
@@ -198,97 +202,82 @@ tape('Utility Functions', function (t) {
     )
 
     tmp = '0000000000000000000000000000000000000000000000000000000000000000'
-    st.notOk(isValidPrivate(Buffer.from(tmp, 'hex')), 'should fail on invalid curve (zero)')
+    st.notOk(isValidPrivate(hexToBytes(tmp)), 'should fail on invalid curve (zero)')
 
     tmp = SECP256K1_N.toString(16)
-    st.notOk(isValidPrivate(Buffer.from(tmp, 'hex')), 'should fail on invalid curve (== N)')
+    st.notOk(isValidPrivate(hexToBytes(tmp)), 'should fail on invalid curve (== N)')
 
     tmp = (SECP256K1_N + BigInt(1)).toString(16)
-    st.notOk(isValidPrivate(Buffer.from(tmp, 'hex')), 'should fail on invalid curve (>= N)')
+    st.notOk(isValidPrivate(hexToBytes(tmp)), 'should fail on invalid curve (>= N)')
 
     tmp = (SECP256K1_N - BigInt(1)).toString(16)
-    st.ok(isValidPrivate(Buffer.from(tmp, 'hex')), 'should work otherwise (< N)')
+    st.ok(isValidPrivate(hexToBytes(tmp)), 'should work otherwise (< N)')
     st.end()
   })
 
   t.test('isValidPublic', function (st) {
-    let pubKey = Buffer.from(
-      '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744',
-      'hex'
+    let pubKey = hexToBytes(
+      '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744'
     )
     st.notOk(isValidPublic(pubKey), 'should fail on too short input')
 
-    pubKey = Buffer.from(
-      '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d00',
-      'hex'
+    pubKey = hexToBytes(
+      '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d00'
     )
     st.notOk(isValidPublic(pubKey), 'should fail on too big input')
 
-    pubKey = Buffer.from(
-      '043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
-      'hex'
+    pubKey = hexToBytes(
+      '043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
     )
     st.notOk(isValidPublic(pubKey), 'should fail on SEC1 key')
 
-    pubKey = Buffer.from(
-      '043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
-      'hex'
+    pubKey = hexToBytes(
+      '043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
     )
     st.ok(isValidPublic(pubKey, true), "shouldn't fail on SEC1 key wt.testh sant.testize enabled")
 
-    pubKey = Buffer.from(
-      '023a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
-      'hex'
+    pubKey = hexToBytes(
+      '023a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
     )
     st.notOk(isValidPublic(pubKey), 'should fail wt.testh an invalid SEC1 public key')
 
-    pubKey = Buffer.from(
-      '03fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f',
-      'hex'
-    )
+    pubKey = hexToBytes('03fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f')
     st.notOk(isValidPublic(pubKey), 'should fail an invalid 33-byte public key')
 
-    pubKey = Buffer.from(
-      'fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f0000000000000000000000000000000000000000000000000000000000000001',
-      'hex'
+    pubKey = hexToBytes(
+      'fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f0000000000000000000000000000000000000000000000000000000000000001'
     )
     st.notOk(isValidPublic(pubKey), 'should fail an invalid 64-byte public key')
 
-    pubKey = Buffer.from(
-      '04fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f0000000000000000000000000000000000000000000000000000000000000001',
-      'hex'
+    pubKey = hexToBytes(
+      '04fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f0000000000000000000000000000000000000000000000000000000000000001'
     )
     st.notOk(isValidPublic(pubKey, true), 'should fail an invalid 65-byte public key')
 
-    pubKey = Buffer.from(
-      '033a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a',
-      'hex'
-    )
+    pubKey = hexToBytes('033a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a')
     st.ok(
       isValidPublic(pubKey, true),
       'should work wt.testh compressed keys wt.testh sant.testize enabled'
     )
 
-    pubKey = Buffer.from(
-      '043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
-      'hex'
+    pubKey = hexToBytes(
+      '043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
     )
     st.ok(isValidPublic(pubKey, true), 'should work wt.testh sant.testize enabled')
 
-    pubKey = Buffer.from(
-      '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
-      'hex'
+    pubKey = hexToBytes(
+      '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
     )
     st.ok(isValidPublic(pubKey), 'should work otherwise')
 
     pubKey =
       '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d' as any
     try {
-      isValidPublic((<unknown>pubKey) as Buffer)
+      isValidPublic((<unknown>pubKey) as Uint8Array)
     } catch (err: any) {
       st.ok(
-        err.message.includes('This method only supports Buffer'),
-        'should throw if input is not Buffer'
+        err.message.includes('This method only supports Uint8Array'),
+        'should throw if input is not Uint8Array'
       )
     }
     st.end()
@@ -301,7 +290,7 @@ tape('Utility Functions', function (t) {
     let tmp =
       '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
     st.equal(
-      importPublic(Buffer.from(tmp, 'hex')).toString('hex'),
+      bytesToHex(importPublic(hexToBytes(tmp))),
       pubKey,
       'should work wt.testh an Ethereum public key'
     )
@@ -309,14 +298,14 @@ tape('Utility Functions', function (t) {
     tmp =
       '043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
     st.equal(
-      importPublic(Buffer.from(tmp, 'hex')).toString('hex'),
+      bytesToHex(importPublic(hexToBytes(tmp))),
       pubKey,
       'should work wt.testh uncompressed SEC1 keys'
     )
 
     tmp = '033a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a'
     st.equal(
-      importPublic(Buffer.from(tmp, 'hex')).toString('hex'),
+      bytesToHex(importPublic(hexToBytes(tmp))),
       pubKey,
       'should work wt.testh compressed SEC1 keys'
     )
@@ -328,33 +317,29 @@ tape('Utility Functions', function (t) {
   })
 
   t.test('publicToAddress', function (st) {
-    let pubKey = Buffer.from(
-      '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
-      'hex'
+    let pubKey = hexToBytes(
+      '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
     )
     let address = '2f015c60e0be116b1f0cd534704db9c92118fb6a'
     let r = publicToAddress(pubKey)
-    st.equal(r.toString('hex'), address, 'should produce an address given a public key')
+    st.equal(bytesToHex(r), address, 'should produce an address given a public key')
 
-    pubKey = Buffer.from(
-      '043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
-      'hex'
+    pubKey = hexToBytes(
+      '043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
     )
     address = '2f015c60e0be116b1f0cd534704db9c92118fb6a'
     r = publicToAddress(pubKey, true)
-    st.equal(r.toString('hex'), address, 'should produce an address given a SEC1 public key')
+    st.equal(bytesToHex(r), address, 'should produce an address given a SEC1 public key')
 
-    pubKey = Buffer.from(
-      '023a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
-      'hex'
+    pubKey = hexToBytes(
+      '023a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
     )
     st.throws(function () {
       publicToAddress(pubKey, true)
     }, "shouldn't produce an address given an invalid SEC1 public key")
 
-    pubKey = Buffer.from(
-      '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744',
-      'hex'
+    pubKey = hexToBytes(
+      '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744'
     )
     st.throws(function () {
       publicToAddress(pubKey)
@@ -364,45 +349,36 @@ tape('Utility Functions', function (t) {
       '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d' as any
     st.throws(function () {
       publicToAddress(pubKey)
-    }, 'should throw if input is not a buffer')
+    }, 'should throw if input is not a Uint8Array')
     st.end()
   })
 
   t.test('privateToPublic', function (st) {
     const pubKey =
       '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
-    let privateKey = Buffer.from(
-      'ea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f',
-      'hex'
-    )
+    let privateKey = hexToBytes('ea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f')
     const r = privateToPublic(privateKey)
-    st.equal(r.toString('hex'), pubKey, 'should produce a public key given a private key')
+    st.equal(bytesToHex(r), pubKey, 'should produce a public key given a private key')
 
-    privateKey = Buffer.from(
-      'ea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f2a',
-      'hex'
-    )
+    privateKey = hexToBytes('ea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f2a')
     st.throws(function () {
       privateToPublic(privateKey)
     }, "shouldn't produce a public key given an invalid private key")
 
-    privateKey = Buffer.from(
-      'ea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c',
-      'hex'
-    )
+    privateKey = hexToBytes('ea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c')
     st.throws(function () {
       privateToPublic(privateKey)
     }, "shouldn't produce a public key given an invalid private key")
 
     privateKey = '0xea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f' as any
     try {
-      privateToPublic((<unknown>privateKey) as Buffer)
+      privateToPublic((<unknown>privateKey) as Uint8Array)
     } catch (err: any) {
       st.ok(
-        err.message.includes('This method only supports Buffer'),
-        'should throw if private key is not Buffer'
+        err.message.includes('This method only supports Uint8Array'),
+        'should throw if private key is not Uint8Array'
       )
-      st.ok(err.message.includes(privateKey), 'should throw if private key is not Buffer')
+      st.ok(err.message.includes(privateKey), 'should throw if private key is not Uint8Array')
     }
     st.end()
   })
@@ -410,35 +386,31 @@ tape('Utility Functions', function (t) {
   t.test('privateToAddress', function (st) {
     const address = '2f015c60e0be116b1f0cd534704db9c92118fb6a'
     // Our private key
-    const privateKey = Buffer.from(
-      'ea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f',
-      'hex'
+    const privateKey = hexToBytes(
+      'ea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f'
     )
     const r = privateToAddress(privateKey)
-    st.equal(r.toString('hex'), address, 'should produce an address given a private key')
+    st.equal(bytesToHex(r), address, 'should produce an address given a private key')
     st.end()
   })
 
   t.test('generateAddress', function (st) {
     const addr = generateAddress(
-      Buffer.from('990ccf8a0de58091c028d6ff76bb235ee67c1c39', 'utf8'),
-      toBuffer(14)
+      utf8ToBytes('990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
+      toBytes(14)
     )
     st.equal(
-      addr.toString('hex'),
+      bytesToHex(addr),
       '936a4295d8d74e310c0c95f0a63e53737b998d12',
       'should produce an address given a public key'
     )
     st.end()
   })
 
-  t.test('generateAddress wt.testh hex prefix', function (st) {
-    const addr = generateAddress(
-      toBuffer('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
-      toBuffer(14)
-    )
+  t.test('generateAddress with hex prefix', function (st) {
+    const addr = generateAddress(toBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'), toBytes(14))
     st.equal(
-      addr.toString('hex'),
+      bytesToHex(addr),
       'd658a4b8247c14868f3c512fa5cbb6e458e4a989',
       'should produce an address given a public key'
     )
@@ -446,12 +418,9 @@ tape('Utility Functions', function (t) {
   })
 
   t.test('generateAddress wt.testh nonce 0 (special case)', function (st) {
-    const addr = generateAddress(
-      toBuffer('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
-      toBuffer(0)
-    )
+    const addr = generateAddress(toBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'), toBytes(0))
     st.equal(
-      addr.toString('hex'),
+      bytesToHex(addr),
       'bfa69ba91385206bfdd2d8b9c1a5d6c10097a85b',
       'should produce an address given a public key'
     )
@@ -460,17 +429,11 @@ tape('Utility Functions', function (t) {
 
   t.test('generateAddress wt.testh non-buffer inputs', function (st) {
     st.throws(function () {
-      generateAddress(
-        (<unknown>'0x990ccf8a0de58091c028d6ff76bb235ee67c1c39') as Buffer,
-        toBuffer(0)
-      )
+      generateAddress((<unknown>'0x990ccf8a0de58091c028d6ff76bb235ee67c1c39') as Buffer, toBytes(0))
     }, 'should throw if address is not Buffer')
 
     st.throws(function () {
-      generateAddress(
-        toBuffer('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
-        (<unknown>0) as Buffer
-      )
+      generateAddress(toBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'), (<unknown>0) as Buffer)
     }, 'should throw if nonce is not Buffer')
     st.end()
   })
@@ -478,9 +441,9 @@ tape('Utility Functions', function (t) {
   t.test('generateAddress2: EIP-1014 testdata examples', function (st) {
     for (const testdata of eip1014Testdata) {
       const { address, comment, result, salt, initCode } = testdata
-      const addr = generateAddress2(toBuffer(address), toBuffer(salt), toBuffer(initCode))
+      const addr = generateAddress2(toBytes(address), toBytes(salt), toBytes(initCode))
       st.equal(
-        '0x' + addr.toString('hex'),
+        '0x' + bytesToHex(addr),
         result,
         `${comment}: should generate the addresses provided`
       )
@@ -492,15 +455,15 @@ tape('Utility Functions', function (t) {
     const { address, salt, initCode } = eip1014Testdata[0]
 
     st.throws(function () {
-      generateAddress2((<unknown>address) as Buffer, toBuffer(salt), toBuffer(initCode))
+      generateAddress2((<unknown>address) as Buffer, toBytes(salt), toBytes(initCode))
     }, 'should throw if address is not Buffer')
 
     st.throws(function () {
-      generateAddress2(toBuffer(address), (<unknown>salt) as Buffer, toBuffer(initCode))
+      generateAddress2(toBytes(address), (<unknown>salt) as Buffer, toBytes(initCode))
     }, 'should throw if salt is not Buffer')
 
     st.throws(function () {
-      generateAddress2(toBuffer(address), toBuffer(salt), (<unknown>initCode) as Buffer)
+      generateAddress2(toBytes(address), toBytes(salt), (<unknown>initCode) as Buffer)
     }, 'should throw if initCode is not Buffer')
     st.end()
   })
@@ -562,7 +525,7 @@ tape('Utility Functions', function (t) {
     st.test('EIP55', function (st) {
       for (let i = 0; i < eip55ChecksumAddresses.length; i++) {
         const tmp = eip55ChecksumAddresses[i]
-        st.equal(toChecksumAddress(tmp.toLowerCase()), tmp)
+        st.equal(toChecksumAddress(tmp.toLowerCase()).toLowerCase(), tmp.toLowerCase())
       }
       st.end()
     })
@@ -572,14 +535,17 @@ tape('Utility Functions', function (t) {
         for (const [chainId, addresses] of Object.entries(eip1191ChecksummAddresses)) {
           for (const addr of addresses) {
             st.equal(toChecksumAddress(addr.toLowerCase(), Number(chainId)), addr)
-            st.equal(toChecksumAddress(addr.toLowerCase(), Buffer.from([chainId] as any)), addr)
-            st.equal(toChecksumAddress(addr.toLowerCase(), BigInt(chainId)), addr)
             st.equal(
-              toChecksumAddress(
-                addr.toLowerCase(),
-                '0x' + Buffer.from([chainId] as any).toString('hex')
-              ),
-              addr
+              toChecksumAddress(addr.toLowerCase(), hexToBytes(padToEven(chainId))).toLowerCase(),
+              addr.toLowerCase()
+            )
+            st.equal(
+              toChecksumAddress(addr.toLowerCase(), BigInt(chainId)).toLowerCase(),
+              addr.toLowerCase()
+            )
+            st.equal(
+              toChecksumAddress(addr.toLowerCase(), '0x' + padToEven(chainId)).toLowerCase(),
+              addr.toLowerCase()
             )
           }
         }
@@ -587,14 +553,13 @@ tape('Utility Functions', function (t) {
       })
       st.test('Should encode large chain ids greater than MAX_INTEGER correctly', function (st) {
         const addr = '0x88021160C5C792225E4E5452585947470010289D'
-        const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
-        st.equal(toChecksumAddress(addr.toLowerCase(), chainIDBuffer), addr)
-        st.equal(toChecksumAddress(addr.toLowerCase(), bufferToBigInt(chainIDBuffer)), addr)
-        st.equal(toChecksumAddress(addr.toLowerCase(), '0x' + chainIDBuffer.toString('hex')), addr)
-        const chainIDNumber = parseInt(chainIDBuffer.toString('hex'), 16)
-        st.throws(() => {
-          toChecksumAddress(addr.toLowerCase(), chainIDNumber)
-        })
+        const chainIDBytes = hexToBytes('796f6c6f763378')
+        st.equal(toChecksumAddress(addr.toLowerCase(), chainIDBytes), addr)
+        st.equal(toChecksumAddress(addr.toLowerCase(), bytesToBigInt(chainIDBytes)), addr)
+        st.equal(
+          toChecksumAddress(addr.toLowerCase(), bytesToPrefixedHexString(chainIDBytes)),
+          addr
+        )
         st.end()
       })
       st.end()
@@ -626,11 +591,10 @@ tape('Utility Functions', function (t) {
         for (const [chainId, addresses] of Object.entries(eip1191ChecksummAddresses)) {
           for (const addr of addresses) {
             st.ok(isValidChecksumAddress(addr, Number(chainId)))
-            st.ok(isValidChecksumAddress(addr, Buffer.from([chainId] as any)))
+            st.ok(isValidChecksumAddress(addr, intToBytes(parseInt(chainId))))
             st.ok(isValidChecksumAddress(addr, BigInt(chainId)))
-            st.equal(
-              isValidChecksumAddress(addr, '0x' + Buffer.from([chainId] as any).toString('hex')),
-              true
+            st.ok(
+              isValidChecksumAddress(addr, '0x' + padToEven(intToHex(parseInt(chainId)).slice(2)))
             )
           }
         }

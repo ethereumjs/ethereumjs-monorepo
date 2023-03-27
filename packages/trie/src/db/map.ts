@@ -1,14 +1,16 @@
+import { bytesToHex } from 'ethereum-cryptography/utils'
+
 import type { BatchDBOp, DB } from '../types'
 
 export class MapDB implements DB {
-  _database: Map<string, Buffer>
+  _database: Map<string, Uint8Array>
 
-  constructor(database?: Map<string, Buffer>) {
+  constructor(database?: Map<string, Uint8Array>) {
     this._database = database ?? new Map()
   }
 
-  async get(key: Buffer): Promise<Buffer | null> {
-    const result = this._database.get(key.toString('hex'))
+  async get(key: Uint8Array): Promise<Uint8Array | null> {
+    const result = this._database.get(bytesToHex(key))
 
     if (result !== undefined) {
       return result
@@ -17,12 +19,12 @@ export class MapDB implements DB {
     return null
   }
 
-  async put(key: Buffer, val: Buffer): Promise<void> {
-    this._database.set(key.toString('hex'), val)
+  async put(key: Uint8Array, val: Uint8Array): Promise<void> {
+    this._database.set(bytesToHex(key), val)
   }
 
-  async del(key: Buffer): Promise<void> {
-    this._database.delete(key.toString('hex'))
+  async del(key: Uint8Array): Promise<void> {
+    this._database.delete(bytesToHex(key))
   }
 
   async batch(opStack: BatchDBOp[]): Promise<void> {

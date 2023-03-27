@@ -4,7 +4,9 @@ import {
   AsyncEventEmitter,
   KECCAK256_NULL,
   MAX_INTEGER,
-  bigIntToBuffer,
+  bigIntToBytes,
+  bytesToHex,
+  equalsBytes,
   generateAddress,
   generateAddress2,
   short,
@@ -388,7 +390,7 @@ export class EVM implements EVMInterface {
           gasRefund: message.gasRefund,
           executionGasUsed: BigInt(0),
           exceptionError: errorMessage, // Only defined if addToBalance failed
-          returnValue: Buffer.alloc(0),
+          returnValue: new Uint8Array(0),
         },
       }
     }
@@ -430,7 +432,7 @@ export class EVM implements EVMInterface {
         return {
           createdAddress: message.to,
           execResult: {
-            returnValue: Buffer.alloc(0),
+            returnValue: new Uint8Array(0),
             exceptionError: new EvmError(ERROR.INITCODE_SIZE_VIOLATION),
             executionGasUsed: message.gasLimit,
           },
@@ -439,7 +441,7 @@ export class EVM implements EVMInterface {
     }
 
     message.code = message.data
-    message.data = Buffer.alloc(0)
+    message.data = new Uint8Array(0)
     message.to = await this._generateAddress(message)
     if (this.DEBUG) {
       debug(`Generated CREATE contract address ${message.to}`)
@@ -449,7 +451,7 @@ export class EVM implements EVMInterface {
     // Check for collision
     if (
       (toAccount.nonce && toAccount.nonce > BigInt(0)) ||
-      !toAccount.codeHash.equals(KECCAK256_NULL)
+      !(equalsBytes(toAccount.codeHash, KECCAK256_NULL) === true)
     ) {
       if (this.DEBUG) {
         debug(`Returning on address collision`)
@@ -457,7 +459,7 @@ export class EVM implements EVMInterface {
       return {
         createdAddress: message.to,
         execResult: {
-          returnValue: Buffer.alloc(0),
+          returnValue: new Uint8Array(0),
           exceptionError: new EvmError(ERROR.CREATE_COLLISION),
           executionGasUsed: message.gasLimit,
         },
@@ -507,7 +509,7 @@ export class EVM implements EVMInterface {
           executionGasUsed: BigInt(0),
           gasRefund: message.gasRefund,
           exceptionError: errorMessage, // only defined if addToBalance failed
-          returnValue: Buffer.alloc(0),
+          returnValue: new Uint8Array(0),
         },
       }
     }
@@ -562,7 +564,7 @@ export class EVM implements EVMInterface {
           // in the bytecode of the contract
           if (
             !EOF.validOpcodes(
-              result.returnValue.slice(codeStart, codeStart + eof1CodeAnalysisResults.code)
+              result.returnValue.subarray(codeStart, codeStart + eof1CodeAnalysisResults.code)
             )
           ) {
             result = {
@@ -637,9 +639,9 @@ export class EVM implements EVMInterface {
     const env = {
       address: message.to ?? Address.zero(),
       caller: message.caller ?? Address.zero(),
-      callData: message.data ?? Buffer.from([0]),
+      callData: message.data ?? Uint8Array.from([0]),
       callValue: message.value ?? BigInt(0),
-      code: message.code as Buffer,
+      code: message.code as Uint8Array,
       isStatic: message.isStatic ?? false,
       depth: message.depth ?? 0,
       gasPrice: this._tx!.gasPrice,
@@ -654,10 +656,10 @@ export class EVM implements EVMInterface {
 
     const interpreter = new Interpreter(this, this.eei, env, message.gasLimit)
     if (message.selfdestruct) {
-      interpreter._result.selfdestruct = message.selfdestruct as { [key: string]: Buffer }
+      interpreter._result.selfdestruct = message.selfdestruct as { [key: string]: Uint8Array }
     }
 
-    const interpreterRes = await interpreter.run(message.code as Buffer, opts)
+    const interpreterRes = await interpreter.run(message.code as Uint8Array, opts)
 
     let result = interpreter._result
     let gasUsed = message.gasLimit - interpreterRes.runState!.gasLeft
@@ -688,7 +690,7 @@ export class EVM implements EVMInterface {
       gas: interpreterRes.runState?.gasLeft,
       executionGasUsed: gasUsed,
       gasRefund: interpreterRes.runState!.gasRefund,
-      returnValue: result.returnValue ? result.returnValue : Buffer.alloc(0),
+      returnValue: result.returnValue ? result.returnValue : new Uint8Array(0),
     }
   }
 
@@ -750,7 +752,7 @@ export class EVM implements EVMInterface {
 
     if (!message.to && this._common.isActivatedEIP(2929) === true) {
       message.code = message.data
-      this.eei.addWarmedAddress((await this._generateAddress(message)).buf)
+      this.eei.addWarmedAddress((await this._generateAddress(message)).bytes)
     }
 
     await this.eei.checkpoint()
@@ -853,7 +855,7 @@ export class EVM implements EVMInterface {
    * if no such precompile exists.
    */
   getPrecompile(address: Address): PrecompileFunc | undefined {
-    return this.precompiles.get(address.buf.toString('hex'))
+    return this.precompiles.get(bytesToHex(address.bytes))
   }
 
   /**
@@ -861,7 +863,7 @@ export class EVM implements EVMInterface {
    */
   protected runPrecompile(
     code: PrecompileFunc,
-    data: Buffer,
+    data: Uint8Array,
     gasLimit: bigint
   ): Promise<ExecResult> | ExecResult {
     if (typeof code !== 'function') {
@@ -900,11 +902,11 @@ export class EVM implements EVMInterface {
   protected async _generateAddress(message: Message): Promise<Address> {
     let addr
     if (message.salt) {
-      addr = generateAddress2(message.caller.buf, message.salt, message.code as Buffer)
+      addr = generateAddress2(message.caller.bytes, message.salt, message.code as Uint8Array)
     } else {
       const acc = await this.eei.getAccount(message.caller)
       const newNonce = acc.nonce - BigInt(1)
-      addr = generateAddress(message.caller.buf, bigIntToBuffer(newNonce))
+      addr = generateAddress(message.caller.bytes, bigIntToBytes(newNonce))
     }
     return new Address(addr)
   }
@@ -995,7 +997,7 @@ export interface ExecResult {
   /**
    * Return value from the contract
    */
-  returnValue: Buffer
+  returnValue: Uint8Array
   /**
    * Array of logs that the contract emitted
    */
@@ -1003,7 +1005,7 @@ export interface ExecResult {
   /**
    * A map from the accounts that have self-destructed to the addresses to send their funds to
    */
-  selfdestruct?: { [k: string]: Buffer }
+  selfdestruct?: { [k: string]: Uint8Array }
   /**
    * The gas refund counter
    */
@@ -1012,7 +1014,7 @@ export interface ExecResult {
 
 export function OOGResult(gasLimit: bigint): ExecResult {
   return {
-    returnValue: Buffer.alloc(0),
+    returnValue: new Uint8Array(0),
     executionGasUsed: gasLimit,
     exceptionError: new EvmError(ERROR.OUT_OF_GAS),
   }
@@ -1020,7 +1022,7 @@ export function OOGResult(gasLimit: bigint): ExecResult {
 // CodeDeposit OOG Result
 export function COOGResult(gasUsedCreateCode: bigint): ExecResult {
   return {
-    returnValue: Buffer.alloc(0),
+    returnValue: new Uint8Array(0),
     executionGasUsed: gasUsedCreateCode,
     exceptionError: new EvmError(ERROR.CODESTORE_OUT_OF_GAS),
   }
@@ -1028,7 +1030,7 @@ export function COOGResult(gasUsedCreateCode: bigint): ExecResult {
 
 export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
   return {
-    returnValue: Buffer.alloc(0),
+    returnValue: new Uint8Array(0),
     executionGasUsed: gasLimit,
     exceptionError: new EvmError(ERROR.INVALID_BYTECODE_RESULT),
   }
@@ -1036,7 +1038,7 @@ export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
 
 export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
   return {
-    returnValue: Buffer.alloc(0),
+    returnValue: new Uint8Array(0),
     executionGasUsed: gasLimit,
     exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
   }
@@ -1044,7 +1046,7 @@ export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
 
 export function CodesizeExceedsMaximumError(gasUsed: bigint): ExecResult {
   return {
-    returnValue: Buffer.alloc(0),
+    returnValue: new Uint8Array(0),
     executionGasUsed: gasUsed,
     exceptionError: new EvmError(ERROR.CODESIZE_EXCEEDS_MAXIMUM),
   }
@@ -1052,7 +1054,7 @@ export function CodesizeExceedsMaximumError(gasUsed: bigint): ExecResult {
 
 export function EvmErrorResult(error: EvmError, gasUsed: bigint): ExecResult {
   return {
-    returnValue: Buffer.alloc(0),
+    returnValue: new Uint8Array(0),
     executionGasUsed: gasUsed,
     exceptionError: error,
   }

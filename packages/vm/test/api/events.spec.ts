@@ -1,12 +1,12 @@
 import { Block } from '@ethereumjs/block'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Account, Address, bufferToHex, toBuffer } from '@ethereumjs/util'
+import { Account, Address, bytesToPrefixedHexString, toBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../src/vm'
 
 tape('VM events', (t) => {
-  const privKey = toBuffer('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07')
+  const privKey = toBytes('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07')
 
   t.test('should emit the Block before running it', async (st) => {
     const vm = await VM.create()
@@ -90,7 +90,7 @@ tape('VM events', (t) => {
 
     await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
-    st.equal(bufferToHex(emitted.execResult.returnValue), '0x')
+    st.equal(bytesToPrefixedHexString(emitted.execResult.returnValue), '0x')
 
     st.end()
   })
@@ -113,8 +113,8 @@ tape('VM events', (t) => {
 
     await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
-    st.equal(bufferToHex(emitted.to), '0x1111111111111111111111111111111111111111')
-    st.equal(bufferToHex(emitted.code), '0x')
+    st.equal(emitted.to.toString(), '0x1111111111111111111111111111111111111111')
+    st.equal(bytesToPrefixedHexString(emitted.code), '0x')
 
     st.end()
   })
@@ -137,7 +137,7 @@ tape('VM events', (t) => {
 
     await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
-    st.equal(bufferToHex(emitted.createdAddress), '0x')
+    st.equal(bytesToPrefixedHexString(emitted.createdAddress), '0x')
 
     st.end()
   })
@@ -186,7 +186,7 @@ tape('VM events', (t) => {
     await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
     st.equal(
-      bufferToHex(emitted.code),
+      bytesToPrefixedHexString(emitted.code),
       '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3'
     )
 

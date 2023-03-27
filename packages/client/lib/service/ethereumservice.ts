@@ -12,13 +12,13 @@ export interface EthereumServiceOptions extends ServiceOptions {
   chain: Chain
 
   /* Blockchain database */
-  chainDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  chainDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   /* State database */
-  stateDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  stateDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   /* Meta database (receipts, logs, indexes) */
-  metaDB?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  metaDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   /* Sync retry interval in ms (default: 8000) */
   interval?: number

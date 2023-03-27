@@ -1,5 +1,5 @@
 import { Trie } from '@ethereumjs/trie'
-import { Account, Address } from '@ethereumjs/util'
+import { Account, Address, hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Cache } from '../src/cache'
@@ -13,14 +13,14 @@ tape('cache initialization', (t) => {
     const trie = new Trie({ useKeyHashing: true })
     const getCb: getCb = async (address) => {
       const innerTrie = trie
-      const rlp = await innerTrie.get(address.buf)
+      const rlp = await innerTrie.get(address.bytes)
       return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined
     }
     const putCb: putCb = async (keyBuf, accountRlp) => {
       const innerTrie = trie
       await innerTrie.put(keyBuf, accountRlp)
     }
-    const deleteCb = async (keyBuf: Buffer) => {
+    const deleteCb = async (keyBuf: Uint8Array) => {
       const innerTrie = trie
       await innerTrie.del(keyBuf)
     }
@@ -35,20 +35,20 @@ tape('cache put and get account', (t) => {
   const trie = new Trie({ useKeyHashing: true })
   const getCb: getCb = async (address) => {
     const innerTrie = trie
-    const rlp = await innerTrie.get(address.buf)
+    const rlp = await innerTrie.get(address.bytes)
     return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined
   }
   const putCb: putCb = async (keyBuf, accountRlp) => {
     const innerTrie = trie
     await innerTrie.put(keyBuf, accountRlp)
   }
-  const deleteCb = async (keyBuf: Buffer) => {
+  const deleteCb = async (keyBuf: Uint8Array) => {
     const innerTrie = trie
     await innerTrie.del(keyBuf)
   }
   const cache = new Cache({ getCb, putCb, deleteCb })
 
-  const addr = new Address(Buffer.from('cd2a3d9f938e13cd947ec05abc7fe734df8dd826', 'hex'))
+  const addr = new Address(hexStringToBytes('cd2a3d9f938e13cd947ec05abc7fe734df8dd826'))
   const acc = createAccount(BigInt(0), BigInt(0xff11))
 
   t.test('should fail to get non-existent account', async (st) => {
@@ -65,7 +65,7 @@ tape('cache put and get account', (t) => {
   })
 
   t.test('should not have flushed to trie', async (st) => {
-    const res = await trie.get(addr.buf)
+    const res = await trie.get(addr.bytes)
     st.notOk(res)
     st.end()
   })
@@ -76,7 +76,7 @@ tape('cache put and get account', (t) => {
   })
 
   t.test('trie should contain flushed account', async (st) => {
-    const raw = await trie.get(addr.buf)
+    const raw = await trie.get(addr.bytes)
     const res = Account.fromRlpSerializedAccount(raw!)
     st.equal(res.balance, acc.balance)
     st.end()
@@ -95,7 +95,7 @@ tape('cache put and get account', (t) => {
     cache.put(addr, updatedAcc)
     await cache.flush()
 
-    const raw = await trie.get(addr.buf)
+    const raw = await trie.get(addr.bytes)
     const res = Account.fromRlpSerializedAccount(raw!)
     st.equal(res.balance, updatedAcc.balance)
     st.end()
@@ -106,20 +106,20 @@ tape('cache checkpointing', (t) => {
   const trie = new Trie({ useKeyHashing: true })
   const getCb: getCb = async (address) => {
     const innerTrie = trie
-    const rlp = await innerTrie.get(address.buf)
+    const rlp = await innerTrie.get(address.bytes)
     return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined
   }
   const putCb: putCb = async (keyBuf, accountRlp) => {
     const innerTrie = trie
     await innerTrie.put(keyBuf, accountRlp)
   }
-  const deleteCb = async (keyBuf: Buffer) => {
+  const deleteCb = async (keyBuf: Uint8Array) => {
     const innerTrie = trie
     await innerTrie.del(keyBuf)
   }
   const cache = new Cache({ getCb, putCb, deleteCb })
 
-  const addr = new Address(Buffer.from('cd2a3d9f938e13cd947ec05abc7fe734df8dd826', 'hex'))
+  const addr = new Address(hexStringToBytes('cd2a3d9f938e13cd947ec05abc7fe734df8dd826'))
   const acc = createAccount(BigInt(0), BigInt(0xff11))
   const updatedAcc = createAccount(BigInt(0x00), BigInt(0xff00))
 

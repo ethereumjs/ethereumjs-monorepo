@@ -1,5 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, bufferToHex } from '@ethereumjs/util'
+import { Address, bytesToPrefixedHexString } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { isRunningInKarma } from '../../../vm/test/util'
@@ -27,13 +28,13 @@ tape('EIP-2537 BLS tests', (t) => {
     const evm = await EVM.create({ common, eei })
 
     for (const address of precompiles) {
-      const to = new Address(Buffer.from(address, 'hex'))
+      const to = new Address(hexToBytes(address))
       const result = await evm.runCall({
         caller: Address.zero(),
         gasLimit: BigInt(0xffffffffff),
         to,
         value: BigInt(0),
-        data: Buffer.alloc(0),
+        data: new Uint8Array(0),
       })
 
       if (result.execResult.executionGasUsed !== BigInt(0)) {
@@ -59,13 +60,13 @@ tape('EIP-2537 BLS tests', (t) => {
     const evm = await EVM.create({ common, eei })
 
     for (const address of precompiles) {
-      const to = new Address(Buffer.from(address, 'hex'))
+      const to = new Address(hexToBytes(address))
       const result = await evm.runCall({
         caller: Address.zero(),
         gasLimit: BigInt(0xffffffffff),
         to,
         value: BigInt(0),
-        data: Buffer.alloc(0),
+        data: new Uint8Array(0),
       })
 
       if (result.execResult.executionGasUsed !== BigInt(0xffffffffff)) {
@@ -106,7 +107,7 @@ tape('EIP-2537 BLS tests', (t) => {
       '0x00000000000000000000000000000000083ad744b34f6393bc983222b004657494232c5d9fbc978d76e2377a28a34c4528da5d91cbc0977dc953397a6d21eca20000000000000000000000000000000015aec6526e151cf5b8403353517dfb9a162087a698b71f32b266d3c5c936a83975d5567c25b3a5994042ec1379c8e526000000000000000000000000000000000e3647185d1a20efad19f975729908840dc33909a583600f7915025f906aef9c022fd34e618170b11178aaa824ae36b300000000000000000000000000000000159576d1d53f6cd12c39d651697e11798321f17cd287118d7ebeabf68281bc03109ee103ee8ef2ef93c71dd1dcbaf1e0'
 
     const result = await BLS12G2MultiExp({
-      data: Buffer.from(testVector, 'hex'),
+      data: hexToBytes(testVector),
       gasLimit: BigInt(5000000),
       _common: common,
       _EVM: evm,
@@ -114,7 +115,7 @@ tape('EIP-2537 BLS tests', (t) => {
 
     st.deepEqual(
       testVectorResult,
-      bufferToHex(result.returnValue),
+      bytesToPrefixedHexString(result.returnValue),
       'return value should match testVectorResult'
     )
     st.end()

@@ -1,3 +1,4 @@
+import { hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Common } from '../src/common'
@@ -63,9 +64,8 @@ tape('[Utils/Parse]', (t) => {
     const json = require(`../../blockchain/test/testdata/geth-genesis-kiln.json`)
     const common = Common.fromGethGenesis(json, {
       chain: 'customChain',
-      genesisHash: Buffer.from(
-        '51c7fe41be669f69c45c33a56982cbde405313342d9e2b00d7c91a7b284dd4f8',
-        'hex'
+      genesisHash: hexStringToBytes(
+        '51c7fe41be669f69c45c33a56982cbde405313342d9e2b00d7c91a7b284dd4f8'
       ),
       mergeForkIdPostMerge: false,
     })

@@ -38,7 +38,7 @@ export class Sender extends EventEmitter {
    * @param code message code
    * @param rlpEncodedData rlp encoded message payload
    */
-  sendMessage(_code: number, _rlpEncodedData: any[] | Buffer) {
+  sendMessage(_code: number, _rlpEncodedData: any[] | Uint8Array) {
     throw new Error('Unimplemented')
   }
 }

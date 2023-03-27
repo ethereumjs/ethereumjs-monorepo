@@ -28,7 +28,7 @@ export interface ServerOptions {
  */
 export class Server {
   public config: Config
-  public key: Buffer
+  public key: Uint8Array
   public bootnodes: Multiaddr[] = []
   public dnsNetworks: DnsNetwork[]
 

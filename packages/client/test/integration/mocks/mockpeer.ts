@@ -14,7 +14,7 @@ import type { RemoteStream } from './network'
 
 // TypeScript doesn't have support yet for ReturnType
 // with generic types, so this wrapper is used as a helper.
-const wrapperPushable = () => pushable<Buffer>()
+const wrapperPushable = () => pushable<Uint8Array>()
 export type Pushable = ReturnType<typeof wrapperPushable>
 
 interface MockPeerOptions extends PeerOptions {

@@ -13,7 +13,7 @@ tape('Precompiles: ECMUL', (t) => {
     const ECMUL = getActivePrecompiles(common).get('0000000000000000000000000000000000000007')!
 
     const result = await ECMUL({
-      data: Buffer.alloc(0),
+      data: new Uint8Array(0),
       gasLimit: BigInt(0xffff),
       _common: common,
       _EVM: evm,

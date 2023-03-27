@@ -16,14 +16,14 @@ export class BanList {
     this.lru = new LRUCache({ max: 30000 }) // 10k should be enough (each peer obj can has 3 keys)
   }
 
-  add(obj: string | Buffer | PeerInfo, maxAge?: number) {
+  add(obj: string | Uint8Array | PeerInfo, maxAge?: number) {
     for (const key of KBucket.getKeys(obj)) {
       this.lru.set(key, true, maxAge)
       debug(`Added peer ${formatLogId(key, verbose)}, size: ${this.lru.length}`)
     }
   }
 
-  has(obj: string | Buffer | PeerInfo): boolean {
+  has(obj: string | Uint8Array | PeerInfo): boolean {
     return KBucket.getKeys(obj).some((key: string) => Boolean(this.lru.get(key)))
   }
 }

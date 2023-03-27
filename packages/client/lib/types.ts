@@ -86,7 +86,7 @@ export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
 /**
  * Like types
  */
-export type Key = Buffer
+export type Key = Uint8Array
 export type KeyLike = string | Key
 
 export type MultiaddrLike = string | string[] | Multiaddr | Multiaddr[]

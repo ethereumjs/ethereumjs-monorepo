@@ -6,12 +6,15 @@ import {
   Account,
   Address,
   GWEI_TO_WEI,
-  bigIntToBuffer,
-  bufArrToArr,
-  intToBuffer,
+  bigIntToBytes,
+  bytesToHex,
+  concatBytesNoTypeCheck,
+  equalsBytes,
+  intToBytes,
   short,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { Bloom } from './bloom'
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
@@ -66,7 +69,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   if (this.DEBUG) {
     debug('-'.repeat(100))
     debug(
-      `Running block hash=${block.hash().toString('hex')} number=${
+      `Running block hash=${bytesToHex(block.hash())} number=${
         block.header.number
       } hardfork=${this._common.hardfork()}`
     )
@@ -75,7 +78,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   // Set state root if provided
   if (root) {
     if (this.DEBUG) {
-      debug(`Set provided state root ${root.toString('hex')}`)
+      debug(`Set provided state root ${bytesToHex(root)}`)
     }
     await state.setStateRoot(root)
   }
@@ -104,7 +107,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       debug(
         `Received block results gasUsed=${result.gasUsed} bloom=${short(result.bloom.bitvector)} (${
           result.bloom.bitvector.length
-        } bytes) receiptsRoot=${result.receiptsRoot.toString('hex')} receipts=${
+        } bytes) receiptsRoot=${bytesToHex(result.receiptsRoot)} receipts=${
           result.receipts.length
         } txResults=${result.results.length}`
       )
@@ -140,23 +143,23 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     }
     block = Block.fromBlockData(blockData, { common: this._common })
   } else {
-    if (result.receiptsRoot.equals(block.header.receiptTrie) === false) {
+    if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
       if (this.DEBUG) {
         debug(
-          `Invalid receiptTrie received=${result.receiptsRoot.toString(
-            'hex'
-          )} expected=${block.header.receiptTrie.toString('hex')}`
+          `Invalid receiptTrie received=${bytesToHex(result.receiptsRoot)} expected=${bytesToHex(
+            block.header.receiptTrie
+          )}`
         )
       }
       const msg = _errorMsg('invalid receiptTrie', this, block)
       throw new Error(msg)
     }
-    if (!result.bloom.bitvector.equals(block.header.logsBloom)) {
+    if (!(equalsBytes(result.bloom.bitvector, block.header.logsBloom) === true)) {
       if (this.DEBUG) {
         debug(
-          `Invalid bloom received=${result.bloom.bitvector.toString(
-            'hex'
-          )} expected=${block.header.logsBloom.toString('hex')}`
+          `Invalid bloom received=${bytesToHex(result.bloom.bitvector)} expected=${bytesToHex(
+            block.header.logsBloom
+          )}`
         )
       }
       const msg = _errorMsg('invalid bloom', this, block)
@@ -169,12 +172,12 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       const msg = _errorMsg('invalid gasUsed', this, block)
       throw new Error(msg)
     }
-    if (!stateRoot.equals(block.header.stateRoot)) {
+    if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
       if (this.DEBUG) {
         debug(
-          `Invalid stateRoot received=${stateRoot.toString(
-            'hex'
-          )} expected=${block.header.stateRoot.toString('hex')}`
+          `Invalid stateRoot received=${bytesToHex(stateRoot)} expected=${bytesToHex(
+            block.header.stateRoot
+          )}`
         )
       }
       const msg = _errorMsg('invalid block stateRoot', this, block)
@@ -203,7 +206,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   await this._emit('afterBlock', afterBlockEvent)
   if (this.DEBUG) {
     debug(
-      `Running block finished hash=${block.hash().toString('hex')} number=${
+      `Running block finished hash=${bytesToHex(block.hash())} number=${
         block.header.number
       } hardfork=${this._common.hardfork()}`
     )
@@ -319,7 +322,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     // Add receipt to trie to later calculate receipt root
     receipts.push(txRes.receipt)
     const encodedReceipt = encodeReceipt(txRes.receipt, tx.type)
-    await receiptTrie.put(Buffer.from(RLP.encode(txIdx)), encodedReceipt)
+    await receiptTrie.put(RLP.encode(txIdx), encodedReceipt)
   }
 
   return {
@@ -407,19 +410,13 @@ export async function rewardAccount(
  * Returns the encoded tx receipt.
  */
 export function encodeReceipt(receipt: TxReceipt, txType: number) {
-  const encoded = Buffer.from(
-    RLP.encode(
-      bufArrToArr([
-        (receipt as PreByzantiumTxReceipt).stateRoot ??
-          ((receipt as PostByzantiumTxReceipt).status === 0
-            ? Buffer.from([])
-            : Buffer.from('01', 'hex')),
-        bigIntToBuffer(receipt.cumulativeBlockGasUsed),
-        receipt.bitvector,
-        receipt.logs,
-      ])
-    )
-  )
+  const encoded = RLP.encode([
+    (receipt as PreByzantiumTxReceipt).stateRoot ??
+      ((receipt as PostByzantiumTxReceipt).status === 0 ? Uint8Array.from([]) : hexToBytes('01')),
+    bigIntToBytes(receipt.cumulativeBlockGasUsed),
+    receipt.bitvector,
+    receipt.logs,
+  ])
 
   if (txType === 0) {
     return encoded
@@ -427,14 +424,14 @@ export function encodeReceipt(receipt: TxReceipt, txType: number) {
 
   // Serialize receipt according to EIP-2718:
   // `typed-receipt = tx-type || receipt-data`
-  return Buffer.concat([intToBuffer(txType), encoded])
+  return concatBytesNoTypeCheck(intToBytes(txType), encoded)
 }
 
 /**
  * Apply the DAO fork changes to the VM
  */
 async function _applyDAOHardfork(state: EVMStateAccess) {
-  const DAORefundContractAddress = new Address(Buffer.from(DAORefundContract, 'hex'))
+  const DAORefundContractAddress = new Address(hexToBytes(DAORefundContract))
   if ((await state.accountExists(DAORefundContractAddress)) === false) {
     await state.putAccount(DAORefundContractAddress, new Account())
   }
@@ -442,7 +439,7 @@ async function _applyDAOHardfork(state: EVMStateAccess) {
 
   for (const addr of DAOAccountList) {
     // retrieve the account and add it to the DAO's Refund accounts' balance.
-    const address = new Address(Buffer.from(addr, 'hex'))
+    const address = new Address(hexToBytes(addr))
     const account = await state.getAccount(address)
     DAORefundAccount.balance += account.balance
     // clear the accounts' balance
@@ -457,7 +454,7 @@ async function _applyDAOHardfork(state: EVMStateAccess) {
 async function _genTxTrie(block: Block) {
   const trie = new Trie()
   for (const [i, tx] of block.transactions.entries()) {
-    await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
+    await trie.put(RLP.encode(i), tx.serialize())
   }
   return trie.root()
 }

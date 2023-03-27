@@ -16,7 +16,7 @@ export enum EthProtocol { // What does this represent?
 
 type MessageCodes = { [key: number | string]: number | string }
 
-export type SendMethod = (code: number, data: Buffer) => any
+export type SendMethod = (code: number, data: Uint8Array) => any
 
 export class Protocol extends EventEmitter {
   _version: number

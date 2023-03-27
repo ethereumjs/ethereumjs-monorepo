@@ -12,8 +12,8 @@ export class LevelDB implements DB {
     this._leveldb = leveldb ?? level()
   }
 
-  async get(key: Buffer): Promise<Buffer | null> {
-    let value: Buffer | null = null
+  async get(key: Uint8Array): Promise<Uint8Array | null> {
+    let value: Uint8Array | null = null
     try {
       value = await this._leveldb.get(key, ENCODING_OPTS)
     } catch (error: any) {
@@ -27,11 +27,11 @@ export class LevelDB implements DB {
     return value
   }
 
-  async put(key: Buffer, val: Buffer): Promise<void> {
+  async put(key: Uint8Array, val: Uint8Array): Promise<void> {
     await this._leveldb.put(key, val, ENCODING_OPTS)
   }
 
-  async del(key: Buffer): Promise<void> {
+  async del(key: Uint8Array): Promise<void> {
     await this._leveldb.del(key, ENCODING_OPTS)
   }
 

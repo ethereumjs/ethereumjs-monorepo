@@ -1,6 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
-import { KECCAK256_RLP, Lock } from '@ethereumjs/util'
+import { KECCAK256_RLP, Lock, concatBytesNoTypeCheck } from '@ethereumjs/util'
+import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import { MemoryLevel } from 'memory-level'
 
 import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus'
@@ -23,7 +24,7 @@ import type { AbstractLevel } from 'abstract-level'
  */
 export class Blockchain implements BlockchainInterface {
   consensus: Consensus
-  db: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  db: AbstractLevel<string | Uint8Array | Uint8Array, string | Uint8Array, string | Uint8Array>
   dbManager: DBManager
 
   private _genesisBlock?: Block /** The genesis block of this blockchain */
@@ -36,16 +37,16 @@ export class Blockchain implements BlockchainInterface {
    * the hash with the highest total difficulty.
    */
   /** The hash of the current head block */
-  private _headBlockHash?: Buffer
+  private _headBlockHash?: Uint8Array
   /** The hash of the current head header */
-  private _headHeaderHash?: Buffer
+  private _headHeaderHash?: Uint8Array
 
   /**
    * A Map which stores the head of each key (for instance the "vm" key) which is
    * updated along a {@link Blockchain.iterator} method run and can be used to (re)run
    * non-verified blocks (for instance in the VM).
    */
-  private _heads: { [key: string]: Buffer }
+  private _heads: { [key: string]: Uint8Array }
 
   protected _isInitialized = false
   private _lock: Lock
@@ -204,10 +205,7 @@ export class Blockchain implements BlockchainInterface {
       let stateRoot
       if (this._common.chainId() === BigInt(1) && this._customGenesisState === undefined) {
         // For mainnet use the known genesis stateRoot to quicken setup
-        stateRoot = Buffer.from(
-          'd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544',
-          'hex'
-        )
+        stateRoot = hexToBytes('d7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544')
       } else {
         stateRoot = await genesisStateRoot(this.genesisState())
       }
@@ -216,7 +214,7 @@ export class Blockchain implements BlockchainInterface {
 
     // If the DB has a genesis block, then verify that the genesis block in the
     // DB is indeed the Genesis block generated or assigned.
-    if (dbGenesisBlock && !genesisBlock.hash().equals(dbGenesisBlock.hash())) {
+    if (dbGenesisBlock && !equalsBytes(genesisBlock.hash(), dbGenesisBlock.hash())) {
       throw new Error(
         'The genesis block in the DB has a different hash than the provided genesis block.'
       )
@@ -691,11 +689,11 @@ export class Blockchain implements BlockchainInterface {
       canonicalBlockMap.push(parentBlock)
 
       // mark block hash as part of the canonical chain
-      canonicalChainHashes[parentBlock.hash().toString('hex')] = true
+      canonicalChainHashes[bytesToHex(parentBlock.hash())] = true
 
       // for each of the uncles, mark the uncle as included
       parentBlock.uncleHeaders.map((uh) => {
-        includedUncles[uh.hash().toString('hex')] = true
+        includedUncles[bytesToHex(uh.hash())] = true
       })
 
       parentHash = parentBlock.header.parentHash
@@ -707,8 +705,8 @@ export class Blockchain implements BlockchainInterface {
     // Uncle Header has a parentHash which points to the canonical chain.
 
     uncleHeaders.map((uh) => {
-      const uncleHash = uh.hash().toString('hex')
-      const parentHash = uh.parentHash.toString('hex')
+      const uncleHash = bytesToHex(uh.hash())
+      const parentHash = bytesToHex(uh.parentHash)
 
       if (!canonicalChainHashes[parentHash]) {
         throw new Error(
@@ -734,7 +732,7 @@ export class Blockchain implements BlockchainInterface {
    * this will be immediately looked up, otherwise it will wait until we have
    * unlocked the DB
    */
-  async getBlock(blockId: Buffer | number | bigint): Promise<Block> {
+  async getBlock(blockId: Uint8Array | number | bigint): Promise<Block> {
     // cannot wait for a lock here: it is used both in `validate` of `Block`
     // (calls `getBlock` to get `parentHash`) it is also called from `runBlock`
     // in the `VM` if we encounter a `BLOCKHASH` opcode: then a bigint is used we
@@ -745,7 +743,7 @@ export class Blockchain implements BlockchainInterface {
     } catch (error: any) {
       if (error.code === 'LEVEL_NOT_FOUND') {
         if (typeof blockId === 'object') {
-          error.message = `Block with hash ${blockId.toString('hex')} not found in DB (NotFound)`
+          error.message = `Block with hash ${bytesToHex(blockId)} not found in DB (NotFound)`
         } else {
           error.message = `Block number ${blockId} not found in DB (NotFound)`
         }
@@ -757,7 +755,7 @@ export class Blockchain implements BlockchainInterface {
   /**
    * Gets total difficulty for a block specified by hash and number
    */
-  public async getTotalDifficulty(hash: Buffer, number?: bigint): Promise<bigint> {
+  public async getTotalDifficulty(hash: Uint8Array, number?: bigint): Promise<bigint> {
     if (number === undefined) {
       number = await this.dbManager.hashToNumber(hash)
     }
@@ -783,7 +781,7 @@ export class Blockchain implements BlockchainInterface {
    * @param reverse - Fetch blocks in reverse
    */
   async getBlocks(
-    blockId: Buffer | bigint | number,
+    blockId: Uint8Array | bigint | number,
     maxBlocks: number,
     skip: number,
     reverse: boolean
@@ -792,7 +790,7 @@ export class Blockchain implements BlockchainInterface {
       const blocks: Block[] = []
       let i = -1
 
-      const nextBlock = async (blockId: Buffer | bigint | number): Promise<any> => {
+      const nextBlock = async (blockId: Uint8Array | bigint | number): Promise<any> => {
         let block
         try {
           block = await this.getBlock(blockId)
@@ -824,8 +822,8 @@ export class Blockchain implements BlockchainInterface {
    * Therefore, the array needs to be ordered upon number.
    * @param hashes - Ordered array of hashes (ordered on `number`).
    */
-  async selectNeededHashes(hashes: Array<Buffer>): Promise<Buffer[]> {
-    return this.runWithLock<Buffer[]>(async () => {
+  async selectNeededHashes(hashes: Array<Uint8Array>): Promise<Uint8Array[]> {
+    return this.runWithLock<Uint8Array[]>(async () => {
       let max: number
       let mid: number
       let min: number
@@ -864,7 +862,7 @@ export class Blockchain implements BlockchainInterface {
    * we can be sure it is correct).
    * @param blockHash - The hash of the block to be deleted
    */
-  async delBlock(blockHash: Buffer) {
+  async delBlock(blockHash: Uint8Array) {
     // Q: is it safe to make this not wait for a lock? this is called from
     // `BlockchainTestsRunner` in case `runBlock` throws (i.e. the block is invalid).
     // But is this the way to go? If we know this is called from the
@@ -876,7 +874,7 @@ export class Blockchain implements BlockchainInterface {
   /**
    * @hidden
    */
-  private async _delBlock(blockHash: Buffer) {
+  private async _delBlock(blockHash: Uint8Array) {
     const dbOps: DBOp[] = []
 
     // get header
@@ -888,7 +886,7 @@ export class Blockchain implements BlockchainInterface {
     // check if block is in the canonical chain
     const canonicalHash = await this.safeNumberToHash(blockNumber)
 
-    const inCanonical = canonicalHash !== false && canonicalHash.equals(blockHash)
+    const inCanonical = canonicalHash !== false && equalsBytes(canonicalHash, blockHash)
 
     // delete the block, and if block is in the canonical chain, delete all
     // children as well
@@ -918,9 +916,9 @@ export class Blockchain implements BlockchainInterface {
    * @hidden
    */
   private async _delChild(
-    blockHash: Buffer,
+    blockHash: Uint8Array,
     blockNumber: bigint,
-    headHash: Buffer | null,
+    headHash: Uint8Array | null,
     ops: DBOp[]
   ) {
     // delete header, body, hash to number mapping and td
@@ -933,11 +931,14 @@ export class Blockchain implements BlockchainInterface {
       return
     }
 
-    if (this._headHeaderHash?.equals(blockHash) === true) {
+    if (
+      this._headHeaderHash !== undefined &&
+      equalsBytes(this._headHeaderHash, blockHash) === true
+    ) {
       this._headHeaderHash = headHash
     }
 
-    if (this._headBlockHash?.equals(blockHash) === true) {
+    if (this._headBlockHash !== undefined && equalsBytes(this._headBlockHash, blockHash)) {
       this._headBlockHash = headHash
     }
 
@@ -983,7 +984,9 @@ export class Blockchain implements BlockchainInterface {
       while (maxBlocks !== blocksRanCounter) {
         try {
           let nextBlock = await this.getBlock(nextBlockNumber)
-          const reorg = lastBlock ? !lastBlock.hash().equals(nextBlock.header.parentHash) : false
+          const reorg = lastBlock
+            ? !equalsBytes(lastBlock.hash(), nextBlock.header.parentHash)
+            : false
           if (reorg) {
             // If reorg has happened, the _heads must have been updated so lets reload the counters
             headHash = this._heads[name] ?? this.genesisBlock.hash()
@@ -1025,7 +1028,7 @@ export class Blockchain implements BlockchainInterface {
    * @param tag - The tag to save the headHash to
    * @param headHash - The head hash to save
    */
-  async setIteratorHead(tag: string, headHash: Buffer) {
+  async setIteratorHead(tag: string, headHash: Uint8Array) {
     await this.runWithLock<void>(async () => {
       this._heads[tag] = headHash
       await this._saveHeads()
@@ -1055,13 +1058,13 @@ export class Blockchain implements BlockchainInterface {
     if (header.number !== newHeader.number) {
       throw new Error('Failed to find ancient header')
     }
-    while (!header.hash().equals(newHeader.hash()) && header.number > BigInt(0)) {
+    while (!equalsBytes(header.hash(), newHeader.hash()) && header.number > BigInt(0)) {
       header = await this.getCanonicalHeader(header.number - BigInt(1))
       ancestorHeaders.add(header)
       newHeader = await this._getHeader(newHeader.parentHash, newHeader.number - BigInt(1))
       ancestorHeaders.add(newHeader)
     }
-    if (!header.hash().equals(newHeader.hash())) {
+    if (!equalsBytes(header.hash(), newHeader.hash())) {
       throw new Error('Failed to find ancient header')
     }
     return {
@@ -1085,10 +1088,10 @@ export class Blockchain implements BlockchainInterface {
    */
   private async _deleteCanonicalChainReferences(
     blockNumber: bigint,
-    headHash: Buffer,
+    headHash: Uint8Array,
     ops: DBOp[]
   ) {
-    let hash: Buffer | false
+    let hash: Uint8Array | false
 
     hash = await this.safeNumberToHash(blockNumber)
     while (hash !== false) {
@@ -1099,18 +1102,18 @@ export class Blockchain implements BlockchainInterface {
       // executed block) blocks to verify the chain up to the current, actual,
       // head.
       for (const name of Object.keys(this._heads)) {
-        if (this._heads[name].equals(hash)) {
+        if (equalsBytes(this._heads[name], hash)) {
           this._heads[name] = headHash
         }
       }
 
-      // reset stale headBlock to current canonical
-      if (this._headBlockHash?.equals(hash) === true) {
-        this._headBlockHash = headHash
+      // reset stale headHeader to current canonical
+      if (this._headHeaderHash !== undefined && equalsBytes(this._headHeaderHash, hash) === true) {
+        this._headHeaderHash = headHash
       }
       // reset stale headBlock to current canonical
-      if (this._headHeaderHash?.equals(hash) === true) {
-        this._headHeaderHash = headHash
+      if (this._headBlockHash !== undefined && equalsBytes(this._headBlockHash, hash) === true) {
+        this._headBlockHash = headHash
       }
 
       blockNumber++
@@ -1136,18 +1139,18 @@ export class Blockchain implements BlockchainInterface {
    */
   private async _rebuildCanonical(header: BlockHeader, ops: DBOp[]) {
     let currentNumber = header.number
-    let currentCanonicalHash: Buffer = header.hash()
+    let currentCanonicalHash: Uint8Array = header.hash()
 
     // track the staleHash: this is the hash currently in the DB which matches
     // the block number of the provided header.
-    let staleHash: Buffer | false = false
+    let staleHash: Uint8Array | false = false
     let staleHeads: string[] = []
     let staleHeadBlock = false
 
     const loopCondition = async () => {
       staleHash = await this.safeNumberToHash(currentNumber)
       currentCanonicalHash = header.hash()
-      return staleHash === false || !currentCanonicalHash.equals(staleHash)
+      return staleHash === false || !equalsBytes(currentCanonicalHash, staleHash)
     }
 
     while (await loopCondition()) {
@@ -1166,12 +1169,16 @@ export class Blockchain implements BlockchainInterface {
       // mark each key `_heads` which is currently set to the hash in the DB as
       // stale to overwrite later in `_deleteCanonicalChainReferences`.
       for (const name of Object.keys(this._heads)) {
-        if (staleHash && this._heads[name].equals(staleHash)) {
+        if (staleHash && equalsBytes(this._heads[name], staleHash)) {
           staleHeads.push(name)
         }
       }
       // flag stale headBlock for reset
-      if (staleHash && this._headBlockHash?.equals(staleHash) === true) {
+      if (
+        staleHash &&
+        this._headBlockHash !== undefined &&
+        equalsBytes(this._headBlockHash, staleHash) === true
+      ) {
         staleHeadBlock = true
       }
 
@@ -1226,7 +1233,7 @@ export class Blockchain implements BlockchainInterface {
    *
    * @hidden
    */
-  private async _getHeader(hash: Buffer, number?: bigint) {
+  private async _getHeader(hash: Uint8Array, number?: bigint) {
     if (number === undefined) {
       number = await this.dbManager.hashToNumber(hash)
     }
@@ -1276,12 +1283,12 @@ export class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * This method either returns a Buffer if there exists one in the DB or if it
+   * This method either returns a Uint8Array if there exists one in the DB or if it
    * does not exist (DB throws a `NotFoundError`) then return false If DB throws
    * any other error, this function throws.
    * @param number
    */
-  async safeNumberToHash(number: bigint): Promise<Buffer | false> {
+  async safeNumberToHash(number: bigint): Promise<Uint8Array | false> {
     try {
       const hash = await this.dbManager.numberToHash(number)
       return hash
@@ -1305,7 +1312,7 @@ export class Blockchain implements BlockchainInterface {
    * Creates a genesis {@link Block} for the blockchain with params from {@link Common.genesis}
    * @param stateRoot The genesis stateRoot
    */
-  createGenesisBlock(stateRoot: Buffer): Block {
+  createGenesisBlock(stateRoot: Uint8Array): Block {
     const common = this._common.copy()
     common.setHardforkByBlockNumber(
       0,
@@ -1326,7 +1333,7 @@ export class Blockchain implements BlockchainInterface {
         header.extraData = common.genesis().extraData
       } else {
         // Add required extraData (32 bytes vanity + 65 bytes filled with zeroes
-        header.extraData = Buffer.concat([Buffer.alloc(32), Buffer.alloc(65).fill(0)])
+        header.extraData = concatBytesNoTypeCheck(new Uint8Array(32), new Uint8Array(65))
       }
     }
     return Block.fromBlockData(

@@ -10,7 +10,7 @@ tape('Memory', (t) => {
   })
 
   t.test('should return zeros from empty memory', (st) => {
-    st.ok(m.read(0, 3).equals(Buffer.from([0, 0, 0])))
+    st.deepEquals(m.read(0, 3), Uint8Array.from([0, 0, 0]))
     st.end()
   })
 
@@ -21,18 +21,18 @@ tape('Memory', (t) => {
   })
 
   t.test('should return zeros before writing', (st) => {
-    st.ok(m.read(0, 2).equals(Buffer.from([0, 0])))
+    st.deepEquals(m.read(0, 2), Uint8Array.from([0, 0]))
     st.end()
   })
 
   t.test('should write value', (st) => {
-    m.write(29, 3, Buffer.from([1, 2, 3]))
-    st.ok(m.read(29, 5).equals(Buffer.from([1, 2, 3, 0, 0])))
+    m.write(29, 3, Uint8Array.from([1, 2, 3]))
+    st.deepEquals(m.read(29, 5), Uint8Array.from([1, 2, 3, 0, 0]))
     st.end()
   })
 
   t.test('should fail when value len and size are inconsistent', (st) => {
-    st.throws(() => m.write(0, 5, Buffer.from([8, 8, 8])), /size/)
+    st.throws(() => m.write(0, 5, Uint8Array.from([8, 8, 8])), /size/)
     st.end()
   })
 
@@ -41,7 +41,7 @@ tape('Memory', (t) => {
     (st) => {
       const memory = new Memory()
       st.equal(memory._store.length, 0, 'memory should start with zero length')
-      memory.write(0, 1, Buffer.from([1]))
+      memory.write(0, 1, Uint8Array.from([1]))
       st.equal(memory._store.length, 8192, 'memory buffer length expanded to 8192 bytes')
 
       st.end()

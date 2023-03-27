@@ -1,4 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { intToBytes } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as test from 'tape'
 
 import * as devp2p from '../../src'
@@ -6,17 +8,14 @@ import * as devp2p from '../../src'
 import * as util from './util'
 
 const GENESIS_TD = 17179869184
-const GENESIS_HASH = Buffer.from(
-  'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-  'hex'
-)
+const GENESIS_HASH = hexToBytes('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3')
 
 const capabilities = [devp2p.LES.les4]
 
 const status = {
-  headTd: devp2p.int2buffer(GENESIS_TD), // total difficulty in genesis block
+  headTd: intToBytes(GENESIS_TD), // total difficulty in genesis block
   headHash: GENESIS_HASH,
-  headNum: devp2p.int2buffer(0),
+  headNum: intToBytes(0),
   genesisHash: GENESIS_HASH,
 }
 
@@ -69,7 +68,7 @@ test('ETH: send status message (Genesis block mismatch)', (t) => {
   const opts: any = {}
   opts.status0 = Object.assign({}, status)
   const status1 = Object.assign({}, status)
-  status1['genesisHash'] = Buffer.alloc(32)
+  status1['genesisHash'] = new Uint8Array(32)
   opts.status1 = status1
   opts.onPeerError0 = function (err: Error, rlpxs: any) {
     const msg =

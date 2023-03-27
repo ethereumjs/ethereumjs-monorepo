@@ -1,4 +1,5 @@
 import { RLP, utils } from '@ethereumjs/rlp'
+import { bytesToHex } from 'ethereum-cryptography/utils'
 import * as snappy from 'snappyjs'
 
 import { formatLogData } from '../util'
@@ -21,7 +22,7 @@ export class SNAP extends Protocol {
 
     // Note, this needs optimization, see issue #1882
     const debugMsg = `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}`
-    const logData = formatLogData(data.toString('hex'), this._verbose)
+    const logData = formatLogData(bytesToHex(data), this._verbose)
     this.debug(messageName, `${debugMsg}: ${logData}`)
 
     switch (code) {

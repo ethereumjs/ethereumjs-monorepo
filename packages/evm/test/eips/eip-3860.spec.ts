@@ -1,11 +1,12 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, privateToAddress } from '@ethereumjs/util'
+import { Address, concatBytesNoTypeCheck, privateToAddress } from '@ethereumjs/util'
+import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { EVM } from '../../src'
 import { getEEI } from '../utils'
 
-const pkey = Buffer.from('20'.repeat(32), 'hex')
+const pkey = hexToBytes('20'.repeat(32))
 const sender = new Address(privateToAddress(pkey))
 
 tape('EIP 3860 tests', (t) => {
@@ -18,7 +19,7 @@ tape('EIP 3860 tests', (t) => {
     const eei = await getEEI()
     const evm = await EVM.create({ common, eei })
 
-    const buffer = Buffer.allocUnsafe(1000000).fill(0x60)
+    const buffer = new Uint8Array(1000000).fill(0x60)
 
     // setup the call arguments
     const runCallArgs = {
@@ -27,13 +28,12 @@ tape('EIP 3860 tests', (t) => {
       // Simple test, PUSH <big number> PUSH 0 RETURN
       // It tries to deploy a contract too large, where the code is all zeros
       // (since memory which is not allocated/resized to yet is always defaulted to 0)
-      data: Buffer.concat([
-        Buffer.from(
-          '0x7F6000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060005260206000F3',
-          'hex'
+      data: concatBytesNoTypeCheck(
+        hexToBytes(
+          '0x7F6000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060005260206000F3'
         ),
-        buffer,
-      ]),
+        buffer
+      ),
     }
     const result = await evm.runCall(runCallArgs)
     st.ok(
@@ -62,17 +62,13 @@ tape('EIP 3860 tests', (t) => {
     const contractAccount = await evm.eei.getAccount(contractFactory)
     await evm.eei.putAccount(contractFactory, contractAccount)
     await evmWithout3860.eei.putAccount(contractFactory, contractAccount)
-    const factoryCode = Buffer.from(
-      '7f600a80600080396000f3000000000000000000000000000000000000000000006000526000355a8160006000f05a8203600a55806000556001600155505050',
-      'hex'
+    const factoryCode = hexToBytes(
+      '7f600a80600080396000f3000000000000000000000000000000000000000000006000526000355a8160006000f05a8203600a55806000556001600155505050'
     )
 
     await evm.eei.putContractCode(contractFactory, factoryCode)
     await evmWithout3860.eei.putContractCode(contractFactory, factoryCode)
-    const data = Buffer.from(
-      '000000000000000000000000000000000000000000000000000000000000c000',
-      'hex'
-    )
+    const data = hexToBytes('000000000000000000000000000000000000000000000000000000000000c000')
     const runCallArgs = {
       from: caller,
       to: contractFactory,
@@ -108,17 +104,13 @@ tape('EIP 3860 tests', (t) => {
     const contractAccount = await evm.eei.getAccount(contractFactory)
     await evm.eei.putAccount(contractFactory, contractAccount)
     await evmWithout3860.eei.putAccount(contractFactory, contractAccount)
-    const factoryCode = Buffer.from(
-      '7f600a80600080396000f3000000000000000000000000000000000000000000006000526000355a60008260006000f55a8203600a55806000556001600155505050',
-      'hex'
+    const factoryCode = hexToBytes(
+      '7f600a80600080396000f3000000000000000000000000000000000000000000006000526000355a60008260006000f55a8203600a55806000556001600155505050'
     )
 
     await evm.eei.putContractCode(contractFactory, factoryCode)
     await evmWithout3860.eei.putContractCode(contractFactory, factoryCode)
-    const data = Buffer.from(
-      '000000000000000000000000000000000000000000000000000000000000c000',
-      'hex'
-    )
+    const data = hexToBytes('000000000000000000000000000000000000000000000000000000000000c000')
     const runCallArgs = {
       from: caller,
       to: contractFactory,
@@ -213,11 +205,11 @@ tape('EIP 3860 tests', (t) => {
       const storageInactive = await evmDisabled.eei.getContractStorage(contractFactory, key0)
 
       st.ok(
-        !storageActive.equals(Buffer.from('')),
+        !equalsBytes(storageActive, new Uint8Array()),
         'created contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=true'
       )
       st.ok(
-        storageInactive.equals(Buffer.from('')),
+        equalsBytes(storageInactive, new Uint8Array()),
         'did not create contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=false'
       )
 
