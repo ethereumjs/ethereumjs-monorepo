@@ -1,3 +1,4 @@
+import { utf8ToBytes } from 'ethereum-cryptography/utils'
 import * as test from 'tape'
 
 import { ENR } from '../src/dns'
@@ -107,7 +108,6 @@ test('ENR (branch): should error if DNS branch entry is mis-prefixed', (t) => {
 // ENR DNS entries
 test('ENR (enr): should convert an Ethereum Name Record string', (t) => {
   const { address, tcpPort, udpPort } = ENR.parseAndVerifyRecord(dns.enr)
-
   t.equal(address, '40.113.111.135', 'returns correct address')
   t.equal(tcpPort, 30303, 'returns correct tcpPort')
   t.equal(udpPort, 30303, 'returns correct udpPort')
@@ -125,7 +125,7 @@ test('ENR (enr): should convert non-padded Ethereum Name Record string', (t) => 
 
 test('ENR (enr): should return correct multiaddr conversion codes for ipv6', (t) => {
   const expected = { ipCode: 41, tcpCode: 6, udpCode: 273 }
-  const protocolId = Buffer.from('v6')
+  const protocolId = utf8ToBytes('v6')
   const codes = ENR._getIpProtocolConversionCodes(protocolId)
 
   t.deepEqual(codes, expected, 'returns correct codes')
@@ -145,7 +145,7 @@ test('ENR (enr): should error if record mis-prefixed', (t) => {
 })
 
 test('ENR (enr): should error when converting to unrecognized ip protocol id', (t) => {
-  const protocolId = Buffer.from('v7')
+  const protocolId = utf8ToBytes('v7')
   try {
     ENR._getIpProtocolConversionCodes(protocolId)
   } catch (e: any) {

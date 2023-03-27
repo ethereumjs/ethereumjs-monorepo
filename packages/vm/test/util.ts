@@ -9,16 +9,16 @@ import {
 import {
   Account,
   Address,
-  bigIntToBuffer,
-  bufferToBigInt,
-  bufferToHex,
+  bigIntToBytes,
+  bytesToBigInt,
+  bytesToPrefixedHexString,
   isHexPrefixed,
   setLengthLeft,
   stripHexPrefix,
-  toBuffer,
+  toBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import type { VmState } from '../src/eei/vmState'
 import type { BlockOptions } from '@ethereumjs/block'
@@ -49,7 +49,7 @@ export function dumpState(state: any, cb: Function) {
       const storageRS = storageTrie.createReadStream()
 
       storageRS.on('data', function (data: any) {
-        storage[data.key.toString('hex')] = data.value.toString('hex')
+        storage[bytesToHex(data.key)] = bytesToHex(data.value)
       })
 
       storageRS.on('end', function () {
@@ -65,8 +65,8 @@ export function dumpState(state: any, cb: Function) {
       results.push(result)
     }
     for (let i = 0; i < results.length; i++) {
-      console.log("SHA3'd address: " + bufferToHex(results[i].address))
-      console.log('\tstorage root: ' + bufferToHex(results[i].storageRoot))
+      console.log("SHA3'd address: " + bytesToHex(results[i].address))
+      console.log('\tstorage root: ' + bytesToHex(results[i].storageRoot))
       console.log('\tstorage: ')
       for (const storageKey in results[i].storage) {
         console.log('\t\t' + storageKey + ': ' + results[i].storage[storageKey])
@@ -78,28 +78,28 @@ export function dumpState(state: any, cb: Function) {
   })
 }
 
-export function format(a: any, toZero: boolean = false, isHex: boolean = false): Buffer {
+export function format(a: any, toZero: boolean = false, isHex: boolean = false): Uint8Array {
   if (a === '') {
-    return Buffer.alloc(0)
+    return new Uint8Array()
   }
 
   if (typeof a === 'string' && isHexPrefixed(a)) {
     a = a.slice(2)
     if (a.length % 2) a = '0' + a
-    a = Buffer.from(a, 'hex')
+    a = hexToBytes(a)
   } else if (!isHex) {
     try {
-      a = bigIntToBuffer(BigInt(a))
+      a = bigIntToBytes(BigInt(a))
     } catch {
       // pass
     }
   } else {
     if (a.length % 2) a = '0' + a
-    a = Buffer.from(a, 'hex')
+    a = hexToBytes(a)
   }
 
-  if (toZero && a.toString('hex') === '') {
-    a = Buffer.from([0])
+  if (toZero && bytesToHex(a) === '') {
+    a = Uint8Array.from([0])
   }
 
   return a
@@ -125,7 +125,7 @@ export function makeTx(
   }
 
   if (txData.secretKey !== undefined) {
-    const privKey = toBuffer(txData.secretKey)
+    const privKey = toBytes(txData.secretKey)
     return tx.sign(privKey)
   }
 
@@ -138,7 +138,7 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
     const keyMap: any = {}
 
     for (const key in testData) {
-      const hash = bytesToHex(keccak256(Buffer.from(stripHexPrefix(key), 'hex')))
+      const hash = bytesToHex(keccak256(hexToBytes(stripHexPrefix(key))))
       hashedAccounts[hash] = testData[key]
       keyMap[hash] = key
     }
@@ -150,7 +150,7 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
     stream.on('data', function (data: any) {
       const rlp = data.value
       const account = Account.fromRlpSerializedAccount(rlp)
-      const key = data.key.toString('hex')
+      const key = bytesToHex(data.key)
       const testData = hashedAccounts[key]
       const address = keyMap[key]
       delete keyMap[key]
@@ -189,18 +189,16 @@ export function verifyAccountPostConditions(
 ) {
   return new Promise<void>((resolve) => {
     t.comment('Account: ' + address)
-    if (!format(account.balance, true).equals(format(acctData.balance, true))) {
+    if (!equalsBytes(format(account.balance, true), format(acctData.balance, true))) {
       t.comment(
-        `Expected balance of ${bufferToBigInt(format(acctData.balance, true))}, but got ${
+        `Expected balance of ${bytesToBigInt(format(acctData.balance, true))}, but got ${
           account.balance
         }`
       )
     }
-    if (!format(account.nonce, true).equals(format(acctData.nonce, true))) {
+    if (!equalsBytes(format(account.nonce, true), format(acctData.nonce, true))) {
       t.comment(
-        `Expected nonce of ${bufferToBigInt(format(acctData.nonce, true))}, but got ${
-          account.nonce
-        }`
+        `Expected nonce of ${bytesToBigInt(format(acctData.nonce, true))}, but got ${account.nonce}`
       )
     }
 
@@ -209,15 +207,15 @@ export function verifyAccountPostConditions(
 
     const hashedStorage: any = {}
     for (const key in acctData.storage) {
-      hashedStorage[bytesToHex(keccak256(setLengthLeft(Buffer.from(key.slice(2), 'hex'), 32)))] =
+      hashedStorage[bytesToHex(keccak256(setLengthLeft(hexToBytes(key.slice(2)), 32)))] =
         acctData.storage[key]
     }
 
     state.root(account.storageRoot)
     const rs = state.createReadStream()
     rs.on('data', function (data: any) {
-      let key = data.key.toString('hex')
-      const val = '0x' + Buffer.from(RLP.decode(data.value) as Uint8Array).toString('hex')
+      let key = bytesToHex(data.key)
+      const val = bytesToPrefixedHexString(RLP.decode(data.value) as Uint8Array)
 
       if (key === '0x') {
         key = '0x00'
@@ -227,7 +225,7 @@ export function verifyAccountPostConditions(
 
       if (val !== hashedStorage[key]) {
         t.comment(
-          `Expected storage key 0x${data.key.toString('hex')} at address ${address} to have value ${
+          `Expected storage key 0x${bytesToHex(data.key)} at address ${address} to have value ${
             hashedStorage[key] ?? '0x'
           }, but got ${val}}`
         )
@@ -344,7 +342,7 @@ export async function setupPreConditions(state: VmState, testData: any) {
     // Set contract storage
     for (const storageKey of Object.keys(storage)) {
       const val = format(storage[storageKey])
-      if (['', '00'].includes(val.toString('hex'))) {
+      if (['', '00'].includes(bytesToHex(val))) {
         continue
       }
       const key = setLengthLeft(format(storageKey), 32)

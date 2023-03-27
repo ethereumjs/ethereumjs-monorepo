@@ -2,7 +2,7 @@ import { Readable } from 'readable-stream'
 
 import { BranchNode, LeafNode } from '../trie'
 
-import { nibblesToBuffer } from './nibbles'
+import { nibblestoBytes } from './nibbles'
 
 import type { Trie } from '../trie'
 import type { FoundNodeFunction } from '../types'
@@ -27,7 +27,7 @@ export class TrieReadStream extends Readable {
       await this._findValueNodes(async (_, node, key, walkController) => {
         if (node !== null) {
           this.push({
-            key: nibblesToBuffer(key),
+            key: nibblestoBytes(key),
             value: node.value(),
           })
           walkController.allChildren(node, key)

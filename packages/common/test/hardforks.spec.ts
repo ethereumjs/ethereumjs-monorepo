@@ -1,3 +1,4 @@
+import { hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src'
@@ -270,26 +271,26 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
   })
 
   t.test('_calcForkHash()', function (st: tape.Test) {
-    const chains: [Chain, Buffer][] = [
+    const chains: [Chain, Uint8Array][] = [
       [
         Chain.Mainnet,
-        Buffer.from('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3', 'hex'),
+        hexStringToBytes('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'),
       ],
       [
         Chain.Ropsten,
-        Buffer.from('41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d', 'hex'),
+        hexStringToBytes('41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d'),
       ],
       [
         Chain.Rinkeby,
-        Buffer.from('6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177', 'hex'),
+        hexStringToBytes('6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177'),
       ],
       [
         Chain.Goerli,
-        Buffer.from('bf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a', 'hex'),
+        hexStringToBytes('bf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a'),
       ],
       [
         Chain.Sepolia,
-        Buffer.from('25a5cc106eea7138acab33231d7160d69cb777ee0c2c553fcddf5138993e6dd9', 'hex'),
+        hexStringToBytes('25a5cc106eea7138acab33231d7160d69cb777ee0c2c553fcddf5138993e6dd9'),
       ],
     ]
 
@@ -323,9 +324,8 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
 
     msg = 'should provide correct forkHash for HF provided'
     st.equal(c.forkHash(Hardfork.SpuriousDragon), '0x3edd5b10', msg)
-    const genesisHash = Buffer.from(
-      'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-      'hex'
+    const genesisHash = hexStringToBytes(
+      'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
     )
     st.equal(c.forkHash(Hardfork.SpuriousDragon, genesisHash), '0x3edd5b10', msg)
 

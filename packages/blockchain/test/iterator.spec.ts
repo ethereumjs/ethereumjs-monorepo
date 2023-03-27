@@ -1,3 +1,4 @@
+import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { Blockchain } from '../src'
@@ -14,7 +15,7 @@ tape('blockchain test', (t) => {
     let reorged = 0
     const iterated = await blockchain.iterator('test', (block: Block, reorg: boolean) => {
       if (reorg) reorged++
-      if (block.hash().equals(blocks[i + 1].hash())) {
+      if (equalsBytes(block.hash(), blocks[i + 1].hash()) === true) {
         i++
       }
     })
@@ -51,7 +52,7 @@ tape('blockchain test', (t) => {
             await blockchain.putBlocks(reorgedBlocks)
           }
         } else {
-          if (block.hash().equals(reorgedBlocks[Number(block.header.number) - 5].hash())) {
+          if (equalsBytes(block.hash(), reorgedBlocks[Number(block.header.number) - 5].hash())) {
             servedReorged++
           }
         }
@@ -59,7 +60,7 @@ tape('blockchain test', (t) => {
       undefined,
       true
     )
-    st.equal(reorged, 1, ' should have reorged once')
+    st.equal(reorged, 1, 'should have reorged once')
     st.equal(
       servedReorged,
       reorgedBlocks.length,
@@ -78,7 +79,7 @@ tape('blockchain test', (t) => {
       const iterated = await blockchain.iterator(
         'test',
         (block: Block) => {
-          if (block.hash().equals(blocks[i + 1].hash())) {
+          if (equalsBytes(block.hash(), blocks[i + 1].hash())) {
             i++
           }
         },
@@ -100,7 +101,7 @@ tape('blockchain test', (t) => {
         .iterator(
           'test',
           (block: Block) => {
-            if (block.hash().equals(blocks[i + 1].hash())) {
+            if (equalsBytes(block.hash(), blocks[i + 1].hash())) {
               i++
             }
           },
@@ -123,7 +124,7 @@ tape('blockchain test', (t) => {
       .iterator(
         'test',
         (block: Block) => {
-          if (block.hash().equals(blocks[i + 1].hash())) {
+          if (equalsBytes(block.hash(), blocks[i + 1].hash())) {
             i++
           }
         },
@@ -145,14 +146,14 @@ tape('blockchain test', (t) => {
     await blockchain.setIteratorHead('myHead', headHash)
     const currentHeadBlock = await blockchain.getIteratorHead('myHead')
 
-    st.ok(headHash.equals(currentHeadBlock.hash()), 'head hash equals the provided head hash')
+    st.deepEquals(headHash, currentHeadBlock.hash(), 'head hash equals the provided head hash')
 
     let i = 0
     // check that iterator starts from this head block
     await blockchain.iterator(
       'myHead',
       (block: Block) => {
-        if (block.hash().equals(blocks[headBlockIndex + 1].hash())) {
+        if (equalsBytes(block.hash(), blocks[headBlockIndex + 1].hash())) {
           i++
         }
       },
@@ -196,10 +197,11 @@ tape('blockchain test', (t) => {
     const [db, genesis] = await createTestDB()
     const blockchain = await Blockchain.create({ db, genesisBlock: genesis })
     const head = await blockchain.getIteratorHead()
+
     if (typeof genesis !== 'undefined') {
-      st.ok(head.hash().equals(genesis.hash()), 'should get head')
+      st.deepEquals(head.hash(), genesis.hash(), 'should get head')
       st.equal(
-        (blockchain as any)._heads['head0'].toString('hex'),
+        bytesToHex((blockchain as any)._heads['head0']),
         'abcd',
         'should get state root heads'
       )

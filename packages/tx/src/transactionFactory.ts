@@ -1,4 +1,4 @@
-import { bufferToBigInt, toBuffer } from '@ethereumjs/util'
+import { bytesToBigInt, toBytes } from '@ethereumjs/util'
 import { JsonRpcProvider } from '@ethersproject/providers'
 
 import { FeeMarketEIP1559Transaction } from './eip1559Transaction'
@@ -34,7 +34,7 @@ export class TransactionFactory {
       // Assume legacy transaction
       return Transaction.fromTxData(<TxData>txData, txOptions)
     } else {
-      const txType = Number(bufferToBigInt(toBuffer(txData.type)))
+      const txType = Number(bytesToBigInt(toBytes(txData.type)))
       if (txType === 0) {
         return Transaction.fromTxData(<TxData>txData, txOptions)
       } else if (txType === 1) {
@@ -52,10 +52,10 @@ export class TransactionFactory {
   /**
    * This method tries to decode serialized data.
    *
-   * @param data - The data Buffer
+   * @param data - The data Uint8Array
    * @param txOptions - The transaction options
    */
-  public static fromSerializedData(data: Buffer, txOptions: TxOptions = {}): TypedTransaction {
+  public static fromSerializedData(data: Uint8Array, txOptions: TxOptions = {}): TypedTransaction {
     if (data[0] <= 0x7f) {
       // Determine the type.
       switch (data[0]) {
@@ -75,15 +75,15 @@ export class TransactionFactory {
 
   /**
    * When decoding a BlockBody, in the transactions field, a field is either:
-   * A Buffer (a TypedTransaction - encoded as TransactionType || rlp(TransactionPayload))
-   * A Buffer[] (Legacy Transaction)
+   * A Uint8Array (a TypedTransaction - encoded as TransactionType || rlp(TransactionPayload))
+   * A Uint8Array[] (Legacy Transaction)
    * This method returns the right transaction.
    *
-   * @param data - A Buffer or Buffer[]
+   * @param data - A Uint8Array or Uint8Array[]
    * @param txOptions - The transaction options
    */
-  public static fromBlockBodyData(data: Buffer | Buffer[], txOptions: TxOptions = {}) {
-    if (Buffer.isBuffer(data)) {
+  public static fromBlockBodyData(data: Uint8Array | Uint8Array[], txOptions: TxOptions = {}) {
+    if (data instanceof Uint8Array) {
       return this.fromSerializedData(data, txOptions)
     } else if (Array.isArray(data)) {
       // It is a legacy transaction

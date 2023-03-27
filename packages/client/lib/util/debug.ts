@@ -1,3 +1,5 @@
+import { bytesToHex } from 'ethereum-cryptography/utils'
+
 import { DataDirectory } from '..'
 
 import type { VMExecution } from '../execution'
@@ -35,17 +37,17 @@ const main = async () => {
   const common = new Common({ chain: '${execution.config.execCommon.chainName()}', hardfork: '${
     execution.hardfork
   }' })
-  const block = Block.fromRLPSerializedBlock(Buffer.from('${block
-    .serialize()
-    .toString('hex')}', 'hex'), { common })
+  const block = Block.fromRLPSerializedBlock(hexStringToBytes('${bytesToHex(
+    block.serialize()
+  )}'), { common })
 
   const stateDB = new Level('${execution.config.getDataDirectory(DataDirectory.State)}')
   const trie = new Trie({ db: stateDB, useKeyHashing: true })
   const stateManager = new DefaultStateManager({ trie, common })
   // Ensure we run on the right root
-  stateManager.setStateRoot(Buffer.from('${(
+  stateManager.setStateRoot(hexStringToBytes('${bytesToHex(
     await execution.vm.stateManager.getStateRoot()
-  ).toString('hex')}', 'hex'))
+  )}'))
 
 
   const chainDB = new Level('${execution.config.getDataDirectory(DataDirectory.Chain)}')

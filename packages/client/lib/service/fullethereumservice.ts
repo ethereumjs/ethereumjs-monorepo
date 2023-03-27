@@ -1,5 +1,6 @@
 import { Hardfork } from '@ethereumjs/common'
 import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
+import { concatBytes } from 'ethereum-cryptography/utils'
 
 import { VMExecution } from '../execution'
 import { Miner } from '../miner'
@@ -256,7 +257,7 @@ export class FullEthereumService extends EthereumService {
       case 'GetBlockBodies': {
         const { reqId, hashes } = message.data
         const blocks: Block[] = await Promise.all(
-          hashes.map((hash: Buffer) => this.chain.getBlock(hash))
+          hashes.map((hash: Uint8Array) => this.chain.getBlock(hash))
         )
         const bodies = blocks.map((block) => block.raw().slice(1))
         peer.eth!.send('BlockBodies', { reqId, bodies })
@@ -309,8 +310,8 @@ export class FullEthereumService extends EthereumService {
           const blockReceipts = await receiptsManager.getReceipts(hash, true, true)
           if (blockReceipts === undefined) continue
           receipts.push(...blockReceipts)
-          const receiptsBuffer = Buffer.concat(receipts.map((r) => encodeReceipt(r, r.txType)))
-          receiptsSize += Buffer.byteLength(receiptsBuffer)
+          const receiptsBytes = concatBytes(...receipts.map((r) => encodeReceipt(r, r.txType)))
+          receiptsSize += receiptsBytes.byteLength
           // From spec: The recommended soft limit for Receipts responses is 2 MiB.
           if (receiptsSize >= 2097152) {
             break

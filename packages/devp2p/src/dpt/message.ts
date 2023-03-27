@@ -1,10 +1,18 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bufArrToArr } from '@ethereumjs/util'
+import { bytesToInt, intToBytes } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
-import * as ip from 'ip'
+import { bytesToHex, bytesToUtf8, concatBytes } from 'ethereum-cryptography/utils'
 
-import { assertEq, buffer2int, int2buffer, keccak256, unstrictDecode } from '../util'
+import {
+  assertEq,
+  ipToBytes,
+  ipToString,
+  isV4Format,
+  isV6Format,
+  keccak256,
+  unstrictDecode,
+} from '../util'
 
 import type { PeerInfo } from './dpt'
 
@@ -16,57 +24,55 @@ function getTimestamp() {
 
 const timestamp = {
   encode(value = getTimestamp() + 60) {
-    const buffer = Buffer.allocUnsafe(4)
-    buffer.writeUInt32BE(value, 0)
-    return buffer
+    const bytes = new Uint8Array(4)
+    new DataView(bytes.buffer).setUint32(0, value)
+    return bytes
   },
-  decode(buffer: Buffer) {
-    if (buffer.length !== 4)
-      throw new RangeError(`Invalid timestamp buffer :${buffer.toString('hex')}`)
-    return buffer.readUInt32BE(0)
+  decode(bytes: Uint8Array) {
+    if (bytes.length !== 4) throw new RangeError(`Invalid timestamp bytes :${bytesToHex(bytes)}`)
+    return new DataView(bytes.buffer).getUint32(0)
   },
 }
 
 const address = {
   encode(value: string) {
-    if (ip.isV4Format(value)) return ip.toBuffer(value)
-    if (ip.isV6Format(value)) return ip.toBuffer(value)
+    if (isV4Format(value)) return ipToBytes(value)
+    if (isV6Format(value)) return ipToBytes(value)
     throw new Error(`Invalid address: ${value}`)
   },
-  decode(buffer: Buffer) {
-    if (buffer.length === 4) return ip.toString(buffer)
-    if (buffer.length === 16) return ip.toString(buffer)
+  decode(bytes: Uint8Array) {
+    if (bytes.length === 4) return ipToString(bytes)
+    if (bytes.length === 16) return ipToString(bytes)
 
-    const str = buffer.toString()
-    if (ip.isV4Format(str) || ip.isV6Format(str)) return str
+    const str = bytesToUtf8(bytes)
+    if (isV4Format(str) || isV6Format(str)) return str
 
     // also can be host, but skip it right now (because need async function for resolve)
-    throw new Error(`Invalid address buffer: ${buffer.toString('hex')}`)
+    throw new Error(`Invalid address bytes: ${bytesToHex(bytes)}`)
   },
 }
 
 const port = {
-  encode(value: number | null): Buffer {
-    if (value === null) return Buffer.allocUnsafe(0)
+  encode(value: number | null): Uint8Array {
+    if (value === null) return new Uint8Array()
     if (value >>> 16 > 0) throw new RangeError(`Invalid port: ${value}`)
-    return Buffer.from([(value >>> 8) & 0xff, (value >>> 0) & 0xff])
+    return Uint8Array.from([(value >>> 8) & 0xff, (value >>> 0) & 0xff])
   },
-  decode(buffer: Buffer): number | null {
-    if (buffer.length === 0) return null
-    // if (buffer.length !== 2) throw new RangeError(`Invalid port buffer: ${buffer.toString('hex')}`)
-    return buffer2int(buffer)
+  decode(bytes: Uint8Array): number | null {
+    if (bytes.length === 0) return null
+    return bytesToInt(bytes)
   },
 }
 
 const endpoint = {
-  encode(obj: PeerInfo): Buffer[] {
+  encode(obj: PeerInfo): Uint8Array[] {
     return [
       address.encode(obj.address!),
       port.encode(obj.udpPort ?? null),
       port.encode(obj.tcpPort ?? null),
     ]
   },
-  decode(payload: Buffer[]): PeerInfo {
+  decode(payload: Uint8Array[]): PeerInfo {
     return {
       address: address.decode(payload[0]),
       udpPort: port.decode(payload[1]),
@@ -75,12 +81,12 @@ const endpoint = {
   },
 }
 
-type InPing = { [0]: Buffer; [1]: Buffer[]; [2]: Buffer[]; [3]: Buffer }
+type InPing = { [0]: Uint8Array; [1]: Uint8Array[]; [2]: Uint8Array[]; [3]: Uint8Array }
 type OutPing = { version: number; from: PeerInfo; to: PeerInfo; timestamp: number }
 const ping = {
   encode(obj: OutPing): InPing {
     return [
-      int2buffer(obj.version),
+      intToBytes(obj.version),
       endpoint.encode(obj.from),
       endpoint.encode(obj.to),
       timestamp.encode(obj.timestamp),
@@ -88,7 +94,7 @@ const ping = {
   },
   decode(payload: InPing): OutPing {
     return {
-      version: buffer2int(payload[0]),
+      version: bytesToInt(payload[0]),
       from: endpoint.decode(payload[1]),
       to: endpoint.decode(payload[2]),
       timestamp: timestamp.decode(payload[3]),
@@ -96,8 +102,8 @@ const ping = {
   },
 }
 
-type OutPong = { to: PeerInfo; hash: Buffer; timestamp: number }
-type InPong = { [0]: Buffer[]; [1]: Buffer[]; [2]: Buffer }
+type OutPong = { to: PeerInfo; hash: Uint8Array; timestamp: number }
+type InPong = { [0]: Uint8Array[]; [1]: Uint8Array[]; [2]: Uint8Array }
 const pong = {
   encode(obj: OutPong) {
     return [endpoint.encode(obj.to), obj.hash, timestamp.encode(obj.timestamp)]
@@ -112,7 +118,7 @@ const pong = {
 }
 
 type OutFindMsg = { id: string; timestamp: number }
-type InFindMsg = { [0]: string; [1]: Buffer }
+type InFindMsg = { [0]: string; [1]: Uint8Array }
 const findneighbours = {
   encode(obj: OutFindMsg): InFindMsg {
     return [obj.id, timestamp.encode(obj.timestamp)]
@@ -126,11 +132,11 @@ const findneighbours = {
 }
 
 type InNeighborMsg = { peers: PeerInfo[]; timestamp: number }
-type OutNeighborMsg = { [0]: Buffer[][]; [1]: Buffer }
+type OutNeighborMsg = { [0]: Uint8Array[][]; [1]: Uint8Array }
 const neighbours = {
   encode(obj: InNeighborMsg): OutNeighborMsg {
     return [
-      obj.peers.map((peer: PeerInfo) => endpoint.encode(peer).concat(peer.id! as Buffer)),
+      obj.peers.map((peer: PeerInfo) => endpoint.encode(peer).concat(peer.id! as Uint8Array)),
       timestamp.encode(obj.timestamp),
     ]
   },
@@ -168,36 +174,32 @@ const types: Types = {
 // 97 type
 // [98, length) data
 
-export function encode<T>(typename: string, data: T, privateKey: Buffer) {
+export function encode<T>(typename: string, data: T, privateKey: Uint8Array) {
   const type: number = types.byName[typename] as number
   if (type === undefined) throw new Error(`Invalid typename: ${typename}`)
   const encodedMsg = messages[typename].encode(data)
-  const typedata = Buffer.concat([
-    Buffer.from([type]),
-    Buffer.from(RLP.encode(bufArrToArr(encodedMsg))),
-  ])
+  const typedata = concatBytes(Uint8Array.from([type]), RLP.encode(encodedMsg))
 
   const sighash = keccak256(typedata)
   const sig = ecdsaSign(sighash, privateKey)
-  const hashdata = Buffer.concat([Buffer.from(sig.signature), Buffer.from([sig.recid]), typedata])
+  const hashdata = concatBytes(sig.signature, Uint8Array.from([sig.recid]), typedata)
   const hash = keccak256(hashdata)
-  return Buffer.concat([hash, hashdata])
+  return concatBytes(hash, hashdata)
 }
 
-export function decode(buffer: Buffer) {
-  const hash = keccak256(buffer.slice(32))
-  assertEq(buffer.slice(0, 32), hash, 'Hash verification failed', debug)
+export function decode(bytes: Uint8Array) {
+  const hash = keccak256(bytes.subarray(32))
+  assertEq(bytes.subarray(0, 32), hash, 'Hash verification failed', debug)
 
-  const typedata = buffer.slice(97)
+  const typedata = bytes.subarray(97)
   const type = typedata[0]
   const typename = types.byType[type]
   if (typename === undefined) throw new Error(`Invalid type: ${type}`)
-  const data = messages[typename].decode(unstrictDecode(typedata.slice(1)))
+  const data = messages[typename].decode(unstrictDecode(typedata.subarray(1)))
 
   const sighash = keccak256(typedata)
-  const signature = buffer.slice(32, 96)
-  const recoverId = buffer[96]
-  const publicKey = Buffer.from(ecdsaRecover(signature, recoverId, sighash, false))
-
+  const signature = bytes.subarray(32, 96)
+  const recoverId = bytes[96]
+  const publicKey = ecdsaRecover(signature, recoverId, sighash, false)
   return { typename, data, publicKey }
 }

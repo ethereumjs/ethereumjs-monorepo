@@ -1,4 +1,5 @@
-import { short } from '@ethereumjs/util'
+import { concatBytesNoTypeCheck, short } from '@ethereumjs/util'
+import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { EvmErrorResult, OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
@@ -8,8 +9,8 @@ import type { PrecompileInput } from './types'
 
 const { BLS12_381_ToG1Point, BLS12_381_ToG2Point } = require('./util/bls12_381')
 
-const zeroBuffer = Buffer.alloc(32, 0)
-const oneBuffer = Buffer.concat([Buffer.alloc(31, 0), Buffer.from('01', 'hex')])
+const zeroBuffer = new Uint8Array(32)
+const oneBuffer = concatBytesNoTypeCheck(new Uint8Array(31), hexToBytes('01'))
 
 export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
   const mcl = (<any>opts._EVM)._mcl!
@@ -19,7 +20,7 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
   const baseGas = opts._common.paramByEIP('gasPrices', 'Bls12381PairingBaseGas', 2537) ?? BigInt(0)
 
   if (inputData.length === 0) {
-    if (opts._debug) {
+    if (opts._debug !== undefined) {
       opts._debug(`BLS12PAIRING (0x10) failed: Empty input`)
     }
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit)
@@ -29,7 +30,7 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
     opts._common.paramByEIP('gasPrices', 'Bls12381PairingPerPairGas', 2537) ?? BigInt(0)
 
   const gasUsed = baseGas + gasUsedPerPair * BigInt(Math.floor(inputData.length / 384))
-  if (opts._debug) {
+  if (opts._debug !== undefined) {
     opts._debug(
       `Run BLS12PAIRING (0x10) precompile data=${short(opts.data)} length=${
         opts.data.length
@@ -38,14 +39,14 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   if (inputData.length % 384 !== 0) {
-    if (opts._debug) {
+    if (opts._debug !== undefined) {
       opts._debug(`BLS12PAIRING (0x10) failed: Invalid input length length=${inputData.length}`)
     }
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
   if (opts.gasLimit < gasUsed) {
-    if (opts._debug) {
+    if (opts._debug !== undefined) {
       opts._debug(`BLS12PAIRING (0x10) failed: OOG`)
     }
     return OOGResult(opts.gasLimit)
@@ -55,7 +56,7 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
 
   const pairs = []
 
-  const zeroBytes16 = Buffer.alloc(16, 0)
+  const zeroBytes16 = new Uint8Array(16)
   const zeroByteCheck = [
     [0, 16],
     [64, 80],
@@ -69,12 +70,12 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
     // zero bytes check
     const pairStart = 384 * k
     for (const index in zeroByteCheck) {
-      const slicedBuffer = opts.data.slice(
+      const slicedBuffer = opts.data.subarray(
         zeroByteCheck[index][0] + pairStart,
         zeroByteCheck[index][1] + pairStart
       )
-      if (!slicedBuffer.equals(zeroBytes16)) {
-        if (opts._debug) {
+      if (!equalsBytes(slicedBuffer, zeroBytes16)) {
+        if (opts._debug !== undefined) {
           opts._debug(`BLS12PAIRING (0x10) failed: Point not on curve`)
         }
         return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
@@ -82,9 +83,9 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
     }
     let G1
     try {
-      G1 = BLS12_381_ToG1Point(opts.data.slice(pairStart, pairStart + 128), mcl)
+      G1 = BLS12_381_ToG1Point(opts.data.subarray(pairStart, pairStart + 128), mcl)
     } catch (e: any) {
-      if (opts._debug) {
+      if (opts._debug !== undefined) {
         opts._debug(`BLS12PAIRING (0x10) failed: ${e.message}`)
       }
       return EvmErrorResult(e, opts.gasLimit)
@@ -93,9 +94,9 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
     const g2start = pairStart + 128
     let G2
     try {
-      G2 = BLS12_381_ToG2Point(opts.data.slice(g2start, g2start + 256), mcl)
+      G2 = BLS12_381_ToG2Point(opts.data.subarray(g2start, g2start + 256), mcl)
     } catch (e: any) {
-      if (opts._debug) {
+      if (opts._debug !== undefined) {
         opts._debug(`BLS12PAIRING (0x10) failed: ${e.message}`)
       }
       return EvmErrorResult(e, opts.gasLimit)
@@ -131,8 +132,8 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
     returnValue = zeroBuffer
   }
 
-  if (opts._debug) {
-    opts._debug(`BLS12PAIRING (0x10) return value=${returnValue.toString('hex')}`)
+  if (opts._debug !== undefined) {
+    opts._debug(`BLS12PAIRING (0x10) return value=${bytesToHex(returnValue)}`)
   }
 
   return {

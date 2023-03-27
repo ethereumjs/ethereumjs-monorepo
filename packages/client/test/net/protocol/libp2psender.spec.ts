@@ -1,3 +1,4 @@
+import { bytesToHex, hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Libp2pSender } from '../../../lib/net/protocol'
@@ -10,11 +11,11 @@ tape('[Libp2pSender]', (t) => {
     const sender = new Libp2pSender(conn[0])
     const receiver = new Libp2pSender(conn[1])
     receiver.on('status', (status: any) => {
-      t.equal(status.id.toString('hex'), '05', 'status received')
-      t.equal(receiver.status.id.toString('hex'), '05', 'status getter')
+      t.equal(bytesToHex(status.id), '05', 'status received')
+      t.equal(bytesToHex(receiver.status.id), '05', 'status getter')
       t.end()
     })
-    sender.sendStatus({ id: Buffer.from('05', 'hex') })
+    sender.sendStatus({ id: hexStringToBytes('05') })
   })
 
   t.test('should send/receive message', (t) => {
@@ -23,10 +24,10 @@ tape('[Libp2pSender]', (t) => {
     const receiver = new Libp2pSender(conn[1])
     receiver.on('message', (message: any) => {
       t.equal(message.code, 1, 'message received (code)')
-      t.equal(message.payload.toString('hex'), '05', 'message received (payload)')
+      t.equal(bytesToHex(message.payload), '05', 'message received (payload)')
       t.end()
     })
-    sender.sendMessage(1, Buffer.from('05', 'hex'))
+    sender.sendMessage(1, hexStringToBytes('05'))
   })
 
   t.test('should catch errors', (t) => {

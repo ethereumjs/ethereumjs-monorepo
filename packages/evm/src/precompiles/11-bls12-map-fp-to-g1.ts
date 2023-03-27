@@ -1,4 +1,5 @@
 import { short } from '@ethereumjs/util'
+import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
 
 import { EvmErrorResult, OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
@@ -15,7 +16,7 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
 
   // note: the gas used is constant; even if the input is incorrect.
   const gasUsed = opts._common.paramByEIP('gasPrices', 'Bls12381MapG1Gas', 2537) ?? BigInt(0)
-  if (opts._debug) {
+  if (opts._debug !== undefined) {
     opts._debug(
       `Run BLS12MAPFPTOG1 (0x11) precompile data=${short(opts.data)} length=${
         opts.data.length
@@ -24,23 +25,23 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   if (opts.gasLimit < gasUsed) {
-    if (opts._debug) {
+    if (opts._debug !== undefined) {
       opts._debug(`BLS12MAPFPTOG1 (0x11) failed: OOG`)
     }
     return OOGResult(opts.gasLimit)
   }
 
   if (inputData.length !== 64) {
-    if (opts._debug) {
+    if (opts._debug !== undefined) {
       opts._debug(`BLS12MAPFPTOG1 (0x11) failed: Invalid input length length=${inputData.length}`)
     }
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
   // check if some parts of input are zero bytes.
-  const zeroBytes16 = Buffer.alloc(16, 0)
-  if (!opts.data.slice(0, 16).equals(zeroBytes16)) {
-    if (opts._debug) {
+  const zeroBytes16 = new Uint8Array(16)
+  if (!equalsBytes(opts.data.subarray(0, 16), zeroBytes16)) {
+    if (opts._debug !== undefined) {
       opts._debug(`BLS12MAPFPTOG1 (0x11) failed: Point not on curve`)
     }
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
@@ -50,9 +51,9 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
 
   let Fp1Point
   try {
-    Fp1Point = BLS12_381_ToFpPoint(opts.data.slice(0, 64), mcl)
+    Fp1Point = BLS12_381_ToFpPoint(opts.data.subarray(0, 64), mcl)
   } catch (e: any) {
-    if (opts._debug) {
+    if (opts._debug !== undefined) {
       opts._debug(`BLS12MAPFPTOG1 (0x11) failed: ${e.message}`)
     }
     return EvmErrorResult(e, opts.gasLimit)
@@ -63,8 +64,8 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
 
   const returnValue = BLS12_381_FromG1Point(result)
 
-  if (opts._debug) {
-    opts._debug(`BLS12MAPFPTOG1 (0x11) return value=${returnValue.toString('hex')}`)
+  if (opts._debug !== undefined) {
+    opts._debug(`BLS12MAPFPTOG1 (0x11) return value=${bytesToHex(returnValue)}`)
   }
 
   return {

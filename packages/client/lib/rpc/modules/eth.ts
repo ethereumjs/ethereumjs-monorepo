@@ -4,11 +4,12 @@ import {
   Address,
   TypeOutput,
   bigIntToHex,
-  bufferToHex,
+  bytesToPrefixedHexString,
+  hexStringToBytes,
   intToHex,
   setLengthLeft,
-  toBuffer,
   toType,
+  utf8ToBytes,
 } from '@ethereumjs/util'
 
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
@@ -83,7 +84,7 @@ const jsonRpcBlock = async (
   const json = block.toJSON()
   const header = json!.header!
   const transactions = block.transactions.map((tx, txIndex) =>
-    includeTransactions ? jsonRpcTx(tx, block, txIndex) : bufferToHex(tx.hash())
+    includeTransactions ? jsonRpcTx(tx, block, txIndex) : bytesToPrefixedHexString(tx.hash())
   )
   const withdrawalsAttr =
     header.withdrawalsRoot !== undefined
@@ -95,7 +96,7 @@ const jsonRpcBlock = async (
   const td = await chain.getTd(block.hash(), block.header.number)
   return {
     number: header.number!,
-    hash: bufferToHex(block.hash()),
+    hash: bytesToPrefixedHexString(block.hash()),
     parentHash: header.parentHash!,
     mixHash: header.mixHash,
     nonce: header.nonce!,
@@ -108,12 +109,12 @@ const jsonRpcBlock = async (
     difficulty: header.difficulty!,
     totalDifficulty: bigIntToHex(td),
     extraData: header.extraData!,
-    size: intToHex(Buffer.byteLength(JSON.stringify(json))),
+    size: intToHex(utf8ToBytes(JSON.stringify(json)).byteLength),
     gasLimit: header.gasLimit!,
     gasUsed: header.gasUsed!,
     timestamp: header.timestamp!,
     transactions,
-    uncles: block.uncleHeaders.map((uh) => bufferToHex(uh.hash())),
+    uncles: block.uncleHeaders.map((uh) => bytesToPrefixedHexString(uh.hash())),
     baseFeePerGas: header.baseFeePerGas,
     ...withdrawalsAttr,
     excessDataGas: header.excessDataGas,
@@ -133,12 +134,12 @@ const jsonRpcLog = async (
   removed: false, // TODO implement
   logIndex: logIndex !== undefined ? intToHex(logIndex) : null,
   transactionIndex: txIndex !== undefined ? intToHex(txIndex) : null,
-  transactionHash: tx ? bufferToHex(tx.hash()) : null,
-  blockHash: block ? bufferToHex(block.hash()) : null,
+  transactionHash: tx ? bytesToPrefixedHexString(tx.hash()) : null,
+  blockHash: block ? bytesToPrefixedHexString(block.hash()) : null,
   blockNumber: block ? bigIntToHex(block.header.number) : null,
-  address: bufferToHex(log[0]),
-  topics: log[1].map((t) => bufferToHex(t as Buffer)),
-  data: bufferToHex(log[2]),
+  address: bytesToPrefixedHexString(log[0]),
+  topics: log[1].map(bytesToPrefixedHexString),
+  data: bytesToPrefixedHexString(log[2]),
 })
 
 /**
@@ -154,9 +155,9 @@ const jsonRpcReceipt = async (
   logIndex: number,
   contractAddress?: Address
 ): Promise<JsonRpcReceipt> => ({
-  transactionHash: bufferToHex(tx.hash()),
+  transactionHash: bytesToPrefixedHexString(tx.hash()),
   transactionIndex: intToHex(txIndex),
-  blockHash: bufferToHex(block.hash()),
+  blockHash: bytesToPrefixedHexString(block.hash()),
   blockNumber: bigIntToHex(block.header.number),
   from: tx.getSenderAddress().toString(),
   to: tx.to?.toString() ?? null,
@@ -167,13 +168,15 @@ const jsonRpcReceipt = async (
   logs: await Promise.all(
     receipt.logs.map((l, i) => jsonRpcLog(l, block, tx, txIndex, logIndex + i))
   ),
-  logsBloom: bufferToHex(receipt.bitvector),
-  root: Buffer.isBuffer((receipt as PreByzantiumTxReceipt).stateRoot)
-    ? bufferToHex((receipt as PreByzantiumTxReceipt).stateRoot)
-    : undefined,
-  status: Buffer.isBuffer((receipt as PostByzantiumTxReceipt).status)
-    ? intToHex((receipt as PostByzantiumTxReceipt).status)
-    : undefined,
+  logsBloom: bytesToPrefixedHexString(receipt.bitvector),
+  root:
+    (receipt as PreByzantiumTxReceipt).stateRoot instanceof Uint8Array
+      ? bytesToPrefixedHexString((receipt as PreByzantiumTxReceipt).stateRoot)
+      : undefined,
+  status:
+    ((receipt as PostByzantiumTxReceipt).status as unknown) instanceof Uint8Array
+      ? intToHex((receipt as PostByzantiumTxReceipt).status)
+      : undefined,
 })
 
 /**
@@ -401,10 +404,10 @@ export class Eth {
         gasLimit: toType(gasLimit, TypeOutput.BigInt),
         gasPrice: toType(gasPrice, TypeOutput.BigInt),
         value: toType(value, TypeOutput.BigInt),
-        data: data !== undefined ? toBuffer(data) : undefined,
+        data: data !== undefined ? hexStringToBytes(data) : undefined,
       }
       const { execResult } = await vm.evm.runCall(runCallOpts)
-      return bufferToHex(execResult.returnValue)
+      return bytesToPrefixedHexString(execResult.returnValue)
     } catch (error: any) {
       throw {
         code: INTERNAL_ERROR,
@@ -527,7 +530,7 @@ export class Eth {
     const [blockHash, includeTransactions] = params
 
     try {
-      const block = await this._chain.getBlock(toBuffer(blockHash))
+      const block = await this._chain.getBlock(hexStringToBytes(blockHash))
       return await jsonRpcBlock(block, this._chain, includeTransactions)
     } catch (error) {
       throw {
@@ -556,7 +559,7 @@ export class Eth {
   async getBlockTransactionCountByHash(params: [string]) {
     const [blockHash] = params
     try {
-      const block = await this._chain.getBlock(toBuffer(blockHash))
+      const block = await this._chain.getBlock(hexStringToBytes(blockHash))
       return intToHex(block.transactions.length)
     } catch (error) {
       throw {
@@ -585,7 +588,7 @@ export class Eth {
 
     const address = Address.fromString(addressHex)
     const code = await vm.stateManager.getContractCode(address)
-    return bufferToHex(code)
+    return bytesToPrefixedHexString(code)
   }
 
   /**
@@ -608,11 +611,11 @@ export class Eth {
 
     const address = Address.fromString(addressHex)
     const storageTrie = await (vm.stateManager as any)._getStorageTrie(address)
-    const position = setLengthLeft(toBuffer(positionHex), 32)
+    const position = setLengthLeft(hexStringToBytes(positionHex), 32)
     const storage = await storageTrie.get(position)
     return storage !== null && storage !== undefined
-      ? bufferToHex(
-          setLengthLeft(Buffer.from(RLP.decode(Uint8Array.from(storage)) as Uint8Array), 32)
+      ? bytesToPrefixedHexString(
+          setLengthLeft(RLP.decode(Uint8Array.from(storage)) as Uint8Array, 32)
         )
       : '0x'
   }
@@ -627,7 +630,7 @@ export class Eth {
     try {
       const [blockHash, txIndexHex] = params
       const txIndex = parseInt(txIndexHex, 16)
-      const block = await this._chain.getBlock(toBuffer(blockHash))
+      const block = await this._chain.getBlock(hexStringToBytes(blockHash))
       if (block.transactions.length <= txIndex) {
         return null
       }
@@ -652,7 +655,7 @@ export class Eth {
 
     try {
       if (!this.receiptsManager) throw new Error('missing receiptsManager')
-      const result = await this.receiptsManager.getReceiptByTxHash(toBuffer(txHash))
+      const result = await this.receiptsManager.getReceiptByTxHash(hexStringToBytes(txHash))
       if (!result) return null
       const [_receipt, blockHash, txIndex] = result
       const block = await this._chain.getBlock(blockHash)
@@ -732,7 +735,7 @@ export class Eth {
 
     try {
       if (!this.receiptsManager) throw new Error('missing receiptsManager')
-      const result = await this.receiptsManager.getReceiptByTxHash(toBuffer(txHash))
+      const result = await this.receiptsManager.getReceiptByTxHash(hexStringToBytes(txHash))
       if (!result) return null
       const [receipt, blockHash, txIndex, logIndex] = result
       const block = await this._chain.getBlock(blockHash)
@@ -791,7 +794,7 @@ export class Eth {
     let from: Block, to: Block
     if (blockHash !== undefined) {
       try {
-        from = to = await this._chain.getBlock(toBuffer(blockHash))
+        from = to = await this._chain.getBlock(hexStringToBytes(blockHash))
       } catch (error: any) {
         throw {
           code: INVALID_PARAMS,
@@ -842,17 +845,17 @@ export class Eth {
         if (t === null) {
           return null
         } else if (Array.isArray(t)) {
-          return t.map((x) => toBuffer(x))
+          return t.map((x) => hexStringToBytes(x))
         } else {
-          return toBuffer(t)
+          return hexStringToBytes(t)
         }
       })
       let addrs
       if (address !== undefined) {
         if (Array.isArray(address)) {
-          addrs = address.map((a) => toBuffer(a))
+          addrs = address.map((a) => hexStringToBytes(a))
         } else {
-          addrs = [toBuffer(address)]
+          addrs = [hexStringToBytes(address)]
         }
       }
       const logs = await this.receiptsManager.getLogs(from, to, addrs, formattedTopics)
@@ -896,7 +899,7 @@ export class Eth {
 
     let tx
     try {
-      const txBuf = toBuffer(serializedTx)
+      const txBuf = hexStringToBytes(serializedTx)
       if (txBuf[0] === 0x05) {
         // Blob Transactions sent over RPC are expected to be in Network Wrapper format
         tx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txBuf, { common })
@@ -943,7 +946,7 @@ export class Eth {
     }
     txPool.sendTransactions([tx], peerPool.peers)
 
-    return bufferToHex(tx.hash())
+    return bytesToPrefixedHexString(tx.hash())
   }
 
   /**
@@ -970,7 +973,7 @@ export class Eth {
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = Address.fromString(addressHex)
-    const slots = slotsHex.map((slotHex) => setLengthLeft(toBuffer(slotHex), 32))
+    const slots = slotsHex.map((slotHex) => setLengthLeft(hexStringToBytes(slotHex), 32))
     const proof = await vm.stateManager.getProof!(address, slots)
     return proof
   }

@@ -1,4 +1,4 @@
-import { randomBytes } from 'crypto'
+import { bytesToInt, intToBytes, randomBytes } from '@ethereumjs/util'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { TypedTransaction } from '@ethereumjs/tx'
@@ -7,14 +7,12 @@ import ms = require('ms')
 
 import * as devp2p from '../src/index'
 import { LES, Peer } from '../src/index'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 
 const PRIVATE_KEY = randomBytes(32)
 
 const GENESIS_TD = 1
-const GENESIS_HASH = Buffer.from(
-  '6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177',
-  'hex'
-)
+const GENESIS_HASH = hexToBytes('6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177')
 
 const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
 const bootstrapNodes = common.bootstrapNodes()
@@ -79,19 +77,24 @@ rlpx.on('peer:added', (peer) => {
   )
 
   les.sendStatus({
-    headTd: devp2p.int2buffer(GENESIS_TD),
+    headTd: intToBytes(GENESIS_TD),
     headHash: GENESIS_HASH,
-    headNum: Buffer.from([]),
+    headNum: Uint8Array.from([]),
     genesisHash: GENESIS_HASH,
-    announceType: devp2p.int2buffer(0),
-    recentTxLookup: devp2p.int2buffer(1),
-    forkID: [Buffer.from('3b8e0691', 'hex'), devp2p.int2buffer(1)],
+    announceType: intToBytes(0),
+    recentTxLookup: intToBytes(1),
+    forkID: [hexToBytes('3b8e0691'), intToBytes(1)],
   })
 
   les.once('status', (status: LES.Status) => {
     const msg = [
-      Buffer.from([]),
-      [devp2p.buffer2int(status['headNum']), Buffer.from([1]), Buffer.from([]), Buffer.from([1])],
+      Uint8Array.from([]),
+      [
+        bytesToInt(status['headNum']),
+        Uint8Array.from([1]),
+        Uint8Array.from([]),
+        Uint8Array.from([1]),
+      ],
     ]
     les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_HEADERS, msg)
   })
@@ -109,7 +112,7 @@ rlpx.on('peer:added', (peer) => {
 
         setTimeout(() => {
           les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_BODIES, [
-            Buffer.from([1]),
+            Uint8Array.from([1]),
             [header.hash()],
           ])
           requests.bodies.push(header)
@@ -196,7 +199,7 @@ dpt.addPeer({ address: '127.0.0.1', udpPort: 30303, tcpPort: 30303 })
   .catch((err) => console.log(`error on connection to local node: ${err.stack ??  err}`)) */
 
 function onNewBlock(block: Block, peer: Peer) {
-  const blockHashHex = block.hash().toString('hex')
+  const blockHashHex = bytesToHex(block.hash())
   const blockNumber = block.header.number
 
   console.log(

@@ -1,9 +1,8 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { bufArrToArr } from '@ethereumjs/util'
+import { bytesToPrefixedHexString } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { Blockchain } from '../src'
@@ -335,8 +334,9 @@ tape('[Blockchain]: Block validation tests', (t) => {
         common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin }),
       })
 
-      forkBlockHeaderData.uncleHash =
-        '0x' + bytesToHex(keccak256(RLP.encode(bufArrToArr([uncleHeader.raw()]))))
+      forkBlockHeaderData.uncleHash = bytesToPrefixedHexString(
+        keccak256(RLP.encode([uncleHeader.raw()]))
+      )
 
       const forkBlock_ValidCommon = Block.fromBlockData(
         {
@@ -348,8 +348,9 @@ tape('[Blockchain]: Block validation tests', (t) => {
         }
       )
 
-      st.ok(
-        forkBlock_ValidCommon.uncleHeaders[0].hash().equals(uncleHeader.hash()),
+      st.deepEquals(
+        forkBlock_ValidCommon.uncleHeaders[0].hash(),
+        uncleHeader.hash(),
         'successfully validated a pre-london uncle on a london block'
       )
       st.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')

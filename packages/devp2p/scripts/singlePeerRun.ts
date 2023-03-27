@@ -1,4 +1,4 @@
-import { randomBytes } from 'crypto'
+import { randomBytes } from '@ethereumjs/util'
 import { Chain, Common } from '@ethereumjs/common'
 import * as devp2p from '../src/index'
 

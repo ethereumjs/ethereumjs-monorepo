@@ -1,3 +1,4 @@
+import { bytesToHex } from '@ethereumjs/util'
 import * as dir from 'node-dir'
 import * as path from 'path'
 
@@ -38,7 +39,7 @@ export async function getTests(
     }
     const fileCallback = async (
       err: Error | undefined,
-      content: string | Buffer,
+      content: string | Uint8Array,
       fileName: string,
       next: Function
     ) => {
@@ -48,7 +49,7 @@ export async function getTests(
       }
       const subDir = fileName.substr(directory.length + 1)
       const parsedFileName = path.parse(fileName).name
-      content = Buffer.isBuffer(content) ? content.toString() : content
+      content = content instanceof Uint8Array ? bytesToHex(content) : content
       const testsByName = JSON.parse(content)
       const testNames = Object.keys(testsByName)
       for (const testName of testNames) {

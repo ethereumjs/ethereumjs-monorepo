@@ -4,6 +4,7 @@ import { Common, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import { Interface } from '@ethersproject/abi'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../src/vm'
@@ -57,10 +58,7 @@ const block = Block.fromBlockData(
     common,
   }
 )
-const privateKey = Buffer.from(
-  'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-  'hex'
-)
+const privateKey = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 
 tape('VM initialized with custom state', (t) => {
   t.test('should transfer eth from already existent account', async (t) => {
@@ -99,14 +97,14 @@ tape('VM initialized with custom state', (t) => {
 
     const callResult = await vm.evm.runCall({
       to: Address.fromString(contractAddress),
-      data: Buffer.from(sigHash.slice(2), 'hex'),
+      data: hexToBytes(sigHash.slice(2)),
       caller: Address.fromPrivateKey(privateKey),
     })
 
     const storage = genesisState[contractAddress][2]
     // Returned value should be 4, because we are trying to trigger the method `retrieve`
     // in the contract, which returns the variable stored in slot 0x00..00
-    t.equal(callResult.execResult.returnValue.toString('hex'), storage[0][1].slice(2))
+    t.equal(bytesToHex(callResult.execResult.returnValue), storage[0][1].slice(2))
     t.end()
   })
 

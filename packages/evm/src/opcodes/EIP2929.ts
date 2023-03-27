@@ -22,7 +22,7 @@ export function accessAddressEIP2929(
   if (common.isActivatedEIP(2929) === false) return BigInt(0)
 
   const eei = runState.eei
-  const addressStr = address.buf
+  const addressStr = address.bytes
 
   // Cold
   if (!eei.isWarmedAddress(addressStr)) {
@@ -45,19 +45,19 @@ export function accessAddressEIP2929(
  * Adjusts cost incurred for executing opcode based on whether storage read
  * is warm/cold. (EIP 2929)
  * @param {RunState} runState
- * @param {Buffer} key (to storage slot)
+ * @param {Uint8Array} key (to storage slot)
  * @param {Common} common
  */
 export function accessStorageEIP2929(
   runState: RunState,
-  key: Buffer,
+  key: Uint8Array,
   isSstore: boolean,
   common: Common
 ): bigint {
   if (common.isActivatedEIP(2929) === false) return BigInt(0)
 
   const eei = runState.eei
-  const address = runState.interpreter.getAddress().buf
+  const address = runState.interpreter.getAddress().bytes
   const slotIsCold = !eei.isWarmedStorage(address, key)
 
   // Cold (SLOAD and SSTORE)
@@ -74,7 +74,7 @@ export function accessStorageEIP2929(
  * Adjusts cost of SSTORE_RESET_GAS or SLOAD (aka sstorenoop) (EIP-2200) downward when storage
  * location is already warm
  * @param  {RunState} runState
- * @param  {Buffer}   key          storage slot
+ * @param  {Uint8Array}   key          storage slot
  * @param  {BigInt}   defaultCost  SSTORE_RESET_GAS / SLOAD
  * @param  {string}   costName     parameter name ('noop')
  * @param  {Common}   common
@@ -82,7 +82,7 @@ export function accessStorageEIP2929(
  */
 export function adjustSstoreGasEIP2929(
   runState: RunState,
-  key: Buffer,
+  key: Uint8Array,
   defaultCost: bigint,
   costName: string,
   common: Common
@@ -90,7 +90,7 @@ export function adjustSstoreGasEIP2929(
   if (common.isActivatedEIP(2929) === false) return defaultCost
 
   const eei = runState.eei
-  const address = runState.interpreter.getAddress().buf
+  const address = runState.interpreter.getAddress().bytes
   const warmRead = common.param('gasPrices', 'warmstorageread')
   const coldSload = common.param('gasPrices', 'coldsload')
 

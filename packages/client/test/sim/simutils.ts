@@ -5,9 +5,14 @@ import {
   commitmentsToVersionedHashes,
   getBlobs,
 } from '@ethereumjs/tx/dist/utils/blobHelpers'
-import { Address } from '@ethereumjs/util'
+import {
+  Address,
+  bytesToHex,
+  bytesToPrefixedHexString,
+  bytesToUtf8,
+  randomBytes,
+} from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { randomBytes } from 'crypto'
 import * as fs from 'fs/promises'
 import { Level } from 'level'
 import { execSync, spawn } from 'node:child_process'
@@ -133,7 +138,7 @@ export function runNetwork(
   const runProcPrefix = withPeer !== undefined ? 'peer1' : ''
   let lastPrintedDot = false
   runProc.stdout.on('data', (chunk) => {
-    const str = Buffer.from(chunk).toString('utf8')
+    const str = bytesToUtf8(chunk)
     const filterStr = filterKeywords.reduce((acc, next) => acc || str.includes(next), false)
     const filterOutStr = filterOutWords.reduce((acc, next) => acc || str.includes(next), false)
     if (filterStr && !filterOutStr) {
@@ -143,16 +148,16 @@ export function runNetwork(
       }
       process.stdout.write(`data:${runProcPrefix}: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
     } else {
-      if (str.includes('Synchronized')) {
+      if (str.includes('Synchronized') === true) {
         process.stdout.write('.')
         lastPrintedDot = true
-      } else if (str.includes('Synced') && !str.includes('skipped')) {
+      } else if (str.includes('Synced') === true && str.includes('skipped') === false) {
         process.stdout.write('`')
       }
     }
   })
   runProc.stderr.on('data', (chunk) => {
-    const str = Buffer.from(chunk).toString('utf8')
+    const str = bytesToUtf8(chunk)
     const filterStr = filterKeywords.reduce((acc, next) => acc || str.includes(next), false)
     const filterOutStr = filterOutWords.reduce((acc, next) => acc || str.includes(next), false)
     if (filterStr && !filterOutStr) {
@@ -178,7 +183,7 @@ export function runNetwork(
 
     let lastPrintedDot = false
     peerRunProc.stdout.on('data', (chunk) => {
-      const str = Buffer.from(chunk).toString('utf8')
+      const str = bytesToUtf8(chunk)
       const filterStr = filterKeywords.reduce((acc, next) => acc || str.includes(next), false)
       const filterOutStr = filterOutWords.reduce((acc, next) => acc || str.includes(next), false)
       if (filterStr && !filterOutStr) {
@@ -188,14 +193,14 @@ export function runNetwork(
         }
         process.stdout.write(`${withPeer}:el<>cl: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
       } else {
-        if (str.includes('Synchronized')) {
+        if (str.includes('Synchronized') === true) {
           process.stdout.write('.')
           lastPrintedDot = true
         }
       }
     })
     peerRunProc.stderr.on('data', (chunk) => {
-      const str = Buffer.from(chunk).toString('utf8')
+      const str = bytesToUtf8(chunk)
       const filterOutStr = filterOutWords.reduce((acc, next) => acc || str.includes(next), false)
       if (!filterOutStr) {
         process.stderr.write(`${withPeer}:el<>cl: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
@@ -241,7 +246,7 @@ export async function startNetwork(
 }
 
 export async function runTxHelper(
-  opts: { client: Client; common: Common; sender: string; pkey: Buffer },
+  opts: { client: Client; common: Common; sender: string; pkey: Uint8Array },
   data: string,
   to?: string,
   value?: bigint
@@ -267,7 +272,7 @@ export async function runTxHelper(
 
   const res = await client.request(
     'eth_sendRawTransaction',
-    ['0x' + tx.serialize().toString('hex')],
+    [bytesToPrefixedHexString(tx.serialize())],
     2.0
   )
   let mined = false
@@ -290,11 +295,11 @@ export async function runTxHelper(
 export const runBlobTx = async (
   client: Client,
   blobSize: number,
-  pkey: Buffer,
+  pkey: Uint8Array,
   to?: string,
   value?: bigint
 ) => {
-  const blobs = getBlobs(randomBytes(blobSize).toString('hex'))
+  const blobs = getBlobs(bytesToHex(randomBytes(blobSize)))
   const commitments = blobsToCommitments(blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
 
@@ -328,7 +333,7 @@ export const runBlobTx = async (
 
   const res = await client.request(
     'eth_sendRawTransaction',
-    ['0x' + serializedWrapper.toString('hex')],
+    [bytesToPrefixedHexString(serializedWrapper)],
     2.0
   )
 
@@ -352,13 +357,13 @@ export const runBlobTx = async (
 export const createBlobTxs = async (
   numTxs: number,
   blobSize = 2 ** 17 - 1,
-  pkey: Buffer,
+  pkey: Uint8Array,
   to?: string,
   value?: bigint
 ) => {
   const txHashes: any = []
 
-  const blobs = getBlobs(randomBytes(blobSize).toString('hex'))
+  const blobs = getBlobs(bytesToHex(randomBytes(blobSize)))
   const commitments = blobsToCommitments(blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
 
@@ -389,8 +394,8 @@ export const createBlobTxs = async (
     const blobTx = BlobEIP4844Transaction.fromTxData(txData).sign(pkey)
 
     const serializedWrapper = blobTx.serializeNetworkWrapper()
-    await fs.appendFile('./blobs.txt', '0x' + serializedWrapper.toString('hex') + '\n')
-    txHashes.push('0x' + blobTx.hash().toString('hex'))
+    await fs.appendFile('./blobs.txt', bytesToPrefixedHexString(serializedWrapper) + '\n')
+    txHashes.push(bytesToPrefixedHexString(blobTx.hash()))
   }
   return txHashes
 }
@@ -409,13 +414,13 @@ export const runBlobTxsFromFile = async (client: Client, path: string) => {
 export async function createInlineClient(config: any, common: any, customGenesisState: any) {
   config.events.setMaxListeners(50)
   const datadir = Config.DATADIR_DEFAULT
-  const chainDB = new Level<string | Buffer, string | Buffer>(
+  const chainDB = new Level<string | Uint8Array, string | Uint8Array>(
     `${datadir}/${common.chainName()}/chainDB`
   )
-  const stateDB = new Level<string | Buffer, string | Buffer>(
+  const stateDB = new Level<string | Uint8Array, string | Uint8Array>(
     `${datadir}/${common.chainName()}/stateDB`
   )
-  const metaDB = new Level<string | Buffer, string | Buffer>(
+  const metaDB = new Level<string | Uint8Array, string | Uint8Array>(
     `${datadir}/${common.chainName()}/metaDB`
   )
 

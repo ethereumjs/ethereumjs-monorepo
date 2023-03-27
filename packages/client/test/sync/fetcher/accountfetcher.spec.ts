@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bufferToBigInt } from '@ethereumjs/util'
+import { bytesToBigInt, hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
@@ -30,7 +30,7 @@ tape('[AccountFetcher]', async (t) => {
     const fetcher = new AccountFetcher({
       config,
       pool,
-      root: Buffer.from(''),
+      root: new Uint8Array(0),
       first: BigInt(1),
       count: BigInt(10),
     })
@@ -52,28 +52,28 @@ tape('[AccountFetcher]', async (t) => {
     const fetcher = new AccountFetcher({
       config,
       pool,
-      root: Buffer.from(''),
+      root: new Uint8Array(0),
       first: BigInt(1),
       count: BigInt(10),
     })
     const fullResult: any = [
       {
-        hash: Buffer.from(''),
-        body: [Buffer.from(''), Buffer.from(''), Buffer.from(''), Buffer.from('')],
+        hash: new Uint8Array(0),
+        body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
       },
       {
-        hash: Buffer.from(''),
-        body: [Buffer.from(''), Buffer.from(''), Buffer.from(''), Buffer.from('')],
+        hash: new Uint8Array(0),
+        body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
       },
     ]
     const accountDataResponse: any = [
       {
-        hash: Buffer.from(''),
-        body: [Buffer.from(''), Buffer.from(''), Buffer.from(''), Buffer.from('')],
+        hash: new Uint8Array(0),
+        body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
       },
       {
-        hash: Buffer.from(''),
-        body: [Buffer.from(''), Buffer.from(''), Buffer.from(''), Buffer.from('')],
+        hash: new Uint8Array(0),
+        body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
       },
     ]
     accountDataResponse.completed = true
@@ -88,18 +88,18 @@ tape('[AccountFetcher]', async (t) => {
     const fetcher = new AccountFetcher({
       config,
       pool,
-      root: Buffer.from(''),
+      root: new Uint8Array(0),
       first: BigInt(1),
       count: BigInt(10),
     })
     const accountDataResponse: any = [
       {
-        hash: Buffer.from(''),
-        body: [Buffer.from(''), Buffer.from(''), Buffer.from(''), Buffer.from('')],
+        hash: new Uint8Array(0),
+        body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
       },
       {
-        hash: Buffer.from(''),
-        body: [Buffer.from(''), Buffer.from(''), Buffer.from(''), Buffer.from('')],
+        hash: new Uint8Array(0),
+        body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
       },
     ]
     accountDataResponse.completed = false
@@ -114,8 +114,8 @@ tape('[AccountFetcher]', async (t) => {
 
     const remainingAccountData: any = [
       {
-        hash: Buffer.from(''),
-        body: [Buffer.from(''), Buffer.from(''), Buffer.from(''), Buffer.from('')],
+        hash: new Uint8Array(0),
+        body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
       },
     ]
     remainingAccountData.completed = true
@@ -131,19 +131,19 @@ tape('[AccountFetcher]', async (t) => {
     const fetcher = new AccountFetcher({
       config,
       pool,
-      root: Buffer.from(''),
+      root: new Uint8Array(0),
       first: BigInt(1),
       count: BigInt(3),
     })
     const partialResult: any = [
       [
         {
-          hash: Buffer.from(''),
-          body: [Buffer.from(''), Buffer.from(''), Buffer.from(''), Buffer.from('')],
+          hash: new Uint8Array(0),
+          body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
         },
         {
-          hash: Buffer.from(''),
-          body: [Buffer.from(''), Buffer.from(''), Buffer.from(''), Buffer.from('')],
+          hash: new Uint8Array(0),
+          body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
         },
       ],
     ]
@@ -158,7 +158,7 @@ tape('[AccountFetcher]', async (t) => {
     await fetcher.request(job as any)
     td.verify(
       job.peer.snap.getAccountRange({
-        root: Buffer.from(''),
+        root: new Uint8Array(0),
         origin: td.matchers.anything(),
         limit: td.matchers.anything(),
         bytes: BigInt(50000),
@@ -175,18 +175,18 @@ tape('[AccountFetcher]', async (t) => {
     const fetcher = new AccountFetcher({
       config,
       pool,
-      root: Buffer.from('39ed8daab7679c0b1b7cf3667c50108185d4d9d1431c24a1c35f696a58277f8f', 'hex'),
-      first: bufferToBigInt(
-        Buffer.from('0000000000000000000000000000000000000000000000000000000000000001', 'hex')
+      root: hexStringToBytes('39ed8daab7679c0b1b7cf3667c50108185d4d9d1431c24a1c35f696a58277f8f'),
+      first: bytesToBigInt(
+        hexStringToBytes('0000000000000000000000000000000000000000000000000000000000000001')
       ),
-      count: bufferToBigInt(
-        Buffer.from('000010c6f7a0b5ed8d36b4c7f34938583621fafc8b0079a2834d26fa3fcc9ea9', 'hex')
+      count: bytesToBigInt(
+        hexStringToBytes('000010c6f7a0b5ed8d36b4c7f34938583621fafc8b0079a2834d26fa3fcc9ea9')
       ),
     })
     t.ok(fetcher.storageFetcher !== undefined, 'storageFetcher should be created')
 
     const task = { count: 3, first: BigInt(1) }
-    const resData = RLP.decode(Buffer.from(_accountRangeRLP, 'hex')) as unknown
+    const resData = RLP.decode(hexStringToBytes(_accountRangeRLP))
     const { accounts, proof } = p.decode(
       p.messages.filter((message) => message.name === 'AccountRange')[0],
       resData
@@ -252,7 +252,7 @@ tape('[AccountFetcher]', async (t) => {
     const fetcher = new AccountFetcher({
       config,
       pool,
-      root: Buffer.from(''),
+      root: new Uint8Array(0),
       first: BigInt(1),
       count: BigInt(10),
     })

@@ -28,7 +28,8 @@
     "src"
   ],
   "scripts": {
-    "build": "../../config/cli/ts-build.sh",
+    "rustbnHotFix": "sed -i -e \"s/.toString('hex')), 'hex'//g\" ../../node_modules/rustbn.js/index.js && sed -i -e \"s/Buffer.from(//g\" ../../node_modules/rustbn.js/index.js",
+    "build": "npm run rustbnHotFix && ../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "c8 --all --reporter=lcov --reporter=text npm run coverage:test",
     "coverage:test": "npm run test && cd ../vm && npm run tester -- --state",
