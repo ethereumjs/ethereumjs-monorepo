@@ -1,9 +1,8 @@
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { EVM } from '../src/evm'
-
-import { getEEI } from './utils'
 
 import type { ExecResult } from '../src/evm'
 import type { PrecompileInput } from '../src/precompiles'
@@ -30,7 +29,7 @@ tape('EVM -> custom precompiles', (t) => {
           function: customPrecompile,
         },
       ],
-      eei: await getEEI(),
+      stateManager: new DefaultStateManager(),
     })
     const result = await EVMOverride.runCall({
       to: shaAddress,
@@ -49,7 +48,7 @@ tape('EVM -> custom precompiles', (t) => {
           address: shaAddress,
         },
       ],
-      eei: await getEEI(),
+      stateManager: new DefaultStateManager(),
     })
     const result = await EVMOverride.runCall({
       to: shaAddress,
@@ -69,7 +68,7 @@ tape('EVM -> custom precompiles', (t) => {
           function: customPrecompile,
         },
       ],
-      eei: await getEEI(),
+      stateManager: new DefaultStateManager(),
     })
     const result = await EVMOverride.runCall({
       to: newPrecompile,
@@ -82,7 +81,7 @@ tape('EVM -> custom precompiles', (t) => {
   })
 
   t.test('should not persist changes to precompiles', async (st) => {
-    let EVMSha = await EVM.create({ eei: await getEEI() })
+    let EVMSha = await EVM.create({ stateManager: new DefaultStateManager() })
     const shaResult = await EVMSha.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
@@ -96,7 +95,7 @@ tape('EVM -> custom precompiles', (t) => {
           function: customPrecompile,
         },
       ],
-      eei: await getEEI(),
+      stateManager: new DefaultStateManager(),
     })
     const result = await EVMOverride.runCall({
       to: shaAddress,
@@ -107,7 +106,7 @@ tape('EVM -> custom precompiles', (t) => {
     // sanity: check we have overridden
     st.ok(result.execResult.returnValue.equals(expectedReturn), 'return value is correct')
     st.ok(result.execResult.executionGasUsed === expectedGas, 'gas used is correct')
-    EVMSha = await EVM.create({ eei: await getEEI() })
+    EVMSha = await EVM.create({ stateManager: new DefaultStateManager() })
     const shaResult2 = await EVMSha.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
@@ -131,7 +130,7 @@ tape('EVM -> custom precompiles', (t) => {
           function: customPrecompile,
         },
       ],
-      eei: await getEEI(),
+      stateManager: new DefaultStateManager(),
     })
     const evmCopy = evm.copy()
     st.deepEqual(

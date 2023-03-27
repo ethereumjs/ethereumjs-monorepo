@@ -1,8 +1,7 @@
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import * as tape from 'tape'
 
 import { EVM } from '../src'
-
-import { getEEI } from './utils'
 
 const STOP = '00'
 const JUMP = '56'
@@ -21,8 +20,7 @@ const testCases = [
 ]
 
 tape('VM.runCode: initial program counter', async (t) => {
-  const eei = await getEEI()
-  const evm = await EVM.create({ eei })
+  const evm = await EVM.create({ stateManager: new DefaultStateManager() })
 
   for (const [i, testData] of testCases.entries()) {
     const runCodeArgs = {
@@ -57,8 +55,7 @@ tape('VM.runCode: initial program counter', async (t) => {
 
 tape('VM.runCode: interpreter', (t) => {
   t.test('should return a EvmError as an exceptionError on the result', async (st) => {
-    const eei = await getEEI()
-    const evm = await EVM.create({ eei })
+    const evm = await EVM.create({ stateManager: new DefaultStateManager() })
 
     const INVALID_opcode = 'fe'
     const runCodeArgs = {
@@ -78,11 +75,10 @@ tape('VM.runCode: interpreter', (t) => {
   })
 
   t.test('should throw on non-EvmError', async (st) => {
-    const eei = await getEEI()
-    eei.putContractStorage = (..._args) => {
+    const evm = await EVM.create({ stateManager: new DefaultStateManager() })
+    evm.eei.putContractStorage = (..._args) => {
       throw new Error('Test')
     }
-    const evm = await EVM.create({ eei })
 
     const SSTORE = '55'
     const runCodeArgs = {
@@ -102,8 +98,7 @@ tape('VM.runCode: interpreter', (t) => {
 
 tape('VM.runCode: RunCodeOptions', (t) => {
   t.test('should throw on negative value args', async (st) => {
-    const eei = await getEEI()
-    const evm = await EVM.create({ eei })
+    const evm = await EVM.create({ stateManager: new DefaultStateManager() })
 
     const runCodeArgs = {
       value: BigInt(-10),

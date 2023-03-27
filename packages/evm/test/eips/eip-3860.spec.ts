@@ -1,9 +1,9 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address, privateToAddress } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { EVM } from '../../src'
-import { getEEI } from '../utils'
 
 const pkey = Buffer.from('20'.repeat(32), 'hex')
 const sender = new Address(privateToAddress(pkey))
@@ -15,8 +15,7 @@ tape('EIP 3860 tests', (t) => {
       hardfork: Hardfork.London,
       eips: [3860],
     })
-    const eei = await getEEI()
-    const evm = await EVM.create({ common, eei })
+    const evm = await EVM.create({ common, stateManager: new DefaultStateManager() })
 
     const buffer = Buffer.allocUnsafe(1000000).fill(0x60)
 
@@ -55,9 +54,14 @@ tape('EIP 3860 tests', (t) => {
       eips: [],
     })
     const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-    const eei = await getEEI()
-    const evm = await EVM.create({ common: commonWith3860, eei })
-    const evmWithout3860 = await EVM.create({ common: commonWithout3860, eei: eei.copy() })
+    const evm = await EVM.create({
+      common: commonWith3860,
+      stateManager: new DefaultStateManager(),
+    })
+    const evmWithout3860 = await EVM.create({
+      common: commonWithout3860,
+      stateManager: new DefaultStateManager(),
+    })
     const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     const contractAccount = await evm.eei.getAccount(contractFactory)
     await evm.eei.putAccount(contractFactory, contractAccount!)
@@ -101,9 +105,14 @@ tape('EIP 3860 tests', (t) => {
       eips: [],
     })
     const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-    const eei = await getEEI()
-    const evm = await EVM.create({ common: commonWith3860, eei })
-    const evmWithout3860 = await EVM.create({ common: commonWithout3860, eei: eei.copy() })
+    const evm = await EVM.create({
+      common: commonWith3860,
+      stateManager: new DefaultStateManager(),
+    })
+    const evmWithout3860 = await EVM.create({
+      common: commonWithout3860,
+      stateManager: new DefaultStateManager(),
+    })
     const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     const contractAccount = await evm.eei.getAccount(contractFactory)
     await evm.eei.putAccount(contractFactory, contractAccount!)
@@ -140,8 +149,11 @@ tape('EIP 3860 tests', (t) => {
       hardfork: Hardfork.London,
       eips: [3860],
     })
-    const eei = await getEEI()
-    const evm = await EVM.create({ common, eei, allowUnlimitedInitCodeSize: true })
+    const evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+      allowUnlimitedInitCodeSize: true,
+    })
 
     const buffer = Buffer.allocUnsafe(1000000).fill(0x60)
 
@@ -172,15 +184,14 @@ tape('EIP 3860 tests', (t) => {
     })
     const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     for (const code of ['F0', 'F5']) {
-      const eei = await getEEI()
       const evm = await EVM.create({
         common: commonWith3860,
-        eei,
+        stateManager: new DefaultStateManager(),
         allowUnlimitedInitCodeSize: true,
       })
       const evmDisabled = await EVM.create({
         common: commonWith3860,
-        eei: eei.copy(),
+        stateManager: new DefaultStateManager(),
         allowUnlimitedInitCodeSize: false,
       })
       const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
