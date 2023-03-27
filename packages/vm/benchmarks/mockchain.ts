@@ -17,7 +17,7 @@ export class Mockchain {
     }
   }
 
-  putBlockHash(num: bigint, hash: Buffer): void {
+  putBlockHash(num: bigint, hash: Uint8Array): void {
     this._hashes[num.toString()] = hash
   }
 }

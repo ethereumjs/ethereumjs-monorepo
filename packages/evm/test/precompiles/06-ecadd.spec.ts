@@ -14,7 +14,7 @@ tape('Precompiles: ECADD', (t) => {
     const ECADD = getActivePrecompiles(common).get(addressStr)!
 
     const result = await ECADD({
-      data: Buffer.alloc(0),
+      data: new Uint8Array(0),
       gasLimit: BigInt(0xffff),
       _common: common,
       _EVM: evm,

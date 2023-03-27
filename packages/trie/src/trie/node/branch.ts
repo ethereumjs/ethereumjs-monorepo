@@ -1,25 +1,24 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bufArrToArr } from '@ethereumjs/util'
 
 import type { EmbeddedNode } from '../../types'
 
 export class BranchNode {
   _branches: (EmbeddedNode | null)[]
-  _value: Buffer | null
+  _value: Uint8Array | null
 
   constructor() {
     this._branches = new Array(16).fill(null)
     this._value = null
   }
 
-  static fromArray(arr: Buffer[]): BranchNode {
+  static fromArray(arr: Uint8Array[]): BranchNode {
     const node = new BranchNode()
     node._branches = arr.slice(0, 16)
     node._value = arr[16]
     return node
   }
 
-  value(v?: Buffer | null): Buffer | null {
+  value(v?: Uint8Array | null): Uint8Array | null {
     if (v !== null && v !== undefined) {
       this._value = v
     }
@@ -35,8 +34,8 @@ export class BranchNode {
     return [...this._branches, this._value]
   }
 
-  serialize(): Buffer {
-    return Buffer.from(RLP.encode(bufArrToArr(this.raw() as Buffer[])))
+  serialize(): Uint8Array {
+    return RLP.encode(this.raw() as Uint8Array[])
   }
 
   getBranch(i: number) {

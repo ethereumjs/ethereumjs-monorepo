@@ -1,3 +1,4 @@
+import { hexStringToBytes } from '@ethereumjs/util'
 import { Multiaddr, multiaddr } from 'multiaddr'
 import { URL } from 'url'
 
@@ -83,12 +84,9 @@ export function parseTransports(transports: string[]) {
 }
 
 /**
- * Returns Buffer from input hexadecimal string or Buffer
- * @param input hexadecimal string or Buffer
+ * Returns Uint8Array from input hexadecimal string or Uint8Array
+ * @param input hexadecimal string or Uint8Array
  */
-export function parseKey(input: string | Buffer) {
-  if (Buffer.isBuffer(input)) {
-    return input
-  }
-  return Buffer.from(input, 'hex')
+export function parseKey(input: string | Uint8Array): Uint8Array {
+  return input instanceof Uint8Array ? input : hexStringToBytes(input)
 }

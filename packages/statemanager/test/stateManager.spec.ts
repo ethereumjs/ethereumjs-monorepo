@@ -3,12 +3,12 @@ import {
   Address,
   KECCAK256_RLP,
   KECCAK256_RLP_S,
-  toBuffer,
-  unpadBuffer,
+  hexStringToBytes,
+  unpadBytes,
   zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { bytesToHex, concatBytes, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 // explicitly import `inherits` to fix karma-typescript issue
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -30,29 +30,29 @@ tape('StateManager', (t) => {
 
   t.test('should set the state root to empty', async (st) => {
     const stateManager = new DefaultStateManager()
-    st.ok(stateManager._trie.root().equals(KECCAK256_RLP), 'it has default root')
+    st.ok(equalsBytes(stateManager._trie.root(), KECCAK256_RLP), 'it has default root')
 
     // commit some data to the trie
-    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+    const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
     const account = createAccount(BigInt(0), BigInt(1000))
     await stateManager.checkpoint()
     await stateManager.putAccount(address, account)
     await stateManager.commit()
     await stateManager.flush()
-    st.ok(!stateManager._trie.root().equals(KECCAK256_RLP), 'it has a new root')
+    st.ok(!equalsBytes(stateManager._trie.root(), KECCAK256_RLP), 'it has a new root')
 
     // set state root to empty trie root
-    const emptyTrieRoot = Buffer.from(KECCAK256_RLP_S, 'hex')
+    const emptyTrieRoot = hexToBytes(KECCAK256_RLP_S)
     await stateManager.setStateRoot(emptyTrieRoot)
 
     const res = await stateManager.getStateRoot()
-    st.ok(res.equals(KECCAK256_RLP), 'it has default root')
+    st.ok(equalsBytes(res, KECCAK256_RLP), 'it has default root')
     st.end()
   })
 
   t.test('should clear the cache when the state root is set', async (st) => {
     const stateManager = new DefaultStateManager()
-    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+    const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
     const account = createAccount()
 
     // test account storage cache
@@ -73,12 +73,14 @@ tape('StateManager', (t) => {
 
     // test contract storage cache
     await stateManager.checkpoint()
-    const key = toBuffer('0x1234567890123456789012345678901234567890123456789012345678901234')
-    const value = Buffer.from('0x1234')
+    const key = hexStringToBytes(
+      '0x1234567890123456789012345678901234567890123456789012345678901234'
+    )
+    const value = hexStringToBytes('0x1234')
     await stateManager.putContractStorage(address, key, value)
 
     const contract0 = await stateManager.getContractStorage(address, key)
-    st.ok(contract0.equals(value), "contract key's value is set in the _storageTries cache")
+    st.ok(equalsBytes(contract0, value), "contract key's value is set in the _storageTries cache")
 
     await stateManager.commit()
     await stateManager.setStateRoot(initialStateRoot)
@@ -93,7 +95,7 @@ tape('StateManager', (t) => {
     async (st) => {
       const stateManager = new DefaultStateManager()
       const account = createAccount()
-      const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+      const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
       await stateManager.putAccount(address, account)
 
@@ -106,8 +108,8 @@ tape('StateManager', (t) => {
 
       const res2 = await stateManager.getAccount(address)
 
-      st.equal(stateManager._cache._cache.begin().pointer[0], address.buf.toString('hex'))
-      st.ok(res1.serialize().equals(res2.serialize()))
+      st.equal(stateManager._cache._cache.begin().pointer[0], bytesToHex(address.bytes))
+      st.ok(equalsBytes(res1.serialize(), res2.serialize()))
 
       st.end()
     }
@@ -117,7 +119,7 @@ tape('StateManager', (t) => {
     'should call the callback with a boolean representing emptiness, when the account is empty',
     async (st) => {
       const stateManager = new DefaultStateManager()
-      const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+      const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
       const res = await stateManager.accountIsEmpty(address)
 
@@ -129,7 +131,7 @@ tape('StateManager', (t) => {
 
   t.test('should return false for a non-existent account', async (st) => {
     const stateManager = new DefaultStateManager()
-    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+    const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
     const res = await stateManager.accountExists(address)
 
@@ -141,7 +143,7 @@ tape('StateManager', (t) => {
   t.test('should return true for an existent account', async (st) => {
     const stateManager = new DefaultStateManager()
     const account = createAccount(BigInt(0x1), BigInt(0x1))
-    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+    const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
     await stateManager.putAccount(address, account)
 
@@ -157,7 +159,7 @@ tape('StateManager', (t) => {
     async (st) => {
       const stateManager = new DefaultStateManager()
       const account = createAccount(BigInt(0x1), BigInt(0x1))
-      const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+      const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
       await stateManager.putAccount(address, account)
 
@@ -172,7 +174,7 @@ tape('StateManager', (t) => {
   t.test('should modify account fields correctly', async (st) => {
     const stateManager = new DefaultStateManager()
     const account = createAccount()
-    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+    const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
     await stateManager.putAccount(address, account)
 
     await stateManager.modifyAccountFields(address, { balance: BigInt(1234) })
@@ -188,24 +190,22 @@ tape('StateManager', (t) => {
     st.equal(res2.nonce, BigInt(1))
 
     await stateManager.modifyAccountFields(address, {
-      codeHash: Buffer.from(
-        'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b',
-        'hex'
+      codeHash: hexStringToBytes(
+        'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b'
       ),
-      storageRoot: Buffer.from(
-        'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7',
-        'hex'
+      storageRoot: hexStringToBytes(
+        'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7'
       ),
     })
 
     const res3 = await stateManager.getAccount(address)
 
     st.equal(
-      res3.codeHash.toString('hex'),
+      bytesToHex(res3.codeHash),
       'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b'
     )
     st.equal(
-      res3.storageRoot.toString('hex'),
+      bytesToHex(res3.storageRoot),
       'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7'
     )
 
@@ -216,7 +216,7 @@ tape('StateManager', (t) => {
     'should modify account fields correctly on previously non-existent account',
     async (st) => {
       const stateManager = new DefaultStateManager()
-      const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+      const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
       await stateManager.modifyAccountFields(address, { balance: BigInt(1234) })
       const res1 = await stateManager.getAccount(address)
@@ -226,13 +226,11 @@ tape('StateManager', (t) => {
       const res2 = await stateManager.getAccount(address)
       st.equal(res2.nonce, BigInt(1))
 
-      const newCodeHash = Buffer.from(
-        'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b',
-        'hex'
+      const newCodeHash = hexStringToBytes(
+        'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b'
       )
-      const newStorageRoot = Buffer.from(
-        'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7',
-        'hex'
+      const newStorageRoot = hexStringToBytes(
+        'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7'
       )
       await stateManager.modifyAccountFields(address, {
         codeHash: newCodeHash,
@@ -240,21 +238,23 @@ tape('StateManager', (t) => {
       })
 
       const res3 = await stateManager.getAccount(address)
-      st.ok(res3.codeHash.equals(newCodeHash))
-      st.ok(res3.storageRoot.equals(newStorageRoot))
+      st.ok(equalsBytes(res3.codeHash, newCodeHash))
+      st.ok(equalsBytes(res3.storageRoot, newStorageRoot))
       st.end()
     }
   )
 
   t.test('should dump storage', async (st) => {
     const stateManager = new DefaultStateManager()
-    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+    const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
     const account = createAccount()
 
     await stateManager.putAccount(address, account)
 
-    const key = toBuffer('0x1234567890123456789012345678901234567890123456789012345678901234')
-    const value = toBuffer('0x0a') // We used this value as its RLP encoding is also 0a
+    const key = hexStringToBytes(
+      '0x1234567890123456789012345678901234567890123456789012345678901234'
+    )
+    const value = hexStringToBytes('0x0a') // We used this value as its RLP encoding is also 0a
     await stateManager.putContractStorage(address, key, value)
 
     const data = await stateManager.dumpStorage(address)
@@ -266,9 +266,9 @@ tape('StateManager', (t) => {
 
   t.test("should validate the key's length when modifying a contract's storage", async (st) => {
     const stateManager = new DefaultStateManager()
-    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+    const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
     try {
-      await stateManager.putContractStorage(address, Buffer.alloc(12), toBuffer('0x1231'))
+      await stateManager.putContractStorage(address, new Uint8Array(12), hexStringToBytes('0x1231'))
     } catch (e: any) {
       st.equal(e.message, 'Storage key must be 32 bytes long')
       st.end()
@@ -281,9 +281,9 @@ tape('StateManager', (t) => {
 
   t.test("should validate the key's length when reading a contract's storage", async (st) => {
     const stateManager = new DefaultStateManager()
-    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+    const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
     try {
-      await stateManager.getContractStorage(address, Buffer.alloc(12))
+      await stateManager.getContractStorage(address, new Uint8Array(12))
     } catch (e: any) {
       st.equal(e.message, 'Storage key must be 32 bytes long')
       st.end()
@@ -308,9 +308,9 @@ tape('StateManager', (t) => {
     // Setup
     const stateManager = new DefaultStateManager()
     const codeStateManager = new DefaultStateManager()
-    const address1 = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
-    const key1 = Buffer.from('00'.repeat(32), 'hex')
-    const key2 = Buffer.from('00'.repeat(31) + '01', 'hex')
+    const address1 = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
+    const key1 = hexStringToBytes('00'.repeat(32))
+    const key2 = hexStringToBytes('00'.repeat(31) + '01')
 
     await stateManager.putContractStorage(address1, key1, key2)
     await stateManager.putContractStorage(address1, key2, key2)
@@ -367,10 +367,9 @@ tape('StateManager - Contract code', (tester) => {
   const it = tester.test
   it('should set and get code', async (t) => {
     const stateManager = new DefaultStateManager()
-    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
-    const code = Buffer.from(
-      '73095e7baea6a6c7c4c2dfeb977efac326af552d873173095e7baea6a6c7c4c2dfeb977efac326af552d873157',
-      'hex'
+    const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
+    const code = hexStringToBytes(
+      '73095e7baea6a6c7c4c2dfeb977efac326af552d873173095e7baea6a6c7c4c2dfeb977efac326af552d873157'
     )
     const raw = {
       nonce: '0x0',
@@ -382,13 +381,13 @@ tape('StateManager - Contract code', (tester) => {
     await stateManager.putAccount(address, account)
     await stateManager.putContractCode(address, code)
     const codeRetrieved = await stateManager.getContractCode(address)
-    t.ok(code.equals(codeRetrieved))
+    t.ok(equalsBytes(code, codeRetrieved))
     t.end()
   })
 
   it('should not get code if is not contract', async (t) => {
     const stateManager = new DefaultStateManager()
-    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+    const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
     const raw = {
       nonce: '0x0',
       balance: '0x03e7',
@@ -396,33 +395,33 @@ tape('StateManager - Contract code', (tester) => {
     const account = Account.fromAccountData(raw)
     await stateManager.putAccount(address, account)
     const code = await stateManager.getContractCode(address)
-    t.ok(code.equals(Buffer.alloc(0)))
+    t.ok(equalsBytes(code, new Uint8Array(0)))
     t.end()
   })
 
   it('should set empty code', async (t) => {
     const stateManager = new DefaultStateManager()
-    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+    const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
     const raw = {
       nonce: '0x0',
       balance: '0x03e7',
     }
     const account = Account.fromAccountData(raw)
-    const code = Buffer.alloc(0)
+    const code = new Uint8Array(0)
     await stateManager.putAccount(address, account)
     await stateManager.putContractCode(address, code)
     const codeRetrieved = await stateManager.getContractCode(address)
-    t.ok(codeRetrieved.equals(Buffer.alloc(0)))
+    t.ok(equalsBytes(codeRetrieved, new Uint8Array(0)))
     t.end()
   })
 
   it('should prefix codehashes by default', async (t) => {
     const stateManager = new DefaultStateManager()
-    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
-    const code = Buffer.from('80', 'hex')
+    const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
+    const code = hexStringToBytes('80')
     await stateManager.putContractCode(address, code)
     const codeRetrieved = await stateManager.getContractCode(address)
-    t.ok(codeRetrieved.equals(code))
+    t.ok(equalsBytes(codeRetrieved, code))
     t.end()
   })
 
@@ -430,8 +429,8 @@ tape('StateManager - Contract code', (tester) => {
     const stateManager = new DefaultStateManager({
       prefixCodeHashes: false,
     })
-    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
-    const code = Buffer.from('80', 'hex')
+    const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
+    const code = hexStringToBytes('80')
     try {
       await stateManager.putContractCode(address, code)
       t.fail('should throw')
@@ -450,7 +449,7 @@ tape('StateManager - Contract storage', (tester) => {
     const stateManager = new DefaultStateManager()
     const address = Address.zero()
     const key = zeros(32)
-    const value = Buffer.from('aa'.repeat(33), 'hex')
+    const value = hexStringToBytes('aa'.repeat(33))
     try {
       await stateManager.putContractStorage(address, key, value)
       t.fail('did not throw')
@@ -465,26 +464,26 @@ tape('StateManager - Contract storage', (tester) => {
     const address = Address.zero()
 
     const key0 = zeros(32)
-    const value0 = Buffer.from('00' + 'aa'.repeat(30), 'hex') // put a value of 31-bytes length with a leading zero byte
-    const expect0 = unpadBuffer(value0)
+    const value0 = hexStringToBytes('00' + 'aa'.repeat(30)) // put a value of 31-bytes length with a leading zero byte
+    const expect0 = unpadBytes(value0)
     await stateManager.putContractStorage(address, key0, value0)
     const slot0 = await stateManager.getContractStorage(address, key0)
-    t.ok(slot0.equals(expect0), 'value of 31 bytes padded correctly')
+    t.ok(equalsBytes(slot0, expect0), 'value of 31 bytes padded correctly')
 
-    const key1 = Buffer.concat([zeros(31), Buffer.from('01', 'hex')])
-    const value1 = Buffer.from('0000' + 'aa'.repeat(1), 'hex') // put a value of 1-byte length with two leading zero bytes
-    const expect1 = unpadBuffer(value1)
+    const key1 = concatBytes(zeros(31), hexStringToBytes('01'))
+    const value1 = hexStringToBytes('0000' + 'aa'.repeat(1)) // put a value of 1-byte length with two leading zero bytes
+    const expect1 = unpadBytes(value1)
     await stateManager.putContractStorage(address, key1, value1)
     const slot1 = await stateManager.getContractStorage(address, key1)
 
-    t.ok(slot1.equals(expect1), 'value of 1 byte padded correctly')
+    t.ok(equalsBytes(slot1, expect1), 'value of 1 byte padded correctly')
     t.end()
   })
 
   it('should delete storage values which only consist of zero bytes', async (t) => {
     const address = Address.zero()
     const key = zeros(32)
-    const startValue = Buffer.from('01', 'hex')
+    const startValue = hexStringToBytes('01')
 
     const zeroLengths = [0, 1, 31, 32] // checks for arbitrary-length zeros
     t.plan(zeroLengths.length)
@@ -494,14 +493,14 @@ tape('StateManager - Contract storage', (tester) => {
       const value = zeros(length)
       await stateManager.putContractStorage(address, key, startValue)
       const currentValue = await stateManager.getContractStorage(address, key)
-      if (!currentValue.equals(startValue)) {
+      if (!equalsBytes(currentValue, startValue)) {
         // sanity check
         t.fail('contract value not set correctly')
       } else {
         // delete the value
         await stateManager.putContractStorage(address, key, value)
         const deleted = await stateManager.getContractStorage(address, key)
-        t.ok(deleted.equals(zeros(0)), 'the storage key should be deleted')
+        t.ok(equalsBytes(deleted, zeros(0)), 'the storage key should be deleted')
       }
     }
     t.end()
@@ -510,12 +509,12 @@ tape('StateManager - Contract storage', (tester) => {
   it('should not strip trailing zeros', async (t) => {
     const address = Address.zero()
     const key = zeros(32)
-    const value = Buffer.from('0000aabb00', 'hex')
-    const expect = Buffer.from('aabb00', 'hex')
+    const value = hexToBytes('0000aabb00')
+    const expect = hexToBytes('aabb00')
     const stateManager = new DefaultStateManager()
     await stateManager.putContractStorage(address, key, value)
     const contractValue = await stateManager.getContractStorage(address, key)
-    t.ok(contractValue.equals(expect), 'trailing zeros are not stripped')
+    t.ok(equalsBytes(contractValue, expect), 'trailing zeros are not stripped')
     t.end()
   })
 })

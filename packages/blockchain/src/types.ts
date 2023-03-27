@@ -21,12 +21,12 @@ export interface BlockchainInterface {
    *
    * @param blockHash - The hash of the block to be deleted
    */
-  delBlock(blockHash: Buffer): Promise<void>
+  delBlock(blockHash: Uint8Array): Promise<void>
 
   /**
    * Returns a block by its hash or number.
    */
-  getBlock(blockId: Buffer | number | bigint): Promise<Block>
+  getBlock(blockId: Uint8Array | number | bigint): Promise<Block>
 
   /**
    * Iterates through blocks starting at the specified iterator head and calls
@@ -66,7 +66,7 @@ export interface BlockchainInterface {
   /**
    * Gets total difficulty for a block specified by hash and number
    */
-  getTotalDifficulty?(hash: Buffer, number?: bigint): Promise<bigint>
+  getTotalDifficulty?(hash: Uint8Array, number?: bigint): Promise<bigint>
 
   /**
    * Returns the genesis state of the blockchain.
@@ -112,7 +112,7 @@ export interface BlockchainOptions {
    * or use the `level` convenience package:
    *   `new MemoryLevel('./db1')`
    */
-  db?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  db?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   /**
    * This flags indicates if a block should be validated along the consensus algorithm

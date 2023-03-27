@@ -1,6 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { ERROR } from '@ethereumjs/evm/dist/exceptions'
-import { bufferToBigInt } from '@ethereumjs/util'
+import { bytesToBigInt } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -17,7 +18,7 @@ const code = ['46', '60', '00', '53', '60', '01', '60', '00', 'f3']
 tape('Istanbul: EIP-1344', async (t) => {
   t.test('CHAINID', async (st) => {
     const runCodeArgs = {
-      code: Buffer.from(code.join(''), 'hex'),
+      code: hexToBytes(code.join('')),
       gasLimit: BigInt(0xffff),
     }
 
@@ -27,11 +28,11 @@ tape('Istanbul: EIP-1344', async (t) => {
       const vm = await VM.create({ common })
       try {
         const res = await vm.evm.runCode!(runCodeArgs)
-        if (testCase.err) {
+        if (testCase.err !== undefined) {
           st.equal(res.exceptionError?.error, testCase.err)
         } else {
           st.assert(res.exceptionError === undefined)
-          st.equal(testCase.chainId, bufferToBigInt(res.returnValue))
+          st.equal(testCase.chainId, bytesToBigInt(res.returnValue))
         }
       } catch (e: any) {
         st.fail(e.message)

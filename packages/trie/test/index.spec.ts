@@ -1,14 +1,18 @@
-// explicitly import buffer,
-// needed for karma-typescript bundling
 import { RLP } from '@ethereumjs/rlp'
-import { KECCAK256_NULL, KECCAK256_RLP_S, bufArrToArr } from '@ethereumjs/util'
-import { Buffer } from 'buffer'
+import {
+  KECCAK256_NULL,
+  KECCAK256_RLP_S,
+  bytesToHex,
+  hexStringToBytes,
+  utf8ToBytes,
+} from '@ethereumjs/util'
 import { blake2b } from 'ethereum-cryptography/blake2b'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { bytesToUtf8, concatBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { LeafNode, Trie } from '../src'
-import { bufferToNibbles } from '../src/util/nibbles'
+import { bytesToNibbles } from '../src/util/nibbles'
 
 import type { HashKeysFunction } from '../src'
 
@@ -16,12 +20,12 @@ tape('simple save and retrieve', function (tester) {
   const it = tester.test
 
   it('should not crash if given a non-existent root', async function (t) {
-    const root = Buffer.from(
-      '3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d',
-      'hex'
+    const root = hexStringToBytes(
+      '3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d'
     )
+
     const trie = new Trie({ root })
-    const value = await trie.get(Buffer.from('test'))
+    const value = await trie.get(utf8ToBytes('test'))
     t.equal(value, null)
     t.end()
   })
@@ -29,59 +33,60 @@ tape('simple save and retrieve', function (tester) {
   const trie = new Trie()
 
   it('save a value', async function (t) {
-    await trie.put(Buffer.from('test'), Buffer.from('one'))
+    await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
     t.end()
   })
 
   it('should get a value', async function (t) {
-    const value = await trie.get(Buffer.from('test'))
-    t.equal(value!.toString(), 'one')
+    const value = await trie.get(utf8ToBytes('test'))
+    t.equal(bytesToUtf8(value!), 'one')
     t.end()
   })
 
   it('should update a value', async function (t) {
-    await trie.put(Buffer.from('test'), Buffer.from('two'))
-    const value = await trie.get(Buffer.from('test'))
-    t.equal(value!.toString(), 'two')
+    await trie.put(utf8ToBytes('test'), utf8ToBytes('two'))
+    const value = await trie.get(utf8ToBytes('test'))
+
+    t.equal(bytesToUtf8(value!), 'two')
     t.end()
   })
 
   it('should delete a value', async function (t) {
-    await trie.del(Buffer.from('test'))
-    const value = await trie.get(Buffer.from('test'))
+    await trie.del(utf8ToBytes('test'))
+    const value = await trie.get(utf8ToBytes('test'))
     t.notok(value)
     t.end()
   })
 
   it('should recreate a value', async function (t) {
-    await trie.put(Buffer.from('test'), Buffer.from('one'))
+    await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
     t.end()
   })
 
   it('should get updated a value', async function (t) {
-    const value = await trie.get(Buffer.from('test'))
-    t.equal(value!.toString(), 'one')
+    const value = await trie.get(utf8ToBytes('test'))
+    t.equal(bytesToUtf8(value!), 'one')
     t.end()
   })
 
   it('should create a branch here', async function (t) {
-    await trie.put(Buffer.from('doge'), Buffer.from('coin'))
+    await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
     t.equal(
       'de8a34a8c1d558682eae1528b47523a483dd8685d6db14b291451a66066bf0fc',
-      trie.root().toString('hex')
+      bytesToHex(trie.root())
     )
     t.end()
   })
 
   it('should get a value that is in a branch', async function (t) {
-    const value = await trie.get(Buffer.from('doge'))
-    t.equal(value!.toString(), 'coin')
+    const value = await trie.get(utf8ToBytes('doge'))
+    t.equal(bytesToUtf8(value!), 'coin')
     t.end()
   })
 
   it('should delete from a branch', async function (t) {
-    await trie.del(Buffer.from('doge'))
-    const value = await trie.get(Buffer.from('doge'))
+    await trie.del(utf8ToBytes('doge'))
+    const value = await trie.get(utf8ToBytes('doge'))
     t.equal(value, null)
     t.end()
   })
@@ -93,20 +98,20 @@ tape('simple save and retrieve', function (tester) {
     const longStringRoot = 'b173e2db29e79c78963cff5196f8a983fbe0171388972106b114ef7f5c24dfa3'
 
     it('should store a longer string', async function (t) {
-      await trie.put(Buffer.from('done'), Buffer.from(longString))
-      await trie.put(Buffer.from('doge'), Buffer.from('coin'))
-      t.equal(longStringRoot, trie.root().toString('hex'))
+      await trie.put(utf8ToBytes('done'), utf8ToBytes(longString))
+      await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
+      t.equal(longStringRoot, bytesToHex(trie.root()))
       t.end()
     })
 
     it('should retrieve a longer value', async function (t) {
-      const value = await trie.get(Buffer.from('done'))
-      t.equal(value!.toString(), longString)
+      const value = await trie.get(utf8ToBytes('done'))
+      t.equal(bytesToUtf8(value!), longString)
       t.end()
     })
 
     it('should when being modified delete the old value', async function (t) {
-      await trie.put(Buffer.from('done'), Buffer.from('test'))
+      await trie.put(utf8ToBytes('done'), utf8ToBytes('test'))
       t.end()
     })
   })
@@ -116,24 +121,24 @@ tape('simple save and retrieve', function (tester) {
     const trie = new Trie()
 
     it('should store a value', async function (t) {
-      await trie.put(Buffer.from('doge'), Buffer.from('coin'))
+      await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
       t.end()
     })
 
     it('should create extension to store this value', async function (t) {
-      await trie.put(Buffer.from('do'), Buffer.from('verb'))
+      await trie.put(utf8ToBytes('do'), utf8ToBytes('verb'))
       t.equal(
         'f803dfcb7e8f1afd45e88eedb4699a7138d6c07b71243d9ae9bff720c99925f9',
-        trie.root().toString('hex')
+        bytesToHex(trie.root())
       )
       t.end()
     })
 
     it('should store this value under the extension', async function (t) {
-      await trie.put(Buffer.from('done'), Buffer.from('finished'))
+      await trie.put(utf8ToBytes('done'), utf8ToBytes('finished'))
       t.equal(
         '409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
-        trie.root().toString('hex')
+        bytesToHex(trie.root())
       )
       t.end()
     })
@@ -144,20 +149,20 @@ tape('simple save and retrieve', function (tester) {
     const trie = new Trie()
 
     it('should create extension to store this value', async function (t) {
-      await trie.put(Buffer.from('do'), Buffer.from('verb'))
+      await trie.put(utf8ToBytes('do'), utf8ToBytes('verb'))
       t.end()
     })
 
     it('should store a value', async function (t) {
-      await trie.put(Buffer.from('doge'), Buffer.from('coin'))
+      await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
       t.end()
     })
 
     it('should store this value under the extension', async function (t) {
-      await trie.put(Buffer.from('done'), Buffer.from('finished'))
+      await trie.put(utf8ToBytes('done'), utf8ToBytes('finished'))
       t.equal(
         '409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
-        trie.root().toString('hex')
+        bytesToHex(trie.root())
       )
       t.end()
     })
@@ -172,51 +177,51 @@ tape('testing deletion cases', function (tester) {
   }
 
   it('should delete from a branch->branch-branch', async function (t) {
-    await trieSetup.trie.put(Buffer.from([11, 11, 11]), Buffer.from('first'))
-    await trieSetup.trie.put(Buffer.from([12, 22, 22]), Buffer.from('create the first branch'))
-    await trieSetup.trie.put(Buffer.from([12, 34, 44]), Buffer.from('create the last branch'))
+    await trieSetup.trie.put(new Uint8Array([11, 11, 11]), utf8ToBytes('first'))
+    await trieSetup.trie.put(new Uint8Array([12, 22, 22]), utf8ToBytes('create the first branch'))
+    await trieSetup.trie.put(new Uint8Array([12, 34, 44]), utf8ToBytes('create the last branch'))
 
-    await trieSetup.trie.del(Buffer.from([12, 22, 22]))
-    const val = await trieSetup.trie.get(Buffer.from([12, 22, 22]))
+    await trieSetup.trie.del(new Uint8Array([12, 22, 22]))
+    const val = await trieSetup.trie.get(new Uint8Array([12, 22, 22]))
     t.equal(null, val, trieSetup.msg)
     t.end()
   })
 
   it('should delete from a branch->branch-extension', async function (t) {
-    await trieSetup.trie.put(Buffer.from([11, 11, 11]), Buffer.from('first'))
-    await trieSetup.trie.put(Buffer.from([12, 22, 22]), Buffer.from('create the first branch'))
-    await trieSetup.trie.put(Buffer.from([12, 33, 33]), Buffer.from('create the middle branch'))
-    await trieSetup.trie.put(Buffer.from([12, 34, 44]), Buffer.from('create the last branch'))
+    await trieSetup.trie.put(new Uint8Array([11, 11, 11]), utf8ToBytes('first'))
+    await trieSetup.trie.put(new Uint8Array([12, 22, 22]), utf8ToBytes('create the first branch'))
+    await trieSetup.trie.put(new Uint8Array([12, 33, 33]), utf8ToBytes('create the middle branch'))
+    await trieSetup.trie.put(new Uint8Array([12, 34, 44]), utf8ToBytes('create the last branch'))
 
-    await trieSetup.trie.del(Buffer.from([12, 22, 22]))
-    const val = await trieSetup.trie.get(Buffer.from([12, 22, 22]))
+    await trieSetup.trie.del(new Uint8Array([12, 22, 22]))
+    const val = await trieSetup.trie.get(new Uint8Array([12, 22, 22]))
     t.equal(null, val, trieSetup.msg)
 
     t.end()
   })
 
   it('should delete from a extension->branch-extension', async function (t) {
-    await trieSetup.trie.put(Buffer.from([11, 11, 11]), Buffer.from('first'))
-    await trieSetup.trie.put(Buffer.from([12, 22, 22]), Buffer.from('create the first branch'))
-    await trieSetup.trie.put(Buffer.from([12, 33, 33]), Buffer.from('create the middle branch'))
-    await trieSetup.trie.put(Buffer.from([12, 34, 44]), Buffer.from('create the last branch'))
+    await trieSetup.trie.put(new Uint8Array([11, 11, 11]), utf8ToBytes('first'))
+    await trieSetup.trie.put(new Uint8Array([12, 22, 22]), utf8ToBytes('create the first branch'))
+    await trieSetup.trie.put(new Uint8Array([12, 33, 33]), utf8ToBytes('create the middle branch'))
+    await trieSetup.trie.put(new Uint8Array([12, 34, 44]), utf8ToBytes('create the last branch'))
 
     // delete the middle branch
-    await trieSetup.trie.del(Buffer.from([11, 11, 11]))
-    const val = await trieSetup.trie.get(Buffer.from([11, 11, 11]))
+    await trieSetup.trie.del(new Uint8Array([11, 11, 11]))
+    const val = await trieSetup.trie.get(new Uint8Array([11, 11, 11]))
     t.equal(null, val, trieSetup.msg)
 
     t.end()
   })
 
   it('should delete from a extension->branch-branch', async function (t) {
-    await trieSetup.trie.put(Buffer.from([11, 11, 11]), Buffer.from('first'))
-    await trieSetup.trie.put(Buffer.from([12, 22, 22]), Buffer.from('create the first branch'))
-    await trieSetup.trie.put(Buffer.from([12, 33, 33]), Buffer.from('create the middle branch'))
-    await trieSetup.trie.put(Buffer.from([12, 34, 44]), Buffer.from('create the last branch'))
+    await trieSetup.trie.put(new Uint8Array([11, 11, 11]), utf8ToBytes('first'))
+    await trieSetup.trie.put(new Uint8Array([12, 22, 22]), utf8ToBytes('create the first branch'))
+    await trieSetup.trie.put(new Uint8Array([12, 33, 33]), utf8ToBytes('create the middle branch'))
+    await trieSetup.trie.put(new Uint8Array([12, 34, 44]), utf8ToBytes('create the last branch'))
     // delete the middle branch
-    await trieSetup.trie.del(Buffer.from([11, 11, 11]))
-    const val = await trieSetup.trie.get(Buffer.from([11, 11, 11]))
+    await trieSetup.trie.del(new Uint8Array([11, 11, 11]))
+    const val = await trieSetup.trie.get(new Uint8Array([11, 11, 11]))
     t.equal(null, val, trieSetup.msg)
 
     t.end()
@@ -225,9 +230,9 @@ tape('testing deletion cases', function (tester) {
 
 tape('shall handle the case of node not found correctly', async (t) => {
   const trie = new Trie()
-  await trie.put(Buffer.from('a'), Buffer.from('value1'))
-  await trie.put(Buffer.from('aa'), Buffer.from('value2'))
-  await trie.put(Buffer.from('aaa'), Buffer.from('value3'))
+  await trie.put(utf8ToBytes('a'), utf8ToBytes('value1'))
+  await trie.put(utf8ToBytes('aa'), utf8ToBytes('value2'))
+  await trie.put(utf8ToBytes('aaa'), utf8ToBytes('value3'))
 
   /* Setups a trie which consists of
     ExtensionNode ->
@@ -237,15 +242,15 @@ tape('shall handle the case of node not found correctly', async (t) => {
     LeafNode -> value3
   */
 
-  let path = await trie.findPath(Buffer.from('aaa'))
+  let path = await trie.findPath(utf8ToBytes('aaa'))
 
   t.ok(path.node !== null, 'findPath should find a node')
 
-  const { stack } = await trie.findPath(Buffer.from('aaa'))
+  const { stack } = await trie.findPath(utf8ToBytes('aaa'))
   // @ts-expect-error
-  await trie._db.del(Buffer.from(keccak256(stack[1].serialize()))) // delete the BranchNode -> value1 from the DB
+  await trie._db.del(keccak256(stack[1].serialize())) // delete the BranchNode -> value1 from the DB
 
-  path = await trie.findPath(Buffer.from('aaa'))
+  path = await trie.findPath(utf8ToBytes('aaa'))
 
   t.ok(path.node === null, 'findPath should not return a node now')
   t.ok(
@@ -260,50 +265,49 @@ tape('it should create the genesis state root from ethereum', function (tester) 
   const it = tester.test
   const trie4 = new Trie()
 
-  const g = Buffer.from('8a40bfaa73256b60764c1bf40675a99083efb075', 'hex')
-  const j = Buffer.from('e6716f9544a56c530d868e4bfbacb172315bdead', 'hex')
-  const v = Buffer.from('1e12515ce3e0f817a4ddef9ca55788a1d66bd2df', 'hex')
-  const a = Buffer.from('1a26338f0d905e295fccb71fa9ea849ffa12aaf4', 'hex')
+  const g = hexStringToBytes('8a40bfaa73256b60764c1bf40675a99083efb075')
+  const j = hexStringToBytes('e6716f9544a56c530d868e4bfbacb172315bdead')
+  const v = hexStringToBytes('1e12515ce3e0f817a4ddef9ca55788a1d66bd2df')
+  const a = hexStringToBytes('1a26338f0d905e295fccb71fa9ea849ffa12aaf4')
 
-  const storageRoot = Buffer.alloc(32)
+  const storageRoot = new Uint8Array(32)
   storageRoot.fill(0)
 
-  const startAmount = Buffer.alloc(26)
+  const startAmount = new Uint8Array(26)
   startAmount.fill(0)
   startAmount[0] = 1
 
   const account = [startAmount, 0, storageRoot, KECCAK256_NULL]
-  const rlpAccount = Buffer.from(RLP.encode(bufArrToArr(account as Buffer[])))
+  const rlpAccount = RLP.encode(account)
   const cppRlp =
     'f85e9a010000000000000000000000000000000000000000000000000080a00000000000000000000000000000000000000000000000000000000000000000a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
 
   const genesisStateRoot = '2f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d'
-  tester.equal(cppRlp, rlpAccount.toString('hex'))
+  tester.equal(cppRlp, bytesToHex(rlpAccount))
 
   it('shall match the root', async function (t) {
     await trie4.put(g, rlpAccount)
     await trie4.put(j, rlpAccount)
     await trie4.put(v, rlpAccount)
     await trie4.put(a, rlpAccount)
-    t.equal(trie4.root().toString('hex'), genesisStateRoot)
+    t.equal(bytesToHex(trie4.root()), genesisStateRoot)
     t.end()
   })
 })
 
 tape('setting back state root (deleteFromDB)', async (t) => {
-  const k1 = Buffer.from('1')
+  const k1 = utf8ToBytes('1')
   /* Testing with longer value due to `rlpNode.length >= 32` check in `_formatNode()`
    * Reasoning from https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/:
    * "When one node is referenced inside another node, what is included is `H(rlp.encode(x))`,
    * where `H(x) = sha3(x) if len(x) >= 32 else x`"
    */
-  const v1 = Buffer.from('this-is-some-longer-value-to-test-the-delete-operation-value1')
-  const k2 = Buffer.from('2')
-  const v2 = Buffer.from('this-is-some-longer-value-to-test-the-delete-operation-value2')
+  const v1 = utf8ToBytes('this-is-some-longer-value-to-test-the-delete-operation-value1')
+  const k2 = utf8ToBytes('2')
+  const v2 = utf8ToBytes('this-is-some-longer-value-to-test-the-delete-operation-value2')
 
-  const rootAfterK1 = Buffer.from(
-    '809e75931f394603657e113eb7244794f35b8d326cff99407111d600722e9425',
-    'hex'
+  const rootAfterK1 = hexStringToBytes(
+    '809e75931f394603657e113eb7244794f35b8d326cff99407111d600722e9425'
   )
 
   const trieSetup = {
@@ -331,30 +335,28 @@ tape('dummy hash', async (t) => {
   const useKeyHashingFunction: HashKeysFunction = (msg) => {
     const hashLen = 32
     if (msg.length <= hashLen - 5) {
-      return Buffer.concat([Buffer.from('hash_'), Buffer.alloc(hashLen - msg.length, 0), msg])
+      return concatBytes(utf8ToBytes('hash_'), new Uint8Array(hashLen - msg.length).fill(0), msg)
     } else {
-      return Buffer.concat([Buffer.from('hash_'), msg.slice(0, hashLen - 5)])
+      return concatBytes(utf8ToBytes('hash_'), msg.slice(0, hashLen - 5))
     }
   }
 
-  const [k, v] = [Buffer.from('foo'), Buffer.from('bar')]
-  const expectedRoot = Buffer.from(
-    useKeyHashingFunction(new LeafNode(bufferToNibbles(k), v).serialize())
-  )
+  const [k, v] = [utf8ToBytes('foo'), utf8ToBytes('bar')]
+  const expectedRoot = useKeyHashingFunction(new LeafNode(bytesToNibbles(k), v).serialize())
 
   const trie = new Trie({ useKeyHashingFunction })
   await trie.put(k, v)
-  t.equal(trie.root().toString('hex'), expectedRoot.toString('hex'))
+  t.equal(bytesToHex(trie.root()), bytesToHex(expectedRoot))
 
   t.end()
 })
 
 tape('blake2b256 trie root', async (t) => {
   const trie = new Trie({ useKeyHashingFunction: (msg) => blake2b(msg, 32) })
-  await trie.put(Buffer.from('foo'), Buffer.from('bar'))
+  await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
 
   t.equal(
-    trie.root().toString('hex'),
+    bytesToHex(trie.root()),
     'e118db4e01512253df38daafa16fc1d69e03e755595b5847d275d7404ebdc74a'
   )
   t.end()
@@ -363,6 +365,6 @@ tape('blake2b256 trie root', async (t) => {
 tape('empty root', async (t) => {
   const trie = new Trie()
 
-  t.equal(trie.root().toString('hex'), KECCAK256_RLP_S)
+  t.equal(bytesToHex(trie.root()), KECCAK256_RLP_S)
   t.end()
 })

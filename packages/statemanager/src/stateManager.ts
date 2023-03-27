@@ -5,11 +5,15 @@ import {
   KECCAK256_NULL,
   KECCAK256_RLP,
   bigIntToHex,
-  bufferToHex,
+  bytesToHex,
+  bytesToPrefixedHexString,
+  concatBytes,
+  equalsBytes,
+  hexStringToBytes,
   setLengthLeft,
   short,
-  toBuffer,
-  unpadBuffer,
+  unpadBytes,
+  utf8ToBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
@@ -44,7 +48,7 @@ export type Proof = {
  * will be the same as the hash of the empty trie which leads to
  * misbehaviour in the underlying trie library.
  */
-const CODEHASH_PREFIX = Buffer.from('c')
+const CODEHASH_PREFIX = utf8ToBytes('c')
 
 /**
  * Options for constructing a {@link StateManager}.
@@ -97,14 +101,14 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
      * desired backend.
      */
     const getCb: getCb = async (address) => {
-      const rlp = await this._trie.get(address.buf)
+      const rlp = await this._trie.get(address.bytes)
       return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined
     }
     const putCb: putCb = async (keyBuf, accountRlp) => {
       const trie = this._trie
       await trie.put(keyBuf, accountRlp)
     }
-    const deleteCb = async (keyBuf: Buffer) => {
+    const deleteCb = async (keyBuf: Uint8Array) => {
       const trie = this._trie
       await trie.del(keyBuf)
     }
@@ -128,14 +132,14 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * @param address - Address of the `account` to add the `code` for
    * @param value - The value of the `code`
    */
-  async putContractCode(address: Address, value: Buffer): Promise<void> {
-    const codeHash = Buffer.from(keccak256(value))
+  async putContractCode(address: Address, value: Uint8Array): Promise<void> {
+    const codeHash = keccak256(value)
 
-    if (codeHash.equals(KECCAK256_NULL)) {
+    if (equalsBytes(codeHash, KECCAK256_NULL)) {
       return
     }
 
-    const key = this._prefixCodeHashes ? Buffer.concat([CODEHASH_PREFIX, codeHash]) : codeHash
+    const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
     // @ts-expect-error
     await this._trie._db.put(key, value)
 
@@ -148,20 +152,20 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
   /**
    * Gets the code corresponding to the provided `address`.
    * @param address - Address to get the `code` for
-   * @returns {Promise<Buffer>} -  Resolves with the code corresponding to the provided address.
-   * Returns an empty `Buffer` if the account has no associated code.
+   * @returns {Promise<Uint8Array>} -  Resolves with the code corresponding to the provided address.
+   * Returns an empty `Uint8Array` if the account has no associated code.
    */
-  async getContractCode(address: Address): Promise<Buffer> {
+  async getContractCode(address: Address): Promise<Uint8Array> {
     const account = await this.getAccount(address)
     if (!account.isContract()) {
-      return Buffer.alloc(0)
+      return new Uint8Array(0)
     }
     const key = this._prefixCodeHashes
-      ? Buffer.concat([CODEHASH_PREFIX, account.codeHash])
+      ? concatBytes(CODEHASH_PREFIX, account.codeHash)
       : account.codeHash
     // @ts-expect-error
     const code = await this._trie._db.get(key)
-    return code ?? Buffer.alloc(0)
+    return code ?? new Uint8Array(0)
   }
 
   /**
@@ -185,7 +189,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async _getStorageTrie(address: Address): Promise<Trie> {
     // from storage cache
-    const addressHex = address.buf.toString('hex')
+    const addressHex = bytesToHex(address.bytes)
     let storageTrie = this._storageTries[addressHex]
     if (storageTrie === undefined || storageTrie === null) {
       // lookup from state
@@ -199,18 +203,18 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * the shortest representation of the stored value.
    * @param address -  Address of the account to get the storage for
    * @param key - Key in the account's storage to get the value for. Must be 32 bytes long.
-   * @returns {Promise<Buffer>} - The storage value for the account
+   * @returns {Promise<Uint8Array>} - The storage value for the account
    * corresponding to the provided address at the provided key.
-   * If this does not exist an empty `Buffer` is returned.
+   * If this does not exist an empty `Uint8Array` is returned.
    */
-  async getContractStorage(address: Address, key: Buffer): Promise<Buffer> {
+  async getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')
     }
 
     const trie = await this._getStorageTrie(address)
     const value = await trie.get(key)
-    const decoded = Buffer.from(RLP.decode(Uint8Array.from(value ?? [])) as Uint8Array)
+    const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
     return decoded
   }
 
@@ -230,7 +234,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
 
       modifyTrie(storageTrie, async () => {
         // update storage cache
-        const addressHex = address.buf.toString('hex')
+        const addressHex = bytesToHex(address.bytes)
         this._storageTries[addressHex] = storageTrie
 
         // update contract storageRoot
@@ -250,7 +254,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * @param key - Key to set the value at. Must be 32 bytes long.
    * @param value - Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is a empty or filled with zeros, deletes the value.
    */
-  async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
+  async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')
     }
@@ -259,12 +263,12 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       throw new Error('Storage value cannot be longer than 32 bytes')
     }
 
-    value = unpadBuffer(value)
+    value = unpadBytes(value)
 
     await this._modifyContractStorage(address, async (storageTrie, done) => {
-      if (Buffer.isBuffer(value) && value.length) {
+      if (value instanceof Uint8Array && value.length) {
         // format input
-        const encodedValue = Buffer.from(RLP.encode(Uint8Array.from(value)))
+        const encodedValue = RLP.encode(value)
         if (this.DEBUG) {
           this._debug(`Update contract storage for account ${address} to ${short(value)}`)
         }
@@ -327,22 +331,24 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * @param address address to get proof of
    * @param storageSlots storage slots to get proof of
    */
-  async getProof(address: Address, storageSlots: Buffer[] = []): Promise<Proof> {
+  async getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
     const account = await this.getAccount(address)
-    const accountProof: PrefixedHexString[] = (await this._trie.createProof(address.buf)).map((p) =>
-      bufferToHex(p)
+    const accountProof: PrefixedHexString[] = (await this._trie.createProof(address.bytes)).map(
+      (p) => bytesToPrefixedHexString(p)
     )
     const storageProof: StorageProof[] = []
     const storageTrie = await this._getStorageTrie(address)
 
     for (const storageKey of storageSlots) {
-      const proof = (await storageTrie.createProof(storageKey)).map((p) => bufferToHex(p))
-      let value = bufferToHex(await this.getContractStorage(address, storageKey))
+      const proof = (await storageTrie.createProof(storageKey)).map((p) =>
+        bytesToPrefixedHexString(p)
+      )
+      let value = bytesToPrefixedHexString(await this.getContractStorage(address, storageKey))
       if (value === '0x') {
         value = '0x0'
       }
       const proofItem: StorageProof = {
-        key: bufferToHex(storageKey),
+        key: bytesToPrefixedHexString(storageKey),
         value,
         proof,
       }
@@ -352,9 +358,9 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     const returnValue: Proof = {
       address: address.toString(),
       balance: bigIntToHex(account.balance),
-      codeHash: bufferToHex(account.codeHash),
+      codeHash: bytesToPrefixedHexString(account.codeHash),
       nonce: bigIntToHex(account.nonce),
-      storageHash: bufferToHex(account.storageRoot),
+      storageHash: bytesToPrefixedHexString(account.storageRoot),
       accountProof,
       storageProof,
     }
@@ -366,10 +372,10 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * @param proof the proof to prove
    */
   async verifyProof(proof: Proof): Promise<boolean> {
-    const rootHash = Buffer.from(keccak256(toBuffer(proof.accountProof[0])))
-    const key = toBuffer(proof.address)
+    const rootHash = keccak256(hexStringToBytes(proof.accountProof[0]))
+    const key = hexStringToBytes(proof.address)
     const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
-      toBuffer(rlpString)
+      hexStringToBytes(rlpString)
     )
 
     // This returns the account if the proof is valid.
@@ -378,22 +384,23 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
 
     if (value === null) {
       // Verify that the account is empty in the proof.
-      const emptyBuffer = Buffer.from('')
+      const emptyBytes = new Uint8Array(0)
       const notEmptyErrorMsg = 'Invalid proof provided: account is not empty'
-      const nonce = unpadBuffer(toBuffer(proof.nonce))
-      if (!nonce.equals(emptyBuffer)) {
+
+      const nonce = unpadBytes(hexStringToBytes(proof.nonce))
+      if (!equalsBytes(nonce, emptyBytes)) {
         throw new Error(`${notEmptyErrorMsg} (nonce is not zero)`)
       }
-      const balance = unpadBuffer(toBuffer(proof.balance))
-      if (!balance.equals(emptyBuffer)) {
+      const balance = unpadBytes(hexStringToBytes(proof.balance))
+      if (!equalsBytes(balance, emptyBytes)) {
         throw new Error(`${notEmptyErrorMsg} (balance is not zero)`)
       }
-      const storageHash = toBuffer(proof.storageHash)
-      if (!storageHash.equals(KECCAK256_RLP)) {
+      const storageHash = hexStringToBytes(proof.storageHash)
+      if (!equalsBytes(storageHash, KECCAK256_RLP)) {
         throw new Error(`${notEmptyErrorMsg} (storageHash does not equal KECCAK256_RLP)`)
       }
-      const codeHash = toBuffer(proof.codeHash)
-      if (!codeHash.equals(KECCAK256_NULL)) {
+      const codeHash = hexStringToBytes(proof.codeHash)
+      if (!equalsBytes(codeHash, KECCAK256_NULL)) {
         throw new Error(`${notEmptyErrorMsg} (codeHash does not equal KECCAK256_NULL)`)
       }
     } else {
@@ -406,30 +413,30 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
       if (balance !== BigInt(proof.balance)) {
         throw new Error(`${invalidErrorMsg} balance does not match`)
       }
-      if (!storageRoot.equals(toBuffer(proof.storageHash))) {
+      if (!equalsBytes(storageRoot, hexStringToBytes(proof.storageHash))) {
         throw new Error(`${invalidErrorMsg} storageHash does not match`)
       }
-      if (!codeHash.equals(toBuffer(proof.codeHash))) {
+      if (!equalsBytes(codeHash, hexStringToBytes(proof.codeHash))) {
         throw new Error(`${invalidErrorMsg} codeHash does not match`)
       }
     }
 
-    const storageRoot = toBuffer(proof.storageHash)
+    const storageRoot = hexStringToBytes(proof.storageHash)
 
     for (const stProof of proof.storageProof) {
-      const storageProof = stProof.proof.map((value: PrefixedHexString) => toBuffer(value))
-      const storageValue = setLengthLeft(toBuffer(stProof.value), 32)
-      const storageKey = toBuffer(stProof.key)
+      const storageProof = stProof.proof.map((value: PrefixedHexString) => hexStringToBytes(value))
+      const storageValue = setLengthLeft(hexStringToBytes(stProof.value), 32)
+      const storageKey = hexStringToBytes(stProof.key)
       const proofValue = await new Trie({ useKeyHashing: true }).verifyProof(
         storageRoot,
         storageKey,
         storageProof
       )
       const reportedValue = setLengthLeft(
-        Buffer.from(RLP.decode(Uint8Array.from((proofValue as Buffer) ?? [])) as Uint8Array),
+        RLP.decode(proofValue ?? new Uint8Array(0)) as Uint8Array,
         32
       )
-      if (!reportedValue.equals(storageValue)) {
+      if (!equalsBytes(reportedValue, storageValue)) {
         throw new Error('Reported trie value does not match storage')
       }
     }
@@ -440,9 +447,9 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * Gets the state-root of the Merkle-Patricia trie representation
    * of the state of this StateManager. Will error if there are uncommitted
    * checkpoints on the instance.
-   * @returns {Promise<Buffer>} - Returns the state-root of the `StateManager`
+   * @returns {Promise<Uint8Array>} - Returns the state-root of the `StateManager`
    */
-  async getStateRoot(): Promise<Buffer> {
+  async getStateRoot(): Promise<Uint8Array> {
     await this._cache.flush()
     return this._trie.root()
   }
@@ -454,10 +461,10 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * the state trie.
    * @param stateRoot - The state-root to reset the instance to
    */
-  async setStateRoot(stateRoot: Buffer): Promise<void> {
+  async setStateRoot(stateRoot: Uint8Array): Promise<void> {
     await this._cache.flush()
 
-    if (!stateRoot.equals(this._trie.EMPTY_TRIE_ROOT)) {
+    if (!equalsBytes(stateRoot, this._trie.EMPTY_TRIE_ROOT)) {
       const hasRoot = await this._trie.checkRoot(stateRoot)
       if (!hasRoot) {
         throw new Error('State trie does not contain state root')
@@ -484,7 +491,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
           const stream = trie.createReadStream()
 
           stream.on('data', (val: any) => {
-            storage[val.key.toString('hex')] = val.value.toString('hex')
+            storage[bytesToHex(val.key)] = bytesToHex(val.value)
           })
           stream.on('end', () => {
             resolve(storage)
@@ -499,7 +506,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
   /**
    * Checks whether there is a state corresponding to a stateRoot
    */
-  async hasStateRoot(root: Buffer): Promise<boolean> {
+  async hasStateRoot(root: Uint8Array): Promise<boolean> {
     return this._trie.checkRoot(root)
   }
 
@@ -517,7 +524,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     ) {
       return true
     }
-    if (await this._trie.get(address.buf)) {
+    if (await this._trie.get(address.bytes)) {
       return true
     }
     return false

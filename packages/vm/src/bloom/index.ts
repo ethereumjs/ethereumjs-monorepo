@@ -4,12 +4,12 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 const BYTE_SIZE = 256
 
 export class Bloom {
-  bitvector: Buffer
+  bitvector: Uint8Array
 
   /**
    * Represents a Bloom filter.
    */
-  constructor(bitvector?: Buffer) {
+  constructor(bitvector?: Uint8Array) {
     if (!bitvector) {
       this.bitvector = zeros(BYTE_SIZE)
     } else {
@@ -22,12 +22,12 @@ export class Bloom {
    * Adds an element to a bit vector of a 64 byte bloom filter.
    * @param e - The element to add
    */
-  add(e: Buffer) {
-    e = Buffer.from(keccak256(e))
+  add(e: Uint8Array) {
+    e = keccak256(e)
     const mask = 2047 // binary 11111111111
 
     for (let i = 0; i < 3; i++) {
-      const first2bytes = e.readUInt16BE(i * 2)
+      const first2bytes = new DataView(e.buffer).getUint16(i * 2)
       const loc = mask & first2bytes
       const byteLoc = loc >> 3
       const bitLoc = 1 << loc % 8
@@ -39,13 +39,13 @@ export class Bloom {
    * Checks if an element is in the bloom.
    * @param e - The element to check
    */
-  check(e: Buffer): boolean {
-    e = Buffer.from(keccak256(e))
+  check(e: Uint8Array): boolean {
+    e = keccak256(e)
     const mask = 2047 // binary 11111111111
     let match = true
 
     for (let i = 0; i < 3 && match; i++) {
-      const first2bytes = e.readUInt16BE(i * 2)
+      const first2bytes = new DataView(e.buffer).getUint16(i * 2)
       const loc = mask & first2bytes
       const byteLoc = loc >> 3
       const bitLoc = 1 << loc % 8
@@ -59,8 +59,8 @@ export class Bloom {
    * Checks if multiple topics are in a bloom.
    * @returns `true` if every topic is in the bloom
    */
-  multiCheck(topics: Buffer[]): boolean {
-    return topics.every((t: Buffer) => this.check(t))
+  multiCheck(topics: Uint8Array[]): boolean {
+    return topics.every((t: Uint8Array) => this.check(t))
   }
 
   /**

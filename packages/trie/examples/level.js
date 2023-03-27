@@ -3,7 +3,7 @@ const { MemoryLevel } = require('memory-level')
 
 const { Trie } = require('../dist')
 
-const ENCODING_OPTS = { keyEncoding: 'buffer', valueEncoding: 'buffer' }
+const ENCODING_OPTS = { keyEncoding: 'view', valueEncoding: 'view' }
 
 class LevelDB {
   _leveldb

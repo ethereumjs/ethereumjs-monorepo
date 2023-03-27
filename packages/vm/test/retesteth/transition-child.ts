@@ -2,8 +2,9 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { RLP } from '@ethereumjs/rlp'
 import { Transaction, TransactionFactory } from '@ethereumjs/tx'
-import { arrToBufArr } from '@ethereumjs/util'
+import { bytesToPrefixedHexString } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 
@@ -14,7 +15,7 @@ import { makeBlockFromEnv, setupPreConditions } from '../util'
 
 import type { PostByzantiumTxReceipt } from '../../src'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { NestedBufferArray } from '@ethereumjs/util'
+import type { NestedUint8Array } from '@ethereumjs/util'
 
 const yargs = require('yargs/yargs')
 
@@ -58,12 +59,13 @@ async function runTransition(argsIn: any) {
     const genesis = Block.fromBlockData({ header: BlockHeader.fromHeaderData(genesisBlockData) })
     blockchain = await Blockchain.create({ common, genesisBlock: genesis })
   }
-  const vm = blockchain ? await VM.create({ common, blockchain }) : await VM.create({ common })
+  const vm =
+    blockchain !== undefined ? await VM.create({ common, blockchain }) : await VM.create({ common })
   await setupPreConditions(<any>vm.eei, { pre: alloc })
 
   const block = makeBlockFromEnv(inputEnv, { common })
 
-  const txsData = arrToBufArr(RLP.decode(Buffer.from(rlpTxs.slice(2), 'hex')))
+  const txsData = RLP.decode(hexToBytes(rlpTxs.slice(2)))
 
   const headerData = block.header.toJSON()
   headerData.difficulty = inputEnv.parentDifficulty
@@ -84,9 +86,9 @@ async function runTransition(argsIn: any) {
       root: '0x',
       status: receipt.status === 0 ? '0x' : '0x1',
       cumulativeGasUsed: '0x' + receipt.cumulativeBlockGasUsed.toString(16),
-      logsBloom: '0x' + receipt.bitvector.toString('hex'),
+      logsBloom: bytesToPrefixedHexString(receipt.bitvector),
       logs: null,
-      transactionHash: '0x' + afterTx.transaction.hash().toString('hex'),
+      transactionHash: bytesToPrefixedHexString(afterTx.transaction.hash()),
       contractAddress: '0x0000000000000000000000000000000000000000',
       gasUsed: '0x' + afterTx.totalGasSpent.toString(16),
       blockHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
@@ -100,13 +102,13 @@ async function runTransition(argsIn: any) {
   const rejected = []
 
   let index = 0
-  for (const txData of <NestedBufferArray>txsData) {
+  for (const txData of <NestedUint8Array>txsData) {
     try {
       let tx: TypedTransaction
-      if (Buffer.isBuffer(txData)) {
-        tx = TransactionFactory.fromSerializedData(txData as Buffer, { common })
+      if (txData instanceof Uint8Array) {
+        tx = TransactionFactory.fromSerializedData(txData as Uint8Array, { common })
       } else {
-        tx = Transaction.fromValuesArray(txData as Buffer[], { common })
+        tx = Transaction.fromValuesArray(txData as Uint8Array[], { common })
       }
       await builder.addTransaction(tx)
     } catch (e: any) {
@@ -119,14 +121,14 @@ async function runTransition(argsIn: any) {
   }
 
   const logsBloom = builder.logsBloom()
-  const logsHash = Buffer.from(keccak256(logsBloom))
+  const logsHash = keccak256(logsBloom)
 
   const output = {
-    stateRoot: '0x' + (await vm.eei.getStateRoot()).toString('hex'),
-    txRoot: '0x' + (await builder.transactionsTrie()).toString('hex'),
-    receiptsRoot: '0x' + (await builder.receiptTrie()).toString('hex'),
-    logsHash: '0x' + logsHash.toString('hex'),
-    logsBloom: '0x' + logsBloom.toString('hex'),
+    stateRoot: bytesToPrefixedHexString(await vm.eei.getStateRoot()),
+    txRoot: bytesToPrefixedHexString(await builder.transactionsTrie()),
+    receiptsRoot: bytesToPrefixedHexString(await builder.receiptTrie()),
+    logsHash: bytesToPrefixedHexString(logsHash),
+    logsBloom: bytesToPrefixedHexString(logsBloom),
     currentDifficulty: '0x20000',
     receipts, // TODO fixme
   }

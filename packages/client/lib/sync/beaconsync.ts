@@ -1,3 +1,5 @@
+import { bytesToHex } from 'ethereum-cryptography/utils'
+
 import { Event } from '../types'
 import { short } from '../util'
 
@@ -76,8 +78,8 @@ export class BeaconSynchronizer extends Synchronizer {
     this.config.chainCommon.setHardforkByBlockNumber(number, td, timestamp)
 
     this.config.logger.info(
-      `Latest local block number=${Number(number)} td=${td} hash=${hash.toString(
-        'hex'
+      `Latest local block number=${Number(number)} td=${td} hash=${bytesToHex(
+        hash
       )} hardfork=${this.config.chainCommon.hardfork()}`
     )
 

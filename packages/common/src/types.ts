@@ -117,6 +117,6 @@ export interface CustomCommonOpts extends BaseOpts {
 
 export interface GethConfigOpts extends BaseOpts {
   chain?: string
-  genesisHash?: Buffer
+  genesisHash?: Uint8Array
   mergeForkIdPostMerge?: boolean
 }

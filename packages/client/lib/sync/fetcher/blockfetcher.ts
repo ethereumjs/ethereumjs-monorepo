@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { KECCAK256_RLP, KECCAK256_RLP_ARRAY } from '@ethereumjs/util'
+import { KECCAK256_RLP, KECCAK256_RLP_ARRAY, equalsBytes } from '@ethereumjs/util'
 
 import { Event } from '../../types'
 
@@ -8,7 +8,7 @@ import { BlockFetcherBase } from './blockfetcherbase'
 import type { Peer } from '../../net/peer'
 import type { BlockFetcherOptions, JobTask } from './blockfetcherbase'
 import type { Job } from './types'
-import type { BlockBuffer } from '@ethereumjs/block'
+import type { BlockBytes } from '@ethereumjs/block'
 
 /**
  * Implements an eth/66 based block fetcher
@@ -69,10 +69,10 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
     for (const [i, [txsData, unclesData, withdrawalsData]] of bodies.entries()) {
       const header = headers[i]
       if (
-        (!header.transactionsTrie.equals(KECCAK256_RLP) && txsData.length === 0) ||
-        (!header.uncleHash.equals(KECCAK256_RLP_ARRAY) && unclesData.length === 0) ||
+        (!equalsBytes(header.transactionsTrie, KECCAK256_RLP) && txsData.length === 0) ||
+        (!equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY) && unclesData.length === 0) ||
         (header.withdrawalsRoot !== undefined &&
-          !header.withdrawalsRoot.equals(KECCAK256_RLP) &&
+          !equalsBytes(header.withdrawalsRoot, KECCAK256_RLP) &&
           (withdrawalsData?.length ?? 0) === 0)
       ) {
         this.debug(
@@ -80,7 +80,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
         )
         return []
       }
-      const values: BlockBuffer = [headers[i].raw(), txsData, unclesData]
+      const values: BlockBytes = [headers[i].raw(), txsData, unclesData]
       if (withdrawalsData !== undefined) {
         values.push(withdrawalsData)
       }

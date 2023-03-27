@@ -1,5 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
-import { Address, bigIntToBuffer, setLengthLeft } from '@ethereumjs/util'
+import { Address, bigIntToBytes, setLengthLeft } from '@ethereumjs/util'
 
 import { ERROR } from '../exceptions'
 
@@ -7,7 +7,7 @@ import { updateSstoreGasEIP1283 } from './EIP1283'
 import { updateSstoreGasEIP2200 } from './EIP2200'
 import { accessAddressEIP2929, accessStorageEIP2929 } from './EIP2929'
 import {
-  addressToBuffer,
+  addresstoBytes,
   divCeil,
   maxCallGas,
   setLengthLeftStorage,
@@ -74,7 +74,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         if (common.isActivatedEIP(2929) === true) {
           const addressBigInt = runState.stack.peek()[0]
-          const address = new Address(addressToBuffer(addressBigInt))
+          const address = new Address(addresstoBytes(addressBigInt))
           gas += accessAddressEIP2929(runState, address, common)
         }
         return gas
@@ -112,7 +112,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         if (common.isActivatedEIP(2929) === true) {
           const addressBigInt = runState.stack.peek()[0]
-          const address = new Address(addressToBuffer(addressBigInt))
+          const address = new Address(addresstoBytes(addressBigInt))
           gas += accessAddressEIP2929(runState, address, common)
         }
         return gas
@@ -127,7 +127,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, memOffset, dataLength, common)
 
         if (common.isActivatedEIP(2929) === true) {
-          const address = new Address(addressToBuffer(addressBigInt))
+          const address = new Address(addresstoBytes(addressBigInt))
           gas += accessAddressEIP2929(runState, address, common)
         }
 
@@ -161,7 +161,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         if (common.isActivatedEIP(2929) === true) {
           const addressBigInt = runState.stack.peek()[0]
-          const address = new Address(addressToBuffer(addressBigInt))
+          const address = new Address(addresstoBytes(addressBigInt))
           gas += accessAddressEIP2929(runState, address, common)
         }
         return gas
@@ -199,7 +199,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       0x54,
       async function (runState, gas, common): Promise<bigint> {
         const key = runState.stack.peek()[0]
-        const keyBuf = setLengthLeft(bigIntToBuffer(key), 32)
+        const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
 
         if (common.isActivatedEIP(2929) === true) {
           gas += accessStorageEIP2929(runState, keyBuf, false, common)
@@ -216,18 +216,20 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
         const [key, val] = runState.stack.peek(2)
 
-        const keyBuf = setLengthLeft(bigIntToBuffer(key), 32)
+        const keyBytes = setLengthLeft(bigIntToBytes(key), 32)
         // NOTE: this should be the shortest representation
         let value
         if (val === BigInt(0)) {
-          value = Buffer.from([])
+          value = Uint8Array.from([])
         } else {
-          value = bigIntToBuffer(val)
+          value = bigIntToBytes(val)
         }
 
-        const currentStorage = setLengthLeftStorage(await runState.interpreter.storageLoad(keyBuf))
+        const currentStorage = setLengthLeftStorage(
+          await runState.interpreter.storageLoad(keyBytes)
+        )
         const originalStorage = setLengthLeftStorage(
-          await runState.interpreter.storageLoad(keyBuf, true)
+          await runState.interpreter.storageLoad(keyBytes, true)
         )
         if (common.hardfork() === Hardfork.Constantinople) {
           gas += updateSstoreGasEIP1283(
@@ -243,7 +245,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             currentStorage,
             originalStorage,
             setLengthLeftStorage(value),
-            keyBuf,
+            keyBytes,
             common
           )
         } else {
@@ -254,7 +256,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           // We have to do this after the Istanbul (EIP2200) checks.
           // Otherwise, we might run out of gas, due to "sentry check" of 2300 gas,
           // if we deduct extra gas first.
-          gas += accessStorageEIP2929(runState, keyBuf, true, common)
+          gas += accessStorageEIP2929(runState, keyBytes, true, common)
         }
         return gas
       },
@@ -315,7 +317,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         const [currentGasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] =
           runState.stack.peek(7)
-        const toAddress = new Address(addressToBuffer(toAddr))
+        const toAddress = new Address(addresstoBytes(toAddr))
 
         if (runState.interpreter.isStatic() && value !== BigInt(0)) {
           trap(ERROR.STATIC_STATE_CHANGE)
@@ -379,7 +381,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, outOffset, outLength, common)
 
         if (common.isActivatedEIP(2929) === true) {
-          const toAddress = new Address(addressToBuffer(toAddr))
+          const toAddress = new Address(addresstoBytes(toAddr))
           gas += accessAddressEIP2929(runState, toAddress, common)
         }
 
@@ -427,7 +429,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, outOffset, outLength, common)
 
         if (common.isActivatedEIP(2929) === true) {
-          const toAddress = new Address(addressToBuffer(toAddr))
+          const toAddress = new Address(addresstoBytes(toAddr))
           gas += accessAddressEIP2929(runState, toAddress, common)
         }
 
@@ -507,7 +509,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           trap(ERROR.AUTHCALL_NONZERO_VALUEEXT)
         }
 
-        const toAddress = new Address(addressToBuffer(addr))
+        const toAddress = new Address(addresstoBytes(addr))
 
         gas += common.param('gasPrices', 'warmstorageread')
 
@@ -552,7 +554,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, outOffset, outLength, common)
 
         if (common.isActivatedEIP(2929) === true) {
-          const toAddress = new Address(addressToBuffer(toAddr))
+          const toAddress = new Address(addresstoBytes(toAddr))
           gas += accessAddressEIP2929(runState, toAddress, common)
         }
 
@@ -585,7 +587,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
         const selfdestructToaddressBigInt = runState.stack.peek()[0]
 
-        const selfdestructToAddress = new Address(addressToBuffer(selfdestructToaddressBigInt))
+        const selfdestructToAddress = new Address(addresstoBytes(selfdestructToaddressBigInt))
         let deductGas = false
         if (common.gteHardfork(Hardfork.SpuriousDragon)) {
           // EIP-161: State Trie Clearing

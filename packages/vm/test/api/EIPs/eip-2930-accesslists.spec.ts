@@ -1,6 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
-import { Account, Address, bufferToHex } from '@ethereumjs/util'
+import { Account, Address, bytesToHex } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -11,22 +12,19 @@ const common = new Common({
   hardfork: Hardfork.Berlin,
 })
 
-const validAddress = Buffer.from('00000000000000000000000000000000000000ff', 'hex')
-const validSlot = Buffer.from('00'.repeat(32), 'hex')
+const validAddress = hexToBytes('00000000000000000000000000000000000000ff')
+const validSlot = hexToBytes('00'.repeat(32))
 
 // setup the accounts for this test
-const privateKey = Buffer.from(
-  'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-  'hex'
-)
+const privateKey = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 const contractAddress = new Address(validAddress)
 
 tape('EIP-2930 Optional Access Lists tests', (t) => {
   t.test('VM should charge the right gas when using access list transactions', async (st) => {
     const access = [
       {
-        address: bufferToHex(validAddress),
-        storageKeys: [bufferToHex(validSlot)],
+        address: bytesToHex(validAddress),
+        storageKeys: [bytesToHex(validSlot)],
       },
     ]
     const txnWithAccessList = AccessListEIP2930Transaction.fromTxData(
@@ -51,7 +49,7 @@ tape('EIP-2930 Optional Access Lists tests', (t) => {
     const vm = await VM.create({ common })
 
     // contract code PUSH1 0x00 SLOAD STOP
-    await vm.stateManager.putContractCode(contractAddress, Buffer.from('60005400', 'hex'))
+    await vm.stateManager.putContractCode(contractAddress, hexToBytes('60005400'))
 
     const address = Address.fromPrivateKey(privateKey)
     const initialBalance = BigInt(10) ** BigInt(18)

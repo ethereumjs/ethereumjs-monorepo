@@ -1,6 +1,8 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
+import { bytesToPrefixedHexString } from '@ethereumjs/util'
+import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
 import { MemoryLevel } from 'memory-level'
 
 import { Event } from '../types'
@@ -132,7 +134,7 @@ export class Miner {
     const header = this.latestBlockHeader()
     this.ethashMiner = this.ethash.getMiner(header)
     const solution = await this.ethashMiner.iterate(-1)
-    if (!header.hash().equals(this.latestBlockHeader().hash())) {
+    if (!equalsBytes(header.hash(), this.latestBlockHeader().hash())) {
       // New block was inserted while iterating so we will discard solution
       return
     }
@@ -319,17 +321,17 @@ export class Miner {
           // We can here decide to keep a tx in pool if it belongs to future hf
           // but for simplicity just remove the tx as the sender can always retransmit
           // the tx
-          this.service.txPool.removeByHash(txs[index].hash().toString('hex'))
+          this.service.txPool.removeByHash(bytesToHex(txs[index].hash()))
           this.config.logger.error(
-            `Pending: Removed from txPool tx 0x${txs[index]
-              .hash()
-              .toString('hex')} having different hf=${txs[
-              index
-            ].common.hardfork()} than block vm hf=${blockBuilder['vm']._common.hardfork()}`
+            `Pending: Removed from txPool tx ${bytesToPrefixedHexString(
+              txs[index].hash()
+            )} having different hf=${txs[index].common.hardfork()} than block vm hf=${blockBuilder[
+              'vm'
+            ]._common.hardfork()}`
           )
         } else {
           // If there is an error adding a tx, it will be skipped
-          const hash = '0x' + txs[index].hash().toString('hex')
+          const hash = bytesToPrefixedHexString(txs[index].hash())
           this.config.logger.debug(
             `Skipping tx ${hash}, error encountered when trying to add tx:\n${error}`
           )

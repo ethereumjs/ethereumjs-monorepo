@@ -1,12 +1,12 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Address, KECCAK256_RLP, Withdrawal } from '@ethereumjs/util'
+import { Address, KECCAK256_RLP, Withdrawal, hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Block } from '../src/block'
 import { BlockHeader } from '../src/header'
 
-import type { WithdrawalBuffer, WithdrawalData } from '@ethereumjs/util'
+import type { WithdrawalBytes, WithdrawalData } from '@ethereumjs/util'
 
 const gethWithdrawals8BlockRlp =
   'f903e1f90213a0fe950635b1bd2a416ff6283b0bbd30176e1b1125ad06fa729da9f3f4c1c61710a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d4934794aa00000000000000000000000000000000000000a07f7510a0cb6203f456e34ec3e2ce30d6c5590ded42c10a9cf3f24784119c5afba056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b901000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080018401c9c380802f80a0ff0000000000000000000000000000000000000000000000000000000000000088000000000000000007a0b695b29ec7ee934ef6a68838b13729f2d49fffe26718de16a1a9ed94a4d7d06dc0c0f901c6da8082ffff94000000000000000000000000000000000000000080f83b0183010000940100000000000000000000000000000000000000a00100000000000000000000000000000000000000000000000000000000000000f83b0283010001940200000000000000000000000000000000000000a00200000000000000000000000000000000000000000000000000000000000000f83b0383010002940300000000000000000000000000000000000000a00300000000000000000000000000000000000000000000000000000000000000f83b0483010003940400000000000000000000000000000000000000a00400000000000000000000000000000000000000000000000000000000000000f83b0583010004940500000000000000000000000000000000000000a00500000000000000000000000000000000000000000000000000000000000000f83b0683010005940600000000000000000000000000000000000000a00600000000000000000000000000000000000000000000000000000000000000f83b0783010006940700000000000000000000000000000000000000a00700000000000000000000000000000000000000000000000000000000000000'
@@ -31,12 +31,12 @@ common.hardforkBlock = function (hardfork: string | undefined) {
 tape('EIP4895 tests', function (t) {
   t.test('should correctly generate withdrawalsRoot', async function (st) {
     // get withdwalsArray
-    const gethBlockBufferArray = RLP.decode(Buffer.from(gethWithdrawals8BlockRlp, 'hex'))
-    const withdrawals = (gethBlockBufferArray[3] as WithdrawalBuffer[]).map((wa) =>
+    const gethBlockBytesArray = RLP.decode(hexStringToBytes(gethWithdrawals8BlockRlp))
+    const withdrawals = (gethBlockBytesArray[3] as WithdrawalBytes[]).map((wa) =>
       Withdrawal.fromValuesArray(wa)
     )
     st.equal(withdrawals.length, 8, '8 withdrawals should have been found')
-    const gethWitdrawalsRoot = (gethBlockBufferArray[0] as Buffer[])[16] as Buffer
+    const gethWitdrawalsRoot = (gethBlockBytesArray[0] as Uint8Array[])[16] as Uint8Array
     st.deepEqual(
       await Block.genWithdrawalsTrieRoot(withdrawals),
       gethWitdrawalsRoot,
@@ -50,7 +50,7 @@ tape('EIP4895 tests', function (t) {
     st.throws(() => {
       BlockHeader.fromHeaderData(
         {
-          withdrawalsRoot: Buffer.from('00'.repeat(32), 'hex'),
+          withdrawalsRoot: hexStringToBytes('00'.repeat(32)),
         },
         {
           common: earlyCommon,
@@ -68,7 +68,7 @@ tape('EIP4895 tests', function (t) {
     st.doesNotThrow(() => {
       BlockHeader.fromHeaderData(
         {
-          withdrawalsRoot: Buffer.from('00'.repeat(32), 'hex'),
+          withdrawalsRoot: hexStringToBytes('00'.repeat(32)),
         },
         {
           common,
@@ -101,7 +101,7 @@ tape('EIP4895 tests', function (t) {
       Block.fromBlockData(
         {
           header: {
-            withdrawalsRoot: Buffer.from('00'.repeat(32), 'hex'),
+            withdrawalsRoot: hexStringToBytes('00'.repeat(32)),
           },
           withdrawals: [],
         },
@@ -113,7 +113,7 @@ tape('EIP4895 tests', function (t) {
     const block = Block.fromBlockData(
       {
         header: {
-          withdrawalsRoot: Buffer.from('00'.repeat(32), 'hex'),
+          withdrawalsRoot: hexStringToBytes('00'.repeat(32)),
         },
         withdrawals: [],
       },
@@ -142,16 +142,15 @@ tape('EIP4895 tests', function (t) {
     const withdrawal = <WithdrawalData>{
       index: BigInt(0),
       validatorIndex: BigInt(0),
-      address: new Address(Buffer.from('20'.repeat(20), 'hex')),
+      address: new Address(hexStringToBytes('20'.repeat(20))),
       amount: BigInt(1000),
     }
 
     const validBlockWithWithdrawal = Block.fromBlockData(
       {
         header: {
-          withdrawalsRoot: Buffer.from(
-            '897ca49edcb278aecab2688bcc2b7b7ee43524cc489672534fee332a172f1718',
-            'hex'
+          withdrawalsRoot: hexStringToBytes(
+            '897ca49edcb278aecab2688bcc2b7b7ee43524cc489672534fee332a172f1718'
           ),
         },
         withdrawals: [withdrawal],
@@ -168,16 +167,15 @@ tape('EIP4895 tests', function (t) {
     const withdrawal2 = <WithdrawalData>{
       index: BigInt(1),
       validatorIndex: BigInt(11),
-      address: new Address(Buffer.from('30'.repeat(20), 'hex')),
+      address: new Address(hexStringToBytes('30'.repeat(20))),
       amount: BigInt(2000),
     }
 
     const validBlockWithWithdrawal2 = Block.fromBlockData(
       {
         header: {
-          withdrawalsRoot: Buffer.from(
-            '3b514862c42008079d461392e29d5b6775dd5ed370a6c4441ccb8ab742bf2436',
-            'hex'
+          withdrawalsRoot: hexStringToBytes(
+            '3b514862c42008079d461392e29d5b6775dd5ed370a6c4441ccb8ab742bf2436'
           ),
         },
         withdrawals: [withdrawal, withdrawal2],

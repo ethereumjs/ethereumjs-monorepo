@@ -1,5 +1,5 @@
 import { TransactionFactory } from '@ethereumjs/tx'
-import { TypeOutput, setLengthLeft, toBuffer, toType } from '@ethereumjs/util'
+import { TypeOutput, setLengthLeft, toBytes, toType } from '@ethereumjs/util'
 
 import { blockHeaderFromRpc } from './header-from-rpc'
 
@@ -21,7 +21,7 @@ function normalizeTxParams(_txParams: any) {
   // strict byte length checking
   txParams.to =
     txParams.to !== null && txParams.to !== undefined
-      ? setLengthLeft(toBuffer(txParams.to), 20)
+      ? setLengthLeft(toBytes(txParams.to), 20)
       : null
 
   txParams.v = toType(txParams.v, TypeOutput.BigInt)

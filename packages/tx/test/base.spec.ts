@@ -3,9 +3,12 @@ import {
   MAX_INTEGER,
   MAX_UINT64,
   SECP256K1_ORDER,
-  bufferToBigInt,
+  bytesToBigInt,
+  equalsBytes,
+  hexStringToBytes,
   privateToPublic,
-  toBuffer,
+  toBytes,
+  utf8ToBytes,
 } from '@ethereumjs/util'
 import * as tape from 'tape'
 
@@ -41,7 +44,7 @@ tape('[BaseTransaction]', function (t) {
     eip1559Txs.push(FeeMarketEIP1559Transaction.fromTxData(tx.data, { common }))
   }
 
-  const zero = Buffer.alloc(0)
+  const zero = new Uint8Array(0)
   const txTypes = [
     {
       class: Transaction,
@@ -62,7 +65,7 @@ tape('[BaseTransaction]', function (t) {
       class: AccessListEIP2930Transaction,
       name: 'AccessListEIP2930Transaction',
       type: 1,
-      values: [Buffer.from([1])].concat(Array(7).fill(zero)),
+      values: [new Uint8Array([1])].concat(Array(7).fill(zero)),
       txs: eip2930Txs,
       fixtures: eip2930Fixtures,
       activeCapabilities: [Capability.EIP2718TypedTransaction, Capability.EIP2930AccessLists],
@@ -72,7 +75,7 @@ tape('[BaseTransaction]', function (t) {
       class: FeeMarketEIP1559Transaction,
       name: 'FeeMarketEIP1559Transaction',
       type: 2,
-      values: [Buffer.from([1])].concat(Array(8).fill(zero)),
+      values: [new Uint8Array([1])].concat(Array(8).fill(zero)),
       txs: eip1559Txs,
       fixtures: eip1559Fixtures,
       activeCapabilities: [
@@ -152,7 +155,7 @@ tape('[BaseTransaction]', function (t) {
 
   t.test('fromValuesArray()', function (st) {
     let rlpData: any = legacyTxs[0].raw()
-    rlpData[0] = toBuffer('0x0')
+    rlpData[0] = toBytes('0x0')
     try {
       Transaction.fromValuesArray(rlpData)
       st.fail('should have thrown when nonce has leading zeroes')
@@ -162,8 +165,8 @@ tape('[BaseTransaction]', function (t) {
         'should throw with nonce with leading zeroes'
       )
     }
-    rlpData[0] = toBuffer('0x')
-    rlpData[6] = toBuffer('0x0')
+    rlpData[0] = toBytes('0x')
+    rlpData[6] = toBytes('0x0')
     try {
       Transaction.fromValuesArray(rlpData)
       st.fail('should have thrown when v has leading zeroes')
@@ -174,7 +177,7 @@ tape('[BaseTransaction]', function (t) {
       )
     }
     rlpData = eip2930Txs[0].raw()
-    rlpData[3] = toBuffer('0x0')
+    rlpData[3] = toBytes('0x0')
     try {
       AccessListEIP2930Transaction.fromValuesArray(rlpData)
       st.fail('should have thrown when gasLimit has leading zeroes')
@@ -185,7 +188,7 @@ tape('[BaseTransaction]', function (t) {
       )
     }
     rlpData = eip1559Txs[0].raw()
-    rlpData[2] = toBuffer('0x0')
+    rlpData[2] = toBytes('0x0')
     try {
       FeeMarketEIP1559Transaction.fromValuesArray(rlpData)
       st.fail('should have thrown when maxPriorityFeePerGas has leading zeroes')
@@ -277,11 +280,11 @@ tape('[BaseTransaction]', function (t) {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
         if (privateKey !== undefined) {
-          st.ok(tx.sign(Buffer.from(privateKey, 'hex')), `${txType.name}: should sign tx`)
+          st.ok(tx.sign(hexStringToBytes(privateKey)), `${txType.name}: should sign tx`)
         }
 
         st.throws(
-          () => tx.sign(Buffer.from('invalid')),
+          () => tx.sign(utf8ToBytes('invalid')),
           `${txType.name}: should fail with invalid PK`
         )
       }
@@ -319,7 +322,7 @@ tape('[BaseTransaction]', function (t) {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey, sendersAddress } = txType.fixtures[i]
         if (privateKey !== undefined) {
-          const signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
+          const signedTx = tx.sign(hexStringToBytes(privateKey))
           st.equal(
             signedTx.getSenderAddress().toString(),
             `0x${sendersAddress}`,
@@ -336,11 +339,11 @@ tape('[BaseTransaction]', function (t) {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
         if (privateKey !== undefined) {
-          const signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
+          const signedTx = tx.sign(hexStringToBytes(privateKey))
           const txPubKey = signedTx.getSenderPublicKey()
-          const pubKeyFromPriv = privateToPublic(Buffer.from(privateKey, 'hex'))
+          const pubKeyFromPriv = privateToPublic(hexStringToBytes(privateKey))
           st.ok(
-            txPubKey.equals(pubKeyFromPriv),
+            equalsBytes(txPubKey, pubKeyFromPriv),
             `${txType.name}: should get sender's public key after signing it`
           )
         }
@@ -358,7 +361,7 @@ tape('[BaseTransaction]', function (t) {
         for (const [i, tx] of txType.txs.entries()) {
           const { privateKey } = txType.fixtures[i]
           if (privateKey !== undefined) {
-            let signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
+            let signedTx = tx.sign(hexStringToBytes(privateKey))
             signedTx = JSON.parse(JSON.stringify(signedTx)) // deep clone
             ;(signedTx as any).s = SECP256K1_ORDER + BigInt(1)
             st.throws(() => {
@@ -376,7 +379,7 @@ tape('[BaseTransaction]', function (t) {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
         if (privateKey !== undefined) {
-          const signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
+          const signedTx = tx.sign(hexStringToBytes(privateKey))
           st.ok(signedTx.verifySignature(), `${txType.name}: should verify signing it`)
         }
       }
@@ -385,7 +388,7 @@ tape('[BaseTransaction]', function (t) {
   })
 
   t.test('initialization with defaults', function (st) {
-    const bufferZero = toBuffer('0x')
+    const bufferZero = toBytes('0x')
     const tx = Transaction.fromTxData({
       nonce: '',
       gasLimit: '',
@@ -401,11 +404,11 @@ tape('[BaseTransaction]', function (t) {
     st.equal(tx.r, undefined)
     st.equal(tx.s, undefined)
     st.isEquivalent(tx.to, undefined)
-    st.isEquivalent(tx.value, bufferToBigInt(bufferZero))
+    st.isEquivalent(tx.value, bytesToBigInt(bufferZero))
     st.isEquivalent(tx.data, bufferZero)
-    st.isEquivalent(tx.gasPrice, bufferToBigInt(bufferZero))
-    st.isEquivalent(tx.gasLimit, bufferToBigInt(bufferZero))
-    st.isEquivalent(tx.nonce, bufferToBigInt(bufferZero))
+    st.isEquivalent(tx.gasPrice, bytesToBigInt(bufferZero))
+    st.isEquivalent(tx.gasLimit, bytesToBigInt(bufferZero))
+    st.isEquivalent(tx.nonce, bytesToBigInt(bufferZero))
 
     st.end()
   })
