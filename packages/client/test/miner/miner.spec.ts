@@ -1,8 +1,10 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
+import { AbstractLevel } from 'abstract-level'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 import * as td from 'testdouble'
@@ -49,6 +51,11 @@ tape('[Miner]', async (t) => {
   VmState.prototype.setStateRoot = td.func<any>()
   td.replace('@ethereumjs/vm/dist/vmState', { VmState })
 
+  // Stub out setStateRoot so txPool.validate checks will pass since correct state root
+  // doesn't exist in fakeChain state anyway
+  const ogStateManagerSetStateRoot = DefaultStateManager.prototype.setStateRoot
+  DefaultStateManager.prototype.setStateRoot = td.func<any>()
+
   class FakeChain {
     open() {}
     close() {}
@@ -64,6 +71,9 @@ tape('[Miner]', async (t) => {
         latest: Block.fromBlockData(),
         height: BigInt(0),
       }
+    }
+    getBlock() {
+      return BlockHeader.fromHeaderData()
     }
     getCanonicalHeadHeader() {
       return BlockHeader.fromHeaderData()
@@ -110,6 +120,7 @@ tape('[Miner]', async (t) => {
   }
 
   const txA01 = createTx() // A -> B, nonce: 0, value: 1, normal gasPrice
+  const txA011 = createTx() // A -> B, nonce: 0, value: 1, normal gasPrice
   const txA02 = createTx(A, B, 1, 1, 2000000000) // A -> B, nonce: 1, value: 1, 2x gasPrice
   const txA03 = createTx(A, B, 2, 1, 3000000000) // A -> B, nonce: 2, value: 1, 3x gasPrice
   const txB01 = createTx(B, A, 0, 1, 2500000000) // B -> A, nonce: 0, value: 1, 2.5x gasPrice
@@ -154,7 +165,7 @@ tape('[Miner]', async (t) => {
       config,
       chain,
     })
-    const miner = new Miner({ config, service })
+    const miner = new Miner({ config, service, skipHardForkValidation: true })
     const { txPool } = service
     const { vm } = service.execution
 
@@ -178,16 +189,59 @@ tape('[Miner]', async (t) => {
     await wait(500)
   })
 
+  t.test('assembleBlocks() -> with a hardfork mismatching tx', async (t) => {
+    t.plan(3)
+    const chain = new FakeChain() as any
+    const service = new FullEthereumService({
+      config,
+      chain,
+    })
+
+    // no skipHardForkValidation
+    const miner = new Miner({ config, service })
+    const { txPool } = service
+    const { vm } = service.execution
+
+    txPool.start()
+    miner.start()
+
+    await setBalance(vm, A.address, BigInt('200000000000001'))
+
+    // add tx
+    txA011.common.setHardfork(Hardfork.Merge)
+    await txPool.add(txA011)
+    t.equal(txPool.txsInPool, 1, 'transaction should be in pool')
+
+    // disable consensus to skip PoA block signer validation
+    ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
+
+    chain.putBlocks = (blocks: Block[]) => {
+      t.equal(
+        blocks[0].transactions.length,
+        0,
+        'new block should not include tx due to hardfork mismatch'
+      )
+      t.equal(txPool.txsInPool, 1, 'transaction should remain in pool')
+      miner.stop()
+      txPool.stop()
+    }
+    await (miner as any).queueNextAssembly(0)
+    await wait(500)
+  })
+
   t.test(
     'assembleBlocks() -> with multiple txs, properly ordered by gasPrice and nonce',
     async (t) => {
       t.plan(4)
       const chain = new FakeChain() as any
+      const _config = {
+        ...config,
+      }
       const service = new FullEthereumService({
         config,
         chain,
       })
-      const miner = new Miner({ config, service })
+      const miner = new Miner({ config, service, skipHardForkValidation: true })
       const { txPool } = service
       const { vm } = service.execution
       txPool.start()
@@ -209,7 +263,7 @@ tape('[Miner]', async (t) => {
         const msg = 'txs in block should be properly ordered by gasPrice and nonce'
         const expectedOrder = [txB01, txA01, txA02, txA03]
         for (const [index, tx] of expectedOrder.entries()) {
-          t.ok(blocks[0].transactions[index].hash().equals(tx.hash()), msg)
+          t.ok(blocks[0].transactions[index]?.hash().equals(tx.hash()), msg)
         }
         miner.stop()
         txPool.stop()
@@ -218,6 +272,57 @@ tape('[Miner]', async (t) => {
       await wait(500)
     }
   )
+  t.test('assembleBlocks() -> with saveReceipts', async (t) => {
+    t.plan(9)
+    const chain = new FakeChain() as any
+    const config = new Config({ transports: [], accounts, mine: true, common, saveReceipts: true })
+    const service = new FullEthereumService({
+      config,
+      chain,
+      metaDB: new AbstractLevel({
+        encodings: { utf8: true, buffer: true },
+      }),
+    })
+    const miner = new Miner({ config, service, skipHardForkValidation: true })
+    const { txPool } = service
+    const { vm, receiptsManager } = service.execution
+    txPool.start()
+    miner.start()
+
+    t.ok(receiptsManager, 'receiptsManager should be initialized')
+
+    await setBalance(vm, A.address, BigInt('400000000000001'))
+    await setBalance(vm, B.address, BigInt('400000000000001'))
+
+    // add txs
+    await txPool.add(txA01)
+    await txPool.add(txA02)
+    await txPool.add(txA03)
+    await txPool.add(txB01)
+
+    // disable consensus to skip PoA block signer validation
+    ;(vm.blockchain as any)._validateConsensus = false
+
+    chain.putBlocks = async (blocks: Block[]) => {
+      const msg = 'txs in block should be properly ordered by gasPrice and nonce'
+      const expectedOrder = [txB01, txA01, txA02, txA03]
+      for (const [index, tx] of expectedOrder.entries()) {
+        t.ok(blocks[0].transactions[index]?.hash().equals(tx.hash()), msg)
+      }
+      miner.stop()
+      txPool.stop()
+    }
+    await (miner as any).queueNextAssembly(0)
+    let receipt = await receiptsManager!.getReceipts(txB01.hash())
+    t.ok(receipt, 'receipt should be saved')
+    receipt = await receiptsManager!.getReceipts(txA01.hash())
+    t.ok(receipt, 'receipt should be saved')
+    receipt = await receiptsManager!.getReceipts(txA02.hash())
+    t.ok(receipt, 'receipt should be saved')
+    receipt = await receiptsManager!.getReceipts(txA03.hash())
+    t.ok(receipt, 'receipt should be saved')
+    await wait(500)
+  })
 
   t.test('assembleBlocks() -> should not include tx under the baseFee', async (t) => {
     t.plan(1)
@@ -231,7 +336,7 @@ tape('[Miner]', async (t) => {
     const block = Block.fromBlockData({}, { common })
     Object.defineProperty(chain, 'headers', {
       get() {
-        return { latest: block.header }
+        return { latest: block.header, height: block.header.number }
       },
     })
     Object.defineProperty(chain, 'blocks', {
@@ -243,7 +348,7 @@ tape('[Miner]', async (t) => {
       config,
       chain,
     })
-    const miner = new Miner({ config, service })
+    const miner = new Miner({ config, service, skipHardForkValidation: true })
     const { txPool } = service
     const { vm } = service.execution
     txPool.start()
@@ -292,7 +397,7 @@ tape('[Miner]', async (t) => {
       config,
       chain,
     })
-    const miner = new Miner({ config, service })
+    const miner = new Miner({ config, service, skipHardForkValidation: true })
     const { txPool } = service
     const { vm } = service.execution
     txPool.start()
@@ -333,7 +438,7 @@ tape('[Miner]', async (t) => {
       config,
       chain,
     })
-    const miner = new Miner({ config, service })
+    const miner = new Miner({ config, service, skipHardForkValidation: true })
 
     // stub chainUpdated so assemble isn't called again
     // when emitting Event.CHAIN_UPDATED in this test
@@ -382,13 +487,13 @@ tape('[Miner]', async (t) => {
     const common = Common.custom(customChainParams, { baseChain: CommonChain.Rinkeby })
     common.setHardforkByBlockNumber(0)
     const config = new Config({ transports: [], accounts, mine: true, common })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     await chain.open()
     const service = new FullEthereumService({
       config,
       chain,
     })
-    const miner = new Miner({ config, service })
+    const miner = new Miner({ config, service, skipHardForkValidation: true })
 
     const { vm } = service.execution
     ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
@@ -449,13 +554,13 @@ tape('[Miner]', async (t) => {
     const common = new Common({ chain: CommonChain.Ropsten, hardfork: Hardfork.Istanbul })
     ;(common as any)._chainParams['genesis'].difficulty = 1
     const config = new Config({ transports: [], accounts, mine: true, common })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     await chain.open()
     const service = new FullEthereumService({
       config,
       chain,
     })
-    const miner = new Miner({ config, service })
+    const miner = new Miner({ config, service, skipHardForkValidation: true })
     ;(chain.blockchain as any)._validateConsensus = false
     ;(miner as any).chainUpdated = async () => {} // stub
     miner.start()
@@ -477,6 +582,7 @@ tape('[Miner]', async (t) => {
     // so we will replace the original functions to avoid issues in other tests that come after
     BlockHeader.prototype._consensusFormatValidation = originalValidate
     VmState.prototype.setStateRoot = originalSetStateRoot
+    DefaultStateManager.prototype.setStateRoot = ogStateManagerSetStateRoot
     t.end()
   })
 })

@@ -23,7 +23,11 @@ To obtain the latest version, simply require the project using `npm`:
 npm install @ethereumjs/vm
 ```
 
+**Note:** If you want to work with `EIP-4844` related functionality, you will have additional manual installation steps for the **KZG setup**, see related section below.
+
 ## Usage
+
+### Running a Transaction
 
 ```typescript
 import { Address } from '@ethereumjs/util'
@@ -43,6 +47,36 @@ const tx = Transaction.fromTxData({
   s: BigInt('21948396863567062449199529794141973192314514851405455194940751428901681436138'),
 })
 await vm.runTx({ tx, skipBalance: true })
+```
+
+Note that there is an additional API method `VM.runBlock()` which allows to run the whole block and execute all included transactions along.
+
+### Building a Block
+
+The VM package can also be used to construct a new valid block by executing and then integrating txs one-by-one.
+
+The following non-complete example gives some illustration on how to use the Block Builder API:
+
+```typescript
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Transaction } from '@ethereumjs/tx'
+import { VM } from '@ethereumjs/vm'
+
+const common = new Common({ chain: Chain.Mainnet })
+const vm = await VM.create({ common })
+
+const blockBuilder = await vm.buildBlock({
+  parentBlock, // the parent @ethereumjs/block Block
+  headerData, // header values for the new block
+  blockOpts: { calcDifficultyFromHeader: parentBlock.header, freeze: false },
+})
+
+const tx = Transaction.fromTxData()
+await blockBuilder.addTransaction(tx)
+
+// Add more transactions
+
+const block = await blockBuilder.build()
 ```
 
 ## Example
@@ -76,18 +110,18 @@ It is still possible to access all `EVM` functionality through the `evm` propert
 
 ```typescript
 vm.evm.runCode() // or
-vm.evm.on('step', function (data) {
+vm.evm.events.on('step', function (data) {
   console.log(`Opcode: ${data.opcode.name}\tStack: ${data.stack}`)
 })
 ```
 
-Note that it now also get's possible to pass in an own or customized `EVM` instance by using the optional `evm` constructor option.
+Note that it's now also possible to pass in an own or customized `EVM` instance by using the optional `evm` constructor option.
 
 ### Execution Environment (EEI) and State
 
 This package provides a concrete implementation of the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) EEI interface to instantiate a VM/EVM combination with an Ethereum `mainnet` compatible execution context.
 
-With `VM` v6 the previously included `StateManager` has been extracted to its own package [@ethereumjs/statemanager](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanger). The `StateManager` package provides a unified state interface and it is now also possible to provide a modified or custom `StateManager` to the VM via the optional `stateManager` constructor option.
+With `VM` v6 the previously included `StateManager` has been extracted to its own package [@ethereumjs/statemanager](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanager). The `StateManager` package provides a unified state interface and it is now also possible to provide a modified or custom `StateManager` to the VM via the optional `stateManager` constructor option.
 
 ## Setup
 
@@ -170,6 +204,24 @@ const vm = new VM({ common })
 
 For a list with supported EIPs see the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) documentation.
 
+### EIP-4844 Shard Blob Transactions Support (experimental)
+
+This library supports an experimental version of the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023) starting with `v1.3.0`.
+
+#### Initialization
+
+To run VM/EVM related EIP-4844 functionality you have to active the EIP in the associated `@ethereumjs/common` library:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+```
+
+EIP-4844 comes with a new opcode `DATAHASH` and adds a new point evaluation precompile at address `0x14` in the underlying `@ethereumjs/evm` package.
+
+**Note:** Usage of the point evaluation precompile needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
+
 ### Tracing Events
 
 Our `TypeScript` VM is implemented as an [AsyncEventEmitter](https://github.com/ahultgren/async-eventemitter) and events are submitted along major execution steps which you can listen to.
@@ -205,14 +257,14 @@ to receive a function as the handler's second argument, nor call it.
 Note that if your event handler receives multiple arguments, the second
 one will be the continuation function, and it must be called.
 
-If an exception is thrown from withing the handler or a function called
+If an exception is thrown from within the handler or a function called
 by it, the exception will bubble into the VM and interrupt it, possibly
-corrupting its state. It's strongly recommended not to throw from withing
+corrupting its state. It's strongly recommended not to throw from within
 event handlers.
 
 ## Understanding the VM
 
-If you want to understand your VM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=[Logger Selection] node [Your Script to Run].js` and produce output like the following:
+If you want to understand your VM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=ethjs,[Logger Selection] node [Your Script to Run].js` and produce output like the following:
 
 ![EthereumJS VM Debug Logger](./debug.png?raw=true)
 
@@ -232,31 +284,31 @@ Here are some examples for useful logger combinations.
 Run one specific logger:
 
 ```shell
-DEBUG=vm:tx ts-node test.ts
+DEBUG=ethjs,vm:tx ts-node test.ts
 ```
 
 Run all loggers currently available:
 
 ```shell
-DEBUG=vm:*,vm:*:* ts-node test.ts
+DEBUG=ethjs,vm:*,vm:*:* ts-node test.ts
 ```
 
 Run only the gas loggers:
 
 ```shell
-DEBUG=vm:*:gas ts-node test.ts
+DEBUG=ethjs,vm:*:gas ts-node test.ts
 ```
 
 Excluding the state logger:
 
 ```shell
-DEBUG=vm:*,vm:*:*,-vm:state ts-node test.ts
+DEBUG=ethjs,vm:*,vm:*:*,-vm:state ts-node test.ts
 ```
 
 Run some specific loggers including a logger specifically logging the `SSTORE` executions from the VM (this is from the screenshot above):
 
 ```shell
-DEBUG=vm:tx,vm:evm,vm:ops:sstore,vm:*:gas ts-node test.ts
+DEBUG=ethjs,vm:tx,vm:evm,vm:ops:sstore,vm:*:gas ts-node test.ts
 ```
 
 ## Internal Structure

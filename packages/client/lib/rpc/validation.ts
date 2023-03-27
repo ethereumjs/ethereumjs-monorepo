@@ -17,13 +17,15 @@ export function middleware(method: any, requiredParamsCount: number, validators:
         }
         return reject(error)
       }
-
       for (let i = 0; i < validators.length; i++) {
         if (validators[i] !== undefined) {
           for (let j = 0; j < validators[i].length; j++) {
-            const error = validators[i][j](params, i)
-            if (error !== undefined) {
-              return reject(error)
+            // Only apply validators if params[i] is a required parameter or exists
+            if (i < requiredParamsCount || params[i] !== undefined) {
+              const error = validators[i][j](params, i)
+              if (error !== undefined) {
+                return reject(error)
+              }
             }
           }
         }
@@ -31,6 +33,66 @@ export function middleware(method: any, requiredParamsCount: number, validators:
 
       resolve(method(params))
     })
+  }
+}
+
+function bytes(bytes: number, params: any[], index: number) {
+  if (typeof params[index] !== 'string') {
+    return {
+      code: INVALID_PARAMS,
+      message: `invalid argument ${index}: argument must be a hex string`,
+    }
+  }
+
+  if (params[index].substr(0, 2) !== '0x') {
+    return {
+      code: INVALID_PARAMS,
+      message: `invalid argument ${index}: hex string without 0x prefix`,
+    }
+  }
+  if (params[index].length > 2 && !/^[0-9a-fA-F]+$/.test(params[index].substr(2))) {
+    return {
+      code: INVALID_PARAMS,
+      message: `invalid argument ${index}: argument must be a hex string`,
+    }
+  }
+  if (params[index].substr(2).length > bytes * 2) {
+    return {
+      code: INVALID_PARAMS,
+      message: `invalid argument ${index}: expected ${bytes} byte value`,
+    }
+  }
+}
+
+function uint(uint: number, params: any[], index: number) {
+  if (uint % 8 !== 0) {
+    // Sanity check
+    throw new Error(`Uint should be a multiple of 8, got: ${uint}`)
+  }
+  if (typeof params[index] !== 'string') {
+    return {
+      code: INVALID_PARAMS,
+      message: `invalid argument ${index}: argument must be a hex string`,
+    }
+  }
+
+  if (params[index].substr(0, 2) !== '0x') {
+    return {
+      code: INVALID_PARAMS,
+      message: `invalid argument ${index}: hex string without 0x prefix`,
+    }
+  }
+  if (params[index].length > 2 && !/^[0-9a-fA-F]+$/.test(params[index].substr(2))) {
+    return {
+      code: INVALID_PARAMS,
+      message: `invalid argument ${index}: argument must be a hex string`,
+    }
+  }
+  if (params[index].substr(2).length > (uint / 8) * 2) {
+    return {
+      code: INVALID_PARAMS,
+      message: `invalid argument ${index}: expected ${uint} bit value`,
+    }
   }
 }
 
@@ -93,6 +155,39 @@ export const validators = {
     }
   },
 
+  get bytes8() {
+    return (params: any[], index: number) => bytes(8, params, index)
+  },
+  get bytes16() {
+    return (params: any[], index: number) => bytes(16, params, index)
+  },
+  get bytes20() {
+    return (params: any[], index: number) => bytes(20, params, index)
+  },
+  get bytes32() {
+    return (params: any[], index: number) => bytes(32, params, index)
+  },
+  get variableBytes32() {
+    return (params: any[], index: number) => bytes(32, params, index)
+  },
+  get bytes48() {
+    return (params: any[], index: number) => bytes(48, params, index)
+  },
+  get bytes256() {
+    return (params: any[], index: number) => bytes(256, params, index)
+  },
+  get uint64() {
+    return (params: any[], index: number) => uint(64, params, index)
+  },
+  get uint256() {
+    return (params: any[], index: number) => uint(256, params, index)
+  },
+  get blob() {
+    // "each blob is FIELD_ELEMENTS_PER_BLOB * BYTES_PER_FIELD_ELEMENT = 4096 * 32 = 131072"
+    // See: https://github.com/ethereum/execution-apis/blob/b7c5d3420e00648f456744d121ffbd929862924d/src/engine/experimental/blob-extension.md
+    return (params: any[], index: number) => bytes(131072, params, index)
+  },
+
   /**
    * hex validator to validate block hash
    * @param params parameters of method
@@ -141,7 +236,7 @@ export const validators = {
 
       const blockOption = params[index]
 
-      if (!['latest', 'earliest', 'pending'].includes(blockOption)) {
+      if (!['latest', 'finalized', 'safe', 'earliest', 'pending'].includes(blockOption)) {
         if (blockOption.substr(0, 2) === '0x') {
           const hash = this.blockHash([blockOption], 0)
           // todo: make integer validator?
@@ -217,7 +312,63 @@ export const validators = {
         }
 
         // validate hex
-        for (const field of [tx.gas, tx.gasPrice, tx.value, tx.data]) {
+        const hexFields = { gas: tx.gas, gasPrice: tx.gasPrice, value: tx.value, data: tx.data }
+        for (const field of Object.entries(hexFields)) {
+          const v = validate(field[1], this.hex)
+          if (v !== undefined) {
+            return {
+              code: INVALID_PARAMS,
+              message: `invalid argument ${field[0]}:${v.message.split(':')[1]}`,
+            }
+          }
+        }
+      }
+    }
+  },
+
+  /**
+   * validator to ensure required withdawal fields are present, and checks for valid address and hex values
+   * for the other quantity based fields
+   * @param requiredFields array of required fields
+   * @returns validator function with params:
+   *   - @param params parameters of method
+   *   - @param index index of parameter
+   */
+  get withdrawal() {
+    return (requiredFields: string[] = ['index', 'validatorIndex', 'address', 'amount']) => {
+      return (params: any[], index: number) => {
+        if (typeof params[index] !== 'object') {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: argument must be an object`,
+          }
+        }
+
+        const wt = params[index]
+
+        for (const field of requiredFields) {
+          if (wt[field] === undefined) {
+            return {
+              code: INVALID_PARAMS,
+              message: `invalid argument ${index}: required field ${field}`,
+            }
+          }
+        }
+
+        const validate = (field: any, validator: Function) => {
+          if (field === undefined) return
+          const v = validator([field], 0)
+          if (v !== undefined) return v
+        }
+
+        // validate addresses
+        for (const field of [wt.address]) {
+          const v = validate(field, this.address)
+          if (v !== undefined) return v
+        }
+
+        // validate hex
+        for (const field of [wt.index, wt.validatorIndex, wt.amount]) {
           const v = validate(field, this.hex)
           if (v !== undefined) return v
         }

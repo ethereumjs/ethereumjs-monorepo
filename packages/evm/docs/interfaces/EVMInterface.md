@@ -9,11 +9,13 @@ API of the EVM
 ### Properties
 
 - [eei](EVMInterface.md#eei)
+- [events](EVMInterface.md#events)
 - [precompiles](EVMInterface.md#precompiles)
 
 ### Methods
 
 - [copy](EVMInterface.md#copy)
+- [getActiveOpcodes](EVMInterface.md#getactiveopcodes)
 - [runCall](EVMInterface.md#runcall)
 - [runCode](EVMInterface.md#runcode)
 
@@ -25,7 +27,17 @@ API of the EVM
 
 #### Defined in
 
-[packages/evm/src/types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L16)
+[types.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L17)
+
+___
+
+### events
+
+• `Optional` **events**: `AsyncEventEmitter`<`EVMEvents`\>
+
+#### Defined in
+
+[types.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L18)
 
 ___
 
@@ -35,7 +47,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/types.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L14)
+[types.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L15)
 
 ## Methods
 
@@ -49,7 +61,21 @@ ___
 
 #### Defined in
 
-[packages/evm/src/types.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L15)
+[types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L16)
+
+___
+
+### getActiveOpcodes
+
+▸ `Optional` **getActiveOpcodes**(): `OpcodeList`
+
+#### Returns
+
+`OpcodeList`
+
+#### Defined in
+
+[types.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L14)
 
 ___
 
@@ -69,7 +95,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/types.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L12)
+[types.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L12)
 
 ___
 
@@ -89,4 +115,4 @@ ___
 
 #### Defined in
 
-[packages/evm/src/types.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L13)
+[types.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L13)

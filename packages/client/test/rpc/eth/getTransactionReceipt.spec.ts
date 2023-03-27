@@ -20,7 +20,11 @@ tape(`${method}: call with legacy tx`, async (t) => {
 
   // construct tx
   const tx = Transaction.fromTxData(
-    { gasLimit: 2000000, gasPrice: 100, to: '0x0000000000000000000000000000000000000000' },
+    {
+      gasLimit: 2000000,
+      gasPrice: 100,
+      to: '0x0000000000000000000000000000000000000000',
+    },
     { common }
   ).sign(dummy.privKey)
 

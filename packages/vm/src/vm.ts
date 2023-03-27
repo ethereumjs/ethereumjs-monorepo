@@ -2,8 +2,7 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
 import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Account, Address, TypeOutput, toType } from '@ethereumjs/util'
-import AsyncEventEmitter = require('async-eventemitter')
+import { Account, Address, AsyncEventEmitter, TypeOutput, toType } from '@ethereumjs/util'
 import { promisify } from 'util'
 
 import { buildBlock } from './buildBlock'
@@ -45,7 +44,6 @@ export class VM {
   readonly _common: Common
 
   readonly events: AsyncEventEmitter<VMEvents>
-
   /**
    * The EVM used for bytecode execution
    */
@@ -147,16 +145,14 @@ export class VM {
     this._hardforkByBlockNumber = opts.hardforkByBlockNumber ?? false
     this._hardforkByTTD = toType(opts.hardforkByTTD, TypeOutput.BigInt)
 
-    // Safeguard if "process" is not available (browser)
-    if (process !== undefined && typeof process.env.DEBUG !== 'undefined') {
-      this.DEBUG = true
-    }
-
     // We cache this promisified function as it's called from the main execution loop, and
     // promisifying each time has a huge performance impact.
     this._emit = <(topic: string, data: any) => Promise<void>>(
       promisify(this.events.emit.bind(this.events))
     )
+
+    // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
+    this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
   }
 
   async init(): Promise<void> {
@@ -247,8 +243,15 @@ export class VM {
    * Returns a copy of the {@link VM} instance.
    */
   async copy(): Promise<VM> {
-    const evmCopy = this.evm.copy()
-    const eeiCopy: EEIInterface = evmCopy.eei
+    const common = this._common.copy()
+    common.setHardfork(this._common.hardfork())
+    const eeiCopy = new EEI(this.stateManager.copy(), common, this.blockchain.copy())
+    const evmOpts = {
+      ...(this.evm as any)._optsCached,
+      common,
+      eei: eeiCopy,
+    }
+    const evmCopy = new EVM(evmOpts)
     return VM.create({
       stateManager: (eeiCopy as any)._stateManager,
       blockchain: (eeiCopy as any)._blockchain,

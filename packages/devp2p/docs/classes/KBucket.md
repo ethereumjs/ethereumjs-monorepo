@@ -70,7 +70,7 @@ EventEmitter.constructor
 
 #### Defined in
 
-[packages/devp2p/src/dpt/kbucket.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L18)
+[packages/devp2p/src/dpt/kbucket.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L17)
 
 ## Properties
 
@@ -80,7 +80,7 @@ EventEmitter.constructor
 
 #### Defined in
 
-[packages/devp2p/src/dpt/kbucket.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L17)
+[packages/devp2p/src/dpt/kbucket.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L16)
 
 ___
 
@@ -90,7 +90,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/kbucket.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L16)
+[packages/devp2p/src/dpt/kbucket.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L15)
 
 ___
 
@@ -1006,7 +1006,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/kbucket.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L46)
+[packages/devp2p/src/dpt/kbucket.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L45)
 
 ___
 

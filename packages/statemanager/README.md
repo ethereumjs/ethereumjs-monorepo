@@ -25,9 +25,9 @@ Note: this library was part of the [@ethereumjs/vm](../vm/) package up till VM `
 
 The `StateManager` provides high-level access and manipulation methods to and for the Ethereum state, thinking in terms of accounts or contract code rather then the storage operations of the underlying data structure (e.g. a [Trie](../trie/)).
 
-The library includes a TypeScript interface `StateManager` to ensure a unified interface (e.g. when passed to the VM) as well as a concrete Trie-based implementation `DefaultStateManager`.
+The library includes a TypeScript interface `StateManager` to ensure a unified interface (e.g. when passed to the VM) as well as a concrete Trie-based implementation `DefaultStateManager` as well as an `EthersStateManager` implementation that sources state and history data from an external `ethers` provider.
 
-### Example
+### `DefaultStateManager` Example
 
 ```typescript
 import { Account, Address } from '@ethereumjs/util'
@@ -41,6 +41,50 @@ await stateManager.putAccount(address, account)
 await stateManager.commit()
 await stateManager.flush()
 ```
+
+### `EthersStateManager`
+
+First, a simple example of usage:
+
+```typescript
+import { Account, Address } from '@ethereumjs/util'
+import { EthersStateManager } from '@ethereumjs/statemanager'
+import { ethers } from 'ethers'
+
+const provider = new ethers.providers.JsonRpcProvider('https://path.to.my.provider.com')
+const stateManager = new EthersStateManager({ provider, blockTag: 500000n })
+const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
+const account = await stateManager.getAccount(vitalikDotEth)
+console.log('Vitalik has a current ETH balance of ', account.balance)
+```
+
+The `EthersStateManager` can be be used with an `ethers` `JsonRpcProvider` or one of its subclasses. Instantiate the `VM` and pass in an `EthersStateManager` to run transactions against accounts sourced from the provider or to run blocks pulled from the provider at any specified block height.
+
+**Note:** Usage of this StateManager can cause a heavy load regarding state request API calls, so be careful (or at least: aware) if used in combination with an Ethers provider connecting to a third-party API service like Infura!
+
+### Points on usage:
+
+#### Provider selection
+
+- If you don't have access to a provider, you can use the `CloudFlareProvider` from the `@ethersproject/providers` module to get a quickstart.
+- The provider you select must support the `eth_getProof`, `eth_getCode`, and `eth_getStorageAt` RPC methods.
+- Not all providers support retrieving state from all block heights so refer to your provider's documentation. Trying to use a block height not supported by your provider (e.g. any block older than the last 256 for CloudFlare) will result in RPC errors when using the state manager.
+
+#### Block Tag selection
+
+- You have to pass a block number or `earliest` in the constructor that specifies the block height you want to pull state from.
+- The `latest`/`pending` values supported by the Ethereum JSON-RPC are not supported as longer running scripts run the risk of state values changing as blocks are mined while your script is running.
+- If using a very recent block as your block tag, be aware that reorgs could occur and potentially alter the state you are interacting with.
+- If you want to rerun transactions from block X or run block X, you need to specify the block tag as X-1 in the state manager constructor to ensure you are pulling the state values at the point in time the transactions or block was run.
+
+#### Potential gotchas
+
+- The Ethers State Manager cannot compute valid state roots when running blocks as it does not have access to the entire Ethereum state trie so can not compute correct state roots, either for the account trie or for storage tries.
+- If you are replaying mainnet transactions and an account or account storage is touched by multiple transactions in a block, you must replay those transactions in order (with regard to their position in that block) or calculated gas will likely be different than actual gas consumed.
+
+#### Further reference
+
+Refer to [this test script](./test/ethersStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
 
 ## API
 

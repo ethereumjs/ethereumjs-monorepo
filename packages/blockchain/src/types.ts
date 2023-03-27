@@ -26,7 +26,7 @@ export interface BlockchainInterface {
   /**
    * Returns a block by its hash or number.
    */
-  getBlock(blockId: Buffer | number | bigint): Promise<Block | null>
+  getBlock(blockId: Buffer | number | bigint): Promise<Block>
 
   /**
    * Iterates through blocks starting at the specified iterator head and calls
@@ -37,7 +37,12 @@ export interface BlockchainInterface {
    * @param maxBlocks - optional maximum number of blocks to iterate through
    * reorg: boolean)
    */
-  iterator(name: string, onBlock: OnBlock, maxBlocks?: number): Promise<number>
+  iterator(
+    name: string,
+    onBlock: OnBlock,
+    maxBlocks?: number,
+    releaseLockOnCallback?: boolean
+  ): Promise<number>
 
   /**
    * Returns a copy of the blockchain

@@ -20,9 +20,14 @@ import { destroy, setup } from './util'
 import type { CliqueConsensus } from '@ethereumjs/blockchain'
 
 tape('[Integration:Miner]', async (t) => {
+  // Schedule london at 0 and also unset any past scheduled timestamp hardforks that might collide with test
   const hardforks = new Common({ chain: ChainCommon.Goerli })
     .hardforks()
-    .map((h) => (h.name === Hardfork.London ? { ...h, block: 0 } : h))
+    .map((h) =>
+      h.name === Hardfork.London
+        ? { ...h, block: 0, timestamp: undefined }
+        : { ...h, timestamp: undefined }
+    )
   const common = Common.custom(
     {
       hardforks,
@@ -53,7 +58,7 @@ tape('[Integration:Miner]', async (t) => {
       validateConsensus: false,
     })
     ;(blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [accounts[0][0]] // stub
-    const chain = new Chain({ config, blockchain })
+    const chain = await Chain.create({ config, blockchain })
     const serviceConfig = new Config({
       common,
       servers: [server as any],

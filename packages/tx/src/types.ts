@@ -1,8 +1,37 @@
+import {
+  BooleanType,
+  ByteListType,
+  ByteVectorType,
+  ContainerType,
+  ListCompositeType,
+  NoneType,
+  UintBigintType,
+  UnionType,
+} from '@chainsafe/ssz'
+
+import {
+  BYTES_PER_FIELD_ELEMENT,
+  FIELD_ELEMENTS_PER_BLOB,
+  LIMIT_BLOBS_PER_TX,
+  MAX_ACCESS_LIST_SIZE,
+  MAX_CALLDATA_SIZE,
+  MAX_TX_WRAP_KZG_COMMITMENTS,
+  MAX_VERSIONED_HASHES_LIST_SIZE,
+} from './constants'
+
 import type { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 import type { AccessListEIP2930Transaction } from './eip2930Transaction'
+import type { BlobEIP4844Transaction } from './eip4844Transaction'
 import type { Transaction } from './legacyTransaction'
 import type { Common } from '@ethereumjs/common'
 import type { AddressLike, BigIntLike, BufferLike, PrefixedHexString } from '@ethereumjs/util'
+
+const Bytes20 = new ByteVectorType(20)
+const Bytes32 = new ByteVectorType(32)
+const Bytes48 = new ByteVectorType(48)
+
+const Uint64 = new UintBigintType(8)
+const Uint256 = new UintBigintType(32)
 
 /**
  * Can be used in conjunction with {@link Transaction.supports}
@@ -61,6 +90,12 @@ export interface TxOptions {
    * Default: true
    */
   freeze?: boolean
+
+  /**
+   * Allows unlimited contract code-size init while debugging. This (partially) disables EIP-3860.
+   * Gas cost for initcode size analysis will still be charged. Use with caution.
+   */
+  allowUnlimitedInitCodeSize?: boolean
 }
 
 /*
@@ -106,6 +141,7 @@ export type TypedTransaction =
   | Transaction
   | AccessListEIP2930Transaction
   | FeeMarketEIP1559Transaction
+  | BlobEIP4844Transaction
 
 /**
  * Legacy {@link Transaction} Data
@@ -119,7 +155,7 @@ export type TxData = {
   /**
    * The transaction's gas price.
    */
-  gasPrice?: BigIntLike
+  gasPrice?: BigIntLike | null
 
   /**
    * The transaction's gas limit.
@@ -175,7 +211,7 @@ export interface AccessListEIP2930TxData extends TxData {
   /**
    * The access list which contains the addresses/storage slots which the transaction wishes to access
    */
-  accessList?: AccessListBuffer | AccessList
+  accessList?: AccessListBuffer | AccessList | null
 }
 
 /**
@@ -186,7 +222,7 @@ export interface FeeMarketEIP1559TxData extends AccessListEIP2930TxData {
    * The transaction's gas price, inherited from {@link Transaction}.  This property is not used for EIP1559
    * transactions and should always be undefined for this specific transaction type.
    */
-  gasPrice?: never
+  gasPrice?: never | null
   /**
    * The maximum inclusion fee per gas (this fee is given to the miner)
    */
@@ -195,6 +231,32 @@ export interface FeeMarketEIP1559TxData extends AccessListEIP2930TxData {
    * The maximum total fee
    */
   maxFeePerGas?: BigIntLike
+}
+
+/**
+ * {@link BlobEIP4844Transaction} data.
+ */
+export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
+  /**
+   * The versioned hashes used to validate the blobs attached to a transaction
+   */
+  versionedHashes?: BufferLike[]
+  /**
+   * The maximum fee per data gas paid for the transaction
+   */
+  maxFeePerDataGas?: BigIntLike
+  /**
+   * The blobs associated with a transaction
+   */
+  blobs?: BufferLike[]
+  /**
+   * The KZG commitments corresponding to the versioned hashes for each blob
+   */
+  kzgCommitments?: BufferLike[]
+  /**
+   * The aggregate KZG proof associated with the transaction
+   */
+  kzgProof?: BufferLike
 }
 
 /**
@@ -262,6 +324,8 @@ export interface JsonTx {
   type?: string
   maxPriorityFeePerGas?: string
   maxFeePerGas?: string
+  maxFeePerDataGas?: string
+  versionedHashes?: string[]
 }
 
 /*
@@ -287,4 +351,58 @@ export interface JsonRpcTx {
   v: string // QUANTITY - ECDSA recovery id
   r: string // DATA, 32 Bytes - ECDSA signature r
   s: string // DATA, 32 Bytes - ECDSA signature s
+  maxFeePerDataGas?: string // QUANTITY - max data fee for blob transactions
+  versionedHashes?: string[] // DATA - array of 32 byte versioned hashes for blob transactions
 }
+
+/** EIP4844 types */
+export const AddressType = Bytes20 // SSZ encoded address
+
+// SSZ encoded container for address and storage keys
+export const AccessTupleType = new ContainerType({
+  address: AddressType,
+  storageKeys: new ListCompositeType(Bytes32, MAX_VERSIONED_HASHES_LIST_SIZE),
+})
+
+// SSZ encoded blob transaction
+export const BlobTransactionType = new ContainerType({
+  chainId: Uint256,
+  nonce: Uint64,
+  maxPriorityFeePerGas: Uint256,
+  maxFeePerGas: Uint256,
+  gas: Uint64,
+  to: new UnionType([new NoneType(), AddressType]),
+  value: Uint256,
+  data: new ByteListType(MAX_CALLDATA_SIZE),
+  accessList: new ListCompositeType(AccessTupleType, MAX_ACCESS_LIST_SIZE),
+  maxFeePerDataGas: Uint256,
+  blobVersionedHashes: new ListCompositeType(Bytes32, MAX_VERSIONED_HASHES_LIST_SIZE),
+})
+
+// SSZ encoded ECDSA Signature
+export const ECDSASignatureType = new ContainerType({
+  yParity: new BooleanType(),
+  r: Uint256,
+  s: Uint256,
+})
+
+// SSZ encoded signed blob transaction
+export const SignedBlobTransactionType = new ContainerType({
+  message: BlobTransactionType,
+  signature: ECDSASignatureType,
+})
+
+// SSZ encoded KZG Commitment/Proof (48 bytes)
+export const KZGCommitmentType = Bytes48
+export const KZGProofType = KZGCommitmentType
+
+// SSZ encoded blob network transaction wrapper
+export const BlobNetworkTransactionWrapper = new ContainerType({
+  tx: SignedBlobTransactionType,
+  blobKzgs: new ListCompositeType(KZGCommitmentType, MAX_TX_WRAP_KZG_COMMITMENTS),
+  blobs: new ListCompositeType(
+    new ByteVectorType(FIELD_ELEMENTS_PER_BLOB * BYTES_PER_FIELD_ELEMENT),
+    LIMIT_BLOBS_PER_TX
+  ),
+  kzgAggregatedProof: KZGProofType,
+})

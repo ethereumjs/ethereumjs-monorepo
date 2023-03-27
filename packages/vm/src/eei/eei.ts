@@ -12,7 +12,7 @@ type Block = {
 }
 
 type Blockchain = {
-  getBlock(blockId: number): Promise<Block | null>
+  getBlock(blockId: number): Promise<Block>
   copy(): Blockchain
 }
 
@@ -94,6 +94,8 @@ export class EEI extends VmState implements EEIInterface {
   }
 
   public copy() {
-    return new EEI(this._stateManager.copy(), this._common.copy(), this._blockchain.copy())
+    const common = this._common.copy()
+    common.setHardfork(this._common.hardfork())
+    return new EEI(this._stateManager.copy(), common, this._blockchain.copy())
   }
 }

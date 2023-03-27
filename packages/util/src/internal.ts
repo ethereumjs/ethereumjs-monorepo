@@ -72,7 +72,7 @@ export function padToEven(value: string): string {
  */
 export function getBinarySize(str: string) {
   if (typeof str !== 'string') {
-    throw new Error(`[getBinarySize] method requires input type 'string', recieved ${typeof str}`)
+    throw new Error(`[getBinarySize] method requires input type 'string', received ${typeof str}`)
   }
 
   return Buffer.byteLength(str, 'utf8')

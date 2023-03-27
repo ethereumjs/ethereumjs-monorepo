@@ -3,7 +3,9 @@ import * as tape from 'tape'
 
 import { blockFromRpc } from '../src/from-rpc'
 import { blockHeaderFromRpc } from '../src/header-from-rpc'
+import { Block } from '../src/index'
 
+import { MockProvider } from './mockProvider'
 import * as alchemy14151203 from './testdata/alchemy14151203.json'
 import * as infura15571241woTxs from './testdata/infura15571241.json'
 import * as infura15571241wTxs from './testdata/infura15571241wtxns.json'
@@ -13,6 +15,7 @@ import * as blockDataDifficultyAsInteger from './testdata/testdata-from-rpc-diff
 import * as testDataFromRpcGoerliLondon from './testdata/testdata-from-rpc-goerli-london.json'
 import * as blockDataWithUncles from './testdata/testdata-from-rpc-with-uncles.json'
 import * as uncleBlockData from './testdata/testdata-from-rpc-with-uncles_uncle-block-data.json'
+import * as blockDataWithWithdrawals from './testdata/testdata-from-rpc-with-withdrawals.json'
 import * as blockData from './testdata/testdata-from-rpc.json'
 
 import type { Transaction } from '@ethereumjs/tx'
@@ -31,12 +34,6 @@ tape('[fromRPC]: block #2924874', function (t) {
     const block = blockHeaderFromRpc(blockData, { common })
     const hash = Buffer.from(blockData.hash.slice(2), 'hex')
     st.ok(block.hash().equals(hash))
-    st.end()
-  })
-
-  t.test('should create a block with uncles', function (st) {
-    const block = blockFromRpc(blockDataWithUncles, [uncleBlockData], { common })
-    st.ok(block.validateUnclesHash())
     st.end()
   })
 })
@@ -109,6 +106,31 @@ tape('[fromRPC]:', function (t) {
     st.equal(`0x${block.hash().toString('hex')}`, testDataFromRpcGoerliLondon.hash)
     st.end()
   })
+
+  t.test('should create a block with uncles', function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const block = blockFromRpc(blockDataWithUncles, [uncleBlockData], { common })
+    st.ok(block.validateUnclesHash())
+    st.end()
+  })
+
+  t.test('should create a block with EIP-4896 withdrawals', function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+    const block = blockFromRpc(blockDataWithWithdrawals, [], { common })
+    st.ok(block.validateWithdrawalsTrie())
+    st.end()
+  })
+
+  t.test(
+    'should create a block header with the correct hash when EIP-4896 withdrawals are present',
+    function (st) {
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+      const block = blockHeaderFromRpc(blockDataWithWithdrawals, { common })
+      const hash = Buffer.from(blockDataWithWithdrawals.hash.slice(2), 'hex')
+      st.ok(block.hash().equals(hash))
+      st.end()
+    }
+  )
 })
 
 tape('[fromRPC] - Alchemy/Infura API block responses', (t) => {
@@ -157,6 +179,19 @@ tape('[fromRPC] - Alchemy/Infura API block responses', (t) => {
 
       st.end()
     }
+  )
+  t.end()
+})
+
+tape('[fromEthersProvider]', async (t) => {
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+  const provider = new MockProvider()
+  const blockHash = '0x1850b014065b23d804ecf71a8a4691d076ca87c2e6fb8fe81ee20a4d8e884c24'
+  const block = await Block.fromEthersProvider(provider, blockHash, { common })
+  t.equal(
+    '0x' + block.hash().toString('hex'),
+    blockHash,
+    'assembled a block from blockdata from a provider'
   )
   t.end()
 })

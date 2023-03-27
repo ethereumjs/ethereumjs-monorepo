@@ -3,7 +3,7 @@
   "number": 3675,
   "comment": "Upgrade consensus to Proof-of-Stake",
   "url": "https://eips.ethereum.org/EIPS/eip-3675",
-  "status": "Review",
+  "status": "Final",
   "minimumHardfork": "london",
   "requiredEIPs": [],
   "gasConfig": {},

@@ -13,7 +13,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BaseTransaction } from './baseTransaction'
-import { AccessLists, checkMaxInitCodeSize } from './util'
+import { AccessLists } from './util'
 
 import type {
   AccessList,
@@ -117,6 +117,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
       s,
     ] = values
 
+    this._validateNotArray({ chainId, v })
     validateNoLeadingZeroes({ nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, value, v, r, s })
 
     return new FeeMarketEIP1559Transaction(
@@ -174,6 +175,8 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
     })
 
+    BaseTransaction._validateNotArray(txData)
+
     if (this.gasLimit * this.maxFeePerGas > MAX_INTEGER) {
       const msg = this._errorMsg('gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)')
       throw new Error(msg)
@@ -188,10 +191,6 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
 
     this._validateYParity()
     this._validateHighS()
-
-    if (this.common.isActivatedEIP(3860)) {
-      checkMaxInitCodeSize(this.common, this.data.length)
-    }
 
     const freeze = opts?.freeze ?? true
     if (freeze) {

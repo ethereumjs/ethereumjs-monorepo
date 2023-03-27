@@ -13,6 +13,7 @@
 - [BLS\_12\_381\_INPUT\_EMPTY](EvmErrorMessage.md#bls_12_381_input_empty)
 - [BLS\_12\_381\_INVALID\_INPUT\_LENGTH](EvmErrorMessage.md#bls_12_381_invalid_input_length)
 - [BLS\_12\_381\_POINT\_NOT\_ON\_CURVE](EvmErrorMessage.md#bls_12_381_point_not_on_curve)
+- [CODESIZE\_EXCEEDS\_MAXIMUM](EvmErrorMessage.md#codesize_exceeds_maximum)
 - [CODESTORE\_OUT\_OF\_GAS](EvmErrorMessage.md#codestore_out_of_gas)
 - [CREATE\_COLLISION](EvmErrorMessage.md#create_collision)
 - [INITCODE\_SIZE\_VIOLATION](EvmErrorMessage.md#initcode_size_violation)
@@ -20,6 +21,7 @@
 - [INTERNAL\_ERROR](EvmErrorMessage.md#internal_error)
 - [INVALID\_BEGINSUB](EvmErrorMessage.md#invalid_beginsub)
 - [INVALID\_BYTECODE\_RESULT](EvmErrorMessage.md#invalid_bytecode_result)
+- [INVALID\_COMMITMENT](EvmErrorMessage.md#invalid_commitment)
 - [INVALID\_EOF\_FORMAT](EvmErrorMessage.md#invalid_eof_format)
 - [INVALID\_JUMP](EvmErrorMessage.md#invalid_jump)
 - [INVALID\_JUMPSUB](EvmErrorMessage.md#invalid_jumpsub)
@@ -27,6 +29,7 @@
 - [INVALID\_RETURNSUB](EvmErrorMessage.md#invalid_returnsub)
 - [OUT\_OF\_GAS](EvmErrorMessage.md#out_of_gas)
 - [OUT\_OF\_RANGE](EvmErrorMessage.md#out_of_range)
+- [POINT\_GREATER\_THAN\_BLS\_MODULUS](EvmErrorMessage.md#point_greater_than_bls_modulus)
 - [REFUND\_EXHAUSTED](EvmErrorMessage.md#refund_exhausted)
 - [REVERT](EvmErrorMessage.md#revert)
 - [STACK\_OVERFLOW](EvmErrorMessage.md#stack_overflow)
@@ -43,7 +46,7 @@
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L25)
+[exceptions.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L26)
 
 ___
 
@@ -53,7 +56,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L24)
+[exceptions.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L25)
 
 ___
 
@@ -63,7 +66,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L26)
+[exceptions.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L27)
 
 ___
 
@@ -73,7 +76,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L32)
+[exceptions.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L33)
 
 ___
 
@@ -83,7 +86,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L31)
+[exceptions.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L32)
 
 ___
 
@@ -93,7 +96,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L29)
+[exceptions.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L30)
 
 ___
 
@@ -103,7 +106,17 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L30)
+[exceptions.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L31)
+
+___
+
+### CODESIZE\_EXCEEDS\_MAXIMUM
+
+• **CODESIZE\_EXCEEDS\_MAXIMUM** = ``"code size to deposit exceeds maximum code size"``
+
+#### Defined in
+
+[exceptions.ts:4](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L4)
 
 ___
 
@@ -113,7 +126,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:3](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L3)
+[exceptions.ts:3](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L3)
 
 ___
 
@@ -123,7 +136,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L12)
+[exceptions.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L13)
 
 ___
 
@@ -133,7 +146,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L22)
+[exceptions.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L23)
 
 ___
 
@@ -143,7 +156,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L16)
+[exceptions.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L17)
 
 ___
 
@@ -153,7 +166,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L11)
+[exceptions.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L12)
 
 ___
 
@@ -163,7 +176,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L17)
+[exceptions.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L18)
 
 ___
 
@@ -173,7 +186,17 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L20)
+[exceptions.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L21)
+
+___
+
+### INVALID\_COMMITMENT
+
+• **INVALID\_COMMITMENT** = ``"kzg commitment does not match versioned hash"``
+
+#### Defined in
+
+[exceptions.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L37)
 
 ___
 
@@ -183,7 +206,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L21)
+[exceptions.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L22)
 
 ___
 
@@ -193,7 +216,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L6)
+[exceptions.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L7)
 
 ___
 
@@ -203,7 +226,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L19)
+[exceptions.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L20)
 
 ___
 
@@ -213,7 +236,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L7)
+[exceptions.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L8)
 
 ___
 
@@ -223,7 +246,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L18)
+[exceptions.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L19)
 
 ___
 
@@ -233,7 +256,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:2](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L2)
+[exceptions.ts:2](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L2)
 
 ___
 
@@ -243,7 +266,17 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L8)
+[exceptions.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L9)
+
+___
+
+### POINT\_GREATER\_THAN\_BLS\_MODULUS
+
+• **POINT\_GREATER\_THAN\_BLS\_MODULUS** = ``"point greater than BLS modulus"``
+
+#### Defined in
+
+[exceptions.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L36)
 
 ___
 
@@ -253,7 +286,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L14)
+[exceptions.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L15)
 
 ___
 
@@ -263,7 +296,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L9)
+[exceptions.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L10)
 
 ___
 
@@ -273,7 +306,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:5](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L5)
+[exceptions.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L6)
 
 ___
 
@@ -283,7 +316,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:4](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L4)
+[exceptions.ts:5](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L5)
 
 ___
 
@@ -293,7 +326,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L10)
+[exceptions.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L11)
 
 ___
 
@@ -303,7 +336,7 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L13)
+[exceptions.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L14)
 
 ___
 
@@ -313,4 +346,4 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L15)
+[exceptions.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L16)

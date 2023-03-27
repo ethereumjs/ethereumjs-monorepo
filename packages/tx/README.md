@@ -13,10 +13,37 @@ Note: this `README` reflects the state of the library from `v3.0.0` onwards. See
 
 ## Installation
 
+### General
+
 To obtain the latest version, simply require the project using `npm`:
 
 ```shell
 npm install @ethereumjs/tx
+```
+
+### KZG Setup
+
+This library supports an experimental version of `EIP-4844` blob transactions (see usage instructions below) starting with `v4.1.0`.
+
+For blob transactions and other KZG related proof functionality (e.g. for EVM precompiles) KZG has to be manually installed and initialized once in a global scope. The functionality is then available for all KZG usages throughout different libraries (Transaction, Block, EVM).
+
+#### Manual Installation
+
+The following two manual installation steps for a KZG library and the trusted setup are needed.
+
+1. Install an additional dependency that supports the `kzg` interface defined in [the kzg interface](./src/kzg/kzg.ts). You can install the default option [c-kzg](https://github.com/ethereum/c-kzg-4844) by simply running `npm install c-kzg`.
+2. Download the trusted setup required for the KZG module. It can be found [here](../client/lib/trustedSetups/trusted_setup.txt) within the client package.
+
+#### Global Initialization
+
+Global initialization can then be done like this (using the `c-kzg` module for our KZG dependency):
+
+```typescript
+// Make the kzg library available globally
+import * as kzg from 'c-kzg'
+
+// Initialize the trusted setup
+initKZG(kzg, 'path/to/my/trusted_setup.txt')
 ```
 
 ## Usage
@@ -35,21 +62,21 @@ All types of transaction objects are frozen with `Object.freeze()` which gives y
 
 ### Chain and Hardfork Support
 
-The `Transaction` constructor receives a parameter of an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common) object that lets you specify the chain and hardfork to be used. If there is no `Common` provided the chain ID provided as a paramter on typed tx or the chain ID derived from the `v` value on signed EIP-155 conforming legacy txs will be taken (introduced in `v3.2.1`). In other cases the chain defaults to `mainnet`.
+The `Transaction` constructor receives a parameter of an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common) object that lets you specify the chain and hardfork to be used. If there is no `Common` provided the chain ID provided as a parameter on typed tx or the chain ID derived from the `v` value on signed EIP-155 conforming legacy txs will be taken (introduced in `v3.2.1`). In other cases the chain defaults to `mainnet`.
 
 Base default HF (determined by `Common`): `merge`
 
 Starting with `v3.2.1` the tx library now deviates from the default HF for typed tx using the following rule: "The default HF is the default HF from `Common` if the tx type is active on that HF. Otherwise it is set to the first greater HF where the tx is active."
 
-Supported Hardforks:
+Hardforks adding features and/or tx types:
 
 | Hardfork         | Introduced | Description                                                                                             |
 | ---------------- | ---------- | ------------------------------------------------------------------------------------------------------- |
-| `london`         | `v3.2.0`   | `EIP-1559` Transactions                                                                                 |
-| `berlin`         | `v3.1.0`   |  `EIP-2718` Typed Transactions, Optional Access Lists Tx Type `EIP-2930`                                |
-| `muirGlacier`    |  `v2.1.2`  |  -                                                                                                      |
-| `istanbul`       |  `v2.1.1`  | Support for reduced non-zero call data gas prices ([EIP-2028](https://eips.ethereum.org/EIPS/eip-2028)) |
 | `spuriousDragon` |  `v2.0.0`  |  `EIP-155` replay protection (disable by setting HF pre-`spuriousDragon`)                               |
+| `istanbul`       |  `v2.1.1`  | Support for reduced non-zero call data gas prices ([EIP-2028](https://eips.ethereum.org/EIPS/eip-2028)) |
+| `muirGlacier`    |  `v2.1.2`  |  -                                                                                                      |
+| `berlin`         | `v3.1.0`   |  `EIP-2718` Typed Transactions, Optional Access Lists Tx Type `EIP-2930`                                |
+| `london`         | `v3.2.0`   | `EIP-1559` Transactions                                                                                 |
 
 ### Standalone EIPs
 
@@ -65,9 +92,59 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eip
 
 This library supports the following transaction types ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)):
 
+- `BlobEIP4844Transaction` ([EIP-4844](https://eips.ethereumorg/EIPS/eip-4844), proto-danksharding)
 - `FeeMarketEIP1559Transaction` ([EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), gas fee market)
 - `AccessListEIP2930Transaction` ([EIP-2930](https://eips.ethereum.org/EIPS/eip-2930), optional access lists)
 - `Transaction`, the Ethereum standard tx up to `berlin`, now referred to as legacy txs with the introduction of tx types
+
+#### Blob Transactions (EIP-4844)
+
+- Class: `BlobEIP4844Transaction`
+- Activation: `sharding`
+- Type: `5`
+
+This library supports an experimental version of the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023), see PR [#2349](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2349).
+
+**Note:** This functionality needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
+
+##### Usage
+
+See the following code snipped for an example on how to instantiate (using the `c-kzg` module for our KZG dependency).
+
+```typescript
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { BlobEIP4844Transaction, initKZG } from '@ethereumjs/tx'
+import * as kzg from 'c-kzg'
+
+initKZG(kzg, 'path/to/my/trusted_setup.txt')
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+
+const txData = {
+  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+  gasLimit: '0x02625a00',
+  maxPriorityFeePerGas: '0x01',
+  maxFeePerGas: '0xff',
+  maxFeePerDataGas: '0xfff',
+  nonce: '0x00',
+  to: '0xcccccccccccccccccccccccccccccccccccccccc',
+  value: '0x0186a0',
+  v: '0x01',
+  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
+  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
+  chainId: '0x01',
+  accessList: [],
+  type: '0x05',
+  versionedHashes: ['0xabc...'], // Test with empty array on a first run
+  kzgCommitments: ['0xdef...'], // Test with empty array on a first run
+  blobs: ['0xghi...'], // Test with empty array on a first run
+}
+
+const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
+```
+
+Note that `versionedHashes` and `kzgCommitments` have a real length of 32 bytes and `blobs` have a real length of `4096` bytes and values are trimmed here for brevity.
+
+See the [Blob Transaction Tests](./test/eip4844.spec.ts) for examples of usage in instantiating, serializing, and deserializing these transactions.
 
 #### Gas Fee Market Transactions (EIP-1559)
 
@@ -205,6 +282,7 @@ The correct tx type class for instantiation will then be chosen on runtime based
 - `public static fromTxData(txData: TxData | AccessListEIP2930TxData, txOptions: TxOptions = {}): TypedTransaction`
 - `public static fromSerializedData(data: Buffer, txOptions: TxOptions = {}): TypedTransaction`
 - `public static fromBlockBodyData(data: Buffer | Buffer[], txOptions: TxOptions = {})`
+- `public static async fromEthersProvider(provider: string | ethers.providers.JsonRpcProvider, txHash: string, txOptions?: TxOptions)`
 
 ### Sending a Transaction
 
@@ -235,7 +313,7 @@ const tx = Transaction.fromTxData(txData, { common })
 const signedTx = tx.sign(Buffer.from(PRIV_KEY, 'hex'))
 ```
 
-The following L2 networks have been tested to work with `@ethereumjs/tx`, see usage examples as well as some notes on pecularities in the issues linked below:
+The following L2 networks have been tested to work with `@ethereumjs/tx`, see usage examples as well as some notes on peculiarities in the issues linked below:
 
 |  L2 Network              |  Common name                          |  Issue                                                                  |
 | ------------------------ | ------------------------------------- | ----------------------------------------------------------------------- |

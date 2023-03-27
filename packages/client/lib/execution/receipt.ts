@@ -195,7 +195,7 @@ export class ReceiptsManager extends MetaDBManager {
         logs = logs.filter((l) => addresses.some((a) => a.equals(l.log[0])))
       }
       if (topics.length > 0) {
-        // From https://eth.wiki/json-rpc/API:
+        // From https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_newfilter/:
         // Topics are order-dependent. A transaction with a log with topics
         // [A, B] will be matched by the following topic filters:
         //  * [] - anything

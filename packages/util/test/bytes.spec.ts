@@ -15,6 +15,7 @@ import {
   fromSigned,
   intToBuffer,
   intToHex,
+  intToUnpaddedBuffer,
   isZeroAddress,
   setLengthLeft,
   setLengthRight,
@@ -483,6 +484,14 @@ tape('bigIntToUnpaddedBuffer', function (t) {
   t.test('should equal unpadded buffer value', function (st) {
     st.ok(bigIntToUnpaddedBuffer(BigInt(0)).equals(Buffer.from([])))
     st.ok(bigIntToUnpaddedBuffer(BigInt(100)).equals(Buffer.from('64', 'hex')))
+    st.end()
+  })
+})
+
+tape('intToUnpaddedBuffer', function (t) {
+  t.test('should equal unpadded buffer value', function (st) {
+    st.ok(intToUnpaddedBuffer(0).equals(Buffer.from([])))
+    st.ok(intToUnpaddedBuffer(100).equals(Buffer.from('64', 'hex')))
     st.end()
   })
 })

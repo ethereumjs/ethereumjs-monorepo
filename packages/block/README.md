@@ -19,15 +19,19 @@ To obtain the latest version, simply require the project using `npm`:
 npm install @ethereumjs/block
 ```
 
+**Note:** If you want to work with `EIP-4844` related functionality, you will have additional manual installation steps for the **KZG setup**, see related section below.
+
 ## Usage
 
 ### Introduction
 
-There are three static factories to instantiate a `Block`:
+There are five static factories to instantiate a `Block`:
 
 - `Block.fromBlockData(blockData: BlockData = {}, opts?: BlockOptions)`
 - `Block.fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions)`
 - `Block.fromValuesArray(values: BlockBuffer, opts?: BlockOptions)`
+- `Block.fromRPC(blockData: JsonRpcBlock, uncles?: any[], opts?: BlockOptions)`
+- `Block.fromEthersProvider(provider: ethers.providers.JsonRpcProvider | string, blockTag: string | bigint, opts: BlockOptions)`
 
 For `BlockHeader` instantiation analog factory methods exists, see API docs linked below.
 
@@ -99,6 +103,59 @@ const blockWithMatchingBaseFee = Block.fromBlockData(
 ```
 
 EIP-1559 blocks have an extra `baseFeePerGas` field (default: `BigInt(7)`) and can encompass `FeeMarketEIP1559Transaction` txs (type `2`) (supported by `@ethereumjs/tx` `v3.2.0` or higher) as well as `Transaction` legacy txs (internal type `0`) and `AccessListEIP2930Transaction` txs (type `1`).
+
+### EIP-4895 Beacon Chain Withdrawals Blocks (experimental)
+
+Starting with the `v4.1.0` release there is (experimental) support for [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals. Withdrawals support can be activated by initializing a respective `Common` object and then use the `withdrawals` data option to pass in system-level withdrawal operations together with a matching `withdrawalsRoot` (mandatory when `EIP-4895` is activated) along Block creation, see the following example:
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import { Common, Chain } from '@ethereumjs/common'
+import { Address } from '@ethereumjs/util'
+import type { WithdrawalData } from '@ethereumjs/util'
+
+const common = new Common({ chain: Chain.Mainnet, eips: [4895] })
+
+const withdrawal = <WithdrawalData>{
+  index: BigInt(0),
+  validatorIndex: BigInt(0),
+  address: new Address(Buffer.from('20'.repeat(20), 'hex')),
+  amount: BigInt(1000),
+}
+
+const block = Block.fromBlockData(
+  {
+    header: {
+      withdrawalsRoot: Buffer.from(
+        '69f28913c562b0d38f8dc81e72eb0d99052444d301bf8158dc1f3f94a4526357',
+        'hex'
+      ),
+    },
+    withdrawals: [withdrawal],
+  },
+  {
+    common,
+  }
+)
+```
+
+Validation of the withdrawals trie can be manually triggered with the newly introduced async `Block.validateWithdrawalsTrie()` method.
+
+### EIP-4844 Shard Blob Transaction Blocks (experimental)
+
+This library supports an experimental version of the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023) starting with `v4.2.0`.
+
+#### Initialization
+
+To create blocks which include blob transactions you have to active EIP-4844 in the associated `@ethereumjs/common` library:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+```
+
+**Note:** Working with blob transactions needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
 ### Consensus Types
 

@@ -88,20 +88,22 @@
       "forkHash": "0xf0afd0e3"
     },
     {
-      "name": "mergeForkIdTransition",
-      "block": null,
-      "forkHash": null
-    },
-    {
+      "//_comment": "The forkHash will remain same as mergeForkIdTransition is post merge, terminal block: https://etherscan.io/block/15537393",
       "name": "merge",
       "ttd": "58750000000000000000000",
+      "block": 15537394,
+      "forkHash": "0xf0afd0e3"
+    },
+    {
+      "name": "mergeForkIdTransition",
       "block": null,
       "forkHash": null
     },
     {
       "name": "shanghai",
       "block": null,
-      "forkHash": null
+      "timestamp": "1681338455",
+      "forkHash": "0xdce96c2d"
     }
   ],
   "bootstrapNodes": [

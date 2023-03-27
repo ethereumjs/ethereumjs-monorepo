@@ -16,3 +16,6 @@
 ### Interfaces
 
 - [ConfigOptions](interfaces/ConfigOptions.md)
+
+### Usage
+- [Run as EL client](usage/RunAsElClient.md)

@@ -16,7 +16,7 @@ async function getBlockchain(gethGenesis: any): Promise<Blockchain> {
 }
 
 tape('[Utils/Parse]', (t) => {
-  t.test('should properly parse gensis state from gethGenesis', async (t) => {
+  t.test('should properly parse genesis state from gethGenesis', async (t) => {
     // kiln genesis with deposit contract storage set
     const json = require(`./testdata/geth-genesis-kiln.json`)
     const genesisState = parseGethGenesisState(json)

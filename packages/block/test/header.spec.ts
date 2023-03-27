@@ -144,7 +144,7 @@ tape('[Block]: Header functions', function (t) {
   })
 
   t.test('Initialization -> fromValuesArray() -> error cases', function (st) {
-    const headerArray = Array(17).fill(Buffer.alloc(0))
+    const headerArray = Array(19).fill(Buffer.alloc(0))
 
     // mock header data (if set to zeros(0) header throws)
     headerArray[0] = zeros(32) //parentHash
@@ -482,4 +482,20 @@ tape('[Block]: Header functions', function (t) {
     )
     st.end()
   })
+
+  t.test(
+    'should be able to initialize shanghai header with correct hardfork defaults',
+    function (st) {
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+      const header = BlockHeader.fromHeaderData({}, { common })
+      st.equal(header._common.hardfork(), Hardfork.Shanghai, 'hardfork should be set to shanghai')
+      st.equal(header.baseFeePerGas, BigInt(7), 'baseFeePerGas should be set to minimum default')
+      st.deepEqual(
+        header.withdrawalsRoot,
+        KECCAK256_RLP,
+        'withdrawalsRoot should be set to KECCAK256_RLP'
+      )
+      st.end()
+    }
+  )
 })

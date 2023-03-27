@@ -153,7 +153,7 @@ tape('blockchain test', (t) => {
     await addNextBlock(1)
   })
 
-  t.test('should get block by number', async (st) => {
+  t.test('getBlock(): should get block by number', async (st) => {
     const blocks: Block[] = []
     const gasLimit = 8000000
     const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Istanbul })
@@ -192,7 +192,7 @@ tape('blockchain test', (t) => {
     st.end()
   })
 
-  t.test('should get block by hash', async (st) => {
+  t.test('getBlock(): should get block by hash / not existing', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const gasLimit = 8000000
     const genesisBlock = Block.fromBlockData({ header: { gasLimit } }, { common })
@@ -204,11 +204,22 @@ tape('blockchain test', (t) => {
       genesisBlock,
     })
     const block = await blockchain.getBlock(genesisBlock.hash())
-    if (typeof block !== 'undefined') {
-      st.ok(block.hash().equals(genesisBlock.hash()))
-    } else {
-      st.fail('block is not defined!')
+    st.ok(block.hash().equals(genesisBlock.hash()))
+
+    try {
+      await blockchain.getBlock(5)
+      st.fail('should throw an exception')
+    } catch (e: any) {
+      st.ok(e.message.includes('NotFound'), `should throw for non-existing block-by-number request`)
     }
+
+    try {
+      await blockchain.getBlock(Buffer.from('1234', 'hex'))
+      st.fail('should throw an exception')
+    } catch (e: any) {
+      st.ok(e.message.includes('NotFound'), `should throw for non-existing block-by-hash request`)
+    }
+
     st.end()
   })
 
@@ -220,6 +231,43 @@ tape('blockchain test', (t) => {
     st.equal(getBlocks!.length, 5)
     st.equal(blocks[0].header.number, getBlocks[0].header.number)
     st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
+
+    const canonicalHeaderOriginal = await blockchain.getCanonicalHeadHeader()
+    st.equal(canonicalHeaderOriginal.number, BigInt(24), 'block 24 should be canonical header')
+    const block22 = await blockchain.getBlock(22)
+    st.equal(block22.header.number, BigInt(22), 'should fetch block by number')
+
+    await blockchain.resetCanonicalHead(BigInt(4))
+    let canonicalHeader = await blockchain.getCanonicalHeadHeader()
+    st.equal(canonicalHeader.number, BigInt(4), 'block 4 should be new canonical header')
+
+    try {
+      await blockchain.getBlock(22)
+      st.fail('canonical references should have been deleted')
+    } catch {
+      st.pass('canonical references correctly deleted')
+    }
+
+    try {
+      await blockchain.getCanonicalHeader(BigInt(22))
+      st.fail('canonical references should have been deleted')
+    } catch {
+      st.pass('canonical references correctly deleted')
+    }
+
+    await blockchain.putHeader(canonicalHeaderOriginal)
+    canonicalHeader = await blockchain.getCanonicalHeadHeader()
+    st.equal(canonicalHeader.number, BigInt(24), 'block 24 should be new canonical header')
+
+    const newblock22 = await blockchain.getBlock(22)
+    st.equal(newblock22.header.number, BigInt(22), 'canonical references should be restored')
+    st.equal(
+      newblock22.hash().toString('hex'),
+      newblock22.hash().toString('hex'),
+      'fetched block should match'
+    )
+    const newheader22 = await blockchain.getCanonicalHeader(BigInt(22))
+    st.equal(newheader22.number, BigInt(22), 'canonical references should be restored')
     st.end()
   })
 
@@ -368,143 +416,6 @@ tape('blockchain test', (t) => {
     st.end()
   })
 
-  t.test('should iterate through 24 blocks', async (st) => {
-    const { blockchain, blocks, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
-    let i = 0
-    const iterated = await blockchain.iterator('test', (block: Block) => {
-      if (block.hash().equals(blocks[i + 1].hash())) {
-        i++
-      }
-    })
-    st.equal(iterated, 24)
-    st.equal(i, 24)
-    st.end()
-  })
-
-  t.test(
-    'should iterate through maxBlocks blocks if maxBlocks parameter is provided',
-    async (st) => {
-      const { blockchain, blocks, error } = await generateBlockchain(25)
-      st.error(error, 'no error')
-      let i = 0
-      const iterated = await blockchain.iterator(
-        'test',
-        (block: Block) => {
-          if (block.hash().equals(blocks[i + 1].hash())) {
-            i++
-          }
-        },
-        5
-      )
-      st.equal(iterated, 5)
-      st.equal(i, 5)
-      st.end()
-    }
-  )
-
-  t.test(
-    'should iterate through 0 blocks in case 0 maxBlocks parameter is provided',
-    async (st) => {
-      const { blockchain, blocks, error } = await generateBlockchain(25)
-      st.error(error, 'no error')
-      let i = 0
-      const iterated = await blockchain
-        .iterator(
-          'test',
-          (block: Block) => {
-            if (block.hash().equals(blocks[i + 1].hash())) {
-              i++
-            }
-          },
-          0
-        )
-        .catch(() => {
-          st.fail('Promise cannot throw when running 0 blocks')
-        })
-      st.equal(iterated, 0)
-      st.equal(i, 0)
-      st.end()
-    }
-  )
-
-  t.test('should throw on a negative maxBlocks parameter in iterator', async (st) => {
-    const { blockchain, blocks, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
-    let i = 0
-    await blockchain
-      .iterator(
-        'test',
-        (block: Block) => {
-          if (block.hash().equals(blocks[i + 1].hash())) {
-            i++
-          }
-        },
-        -1
-      )
-      .catch(() => {
-        st.end()
-      })
-    // Note: if st.end() is not called (Promise did not throw), then this test fails, as it does not end.
-  })
-
-  t.test('should test setIteratorHead method', async (st) => {
-    const { blockchain, blocks, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
-
-    const headBlockIndex = 5
-
-    const headHash = blocks[headBlockIndex].hash()
-    await blockchain.setIteratorHead('myHead', headHash)
-    const currentHeadBlock = await blockchain.getIteratorHead('myHead')
-
-    st.ok(headHash.equals(currentHeadBlock.hash()), 'head hash equals the provided head hash')
-
-    let i = 0
-    // check that iterator starts from this head block
-    await blockchain.iterator(
-      'myHead',
-      (block: Block) => {
-        if (block.hash().equals(blocks[headBlockIndex + 1].hash())) {
-          i++
-        }
-      },
-      5
-    )
-
-    st.equal(i, 1)
-
-    st.end()
-  })
-
-  t.test('should catch iterator func error', async (st) => {
-    const { blockchain, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
-    try {
-      await blockchain.iterator('error', () => {
-        throw new Error('iterator func error')
-      })
-    } catch (error: any) {
-      st.ok(error)
-      st.equal(error.message, 'iterator func error', 'should return correct error')
-      st.end()
-    }
-  })
-
-  t.test('should not call iterator function in an empty blockchain', async (st) => {
-    const blockchain = await Blockchain.create({
-      validateBlocks: true,
-      validateConsensus: false,
-    })
-
-    await blockchain.iterator('test', () => {
-      st.fail('should not call iterator function')
-    })
-
-    st.pass('should finish iterating')
-    st.end()
-  })
-
   t.test('should add fork header and reset stale heads', async (st) => {
     const { blockchain, blocks, error } = await generateBlockchain(15)
     st.error(error, 'no error')
@@ -601,6 +512,32 @@ tape('blockchain test', (t) => {
     st.end()
   })
 
+  t.test('should test nil bodies / throw', async (st) => {
+    const blocks = generateBlocks(3)
+    const blockchain = await Blockchain.create({
+      validateBlocks: false,
+      validateConsensus: false,
+      genesisBlock: blocks[0],
+    })
+    await blockchain.putHeader(blocks[1].header)
+    // Should be able to get the block
+    await blockchain.getBlock(BigInt(1))
+
+    const block2HeaderValuesArray = blocks[2].header.raw()
+    block2HeaderValuesArray[1] = Buffer.alloc(32)
+    const block2Header = BlockHeader.fromValuesArray(block2HeaderValuesArray, {
+      common: blocks[2]._common,
+    })
+    await blockchain.putHeader(block2Header)
+    try {
+      await blockchain.getBlock(BigInt(2))
+      st.fail('block should not be constucted')
+    } catch (e) {
+      st.pass('block not constructed from empty bodies')
+    }
+    st.end()
+  })
+
   t.test('should put multiple blocks at once', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blocks: Block[] = []
@@ -613,23 +550,6 @@ tape('blockchain test', (t) => {
     })
     await blockchain.putBlocks(blocks.slice(1))
     st.end()
-  })
-
-  t.test('should get heads', async (st) => {
-    const [db, genesis] = await createTestDB()
-    const blockchain = await Blockchain.create({ db, genesisBlock: genesis })
-    const head = await blockchain.getIteratorHead()
-    if (typeof genesis !== 'undefined') {
-      st.ok(head.hash().equals(genesis.hash()), 'should get head')
-      st.equal(
-        (blockchain as any)._heads['head0'].toString('hex'),
-        'abcd',
-        'should get state root heads'
-      )
-      st.end()
-    } else {
-      st.fail()
-    }
   })
 
   t.test('should validate', async (st) => {

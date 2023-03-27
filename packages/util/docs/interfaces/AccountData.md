@@ -19,7 +19,7 @@
 
 #### Defined in
 
-[account.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L25)
+[packages/util/src/account.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L25)
 
 ___
 
@@ -29,7 +29,7 @@ ___
 
 #### Defined in
 
-[account.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L27)
+[packages/util/src/account.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L27)
 
 ___
 
@@ -39,7 +39,7 @@ ___
 
 #### Defined in
 
-[account.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L24)
+[packages/util/src/account.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L24)
 
 ___
 
@@ -49,4 +49,4 @@ ___
 
 #### Defined in
 
-[account.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L26)
+[packages/util/src/account.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L26)

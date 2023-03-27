@@ -40,7 +40,7 @@ Log that the contract emits.
 
 #### Defined in
 
-[packages/evm/src/types.ts:224](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L224)
+[types.ts:234](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L234)
 
 ## Functions
 
@@ -61,4 +61,4 @@ Log that the contract emits.
 
 #### Defined in
 
-[packages/evm/src/precompiles/index.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/index.ts#L177)
+[precompiles/index.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/index.ts#L183)
