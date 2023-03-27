@@ -1,4 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
+import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
@@ -28,16 +29,14 @@ tape('[StorageFetcher]', async (t) => {
     const fetcher = new StorageFetcher({
       config,
       pool,
-      root: Buffer.from('e794e45a596856bcd5412788f46752a559a4aa89fe556ab26a8c2cf0fc24cb5e', 'hex'),
+      root: hexToBytes('e794e45a596856bcd5412788f46752a559a4aa89fe556ab26a8c2cf0fc24cb5e'),
       storageRequests: [
         {
-          accountHash: Buffer.from(
-            '352a47fc6863b89a6b51890ef3c1550d560886c027141d2058ba1e2d4c66d99a',
-            'hex'
+          accountHash: hexToBytes(
+            '352a47fc6863b89a6b51890ef3c1550d560886c027141d2058ba1e2d4c66d99a'
           ),
-          storageRoot: Buffer.from(
-            '556a482068355939c95a3412bdb21213a301483edb1b64402fb66ac9f3583599',
-            'hex'
+          storageRoot: hexToBytes(
+            '556a482068355939c95a3412bdb21213a301483edb1b64402fb66ac9f3583599'
           ),
           first: BigInt(0),
           count: BigInt(2) ** BigInt(256) - BigInt(1),
@@ -50,14 +49,8 @@ tape('[StorageFetcher]', async (t) => {
     t.equal((fetcher as any).storageRequests.length, 1, 'one storageRequests have been added')
     fetcher.enqueueByStorageRequestList([
       {
-        accountHash: Buffer.from(
-          'e9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1',
-          'hex'
-        ),
-        storageRoot: Buffer.from(
-          '69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92',
-          'hex'
-        ),
+        accountHash: hexToBytes('e9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1'),
+        storageRoot: hexToBytes('69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92'),
         first: BigInt(0),
         count: BigInt(2) ** BigInt(256) - BigInt(1),
       },
@@ -82,33 +75,31 @@ tape('[StorageFetcher]', async (t) => {
     const fetcher = new StorageFetcher({
       config,
       pool,
-      root: Buffer.from(''),
+      root: utf8ToBytes(''),
       first: BigInt(1),
       count: BigInt(10),
     })
     const fullResult: any = [
       [
-        [{ hash: Buffer.from(''), body: Buffer.from('') }],
-        [{ hash: Buffer.from(''), body: Buffer.from('') }],
+        [{ hash: utf8ToBytes(''), body: utf8ToBytes('') }],
+        [{ hash: utf8ToBytes(''), body: utf8ToBytes('') }],
       ],
     ]
     const StorageDataResponse: any = [
       [
-        [{ hash: Buffer.from(''), body: Buffer.from('') }],
-        [{ hash: Buffer.from(''), body: Buffer.from('') }],
+        [{ hash: utf8ToBytes(''), body: utf8ToBytes('') }],
+        [{ hash: utf8ToBytes(''), body: utf8ToBytes('') }],
       ],
     ]
     StorageDataResponse.completed = true
     const task = {
       storageRequests: [
         {
-          accountHash: Buffer.from(
-            'e9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1',
-            'hex'
+          accountHash: hexToBytes(
+            'e9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1'
           ),
-          storageRoot: Buffer.from(
-            '69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92',
-            'hex'
+          storageRoot: hexToBytes(
+            '69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92'
           ),
           first: BigInt(0),
           count: BigInt(2) ** BigInt(256) - BigInt(1),
@@ -133,25 +124,23 @@ tape('[StorageFetcher]', async (t) => {
     const fetcher = new StorageFetcher({
       config,
       pool,
-      root: Buffer.from(''),
+      root: utf8ToBytes(''),
     })
     const StorageDataResponse: any = [
       [
-        [{ hash: Buffer.from(''), body: Buffer.from('') }],
-        [{ hash: Buffer.from(''), body: Buffer.from('') }],
+        [{ hash: utf8ToBytes(''), body: utf8ToBytes('') }],
+        [{ hash: utf8ToBytes(''), body: utf8ToBytes('') }],
       ],
     ]
     StorageDataResponse.completed = false
     const task = {
       storageRequests: [
         {
-          accountHash: Buffer.from(
-            'e9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1',
-            'hex'
+          accountHash: hexToBytes(
+            'e9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1'
           ),
-          storageRoot: Buffer.from(
-            '69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92',
-            'hex'
+          storageRoot: hexToBytes(
+            '69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92'
           ),
           first: BigInt(0),
           count: BigInt(2) ** BigInt(256) - BigInt(1),
@@ -167,9 +156,9 @@ tape('[StorageFetcher]', async (t) => {
     t.equal(results, undefined, 'Process should not return full results yet')
     const remainingStorageData: any = [
       [
-        [{ hash: Buffer.from(''), body: Buffer.from('') }],
-        [{ hash: Buffer.from(''), body: Buffer.from('') }],
-        [{ hash: Buffer.from(''), body: Buffer.from('') }],
+        [{ hash: utf8ToBytes(''), body: utf8ToBytes('') }],
+        [{ hash: utf8ToBytes(''), body: utf8ToBytes('') }],
+        [{ hash: utf8ToBytes(''), body: utf8ToBytes('') }],
       ],
     ]
     remainingStorageData.completed = true
@@ -186,32 +175,30 @@ tape('[StorageFetcher]', async (t) => {
     const fetcher = new StorageFetcher({
       config,
       pool,
-      root: Buffer.from(''),
+      root: utf8ToBytes(''),
     })
     const partialResult: any = [
       [
-        [{ hash: Buffer.from(''), body: Buffer.from('') }],
-        [{ hash: Buffer.from(''), body: Buffer.from('') }],
+        [{ hash: utf8ToBytes(''), body: utf8ToBytes('') }],
+        [{ hash: utf8ToBytes(''), body: utf8ToBytes('') }],
       ],
     ]
 
     const task = {
       storageRequests: [
         {
-          accountHash: Buffer.from(
-            'e9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1',
-            'hex'
+          accountHash: hexToBytes(
+            'e9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1'
           ),
-          storageRoot: Buffer.from(
-            '69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92',
-            'hex'
+          storageRoot: hexToBytes(
+            '69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92'
           ),
           first: BigInt(0),
           count: BigInt(2) ** BigInt(256) - BigInt(1),
         },
       ],
     }
-    const resData = RLP.decode(Buffer.from(_storageRangesRLP, 'hex')) as unknown
+    const resData = RLP.decode(hexToBytes(_storageRangesRLP)) as unknown
     const res = p.decode(
       p.messages.filter((message) => message.name === 'StorageRanges')[0],
       resData
@@ -232,10 +219,8 @@ tape('[StorageFetcher]', async (t) => {
     await fetcher.request(job as any)
     td.verify(
       job.peer.snap.getStorageRanges({
-        root: Buffer.from(''),
-        accounts: [
-          Buffer.from('e9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1', 'hex'),
-        ],
+        root: utf8ToBytes(''),
+        accounts: [hexToBytes('e9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1')],
         origin: td.matchers.anything(),
         limit: td.matchers.anything(),
         bytes: BigInt(50000),
@@ -252,32 +237,30 @@ tape('[StorageFetcher]', async (t) => {
     const fetcher = new StorageFetcher({
       config,
       pool,
-      root: Buffer.from(''),
+      root: utf8ToBytes(''),
     })
     const partialResult: any = [
       [
-        [{ hash: Buffer.from(''), body: Buffer.from('') }],
-        [{ hash: Buffer.from(''), body: Buffer.from('') }],
+        [{ hash: utf8ToBytes(''), body: utf8ToBytes('') }],
+        [{ hash: utf8ToBytes(''), body: utf8ToBytes('') }],
       ],
     ]
 
     const task = {
       storageRequests: [
         {
-          accountHash: Buffer.from(
-            '00009e5969eba9656d7e4dad5b0596241deb87c29bbab71c23b602c2b88a7276',
-            'hex'
+          accountHash: hexToBytes(
+            '00009e5969eba9656d7e4dad5b0596241deb87c29bbab71c23b602c2b88a7276'
           ),
-          storageRoot: Buffer.from(
-            '4431bd7d69241190bb930b74485c1e31ff75552f67d758d0b6612e7bd9226121',
-            'hex'
+          storageRoot: hexToBytes(
+            '4431bd7d69241190bb930b74485c1e31ff75552f67d758d0b6612e7bd9226121'
           ),
           first: BigInt(0),
           count: BigInt(2) ** BigInt(256) - BigInt(1),
         },
       ],
     }
-    const resData = RLP.decode(Buffer.from(_storageRangesRLP, 'hex')) as unknown
+    const resData = RLP.decode(hexToBytes(_storageRangesRLP)) as unknown
     const res = p.decode(
       p.messages.filter((message) => message.name === 'StorageRanges')[0],
       resData
@@ -315,14 +298,13 @@ tape('[StorageFetcher]', async (t) => {
 
     // We have not been able to captured valid storage proof yet but we can try invalid
     // proof for coverage. A valid proof test can be added later
-    const accResData = RLP.decode(Buffer.from(_accountRangeRLP, 'hex')) as unknown
+    const accResData = RLP.decode(hexToBytes(_accountRangeRLP)) as unknown
     const { proof: proofInvalid } = p.decode(
       p.messages.filter((message) => message.name === 'AccountRange')[0],
       accResData
     )
-    const dummyStorageRoot = Buffer.from(
-      '39ed8daab7679c0b1b7cf3667c50108185d4d9d1431c24a1c35f696a58277f8f',
-      'hex'
+    const dummyStorageRoot = hexToBytes(
+      '39ed8daab7679c0b1b7cf3667c50108185d4d9d1431c24a1c35f696a58277f8f'
     )
     const dummyOrigin = Buffer.alloc(32)
     try {
@@ -349,7 +331,7 @@ tape('[StorageFetcher]', async (t) => {
     const fetcher = new StorageFetcher({
       config,
       pool,
-      root: Buffer.from(''),
+      root: utf8ToBytes(''),
       first: BigInt(1),
       count: BigInt(10),
     })

@@ -1,3 +1,4 @@
+import { randomBytes } from '@ethereumjs/util'
 import { encode } from 'jwt-simple'
 import * as tape from 'tape'
 
@@ -9,7 +10,7 @@ import type { TAlgorithm } from 'jwt-simple'
 
 const request = require('supertest')
 
-const jwtSecret = Buffer.from(Array.from({ length: 32 }, () => Math.round(Math.random() * 255)))
+const jwtSecret = randomBytes(32)
 
 tape('call JSON-RPC without Content-Type header', (t) => {
   const server = startRPC({})

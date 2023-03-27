@@ -1,15 +1,16 @@
 import { RLP } from '@ethereumjs/rlp'
-import { arrToBufArr, bufArrToArr, bufferToInt, intToBuffer } from '@ethereumjs/util'
+import { bytesToInt, bytesToUtf8, intToBytes, utf8ToBytes } from '@ethereumjs/util'
 import * as pipe from 'it-pipe'
 import * as pushable from 'it-pushable'
 
 import { Sender } from './sender'
 
 import type { Libp2pMuxedStream as MuxedStream } from '../../types'
+import type { NestedUint8Array } from '@ethereumjs/util'
 
 // TypeScript doesn't have support yet for ReturnType
 // with generic types, so this wrapper is used as a helper.
-const wrapperPushable = () => pushable<Buffer>()
+const wrapperPushable = () => pushable<Uint8Array>()
 type Pushable = ReturnType<typeof wrapperPushable>
 
 /**
@@ -41,15 +42,15 @@ export class Libp2pSender extends Sender {
     // incoming stream
     void pipe.pipe(this.stream, async (source: any) => {
       for await (const bl of source) {
-        // convert BufferList to Buffer
-        const data: Buffer = bl.slice()
+        // convert BytesList to Uint8Array
+        const data: Uint8Array = bl.slice()
         try {
-          const [codeBuf, payload]: any = arrToBufArr(RLP.decode(Uint8Array.from(data)))
-          const code = bufferToInt(codeBuf)
+          const [codeBuf, payload] = RLP.decode(Uint8Array.from(data))
+          const code = bytesToInt(codeBuf as Uint8Array)
           if (code === 0) {
             const status: any = {}
-            for (const [k, v] of payload.values()) {
-              status[k.toString()] = v
+            for (const [k, v] of (payload as NestedUint8Array).values()) {
+              status[bytesToUtf8(k as Uint8Array)] = v
             }
             this.status = status
           } else {
@@ -67,8 +68,8 @@ export class Libp2pSender extends Sender {
    * @param status
    */
   sendStatus(status: any) {
-    const payload: any = Object.entries(status).map(([k, v]) => [Buffer.from(k), v])
-    this.pushable.push(Buffer.from(RLP.encode(bufArrToArr([intToBuffer(0), payload]))))
+    const payload: any = Object.entries(status).map(([k, v]) => [utf8ToBytes(k), v])
+    this.pushable.push(RLP.encode([intToBytes(0), payload]))
   }
 
   /**
@@ -77,6 +78,6 @@ export class Libp2pSender extends Sender {
    * @param data message payload
    */
   sendMessage(code: number, data: any) {
-    this.pushable.push(Buffer.from(RLP.encode(bufArrToArr([intToBuffer(code), data]))))
+    this.pushable.push(RLP.encode([intToBytes(code), data]))
   }
 }

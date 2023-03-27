@@ -1,5 +1,6 @@
 import { Hardfork } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { precompile01 } from './01-ecrecover'
 import { precompile02 } from './02-sha256'
@@ -154,7 +155,7 @@ const precompileAvailability: PrecompileAvailability = {
 }
 
 function getPrecompile(address: Address, common: Common): PrecompileFunc {
-  const addr = address.buf.toString('hex')
+  const addr = bytesToHex(address.bytes)
   if (precompiles[addr] !== undefined) {
     const availability = precompileAvailability[addr]
     if (
@@ -188,7 +189,7 @@ function getActivePrecompiles(
   if (customPrecompiles) {
     for (const precompile of customPrecompiles) {
       precompileMap.set(
-        precompile.address.buf.toString('hex'),
+        bytesToHex(precompile.address.bytes),
         'function' in precompile ? precompile.function : undefined
       )
     }
@@ -197,7 +198,8 @@ function getActivePrecompiles(
     if (precompileMap.has(addressString)) {
       continue
     }
-    const address = new Address(Buffer.from(addressString, 'hex'))
+
+    const address = new Address(hexToBytes(addressString))
     const precompileFunc = getPrecompile(address, common)
     if (precompileFunc !== undefined) {
       precompileMap.set(addressString, precompileFunc)

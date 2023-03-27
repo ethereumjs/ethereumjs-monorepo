@@ -3,6 +3,7 @@ import { Chain, Common } from '@ethereumjs/common'
 import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address, AsyncEventEmitter, TypeOutput, toType } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import { promisify } from 'util'
 
 import { buildBlock } from './buildBlock'
@@ -113,13 +114,13 @@ export class VM {
     this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this._common })
 
     // TODO tests
-    if (opts.eei) {
-      if (opts.evm) {
+    if (opts.eei !== undefined) {
+      if (opts.evm !== undefined) {
         throw new Error('cannot specify EEI if EVM opt provided')
       }
       this.eei = opts.eei
     } else {
-      if (opts.evm) {
+      if (opts.evm !== undefined) {
         this.eei = opts.evm.eei
       } else {
         this.eei = new EEI(this.stateManager, this._common, this.blockchain)
@@ -127,7 +128,7 @@ export class VM {
     }
 
     // TODO tests
-    if (opts.evm) {
+    if (opts.evm !== undefined) {
       this.evm = opts.evm
     } else {
       this.evm = new EVM({
@@ -177,11 +178,11 @@ export class VM {
       await this.eei.checkpoint()
       // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
       for (const [addressStr] of getActivePrecompiles(this._common)) {
-        const address = new Address(Buffer.from(addressStr, 'hex'))
+        const address = new Address(hexToBytes(addressStr))
         const account = await this.eei.getAccount(address)
         // Only do this if it is not overridden in genesis
         // Note: in the case that custom genesis has storage fields, this is preserved
-        if (account.isEmpty()) {
+        if (account.isEmpty() === true) {
           const newAccount = Account.fromAccountData({
             balance: 1,
             storageRoot: account.storageRoot,

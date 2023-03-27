@@ -8,6 +8,7 @@ import {
   TransactionFactory,
 } from '@ethereumjs/tx'
 import { Account, Address, KECCAK256_NULL, MAX_INTEGER } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../src/vm'
@@ -46,7 +47,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
       if (vm._common.consensusType() === 'poa') {
         // Setup block with correct extraData for POA
         block = Block.fromBlockData(
-          { header: { extraData: Buffer.alloc(97) } },
+          { header: { extraData: new Uint8Array(97) } },
           { common: vm._common }
         )
       }
@@ -201,9 +202,8 @@ tape('runTx() -> successful API parameter usage', async (t) => {
       for (const txType of TRANSACTION_TYPES) {
         const vm = await VM.create({ common })
 
-        const privateKey = Buffer.from(
-          'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-          'hex'
+        const privateKey = hexToBytes(
+          'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
         )
         const address = Address.fromPrivateKey(privateKey)
         const initialBalance = BigInt(10) ** BigInt(18)
@@ -229,7 +229,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
         )
         const tx = unsignedTx.sign(privateKey)
 
-        const coinbase = Buffer.from('00000000000000000000000000000000000000ff', 'hex')
+        const coinbase = hexToBytes('00000000000000000000000000000000000000ff')
         const block = Block.fromBlockData(
           {
             header: {
@@ -436,9 +436,8 @@ tape('runTx() -> runtime behavior', async (t) => {
     for (const txType of TRANSACTION_TYPES) {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
       const vm = await VM.create({ common })
-      const privateKey = Buffer.from(
-        'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-        'hex'
+      const privateKey = hexToBytes(
+        'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
       )
       /* Code which is deployed here:
         PUSH1 01
@@ -446,13 +445,13 @@ tape('runTx() -> runtime behavior', async (t) => {
         SSTORE
         INVALID
       */
-      const code = Buffer.from('6001600055FE', 'hex')
-      const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
+      const code = hexToBytes('6001600055FE')
+      const address = new Address(hexToBytes('00000000000000000000000000000000000000ff'))
       await vm.eei.putContractCode(address, code)
       await vm.eei.putContractStorage(
         address,
-        Buffer.from('00'.repeat(32), 'hex'),
-        Buffer.from('00'.repeat(31) + '01', 'hex')
+        hexToBytes('00'.repeat(32)),
+        hexToBytes('00'.repeat(31) + '01')
       )
       const txParams: any = {
         nonce: '0x00',
@@ -515,9 +514,7 @@ tape('runTx() -> runtime errors', async (t) => {
       const from = createAccount()
       await vm.eei.putAccount(caller, from)
 
-      const contractAddress = new Address(
-        Buffer.from('61de9dc6f6cff1df2809480882cfd3c2364b28f7', 'hex')
-      )
+      const contractAddress = new Address(hexToBytes('61de9dc6f6cff1df2809480882cfd3c2364b28f7'))
       const to = createAccount(BigInt(0), MAX_INTEGER)
       await vm.eei.putAccount(contractAddress, to)
 
@@ -558,8 +555,8 @@ tape('runTx() -> API return values', async (t) => {
       )
       t.deepEqual(
         res.execResult.returnValue,
-        Buffer.from([]),
-        `execution result -> return value -> empty Buffer (${txType.name})`
+        Uint8Array.from([]),
+        `execution result -> return value -> empty Uint8Array (${txType.name})`
       )
       t.equal(res.gasRefund, BigInt(0), `gasRefund -> 0 (${txType.name})`)
     }
@@ -604,7 +601,7 @@ tape('runTx() -> API return values', async (t) => {
 
       t.deepEqual(
         res.bloom.bitvector,
-        Buffer.from('00'.repeat(256), 'hex'),
+        hexToBytes('00'.repeat(256)),
         `runTx result -> bloom.bitvector -> should be empty (${txType.name})`
       )
       t.equal(
@@ -673,7 +670,7 @@ tape('runTx() -> consensus bugs', async (t) => {
        REVERT puts an "error message" in the RETURNDATA buffer. This buffer would contain the contract code to deploy if the message would not fail.
        In this case, REVERT puts a message in the RETURNDATA buffer which is larger than the `maxCodeSize`
        This should not consume all gas: it should only consume the gas spent by the attempt to create the contract */
-    const pkey = Buffer.alloc(32, 1)
+    const pkey = new Uint8Array(32).fill(1)
     const txData: FeeMarketEIP1559TxData = {
       gasLimit: 100000,
       maxPriorityFeePerGas: 1000,
@@ -743,10 +740,7 @@ tape('runTx() -> skipBalance behavior', async (t) => {
   t.plan(6)
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
   const vm = await VM.create({ common })
-  const senderKey = Buffer.from(
-    'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-    'hex'
-  )
+  const senderKey = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
   const sender = Address.fromPrivateKey(senderKey)
 
   for (const balance of [undefined, BigInt(5)]) {
@@ -777,11 +771,11 @@ tape(
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
     const vm = await VM.create({ common })
 
-    const pkey = Buffer.alloc(32, 1)
+    const pkey = new Uint8Array(32).fill(1)
 
     // CALLER EXTCODEHASH PUSH 0 SSTORE STOP
     // Puts EXTCODEHASH of CALLER into slot 0
-    const code = Buffer.from('333F60005500', 'hex')
+    const code = hexToBytes('333F60005500')
     const codeAddr = Address.fromString('0x' + '20'.repeat(20))
     await vm.stateManager.putContractCode(codeAddr, code)
 
@@ -797,11 +791,8 @@ tape(
     await vm.eei.putAccount(addr, acc)
     await vm.runTx({ tx, skipHardForkValidation: true })
 
-    const hash = await vm.stateManager.getContractStorage(
-      codeAddr,
-      Buffer.from('00'.repeat(32), 'hex')
-    )
-    t.ok(hash.equals(KECCAK256_NULL), 'hash ok')
+    const hash = await vm.stateManager.getContractStorage(codeAddr, hexToBytes('00'.repeat(32)))
+    t.deepEquals(hash, KECCAK256_NULL, 'hash ok')
 
     t.end()
   }
@@ -813,7 +804,7 @@ tape(
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
     const vm = await VM.create({ common })
 
-    const pkey = Buffer.alloc(32, 1)
+    const pkey = new Uint8Array(32).fill(1)
 
     // PUSH 0 DUP DUP DUP
     // CALLVALUE CALLER GAS
@@ -821,7 +812,7 @@ tape(
     // STOP
 
     // Calls CALLER and sends back the ETH just sent with the transaction
-    const code = Buffer.from('600080808034335AF100', 'hex')
+    const code = hexToBytes('600080808034335AF100')
     const codeAddr = Address.fromString('0x' + '20'.repeat(20))
     await vm.stateManager.putContractCode(codeAddr, code)
 
@@ -852,11 +843,11 @@ tape(
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
     const vm = await VM.create({ common })
 
-    const pkey = Buffer.alloc(32, 1)
+    const pkey = new Uint8Array(32).fill(1)
 
     // CALLER EXTCODEHASH PUSH 0 SSTORE STOP
     // Puts EXTCODEHASH of CALLER into slot 0
-    const code = Buffer.from('33FF', 'hex')
+    const code = hexToBytes('33FF')
     const codeAddr = Address.fromString('0x' + '20'.repeat(20))
     await vm.stateManager.putContractCode(codeAddr, code)
 

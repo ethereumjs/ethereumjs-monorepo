@@ -99,9 +99,9 @@ export abstract class BaseStateManager {
     return account.isEmpty()
   }
 
-  abstract putContractCode(address: Address, value: Buffer): Promise<void>
-  abstract getContractStorage(address: Address, key: Buffer): Promise<Buffer>
-  abstract putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void>
+  abstract putContractCode(address: Address, value: Uint8Array): Promise<void>
+  abstract getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
+  abstract putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void>
 
   /**
    * Checkpoints the current state of the StateManager instance.

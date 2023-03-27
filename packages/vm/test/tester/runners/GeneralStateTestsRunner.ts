@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { Address, toBuffer } from '@ethereumjs/util'
+import { Address, bytesToHex, equalsBytes, toBytes } from '@ethereumjs/util'
 
 import { EVM } from '../../../../evm/src'
 import { EEI } from '../../../src'
@@ -100,7 +100,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   }
 
   // Even if no txs are ran, coinbase should always be created
-  const coinbaseAddress = new Address(Buffer.from(testData.env.currentCoinbase.slice(2), 'hex'))
+  const coinbaseAddress = new Address(testData.env.currentCoinbase.slice(2))
   const account = await (<VM>vm).eei.getAccount(coinbaseAddress)
   await (<VM>vm).eei.putAccount(coinbaseAddress, account)
 
@@ -129,7 +129,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
         })
         vm.events.on('afterTx', async () => {
           const stateRoot = {
-            stateRoot: vm.stateManager._trie.root.toString('hex'),
+            stateRoot: bytesToHex(vm.stateManager._trie.root),
           }
           t.comment(JSON.stringify(stateRoot))
         })
@@ -150,8 +150,8 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   await (<VM>vm).eei.getStateRoot() // Ensure state root is updated (flush all changes to trie)
 
   const stateManagerStateRoot = vm.stateManager._trie.root()
-  const testDataPostStateRoot = toBuffer(testData.postStateRoot)
-  const stateRootsAreEqual = stateManagerStateRoot.equals(testDataPostStateRoot)
+  const testDataPostStateRoot = toBytes(testData.postStateRoot)
+  const stateRootsAreEqual = equalsBytes(stateManagerStateRoot, testDataPostStateRoot)
 
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`

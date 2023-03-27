@@ -83,7 +83,7 @@ export interface ConfigOptions {
    * Use return value of {@link Config.getClientKey}.
    * If left blank, a random key will be generated and used.
    */
-  key?: Buffer
+  key?: Uint8Array
 
   /**
    * Network transports ('rlpx' and/or 'libp2p')
@@ -236,7 +236,7 @@ export interface ConfigOptions {
    *
    * Default: []
    */
-  accounts?: [address: Address, privKey: Buffer][]
+  accounts?: [address: Address, privKey: Uint8Array][]
 
   /**
    * Address for mining rewards (etherbase)
@@ -312,7 +312,7 @@ export class Config {
   public readonly vm?: VM
   public readonly lightserv: boolean
   public readonly datadir: string
-  public readonly key: Buffer
+  public readonly key: Uint8Array
   public readonly transports: string[]
   public readonly bootnodes?: Multiaddr[]
   public readonly port?: number
@@ -332,7 +332,7 @@ export class Config {
   public readonly discV4: boolean
   public readonly mine: boolean
   public readonly isSingleNode: boolean
-  public readonly accounts: [address: Address, privKey: Buffer][]
+  public readonly accounts: [address: Address, privKey: Uint8Array][]
   public readonly minerCoinbase?: Address
 
   public readonly safeReorgDistance: number
@@ -453,11 +453,14 @@ export class Config {
       return
     }
 
-    if (latest) {
+    if (latest !== null && latest !== undefined) {
       const height = latest.number
       if (height >= (this.syncTargetHeight ?? BigInt(0))) {
         this.syncTargetHeight = height
-        this.lastSyncDate = latest.timestamp ? Number(latest.timestamp) * 1000 : Date.now()
+        this.lastSyncDate =
+          typeof latest.timestamp === 'bigint' && latest.timestamp > 0n
+            ? Number(latest.timestamp) * 1000
+            : Date.now()
 
         const diff = Date.now() - this.lastSyncDate
         // update synchronized
@@ -491,7 +494,7 @@ export class Config {
 
     this.logger.debug(
       `Client synchronized=${this.synchronized}${
-        latest ? ' height=' + latest.number : ''
+        latest !== null && latest !== undefined ? ' height=' + latest.number : ''
       } syncTargetHeight=${this.syncTargetHeight} lastSyncDate=${
         (Date.now() - this.lastSyncDate) / 1000
       } secs ago`
@@ -527,7 +530,7 @@ export class Config {
    * Returns the config level db.
    */
   static getConfigDB(networkDir: string) {
-    return new Level<string | Buffer, Buffer>(`${networkDir}/config` as any)
+    return new Level<string | Uint8Array, Uint8Array>(`${networkDir}/config` as any)
   }
 
   /**

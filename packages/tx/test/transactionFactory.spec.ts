@@ -1,4 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import {
@@ -13,7 +14,7 @@ const common = new Common({
   hardfork: Hardfork.London,
 })
 
-const pKey = Buffer.from('4646464646464646464646464646464646464646464646464646464646464646', 'hex')
+const pKey = hexStringToBytes('4646464646464646464646464646464646464646464646464646464646464646')
 
 const unsignedTx = Transaction.fromTxData({})
 const signedTx = unsignedTx.sign(pKey)
@@ -90,11 +91,11 @@ tape('[TransactionFactory]: Basic functions', function (t) {
 
   t.test('fromBlockBodyData() -> success cases', function (st) {
     for (const txType of txTypes) {
-      let rawTx
+      let rawTx: Uint8Array | Uint8Array[]
       if (txType.eip2718) {
-        rawTx = txType.signed.serialize() as Buffer
+        rawTx = txType.signed.serialize()
       } else {
-        rawTx = txType.signed.raw() as Buffer[]
+        rawTx = txType.signed.raw() as Uint8Array[]
       }
       const tx = TransactionFactory.fromBlockBodyData(rawTx, { common })
       st.equal(tx.constructor.name, txType.name, `should return the right type (${txType.name})`)

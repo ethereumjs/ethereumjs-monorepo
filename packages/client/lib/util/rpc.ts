@@ -30,7 +30,7 @@ type CreateRPCServerListenerOpts = {
   withEngineMiddleware?: WithEngineMiddleware
 }
 type CreateWSServerOpts = CreateRPCServerListenerOpts & { httpServer?: HttpServer }
-type WithEngineMiddleware = { jwtSecret: Buffer; unlessFn?: (req: IncomingMessage) => boolean }
+type WithEngineMiddleware = { jwtSecret: Uint8Array; unlessFn?: (req: IncomingMessage) => boolean }
 
 export enum MethodConfig {
   WithEngine = 'withengine',
@@ -150,7 +150,7 @@ export function createRPCServer(
   return { server, methods, namespaces }
 }
 
-function checkHeaderAuth(req: any, jwtSecret: Buffer): void {
+function checkHeaderAuth(req: any, jwtSecret: Uint8Array): void {
   const header = (req.headers['Authorization'] ?? req.headers['authorization']) as string
   if (!header) throw Error(`Missing auth header`)
   const token = header.trim().split(' ')[1]

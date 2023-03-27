@@ -1,3 +1,4 @@
+import { hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Chain, Common, Hardfork } from '../src'
@@ -97,9 +98,8 @@ tape('[Common]: Timestamp Hardfork logic', function (t: tape.Test) {
     ])
 
     const c = Common.custom({ hardforks }, { baseChain: Chain.Mainnet })
-    const mainnetGenesisHash = Buffer.from(
-      'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-      'hex'
+    const mainnetGenesisHash = hexStringToBytes(
+      'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
     )
     for (const hf of c.hardforks()) {
       if (typeof hf.forkHash === 'string') {
@@ -141,9 +141,8 @@ tape('[Common]: Timestamp Hardfork logic', function (t: tape.Test) {
     ])
 
     const c = Common.custom({ hardforks }, { baseChain: Chain.Mainnet })
-    const mainnetGenesisHash = Buffer.from(
-      'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-      'hex'
+    const mainnetGenesisHash = hexStringToBytes(
+      'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
     )
 
     let noForkHashes = c.hardforks().reduce((acc, hf) => {

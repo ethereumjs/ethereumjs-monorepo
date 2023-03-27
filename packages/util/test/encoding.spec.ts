@@ -1,3 +1,4 @@
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { bytesToNibbles, compactBytesToNibbles, nibblesToCompactBytes } from '../src'
@@ -7,23 +8,23 @@ tape('encoding', function (t) {
     'nibblesToCompactBytes and compactBytesToNibbles should encode hex data correctly',
     function (t) {
       const tests = [
-        { hex: new Uint8Array(), compact: new Uint8Array(Buffer.from('00', 'hex')) },
-        { hex: new Uint8Array([16]), compact: new Uint8Array(Buffer.from('20', 'hex')) },
+        { hex: new Uint8Array(), compact: hexToBytes('00') },
+        { hex: new Uint8Array([16]), compact: hexToBytes('20') },
         {
           hex: new Uint8Array([1, 2, 3, 4, 5]),
-          compact: new Uint8Array(Buffer.from('112345', 'hex')),
+          compact: hexToBytes('112345'),
         },
         {
           hex: new Uint8Array([0, 1, 2, 3, 4, 5]),
-          compact: new Uint8Array(Buffer.from('00012345', 'hex')),
+          compact: hexToBytes('00012345'),
         },
         {
           hex: new Uint8Array([15, 1, 12, 11, 8, 16]),
-          compact: new Uint8Array(Buffer.from('3f1cb8', 'hex')),
+          compact: hexToBytes('3f1cb8'),
         },
         {
           hex: new Uint8Array([0, 15, 1, 12, 11, 8, 16]),
-          compact: new Uint8Array(Buffer.from('200f1cb8', 'hex')),
+          compact: hexToBytes('200f1cb8'),
         },
       ]
 
@@ -42,15 +43,15 @@ tape('encoding', function (t) {
       { key: new Uint8Array(), hexOut: new Uint8Array([16]) },
       { key: new Uint8Array(), hexOut: new Uint8Array([16]) },
       {
-        key: new Uint8Array(Buffer.from('123456', 'hex')),
+        key: hexToBytes('123456'),
         hexOut: new Uint8Array([1, 2, 3, 4, 5, 6, 16]),
       },
       {
-        key: new Uint8Array(Buffer.from('123405', 'hex')),
+        key: hexToBytes('123405'),
         hexOut: new Uint8Array([1, 2, 3, 4, 0, 5, 16]),
       },
       {
-        key: new Uint8Array(Buffer.from('123456', 'hex')),
+        key: hexToBytes('123456'),
         hexOut: new Uint8Array([1, 2, 3, 4, 5, 6, 16]),
       },
     ]

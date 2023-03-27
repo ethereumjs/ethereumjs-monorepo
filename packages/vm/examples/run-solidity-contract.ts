@@ -4,17 +4,18 @@ import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
 import { Address } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { VM } from '..'
+import { VM } from '@ethereumjs/vm'
 import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder'
 import { getAccountNonce, insertAccount } from './helpers/account-utils'
 import { Block } from '@ethereumjs/block'
+import { bytesToHex, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 const solc = require('solc')
 
 const INITIAL_GREETING = 'Hello, World!'
 const SECOND_GREETING = 'Hola, Mundo!'
 
 const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Istanbul })
-const block = Block.fromBlockData({ header: { extraData: Buffer.alloc(97) } }, { common })
+const block = Block.fromBlockData({ header: { extraData: new Uint8Array(97) } }, { common })
 
 /**
  * This function creates the input for the Solidity compiler.
@@ -85,13 +86,14 @@ function getGreeterDeploymentBytecode(solcOutput: any): any {
 
 async function deployContract(
   vm: VM,
-  senderPrivateKey: Buffer,
-  deploymentBytecode: Buffer,
+  senderPrivateKey: Uint8Array,
+  deploymentBytecode: string,
   greeting: string
 ): Promise<Address> {
   // Contracts are deployed by sending their deployment bytecode to the address 0
   // The contract params should be abi-encoded and appended to the deployment bytecode.
-  const data = encodeDeployment(deploymentBytecode.toString('hex'), {
+
+  const data = encodeDeployment(deploymentBytecode, {
     types: ['string'],
     values: [greeting],
   })
@@ -113,7 +115,7 @@ async function deployContract(
 
 async function setGreeting(
   vm: VM,
-  senderPrivateKey: Buffer,
+  senderPrivateKey: Uint8Array,
   contractAddress: Address,
   greeting: string
 ) {
@@ -144,7 +146,7 @@ async function getGreeting(vm: VM, contractAddress: Address, caller: Address) {
     to: contractAddress,
     caller: caller,
     origin: caller, // The tx.origin is also the caller here
-    data: Buffer.from(sigHash.slice(2), 'hex'),
+    data: hexToBytes(sigHash.slice(2)),
     block,
   })
 
@@ -158,10 +160,7 @@ async function getGreeting(vm: VM, contractAddress: Address, caller: Address) {
 }
 
 async function main() {
-  const accountPk = Buffer.from(
-    'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-    'hex'
-  )
+  const accountPk = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 
   const vm = await VM.create({ common })
   const accountAddress = Address.fromPrivateKey(accountPk)
@@ -215,8 +214,8 @@ async function main() {
   console.log('-------results-------')
   console.log('nonce: ' + createdAccount.nonce.toString())
   console.log('balance in wei: ', createdAccount.balance.toString())
-  console.log('storageRoot: 0x' + createdAccount.storageRoot.toString('hex'))
-  console.log('codeHash: 0x' + createdAccount.codeHash.toString('hex'))
+  console.log('storageRoot: 0x' + bytesToHex(createdAccount.storageRoot))
+  console.log('codeHash: 0x' + bytesToHex(createdAccount.codeHash))
   console.log('---------------------')
 
   console.log('Everything ran correctly!')

@@ -127,7 +127,7 @@ tape('[BeaconSynchronizer]', async (t) => {
     td.when(sync.best()).thenResolve('peer')
     td.when(sync.latest('peer' as any)).thenResolve({
       number: BigInt(2),
-      hash: () => Buffer.from([]),
+      hash: () => new Uint8Array(0),
     })
     td.when(ReverseBlockFetcher.prototype.fetch(), { delay: 100, times: 3 }).thenResolve(undefined)
     ;(skeleton as any).status.progress.subchains = [
@@ -178,7 +178,7 @@ tape('[BeaconSynchronizer]', async (t) => {
     td.when(sync.best()).thenResolve('peer')
     td.when(sync.latest('peer' as any)).thenResolve({
       number: BigInt(2),
-      hash: () => Buffer.from([]),
+      hash: () => new Uint8Array(0),
     })
     td.when(ReverseBlockFetcher.prototype.fetch(), { delay: 100, times: 1 }).thenResolve(undefined)
     ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(6) }]

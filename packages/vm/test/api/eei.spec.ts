@@ -3,6 +3,7 @@ import { Common } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
 import { DefaultStateManager as StateManager } from '@ethereumjs/statemanager'
 import { Account, Address } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../src'
@@ -100,7 +101,7 @@ tape('EEI', (t) => {
       )
     }
 
-    const address = new Address(Buffer.from('02E815899482f27C899fB266319dE7cc97F72E87', 'hex'))
+    const address = new Address(hexToBytes('02E815899482f27C899fB266319dE7cc97F72E87'))
     void eei.putAccount(address, Account.fromAccountData({ nonce: 5, balance: '0x123' }))
     const vm = await VM.create({ evm })
     const accountFromEEI = await vm.eei.getAccount(address)
