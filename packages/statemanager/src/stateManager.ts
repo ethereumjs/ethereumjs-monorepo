@@ -17,24 +17,8 @@ import { BaseStateManager } from './baseStateManager'
 import { Cache, DEFAULT_CACHE_CLEARING_OPTS } from './cache'
 
 import type { CacheClearingOpts, getCb, putCb } from './cache'
-import type { StateManager, StorageDump } from './interface'
+import type { Proof, StateManagerInterface, StorageDump, StorageProof } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
-
-export type StorageProof = {
-  key: PrefixedHexString
-  proof: PrefixedHexString[]
-  value: PrefixedHexString
-}
-
-export type Proof = {
-  address: PrefixedHexString
-  balance: PrefixedHexString
-  codeHash: PrefixedHexString
-  nonce: PrefixedHexString
-  storageHash: PrefixedHexString
-  accountProof: PrefixedHexString[]
-  storageProof: StorageProof[]
-}
 
 /**
  * Prefix to distinguish between a contract deployed with code `0x80`
@@ -81,7 +65,7 @@ export interface DefaultStateManagerOpts {
  * The default state manager implementation uses a
  * `@ethereumjs/trie` trie as a data backend.
  */
-export class DefaultStateManager extends BaseStateManager implements StateManager {
+export class DefaultStateManager extends BaseStateManager implements StateManagerInterface {
   _trie: Trie
   _storageTries: { [key: string]: Trie }
   _codeCache: { [key: string]: Buffer }
@@ -624,7 +608,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * at the last fully committed point, i.e. as if all current
    * checkpoints were reverted.
    */
-  copy(): StateManager {
+  copy(): DefaultStateManager {
     return new DefaultStateManager({
       trie: this._trie.copy(false),
       prefixCodeHashes: this._prefixCodeHashes,

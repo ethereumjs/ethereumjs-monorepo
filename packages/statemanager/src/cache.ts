@@ -2,6 +2,7 @@ import { Account } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { OrderedMap } from 'js-sdsl'
 
+import type { CacheInterface } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
@@ -68,7 +69,7 @@ type DiffCache = OrderedMap<string, CacheElement | undefined>[]
 /**
  * @ignore
  */
-export class Cache {
+export class Cache implements CacheInterface {
   _debug: Debugger
 
   _cache: OrderedMap<string, CacheElement>

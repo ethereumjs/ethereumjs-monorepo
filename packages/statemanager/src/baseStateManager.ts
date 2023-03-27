@@ -1,9 +1,8 @@
 import { Account } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
-import type { Cache } from './cache'
-import type { AccountFields } from './interface'
 import type { DefaultStateManagerOpts } from './stateManager'
+import type { AccountFields, CacheInterface } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
@@ -21,7 +20,7 @@ import type { Debugger } from 'debug'
  */
 export abstract class BaseStateManager {
   _debug: Debugger
-  _cache?: Cache
+  _cache?: CacheInterface
 
   /**
    * StateManager is run in DEBUG mode (default: false)

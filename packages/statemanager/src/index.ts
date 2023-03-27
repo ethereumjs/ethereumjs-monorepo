@@ -9,5 +9,6 @@ export {
   putCb,
 } from './cache'
 export { EthersStateManager, EthersStateManagerOpts } from './ethersStateManager'
-export { AccountFields, StateAccess, StateManager } from './interface'
-export { DefaultStateManager, Proof } from './stateManager'
+export { DefaultStateManager } from './stateManager'
+export { DefaultStateManager as StateManager } from './stateManager'
+export { AccountFields, Proof, StateAccess, StateManagerInterface } from '@ethereumjs/common'

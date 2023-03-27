@@ -15,9 +15,9 @@ import { Cache } from './cache'
 
 import { BaseStateManager } from '.'
 
-import type { Proof, StateManager } from '.'
+import type { Proof, StateManagerInterface } from '.'
 import type { getCb, putCb } from './cache'
-import type { StorageDump } from './interface'
+import type { StorageDump } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 
 const log = debug('statemanager')
@@ -27,7 +27,7 @@ export interface EthersStateManagerOpts {
   blockTag: bigint | 'earliest'
 }
 
-export class EthersStateManager extends BaseStateManager implements StateManager {
+export class EthersStateManager extends BaseStateManager implements StateManagerInterface {
   private provider: ethers.providers.StaticJsonRpcProvider | ethers.providers.JsonRpcProvider
   private contractCache: Map<string, Buffer>
   private storageCache: Map<string, Map<string, Buffer>>
