@@ -232,14 +232,16 @@ export class VM {
     const common = this._common.copy()
     common.setHardfork(this._common.hardfork())
     const blockchain = this.blockchain.copy()
+    const stateManager = this.stateManager.copy()
     const evmOpts = {
       ...(this.evm as any)._optsCached,
       common,
       blockchain,
+      stateManager,
     }
     const evmCopy = new EVM(evmOpts)
     return VM.create({
-      stateManager: this.stateManager.copy(),
+      stateManager,
       blockchain: this.blockchain,
       common,
       evm: evmCopy,
