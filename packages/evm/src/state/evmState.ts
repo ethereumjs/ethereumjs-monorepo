@@ -1,12 +1,13 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { ripemdPrecompileAddress } from '@ethereumjs/evm/dist/precompiles'
 import { Account, Address, toBuffer } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
+import { ripemdPrecompileAddress } from '../precompiles'
+
 import { Journaling } from './journaling'
 
-import type { EVMStateAccess } from '@ethereumjs/evm/dist/types'
-import type { AccountFields, CacheClearingOpts, StateManager } from '@ethereumjs/statemanager'
+import type { EVMStateAccess } from '../types'
+import type { AccountFields, CacheClearingOpts, StateManagerInterface } from '@ethereumjs/common'
 import type { AccessList, AccessListItem } from '@ethereumjs/tx'
 import type { Debugger } from 'debug'
 
@@ -17,7 +18,7 @@ export class VmState implements EVMStateAccess {
   protected _debug: Debugger
 
   protected _checkpointCount: number
-  protected _stateManager: StateManager
+  protected _stateManager: StateManagerInterface
 
   // EIP-2929 address/storage trackers.
   // This maps both the accessed accounts and the accessed storage slots.
@@ -43,7 +44,7 @@ export class VmState implements EVMStateAccess {
 
   protected readonly DEBUG: boolean = false
 
-  constructor({ common, stateManager }: { common?: Common; stateManager: StateManager }) {
+  constructor({ common, stateManager }: { common?: Common; stateManager: StateManagerInterface }) {
     this._checkpointCount = 0
     this._stateManager = stateManager
     this._common = common ?? new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
