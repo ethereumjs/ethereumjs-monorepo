@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { RLP, decode } from '@ethereumjs/rlp'
+import { RLP } from '@ethereumjs/rlp'
 import { Address, KECCAK256_RLP, Withdrawal } from '@ethereumjs/util'
 import * as tape from 'tape'
 
@@ -31,7 +31,7 @@ common.hardforkBlock = function (hardfork: string | undefined) {
 tape('EIP4895 tests', function (t) {
   t.test('should correctly generate withdrawalsRoot', async function (st) {
     // get withdwalsArray
-    const gethBlockBufferArray = decode(Buffer.from(gethWithdrawals8BlockRlp, 'hex'))
+    const gethBlockBufferArray = RLP.decode(Buffer.from(gethWithdrawals8BlockRlp, 'hex'))
     const withdrawals = (gethBlockBufferArray[3] as WithdrawalBuffer[]).map((wa) =>
       Withdrawal.fromValuesArray(wa)
     )
