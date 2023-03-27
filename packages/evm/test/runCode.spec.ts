@@ -1,10 +1,8 @@
-import { Account, Address } from '@ethereumjs/util'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { EVM } from '../src'
-
-import { getEEI } from './utils'
 
 const STOP = '00'
 const JUMP = '56'
@@ -23,8 +21,10 @@ const testCases = [
 ]
 
 tape('VM.runCode: initial program counter', async (t) => {
-  const eei = await getEEI()
-  const evm = await EVM.create({ eei })
+  const evm = await EVM.create({
+    stateManager: new DefaultStateManager(),
+    enableDefaultBlockchain: true,
+  })
 
   for (const [i, testData] of testCases.entries()) {
     const runCodeArgs = {
@@ -59,8 +59,10 @@ tape('VM.runCode: initial program counter', async (t) => {
 
 tape('VM.runCode: interpreter', (t) => {
   t.test('should return a EvmError as an exceptionError on the result', async (st) => {
-    const eei = await getEEI()
-    const evm = await EVM.create({ eei })
+    const evm = await EVM.create({
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
 
     const INVALID_opcode = 'fe'
     const runCodeArgs = {
@@ -80,13 +82,13 @@ tape('VM.runCode: interpreter', (t) => {
   })
 
   t.test('should throw on non-EvmError', async (st) => {
-    const eei = await getEEI()
-    const address = Address.fromString(`0x${'00'.repeat(20)}`)
-    await eei.putAccount(address, new Account())
-    eei.putContractStorage = (..._args) => {
+    const evm = await EVM.create({
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
+    evm.eei.putContractStorage = (..._args) => {
       throw new Error('Test')
     }
-    const evm = await EVM.create({ eei })
 
     const SSTORE = '55'
     const runCodeArgs = {
@@ -106,8 +108,10 @@ tape('VM.runCode: interpreter', (t) => {
 
 tape('VM.runCode: RunCodeOptions', (t) => {
   t.test('should throw on negative value args', async (st) => {
-    const eei = await getEEI()
-    const evm = await EVM.create({ eei })
+    const evm = await EVM.create({
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
 
     const runCodeArgs = {
       value: BigInt(-10),

@@ -28,7 +28,7 @@ tape(`${method}: ensure balance deducts after a tx`, async (t) => {
 
   // since synchronizer.run() is not executed in the mock setup,
   // manually run stateManager.generateCanonicalGenesis()
-  await vm.eei.generateCanonicalGenesis(blockchain.genesisState())
+  await vm.evm.eei.generateCanonicalGenesis(blockchain.genesisState())
 
   // genesis address with balance
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')

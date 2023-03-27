@@ -1,9 +1,8 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import * as tape from 'tape'
 
 import { EVM } from '../src'
-
-import { getEEI } from './utils'
 
 tape('EVM -> getActiveOpcodes()', (t) => {
   const CHAINID = 0x46 //istanbul opcode
@@ -11,7 +10,11 @@ tape('EVM -> getActiveOpcodes()', (t) => {
 
   t.test('should not expose opcodes from a follow-up HF (istanbul -> petersburg)', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    const evm = await EVM.create({ common, eei: await getEEI() })
+    const evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
     st.equal(
       evm.getActiveOpcodes().get(CHAINID),
       undefined,
@@ -22,7 +25,11 @@ tape('EVM -> getActiveOpcodes()', (t) => {
 
   t.test('should expose opcodes when HF is active (>= istanbul)', async (st) => {
     let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    let evm = await EVM.create({ common, eei: await getEEI() })
+    let evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
     st.equal(
       evm.getActiveOpcodes().get(CHAINID)!.name,
       'CHAINID',
@@ -30,7 +37,11 @@ tape('EVM -> getActiveOpcodes()', (t) => {
     )
 
     common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
-    evm = await EVM.create({ common, eei: await getEEI() })
+    evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
     st.equal(
       evm.getActiveOpcodes().get(CHAINID)!.name,
       'CHAINID',
@@ -42,7 +53,11 @@ tape('EVM -> getActiveOpcodes()', (t) => {
 
   t.test('should expose opcodes when EIP is active', async (st) => {
     let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul, eips: [2315] })
-    let evm = await EVM.create({ common, eei: await getEEI() })
+    let evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
     st.equal(
       evm.getActiveOpcodes().get(BEGINSUB)!.name,
       'BEGINSUB',
@@ -50,7 +65,11 @@ tape('EVM -> getActiveOpcodes()', (t) => {
     )
 
     common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    evm = await EVM.create({ common, eei: await getEEI() })
+    evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
     st.equal(
       evm.getActiveOpcodes().get(BEGINSUB),
       undefined,
@@ -62,7 +81,11 @@ tape('EVM -> getActiveOpcodes()', (t) => {
 
   t.test('should update opcodes on a hardfork change', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const evm = await EVM.create({ common, eei: await getEEI() })
+    const evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
 
     common.setHardfork(Hardfork.Byzantium)
     st.equal(

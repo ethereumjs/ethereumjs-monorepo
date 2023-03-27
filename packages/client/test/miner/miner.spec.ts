@@ -1,9 +1,9 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
+import { VmState } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Address, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
-import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
 import { AbstractLevel } from 'abstract-level'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
@@ -31,9 +31,9 @@ const B = {
 }
 
 const setBalance = async (vm: VM, address: Address, balance: bigint) => {
-  await vm.eei.checkpoint()
-  await vm.eei.modifyAccountFields(address, { balance })
-  await vm.eei.commit()
+  await vm.evm.eei.checkpoint()
+  await vm.evm.eei.modifyAccountFields(address, { balance })
+  await vm.evm.eei.commit()
 }
 
 tape('[Miner]', async (t) => {
@@ -43,7 +43,7 @@ tape('[Miner]', async (t) => {
 
   const originalSetStateRoot = VmState.prototype.setStateRoot
   VmState.prototype.setStateRoot = td.func<any>()
-  td.replace('@ethereumjs/vm/dist/vmState', { VmState })
+  td.replace('@ethereumjs/evm', { VmState })
 
   // Stub out setStateRoot so txPool.validate checks will pass since correct state root
   // doesn't exist in fakeChain state anyway

@@ -22,6 +22,7 @@ import { Interpreter } from './interpreter'
 import { Message } from './message'
 import { getOpcodesForHF } from './opcodes'
 import { getActivePrecompiles } from './precompiles'
+import { DefaultBlockchain, EEI } from './state/state'
 import { TransientStorage } from './transientStorage'
 
 import type { InterpreterOpts, RunState } from './interpreter'
@@ -29,6 +30,7 @@ import type { MessageWithTo } from './message'
 import type { OpHandler, OpcodeList } from './opcodes'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
 import type { CustomPrecompile, PrecompileFunc } from './precompiles'
+import type { Blockchain } from './state/state'
 import type {
   Block,
   CustomOpcode,
@@ -41,6 +43,7 @@ import type {
   /*ExternalInterfaceFactory,*/
   Log,
 } from './types'
+import type { StateManagerInterface } from '@ethereumjs/common'
 
 const debug = createDebugLogger('evm:evm')
 const debugGas = createDebugLogger('evm:gas')
@@ -137,9 +140,21 @@ export interface EVMOpts {
   customPrecompiles?: CustomPrecompile[]
 
   /*
-   * The External Interface Factory, used to build an External Interface when this is necessary
+   * The StateManager which is used to update the trie
    */
-  eei: EEIInterface
+  stateManager: StateManagerInterface
+
+  /**
+   *
+   */
+  blockchain?: Blockchain
+
+  /**
+   * This optional flag should be set to `true` if no blockchain is provided
+   * This is used the warn users that if they do not provide a blockchain,
+   * the default blockchain will be used, which always returns the 0 hash if a block is
+   */
+  enableDefaultBlockchain?: boolean
 }
 
 /**
@@ -254,8 +269,6 @@ export class EVM implements EVMInterface {
 
     this._optsCached = opts
 
-    this.eei = opts.eei
-
     this._transientStorage = new TransientStorage()
 
     if (opts.common) {
@@ -264,6 +277,20 @@ export class EVM implements EVMInterface {
       const DEFAULT_CHAIN = Chain.Mainnet
       this._common = new Common({ chain: DEFAULT_CHAIN })
     }
+
+    let blockchain: Blockchain
+
+    if (opts.blockchain === undefined && opts.enableDefaultBlockchain === true) {
+      blockchain = new DefaultBlockchain()
+    } else if (opts.blockchain === undefined) {
+      throw new Error(
+        'Cannot create EVM: no blockchain is provided, and enableDefaultBlockchain is not set to true'
+      )
+    } else {
+      blockchain = opts.blockchain
+    }
+
+    this.eei = new EEI(opts.stateManager, this._common, blockchain)
 
     // Supported EIPs
     const supportedEIPs = [

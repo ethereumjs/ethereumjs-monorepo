@@ -59,9 +59,8 @@ async function runTransition(argsIn: any) {
     const genesis = Block.fromBlockData({ header: BlockHeader.fromHeaderData(genesisBlockData) })
     blockchain = await Blockchain.create({ common, genesisBlock: genesis })
   }
-  const vm =
-    blockchain !== undefined ? await VM.create({ common, blockchain }) : await VM.create({ common })
-  await setupPreConditions(<any>vm.eei, { pre: alloc })
+  const vm = blockchain ? await VM.create({ common, blockchain }) : await VM.create({ common })
+  await setupPreConditions(<any>vm.evm.eei, { pre: alloc })
 
   const block = makeBlockFromEnv(inputEnv, { common })
 
@@ -129,7 +128,7 @@ async function runTransition(argsIn: any) {
   await vm.eei.cleanupTouchedAccounts()
 
   const output = {
-    stateRoot: bytesToPrefixedHexString(await vm.eei.getStateRoot()),
+    stateRoot: bytesToPrefixedHexString(await vm.evm.eei.getStateRoot()),
     txRoot: bytesToPrefixedHexString(await builder.transactionsTrie()),
     receiptsRoot: bytesToPrefixedHexString(await builder.receiptTrie()),
     logsHash: bytesToPrefixedHexString(logsHash),

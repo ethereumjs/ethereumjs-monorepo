@@ -1,4 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address, bytesToPrefixedHexString } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
@@ -6,7 +7,6 @@ import * as tape from 'tape'
 import { isRunningInKarma } from '../../../vm/test/util'
 import { getActivePrecompiles } from '../../src'
 import { EVM } from '../../src/evm'
-import { getEEI } from '../utils'
 
 const precompileAddressStart = 0x0a
 const precompileAddressEnd = 0x12
@@ -24,8 +24,11 @@ tape('EIP-2537 BLS tests', (t) => {
       return st.end()
     }
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
-    const eei = await getEEI()
-    const evm = await EVM.create({ common, eei })
+    const evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
 
     for (const address of precompiles) {
       const to = new Address(hexToBytes(address))
@@ -56,8 +59,11 @@ tape('EIP-2537 BLS tests', (t) => {
       return st.end()
     }
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium, eips: [2537] })
-    const eei = await getEEI()
-    const evm = await EVM.create({ common, eei })
+    const evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
 
     for (const address of precompiles) {
       const to = new Address(hexToBytes(address))
@@ -95,8 +101,11 @@ tape('EIP-2537 BLS tests', (t) => {
       return st.end()
     }
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2537] })
-    const eei = await getEEI()
-    const evm = await EVM.create({ common, eei })
+    const evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
     const BLS12G2MultiExp = getActivePrecompiles(common).get(
       '000000000000000000000000000000000000000f'
     )!

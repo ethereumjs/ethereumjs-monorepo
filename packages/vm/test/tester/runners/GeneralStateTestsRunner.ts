@@ -5,7 +5,6 @@ import { Trie } from '@ethereumjs/trie'
 import { Account, Address, bytesToHex, equalsBytes, toBytes } from '@ethereumjs/util'
 
 import { EVM } from '../../../../evm/src'
-import { EEI } from '../../../src'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
 
 import type { VM } from '../../../src'
@@ -86,11 +85,11 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   let stateManager = new DefaultStateManager({
     trie: state,
   })
-  let eei = new EEI(stateManager, common, blockchain)
-  let evm = new EVM({ common, eei })
-  let vm = await VM.create({ state, stateManager, common, blockchain, evm })
 
-  await setupPreConditions(vm.eei, testData)
+  const evm = new EVM({ common, stateManager, blockchain })
+  const vm = await VM.create({ state, stateManager, common, blockchain, evm })
+
+  await setupPreConditions(vm.evm.eei, testData)
 
   let execInfo = ''
   let tx
@@ -103,8 +102,8 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
 
   // Even if no txs are ran, coinbase should always be created
   const coinbaseAddress = Address.fromString(testData.env.currentCoinbase)
-  const account = await (<VM>vm).eei.getAccount(coinbaseAddress)
-  await (<VM>vm).eei.putAccount(coinbaseAddress, account ?? new Account())
+  const account = await (<VM>vm).evm.eei.getAccount(coinbaseAddress)
+  await (<VM>vm).evm.eei.putAccount(coinbaseAddress, account ?? new Account())
 
   const stepHandler = (e: InterpreterStep) => {
     let hexStack = []
@@ -152,8 +151,8 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   }
 
   // Cleanup touched accounts (this wipes coinbase if it is empty on HFs >= TangerineWhistle)
-  await (<VM>vm).eei.cleanupTouchedAccounts()
-  await (<VM>vm).eei.getStateRoot() // Ensure state root is updated (flush all changes to trie)
+  await (<VM>vm).evm.eei.cleanupTouchedAccounts()
+  await (<VM>vm).evm.eei.getStateRoot() // Ensure state root is updated (flush all changes to trie)
 
   const stateManagerStateRoot = vm.stateManager._trie.root()
   const testDataPostStateRoot = toBytes(testData.postStateRoot)

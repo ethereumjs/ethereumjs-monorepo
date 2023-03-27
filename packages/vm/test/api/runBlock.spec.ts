@@ -38,7 +38,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
     //@ts-ignore
-    await setupPreConditions(vm.eei, testData)
+    await setupPreConditions(vm.evm.eei, testData)
 
     st.deepEquals(
       //@ts-ignore
@@ -60,13 +60,18 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       '5208',
       'actual gas used should equal blockHeader gasUsed'
     )
+    st.equal(
+      (<any>vm.stateManager.cache!)._comparand,
+      BigInt(5),
+      'should pass through the cache clearing options'
+    )
   }
 
   async function uncleRun(vm: VM, st: tape.Test) {
     const testData = require('./testdata/uncleData.json')
 
     //@ts-ignore
-    await setupPreConditions(vm.eei, testData)
+    await setupPreConditions(vm.evm.eei, testData)
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const block1Rlp = toBytes(testData.blocks[0].rlp)
@@ -291,7 +296,7 @@ tape('runBlock() -> runtime behavior', async (t) => {
     block1[0][12] = utf8ToBytes('dao-hard-fork')
     const block = Block.fromValuesArray(block1, { common })
     // @ts-ignore
-    await setupPreConditions(vm.eei, testData)
+    await setupPreConditions(vm.evm.eei, testData)
 
     // fill two original DAO child-contracts with funds and the recovery account with funds in order to verify that the balance gets summed correctly
     const fundBalance1 = BigInt('0x1111')
@@ -422,7 +427,7 @@ async function runWithHf(hardfork: string) {
   const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
   // @ts-ignore
-  await setupPreConditions(vm.eei, testData)
+  await setupPreConditions(vm.evm.eei, testData)
 
   const res = await vm.runBlock({
     block,
@@ -467,7 +472,7 @@ tape('runBlock() -> tx types', async (t) => {
     }
 
     //@ts-ignore
-    await setupPreConditions(vm.eei, testData)
+    await setupPreConditions(vm.evm.eei, testData)
 
     const res = await vm.runBlock({
       block,

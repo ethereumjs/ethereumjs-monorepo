@@ -1,15 +1,18 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import * as tape from 'tape'
 
 import { EVM } from '../../src'
 import { getActivePrecompiles } from '../../src/precompiles'
-import { getEEI } from '../utils'
 
 tape('Precompiles: ECADD', (t) => {
   t.test('ECADD', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    const eei = await getEEI()
-    const evm = await EVM.create({ common, eei })
+    const evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+      enableDefaultBlockchain: true,
+    })
     const addressStr = '0000000000000000000000000000000000000006'
     const ECADD = getActivePrecompiles(common).get(addressStr)!
 

@@ -24,7 +24,7 @@ import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { AccountCache, CacheType, StorageCache } from './cache'
 
-import type { AccountFields, StateManager, StorageDump } from './interface'
+import type { AccountFields, StateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
@@ -128,7 +128,7 @@ export interface DefaultStateManagerOpts {
  * The default state manager implementation uses a
  * `@ethereumjs/trie` trie as a data backend.
  */
-export class DefaultStateManager implements StateManager {
+export class DefaultStateManager implements StateManagerInterface {
   _debug: Debugger
   _accountCache?: AccountCache
   _storageCache?: StorageCache
@@ -790,7 +790,7 @@ export class DefaultStateManager implements StateManager {
    * at the last fully committed point, i.e. as if all current
    * checkpoints were reverted.
    */
-  copy(): StateManager {
+  copy(): DefaultStateManager {
     return new DefaultStateManager({
       trie: this._trie.copy(false),
       prefixCodeHashes: this._prefixCodeHashes,

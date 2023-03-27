@@ -4,7 +4,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { decode } from '@ethereumjs/rlp'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Account, Address, GWEI_TO_WEI, KECCAK256_RLP, Withdrawal, zeros } from '@ethereumjs/util'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, hexToBytes, toHex } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import genesisJSON = require('../../../../client/test/testdata/geth-genesis/withdrawals.json')
@@ -118,8 +118,8 @@ tape('EIP4895 tests', (t) => {
   t.test('EIP4895: state updation should exclude 0 amount updates', async (st) => {
     const vm = await VM.create({ common })
 
-    await vm.eei.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
-    const preState = bytesToHex(await vm.eei.getStateRoot())
+    await vm.evm.eei.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
+    const preState = toHex(await vm.evm.eei.getStateRoot())
     st.equal(
       preState,
       'ca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
@@ -147,7 +147,7 @@ tape('EIP4895 tests', (t) => {
       },
       { common: vm._common }
     )
-    postState = bytesToHex(await vm.eei.getStateRoot())
+    postState = toHex(await vm.evm.eei.getStateRoot())
 
     await vm.runBlock({ block, generate: true })
     st.equal(
@@ -170,7 +170,7 @@ tape('EIP4895 tests', (t) => {
       { common: vm._common }
     )
     await vm.runBlock({ block, generate: true })
-    postState = bytesToHex(await vm.eei.getStateRoot())
+    postState = toHex(await vm.evm.eei.getStateRoot())
     st.equal(
       postState,
       '23eadd91fca55c0e14034e4d63b2b3ed43f2e807b6bf4d276b784ac245e7fa3f',
@@ -197,7 +197,7 @@ tape('EIP4895 tests', (t) => {
       'correct state root should be generated'
     )
     const vm = await VM.create({ common, blockchain })
-    await vm.eei.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
+    await vm.evm.eei.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
     const vmCopy = await vm.copy()
 
     const gethBlockBufferArray = decode(hexToBytes(gethWithdrawals8BlockRlp))

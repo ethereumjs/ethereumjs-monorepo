@@ -1,4 +1,5 @@
 import { Common, Hardfork } from '@ethereumjs/common'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
   bigIntToBytes,
   bytesToBigInt,
@@ -13,7 +14,6 @@ import * as tape from 'tape'
 
 import { EVM, getActivePrecompiles } from '../../src'
 import { BLS_MODULUS } from '../../src/precompiles/14-kzg-point-evaluation'
-import { getEEI } from '../utils'
 
 import type { PrecompileInput } from '../../src/precompiles'
 
@@ -25,8 +25,11 @@ tape('Precompiles: point evaluation', async (t) => {
     chain: 'custom',
     hardfork: Hardfork.ShardingForkDev,
   })
-  const eei = await getEEI()
-  const evm = await EVM.create({ common, eei })
+  const evm = await EVM.create({
+    common,
+    stateManager: new DefaultStateManager(),
+    enableDefaultBlockchain: true,
+  })
   const addressStr = '0000000000000000000000000000000000000014'
   const pointEvaluation = getActivePrecompiles(common).get(addressStr)!
 

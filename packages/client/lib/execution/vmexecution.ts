@@ -132,7 +132,7 @@ export class VMExecution extends Execution {
         if (typeof this.vm.blockchain.genesisState !== 'function') {
           throw new Error('cannot get iterator head: blockchain has no genesisState function')
         }
-        await this.vm.eei.generateCanonicalGenesis(this.vm.blockchain.genesisState())
+        await this.vm.evm.eei.generateCanonicalGenesis(this.vm.blockchain.genesisState())
       }
       await super.open()
       // TODO: Should a run be started to execute any left over blocks?

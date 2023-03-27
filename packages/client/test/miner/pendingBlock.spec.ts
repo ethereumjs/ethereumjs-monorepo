@@ -1,6 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction, Transaction } from '@ethereumjs/tx'
+import { VmState } from '@ethereumjs/evm'
+import { BlobEIP4844Transaction, Transaction, initKZG } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -16,7 +17,6 @@ import {
   randomBytes,
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
-import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
 import * as kzg from 'c-kzg'
 import * as tape from 'tape'
 import * as td from 'testdouble'
@@ -85,7 +85,7 @@ tape('[PendingBlock]', async (t) => {
 
   const originalSetStateRoot = VmState.prototype.setStateRoot
   VmState.prototype.setStateRoot = td.func<any>()
-  td.replace('@ethereumjs/vm/dist/vmState', { VmState })
+  td.replace('@ethereumjs/evm', { VmState })
 
   const createTx = (
     from = A,

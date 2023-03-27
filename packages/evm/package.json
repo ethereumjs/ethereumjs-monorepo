@@ -50,6 +50,7 @@
     "@ethereumjs/common": "^3.1.1",
     "@ethereumjs/util": "^8.0.5",
     "@ethersproject/providers": "^5.7.1",
+    "@ethereumjs/tx": "^4.1.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.1.2",
     "mcl-wasm": "^0.7.1",

@@ -1,19 +1,31 @@
-import { bytesToBigInt } from '@ethereumjs/util'
+import { bytesToBigInt, zeros } from '@ethereumjs/util'
 
-import { VmState } from './vmState'
+import { VmState } from './evmState'
 
-import type { Common } from '@ethereumjs/common'
-import type { EEIInterface } from '@ethereumjs/evm'
-import type { StateManager } from '@ethereumjs/statemanager'
+import type { EEIInterface } from '../types'
+import type { Common, StateManagerInterface } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 
 type Block = {
   hash(): Uint8Array
 }
 
-type Blockchain = {
+export interface Blockchain {
   getBlock(blockId: number): Promise<Block>
   copy(): Blockchain
+}
+
+export class DefaultBlockchain implements Blockchain {
+  async getBlock() {
+    return {
+      hash() {
+        return zeros(32)
+      },
+    }
+  }
+  copy() {
+    return this
+  }
 }
 
 /**
@@ -28,7 +40,7 @@ export class EEI extends VmState implements EEIInterface {
   protected _common: Common
   protected _blockchain: Blockchain
 
-  constructor(stateManager: StateManager, common: Common, blockchain: Blockchain) {
+  constructor(stateManager: StateManagerInterface, common: Common, blockchain: Blockchain) {
     super({ common, stateManager })
     this._common = common
     this._blockchain = blockchain

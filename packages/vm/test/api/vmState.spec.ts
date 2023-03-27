@@ -1,11 +1,10 @@
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { VmState } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address } from '@ethereumjs/util'
 import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
-
-import { VmState } from '../../src/eei/vmState'
 
 import { createAccount, isRunningInKarma } from './utils'
 
