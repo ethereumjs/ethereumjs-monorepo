@@ -325,24 +325,6 @@ export const toUtf8 = function (hex: string): string {
 }
 
 /**
- * Converts a `Uint8Array` or `Array` to JSON.
- * @param ba (Uint8Array|Array)
- * @return (Array|String|null)
- */
-export const baToJSON = function (ba: Uint8Array | Array<any>): Array<any> | string | null {
-  if (ba instanceof Uint8Array) {
-    return bytesToPrefixedHexString(ba)
-  } else if (ba instanceof Array) {
-    const array = []
-    for (let i = 0; i < ba.length; i++) {
-      array.push(baToJSON(ba[i]))
-    }
-    return array
-  }
-  return null
-}
-
-/**
  * Checks provided Uint8Array for leading zeroes and throws if found.
  *
  * Examples:

@@ -4,7 +4,6 @@ import * as tape from 'tape'
 import {
   Address,
   addHexPrefix,
-  baToJSON,
   bigIntToBytes,
   bigIntToHex,
   bigIntToUnpaddedBytes,
@@ -328,18 +327,6 @@ tape('toBytes', function (t) {
       st.end()
     }
   )
-})
-
-tape('baToJSON', function (t) {
-  t.test('should turn a array of buffers into a pure json object', function (st) {
-    const ba = [Uint8Array.from([0]), Uint8Array.from([1]), [Uint8Array.from([2])]]
-    st.deepEqual(baToJSON(ba), ['0x00', '0x01', ['0x02']])
-    st.end()
-  })
-  t.test('should turn a buffers into string', function (st) {
-    st.deepEqual(baToJSON(Uint8Array.from([0])), '0x00')
-    st.end()
-  })
 })
 
 tape('intToBytes', function (st) {
