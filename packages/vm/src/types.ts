@@ -131,11 +131,6 @@ export interface VMOpts {
   hardforkByTTD?: BigIntLike
 
   /**
-   * Use a custom EEI for the EVM. If this is not present, use the default EEI.
-   */
-  eei?: EEIInterface
-
-  /**
    * Use a custom EVM to run Messages on. If this is not present, use the default EVM.
    */
   evm?: EVMInterface
