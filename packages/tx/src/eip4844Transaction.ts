@@ -7,23 +7,23 @@ import {
   bytesToBigInt,
   bytesToHex,
   bytesToPrefixedHexString,
+  computeVersionedHash,
   concatBytes,
   ecrecover,
   hexStringToBytes,
+  kzg,
   toBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BaseTransaction } from './baseTransaction'
 import { LIMIT_BLOBS_PER_TX } from './constants'
-import { kzg } from './kzg/kzg'
 import {
   BlobNetworkTransactionWrapper,
   BlobTransactionType,
   SignedBlobTransactionType,
 } from './types'
 import { AccessLists, blobTxToNetworkWrapperDataFormat } from './util'
-import { computeVersionedHash } from './utils/blobHelpers'
 
 import type {
   AccessList,

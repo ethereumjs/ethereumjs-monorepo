@@ -1,21 +1,21 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import {
-  bytesToHex,
-  concatBytes,
-  equalsBytes,
-  hexStringToBytes,
-  randomBytes,
-} from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
-import * as tape from 'tape'
-
-import { BlobEIP4844Transaction, TransactionFactory, initKZG } from '../src'
-import {
   blobsToCommitments,
   blobsToProofs,
+  bytesToHex,
   commitmentsToVersionedHashes,
+  concatBytes,
+  equalsBytes,
   getBlobs,
-} from '../src/utils/blobHelpers'
+  hexStringToBytes,
+  initKZG,
+} from '@ethereumjs/util'
+import * as kzg from 'c-kzg'
+import { randomBytes } from 'crypto'
+import { hexToBytes } from 'ethereum-cryptography/utils'
+import * as tape from 'tape'
+
+import { BlobEIP4844Transaction, TransactionFactory } from '../src'
 
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
@@ -292,7 +292,7 @@ tape('hash() and signature verification', async (t) => {
         chainId: 1,
         nonce: 1,
         versionedHashes: [
-          hexStringToBytes('01624652859a6e98ffc1608e2af0147ca4e86e1ce27672d8d3f3c9d4ffd6ef7e'),
+          hexToBytes('01624652859a6e98ffc1608e2af0147ca4e86e1ce27672d8d3f3c9d4ffd6ef7e'),
         ],
         maxFeePerDataGas: 10000000n,
         gasLimit: 123457n,

@@ -1,10 +1,14 @@
 // Adapted from - https://github.com/Inphi/eip4844-interop/blob/master/blob_tx_generator/blob.js
-import { BlobEIP4844Transaction, initKZG } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
+  Address,
   blobsToCommitments,
+  bytesToPrefixedHexString,
   commitmentsToVersionedHashes,
-} from '@ethereumjs/tx/test/utils/blobHelpers'
-import { Address, bytesToPrefixedHexString, hexStringToBytes, randomBytes } from '@ethereumjs/util'
+  hexStringToBytes,
+  initKZG,
+  randomBytes,
+} from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { Client } from 'jayson/promise'
 const clientPort = process.argv[2]

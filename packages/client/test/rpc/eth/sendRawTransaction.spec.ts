@@ -1,18 +1,13 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import {
-  BlobEIP4844Transaction,
-  FeeMarketEIP1559Transaction,
-  Transaction,
-  initKZG,
-} from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
   getBlobs,
 } from '@ethereumjs/tx/dist/utils/blobHelpers'
-import { bytesToPrefixedHexString, hexStringToBytes, randomBytes } from '@ethereumjs/util'
+import { bytesToPrefixedHexString, hexStringToBytes, initKZG, randomBytes } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import * as tape from 'tape'
 

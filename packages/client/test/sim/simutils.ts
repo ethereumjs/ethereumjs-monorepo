@@ -1,16 +1,14 @@
 import { Blockchain } from '@ethereumjs/blockchain'
-import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction, initKZG } from '@ethereumjs/tx'
-import {
-  blobsToCommitments,
-  blobsToProofs,
-  commitmentsToVersionedHashes,
-  getBlobs,
-} from '@ethereumjs/tx/dist/utils/blobHelpers'
+import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import {
   Address,
+  blobsToCommitments,
+  blobsToProofs,
   bytesToHex,
   bytesToPrefixedHexString,
   bytesToUtf8,
+  commitmentsToVersionedHashes,
+  getBlobs,
   randomBytes,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'

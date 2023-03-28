@@ -1,12 +1,16 @@
 // Adapted from - https://github.com/Inphi/eip4844-interop/blob/master/blob_tx_generator/blob.js
 import { Common, Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction, initKZG } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
+  Address,
+  initKZG,
   blobsToCommitments,
   commitmentsToVersionedHashes,
   getBlobs,
-} from '@ethereumjs/tx/dist/utils/blobHelpers'
-import { Address, bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
+  bytesToPrefixedHexString,
+  hexStringToBytes,
+} from '@ethereumjs/util'
+
 import * as kzg from 'c-kzg'
 import { randomBytes } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'

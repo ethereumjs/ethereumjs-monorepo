@@ -1,18 +1,17 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction, Transaction, initKZG } from '@ethereumjs/tx'
-import {
-  blobsToCommitments,
-  commitmentsToVersionedHashes,
-  getBlobs,
-} from '@ethereumjs/tx/dist/utils/blobHelpers'
+import { BlobEIP4844Transaction, Transaction } from '@ethereumjs/tx'
 import {
   Account,
   Address,
+  blobsToCommitments,
   bytesToHex,
   bytesToPrefixedHexString,
+  commitmentsToVersionedHashes,
   equalsBytes,
+  getBlobs,
   hexStringToBytes,
+  initKZG,
   randomBytes,
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
