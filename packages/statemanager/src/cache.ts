@@ -16,35 +16,6 @@ export interface CacheOpts {
   deleteCb: deleteCb
 }
 
-export const DEFAULT_CACHE_CLEARING_OPTS: CacheClearingOpts = {
-  clear: true,
-}
-
-export type CacheClearingOpts = {
-  /**
-   * Full cache clearing
-   * (overrides the useThreshold option)
-   *
-   * default: true
-   */
-  clear: boolean
-  /**
-   * Clean up the cache by deleting cache elements
-   * where stored comparand is below the given
-   * threshold.
-   */
-  useThreshold?: bigint
-  /**
-   * Comparand stored along a cache element with a
-   * read or write access.
-   *
-   * This can be a block number, timestamp,
-   * consecutive number or any other bigint
-   * which makes sense as a comparison value.
-   */
-  comparand?: bigint
-}
-
 /**
  * account: undefined
  *
@@ -52,7 +23,6 @@ export type CacheClearingOpts = {
  */
 type CacheElement = {
   accountRLP: Buffer | undefined
-  comparand: bigint
 }
 
 /**
@@ -75,17 +45,6 @@ export class Cache {
   _cache: LRUCache<string, CacheElement>
   _diffCache: DiffCache = []
   _checkpoints = 0
-
-  /**
-   * Comparand for cache clearing.
-   *
-   * This value is stored along each cache element along
-   * a write or get operation.
-   *
-   * Cache elements with a comparand lower than a certain
-   * threshold can be deleted by using the clear() operation.
-   */
-  _comparand = BigInt(0)
 
   _getCb: getCb
   _putCb: putCb
@@ -110,7 +69,7 @@ export class Cache {
     this._debug = createDebugLogger('statemanager:cache')
 
     this._cache = new LRUCache({
-      max: 2500000,
+      max: 1000,
       updateAgeOnGet: true,
     })
 
@@ -147,7 +106,6 @@ export class Cache {
     this._saveCachePreState(addressHex)
     const elem = {
       accountRLP: account !== undefined ? account.serialize() : undefined,
-      comparand: this._comparand,
     }
 
     this._debug(`Put account ${addressHex}`)
@@ -181,7 +139,6 @@ export class Cache {
     this._debug(`Delete account ${addressHex}`)
     this._cache.set(addressHex, {
       accountRLP: undefined,
-      comparand: this._comparand,
     })
     this._stats.cache.dels += 1
   }
@@ -215,7 +172,6 @@ export class Cache {
       this._debug(`Get account ${addressHex} from DB (${accountRLP ? 'exists' : 'non-existent'})`)
       this._cache.set(addressHex, {
         accountRLP,
-        comparand: this._comparand,
       })
       return accountRLP ? Account.fromRlpSerializedAccount(accountRLP) : undefined
     } else {
@@ -339,15 +295,8 @@ export class Cache {
   /**
    * Clears cache.
    */
-  clear(cacheClearingOpts: CacheClearingOpts = DEFAULT_CACHE_CLEARING_OPTS): void {
+  clear(): void {
     this._debug(`Clear cache`)
-    if (cacheClearingOpts.comparand !== undefined) {
-      // Set new comparand value
-      this._comparand = cacheClearingOpts.comparand
-    }
-    if (cacheClearingOpts.clear) {
-      this._cache.clear()
-      return
-    }
+    this._cache.clear()
   }
 }

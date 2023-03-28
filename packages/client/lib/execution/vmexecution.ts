@@ -35,12 +35,6 @@ export class VMExecution extends Execution {
   private MAX_TOLERATED_BLOCK_TIME = 12
 
   /**
-   * Delete cache items if not read or modfied by
-   * STATE_CACHE_THRESHOLD_NUM_BLOCKS number of blocks
-   */
-  private STATE_CACHE_THRESHOLD_NUM_BLOCKS = 25000
-
-  /**
    * Display state cache stats every num blocks
    */
   private CACHE_STATS_NUM_BLOCKS = 500
@@ -336,7 +330,7 @@ export class VMExecution extends Execution {
               const result = await this.vm.runBlock({
                 block,
                 root: parentState,
-                cacheClearingOptions: this.cacheStatsAndOptions(this.vm, number, reorg),
+                clearCache: reorg ? true : false,
                 skipBlockValidation,
                 skipHeaderValidation: true,
               })
@@ -516,7 +510,7 @@ export class VMExecution extends Execution {
         const res = await vm.runBlock({
           block,
           root,
-          cacheClearingOptions: this.cacheStatsAndOptions(vm, BigInt(blockNumber), false),
+          clearCache: false,
           skipHeaderValidation: true,
         })
         const afterTS = Date.now()
@@ -555,27 +549,14 @@ export class VMExecution extends Execution {
     }
   }
 
-  cacheStatsAndOptions(vm: VM, blockNumber: bigint, reorg: boolean) {
+  cacheStats(vm: VM) {
     this.cacheStatsCount += 1
     if (this.cacheStatsCount === this.CACHE_STATS_NUM_BLOCKS) {
-      const stats = vm.stateManager.cache!.stats()
+      const stats = (vm.stateManager as any)._cache.stats()
       this.config.logger.info(
         `State cache stats size=${stats.cache.size} reads=${stats.cache.reads} hits=${stats.cache.hits} writes=${stats.cache.writes} | trie reads=${stats.trie.reads} writes=${stats.trie.writes}`
       )
       this.cacheStatsCount = 0
     }
-    // Only apply cache threshold in selected block intervals
-    // for performance reasons (whole cache iteration needed)
-    let useThreshold
-    if (blockNumber % BigInt(100) === BigInt(0)) {
-      useThreshold = blockNumber - BigInt(this.STATE_CACHE_THRESHOLD_NUM_BLOCKS)
-    }
-
-    const cacheClearingOptions = {
-      clear: reorg ? true : false,
-      useThreshold,
-      comparand: blockNumber,
-    }
-    return cacheClearingOptions
   }
 }

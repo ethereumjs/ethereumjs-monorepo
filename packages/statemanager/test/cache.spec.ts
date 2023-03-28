@@ -141,9 +141,6 @@ tape('cache checkpointing', (t) => {
   const acc = createAccount(BigInt(1), BigInt(0xff11))
   const accRLP = acc.serialize()
 
-  const addr2 = new Address(Buffer.from('20'.repeat(20), 'hex'))
-  const acc2 = createAccount(BigInt(2), BigInt(0xff22))
-
   const updatedAcc = createAccount(BigInt(0x00), BigInt(0xff00))
   const updatedAccRLP = updatedAcc.serialize()
 
@@ -166,30 +163,8 @@ tape('cache checkpointing', (t) => {
   t.test('cache clearing', async (st) => {
     const cache = new Cache({ getCb, putCb, deleteCb })
     cache.put(addr, acc)
-    cache.clear({ clear: false })
-    st.equal(cache.size(), 1, 'should not delete cache objects with clear=false')
-
-    cache.clear({ clear: true })
+    cache.clear()
     st.equal(cache.size(), 0, 'should delete cache objects with clear=true')
-
-    cache.clear({
-      clear: false,
-      comparand: BigInt(1),
-    })
-    cache.put(addr, acc)
-    cache.clear({
-      clear: false,
-      comparand: BigInt(2),
-    })
-    cache.put(addr2, acc2)
-    st.equal(cache.size(), 2, 'should put 2 accounts to cache')
-
-    cache.clear({
-      clear: false,
-      useThreshold: BigInt(2),
-      comparand: BigInt(3),
-    })
-    st.equal(cache.size(), 1, 'should delete cache element below threshold value')
 
     st.end()
   })

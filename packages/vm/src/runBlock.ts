@@ -1,7 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { DEFAULT_CACHE_CLEARING_OPTS } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import {
   Account,
@@ -40,13 +39,9 @@ const DAORefundContract = DAOConfig.DAORefundContract
 export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
   const state = this.eei
   const { root } = opts
-  let { cacheClearingOptions } = opts
+  const clearCache = opts.clearCache ?? true
   let { block } = opts
   const generateFields = opts.generate === true
-
-  if (cacheClearingOptions === undefined) {
-    cacheClearingOptions = DEFAULT_CACHE_CLEARING_OPTS
-  }
 
   /**
    * The `beforeBlock` event.
@@ -83,7 +78,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     if (this.DEBUG) {
       debug(`Set provided state root ${root.toString('hex')}`)
     }
-    await state.setStateRoot(root, cacheClearingOptions)
+    await state.setStateRoot(root, clearCache)
   }
 
   // check for DAO support and if we should apply the DAO fork

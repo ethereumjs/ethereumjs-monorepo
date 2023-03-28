@@ -1,4 +1,3 @@
-import type { Cache, CacheClearingOpts } from './cache'
 import type { Proof } from './stateManager'
 import type { Account, Address } from '@ethereumjs/util'
 
@@ -26,14 +25,13 @@ export interface StateAccess {
   commit(): Promise<void>
   revert(): Promise<void>
   getStateRoot(): Promise<Buffer>
-  setStateRoot(stateRoot: Buffer, cacheClearingOptions?: CacheClearingOpts): Promise<void>
+  setStateRoot(stateRoot: Buffer, clearCache?: boolean): Promise<void>
   getProof?(address: Address, storageSlots: Buffer[]): Promise<Proof>
   verifyProof?(proof: Proof): Promise<boolean>
   hasStateRoot(root: Buffer): Promise<boolean>
 }
 
 export interface StateManager extends StateAccess {
-  cache?: Cache
   copy(): StateManager
   flush(): Promise<void>
   dumpStorage(address: Address): Promise<StorageDump>

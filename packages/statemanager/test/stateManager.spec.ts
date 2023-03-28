@@ -111,9 +111,6 @@ tape('StateManager -> General', (t) => {
 
         const res2 = await stateManager.getAccount(address)
 
-        if (stateManager._cache) {
-          st.equal(stateManager._cache!._cache.begin().pointer[0], address.buf.toString('hex'))
-        }
         st.ok(res1!.serialize().equals(res2!.serialize()))
 
         st.end()

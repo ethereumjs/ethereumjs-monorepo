@@ -3,7 +3,7 @@ import type { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
 import type { EEIInterface, EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
-import type { CacheClearingOpts, StateManager } from '@ethereumjs/statemanager'
+import type { StateManager } from '@ethereumjs/statemanager'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import type { BigIntLike, WithdrawalData } from '@ethereumjs/util'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt
@@ -209,10 +209,13 @@ export interface RunBlockOpts {
    */
   root?: Buffer
   /**
-   * Cache clearing options for the StateManager cache, this only gets used
-   * if a state root is provided along.
+   * Clearing the StateManager cache.
+   *
+   * If state root is not reset for whatever reason this can be set to `false` for better performance.
+   *
+   * Default: true
    */
-  cacheClearingOptions?: CacheClearingOpts
+  clearCache?: boolean
   /**
    * Whether to generate the stateRoot and other related fields.
    * If `true`, `runBlock` will set the fields `stateRoot`, `receiptTrie`, `gasUsed`, and `bloom` (logs bloom) after running the block.
