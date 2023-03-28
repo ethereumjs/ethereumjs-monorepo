@@ -37,9 +37,9 @@ const B = {
 }
 
 const setBalance = async (vm: VM, address: Address, balance: bigint) => {
-  await vm.eei.checkpoint()
-  await vm.eei.modifyAccountFields(address, { balance })
-  await vm.eei.commit()
+  await vm.evm.eei.checkpoint()
+  await vm.evm.eei.modifyAccountFields(address, { balance })
+  await vm.evm.eei.commit()
 }
 
 tape('[Miner]', async (t) => {

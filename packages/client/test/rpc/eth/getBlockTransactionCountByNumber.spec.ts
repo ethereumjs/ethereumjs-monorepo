@@ -30,7 +30,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   t.notEqual(execution, undefined, 'should have valid execution')
   const { vm } = execution
 
-  await vm.eei.generateCanonicalGenesis(blockchain.genesisState())
+  await vm.evm.eei.generateCanonicalGenesis(blockchain.genesisState())
 
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
@@ -81,7 +81,7 @@ tape(`${method}: call with valid arguments (multiple transactions)`, async (t) =
   t.notEqual(execution, undefined, 'should have valid execution')
   const { vm } = execution
 
-  await vm.eei.generateCanonicalGenesis(blockchain.genesisState())
+  await vm.evm.eei.generateCanonicalGenesis(blockchain.genesisState())
 
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 

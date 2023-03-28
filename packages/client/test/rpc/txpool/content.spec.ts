@@ -25,7 +25,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
   t.notEqual(execution, undefined, 'should have valid execution')
   const { vm } = execution
-  await vm.eei.generateCanonicalGenesis(blockchain.genesisState())
+  await vm.evm.eei.generateCanonicalGenesis(blockchain.genesisState())
   const gasLimit = 2000000
   const parent = await blockchain.getCanonicalHeadHeader()
   const block = Block.fromBlockData(
