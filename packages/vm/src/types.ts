@@ -1,9 +1,9 @@
 import type { Bloom } from './bloom'
 import type { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
-import type { Common } from '@ethereumjs/common'
+import type { Common, StateManagerInterface } from '@ethereumjs/common'
 import type { EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
-import type { CacheClearingOpts, StateManager } from '@ethereumjs/statemanager'
+import type { CacheClearingOpts } from '@ethereumjs/statemanager'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import type { BigIntLike, WithdrawalData } from '@ethereumjs/util'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt
@@ -84,7 +84,7 @@ export interface VMOpts {
   /**
    * A {@link StateManager} instance to use as the state store
    */
-  stateManager?: StateManager
+  stateManager?: StateManagerInterface
   /**
    * A {@link Blockchain} object for storing/retrieving blocks
    */
