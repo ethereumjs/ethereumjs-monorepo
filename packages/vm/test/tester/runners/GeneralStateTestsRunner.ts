@@ -83,7 +83,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     trie: state,
   })
 
-  const evm = new EVM({ common, stateManager: new DefaultStateManager(), blockchain })
+  const evm = new EVM({ common, stateManager, blockchain })
   const vm = await VM.create({ state, stateManager, common, blockchain, evm })
 
   await setupPreConditions(vm.evm.eei, testData)

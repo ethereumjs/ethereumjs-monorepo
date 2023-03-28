@@ -59,7 +59,7 @@ async function runTransition(argsIn: any) {
     blockchain = await Blockchain.create({ common, genesisBlock: genesis })
   }
   const vm = blockchain ? await VM.create({ common, blockchain }) : await VM.create({ common })
-  await setupPreConditions(<any>vm.eei, { pre: alloc })
+  await setupPreConditions(<any>vm.evm.eei, { pre: alloc })
 
   const block = makeBlockFromEnv(inputEnv, { common })
 
@@ -122,7 +122,7 @@ async function runTransition(argsIn: any) {
   const logsHash = Buffer.from(keccak256(logsBloom))
 
   const output = {
-    stateRoot: '0x' + (await vm.eei.getStateRoot()).toString('hex'),
+    stateRoot: '0x' + (await vm.evm.eei.getStateRoot()).toString('hex'),
     txRoot: '0x' + (await builder.transactionsTrie()).toString('hex'),
     receiptsRoot: '0x' + (await builder.receiptTrie()).toString('hex'),
     logsHash: '0x' + logsHash.toString('hex'),
