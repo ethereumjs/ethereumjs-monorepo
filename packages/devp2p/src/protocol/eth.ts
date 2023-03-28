@@ -227,7 +227,7 @@ export class ETH extends Protocol {
   _getStatusString(status: ETH.StatusMsg) {
     let sStr = `[V:${bytesToInt(status[0] as Uint8Array)}, NID:${bytesToInt(
       status[1] as Uint8Array
-    )}, TD:${status[2].length === 0 ? 0 : bytesToInt(status[2] as Uint8Array)}`
+    )}, TD:${status[2].length === 0 ? 0 : bytesToBigInt(status[2] as Uint8Array).toString()}`
     sStr += `, BestH:${formatLogId(
       bytesToHex(status[3] as Uint8Array),
       this._verbose

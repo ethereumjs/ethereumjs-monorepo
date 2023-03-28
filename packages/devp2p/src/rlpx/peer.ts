@@ -587,11 +587,11 @@ export class Peer extends EventEmitter {
       //
       if (protocolName === 'Peer') {
         try {
-          payload = RLP.decode(Uint8Array.from(payload))
+          payload = RLP.decode(payload)
         } catch (e: any) {
           if (msgCode === PREFIXES.DISCONNECT) {
             if (compressed) {
-              payload = RLP.decode(Uint8Array.from(origPayload))
+              payload = RLP.decode(origPayload)
             } else {
               payload = RLP.decode(snappy.uncompress(payload))
             }
