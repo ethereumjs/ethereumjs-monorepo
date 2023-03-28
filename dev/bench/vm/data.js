@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1679999009622,
+  "lastUpdate": 1680026414581,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "47c293da1f849f05000e7e70061d62d571ff3920",
-          "message": "New Releases (Continuation) (#2549)\n\n* Updated CHANGELOG files, rebuild blockchain docs, added client Lodestar/EthereumJS README example\r\n\r\n* Fix typo\r\n\r\n* Client CHANGELOG addition\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-02-24T09:51:02+01:00",
-          "tree_id": "b861300c540bc9eee169e371878e98ff6ed6c82a",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/47c293da1f849f05000e7e70061d62d571ff3920"
-        },
-        "date": 1677228856733,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 12641,
-            "range": "±2.78%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 12827,
-            "range": "±2.38%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 12413,
-            "range": "±6.11%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 12554,
-            "range": "±2.61%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 12468,
-            "range": "±2.53%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±8.00%",
             "unit": "ops/sec",
             "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "abe741e3439aa5ae4faf75b9bfabdb21250bde8f",
+          "message": "client: tests for getTrieNodes and trieNodes SNAP messages (#2282)\n\n* Add getTrieNodes function signature to SnapProtocolMethods interface\r\n\r\n* Add tests for GetTrieNodes and TrieNodes message encode/decode\r\n\r\n* Clean up comments\r\n\r\n* Add TODOs\r\n\r\n* Update tests\r\n\r\n* Implement compact encoding helpers\r\n\r\n* Add getTrieNodes function signature to SnapProtocolMethods interface\r\n\r\n* Add tests for GetTrieNodes and TrieNodes message encode/decode\r\n\r\n* Clean up comments\r\n\r\n* Add TODOs\r\n\r\n* Update tests\r\n\r\n* Implement compact encoding helpers\r\n\r\n* Update tests to check raw node data is valid\r\n\r\n* Remove unused import\r\n\r\n* Add pathTo function to encoding library\r\n\r\n* Fix bug in compactToHex\r\n\r\n* Add tests for compact encoding helpers\r\n\r\n* Correct test input\r\n\r\n* Update test title\r\n\r\n* Ignore unused-var error\r\n\r\n* Fix linting errors\r\n\r\n* Ignore unused variable\r\n\r\n* Include type for conditional\r\n\r\n* Check explicitly for null\r\n\r\n* Use expected operator\r\n\r\n* Fix karma configuration\r\n\r\n* Add docs for hasTerm method\r\n\r\n* Remove comment\r\n\r\n* Add block and network to example call\r\n\r\n* rename and comment clarify path encoding\r\n\r\n* fix snap spec\r\n\r\n* add reference\r\n\r\n* fix the coverage issue\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: harkamal <gajinder@g11.in>",
+          "timestamp": "2023-03-28T23:27:29+05:30",
+          "tree_id": "36abd26730fbcc653620a394e0eea44302a1053d",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/abe741e3439aa5ae4faf75b9bfabdb21250bde8f"
+        },
+        "date": 1680026412945,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15592,
+            "range": "±3.06%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 15755,
+            "range": "±1.64%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15338,
+            "range": "±3.99%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15319,
+            "range": "±1.81%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 15138,
+            "range": "±1.83%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
           }
         ]
       }
