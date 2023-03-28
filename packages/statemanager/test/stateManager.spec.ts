@@ -19,9 +19,9 @@ import { DefaultStateManager } from '../src'
 import { createAccount } from './util'
 
 tape('StateManager -> General', (t) => {
-  for (const deactivateCache of [false, true]) {
+  for (const cacheOptions of [{ deactivate: false }, { deactivate: true }]) {
     t.test('should instantiate', async (st) => {
-      const stateManager = new DefaultStateManager({ deactivateCache })
+      const stateManager = new DefaultStateManager({ cacheOptions })
 
       st.deepEqual(stateManager._trie.root(), KECCAK256_RLP, 'it has default root')
       const res = await stateManager.getStateRoot()
@@ -30,7 +30,7 @@ tape('StateManager -> General', (t) => {
     })
 
     t.test('should set the state root to empty', async (st) => {
-      const stateManager = new DefaultStateManager({ deactivateCache })
+      const stateManager = new DefaultStateManager({ cacheOptions })
       st.ok(stateManager._trie.root().equals(KECCAK256_RLP), 'it has default root')
 
       // commit some data to the trie
@@ -52,7 +52,7 @@ tape('StateManager -> General', (t) => {
     })
 
     t.test('should clear the cache when the state root is set', async (st) => {
-      const stateManager = new DefaultStateManager({ deactivateCache })
+      const stateManager = new DefaultStateManager({ cacheOptions })
       const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
       const account = createAccount()
 
@@ -96,7 +96,7 @@ tape('StateManager -> General', (t) => {
     t.test(
       'should put and get account, and add to the underlying cache if the account is not found',
       async (st) => {
-        const stateManager = new DefaultStateManager({ deactivateCache })
+        const stateManager = new DefaultStateManager({ cacheOptions })
         const account = createAccount()
         const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
 
@@ -118,7 +118,7 @@ tape('StateManager -> General', (t) => {
     )
 
     t.test('should return false for a non-existent account', async (st) => {
-      const stateManager = new DefaultStateManager({ deactivateCache })
+      const stateManager = new DefaultStateManager({ cacheOptions })
       const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
 
       const res = await stateManager.accountExists(address)
@@ -129,7 +129,7 @@ tape('StateManager -> General', (t) => {
     })
 
     t.test('should return true for an existent account', async (st) => {
-      const stateManager = new DefaultStateManager({ deactivateCache })
+      const stateManager = new DefaultStateManager({ cacheOptions })
       const account = createAccount(BigInt(0x1), BigInt(0x1))
       const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
 
@@ -143,7 +143,7 @@ tape('StateManager -> General', (t) => {
     })
 
     t.test('should modify account fields correctly', async (st) => {
-      const stateManager = new DefaultStateManager({ deactivateCache })
+      const stateManager = new DefaultStateManager({ cacheOptions })
       const account = createAccount()
       const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
       await stateManager.putAccount(address, account)
@@ -186,7 +186,7 @@ tape('StateManager -> General', (t) => {
     })
 
     t.test('should dump storage', async (st) => {
-      const stateManager = new DefaultStateManager({ deactivateCache })
+      const stateManager = new DefaultStateManager({ cacheOptions })
       const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
       const account = createAccount()
 
@@ -204,7 +204,7 @@ tape('StateManager -> General', (t) => {
     })
 
     t.test("should validate the key's length when modifying a contract's storage", async (st) => {
-      const stateManager = new DefaultStateManager({ deactivateCache })
+      const stateManager = new DefaultStateManager({ cacheOptions })
       const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
       try {
         await stateManager.putContractStorage(address, Buffer.alloc(12), toBuffer('0x1231'))
@@ -219,7 +219,7 @@ tape('StateManager -> General', (t) => {
     })
 
     t.test("should validate the key's length when reading a contract's storage", async (st) => {
-      const stateManager = new DefaultStateManager({ deactivateCache })
+      const stateManager = new DefaultStateManager({ cacheOptions })
       const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
       try {
         await stateManager.getContractStorage(address, Buffer.alloc(12))
@@ -245,8 +245,8 @@ tape('StateManager -> General', (t) => {
       */
 
       // Setup
-      const stateManager = new DefaultStateManager({ deactivateCache })
-      const codeStateManager = new DefaultStateManager({ deactivateCache })
+      const stateManager = new DefaultStateManager({ cacheOptions })
+      const codeStateManager = new DefaultStateManager({ cacheOptions })
       const address1 = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
       const account = createAccount()
       const key1 = Buffer.from('00'.repeat(32), 'hex')
@@ -306,10 +306,10 @@ tape('StateManager -> General', (t) => {
 })
 
 tape('StateManager - Contract code', (tester) => {
-  for (const deactivateCache of [false, true]) {
+  for (const cacheOptions of [{ deactivate: false }, { deactivate: true }]) {
     const it = tester.test
     it('should set and get code', async (t) => {
-      const stateManager = new DefaultStateManager({ deactivateCache })
+      const stateManager = new DefaultStateManager({ cacheOptions })
       const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
       const code = Buffer.from(
         '73095e7baea6a6c7c4c2dfeb977efac326af552d873173095e7baea6a6c7c4c2dfeb977efac326af552d873157',
@@ -330,7 +330,7 @@ tape('StateManager - Contract code', (tester) => {
     })
 
     it('should not get code if is not contract', async (t) => {
-      const stateManager = new DefaultStateManager({ deactivateCache })
+      const stateManager = new DefaultStateManager({ cacheOptions })
       const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
       const raw = {
         nonce: '0x0',
@@ -344,7 +344,7 @@ tape('StateManager - Contract code', (tester) => {
     })
 
     it('should set empty code', async (t) => {
-      const stateManager = new DefaultStateManager({ deactivateCache })
+      const stateManager = new DefaultStateManager({ cacheOptions })
       const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
       const raw = {
         nonce: '0x0',
@@ -360,7 +360,7 @@ tape('StateManager - Contract code', (tester) => {
     })
 
     it('should prefix codehashes by default', async (t) => {
-      const stateManager = new DefaultStateManager({ deactivateCache })
+      const stateManager = new DefaultStateManager({ cacheOptions })
       const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
       const code = Buffer.from('80', 'hex')
       await stateManager.putContractCode(address, code)
@@ -388,12 +388,12 @@ tape('StateManager - Contract code', (tester) => {
 })
 
 tape('StateManager - Contract storage', (tester) => {
-  for (const deactivateCache of [false, true]) {
+  for (const cacheOptions of [{ deactivate: false }, { deactivate: true }]) {
     const it = tester.test
 
     it('should throw on storage values larger than 32 bytes', async (t) => {
       t.plan(1)
-      const stateManager = new DefaultStateManager({ deactivateCache })
+      const stateManager = new DefaultStateManager({ cacheOptions })
       const address = Address.zero()
       const key = zeros(32)
       const value = Buffer.from('aa'.repeat(33), 'hex')
@@ -407,7 +407,7 @@ tape('StateManager - Contract storage', (tester) => {
     })
 
     it('should strip zeros of storage values', async (t) => {
-      const stateManager = new DefaultStateManager({ deactivateCache })
+      const stateManager = new DefaultStateManager({ cacheOptions })
       const address = Address.zero()
 
       const key0 = zeros(32)
@@ -436,7 +436,7 @@ tape('StateManager - Contract storage', (tester) => {
       t.plan(zeroLengths.length)
 
       for (const length of zeroLengths) {
-        const stateManager = new DefaultStateManager({ deactivateCache })
+        const stateManager = new DefaultStateManager({ cacheOptions })
         const value = zeros(length)
         await stateManager.putContractStorage(address, key, startValue)
         const currentValue = await stateManager.getContractStorage(address, key)
@@ -458,7 +458,7 @@ tape('StateManager - Contract storage', (tester) => {
       const key = zeros(32)
       const value = Buffer.from('0000aabb00', 'hex')
       const expect = Buffer.from('aabb00', 'hex')
-      const stateManager = new DefaultStateManager({ deactivateCache })
+      const stateManager = new DefaultStateManager({ cacheOptions })
       await stateManager.putContractStorage(address, key, value)
       const contractValue = await stateManager.getContractStorage(address, key)
       t.ok(contractValue.equals(expect), 'trailing zeros are not stripped')

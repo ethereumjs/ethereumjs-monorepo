@@ -11,6 +11,7 @@ export type putCb = (keyBuf: Buffer, accountRlp: Buffer) => Promise<void>
 export type deleteCb = (keyBuf: Buffer) => Promise<void>
 
 export interface CacheOpts {
+  size: number
   getCb: getCb
   putCb: putCb
   deleteCb: deleteCb
@@ -69,7 +70,7 @@ export class Cache {
     this._debug = createDebugLogger('statemanager:cache')
 
     this._cache = new LRUCache({
-      max: 1000,
+      max: opts.size,
       updateAgeOnGet: true,
     })
 

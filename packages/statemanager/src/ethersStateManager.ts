@@ -58,7 +58,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     const deleteCb = async (_keyBuf: Buffer) => {
       return Promise.resolve()
     }
-    this._cache = new Cache({ getCb, putCb, deleteCb })
+    this._cache = new Cache({ size: 100000, getCb, putCb, deleteCb })
   }
 
   copy(): EthersStateManager {

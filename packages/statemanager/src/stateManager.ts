@@ -36,6 +36,30 @@ export type Proof = {
   storageProof: StorageProof[]
 }
 
+type CacheOptions = {
+  /**
+   * Allows for cache deactivation
+   *
+   * Depending on the use case and underlying datastore (and eventual concurrent cache
+   * mechanisms there), usage with or without cache can be faster
+   *
+   * Default: false
+   */
+  deactivate?: boolean
+
+  /**
+   * Size of the account cache
+   *
+   * Default: 100000
+   */
+  size?: number
+}
+
+type CacheSettings = {
+  deactivate: boolean
+  size: number
+}
+
 /**
  * Prefix to distinguish between a contract deployed with code `0x80`
  * and `RLP([])` (also having the value `0x80`).
@@ -62,13 +86,7 @@ export interface DefaultStateManagerOpts {
    */
   prefixCodeHashes?: boolean
 
-  /**
-   * Allows for cache deactivation
-   *
-   * Depending on the use case and underlying datastore (and eventual concurrent cache
-   * mechanisms there), usage with or without cache can be faster
-   */
-  deactivateCache?: boolean
+  cacheOptions?: CacheOptions
 }
 
 /**
@@ -87,7 +105,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
   _codeCache: { [key: string]: Buffer }
 
   protected readonly _prefixCodeHashes: boolean
-  protected readonly _deactivateCache: boolean
+  protected readonly _cacheSettings: CacheSettings
 
   /**
    * Instantiate the StateManager interface.
@@ -100,9 +118,12 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     this._codeCache = {}
 
     this._prefixCodeHashes = opts.prefixCodeHashes ?? true
-    this._deactivateCache = opts.deactivateCache ?? false
+    this._cacheSettings = {
+      deactivate: opts.cacheOptions?.deactivate ?? false,
+      size: opts.cacheOptions?.size ?? 100000,
+    }
 
-    if (!this._deactivateCache) {
+    if (!this._cacheSettings.deactivate) {
       /*
        * For a custom StateManager implementation adopt these
        * callbacks passed to the `Cache` instantiated to perform
@@ -123,7 +144,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
         const trie = this._trie
         await trie.del(keyBuf)
       }
-      this._cache = new Cache({ getCb, putCb, deleteCb })
+      this._cache = new Cache({ size: this._cacheSettings.size, getCb, putCb, deleteCb })
     }
   }
 
@@ -132,7 +153,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * @param address - Address of the `account` to get
    */
   async getAccount(address: Address): Promise<Account | undefined> {
-    if (this._deactivateCache) {
+    if (this._cacheSettings.deactivate) {
       const rlp = await this._trie.get(address.buf)
       if (rlp !== null) {
         return Account.fromRlpSerializedAccount(rlp)
@@ -157,7 +178,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
         } contract=${account.isContract() ? 'yes' : 'no'} empty=${account.isEmpty() ? 'yes' : 'no'}`
       )
     }
-    if (this._deactivateCache) {
+    if (this._cacheSettings.deactivate) {
       const trie = this._trie
       await trie.put(address.buf, account.serialize())
     } else {
@@ -173,7 +194,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     if (this.DEBUG) {
       this._debug(`Delete account ${address}`)
     }
-    if (this._deactivateCache) {
+    if (this._cacheSettings.deactivate) {
       await this._trie.del(address.buf)
     } else {
       await super.deleteAccount(address)
@@ -625,7 +646,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     return new DefaultStateManager({
       trie: this._trie.copy(false),
       prefixCodeHashes: this._prefixCodeHashes,
-      deactivateCache: this._deactivateCache,
+      cacheOptions: this._cacheSettings,
     })
   }
 }
