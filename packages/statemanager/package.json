@@ -46,7 +46,8 @@
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.1.2",
     "ethers": "^5.7.1",
-    "js-sdsl": "^4.1.4"
+    "js-sdsl": "^4.1.4",
+    "lru-cache": "^8.0.4"
   },
   "devDependencies": {
     "@ethereumjs/block": "^4.2.1",

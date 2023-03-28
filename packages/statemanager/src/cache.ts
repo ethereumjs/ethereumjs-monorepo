@@ -1,6 +1,7 @@
 import { Account } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { OrderedMap } from 'js-sdsl'
+import LRUCache from 'lru-cache'
 
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
@@ -71,7 +72,7 @@ type DiffCache = OrderedMap<string, CacheElement | undefined>[]
 export class Cache {
   _debug: Debugger
 
-  _cache: OrderedMap<string, CacheElement>
+  _cache: LRUCache<string, CacheElement>
   _diffCache: DiffCache = []
   _checkpoints = 0
 
@@ -108,7 +109,10 @@ export class Cache {
   constructor(opts: CacheOpts) {
     this._debug = createDebugLogger('statemanager:cache')
 
-    this._cache = new OrderedMap()
+    this._cache = new LRUCache({
+      max: 2500000,
+      updateAgeOnGet: true,
+    })
 
     this._diffCache.push(new OrderedMap())
 
@@ -120,7 +124,7 @@ export class Cache {
   _saveCachePreState(addressHex: string) {
     const it = this._diffCache[this._checkpoints].find(addressHex)
     if (it.equals(this._diffCache[this._checkpoints].end())) {
-      const oldElem = this._cache.getElementByKey(addressHex)
+      const oldElem = this._cache.get(addressHex)
       this._debug(
         `Save pre cache state ${
           oldElem?.accountRLP ? 'as exists' : 'as non-existent'
@@ -147,7 +151,7 @@ export class Cache {
     }
 
     this._debug(`Put account ${addressHex}`)
-    this._cache.setElement(addressHex, elem)
+    this._cache.set(addressHex, elem)
     this._stats.cache.writes += 1
   }
 
@@ -159,7 +163,7 @@ export class Cache {
     const addressHex = address.buf.toString('hex')
     this._debug(`Get account ${addressHex}`)
 
-    const elem = this._cache.getElementByKey(addressHex)
+    const elem = this._cache.get(addressHex)
     this._stats.cache.reads += 1
     if (elem) {
       this._stats.cache.hits += 1
@@ -175,7 +179,7 @@ export class Cache {
     const addressHex = address.buf.toString('hex')
     this._saveCachePreState(addressHex)
     this._debug(`Delete account ${addressHex}`)
-    this._cache.setElement(addressHex, {
+    this._cache.set(addressHex, {
       accountRLP: undefined,
       comparand: this._comparand,
     })
@@ -209,7 +213,7 @@ export class Cache {
       const accountRLP = await this._getCb(address)
       this._stats.trie.reads += 1
       this._debug(`Get account ${addressHex} from DB (${accountRLP ? 'exists' : 'non-existent'})`)
-      this._cache.setElement(addressHex, {
+      this._cache.set(addressHex, {
         accountRLP,
         comparand: this._comparand,
       })
@@ -232,7 +236,7 @@ export class Cache {
     while (!it.equals(diffMap.end())) {
       const addressHex = it.pointer[0]
       const addressBuf = Buffer.from(addressHex, 'hex')
-      const elem = this._cache.getElementByKey(addressHex)
+      const elem = this._cache.get(addressHex)
       if (elem) {
         if (elem.accountRLP === undefined) {
           await this._deleteCb(addressBuf)
@@ -270,9 +274,9 @@ export class Cache {
       const addressHex = it.pointer[0]
       const elem = it.pointer[1]
       if (elem === undefined) {
-        this._cache.eraseElementByKey(addressHex)
+        this._cache.delete(addressHex)
       } else {
-        this._cache.setElement(addressHex, elem)
+        this._cache.set(addressHex, elem)
       }
       it.next()
     }
@@ -303,7 +307,7 @@ export class Cache {
    * @returns
    */
   size() {
-    return this._cache.size()
+    return this._cache.size
   }
 
   /**
@@ -344,16 +348,6 @@ export class Cache {
     if (cacheClearingOpts.clear) {
       this._cache.clear()
       return
-    }
-    if (cacheClearingOpts.useThreshold !== undefined) {
-      const threshold = cacheClearingOpts.useThreshold
-      const it = this._cache.begin()
-      while (!it.equals(this._cache.end())) {
-        if (it.pointer[1].comparand < threshold) {
-          this._cache.eraseElementByKey(it.pointer[0])
-        }
-        it.next()
-      }
     }
   }
 }
