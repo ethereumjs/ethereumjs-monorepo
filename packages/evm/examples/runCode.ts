@@ -11,6 +11,7 @@ const main = async () => {
   const evm = new EVM({
     common,
     stateManager,
+    blockchain,
   })
 
   const STOP = '00'
