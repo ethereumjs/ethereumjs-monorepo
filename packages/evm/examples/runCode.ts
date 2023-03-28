@@ -2,17 +2,15 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { EEI } from '@ethereumjs/vm'
 
 const main = async () => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
   const stateManager = new DefaultStateManager()
   const blockchain = await Blockchain.create()
-  const eei = new EEI(stateManager, common, blockchain)
 
   const evm = new EVM({
     common,
-    eei,
+    stateManager,
   })
 
   const STOP = '00'
