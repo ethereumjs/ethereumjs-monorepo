@@ -191,7 +191,7 @@ type Stats = {
 export interface CacheInterface {
   getOrLoad(address: Address): Promise<Account | undefined>
   flush(): Promise<void>
-  clear(cacheClearingOpts: CacheClearingOpts): void
+  clear(cacheClearingOpts?: CacheClearingOpts): void
   put(address: Address, account: Account | undefined): void
   del(address: Address): void
   checkpoint(): void
