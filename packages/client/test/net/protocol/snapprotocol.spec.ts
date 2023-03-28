@@ -457,9 +457,9 @@ tape('[SnapProtocol]', (t) => {
     t.end()
   })
 
-  t.test('GetTrieNodes should encode/decode correctly', (t) => {
+  t.test('GetTrieNodes should encode/decode correctly', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
     const reqId = BigInt(1)
@@ -504,7 +504,7 @@ tape('[SnapProtocol]', (t) => {
 
   t.test('TrieNodes should encode/decode correctly with real sample', async (t) => {
     const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
     const nodesRes = RLP.decode(Buffer.from(trieNodesRLP, 'hex')) as unknown
