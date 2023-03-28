@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1679841860993,
+  "lastUpdate": 1679965589256,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "1838a1cf12de633f15528c91bfdbf167d7d7593b",
-          "message": "blockchain: Revert to previous sane heads if block or header put fails (#2548)",
-          "timestamp": "2023-02-23T14:57:42+01:00",
-          "tree_id": "f4aff2e7876bc0221c08ecdc91061d607ff105c0",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/1838a1cf12de633f15528c91bfdbf167d7d7593b"
-        },
-        "date": 1677160827791,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 16058,
-            "range": "±2.22%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 15336,
-            "range": "±4.58%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 15925,
-            "range": "±1.66%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 15510,
-            "range": "±1.78%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 14395,
-            "range": "±6.08%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±9.00%",
             "unit": "ops/sec",
             "extra": "73 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ecb62e5d04d54f02b5bd0ff0d7b5ce3755a83df0",
+          "message": "Update ethereum/tests to v12 (#2601)\n\n* vm: update tests to shanghai\r\n\r\n* evm: fix EIP3860\r\n\r\n* vm: cleanup touched accounts after withdrawals\r\n\r\n* tx: fix eip3860 check when deserializing RLPs\r\n\r\n* block: throw if 4895 is active and no withdrawal is available / withdrawals are not a list\r\n\r\n* evm: fix create/create2 if allowUnlimitedInitCodeSize = true\r\n\r\n* vm: fix state tests runner\r\n\r\n* vm/tests: update test count\r\n\r\n* vm/tests: ensure state root is updated after test\r\n\r\n* vm/tests: Temporarily disable homestead ShanghaiLove test\r\n\r\n* block: bump test coverage, no withdrawals array provided\r\n\r\n* clean up test imports\r\n\r\n* block: move eip4895 check to fromValues\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-03-27T21:03:08-04:00",
+          "tree_id": "2216f27d846f503d82b9442dbb91804a0f08d54b",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ecb62e5d04d54f02b5bd0ff0d7b5ce3755a83df0"
+        },
+        "date": 1679965587908,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 8412,
+            "range": "±3.58%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 8325,
+            "range": "±4.75%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 8918,
+            "range": "±2.28%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 8613,
+            "range": "±2.98%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 7749,
+            "range": "±7.37%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
           }
         ]
       }
