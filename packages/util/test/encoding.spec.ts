@@ -1,5 +1,6 @@
-import { bytesToNibbles, compactBytesToNibbles, nibblesToCompactBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
+
+import { bytesToNibbles, compactBytesToNibbles, nibblesToCompactBytes } from '../src'
 
 tape('encoding', function (t) {
   t.test(
