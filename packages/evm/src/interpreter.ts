@@ -106,7 +106,7 @@ export class Interpreter {
   protected _runState: RunState
   protected _eei: EEIInterface
   protected _common: Common
-  protected _evm: EVM
+  public _evm: EVM
   _env: Env
 
   // Keep track of this Interpreter run result

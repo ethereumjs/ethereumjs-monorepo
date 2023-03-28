@@ -2,12 +2,13 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { toBuffer } from '@ethereumjs/util'
+import { Address, toBuffer } from '@ethereumjs/util'
 
 import { EVM } from '../../../../evm/src'
 import { EEI } from '../../../src'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
 
+import type { VM } from '../../../src'
 import type { InterpreterStep } from '@ethereumjs/evm/dist//interpreter'
 import type * as tape from 'tape'
 
@@ -98,6 +99,11 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     execInfo = 'tx instantiation exception'
   }
 
+  // Even if no txs are ran, coinbase should always be created
+  const coinbaseAddress = new Address(Buffer.from(testData.env.currentCoinbase.slice(2), 'hex'))
+  const account = await (<VM>vm).eei.getAccount(coinbaseAddress)
+  await (<VM>vm).eei.putAccount(coinbaseAddress, account)
+
   if (tx) {
     if (tx.validate()) {
       const block = makeBlockFromEnv(testData.env, { common })
@@ -138,6 +144,10 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
       execInfo = 'tx validation failed'
     }
   }
+
+  // Cleanup touched accounts (this wipes coinbase if it is empty on HFs >= TangerineWhistle)
+  await (<VM>vm).eei.cleanupTouchedAccounts()
+  await (<VM>vm).eei.getStateRoot() // Ensure state root is updated (flush all changes to trie)
 
   const stateManagerStateRoot = vm.stateManager._trie.root()
   const testDataPostStateRoot = toBuffer(testData.postStateRoot)
