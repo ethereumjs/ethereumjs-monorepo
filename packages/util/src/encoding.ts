@@ -1,3 +1,4 @@
+// Reference: https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/
 /**
  *
  * @param s byte sequence
