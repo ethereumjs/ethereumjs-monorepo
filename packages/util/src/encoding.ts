@@ -1,36 +1,42 @@
 /**
  *
  * @param s byte sequence
- * @returns boolean indicating if input byte sequence contains an optional terminating character
+ * @returns boolean indicating if input hex nibble sequence has terminator indicating leaf-node
+ *          terminator is represented with 16 because a nibble ranges from 0 - 15(f)
  */
-export const hasTerm = (s: Uint8Array) => {
-  return s.length > 0 && s[s.length - 1] === 16
+export const hasTerminator = (nibbles: Uint8Array) => {
+  return nibbles.length > 0 && nibbles[nibbles.length - 1] === 16
 }
 
-export const decodeNibbles = (nibbles: Uint8Array, bytes: Uint8Array) => {
+export const nibblesToBytes = (nibbles: Uint8Array, bytes: Uint8Array) => {
   for (let bi = 0, ni = 0; ni < nibbles.length; bi += 1, ni += 2) {
     bytes[bi] = (nibbles[ni] << 4) | nibbles[ni + 1]
   }
 }
 
-export const hexToCompact = (hex: Uint8Array) => {
+export const nibblesToCompactBytes = (nibbles: Uint8Array) => {
   let terminator = 0
-  if (hasTerm(hex)) {
+  if (hasTerminator(nibbles)) {
     terminator = 1
-    hex = hex.subarray(0, hex.length - 1)
+    // Remove the terminator from the sequence
+    nibbles = nibbles.subarray(0, nibbles.length - 1)
   }
-  const buf = new Uint8Array(hex.length / 2 + 1)
+  const buf = new Uint8Array(nibbles.length / 2 + 1)
+  // Shift the terminator info into the first nibble of buf[0]
   buf[0] = terminator << 5
-  if ((hex.length & 1) === 1) {
+  // If odd length, then add that flag into the first nibble and put the odd nibble to
+  // second part of buf[0] which otherwise will be left padded with a 0
+  if ((nibbles.length & 1) === 1) {
     buf[0] |= 1 << 4
-    buf[0] |= hex[0]
-    hex = hex.subarray(1)
+    buf[0] |= nibbles[0]
+    nibbles = nibbles.subarray(1)
   }
-  decodeNibbles(hex, buf.subarray(1))
+  // create bytes out of the rest even nibbles
+  nibblesToBytes(nibbles, buf.subarray(1))
   return buf
 }
 
-export const keybytesToHex = (str: Uint8Array) => {
+export const bytesToNibbles = (str: Uint8Array) => {
   const l = str.length * 2 + 1
   const nibbles = new Uint8Array(l)
   for (let i = 0; i < str.length; i++) {
@@ -38,35 +44,41 @@ export const keybytesToHex = (str: Uint8Array) => {
     nibbles[i * 2] = b / 16
     nibbles[i * 2 + 1] = b % 16
   }
+  // This will get removed from calling function if the first nibble
+  // indicates that terminator is not present
   nibbles[l - 1] = 16
   return nibbles
 }
 
-export const compactToHex = (compact: Uint8Array) => {
+export const compactBytesToNibbles = (compact: Uint8Array) => {
   if (compact.length === 0) {
     return compact
   }
-  let base = keybytesToHex(compact)
-  // delete terminator flag
+  let base = bytesToNibbles(compact)
+  // delete terminator flag if terminator flag was not in first nibble
   if (base[0] < 2) {
     base = base.subarray(0, base.length - 1)
   }
-  // apply odd flag
+  // chop the terminator nibble and the even padding (if there is one)
+  // i.e.  chop 2 left nibbles when even else 1 when odd
   const chop = 2 - (base[0] & 1)
   return base.subarray(chop)
 }
 
 /**
- * Provides a path to a trie node. Currently, only supports paths to nodes in an account
- * trie. Used for requesting trie node data for SNAP sync.
+ * A test helper to generates compact path for a subset of key bytes
  *
- * @param l byte index to generate path to
- * @param key account key to generate trie node path for
- * @returns an array containing one buffer indicating account trie node path. Will include storage node paths starting at index 1 (0-indexed) when this is implemented
+ * TODO: Commenting the code for now as this seems to be helper function
+ * (from geth codebase )
+ *
  */
-export const pathTo = (l: number, key: Buffer) => {
-  const hex = keybytesToHex(key).subarray(0, l)
-  hex[hex.length - 1] = 0 // remove term flag
-  const hKey = hexToCompact(hex)
-  return [Buffer.from(hKey)]
-}
+//
+//
+// export const getPathTo = (tillBytes: number, key: Buffer) => {
+//   const hexNibbles = bytesToNibbles(key).subarray(0, tillBytes)
+//   // Remove the terminator if its there, although it would be there only if tillBytes >= key.length
+//   // This seems to be a test helper to generate paths so correctness of this isn't necessary
+//   hexNibbles[hexNibbles.length - 1] = 0
+//   const compactBytes = nibblesToCompactBytes(hexNibbles)
+//   return [Buffer.from(compactBytes)]
+// }
