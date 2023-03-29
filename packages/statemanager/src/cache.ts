@@ -1,10 +1,12 @@
 import { Account } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { OrderedMap } from 'js-sdsl'
-import LRUCache from 'lru-cache'
 
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+import type LRUCache from 'lru-cache'
+
+const LRU = require('lru-cache')
 
 export type getCb = (address: Address) => Promise<Buffer | undefined>
 export type putCb = (keyBuf: Buffer, accountRlp: Buffer) => Promise<void>
@@ -69,7 +71,7 @@ export class Cache {
   constructor(opts: CacheOpts) {
     this._debug = createDebugLogger('statemanager:cache')
 
-    this._cache = new LRUCache({
+    this._cache = new LRU({
       max: opts.size,
       updateAgeOnGet: true,
     })
