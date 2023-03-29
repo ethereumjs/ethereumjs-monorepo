@@ -330,6 +330,7 @@ export class VMExecution extends Execution {
                 throw Error('Execution stopped')
               }
               const beforeTS = Date.now()
+              this.cacheStats(this.vm)
               const result = await this.vm.runBlock({
                 block,
                 root: parentState,
@@ -510,6 +511,7 @@ export class VMExecution extends Execution {
         // we are skipping header validation because the block has been picked from the
         // blockchain and header should have already been validated while putBlock
         const beforeTS = Date.now()
+        this.cacheStats(vm)
         const res = await vm.runBlock({
           block,
           root,
