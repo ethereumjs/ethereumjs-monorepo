@@ -217,13 +217,13 @@ export class DBManager {
       if (this._cache[cacheString] === undefined) {
         throw new Error(`Invalid cache: ${cacheString}`)
       }
-
       let value = this._cache[cacheString].get(dbKey)
       if (!value) {
         value = await this._db.get(dbKey, dbOpts)
 
-        if (value) {
-          this._cache[cacheString].set(dbKey, value)
+        if (value !== undefined) {
+          // Always cast values to Uint8Array since db sometimes returns values as `Buffer`
+          this._cache[cacheString].set(dbKey, Uint8Array.from(value))
         }
       }
 
