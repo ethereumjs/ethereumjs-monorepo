@@ -539,7 +539,7 @@ export class Config {
   static async getClientKey(datadir: string, common: Common) {
     const networkDir = `${datadir}/${common.chainName()}`
     const db = this.getConfigDB(networkDir)
-    const encodingOpts = { keyEncoding: 'utf8', valueEncoding: 'buffer' }
+    const encodingOpts = { keyEncoding: 'utf8', valueEncoding: 'view' }
     const dbKey = 'config:client_key'
     let key
     try {
