@@ -320,9 +320,9 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       await this.accountTrie.put(account.hash, accountBodyToRLP(account.body))
 
       // build record of accounts that need storage slots to be fetched
-      const storageRoot: Buffer =
-        account.body[2] instanceof Buffer ? account.body[2] : Buffer.from(account.body[2])
-      if (storageRoot.compare(KECCAK256_RLP) !== 0) {
+      const storageRoot: Uint8Array =
+        account.body[2] instanceof Uint8Array ? account.body[2] : Uint8Array.from(account.body[2])
+      if (!equalsBytes(storageRoot, KECCAK256_RLP)) {
         storageFetchRequests.push({
           accountHash: account.hash,
           storageRoot,

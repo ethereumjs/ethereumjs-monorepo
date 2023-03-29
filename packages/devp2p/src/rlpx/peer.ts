@@ -602,6 +602,7 @@ export class Peer extends EventEmitter {
       }
       protocolObj.protocol._handleMessage(msgCode, payload)
     } catch (err: any) {
+      console.log(err)
       this.disconnect(DISCONNECT_REASONS.SUBPROTOCOL_ERROR)
       this._logger(`Error on peer subprotocol message handling: ${err}`)
       this.emit('error', err)

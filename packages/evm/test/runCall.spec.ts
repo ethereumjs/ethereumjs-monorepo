@@ -621,7 +621,7 @@ tape('step event: ensure EVM memory and not internal memory gets reported', asyn
   const eei = await getEEI()
   const evm = await EVM.create({ common, eei })
 
-  const contractCode = Buffer.from('600060405200', 'hex') // PUSH 0 PUSH 40 MSTORE STOP
+  const contractCode = hexToBytes('600060405200') // PUSH 0 PUSH 40 MSTORE STOP
   const contractAddress = Address.fromString('0x000000000000000000000000636F6E7472616374')
   await eei.putContractCode(contractAddress, contractCode)
 

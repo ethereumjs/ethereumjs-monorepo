@@ -145,7 +145,7 @@ tape('EIP 3860 tests', (t) => {
       // It tries to deploy a contract too large, where the code is all zeros
       // (since memory which is not allocated/resized to yet is always defaulted to 0)
       data: Buffer.concat([
-        Buffer.from('00'.repeat(Number(common.param('vm', 'maxInitCodeSize')) + 1), 'hex'),
+        hexToBytes('00'.repeat(Number(common.param('vm', 'maxInitCodeSize')) + 1)),
         buffer,
       ]),
     }
@@ -185,7 +185,7 @@ tape('EIP 3860 tests', (t) => {
       // (the initcode of this contract is just zeros, so STOP opcode
       // It stores the topmost stack item of this CREATE(2) at slot 0
       // This is either the contract address if it was succesful, or 0 in case of error
-      const factoryCode = Buffer.from('600060003560006000' + code + '600055', 'hex')
+      const factoryCode = hexToBytes('600060003560006000' + code + '600055')
 
       await evm.eei.putContractCode(contractFactory, factoryCode)
       await evmDisabled.eei.putContractCode(contractFactory, factoryCode)
@@ -194,13 +194,13 @@ tape('EIP 3860 tests', (t) => {
         from: caller,
         to: contractFactory,
         gasLimit: BigInt(0xfffffffff),
-        data: Buffer.from('00'.repeat(30) + 'C001', 'hex'),
+        data: hexToBytes('00'.repeat(30) + 'C001'),
       }
 
       await evm.runCall(runCallArgs)
       await evmDisabled.runCall(runCallArgs)
 
-      const key0 = Buffer.from('00'.repeat(32), 'hex')
+      const key0 = hexToBytes('00'.repeat(32))
       const storageActive = await evm.eei.getContractStorage(contractFactory, key0)
       const storageInactive = await evmDisabled.eei.getContractStorage(contractFactory, key0)
 
@@ -219,7 +219,7 @@ tape('EIP 3860 tests', (t) => {
         from: caller,
         to: contractFactory,
         gasLimit: BigInt(0xfffffffff),
-        data: Buffer.from('00'.repeat(30) + 'C000', 'hex'),
+        data: hexToBytes('00'.repeat(30) + 'C000'),
       }
 
       // Test:
