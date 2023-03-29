@@ -12,7 +12,7 @@ import type { ToBytesInputTypes } from './bytes'
 export type BigIntLike = bigint | PrefixedHexString | number | Uint8Array
 
 /*
- * A type that represents an input that can be converted to a Buffer.
+ * A type that represents an input that can be converted to a Uint8Array.
  */
 export type BytesLike =
   | Uint8Array

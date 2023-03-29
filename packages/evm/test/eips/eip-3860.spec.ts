@@ -135,7 +135,7 @@ tape('EIP 3860 tests', (t) => {
     const eei = await getEEI()
     const evm = await EVM.create({ common, eei, allowUnlimitedInitCodeSize: true })
 
-    const buffer = Buffer.allocUnsafe(1000000).fill(0x60)
+    const buffer = new Uint8Array(1000000).fill(0x60)
 
     // setup the call arguments
     const runCallArgs = {
@@ -144,10 +144,10 @@ tape('EIP 3860 tests', (t) => {
       // Simple test, PUSH <big number> PUSH 0 RETURN
       // It tries to deploy a contract too large, where the code is all zeros
       // (since memory which is not allocated/resized to yet is always defaulted to 0)
-      data: Buffer.concat([
+      data: concatBytesNoTypeCheck(
         hexToBytes('00'.repeat(Number(common.param('vm', 'maxInitCodeSize')) + 1)),
-        buffer,
-      ]),
+        buffer
+      ),
     }
     const result = await evm.runCall(runCallArgs)
     st.ok(

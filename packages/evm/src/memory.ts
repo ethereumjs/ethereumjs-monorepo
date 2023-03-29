@@ -75,7 +75,7 @@ export class Memory {
       return loaded
     }
     const returnBytes = new Uint8Array(size)
-    // Copy the stored "buffer" from memory into the return Buffer
+    // Copy the stored "buffer" from memory into the return Uint8Array
     returnBytes.set(loaded)
 
     return returnBytes

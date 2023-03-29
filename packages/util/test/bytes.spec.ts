@@ -123,7 +123,7 @@ tape('setLengthLeft', function (t) {
   })
   t.test('should throw if input is not a Uint8Array', function (st) {
     st.throws(function () {
-      setLengthLeft((<unknown>[9, 9]) as Buffer, 3)
+      setLengthLeft((<unknown>[9, 9]) as Uint8Array, 3)
     })
     st.end()
   })
@@ -273,7 +273,7 @@ tape('toUtf8', function (t) {
 
 tape('toBytes', function (t) {
   t.test('should work', function (st) {
-    // Buffer
+    // Uint8Array
     st.ok(equalsBytes(toBytes(new Uint8Array(0)), new Uint8Array()))
     // Array
     st.ok(equalsBytes(toBytes([]), new Uint8Array()))

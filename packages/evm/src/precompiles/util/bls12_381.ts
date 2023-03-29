@@ -139,8 +139,8 @@ export const gasDiscountPairs = [
   [127, 175],
   [128, 174],
 ]
-// convert an input Buffer to a mcl G1 point
-// this does /NOT/ do any input checks. the input Buffer needs to be of length 128
+// convert an input Uint8Array to a mcl G1 point
+// this does /NOT/ do any input checks. the input Uint8Array needs to be of length 128
 // it does raise an error if the point is not on the curve.
 function BLS12_381_ToG1Point(input: Uint8Array, mcl: any): any {
   const p_x = bytesToHex(input.subarray(16, 64))
@@ -178,7 +178,7 @@ function BLS12_381_ToG1Point(input: Uint8Array, mcl: any): any {
 }
 
 // input: a mcl G1 point
-// output: a 128-byte Buffer
+// output: a 128-byte Uint8Array
 function BLS12_381_FromG1Point(input: any): Uint8Array {
   // TODO: figure out if there is a better way to decode these values.
   const decodeStr = input.getStr(16) //return a string of pattern "1 <x_coord> <y_coord>"
@@ -200,8 +200,8 @@ function BLS12_381_FromG1Point(input: any): Uint8Array {
   return concatBytesNoTypeCheck(xBuffer, yBuffer)
 }
 
-// convert an input Buffer to a mcl G2 point
-// this does /NOT/ do any input checks. the input Buffer needs to be of length 256
+// convert an input Uint8Array to a mcl G2 point
+// this does /NOT/ do any input checks. the input Uint8Array needs to be of length 256
 function BLS12_381_ToG2Point(input: Uint8Array, mcl: any): any {
   const p_x_1 = input.subarray(0, 64)
   const p_x_2 = input.subarray(64, 128)
@@ -251,7 +251,7 @@ function BLS12_381_ToG2Point(input: Uint8Array, mcl: any): any {
 }
 
 // input: a mcl G2 point
-// output: a 256-byte Buffer
+// output: a 256-byte Uint8Array
 function BLS12_381_FromG2Point(input: any): Uint8Array {
   // TODO: figure out if there is a better way to decode these values.
   const decodeStr = input.getStr(16) //return a string of pattern "1 <x_coord_1> <x_coord_2> <y_coord_1> <y_coord_2>"
@@ -276,7 +276,7 @@ function BLS12_381_FromG2Point(input: any): Uint8Array {
   return concatBytesNoTypeCheck(xBuffer1, xBuffer2, yBuffer1, yBuffer2)
 }
 
-// input: a 32-byte hex scalar Buffer
+// input: a 32-byte hex scalar Uint8Array
 // output: a mcl Fr point
 
 function BLS12_381_ToFrPoint(input: Uint8Array, mcl: any): any {
