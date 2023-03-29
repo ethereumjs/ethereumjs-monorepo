@@ -65,7 +65,11 @@ export class DBManager {
   async getHeads(): Promise<{ [key: string]: Uint8Array }> {
     const heads = await this.get(DBTarget.Heads)
     for (const key of Object.keys(heads)) {
-      heads[key] = Uint8Array.from(heads[key])
+      // DB incorrectly stores the `uint8Array` representation of each head hash
+      // as a JSON object of key value pairs where the key is the array index
+      // and the value is the uint8 from that index of the original array
+      // so we convert it back to a Uint8Array before storing the heads
+      heads[key] = Uint8Array.from(Object.values(heads[key]))
     }
     return heads
   }
@@ -236,7 +240,6 @@ export class DBManager {
     const convertedOps: DBOpData[] = ops.map((op) => op.baseDBOp)
     // update the current cache for each operation
     ops.map((op) => op.updateCache(this._cache))
-
     return this._db.batch(convertedOps as any)
   }
 }
