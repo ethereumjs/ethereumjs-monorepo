@@ -205,7 +205,7 @@ tape('EIP 3860 tests', (t) => {
         data: Buffer.from('00'.repeat(30) + 'C001', 'hex'),
       }
 
-      await evm.runCall(runCallArgs)
+      const res = await evm.runCall(runCallArgs)
       await evmDisabled.runCall(runCallArgs)
 
       const key0 = Buffer.from('00'.repeat(32), 'hex')
@@ -234,9 +234,7 @@ tape('EIP 3860 tests', (t) => {
       // On the `allowUnlimitedInitCodeSize = true`, create contract with MAX_INITCODE_SIZE + 1
       // On `allowUnlimitedInitCodeSize = false`, create contract with MAX_INITCODE_SIZE
       // Verify that the gas cost on the prior one is higher than the first one
-
-      const res = await evm.runCall(runCallArgs2)
-      const res2 = await evmDisabled.runCall(runCallArgs)
+      const res2 = await evmDisabled.runCall(runCallArgs2)
 
       st.ok(
         res.execResult.executionGasUsed > res2.execResult.executionGasUsed,

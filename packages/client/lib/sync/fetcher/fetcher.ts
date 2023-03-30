@@ -403,7 +403,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   write() {
     // writer is already setup, just return
     if (this.writer !== null) {
-      return
+      return false
     }
     const _write = async (
       job: Job<JobTask, JobResult, StorageItem> | Job<JobTask, JobResult, StorageItem>[],
@@ -471,6 +471,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       })
     this.writer = writer
     this.debug(`Setup writer pipe.`)
+    return true
   }
 
   /**

@@ -88,6 +88,7 @@ export interface SnapProtocolMethods {
     proof: Buffer[]
   }>
   getByteCodes: (opts: GetByteCodesOpts) => Promise<{ reqId: bigint; codes: Buffer[] }>
+  getTrieNodes: (opts: GetTrieNodesOpts) => Promise<{ reqId: bigint; nodes: Buffer[] }>
 }
 
 /**
