@@ -6,6 +6,7 @@ import {
 } from '@ethereumjs/blockchain/dist/db/helpers'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { CacheType } from '@ethereumjs/statemanager/dist/cache'
 import { Trie } from '@ethereumjs/trie'
 import { Lock, bufferToHex } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
@@ -57,6 +58,7 @@ export class VMExecution extends Execution {
         trie,
         cacheOptions: {
           deactivate: false,
+          type: CacheType.LRU,
           size: this.config.cacheSize,
         },
       })

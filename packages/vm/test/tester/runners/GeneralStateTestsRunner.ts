@@ -1,6 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { CacheType } from '@ethereumjs/statemanager/dist/cache'
 import { Trie } from '@ethereumjs/trie'
 import { Address, toBuffer } from '@ethereumjs/util'
 
@@ -84,7 +85,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const stateManager = new DefaultStateManager({
     trie: state,
     cacheOptions: {
-      size: 10000,
+      type: CacheType.ORDERED_MAP,
     },
   })
   const eei = new EEI(stateManager, common, blockchain)

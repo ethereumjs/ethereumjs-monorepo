@@ -14,7 +14,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BaseStateManager } from './baseStateManager'
-import { Cache } from './cache'
+import { Cache, CacheType } from './cache'
 
 import type { getCb, putCb } from './cache'
 import type { StateManager, StorageDump } from './interface'
@@ -48,7 +48,20 @@ type CacheOptions = {
   deactivate?: boolean
 
   /**
-   * Size of the account cache
+   * Cache type to use.
+   *
+   * Available options:
+   *
+   * ORDERED_MAP: Cache with no fixed upper bound and dynamic allocation,
+   * use for dynamic setups like testing or similar.
+   *
+   * LRU: LRU cache with pre-allocation of memory and a fixed size.
+   * Use for larger and more persistent caches.
+   */
+  type?: CacheType
+
+  /**
+   * Size of the account cache (only for LRU cache)
    *
    * Default: 100000
    *
@@ -62,6 +75,7 @@ type CacheOptions = {
 
 type CacheSettings = {
   deactivate: boolean
+  type: CacheType
   size: number
 }
 
@@ -125,6 +139,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     this._prefixCodeHashes = opts.prefixCodeHashes ?? true
     this._cacheSettings = {
       deactivate: opts.cacheOptions?.deactivate ?? false,
+      type: opts.cacheOptions?.type ?? CacheType.ORDERED_MAP,
       size: opts.cacheOptions?.size ?? 100000,
     }
 
@@ -149,7 +164,13 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
         const trie = this._trie
         await trie.del(keyBuf)
       }
-      this._cache = new Cache({ size: this._cacheSettings.size, getCb, putCb, deleteCb })
+      this._cache = new Cache({
+        size: this._cacheSettings.size,
+        type: this._cacheSettings.type,
+        getCb,
+        putCb,
+        deleteCb,
+      })
     }
   }
 

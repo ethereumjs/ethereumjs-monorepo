@@ -3,6 +3,7 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { CacheType } from '@ethereumjs/statemanager/dist/cache'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { bufferToBigInt, isHexPrefixed, stripHexPrefix, toBuffer } from '@ethereumjs/util'
@@ -45,7 +46,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   const stateManager = new DefaultStateManager({
     trie: state,
     cacheOptions: {
-      size: 10000,
+      type: CacheType.ORDERED_MAP,
     },
   })
 

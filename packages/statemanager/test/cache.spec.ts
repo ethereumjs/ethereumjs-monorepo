@@ -2,7 +2,7 @@ import { Trie } from '@ethereumjs/trie'
 import { Account, Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { Cache } from '../src/cache'
+import { Cache, CacheType } from '../src/cache'
 
 import { createAccount } from './util'
 
@@ -26,7 +26,7 @@ tape('cache initialization', (t) => {
       const innerTrie = trie
       await innerTrie.del(keyBuf)
     }
-    const cache = new Cache({ size: 100, getCb, putCb, deleteCb })
+    const cache = new Cache({ size: 100, type: CacheType.LRU, getCb, putCb, deleteCb })
 
     st.equal(cache._checkpoints, 0, 'initializes given trie')
     st.end()
@@ -50,7 +50,7 @@ tape('cache put and get account', (t) => {
     const innerTrie = trie
     await innerTrie.del(keyBuf)
   }
-  const cache = new Cache({ size: 100, getCb, putCb, deleteCb })
+  const cache = new Cache({ size: 100, type: CacheType.LRU, getCb, putCb, deleteCb })
 
   const addr = new Address(Buffer.from('10'.repeat(20), 'hex'))
   const acc: Account = createAccount(BigInt(1), BigInt(0xff11))
@@ -135,7 +135,7 @@ tape('cache checkpointing', (t) => {
     const innerTrie = trie
     await innerTrie.del(keyBuf)
   }
-  const cache = new Cache({ size: 100, getCb, putCb, deleteCb })
+  const cache = new Cache({ size: 100, type: CacheType.LRU, getCb, putCb, deleteCb })
 
   const addr = new Address(Buffer.from('10'.repeat(20), 'hex'))
   const acc = createAccount(BigInt(1), BigInt(0xff11))
@@ -161,7 +161,7 @@ tape('cache checkpointing', (t) => {
   })
 
   t.test('cache clearing', async (st) => {
-    const cache = new Cache({ size: 100, getCb, putCb, deleteCb })
+    const cache = new Cache({ size: 100, type: CacheType.LRU, getCb, putCb, deleteCb })
     cache.put(addr, acc)
     cache.clear()
     st.equal(cache.size(), 0, 'should delete cache objects with clear=true')

@@ -11,7 +11,7 @@ import { debug } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { ethers } from 'ethers'
 
-import { Cache } from './cache'
+import { Cache, CacheType } from './cache'
 
 import { BaseStateManager } from '.'
 
@@ -58,7 +58,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
     const deleteCb = async (_keyBuf: Buffer) => {
       return Promise.resolve()
     }
-    this._cache = new Cache({ size: 100000, getCb, putCb, deleteCb })
+    this._cache = new Cache({ size: 100000, type: CacheType.LRU, getCb, putCb, deleteCb })
   }
 
   copy(): EthersStateManager {
