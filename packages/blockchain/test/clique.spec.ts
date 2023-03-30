@@ -19,7 +19,7 @@ tape('Clique: Initialization', (t) => {
     st.ok(equalsBytes(head.hash(), blockchain.genesisBlock.hash()), 'correct genesis hash')
 
     st.deepEquals(
-      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(head.header.number),
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(head.header.number + BigInt(1)),
       head.header.cliqueEpochTransitionSigners(),
       'correct genesis signers'
     )
@@ -150,7 +150,9 @@ tape('Clique: Initialization', (t) => {
     }
 
     // calculate difficulty
-    const signers = (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(BigInt(number))
+    const signers = (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+      BigInt(number + 1)
+    )
     const signerIndex = signers.findIndex((address: Address) => address.equals(signer.address))
     const inTurn = number % signers.length === signerIndex
     blockData.header.difficulty = inTurn ? BigInt(2) : BigInt(1)
@@ -283,7 +285,9 @@ tape('Clique: Initialization', (t) => {
     const block = await addNextBlock(blockchain, blocks, A)
     st.equal(block.header.number, BigInt(1))
     st.deepEqual(
-      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(block.header.number),
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+        block.header.number + BigInt(1)
+      ),
       [A.address]
     )
     st.end()
@@ -296,7 +300,7 @@ tape('Clique: Initialization', (t) => {
     await addNextBlock(blockchain, blocks, A, [C, true])
     st.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number
+        blocks[blocks.length - 1].header.number + BigInt(1)
       ),
       [A.address, B.address],
       'only accept first, second needs 2 votes'
@@ -316,7 +320,7 @@ tape('Clique: Initialization', (t) => {
 
     st.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number
+        blocks[blocks.length - 1].header.number + BigInt(1)
       ),
       [A.address, B.address, C.address, D.address],
       'only accept first two, third needs 3 votes already'
@@ -347,7 +351,7 @@ tape('Clique: Initialization', (t) => {
 
     st.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number
+        blocks[blocks.length - 1].header.number + BigInt(1)
       ),
       [],
       'weird, but one less cornercase by explicitly allowing this'
@@ -363,7 +367,7 @@ tape('Clique: Initialization', (t) => {
 
       st.deepEqual(
         (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-          blocks[blocks.length - 1].header.number
+          blocks[blocks.length - 1].header.number + BigInt(1)
         ),
         [A.address, B.address],
         'not fulfilled'
@@ -381,7 +385,7 @@ tape('Clique: Initialization', (t) => {
 
       st.deepEqual(
         (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-          blocks[blocks.length - 1].header.number
+          blocks[blocks.length - 1].header.number + BigInt(1)
         ),
         [A.address],
         'fulfilled'
@@ -397,7 +401,7 @@ tape('Clique: Initialization', (t) => {
 
     st.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number
+        blocks[blocks.length - 1].header.number + BigInt(1)
       ),
       [A.address, B.address]
     )
@@ -413,7 +417,7 @@ tape('Clique: Initialization', (t) => {
 
       st.deepEqual(
         (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-          blocks[blocks.length - 1].header.number
+          blocks[blocks.length - 1].header.number + BigInt(1)
         ),
         [A.address, B.address, C.address, D.address]
       )
@@ -431,7 +435,7 @@ tape('Clique: Initialization', (t) => {
 
       st.deepEqual(
         (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-          blocks[blocks.length - 1].header.number
+          blocks[blocks.length - 1].header.number + BigInt(1)
         ),
         [A.address, B.address, C.address]
       )
@@ -449,7 +453,7 @@ tape('Clique: Initialization', (t) => {
 
     st.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number
+        blocks[blocks.length - 1].header.number + BigInt(1)
       ),
       [A.address, B.address]
     )
@@ -469,7 +473,7 @@ tape('Clique: Initialization', (t) => {
 
     st.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number
+        blocks[blocks.length - 1].header.number + BigInt(1)
       ),
       [A.address, B.address, C.address, D.address]
     )
@@ -486,7 +490,7 @@ tape('Clique: Initialization', (t) => {
 
     st.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number
+        blocks[blocks.length - 1].header.number + BigInt(1)
       ),
       [A.address, B.address]
     )
@@ -509,7 +513,7 @@ tape('Clique: Initialization', (t) => {
 
     st.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number
+        blocks[blocks.length - 1].header.number + BigInt(1)
       ),
       [A.address, B.address]
     )
@@ -525,7 +529,7 @@ tape('Clique: Initialization', (t) => {
 
     st.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number
+        blocks[blocks.length - 1].header.number + BigInt(1)
       ),
       [A.address, B.address],
       'deauth votes'
@@ -542,7 +546,7 @@ tape('Clique: Initialization', (t) => {
 
     st.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number
+        blocks[blocks.length - 1].header.number + BigInt(1)
       ),
       [A.address, B.address],
       'auth votes'
@@ -568,7 +572,7 @@ tape('Clique: Initialization', (t) => {
 
       st.deepEqual(
         (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-          blocks[blocks.length - 1].header.number
+          blocks[blocks.length - 1].header.number + BigInt(1)
         ),
         [A.address, B.address]
       )
@@ -594,7 +598,7 @@ tape('Clique: Initialization', (t) => {
 
       st.deepEqual(
         (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-          blocks[blocks.length - 1].header.number
+          blocks[blocks.length - 1].header.number + BigInt(1)
         ),
         [A.address, B.address, C.address]
       )
@@ -626,7 +630,7 @@ tape('Clique: Initialization', (t) => {
 
       st.deepEqual(
         (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-          blocks[blocks.length - 1].header.number
+          blocks[blocks.length - 1].header.number + BigInt(1)
         ),
         [B.address, C.address, D.address, E.address, F.address]
       )
@@ -661,7 +665,7 @@ tape('Clique: Initialization', (t) => {
 
       st.deepEqual(
         (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-          blocks[blocks.length - 1].header.number
+          blocks[blocks.length - 1].header.number + BigInt(1)
         ),
         [A.address, B.address]
       )
