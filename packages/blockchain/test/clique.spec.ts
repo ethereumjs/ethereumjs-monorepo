@@ -19,7 +19,7 @@ tape('Clique: Initialization', (t) => {
     st.ok(equalsBytes(head.hash(), blockchain.genesisBlock.hash()), 'correct genesis hash')
 
     st.deepEquals(
-      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(),
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(head.header.number),
       head.header.cliqueEpochTransitionSigners(),
       'correct genesis signers'
     )
@@ -150,7 +150,7 @@ tape('Clique: Initialization', (t) => {
     }
 
     // calculate difficulty
-    const signers = (blockchain.consensus as CliqueConsensus).cliqueActiveSigners()
+    const signers = (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(BigInt(number))
     const signerIndex = signers.findIndex((address: Address) => address.equals(signer.address))
     const inTurn = number % signers.length === signerIndex
     blockData.header.difficulty = inTurn ? BigInt(2) : BigInt(1)
@@ -282,7 +282,10 @@ tape('Clique: Initialization', (t) => {
     const { blocks, blockchain } = await initWithSigners([A])
     const block = await addNextBlock(blockchain, blocks, A)
     st.equal(block.header.number, BigInt(1))
-    st.deepEqual((blockchain.consensus as CliqueConsensus).cliqueActiveSigners(), [A.address])
+    st.deepEqual(
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(block.header.number),
+      [A.address]
+    )
     st.end()
   })
 
@@ -292,7 +295,9 @@ tape('Clique: Initialization', (t) => {
     await addNextBlock(blockchain, blocks, B)
     await addNextBlock(blockchain, blocks, A, [C, true])
     st.deepEqual(
-      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(),
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+        blocks[blocks.length - 1].header.number
+      ),
       [A.address, B.address],
       'only accept first, second needs 2 votes'
     )
@@ -310,10 +315,27 @@ tape('Clique: Initialization', (t) => {
     await addNextBlock(blockchain, blocks, B, [E, true])
 
     st.deepEqual(
-      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(),
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+        blocks[blocks.length - 1].header.number
+      ),
       [A.address, B.address, C.address, D.address],
       'only accept first two, third needs 3 votes already'
     )
+    st.end()
+  })
+
+  t.test('Ensure old clique states are remembered', async (st) => {
+    const { blocks, blockchain } = await initWithSigners([A, B])
+    await addNextBlock(blockchain, blocks, A, [C, true])
+    const block = await blockchain.getCanonicalHeadBlock()
+    await addNextBlock(blockchain, blocks, B, [C, true])
+    await addNextBlock(blockchain, blocks, A, [D, true])
+    await addNextBlock(blockchain, blocks, B, [D, true])
+    await addNextBlock(blockchain, blocks, C)
+    await addNextBlock(blockchain, blocks, A, [E, true])
+    await addNextBlock(blockchain, blocks, B, [E, true])
+
+    await blockchain.putBlock(block)
     st.end()
   })
 
@@ -322,7 +344,9 @@ tape('Clique: Initialization', (t) => {
     await addNextBlock(blockchain, blocks, A, [A, false])
 
     st.deepEqual(
-      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(),
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+        blocks[blocks.length - 1].header.number
+      ),
       [],
       'weird, but one less cornercase by explicitly allowing this'
     )
@@ -336,7 +360,9 @@ tape('Clique: Initialization', (t) => {
       await addNextBlock(blockchain, blocks, A, [B, false])
 
       st.deepEqual(
-        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(),
+        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+          blocks[blocks.length - 1].header.number
+        ),
         [A.address, B.address],
         'not fulfilled'
       )
@@ -352,7 +378,9 @@ tape('Clique: Initialization', (t) => {
       await addNextBlock(blockchain, blocks, B, [B, false])
 
       st.deepEqual(
-        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(),
+        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+          blocks[blocks.length - 1].header.number
+        ),
         [A.address],
         'fulfilled'
       )
@@ -365,10 +393,12 @@ tape('Clique: Initialization', (t) => {
     await addNextBlock(blockchain, blocks, A, [C, false])
     await addNextBlock(blockchain, blocks, B, [C, false])
 
-    st.deepEqual((blockchain.consensus as CliqueConsensus).cliqueActiveSigners(), [
-      A.address,
-      B.address,
-    ])
+    st.deepEqual(
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+        blocks[blocks.length - 1].header.number
+      ),
+      [A.address, B.address]
+    )
     st.end()
   })
 
@@ -379,12 +409,12 @@ tape('Clique: Initialization', (t) => {
       await addNextBlock(blockchain, blocks, A, [C, false])
       await addNextBlock(blockchain, blocks, B, [C, false])
 
-      st.deepEqual((blockchain.consensus as CliqueConsensus).cliqueActiveSigners(), [
-        A.address,
-        B.address,
-        C.address,
-        D.address,
-      ])
+      st.deepEqual(
+        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+          blocks[blocks.length - 1].header.number
+        ),
+        [A.address, B.address, C.address, D.address]
+      )
       st.end()
     }
   )
@@ -397,11 +427,12 @@ tape('Clique: Initialization', (t) => {
       await addNextBlock(blockchain, blocks, B, [D, false])
       await addNextBlock(blockchain, blocks, C, [D, false])
 
-      st.deepEqual((blockchain.consensus as CliqueConsensus).cliqueActiveSigners(), [
-        A.address,
-        B.address,
-        C.address,
-      ])
+      st.deepEqual(
+        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+          blocks[blocks.length - 1].header.number
+        ),
+        [A.address, B.address, C.address]
+      )
       st.end()
     }
   )
@@ -414,10 +445,12 @@ tape('Clique: Initialization', (t) => {
     await addNextBlock(blockchain, blocks, B)
     await addNextBlock(blockchain, blocks, A, [C, true])
 
-    st.deepEqual((blockchain.consensus as CliqueConsensus).cliqueActiveSigners(), [
-      A.address,
-      B.address,
-    ])
+    st.deepEqual(
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+        blocks[blocks.length - 1].header.number
+      ),
+      [A.address, B.address]
+    )
     st.end()
   })
 
@@ -432,12 +465,12 @@ tape('Clique: Initialization', (t) => {
     await addNextBlock(blockchain, blocks, A)
     await addNextBlock(blockchain, blocks, B, [C, true])
 
-    st.deepEqual((blockchain.consensus as CliqueConsensus).cliqueActiveSigners(), [
-      A.address,
-      B.address,
-      C.address,
-      D.address,
-    ])
+    st.deepEqual(
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+        blocks[blocks.length - 1].header.number
+      ),
+      [A.address, B.address, C.address, D.address]
+    )
     st.end()
   })
 
@@ -449,10 +482,12 @@ tape('Clique: Initialization', (t) => {
     await addNextBlock(blockchain, blocks, B)
     await addNextBlock(blockchain, blocks, A, [B, false])
 
-    st.deepEqual((blockchain.consensus as CliqueConsensus).cliqueActiveSigners(), [
-      A.address,
-      B.address,
-    ])
+    st.deepEqual(
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+        blocks[blocks.length - 1].header.number
+      ),
+      [A.address, B.address]
+    )
     st.end()
   })
 
@@ -470,10 +505,12 @@ tape('Clique: Initialization', (t) => {
     await addNextBlock(blockchain, blocks, A)
     await addNextBlock(blockchain, blocks, B, [C, false])
 
-    st.deepEqual((blockchain.consensus as CliqueConsensus).cliqueActiveSigners(), [
-      A.address,
-      B.address,
-    ])
+    st.deepEqual(
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+        blocks[blocks.length - 1].header.number
+      ),
+      [A.address, B.address]
+    )
     st.end()
   })
 
@@ -485,7 +522,9 @@ tape('Clique: Initialization', (t) => {
     await addNextBlock(blockchain, blocks, A, [B, false])
 
     st.deepEqual(
-      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(),
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+        blocks[blocks.length - 1].header.number
+      ),
       [A.address, B.address],
       'deauth votes'
     )
@@ -500,7 +539,9 @@ tape('Clique: Initialization', (t) => {
     await addNextBlock(blockchain, blocks, A, [D, true])
 
     st.deepEqual(
-      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(),
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+        blocks[blocks.length - 1].header.number
+      ),
       [A.address, B.address],
       'auth votes'
     )
@@ -523,10 +564,12 @@ tape('Clique: Initialization', (t) => {
       await addNextBlock(blockchain, blocks, A)
       await addNextBlock(blockchain, blocks, C, [C, true])
 
-      st.deepEqual((blockchain.consensus as CliqueConsensus).cliqueActiveSigners(), [
-        A.address,
-        B.address,
-      ])
+      st.deepEqual(
+        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+          blocks[blocks.length - 1].header.number
+        ),
+        [A.address, B.address]
+      )
       st.end()
     }
   )
@@ -547,11 +590,12 @@ tape('Clique: Initialization', (t) => {
       await addNextBlock(blockchain, blocks, A)
       await addNextBlock(blockchain, blocks, B, [C, true])
 
-      st.deepEqual((blockchain.consensus as CliqueConsensus).cliqueActiveSigners(), [
-        A.address,
-        B.address,
-        C.address,
-      ])
+      st.deepEqual(
+        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+          blocks[blocks.length - 1].header.number
+        ),
+        [A.address, B.address, C.address]
+      )
       st.end()
     }
   )
@@ -578,13 +622,12 @@ tape('Clique: Initialization', (t) => {
       await addNextBlock(blockchain, blocks, D, [A, false])
       await addNextBlock(blockchain, blocks, B, [F, true]) // Finish authorizing F, 3/3 votes needed
 
-      st.deepEqual((blockchain.consensus as CliqueConsensus).cliqueActiveSigners(), [
-        B.address,
-        C.address,
-        D.address,
-        E.address,
-        F.address,
-      ])
+      st.deepEqual(
+        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+          blocks[blocks.length - 1].header.number
+        ),
+        [B.address, C.address, D.address, E.address, F.address]
+      )
       st.end()
     }
   )
@@ -614,10 +657,12 @@ tape('Clique: Initialization', (t) => {
       await addNextBlock(blockchain, blocks, A, undefined, [A, B], common)
       await addNextBlock(blockchain, blocks, B, [C, true], undefined, common)
 
-      st.deepEqual((blockchain.consensus as CliqueConsensus).cliqueActiveSigners(), [
-        A.address,
-        B.address,
-      ])
+      st.deepEqual(
+        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+          blocks[blocks.length - 1].header.number
+        ),
+        [A.address, B.address]
+      )
       st.end()
     }
   )
@@ -698,24 +743,84 @@ tape('Clique: Initialization', (t) => {
     const { blocks, blockchain } = await initWithSigners([A, B, C])
     // block 1: B, next signer: C
     await addNextBlock(blockchain, blocks, B)
-    st.notOk(await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(A.address))
-    st.notOk(await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(B.address))
-    st.ok(await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(C.address))
+    st.notOk(
+      await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
+        A.address,
+        blocks[blocks.length - 1].header.number
+      )
+    )
+    st.notOk(
+      await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
+        B.address,
+        blocks[blocks.length - 1].header.number
+      )
+    )
+    st.ok(
+      await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
+        C.address,
+        blocks[blocks.length - 1].header.number
+      )
+    )
     // block 2: C, next signer: A
     await addNextBlock(blockchain, blocks, C)
-    st.ok(await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(A.address))
-    st.notOk(await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(B.address))
-    st.notOk(await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(C.address))
+    st.ok(
+      await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
+        A.address,
+        blocks[blocks.length - 1].header.number
+      )
+    )
+    st.notOk(
+      await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
+        B.address,
+        blocks[blocks.length - 1].header.number
+      )
+    )
+    st.notOk(
+      await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
+        C.address,
+        blocks[blocks.length - 1].header.number
+      )
+    )
     // block 3: A, next signer: B
     await addNextBlock(blockchain, blocks, A)
-    st.notOk(await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(A.address))
-    st.ok(await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(B.address))
-    st.notOk(await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(C.address))
+    st.notOk(
+      await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
+        A.address,
+        blocks[blocks.length - 1].header.number
+      )
+    )
+    st.ok(
+      await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
+        B.address,
+        blocks[blocks.length - 1].header.number
+      )
+    )
+    st.notOk(
+      await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
+        C.address,
+        blocks[blocks.length - 1].header.number
+      )
+    )
     // block 4: B, next signer: C
     await addNextBlock(blockchain, blocks, B)
-    st.notOk(await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(A.address))
-    st.notOk(await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(B.address))
-    st.ok(await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(C.address))
+    st.notOk(
+      await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
+        A.address,
+        blocks[blocks.length - 1].header.number
+      )
+    )
+    st.notOk(
+      await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
+        B.address,
+        blocks[blocks.length - 1].header.number
+      )
+    )
+    st.ok(
+      await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
+        C.address,
+        blocks[blocks.length - 1].header.number
+      )
+    )
     st.end()
   })
 })
