@@ -84,7 +84,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const stateManager = new DefaultStateManager({
     trie: state,
     cacheOptions: {
-      deactivate: true,
+      size: 2000,
     },
   })
   const eei = new EEI(stateManager, common, blockchain)
