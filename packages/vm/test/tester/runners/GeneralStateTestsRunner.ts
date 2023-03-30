@@ -83,6 +83,9 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const state = new Trie({ useKeyHashing: true })
   const stateManager = new DefaultStateManager({
     trie: state,
+    cacheOptions: {
+      deactivate: true,
+    },
   })
   const eei = new EEI(stateManager, common, blockchain)
   const evm = new EVM({ common, eei })

@@ -185,7 +185,12 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     }
     if (this._cacheSettings.deactivate) {
       const trie = this._trie
-      await trie.put(address.buf, account.serialize())
+      // This is fixing a bug in the VM GeneralStateTestsRunner passing undefined here for selected accounts
+      // and which breaks when account cache is being deactivated
+      // TODO: analyze root cause (behavior likely there before, just uncovered by cache deactivation)
+      if (account !== undefined) {
+        await trie.put(address.buf, account.serialize())
+      }
     } else {
       await super.putAccount(address, account)
     }
