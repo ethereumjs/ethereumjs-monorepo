@@ -287,7 +287,7 @@ export class CliqueConsensus implements Consensus {
           (header.number %
             BigInt((this.blockchain!._common.consensusConfig() as CliqueConfig).epoch))
         const limit = this.cliqueSignerLimit(header.number)
-        let activeSigners = this.cliqueActiveSigners(header.number)
+        let activeSigners = [...this.cliqueActiveSigners(header.number)]
         let consensus = false
 
         // AUTH vote analysis
@@ -424,7 +424,7 @@ export class CliqueConsensus implements Consensus {
       return []
     }
     for (let i = signers.length - 1; i >= 0; i--) {
-      if (signers[i][0] <= blockNum) {
+      if (signers[i][0] < blockNum) {
         return signers[i][1]
       }
     }

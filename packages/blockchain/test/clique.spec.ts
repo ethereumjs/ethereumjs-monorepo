@@ -327,15 +327,17 @@ tape('Clique: Initialization', (t) => {
   t.test('Ensure old clique states are remembered', async (st) => {
     const { blocks, blockchain } = await initWithSigners([A, B])
     await addNextBlock(blockchain, blocks, A, [C, true])
-    const block = await blockchain.getCanonicalHeadBlock()
     await addNextBlock(blockchain, blocks, B, [C, true])
     await addNextBlock(blockchain, blocks, A, [D, true])
     await addNextBlock(blockchain, blocks, B, [D, true])
     await addNextBlock(blockchain, blocks, C)
     await addNextBlock(blockchain, blocks, A, [E, true])
     await addNextBlock(blockchain, blocks, B, [E, true])
+    await addNextBlock(blockchain, blocks, C)
 
-    await blockchain.putBlock(block)
+    for (let i = 1; i < blocks.length; i++) {
+      await blockchain.putBlock(blocks[i])
+    }
     st.end()
   })
 
