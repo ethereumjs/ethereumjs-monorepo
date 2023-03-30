@@ -58,7 +58,7 @@ export class CliqueConsensus implements Consensus {
    *
    * This defines a limit for reorgs on PoA clique chains.
    */
-  private CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT = 100
+  private CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT = 200
 
   /**
    * List with the latest signer states checkpointed on blocks where
@@ -112,6 +112,7 @@ export class CliqueConsensus implements Consensus {
   async setup({ blockchain }: ConsensusOptions): Promise<void> {
     this.blockchain = blockchain
     this._cliqueLatestSignerStates = await this.getCliqueLatestSignerStates()
+    this._cliqueLatestSignerStates.sort((a, b) => (a[0] > b[0] ? 1 : -1))
     this._cliqueLatestVotes = await this.getCliqueLatestVotes()
     this._cliqueLatestBlockSigners = await this.getCliqueLatestBlockSigners()
   }
@@ -215,7 +216,17 @@ export class CliqueConsensus implements Consensus {
    */
   private async cliqueUpdateSignerStates(signerState?: CliqueSignerState) {
     if (signerState) {
+      const blockNumber = signerState[0]
+      const known = this._cliqueLatestSignerStates.find((value) => {
+        if (value[0] === blockNumber) {
+          return true
+        }
+      })
+      if (known !== undefined) {
+        return
+      }
       this._cliqueLatestSignerStates.push(signerState)
+      this._cliqueLatestSignerStates.sort((a, b) => (a[0] > b[0] ? 1 : -1))
     }
 
     // trim to CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
@@ -233,6 +244,8 @@ export class CliqueConsensus implements Consensus {
       }
     }
 
+    this._cliqueLatestSignerStates.sort((a, b) => (a[0] > b[0] ? 1 : -1))
+
     // save to db
     const formatted = this._cliqueLatestSignerStates.map((state) => [
       bigIntToBytes(state[0]),
@@ -242,10 +255,13 @@ export class CliqueConsensus implements Consensus {
     // Output active signers for debugging purposes
     if (signerState !== undefined) {
       let i = 0
-      for (const signer of this.cliqueActiveSigners(signerState[0])) {
-        debug(`Clique signer [${i}]: ${signer} (block: ${signerState[0]})`)
-        i++
-      }
+      try {
+        for (const signer of this.cliqueActiveSigners(signerState[0])) {
+          debug(`Clique signer [${i}]: ${signer} (block: ${signerState[0]})`)
+          i++
+        }
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
     }
   }
 
@@ -462,6 +478,7 @@ export class CliqueConsensus implements Consensus {
     this._cliqueLatestSignerStates = this._cliqueLatestSignerStates.filter(
       (s) => s[0] <= blockNumber
     )
+    this._cliqueLatestSignerStates.sort((a, b) => (a[0] > b[0] ? 1 : -1))
     await this.cliqueUpdateSignerStates()
 
     this._cliqueLatestVotes = this._cliqueLatestVotes.filter((v) => v[0] <= blockNumber)
