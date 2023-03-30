@@ -45,7 +45,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   const stateManager = new DefaultStateManager({
     trie: state,
     cacheOptions: {
-      size: 2000,
+      size: 10000,
     },
   })
 
