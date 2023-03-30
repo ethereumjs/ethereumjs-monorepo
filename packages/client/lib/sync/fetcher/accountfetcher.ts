@@ -14,6 +14,7 @@ import { LevelDB } from '../../execution/level'
 import { Event } from '../../types'
 import { short } from '../../util'
 
+import { ByteCodeFetcher } from './bytecodefetcher'
 import { Fetcher } from './fetcher'
 import { StorageFetcher } from './storagefetcher'
 
@@ -24,7 +25,6 @@ import type { FetcherOptions } from './fetcher'
 import type { StorageRequest } from './storagefetcher'
 import type { Job } from './types'
 import type { Debugger } from 'debug'
-import { ByteCodeFetcher } from './bytecodefetcher'
 
 type AccountDataResponse = AccountData[] & { completed?: boolean }
 
@@ -78,7 +78,7 @@ export function snapFetchersCompleted(
     case StorageFetcher:
       fetcherDoneFlags.storageFetcherDone = true
       break
-    case StorageFetcher:
+    case ByteCodeFetcher:
       fetcherDoneFlags.byteCodeFetcherDone = true
       break
   }
