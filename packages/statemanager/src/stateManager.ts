@@ -51,6 +51,11 @@ type CacheOptions = {
    * Size of the account cache
    *
    * Default: 100000
+   *
+   * Note: the cache/trie interplay mechanism is designed in a way that
+   * the theoretical number of max modified accounts between two flush operations
+   * should be smaller than the cache size, otherwise the cache will "forget" the
+   * old modifications resulting in an incomplete set of trie-flushed accounts.
    */
   size?: number
 }

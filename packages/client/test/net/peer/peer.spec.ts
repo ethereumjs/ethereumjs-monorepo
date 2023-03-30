@@ -7,7 +7,7 @@ import { Peer } from '../../../lib/net/peer'
 import { Event } from '../../../lib/types'
 
 tape('[Peer]', (t) => {
-  const config = new Config({ transports: [] })
+  const config = new Config({ transports: [], cacheSize: 10000 })
   const peer = new Peer({
     config,
     id: '0123456789abcdef',

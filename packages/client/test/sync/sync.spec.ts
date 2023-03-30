@@ -27,7 +27,7 @@ tape('[Synchronizer]', async (t) => {
   PeerPool.prototype.close = td.func<any>()
 
   t.test('should sync', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], cacheSize: 10000 })
     config.syncTargetHeight = BigInt(1)
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })

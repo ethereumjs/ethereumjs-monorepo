@@ -5,7 +5,7 @@ import { Config } from '../lib/config'
 import { PeerPool } from '../lib/net/peerpool'
 
 tape('[EthereumClient]', async (t) => {
-  const config = new Config({ transports: [] })
+  const config = new Config({ transports: [], cacheSize: 10000 })
   class FullEthereumService {
     open() {}
     start() {}
@@ -39,7 +39,7 @@ tape('[EthereumClient]', async (t) => {
   const { EthereumClient } = await import('../lib/client')
 
   t.test('should initialize correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], cacheSize: 10000 })
     const client = await EthereumClient.create({ config })
     t.ok(client.services[0] instanceof FullEthereumService, 'added service')
     t.end()
@@ -48,7 +48,7 @@ tape('[EthereumClient]', async (t) => {
   t.test('should open', async (t) => {
     t.plan(2)
     const servers = [new Server()] as any
-    const config = new Config({ servers })
+    const config = new Config({ servers, cacheSize: 10000 })
     const client = await EthereumClient.create({ config })
 
     await client.open()
@@ -58,7 +58,7 @@ tape('[EthereumClient]', async (t) => {
 
   t.test('should start/stop', async (t) => {
     const servers = [new Server()] as any
-    const config = new Config({ servers })
+    const config = new Config({ servers, cacheSize: 10000 })
     const client = await EthereumClient.create({ config })
     await client.start()
     t.ok(client.started, 'started')

@@ -76,7 +76,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
   })
 
   t.test('should process', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], cacheSize: 10000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -95,7 +95,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
   })
 
   t.test('should adopt correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], cacheSize: 10000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -125,7 +125,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
   })
 
   t.test('should find a fetchable peer', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], cacheSize: 10000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -143,7 +143,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
   })
 
   t.test('should request correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], cacheSize: 10000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -222,7 +222,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
 
   t.test('should restart the fetcher when subchains are merged', async (st) => {
     td.reset()
-    const config = new Config({ transports: [], skeletonSubchainMergeMinimum: 0 })
+    const config = new Config({ transports: [], cacheSize: 10000, skeletonSubchainMergeMinimum: 0 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })

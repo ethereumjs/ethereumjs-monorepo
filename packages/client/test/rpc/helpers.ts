@@ -74,6 +74,7 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
     common,
     saveReceipts: clientOpts.enableMetaDB,
     txLookupLimit: clientOpts.txLookupLimit,
+    cacheSize: 10000,
   })
   const blockchain = clientOpts.blockchain ?? mockBlockchain()
 

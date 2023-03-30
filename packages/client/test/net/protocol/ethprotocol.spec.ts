@@ -11,7 +11,7 @@ import { EthProtocol } from '../../../lib/net/protocol'
 
 tape('[EthProtocol]', (t) => {
   t.test('should get properties', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], cacheSize: 10000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     t.ok(typeof p.name === 'string', 'get name')
@@ -21,7 +21,7 @@ tape('[EthProtocol]', (t) => {
   })
 
   t.test('should open correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], cacheSize: 10000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     await p.open()
@@ -31,7 +31,7 @@ tape('[EthProtocol]', (t) => {
   })
 
   t.test('should encode/decode status', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], cacheSize: 10000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     Object.defineProperty(chain, 'networkId', {
@@ -80,7 +80,7 @@ tape('[EthProtocol]', (t) => {
   })
 
   t.test('verify that NewBlock handler encodes/decodes correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], cacheSize: 10000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     const td = BigInt(100)
@@ -99,7 +99,7 @@ tape('[EthProtocol]', (t) => {
   })
 
   t.test('verify that GetReceipts handler encodes/decodes correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], cacheSize: 10000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     const block = Block.fromBlockData({})
@@ -122,6 +122,7 @@ tape('[EthProtocol]', (t) => {
     const config = new Config({
       transports: [],
       common: new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.London }),
+      cacheSize: 10000,
     })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
@@ -147,6 +148,7 @@ tape('[EthProtocol]', (t) => {
     const config = new Config({
       transports: [],
       common: new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.London }),
+      cacheSize: 10000,
     })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
@@ -204,6 +206,7 @@ tape('[EthProtocol]', (t) => {
         hardfork: Hardfork.Merge,
         eips: [4895, 4844],
       }),
+      cacheSize: 10000,
     })
     config.synchronized = true
     const chain = await Chain.create({ config })
@@ -238,6 +241,7 @@ tape('[EthProtocol]', (t) => {
     const config = new Config({
       transports: [],
       common: new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.London }),
+      cacheSize: 10000,
     })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })

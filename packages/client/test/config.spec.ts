@@ -11,7 +11,7 @@ tape('[Config]', (t) => {
   })
 
   t.test('Initialization with parameters passed', (t) => {
-    const config = new Config({ maxPeers: 10 })
+    const config = new Config({ maxPeers: 10, cacheSize: 10000 })
     t.equal(config.maxPeers, 10)
     t.end()
   })
@@ -36,7 +36,7 @@ tape('[Config]', (t) => {
 
   t.test('peer discovery default mainnet setting', (t) => {
     const common = new Common({ chain: Chain.Mainnet })
-    const config = new Config({ common })
+    const config = new Config({ common, cacheSize: 10000 })
     t.equal(config.discDns, false, 'disables DNS peer discovery for mainnet')
     t.equal(config.discV4, true, 'enables DNS peer discovery for mainnet')
     t.end()
