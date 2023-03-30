@@ -126,7 +126,7 @@ export class CliqueConsensus implements Consensus {
     }
 
     const { header } = block
-    const valid = header.cliqueVerifySignature(this.cliqueActiveSigners())
+    const valid = header.cliqueVerifySignature(this.cliqueActiveSigners(header.number))
     if (!valid) {
       throw new Error('invalid PoA block signature (clique)')
     }
@@ -140,7 +140,7 @@ export class CliqueConsensus implements Consensus {
       // only active (non-stale) votes will counted (if vote.blockNumber >= lastEpochBlockNumber
 
       const checkpointSigners = header.cliqueEpochTransitionSigners()
-      const activeSigners = this.cliqueActiveSigners()
+      const activeSigners = this.cliqueActiveSigners(header.number)
       for (const [i, cSigner] of checkpointSigners.entries()) {
         if (activeSigners[i]?.equals(cSigner) !== true) {
           throw new Error(
@@ -161,7 +161,7 @@ export class CliqueConsensus implements Consensus {
       throw new Error(`${msg} ${header.errorStr()}`)
     }
 
-    const signers = this.cliqueActiveSigners()
+    const signers = this.cliqueActiveSigners(header.number)
     if (signers.length === 0) {
       // abort if signers are unavailable
       const msg = 'no signers available'
@@ -240,10 +240,12 @@ export class CliqueConsensus implements Consensus {
     ])
     await this.blockchain!.db.put(CLIQUE_SIGNERS_KEY, RLP.encode(formatted), DB_OPTS)
     // Output active signers for debugging purposes
-    let i = 0
-    for (const signer of this.cliqueActiveSigners()) {
-      debug(`Clique signer [${i}]: ${signer}`)
-      i++
+    if (signerState !== undefined) {
+      let i = 0
+      for (const signer of this.cliqueActiveSigners(signerState[0])) {
+        debug(`Clique signer [${i}]: ${signer} (block: ${signerState[0]})`)
+        i++
+      }
     }
   }
 
@@ -268,8 +270,8 @@ export class CliqueConsensus implements Consensus {
           header.number -
           (header.number %
             BigInt((this.blockchain!._common.consensusConfig() as CliqueConfig).epoch))
-        const limit = this.cliqueSignerLimit()
-        let activeSigners = this.cliqueActiveSigners()
+        const limit = this.cliqueSignerLimit(header.number)
+        let activeSigners = this.cliqueActiveSigners(header.number)
         let consensus = false
 
         // AUTH vote analysis
@@ -400,12 +402,17 @@ export class CliqueConsensus implements Consensus {
   /**
    * Returns a list with the current block signers
    */
-  cliqueActiveSigners(): Address[] {
+  cliqueActiveSigners(blockNum: bigint): Address[] {
     const signers = this._cliqueLatestSignerStates
     if (signers.length === 0) {
       return []
     }
-    return [...signers[signers.length - 1][1]]
+    for (let i = signers.length - 1; i >= 0; i--) {
+      if (signers[i][0] <= blockNum) {
+        return signers[i][1]
+      }
+    }
+    throw new Error(`Could not load signers for block ${blockNum}`)
   }
 
   /**
@@ -415,8 +422,8 @@ export class CliqueConsensus implements Consensus {
    *   1 -> 1, 2 -> 2, 3 -> 2, 4 -> 2, 5 -> 3, ...
    * @hidden
    */
-  private cliqueSignerLimit() {
-    return Math.floor(this.cliqueActiveSigners().length / 2) + 1
+  private cliqueSignerLimit(blockNum: bigint) {
+    return Math.floor(this.cliqueActiveSigners(blockNum).length / 2) + 1
   }
 
   /**
@@ -430,7 +437,7 @@ export class CliqueConsensus implements Consensus {
       // skip genesis, first block
       return false
     }
-    const limit = this.cliqueSignerLimit()
+    const limit = this.cliqueSignerLimit(header.number)
     // construct recent block signers list with this block
     let signers = this._cliqueLatestBlockSigners
     signers = signers.slice(signers.length < limit ? 0 : 1)
@@ -484,7 +491,7 @@ export class CliqueConsensus implements Consensus {
 
       // trim length to `this.cliqueSignerLimit()`
       const length = this._cliqueLatestBlockSigners.length
-      const limit = this.cliqueSignerLimit()
+      const limit = this.cliqueSignerLimit(header.number)
       if (length > limit) {
         this._cliqueLatestBlockSigners = this._cliqueLatestBlockSigners.slice(
           length - limit,
@@ -591,8 +598,8 @@ export class CliqueConsensus implements Consensus {
    * Helper to determine if a signer is in or out of turn for the next block.
    * @param signer The signer address
    */
-  async cliqueSignerInTurn(signer: Address): Promise<boolean> {
-    const signers = this.cliqueActiveSigners()
+  async cliqueSignerInTurn(signer: Address, blockNum: bigint): Promise<boolean> {
+    const signers = this.cliqueActiveSigners(blockNum)
     const signerIndex = signers.findIndex((address) => address.equals(signer))
     if (signerIndex === -1) {
       throw new Error('Signer not found')
