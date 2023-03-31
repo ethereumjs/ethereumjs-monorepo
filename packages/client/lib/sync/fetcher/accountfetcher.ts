@@ -1,5 +1,6 @@
 import { Trie } from '@ethereumjs/trie'
 import {
+  KECCAK256_NULL_S,
   KECCAK256_RLP,
   accountBodyToRLP,
   bigIntToBuffer,
@@ -339,7 +340,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       return
     }
     const storageFetchRequests = new Set()
-    const byteCodeFetchRequests = new Set()
+    const byteCodeFetchRequests = new Set<Buffer>()
     for (const account of result) {
       await this.accountTrie.put(account.hash, accountBodyToRLP(account.body))
 
@@ -357,7 +358,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       // build record of accounts that need bytecode to be fetched
       const codeHash: Buffer =
         account.body[3] instanceof Buffer ? account.body[3] : Buffer.from(account.body[3])
-      if (codeHash.compare(KECCAK256_RLP) !== 0) {
+      if (codeHash.compare(Buffer.from(KECCAK256_NULL_S, 'hex')) !== 0) {
         byteCodeFetchRequests.add(codeHash)
       }
     }
