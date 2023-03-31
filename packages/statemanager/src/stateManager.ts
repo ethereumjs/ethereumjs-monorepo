@@ -122,6 +122,11 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     })
   }
 
+  async deleteAccount(address: Address) {
+    delete this._storageTries[address.buf.toString('hex')]
+    await super.deleteAccount(address)
+  }
+
   /**
    * Adds `value` to the state trie as code, and sets `codeHash` on the account
    * corresponding to `address` to reference this.

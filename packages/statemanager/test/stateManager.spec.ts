@@ -445,6 +445,17 @@ tape('StateManager - Contract code', (tester) => {
 tape('StateManager - Contract storage', (tester) => {
   const it = tester.test
 
+  it('should delete the storage tries cache if the account is deleted', async (t) => {
+    const stateManager = new DefaultStateManager()
+    const address = Address.zero()
+    const key = zeros(32)
+    const value = Buffer.from('aa'.repeat(32), 'hex')
+    await stateManager.putContractStorage(address, key, value)
+    await stateManager.deleteAccount(address)
+    const storage = await stateManager.getContractStorage(address, key)
+    t.ok(storage.equals(Buffer.from('')))
+  })
+
   it('should throw on storage values larger than 32 bytes', async (t) => {
     t.plan(1)
     const stateManager = new DefaultStateManager()
