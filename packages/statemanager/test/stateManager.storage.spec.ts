@@ -154,5 +154,18 @@ tape('StateManager -> Storage', (t) => {
       st.ok(equalsBytes(contractValue, expect), 'trailing zeros are not stripped')
       st.end()
     })
+
+    t.test('should delete the storage tries cache if the account is deleted', async (t) => {
+      const stateManager = new DefaultStateManager()
+      const address = Address.zero()
+      const account = createAccount()
+      await stateManager.putAccount(address, account)
+      const key = zeros(32)
+      const value = Buffer.from('aa'.repeat(32), 'hex')
+      await stateManager.putContractStorage(address, key, value)
+      await stateManager.deleteAccount(address)
+      const storage = await stateManager.getContractStorage(address, key)
+      t.ok(equalsBytes(storage, zeros(0)))
+    })
   }
 })

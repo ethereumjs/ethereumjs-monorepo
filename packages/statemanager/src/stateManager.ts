@@ -316,6 +316,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (!this._storageCacheSettings.deactivate) {
       this._storageCache?.clearContractStorage(address)
     }
+    delete this._storageTries[bytesToHex(address.bytes)]
   }
 
   /**
