@@ -75,7 +75,7 @@ async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
   return client
 }
 
-const stopClient = async (client: EthereumClient, t: tape.Test) => {
+const mineBlockAndstopClient = async (client: EthereumClient, t: tape.Test) => {
   await new Promise((resolve) => {
     client.config.logger.on('data', (data) => {
       if (data.message.includes('Miner: Found PoW solution') === true && client.started) {
@@ -93,5 +93,5 @@ tape('PoW client test', async (t) => {
   t.plan(3)
   const client = await setupPowDevnet(minerAddress, true)
   t.ok(client.started, 'client started successfully')
-  await stopClient(client, t)
+  await mineBlockAndstopClient(client, t)
 })
