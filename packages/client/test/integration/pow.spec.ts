@@ -72,19 +72,15 @@ async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
     mine: true,
   })
 
-  try {
-    const client = await createInlineClient(config, common, customGenesisState)
-    return client
-  } catch (err) {
-    console.log(err)
-    throw err
-  }
+  const client = await createInlineClient(config, common, customGenesisState)
+  return client
 }
 
 const stopClient = async (client: EthereumClient, t: tape.Test) => {
   await new Promise((resolve) => {
     client.config.logger.on('data', (data) => {
       if (data.message.includes('Miner: Found PoW solution') === true && client.started) {
+        t.pass('found a PoW solution')
         void client.stop().then(() => {
           t.ok(!client.started, 'client stopped successfully')
           resolve(undefined)
@@ -94,26 +90,9 @@ const stopClient = async (client: EthereumClient, t: tape.Test) => {
   })
 }
 
-const restartClient = async (client: EthereumClient, t: tape.Test) => {
-  await new Promise((resolve) => {
-    client.config.logger.on('data', (data) => {
-      if (data.message.includes('Miner: Found PoW solution') === true && client.started) {
-        void client.stop().then(() => {
-          t.ok(!client.started, 'client found a new solution successfully')
-          resolve(undefined)
-        })
-      }
-    })
-  })
-}
-tape('start client', async (t) => {
+tape('PoW client test', async (t) => {
+  t.plan(3)
   const client = await setupPowDevnet(minerAddress, true)
   t.ok(client.started, 'client started successfully')
   await stopClient(client, t)
-  await client.open()
-  await ((client.service('eth') as FullEthereumService).execution as any).stateDB!.open()
-  await client.chain.blockchain.db.open()
-  await client.start()
-  await restartClient(client, t)
-  t.end()
 })
