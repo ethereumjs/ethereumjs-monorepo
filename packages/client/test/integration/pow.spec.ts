@@ -89,7 +89,7 @@ const mineBlockAndstopClient = async (client: EthereumClient, t: tape.Test) => {
   })
 }
 
-tape('PoW client test', async (t) => {
+tape('PoW client test', { timeout: 60000 }, async (t) => {
   t.plan(3)
   const client = await setupPowDevnet(minerAddress, true)
   t.ok(client.started, 'client started successfully')
