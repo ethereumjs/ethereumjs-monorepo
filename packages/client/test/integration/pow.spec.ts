@@ -9,7 +9,6 @@ import { Config } from '../../lib'
 import { createInlineClient } from '../sim/simutils'
 
 import type { EthereumClient } from '../../lib'
-import type { FullEthereumService } from '../../lib/service'
 
 const pk = hexToBytes('95a602ff1ae30a2243f400dcf002561b9743b2ae9827b1008e3714a5cc1c0cfe')
 const minerAddress = Address.fromPrivateKey(pk)
