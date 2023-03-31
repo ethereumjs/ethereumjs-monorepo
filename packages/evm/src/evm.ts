@@ -266,7 +266,7 @@ export class EVM implements EVMInterface {
     // Supported EIPs
     const supportedEIPs = [
       1153, 1559, 2315, 2537, 2565, 2718, 2929, 2930, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
-      3670, 3855, 3860, 4399, 4895, 4844, 5133,
+      3670, 3855, 3860, 4399, 4895, 4844, 5133, 6780,
     ]
 
     for (const eip of this._common.eips()) {
@@ -441,6 +441,11 @@ export class EVM implements EVMInterface {
     message.code = message.data
     message.data = Buffer.alloc(0)
     message.to = await this._generateAddress(message)
+
+    if (this._common.isActivatedEIP(6780)) {
+      message.createdAddresses![message.to.toString()] = true
+    }
+
     if (this.DEBUG) {
       debug(`Generated CREATE contract address ${message.to}`)
     }
@@ -656,6 +661,9 @@ export class EVM implements EVMInterface {
     if (message.selfdestruct) {
       interpreter._result.selfdestruct = message.selfdestruct as { [key: string]: Buffer }
     }
+    if (message.createdAddresses) {
+      interpreter._result.createdAddresses = message.createdAddresses
+    }
 
     const interpreterRes = await interpreter.run(message.code as Buffer, opts)
 
@@ -674,6 +682,7 @@ export class EVM implements EVMInterface {
         ...result,
         logs: [],
         selfdestruct: {},
+        createdAddresses: {},
       }
     }
 
@@ -730,6 +739,7 @@ export class EVM implements EVMInterface {
         isStatic: opts.isStatic,
         salt: opts.salt,
         selfdestruct: opts.selfdestruct ?? {},
+        createdAddresses: opts.createdAddresses ?? {},
         delegatecall: opts.delegatecall,
         versionedHashes: opts.versionedHashes,
       })
@@ -796,6 +806,7 @@ export class EVM implements EVMInterface {
     // then the error is dismissed
     if (err && err.error !== ERROR.CODESTORE_OUT_OF_GAS) {
       result.execResult.selfdestruct = {}
+      result.execResult.createdAddresses = {}
       result.execResult.gasRefund = BigInt(0)
     }
     if (
@@ -1004,6 +1015,10 @@ export interface ExecResult {
    * A map from the accounts that have self-destructed to the addresses to send their funds to
    */
   selfdestruct?: { [k: string]: Buffer }
+  /**
+   * Map of addresses which were created (used in EIP 6780)
+   */
+  createdAddresses?: { [k: string]: boolean }
   /**
    * The gas refund counter
    */

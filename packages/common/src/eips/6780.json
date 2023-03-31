@@ -1,0 +1,12 @@
+{
+  "name": "EIP-6780",
+  "number": 6780,
+  "comment": "SELFDESTRUCT only in same transaction",
+  "url": "https://eips.ethereum.org/EIPS/eip-6780",
+  "status": "Draft",
+  "minimumHardfork": "london",
+  "gasConfig": {},
+  "gasPrices": {},
+  "vm": {},
+  "pow": {}
+}
