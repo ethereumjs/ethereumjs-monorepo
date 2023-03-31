@@ -9,6 +9,7 @@ import { Config } from '../../lib'
 import { createInlineClient } from '../sim/simutils'
 
 import type { EthereumClient } from '../../lib'
+import type { FullEthereumService } from '../../lib/service'
 
 const pk = hexToBytes('95a602ff1ae30a2243f400dcf002561b9743b2ae9827b1008e3714a5cc1c0cfe')
 const minerAddress = Address.fromPrivateKey(pk)
@@ -94,7 +95,6 @@ const stopClient = async (client: EthereumClient, t: tape.Test) => {
 }
 
 const restartClient = async (client: EthereumClient, t: tape.Test) => {
-  await client.start()
   await new Promise((resolve) => {
     client.config.logger.on('data', (data) => {
       if (data.message.includes('Miner: Found PoW solution') === true && client.started) {
@@ -110,7 +110,10 @@ tape('start client', async (t) => {
   const client = await setupPowDevnet(minerAddress, true)
   t.ok(client.started, 'client started successfully')
   await stopClient(client, t)
-  const restartedClient = await setupPowDevnet(minerAddress, false)
-  await restartClient(restartedClient, t)
+  await client.open()
+  await ((client.service('eth') as FullEthereumService).execution as any).stateDB!.open()
+  await client.chain.blockchain.db.open()
+  await client.start()
+  await restartClient(client, t)
   t.end()
 })
