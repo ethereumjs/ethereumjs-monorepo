@@ -9,6 +9,7 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { LevelDB } from '../../execution/level'
 import { Event } from '../../types'
@@ -54,19 +55,13 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
   constructor(options: ByteCodeFetcherOptions) {
     super(options)
     this.hashes = options.hashes ?? []
-    this.debug = createDebugLogger('client:AccountFetcher')
-
-    // const fullJob = { task: { first: this.first, count: this.count } } as Job<
-    //   JobTask,
-    //   AccountData[],
-    //   AccountData
-    // >
-
-    // this.debug(
-    //   `Account fetcher instantiated root=${short(this.root)} origin=${short(origin)} limit=${short(
-    //     limit
-    //   )} destroyWhenDone=${this.destroyWhenDone}`
-    // )
+    this.debug = createDebugLogger('client:ByteCodeFetcher')
+    if (this.hashes.length > 0) {
+      const fullJob = { task: { hashes: this.hashes } } as Job<JobTask, AccountData[], AccountData>
+      this.debug(
+        `Bytecode fetcher instantiated ${fullJob.task.hashes.length} hash requests destroyWhenDone=${this.destroyWhenDone}`
+      )
+    }
   }
 
   /**
@@ -77,56 +72,42 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
    * @param peer
    */
   async request(job: Job<JobTask, Buffer[], Buffer>): Promise<ByteCodeDataResponse | undefined> {
-    const { peer } = job
+    const { task, peer } = job
+
+    this.debug(`requested code hashes: ${Array.from(task.hashes).map((h) => bufferToHex(h))}`)
 
     const rangeResult = await peer!.snap!.getByteCodes({
-      hashes: job.task.hashes,
+      hashes: Array.from(task.hashes),
       bytes: BigInt(this.config.maxRangeBytes),
     })
 
-    return undefined
+    // Response is valid, but check if peer is signalling that it does not have
+    // the requested data. For bytecode range queries that means the peer is not
+    // yet synced.
+    if (rangeResult === undefined || task.hashes.length < rangeResult.codes.length) {
+      this.debug(`Peer rejected bytecode request`)
+      return undefined
+    }
 
-    // if (
-    //   rangeResult.accounts.length === 0 ||
-    //   limit.compare(bigIntToBuffer(BigInt(2) ** BigInt(256))) === 0
-    // ) {
-    //   // TODO have to check proof of nonexistence -- as a shortcut for now, we can mark as completed if a proof is present
-    //   if (rangeResult.proof.length > 0) {
-    //     this.debug(`Data for last range has been received`)
-    //     // response contains empty object so that task can be terminated in store phase and not reenqueued
-    //     return Object.assign([], [Object.create(null) as any], { completed: true })
-    //   }
-    // }
+    // Cross reference the requested bytecodes with the response to find gaps
+    // that the serving node is missing
+    const receivedCodes: Map<String, Buffer> = new Map()
+    const missingCodeHashes: Buffer[] = []
+    for (let i = 0; i < task.hashes.length; i++) {
+      const requestedHash = task.hashes[i]
+      const receivedCode = rangeResult.codes[i]
+      const receivedHash = Buffer.from(keccak256(receivedCode))
+      if (requestedHash.compare(receivedHash) !== 0) {
+        missingCodeHashes.push(requestedHash)
+      } else {
+        receivedCodes.set(bufferToHex(requestedHash), receivedHash)
+      }
+    }
 
-    // const peerInfo = `id=${peer?.id.slice(0, 8)} address=${peer?.address}`
+    // requeue missed requests for fetching
+    this.hashes.push(...missingCodeHashes)
 
-    // // eslint-disable-next-line eqeqeq
-    // if (rangeResult === undefined) {
-    //   return undefined
-    // } else {
-    //   // validate the proof
-    //   try {
-    //     // verifyRangeProof will also verify validate there are no missed states between origin and
-    //     // response data
-    //     const isMissingRightRange = await this.verifyRangeProof(this.root, origin, rangeResult)
-
-    //     // Check if there is any pending data to be synced to the right
-    //     let completed: boolean
-    //     if (isMissingRightRange && this.isMissingRightRange(limit, rangeResult)) {
-    //       this.debug(
-    //         `Peer ${peerInfo} returned missing right range account=${rangeResult.accounts[
-    //           rangeResult.accounts.length - 1
-    //         ].hash.toString('hex')} limit=${limit.toString('hex')}`
-    //       )
-    //       completed = false
-    //     } else {
-    //       completed = true
-    //     }
-    //     return Object.assign([], rangeResult.accounts, { completed })
-    //   } catch (err) {
-    //     throw Error(`InvalidAccountRange: ${err}`)
-    //   }
-    // }
+    return Object.assign([], [receivedCodes], { completed: true })
   }
 
   /**
@@ -210,26 +191,33 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
    */
   tasks(maxTasks = this.config.maxFetcherJobs): JobTask[] {
     const tasks: JobTask[] = []
-    let pushedCount = 0
-
     if (this.hashes.length > 0) {
       tasks.push({ hashes: this.hashes })
-      pushedCount += this.hashes.length
     }
-
     this.debug(`Created new tasks num=${tasks.length}`)
     return tasks
   }
 
   nextTasks(): void {
-    if (this.in.length === 0 && this.hashes.length > 0) {
-      const fullJob = { task: { hashes: this.hashes } } as Job<JobTask, Buffer[], Buffer>
-
-      this.debug(`Fetcher pending with ${this.hashes.length}`)
-      const tasks = this.tasks()
-      for (const task of tasks) {
-        this.enqueueTask(task)
+    this.debug(`Entering nextTasks with hash request queue length of ${this.hashes.length}`)
+    this.debug('Bytecode requests in primary queue:')
+    for (const h of this.hashes) {
+      this.debug(`\tCode hash: ${bufferToHex(h)}`)
+      this.debug('\t---')
+    }
+    try {
+      if (this.in.length === 0 && this.hashes.length > 0) {
+        const fullJob = { task: { hashes: this.hashes } } as Job<JobTask, Buffer[], Buffer>
+        const tasks = this.tasks()
+        for (const task of tasks) {
+          this.enqueueTask(task, true)
+        }
+        this.debug(
+          `Fetcher pending with ${(fullJob as any)!.task.hashes.length} code hashes requested`
+        )
       }
+    } catch (err) {
+      this.debug(err)
     }
   }
 
@@ -265,20 +253,12 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
    * @param withIndex pass true to additionally output job.index
    */
   jobStr(job: Job<JobTask, Buffer[], Buffer>, withIndex = false) {
-    return 'Hello World'
-    // let str = ''
-    // if (withIndex) {
-    //   str += `index=${job.index} `
-    // }
+    let str = ''
+    if (withIndex) {
+      str += `index=${job.index} `
+    }
 
-    // let partialResult
-    // if (job.partialResult) {
-    //   partialResult = ` partialResults=${job.partialResult.length}`
-    // } else {
-    //   partialResult = ''
-    // }
-
-    // str += `origin=${short(origin)} limit=${short(limit)}${partialResult}`
-    // return str
+    str += `${job.task.hashes.length} hash requests`
+    return str
   }
 }
