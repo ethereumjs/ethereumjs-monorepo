@@ -29,6 +29,10 @@ interface MessageOpts {
    * A map of addresses to selfdestruct, see {@link Message.selfdestruct}
    */
   selfdestruct?: { [key: string]: boolean } | { [key: string]: Uint8Array }
+  /**
+   * Map of addresses which were created (used in EIP 6780)
+   */
+  createdAddresses?: { [key: string]: boolean }
   delegatecall?: boolean
   authcallOrigin?: Address
   gasRefund?: bigint
@@ -53,6 +57,10 @@ export class Message {
    * Value is a boolean when marked for destruction and replaced with a Uint8Array containing the address where the remaining funds are sent.
    */
   selfdestruct?: { [key: string]: boolean } | { [key: string]: Uint8Array }
+  /**
+   * Map of addresses which were created (used in EIP 6780)
+   */
+  createdAddresses?: { [key: string]: boolean }
   delegatecall: boolean
   /**
    * This is used to store the origin of the AUTHCALL,
@@ -78,6 +86,7 @@ export class Message {
     this.isCompiled = opts.isCompiled ?? defaults.isCompiled
     this.salt = opts.salt
     this.selfdestruct = opts.selfdestruct
+    this.createdAddresses = opts.createdAddresses
     this.delegatecall = opts.delegatecall ?? defaults.delegatecall
     this.authcallOrigin = opts.authcallOrigin
     this.gasRefund = opts.gasRefund ?? defaults.gasRefund

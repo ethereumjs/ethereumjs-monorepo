@@ -32,6 +32,11 @@ export interface RunResult {
    * A map from the accounts that have self-destructed to the addresses to send their funds to
    */
   selfdestruct: { [k: string]: Uint8Array }
+
+  /**
+   * A map which tracks which addresses were created (used in EIP 6780)
+   */
+  createdAddresses?: { [k: string]: boolean }
 }
 
 export interface Env {
@@ -841,6 +846,14 @@ export class Interpreter {
 
     // empty the return data Uint8Array
     this._runState.returnBytes = new Uint8Array(0)
+    let createdAddresses
+    if (this._common.isActivatedEIP(6780)) {
+      createdAddresses = { ...this._result.createdAddresses }
+      msg.createdAddresses = createdAddresses
+    }
+
+    // empty the return data Uint8Array
+    this._runState.returnBytes = new Uint8Array(0)
 
     // Check if account has enough ether and max depth not exceeded
     if (
@@ -870,6 +883,9 @@ export class Interpreter {
 
     if (!results.execResult.exceptionError) {
       Object.assign(this._result.selfdestruct, selfdestruct)
+      if (this._common.isActivatedEIP(6780)) {
+        Object.assign(this._result.createdAddresses!, createdAddresses)
+      }
       // update stateRoot on current contract
       const account = await this._stateManager.getAccount(this._env.address)
       if (!account) {
