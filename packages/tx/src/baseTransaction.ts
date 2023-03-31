@@ -96,9 +96,9 @@ export abstract class BaseTransaction<TransactionObject> {
     this.txOptions = opts
 
     const toB = toBuffer(to === '' ? '0x' : to)
-    const vB = toBuffer(v === '' ? '0x' : v)
-    const rB = toBuffer(r === '' ? '0x' : r)
-    const sB = toBuffer(s === '' ? '0x' : s)
+    const vB = toBuffer(v === '' || v === '0x0' ? '0x' : v)
+    const rB = toBuffer(r === '' || r === '0x0' ? '0x' : r)
+    const sB = toBuffer(s === '' || s === '0x0' ? '0x' : s)
 
     this.nonce = bufferToBigInt(toBuffer(nonce === '' ? '0x' : nonce))
     this.gasLimit = bufferToBigInt(toBuffer(gasLimit === '' ? '0x' : gasLimit))
