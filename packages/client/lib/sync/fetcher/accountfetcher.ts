@@ -110,6 +110,9 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   /** The range to eventually, by default should be set at BigInt(2) ** BigInt(256) + BigInt(1) - first */
   count: bigint
 
+  /** Contains known bytecodes */
+  trie: Trie
+
   storageFetcher: StorageFetcher
 
   byteCodeFetcher: ByteCodeFetcher
@@ -132,6 +135,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     this.root = options.root
     this.first = options.first
     this.count = options.count ?? BigInt(2) ** BigInt(256) - this.first
+    this.trie = new Trie({ useKeyHashing: false })
     this.accountTrie = new Trie({ useKeyHashing: false })
     this.accountToStorageTrie = new Map()
     this.debug = createDebugLogger('client:AccountFetcher')
@@ -155,6 +159,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       pool: this.pool,
       hashes: [],
       destroyWhenDone: false,
+      trie: this.trie,
     })
     this.byteCodeFetcher.fetch().then(
       () => snapFetchersCompleted(this.fetcherDoneFlags, ByteCodeFetcher),

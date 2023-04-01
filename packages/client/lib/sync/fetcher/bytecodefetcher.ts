@@ -34,6 +34,7 @@ type ByteCodeDataResponse = Buffer[] & { completed?: boolean }
  */
 export interface ByteCodeFetcherOptions extends FetcherOptions {
   hashes: Buffer[]
+  trie: Trie
 
   /** Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
@@ -49,12 +50,15 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
 
   hashes: Buffer[]
 
+  trie: Trie
+
   /**
    * Create new block fetcher
    */
   constructor(options: ByteCodeFetcherOptions) {
     super(options)
     this.hashes = options.hashes ?? []
+    this.trie = options.trie ?? new Trie({ useKeyHashing: false })
     this.debug = createDebugLogger('client:ByteCodeFetcher')
     if (this.hashes.length > 0) {
       const fullJob = { task: { hashes: this.hashes } } as Job<JobTask, AccountData[], AccountData>
@@ -105,8 +109,10 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
     }
 
     // requeue missed requests for fetching
-    this.hashes.push(...missingCodeHashes)
-
+    if (missingCodeHashes.length > 0) {
+      this.debug(`${missingCodeHashes.length} missed requests`)
+      this.hashes.push(...missingCodeHashes)
+    }
     return Object.assign([], [receivedCodes], { completed: true })
   }
 
@@ -118,16 +124,15 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
    * @param result result data
    */
   process(job: Job<JobTask, Buffer[], Buffer>, result: ByteCodeDataResponse): Buffer[] | undefined {
-    return undefined
-
-    // const fullResult = (job.partialResult ?? []).concat(result)
-    // job.partialResult = undefined
-    // if (result.completed === true) {
-    //   return fullResult
-    // } else {
-    //   // Save partial result to re-request missing items.
-    //   job.partialResult = fullResult
-    // }
+    this.debug('dbg0: in process phase')
+    const fullResult = (job.partialResult ?? []).concat(result)
+    job.partialResult = undefined
+    if (result.completed === true) {
+      return fullResult
+    } else {
+      // Save partial result to re-request missing items.
+      job.partialResult = fullResult
+    }
   }
 
   /**
@@ -135,6 +140,8 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
    * @param result fetch result
    */
   async store(result: Buffer[]): Promise<void> {
+    this.debug('dbg1: in store phase phase')
+
     // this.debug(`Stored ${result.length} accounts in account trie`)
     // // TODO fails to handle case where there is a proof of non existence and returned accounts for last requested range
     // if (JSON.stringify(result[0]) === JSON.stringify(Object.create(null))) {
@@ -192,9 +199,11 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
   tasks(maxTasks = this.config.maxFetcherJobs): JobTask[] {
     const tasks: JobTask[] = []
     if (this.hashes.length > 0) {
+      // Current strategy is to requests all known code hash requests
       tasks.push({ hashes: this.hashes })
+      this.hashes = [] // TODO limit number of requests
+      this.debug(`Created new tasks num=${tasks.length}`)
     }
-    this.debug(`Created new tasks num=${tasks.length}`)
     return tasks
   }
 
