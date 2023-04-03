@@ -468,13 +468,13 @@ tape('[SnapProtocol]', (t) => {
     })
 
     t.ok(
-      JSON.stringify(payload[0]) === JSON.stringify(bigIntToBuffer(reqId)),
+      JSON.stringify(payload[0]) === JSON.stringify(bigIntToBytes(reqId)),
       'correctly encoded reqId'
     )
     t.ok(JSON.stringify(payload[1]) === JSON.stringify(root), 'correctly encoded root')
     t.ok(JSON.stringify(payload[2]) === JSON.stringify(paths), 'correctly encoded paths')
     t.ok(
-      JSON.stringify(payload[3]) === JSON.stringify(bigIntToBuffer(bytes)),
+      JSON.stringify(payload[3]) === JSON.stringify(bigIntToBytes(bytes)),
       'correctly encoded bytes'
     )
     t.ok(payload)
