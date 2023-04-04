@@ -1,23 +1,15 @@
-import { Account } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { OrderedMap } from 'js-sdsl'
 
-import type { Address } from '@ethereumjs/util'
+import type { Account, Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 import type LRUCache from 'lru-cache'
 
 const LRU = require('lru-cache')
 
-export type getCb = (address: Address) => Promise<Buffer | undefined>
-export type putCb = (keyBuf: Buffer, accountRlp: Buffer) => Promise<void>
-export type deleteCb = (keyBuf: Buffer) => Promise<void>
-
 export interface CacheOpts {
   size: number
   type: CacheType
-  getCb: getCb
-  putCb: putCb
-  deleteCb: deleteCb
 }
 
 export enum CacheType {
@@ -57,23 +49,12 @@ export class Cache {
   _diffCache: DiffCache = []
   _checkpoints = 0
 
-  _getCb: getCb
-  _putCb: putCb
-  _deleteCb: deleteCb
-
   _stats = {
-    cache: {
-      size: 0,
-      reads: 0,
-      hits: 0,
-      writes: 0,
-      dels: 0,
-    },
-    trie: {
-      reads: 0,
-      writes: 0,
-      dels: 0,
-    },
+    size: 0,
+    reads: 0,
+    hits: 0,
+    writes: 0,
+    dels: 0,
   }
 
   constructor(opts: CacheOpts) {
@@ -89,10 +70,6 @@ export class Cache {
     }
 
     this._diffCache.push(new OrderedMap())
-
-    this._getCb = opts.getCb
-    this._putCb = opts.putCb
-    this._deleteCb = opts.deleteCb
   }
 
   _saveCachePreState(addressHex: string) {
@@ -134,7 +111,7 @@ export class Cache {
     } else {
       this._orderedMapCache!.setElement(addressHex, elem)
     }
-    this._stats.cache.writes += 1
+    this._stats.writes += 1
   }
 
   /**
@@ -151,9 +128,9 @@ export class Cache {
     } else {
       elem = this._orderedMapCache!.getElementByKey(addressHex)
     }
-    this._stats.cache.reads += 1
+    this._stats.reads += 1
     if (elem) {
-      this._stats.cache.hits += 1
+      this._stats.hits += 1
     }
     return elem
   }
@@ -176,64 +153,23 @@ export class Cache {
       })
     }
 
-    this._stats.cache.dels += 1
+    this._stats.dels += 1
   }
 
   /**
-   * Returns true if the key was deleted and thus existed in the cache earlier
-   * @param key - trie key to lookup
+   * Flushes cache by returning accounts that have been modified
+   * or deleted and resetting the diff cache (at checkpoint height).
    */
-  keyIsDeleted(address: Address): boolean {
-    const elem = this.get(address)
-
-    if (elem !== undefined && elem.accountRLP === undefined) {
-      return true
-    } else {
-      return false
-    }
-  }
-
-  /**
-   * Looks up address in cache, if not found, looks it up
-   * in the underlying trie.
-   * @param key - Address of account
-   */
-  async getOrLoad(address: Address): Promise<Account | undefined> {
-    const addressHex: string = address.buf.toString('hex')
-    const elem = this.get(address)
-
-    if (!elem) {
-      const accountRLP = await this._getCb(address)
-      this._stats.trie.reads += 1
-      this._debug(`Get account ${addressHex} from DB (${accountRLP ? 'exists' : 'non-existent'})`)
-      if (this._lruCache) {
-        this._lruCache!.set(addressHex, {
-          accountRLP,
-        })
-      } else {
-        this._orderedMapCache!.setElement(addressHex, {
-          accountRLP,
-        })
-      }
-      return accountRLP ? Account.fromRlpSerializedAccount(accountRLP) : undefined
-    } else {
-      return elem.accountRLP ? Account.fromRlpSerializedAccount(elem.accountRLP) : undefined
-    }
-  }
-
-  /**
-   * Flushes cache by updating accounts that have been modified
-   * and removing accounts that have been deleted.
-   */
-  async flush(): Promise<void> {
+  async flush(): Promise<[Buffer, CacheElement][]> {
     this._debug(`Flushing cache on checkpoint ${this._checkpoints}`)
 
     const diffMap = this._diffCache[this._checkpoints]!
     const it = diffMap.begin()
 
+    const items: [Buffer, CacheElement][] = []
+
     while (!it.equals(diffMap.end())) {
       const addressHex = it.pointer[0]
-      const addressBuf = Buffer.from(addressHex, 'hex')
       let elem
       if (this._lruCache) {
         elem = this._lruCache!.get(addressHex)
@@ -242,17 +178,12 @@ export class Cache {
       }
 
       if (elem) {
-        if (elem.accountRLP === undefined) {
-          await this._deleteCb(addressBuf)
-          this._stats.trie.dels += 1
-        } else {
-          await this._putCb(addressBuf, elem.accountRLP)
-          this._stats.trie.writes += 1
-        }
+        items.push([Buffer.from(addressHex, 'hex'), elem])
       }
       it.next()
     }
     this._diffCache[this._checkpoints] = new OrderedMap()
+    return items
   }
 
   /**
@@ -332,21 +263,14 @@ export class Cache {
    */
   stats(reset = true) {
     const stats = { ...this._stats }
-    stats.cache.size = this.size()
+    stats.size = this.size()
     if (reset) {
       this._stats = {
-        cache: {
-          size: 0,
-          reads: 0,
-          hits: 0,
-          writes: 0,
-          dels: 0,
-        },
-        trie: {
-          reads: 0,
-          writes: 0,
-          dels: 0,
-        },
+        size: 0,
+        reads: 0,
+        hits: 0,
+        writes: 0,
+        dels: 0,
       }
     }
     return stats
