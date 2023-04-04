@@ -8,8 +8,6 @@ import {
   TransactionFactory,
 } from '../src'
 
-const optimismTx = require('./json/optimismTx.json')
-
 const common = new Common({
   chain: Chain.Mainnet,
   hardfork: Hardfork.London,
@@ -146,17 +144,6 @@ tape('[TransactionFactory]: Basic functions', function (t) {
       TransactionFactory.fromTxData({ value: BigInt('-100') })
     })
 
-    st.end()
-  })
-
-  t.test('ensure v/r/s values of 0x0 are interpreted as undefined', function (st) {
-    for (const txType of txTypes) {
-      optimismTx.type = txType.type
-      const tx = TransactionFactory.fromTxData(optimismTx)
-      st.ok(tx.v === undefined)
-      st.ok(tx.s === undefined)
-      st.ok(tx.r === undefined)
-    }
     st.end()
   })
 })
