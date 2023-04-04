@@ -56,7 +56,7 @@ tape('Ethers State Manager API tests', async (t) => {
     await state.putAccount(vitalikDotEth, account!)
 
     const retrievedVitalikAccount = Account.fromRlpSerializedAccount(
-      (state as any)._cache.get(vitalikDotEth)!.accountRLP
+      (state as any)._accountCache.get(vitalikDotEth)!.accountRLP
     )
 
     t.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
