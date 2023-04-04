@@ -13,11 +13,9 @@ import { ethers } from 'ethers'
 
 import { Cache, CacheType } from './cache'
 
-import { BaseStateManager } from '.'
-
 import type { Proof, StateManager } from '.'
 import type { getCb, putCb } from './cache'
-import type { StorageDump } from './interface'
+import type { AccountFields, StorageDump } from './interface'
 import type { Address } from '@ethereumjs/util'
 
 const log = debug('statemanager')
@@ -27,7 +25,7 @@ export interface EthersStateManagerOpts {
   blockTag: bigint | 'earliest'
 }
 
-export class EthersStateManager extends BaseStateManager implements StateManager {
+export class EthersStateManager implements StateManager {
   private provider: ethers.providers.StaticJsonRpcProvider | ethers.providers.JsonRpcProvider
   private contractCache: Map<string, Buffer>
   private storageCache: Map<string, Map<string, Buffer>>
@@ -35,7 +33,6 @@ export class EthersStateManager extends BaseStateManager implements StateManager
   _cache: Cache
 
   constructor(opts: EthersStateManagerOpts) {
-    super({})
     if (typeof opts.provider === 'string') {
       this.provider = new ethers.providers.StaticJsonRpcProvider(opts.provider)
     } else if (opts.provider instanceof ethers.providers.JsonRpcProvider) {
@@ -259,6 +256,33 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    */
   async putAccount(address: Address, account: Account): Promise<void> {
     this._cache.put(address, account)
+  }
+
+  /**
+   * Gets the account associated with `address`, modifies the given account
+   * fields, then saves the account into state. Account fields can include
+   * `nonce`, `balance`, `storageRoot`, and `codeHash`.
+   * @param address - Address of the account to modify
+   * @param accountFields - Object containing account fields and values to modify
+   */
+  async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
+    let account = await this.getAccount(address)
+    if (!account) {
+      account = new Account()
+    }
+    account.nonce = accountFields.nonce ?? account.nonce
+    account.balance = accountFields.balance ?? account.balance
+    account.storageRoot = accountFields.storageRoot ?? account.storageRoot
+    account.codeHash = accountFields.codeHash ?? account.codeHash
+    await this.putAccount(address, account)
+  }
+
+  /**
+   * Deletes an account from state under the provided `address`.
+   * @param address - Address of the account which should be deleted
+   */
+  async deleteAccount(address: Address) {
+    this._cache.del(address)
   }
 
   /**
