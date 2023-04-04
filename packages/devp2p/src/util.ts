@@ -126,7 +126,7 @@ export function toNewUint8Array(buf: Uint8Array): Uint8Array {
 
 /*************************** ************************************************************/
 // Methods borrowed from `node-ip` by Fedor Indutny (https://github.com/indutny/node-ip)
-// and modified to use Uint8Arrays instead of Buffers
+// and modified to use Uint8Arrays instead of Uint8Arrays
 export const ipToString = (bytes: Uint8Array, offset?: number, length?: number) => {
   offset = offset !== undefined ? ~~offset : 0
   length = length ?? bytes.length - offset

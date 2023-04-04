@@ -3,7 +3,7 @@ import { MemoryLevel } from 'memory-level'
 import type { BatchDBOp, DB } from '@ethereumjs/trie'
 import type { AbstractLevel } from 'abstract-level'
 
-export const ENCODING_OPTS = { keyEncoding: 'buffer', valueEncoding: 'buffer' }
+export const ENCODING_OPTS = { keyEncoding: 'view', valueEncoding: 'view' }
 
 /**
  * LevelDB is a thin wrapper around the underlying levelup db,

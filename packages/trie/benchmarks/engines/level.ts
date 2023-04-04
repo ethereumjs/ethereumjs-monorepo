@@ -4,7 +4,7 @@ import { MemoryLevel } from 'memory-level'
 import type { BatchDBOp, DB } from '../../src/types'
 import type { AbstractLevel } from 'abstract-level'
 
-export const ENCODING_OPTS = { keyEncoding: 'Uint8Array', valueEncoding: 'Uint8Array' }
+export const ENCODING_OPTS = { keyEncoding: 'view', valueEncoding: 'view' }
 
 /**
  * LevelDB is a thin wrapper around the underlying levelup db,

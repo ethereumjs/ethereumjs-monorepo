@@ -119,7 +119,7 @@ export class DBOp {
     if (operationTarget === DBTarget.Heads) {
       dbOperation.baseDBOp.valueEncoding = 'json'
     } else {
-      dbOperation.baseDBOp.valueEncoding = 'binary'
+      dbOperation.baseDBOp.valueEncoding = 'view'
     }
 
     return dbOperation

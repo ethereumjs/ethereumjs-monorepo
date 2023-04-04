@@ -1,6 +1,6 @@
 import { Chain, Common } from '@ethereumjs/common'
 import chalk from 'chalk'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { DPT } from '../src/index'
 

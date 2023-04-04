@@ -87,8 +87,8 @@ export interface SnapProtocolMethods {
     slots: StorageData[][]
     proof: Uint8Array[]
   }>
-  getByteCodes: (opts: GetByteCodesOpts) => Promise<{ reqId: bigint; codes: Buffer[] }>
-  getTrieNodes: (opts: GetTrieNodesOpts) => Promise<{ reqId: bigint; nodes: Buffer[] }>
+  getByteCodes: (opts: GetByteCodesOpts) => Promise<{ reqId: bigint; codes: Uint8Array[] }>
+  getTrieNodes: (opts: GetTrieNodesOpts) => Promise<{ reqId: bigint; nodes: Uint8Array[] }>
 }
 
 /**

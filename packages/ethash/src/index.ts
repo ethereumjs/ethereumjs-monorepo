@@ -318,6 +318,9 @@ export class Ethash {
     let data
     try {
       data = await this.cacheDB!.get(epoc, this.dbOpts)
+      // Fix uint8Arrays that get stored in DB as JSON dictionary of array indices and values
+      data.seed = Uint8Array.from(Object.values(data.seed))
+      data.cache = data.cache.map((el) => Uint8Array.from(Object.values(el)))
     } catch (error: any) {
       if (error.code !== 'LEVEL_NOT_FOUND') {
         throw error

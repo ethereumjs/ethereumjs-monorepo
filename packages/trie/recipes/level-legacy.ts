@@ -3,7 +3,7 @@ import level from 'level-mem'
 import type { BatchDBOp, DB } from '@ethereumjs/trie'
 import type { LevelUp } from 'levelup'
 
-const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
+const ENCODING_OPTS = { keyEncoding: 'view', valueEncoding: 'view' }
 
 export class LevelDB implements DB {
   readonly _leveldb: LevelUp

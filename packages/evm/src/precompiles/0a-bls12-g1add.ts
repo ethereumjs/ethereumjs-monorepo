@@ -57,7 +57,7 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
     }
   }
 
-  // convert input to mcl G1 points, add them, and convert the output to a Buffer.
+  // convert input to mcl G1 points, add them, and convert the output to a Uint8Array.
   let mclPoint1
   let mclPoint2
   try {

@@ -258,12 +258,12 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
 }
 
 /**
- * Buffer values array for a legacy {@link Transaction}
+ * Bytes values array for a legacy {@link Transaction}
  */
 export type TxValuesArray = Uint8Array[]
 
 /**
- * Buffer values array for an {@link AccessListEIP2930Transaction}
+ * Bytes values array for an {@link AccessListEIP2930Transaction}
  */
 export type AccessListEIP2930ValuesArray = [
   Uint8Array,
@@ -280,7 +280,7 @@ export type AccessListEIP2930ValuesArray = [
 ]
 
 /**
- * Buffer values array for a {@link FeeMarketEIP1559Transaction}
+ * Bytes values array for a {@link FeeMarketEIP1559Transaction}
  */
 export type FeeMarketEIP1559ValuesArray = [
   Uint8Array,

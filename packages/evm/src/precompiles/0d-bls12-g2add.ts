@@ -63,7 +63,7 @@ export async function precompile0d(opts: PrecompileInput): Promise<ExecResult> {
 
   // TODO: verify that point is on G2
 
-  // convert input to mcl G2 points, add them, and convert the output to a Buffer.
+  // convert input to mcl G2 points, add them, and convert the output to a Uint8Array.
   let mclPoint1
   let mclPoint2
 

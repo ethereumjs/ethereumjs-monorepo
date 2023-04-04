@@ -282,13 +282,7 @@ export class RlpxServer extends Server {
         }
       })
 
-      this.rlpx.on('peer:error', (rlpxPeer: Devp2pRLPxPeer, error: Error) => {
-        const peerId = bytesToHex(rlpxPeer.getId() as Uint8Array)
-        if (peerId === null) {
-          return this.error(error)
-        }
-        this.error(error)
-      })
+      this.rlpx.on('peer:error', (rlpxPeer: Devp2pRLPxPeer, error: Error) => this.error(error))
 
       this.rlpx.on('error', (e: Error) => this.error(e))
 
