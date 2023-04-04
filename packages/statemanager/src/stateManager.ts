@@ -328,23 +328,6 @@ export class DefaultStateManager implements StateManager {
   }
 
   /**
-   * Creates a storage trie from the primary storage trie
-   * for an account and saves this in the storage cache.
-   * @private
-   */
-  async _lookupStorageTrie(address: Address): Promise<Trie> {
-    // from state trie
-    let account = await this.getAccount(address)
-    if (!account) {
-      account = new Account()
-    }
-    const storageTrie = this._trie.copy(false)
-    storageTrie.root(account.storageRoot)
-    storageTrie.flushCheckpoints()
-    return storageTrie
-  }
-
-  /**
    * Gets the storage trie for an account from the storage
    * cache or does a lookup.
    * @private
@@ -352,10 +335,18 @@ export class DefaultStateManager implements StateManager {
   async _getStorageTrie(address: Address): Promise<Trie> {
     // from storage cache
     const addressHex = address.buf.toString('hex')
-    let storageTrie = this._storageTries[addressHex]
+    const storageTrie = this._storageTries[addressHex]
     if (storageTrie === undefined || storageTrie === null) {
       // lookup from state
-      storageTrie = await this._lookupStorageTrie(address)
+      // from state trie
+      let account = await this.getAccount(address)
+      if (!account) {
+        account = new Account()
+      }
+      const storageTrie = this._trie.copy(false)
+      storageTrie.root(account.storageRoot)
+      storageTrie.flushCheckpoints()
+      return storageTrie
     }
     return storageTrie
   }
