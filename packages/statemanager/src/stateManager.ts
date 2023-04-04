@@ -16,7 +16,6 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { Cache, CacheType } from './cache'
 
-import type { getCb, putCb } from './cache'
 import type { AccountFields, StateManager, StorageDump } from './interface'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
@@ -161,32 +160,9 @@ export class DefaultStateManager implements StateManager {
     }
 
     if (!this._cacheSettings.deactivate) {
-      /*
-       * For a custom StateManager implementation adopt these
-       * callbacks passed to the `Cache` instantiated to perform
-       * the `get`, `put` and `delete` operations with the
-       * desired backend.
-       */
-      const getCb: getCb = async (address) => {
-        const res = await this._trie.get(address.buf)
-        if (res !== null) {
-          return res
-        }
-      }
-      const putCb: putCb = async (keyBuf, accountRlp) => {
-        const trie = this._trie
-        await trie.put(keyBuf, accountRlp)
-      }
-      const deleteCb = async (keyBuf: Buffer) => {
-        const trie = this._trie
-        await trie.del(keyBuf)
-      }
       this._cache = new Cache({
         size: this._cacheSettings.size,
         type: this._cacheSettings.type,
-        getCb,
-        putCb,
-        deleteCb,
       })
     }
   }
@@ -196,17 +172,18 @@ export class DefaultStateManager implements StateManager {
    * @param address - Address of the `account` to get
    */
   async getAccount(address: Address): Promise<Account | undefined> {
-    if (this._cacheSettings.deactivate) {
-      const rlp = await this._trie.get(address.buf)
-      if (rlp !== null) {
-        return Account.fromRlpSerializedAccount(rlp)
-      } else {
-        return undefined
+    if (!this._cacheSettings.deactivate) {
+      const elem = this._cache!.get(address)
+      if (elem) {
+        return elem.accountRLP ? Account.fromRlpSerializedAccount(elem.accountRLP) : undefined
       }
-    } else {
-      const account = await this._cache!.getOrLoad(address)
-      return account
     }
+
+    const rlp = await this._trie.get(address.buf)
+    const account = rlp !== null ? Account.fromRlpSerializedAccount(rlp) : undefined
+    this._debug(`Get account ${address} from DB (${account ? 'exists' : 'non-existent'})`)
+    this._cache?.put(address, account)
+    return account
   }
 
   /**
@@ -336,7 +313,7 @@ export class DefaultStateManager implements StateManager {
     // from storage cache
     const addressHex = address.buf.toString('hex')
     const storageTrie = this._storageTries[addressHex]
-    if (storageTrie === undefined || storageTrie === null) {
+    if (storageTrie === undefined) {
       // lookup from state
       // from state trie
       let account = await this.getAccount(address)
@@ -487,7 +464,20 @@ export class DefaultStateManager implements StateManager {
   }
 
   async flush(): Promise<void> {
-    await this._cache?.flush()
+    if (!this._cacheSettings.deactivate) {
+      const items = await this._cache!.flush()
+      for (const item of items) {
+        const addressBuf = item[0]
+        const elem = item[1]
+        if (elem.accountRLP === undefined) {
+          const trie = this._trie
+          await trie.del(addressBuf)
+        } else {
+          const trie = this._trie
+          await trie.put(addressBuf, elem.accountRLP)
+        }
+      }
+    }
   }
 
   /**
@@ -683,17 +673,12 @@ export class DefaultStateManager implements StateManager {
    * @param address - Address of the `account` to check
    */
   async accountExists(address: Address): Promise<boolean> {
-    if (this._cache) {
-      const account = await this._cache.getOrLoad(address)
-      if (account) {
-        return true
-      }
+    const account = await this.getAccount(address)
+    if (account) {
+      return true
     } else {
-      if (await this._trie.get(address.buf)) {
-        return true
-      }
+      return false
     }
-    return false
   }
 
   /**

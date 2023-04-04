@@ -106,7 +106,7 @@ tape('StateManager -> General', (t) => {
 
         st.equal(res1!.balance, BigInt(0xfff384))
 
-        await stateManager._cache?.flush()
+        await stateManager.flush()
         stateManager._cache?.clear()
 
         const res2 = await stateManager.getAccount(address)

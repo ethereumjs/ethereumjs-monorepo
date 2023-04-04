@@ -14,7 +14,6 @@ import { ethers } from 'ethers'
 import { Cache, CacheType } from './cache'
 
 import type { Proof, StateManager } from '.'
-import type { getCb, putCb } from './cache'
 import type { AccountFields, StorageDump } from './interface'
 import type { Address } from '@ethereumjs/util'
 
@@ -46,16 +45,7 @@ export class EthersStateManager implements StateManager {
     this.contractCache = new Map()
     this.storageCache = new Map()
 
-    const getCb: getCb = async (address) => {
-      return (await this.getAccountFromProvider(address)).serialize()
-    }
-    const putCb: putCb = async (_keyBuf, _accountRlp) => {
-      return Promise.resolve()
-    }
-    const deleteCb = async (_keyBuf: Buffer) => {
-      return Promise.resolve()
-    }
-    this._cache = new Cache({ size: 100000, type: CacheType.LRU, getCb, putCb, deleteCb })
+    this._cache = new Cache({ size: 100000, type: CacheType.LRU })
   }
 
   copy(): EthersStateManager {
@@ -224,8 +214,14 @@ export class EthersStateManager implements StateManager {
    * Returns an empty `Buffer` if the account has no associated code.
    */
   async getAccount(address: Address): Promise<Account | undefined> {
-    const account = this._cache.getOrLoad(address)
+    const elem = this._cache?.get(address)
+    if (elem) {
+      return elem.accountRLP ? Account.fromRlpSerializedAccount(elem.accountRLP) : undefined
+    }
 
+    const rlp = (await this.getAccountFromProvider(address)).serialize()
+    const account = rlp !== null ? Account.fromRlpSerializedAccount(rlp) : undefined
+    this._cache?.put(address, account)
     return account
   }
 
