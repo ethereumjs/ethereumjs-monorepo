@@ -258,11 +258,6 @@ tape('[PendingBlock]', async (t) => {
   })
 
   t.test('construct blob bundles', async (st) => {
-    try {
-      kzg.freeTrustedSetup()
-    } catch {
-      /** ensure kzg is setup */
-    }
     initKZG(kzg, __dirname + '/../../lib/trustedSetups/devnet4.txt')
     const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
     const common = Common.fromGethGenesis(gethGenesis, {
@@ -296,7 +291,6 @@ tape('[PendingBlock]', async (t) => {
     await pendingBlock.build(payloadId)
     const pendingBlob = pendingBlock.blobBundles.get(bytesToPrefixedHexString(payloadId))?.blobs[0]
     st.ok(pendingBlob !== undefined && equalsBytes(pendingBlob, blobs[0]))
-    kzg.freeTrustedSetup()
     st.end()
   })
   t.test('should reset td', (st) => {
