@@ -40,7 +40,7 @@ type DiffCache = OrderedMap<string, CacheElement | undefined>[]
 /**
  * @ignore
  */
-export class Cache {
+export class AccountCache {
   _debug: Debugger
 
   _lruCache: LRUCache<string, CacheElement> | undefined

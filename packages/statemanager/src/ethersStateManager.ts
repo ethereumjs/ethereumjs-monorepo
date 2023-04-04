@@ -11,7 +11,7 @@ import { debug } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { ethers } from 'ethers'
 
-import { Cache, CacheType } from './cache'
+import { AccountCache, CacheType } from './cache'
 
 import type { Proof, StateManager } from '.'
 import type { AccountFields, StorageDump } from './interface'
@@ -29,7 +29,7 @@ export class EthersStateManager implements StateManager {
   private contractCache: Map<string, Buffer>
   private storageCache: Map<string, Map<string, Buffer>>
   private blockTag: string
-  _cache: Cache
+  _accountCache: AccountCache
 
   constructor(opts: EthersStateManagerOpts) {
     if (typeof opts.provider === 'string') {
@@ -45,7 +45,7 @@ export class EthersStateManager implements StateManager {
     this.contractCache = new Map()
     this.storageCache = new Map()
 
-    this._cache = new Cache({ size: 100000, type: CacheType.LRU })
+    this._accountCache = new AccountCache({ size: 100000, type: CacheType.LRU })
   }
 
   copy(): EthersStateManager {
@@ -55,7 +55,7 @@ export class EthersStateManager implements StateManager {
     })
     ;(newState as any).contractCache = new Map(this.contractCache)
     ;(newState as any).storageCache = new Map(this.storageCache)
-    ;(newState as any)._cache = this._cache
+    ;(newState as any)._accountCache = this._accountCache
     return newState
   }
 
@@ -76,7 +76,7 @@ export class EthersStateManager implements StateManager {
   clearCache(): void {
     this.contractCache.clear()
     this.storageCache.clear()
-    this._cache.clear()
+    this._accountCache.clear()
   }
 
   /**
@@ -190,8 +190,8 @@ export class EthersStateManager implements StateManager {
   async accountExists(address: Address): Promise<boolean> {
     log(`Verify if ${address.toString()} exists`)
 
-    const localAccount = this._cache.get(address)
-    if (localAccount) return true
+    const localAccount = this._accountCache.get(address)
+    if (localAccount !== undefined) return true
     // Get merkle proof for `address` from provider
     const proof = await this.provider.send('eth_getProof', [address.toString(), [], this.blockTag])
 
@@ -214,14 +214,16 @@ export class EthersStateManager implements StateManager {
    * Returns an empty `Buffer` if the account has no associated code.
    */
   async getAccount(address: Address): Promise<Account | undefined> {
-    const elem = this._cache?.get(address)
-    if (elem) {
-      return elem.accountRLP ? Account.fromRlpSerializedAccount(elem.accountRLP) : undefined
+    const elem = this._accountCache?.get(address)
+    if (elem !== undefined) {
+      return elem.accountRLP !== undefined
+        ? Account.fromRlpSerializedAccount(elem.accountRLP)
+        : undefined
     }
 
     const rlp = (await this.getAccountFromProvider(address)).serialize()
     const account = rlp !== null ? Account.fromRlpSerializedAccount(rlp) : undefined
-    this._cache?.put(address, account)
+    this._accountCache?.put(address, account)
     return account
   }
 
@@ -251,7 +253,7 @@ export class EthersStateManager implements StateManager {
    * @param account - The account to store
    */
   async putAccount(address: Address, account: Account): Promise<void> {
-    this._cache.put(address, account)
+    this._accountCache.put(address, account)
   }
 
   /**
@@ -278,7 +280,7 @@ export class EthersStateManager implements StateManager {
    * @param address - Address of the account which should be deleted
    */
   async deleteAccount(address: Address) {
-    this._cache.del(address)
+    this._accountCache.del(address)
   }
 
   /**
@@ -305,7 +307,7 @@ export class EthersStateManager implements StateManager {
    * Partial implementation, called from the subclass.
    */
   async checkpoint(): Promise<void> {
-    this._cache.checkpoint()
+    this._accountCache.checkpoint()
   }
 
   /**
@@ -316,7 +318,7 @@ export class EthersStateManager implements StateManager {
    */
   async commit(): Promise<void> {
     // setup cache checkpointing
-    this._cache.commit()
+    this._accountCache.commit()
   }
 
   /**
@@ -327,11 +329,11 @@ export class EthersStateManager implements StateManager {
    */
   async revert(): Promise<void> {
     // setup cache checkpointing
-    this._cache.revert()
+    this._accountCache.revert()
   }
 
   async flush(): Promise<void> {
-    await this._cache.flush()
+    await this._accountCache.flush()
   }
 
   /**

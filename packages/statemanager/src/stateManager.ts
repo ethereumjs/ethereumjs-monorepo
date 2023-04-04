@@ -14,7 +14,7 @@ import {
 import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { Cache, CacheType } from './cache'
+import { AccountCache, CacheType } from './cache'
 
 import type { AccountFields, StateManager, StorageDump } from './interface'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
@@ -105,7 +105,7 @@ export interface DefaultStateManagerOpts {
    */
   prefixCodeHashes?: boolean
 
-  cacheOptions?: CacheOptions
+  accountCacheOpts?: CacheOptions
 }
 
 /**
@@ -120,14 +120,14 @@ export interface DefaultStateManagerOpts {
  */
 export class DefaultStateManager implements StateManager {
   _debug: Debugger
-  _cache?: Cache
+  _accountCache?: AccountCache
 
   _trie: Trie
   _storageTries: { [key: string]: Trie }
   _codeCache: { [key: string]: Buffer }
 
   protected readonly _prefixCodeHashes: boolean
-  protected readonly _cacheSettings: CacheSettings
+  protected readonly _accountCacheSettings: CacheSettings
 
   /**
    * StateManager is run in DEBUG mode (default: false)
@@ -153,16 +153,16 @@ export class DefaultStateManager implements StateManager {
     this._codeCache = {}
 
     this._prefixCodeHashes = opts.prefixCodeHashes ?? true
-    this._cacheSettings = {
-      deactivate: opts.cacheOptions?.deactivate ?? false,
-      type: opts.cacheOptions?.type ?? CacheType.ORDERED_MAP,
-      size: opts.cacheOptions?.size ?? 100000,
+    this._accountCacheSettings = {
+      deactivate: opts.accountCacheOpts?.deactivate ?? false,
+      type: opts.accountCacheOpts?.type ?? CacheType.ORDERED_MAP,
+      size: opts.accountCacheOpts?.size ?? 100000,
     }
 
-    if (!this._cacheSettings.deactivate) {
-      this._cache = new Cache({
-        size: this._cacheSettings.size,
-        type: this._cacheSettings.type,
+    if (!this._accountCacheSettings.deactivate) {
+      this._accountCache = new AccountCache({
+        size: this._accountCacheSettings.size,
+        type: this._accountCacheSettings.type,
       })
     }
   }
@@ -172,17 +172,19 @@ export class DefaultStateManager implements StateManager {
    * @param address - Address of the `account` to get
    */
   async getAccount(address: Address): Promise<Account | undefined> {
-    if (!this._cacheSettings.deactivate) {
-      const elem = this._cache!.get(address)
-      if (elem) {
-        return elem.accountRLP ? Account.fromRlpSerializedAccount(elem.accountRLP) : undefined
+    if (!this._accountCacheSettings.deactivate) {
+      const elem = this._accountCache!.get(address)
+      if (elem !== undefined) {
+        return elem.accountRLP !== undefined
+          ? Account.fromRlpSerializedAccount(elem.accountRLP)
+          : undefined
       }
     }
 
     const rlp = await this._trie.get(address.buf)
     const account = rlp !== null ? Account.fromRlpSerializedAccount(rlp) : undefined
     this._debug(`Get account ${address} from DB (${account ? 'exists' : 'non-existent'})`)
-    this._cache?.put(address, account)
+    this._accountCache?.put(address, account)
     return account
   }
 
@@ -199,7 +201,7 @@ export class DefaultStateManager implements StateManager {
         } contract=${account.isContract() ? 'yes' : 'no'} empty=${account.isEmpty() ? 'yes' : 'no'}`
       )
     }
-    if (this._cacheSettings.deactivate) {
+    if (this._accountCacheSettings.deactivate) {
       const trie = this._trie
       // This is fixing a bug in the VM GeneralStateTestsRunner passing undefined here for selected accounts
       // and which breaks when account cache is being deactivated
@@ -208,7 +210,7 @@ export class DefaultStateManager implements StateManager {
         await trie.put(address.buf, account.serialize())
       }
     } else {
-      this._cache!.put(address, account)
+      this._accountCache!.put(address, account)
     }
   }
 
@@ -239,10 +241,10 @@ export class DefaultStateManager implements StateManager {
     if (this.DEBUG) {
       this._debug(`Delete account ${address}`)
     }
-    if (this._cacheSettings.deactivate) {
+    if (this._accountCacheSettings.deactivate) {
       await this._trie.del(address.buf)
     } else {
-      this._cache!.del(address)
+      this._accountCache!.del(address)
     }
   }
 
@@ -438,7 +440,7 @@ export class DefaultStateManager implements StateManager {
    */
   async checkpoint(): Promise<void> {
     this._trie.checkpoint()
-    this._cache?.checkpoint()
+    this._accountCache?.checkpoint()
   }
 
   /**
@@ -448,7 +450,7 @@ export class DefaultStateManager implements StateManager {
   async commit(): Promise<void> {
     // setup trie checkpointing
     await this._trie.commit()
-    this._cache?.commit()
+    this._accountCache?.commit()
   }
 
   /**
@@ -460,12 +462,12 @@ export class DefaultStateManager implements StateManager {
     await this._trie.revert()
     this._storageTries = {}
     this._codeCache = {}
-    this._cache?.revert()
+    this._accountCache?.revert()
   }
 
   async flush(): Promise<void> {
-    if (!this._cacheSettings.deactivate) {
-      const items = await this._cache!.flush()
+    if (!this._accountCacheSettings.deactivate) {
+      const items = await this._accountCache!.flush()
       for (const item of items) {
         const addressBuf = item[0]
         const elem = item[1]
@@ -626,8 +628,8 @@ export class DefaultStateManager implements StateManager {
     }
 
     this._trie.root(stateRoot)
-    if (this._cache && clearCache) {
-      this._cache.clear()
+    if (this._accountCache !== undefined && clearCache) {
+      this._accountCache.clear()
     }
     this._storageTries = {}
     this._codeCache = {}
@@ -690,7 +692,7 @@ export class DefaultStateManager implements StateManager {
     return new DefaultStateManager({
       trie: this._trie.copy(false),
       prefixCodeHashes: this._prefixCodeHashes,
-      cacheOptions: this._cacheSettings,
+      accountCacheOpts: this._accountCacheSettings,
     })
   }
 }
