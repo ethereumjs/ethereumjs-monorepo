@@ -51,6 +51,19 @@ export class Cache<CacheElement> {
     this._diffCache.push(new OrderedMap())
   }
 
+  _saveCachePreState(cacheKeyHex: string) {
+    const it = this._diffCache[this._checkpoints].find(cacheKeyHex)
+    if (it.equals(this._diffCache[this._checkpoints].end())) {
+      let oldElem
+      if (this._lruCache) {
+        oldElem = this._lruCache!.get(cacheKeyHex)
+      } else {
+        oldElem = this._orderedMapCache!.getElementByKey(cacheKeyHex)
+      }
+      this._diffCache[this._checkpoints].setElement(cacheKeyHex, oldElem)
+    }
+  }
+
   /**
    * Flushes cache by returning accounts that have been modified
    * or deleted and resetting the diff cache (at checkpoint height).

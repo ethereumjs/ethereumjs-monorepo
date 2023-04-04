@@ -6,7 +6,7 @@ import { createAccount } from '../util'
 
 import type { Account } from '@ethereumjs/util'
 
-tape('cache initialization', (t) => {
+tape('Account Cache: initialization', (t) => {
   t.test('should initialize', async (st) => {
     const cache = new AccountCache({ size: 100, type: CacheType.LRU })
 
@@ -15,7 +15,7 @@ tape('cache initialization', (t) => {
   })
 })
 
-tape('cache put and get account', (t) => {
+tape('Account Cache: put and get account', (t) => {
   const cache = new AccountCache({ size: 100, type: CacheType.LRU })
 
   const addr = new Address(Buffer.from('10'.repeat(20), 'hex'))
@@ -38,8 +38,9 @@ tape('cache put and get account', (t) => {
     st.end()
   })
 
-  t.test('should flush to trie', async (st) => {
-    await cache.flush()
+  t.test('should flush', async (st) => {
+    const items = await cache.flush()
+    st.equal(items.length, 1)
     st.end()
   })
 
@@ -52,7 +53,7 @@ tape('cache put and get account', (t) => {
   })
 })
 
-tape('cache checkpointing', (t) => {
+tape('Account Cache: checkpointing', (t) => {
   const cache = new AccountCache({ size: 100, type: CacheType.LRU })
 
   const addr = new Address(Buffer.from('10'.repeat(20), 'hex'))
