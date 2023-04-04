@@ -342,6 +342,9 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         this.accountTrie.root(),
         this.config.events
       )
+
+      this.byteCodeFetcher.setDestroyWhenDone()
+
       return
     }
     const storageFetchRequests = new Set()

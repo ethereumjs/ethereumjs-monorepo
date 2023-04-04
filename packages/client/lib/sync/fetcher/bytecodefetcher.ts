@@ -1,29 +1,16 @@
+import { CODEHASH_PREFIX } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import {
-  KECCAK256_RLP,
-  accountBodyToRLP,
-  bigIntToBuffer,
-  bufArrToArr,
-  bufferToBigInt,
-  bufferToHex,
-  setLengthLeft,
-} from '@ethereumjs/util'
+import { bufferToHex } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { LevelDB } from '../../execution/level'
-import { Event } from '../../types'
-import { short } from '../../util'
-
 import { Fetcher } from './fetcher'
-import { StorageFetcher } from './storagefetcher'
 
 import type { Peer } from '../../net/peer'
 import type { AccountData } from '../../net/protocol/snapprotocol'
-import type { EventBusType } from '../../types'
 import type { FetcherOptions } from './fetcher'
-import type { StorageRequest } from './storagefetcher'
 import type { Job } from './types'
+import type { BatchDBOp } from '@ethereumjs/trie'
 import type { Debugger } from 'debug'
 
 type ByteCodeDataResponse = Buffer[] & { completed?: boolean }
@@ -68,6 +55,10 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
     }
   }
 
+  setDestroyWhenDone() {
+    this.destroyWhenDone = true
+  }
+
   /**
    * Request results from peer for the given job.
    * Resolves with the raw result
@@ -104,7 +95,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
       if (requestedHash.compare(receivedHash) !== 0) {
         missingCodeHashes.push(requestedHash)
       } else {
-        receivedCodes.set(bufferToHex(requestedHash), receivedHash)
+        receivedCodes.set(bufferToHex(requestedHash), receivedCode)
       }
     }
 
@@ -124,7 +115,6 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
    * @param result result data
    */
   process(job: Job<JobTask, Buffer[], Buffer>, result: ByteCodeDataResponse): Buffer[] | undefined {
-    this.debug('dbg0: in process phase')
     const fullResult = (job.partialResult ?? []).concat(result)
     job.partialResult = undefined
     if (result.completed === true) {
@@ -140,34 +130,22 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
    * @param result fetch result
    */
   async store(result: Buffer[]): Promise<void> {
-    this.debug('dbg1: in store phase phase')
+    const codeHashToByteCode = result[0] as unknown as Map<String, Buffer>
+    const ops = []
+    let storeCount = 0
+    for (const [_, value] of codeHashToByteCode) {
+      const codeHash = Buffer.from(keccak256(value))
+      const computedKey = Buffer.concat([CODEHASH_PREFIX, codeHash])
+      ops.push({
+        type: 'put',
+        key: computedKey,
+        value,
+      })
+      storeCount += 1
+    }
+    await this.trie.batch(ops as BatchDBOp[])
 
-    // this.debug(`Stored ${result.length} accounts in account trie`)
-    // // TODO fails to handle case where there is a proof of non existence and returned accounts for last requested range
-    // if (JSON.stringify(result[0]) === JSON.stringify(Object.create(null))) {
-    //   this.debug('Final range received with no elements remaining to the right')
-    //   // TODO include stateRoot in emission once moved over to using MPT's
-    //   await this.accountTrie.persistRoot()
-    //   snapFetchersCompleted(AccountFetcher, this.accountTrie.root(), this.config.events)
-    //   return
-    // }
-    // const storageFetchRequests: StorageRequest[] = []
-    // for (const account of result) {
-    //   await this.accountTrie.put(account.hash, accountBodyToRLP(account.body))
-    //   // build record of accounts that need storage slots to be fetched
-    //   const storageRoot: Buffer =
-    //     account.body[2] instanceof Buffer ? account.body[2] : Buffer.from(account.body[2])
-    //   if (storageRoot.compare(KECCAK256_RLP) !== 0) {
-    //     storageFetchRequests.push({
-    //       accountHash: account.hash,
-    //       storageRoot,
-    //       first: BigInt(0),
-    //       count: BigInt(2) ** BigInt(256) - BigInt(1),
-    //     })
-    //   }
-    // }
-    // if (storageFetchRequests.length > 0)
-    //   this.storageFetcher.enqueueByStorageRequestList(storageFetchRequests)
+    this.debug(`Stored ${storeCount} bytecode in code trie`)
   }
 
   /**
