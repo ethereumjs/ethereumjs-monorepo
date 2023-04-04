@@ -9,6 +9,7 @@ import {
   bytesToUtf8,
   commitmentsToVersionedHashes,
   getBlobs,
+  initKZG,
   randomBytes,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
@@ -302,7 +303,7 @@ export const runBlobTx = async (
 ) => {
   const blobs = getBlobs(bytesToHex(randomBytes(blobSize)))
   const commitments = blobsToCommitments(blobs)
-  const proofs = blobsToProofs(blobs)
+  const proofs = blobsToProofs(blobs, commitments)
   const hashes = commitmentsToVersionedHashes(commitments)
 
   const sender = Address.fromPrivateKey(pkey)
@@ -369,7 +370,7 @@ export const createBlobTxs = async (
 
   const blobs = getBlobs(bytesToHex(randomBytes(blobSize)))
   const commitments = blobsToCommitments(blobs)
-  const proofs = blobsToProofs(blobs)
+  const proofs = blobsToProofs(blobs, commitments)
   const hashes = commitmentsToVersionedHashes(commitments)
 
   for (let x = 1; x <= numTxs; x++) {
