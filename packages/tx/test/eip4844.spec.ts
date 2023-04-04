@@ -161,7 +161,7 @@ tape('Network wrapper tests', async (t) => {
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(blobs)
     const versionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobsToProofs(blobs)
+    const proofs = blobsToProofs(blobs, commitments)
     const unsignedTx = BlobEIP4844Transaction.fromTxData(
       {
         versionedHashes,

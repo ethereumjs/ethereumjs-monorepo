@@ -3,9 +3,8 @@
  */
 export interface Kzg {
   loadTrustedSetup(filePath: string): void
-  freeTrustedSetup(): void
   blobToKzgCommitment(blob: Uint8Array): Uint8Array
-  computeBlobKzgProof(blob: Uint8Array): Uint8Array
+  computeBlobKzgProof(blob: Uint8Array, commitment: Uint8Array): Uint8Array
   verifyKzgProof(
     polynomialKzg: Uint8Array,
     z: Uint8Array,
@@ -25,7 +24,6 @@ function kzgNotLoaded(): never {
 
 // eslint-disable-next-line import/no-mutable-exports
 export let kzg: Kzg = {
-  freeTrustedSetup: kzgNotLoaded,
   loadTrustedSetup: kzgNotLoaded,
   blobToKzgCommitment: kzgNotLoaded,
   computeBlobKzgProof: kzgNotLoaded,
@@ -39,10 +37,6 @@ export let kzg: Kzg = {
  */
 export function initKZG(kzgLib: Kzg, trustedSetupPath: string) {
   kzg = kzgLib
-  try {
-    // Always try to free trusted setup before loading (in case loaded by different module)
-    kzg.freeTrustedSetup()
-    // eslint-disable-next-line
-  } catch {}
+
   kzg.loadTrustedSetup(trustedSetupPath)
 }

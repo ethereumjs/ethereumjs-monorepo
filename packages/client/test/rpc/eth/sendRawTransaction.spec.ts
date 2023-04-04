@@ -4,10 +4,13 @@ import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
+  bytesToPrefixedHexString,
   commitmentsToVersionedHashes,
   getBlobs,
-} from '@ethereumjs/tx/dist/utils/blobHelpers'
-import { bytesToPrefixedHexString, hexStringToBytes, initKZG, randomBytes } from '@ethereumjs/util'
+  hexStringToBytes,
+  initKZG,
+  randomBytes,
+} from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import * as tape from 'tape'
 
@@ -207,11 +210,7 @@ tape('blob EIP 4844 transaction', async (t) => {
   // Disable block header consensus format validation
   const consensusFormatValidation = BlockHeader.prototype._consensusFormatValidation
   BlockHeader.prototype._consensusFormatValidation = (): any => {}
-  try {
-    kzg.freeTrustedSetup()
-  } catch {
-    // NOOP - just verifying KZG is ready if not already
-  }
+
   initKZG(kzg, __dirname + '/../../../lib/trustedSetups/devnet4.txt')
   const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
   const common = Common.fromGethGenesis(gethGenesis, {
@@ -227,7 +226,7 @@ tape('blob EIP 4844 transaction', async (t) => {
   const blobs = getBlobs('hello world')
   const commitments = blobsToCommitments(blobs)
   const versionedHashes = commitmentsToVersionedHashes(commitments)
-  const proofs = blobs.map((blob) => kzg.computeBlobKzgProof(blob))
+  const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
   const pk = randomBytes(32)
   const tx = BlobEIP4844Transaction.fromTxData(
     {

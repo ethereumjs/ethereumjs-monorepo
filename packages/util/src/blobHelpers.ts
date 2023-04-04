@@ -63,11 +63,9 @@ export const blobsToCommitments = (blobs: Uint8Array[]) => {
   return commitments
 }
 
-export const blobsToProofs = (blobs: Uint8Array[]) => {
-  const proofs = []
-  for (const blob of blobs) {
-    proofs.push(kzg.computeBlobKzgProof(blob))
-  }
+export const blobsToProofs = (blobs: Uint8Array[], commitments: Uint8Array[]) => {
+  const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
+
   return proofs
 }
 
