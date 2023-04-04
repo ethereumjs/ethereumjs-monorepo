@@ -1,9 +1,8 @@
 import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { AccountCache, CacheType } from '../src/cache'
-
-import { createAccount } from './util'
+import { AccountCache, CacheType } from '../../src/cache'
+import { createAccount } from '../util'
 
 import type { Account } from '@ethereumjs/util'
 
