@@ -63,7 +63,7 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
 
   // TODO: verify that point is on G2
 
-  // convert input to mcl G2 point/Fr point, add them, and convert the output to a Buffer.
+  // convert input to mcl G2 point/Fr point, add them, and convert the output to a Uint8Array.
   let mclPoint
   try {
     mclPoint = BLS12_381_ToG2Point(opts.data.subarray(0, 256), mcl)

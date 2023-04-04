@@ -197,7 +197,7 @@ tape('Utility Functions', function (t) {
     st.notOk(isValidPrivate(hexToBytes(tmp)), 'should fail on too big input')
 
     st.notOk(
-      isValidPrivate((<unknown>'WRONG_INPUT_TYPE') as Buffer),
+      isValidPrivate((<unknown>'WRONG_INPUT_TYPE') as Uint8Array),
       'should fail on wrong input type'
     )
 
@@ -311,8 +311,8 @@ tape('Utility Functions', function (t) {
     )
 
     st.throws(function () {
-      importPublic((<unknown>pubKey) as Buffer)
-    }, 'should throw if input is not Buffer')
+      importPublic((<unknown>pubKey) as Uint8Array)
+    }, 'should throw if input is not Uint8Array')
     st.end()
   })
 
@@ -429,12 +429,18 @@ tape('Utility Functions', function (t) {
 
   t.test('generateAddress wt.testh non-buffer inputs', function (st) {
     st.throws(function () {
-      generateAddress((<unknown>'0x990ccf8a0de58091c028d6ff76bb235ee67c1c39') as Buffer, toBytes(0))
-    }, 'should throw if address is not Buffer')
+      generateAddress(
+        (<unknown>'0x990ccf8a0de58091c028d6ff76bb235ee67c1c39') as Uint8Array,
+        toBytes(0)
+      )
+    }, 'should throw if address is not Uint8Array')
 
     st.throws(function () {
-      generateAddress(toBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'), (<unknown>0) as Buffer)
-    }, 'should throw if nonce is not Buffer')
+      generateAddress(
+        toBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
+        (<unknown>0) as Uint8Array
+      )
+    }, 'should throw if nonce is not Uint8Array')
     st.end()
   })
 
@@ -455,16 +461,16 @@ tape('Utility Functions', function (t) {
     const { address, salt, initCode } = eip1014Testdata[0]
 
     st.throws(function () {
-      generateAddress2((<unknown>address) as Buffer, toBytes(salt), toBytes(initCode))
-    }, 'should throw if address is not Buffer')
+      generateAddress2((<unknown>address) as Uint8Array, toBytes(salt), toBytes(initCode))
+    }, 'should throw if address is not Uint8Array')
 
     st.throws(function () {
-      generateAddress2(toBytes(address), (<unknown>salt) as Buffer, toBytes(initCode))
-    }, 'should throw if salt is not Buffer')
+      generateAddress2(toBytes(address), (<unknown>salt) as Uint8Array, toBytes(initCode))
+    }, 'should throw if salt is not Uint8Array')
 
     st.throws(function () {
-      generateAddress2(toBytes(address), toBytes(salt), (<unknown>initCode) as Buffer)
-    }, 'should throw if initCode is not Buffer')
+      generateAddress2(toBytes(address), toBytes(salt), (<unknown>initCode) as Uint8Array)
+    }, 'should throw if initCode is not Uint8Array')
     st.end()
   })
 

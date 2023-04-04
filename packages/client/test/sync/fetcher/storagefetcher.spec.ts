@@ -306,7 +306,7 @@ tape('[StorageFetcher]', async (t) => {
     const dummyStorageRoot = hexToBytes(
       '39ed8daab7679c0b1b7cf3667c50108185d4d9d1431c24a1c35f696a58277f8f'
     )
-    const dummyOrigin = Buffer.alloc(32)
+    const dummyOrigin = new Uint8Array(32)
     try {
       await fetcher['verifyRangeProof'](dummyStorageRoot, dummyOrigin, {
         slots,

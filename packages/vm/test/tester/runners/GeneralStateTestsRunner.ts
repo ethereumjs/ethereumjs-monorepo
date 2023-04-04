@@ -100,7 +100,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   }
 
   // Even if no txs are ran, coinbase should always be created
-  const coinbaseAddress = new Address(testData.env.currentCoinbase.slice(2))
+  const coinbaseAddress = Address.fromString(testData.env.currentCoinbase)
   const account = await (<VM>vm).eei.getAccount(coinbaseAddress)
   await (<VM>vm).eei.putAccount(coinbaseAddress, account)
 

@@ -334,7 +334,7 @@ export const toUtf8 = function (hex: string): string {
  *
  * Note: This method is useful for validating that RLP encoded integers comply with the rule that all
  * integer values encoded to RLP must be in the most compact form and contain no leading zero bytes
- * @param values An object containing string keys and Buffer values
+ * @param values An object containing string keys and Uint8Array values
  * @throws if any provided value is found to have leading zero bytes
  */
 export const validateNoLeadingZeroes = function (values: {
