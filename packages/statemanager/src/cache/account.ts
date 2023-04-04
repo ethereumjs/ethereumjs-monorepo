@@ -1,3 +1,5 @@
+import { debug as createDebugLogger } from 'debug'
+
 import { Cache } from './cache'
 
 import type { CacheOpts } from './types'
@@ -15,24 +17,7 @@ type AccountCacheElement = {
 export class AccountCache extends Cache<AccountCacheElement> {
   constructor(opts: CacheOpts) {
     super(opts)
-  }
-
-  _saveCachePreState(addressHex: string) {
-    const it = this._diffCache[this._checkpoints].find(addressHex)
-    if (it.equals(this._diffCache[this._checkpoints].end())) {
-      let oldElem
-      if (this._lruCache) {
-        oldElem = this._lruCache!.get(addressHex)
-      } else {
-        oldElem = this._orderedMapCache!.getElementByKey(addressHex)
-      }
-      this._debug(
-        `Save pre cache state ${
-          oldElem?.accountRLP ? 'as exists' : 'as non-existent'
-        } for account ${addressHex}`
-      )
-      this._diffCache[this._checkpoints].setElement(addressHex, oldElem)
-    }
+    this._debug = createDebugLogger('statemanager:cache:account')
   }
 
   /**
@@ -41,9 +26,6 @@ export class AccountCache extends Cache<AccountCacheElement> {
    * @param val - Account
    */
   put(address: Address, account: Account | undefined): void {
-    // TODO: deleted fromTrie parameter since I haven't found any calling
-    // from any monorepo method, eventually re-evaluate the functionality
-    // Holger Drewes, 2023-03-15
     const addressHex = address.buf.toString('hex')
     this._saveCachePreState(addressHex)
     const elem = {
