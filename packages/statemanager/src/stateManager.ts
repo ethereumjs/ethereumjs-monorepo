@@ -2,6 +2,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import {
   Account,
+  Address,
   KECCAK256_NULL,
   KECCAK256_RLP,
   bigIntToHex,
@@ -14,10 +15,10 @@ import {
 import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { AccountCache, CacheType } from './cache'
+import { AccountCache, CacheType, StorageCache } from './cache'
 
 import type { AccountFields, StateManager, StorageDump } from './interface'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 export type StorageProof = {
@@ -106,6 +107,8 @@ export interface DefaultStateManagerOpts {
   prefixCodeHashes?: boolean
 
   accountCacheOpts?: CacheOptions
+
+  storageCacheOpts?: CacheOptions
 }
 
 /**
@@ -121,6 +124,7 @@ export interface DefaultStateManagerOpts {
 export class DefaultStateManager implements StateManager {
   _debug: Debugger
   _accountCache?: AccountCache
+  _storageCache?: StorageCache
 
   _trie: Trie
   _storageTries: { [key: string]: Trie }
@@ -128,6 +132,7 @@ export class DefaultStateManager implements StateManager {
 
   protected readonly _prefixCodeHashes: boolean
   protected readonly _accountCacheSettings: CacheSettings
+  protected readonly _storageCacheSettings: CacheSettings
 
   /**
    * StateManager is run in DEBUG mode (default: false)
@@ -163,6 +168,19 @@ export class DefaultStateManager implements StateManager {
       this._accountCache = new AccountCache({
         size: this._accountCacheSettings.size,
         type: this._accountCacheSettings.type,
+      })
+    }
+
+    this._storageCacheSettings = {
+      deactivate: opts.storageCacheOpts?.deactivate ?? false,
+      type: opts.storageCacheOpts?.type ?? CacheType.ORDERED_MAP,
+      size: opts.storageCacheOpts?.size ?? 100000,
+    }
+
+    if (!this._storageCacheSettings.deactivate) {
+      this._storageCache = new StorageCache({
+        size: this._storageCacheSettings.size,
+        type: this._storageCacheSettings.type,
       })
     }
   }
@@ -343,6 +361,13 @@ export class DefaultStateManager implements StateManager {
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')
     }
+    if (!this._storageCacheSettings.deactivate) {
+      const elem = this._storageCache!.get(address, key)
+      if (elem !== undefined) {
+        const decoded = Buffer.from(RLP.decode(Uint8Array.from(elem.value ?? [])) as Uint8Array)
+        return decoded
+      }
+    }
 
     const trie = await this._getStorageTrie(address)
     const value = await trie.get(key)
@@ -382,23 +407,7 @@ export class DefaultStateManager implements StateManager {
     })
   }
 
-  /**
-   * Adds value to the state trie for the `account`
-   * corresponding to `address` at the provided `key`.
-   * @param address -  Address to set a storage value for
-   * @param key - Key to set the value at. Must be 32 bytes long.
-   * @param value - Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is a empty or filled with zeros, deletes the value.
-   */
-  async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
-    if (key.length !== 32) {
-      throw new Error('Storage key must be 32 bytes long')
-    }
-
-    if (value.length > 32) {
-      throw new Error('Storage value cannot be longer than 32 bytes')
-    }
-
-    value = unpadBuffer(value)
+  async _writeContractStorage(address: Address, key: Buffer, value: Buffer) {
     if (!(await this.getAccount(address))) {
       await this.putAccount(address, new Account())
     }
@@ -423,10 +432,36 @@ export class DefaultStateManager implements StateManager {
   }
 
   /**
+   * Adds value to the state trie for the `account`
+   * corresponding to `address` at the provided `key`.
+   * @param address -  Address to set a storage value for
+   * @param key - Key to set the value at. Must be 32 bytes long.
+   * @param value - Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is a empty or filled with zeros, deletes the value.
+   */
+  async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
+    if (key.length !== 32) {
+      throw new Error('Storage key must be 32 bytes long')
+    }
+
+    if (value.length > 32) {
+      throw new Error('Storage value cannot be longer than 32 bytes')
+    }
+
+    value = unpadBuffer(value)
+    if (!this._storageCacheSettings.deactivate) {
+      const encodedValue = Buffer.from(RLP.encode(Uint8Array.from(value)))
+      this._storageCache!.put(address, key, encodedValue)
+    } else {
+      await this._writeContractStorage(address, key, value)
+    }
+  }
+
+  /**
    * Clears all storage entries for the account corresponding to `address`.
    * @param address -  Address to clear the storage of
    */
   async clearContractStorage(address: Address): Promise<void> {
+    // TODO: I am unsure how to proceed here
     await this._modifyContractStorage(address, (storageTrie, done) => {
       storageTrie.root(storageTrie.EMPTY_TRIE_ROOT)
       done()
@@ -441,6 +476,7 @@ export class DefaultStateManager implements StateManager {
   async checkpoint(): Promise<void> {
     this._trie.checkpoint()
     this._accountCache?.checkpoint()
+    this._storageCache?.checkpoint()
   }
 
   /**
@@ -451,6 +487,7 @@ export class DefaultStateManager implements StateManager {
     // setup trie checkpointing
     await this._trie.commit()
     this._accountCache?.commit()
+    this._storageCache?.commit()
   }
 
   /**
@@ -463,13 +500,15 @@ export class DefaultStateManager implements StateManager {
     this._storageTries = {}
     this._codeCache = {}
     this._accountCache?.revert()
+    this._storageCache?.revert()
   }
 
   async flush(): Promise<void> {
     if (!this._accountCacheSettings.deactivate) {
       const items = await this._accountCache!.flush()
       for (const item of items) {
-        const addressBuf = item[0]
+        const addressHex = item[0]
+        const addressBuf = Buffer.from(addressHex, 'hex')
         const elem = item[1]
         if (elem.accountRLP === undefined) {
           const trie = this._trie
@@ -477,6 +516,19 @@ export class DefaultStateManager implements StateManager {
         } else {
           const trie = this._trie
           await trie.put(addressBuf, elem.accountRLP)
+        }
+      }
+      if (!this._storageCacheSettings.deactivate) {
+        const items = await this._storageCache!.flush()
+        for (const item of items) {
+          const cacheKeyHex = item[0]
+          const address = Address.fromString(`0x${cacheKeyHex.slice(0, 40)}`)
+          const keyHex = cacheKeyHex.slice(41)
+          const keyBuf = Buffer.from(keyHex, 'hex')
+          const elem = item[1]
+
+          const decoded = Buffer.from(RLP.decode(Uint8Array.from(elem.value ?? [])) as Uint8Array)
+          await this._writeContractStorage(address, keyBuf, decoded)
         }
       }
     }

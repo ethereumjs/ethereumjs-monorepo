@@ -68,25 +68,25 @@ export class Cache<CacheElement> {
    * Flushes cache by returning accounts that have been modified
    * or deleted and resetting the diff cache (at checkpoint height).
    */
-  async flush(): Promise<[Buffer, CacheElement][]> {
+  async flush(): Promise<[string, CacheElement][]> {
     this._debug(`Flushing cache on checkpoint ${this._checkpoints}`)
 
     const diffMap = this._diffCache[this._checkpoints]!
     const it = diffMap.begin()
 
-    const items: [Buffer, CacheElement][] = []
+    const items: [string, CacheElement][] = []
 
     while (!it.equals(diffMap.end())) {
-      const addressHex = it.pointer[0]
+      const cacheKeyHex = it.pointer[0]
       let elem
       if (this._lruCache) {
-        elem = this._lruCache!.get(addressHex)
+        elem = this._lruCache!.get(cacheKeyHex)
       } else {
-        elem = this._orderedMapCache!.getElementByKey(addressHex)
+        elem = this._orderedMapCache!.getElementByKey(cacheKeyHex)
       }
 
       if (elem !== undefined) {
-        items.push([Buffer.from(addressHex, 'hex'), elem])
+        items.push([cacheKeyHex, elem])
       }
       it.next()
     }
