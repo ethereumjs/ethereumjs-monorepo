@@ -258,7 +258,10 @@ tape('[PendingBlock]', async (t) => {
   })
 
   t.test('construct blob bundles', async (st) => {
-    initKZG(kzg, __dirname + '/../../lib/trustedSetups/devnet4.txt')
+    try {
+      initKZG(kzg, __dirname + '/../../lib/trustedSetups/devnet4.txt')
+      // eslint-disable-next-line
+    } catch {}
     const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
