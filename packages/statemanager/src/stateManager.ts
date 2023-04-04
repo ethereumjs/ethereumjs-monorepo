@@ -11,14 +11,15 @@ import {
   toBuffer,
   unpadBuffer,
 } from '@ethereumjs/util'
+import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { BaseStateManager } from './baseStateManager'
 import { Cache, CacheType } from './cache'
 
 import type { getCb, putCb } from './cache'
-import type { StateManager, StorageDump } from './interface'
+import type { AccountFields, StateManager, StorageDump } from './interface'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { Debugger } from 'debug'
 
 export type StorageProof = {
   key: PrefixedHexString
@@ -118,7 +119,10 @@ export interface DefaultStateManagerOpts {
  * The default state manager implementation uses a
  * `@ethereumjs/trie` trie as a data backend.
  */
-export class DefaultStateManager extends BaseStateManager implements StateManager {
+export class DefaultStateManager implements StateManager {
+  _debug: Debugger
+  _cache?: Cache
+
   _trie: Trie
   _storageTries: { [key: string]: Trie }
   _codeCache: { [key: string]: Buffer }
@@ -127,10 +131,23 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
   protected readonly _cacheSettings: CacheSettings
 
   /**
+   * StateManager is run in DEBUG mode (default: false)
+   * Taken from DEBUG environment variable
+   *
+   * Safeguards on debug() calls are added for
+   * performance reasons to avoid string literal evaluation
+   * @hidden
+   */
+  protected readonly DEBUG: boolean = false
+
+  /**
    * Instantiate the StateManager interface.
    */
   constructor(opts: DefaultStateManagerOpts = {}) {
-    super(opts)
+    // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
+    this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
+
+    this._debug = createDebugLogger('statemanager:statemanager')
 
     this._trie = opts.trie ?? new Trie({ useKeyHashing: true })
     this._storageTries = {}
@@ -187,7 +204,8 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
         return undefined
       }
     } else {
-      return super.getAccount(address)
+      const account = await this._cache!.getOrLoad(address)
+      return account
     }
   }
 
@@ -213,8 +231,27 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
         await trie.put(address.buf, account.serialize())
       }
     } else {
-      await super.putAccount(address, account)
+      this._cache!.put(address, account)
     }
+  }
+
+  /**
+   * Gets the account associated with `address`, modifies the given account
+   * fields, then saves the account into state. Account fields can include
+   * `nonce`, `balance`, `storageRoot`, and `codeHash`.
+   * @param address - Address of the account to modify
+   * @param accountFields - Object containing account fields and values to modify
+   */
+  async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
+    let account = await this.getAccount(address)
+    if (!account) {
+      account = new Account()
+    }
+    account.nonce = accountFields.nonce ?? account.nonce
+    account.balance = accountFields.balance ?? account.balance
+    account.storageRoot = accountFields.storageRoot ?? account.storageRoot
+    account.codeHash = accountFields.codeHash ?? account.codeHash
+    await this.putAccount(address, account)
   }
 
   /**
@@ -228,7 +265,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     if (this._cacheSettings.deactivate) {
       await this._trie.del(address.buf)
     } else {
-      await super.deleteAccount(address)
+      this._cache!.del(address)
     }
   }
 
@@ -433,7 +470,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    */
   async checkpoint(): Promise<void> {
     this._trie.checkpoint()
-    await super.checkpoint()
+    this._cache?.checkpoint()
   }
 
   /**
@@ -443,7 +480,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
   async commit(): Promise<void> {
     // setup trie checkpointing
     await this._trie.commit()
-    await super.commit()
+    this._cache?.commit()
   }
 
   /**
@@ -455,7 +492,11 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
     await this._trie.revert()
     this._storageTries = {}
     this._codeCache = {}
-    await super.revert()
+    this._cache?.revert()
+  }
+
+  async flush(): Promise<void> {
+    await this._cache?.flush()
   }
 
   /**
@@ -582,9 +623,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * @returns {Promise<Buffer>} - Returns the state-root of the `StateManager`
    */
   async getStateRoot(): Promise<Buffer> {
-    if (this._cache) {
-      await this._cache.flush()
-    }
+    await this.flush()
     return this._trie.root()
   }
 
@@ -596,9 +635,7 @@ export class DefaultStateManager extends BaseStateManager implements StateManage
    * @param stateRoot - The state-root to reset the instance to
    */
   async setStateRoot(stateRoot: Buffer, clearCache: boolean = true): Promise<void> {
-    if (this._cache) {
-      await this._cache.flush()
-    }
+    await this.flush()
 
     if (!stateRoot.equals(this._trie.EMPTY_TRIE_ROOT)) {
       const hasRoot = await this._trie.checkRoot(stateRoot)
