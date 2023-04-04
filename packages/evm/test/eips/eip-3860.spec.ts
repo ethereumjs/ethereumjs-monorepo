@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, concatBytesNoTypeCheck, privateToAddress } from '@ethereumjs/util'
-import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import { concatBytes, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { EVM } from '../../src'
@@ -135,7 +135,7 @@ tape('EIP 3860 tests', (t) => {
     const eei = await getEEI()
     const evm = await EVM.create({ common, eei, allowUnlimitedInitCodeSize: true })
 
-    const buffer = new Uint8Array(1000000).fill(0x60)
+    const bytes = new Uint8Array(1000000).fill(0x60)
 
     // setup the call arguments
     const runCallArgs = {
@@ -144,9 +144,9 @@ tape('EIP 3860 tests', (t) => {
       // Simple test, PUSH <big number> PUSH 0 RETURN
       // It tries to deploy a contract too large, where the code is all zeros
       // (since memory which is not allocated/resized to yet is always defaulted to 0)
-      data: concatBytesNoTypeCheck(
+      data: concatBytes(
         hexToBytes('00'.repeat(Number(common.param('vm', 'maxInitCodeSize')) + 1)),
-        buffer
+        bytes
       ),
     }
     const result = await evm.runCall(runCallArgs)
@@ -197,7 +197,7 @@ tape('EIP 3860 tests', (t) => {
         data: hexToBytes('00'.repeat(30) + 'C001'),
       }
 
-      await evm.runCall(runCallArgs)
+      const res = await evm.runCall(runCallArgs)
       await evmDisabled.runCall(runCallArgs)
 
       const key0 = hexToBytes('00'.repeat(32))
@@ -226,9 +226,7 @@ tape('EIP 3860 tests', (t) => {
       // On the `allowUnlimitedInitCodeSize = true`, create contract with MAX_INITCODE_SIZE + 1
       // On `allowUnlimitedInitCodeSize = false`, create contract with MAX_INITCODE_SIZE
       // Verify that the gas cost on the prior one is higher than the first one
-
-      const res = await evm.runCall(runCallArgs2)
-      const res2 = await evmDisabled.runCall(runCallArgs)
+      const res2 = await evmDisabled.runCall(runCallArgs2)
 
       st.ok(
         res.execResult.executionGasUsed > res2.execResult.executionGasUsed,

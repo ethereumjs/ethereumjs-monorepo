@@ -400,9 +400,9 @@ tape('should correctly reflect generated fields', async (t) => {
   // filled with 0s and no txs. Once we run it we should
   // get a receipt trie root of for the empty receipts set,
   // which is a well known constant.
-  const buffer32Zeros = new Uint8Array(32)
+  const bytes32Zeros = new Uint8Array(32)
   const block = Block.fromBlockData({
-    header: { receiptTrie: buffer32Zeros, transactionsTrie: buffer32Zeros, gasUsed: BigInt(1) },
+    header: { receiptTrie: bytes32Zeros, transactionsTrie: bytes32Zeros, gasUsed: BigInt(1) },
   })
 
   const results = await runBlockAndGetAfterBlockEvent(vm, {

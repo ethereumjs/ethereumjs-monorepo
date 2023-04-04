@@ -394,7 +394,7 @@ export class ECIES {
 
     if (!this._ingressMac) return
     this._ingressMac.updateBody(body)
-    const _mac = this._ingressMac.digest()
+    const _mac = Uint8Array.from(this._ingressMac.digest())
     assertEq(_mac, mac, 'Invalid MAC', debug)
 
     const size = this._bodySize

@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        fork: ['London', 'Berlin', 'Merge', 'MuirGlacier', 'Istanbul']
+        fork: ['London', 'Berlin', 'Merge', 'MuirGlacier', 'Istanbul', 'Shanghai']
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
@@ -68,6 +68,8 @@ jobs:
       matrix:
         fork:
           [
+            'Shanghai',
+            'Merge',
             'London',
             'Berlin',
             'MuirGlacier',
@@ -114,6 +116,8 @@ jobs:
             '--fork=Merge --dir=GeneralStateTests/stTimeConsuming',
             '--fork=Merge --excludeDir=stTimeConsuming',
             '--fork=ArrowGlacierToMergeAtDiffC0000',
+            '--fork=Shanghai --dir=GeneralStateTests/stTimeConsuming',
+            '--fork=Shanghai --excludeDir=stTimeConsuming',
           ]
       fail-fast: false
     steps:
@@ -150,6 +154,8 @@ jobs:
             '--fork=MuirGlacier --verify-test-amount-alltests',
             '--fork=Berlin --verify-test-amount-alltests',
             '--fork=London --verify-test-amount-alltests',
+            '--fork=Merge --verify-test-amount-alltests',
+            '--fork=Shanghai --verify-test-amount-alltests',
             '--fork=ByzantiumToConstantinopleFixAt5 --verify-test-amount-alltests',
             '--fork=EIP158ToByzantiumAt5 --verify-test-amount-alltests',
             '--fork=FrontierToHomesteadAt5 --verify-test-amount-alltests',

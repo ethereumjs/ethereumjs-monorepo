@@ -88,6 +88,7 @@ export interface SnapProtocolMethods {
     proof: Uint8Array[]
   }>
   getByteCodes: (opts: GetByteCodesOpts) => Promise<{ reqId: bigint; codes: Uint8Array[] }>
+  getTrieNodes: (opts: GetTrieNodesOpts) => Promise<{ reqId: bigint; nodes: Uint8Array[] }>
 }
 
 /**

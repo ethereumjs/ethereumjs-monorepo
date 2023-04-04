@@ -44,6 +44,11 @@ export * as ssz from './ssz'
 export * from './types'
 
 /**
+ * Helper function for working with compact encoding
+ */
+export * from './encoding'
+
+/**
  * Export ethjs-util methods
  */
 export * from './asyncEventEmitter'
