@@ -560,7 +560,7 @@ export class VMExecution extends Execution {
   cacheStats(vm: VM) {
     this.cacheStatsCount += 1
     if (this.cacheStatsCount === this.CACHE_STATS_NUM_BLOCKS) {
-      const stats = (vm.stateManager as any)._cache.stats()
+      const stats = (vm.stateManager as any)._accountCache.stats()
       this.config.logger.info(
         `State cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
       )

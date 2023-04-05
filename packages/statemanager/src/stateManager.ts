@@ -475,8 +475,8 @@ export class DefaultStateManager implements StateManager {
    */
   async checkpoint(): Promise<void> {
     this._trie.checkpoint()
-    this._accountCache?.checkpoint()
     this._storageCache?.checkpoint()
+    this._accountCache?.checkpoint()
   }
 
   /**
@@ -486,8 +486,8 @@ export class DefaultStateManager implements StateManager {
   async commit(): Promise<void> {
     // setup trie checkpointing
     await this._trie.commit()
-    this._accountCache?.commit()
     this._storageCache?.commit()
+    this._accountCache?.commit()
   }
 
   /**
@@ -497,13 +497,26 @@ export class DefaultStateManager implements StateManager {
   async revert(): Promise<void> {
     // setup trie checkpointing
     await this._trie.revert()
+    this._storageCache?.revert()
+    this._accountCache?.revert()
     this._storageTries = {}
     this._codeCache = {}
-    this._accountCache?.revert()
-    this._storageCache?.revert()
   }
 
   async flush(): Promise<void> {
+    if (!this._storageCacheSettings.deactivate) {
+      const items = await this._storageCache!.flush()
+      for (const item of items) {
+        const cacheKeyHex = item[0]
+        const address = Address.fromString(`0x${cacheKeyHex.slice(0, 40)}`)
+        const keyHex = cacheKeyHex.slice(41)
+        const keyBuf = Buffer.from(keyHex, 'hex')
+        const elem = item[1]
+
+        const decoded = Buffer.from(RLP.decode(Uint8Array.from(elem.value ?? [])) as Uint8Array)
+        await this._writeContractStorage(address, keyBuf, decoded)
+      }
+    }
     if (!this._accountCacheSettings.deactivate) {
       const items = await this._accountCache!.flush()
       for (const item of items) {
@@ -516,19 +529,6 @@ export class DefaultStateManager implements StateManager {
         } else {
           const trie = this._trie
           await trie.put(addressBuf, elem.accountRLP)
-        }
-      }
-      if (!this._storageCacheSettings.deactivate) {
-        const items = await this._storageCache!.flush()
-        for (const item of items) {
-          const cacheKeyHex = item[0]
-          const address = Address.fromString(`0x${cacheKeyHex.slice(0, 40)}`)
-          const keyHex = cacheKeyHex.slice(41)
-          const keyBuf = Buffer.from(keyHex, 'hex')
-          const elem = item[1]
-
-          const decoded = Buffer.from(RLP.decode(Uint8Array.from(elem.value ?? [])) as Uint8Array)
-          await this._writeContractStorage(address, keyBuf, decoded)
         }
       }
     }
@@ -682,6 +682,9 @@ export class DefaultStateManager implements StateManager {
     this._trie.root(stateRoot)
     if (this._accountCache !== undefined && clearCache) {
       this._accountCache.clear()
+    }
+    if (this._storageCache !== undefined && clearCache) {
+      this._storageCache.clear()
     }
     this._storageTries = {}
     this._codeCache = {}
