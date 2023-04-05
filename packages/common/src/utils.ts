@@ -78,8 +78,8 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     networkId: chainId,
     genesis: {
       timestamp,
-      gasLimit: parseInt(gasLimit), // geth gasLimit and difficulty are hex strings while ours are `number`s
-      difficulty: parseInt(difficulty),
+      gasLimit,
+      difficulty,
       nonce,
       extraData,
       mixHash,
