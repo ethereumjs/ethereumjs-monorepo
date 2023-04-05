@@ -1,4 +1,4 @@
-import { Account, Address, KECCAK256_RLP, KECCAK256_RLP_S, toBuffer } from '@ethereumjs/util'
+import { Address, KECCAK256_RLP, KECCAK256_RLP_S, toBuffer } from '@ethereumjs/util'
 import * as tape from 'tape'
 // explicitly import `inherits` to fix karma-typescript issue
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
