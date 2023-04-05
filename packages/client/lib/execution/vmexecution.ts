@@ -61,6 +61,11 @@ export class VMExecution extends Execution {
           type: CacheType.LRU,
           size: this.config.cacheSize,
         },
+        storageCacheOpts: {
+          deactivate: false,
+          type: CacheType.LRU,
+          size: 1000000,
+        },
       })
 
       this.vm = new (VM as any)({
@@ -560,9 +565,13 @@ export class VMExecution extends Execution {
   cacheStats(vm: VM) {
     this.cacheStatsCount += 1
     if (this.cacheStatsCount === this.CACHE_STATS_NUM_BLOCKS) {
-      const stats = (vm.stateManager as any)._accountCache.stats()
+      let stats = (vm.stateManager as any)._accountCache.stats()
       this.config.logger.info(
-        `State cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
+        `Account cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
+      )
+      stats = (vm.stateManager as any)._storageCache.stats()
+      this.config.logger.info(
+        `Storage cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
       )
       this.cacheStatsCount = 0
     }
