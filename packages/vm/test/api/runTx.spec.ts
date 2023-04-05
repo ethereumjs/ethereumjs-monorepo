@@ -6,8 +6,10 @@ import {
   FeeMarketEIP1559Transaction,
   Transaction,
   TransactionFactory,
+  initKZG,
 } from '@ethereumjs/tx'
 import { Account, Address, KECCAK256_NULL, MAX_INTEGER } from '@ethereumjs/util'
+import * as kzg from 'c-kzg'
 import * as tape from 'tape'
 
 import { VM } from '../../src/vm'
@@ -882,6 +884,7 @@ tape(
 )
 
 tape('EIP 4844 transaction tests', async (t) => {
+  initKZG(kzg, __dirname + '/../../../client/lib/trustedSetups/devnet4.txt')
   const genesisJson = require('../../../block/test/testdata/4844-hardfork.json')
   const common = Common.fromGethGenesis(genesisJson, {
     chain: 'customChain',
@@ -915,7 +918,7 @@ tape('EIP 4844 transaction tests', async (t) => {
   const blockchain = await Blockchain.create({ validateBlocks: false, validateConsensus: false })
   const vm = await VM.create({ common, blockchain })
 
-  const tx = getTransaction(common, 5, true)
+  const tx = getTransaction(common, 5, true) as BlobEIP4844Transaction
 
   const block = Block.fromBlockData(
     {
@@ -935,6 +938,7 @@ tape('EIP 4844 transaction tests', async (t) => {
   )
   const res = await vm.runTx({ tx, block, skipBalance: true })
   t.ok(res.execResult.exceptionError === undefined, 'simple blob tx run succeeds')
+  t.equal(res.dataGasUsed, 131072n, 'returns correct data gas used for 1 blob')
   Blockchain.prototype.getBlock = oldGetBlockFunction
   t.end()
 })

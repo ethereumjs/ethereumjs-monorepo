@@ -1,5 +1,10 @@
 import { Blockchain } from '@ethereumjs/blockchain'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { TransactionFactory, kzg } from '@ethereumjs/tx'
+import {
+  blobsToCommitments,
+  computeVersionedHash,
+  getBlobs,
+} from '@ethereumjs/tx/dist/utils/blobHelpers'
 import { Account } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
@@ -93,6 +98,12 @@ export function getTransaction(
     txParams['maxFeePerGas'] = BigInt(1000000000)
     txParams['maxPriorityFeePerGas'] = BigInt(10)
     txParams['maxFeePerDataGas'] = BigInt(100)
+    txParams['blobs'] = getBlobs('hello world')
+    txParams['kzgCommitments'] = blobsToCommitments(txParams['blobs'])
+    txParams['kzgProof'] = kzg.computeAggregateKzgProof(txParams['blobs'])
+    txParams['versionedHashes'] = txParams['kzgCommitments'].map((commitment: Uint8Array) =>
+      computeVersionedHash(commitment, 0x1)
+    )
   }
 
   const tx = TransactionFactory.fromTxData(txParams, { common, freeze: false })

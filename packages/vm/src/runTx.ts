@@ -9,6 +9,7 @@ import { Bloom } from './bloom'
 import type {
   AfterTxEvent,
   BaseTxReceipt,
+  EIP4844BlobTxReceipt,
   PostByzantiumTxReceipt,
   PreByzantiumTxReceipt,
   RunTxOpts,
@@ -309,6 +310,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // the signer must be able to afford the transaction
     // assert signer(tx).balance >= tx.message.gas * tx.message.max_fee_per_gas + get_total_data_gas(tx) * tx.message.max_fee_per_data_gas
     const castTx = tx as BlobEIP4844Transaction
+
     totalDataGas = castTx.common.param('gasConfig', 'dataGasPerBlob') * BigInt(castTx.numBlobs())
     maxCost += totalDataGas * castTx.maxFeePerDataGas
 
@@ -393,6 +395,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Update from account's balance
   const txCost = tx.gasLimit * gasPrice
   const dataGasCost = totalDataGas * dataGasPrice
+
   fromAccount.balance -= txCost
   fromAccount.balance -= dataGasCost
   if (opts.skipBalance === true && fromAccount.balance < BigInt(0)) {
@@ -448,6 +451,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    */
   // Generate the bloom for the tx
   results.bloom = txLogsBloom(results.execResult.logs)
+
   if (this.DEBUG) {
     debug(`Generated tx bloom with logs=${results.execResult.logs?.length}`)
   }
@@ -456,6 +460,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   results.totalGasSpent = results.execResult.executionGasUsed + txBaseFee
   if (this.DEBUG) {
     debugGas(`tx add baseFee ${txBaseFee} to totalGasSpent (-> ${results.totalGasSpent})`)
+  }
+
+  // Add data gas used to result
+  if (tx.type === 5) {
+    results.dataGasUsed = totalDataGas
   }
 
   // Process any gas refund
@@ -532,7 +541,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Generate the tx receipt
   const gasUsed = opts.blockGasUsed !== undefined ? opts.blockGasUsed : block.header.gasUsed
   const cumulativeGasUsed = gasUsed + results.totalGasSpent
-  results.receipt = await generateTxReceipt.bind(this)(tx, results, cumulativeGasUsed)
+  results.receipt = await generateTxReceipt.bind(this)(tx, results, cumulativeGasUsed, totalDataGas)
 
   /**
    * The `afterTx` event
@@ -581,12 +590,14 @@ function txLogsBloom(logs?: any[]): Bloom {
  * @param tx The transaction
  * @param txResult The tx result
  * @param cumulativeGasUsed The gas used in the block including this tx
+ * @param totalDataGas The data gas used in the tx
  */
 export async function generateTxReceipt(
   this: VM,
   tx: TypedTransaction,
   txResult: RunTxResult,
-  cumulativeGasUsed: bigint
+  cumulativeGasUsed: bigint,
+  totalDataGas: bigint
 ): Promise<TxReceipt> {
   const baseReceipt: BaseTxReceipt = {
     cumulativeBlockGasUsed: cumulativeGasUsed,
@@ -623,12 +634,19 @@ export async function generateTxReceipt(
     }
   } else {
     // Typed EIP-2718 Transaction
-    receipt = {
-      status: txResult.execResult.exceptionError ? 0 : 1,
-      ...baseReceipt,
-    } as PostByzantiumTxReceipt
+    if (tx.type === 5) {
+      receipt = {
+        dataGasUsed: totalDataGas,
+        status: txResult.execResult.exceptionError ? 0 : 1,
+        ...baseReceipt,
+      } as EIP4844BlobTxReceipt
+    } else {
+      receipt = {
+        status: txResult.execResult.exceptionError ? 0 : 1,
+        ...baseReceipt,
+      } as PostByzantiumTxReceipt
+    }
   }
-
   return receipt
 }
 

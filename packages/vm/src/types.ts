@@ -48,6 +48,13 @@ export interface PostByzantiumTxReceipt extends BaseTxReceipt {
   status: 0 | 1
 }
 
+export interface EIP4844BlobTxReceipt extends PostByzantiumTxReceipt {
+  /**
+   * Data gas consumed by a transaction
+   */
+  dataGasUsed: bigint
+}
+
 export type VMEvents = {
   beforeBlock: (data: Block, resolve?: (result?: any) => void) => void
   afterBlock: (data: AfterBlockEvent, resolve?: (result?: any) => void) => void
@@ -375,6 +382,11 @@ export interface RunTxResult extends EVMResult {
    * The value that accrues to the miner by this transaction
    */
   minerValue: bigint
+
+  /**
+   * This is the data gas units times the fee per data gas for 4844 transactions
+   */
+  dataGasUsed?: bigint
 }
 
 export interface AfterTxEvent extends RunTxResult {

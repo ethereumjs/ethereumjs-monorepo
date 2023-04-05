@@ -1008,6 +1008,10 @@ export interface ExecResult {
    * The gas refund counter
    */
   gasRefund?: bigint
+  /**
+   * Amount of data gas consumed by the transaction
+   */
+  dataGasUsed?: bigint
 }
 
 export function OOGResult(gasLimit: bigint): ExecResult {
