@@ -409,7 +409,7 @@ export class DefaultStateManager implements StateManager {
 
   async _writeContractStorage(address: Address, key: Buffer, value: Buffer) {
     if (!(await this.getAccount(address))) {
-      await this.putAccount(address, new Account())
+      return
     }
 
     await this._modifyContractStorage(address, async (storageTrie, done) => {
