@@ -107,8 +107,7 @@ export class TransactionFactory {
   ) {
     const prov = typeof provider === 'string' ? new JsonRpcProvider(provider) : provider
     const txData = await prov.send('eth_getTransactionByHash', [txHash])
-    const normedTx = normalizeTxParams(txData)
-    return TransactionFactory.fromTxData(normedTx, txOptions)
+    return TransactionFactory.fromRPCTx(txData, txOptions)
   }
 
   /**
