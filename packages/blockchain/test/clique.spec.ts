@@ -895,4 +895,71 @@ tape('clique: reorgs', (t) => {
       st.end()
     }
   )
+
+  t.test(
+    'Two signers, voting to add one other signer, epoch transition, then reorg and revoke this addition',
+    async (st) => {
+      const common = Common.custom(
+        {
+          consensus: {
+            type: ConsensusType.ProofOfAuthority,
+            algorithm: ConsensusAlgorithm.Clique,
+            clique: {
+              period: 15,
+              epoch: 3,
+            },
+          },
+        },
+        {
+          baseChain: Chain.Rinkeby,
+          hardfork: Hardfork.Chainstart,
+        }
+      )
+      const { blocks, blockchain } = await initWithSigners([A, B])
+      const genesis = blocks[0]
+      await addNextBlock(blockchain, blocks, A, [C, true], undefined, common)
+      await addNextBlock(blockchain, blocks, B, [C, true], undefined, common)
+      await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
+      const headBlockUnforked = await addNextBlock(
+        blockchain,
+        blocks,
+        B,
+        undefined,
+        undefined,
+        common
+      )
+      st.deepEqual(
+        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+          blocks[blocks.length - 1].header.number + BigInt(1)
+        ),
+        [A.address, B.address, C.address],
+        'address C added to signers'
+      )
+      st.ok(
+        equalsBytes((await blockchain.getCanonicalHeadBlock()).hash(), headBlockUnforked.hash())
+      )
+      await addNextBlockReorg(blockchain, blocks, genesis, B, undefined, undefined, common)
+      await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
+
+      // Add block 3: epoch transition
+      await addNextBlock(blockchain, blocks, B, undefined, undefined, common)
+      // Now here suddenly C is added again as signer
+
+      await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
+      await addNextBlock(blockchain, blocks, B, undefined, undefined, common)
+
+      const headBlock = await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
+      st.ok(equalsBytes((await blockchain.getCanonicalHeadBlock()).hash(), headBlock.hash()))
+
+      st.deepEqual(
+        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+          blocks[blocks.length - 1].header.number + BigInt(1)
+        ),
+        [A.address, B.address],
+        'address C not added to signers'
+      )
+
+      st.end()
+    }
+  )
 })
