@@ -364,7 +364,7 @@ export class DefaultStateManager implements StateManager {
     if (!this._storageCacheSettings.deactivate) {
       const elem = this._storageCache!.get(address, key)
       if (elem !== undefined) {
-        const decoded = Buffer.from(RLP.decode(Uint8Array.from(elem.value ?? [])) as Uint8Array)
+        const decoded = Buffer.from(RLP.decode(Uint8Array.from(elem ?? [])) as Uint8Array)
         return decoded
       }
     }
@@ -513,7 +513,7 @@ export class DefaultStateManager implements StateManager {
         const keyBuf = Buffer.from(keyHex, 'hex')
         const elem = item[1]
 
-        const decoded = Buffer.from(RLP.decode(Uint8Array.from(elem.value ?? [])) as Uint8Array)
+        const decoded = Buffer.from(RLP.decode(Uint8Array.from(elem ?? [])) as Uint8Array)
         await this._writeContractStorage(address, keyBuf, decoded)
       }
     }

@@ -10,9 +10,7 @@ import type { Address } from '@ethereumjs/util'
  *
  * Account is known to not exist in the trie
  */
-type StorageCacheElement = {
-  value: Buffer | undefined
-}
+type StorageCacheElement = Buffer | undefined
 
 export class StorageCache extends Cache<StorageCacheElement> {
   constructor(opts: CacheOpts) {
@@ -31,15 +29,12 @@ export class StorageCache extends Cache<StorageCacheElement> {
     const keyHex = key.toString('hex')
     const cacheKeyHex = `${addressHex}_${keyHex}`
     this._saveCachePreState(cacheKeyHex)
-    const elem = {
-      value,
-    }
 
     this._debug(`Put storage for ${addressHex}: ${keyHex} -> ${value?.toString('hex')}`)
     if (this._lruCache) {
-      this._lruCache!.set(cacheKeyHex, elem)
+      this._lruCache!.set(cacheKeyHex, value)
     } else {
-      this._orderedMapCache!.setElement(cacheKeyHex, elem)
+      this._orderedMapCache!.setElement(cacheKeyHex, value)
     }
     this._stats.writes += 1
   }
@@ -78,13 +73,9 @@ export class StorageCache extends Cache<StorageCacheElement> {
     this._saveCachePreState(cacheKeyHex)
     this._debug(`Delete storage for ${addressHex}: ${keyHex}`)
     if (this._lruCache) {
-      this._lruCache!.set(cacheKeyHex, {
-        value: undefined,
-      })
+      this._lruCache!.set(cacheKeyHex, Buffer.from('80', 'hex'))
     } else {
-      this._orderedMapCache!.setElement(cacheKeyHex, {
-        value: undefined,
-      })
+      this._orderedMapCache!.setElement(cacheKeyHex, Buffer.from('80', 'hex'))
     }
 
     this._stats.dels += 1
