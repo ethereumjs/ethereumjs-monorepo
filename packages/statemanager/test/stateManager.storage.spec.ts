@@ -1,6 +1,6 @@
 import { Address, toBuffer, unpadBuffer, zeros } from '@ethereumjs/util'
-//import { keccak256 } from 'ethereum-cryptography/keccak'
-//import { bytesToHex } from 'ethereum-cryptography/utils'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { bytesToHex } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 // explicitly import `inherits` to fix karma-typescript issue
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -8,12 +8,11 @@ import { inherits } from 'util'
 
 import { DefaultStateManager } from '../src'
 
-//import { createAccount } from './util'
+import { createAccount } from './util'
 
 tape('StateManager -> Storage', (t) => {
   for (const storageCacheOpts of [{ deactivate: false }, { deactivate: true }]) {
-    // TODO: fix test
-    /**t.test('should dump storage', async (st) => {
+    t.test('should dump storage', async (st) => {
       const stateManager = new DefaultStateManager({ storageCacheOpts })
       const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
       const account = createAccount()
@@ -29,11 +28,14 @@ tape('StateManager -> Storage', (t) => {
       st.deepEqual(data, expect, 'should dump storage value')
 
       st.end()
-    })*/
+    })
 
     t.test("should validate the key's length when modifying a contract's storage", async (st) => {
       const stateManager = new DefaultStateManager({ storageCacheOpts })
       const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+      const account = createAccount()
+      await stateManager.putAccount(address, account)
+
       try {
         await stateManager.putContractStorage(address, Buffer.alloc(12), toBuffer('0x1231'))
       } catch (e: any) {
@@ -49,6 +51,9 @@ tape('StateManager -> Storage', (t) => {
     t.test("should validate the key's length when reading a contract's storage", async (st) => {
       const stateManager = new DefaultStateManager({ storageCacheOpts })
       const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+      const account = createAccount()
+      await stateManager.putAccount(address, account)
+
       try {
         await stateManager.getContractStorage(address, Buffer.alloc(12))
       } catch (e: any) {
@@ -65,6 +70,9 @@ tape('StateManager -> Storage', (t) => {
       st.plan(1)
       const stateManager = new DefaultStateManager({ storageCacheOpts })
       const address = Address.zero()
+      const account = createAccount()
+      await stateManager.putAccount(address, account)
+
       const key = zeros(32)
       const value = Buffer.from('aa'.repeat(33), 'hex')
       try {
@@ -79,6 +87,8 @@ tape('StateManager -> Storage', (t) => {
     t.test('should strip zeros of storage values', async (st) => {
       const stateManager = new DefaultStateManager({ storageCacheOpts })
       const address = Address.zero()
+      const account = createAccount()
+      await stateManager.putAccount(address, account)
 
       const key0 = zeros(32)
       const value0 = Buffer.from('00' + 'aa'.repeat(30), 'hex') // put a value of 31-bytes length with a leading zero byte
@@ -100,6 +110,7 @@ tape('StateManager -> Storage', (t) => {
     t.test('should delete storage values which only consist of zero bytes', async (st) => {
       const address = Address.zero()
       const key = zeros(32)
+
       const startValue = Buffer.from('01', 'hex')
 
       const zeroLengths = [0, 1, 31, 32] // checks for arbitrary-length zeros
@@ -107,6 +118,9 @@ tape('StateManager -> Storage', (t) => {
 
       for (const length of zeroLengths) {
         const stateManager = new DefaultStateManager({ storageCacheOpts })
+        const account = createAccount()
+        await stateManager.putAccount(address, account)
+
         const value = zeros(length)
         await stateManager.putContractStorage(address, key, startValue)
         const currentValue = await stateManager.getContractStorage(address, key)
@@ -124,11 +138,15 @@ tape('StateManager -> Storage', (t) => {
     })
 
     t.test('should not strip trailing zeros', async (st) => {
+      const stateManager = new DefaultStateManager({ storageCacheOpts })
       const address = Address.zero()
+      const account = createAccount()
+      await stateManager.putAccount(address, account)
+
       const key = zeros(32)
       const value = Buffer.from('0000aabb00', 'hex')
       const expect = Buffer.from('aabb00', 'hex')
-      const stateManager = new DefaultStateManager({ storageCacheOpts })
+
       await stateManager.putContractStorage(address, key, value)
       const contractValue = await stateManager.getContractStorage(address, key)
       st.ok(contractValue.equals(expect), 'trailing zeros are not stripped')
