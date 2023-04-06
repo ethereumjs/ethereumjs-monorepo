@@ -2,20 +2,50 @@ import { debug as createDebugLogger } from 'debug'
 import { OrderedMap } from 'js-sdsl'
 
 import { Cache } from './cache'
+import { CacheType } from './types'
 
 import type { CacheOpts } from './types'
 import type { Address } from '@ethereumjs/util'
+import type LRUCache from 'lru-cache'
+
+const LRU = require('lru-cache')
 
 /**
  * account: undefined
  *
  * Account is known to not exist in the trie
  */
-type StorageCacheElement = OrderedMap<string, Buffer | undefined>
+type DiffStorageCacheMap = OrderedMap<string, Buffer | undefined>
+type StorageCacheMap = OrderedMap<string, Buffer>
 
-export class StorageCache extends Cache<StorageCacheElement> {
+export class StorageCache extends Cache {
+  _lruCache: LRUCache<string, StorageCacheMap> | undefined
+  _orderedMapCache: OrderedMap<string, StorageCacheMap> | undefined
+
+  /**
+   * Diff cache collecting the state of the cache
+   * at the beginning of checkpoint height
+   * (respectively: before a first modification)
+   *
+   * If the whole cache element is undefined (in contrast
+   * to the account), the element didn't exist in the cache
+   * before.
+   */
+  _diffCache: OrderedMap<string, DiffStorageCacheMap>[] = []
+
   constructor(opts: CacheOpts) {
-    super(opts)
+    super()
+    if (opts.type === CacheType.LRU) {
+      this._lruCache = new LRU({
+        max: opts.size,
+        updateAgeOnGet: true,
+      })
+    } else {
+      this._orderedMapCache = new OrderedMap()
+    }
+
+    this._diffCache.push(new OrderedMap())
+
     if (this.DEBUG) {
       this._debug = createDebugLogger('statemanager:cache:storage')
     }
@@ -23,20 +53,16 @@ export class StorageCache extends Cache<StorageCacheElement> {
 
   _saveCachePreState(addressHex: string, keyHex: string) {
     const itAddress = this._diffCache[this._checkpoints].find(addressHex)
-    let storageMap: StorageCacheElement
+    let diffStorageMap: DiffStorageCacheMap
     if (itAddress.equals(this._diffCache[this._checkpoints].end())) {
-      storageMap = new OrderedMap()
+      diffStorageMap = new OrderedMap()
     } else {
-      if (itAddress.pointer[1] !== undefined) {
-        storageMap = itAddress.pointer[1]
-      } else {
-        storageMap = new OrderedMap()
-      }
+      diffStorageMap = itAddress.pointer[1]
     }
 
-    const itKey = storageMap.find(keyHex)
-    if (itKey.equals(storageMap.end())) {
-      let oldStorageMap: StorageCacheElement | undefined
+    const itKey = diffStorageMap.find(keyHex)
+    if (itKey.equals(diffStorageMap.end())) {
+      let oldStorageMap: StorageCacheMap | undefined
       let oldStorage: Buffer | undefined = undefined
       if (this._lruCache) {
         oldStorageMap = this._lruCache!.get(addressHex)
@@ -52,8 +78,8 @@ export class StorageCache extends Cache<StorageCacheElement> {
       if (oldStorage === undefined) {
         oldStorage = Buffer.from('80', 'hex')
       }
-      storageMap.setElement(keyHex, oldStorage)
-      this._diffCache[this._checkpoints].setElement(addressHex, storageMap)
+      diffStorageMap.setElement(keyHex, oldStorage)
+      this._diffCache[this._checkpoints].setElement(addressHex, diffStorageMap)
     }
   }
 
@@ -76,14 +102,14 @@ export class StorageCache extends Cache<StorageCacheElement> {
       if (!storageMap) {
         storageMap = new OrderedMap()
       }
-      storageMap.setElement(keyHex, value)
+      storageMap.setElement(keyHex, value ?? Buffer.from('80', 'hex'))
       this._lruCache!.set(addressHex, storageMap)
     } else {
       let storageMap = this._orderedMapCache!.getElementByKey(addressHex)
       if (!storageMap) {
         storageMap = new OrderedMap()
       }
-      storageMap.setElement(keyHex, value)
+      storageMap.setElement(keyHex, value ?? Buffer.from('80', 'hex'))
       this._orderedMapCache!.setElement(addressHex, storageMap)
     }
     this._stats.writes += 1
@@ -161,7 +187,8 @@ export class StorageCache extends Cache<StorageCacheElement> {
 
     while (!it.equals(diffMap.end())) {
       const addressHex = it.pointer[0]
-      let storageMap
+      const diffStorageMap = it.pointer[1]
+      let storageMap: StorageCacheMap | undefined
       if (this._lruCache) {
         storageMap = this._lruCache!.get(addressHex)
       } else {
@@ -169,11 +196,12 @@ export class StorageCache extends Cache<StorageCacheElement> {
       }
 
       if (storageMap !== undefined) {
-        const itStorage = storageMap.begin()
-        while (!itStorage.equals(storageMap.end())) {
-          const keyHex = itStorage.pointer[0]
-          const value = itStorage.pointer[1]
+        const itDiffStorage = diffStorageMap.begin()
+        while (!itDiffStorage.equals(diffStorageMap.end())) {
+          const keyHex = itDiffStorage.pointer[0]
+          const value = storageMap.getElementByKey(keyHex)
           items.push([addressHex, keyHex, value])
+          itDiffStorage.next()
         }
       }
       it.next()
@@ -195,23 +223,30 @@ export class StorageCache extends Cache<StorageCacheElement> {
     const it = diffMap.begin()
     while (!it.equals(diffMap.end())) {
       const addressHex = it.pointer[0]
-      const elem = it.pointer[1]
-      if (elem !== undefined) {
-        const diffStorageMap = it.pointer[1]
-      }
+      const diffStorageMap = it.pointer[1]
 
-      if (elem === undefined) {
+      const itStorage = diffStorageMap.begin()
+      while (!itStorage.equals(diffStorageMap.end())) {
+        const keyHex = itStorage.pointer[0]
+        const value = itStorage.pointer[1]
         if (this._lruCache) {
-          this._lruCache!.delete(addressHex)
+          const storageMap = this._lruCache.get(addressHex) ?? new OrderedMap()
+          if (!value) {
+            storageMap.eraseElementByKey(keyHex)
+          } else {
+            storageMap.setElement(keyHex, value)
+          }
+          this._lruCache.set(addressHex, storageMap)
         } else {
-          this._orderedMapCache!.eraseElementByKey(addressHex)
+          const storageMap = this._orderedMapCache!.getElementByKey(addressHex) ?? new OrderedMap()
+          if (!value) {
+            storageMap.eraseElementByKey(keyHex)
+          } else {
+            storageMap.setElement(keyHex, value)
+          }
+          this._orderedMapCache!.setElement(addressHex, storageMap)
         }
-      } else {
-        if (this._lruCache) {
-          this._lruCache!.set(addressHex, elem)
-        } else {
-          this._orderedMapCache!.setElement(addressHex, elem)
-        }
+        itStorage.next()
       }
       it.next()
     }
@@ -226,16 +261,82 @@ export class StorageCache extends Cache<StorageCacheElement> {
       this._debug(`Commit to checkpoint ${this._checkpoints}`)
     }
     const diffMap = this._diffCache.pop()!
+    const oldDiffMap = this._diffCache[this._checkpoints]
 
     const it = diffMap.begin()
     while (!it.equals(diffMap.end())) {
       const addressHex = it.pointer[0]
-      const element = it.pointer[1]
-      const oldElem = this._diffCache[this._checkpoints].getElementByKey(addressHex)
-      if (oldElem === undefined) {
-        this._diffCache[this._checkpoints].setElement(addressHex, element)
+      const storageDiff = it.pointer[1]
+
+      const itStorageDiff = storageDiff.begin()
+      while (!itStorageDiff.equals(storageDiff.end())) {
+        const keyHex = itStorageDiff.pointer[0]
+        const value = itStorageDiff.pointer[1]
+        const oldStorageDiff = oldDiffMap.getElementByKey(addressHex) ?? new OrderedMap()
+        const oldDiffStorage = oldStorageDiff.getElementByKey(keyHex)
+        if (!oldDiffStorage) {
+          oldStorageDiff.setElement(keyHex, value)
+        }
+        itStorageDiff.next()
       }
       it.next()
+    }
+  }
+
+  /**
+   * Marks current state of cache as checkpoint, which can
+   * later on be reverted or committed.
+   */
+  checkpoint(): void {
+    this._checkpoints += 1
+    if (this.DEBUG) {
+      this._debug(`New checkpoint ${this._checkpoints}`)
+    }
+    this._diffCache.push(new OrderedMap())
+  }
+
+  /**
+   * Returns the size of the cache
+   * @returns
+   */
+  size() {
+    if (this._lruCache) {
+      return this._lruCache!.size
+    } else {
+      return this._orderedMapCache!.size()
+    }
+  }
+
+  /**
+   * Returns a dict with cache stats
+   * @param reset
+   */
+  stats(reset = true) {
+    const stats = { ...this._stats }
+    stats.size = this.size()
+    if (reset) {
+      this._stats = {
+        size: 0,
+        reads: 0,
+        hits: 0,
+        writes: 0,
+        dels: 0,
+      }
+    }
+    return stats
+  }
+
+  /**
+   * Clears cache.
+   */
+  clear(): void {
+    if (this.DEBUG) {
+      this._debug(`Clear cache`)
+    }
+    if (this._lruCache) {
+      this._lruCache!.clear()
+    } else {
+      this._orderedMapCache!.clear()
     }
   }
 }

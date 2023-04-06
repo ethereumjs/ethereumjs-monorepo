@@ -2,9 +2,13 @@ import { debug as createDebugLogger } from 'debug'
 import { OrderedMap } from 'js-sdsl'
 
 import { Cache } from './cache'
+import { CacheType } from './types'
 
 import type { CacheOpts } from './types'
 import type { Account, Address } from '@ethereumjs/util'
+import type LRUCache from 'lru-cache'
+
+const LRU = require('lru-cache')
 
 /**
  * account: undefined
@@ -15,9 +19,33 @@ type AccountCacheElement = {
   accountRLP: Buffer | undefined
 }
 
-export class AccountCache extends Cache<AccountCacheElement> {
+export class AccountCache extends Cache {
+  _lruCache: LRUCache<string, AccountCacheElement> | undefined
+  _orderedMapCache: OrderedMap<string, AccountCacheElement> | undefined
+
+  /**
+   * Diff cache collecting the state of the cache
+   * at the beginning of checkpoint height
+   * (respectively: before a first modification)
+   *
+   * If the whole cache element is undefined (in contrast
+   * to the account), the element didn't exist in the cache
+   * before.
+   */
+  _diffCache: OrderedMap<string, AccountCacheElement | undefined>[] = []
+
   constructor(opts: CacheOpts) {
-    super(opts)
+    super()
+    if (opts.type === CacheType.LRU) {
+      this._lruCache = new LRU({
+        max: opts.size,
+        updateAgeOnGet: true,
+      })
+    } else {
+      this._orderedMapCache = new OrderedMap()
+    }
+
+    this._diffCache.push(new OrderedMap())
     this._debug = createDebugLogger('statemanager:cache:account')
   }
 
@@ -185,6 +213,63 @@ export class AccountCache extends Cache<AccountCacheElement> {
         this._diffCache[this._checkpoints].setElement(addressHex, element)
       }
       it.next()
+    }
+  }
+
+  /**
+   * Marks current state of cache as checkpoint, which can
+   * later on be reverted or committed.
+   */
+  checkpoint(): void {
+    this._checkpoints += 1
+    if (this.DEBUG) {
+      this._debug(`New checkpoint ${this._checkpoints}`)
+    }
+    this._diffCache.push(new OrderedMap())
+  }
+
+  /**
+   * Returns the size of the cache
+   * @returns
+   */
+  size() {
+    if (this._lruCache) {
+      return this._lruCache!.size
+    } else {
+      return this._orderedMapCache!.size()
+    }
+  }
+
+  /**
+   * Returns a dict with cache stats
+   * @param reset
+   */
+  stats(reset = true) {
+    const stats = { ...this._stats }
+    stats.size = this.size()
+    if (reset) {
+      this._stats = {
+        size: 0,
+        reads: 0,
+        hits: 0,
+        writes: 0,
+        dels: 0,
+      }
+    }
+    return stats
+  }
+
+  /**
+   * Clears cache.
+   */
+  clear(): void {
+    if (this.DEBUG) {
+      this._debug(`Clear cache`)
+    }
+    if (this._lruCache) {
+      this._lruCache!.clear()
+    } else {
+      this._orderedMapCache!.clear()
     }
   }
 }
