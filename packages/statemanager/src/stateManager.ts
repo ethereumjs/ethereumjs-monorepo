@@ -698,6 +698,8 @@ export class DefaultStateManager implements StateManager {
    * Both are represented as hex strings without the `0x` prefix.
    */
   async dumpStorage(address: Address): Promise<StorageDump> {
+    await this.flush()
+
     return new Promise((resolve, reject) => {
       this._getStorageTrie(address)
         .then((trie) => {

@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { Address } from '@ethereumjs/util'
+import { Account, Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -130,6 +130,7 @@ tape('EIP-3529 tests', (t) => {
     for (const testCase of testCases) {
       const code = Buffer.from((testCase.code + '00').slice(2), 'hex') // add a STOP opcode (0 gas) so we can find the gas used / effective gas
 
+      await vm.stateManager.putAccount(address, new Account())
       await vm.stateManager.putContractStorage(
         address,
         key,

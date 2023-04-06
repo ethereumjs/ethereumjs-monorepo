@@ -31,7 +31,7 @@ tape('Storage Cache: put and get account', (t) => {
   t.test('should put storage value', async (st) => {
     cache.put(addr, key, value)
     const elem = cache.get(addr, key)
-    st.ok(elem !== undefined && elem.value && elem.value.equals(value))
+    st.ok(elem !== undefined && elem.equals(value))
     st.end()
   })
 
@@ -45,7 +45,7 @@ tape('Storage Cache: put and get account', (t) => {
     cache.del(addr, key)
 
     const elem = cache.get(addr, key)
-    st.ok(elem !== undefined && elem.value === undefined)
+    st.ok(elem !== undefined && elem.equals(Buffer.from('80', 'hex')))
     st.end()
   })
 })
@@ -65,12 +65,12 @@ tape('Storage Cache: checkpointing', (t) => {
     cache.put(addr, key, updatedValue)
 
     let elem = cache.get(addr, key)
-    st.ok(elem !== undefined && elem.value && elem.value.equals(updatedValue))
+    st.ok(elem !== undefined && elem.equals(updatedValue))
 
     cache.revert()
 
     elem = cache.get(addr, key)
-    st.ok(elem !== undefined && elem.value && elem.value.equals(value))
+    st.ok(elem !== undefined && elem.equals(value))
 
     st.end()
   })
