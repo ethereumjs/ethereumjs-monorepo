@@ -51,6 +51,9 @@ export interface PostByzantiumTxReceipt extends BaseTxReceipt {
 export interface EIP4844BlobTxReceipt extends PostByzantiumTxReceipt {
   /**
    * Data gas consumed by a transaction
+   *
+   * Note: This value is not included in the receiptRLP used for encoding the receiptsRoot in a block
+   * and is only provided as part of receipt metadata.
    */
   dataGasUsed: bigint
 }
