@@ -13,7 +13,7 @@ export type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'storage
 export interface StateAccess {
   accountExists(address: Address): Promise<boolean>
   getAccount(address: Address): Promise<Account | undefined>
-  putAccount(address: Address, account: Account): Promise<void>
+  putAccount(address: Address, account: Account | undefined): Promise<void>
   deleteAccount(address: Address): Promise<void>
   modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void>
   putContractCode(address: Address, value: Buffer): Promise<void>
