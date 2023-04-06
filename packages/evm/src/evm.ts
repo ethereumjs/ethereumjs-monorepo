@@ -476,6 +476,7 @@ export class EVM implements EVMInterface {
       }
     }
 
+    await this.eei.putAccount(message.to, toAccount)
     await this.eei.clearContractStorage(message.to)
 
     const newContractEvent = {
