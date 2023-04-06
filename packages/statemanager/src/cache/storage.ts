@@ -203,6 +203,8 @@ export class StorageCache extends Cache {
           items.push([addressHex, keyHex, value])
           itDiffStorage.next()
         }
+      } else {
+        throw new Error('Inconsistent cache state')
       }
       it.next()
     }
@@ -269,16 +271,18 @@ export class StorageCache extends Cache {
       const storageDiff = it.pointer[1]
 
       const itStorageDiff = storageDiff.begin()
+      const oldStorageDiff = oldDiffMap.getElementByKey(addressHex) ?? new OrderedMap()
+
       while (!itStorageDiff.equals(storageDiff.end())) {
         const keyHex = itStorageDiff.pointer[0]
         const value = itStorageDiff.pointer[1]
-        const oldStorageDiff = oldDiffMap.getElementByKey(addressHex) ?? new OrderedMap()
         const oldDiffStorage = oldStorageDiff.getElementByKey(keyHex)
         if (!oldDiffStorage) {
           oldStorageDiff.setElement(keyHex, value)
         }
         itStorageDiff.next()
       }
+      oldDiffMap.setElement(addressHex, oldStorageDiff)
       it.next()
     }
   }

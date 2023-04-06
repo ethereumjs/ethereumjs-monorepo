@@ -35,4 +35,5 @@ export interface StateManager extends StateAccess {
   copy(): StateManager
   flush(): Promise<void>
   dumpStorage(address: Address): Promise<StorageDump>
+  clearCaches(): void
 }

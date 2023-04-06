@@ -66,14 +66,14 @@ export class EthersStateManager implements StateManager {
    */
   setBlockTag(blockTag: bigint | 'earliest'): void {
     this.blockTag = blockTag === 'earliest' ? blockTag : bigIntToHex(blockTag)
-    this.clearCache()
+    this.clearCaches()
   }
 
   /**
    * Clears the internal cache so all accounts, contract code, and storage slots will
    * initially be retrieved from the provider
    */
-  clearCache(): void {
+  clearCaches(): void {
     this.contractCache.clear()
     this.storageCache.clear()
     this._accountCache.clear()

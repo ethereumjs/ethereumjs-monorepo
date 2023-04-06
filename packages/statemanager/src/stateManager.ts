@@ -336,17 +336,11 @@ export class DefaultStateManager implements StateManager {
    * cache or does a lookup.
    * @private
    */
-  async _getStorageTrie(address: Address): Promise<Trie> {
+  async _getStorageTrie(address: Address, account: Account): Promise<Trie> {
     // from storage cache
     const addressHex = address.buf.toString('hex')
     const storageTrie = this._storageTries[addressHex]
     if (storageTrie === undefined) {
-      // lookup from state
-      // from state trie
-      let account = await this.getAccount(address)
-      if (!account) {
-        account = new Account()
-      }
       const storageTrie = this._trie.copy(false)
       storageTrie.root(account.storageRoot)
       storageTrie.flushCheckpoints()
@@ -376,7 +370,11 @@ export class DefaultStateManager implements StateManager {
       }
     }
 
-    const trie = await this._getStorageTrie(address)
+    const account = await this.getAccount(address)
+    if (!account) {
+      throw new Error('getContractStorage() called on non-existing account')
+    }
+    const trie = await this._getStorageTrie(address, account)
     const value = await trie.get(key)
     const decoded = Buffer.from(RLP.decode(Uint8Array.from(value ?? [])) as Uint8Array)
     return decoded
@@ -390,11 +388,12 @@ export class DefaultStateManager implements StateManager {
    */
   async _modifyContractStorage(
     address: Address,
+    account: Account,
     modifyTrie: (storageTrie: Trie, done: Function) => void
   ): Promise<void> {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve) => {
-      const storageTrie = await this._getStorageTrie(address)
+      const storageTrie = await this._getStorageTrie(address, account)
 
       modifyTrie(storageTrie, async () => {
         // update storage cache
@@ -402,24 +401,15 @@ export class DefaultStateManager implements StateManager {
         this._storageTries[addressHex] = storageTrie
 
         // update contract storageRoot
-        let contract = await this.getAccount(address)
-        if (!contract) {
-          contract = new Account()
-        }
-        contract.storageRoot = storageTrie.root()
-
-        await this.putAccount(address, contract)
+        account.storageRoot = storageTrie.root()
+        await this.putAccount(address, account)
         resolve()
       })
     })
   }
 
-  async _writeContractStorage(address: Address, key: Buffer, value: Buffer) {
-    if (!(await this.getAccount(address))) {
-      return
-    }
-
-    await this._modifyContractStorage(address, async (storageTrie, done) => {
+  async _writeContractStorage(address: Address, account: Account, key: Buffer, value: Buffer) {
+    await this._modifyContractStorage(address, account, async (storageTrie, done) => {
       if (Buffer.isBuffer(value) && value.length) {
         // format input
         const encodedValue = Buffer.from(RLP.encode(Uint8Array.from(value)))
@@ -454,12 +444,17 @@ export class DefaultStateManager implements StateManager {
       throw new Error('Storage value cannot be longer than 32 bytes')
     }
 
+    const account = await this.getAccount(address)
+    if (!account) {
+      throw new Error('putContractStorage() called on non-existing account')
+    }
+
     value = unpadBuffer(value)
     if (!this._storageCacheSettings.deactivate) {
       const encodedValue = Buffer.from(RLP.encode(Uint8Array.from(value)))
       this._storageCache!.put(address, key, encodedValue)
     } else {
-      await this._writeContractStorage(address, key, value)
+      await this._writeContractStorage(address, account, key, value)
     }
   }
 
@@ -468,8 +463,13 @@ export class DefaultStateManager implements StateManager {
    * @param address -  Address to clear the storage of
    */
   async clearContractStorage(address: Address): Promise<void> {
+    let account = await this.getAccount(address)
+    if (!account) {
+      account = new Account()
+    }
+
     // TODO: I am unsure how to proceed here
-    await this._modifyContractStorage(address, (storageTrie, done) => {
+    await this._modifyContractStorage(address, account, (storageTrie, done) => {
       storageTrie.root(storageTrie.EMPTY_TRIE_ROOT)
       done()
     })
@@ -520,10 +520,10 @@ export class DefaultStateManager implements StateManager {
         const value = item[2]
 
         const decoded = Buffer.from(RLP.decode(Uint8Array.from(value ?? [])) as Uint8Array)
-        console.log(
-          `${address} -> ${keyHex} -> ${value?.toString('hex')} -> ${decoded.toString('hex')}`
-        )
-        await this._writeContractStorage(address, keyBuf, decoded)
+        const account = await this.getAccount(address)
+        if (account) {
+          await this._writeContractStorage(address, account, keyBuf, decoded)
+        }
       }
     }
     if (!this._accountCacheSettings.deactivate) {
@@ -557,7 +557,7 @@ export class DefaultStateManager implements StateManager {
       bufferToHex(p)
     )
     const storageProof: StorageProof[] = []
-    const storageTrie = await this._getStorageTrie(address)
+    const storageTrie = await this._getStorageTrie(address, account)
 
     for (const storageKey of storageSlots) {
       const proof = (await storageTrie.createProof(storageKey)).map((p) => bufferToHex(p))
@@ -708,9 +708,13 @@ export class DefaultStateManager implements StateManager {
    */
   async dumpStorage(address: Address): Promise<StorageDump> {
     await this.flush()
+    const account = await this.getAccount(address)
+    if (!account) {
+      throw new Error(`dumpStorage f() can only be called for an existing account`)
+    }
 
     return new Promise((resolve, reject) => {
-      this._getStorageTrie(address)
+      this._getStorageTrie(address, account)
         .then((trie) => {
           const storage: StorageDump = {}
           const stream = trie.createReadStream()
@@ -760,5 +764,13 @@ export class DefaultStateManager implements StateManager {
       prefixCodeHashes: this._prefixCodeHashes,
       accountCacheOpts: this._accountCacheSettings,
     })
+  }
+
+  /**
+   * Clears all underlying caches
+   */
+  clearCaches() {
+    this._accountCache?.clear()
+    this._storageCache?.clear()
   }
 }
