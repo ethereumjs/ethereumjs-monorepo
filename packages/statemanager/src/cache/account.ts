@@ -32,7 +32,9 @@ export class AccountCache extends Cache<AccountCacheElement> {
       accountRLP: account !== undefined ? account.serialize() : undefined,
     }
 
-    this._debug(`Put account ${addressHex}`)
+    if (this.DEBUG) {
+      this._debug(`Put account ${addressHex}`)
+    }
     if (this._lruCache) {
       this._lruCache!.set(addressHex, elem)
     } else {
@@ -47,7 +49,9 @@ export class AccountCache extends Cache<AccountCacheElement> {
    */
   get(address: Address): AccountCacheElement | undefined {
     const addressHex = address.buf.toString('hex')
-    this._debug(`Get account ${addressHex}`)
+    if (this.DEBUG) {
+      this._debug(`Get account ${addressHex}`)
+    }
 
     let elem
     if (this._lruCache) {
@@ -69,7 +73,9 @@ export class AccountCache extends Cache<AccountCacheElement> {
   del(address: Address): void {
     const addressHex = address.buf.toString('hex')
     this._saveCachePreState(addressHex)
-    this._debug(`Delete account ${addressHex}`)
+    if (this.DEBUG) {
+      this._debug(`Delete account ${addressHex}`)
+    }
     if (this._lruCache) {
       this._lruCache!.set(addressHex, {
         accountRLP: undefined,
