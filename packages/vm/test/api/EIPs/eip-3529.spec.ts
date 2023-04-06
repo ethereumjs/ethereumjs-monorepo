@@ -203,6 +203,7 @@ tape('EIP-3529 tests', (t) => {
 
     for (let i = 0; i < 100; i++) {
       const key = Buffer.from(i.toString(16).padStart(64, '0'), 'hex')
+      await vm.stateManager.putAccount(address, new Account())
       await vm.stateManager.putContractStorage(address, key, value)
       const hex = i.toString(16).padStart(2, '0')
       // push 0 push <hex> sstore
