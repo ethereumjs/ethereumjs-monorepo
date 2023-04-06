@@ -28,6 +28,9 @@ tape('StateManager -> Account Checkpointing', (t) => {
     await sm.flush()
     st.equal((await sm.getAccount(address))!.nonce, 1n)
 
+    sm.clearCaches()
+    st.equal((await sm.getAccount(address))!.nonce, 1n)
+
     st.end()
   })
 
@@ -38,6 +41,9 @@ tape('StateManager -> Account Checkpointing', (t) => {
     await sm.putAccount(address, account)
     await sm.commit()
     await sm.flush()
+    st.equal((await sm.getAccount(address))!.nonce, 1n)
+
+    sm.clearCaches()
     st.equal((await sm.getAccount(address))!.nonce, 1n)
 
     st.end()
@@ -52,6 +58,9 @@ tape('StateManager -> Account Checkpointing', (t) => {
     await sm.flush()
     st.equal(await sm.getAccount(address), undefined)
 
+    sm.clearCaches()
+    st.equal(await sm.getAccount(address), undefined)
+
     st.end()
   })
 
@@ -62,6 +71,9 @@ tape('StateManager -> Account Checkpointing', (t) => {
     await sm.checkpoint()
     await sm.commit()
     await sm.flush()
+    st.equal((await sm.getAccount(address))!.nonce, 1n)
+
+    sm.clearCaches()
     st.equal((await sm.getAccount(address))!.nonce, 1n)
 
     st.end()
@@ -76,6 +88,9 @@ tape('StateManager -> Account Checkpointing', (t) => {
     await sm.flush()
     st.equal((await sm.getAccount(address))!.nonce, 1n)
 
+    sm.clearCaches()
+    st.equal((await sm.getAccount(address))!.nonce, 1n)
+
     st.end()
   })
 
@@ -87,6 +102,9 @@ tape('StateManager -> Account Checkpointing', (t) => {
     await sm.putAccount(address, account2)
     await sm.commit()
     await sm.flush()
+    st.equal((await sm.getAccount(address))!.nonce, 2n)
+
+    sm.clearCaches()
     st.equal((await sm.getAccount(address))!.nonce, 2n)
 
     st.end()
@@ -103,6 +121,9 @@ tape('StateManager -> Account Checkpointing', (t) => {
     await sm.flush()
     st.equal((await sm.getAccount(address))!.nonce, 3n)
 
+    sm.clearCaches()
+    st.equal((await sm.getAccount(address))!.nonce, 3n)
+
     st.end()
   })
 
@@ -117,6 +138,9 @@ tape('StateManager -> Account Checkpointing', (t) => {
     await sm.flush()
     st.equal((await sm.getAccount(address))!.nonce, 3n)
 
+    sm.clearCaches()
+    st.equal((await sm.getAccount(address))!.nonce, 3n)
+
     st.end()
   })
 
@@ -128,6 +152,9 @@ tape('StateManager -> Account Checkpointing', (t) => {
     await sm.putAccount(address, account2)
     await sm.commit()
     await sm.flush()
+    st.equal((await sm.getAccount(address))!.nonce, 2n)
+
+    sm.clearCaches()
     st.equal((await sm.getAccount(address))!.nonce, 2n)
 
     st.end()
@@ -144,6 +171,9 @@ tape('StateManager -> Account Checkpointing', (t) => {
     await sm.flush()
     st.equal(await sm.getAccount(address), undefined)
 
+    sm.clearCaches()
+    st.equal(await sm.getAccount(address), undefined)
+
     st.end()
   })
 
@@ -155,6 +185,9 @@ tape('StateManager -> Account Checkpointing', (t) => {
     await sm.putAccount(address, account2)
     await sm.revert()
     await sm.flush()
+    st.equal((await sm.getAccount(address))!.nonce, 1n)
+
+    sm.clearCaches()
     st.equal((await sm.getAccount(address))!.nonce, 1n)
 
     st.end()
@@ -173,6 +206,9 @@ tape('StateManager -> Account Checkpointing', (t) => {
       await sm.commit()
       await sm.commit()
       await sm.flush()
+      st.equal((await sm.getAccount(address))!.nonce, 3n)
+
+      sm.clearCaches()
       st.equal((await sm.getAccount(address))!.nonce, 3n)
 
       st.end()
@@ -194,6 +230,9 @@ tape('StateManager -> Account Checkpointing', (t) => {
       await sm.flush()
       st.equal((await sm.getAccount(address))!.nonce, 1n)
 
+      sm.clearCaches()
+      st.equal((await sm.getAccount(address))!.nonce, 1n)
+
       st.end()
     }
   )
@@ -211,6 +250,9 @@ tape('StateManager -> Account Checkpointing', (t) => {
       await sm.revert()
       await sm.commit()
       await sm.flush()
+      st.equal((await sm.getAccount(address))!.nonce, 2n)
+
+      sm.clearCaches()
       st.equal((await sm.getAccount(address))!.nonce, 2n)
 
       st.end()
@@ -231,6 +273,9 @@ tape('StateManager -> Account Checkpointing', (t) => {
       await sm.putAccount(address, account4)
       await sm.commit()
       await sm.flush()
+      st.equal((await sm.getAccount(address))!.nonce, 4n)
+
+      sm.clearCaches()
       st.equal((await sm.getAccount(address))!.nonce, 4n)
 
       st.end()
@@ -254,6 +299,9 @@ tape('StateManager -> Account Checkpointing', (t) => {
       await sm.commit()
       await sm.commit()
       await sm.flush()
+      st.equal((await sm.getAccount(address))!.nonce, 5n)
+
+      sm.clearCaches()
       st.equal((await sm.getAccount(address))!.nonce, 5n)
 
       st.end()
