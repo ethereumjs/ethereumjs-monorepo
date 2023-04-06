@@ -171,6 +171,15 @@ export class StorageCache extends Cache {
     this._stats.dels += 1
   }
 
+  clearContractStorage(address: Address): void {
+    const addressHex = address.buf.toString('hex')
+    if (this._lruCache) {
+      this._lruCache!.set(addressHex, new OrderedMap())
+    } else {
+      this._orderedMapCache!.setElement(addressHex, new OrderedMap())
+    }
+  }
+
   /**
    * Flushes cache by returning storage slots that have been modified
    * or deleted and resetting the diff cache (at checkpoint height).
