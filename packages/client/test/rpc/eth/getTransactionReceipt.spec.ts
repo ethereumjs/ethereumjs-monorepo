@@ -1,4 +1,3 @@
-import { BlockHeader } from '@ethereumjs/block'
 import { Common, Hardfork } from '@ethereumjs/common'
 import {
   BlobEIP4844Transaction,
