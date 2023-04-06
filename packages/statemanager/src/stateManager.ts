@@ -201,7 +201,9 @@ export class DefaultStateManager implements StateManager {
 
     const rlp = await this._trie.get(address.buf)
     const account = rlp !== null ? Account.fromRlpSerializedAccount(rlp) : undefined
-    this._debug(`Get account ${address} from DB (${account ? 'exists' : 'non-existent'})`)
+    if (this.DEBUG) {
+      this._debug(`Get account ${address} from DB (${account ? 'exists' : 'non-existent'})`)
+    }
     this._accountCache?.put(address, account)
     return account
   }

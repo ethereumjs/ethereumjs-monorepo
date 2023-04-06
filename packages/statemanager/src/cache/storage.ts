@@ -15,7 +15,9 @@ type StorageCacheElement = Buffer | undefined
 export class StorageCache extends Cache<StorageCacheElement> {
   constructor(opts: CacheOpts) {
     super(opts)
-    this._debug = createDebugLogger('statemanager:cache:storage')
+    if (this.DEBUG) {
+      this._debug = createDebugLogger('statemanager:cache:storage')
+    }
   }
 
   /**
@@ -30,7 +32,9 @@ export class StorageCache extends Cache<StorageCacheElement> {
     const cacheKeyHex = `${addressHex}_${keyHex}`
     this._saveCachePreState(cacheKeyHex)
 
-    this._debug(`Put storage for ${addressHex}: ${keyHex} -> ${value?.toString('hex')}`)
+    if (this.DEBUG) {
+      this._debug(`Put storage for ${addressHex}: ${keyHex} -> ${value?.toString('hex')}`)
+    }
     if (this._lruCache) {
       this._lruCache!.set(cacheKeyHex, value)
     } else {
@@ -47,7 +51,9 @@ export class StorageCache extends Cache<StorageCacheElement> {
     const addressHex = address.buf.toString('hex')
     const keyHex = key.toString('hex')
     const cacheKeyHex = `${addressHex}_${keyHex}`
-    this._debug(`Get storage for ${addressHex}`)
+    if (this.DEBUG) {
+      this._debug(`Get storage for ${addressHex}`)
+    }
 
     let elem
     if (this._lruCache) {
@@ -71,7 +77,9 @@ export class StorageCache extends Cache<StorageCacheElement> {
     const keyHex = key.toString('hex')
     const cacheKeyHex = `${addressHex}_${keyHex}`
     this._saveCachePreState(cacheKeyHex)
-    this._debug(`Delete storage for ${addressHex}: ${keyHex}`)
+    if (this.DEBUG) {
+      this._debug(`Delete storage for ${addressHex}: ${keyHex}`)
+    }
     if (this._lruCache) {
       this._lruCache!.set(cacheKeyHex, Buffer.from('80', 'hex'))
     } else {

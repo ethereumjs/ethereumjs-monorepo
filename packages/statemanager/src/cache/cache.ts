@@ -36,7 +36,20 @@ export class Cache<CacheElement> {
     dels: 0,
   }
 
+  /**
+   * StateManager cache is run in DEBUG mode (default: false)
+   * Taken from DEBUG environment variable
+   *
+   * Safeguards on debug() calls are added for
+   * performance reasons to avoid string literal evaluation
+   * @hidden
+   */
+  protected readonly DEBUG: boolean = false
+
   constructor(opts: CacheOpts) {
+    // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
+    this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
+
     this._debug = createDebugLogger('statemanager:cache')
 
     if (opts.type === CacheType.LRU) {
@@ -69,7 +82,9 @@ export class Cache<CacheElement> {
    * or deleted and resetting the diff cache (at checkpoint height).
    */
   async flush(): Promise<[string, CacheElement][]> {
-    this._debug(`Flushing cache on checkpoint ${this._checkpoints}`)
+    if (this.DEBUG) {
+      this._debug(`Flushing cache on checkpoint ${this._checkpoints}`)
+    }
 
     const diffMap = this._diffCache[this._checkpoints]!
     const it = diffMap.begin()
@@ -100,7 +115,9 @@ export class Cache<CacheElement> {
    */
   checkpoint(): void {
     this._checkpoints += 1
-    this._debug(`New checkpoint ${this._checkpoints}`)
+    if (this.DEBUG) {
+      this._debug(`New checkpoint ${this._checkpoints}`)
+    }
     this._diffCache.push(new OrderedMap())
   }
 
@@ -109,7 +126,9 @@ export class Cache<CacheElement> {
    */
   revert(): void {
     this._checkpoints -= 1
-    this._debug(`Revert to checkpoint ${this._checkpoints}`)
+    if (this.DEBUG) {
+      this._debug(`Revert to checkpoint ${this._checkpoints}`)
+    }
     const diffMap = this._diffCache.pop()!
 
     const it = diffMap.begin()
@@ -138,7 +157,9 @@ export class Cache<CacheElement> {
    */
   commit(): void {
     this._checkpoints -= 1
-    this._debug(`Commit to checkpoint ${this._checkpoints}`)
+    if (this.DEBUG) {
+      this._debug(`Commit to checkpoint ${this._checkpoints}`)
+    }
     const diffMap = this._diffCache.pop()!
 
     const it = diffMap.begin()
@@ -188,7 +209,9 @@ export class Cache<CacheElement> {
    * Clears cache.
    */
   clear(): void {
-    this._debug(`Clear cache`)
+    if (this.DEBUG) {
+      this._debug(`Clear cache`)
+    }
     if (this._lruCache) {
       this._lruCache!.clear()
     } else {
