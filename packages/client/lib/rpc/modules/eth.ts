@@ -57,6 +57,7 @@ type JsonRpcReceipt = {
   // It also returns either:
   root?: string // DATA, 32 bytes of post-transaction stateroot (pre Byzantium)
   status?: string // QUANTITY, either 1 (success) or 0 (failure)
+  dataGasUsed?: string // QUANTITY, data gas consumed by transaction (if blob transaction)
 }
 type JsonRpcLog = {
   removed: boolean // TAG - true when the log was removed, due to a chain reorganization. false if it's a valid log.
@@ -152,7 +153,8 @@ const jsonRpcReceipt = async (
   tx: TypedTransaction,
   txIndex: number,
   logIndex: number,
-  contractAddress?: Address
+  contractAddress?: Address,
+  dataGasUsed?: bigint
 ): Promise<JsonRpcReceipt> => ({
   transactionHash: bufferToHex(tx.hash()),
   transactionIndex: intToHex(txIndex),
@@ -174,6 +176,7 @@ const jsonRpcReceipt = async (
   status: Buffer.isBuffer((receipt as PostByzantiumTxReceipt).status)
     ? intToHex((receipt as PostByzantiumTxReceipt).status)
     : undefined,
+  dataGasUsed: dataGasUsed !== undefined ? bigIntToHex(dataGasUsed) : undefined,
 })
 
 /**
@@ -729,10 +732,10 @@ export class Eth {
    */
   async getTransactionReceipt(params: [string]) {
     const [txHash] = params
-
     try {
       if (!this.receiptsManager) throw new Error('missing receiptsManager')
       const result = await this.receiptsManager.getReceiptByTxHash(toBuffer(txHash))
+
       if (!result) return null
       const [receipt, blockHash, txIndex, logIndex] = result
       const block = await this._chain.getBlock(blockHash)
@@ -755,7 +758,7 @@ export class Eth {
         root: parentBlock.header.stateRoot,
         skipBlockValidation: true,
       })
-      const { totalGasSpent, createdAddress } = runBlockResult.results[txIndex]
+      const { totalGasSpent, createdAddress, dataGasUsed } = runBlockResult.results[txIndex]
       return await jsonRpcReceipt(
         receipt,
         totalGasSpent,
@@ -764,7 +767,8 @@ export class Eth {
         tx,
         txIndex,
         logIndex,
-        createdAddress
+        createdAddress,
+        dataGasUsed
       )
     } catch (error: any) {
       throw {
