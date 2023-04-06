@@ -63,6 +63,9 @@ async function runTransition(argsIn: any) {
 
   const block = makeBlockFromEnv(inputEnv, { common })
 
+  const acc = await vm.stateManager.getAccount(block.header.coinbase)
+  await vm.stateManager.putAccount(block.header.coinbase, acc)
+
   const txsData = arrToBufArr(RLP.decode(Buffer.from(rlpTxs.slice(2), 'hex')))
 
   const headerData = block.header.toJSON()
@@ -121,6 +124,8 @@ async function runTransition(argsIn: any) {
   const logsBloom = builder.logsBloom()
   const logsHash = Buffer.from(keccak256(logsBloom))
 
+  await vm.eei.cleanupTouchedAccounts()
+
   const output = {
     stateRoot: '0x' + (await vm.eei.getStateRoot()).toString('hex'),
     txRoot: '0x' + (await builder.transactionsTrie()).toString('hex'),
@@ -158,6 +163,7 @@ process.on('message', async (message) => {
       await runTransition(message)
       // eslint-disable-next-line no-empty
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.log(e)
     }
 
