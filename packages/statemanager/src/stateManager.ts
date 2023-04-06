@@ -211,26 +211,31 @@ export class DefaultStateManager implements StateManager {
   /**
    * Saves an account into state under the provided `address`.
    * @param address - Address under which to store `account`
-   * @param account - The account to store
+   * @param account - The account to store or undefined if to be deleted
    */
-  async putAccount(address: Address, account: Account): Promise<void> {
+  async putAccount(address: Address, account: Account | undefined): Promise<void> {
     if (this.DEBUG) {
       this._debug(
-        `Save account address=${address} nonce=${account.nonce} balance=${
-          account.balance
-        } contract=${account.isContract() ? 'yes' : 'no'} empty=${account.isEmpty() ? 'yes' : 'no'}`
+        `Save account address=${address} nonce=${account?.nonce} balance=${
+          account?.balance
+        } contract=${account && account.isContract() ? 'yes' : 'no'} empty=${
+          account && account.isEmpty() ? 'yes' : 'no'
+        }`
       )
     }
     if (this._accountCacheSettings.deactivate) {
       const trie = this._trie
-      // This is fixing a bug in the VM GeneralStateTestsRunner passing undefined here for selected accounts
-      // and which breaks when account cache is being deactivated
-      // TODO: analyze root cause (behavior likely there before, just uncovered by cache deactivation)
       if (account !== undefined) {
         await trie.put(address.buf, account.serialize())
+      } else {
+        await trie.del(address.buf)
       }
     } else {
-      this._accountCache!.put(address, account)
+      if (account !== undefined) {
+        this._accountCache!.put(address, account)
+      } else {
+        this._accountCache!.del(address)
+      }
     }
   }
 
