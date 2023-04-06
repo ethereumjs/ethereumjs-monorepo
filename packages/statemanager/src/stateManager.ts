@@ -514,13 +514,15 @@ export class DefaultStateManager implements StateManager {
     if (!this._storageCacheSettings.deactivate) {
       const items = await this._storageCache!.flush()
       for (const item of items) {
-        const cacheKeyHex = item[0]
-        const address = Address.fromString(`0x${cacheKeyHex.slice(0, 40)}`)
-        const keyHex = cacheKeyHex.slice(41)
+        const address = Address.fromString(`0x${item[0]}`)
+        const keyHex = item[1]
         const keyBuf = Buffer.from(keyHex, 'hex')
-        const elem = item[1]
+        const value = item[2]
 
-        const decoded = Buffer.from(RLP.decode(Uint8Array.from(elem ?? [])) as Uint8Array)
+        const decoded = Buffer.from(RLP.decode(Uint8Array.from(value ?? [])) as Uint8Array)
+        console.log(
+          `${address} -> ${keyHex} -> ${value?.toString('hex')} -> ${decoded.toString('hex')}`
+        )
         await this._writeContractStorage(address, keyBuf, decoded)
       }
     }
