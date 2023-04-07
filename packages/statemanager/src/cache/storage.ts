@@ -11,9 +11,9 @@ import type LRUCache from 'lru-cache'
 const LRU = require('lru-cache')
 
 /**
- * account: undefined
+ * key -> storage mapping
  *
- * Account is known to not exist in the trie
+ * undefined: storage value is known not to exist in the cache
  */
 type DiffStorageCacheMap = OrderedMap<string, Buffer | undefined>
 type StorageCacheMap = OrderedMap<string, Buffer>
@@ -142,8 +142,9 @@ export class StorageCache extends Cache {
   }
 
   /**
-   * Marks address as deleted in cache.
-   * @param key - Address
+   * Marks storage key for address as deleted in cache.
+   * @param address - Address
+   * @param key - Storage key
    */
   del(address: Address, key: Buffer): void {
     const addressHex = address.buf.toString('hex')
@@ -171,6 +172,10 @@ export class StorageCache extends Cache {
     this._stats.dels += 1
   }
 
+  /**
+   * Deletes all storage slots for address from the cache
+   * @param address
+   */
   clearContractStorage(address: Address): void {
     const addressHex = address.buf.toString('hex')
     if (this._lruCache) {

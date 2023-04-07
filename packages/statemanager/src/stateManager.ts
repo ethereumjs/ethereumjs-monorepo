@@ -62,9 +62,9 @@ type CacheOptions = {
   type?: CacheType
 
   /**
-   * Size of the account cache (only for LRU cache)
+   * Size of the cache (only for LRU cache)
    *
-   * Default: 100000
+   * Default: 100000 (account cache) / 20000 (storage cache)
    *
    * Note: the cache/trie interplay mechanism is designed in a way that
    * the theoretical number of max modified accounts between two flush operations
@@ -174,7 +174,7 @@ export class DefaultStateManager implements StateManager {
     this._storageCacheSettings = {
       deactivate: opts.storageCacheOpts?.deactivate ?? false,
       type: opts.storageCacheOpts?.type ?? CacheType.ORDERED_MAP,
-      size: opts.storageCacheOpts?.size ?? 100000,
+      size: opts.storageCacheOpts?.size ?? 20000,
     }
 
     if (!this._storageCacheSettings.deactivate) {
@@ -259,7 +259,7 @@ export class DefaultStateManager implements StateManager {
   }
 
   /**
-   * Deletes an account from state under the provided `address`. The account will also be removed from the state trie.
+   * Deletes an account from state under the provided `address`.
    * @param address - Address of the account which should be deleted
    */
   async deleteAccount(address: Address) {
@@ -357,7 +357,7 @@ export class DefaultStateManager implements StateManager {
    * the shortest representation of the stored value.
    * @param address -  Address of the account to get the storage for
    * @param key - Key in the account's storage to get the value for. Must be 32 bytes long.
-   * @returns {Promise<Buffer>} - The storage value for the account
+   * @returns - The storage value for the account
    * corresponding to the provided address at the provided key.
    * If this does not exist an empty `Buffer` is returned.
    */
@@ -439,7 +439,9 @@ export class DefaultStateManager implements StateManager {
    * corresponding to `address` at the provided `key`.
    * @param address -  Address to set a storage value for
    * @param key - Key to set the value at. Must be 32 bytes long.
-   * @param value - Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is a empty or filled with zeros, deletes the value.
+   * @param value - Value to set at `key` for account corresponding to `address`.
+   * Cannot be more than 32 bytes. Leading zeros are stripped.
+   * If it is a empty or filled with zeros, deletes the value.
    */
   async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
     if (key.length !== 32) {
@@ -515,6 +517,9 @@ export class DefaultStateManager implements StateManager {
     this._codeCache = {}
   }
 
+  /**
+   * Writes all cache items to the trie
+   */
   async flush(): Promise<void> {
     if (!this._storageCacheSettings.deactivate) {
       const items = await this._storageCache!.flush()
@@ -764,7 +769,6 @@ export class DefaultStateManager implements StateManager {
    * checkpoints were reverted.
    */
   copy(): StateManager {
-    console.log('copy')
     return new DefaultStateManager({
       trie: this._trie.copy(false),
       prefixCodeHashes: this._prefixCodeHashes,
