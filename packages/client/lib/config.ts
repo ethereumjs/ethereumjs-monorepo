@@ -199,6 +199,11 @@ export interface ConfigOptions {
   accountCache?: number
 
   /**
+   * Size for the storage cache (max number of contracts)
+   */
+  storageCache?: number
+
+  /**
    * Generate code for local debugging, currently providing a
    * code snippet which can be used to run blocks on the
    * EthereumJS VM on execution errors
@@ -301,6 +306,7 @@ export class Config {
   public static readonly DNSADDR_DEFAULT = '8.8.8.8'
   public static readonly NUM_BLOCKS_PER_ITERATION = 50
   public static readonly ACCOUNT_CACHE = 1000000
+  public static readonly STORAGE_CACHE = 200000
   public static readonly DEBUGCODE_DEFAULT = false
   public static readonly SAFE_REORG_DISTANCE = 100
   public static readonly SKELETON_FILL_CANONICAL_BACKSTEP = 100
@@ -334,6 +340,7 @@ export class Config {
   public readonly dnsAddr: string
   public readonly numBlocksPerIteration: number
   public readonly accountCache: number
+  public readonly storageCache: number
   public readonly debugCode: boolean
   public readonly discDns: boolean
   public readonly discV4: boolean
@@ -389,6 +396,7 @@ export class Config {
     this.dnsAddr = options.dnsAddr ?? Config.DNSADDR_DEFAULT
     this.numBlocksPerIteration = options.numBlocksPerIteration ?? Config.NUM_BLOCKS_PER_ITERATION
     this.accountCache = options.accountCache ?? Config.ACCOUNT_CACHE
+    this.storageCache = options.storageCache ?? Config.STORAGE_CACHE
     this.debugCode = options.debugCode ?? Config.DEBUGCODE_DEFAULT
     this.mine = options.mine ?? false
     this.isSingleNode = options.isSingleNode ?? false

@@ -7,13 +7,14 @@ import { Event } from '../../lib/types'
 import { MockServer } from './mocks/mockserver'
 
 tape('[Integration:EthereumClient]', async (t) => {
-  const serverConfig = new Config({ accountCacheSize: 10000 })
+  const serverConfig = new Config({ accountCache: 10000, storageCache: 1000 })
   const servers = [new MockServer({ config: serverConfig }) as any]
   const config = new Config({
     servers,
     syncmode: SyncMode.Full,
     lightserv: false,
-    accountCacheSize: 10000,
+    accountCache: 10000,
+    storageCache: 1000,
   })
 
   // attach server to centralized event bus

@@ -11,7 +11,7 @@ import { Config } from '../../lib/config'
 
 import type { BlockData, HeaderData } from '@ethereumjs/block'
 
-const config = new Config({ accountCacheSize: 10000 })
+const config = new Config({ accountCache: 10000, storageCache: 1000 })
 
 tape('[Chain]', (t) => {
   t.test('should test blockchain DB is initialized', async (t) => {

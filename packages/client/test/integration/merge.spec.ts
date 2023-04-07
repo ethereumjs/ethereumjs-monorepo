@@ -72,7 +72,7 @@ tape('[Integration:Merge]', async (t) => {
     ],
   ]
   async function minerSetup(common: Common): Promise<[MockServer, FullEthereumService]> {
-    const config = new Config({ common, accountCacheSize: 10000 })
+    const config = new Config({ common, accountCache: 10000, storageCache: 1000 })
     const server = new MockServer({ config })
     const blockchain = await Blockchain.create({
       common,

@@ -20,7 +20,7 @@ import { SnapProtocol } from '../../../lib/net/protocol'
 
 tape('[SnapProtocol]', (t) => {
   t.test('should get properties', async (t) => {
-    const config = new Config({ transports: [], accountCacheSize: 10000 })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     t.ok(typeof p.name === 'string', 'get name')
@@ -30,7 +30,7 @@ tape('[SnapProtocol]', (t) => {
   })
 
   t.test('should open correctly', async (t) => {
-    const config = new Config({ transports: [], accountCacheSize: 10000 })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     await p.open()
@@ -40,7 +40,7 @@ tape('[SnapProtocol]', (t) => {
   })
 
   t.test('GetAccountRange should encode/decode correctly', async (t) => {
-    const config = new Config({ transports: [], accountCacheSize: 10000 })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     const root = Buffer.from([])
@@ -100,7 +100,7 @@ tape('[SnapProtocol]', (t) => {
   })
 
   t.test('AccountRange should encode/decode correctly', async (t) => {
-    const config = new Config({ transports: [], accountCacheSize: 10000 })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     /* eslint-disable @typescript-eslint/no-use-before-define */
@@ -143,7 +143,7 @@ tape('[SnapProtocol]', (t) => {
   })
 
   t.test('AccountRange encode/decode should handle account slim body correctly', async (t) => {
-    const config = new Config({ transports: [], accountCacheSize: 10000 })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const pSlim = new SnapProtocol({ config, chain })
     const pFull = new SnapProtocol({ config, chain, convertSlimBody: true })
@@ -181,7 +181,7 @@ tape('[SnapProtocol]', (t) => {
   })
 
   t.test('AccountRange should verify a real sample', async (t) => {
-    const config = new Config({ transports: [], accountCacheSize: 10000 })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
@@ -221,7 +221,7 @@ tape('[SnapProtocol]', (t) => {
   })
 
   t.test('GetStorageRanges should encode/decode correctly', async (t) => {
-    const config = new Config({ transports: [], accountCacheSize: 10000 })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     const root = Buffer.from([])
@@ -287,7 +287,7 @@ tape('[SnapProtocol]', (t) => {
   })
 
   t.test('StorageRanges should encode/decode correctly', async (t) => {
-    const config = new Config({ transports: [], accountCacheSize: 10000 })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
@@ -321,7 +321,7 @@ tape('[SnapProtocol]', (t) => {
   })
 
   t.test('StorageRanges should verify a real sample', async (t) => {
-    const config = new Config({ transports: [], accountCacheSize: 10000 })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
@@ -366,7 +366,7 @@ tape('[SnapProtocol]', (t) => {
   })
 
   t.test('GetByteCodes should encode/decode correctly', async (t) => {
-    const config = new Config({ transports: [], accountCacheSize: 10000 })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     const reqId = BigInt(1)
@@ -406,7 +406,7 @@ tape('[SnapProtocol]', (t) => {
   })
 
   t.test('ByteCodes should encode/decode correctly', async (t) => {
-    const config = new Config({ transports: [], accountCacheSize: 10000 })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
@@ -433,7 +433,7 @@ tape('[SnapProtocol]', (t) => {
   })
 
   t.test('ByteCodes should verify a real sample', async (t) => {
-    const config = new Config({ transports: [], accountCacheSize: 10000 })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
@@ -458,7 +458,7 @@ tape('[SnapProtocol]', (t) => {
   })
 
   t.test('GetTrieNodes should encode/decode correctly', async (t) => {
-    const config = new Config({ transports: [], accountCacheSize: 10000 })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
@@ -503,7 +503,7 @@ tape('[SnapProtocol]', (t) => {
   })
 
   t.test('TrieNodes should encode/decode correctly with real sample', async (t) => {
-    const config = new Config({ transports: [], accountCacheSize: 10000 })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
