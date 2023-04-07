@@ -196,7 +196,7 @@ export interface ConfigOptions {
   /**
    * Size for the account cache (max number of accounts)
    */
-  cacheSize?: number
+  accountCache?: number
 
   /**
    * Generate code for local debugging, currently providing a
@@ -300,7 +300,7 @@ export class Config {
   public static readonly MAXPEERS_DEFAULT = 25
   public static readonly DNSADDR_DEFAULT = '8.8.8.8'
   public static readonly NUM_BLOCKS_PER_ITERATION = 50
-  public static readonly CACHE_SIZE = 1000000
+  public static readonly ACCOUNT_CACHE = 1000000
   public static readonly DEBUGCODE_DEFAULT = false
   public static readonly SAFE_REORG_DISTANCE = 100
   public static readonly SKELETON_FILL_CANONICAL_BACKSTEP = 100
@@ -333,7 +333,7 @@ export class Config {
   public readonly maxPeers: number
   public readonly dnsAddr: string
   public readonly numBlocksPerIteration: number
-  public readonly cacheSize: number
+  public readonly accountCache: number
   public readonly debugCode: boolean
   public readonly discDns: boolean
   public readonly discV4: boolean
@@ -388,7 +388,7 @@ export class Config {
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT
     this.dnsAddr = options.dnsAddr ?? Config.DNSADDR_DEFAULT
     this.numBlocksPerIteration = options.numBlocksPerIteration ?? Config.NUM_BLOCKS_PER_ITERATION
-    this.cacheSize = options.cacheSize ?? Config.CACHE_SIZE
+    this.accountCache = options.accountCache ?? Config.ACCOUNT_CACHE
     this.debugCode = options.debugCode ?? Config.DEBUGCODE_DEFAULT
     this.mine = options.mine ?? false
     this.isSingleNode = options.isSingleNode ?? false

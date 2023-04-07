@@ -39,7 +39,7 @@ tape('[SnapSynchronizer]', async (t) => {
   const { SnapSynchronizer } = await import('../../lib/sync/snapsync')
 
   t.test('should initialize correctly', async (t) => {
-    const config = new Config({ transports: [], cacheSize: 10000 })
+    const config = new Config({ transports: [], accountCacheSize: 10000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new SnapSynchronizer({ config, pool, chain })
@@ -48,7 +48,7 @@ tape('[SnapSynchronizer]', async (t) => {
   })
 
   t.test('should open', async (t) => {
-    const config = new Config({ transports: [], cacheSize: 10000 })
+    const config = new Config({ transports: [], accountCacheSize: 10000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new SnapSynchronizer({ config, pool, chain })
@@ -62,7 +62,7 @@ tape('[SnapSynchronizer]', async (t) => {
   })
 
   t.test('should find best', async (t) => {
-    const config = new Config({ transports: [], cacheSize: 10000 })
+    const config = new Config({ transports: [], accountCacheSize: 10000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new SnapSynchronizer({

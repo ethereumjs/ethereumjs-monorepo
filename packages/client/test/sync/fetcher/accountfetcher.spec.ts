@@ -47,7 +47,7 @@ tape('[AccountFetcher]', async (t) => {
   })
 
   t.test('should process', (t) => {
-    const config = new Config({ transports: [], cacheSize: 10000 })
+    const config = new Config({ transports: [], accountCacheSize: 10000 })
     const pool = new PeerPool() as any
     const fetcher = new AccountFetcher({
       config,
@@ -83,7 +83,7 @@ tape('[AccountFetcher]', async (t) => {
   })
 
   t.test('should adopt correctly', (t) => {
-    const config = new Config({ transports: [], cacheSize: 10000 })
+    const config = new Config({ transports: [], accountCacheSize: 10000 })
     const pool = new PeerPool() as any
     const fetcher = new AccountFetcher({
       config,
@@ -126,7 +126,7 @@ tape('[AccountFetcher]', async (t) => {
   })
 
   t.test('should request correctly', async (t) => {
-    const config = new Config({ transports: [], cacheSize: 10000 })
+    const config = new Config({ transports: [], accountCacheSize: 10000 })
     const pool = new PeerPool() as any
     const fetcher = new AccountFetcher({
       config,
@@ -168,7 +168,7 @@ tape('[AccountFetcher]', async (t) => {
   })
 
   t.test('should verify proof correctly', async (t) => {
-    const config = new Config({ transports: [], cacheSize: 10000 })
+    const config = new Config({ transports: [], accountCacheSize: 10000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     const pool = new PeerPool() as any
@@ -246,7 +246,7 @@ tape('[AccountFetcher]', async (t) => {
   })
 
   t.test('should find a fetchable peer', async (t) => {
-    const config = new Config({ transports: [], cacheSize: 10000 })
+    const config = new Config({ transports: [], accountCacheSize: 10000 })
     const pool = new PeerPool() as any
     const fetcher = new AccountFetcher({
       config,
