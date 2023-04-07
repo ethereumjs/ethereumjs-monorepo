@@ -241,6 +241,11 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     number: true,
     default: Config.ACCOUNT_CACHE,
   })
+  .option('storageCache', {
+    describe: 'Size for the storage cache (max number of contracts)',
+    number: true,
+    default: Config.STORAGE_CACHE,
+  })
   .option('debugCode', {
     describe: 'Generate code for local debugging (internal usage mostly)',
     boolean: true,
@@ -720,6 +725,7 @@ async function run() {
     dnsAddr: args.dnsAddr,
     numBlocksPerIteration: args.numBlocksPerIteration,
     accountCache: args.accountCache,
+    storageCache: args.storageCache,
     dnsNetworks: args.dnsNetworks,
     extIP: args.extIP,
     key,

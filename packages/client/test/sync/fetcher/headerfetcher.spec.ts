@@ -17,7 +17,7 @@ tape('[HeaderFetcher]', async (t) => {
   const { HeaderFetcher } = await import('../../../lib/sync/fetcher/headerfetcher')
 
   t.test('should process', (t) => {
-    const config = new Config({ transports: [], accountCacheSize: 10000 })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool()
     const flow = td.object()
     const fetcher = new HeaderFetcher({ config, pool, flow })
@@ -35,7 +35,7 @@ tape('[HeaderFetcher]', async (t) => {
   })
 
   t.test('should adopt correctly', (t) => {
-    const config = new Config({ transports: [], accountCacheSize: 10000 })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const flow = td.object()
     const fetcher = new HeaderFetcher({
@@ -62,7 +62,7 @@ tape('[HeaderFetcher]', async (t) => {
   })
 
   t.test('should find a fetchable peer', async (t) => {
-    const config = new Config({ transports: [], accountCacheSize: 10000 })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool()
     const fetcher = new HeaderFetcher({ config, pool })
     td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
@@ -71,7 +71,7 @@ tape('[HeaderFetcher]', async (t) => {
   })
 
   t.test('should request correctly', async (t) => {
-    const config = new Config({ transports: [], accountCacheSize: 10000 })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const flow = td.object()
     const fetcher = new HeaderFetcher({

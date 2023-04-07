@@ -34,7 +34,8 @@ export async function setup(
     minPeers,
     common,
     safeReorgDistance: 0,
-    accountCacheSize: 10000,
+    accountCache: 10000,
+    storageCache: 1000,
   })
 
   const server = new MockServer({ config, location })

@@ -194,7 +194,8 @@ tape('[Skeleton] / initSync', async (t) => {
         common,
         transports: [],
         logger: getLogger({ loglevel: 'debug' }),
-        accountCacheSize: 10000,
+        accountCache: 10000,
+        storageCache: 1000,
       })
       const chain = await Chain.create({ config })
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -309,7 +310,8 @@ tape('[Skeleton] / setHead', async (t) => {
         common,
         transports: [],
         logger: getLogger({ loglevel: 'debug' }),
-        accountCacheSize: 10000,
+        accountCache: 10000,
+        storageCache: 1000,
       })
       const chain = await Chain.create({ config })
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -650,7 +652,8 @@ tape('[Skeleton] / setHead', async (t) => {
       const config = new Config({
         transports: [],
         common,
-        accountCacheSize: 10000,
+        accountCache: 10000,
+        storageCache: 1000,
       })
       const chain = await Chain.create({ config })
       ;(chain.blockchain as any)._validateBlocks = false
@@ -756,7 +759,8 @@ tape('[Skeleton] / setHead', async (t) => {
       const config = new Config({
         transports: [],
         common,
-        accountCacheSize: 10000,
+        accountCache: 10000,
+        storageCache: 1000,
       })
       const chain = await Chain.create({ config })
       ;(chain.blockchain as any)._validateBlocks = false
@@ -820,7 +824,8 @@ tape('[Skeleton] / setHead', async (t) => {
         transports: [],
         common,
         logger: getLogger({ loglevel: 'debug' }),
-        accountCacheSize: 10000,
+        accountCache: 10000,
+        storageCache: 1000,
       })
 
       const chain = await Chain.create({ config })

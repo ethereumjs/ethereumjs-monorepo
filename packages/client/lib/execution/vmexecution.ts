@@ -54,6 +54,7 @@ export class VMExecution extends Execution {
       })
 
       this.config.logger.info(`Initializing account cache size=${this.config.accountCache}`)
+      this.config.logger.info(`Initializing storage cache size=${this.config.storageCache}`)
       const stateManager = new DefaultStateManager({
         trie,
         accountCacheOpts: {
@@ -64,7 +65,7 @@ export class VMExecution extends Execution {
         storageCacheOpts: {
           deactivate: false,
           type: CacheType.LRU,
-          size: this.config.accountCache,
+          size: this.config.storageCache,
         },
       })
 

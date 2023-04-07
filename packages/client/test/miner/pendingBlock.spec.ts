@@ -48,7 +48,8 @@ const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berli
 const config = new Config({
   transports: [],
   common,
-  accountCacheSize: 10000,
+  accountCache: 10000,
+  storageCache: 1000,
   logger: getLogger({ loglevel: 'debug' }),
 })
 

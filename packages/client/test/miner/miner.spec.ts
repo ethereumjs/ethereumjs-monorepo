@@ -98,7 +98,8 @@ tape('[Miner]', async (t) => {
   const accounts: [Address, Buffer][] = [[A.address, A.privateKey]]
   const config = new Config({
     transports: [],
-    accountCacheSize: 10000,
+    accountCache: 10000,
+    storageCache: 1000,
     accounts,
     mine: true,
     common,
@@ -283,7 +284,8 @@ tape('[Miner]', async (t) => {
     const chain = new FakeChain() as any
     const config = new Config({
       transports: [],
-      accountCacheSize: 10000,
+      accountCache: 10000,
+      storageCache: 1000,
       accounts,
       mine: true,
       common,
@@ -346,7 +348,8 @@ tape('[Miner]', async (t) => {
     })
     const config = new Config({
       transports: [],
-      accountCacheSize: 10000,
+      accountCache: 10000,
+      storageCache: 1000,
       accounts,
       mine: true,
       common,
@@ -454,7 +457,8 @@ tape('[Miner]', async (t) => {
     const chain = new FakeChain() as any
     const config = new Config({
       transports: [],
-      accountCacheSize: 10000,
+      accountCache: 10000,
+      storageCache: 1000,
       accounts,
       mine: true,
       common,
@@ -513,7 +517,8 @@ tape('[Miner]', async (t) => {
     common.setHardforkByBlockNumber(0)
     const config = new Config({
       transports: [],
-      accountCacheSize: 10000,
+      accountCache: 10000,
+      storageCache: 1000,
       accounts,
       mine: true,
       common,
@@ -586,7 +591,8 @@ tape('[Miner]', async (t) => {
     ;(common as any)._chainParams['genesis'].difficulty = 1
     const config = new Config({
       transports: [],
-      accountCacheSize: 10000,
+      accountCache: 10000,
+      storageCache: 1000,
       accounts,
       mine: true,
       common,
