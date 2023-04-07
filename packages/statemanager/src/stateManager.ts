@@ -271,6 +271,9 @@ export class DefaultStateManager implements StateManager {
     } else {
       this._accountCache!.del(address)
     }
+    if (!this._storageCacheSettings.deactivate) {
+      this._storageCache?.clearContractStorage(address)
+    }
   }
 
   /**
