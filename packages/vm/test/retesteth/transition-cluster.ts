@@ -22,6 +22,7 @@ function getChild() {
   }
   if (index === -1) {
     const child = fork(program, parameters, options)
+    // eslint-disable-next-line no-console
     child.on('error', console.log)
     const newChild = {
       active: false,
@@ -62,4 +63,5 @@ const server = http.createServer((request: any, result: any) => {
   }
 })
 server.listen(3000)
+// eslint-disable-next-line no-console
 console.log('Transition cluster ready')

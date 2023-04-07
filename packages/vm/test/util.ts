@@ -281,6 +281,9 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
     currentNumber,
     currentBaseFee,
     currentRandom,
+    parentGasLimit,
+    parentGasUsed,
+    parentBaseFee,
   } = data
   const headerData: any = {
     number: currentNumber,
@@ -292,6 +295,17 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
   }
   if (opts?.common && opts.common.gteHardfork('london')) {
     headerData['baseFeePerGas'] = currentBaseFee
+    if (currentBaseFee === undefined) {
+      const parentBlockHeader = BlockHeader.fromHeaderData(
+        {
+          gasLimit: parentGasLimit,
+          gasUsed: parentGasUsed,
+          baseFeePerGas: parentBaseFee,
+        },
+        { common: opts.common }
+      )
+      headerData['baseFeePerGas'] = parentBlockHeader.calcNextBaseFee()
+    }
   }
   if (opts?.common && opts.common.gteHardfork('merge')) {
     headerData['mixHash'] = currentRandom
