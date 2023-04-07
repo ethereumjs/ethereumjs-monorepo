@@ -87,7 +87,7 @@ export class StorageCache extends Cache {
    * Puts storage value to cache under address_key cache key.
    * @param address - Account address
    * @param key - Storage key
-   * @param val - Storage value
+   * @param val - RLP-encoded storage value
    */
   put(address: Address, key: Buffer, value: Buffer): void {
     const addressHex = address.buf.toString('hex')
@@ -116,7 +116,7 @@ export class StorageCache extends Cache {
   }
 
   /**
-   * Returns the queried slot
+   * Returns the queried slot as the RLP encoded storage value
    * Buffer.from('80', 'hex'): slot is known to be empty
    * undefined: slot is not in cache
    * @param key - Address of account
