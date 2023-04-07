@@ -141,8 +141,7 @@ tape('StateManager -> Code', (t) => {
       st.end()
     })
 
-    // TODO: fix this test (likely Jochem)
-    /**it('should not prefix codehashes if prefixCodeHashes = false', async (t) => {
+    t.test('should not prefix codehashes if prefixCodeHashes = false', async (st) => {
       const stateManager = new DefaultStateManager({
         prefixCodeHashes: false,
       })
@@ -150,11 +149,10 @@ tape('StateManager -> Code', (t) => {
       const code = Buffer.from('80', 'hex')
       try {
         await stateManager.putContractCode(address, code)
-        t.fail('should throw')
+        st.fail('should throw')
       } catch (e) {
-        t.pass('successfully threw')
+        st.pass('successfully threw')
       }
-      t.end()
-    })*/
+    })
   }
 })
