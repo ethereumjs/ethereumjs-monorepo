@@ -376,6 +376,9 @@ export class DefaultStateManager implements StateManager {
     }
     const trie = await this._getStorageTrie(address, account)
     const value = await trie.get(key)
+    if (!this._storageCacheSettings.deactivate) {
+      this._storageCache?.put(address, key, value ?? Buffer.from('80', 'hex'))
+    }
     const decoded = Buffer.from(RLP.decode(Uint8Array.from(value ?? [])) as Uint8Array)
     return decoded
   }
