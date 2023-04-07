@@ -89,7 +89,7 @@ export class StorageCache extends Cache {
    * @param key - Storage key
    * @param val - Storage value
    */
-  put(address: Address, key: Buffer, value: Buffer | undefined): void {
+  put(address: Address, key: Buffer, value: Buffer): void {
     const addressHex = address.buf.toString('hex')
     const keyHex = key.toString('hex')
     this._saveCachePreState(addressHex, keyHex)
@@ -102,14 +102,14 @@ export class StorageCache extends Cache {
       if (!storageMap) {
         storageMap = new OrderedMap()
       }
-      storageMap.setElement(keyHex, value ?? Buffer.from('80', 'hex'))
+      storageMap.setElement(keyHex, value)
       this._lruCache!.set(addressHex, storageMap)
     } else {
       let storageMap = this._orderedMapCache!.getElementByKey(addressHex)
       if (!storageMap) {
         storageMap = new OrderedMap()
       }
-      storageMap.setElement(keyHex, value ?? Buffer.from('80', 'hex'))
+      storageMap.setElement(keyHex, value)
       this._orderedMapCache!.setElement(addressHex, storageMap)
     }
     this._stats.writes += 1
@@ -128,16 +128,16 @@ export class StorageCache extends Cache {
       this._debug(`Get storage for ${addressHex}`)
     }
 
-    let elem
+    let storageMap
     if (this._lruCache) {
-      elem = this._lruCache!.get(addressHex)
+      storageMap = this._lruCache!.get(addressHex)
     } else {
-      elem = this._orderedMapCache!.getElementByKey(addressHex)
+      storageMap = this._orderedMapCache!.getElementByKey(addressHex)
     }
     this._stats.reads += 1
-    if (elem) {
+    if (storageMap) {
       this._stats.hits += 1
-      return elem.getElementByKey(keyHex)
+      return storageMap.getElementByKey(keyHex)
     }
   }
 
@@ -242,9 +242,13 @@ export class StorageCache extends Cache {
         const value = itStorage.pointer[1]
         if (this._lruCache) {
           const storageMap = this._lruCache.get(addressHex) ?? new OrderedMap()
-          if (!value) {
+          if (value === undefined) {
+            // Value is known not to be in the cache before
+            // -> delete from cache
             storageMap.eraseElementByKey(keyHex)
           } else {
+            // Value is known to be in the cache before
+            // (being either some storage value or the RLP-encoded empty Buffer)
             storageMap.setElement(keyHex, value)
           }
           this._lruCache.set(addressHex, storageMap)
@@ -271,27 +275,32 @@ export class StorageCache extends Cache {
     if (this.DEBUG) {
       this._debug(`Commit to checkpoint ${this._checkpoints}`)
     }
-    const diffMap = this._diffCache.pop()!
-    const oldDiffMap = this._diffCache[this._checkpoints]
+    const higherHeightDiffMap = this._diffCache.pop()!
+    const lowerHeightDiffMap = this._diffCache[this._checkpoints]
 
-    const it = diffMap.begin()
-    while (!it.equals(diffMap.end())) {
+    const it = higherHeightDiffMap.begin()
+    // Go through diffMap from the pre-commit checkpoint height.
+    // 1. Iterate through all state pre states
+    // 2. If state pre-state is not in the new (lower) height diff map, take pre commit pre state value
+    // 3. If state is in new map, take this one, since this superseeds subsequent changes
+    while (!it.equals(higherHeightDiffMap.end())) {
       const addressHex = it.pointer[0]
-      const storageDiff = it.pointer[1]
+      const higherHeightStorageDiff = it.pointer[1]
 
-      const itStorageDiff = storageDiff.begin()
-      const oldStorageDiff = oldDiffMap.getElementByKey(addressHex) ?? new OrderedMap()
+      const itHigherHeightStorageDiff = higherHeightStorageDiff.begin()
+      const lowerHeightStorageDiff =
+        lowerHeightDiffMap.getElementByKey(addressHex) ?? new OrderedMap()
 
-      while (!itStorageDiff.equals(storageDiff.end())) {
-        const keyHex = itStorageDiff.pointer[0]
-        const value = itStorageDiff.pointer[1]
-        const oldDiffStorage = oldStorageDiff.getElementByKey(keyHex)
-        if (!oldDiffStorage) {
-          oldStorageDiff.setElement(keyHex, value)
+      while (!itHigherHeightStorageDiff.equals(higherHeightStorageDiff.end())) {
+        const keyHex = itHigherHeightStorageDiff.pointer[0]
+        const value = itHigherHeightStorageDiff.pointer[1]
+        const lowerHeightDiffStorage = lowerHeightStorageDiff.getElementByKey(keyHex)
+        if (lowerHeightDiffStorage === undefined) {
+          lowerHeightStorageDiff.setElement(keyHex, value)
         }
-        itStorageDiff.next()
+        itHigherHeightStorageDiff.next()
       }
-      oldDiffMap.setElement(addressHex, oldStorageDiff)
+      lowerHeightDiffMap.setElement(addressHex, lowerHeightStorageDiff)
       it.next()
     }
   }
