@@ -1,12 +1,5 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
-import {
-  Account,
-  KECCAK256_RLP,
-  MAX_UINT64,
-  bigIntToHex,
-  bufferToBigInt,
-  intToHex,
-} from '@ethereumjs/util'
+import { Account, MAX_UINT64, bigIntToHex, bufferToBigInt, intToHex } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { EOF } from './eof'
@@ -986,9 +979,7 @@ export class Interpreter {
     // Subtract from contract balance
     await this._eei.modifyAccountFields(this._env.address, {
       balance: BigInt(0),
-      storageRoot: KECCAK256_RLP,
     })
-    await this._eei.clearContractStorage(this._env.address)
 
     trap(ERROR.STOP)
   }
