@@ -1,7 +1,5 @@
-// TODO: fix ProofStateManager tests
-
-/*import { Trie } from '@ethereumjs/trie'
-import { Address, toBuffer, zeros } from '@ethereumjs/util'
+import { Trie } from '@ethereumjs/trie'
+import { Account, Address, toBuffer, zeros } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
@@ -19,6 +17,7 @@ tape('ProofStateManager', (t) => {
     const code = Buffer.from('6000', 'hex')
     const stateManager = new DefaultStateManager()
     await stateManager.checkpoint()
+    await stateManager.putAccount(address, new Account())
     await stateManager.putContractStorage(address, key, value)
     await stateManager.putContractCode(address, code)
     const account = await stateManager.getAccount(address)
@@ -85,6 +84,7 @@ tape('ProofStateManager', (t) => {
         await trie._db.put(key, bufferData)
       }
       trie.root(stateRoot!)
+      await stateManager.putAccount(address, new Account())
       const proof = await stateManager.getProof(address)
       st.deepEqual(ropsten_nonexistentAccount, proof)
       st.ok(await stateManager.verifyProof(ropsten_nonexistentAccount))
@@ -251,4 +251,4 @@ tape('ProofStateManager', (t) => {
     }
     st.end()
   })
-})*/
+})
