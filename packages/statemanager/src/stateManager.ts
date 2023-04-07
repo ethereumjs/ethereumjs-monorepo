@@ -764,10 +764,12 @@ export class DefaultStateManager implements StateManager {
    * checkpoints were reverted.
    */
   copy(): StateManager {
+    console.log('copy')
     return new DefaultStateManager({
       trie: this._trie.copy(false),
       prefixCodeHashes: this._prefixCodeHashes,
       accountCacheOpts: this._accountCacheSettings,
+      storageCacheOpts: this._storageCacheSettings,
     })
   }
 
