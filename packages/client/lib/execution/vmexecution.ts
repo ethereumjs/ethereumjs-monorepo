@@ -53,18 +53,18 @@ export class VMExecution extends Execution {
         useKeyHashing: true,
       })
 
-      this.config.logger.info(`Initializing account cache size=${this.config.cacheSize}`)
+      this.config.logger.info(`Initializing account cache size=${this.config.accountCache}`)
       const stateManager = new DefaultStateManager({
         trie,
         accountCacheOpts: {
           deactivate: false,
           type: CacheType.LRU,
-          size: this.config.cacheSize,
+          size: this.config.accountCache,
         },
         storageCacheOpts: {
           deactivate: false,
           type: CacheType.LRU,
-          size: 1000000,
+          size: this.config.accountCache,
         },
       })
 

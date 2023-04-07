@@ -15,7 +15,7 @@ import type { StateManager } from '@ethereumjs/statemanager'
 const setup = () => {
   const config = new Config({
     transports: [],
-    cacheSize: 10000,
+    accountCacheSize: 10000,
     logger: getLogger({ loglevel: 'info' }),
   })
   const service: any = {
@@ -38,7 +38,7 @@ const setup = () => {
 }
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-const config = new Config({ transports: [], cacheSize: 10000 })
+const config = new Config({ transports: [], accountCacheSize: 10000 })
 
 const handleTxs = async (
   txs: any[],

@@ -15,7 +15,7 @@ import { MockChain } from './mocks/mockchain'
 import { MockServer } from './mocks/mockserver'
 import { destroy } from './util'
 
-const config = new Config({ cacheSize: 10000 })
+const config = new Config({ accountCacheSize: 10000 })
 
 tape('[Integration:FullEthereumService]', async (t) => {
   // Stub out setStateRoot since correct state root doesn't exist in mock state.

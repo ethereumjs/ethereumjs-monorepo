@@ -144,7 +144,7 @@ export interface ClientOpts {
   maxPeers?: number
   dnsAddr?: string
   numBlocksPerIteration?: number
-  cacheSize?: number
+  accountCache?: number
   dnsNetworks?: string[]
   executeBlocks?: string
   debugCode?: boolean

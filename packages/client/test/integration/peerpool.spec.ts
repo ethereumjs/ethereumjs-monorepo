@@ -12,10 +12,10 @@ import { wait } from './util'
 
 tape('[Integration:PeerPool]', async (t) => {
   async function setup(protocols: EthProtocol[] = []): Promise<[MockServer, PeerPool]> {
-    const serverConfig = new Config({ cacheSize: 10000 })
+    const serverConfig = new Config({ accountCacheSize: 10000 })
     const server = new MockServer({ config: serverConfig }) as any
     server.addProtocols(protocols)
-    const config = new Config({ servers: [server], cacheSize: 10000 })
+    const config = new Config({ servers: [server], accountCacheSize: 10000 })
     await server.start()
     const pool = new PeerPool({ config })
     await pool.open()
@@ -64,7 +64,7 @@ tape('[Integration:PeerPool]', async (t) => {
   })
 
   t.test('should handle peer messages', async (t) => {
-    const config = new Config({ transports: [], cacheSize: 10000 })
+    const config = new Config({ transports: [], accountCacheSize: 10000 })
     const blockchain = await Blockchain.create({
       validateBlocks: false,
       validateConsensus: false,

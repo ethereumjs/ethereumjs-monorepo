@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { Address, bigIntToHex, bufferToHex, toBuffer } from '@ethereumjs/util'
+import { Account, Address, bigIntToHex, bufferToHex, toBuffer } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
@@ -28,6 +28,10 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const server = startRPC(manager.getMethods())
 
   const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
+  await execution.vm.stateManager.putAccount(
+    Address.fromString('0x9288f8f702cbfb8cc5890819c1c1e2746e684d07'),
+    new Account()
+  )
   t.notEqual(execution, undefined, 'should have valid execution')
   const { vm } = execution
 
