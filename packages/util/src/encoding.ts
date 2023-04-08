@@ -72,14 +72,15 @@ export const compactBytesToNibbles = (compact: Uint8Array) => {
  * TODO: Commenting the code for now as this seems to be helper function
  * (from geth codebase )
  *
+ * TODO: This function should return an array of buffers encoding a path in either the account or storage trie
+ *  or use this to implement a function that will
+ *  for now assuming the mentioned return type
  */
-//
-//
-// export const getPathTo = (tillBytes: number, key: Buffer) => {
-//   const hexNibbles = bytesToNibbles(key).subarray(0, tillBytes)
-//   // Remove the terminator if its there, although it would be there only if tillBytes >= key.length
-//   // This seems to be a test helper to generate paths so correctness of this isn't necessary
-//   hexNibbles[hexNibbles.length - 1] = 0
-//   const compactBytes = nibblesToCompactBytes(hexNibbles)
-//   return [Buffer.from(compactBytes)]
-// }
+export const getPathTo = (tillBytes: number, key: Buffer) => {
+  const hexNibbles = bytesToNibbles(key).subarray(0, tillBytes)
+  // Remove the terminator if its there, although it would be there only if tillBytes >= key.length
+  // This seems to be a test helper to generate paths so correctness of this isn't necessary
+  hexNibbles[hexNibbles.length - 1] = 0
+  const compactBytes = nibblesToCompactBytes(hexNibbles)
+  return [compactBytes.toString()]
+}
