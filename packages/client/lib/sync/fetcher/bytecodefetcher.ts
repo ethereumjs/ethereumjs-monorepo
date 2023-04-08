@@ -7,7 +7,6 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { Fetcher } from './fetcher'
 
 import type { Peer } from '../../net/peer'
-import type { AccountData } from '../../net/protocol/snapprotocol'
 import type { FetcherOptions } from './fetcher'
 import type { Job } from './types'
 import type { BatchDBOp } from '@ethereumjs/trie'
@@ -48,7 +47,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
     this.trie = options.trie ?? new Trie({ useKeyHashing: false })
     this.debug = createDebugLogger('client:ByteCodeFetcher')
     if (this.hashes.length > 0) {
-      const fullJob = { task: { hashes: this.hashes } } as Job<JobTask, AccountData[], AccountData>
+      const fullJob = { task: { hashes: this.hashes } } as Job<JobTask, Buffer[], Buffer>
       this.debug(
         `Bytecode fetcher instantiated ${fullJob.task.hashes.length} hash requests destroyWhenDone=${this.destroyWhenDone}`
       )
@@ -170,9 +169,6 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
   /**
    * Generate list of tasks to fetch. Modifies `first` and `count` to indicate
    * remaining items apart from the tasks it pushes in the queue
-   *
-   * Divides the full 256-bit range of hashes into ranges of @maxAccountRange
-   * size and turnes each range into a task for the fetcher
    */
   tasks(maxTasks = this.config.maxFetcherJobs): JobTask[] {
     const tasks: JobTask[] = []
