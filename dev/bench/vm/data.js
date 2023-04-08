@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1680820390474,
+  "lastUpdate": 1680940100017,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "295e5a3caa69c226e8f8edfad4ea72a843bc0b4f",
-          "message": "Hotfix Releases (SSZ and KZG dependency fixes) (#2556)\n\n* Added CHANGELOG updates, deprecation notes, updated version numbers, updated upstream dependency versions\r\n\r\n* Fixes\r\n\r\n* Updated package-lock.json",
-          "timestamp": "2023-02-27T15:05:29+01:00",
-          "tree_id": "dd043ea6ce2023023c11e8fa35cb465476161c43",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/295e5a3caa69c226e8f8edfad4ea72a843bc0b4f"
-        },
-        "date": 1677506908927,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 13529,
-            "range": "±3.53%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 13706,
-            "range": "±4.05%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 13242,
-            "range": "±6.64%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 13493,
-            "range": "±2.36%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 13355,
-            "range": "±2.34%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.24%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "frederik.bolding@gmail.com",
+            "name": "Frederik Bolding",
+            "username": "FrederikBolding"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e8cf85bb8207a273d0ecdb0bf132d22b9b5304bc",
+          "message": "Bump `@chainsafe/ssz` to `0.11.0` (#2622)\n\n* Bump chainsafe/ssz to 0.11.0\r\n\r\n* Try fixing karma\r\n\r\n* Add karma aliases\r\n\r\n* Add `common` configuration\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-04-08T09:45:34+02:00",
+          "tree_id": "6aebdda2c413c1394f11f7b5ba61635087a02ec0",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e8cf85bb8207a273d0ecdb0bf132d22b9b5304bc"
+        },
+        "date": 1680940099318,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15077,
+            "range": "±2.88%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 14664,
+            "range": "±4.63%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 15104,
+            "range": "±1.99%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 14669,
+            "range": "±2.20%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 13259,
+            "range": "±8.73%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
           }
         ]
       }
