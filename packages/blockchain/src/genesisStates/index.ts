@@ -11,7 +11,8 @@ export type StoragePair = [key: PrefixedHexString, value: PrefixedHexString]
 export type AccountState = [
   balance: PrefixedHexString,
   code: PrefixedHexString,
-  storage: Array<StoragePair>
+  storage: Array<StoragePair>,
+  nonce: PrefixedHexString
 ]
 
 export interface GenesisState {
@@ -29,12 +30,13 @@ export async function genesisStateRoot(genesisState: GenesisState) {
     if (typeof value === 'string') {
       account.balance = BigInt(value)
     } else {
-      const [balance, code, storage] = value as Partial<AccountState>
+      const [balance, code, storage, nonce] = value as Partial<AccountState>
       if (balance !== undefined) {
         account.balance = BigInt(balance)
       }
       if (code !== undefined) {
-        account.codeHash = keccak256(toBytes(code))
+        const codeBytes = isHexPrefixed(code) ? toBytes(code) : hexToBytes(code)
+        account.codeHash = keccak256(codeBytes)
       }
       if (storage !== undefined) {
         const storageTrie = new Trie({ useKeyHashing: true })
@@ -46,6 +48,9 @@ export async function genesisStateRoot(genesisState: GenesisState) {
           await storageTrie.put(storageKey, storageVal)
         }
         account.storageRoot = storageTrie.root()
+      }
+      if (nonce !== undefined) {
+        account.nonce = BigInt(nonce)
       }
     }
     await trie.put(address, account.serialize())
