@@ -91,6 +91,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
       const requestedHash = task.hashes[i]
       const receivedCode = rangeResult.codes[i]
       const receivedHash = Buffer.from(keccak256(receivedCode))
+
       if (requestedHash.compare(receivedHash) !== 0) {
         missingCodeHashes.push(requestedHash)
       } else {
@@ -171,13 +172,12 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
    * remaining items apart from the tasks it pushes in the queue
    */
   tasks(maxTasks = this.config.maxFetcherJobs): JobTask[] {
+    const max = this.config.maxPerRequest
     const tasks: JobTask[] = []
-    if (this.hashes.length > 0) {
-      // Current strategy is to requests all known code hash requests
-      tasks.push({ hashes: this.hashes })
-      this.hashes = [] // TODO limit number of requests
-      this.debug(`Created new tasks num=${tasks.length}`)
+    while (tasks.length < maxTasks && this.hashes.length > 0) {
+      tasks.push({ hashes: this.hashes.splice(0, max) })
     }
+    this.debug(`Created new tasks num=${tasks.length}`)
     return tasks
   }
 
