@@ -106,11 +106,17 @@ export class Miner {
       // delay signing by rand(SIGNER_COUNT * 500ms)
       const [signerAddress] = this.config.accounts[0]
       const { blockchain } = this.service.chain
+      const parentBlock = this.service.chain.blocks.latest!
+      //eslint-disable-next-line
+      const number = parentBlock.header.number + BigInt(1)
       const inTurn = await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
-        signerAddress
+        signerAddress,
+        number
       )
       if (inTurn === false) {
-        const signerCount = (blockchain.consensus as CliqueConsensus).cliqueActiveSigners().length
+        const signerCount = (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+          number
+        ).length
         timeout += Math.random() * signerCount * 500
       }
     }
@@ -241,7 +247,8 @@ export class Miner {
       cliqueSigner = signerPrivKey
       // Determine if signer is INTURN (2) or NOTURN (1)
       inTurn = await (vmCopy.blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
-        signerAddress
+        signerAddress,
+        number
       )
       difficulty = inTurn ? 2 : 1
     }
