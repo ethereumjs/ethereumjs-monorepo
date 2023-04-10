@@ -180,13 +180,13 @@ const addNextBlock = async (
   return block
 }
 
-tape('Clique: Initialization', (t) => {
+tape.only('Clique: Initialization', (t) => {
   t.test('should initialize a clique blockchain', async (st) => {
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.create({ common })
 
     const head = await blockchain.getIteratorHead()
-    st.ok(equalsBytes(head.hash(), blockchain.genesisBlock.hash()), 'correct genesis hash')
+    st.deepEquals(head.hash(), blockchain.genesisBlock.hash(), 'correct genesis hash')
 
     st.deepEquals(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(head.header.number + BigInt(1)),
@@ -875,12 +875,10 @@ tape('clique: reorgs', (t) => {
         [A.address, B.address, C.address],
         'address C added to signers'
       )
-      st.ok(
-        equalsBytes((await blockchain.getCanonicalHeadBlock()).hash(), headBlockUnforked.hash())
-      )
+      st.deepEquals((await blockchain.getCanonicalHeadBlock()).hash(), headBlockUnforked.hash())
       await addNextBlockReorg(blockchain, blocks, genesis, B)
       const headBlock = await addNextBlock(blockchain, blocks, A)
-      st.ok(equalsBytes((await blockchain.getCanonicalHeadBlock()).hash(), headBlock.hash()))
+      st.deepEquals((await blockchain.getCanonicalHeadBlock()).hash(), headBlock.hash())
       await addNextBlock(blockchain, blocks, B)
       await addNextBlock(blockchain, blocks, A)
 
@@ -935,9 +933,7 @@ tape('clique: reorgs', (t) => {
         [A.address, B.address, C.address],
         'address C added to signers'
       )
-      st.ok(
-        equalsBytes((await blockchain.getCanonicalHeadBlock()).hash(), headBlockUnforked.hash())
-      )
+      st.deepEquals((await blockchain.getCanonicalHeadBlock()).hash(), headBlockUnforked.hash())
       await addNextBlockReorg(blockchain, blocks, genesis, B, undefined, undefined, common)
       await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
 
@@ -949,7 +945,7 @@ tape('clique: reorgs', (t) => {
       await addNextBlock(blockchain, blocks, B, undefined, undefined, common)
 
       const headBlock = await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
-      st.ok(equalsBytes((await blockchain.getCanonicalHeadBlock()).hash(), headBlock.hash()))
+      st.deepEquals((await blockchain.getCanonicalHeadBlock()).hash(), headBlock.hash())
 
       st.deepEqual(
         (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
