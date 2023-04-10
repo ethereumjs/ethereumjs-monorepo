@@ -252,8 +252,8 @@ export class VmState implements EVMStateAccess {
         await this.putAccount(addr, account)
       } else {
         // New format: address -> [balance, code, storage]
-        const [balance, code, storage] = state
-        const account = Account.fromAccountData({ balance })
+        const [balance, code, storage, nonce] = state
+        const account = Account.fromAccountData({ balance, nonce })
         await this.putAccount(addr, account)
         if (code !== undefined) {
           await this.putContractCode(addr, toBytes(code))
