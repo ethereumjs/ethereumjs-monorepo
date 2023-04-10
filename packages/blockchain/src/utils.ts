@@ -9,12 +9,13 @@ import type { GenesisState } from './genesisStates'
 export function parseGethGenesisState(json: any) {
   const state: GenesisState = {}
   for (let address of Object.keys(json.alloc)) {
-    let { balance, code, storage } = json.alloc[address]
+    let { balance, code, storage, nonce } = json.alloc[address]
     address = addHexPrefix(address)
     balance = isHexPrefixed(balance) ? balance : bigIntToHex(BigInt(balance))
     code = code !== undefined ? addHexPrefix(code) : undefined
     storage = storage !== undefined ? Object.entries(storage) : undefined
-    state[address] = [balance, code, storage] as any
+    nonce = nonce !== undefined ? addHexPrefix(nonce) : undefined
+    state[address] = [balance, code, storage, nonce] as any
   }
   return state
 }

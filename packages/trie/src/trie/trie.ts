@@ -130,7 +130,7 @@ export class Trie {
       return value !== null
     } catch (error: any) {
       if (error.message === 'Missing node in DB') {
-        return false
+        return equalsBytes(root, this.EMPTY_TRIE_ROOT)
       } else {
         throw error
       }
