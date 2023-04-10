@@ -47,6 +47,10 @@ type CliqueLatestBlockSigners = CliqueBlockSigner[]
 
 /**
  * This class encapsulates Clique-related consensus functionality when used with the Blockchain class.
+ * Note: reorgs which happen between epoch transitions, which change the internal voting state over the reorg
+ * will result in failure and is currently not supported.
+ * The hotfix for this could be: re-load the latest epoch block (this has the clique state in the extraData of the header)
+ * Now replay all blocks on top of it. This should validate the chain up to the new/reorged tip which previously threw.
  */
 export class CliqueConsensus implements Consensus {
   blockchain: Blockchain | undefined
@@ -243,8 +247,6 @@ export class CliqueConsensus implements Consensus {
         this._cliqueLatestSignerStates.push(lastItem)
       }
     }
-
-    this._cliqueLatestSignerStates.sort((a, b) => (a[0] > b[0] ? 1 : -1))
 
     // save to db
     const formatted = this._cliqueLatestSignerStates.map((state) => [
@@ -478,7 +480,6 @@ export class CliqueConsensus implements Consensus {
     this._cliqueLatestSignerStates = this._cliqueLatestSignerStates.filter(
       (s) => s[0] <= blockNumber
     )
-    this._cliqueLatestSignerStates.sort((a, b) => (a[0] > b[0] ? 1 : -1))
     await this.cliqueUpdateSignerStates()
 
     this._cliqueLatestVotes = this._cliqueLatestVotes.filter((v) => v[0] <= blockNumber)
