@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "@types/lru-cache": "^5.1.0",
-    "c-kzg": "^2.0.0"
+    "c-kzg": "^2.0.4"
   },
   "engines": {
     "node": ">=14"
