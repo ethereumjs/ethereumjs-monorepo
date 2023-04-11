@@ -1,7 +1,7 @@
 import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { TransactionFactory, initKZG } from '@ethereumjs/tx'
-import { Address, hexStringToBytes } from '@ethereumjs/util'
+import { TransactionFactory } from '@ethereumjs/tx'
+import { Address, hexStringToBytes, initKZG } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import * as tape from 'tape'
 

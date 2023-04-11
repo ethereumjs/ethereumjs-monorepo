@@ -52,6 +52,7 @@ export * from './encoding'
  * Export ethjs-util methods
  */
 export * from './asyncEventEmitter'
+export * from './blobHelpers'
 export {
   arrayContainsArray,
   fromAscii,
@@ -64,4 +65,5 @@ export {
   stripHexPrefix,
   toAscii,
 } from './internal'
+export * from './kzg'
 export * from './lock'

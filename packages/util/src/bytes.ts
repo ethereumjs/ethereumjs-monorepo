@@ -186,10 +186,6 @@ export const toBytes = function (v: ToBytesInputTypes): Uint8Array {
     return new Uint8Array()
   }
 
-  if (Buffer.isBuffer(v)) {
-    return Uint8Array.from(v)
-  }
-
   if (Array.isArray(v) || v instanceof Uint8Array) {
     return Uint8Array.from(v)
   }
