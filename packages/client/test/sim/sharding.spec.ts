@@ -2,13 +2,14 @@ import { Common } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { bytesToPrefixedHexString, hexStringToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
+import { randomBytes } from 'node:crypto'
 import * as tape from 'tape'
 
 import {
+  createBlobTxs,
   filterKeywords,
   filterOutWords,
   runBlobTx,
-  runBlobTxsFromFile,
   runTxHelper,
   sleep,
   startNetwork,
@@ -28,6 +29,9 @@ export async function runTx(data: string, to?: string, value?: bigint) {
 }
 
 tape('sharding/eip4844 hardfork tests', async (t) => {
+  if (process.env.EXTRA_CL_PARAMS === undefined) {
+    process.env.EXTRA_CL_PARAMS = '--params.CAPELLA_FORK_EPOCH 0 --params.DENEB_FORK_EPOCH 0'
+  }
   const { teardownCallBack, result } = await startNetwork(network, client, {
     filterKeywords,
     filterOutWords,
@@ -55,7 +59,9 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
       client,
       2 ** 14,
       pkey,
-      '0x3dA33B9A0894b908DdBb00d96399e506515A1009'
+      '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
+      undefined,
+      { common }
     )
 
     const eth2res = await (await fetch('http://127.0.0.1:9596/eth/v1/beacon/headers')).json()
@@ -96,11 +102,23 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
   })
 
   t.test('data gas fee market tests', async (st) => {
-    const res = await runBlobTxsFromFile(client, './test/sim/configs/blobs.txt')
+    const txns = await createBlobTxs(
+      4,
+      4096,
+      pkey,
+      '0x' + randomBytes(20).toString('hex'),
+      undefined,
+      { common }
+    )
+    const txHashes = []
+    for (const txn of txns) {
+      const res = await client.request('eth_sendRawTransaction', [txn], 2.0)
+      txHashes.push(res.result)
+    }
     let done = false
     let txReceipt
     while (!done) {
-      txReceipt = await client.request('eth_getTransactionReceipt', [res[0]], 2.0)
+      txReceipt = await client.request('eth_getTransactionReceipt', [txHashes[0]], 2.0)
       if (txReceipt.result !== null) {
         done = true
       }

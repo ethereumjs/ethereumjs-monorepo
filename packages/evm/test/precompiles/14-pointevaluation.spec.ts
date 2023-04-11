@@ -1,6 +1,12 @@
 import { Common, Hardfork } from '@ethereumjs/common'
-import { computeVersionedHash, initKZG } from '@ethereumjs/tx'
-import { bigIntToBytes, bytesToBigInt, concatBytesNoTypeCheck, unpadBytes } from '@ethereumjs/util'
+import {
+  bigIntToBytes,
+  bytesToBigInt,
+  computeVersionedHash,
+  concatBytesNoTypeCheck,
+  initKZG,
+  unpadBytes,
+} from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'

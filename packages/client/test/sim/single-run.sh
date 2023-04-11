@@ -87,7 +87,7 @@ case $MULTIPEER in
         echo "ELCLIENT=$ELCLIENT not implemented"
     esac
 
-    CL_PORT_ARGS="--genesisValidators 8 --startValidators 4..7 --enr.tcp 9001 --port 9001 --execution.urls http://localhost:8552  --rest.port 9597 --server http://localhost:9597 --network.connectToDiscv5Bootnodes true --bootnodes $bootEnrs"
+    CL_PORT_ARGS="--genesisValidators 8 --startValidators 4..7 --enr.tcp 9001 --port 9001 --execution.urls http://localhost:8552  --rest.port 9597 --server http://127.0.0.1:9597 --network.connectToDiscv5Bootnodes true --bootnodes $bootEnrs"
     ;;
 
   * )
@@ -105,7 +105,7 @@ case $MULTIPEER in
         echo "ELCLIENT=$ELCLIENT not implemented"
     esac
 
-    CL_PORT_ARGS="--enr.ip 127.0.0.1 --enr.tcp 9000 --enr.udp 9000"
+    CL_PORT_ARGS="--sync.isSingleNode --enr.ip 127.0.0.1 --enr.tcp 9000 --enr.udp 9000"
     if [ ! -n "$MULTIPEER" ]
     then
       echo "setting up to run as a solo node..."
@@ -247,8 +247,17 @@ else
     responseCmd="curl --location --request GET 'http://localhost:9596/eth/v1/beacon/headers/genesis' --header 'Content-Type: application/json'  2>/dev/null | jq \".data.root\""
     CL_GENESIS_HASH=$(eval "$responseCmd")
   done;
-  # since peer1 is setup get their enr and enode
-  bootEnrs=$(sudo cat "$origDataDir/peer1/lodestar/enr")
+
+  # We should curl and get boot enr
+  while [ ! -n "$bootEnrs" ]
+  do
+    sleep 3
+    echo "Fetching bootEnrs block from peer1/bootnode ..."
+    ejsId=$(( ejsId +1 ))
+    responseCmd="curl --location --request GET 'http://localhost:9596/eth/v1/node/identity' --header 'Content-Type: application/json'  2>/dev/null | jq \".data.enr\""
+    bootEnrs=$(eval "$responseCmd")
+  done;
+
   elBootnode=$(cat "$origDataDir/peer1/ethereumjs/$NETWORK/rlpx");
   EL_PORT_ARGS="$EL_PORT_ARGS --bootnodes $elBootnode"
   CL_PORT_ARGS="$CL_PORT_ARGS --bootnodes $bootEnrs"
