@@ -23,7 +23,6 @@ const unsignedEIP2930Tx = AccessListEIP2930Transaction.fromTxData(
   { common }
 )
 const signedEIP2930Tx = unsignedEIP2930Tx.sign(pKey)
-
 const unsignedEIP1559Tx = FeeMarketEIP1559Transaction.fromTxData({ chainId: BigInt(1) }, { common })
 const signedEIP1559Tx = unsignedEIP1559Tx.sign(pKey)
 

@@ -107,7 +107,20 @@ export class TransactionFactory {
   ) {
     const prov = typeof provider === 'string' ? new JsonRpcProvider(provider) : provider
     const txData = await prov.send('eth_getTransactionByHash', [txHash])
-    const normedTx = normalizeTxParams(txData)
-    return TransactionFactory.fromTxData(normedTx, txOptions)
+    return TransactionFactory.fromRPCTx(txData, txOptions)
+  }
+
+  /**
+   * Method to decode data retrieved from RPC, such as `eth_getTransactionByHash`
+   * Note that this normalizes some of the parameters
+   * @param txData The RPC-encoded data
+   * @param txOptions The transaction options
+   * @returns
+   */
+  public static async fromRPCTx(
+    txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData | BlobEIP4844TxData,
+    txOptions: TxOptions = {}
+  ) {
+    return TransactionFactory.fromTxData(normalizeTxParams(txData), txOptions)
   }
 }
