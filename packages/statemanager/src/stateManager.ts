@@ -332,6 +332,7 @@ export class DefaultStateManager implements StateManager {
     if (keyHex in this._codeCache) {
       return this._codeCache[keyHex]
     } else {
+      // `db` is a protected member of the `trie` class so telling Typescript to expect this error to avoid casting `db` to `any`
       // @ts-expect-error
       const code = (await this._trie._db.get(key)) ?? new Uint8Array(0)
       this._codeCache[keyHex] = code
