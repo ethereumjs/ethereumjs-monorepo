@@ -1,18 +1,17 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction, Transaction, initKZG } from '@ethereumjs/tx'
-import {
-  blobsToCommitments,
-  commitmentsToVersionedHashes,
-  getBlobs,
-} from '@ethereumjs/tx/dist/utils/blobHelpers'
+import { BlobEIP4844Transaction, Transaction } from '@ethereumjs/tx'
 import {
   Account,
   Address,
+  blobsToCommitments,
   bytesToHex,
   bytesToPrefixedHexString,
+  commitmentsToVersionedHashes,
   equalsBytes,
+  getBlobs,
   hexStringToBytes,
+  initKZG,
   randomBytes,
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
@@ -266,11 +265,9 @@ tape('[PendingBlock]', async (t) => {
 
   t.test('construct blob bundles', async (st) => {
     try {
-      kzg.freeTrustedSetup()
-    } catch {
-      /** ensure kzg is setup */
-    }
-    initKZG(kzg, __dirname + '/../../lib/trustedSetups/devnet4.txt')
+      initKZG(kzg, __dirname + '/../../lib/trustedSetups/devnet4.txt')
+      // eslint-disable-next-line
+    } catch {}
     const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
@@ -303,7 +300,6 @@ tape('[PendingBlock]', async (t) => {
     await pendingBlock.build(payloadId)
     const pendingBlob = pendingBlock.blobBundles.get(bytesToPrefixedHexString(payloadId))?.blobs[0]
     st.ok(pendingBlob !== undefined && equalsBytes(pendingBlob, blobs[0]))
-    kzg.freeTrustedSetup()
     st.end()
   })
   t.test('should reset td', (st) => {

@@ -59,7 +59,7 @@
     "@ethersproject/providers": "^5.7.2"
   },
   "peerDependencies": {
-    "c-kzg": "^1.0.8"
+    "c-kzg": "^2.0.4"
   },
   "peerDependenciesMeta": {
     "c-kzg": {

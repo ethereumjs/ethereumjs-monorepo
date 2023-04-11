@@ -1,20 +1,21 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import {
+  blobsToCommitments,
+  blobsToProofs,
   bytesToHex,
+  commitmentsToVersionedHashes,
   concatBytes,
   equalsBytes,
+  getBlobs,
   hexStringToBytes,
-  randomBytes,
+  initKZG,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
+import { randomBytes } from 'crypto'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
-import { BlobEIP4844Transaction, TransactionFactory, initKZG } from '../src'
-import {
-  blobsToCommitments,
-  commitmentsToVersionedHashes,
-  getBlobs,
-} from '../src/utils/blobHelpers'
+import { BlobEIP4844Transaction, TransactionFactory } from '../src'
 
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
@@ -160,13 +161,13 @@ tape('Network wrapper tests', async (t) => {
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(blobs)
     const versionedHashes = commitmentsToVersionedHashes(commitments)
-    const proof = kzg.computeAggregateKzgProof(blobs)
+    const proofs = blobsToProofs(blobs, commitments)
     const unsignedTx = BlobEIP4844Transaction.fromTxData(
       {
         versionedHashes,
         blobs,
         kzgCommitments: commitments,
-        kzgProof: proof,
+        kzgProofs: proofs,
         maxFeePerDataGas: 100000000n,
         gasLimit: 0xffffffn,
         to: randomBytes(20),
@@ -204,6 +205,7 @@ tape('Network wrapper tests', async (t) => {
         versionedHashes,
         blobs: blobs.slice(1),
         kzgCommitments: commitments,
+        kzgProofs: proofs,
         maxFeePerDataGas: 100000000n,
         gasLimit: 0xffffffn,
         to: randomBytes(20),
@@ -230,6 +232,7 @@ tape('Network wrapper tests', async (t) => {
         versionedHashes,
         blobs,
         kzgCommitments: commitments,
+        kzgProofs: proofs,
         maxFeePerDataGas: 100000000n,
         gasLimit: 0xffffffn,
         to: randomBytes(20),
@@ -255,7 +258,7 @@ tape('Network wrapper tests', async (t) => {
         versionedHashes,
         blobs,
         kzgCommitments: commitments,
-        kzgProof: proof,
+        kzgProofs: proofs,
         maxFeePerDataGas: 100000000n,
         gasLimit: 0xffffffn,
         to: randomBytes(20),
@@ -289,7 +292,7 @@ tape('hash() and signature verification', async (t) => {
         chainId: 1,
         nonce: 1,
         versionedHashes: [
-          hexStringToBytes('01624652859a6e98ffc1608e2af0147ca4e86e1ce27672d8d3f3c9d4ffd6ef7e'),
+          hexToBytes('01624652859a6e98ffc1608e2af0147ca4e86e1ce27672d8d3f3c9d4ffd6ef7e'),
         ],
         maxFeePerDataGas: 10000000n,
         gasLimit: 123457n,

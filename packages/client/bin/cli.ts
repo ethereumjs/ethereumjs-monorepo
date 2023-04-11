@@ -4,12 +4,12 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { initKZG } from '@ethereumjs/tx'
 import {
   Address,
   bytesToHex,
   bytesToPrefixedHexString,
   hexStringToBytes,
+  initKZG,
   randomBytes,
   short,
   toBytes,

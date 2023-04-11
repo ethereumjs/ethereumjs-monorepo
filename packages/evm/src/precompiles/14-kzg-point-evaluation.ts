@@ -1,9 +1,10 @@
-import { computeVersionedHash, kzg } from '@ethereumjs/tx'
 import {
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
+  computeVersionedHash,
   concatBytesNoTypeCheck,
+  kzg,
   setLengthLeft,
   short,
 } from '@ethereumjs/util'

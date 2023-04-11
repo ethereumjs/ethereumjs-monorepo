@@ -252,9 +252,9 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
    */
   kzgCommitments?: BytesLike[]
   /**
-   * The aggregate KZG proof associated with the transaction
+   * The KZG proofs associated with the transaction
    */
-  kzgProof?: BytesLike
+  kzgProofs?: BytesLike[]
 }
 
 /**
@@ -402,5 +402,5 @@ export const BlobNetworkTransactionWrapper = new ContainerType({
     new ByteVectorType(FIELD_ELEMENTS_PER_BLOB * BYTES_PER_FIELD_ELEMENT),
     LIMIT_BLOBS_PER_TX
   ),
-  kzgAggregatedProof: KZGProofType,
+  blobKzgProofs: new ListCompositeType(KZGProofType, MAX_TX_WRAP_KZG_COMMITMENTS),
 })
