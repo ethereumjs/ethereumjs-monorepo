@@ -322,7 +322,7 @@ export class EthersStateManager implements StateManager {
   }
 
   async flush(): Promise<void> {
-    await this._accountCache.flush()
+    this._accountCache.flush()
   }
 
   /**
