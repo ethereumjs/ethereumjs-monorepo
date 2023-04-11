@@ -37,7 +37,6 @@ export interface TransformabletoBytes {
 }
 
 export type NestedUint8Array = Array<Uint8Array | NestedUint8Array>
-export type NestedBufferArray = Array<Buffer | NestedBufferArray>
 
 /**
  * Type output options
