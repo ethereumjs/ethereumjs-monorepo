@@ -87,21 +87,37 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
     // that the serving node is missing
     const receivedCodes: Map<String, Buffer> = new Map()
     const missingCodeHashes: Buffer[] = []
-    for (let i = 0; i < task.hashes.length; i++) {
-      const requestedHash = task.hashes[i]
+
+    // While results are in the same order as requested hashes but there could be gaps/misses in the results
+    // if the node doesn't has the bytecode. We need an index to move forward through the hashes which are
+    // absent in the receieved responses
+    let requestedHashIndex = 0
+    for (let i = 0; i < rangeResult.codes.length; i++) {
       const receivedCode = rangeResult.codes[i]
       const receivedHash = Buffer.from(keccak256(receivedCode))
 
-      if (requestedHash.compare(receivedHash) !== 0) {
-        missingCodeHashes.push(requestedHash)
+      // move forward requestedHashIndex till the match has been found
+      while (
+        requestedHashIndex < task.hashes.length &&
+        receivedHash.compare(task.hashes[requestedHashIndex]) !== 0
+      ) {
+        // requestedHashIndex 's hash is skipped in response
+        missingCodeHashes.push(task.hashes[requestedHashIndex])
+        requestedHashIndex++
+      }
+
+      if (requestedHashIndex >= task.hashes.length) {
+        // no more matches
+        break
       } else {
-        receivedCodes.set(bufferToHex(requestedHash), receivedCode)
+        // match found
+        receivedCodes.set(bufferToHex(receivedHash), receivedCode)
       }
     }
 
     // requeue missed requests for fetching
     if (missingCodeHashes.length > 0) {
-      this.debug(`${missingCodeHashes.length} missed requests`)
+      this.debug(`${missingCodeHashes.length} missed requests adding them to request backlog`)
       this.hashes.push(...missingCodeHashes)
     }
     return Object.assign([], [receivedCodes], { completed: true })
