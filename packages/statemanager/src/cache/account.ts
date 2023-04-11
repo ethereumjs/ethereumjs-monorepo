@@ -136,7 +136,7 @@ export class AccountCache extends Cache {
    * Flushes cache by returning accounts that have been modified
    * or deleted and resetting the diff cache (at checkpoint height).
    */
-  async flush(): Promise<[string, AccountCacheElement][]> {
+  flush(): [string, AccountCacheElement][] {
     if (this.DEBUG) {
       this._debug(`Flushing cache on checkpoint ${this._checkpoints}`)
     }

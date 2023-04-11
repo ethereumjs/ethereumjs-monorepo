@@ -1,5 +1,12 @@
 import { Trie } from '@ethereumjs/trie'
-import { Account, Address, bytesToHex, hexStringToBytes, zeros } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  bytesToHex,
+  hexStringToBytes,
+  randomBytes,
+  zeros,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
@@ -33,6 +40,12 @@ tape('ProofStateManager', (t) => {
 
     const proof = await stateManager.getProof(address, [key])
     st.ok(await stateManager.verifyProof(proof))
+    const nonExistenceProof = await stateManager.getProof(Address.fromPrivateKey(randomBytes(32)))
+    st.equals(
+      await stateManager.verifyProof(nonExistenceProof),
+      true,
+      'verified proof of non-existence of account'
+    )
     st.end()
   })
 

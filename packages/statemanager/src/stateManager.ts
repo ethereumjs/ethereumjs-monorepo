@@ -4,7 +4,9 @@ import {
   Account,
   Address,
   KECCAK256_NULL,
+  KECCAK256_NULL_S,
   KECCAK256_RLP,
+  KECCAK256_RLP_S,
   bigIntToHex,
   bytesToHex,
   bytesToPrefixedHexString,
@@ -548,7 +550,7 @@ export class DefaultStateManager implements StateManager {
       }
     }
     if (!this._accountCacheSettings.deactivate) {
-      const items = await this._accountCache!.flush()
+      const items = this._accountCache!.flush()
       for (const item of items) {
         const addressHex = item[0]
         const addressBytes = hexToBytes(addressHex)
@@ -572,7 +574,19 @@ export class DefaultStateManager implements StateManager {
   async getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
     const account = await this.getAccount(address)
     if (!account) {
-      throw new Error(`getProof() can only be called for an existing account`)
+      // throw new Error(`getProof() can only be called for an existing account`)
+      const returnValue: Proof = {
+        address: address.toString(),
+        balance: '0x',
+        codeHash: '0x' + KECCAK256_NULL_S,
+        nonce: '0x',
+        storageHash: '0x' + KECCAK256_RLP_S,
+        accountProof: (await this._trie.createProof(address.bytes)).map((p) =>
+          bytesToPrefixedHexString(p)
+        ),
+        storageProof: [],
+      }
+      return returnValue
     }
     const accountProof: PrefixedHexString[] = (await this._trie.createProof(address.bytes)).map(
       (p) => bytesToPrefixedHexString(p)
@@ -587,7 +601,7 @@ export class DefaultStateManager implements StateManager {
       const value = bytesToPrefixedHexString(await this.getContractStorage(address, storageKey))
       const proofItem: StorageProof = {
         key: bytesToPrefixedHexString(storageKey),
-        value,
+        value: value === '0x' ? '0x0' : value, // Return '0x' values as '0x0' since this is a JSON RPC response
         proof,
       }
       storageProof.push(proofItem)
