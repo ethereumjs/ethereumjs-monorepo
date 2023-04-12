@@ -41,13 +41,13 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   // fix for BlockchainTests/GeneralStateTests/stRandom/*
   testData.lastblockhash = stripHexPrefix(testData.lastblockhash)
 
-  const cacheDB = new Level('./.cachedb')
-  const state = new Trie({ useKeyHashing: true })
-  const stateManager = new DefaultStateManager({
+  let cacheDB = new Level('./.cachedb')
+  let state = new Trie({ useKeyHashing: true })
+  let stateManager = new DefaultStateManager({
     trie: state,
   })
 
-  const { common }: { common: Common } = options
+  let common = options.common.copy() as Common
   common.setHardforkByBlockNumber(0)
 
   let validatePow = false
@@ -71,7 +71,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     t.deepEquals(genesisBlock.serialize(), rlp, 'correct genesis RLP')
   }
 
-  const blockchain = await Blockchain.create({
+  let blockchain = await Blockchain.create({
     db: new MemoryLevel(),
     common,
     validateBlocks: true,
@@ -92,7 +92,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   const begin = Date.now()
 
-  const vm = await VM.create({
+  let vm = await VM.create({
     stateManager,
     blockchain,
     common,
@@ -243,4 +243,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   const timeSpent = `${(end - begin) / 1000} secs`
   t.comment(`Time: ${timeSpent}`)
   await cacheDB.close()
+
+  // @ts-ignore Explicitly delete objects for memory optimization (early GC)
+  common = blockchain = state = stateManager = vm = cacheDB = null // eslint-disable-line
 }
