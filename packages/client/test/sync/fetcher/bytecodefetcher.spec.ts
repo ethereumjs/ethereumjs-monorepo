@@ -1,14 +1,17 @@
+import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
+import { Chain } from '../../../lib/blockchain'
 import { Config } from '../../../lib/config'
+import { SnapProtocol } from '../../../lib/net/protocol'
 import { wait } from '../../integration/util'
 
 import { _accountRangeRLP } from './accountfetcher.spec'
 
-const _storageRangesRLP =
-  'f83e0bf83af838f7a0290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5639594053cd080a26cb03d5e6d2956cebb31c56e7660cac0'
+const _byteCodesRLP =
+  'f89e1af89b9e60806040526004361061003f5760003560e01c806301ffc9a714610044579e60806040526004361061003f5760003560e01c806301ffc9a714610044589e60806040526004361061003f5760003560e01c806301ffc9a714610044599e60806040526004361061003f5760003560e01c806301ffc9a714610044609e60806040526004361061003f5760003560e01c806301ffc9a71461004461'
 
 tape('[ByteCodeFetcher]', async (t) => {
   class PeerPool {
@@ -102,6 +105,61 @@ tape('[ByteCodeFetcher]', async (t) => {
     remainingBytesCodeData.completed = true
     results = fetcher.process(job as any, remainingBytesCodeData)
     t.equal((results as any).length, 5, 'Should return full results')
+    t.end()
+  })
+
+  t.test('should request correctly', async (t) => {
+    const config = new Config({ transports: [] })
+    const chain = await Chain.create({ config })
+    const pool = new PeerPool() as any
+    const p = new SnapProtocol({ config, chain })
+    const fetcher = new ByteCodeFetcher({
+      config,
+      pool,
+      trie: new Trie({ useKeyHashing: false }),
+      hashes: [],
+    })
+
+    const task = {
+      hashes: [
+        Buffer.from('28ec5c6e71bc4243030bc6aa069616b4497c150c883c019dee059279f0593cd8', 'hex'),
+        Buffer.from('418df730969850c4f5c10d09ca929d018ee4c5d71243aa7440560e2265c37aab', 'hex'),
+        Buffer.from('01b45b4d94f26e3f7a84ea31f7338c0f621d3f3ee38e439611a0954da7e2d728', 'hex'),
+        Buffer.from('6bd103c66d7d0908a75ae23d5f6de62865be2784408cf07906eaffe515616212', 'hex'),
+        Buffer.from('0c9d7b40fa7bb308c9b029f7b2840bc1071760c55cdf136b08f0f81ace379399', 'hex'),
+      ],
+    }
+    const resData = RLP.decode(Buffer.from(_byteCodesRLP, 'hex')) as unknown
+    const res = p.decode(p.messages.filter((message) => message.name === 'ByteCodes')[0], resData)
+    const { reqId, codes } = res
+    const mockedGetByteCodes = td.func<any>()
+    td.when(mockedGetByteCodes(td.matchers.anything())).thenReturn({
+      reqId,
+      codes,
+    })
+    const peer = {
+      snap: { getByteCodes: mockedGetByteCodes },
+      id: 'random',
+      address: 'random',
+    }
+    const job = { peer, task }
+    const results = await fetcher.request(job as any)
+    td.verify(
+      job.peer.snap.getByteCodes({
+        hashes: task.hashes,
+        bytes: BigInt(50000),
+      })
+    )
+    t.ok(results?.completed === true, 'response processed and matched properly')
+    t.equal((results![0] as any).size, 5, 'matched code in the response')
+
+    try {
+      await fetcher.store(results! as any)
+      t.pass('fetcher stored results successfully')
+    } catch (e) {
+      t.fail(`fetcher failed to store results, Error: ${(e as Error).message}`)
+    }
+
     t.end()
   })
 
