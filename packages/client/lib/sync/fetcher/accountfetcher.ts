@@ -1,5 +1,6 @@
 import { Trie } from '@ethereumjs/trie'
 import {
+  KECCAK256_NULL_S,
   KECCAK256_RLP,
   accountBodyToRLP,
   bigIntToBuffer,
@@ -14,6 +15,7 @@ import { LevelDB } from '../../execution/level'
 import { Event } from '../../types'
 import { short } from '../../util'
 
+import { ByteCodeFetcher } from './bytecodefetcher'
 import { Fetcher } from './fetcher'
 import { StorageFetcher } from './storagefetcher'
 
@@ -56,6 +58,7 @@ export type JobTask = {
 export type FetcherDoneFlags = {
   storageFetcherDone: boolean
   accountFetcherDone: boolean
+  byteCodeFetcherDone: boolean
   eventBus?: EventBusType | undefined
   stateRoot?: Buffer | undefined
 }
@@ -76,8 +79,15 @@ export function snapFetchersCompleted(
     case StorageFetcher:
       fetcherDoneFlags.storageFetcherDone = true
       break
+    case ByteCodeFetcher:
+      fetcherDoneFlags.byteCodeFetcherDone = true
+      break
   }
-  if (fetcherDoneFlags.accountFetcherDone && fetcherDoneFlags.storageFetcherDone) {
+  if (
+    fetcherDoneFlags.accountFetcherDone &&
+    fetcherDoneFlags.storageFetcherDone &&
+    fetcherDoneFlags.byteCodeFetcherDone
+  ) {
     fetcherDoneFlags.eventBus!.emit(
       Event.SYNC_SNAPSYNC_COMPLETE,
       bufArrToArr(fetcherDoneFlags.stateRoot as Buffer)
@@ -100,7 +110,12 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   /** The range to eventually, by default should be set at BigInt(2) ** BigInt(256) + BigInt(1) - first */
   count: bigint
 
+  /** Contains known bytecodes */
+  trie: Trie
+
   storageFetcher: StorageFetcher
+
+  byteCodeFetcher: ByteCodeFetcher
 
   accountTrie: Trie
 
@@ -109,6 +124,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   fetcherDoneFlags: FetcherDoneFlags = {
     storageFetcherDone: false,
     accountFetcherDone: false,
+    byteCodeFetcherDone: false,
   }
 
   /**
@@ -119,6 +135,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     this.root = options.root
     this.first = options.first
     this.count = options.count ?? BigInt(2) ** BigInt(256) - this.first
+    this.trie = new Trie({ useKeyHashing: false })
     this.accountTrie = new Trie({ useKeyHashing: false })
     this.accountToStorageTrie = new Map()
     this.debug = createDebugLogger('client:AccountFetcher')
@@ -133,6 +150,19 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     })
     this.storageFetcher.fetch().then(
       () => snapFetchersCompleted(this.fetcherDoneFlags, StorageFetcher),
+      () => {
+        throw Error('Snap fetcher failed to exit')
+      }
+    )
+    this.byteCodeFetcher = new ByteCodeFetcher({
+      config: this.config,
+      pool: this.pool,
+      hashes: [],
+      destroyWhenDone: false,
+      trie: this.trie,
+    })
+    this.byteCodeFetcher.fetch().then(
+      () => snapFetchersCompleted(this.fetcherDoneFlags, ByteCodeFetcher),
       () => {
         throw Error('Snap fetcher failed to exit')
       }
@@ -312,9 +342,13 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         this.accountTrie.root(),
         this.config.events
       )
+
+      this.byteCodeFetcher.setDestroyWhenDone()
+
       return
     }
-    const storageFetchRequests: StorageRequest[] = []
+    const storageFetchRequests = new Set()
+    const byteCodeFetchRequests = new Set<Buffer>()
     for (const account of result) {
       await this.accountTrie.put(account.hash, accountBodyToRLP(account.body))
 
@@ -322,16 +356,28 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       const storageRoot: Buffer =
         account.body[2] instanceof Buffer ? account.body[2] : Buffer.from(account.body[2])
       if (storageRoot.compare(KECCAK256_RLP) !== 0) {
-        storageFetchRequests.push({
+        storageFetchRequests.add({
           accountHash: account.hash,
           storageRoot,
           first: BigInt(0),
           count: BigInt(2) ** BigInt(256) - BigInt(1),
         })
       }
+      // build record of accounts that need bytecode to be fetched
+      const codeHash: Buffer =
+        account.body[3] instanceof Buffer ? account.body[3] : Buffer.from(account.body[3])
+      if (codeHash.compare(Buffer.from(KECCAK256_NULL_S, 'hex')) !== 0) {
+        byteCodeFetchRequests.add(codeHash)
+      }
     }
-    if (storageFetchRequests.length > 0)
-      this.storageFetcher.enqueueByStorageRequestList(storageFetchRequests)
+    if (storageFetchRequests.size > 0)
+      this.storageFetcher.enqueueByStorageRequestList(
+        Array.from(storageFetchRequests) as StorageRequest[]
+      )
+    if (byteCodeFetchRequests.size > 0)
+      this.byteCodeFetcher.enqueueByByteCodeRequestList(
+        Array.from(byteCodeFetchRequests) as Buffer[]
+      )
   }
 
   /**

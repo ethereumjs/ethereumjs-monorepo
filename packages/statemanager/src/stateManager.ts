@@ -44,7 +44,7 @@ export type Proof = {
  * will be the same as the hash of the empty trie which leads to
  * misbehaviour in the underlying trie library.
  */
-const CODEHASH_PREFIX = Buffer.from('c')
+export const CODEHASH_PREFIX = Buffer.from('c')
 
 /**
  * Options for constructing a {@link StateManager}.

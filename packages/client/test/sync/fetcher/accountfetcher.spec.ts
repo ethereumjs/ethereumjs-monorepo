@@ -212,6 +212,7 @@ tape('[AccountFetcher]', async (t) => {
 
     // mock storageFetches's enqueue so to not having a hanging storage fetcher
     fetcher.storageFetcher.enqueueByStorageRequestList = td.func<any>()
+    fetcher.byteCodeFetcher.enqueueByByteCodeRequestList = td.func<any>()
     try {
       await fetcher.store(results!)
       t.pass('fetcher stored results successfully')
