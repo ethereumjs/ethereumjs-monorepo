@@ -194,7 +194,7 @@ export class StorageCache extends Cache {
    * Flushes cache by returning storage slots that have been modified
    * or deleted and resetting the diff cache (at checkpoint height).
    */
-  async flush(): Promise<[string, string, Uint8Array | undefined][]> {
+  flush(): [string, string, Uint8Array | undefined][] {
     if (this.DEBUG) {
       this._debug(`Flushing cache on checkpoint ${this._checkpoints}`)
     }

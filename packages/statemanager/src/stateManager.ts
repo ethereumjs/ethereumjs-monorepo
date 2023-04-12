@@ -535,7 +535,7 @@ export class DefaultStateManager implements StateManager {
    */
   async flush(): Promise<void> {
     if (!this._storageCacheSettings.deactivate) {
-      const items = await this._storageCache!.flush()
+      const items = this._storageCache!.flush()
       for (const item of items) {
         const address = Address.fromString(`0x${item[0]}`)
         const keyHex = item[1]

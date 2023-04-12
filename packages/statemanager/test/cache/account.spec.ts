@@ -39,7 +39,7 @@ tape('Account Cache: put and get account', (t) => {
   })
 
   t.test('should flush', async (st) => {
-    const items = await cache.flush()
+    const items = cache.flush()
     st.equal(items.length, 1)
     st.end()
   })
