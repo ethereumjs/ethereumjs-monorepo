@@ -13,12 +13,11 @@ import {
   isHexPrefixed,
   ssz,
 } from '@ethereumjs/util'
-import fetch from 'cross-fetch'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
-import { getDataGasPrice } from './helpers'
+import { fetchFromProvider, getDataGasPrice } from './helpers'
 
 import type { BlockBuffer, BlockData, BlockOptions, JsonBlock, JsonRpcBlock } from './types'
 import type { Common } from '@ethereumjs/common'
@@ -243,56 +242,26 @@ export class Block {
     } else {
       throw new Error('Must provide valid provider URL or Web3Provider')
     }
+
     if (typeof blockTag === 'string' && blockTag.length === 66) {
-      const res = await fetch(providerUrl, {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({
-          method: 'eth_getBlockByHash',
-          params: [blockTag, true],
-          jsonrpc: '2.0',
-          id: 1,
-        }),
+      blockData = await fetchFromProvider(providerUrl, {
+        method: 'eth_getBlockByHash',
+        params: [blockTag, true],
       })
-      blockData = (await res.json()).result
     } else if (typeof blockTag === 'bigint') {
-      const res = await fetch(providerUrl, {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({
-          method: 'eth_getBlockByNumber',
-          params: [bigIntToHex(blockTag), true],
-          jsonrpc: '2.0',
-          id: 1,
-        }),
+      blockData = await fetchFromProvider(providerUrl, {
+        method: 'eth_getBlockByNumber',
+        params: [bigIntToHex(blockTag), true],
       })
-      blockData = (await res.json()).result
     } else if (
       isHexPrefixed(blockTag) ||
       blockTag === 'latest' ||
       blockTag === 'earliest' ||
       blockTag === 'pending'
     ) {
-      blockData = (
-        await (
-          await fetch(providerUrl, {
-            method: 'POST',
-            headers: {
-              'content-type': 'application/json',
-            },
-            body: JSON.stringify({
-              method: 'eth_getBlockByNumber',
-              params: [blockTag, true],
-              jsonrpc: '2.0',
-              id: 1,
-            }),
-          })
-        ).json()
-      ).result
+      blockData = await fetchFromProvider(providerUrl, {
+        method: 'eth_getBlockByNumber',
+      })
     } else {
       throw new Error(
         `expected blockTag to be block hash, bigint, hex prefixed string, or earliest/latest/pending; got ${blockTag}`
@@ -302,19 +271,10 @@ export class Block {
     const uncleHeaders = []
     if (blockData.uncles.length > 0) {
       for (let x = 0; x < blockData.uncles.length; x++) {
-        const res = await fetch(providerUrl, {
-          method: 'POST',
-          headers: {
-            'content-type': 'application/json',
-          },
-          body: JSON.stringify({
-            method: 'eth_getUncleByBlockHashAndIndex',
-            params: [blockData.hash, intToHex(x)],
-            jsonrpc: '2.0',
-            id: 1,
-          }),
+        const headerData = await fetchFromProvider(providerUrl, {
+          method: 'eth_getUncleByBlockHashAndIndex',
+          params: [blockData.hash, intToHex(x)],
         })
-        const headerData = (await res.json()).result
         uncleHeaders.push(headerData)
       }
     }
