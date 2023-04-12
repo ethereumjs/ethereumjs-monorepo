@@ -43,12 +43,13 @@
     "@ethereumjs/trie": "^5.0.4",
     "@ethereumjs/tx": "^4.1.1",
     "@ethereumjs/util": "^8.0.5",
-    "ethereum-cryptography": "^1.1.2",
-    "ethers": "^5.7.1"
+    "cross-fetch": "^3.1.5",
+    "ethereum-cryptography": "^1.1.2"
   },
   "devDependencies": {
     "@types/lru-cache": "^5.1.0",
-    "c-kzg": "^1.0.8"
+    "c-kzg": "^1.0.8",
+    "ethers": "^5.7.1"
   },
   "engines": {
     "node": ">=14"
