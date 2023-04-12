@@ -74,6 +74,8 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     ;({ VM } = require('../../../src'))
   }
   const begin = Date.now()
+  // Copy the common object to not create long-lasting
+  // references in memory which might prevent GC
   let common = options.common.copy()
 
   // Have to create a blockchain with empty block as genesisBlock for Merge
@@ -103,12 +105,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const coinbaseAddress = Address.fromString(testData.env.currentCoinbase)
   const account = await (<VM>vm).eei.getAccount(coinbaseAddress)
   await (<VM>vm).eei.putAccount(coinbaseAddress, account!)
-  const handler = async () => {
-    const stateRoot = {
-      stateRoot: bytesToHex(vm.stateManager._trie.root),
-    }
-    t.comment(JSON.stringify(stateRoot))
-  }
+
   const stepHandler = (e: InterpreterStep) => {
     let hexStack = []
     hexStack = e.stack.map((item: bigint) => {
@@ -128,13 +125,20 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     t.comment(JSON.stringify(opTrace))
   }
 
+  const afterTxHandler = async () => {
+    const stateRoot = {
+      stateRoot: bytesToHex(vm.stateManager._trie.root),
+    }
+    t.comment(JSON.stringify(stateRoot))
+  }
+
   if (tx) {
     if (tx.validate()) {
       const block = makeBlockFromEnv(testData.env, { common })
 
       if (options.jsontrace === true) {
         vm.evm.events.on('step', stepHandler)
-        vm.events.on('afterTx', handler)
+        vm.events.on('afterTx', afterTxHandler)
       }
       try {
         await vm.runTx({ tx, block })
@@ -159,10 +163,13 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const timeSpent = `${(end - begin) / 1000} secs`
 
   t.ok(stateRootsAreEqual, `[ ${timeSpent} ] the state roots should match (${execInfo})`)
-  ;(<VM>vm).events.removeListener('afterTx', handler)
+
   vm.evm.events.removeListener('step', stepHandler)
-  // @ts-ignore
+  vm.events.removeListener('afterTx', afterTxHandler)
+
+  // @ts-ignore Explicitly delete objects for memory optimization (early GC)
   common = blockchain = state = stateManager = eei = evm = vm = null // eslint-disable-line
+
   return parseFloat(timeSpent)
 }
 
