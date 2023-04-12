@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
-import { ConsensusAlgorithm } from '@ethereumjs/common'
+import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
@@ -23,6 +23,13 @@ function formatBlockHeader(data: any) {
 }
 
 export async function runBlockchainTest(options: any, testData: any, t: tape.Test) {
+  if (
+    options.common.hardfork() === Hardfork.Homestead &&
+    testData._info.source.includes('ShanghaiLove') === true
+  ) {
+    t.comment('temporarily skipping ShanghaiLove test on Homestead, see issue 2406')
+    return
+  }
   // ensure that the test data is the right fork data
   if (testData.network !== options.forkConfigTestSuite) {
     t.comment(`skipping test: no data available for ${options.forkConfigTestSuite}`)

@@ -281,6 +281,9 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
     currentNumber,
     currentBaseFee,
     currentRandom,
+    parentGasLimit,
+    parentGasUsed,
+    parentBaseFee,
   } = data
   const headerData: any = {
     number: currentNumber,
@@ -292,6 +295,17 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
   }
   if (opts?.common && opts.common.gteHardfork('london')) {
     headerData['baseFeePerGas'] = currentBaseFee
+    if (currentBaseFee === undefined) {
+      const parentBlockHeader = BlockHeader.fromHeaderData(
+        {
+          gasLimit: parentGasLimit,
+          gasUsed: parentGasUsed,
+          baseFeePerGas: parentBaseFee,
+        },
+        { common: opts.common }
+      )
+      headerData['baseFeePerGas'] = parentBlockHeader.calcNextBaseFee()
+    }
   }
   if (opts?.common && opts.common.gteHardfork('merge')) {
     headerData['mixHash'] = currentRandom
@@ -353,7 +367,7 @@ export async function setupPreConditions(state: VmState, testData: any) {
   await state.commit()
   // Clear the touched stack, otherwise untouched accounts in the block which are empty (>= SpuriousDragon)
   // will get deleted from the state, resulting in state trie errors
-  ;(<any>state)._touched.clear()
+  ;(<any>state).touchedJournal.clear()
 }
 
 /**

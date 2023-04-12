@@ -17,6 +17,8 @@ import type { FullEthereumService } from '../../service'
 import type { HeaderData } from '@ethereumjs/block'
 import type { VM } from '@ethereumjs/vm'
 
+const zeroBlockHash = zeros(32)
+
 export enum Status {
   ACCEPTED = 'ACCEPTED',
   INVALID = 'INVALID',
@@ -158,7 +160,7 @@ const payloadAttributesFieldValidatorsV2 = {
 /**
  * Formats a block to {@link ExecutionPayloadV1}.
  */
-const blockToExecutionPayload = (block: Block, value: bigint) => {
+export const blockToExecutionPayload = (block: Block, value: bigint) => {
   const blockJson = block.toJSON()
   const header = blockJson.header!
   const transactions = block.transactions.map((tx) => bufferToHex(tx.serialize())) ?? []
@@ -305,7 +307,7 @@ const assembleBlock = async (
         payload.blockHash
       }, received: ${bufferToHex(block.hash())}`
       config.logger.debug(validationError)
-      const latestValidHash = await validHash(toBuffer(header.parentHash), chain)
+      const latestValidHash = null
       const response = { status: Status.INVALID_BLOCK_HASH, latestValidHash, validationError }
       return { error: response }
     }
@@ -590,8 +592,10 @@ export class Engine {
 
     blocks.push(block)
 
+    let lastBlock: Block
     try {
       for (const [i, block] of blocks.entries()) {
+        lastBlock = block
         const root = (i > 0 ? blocks[i - 1] : await this.chain.getBlock(block.header.parentHash))
           .header.stateRoot
         await this.execution.runWithoutSetHead({
@@ -605,6 +609,14 @@ export class Engine {
       this.config.logger.error(validationError)
       const latestValidHash = await validHash(block.header.parentHash, this.chain)
       const response = { status: Status.INVALID, latestValidHash, validationError }
+      try {
+        await this.chain.blockchain.delBlock(lastBlock!.hash())
+        // eslint-disable-next-line no-empty
+      } catch {}
+      try {
+        await this.service.beaconSync?.skeleton.deleteBlock(lastBlock!)
+        // eslint-disable-next-line no-empty
+      } catch {}
       return response
     }
 
@@ -711,6 +723,16 @@ export class Engine {
     const { headBlockHash, finalizedBlockHash, safeBlockHash } = params[0]
     const payloadAttributes = params[1]
 
+    const safe = toBuffer(safeBlockHash)
+    const finalized = toBuffer(finalizedBlockHash)
+
+    if (!finalized.equals(zeroBlockHash) && safe.equals(zeroBlockHash)) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'safe block can not be zero if finalized is not zero',
+      }
+    }
+
     if (this.config.synchronized) {
       this.connectionManager.newForkchoiceLog()
     }
@@ -794,6 +816,46 @@ export class Engine {
       return response
     }
 
+    /*
+     * Process safe and finalized block since headBlock has been found to be executed
+     * Allowed to have zero value while transition block is finalizing
+     */
+    let safeBlock, finalizedBlock
+
+    if (!safe.equals(zeroBlockHash)) {
+      if (safe.equals(headBlock.hash())) {
+        safeBlock = headBlock
+      } else {
+        try {
+          // Right now only check if the block is available, canonicality check is done
+          // in setHead after chain.putBlocks so as to reflect latest canonical chain
+          safeBlock = await this.chain.getBlock(safe)
+        } catch (_error: any) {
+          throw {
+            code: INVALID_PARAMS,
+            message: 'safe block not available',
+          }
+        }
+      }
+    } else {
+      safeBlock = undefined
+    }
+
+    if (!finalized.equals(zeroBlockHash)) {
+      try {
+        // Right now only check if the block is available, canonicality check is done
+        // in setHead after chain.putBlocks so as to reflect latest canonical chain
+        finalizedBlock = await this.chain.getBlock(finalized)
+      } catch (error: any) {
+        throw {
+          message: 'finalized block not available',
+          code: INVALID_PARAMS,
+        }
+      }
+    } else {
+      finalizedBlock = undefined
+    }
+
     const vmHeadHash = this.chain.headers.latest!.hash()
     if (!vmHeadHash.equals(headBlock.hash())) {
       let parentBlocks: Block[] = []
@@ -816,7 +878,14 @@ export class Engine {
       }
 
       const blocks = [...parentBlocks, headBlock]
-      await this.execution.setHead(blocks)
+      try {
+        await this.execution.setHead(blocks, { safeBlock, finalizedBlock })
+      } catch (error) {
+        throw {
+          message: (error as Error).message,
+          code: INVALID_PARAMS,
+        }
+      }
       this.service.txPool.removeNewBlockTxs(blocks)
 
       const isPrevSynced = this.chain.config.synchronized
@@ -825,40 +894,23 @@ export class Engine {
         this.service.txPool.checkRunState()
       }
     }
-    /*
-     * Process safe and finalized block
-     * Allowed to have zero value while transition block is finalizing
-     */
-    const zeroBlockHash = zeros(32)
-    const safe = toBuffer(safeBlockHash)
-    if (!safe.equals(headBlock.hash()) && !safe.equals(zeroBlockHash)) {
-      try {
-        await this.chain.getBlock(safe)
-      } catch (error) {
-        const message = 'safe block not available'
-        throw {
-          code: INVALID_PARAMS,
-          message,
-        }
-      }
-    }
-    const finalized = toBuffer(finalizedBlockHash)
-    if (!finalized.equals(zeroBlockHash)) {
-      try {
-        await this.chain.getBlock(finalized)
-      } catch (error) {
-        throw {
-          message: 'finalized block not available',
-          code: INVALID_PARAMS,
-        }
-      }
-    }
 
     /*
      * If payloadAttributes is present, start building block and return payloadId
      */
     if (payloadAttributes) {
       const { timestamp, prevRandao, suggestedFeeRecipient, withdrawals } = payloadAttributes
+      const timestampBigInt = BigInt(timestamp)
+
+      if (timestampBigInt <= headBlock.header.timestamp) {
+        throw {
+          message: `invalid timestamp in payloadAttributes, got ${timestampBigInt}, need at least ${
+            headBlock.header.timestamp + BigInt(1)
+          }`,
+          code: INVALID_PARAMS,
+        }
+      }
+
       const payloadId = await this.pendingBlock.start(
         await this.vm.copy(),
         headBlock,

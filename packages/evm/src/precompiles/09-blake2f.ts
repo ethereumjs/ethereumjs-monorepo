@@ -1,3 +1,5 @@
+import { short } from '@ethereumjs/util'
+
 import { OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
 
@@ -158,6 +160,9 @@ export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, ro
 export function precompile09(opts: PrecompileInput): ExecResult {
   const data = opts.data
   if (data.length !== 213) {
+    if (opts._debug) {
+      opts._debug(`BLAKE2F (0x09) failed: OUT_OF_RANGE dataLength=${data.length}`)
+    }
     return {
       returnValue: Buffer.alloc(0),
       executionGasUsed: opts.gasLimit,
@@ -166,6 +171,9 @@ export function precompile09(opts: PrecompileInput): ExecResult {
   }
   const lastByte = data.slice(212, 213)[0]
   if (lastByte !== 1 && lastByte !== 0) {
+    if (opts._debug) {
+      opts._debug(`BLAKE2F (0x09) failed: OUT_OF_RANGE lastByte=${lastByte}`)
+    }
     return {
       returnValue: Buffer.alloc(0),
       executionGasUsed: opts.gasLimit,
@@ -182,7 +190,18 @@ export function precompile09(opts: PrecompileInput): ExecResult {
 
   let gasUsed = opts._common.param('gasPrices', 'blake2Round')
   gasUsed *= BigInt(rounds)
+  if (opts._debug) {
+    opts._debug(
+      `Run BLAKE2F (0x09) precompile data=${short(opts.data)} length=${opts.data.length} gasLimit=${
+        opts.gasLimit
+      } gasUsed=${gasUsed}`
+    )
+  }
+
   if (opts.gasLimit < gasUsed) {
+    if (opts._debug) {
+      opts._debug(`BLAKE2F (0x09) failed: OOG`)
+    }
     return OOGResult(opts.gasLimit)
   }
 
@@ -206,6 +225,10 @@ export function precompile09(opts: PrecompileInput): ExecResult {
   const output = Buffer.alloc(64)
   for (let i = 0; i < 16; i++) {
     output.writeUInt32LE(h[i], i * 4)
+  }
+
+  if (opts._debug) {
+    opts._debug(`BLAKE2F (0x09) return hash=${output.toString('hex')}`)
   }
 
   return {

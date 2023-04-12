@@ -13,7 +13,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BaseTransaction } from './baseTransaction'
-import { AccessLists, checkMaxInitCodeSize } from './util'
+import { AccessLists } from './util'
 
 import type {
   AccessList,
@@ -191,10 +191,6 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
 
     this._validateYParity()
     this._validateHighS()
-
-    if (this.common.isActivatedEIP(3860)) {
-      checkMaxInitCodeSize(this.common, this.data.length)
-    }
 
     const freeze = opts?.freeze ?? true
     if (freeze) {

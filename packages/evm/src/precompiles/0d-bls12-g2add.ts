@@ -1,3 +1,5 @@
+import { short } from '@ethereumjs/util'
+
 import { EvmErrorResult, OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
 
@@ -13,12 +15,25 @@ export async function precompile0d(opts: PrecompileInput): Promise<ExecResult> {
 
   // note: the gas used is constant; even if the input is incorrect.
   const gasUsed = opts._common.paramByEIP('gasPrices', 'Bls12381G2AddGas', 2537) ?? BigInt(0)
+  if (opts._debug) {
+    opts._debug(
+      `Run BLS12G2ADD (0x0d) precompile data=${short(opts.data)} length=${
+        opts.data.length
+      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`
+    )
+  }
 
   if (opts.gasLimit < gasUsed) {
+    if (opts._debug) {
+      opts._debug(`BLS12G2ADD (0x0d) failed: OOG`)
+    }
     return OOGResult(opts.gasLimit)
   }
 
   if (inputData.length !== 512) {
+    if (opts._debug) {
+      opts._debug(`BLS12G2ADD (0x0d) failed: Invalid input length length=${inputData.length}`)
+    }
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
@@ -38,6 +53,9 @@ export async function precompile0d(opts: PrecompileInput): Promise<ExecResult> {
   for (const index in zeroByteCheck) {
     const slicedBuffer = opts.data.slice(zeroByteCheck[index][0], zeroByteCheck[index][1])
     if (!slicedBuffer.equals(zeroBytes16)) {
+      if (opts._debug) {
+        opts._debug(`BLS12G2ADD (0x0d) failed: Point not on curve`)
+      }
       return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
     }
   }
@@ -58,6 +76,10 @@ export async function precompile0d(opts: PrecompileInput): Promise<ExecResult> {
   const result = mcl.add(mclPoint1, mclPoint2)
 
   const returnValue = BLS12_381_FromG2Point(result)
+
+  if (opts._debug) {
+    opts._debug(`BLS12G2ADD (0x0d) return value=${returnValue.toString('hex')}`)
+  }
 
   return {
     executionGasUsed: gasUsed,

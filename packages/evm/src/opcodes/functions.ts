@@ -657,7 +657,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x51,
     function (runState) {
       const pos = runState.stack.pop()
-      const word = runState.memory.read(Number(pos), 32)
+      const word = runState.memory.read(Number(pos), 32, true)
       runState.stack.push(bufferToBigInt(word))
     },
   ],
@@ -910,15 +910,23 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xf0: CREATE
   [
     0xf0,
-    async function (runState) {
+    async function (runState, common) {
       const [value, offset, length] = runState.stack.popN(3)
+
+      if (
+        common.isActivatedEIP(3860) &&
+        length > Number(common.param('vm', 'maxInitCodeSize')) &&
+        !runState.interpreter._evm._allowUnlimitedInitCodeSize
+      ) {
+        trap(ERROR.INITCODE_SIZE_VIOLATION)
+      }
 
       const gasLimit = runState.messageGasLimit!
       runState.messageGasLimit = undefined
 
       let data = Buffer.alloc(0)
       if (length !== BigInt(0)) {
-        data = runState.memory.read(Number(offset), Number(length))
+        data = runState.memory.read(Number(offset), Number(length), true)
       }
 
       const ret = await runState.interpreter.create(gasLimit, value, data)
@@ -928,19 +936,27 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xf5: CREATE2
   [
     0xf5,
-    async function (runState) {
+    async function (runState, common) {
       if (runState.interpreter.isStatic()) {
         trap(ERROR.STATIC_STATE_CHANGE)
       }
 
       const [value, offset, length, salt] = runState.stack.popN(4)
 
+      if (
+        common.isActivatedEIP(3860) &&
+        length > Number(common.param('vm', 'maxInitCodeSize')) &&
+        !runState.interpreter._evm._allowUnlimitedInitCodeSize
+      ) {
+        trap(ERROR.INITCODE_SIZE_VIOLATION)
+      }
+
       const gasLimit = runState.messageGasLimit!
       runState.messageGasLimit = undefined
 
       let data = Buffer.alloc(0)
       if (length !== BigInt(0)) {
-        data = runState.memory.read(Number(offset), Number(length))
+        data = runState.memory.read(Number(offset), Number(length), true)
       }
 
       const ret = await runState.interpreter.create2(
@@ -962,7 +978,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (inLength !== BigInt(0)) {
-        data = runState.memory.read(Number(inOffset), Number(inLength))
+        data = runState.memory.read(Number(inOffset), Number(inLength), true)
       }
 
       const gasLimit = runState.messageGasLimit!
@@ -987,7 +1003,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (inLength !== BigInt(0)) {
-        data = runState.memory.read(Number(inOffset), Number(inLength))
+        data = runState.memory.read(Number(inOffset), Number(inLength), true)
       }
 
       const ret = await runState.interpreter.callCode(gasLimit, toAddress, value, data)
@@ -1007,7 +1023,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (inLength !== BigInt(0)) {
-        data = runState.memory.read(Number(inOffset), Number(inLength))
+        data = runState.memory.read(Number(inOffset), Number(inLength), true)
       }
 
       const gasLimit = runState.messageGasLimit!
@@ -1121,7 +1137,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (inLength !== BigInt(0)) {
-        data = runState.memory.read(Number(inOffset), Number(inLength))
+        data = runState.memory.read(Number(inOffset), Number(inLength), true)
       }
 
       const ret = await runState.interpreter.callStatic(gasLimit, toAddress, value, data)

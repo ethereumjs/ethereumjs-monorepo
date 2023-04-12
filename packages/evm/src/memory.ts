@@ -63,21 +63,16 @@ export class Memory {
    * It fills up the difference between memory's length and `offset + size` with zeros.
    * @param offset - Starting position
    * @param size - How many bytes to read
+   * @param avoidCopy - Avoid memory copy if possible for performance reasons (optional)
    */
-  read(offset: number, size: number): Buffer {
+  read(offset: number, size: number, avoidCopy?: boolean): Buffer {
     this.extend(offset, size)
 
-    const returnBuffer = Buffer.allocUnsafe(size)
-    // Copy the stored "buffer" from memory into the return Buffer
-
-    const loaded = Buffer.from(this._store.slice(offset, offset + size))
-    returnBuffer.fill(loaded, 0, loaded.length)
-
-    if (loaded.length < size) {
-      // fill the remaining part of the Buffer with zeros
-      returnBuffer.fill(0, loaded.length, size)
+    const loaded = this._store.slice(offset, offset + size)
+    if (avoidCopy === true) {
+      return loaded
     }
 
-    return returnBuffer
+    return Buffer.from(loaded)
   }
 }

@@ -1,15 +1,19 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bufferToHex, zeros } from '@ethereumjs/util'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import { blockToExecutionPayload } from '../../../lib/rpc/modules'
 import blocks = require('../../testdata/blocks/beacon.json')
 import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 
 import { batchBlocks } from './newPayloadV1.spec'
+
+const crypto = require('crypto')
 
 const method = 'engine_forkchoiceUpdatedV1'
 
@@ -25,6 +29,26 @@ const validPayloadAttributes = {
   timestamp: '0x5',
   prevRandao: '0x0000000000000000000000000000000000000000000000000000000000000000',
   suggestedFeeRecipient: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
+}
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+
+function createBlock(parentBlock: Block) {
+  const prevRandao = crypto.randomBytes(32)
+  const block = Block.fromBlockData(
+    {
+      header: {
+        parentHash: parentBlock.hash(),
+        mixHash: prevRandao,
+        number: parentBlock.header.number + BigInt(1),
+        stateRoot: parentBlock.header.stateRoot,
+        timestamp: parentBlock.header.timestamp + BigInt(1),
+        gasLimit: parentBlock.header.gasLimit,
+      },
+    },
+    { common }
+  )
+  return block
 }
 
 export const validPayload = [validForkChoiceState, validPayloadAttributes]
@@ -90,6 +114,21 @@ tape(`${method}: call with valid data and synced data`, async (t) => {
     t.equal(res.body.result.payloadStatus.validationError, null)
     t.notEqual(res.body.result.payloadId, null)
   }
+  await baseRequest(t, server, req, 200, expectRes)
+})
+
+tape(`${method}: call with invalid timestamp payloadAttributes`, async (t) => {
+  const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+
+  const invalidTimestampPayload: any = [{ ...validPayload[0] }, { ...validPayload[1] }]
+  invalidTimestampPayload[1].timestamp = '0x0'
+
+  const req = params(method, invalidTimestampPayload)
+  const expectRes = checkError(
+    t,
+    INVALID_PARAMS,
+    'invalid timestamp in payloadAttributes, got 0, need at least 1'
+  )
   await baseRequest(t, server, req, 200, expectRes)
 })
 
@@ -262,6 +301,19 @@ tape(`${method}: latest block after reorg`, async (t) => {
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
+  // check safe and finalized
+  req = params('eth_getBlockByNumber', ['finalized', false])
+  expectRes = (res: any) => {
+    t.equal(res.body.result.number, '0x0', 'finalized should be set to genesis')
+  }
+  await baseRequest(t, server, req, 200, expectRes, false)
+
+  req = params('eth_getBlockByNumber', ['safe', false])
+  expectRes = (res: any) => {
+    t.equal(res.body.result.number, '0x1', 'safe should be set to first block')
+  }
+  await baseRequest(t, server, req, 200, expectRes, false)
+
   req = params(method, [
     {
       headBlockHash: blocks[1].blockHash,
@@ -271,7 +323,93 @@ tape(`${method}: latest block after reorg`, async (t) => {
   ])
 
   expectRes = (res: any) => {
-    t.equal(res.body.result.payloadStatus.latestValidHash, blocks[1].blockHash)
+    t.equal(res.body.error.code, -32602)
+  }
+  await baseRequest(t, server, req, 200, expectRes)
+})
+
+tape(`${method}: validate safeBlockHash is part of canonical chain`, async (t) => {
+  const { server, chain } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+
+  const genesis = await chain.getBlock(BigInt(0))
+
+  // Build the payload for the canonical chain
+  const canonical = [genesis]
+
+  for (let i = 0; i < 2; i++) {
+    canonical.push(createBlock(canonical[canonical.length - 1]))
+  }
+
+  // Build an alternative payload
+  const reorg = [genesis]
+  for (let i = 0; i < 2; i++) {
+    reorg.push(createBlock(reorg[reorg.length - 1]))
+  }
+
+  const canonicalPayload = canonical.map(
+    (e) => blockToExecutionPayload(e, BigInt(0)).executionPayload
+  )
+  const reorgPayload = reorg.map((e) => blockToExecutionPayload(e, BigInt(0)).executionPayload)
+
+  await batchBlocks(t, server, canonicalPayload.slice(1))
+  await batchBlocks(t, server, reorgPayload.slice(1))
+
+  // Safe block hash is not in the canonical chain
+  const req = params(method, [
+    {
+      headBlockHash: reorgPayload[2].blockHash,
+      safeBlockHash: canonicalPayload[1].blockHash,
+      finalizedBlockHash: reorgPayload[1].blockHash,
+    },
+  ])
+
+  const expectRes = (res: any) => {
+    t.equal(res.body.error.code, -32602)
+    t.ok(res.body.error.message.includes('safeBlock'))
+    t.ok(res.body.error.message.includes('canonical'))
+  }
+  await baseRequest(t, server, req, 200, expectRes)
+})
+
+tape(`${method}: validate finalizedBlockHash is part of canonical chain`, async (t) => {
+  const { server, chain } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+
+  const genesis = await chain.getBlock(BigInt(0))
+
+  // Build the payload for the canonical chain
+  const canonical = [genesis]
+
+  for (let i = 0; i < 2; i++) {
+    canonical.push(createBlock(canonical[canonical.length - 1]))
+  }
+
+  // Build an alternative payload
+  const reorg = [genesis]
+  for (let i = 0; i < 2; i++) {
+    reorg.push(createBlock(reorg[reorg.length - 1]))
+  }
+
+  const canonicalPayload = canonical.map(
+    (e) => blockToExecutionPayload(e, BigInt(0)).executionPayload
+  )
+  const reorgPayload = reorg.map((e) => blockToExecutionPayload(e, BigInt(0)).executionPayload)
+
+  await batchBlocks(t, server, canonicalPayload.slice(1))
+  await batchBlocks(t, server, reorgPayload.slice(1))
+
+  // Finalized block hash is not in the canonical chain
+  const req = params(method, [
+    {
+      headBlockHash: reorgPayload[2].blockHash,
+      safeBlockHash: reorgPayload[1].blockHash,
+      finalizedBlockHash: canonicalPayload[1].blockHash,
+    },
+  ])
+
+  const expectRes = (res: any) => {
+    t.equal(res.body.error.code, -32602)
+    t.ok(res.body.error.message.includes('finalizedBlock'))
+    t.ok(res.body.error.message.includes('canonical'))
   }
   await baseRequest(t, server, req, 200, expectRes)
 })

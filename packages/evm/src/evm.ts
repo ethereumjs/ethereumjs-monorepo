@@ -40,8 +40,9 @@ import type {
 } from './types'
 import type { Account } from '@ethereumjs/util'
 
-const debug = createDebugLogger('evm')
+const debug = createDebugLogger('evm:evm')
 const debugGas = createDebugLogger('evm:gas')
+const debugPrecompiles = createDebugLogger('evm:precompiles')
 
 // very ugly way to detect if we are running in a browser
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
@@ -96,6 +97,12 @@ export interface EVMOpts {
    * Default: `false` [ONLY set to `true` during debugging]
    */
   allowUnlimitedContractSize?: boolean
+
+  /**
+   * Allows unlimited contract code-size init while debugging. This (partially) disables EIP-3860.
+   * Gas cost for initcode size analysis will still be charged. Use with caution.
+   */
+  allowUnlimitedInitCodeSize?: boolean
 
   /**
    * Override or add custom opcodes to the EVM instruction set
@@ -181,6 +188,7 @@ export class EVM implements EVMInterface {
   _opcodes!: OpcodeList
 
   public readonly _allowUnlimitedContractSize: boolean
+  public readonly _allowUnlimitedInitCodeSize: boolean
 
   protected readonly _customOpcodes?: CustomOpcode[]
   protected readonly _customPrecompiles?: CustomPrecompile[]
@@ -274,6 +282,7 @@ export class EVM implements EVMInterface {
     }
 
     this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false
+    this._allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
     this._customOpcodes = opts.customOpcodes
     this._customPrecompiles = opts.customPrecompiles
 
@@ -364,13 +373,13 @@ export class EVM implements EVMInterface {
     if (!message.code || message.code.length === 0) {
       exit = true
       if (this.DEBUG) {
-        debug(`Exit early on no code`)
+        debug(`Exit early on no code (CALL)`)
       }
     }
     if (errorMessage !== undefined) {
       exit = true
       if (this.DEBUG) {
-        debug(`Exit early on value transfer overflowed`)
+        debug(`Exit early on value transfer overflowed (CALL)`)
       }
     }
     if (exit) {
@@ -386,9 +395,6 @@ export class EVM implements EVMInterface {
 
     let result: ExecResult
     if (message.isCompiled) {
-      if (this.DEBUG) {
-        debug(`Run precompile`)
-      }
       result = await this.runPrecompile(
         message.code as PrecompileFunc,
         message.data,
@@ -417,7 +423,10 @@ export class EVM implements EVMInterface {
     await this._reduceSenderBalance(account, message)
 
     if (this._common.isActivatedEIP(3860)) {
-      if (message.data.length > Number(this._common.param('vm', 'maxInitCodeSize'))) {
+      if (
+        message.data.length > Number(this._common.param('vm', 'maxInitCodeSize')) &&
+        !this._allowUnlimitedInitCodeSize
+      ) {
         return {
           createdAddress: message.to,
           execResult: {
@@ -482,13 +491,13 @@ export class EVM implements EVMInterface {
     if (message.code === undefined || message.code.length === 0) {
       exit = true
       if (this.DEBUG) {
-        debug(`Exit early on no code`)
+        debug(`Exit early on no code (CREATE)`)
       }
     }
     if (errorMessage !== undefined) {
       exit = true
       if (this.DEBUG) {
-        debug(`Exit early on value transfer overflowed`)
+        debug(`Exit early on value transfer overflowed (CREATE)`)
       }
     }
     if (exit) {
@@ -745,7 +754,7 @@ export class EVM implements EVMInterface {
     }
 
     await this.eei.checkpoint()
-    this._transientStorage.checkpoint()
+    if (this._common.isActivatedEIP(1153)) this._transientStorage.checkpoint()
     if (this.DEBUG) {
       debug('-'.repeat(100))
       debug(`message checkpoint`)
@@ -789,29 +798,19 @@ export class EVM implements EVMInterface {
       result.execResult.selfdestruct = {}
       result.execResult.gasRefund = BigInt(0)
     }
-    if (err) {
-      if (
-        this._common.gteHardfork(Hardfork.Homestead) ||
-        err.error !== ERROR.CODESTORE_OUT_OF_GAS
-      ) {
-        result.execResult.logs = []
-        await this.eei.revert()
-        this._transientStorage.revert()
-        if (this.DEBUG) {
-          debug(`message checkpoint reverted`)
-        }
-      } else {
-        // we are in chainstart and the error was the code deposit error
-        // we do like nothing happened.
-        await this.eei.commit()
-        this._transientStorage.commit()
-        if (this.DEBUG) {
-          debug(`message checkpoint committed`)
-        }
+    if (
+      err &&
+      !(this._common.hardfork() === Hardfork.Chainstart && err.error === ERROR.CODESTORE_OUT_OF_GAS)
+    ) {
+      result.execResult.logs = []
+      await this.eei.revert()
+      if (this._common.isActivatedEIP(1153)) this._transientStorage.revert()
+      if (this.DEBUG) {
+        debug(`message checkpoint reverted`)
       }
     } else {
       await this.eei.commit()
-      this._transientStorage.commit()
+      if (this._common.isActivatedEIP(1153)) this._transientStorage.commit()
       if (this.DEBUG) {
         debug(`message checkpoint committed`)
       }
@@ -874,6 +873,7 @@ export class EVM implements EVMInterface {
       gasLimit,
       _common: this._common,
       _EVM: this,
+      _debug: this.DEBUG ? debugPrecompiles : undefined,
     }
 
     return code(opts)

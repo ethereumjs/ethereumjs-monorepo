@@ -259,11 +259,13 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   const blockResults = await applyTransactions.bind(this)(block, opts)
   if (this._common.isActivatedEIP(4895)) {
     await assignWithdrawals.bind(this)(block)
+    await this.eei.cleanupTouchedAccounts()
   }
   // Pay ommers and miners
   if (block._common.consensusType() === ConsensusType.ProofOfWork) {
     await assignBlockRewards.bind(this)(block)
   }
+
   return blockResults
 }
 
@@ -345,10 +347,10 @@ async function assignWithdrawals(this: VM, block: Block): Promise<void> {
   const withdrawals = block.withdrawals!
   for (const withdrawal of withdrawals) {
     const { address, amount } = withdrawal
-    // skip touching account if no amount update
-    if (amount === BigInt(0)) continue
     // Withdrawal amount is represented in Gwei so needs to be
     // converted to wei
+    // Note: event if amount is 0, still reward the account
+    // such that the account is touched and marked for cleanup if it is empty
     await rewardAccount(state, address, amount * GWEI_TO_WEI)
   }
 }

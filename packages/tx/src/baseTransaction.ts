@@ -13,6 +13,7 @@ import {
 } from '@ethereumjs/util'
 
 import { Capability } from './types'
+import { checkMaxInitCodeSize } from './util'
 
 import type {
   AccessListEIP2930TxData,
@@ -116,6 +117,13 @@ export abstract class BaseTransaction<TransactionObject> {
 
     // EIP-2681 limits nonce to 2^64-1 (cannot equal 2^64-1)
     this._validateCannotExceedMaxInteger({ nonce: this.nonce }, 64, true)
+
+    const createContract = this.to === undefined || this.to === null
+    const allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
+    const common = opts.common ?? this._getCommon()
+    if (createContract && common.isActivatedEIP(3860) && allowUnlimitedInitCodeSize === false) {
+      checkMaxInitCodeSize(common, this.data.length)
+    }
   }
 
   /**

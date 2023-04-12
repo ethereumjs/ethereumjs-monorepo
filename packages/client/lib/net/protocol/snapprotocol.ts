@@ -39,13 +39,25 @@ type GetAccountRangeOpts = {
 type GetStorageRangesOpts = {
   reqId?: bigint
   root: Buffer
+
+  // If multiple accounts' storage is requested, serving nodes
+  // should reply with the entire storage ranges (thus no Merkle
+  // proofs needed), up to the first contract which exceeds the
+  // packet limit. If the last included storage range does not
+  // fit entirely, a Merkle proof must be attached to that and
+  // only that.
+  // If a single account's storage is requested, serving nodes
+  // should only return slots starting with the requested
+  // starting hash, up to the last one or until the packet fills
+  // up. It the entire storage range is not being returned, a
+  // Merkle proof must be attached.
   accounts: Buffer[]
   origin: Buffer
   limit: Buffer
   bytes: bigint
 }
 
-type StorageData = {
+export type StorageData = {
   hash: Buffer
   body: Buffer
 }
@@ -76,6 +88,7 @@ export interface SnapProtocolMethods {
     proof: Buffer[]
   }>
   getByteCodes: (opts: GetByteCodesOpts) => Promise<{ reqId: bigint; codes: Buffer[] }>
+  getTrieNodes: (opts: GetTrieNodesOpts) => Promise<{ reqId: bigint; nodes: Buffer[] }>
 }
 
 /**

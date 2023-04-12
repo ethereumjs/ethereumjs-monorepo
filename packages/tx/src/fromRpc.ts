@@ -18,7 +18,19 @@ export const normalizeTxParams = (_txParams: any): TxData => {
       ? setLengthLeft(toBuffer(txParams.to), 20)
       : null
 
-  txParams.v = toType(txParams.v, TypeOutput.BigInt)
+  // Normalize the v/r/s values. If RPC returns '0x0', ensure v/r/s are set to `undefined` in the tx.
+  // If this is not done, then the transaction creation will throw, because `v` is `0`.
+  // Note: this still means that `isSigned` will return `false`.
+  // v/r/s values are `0x0` on networks like Optimism, where the tx is a system tx.
+  // For instance: https://optimistic.etherscan.io/tx/0xf4304cb09b3f58a8e5d20fec5f393c96ccffe0269aaf632cb2be7a8a0f0c91cc
+
+  txParams.v = txParams.v === '0x0' ? '0x' : txParams.v
+  txParams.r = txParams.r === '0x0' ? '0x' : txParams.r
+  txParams.s = txParams.s === '0x0' ? '0x' : txParams.s
+
+  if (txParams.v !== '0x') {
+    txParams.v = toType(txParams.v, TypeOutput.BigInt)
+  }
 
   return txParams
 }

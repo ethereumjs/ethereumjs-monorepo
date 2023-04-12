@@ -189,6 +189,11 @@ export interface ConfigOptions {
   dnsNetworks?: string[]
 
   /**
+   * Number of blocks to execute in batch mode and logged to console
+   */
+  numBlocksPerIteration?: number
+
+  /**
    * Generate code for local debugging, currently providing a
    * code snippet which can be used to run blocks on the
    * EthereumJS VM on execution errors
@@ -266,6 +271,8 @@ export interface ConfigOptions {
    * The time after which synced state is downgraded to unsynced
    */
   syncedStateRemovalPeriod?: number
+
+  maxStorageRange?: bigint
 }
 
 export class Config {
@@ -287,13 +294,17 @@ export class Config {
   public static readonly MINPEERS_DEFAULT = 1
   public static readonly MAXPEERS_DEFAULT = 25
   public static readonly DNSADDR_DEFAULT = '8.8.8.8'
+  public static readonly NUM_BLOCKS_PER_ITERATION = 50
   public static readonly DEBUGCODE_DEFAULT = false
   public static readonly SAFE_REORG_DISTANCE = 100
   public static readonly SKELETON_FILL_CANONICAL_BACKSTEP = 100
   public static readonly SKELETON_SUBCHAIN_MERGE_MINIMUM = 1000
   public static readonly MAX_RANGE_BYTES = 50000
   // This should get like 100 accounts in this range
-  public static readonly MAX_ACCOUNT_RANGE = BigInt(2) ** BigInt(256) / BigInt(1_000_000)
+  public static readonly MAX_ACCOUNT_RANGE =
+    (BigInt(2) ** BigInt(256) - BigInt(1)) / BigInt(1_000_000)
+  // Larger ranges used for storage slots since assumption is slots should be much sparser than accounts
+  public static readonly MAX_STORAGE_RANGE = (BigInt(2) ** BigInt(256) - BigInt(1)) / BigInt(10)
   public static readonly SYNCED_STATE_REMOVAL_PERIOD = 60000
 
   public readonly logger: Logger
@@ -315,6 +326,7 @@ export class Config {
   public readonly minPeers: number
   public readonly maxPeers: number
   public readonly dnsAddr: string
+  public readonly numBlocksPerIteration: number
   public readonly debugCode: boolean
   public readonly discDns: boolean
   public readonly discV4: boolean
@@ -328,6 +340,7 @@ export class Config {
   public readonly skeletonSubchainMergeMinimum: number
   public readonly maxRangeBytes: number
   public readonly maxAccountRange: bigint
+  public readonly maxStorageRange: bigint
   public readonly syncedStateRemovalPeriod: number
 
   public readonly disableBeaconSync: boolean
@@ -367,6 +380,7 @@ export class Config {
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT
     this.dnsAddr = options.dnsAddr ?? Config.DNSADDR_DEFAULT
+    this.numBlocksPerIteration = options.numBlocksPerIteration ?? Config.NUM_BLOCKS_PER_ITERATION
     this.debugCode = options.debugCode ?? Config.DEBUGCODE_DEFAULT
     this.mine = options.mine ?? false
     this.isSingleNode = options.isSingleNode ?? false
@@ -380,6 +394,7 @@ export class Config {
       options.skeletonSubchainMergeMinimum ?? Config.SKELETON_SUBCHAIN_MERGE_MINIMUM
     this.maxRangeBytes = options.maxRangeBytes ?? Config.MAX_RANGE_BYTES
     this.maxAccountRange = options.maxAccountRange ?? Config.MAX_ACCOUNT_RANGE
+    this.maxStorageRange = options.maxStorageRange ?? Config.MAX_STORAGE_RANGE
     this.syncedStateRemovalPeriod =
       options.syncedStateRemovalPeriod ?? Config.SYNCED_STATE_REMOVAL_PERIOD
 

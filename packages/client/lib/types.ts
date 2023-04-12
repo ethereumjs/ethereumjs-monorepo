@@ -22,6 +22,7 @@ export enum Event {
   SYNC_SYNCHRONIZED = 'sync:synchronized',
   SYNC_ERROR = 'sync:error',
   SYNC_FETCHER_ERROR = 'sync:fetcher:error',
+  SYNC_SNAPSYNC_COMPLETE = 'sync:snapsync:complete',
   PEER_CONNECTED = 'peer:connected',
   PEER_DISCONNECTED = 'peer:disconnected',
   PEER_ERROR = 'peer:error',
@@ -40,6 +41,7 @@ export interface EventParams {
   [Event.SYNC_FETCHED_BLOCKS]: [blocks: Block[]]
   [Event.SYNC_FETCHED_HEADERS]: [headers: BlockHeader[]]
   [Event.SYNC_SYNCHRONIZED]: [chainHeight: bigint]
+  [Event.SYNC_SNAPSYNC_COMPLETE]: [stateRoot: Uint8Array]
   [Event.SYNC_ERROR]: [syncError: Error]
   [Event.SYNC_FETCHER_ERROR]: [fetchError: Error, task: any, peer: Peer | null | undefined]
   [Event.PEER_CONNECTED]: [connectedPeer: Peer]
@@ -67,6 +69,7 @@ export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
   EventBus<Event.SYNC_FETCHED_BLOCKS> &
   EventBus<Event.SYNC_FETCHED_HEADERS> &
   EventBus<Event.SYNC_SYNCHRONIZED> &
+  EventBus<Event.SYNC_SNAPSYNC_COMPLETE> &
   EventBus<Event.SYNC_FETCHER_ERROR> &
   EventBus<Event.PEER_CONNECTED> &
   EventBus<Event.PEER_DISCONNECTED> &
@@ -140,6 +143,7 @@ export interface ClientOpts {
   minPeers?: number
   maxPeers?: number
   dnsAddr?: string
+  numBlocksPerIteration?: number
   dnsNetworks?: string[]
   executeBlocks?: string
   debugCode?: boolean

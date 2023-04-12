@@ -83,7 +83,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@chainsafe/ssz": "0.9.4",
+    "@chainsafe/ssz": "^0.11.0",
     "@ethereumjs/rlp": "^4.0.1",
     "ethereum-cryptography": "^1.1.2"
   },
