@@ -1,6 +1,6 @@
 import { CODEHASH_PREFIX } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { bufferToHex } from '@ethereumjs/util'
+import { bytesToHex, concatBytes, equalsBytes } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
@@ -12,14 +12,14 @@ import type { Job } from './types'
 import type { BatchDBOp } from '@ethereumjs/trie'
 import type { Debugger } from 'debug'
 
-type ByteCodeDataResponse = Buffer[] & { completed?: boolean }
+type ByteCodeDataResponse = Uint8Array[] & { completed?: boolean }
 
 /**
  * Implements an snap1 based bytecode fetcher
  * @memberof module:sync/fetcher
  */
 export interface ByteCodeFetcherOptions extends FetcherOptions {
-  hashes: Buffer[]
+  hashes: Uint8Array[]
   trie: Trie
 
   /** Destroy fetcher once all tasks are done */
@@ -28,13 +28,13 @@ export interface ByteCodeFetcherOptions extends FetcherOptions {
 
 // root comes from block?
 export type JobTask = {
-  hashes: Buffer[]
+  hashes: Uint8Array[]
 }
 
-export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
+export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> {
   protected debug: Debugger
 
-  hashes: Buffer[]
+  hashes: Uint8Array[]
 
   trie: Trie
 
@@ -47,7 +47,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
     this.trie = options.trie ?? new Trie({ useKeyHashing: false })
     this.debug = createDebugLogger('client:ByteCodeFetcher')
     if (this.hashes.length > 0) {
-      const fullJob = { task: { hashes: this.hashes } } as Job<JobTask, Buffer[], Buffer>
+      const fullJob = { task: { hashes: this.hashes } } as Job<JobTask, Uint8Array[], Uint8Array>
       this.debug(
         `Bytecode fetcher instantiated ${fullJob.task.hashes.length} hash requests destroyWhenDone=${this.destroyWhenDone}`
       )
@@ -65,10 +65,12 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
    * @param job
    * @param peer
    */
-  async request(job: Job<JobTask, Buffer[], Buffer>): Promise<ByteCodeDataResponse | undefined> {
+  async request(
+    job: Job<JobTask, Uint8Array[], Uint8Array>
+  ): Promise<ByteCodeDataResponse | undefined> {
     const { task, peer } = job
 
-    this.debug(`requested code hashes: ${Array.from(task.hashes).map((h) => bufferToHex(h))}`)
+    this.debug(`requested code hashes: ${Array.from(task.hashes).map((h) => bytesToHex(h))}`)
 
     const rangeResult = await peer!.snap!.getByteCodes({
       hashes: Array.from(task.hashes),
@@ -85,8 +87,8 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
 
     // Cross reference the requested bytecodes with the response to find gaps
     // that the serving node is missing
-    const receivedCodes: Map<String, Buffer> = new Map()
-    const missingCodeHashes: Buffer[] = []
+    const receivedCodes: Map<String, Uint8Array> = new Map()
+    const missingCodeHashes: Uint8Array[] = []
 
     // While results are in the same order as requested hashes but there could be gaps/misses in the results
     // if the node doesn't has the bytecode. We need an index to move forward through the hashes which are
@@ -94,12 +96,12 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
     let requestedHashIndex = 0
     for (let i = 0; i < rangeResult.codes.length; i++) {
       const receivedCode = rangeResult.codes[i]
-      const receivedHash = Buffer.from(keccak256(receivedCode))
+      const receivedHash = keccak256(receivedCode)
 
       // move forward requestedHashIndex till the match has been found
       while (
         requestedHashIndex < task.hashes.length &&
-        receivedHash.compare(task.hashes[requestedHashIndex]) !== 0
+        !equalsBytes(receivedHash, task.hashes[requestedHashIndex])
       ) {
         // requestedHashIndex 's hash is skipped in response
         missingCodeHashes.push(task.hashes[requestedHashIndex])
@@ -111,7 +113,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
         break
       } else {
         // match found
-        receivedCodes.set(bufferToHex(receivedHash), receivedCode)
+        receivedCodes.set(bytesToHex(receivedHash), receivedCode)
       }
     }
 
@@ -130,7 +132,10 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
    * @param job fetch job
    * @param result result data
    */
-  process(job: Job<JobTask, Buffer[], Buffer>, result: ByteCodeDataResponse): Buffer[] | undefined {
+  process(
+    job: Job<JobTask, Uint8Array[], Uint8Array>,
+    result: ByteCodeDataResponse
+  ): Uint8Array[] | undefined {
     const fullResult = (job.partialResult ?? []).concat(result)
     job.partialResult = undefined
     if (result.completed === true) {
@@ -145,13 +150,13 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
    * Store fetch result. Resolves once store operation is complete.
    * @param result fetch result
    */
-  async store(result: Buffer[]): Promise<void> {
-    const codeHashToByteCode = result[0] as unknown as Map<String, Buffer>
+  async store(result: Uint8Array[]): Promise<void> {
+    const codeHashToByteCode = result[0] as unknown as Map<String, Uint8Array>
     const ops = []
     let storeCount = 0
     for (const [_, value] of codeHashToByteCode) {
-      const codeHash = Buffer.from(keccak256(value))
-      const computedKey = Buffer.concat([CODEHASH_PREFIX, codeHash])
+      const codeHash = keccak256(value)
+      const computedKey = concatBytes(CODEHASH_PREFIX, codeHash)
       ops.push({
         type: 'put',
         key: computedKey,
@@ -175,7 +180,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
    * @param numberList List of block numbers
    * @param min Start block number
    */
-  enqueueByByteCodeRequestList(byteCodeRequestList: Buffer[]) {
+  enqueueByByteCodeRequestList(byteCodeRequestList: Uint8Array[]) {
     this.hashes.push(...byteCodeRequestList)
     this.debug(
       `Number of bytecode fetch requests added to fetcher queue: ${byteCodeRequestList.length}`
@@ -201,12 +206,12 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
     this.debug(`Entering nextTasks with hash request queue length of ${this.hashes.length}`)
     this.debug('Bytecode requests in primary queue:')
     for (const h of this.hashes) {
-      this.debug(`\tCode hash: ${bufferToHex(h)}`)
+      this.debug(`\tCode hash: ${bytesToHex(h)}`)
       this.debug('\t---')
     }
     try {
       if (this.in.length === 0 && this.hashes.length > 0) {
-        const fullJob = { task: { hashes: this.hashes } } as Job<JobTask, Buffer[], Buffer>
+        const fullJob = { task: { hashes: this.hashes } } as Job<JobTask, Uint8Array[], Uint8Array>
         const tasks = this.tasks()
         for (const task of tasks) {
           this.enqueueTask(task, true)
@@ -251,7 +256,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
    * @param job
    * @param withIndex pass true to additionally output job.index
    */
-  jobStr(job: Job<JobTask, Buffer[], Buffer>, withIndex = false) {
+  jobStr(job: Job<JobTask, Uint8Array[], Uint8Array>, withIndex = false) {
     let str = ''
     if (withIndex) {
       str += `index=${job.index} `

@@ -88,10 +88,7 @@ export function snapFetchersCompleted(
     fetcherDoneFlags.storageFetcherDone &&
     fetcherDoneFlags.byteCodeFetcherDone
   ) {
-    fetcherDoneFlags.eventBus!.emit(
-      Event.SYNC_SNAPSYNC_COMPLETE,
-      bufArrToArr(fetcherDoneFlags.stateRoot!)
-    )
+    fetcherDoneFlags.eventBus!.emit(Event.SYNC_SNAPSYNC_COMPLETE, fetcherDoneFlags.stateRoot!)
   }
 }
 
@@ -360,7 +357,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       const storageRoot: Uint8Array =
         account.body[2] instanceof Uint8Array ? account.body[2] : Uint8Array.from(account.body[2])
       if (!equalsBytes(storageRoot, KECCAK256_RLP)) {
-        storageFetchRequests.push({
+        storageFetchRequests.add({
           accountHash: account.hash,
           storageRoot,
           first: BigInt(0),

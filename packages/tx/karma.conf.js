@@ -15,6 +15,7 @@ module.exports = function (config) {
         acornOptions: {
           ecmaVersion: 12,
         },
+        ignore: ['c-kzg', 'safer-buffer'],
         resolve: {
           alias: {
             '@chainsafe/persistent-merkle-tree/hasher':
