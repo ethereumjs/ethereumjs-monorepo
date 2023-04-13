@@ -264,6 +264,10 @@ export class Block {
       )
     }
 
+    if (blockData === null) {
+      throw new Error('No block data returned from provider')
+    }
+
     const uncleHeaders = []
     if (blockData.uncles.length > 0) {
       for (let x = 0; x < blockData.uncles.length; x++) {

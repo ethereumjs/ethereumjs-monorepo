@@ -1,4 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
@@ -195,6 +196,8 @@ tape('[fromEthersProvider]', async (t) => {
     ) {
       const block = await import(`./testdata/infura15571241wtxns.json`)
       return block
+    } else {
+      return null // Infura returns null if no block is found
     }
   }
 
@@ -208,7 +211,15 @@ tape('[fromEthersProvider]', async (t) => {
     blockHash,
     'assembled a block from blockdata from a provider'
   )
-
+  try {
+    await Block.fromEthersProvider(provider, '0x' + randomBytes(32).toString('hex'), {})
+    t.fail('should throw')
+  } catch (err: any) {
+    t.ok(
+      err.message.includes('No block data returned from provider'),
+      'returned correct error message'
+    )
+  }
   td.reset()
   t.end()
 })

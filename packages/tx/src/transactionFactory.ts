@@ -109,6 +109,9 @@ export class TransactionFactory {
       method: 'eth_getTransactionByHash',
       params: [txHash],
     })
+    if (txData === null) {
+      throw new Error('No data returned from provider')
+    }
     return TransactionFactory.fromRPCTx(txData, txOptions)
   }
 
