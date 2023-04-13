@@ -485,9 +485,9 @@ export class DefaultStateManager implements StateManager {
    * @param address -  Address to clear the storage of
    */
   async clearContractStorage(address: Address): Promise<void> {
-    const account = await this.getAccount(address)
+    let account = await this.getAccount(address)
     if (!account) {
-      throw new Error(`clearContractStorage() called on non-existing account (${address})`)
+      account = new Account()
     }
     this._storageCache?.clearContractStorage(address)
     await this._modifyContractStorage(address, account, (storageTrie, done) => {
