@@ -89,7 +89,7 @@ export function getTransaction(
     txParams['gasPrice'] = undefined
     txParams['maxFeePerGas'] = BigInt(100)
     txParams['maxPriorityFeePerGas'] = BigInt(10)
-  } else if (txType === 5) {
+  } else if (txType === 3) {
     txParams['gasPrice'] = undefined
     txParams['maxFeePerGas'] = BigInt(1000000000)
     txParams['maxPriorityFeePerGas'] = BigInt(10)
