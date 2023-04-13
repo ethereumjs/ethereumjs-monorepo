@@ -227,7 +227,7 @@ tape('[EthProtocol]', (t) => {
     const legacyTx = TransactionFactory.fromTxData({ type: 0 })
     const eip2929Tx = TransactionFactory.fromTxData({ type: 1 })
     const eip1559Tx = TransactionFactory.fromTxData({ type: 2 })
-    const blobTx = TransactionFactory.fromTxData({ type: 5 }, { common: config.chainCommon })
+    const blobTx = TransactionFactory.fromTxData({ type: 3 }, { common: config.chainCommon })
     const res = p.encode(p.messages.filter((message) => message.name === 'Transactions')[0], [
       legacyTx,
       eip2929Tx,

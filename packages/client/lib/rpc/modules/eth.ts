@@ -905,7 +905,7 @@ export class Eth {
     let tx
     try {
       const txBuf = hexStringToBytes(serializedTx)
-      if (txBuf[0] === 0x05) {
+      if (txBuf[0] === 0x03) {
         // Blob Transactions sent over RPC are expected to be in Network Wrapper format
         tx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txBuf, { common })
       } else {

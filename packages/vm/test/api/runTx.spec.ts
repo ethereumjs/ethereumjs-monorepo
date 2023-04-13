@@ -913,7 +913,7 @@ tape('EIP 4844 transaction tests', async (t) => {
   const blockchain = await Blockchain.create({ validateBlocks: false, validateConsensus: false })
   const vm = await VM.create({ common, blockchain })
 
-  const tx = getTransaction(common, 5, true)
+  const tx = getTransaction(common, 3, true)
 
   const block = Block.fromBlockData(
     {

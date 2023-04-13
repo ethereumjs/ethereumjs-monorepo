@@ -41,7 +41,7 @@ export class TransactionFactory {
         return AccessListEIP2930Transaction.fromTxData(<AccessListEIP2930TxData>txData, txOptions)
       } else if (txType === 2) {
         return FeeMarketEIP1559Transaction.fromTxData(<FeeMarketEIP1559TxData>txData, txOptions)
-      } else if (txType === 5) {
+      } else if (txType === 3) {
         return BlobEIP4844Transaction.fromTxData(<BlobEIP4844TxData>txData, txOptions)
       } else {
         throw new Error(`Tx instantiation with type ${txType} not supported`)
@@ -63,7 +63,7 @@ export class TransactionFactory {
           return AccessListEIP2930Transaction.fromSerializedTx(data, txOptions)
         case 2:
           return FeeMarketEIP1559Transaction.fromSerializedTx(data, txOptions)
-        case 5:
+        case 3:
           return BlobEIP4844Transaction.fromSerializedTx(data, txOptions)
         default:
           throw new Error(`TypedTransaction with ID ${data[0]} unknown`)

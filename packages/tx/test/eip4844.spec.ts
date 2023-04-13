@@ -34,19 +34,19 @@ tape('EIP4844 constructor tests - valid scenarios', (t) => {
     t.end()
   } else {
     const txData = {
-      type: 0x05,
+      type: 0x03,
       versionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
       maxFeePerDataGas: 1n,
     }
     const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
-    t.equal(tx.type, 5, 'successfully instantiated a blob transaction from txData')
+    t.equal(tx.type, 3, 'successfully instantiated a blob transaction from txData')
     const factoryTx = TransactionFactory.fromTxData(txData, { common })
-    t.equal(factoryTx.type, 5, 'instantiated a blob transaction from the tx factory')
+    t.equal(factoryTx.type, 3, 'instantiated a blob transaction from the tx factory')
 
     const serializedTx = tx.serialize()
-    t.equal(serializedTx[0], 5, 'successfully serialized a blob tx')
+    t.equal(serializedTx[0], 3, 'successfully serialized a blob tx')
     const deserializedTx = BlobEIP4844Transaction.fromSerializedTx(serializedTx, { common })
-    t.equal(deserializedTx.type, 5, 'deserialized a blob tx')
+    t.equal(deserializedTx.type, 3, 'deserialized a blob tx')
 
     const signedTx = tx.sign(pk)
     const sender = signedTx.getSenderAddress().toString()
@@ -66,7 +66,7 @@ tape('fromTxData using from a json', (t) => {
     t.end()
   } else {
     const txData = {
-      type: '0x5',
+      type: '0x3',
       nonce: '0x0',
       gasPrice: null,
       maxPriorityFeePerGas: '0x12a05f200',
@@ -84,9 +84,9 @@ tape('fromTxData using from a json', (t) => {
       versionedHashes: ['0x01b0a4cdd5f55589f5c5b4d46c76704bb6ce95c0a8c09f77f197a57808dded28'],
       kzgAggregatedProof:
         '0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      hash: 'd5455662e76b193a84ce57d4c0a3b6fd609fdfca21cc93b93408de62be3c5708',
+      hash: '35cfcdb43774134e8a8b05e936222c35bc5c68b9aa672453eedf5897213b4a6b',
       serialized:
-        '054500000000a7585eaecd6b446d7e358fdc244d8d4bea5c4ff233ed4d5a480678c03e83838af857b5c220d93590d9ff9871c910691942e12ea3bdfcb5c084cf502a42baa268b357870200000000000000000000000000000000000000000000000000000000000000000000000000f2052a0100000000000000000000000000000000000000000000000000000000f2052a010000000000000000000000000000000000000000000000000000005034030000000000c00000004e61bc0000000000000000000000000000000000000000000000000000000000d5000000d5000000005ed0b200000000000000000000000000000000000000000000000000000000d500000001ffb38a7a99e3e2335be83fc74b7faa19d553124301b0a4cdd5f55589f5c5b4d46c76704bb6ce95c0a8c09f77f197a57808dded28',
+        '034500000000a7585eaecd6b446d7e358fdc244d8d4bea5c4ff233ed4d5a480678c03e83838af857b5c220d93590d9ff9871c910691942e12ea3bdfcb5c084cf502a42baa268b357870200000000000000000000000000000000000000000000000000000000000000000000000000f2052a0100000000000000000000000000000000000000000000000000000000f2052a010000000000000000000000000000000000000000000000000000005034030000000000c00000004e61bc0000000000000000000000000000000000000000000000000000000000d5000000d5000000005ed0b200000000000000000000000000000000000000000000000000000000d500000001ffb38a7a99e3e2335be83fc74b7faa19d553124301b0a4cdd5f55589f5c5b4d46c76704bb6ce95c0a8c09f77f197a57808dded28',
     }
     const c = common.copy()
     c['_chainParams'] = Object.assign({}, common['_chainParams'], {
@@ -113,7 +113,7 @@ tape('EIP4844 constructor tests - invalid scenarios', (t) => {
     t.end()
   } else {
     const baseTxData = {
-      type: 0x05,
+      type: 0x03,
       maxFeePerDataGas: 1n,
     }
     const shortVersionHash = {
@@ -184,7 +184,7 @@ tape('Network wrapper tests', async (t) => {
 
     t.equal(
       deserializedTx.type,
-      0x05,
+      0x03,
       'successfully deserialized a blob transaction network wrapper'
     )
     t.equal(deserializedTx.blobs?.length, blobs.length, 'contains the correct number of blobs')
@@ -309,7 +309,7 @@ tape('hash() and signature verification', async (t) => {
     )
     t.equal(
       bytesToHex(unsignedTx.unsignedHash()),
-      '0fcee5b30088a9c96b4990a3914002736a50f42468209d65a93badd3d1cd0677',
+      'a99daca5e246f242df985eca984d17ce1a510a780fdd5221d5635f96a5a1bebc',
       'produced the correct transaction hash'
     )
     const signedTx = unsignedTx.sign(

@@ -76,7 +76,7 @@ tape(`${method}: call with known payload`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes, false)
   const tx = TransactionFactory.fromTxData(
     {
-      type: 0x05,
+      type: 0x03,
       versionedHashes: [],
       maxFeePerDataGas: 1n,
       maxFeePerGas: 10000000000n,
@@ -92,7 +92,7 @@ tape(`${method}: call with known payload`, async (t) => {
   expectRes = (res: any) => {
     t.equal(
       res.body.result.executionPayload.blockHash,
-      '0x467ffd05100e34088fbc3eee3966304a3330ac37fe5d85c1873a867f514112e6',
+      '0x4f3068842f4977e1358719f03868cae636e654eca60cf97a1b5619aa006b7185',
       'built expected block'
     )
   }
@@ -102,7 +102,7 @@ tape(`${method}: call with known payload`, async (t) => {
   expectRes = (res: any) => {
     t.equal(
       res.body.result.blockHash,
-      '0x467ffd05100e34088fbc3eee3966304a3330ac37fe5d85c1873a867f514112e6',
+      '0x4f3068842f4977e1358719f03868cae636e654eca60cf97a1b5619aa006b7185',
       'got expected blockHash'
     )
   }
