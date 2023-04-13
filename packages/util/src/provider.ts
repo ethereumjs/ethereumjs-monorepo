@@ -1,4 +1,4 @@
-import fetch from 'cross-fetch'
+import fetch from 'micro-ftch'
 
 type rpcParams = {
   method: string
@@ -6,19 +6,19 @@ type rpcParams = {
 }
 export const fetchFromProvider = async (url: string, params: rpcParams) => {
   const res = await fetch(url, {
-    method: 'POST',
     headers: {
       'content-type': 'application/json',
     },
-    body: JSON.stringify({
+    type: 'json',
+    data: {
       method: params.method,
       params: params.params,
       jsonrpc: '2.0',
       id: 1,
-    }),
+    },
   })
-  const data = (await res.json()).result
-  return data
+
+  return res.result
 }
 
 export const getProvider = (provider: string | any) => {
