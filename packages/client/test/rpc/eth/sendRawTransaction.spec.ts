@@ -33,7 +33,14 @@ tape(`${method}: call with valid arguments`, async (t) => {
   DefaultStateManager.prototype.copy = function () {
     return this
   }
-  const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
+  const common = new Common({ chain: Chain.Mainnet })
+  common
+    .hardforks()
+    .filter((hf) => hf.timestamp !== undefined)
+    .map((hf) => {
+      hf.timestamp = undefined
+    })
+  const syncTargetHeight = common.hardforkBlock(Hardfork.London)
   const { server, client } = baseSetup({ syncTargetHeight, includeVM: true })
 
   // Mainnet EIP-1559 tx
