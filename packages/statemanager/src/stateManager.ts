@@ -355,6 +355,7 @@ export class DefaultStateManager implements StateManager {
       const storageTrie = this._trie.copy(false)
       storageTrie.root(account.storageRoot)
       storageTrie.flushCheckpoints()
+      this._storageTries[addressHex] = storageTrie
       return storageTrie
     }
     return storageTrie
