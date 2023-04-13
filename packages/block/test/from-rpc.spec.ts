@@ -199,7 +199,7 @@ tape('[fromEthersProvider]', async (t) => {
   }
 
   const providerUtils = require('@ethereumjs/util/dist/provider')
-  td.replace(providerUtils, 'fetchFromProvider', fakeFetch)
+  td.replace<any>(providerUtils, 'fetchFromProvider', fakeFetch)
 
   const blockHash = '0x1850b014065b23d804ecf71a8a4691d076ca87c2e6fb8fe81ee20a4d8e884c24'
   const block = await Block.fromEthersProvider(provider, blockHash, { common })
