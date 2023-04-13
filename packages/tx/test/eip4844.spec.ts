@@ -34,7 +34,7 @@ tape('EIP4844 constructor tests - valid scenarios', (t) => {
     t.end()
   } else {
     const txData = {
-      type: 0x05,
+      type: 0x03,
       versionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
       maxFeePerDataGas: 1n,
     }
@@ -113,7 +113,7 @@ tape('EIP4844 constructor tests - invalid scenarios', (t) => {
     t.end()
   } else {
     const baseTxData = {
-      type: 0x05,
+      type: 0x03,
       maxFeePerDataGas: 1n,
     }
     const shortVersionHash = {
@@ -184,7 +184,7 @@ tape('Network wrapper tests', async (t) => {
 
     t.equal(
       deserializedTx.type,
-      0x05,
+      0x03,
       'successfully deserialized a blob transaction network wrapper'
     )
     t.equal(deserializedTx.blobs?.length, blobs.length, 'contains the correct number of blobs')

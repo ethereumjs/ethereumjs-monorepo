@@ -76,7 +76,7 @@ tape(`${method}: call with known payload`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes, false)
   const tx = TransactionFactory.fromTxData(
     {
-      type: 0x05,
+      type: 0x03,
       versionedHashes: [],
       maxFeePerDataGas: 1n,
       maxFeePerGas: 10000000000n,

@@ -37,7 +37,7 @@ import type {
 import type { ValueOf } from '@chainsafe/ssz'
 import type { Common } from '@ethereumjs/common'
 
-const TRANSACTION_TYPE = 0x05
+const TRANSACTION_TYPE = 0x03
 const TRANSACTION_TYPE_BYTES = hexStringToBytes(TRANSACTION_TYPE.toString(16).padStart(2, '0'))
 
 const validateBlobTransactionNetworkWrapper = (
@@ -366,7 +366,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       tx: { ...blobTxToNetworkWrapperDataFormat(this), ...to },
       blobKzgProofs: this.kzgProofs?.map((proof) => Uint8Array.from(proof)) ?? [],
     })
-    return concatBytes(new Uint8Array([0x05]), serializedTxWrapper)
+    return concatBytes(new Uint8Array([0x03]), serializedTxWrapper)
   }
 
   getMessageToSign(hashMessage: false): Uint8Array | Uint8Array[]
