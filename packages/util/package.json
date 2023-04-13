@@ -85,6 +85,7 @@
   "dependencies": {
     "@chainsafe/ssz": "^0.11.0",
     "@ethereumjs/rlp": "^4.0.1",
+    "cross-fetch": "^3.1.5",
     "ethereum-cryptography": "^1.1.2"
   },
   "devDependencies": {

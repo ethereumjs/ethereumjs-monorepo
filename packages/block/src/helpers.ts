@@ -1,5 +1,4 @@
 import { TypeOutput, isHexString, toType } from '@ethereumjs/util'
-import fetch from 'cross-fetch'
 
 import type { BlockHeader } from './header'
 import type { BlockHeaderBuffer, HeaderData } from './types'
@@ -152,21 +151,4 @@ export const calcDataFee = (numBlobs: number, parent: BlockHeader) => {
   const totalDataGas = parent._common.param('gasConfig', 'dataGasPerBlob') * BigInt(numBlobs)
   const dataGasPrice = getDataGasPrice(parent)
   return totalDataGas * dataGasPrice
-}
-
-export const fetchFromProvider = async (url: string, params: any) => {
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      method: params.method,
-      params: params.params,
-      jsonrpc: '2.0',
-      id: 1,
-    }),
-  })
-  const data = (await res.json()).result
-  return data
 }

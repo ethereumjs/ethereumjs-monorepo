@@ -9,6 +9,8 @@ import {
   bigIntToHex,
   bufArrToArr,
   bufferToHex,
+  fetchFromProvider,
+  getProvider,
   intToHex,
   isHexPrefixed,
   ssz,
@@ -17,7 +19,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
-import { fetchFromProvider, getDataGasPrice } from './helpers'
+import { getDataGasPrice } from './helpers'
 
 import type { BlockBuffer, BlockData, BlockOptions, JsonBlock, JsonRpcBlock } from './types'
 import type { Common } from '@ethereumjs/common'
@@ -234,14 +236,7 @@ export class Block {
     opts: BlockOptions
   ) => {
     let blockData
-    let providerUrl
-    if (typeof provider === 'string') {
-      providerUrl = provider
-    } else if (provider.connection.url !== undefined) {
-      providerUrl = provider.connection.url
-    } else {
-      throw new Error('Must provide valid provider URL or Web3Provider')
-    }
+    const providerUrl = getProvider(provider)
 
     if (typeof blockTag === 'string' && blockTag.length === 66) {
       blockData = await fetchFromProvider(providerUrl, {

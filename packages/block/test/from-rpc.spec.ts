@@ -184,7 +184,7 @@ tape('[fromRPC] - Alchemy/Infura API block responses', (t) => {
   t.end()
 })
 
-tape.only('[fromEthersProvider]', async (t) => {
+tape('[fromEthersProvider]', async (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
   const provider = new MockProvider() // mimics some properties of an Ethers JsonRPCProvider
 
@@ -198,8 +198,8 @@ tape.only('[fromEthersProvider]', async (t) => {
     }
   }
 
-  const helpers = require('../src/helpers')
-  td.replace(helpers, 'fetchFromProvider', fakeFetch)
+  const providerUtils = require('@ethereumjs/util/dist/provider')
+  td.replace(providerUtils, 'fetchFromProvider', fakeFetch)
 
   const blockHash = '0x1850b014065b23d804ecf71a8a4691d076ca87c2e6fb8fe81ee20a4d8e884c24'
   const block = await Block.fromEthersProvider(provider, blockHash, { common })
