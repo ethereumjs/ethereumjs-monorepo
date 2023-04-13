@@ -63,7 +63,7 @@ export class TransactionFactory {
           return AccessListEIP2930Transaction.fromSerializedTx(data, txOptions)
         case 2:
           return FeeMarketEIP1559Transaction.fromSerializedTx(data, txOptions)
-        case 5:
+        case 3:
           return BlobEIP4844Transaction.fromSerializedTx(data, txOptions)
         default:
           throw new Error(`TypedTransaction with ID ${data[0]} unknown`)
