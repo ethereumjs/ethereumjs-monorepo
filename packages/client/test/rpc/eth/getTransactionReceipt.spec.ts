@@ -102,10 +102,9 @@ tape(`${method}: get dataGasUsed in blob tx receipt`, async (t) => {
   const commitments = blobsToCommitments(blobs)
   const versionedHashes = commitmentsToVersionedHashes(commitments)
   const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
-  const bufferedHashes = versionedHashes.map((el) => Buffer.from(el))
   const tx = BlobEIP4844Transaction.fromTxData(
     {
-      versionedHashes: bufferedHashes,
+      versionedHashes,
       blobs,
       kzgCommitments: commitments,
       kzgProofs: proofs,
