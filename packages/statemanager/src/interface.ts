@@ -12,28 +12,28 @@ export type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'storage
 
 export interface StateAccess {
   accountExists(address: Address): Promise<boolean>
-  getAccount(address: Address): Promise<Account>
-  putAccount(address: Address, account: Account): Promise<void>
-  accountIsEmpty(address: Address): Promise<boolean>
+  getAccount(address: Address): Promise<Account | undefined>
+  putAccount(address: Address, account: Account | undefined): Promise<void>
   deleteAccount(address: Address): Promise<void>
   modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void>
-  putContractCode(address: Address, value: Buffer): Promise<void>
-  getContractCode(address: Address): Promise<Buffer>
-  getContractStorage(address: Address, key: Buffer): Promise<Buffer>
-  putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void>
+  putContractCode(address: Address, value: Uint8Array): Promise<void>
+  getContractCode(address: Address): Promise<Uint8Array>
+  getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
+  putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void>
   clearContractStorage(address: Address): Promise<void>
   checkpoint(): Promise<void>
   commit(): Promise<void>
   revert(): Promise<void>
-  getStateRoot(): Promise<Buffer>
-  setStateRoot(stateRoot: Buffer): Promise<void>
-  getProof?(address: Address, storageSlots: Buffer[]): Promise<Proof>
+  getStateRoot(): Promise<Uint8Array>
+  setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void>
+  getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
   verifyProof?(proof: Proof): Promise<boolean>
-  hasStateRoot(root: Buffer): Promise<boolean>
+  hasStateRoot(root: Uint8Array): Promise<boolean>
 }
 
 export interface StateManager extends StateAccess {
   copy(): StateManager
   flush(): Promise<void>
   dumpStorage(address: Address): Promise<StorageDump>
+  clearCaches(): void
 }

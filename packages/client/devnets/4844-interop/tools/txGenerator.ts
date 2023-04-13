@@ -1,21 +1,25 @@
 // Adapted from - https://github.com/Inphi/eip4844-interop/blob/master/blob_tx_generator/blob.js
 import { Common, Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction, initKZG } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
+  Address,
+  initKZG,
   blobsToCommitments,
   commitmentsToVersionedHashes,
   getBlobs,
-} from '@ethereumjs/tx/dist/utils/blobHelpers'
-import { Address } from '@ethereumjs/util'
+  bytesToPrefixedHexString,
+  hexStringToBytes,
+} from '@ethereumjs/util'
+
 import * as kzg from 'c-kzg'
-import { randomBytes } from 'crypto'
+import { randomBytes } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 
 // CLI Args
 const clientPort = parseInt(process.argv[2]) // EL client port number
 const input = process.argv[3] // text to generate blob from
 const genesisJson = require(process.argv[4]) // Genesis parameters
-const pkey = Buffer.from(process.argv[5], 'hex') // private key of tx sender as unprefixed hex string
+const pkey = hexStringToBytes(process.argv[5]) // private key of tx sender as unprefixed hex string
 
 initKZG(kzg, __dirname + '/../../../lib/trustedSetups/devnet4.txt')
 
@@ -65,7 +69,7 @@ async function run(data: any) {
 
   const res = await client.request(
     'eth_sendRawTransaction',
-    ['0x' + serializedWrapper.toString('hex')],
+    [bytesToPrefixedHexString(serializedWrapper)],
     2.0
   )
 

@@ -19,7 +19,7 @@ export interface BaseTxReceipt {
   /**
    * Bloom bitvector
    */
-  bitvector: Buffer
+  bitvector: Uint8Array
   /**
    * Logs emitted
    */
@@ -34,7 +34,7 @@ export interface PreByzantiumTxReceipt extends BaseTxReceipt {
   /**
    * Intermediary state root
    */
-  stateRoot: Buffer
+  stateRoot: Uint8Array
 }
 
 /**
@@ -197,13 +197,13 @@ export interface SealBlockOpts {
    * For PoW, the nonce.
    * Overrides the value passed in the constructor.
    */
-  nonce?: Buffer
+  nonce?: Uint8Array
 
   /**
    * For PoW, the mixHash.
    * Overrides the value passed in the constructor.
    */
-  mixHash?: Buffer
+  mixHash?: Uint8Array
 }
 
 /**
@@ -217,7 +217,15 @@ export interface RunBlockOpts {
   /**
    * Root of the state trie
    */
-  root?: Buffer
+  root?: Uint8Array
+  /**
+   * Clearing the StateManager cache.
+   *
+   * If state root is not reset for whatever reason this can be set to `false` for better performance.
+   *
+   * Default: true
+   */
+  clearCache?: boolean
   /**
    * Whether to generate the stateRoot and other related fields.
    * If `true`, `runBlock` will set the fields `stateRoot`, `receiptTrie`, `gasUsed`, and `bloom` (logs bloom) after running the block.
@@ -273,7 +281,7 @@ export interface RunBlockResult {
   /**
    * The stateRoot after executing the block
    */
-  stateRoot: Buffer
+  stateRoot: Uint8Array
   /**
    * The gas used after executing the block
    */
@@ -281,11 +289,11 @@ export interface RunBlockResult {
   /**
    * The bloom filter of the LOGs (events) after executing the block
    */
-  logsBloom: Buffer
+  logsBloom: Uint8Array
   /**
    * The receipt root after executing the block
    */
-  receiptsRoot: Buffer
+  receiptsRoot: Uint8Array
 }
 
 export interface AfterBlockEvent extends RunBlockResult {

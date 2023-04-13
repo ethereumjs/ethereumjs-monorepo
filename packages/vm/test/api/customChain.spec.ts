@@ -4,6 +4,7 @@ import { Common, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import { Interface } from '@ethersproject/abi'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../src/vm'
@@ -23,6 +24,7 @@ const accountState: AccountState = [
   '0x0',
   '0x6080604052348015600f57600080fd5b506004361060285760003560e01c80632e64cec114602d575b600080fd5b60336047565b604051603e9190605d565b60405180910390f35b60008054905090565b6057816076565b82525050565b6000602082019050607060008301846050565b92915050565b600081905091905056fea2646970667358221220338001095242a334ada78025237955fa36b6f2f895ea7f297b69af72f8bc7fd164736f6c63430008070033',
   storage,
+  '0x0',
 ]
 
 /**
@@ -57,10 +59,7 @@ const block = Block.fromBlockData(
     common,
   }
 )
-const privateKey = Buffer.from(
-  'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-  'hex'
-)
+const privateKey = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 
 tape('VM initialized with custom state', (t) => {
   t.test('should transfer eth from already existent account', async (t) => {
@@ -87,7 +86,7 @@ tape('VM initialized with custom state', (t) => {
     const receiverAddress = await vm.stateManager.getAccount(toAddress)
 
     t.equal(result.totalGasSpent.toString(), '21000')
-    t.equal(receiverAddress.balance.toString(), '1')
+    t.equal(receiverAddress!.balance.toString(), '1')
     t.end()
   })
 
@@ -99,14 +98,14 @@ tape('VM initialized with custom state', (t) => {
 
     const callResult = await vm.evm.runCall({
       to: Address.fromString(contractAddress),
-      data: Buffer.from(sigHash.slice(2), 'hex'),
+      data: hexToBytes(sigHash.slice(2)),
       caller: Address.fromPrivateKey(privateKey),
     })
 
     const storage = genesisState[contractAddress][2]
     // Returned value should be 4, because we are trying to trigger the method `retrieve`
     // in the contract, which returns the variable stored in slot 0x00..00
-    t.equal(callResult.execResult.returnValue.toString('hex'), storage[0][1].slice(2))
+    t.equal(bytesToHex(callResult.execResult.returnValue), storage[0][1].slice(2))
     t.end()
   })
 

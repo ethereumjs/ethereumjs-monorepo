@@ -27,7 +27,7 @@ class FetcherTest extends Fetcher<any, any, any> {
 tape('[Fetcher]', (t) => {
   t.test('should handle bad result', (t) => {
     t.plan(2)
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const fetcher = new FetcherTest({ config, pool: td.object() })
     const job: any = { peer: {}, state: 'active' }
     ;(fetcher as any).running = true
@@ -41,7 +41,7 @@ tape('[Fetcher]', (t) => {
 
   t.test('should handle failure', (t) => {
     t.plan(2)
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const fetcher = new FetcherTest({ config, pool: td.object() })
     const job = { peer: {}, state: 'active' }
     ;(fetcher as any).running = true
@@ -53,7 +53,7 @@ tape('[Fetcher]', (t) => {
 
   t.test('should handle expiration', (t) => {
     t.plan(2)
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const fetcher = new FetcherTest({
       config,
       pool: td.object(),
@@ -81,7 +81,7 @@ tape('[Fetcher]', (t) => {
 
   t.test('should handle queue management', (t) => {
     t.plan(3)
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const fetcher = new FetcherTest({
       config,
       pool: td.object(),
@@ -109,7 +109,7 @@ tape('[Fetcher]', (t) => {
 
   t.test('should re-enqueue on a non-fatal error', (t) => {
     t.plan(1)
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const fetcher = new FetcherTest({ config, pool: td.object(), timeout: 5000 })
     const task = { first: BigInt(50), count: 10 }
     const job: any = { peer: {}, task, state: 'active', index: 0 }
@@ -141,7 +141,7 @@ tape('[Fetcher]', (t) => {
   })
 
   t.test('should handle fatal errors correctly', (st) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const fetcher = new FetcherTest({ config, pool: td.object(), timeout: 5000 })
     const task = { first: BigInt(50), count: 10 }
     const job: any = { peer: {}, task, state: 'active', index: 0 }

@@ -1,7 +1,8 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { ripemdPrecompileAddress } from '@ethereumjs/evm/dist/precompiles'
-import { Account, Address, toBuffer } from '@ethereumjs/util'
+import { Account, Address, toBytes } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { Journaling } from './journaling'
 
@@ -37,7 +38,7 @@ export class VmState implements EVMStateAccess {
   // to also include on access list generation
   protected _accessedStorageReverted: Map<string, Set<string>>[]
 
-  protected _originalStorageCache: Map<AddressHex, Map<AddressHex, Buffer>>
+  protected _originalStorageCache: Map<AddressHex, Map<AddressHex, Uint8Array>>
 
   protected readonly touchedJournal: Journaling<AddressHex>
 
@@ -116,7 +117,6 @@ export class VmState implements EVMStateAccess {
         this._accessedStorageReverted.push(lastItem)
       }
     }
-
     await this._stateManager.revert()
     this.touchedJournal.revert(ripemdPrecompileAddress)
 
@@ -132,7 +132,7 @@ export class VmState implements EVMStateAccess {
     }
   }
 
-  async getAccount(address: Address): Promise<Account> {
+  async getAccount(address: Address): Promise<Account | undefined> {
     return this._stateManager.getAccount(address)
   }
 
@@ -154,19 +154,19 @@ export class VmState implements EVMStateAccess {
     this.touchAccount(address)
   }
 
-  async getContractCode(address: Address): Promise<Buffer> {
+  async getContractCode(address: Address): Promise<Uint8Array> {
     return this._stateManager.getContractCode(address)
   }
 
-  async putContractCode(address: Address, value: Buffer): Promise<void> {
+  async putContractCode(address: Address, value: Uint8Array): Promise<void> {
     return this._stateManager.putContractCode(address, value)
   }
 
-  async getContractStorage(address: Address, key: Buffer): Promise<Buffer> {
+  async getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     return this._stateManager.getContractStorage(address, key)
   }
 
-  async putContractStorage(address: Address, key: Buffer, value: Buffer) {
+  async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array) {
     await this._stateManager.putContractStorage(address, key, value)
     this.touchAccount(address)
   }
@@ -180,18 +180,18 @@ export class VmState implements EVMStateAccess {
     return this._stateManager.accountExists(address)
   }
 
-  async setStateRoot(stateRoot: Buffer): Promise<void> {
+  async setStateRoot(stateRoot: Uint8Array, clearCache: boolean = true): Promise<void> {
     if (this._checkpointCount !== 0) {
       throw new Error('Cannot set state root with uncommitted checkpoints')
     }
-    return this._stateManager.setStateRoot(stateRoot)
+    return this._stateManager.setStateRoot(stateRoot, clearCache)
   }
 
-  async getStateRoot(): Promise<Buffer> {
+  async getStateRoot(): Promise<Uint8Array> {
     return this._stateManager.getStateRoot()
   }
 
-  async hasStateRoot(root: Buffer): Promise<boolean> {
+  async hasStateRoot(root: Uint8Array): Promise<boolean> {
     return this._stateManager.hasStateRoot(root)
   }
 
@@ -203,7 +203,7 @@ export class VmState implements EVMStateAccess {
    * at the end of the tx.
    */
   touchAccount(address: Address): void {
-    this.touchedJournal.addJournalItem(address.buf.toString('hex'))
+    this.touchedJournal.addJournalItem(address.toString().slice(2))
   }
 
   /**
@@ -252,20 +252,23 @@ export class VmState implements EVMStateAccess {
         await this.putAccount(addr, account)
       } else {
         // New format: address -> [balance, code, storage]
-        const [balance, code, storage] = state
-        const account = Account.fromAccountData({ balance })
+        const [balance, code, storage, nonce] = state
+        const account = Account.fromAccountData({ balance, nonce })
         await this.putAccount(addr, account)
         if (code !== undefined) {
-          await this.putContractCode(addr, toBuffer(code))
+          await this.putContractCode(addr, toBytes(code))
         }
         if (storage !== undefined) {
           for (const [key, value] of storage) {
-            await this.putContractStorage(addr, toBuffer(key), toBuffer(value))
+            await this.putContractStorage(addr, toBytes(key), toBytes(value))
           }
         }
       }
     }
     await this._stateManager.flush()
+    // If any empty accounts are put, these should not be marked as touched (when first tx is ran, this account is deleted when it cleans up the accounts)
+    // TODO: not 100% sure if to keep this line or not along cache refactor rebase, 2023-04-11
+    this.touchedJournal.clear()
   }
 
   /**
@@ -276,8 +279,8 @@ export class VmState implements EVMStateAccess {
     if (this._common.gteHardfork(Hardfork.SpuriousDragon) === true) {
       const touchedArray = Array.from(this.touchedJournal.journal)
       for (const addressHex of touchedArray) {
-        const address = new Address(Buffer.from(addressHex, 'hex'))
-        const empty = await this.accountIsEmpty(address)
+        const address = new Address(hexToBytes(addressHex))
+        const empty = await this.accountIsEmptyOrNonExistent(address)
         if (empty) {
           await this._stateManager.deleteAccount(address)
           if (this.DEBUG) {
@@ -297,15 +300,18 @@ export class VmState implements EVMStateAccess {
    * @param address - Address of the account to get the storage for
    * @param key - Key in the account's storage to get the value for. Must be 32 bytes long.
    */
-  protected async getOriginalContractStorage(address: Address, key: Buffer): Promise<Buffer> {
+  protected async getOriginalContractStorage(
+    address: Address,
+    key: Uint8Array
+  ): Promise<Uint8Array> {
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')
     }
 
-    const addressHex = address.buf.toString('hex')
-    const keyHex = key.toString('hex')
+    const addressHex = address.toString()
+    const keyHex = bytesToHex(key)
 
-    let map: Map<AddressHex, Buffer>
+    let map: Map<AddressHex, Uint8Array>
     if (!this._originalStorageCache.has(addressHex)) {
       map = new Map()
       this._originalStorageCache.set(addressHex, map)
@@ -344,12 +350,12 @@ export class VmState implements EVMStateAccess {
 
   /**
    * Returns true if the address is warm in the current context
-   * @param address - The address (as a Buffer) to check
+   * @param address - The address (as a Uint8Array) to check
    */
-  isWarmedAddress(address: Buffer): boolean {
+  isWarmedAddress(address: Uint8Array): boolean {
     for (let i = this._accessedStorage.length - 1; i >= 0; i--) {
       const currentMap = this._accessedStorage[i]
-      if (currentMap.has(address.toString('hex'))) {
+      if (currentMap.has(bytesToHex(address))) {
         return true
       }
     }
@@ -358,10 +364,10 @@ export class VmState implements EVMStateAccess {
 
   /**
    * Add a warm address in the current context
-   * @param address - The address (as a Buffer) to check
+   * @param address - The address (as a Uint8Array) to check
    */
-  addWarmedAddress(address: Buffer): void {
-    const key = address.toString('hex')
+  addWarmedAddress(address: Uint8Array): void {
+    const key = bytesToHex(address)
     const storageSet = this._accessedStorage[this._accessedStorage.length - 1].get(key)
     if (!storageSet) {
       const emptyStorage = new Set<string>()
@@ -371,12 +377,12 @@ export class VmState implements EVMStateAccess {
 
   /**
    * Returns true if the slot of the address is warm
-   * @param address - The address (as a Buffer) to check
-   * @param slot - The slot (as a Buffer) to check
+   * @param address - The address (as a Uint8Array) to check
+   * @param slot - The slot (as a Uint8Array) to check
    */
-  isWarmedStorage(address: Buffer, slot: Buffer): boolean {
-    const addressKey = address.toString('hex')
-    const storageKey = slot.toString('hex')
+  isWarmedStorage(address: Uint8Array, slot: Uint8Array): boolean {
+    const addressKey = bytesToHex(address)
+    const storageKey = bytesToHex(slot)
 
     for (let i = this._accessedStorage.length - 1; i >= 0; i--) {
       const currentMap = this._accessedStorage[i]
@@ -390,17 +396,17 @@ export class VmState implements EVMStateAccess {
 
   /**
    * Mark the storage slot in the address as warm in the current context
-   * @param address - The address (as a Buffer) to check
-   * @param slot - The slot (as a Buffer) to check
+   * @param address - The address (as a Uint8Array) to check
+   * @param slot - The slot (as a Uint8Array) to check
    */
-  addWarmedStorage(address: Buffer, slot: Buffer): void {
-    const addressKey = address.toString('hex')
+  addWarmedStorage(address: Uint8Array, slot: Uint8Array): void {
+    const addressKey = bytesToHex(address)
     let storageSet = this._accessedStorage[this._accessedStorage.length - 1].get(addressKey)
     if (!storageSet) {
       storageSet = new Set()
       this._accessedStorage[this._accessedStorage.length - 1].set(addressKey, storageSet!)
     }
-    storageSet!.add(slot.toString('hex'))
+    storageSet!.add(bytesToHex(slot))
   }
 
   /**
@@ -473,7 +479,11 @@ export class VmState implements EVMStateAccess {
    * EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
    * @param address - Address to check
    */
-  async accountIsEmpty(address: Address): Promise<boolean> {
-    return this._stateManager.accountIsEmpty(address)
+  async accountIsEmptyOrNonExistent(address: Address): Promise<boolean> {
+    const account = await this._stateManager.getAccount(address)
+    if (account === undefined || account.isEmpty()) {
+      return true
+    }
+    return false
   }
 }

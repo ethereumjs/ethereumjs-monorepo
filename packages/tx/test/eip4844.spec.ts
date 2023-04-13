@@ -1,14 +1,21 @@
 import { Common, Hardfork } from '@ethereumjs/common'
-import * as kzg from 'c-kzg'
-import { randomBytes } from 'crypto'
-import * as tape from 'tape'
-
-import { BlobEIP4844Transaction, TransactionFactory, initKZG } from '../src'
 import {
   blobsToCommitments,
+  blobsToProofs,
+  bytesToHex,
   commitmentsToVersionedHashes,
+  concatBytes,
+  equalsBytes,
   getBlobs,
-} from '../src/utils/blobHelpers'
+  hexStringToBytes,
+  initKZG,
+} from '@ethereumjs/util'
+import * as kzg from 'c-kzg'
+import { randomBytes } from 'crypto'
+import { hexToBytes } from 'ethereum-cryptography/utils'
+import * as tape from 'tape'
+
+import { BlobEIP4844Transaction, TransactionFactory } from '../src'
 
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
@@ -28,7 +35,7 @@ tape('EIP4844 constructor tests - valid scenarios', (t) => {
   } else {
     const txData = {
       type: 0x05,
-      versionedHashes: [Buffer.concat([Buffer.from([1]), randomBytes(31)])],
+      versionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
       maxFeePerDataGas: 1n,
     }
     const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
@@ -90,9 +97,9 @@ tape('fromTxData using from a json', (t) => {
       t.pass('Should be able to parse a json data and hash it')
 
       t.equal(typeof tx.maxFeePerDataGas, 'bigint', 'should be able to parse correctly')
-      t.equal(tx.serialize().toString('hex'), txData.serialized, 'serialization should match')
+      t.equal(bytesToHex(tx.serialize()), txData.serialized, 'serialization should match')
       // TODO: fix the hash
-      t.equal(tx.hash().toString('hex'), txData.hash, 'hash should match')
+      t.equal(bytesToHex(tx.hash()), txData.hash, 'hash should match')
     } catch (e) {
       t.fail('failed to parse json data')
     }
@@ -110,16 +117,16 @@ tape('EIP4844 constructor tests - invalid scenarios', (t) => {
       maxFeePerDataGas: 1n,
     }
     const shortVersionHash = {
-      versionedHashes: [Buffer.concat([Buffer.from([3]), randomBytes(3)])],
+      versionedHashes: [concatBytes(new Uint8Array([3]), randomBytes(3))],
     }
     const invalidVersionHash = {
-      versionedHashes: [Buffer.concat([Buffer.from([3]), randomBytes(31)])],
+      versionedHashes: [concatBytes(new Uint8Array([3]), randomBytes(31))],
     }
     const tooManyBlobs = {
       versionedHashes: [
-        Buffer.concat([Buffer.from([1]), randomBytes(31)]),
-        Buffer.concat([Buffer.from([1]), randomBytes(31)]),
-        Buffer.concat([Buffer.from([1]), randomBytes(31)]),
+        concatBytes(new Uint8Array([1]), randomBytes(31)),
+        concatBytes(new Uint8Array([1]), randomBytes(31)),
+        concatBytes(new Uint8Array([1]), randomBytes(31)),
       ],
     }
     try {
@@ -154,20 +161,20 @@ tape('Network wrapper tests', async (t) => {
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(blobs)
     const versionedHashes = commitmentsToVersionedHashes(commitments)
-    const proof = kzg.computeAggregateKzgProof(blobs)
-    const bufferedHashes = versionedHashes.map((el) => Buffer.from(el))
+    const proofs = blobsToProofs(blobs, commitments)
     const unsignedTx = BlobEIP4844Transaction.fromTxData(
       {
-        versionedHashes: bufferedHashes,
+        versionedHashes,
         blobs,
         kzgCommitments: commitments,
-        kzgProof: Buffer.from(proof),
+        kzgProofs: proofs,
         maxFeePerDataGas: 100000000n,
         gasLimit: 0xffffffn,
         to: randomBytes(20),
       },
       { common }
     )
+
     const signedTx = unsignedTx.sign(pk)
     const sender = signedTx.getSenderAddress().toString()
     const wrapper = signedTx.serializeNetworkWrapper()
@@ -189,15 +196,16 @@ tape('Network wrapper tests', async (t) => {
     const minimalTx = BlobEIP4844Transaction.minimalFromNetworkWrapper(deserializedTx, { common })
     t.ok(minimalTx.blobs === undefined, 'minimal representation contains no blobs')
     t.ok(
-      minimalTx.hash().equals(deserializedTx.hash()),
+      equalsBytes(minimalTx.hash(), deserializedTx.hash()),
       'has the same hash as the network wrapper version'
     )
 
     const txWithMissingBlob = BlobEIP4844Transaction.fromTxData(
       {
-        versionedHashes: bufferedHashes,
+        versionedHashes,
         blobs: blobs.slice(1),
         kzgCommitments: commitments,
+        kzgProofs: proofs,
         maxFeePerDataGas: 100000000n,
         gasLimit: 0xffffffn,
         to: randomBytes(20),
@@ -221,9 +229,10 @@ tape('Network wrapper tests', async (t) => {
     commitments[0][0] = 154
     const txWithInvalidCommitment = BlobEIP4844Transaction.fromTxData(
       {
-        versionedHashes: bufferedHashes,
+        versionedHashes,
         blobs,
         kzgCommitments: commitments,
+        kzgProofs: proofs,
         maxFeePerDataGas: 100000000n,
         gasLimit: 0xffffffn,
         to: randomBytes(20),
@@ -241,15 +250,15 @@ tape('Network wrapper tests', async (t) => {
       'throws when kzg proof cant be verified'
     )
 
-    bufferedHashes[0][1] = 2
+    versionedHashes[0][1] = 2
     commitments[0][0] = mangledValue
 
     const txWithInvalidVersionedHashes = BlobEIP4844Transaction.fromTxData(
       {
-        versionedHashes: bufferedHashes,
+        versionedHashes,
         blobs,
         kzgCommitments: commitments,
-        kzgProof: Buffer.from(proof),
+        kzgProofs: proofs,
         maxFeePerDataGas: 100000000n,
         gasLimit: 0xffffffn,
         to: randomBytes(20),
@@ -283,7 +292,7 @@ tape('hash() and signature verification', async (t) => {
         chainId: 1,
         nonce: 1,
         versionedHashes: [
-          Buffer.from('01624652859a6e98ffc1608e2af0147ca4e86e1ce27672d8d3f3c9d4ffd6ef7e', 'hex'),
+          hexToBytes('01624652859a6e98ffc1608e2af0147ca4e86e1ce27672d8d3f3c9d4ffd6ef7e'),
         ],
         maxFeePerDataGas: 10000000n,
         gasLimit: 123457n,
@@ -299,12 +308,12 @@ tape('hash() and signature verification', async (t) => {
       { common }
     )
     t.equal(
-      unsignedTx.unsignedHash().toString('hex'),
+      bytesToHex(unsignedTx.unsignedHash()),
       '0fcee5b30088a9c96b4990a3914002736a50f42468209d65a93badd3d1cd0677',
       'produced the correct transaction hash'
     )
     const signedTx = unsignedTx.sign(
-      Buffer.from('45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8', 'hex')
+      hexStringToBytes('45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
     )
 
     t.equal(

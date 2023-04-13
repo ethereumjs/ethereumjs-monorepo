@@ -1,3 +1,4 @@
+import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils'
 import { EventEmitter } from 'events'
 import { multiaddr } from 'multiaddr'
 import * as tape from 'tape'
@@ -41,7 +42,7 @@ tape('[Libp2pServer]', async (t) => {
   const { Libp2pServer } = await import('../../../lib/net/server/libp2pserver')
 
   t.test('should initialize correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const multiaddrs = [
       multiaddr('/ip4/192.0.2.1/tcp/12345'),
       multiaddr('/ip4/192.0.2.1/tcp/23456'),
@@ -50,7 +51,7 @@ tape('[Libp2pServer]', async (t) => {
       config,
       multiaddrs,
       bootnodes: ['0.0.0.0:3030', '1.1.1.1:3031'],
-      key: Buffer.from('abcd'),
+      key: utf8ToBytes('abcd'),
     })
     t.deepEquals((server as any).multiaddrs, multiaddrs, 'multiaddrs correct')
     t.deepEquals(
@@ -58,7 +59,7 @@ tape('[Libp2pServer]', async (t) => {
       [multiaddr('/ip4/0.0.0.0/tcp/3030'), multiaddr('/ip4/1.1.1.1/tcp/3031')],
       'bootnodes split'
     )
-    t.equals(server.key!.toString(), 'abcd', 'key is correct')
+    t.equals(bytesToUtf8(server.key!), 'abcd', 'key is correct')
     t.equals(server.name, 'libp2p', 'get name')
     t.equals(
       (await server.getPeerId()).toB58String(),
@@ -69,7 +70,7 @@ tape('[Libp2pServer]', async (t) => {
   })
 
   t.test('should get peer info', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const server = new Libp2pServer({ config })
     const connection = td.object<any>()
     connection.remotePeer = 'id0'
@@ -78,7 +79,7 @@ tape('[Libp2pServer]', async (t) => {
   })
 
   t.test('should create peer', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const multiaddrs = [multiaddr('/ip4/6.6.6.6')]
     const server = new Libp2pServer({ config, multiaddrs })
     const peerId = {
@@ -94,9 +95,14 @@ tape('[Libp2pServer]', async (t) => {
 
   t.test('should start/stop server and test banning', async (t) => {
     t.plan(12)
-    const config = new Config({ transports: [], logger: getLogger({ loglevel: 'off' }) })
+    const config = new Config({
+      transports: [],
+      logger: getLogger({ loglevel: 'off' }),
+      accountCache: 10000,
+      storageCache: 1000,
+    })
     const multiaddrs = [multiaddr('/ip4/6.6.6.6')]
-    const server = new Libp2pServer({ config, multiaddrs, key: Buffer.from('4') })
+    const server = new Libp2pServer({ config, multiaddrs, key: utf8ToBytes('4') })
     const protos: any = [
       { name: 'proto', versions: [1] },
       { name: 'proto', versions: [2] },

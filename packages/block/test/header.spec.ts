@@ -1,6 +1,16 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Address, KECCAK256_RLP, KECCAK256_RLP_ARRAY, toBuffer, zeros } from '@ethereumjs/util'
+import {
+  Address,
+  KECCAK256_RLP,
+  KECCAK256_RLP_ARRAY,
+  bytesToHex,
+  concatBytes,
+  equalsBytes,
+  hexStringToBytes,
+  toBytes,
+  zeros,
+} from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Block } from '../src'
@@ -14,21 +24,21 @@ const blocksMainnet = require('./testdata/blocks_mainnet.json')
 tape('[Block]: Header functions', function (t) {
   t.test('should create with default constructor', function (st) {
     function compareDefaultHeader(st: tape.Test, header: BlockHeader) {
-      st.ok(header.parentHash.equals(zeros(32)))
-      st.ok(header.uncleHash.equals(KECCAK256_RLP_ARRAY))
+      st.ok(equalsBytes(header.parentHash, zeros(32)))
+      st.ok(equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY))
       st.ok(header.coinbase.equals(Address.zero()))
-      st.ok(header.stateRoot.equals(zeros(32)))
-      st.ok(header.transactionsTrie.equals(KECCAK256_RLP))
-      st.ok(header.receiptTrie.equals(KECCAK256_RLP))
-      st.ok(header.logsBloom.equals(zeros(256)))
+      st.ok(equalsBytes(header.stateRoot, zeros(32)))
+      st.ok(equalsBytes(header.transactionsTrie, KECCAK256_RLP))
+      st.ok(equalsBytes(header.receiptTrie, KECCAK256_RLP))
+      st.ok(equalsBytes(header.logsBloom, zeros(256)))
       st.equal(header.difficulty, BigInt(0))
       st.equal(header.number, BigInt(0))
       st.equal(header.gasLimit, BigInt('0xffffffffffffff'))
       st.equal(header.gasUsed, BigInt(0))
       st.equal(header.timestamp, BigInt(0))
-      st.ok(header.extraData.equals(Buffer.from([])))
-      st.ok(header.mixHash.equals(zeros(32)))
-      st.ok(header.nonce.equals(zeros(8)))
+      st.ok(equalsBytes(header.extraData, new Uint8Array(0)))
+      st.ok(equalsBytes(header.mixHash, zeros(32)))
+      st.ok(equalsBytes(header.nonce, zeros(8)))
     }
 
     const header = BlockHeader.fromHeaderData()
@@ -43,7 +53,7 @@ tape('[Block]: Header functions', function (t) {
   t.test('Initialization -> fromHeaderData()', function (st) {
     const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
     let header = BlockHeader.fromHeaderData(undefined, { common })
-    st.ok(header.hash().toString('hex'), 'genesis block should initialize')
+    st.ok(bytesToHex(header.hash()), 'genesis block should initialize')
     st.equal(header._common.hardfork(), 'chainstart', 'should initialize with correct HF provided')
 
     common.setHardfork(Hardfork.Byzantium)
@@ -54,7 +64,7 @@ tape('[Block]: Header functions', function (t) {
     )
 
     header = BlockHeader.fromHeaderData({}, { common })
-    st.ok(header.hash().toString('hex'), 'default block should initialize')
+    st.ok(bytesToHex(header.hash()), 'default block should initialize')
 
     // test default freeze values
     // also test if the options are carried over to the constructor
@@ -94,14 +104,13 @@ tape('[Block]: Header functions', function (t) {
     )
 
     header = BlockHeader.fromRLPSerializedHeader(
-      Buffer.from(
-        'f90214a00000000000000000000000000000000000000000000000000000000000000000a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347940000000000000000000000000000000000000000a0d7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000850400000000808213888080a011bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82faa00000000000000000000000000000000000000000000000000000000000000000880000000000000042',
-        'hex'
+      hexStringToBytes(
+        'f90214a00000000000000000000000000000000000000000000000000000000000000000a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347940000000000000000000000000000000000000000a0d7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000850400000000808213888080a011bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82faa00000000000000000000000000000000000000000000000000000000000000000880000000000000042'
       ),
       { common, hardforkByBlockNumber: false }
     )
     st.equal(
-      header.hash().toString('hex'),
+      bytesToHex(header.hash()),
       'f0f936910ebf101b7b168bbe08e3f166ce1e75e16f513dd5a97af02fbe7de7c0',
       'genesis block should produce incorrect hash since default hardfork is london'
     )
@@ -110,7 +119,7 @@ tape('[Block]: Header functions', function (t) {
 
   t.test('Initialization -> fromRLPSerializedHeader() -> error cases', function (st) {
     try {
-      BlockHeader.fromRLPSerializedHeader(Buffer.from(RLP.encode('a')))
+      BlockHeader.fromRLPSerializedHeader(RLP.encode('a'))
     } catch (e: any) {
       const expectedError = 'Invalid serialized header input. Must be array'
       st.ok(e.message.includes(expectedError), 'should throw with header as rlp encoded string')
@@ -120,7 +129,7 @@ tape('[Block]: Header functions', function (t) {
 
   t.test('Initialization -> fromValuesArray()', function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const zero = Buffer.alloc(0)
+    const zero = new Uint8Array(0)
     const headerArray = []
     for (let item = 0; item < 15; item++) {
       headerArray.push(zero)
@@ -144,7 +153,7 @@ tape('[Block]: Header functions', function (t) {
   })
 
   t.test('Initialization -> fromValuesArray() -> error cases', function (st) {
-    const headerArray = Array(19).fill(Buffer.alloc(0))
+    const headerArray = Array(19).fill(new Uint8Array(0))
 
     // mock header data (if set to zeros(0) header throws)
     headerArray[0] = zeros(32) //parentHash
@@ -173,8 +182,8 @@ tape('[Block]: Header functions', function (t) {
 
   t.test('Initialization -> Clique Blocks', function (st) {
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
-    const header = BlockHeader.fromHeaderData({ extraData: Buffer.alloc(97) }, { common })
-    st.ok(header.hash().toString('hex'), 'default block should initialize')
+    const header = BlockHeader.fromHeaderData({ extraData: new Uint8Array(97) }, { common })
+    st.ok(bytesToHex(header.hash()), 'default block should initialize')
 
     st.end()
   })
@@ -193,7 +202,7 @@ tape('[Block]: Header functions', function (t) {
 
     // valid extraData: at limit
     let testCase = 'pow block should validate with 32 bytes of extraData'
-    let extraData = Buffer.alloc(32)
+    let extraData = new Uint8Array(32)
 
     try {
       BlockHeader.fromHeaderData({ ...data, extraData }, opts)
@@ -204,7 +213,7 @@ tape('[Block]: Header functions', function (t) {
 
     // valid extraData: fewer than limit
     testCase = 'pow block should validate with 12 bytes of extraData'
-    extraData = Buffer.alloc(12)
+    extraData = new Uint8Array(12)
 
     try {
       BlockHeader.fromHeaderData({ ...data, extraData }, opts)
@@ -215,7 +224,7 @@ tape('[Block]: Header functions', function (t) {
 
     // extraData beyond limit
     testCase = 'pow block should throw with excess amount of extraData'
-    extraData = Buffer.alloc(42)
+    extraData = new Uint8Array(42)
 
     try {
       BlockHeader.fromHeaderData({ ...data, extraData }, opts)
@@ -226,7 +235,7 @@ tape('[Block]: Header functions', function (t) {
 
     // PoA
     common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
-    genesis = Block.fromBlockData({ header: { extraData: Buffer.alloc(97) } }, { common })
+    genesis = Block.fromBlockData({ header: { extraData: new Uint8Array(97) } }, { common })
 
     parentHash = genesis.hash()
     gasLimit = genesis.header.gasLimit
@@ -236,7 +245,7 @@ tape('[Block]: Header functions', function (t) {
     // valid extraData (32 byte vanity + 65 byte seal)
     testCase =
       'clique block should validate with valid number of bytes in extraData: 32 byte vanity + 65 byte seal'
-    extraData = Buffer.concat([Buffer.alloc(32), Buffer.alloc(65)])
+    extraData = concatBytes(new Uint8Array(32), new Uint8Array(65))
     try {
       BlockHeader.fromHeaderData({ ...data, extraData }, opts)
       t.pass(testCase)
@@ -246,7 +255,7 @@ tape('[Block]: Header functions', function (t) {
 
     // invalid extraData length
     testCase = 'clique block should throw on invalid extraData length'
-    extraData = Buffer.alloc(32)
+    extraData = new Uint8Array(32)
     try {
       BlockHeader.fromHeaderData({ ...data, extraData }, opts)
       t.fail(testCase)
@@ -261,12 +270,12 @@ tape('[Block]: Header functions', function (t) {
 
     // signer list indivisible by 20
     testCase = 'clique blocks should throw on invalid extraData length: indivisible by 20'
-    extraData = Buffer.concat([
-      Buffer.alloc(32),
-      Buffer.alloc(65),
-      Buffer.alloc(20),
-      Buffer.alloc(21),
-    ])
+    extraData = concatBytes(
+      new Uint8Array(32),
+      new Uint8Array(65),
+      new Uint8Array(20),
+      new Uint8Array(21)
+    )
     const epoch = BigInt((common.consensusConfig() as CliqueConfig).epoch)
     try {
       BlockHeader.fromHeaderData({ ...data, number: epoch, extraData }, opts)
@@ -285,7 +294,7 @@ tape('[Block]: Header functions', function (t) {
 
   t.test('should skip consensusFormatValidation if flag is set to false', (st) => {
     const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
-    const extraData = Buffer.concat([Buffer.alloc(1)])
+    const extraData = concatBytes(new Uint8Array(1))
 
     try {
       BlockHeader.fromHeaderData({ extraData }, { common, skipConsensusFormatValidation: true })
@@ -300,7 +309,7 @@ tape('[Block]: Header functions', function (t) {
   })
 
   t.test('_genericFormatValidation checks', (st) => {
-    const badHash = Buffer.alloc(31)
+    const badHash = new Uint8Array(31)
 
     st.throws(
       () => BlockHeader.fromHeaderData({ parentHash: badHash }),
@@ -319,7 +328,7 @@ tape('[Block]: Header functions', function (t) {
     )
 
     st.throws(
-      () => BlockHeader.fromHeaderData({ nonce: Buffer.alloc(5) }),
+      () => BlockHeader.fromHeaderData({ nonce: new Uint8Array(5) }),
       (err: any) => err.message.includes('nonce must be 8 bytes'),
       'contains nonce length error message'
     )
@@ -333,14 +342,14 @@ tape('[Block]: Header functions', function (t) {
     const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Istanbul })
     const blockchain = new Mockchain()
 
-    const genesisRlp = toBuffer(testDataPreLondon.genesisRLP)
+    const genesisRlp = toBytes(testDataPreLondon.genesisRLP)
     const block = Block.fromRLPSerializedBlock(genesisRlp, { common })
     await blockchain.putBlock(block)
 
     headerData.number = 1
     headerData.timestamp = BigInt(1422494850)
-    headerData.extraData = Buffer.alloc(97)
-    headerData.mixHash = Buffer.alloc(32)
+    headerData.extraData = new Uint8Array(97)
+    headerData.mixHash = new Uint8Array(32)
     headerData.difficulty = BigInt(2)
 
     let testCase = 'should throw on lower than period timestamp diffs'
@@ -380,7 +389,7 @@ tape('[Block]: Header functions', function (t) {
     headerData.coinbase = Address.zero()
 
     testCase = 'should throw on non-zero mixHash'
-    headerData.mixHash = Buffer.alloc(32).fill(1)
+    headerData.mixHash = new Uint8Array(32).fill(1)
     header = BlockHeader.fromHeaderData(headerData, { common })
     try {
       await header.validate(blockchain)
@@ -392,7 +401,7 @@ tape('[Block]: Header functions', function (t) {
         st.fail('should throw with appropriate error')
       }
     }
-    headerData.mixHash = Buffer.alloc(32)
+    headerData.mixHash = new Uint8Array(32)
 
     testCase = 'should throw on invalid clique difficulty'
     headerData.difficulty = BigInt(3)
@@ -411,9 +420,8 @@ tape('[Block]: Header functions', function (t) {
     testCase = 'validateCliqueDifficulty() should return true with NOTURN difficulty and one signer'
     headerData.difficulty = BigInt(2)
     const poaBlockchain = new PoaMockchain()
-    const cliqueSigner = Buffer.from(
-      '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
-      'hex'
+    const cliqueSigner = hexToBytes(
+      '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'
     )
     const poaBlock = Block.fromRLPSerializedBlock(genesisRlp, { common, cliqueSigner })
     await poaBlockchain.putBlock(poaBlock)
@@ -445,9 +453,9 @@ tape('[Block]: Header functions', function (t) {
     const bcBlockGasLimitTestData = testData.BlockGasLimit2p63m1
 
     for (const key of Object.keys(bcBlockGasLimitTestData)) {
-      const genesisRlp = toBuffer(bcBlockGasLimitTestData[key].genesisRLP)
+      const genesisRlp = toBytes(bcBlockGasLimitTestData[key].genesisRLP)
       const parentBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
-      const blockRlp = toBuffer(bcBlockGasLimitTestData[key].blocks[0].rlp)
+      const blockRlp = toBytes(bcBlockGasLimitTestData[key].blocks[0].rlp)
       const block = Block.fromRLPSerializedBlock(blockRlp, { common })
       st.doesNotThrow(() => block.validateGasLimit(parentBlock))
     }
@@ -468,7 +476,7 @@ tape('[Block]: Header functions', function (t) {
     let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     let header = BlockHeader.fromHeaderData(blocksMainnet[0]['header'], { common })
     st.equal(
-      header.hash().toString('hex'),
+      bytesToHex(header.hash()),
       '88e96d4537bea4d9c05d12549907b32561d3bf31f45aae734cdc119f13406cb6',
       'correct PoW hash (mainnet block 1)'
     )
@@ -476,7 +484,7 @@ tape('[Block]: Header functions', function (t) {
     common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
     header = BlockHeader.fromHeaderData(blocksGoerli[0]['header'], { common })
     st.equal(
-      header.hash().toString('hex'),
+      bytesToHex(header.hash()),
       '8f5bab218b6bb34476f51ca588e9f4553a3a7ce5e13a66c660a5283e97e9a85a',
       'correct PoA clique hash (goerli block 1)'
     )

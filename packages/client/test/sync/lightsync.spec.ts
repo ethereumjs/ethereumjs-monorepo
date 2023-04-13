@@ -24,7 +24,7 @@ tape('[LightSynchronizer]', async (t) => {
   const { LightSynchronizer } = await import('../../lib/sync/lightsync')
 
   t.test('should initialize correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new LightSynchronizer({ config, pool, chain })
@@ -33,7 +33,7 @@ tape('[LightSynchronizer]', async (t) => {
   })
 
   t.test('should find best', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new LightSynchronizer({
@@ -62,7 +62,12 @@ tape('[LightSynchronizer]', async (t) => {
 
   t.test('should sync', async (t) => {
     t.plan(3)
-    const config = new Config({ transports: [], safeReorgDistance: 0 })
+    const config = new Config({
+      transports: [],
+      accountCache: 10000,
+      storageCache: 1000,
+      safeReorgDistance: 0,
+    })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new LightSynchronizer({
@@ -76,7 +81,7 @@ tape('[LightSynchronizer]', async (t) => {
     td.when(sync.best()).thenResolve({ les: { status: { headNum: BigInt(2) } } } as any)
     td.when(sync.latest(td.matchers.anything())).thenResolve({
       number: BigInt(2),
-      hash: () => Buffer.from([]),
+      hash: () => new Uint8Array(0),
     })
     td.when(HeaderFetcher.prototype.fetch(), { delay: 20, times: 2 }).thenResolve(undefined)
     ;(sync as any).chain = { headers: { height: BigInt(3) } }
@@ -99,7 +104,12 @@ tape('[LightSynchronizer]', async (t) => {
   t.test('import headers', async (st) => {
     td.reset()
     st.plan(1)
-    const config = new Config({ transports: [], safeReorgDistance: 0 })
+    const config = new Config({
+      transports: [],
+      accountCache: 10000,
+      storageCache: 1000,
+      safeReorgDistance: 0,
+    })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new LightSynchronizer({
@@ -113,7 +123,7 @@ tape('[LightSynchronizer]', async (t) => {
     td.when(sync.best()).thenResolve({ les: { status: { headNum: BigInt(2) } } } as any)
     td.when(sync.latest(td.matchers.anything())).thenResolve({
       number: BigInt(2),
-      hash: () => Buffer.from([]),
+      hash: () => new Uint8Array(0),
     })
     td.when(HeaderFetcher.prototype.fetch()).thenResolve(undefined)
     td.when(HeaderFetcher.prototype.fetch()).thenDo(() =>
@@ -133,7 +143,7 @@ tape('[LightSynchronizer]', async (t) => {
   t.test('sync errors', async (st) => {
     td.reset()
     st.plan(1)
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new LightSynchronizer({
@@ -147,7 +157,7 @@ tape('[LightSynchronizer]', async (t) => {
     td.when(sync.best()).thenResolve({ les: { status: { headNum: BigInt(2) } } } as any)
     td.when(sync.latest(td.matchers.anything())).thenResolve({
       number: BigInt(2),
-      hash: () => Buffer.from([]),
+      hash: () => new Uint8Array(0),
     })
     td.when(HeaderFetcher.prototype.fetch()).thenResolve(undefined)
     td.when(HeaderFetcher.prototype.fetch()).thenDo(() =>

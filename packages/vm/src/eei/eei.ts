@@ -1,4 +1,4 @@
-import { bufferToBigInt } from '@ethereumjs/util'
+import { Account, bytesToBigInt } from '@ethereumjs/util'
 
 import { VmState } from './vmState'
 
@@ -8,7 +8,7 @@ import type { StateManager } from '@ethereumjs/statemanager'
 import type { Address } from '@ethereumjs/util'
 
 type Block = {
-  hash(): Buffer
+  hash(): Uint8Array
 }
 
 type Blockchain = {
@@ -39,7 +39,10 @@ export class EEI extends VmState implements EEIInterface {
    * @param address - Address of account
    */
   async getExternalBalance(address: Address): Promise<bigint> {
-    const account = await this.getAccount(address)
+    let account = await this.getAccount(address)
+    if (!account) {
+      account = new Account()
+    }
     return account.balance
   }
 
@@ -56,7 +59,7 @@ export class EEI extends VmState implements EEIInterface {
    * Returns code of an account.
    * @param address - Address of account
    */
-  async getExternalCode(address: Address): Promise<Buffer> {
+  async getExternalCode(address: Address): Promise<Uint8Array> {
     return this.getContractCode(address)
   }
 
@@ -66,7 +69,7 @@ export class EEI extends VmState implements EEIInterface {
    */
   async getBlockHash(num: bigint): Promise<bigint> {
     const block = await this._blockchain.getBlock(Number(num))
-    return bufferToBigInt(block!.hash())
+    return bytesToBigInt(block!.hash())
   }
 
   /**
@@ -75,7 +78,7 @@ export class EEI extends VmState implements EEIInterface {
    * @param key Storage key
    * @param value Storage value
    */
-  async storageStore(address: Address, key: Buffer, value: Buffer): Promise<void> {
+  async storageStore(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
     await this.putContractStorage(address, key, value)
   }
 
@@ -85,7 +88,7 @@ export class EEI extends VmState implements EEIInterface {
    * @param key Storage key
    * @param original If true, return the original storage value (default: false)
    */
-  async storageLoad(address: Address, key: Buffer, original = false): Promise<Buffer> {
+  async storageLoad(address: Address, key: Uint8Array, original = false): Promise<Uint8Array> {
     if (original) {
       return this.getOriginalContractStorage(address, key)
     } else {

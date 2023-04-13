@@ -6,10 +6,10 @@ import {
   FeeMarketEIP1559Transaction,
   Transaction,
   TransactionFactory,
-  initKZG,
 } from '@ethereumjs/tx'
-import { Account, Address, KECCAK256_NULL, MAX_INTEGER } from '@ethereumjs/util'
+import { Account, Address, KECCAK256_NULL, MAX_INTEGER, initKZG } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../src/vm'
@@ -48,7 +48,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
       if (vm._common.consensusType() === 'poa') {
         // Setup block with correct extraData for POA
         block = Block.fromBlockData(
-          { header: { extraData: Buffer.alloc(97) } },
+          { header: { extraData: new Uint8Array(97) } },
           { common: vm._common }
         )
       }
@@ -203,9 +203,8 @@ tape('runTx() -> successful API parameter usage', async (t) => {
       for (const txType of TRANSACTION_TYPES) {
         const vm = await VM.create({ common })
 
-        const privateKey = Buffer.from(
-          'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-          'hex'
+        const privateKey = hexToBytes(
+          'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
         )
         const address = Address.fromPrivateKey(privateKey)
         const initialBalance = BigInt(10) ** BigInt(18)
@@ -231,7 +230,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
         )
         const tx = unsignedTx.sign(privateKey)
 
-        const coinbase = Buffer.from('00000000000000000000000000000000000000ff', 'hex')
+        const coinbase = hexToBytes('00000000000000000000000000000000000000ff')
         const block = Block.fromBlockData(
           {
             header: {
@@ -265,7 +264,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
             : result.amountSpent
 
         t.equals(
-          coinbaseAccount.balance,
+          coinbaseAccount!.balance,
           expectedCoinbaseBalance,
           `should use custom block (${txType.name})`
         )
@@ -379,12 +378,13 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
     const vm = await VM.create({ common })
     const tx = getTransaction(common, 2, true, '0x0', false)
     const address = tx.getSenderAddress()
+    await vm.eei.putAccount(address, new Account())
     const account = await vm.eei.getAccount(address)
-    account.balance = BigInt(9000000) // This is the maxFeePerGas multiplied with the gasLimit of 90000
-    await vm.eei.putAccount(address, account)
+    account!.balance = BigInt(9000000) // This is the maxFeePerGas multiplied with the gasLimit of 90000
+    await vm.eei.putAccount(address, account!)
     await vm.runTx({ tx })
-    account.balance = BigInt(9000000)
-    await vm.eei.putAccount(address, account)
+    account!.balance = BigInt(9000000)
+    await vm.eei.putAccount(address, account!)
     const tx2 = getTransaction(common, 2, true, '0x64', false) // Send 100 wei; now balance < maxFeePerGas*gasLimit + callvalue
     try {
       await vm.runTx({ tx: tx2 })
@@ -399,10 +399,11 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
     const vm = await VM.create({ common })
     const tx = getTransaction(common, 2, true, '0x0', false)
     const address = tx.getSenderAddress()
+    await vm.eei.putAccount(address, new Account())
     const account = await vm.eei.getAccount(address)
-    account.balance = BigInt(9000000) // This is the maxFeePerGas multiplied with the gasLimit of 90000
-    account.nonce = BigInt(1)
-    await vm.eei.putAccount(address, account)
+    account!.balance = BigInt(9000000) // This is the maxFeePerGas multiplied with the gasLimit of 90000
+    account!.nonce = BigInt(1)
+    await vm.eei.putAccount(address, account!)
     try {
       await vm.runTx({ tx })
       t.fail('cannot reach this')
@@ -438,9 +439,8 @@ tape('runTx() -> runtime behavior', async (t) => {
     for (const txType of TRANSACTION_TYPES) {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
       const vm = await VM.create({ common })
-      const privateKey = Buffer.from(
-        'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-        'hex'
+      const privateKey = hexToBytes(
+        'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
       )
       /* Code which is deployed here:
         PUSH1 01
@@ -448,13 +448,13 @@ tape('runTx() -> runtime behavior', async (t) => {
         SSTORE
         INVALID
       */
-      const code = Buffer.from('6001600055FE', 'hex')
-      const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
+      const code = hexToBytes('6001600055FE')
+      const address = new Address(hexToBytes('00000000000000000000000000000000000000ff'))
       await vm.eei.putContractCode(address, code)
       await vm.eei.putContractStorage(
         address,
-        Buffer.from('00'.repeat(32), 'hex'),
-        Buffer.from('00'.repeat(31) + '01', 'hex')
+        hexToBytes('00'.repeat(32)),
+        hexToBytes('00'.repeat(31) + '01')
       )
       const txParams: any = {
         nonce: '0x00',
@@ -517,9 +517,7 @@ tape('runTx() -> runtime errors', async (t) => {
       const from = createAccount()
       await vm.eei.putAccount(caller, from)
 
-      const contractAddress = new Address(
-        Buffer.from('61de9dc6f6cff1df2809480882cfd3c2364b28f7', 'hex')
-      )
+      const contractAddress = new Address(hexToBytes('61de9dc6f6cff1df2809480882cfd3c2364b28f7'))
       const to = createAccount(BigInt(0), MAX_INTEGER)
       await vm.eei.putAccount(contractAddress, to)
 
@@ -560,8 +558,8 @@ tape('runTx() -> API return values', async (t) => {
       )
       t.deepEqual(
         res.execResult.returnValue,
-        Buffer.from([]),
-        `execution result -> return value -> empty Buffer (${txType.name})`
+        Uint8Array.from([]),
+        `execution result -> return value -> empty Uint8Array (${txType.name})`
       )
       t.equal(res.gasRefund, BigInt(0), `gasRefund -> 0 (${txType.name})`)
     }
@@ -606,7 +604,7 @@ tape('runTx() -> API return values', async (t) => {
 
       t.deepEqual(
         res.bloom.bitvector,
-        Buffer.from('00'.repeat(256), 'hex'),
+        hexToBytes('00'.repeat(256)),
         `runTx result -> bloom.bitvector -> should be empty (${txType.name})`
       )
       t.equal(
@@ -656,15 +654,16 @@ tape('runTx() -> consensus bugs', async (t) => {
     const vm = await VM.create({ common })
 
     const addr = Address.fromString('0xd3563d8f19a85c95beab50901fd59ca4de69174c')
+    await vm.eei.putAccount(addr, new Account())
     const acc = await vm.eei.getAccount(addr)
-    acc.balance = beforeBalance
-    acc.nonce = BigInt(2)
-    await vm.eei.putAccount(addr, acc)
+    acc!.balance = beforeBalance
+    acc!.nonce = BigInt(2)
+    await vm.eei.putAccount(addr, acc!)
 
     const tx = Transaction.fromTxData(txData, { common })
     await vm.runTx({ tx })
 
-    const newBalance = (await vm.eei.getAccount(addr)).balance
+    const newBalance = (await vm.eei.getAccount(addr))!.balance
     t.equals(newBalance, afterBalance)
     t.end()
   })
@@ -675,7 +674,7 @@ tape('runTx() -> consensus bugs', async (t) => {
        REVERT puts an "error message" in the RETURNDATA buffer. This buffer would contain the contract code to deploy if the message would not fail.
        In this case, REVERT puts a message in the RETURNDATA buffer which is larger than the `maxCodeSize`
        This should not consume all gas: it should only consume the gas spent by the attempt to create the contract */
-    const pkey = Buffer.alloc(32, 1)
+    const pkey = new Uint8Array(32).fill(1)
     const txData: FeeMarketEIP1559TxData = {
       gasLimit: 100000,
       maxPriorityFeePerGas: 1000,
@@ -694,9 +693,10 @@ tape('runTx() -> consensus bugs', async (t) => {
     const vm = await VM.create({ common })
 
     const addr = Address.fromPrivateKey(pkey)
+    await vm.eei.putAccount(addr, new Account())
     const acc = await vm.eei.getAccount(addr)
-    acc.balance = BigInt(10000000000000)
-    await vm.eei.putAccount(addr, acc)
+    acc!.balance = BigInt(10000000000000)
+    await vm.eei.putAccount(addr, acc!)
 
     const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common }).sign(pkey)
 
@@ -745,10 +745,7 @@ tape('runTx() -> skipBalance behavior', async (t) => {
   t.plan(6)
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
   const vm = await VM.create({ common })
-  const senderKey = Buffer.from(
-    'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-    'hex'
-  )
+  const senderKey = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
   const sender = Address.fromPrivateKey(senderKey)
 
   for (const balance of [undefined, BigInt(5)]) {
@@ -763,7 +760,7 @@ tape('runTx() -> skipBalance behavior', async (t) => {
 
     const res = await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
     t.pass('runTx should not throw with no balance and skipBalance')
-    const afterTxBalance = (await vm.stateManager.getAccount(sender)).balance
+    const afterTxBalance = (await vm.stateManager.getAccount(sender))!.balance
     t.equal(
       afterTxBalance,
       balance !== undefined ? balance - 1n : BigInt(0),
@@ -779,11 +776,11 @@ tape(
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
     const vm = await VM.create({ common })
 
-    const pkey = Buffer.alloc(32, 1)
+    const pkey = new Uint8Array(32).fill(1)
 
     // CALLER EXTCODEHASH PUSH 0 SSTORE STOP
     // Puts EXTCODEHASH of CALLER into slot 0
-    const code = Buffer.from('333F60005500', 'hex')
+    const code = hexToBytes('333F60005500')
     const codeAddr = Address.fromString('0x' + '20'.repeat(20))
     await vm.stateManager.putContractCode(codeAddr, code)
 
@@ -794,16 +791,14 @@ tape(
     }).sign(pkey)
 
     const addr = Address.fromPrivateKey(pkey)
+    await vm.eei.putAccount(addr, new Account())
     const acc = await vm.eei.getAccount(addr)
-    acc.balance = BigInt(tx.gasLimit * tx.gasPrice)
-    await vm.eei.putAccount(addr, acc)
+    acc!.balance = BigInt(tx.gasLimit * tx.gasPrice)
+    await vm.eei.putAccount(addr, acc!)
     await vm.runTx({ tx, skipHardForkValidation: true })
 
-    const hash = await vm.stateManager.getContractStorage(
-      codeAddr,
-      Buffer.from('00'.repeat(32), 'hex')
-    )
-    t.ok(hash.equals(KECCAK256_NULL), 'hash ok')
+    const hash = await vm.stateManager.getContractStorage(codeAddr, hexToBytes('00'.repeat(32)))
+    t.deepEquals(hash, KECCAK256_NULL, 'hash ok')
 
     t.end()
   }
@@ -815,7 +810,7 @@ tape(
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
     const vm = await VM.create({ common })
 
-    const pkey = Buffer.alloc(32, 1)
+    const pkey = new Uint8Array(32).fill(1)
 
     // PUSH 0 DUP DUP DUP
     // CALLVALUE CALLER GAS
@@ -823,7 +818,7 @@ tape(
     // STOP
 
     // Calls CALLER and sends back the ETH just sent with the transaction
-    const code = Buffer.from('600080808034335AF100', 'hex')
+    const code = hexToBytes('600080808034335AF100')
     const codeAddr = Address.fromString('0x' + '20'.repeat(20))
     await vm.stateManager.putContractCode(codeAddr, code)
 
@@ -835,9 +830,10 @@ tape(
     }).sign(pkey)
 
     const addr = Address.fromPrivateKey(pkey)
+    await vm.eei.putAccount(addr, new Account())
     const acc = await vm.eei.getAccount(addr)
-    acc.balance = BigInt(tx.gasLimit * tx.gasPrice + tx.value)
-    await vm.eei.putAccount(addr, acc)
+    acc!.balance = BigInt(tx.gasLimit * tx.gasPrice + tx.value)
+    await vm.eei.putAccount(addr, acc!)
     t.equals(
       (await vm.runTx({ tx, skipHardForkValidation: true })).totalGasSpent,
       BigInt(27818),
@@ -854,11 +850,11 @@ tape(
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
     const vm = await VM.create({ common })
 
-    const pkey = Buffer.alloc(32, 1)
+    const pkey = new Uint8Array(32).fill(1)
 
     // CALLER EXTCODEHASH PUSH 0 SSTORE STOP
     // Puts EXTCODEHASH of CALLER into slot 0
-    const code = Buffer.from('33FF', 'hex')
+    const code = hexToBytes('33FF')
     const codeAddr = Address.fromString('0x' + '20'.repeat(20))
     await vm.stateManager.putContractCode(codeAddr, code)
 
@@ -870,9 +866,10 @@ tape(
     }).sign(pkey)
 
     const addr = Address.fromPrivateKey(pkey)
+    await vm.eei.putAccount(addr, new Account())
     const acc = await vm.eei.getAccount(addr)
-    acc.balance = BigInt(tx.gasLimit * tx.gasPrice + tx.value)
-    await vm.eei.putAccount(addr, acc)
+    acc!.balance = BigInt(tx.gasLimit * tx.gasPrice + tx.value)
+    await vm.eei.putAccount(addr, acc!)
     t.equals(
       (await vm.runTx({ tx, skipHardForkValidation: true })).totalGasSpent,
       BigInt(13001),

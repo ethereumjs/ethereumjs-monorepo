@@ -1,3 +1,5 @@
+import { bytesToHex, hexStringToBytes } from '@ethereumjs/util'
+
 import type { BatchDBOp, Checkpoint, DB } from '../types'
 
 /**
@@ -43,8 +45,8 @@ export class CheckpointDB implements DB {
    * Adds a new checkpoint to the stack
    * @param root
    */
-  checkpoint(root: Buffer) {
-    this.checkpoints.push({ keyValueMap: new Map<string, Buffer>(), root })
+  checkpoint(root: Uint8Array) {
+    this.checkpoints.push({ keyValueMap: new Map<string, Uint8Array>(), root })
   }
 
   /**
@@ -59,12 +61,12 @@ export class CheckpointDB implements DB {
         if (value === null) {
           batchOp.push({
             type: 'del',
-            key: Buffer.from(key, 'binary'),
+            key: hexStringToBytes(key),
           })
         } else {
           batchOp.push({
             type: 'put',
-            key: Buffer.from(key, 'binary'),
+            key: hexStringToBytes(key),
             value,
           })
         }
@@ -90,10 +92,10 @@ export class CheckpointDB implements DB {
   /**
    * @inheritDoc
    */
-  async get(key: Buffer): Promise<Buffer | null> {
+  async get(key: Uint8Array): Promise<Uint8Array | null> {
     // Lookup the value in our cache. We return the latest checkpointed value (which should be the value on disk)
     for (let index = this.checkpoints.length - 1; index >= 0; index--) {
-      const value = this.checkpoints[index].keyValueMap.get(key.toString('binary'))
+      const value = this.checkpoints[index].keyValueMap.get(bytesToHex(key))
       if (value !== undefined) {
         return value
       }
@@ -103,7 +105,7 @@ export class CheckpointDB implements DB {
     const value = await this.db.get(key)
     if (this.hasCheckpoints()) {
       // Since we are a checkpoint, put this value in cache, so future `get` calls will not look the key up again from disk.
-      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), value)
+      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(bytesToHex(key), value)
     }
 
     return value
@@ -112,10 +114,10 @@ export class CheckpointDB implements DB {
   /**
    * @inheritDoc
    */
-  async put(key: Buffer, val: Buffer): Promise<void> {
+  async put(key: Uint8Array, val: Uint8Array): Promise<void> {
     if (this.hasCheckpoints()) {
       // put value in cache
-      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), val)
+      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(bytesToHex(key), val)
     } else {
       await this.db.put(key, val)
     }
@@ -124,10 +126,10 @@ export class CheckpointDB implements DB {
   /**
    * @inheritDoc
    */
-  async del(key: Buffer): Promise<void> {
+  async del(key: Uint8Array): Promise<void> {
     if (this.hasCheckpoints()) {
       // delete the value in the current cache
-      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), null)
+      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(bytesToHex(key), null)
     } else {
       // delete the value on disk
       await this.db.del(key)

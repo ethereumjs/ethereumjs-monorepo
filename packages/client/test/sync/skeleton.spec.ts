@@ -1,5 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
+import { equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import { MemoryLevel } from 'memory-level'
 import * as tape from 'tape'
 import * as td from 'testdouble'
@@ -19,7 +20,7 @@ type Subchain = {
 const common = new Common({ chain: 1 })
 const block49 = Block.fromBlockData({ header: { number: 49 } }, { common })
 const block49B = Block.fromBlockData(
-  { header: { number: 49, extraData: Buffer.from('B') } },
+  { header: { number: 49, extraData: utf8ToBytes('B') } },
   { common }
 )
 const block50 = Block.fromBlockData(
@@ -194,6 +195,8 @@ tape('[Skeleton] / initSync', async (t) => {
         common,
         transports: [],
         logger: getLogger({ loglevel: 'debug' }),
+        accountCache: 10000,
+        storageCache: 1000,
       })
       const chain = await Chain.create({ config })
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -308,6 +311,8 @@ tape('[Skeleton] / setHead', async (t) => {
         common,
         transports: [],
         logger: getLogger({ loglevel: 'debug' }),
+        accountCache: 10000,
+        storageCache: 1000,
       })
       const chain = await Chain.create({ config })
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -648,6 +653,8 @@ tape('[Skeleton] / setHead', async (t) => {
       const config = new Config({
         transports: [],
         common,
+        accountCache: 10000,
+        storageCache: 1000,
       })
       const chain = await Chain.create({ config })
       ;(chain.blockchain as any)._validateBlocks = false
@@ -724,8 +731,9 @@ tape('[Skeleton] / setHead', async (t) => {
         BigInt(4),
         'canonical height should now be at head with correct chain'
       )
+      const latestHash = chain.headers.latest?.hash()
       st.ok(
-        chain.headers.latest?.hash().equals(block4PoS.hash()),
+        latestHash !== undefined && equalsBytes(latestHash, block4PoS.hash()),
         'canonical height should now be at head with correct chain'
       )
       await skeleton.setHead(block5, true)
@@ -753,6 +761,8 @@ tape('[Skeleton] / setHead', async (t) => {
       const config = new Config({
         transports: [],
         common,
+        accountCache: 10000,
+        storageCache: 1000,
       })
       const chain = await Chain.create({ config })
       ;(chain.blockchain as any)._validateBlocks = false
@@ -816,6 +826,8 @@ tape('[Skeleton] / setHead', async (t) => {
         transports: [],
         common,
         logger: getLogger({ loglevel: 'debug' }),
+        accountCache: 10000,
+        storageCache: 1000,
       })
 
       const chain = await Chain.create({ config })
@@ -881,8 +893,9 @@ tape('[Skeleton] / setHead', async (t) => {
         BigInt(3),
         'canonical height should now be at head with correct chain'
       )
+      const latestHash = chain.headers.latest?.hash()
       st.ok(
-        chain.headers.latest?.hash().equals(block3.hash()),
+        latestHash !== undefined && equalsBytes(latestHash, block3.hash()),
         'canonical height should now be at head with correct chain'
       )
 

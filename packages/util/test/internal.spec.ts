@@ -1,3 +1,4 @@
+import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import {
@@ -11,7 +12,7 @@ import {
   toAscii,
 } from '../src/internal'
 
-const buf = Buffer.from('hello')
+const buf = utf8ToBytes('hello')
 
 tape('internal', (t) => {
   t.test('isHexPrefixed', (st) => {
@@ -41,7 +42,7 @@ tape('internal', (t) => {
     st.end()
   })
   t.test('toAscii', (st) => {
-    st.equal(toAscii(buf.toString('ascii')), '\x00\x00\x00')
+    st.equal(toAscii(bytesToUtf8(buf)), '\x00\x00\x00')
     st.end()
   })
   t.test('getKeys', (st) => {

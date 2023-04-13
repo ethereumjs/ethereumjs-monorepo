@@ -1,12 +1,13 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction, initKZG } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
   getBlobs,
-} from '@ethereumjs/tx/dist/utils/blobHelpers'
+  initKZG,
+  randomBytes,
+} from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
 import { Block, calcExcessDataGas, getDataGasPrice } from '../src'
@@ -129,11 +130,9 @@ tape('data gas tests', async (t) => {
     const commitments = blobsToCommitments(blobs)
     const versionedHashes = commitmentsToVersionedHashes(commitments)
 
-    const bufferedHashes = versionedHashes.map((el) => Buffer.from(el))
-
     const unsignedTx = BlobEIP4844Transaction.fromTxData(
       {
-        versionedHashes: bufferedHashes,
+        versionedHashes,
         blobs,
         kzgCommitments: commitments,
         maxFeePerDataGas: 100000000n,
@@ -161,11 +160,9 @@ tape('transaction validation tests', async (t) => {
     const commitments = blobsToCommitments(blobs)
     const versionedHashes = commitmentsToVersionedHashes(commitments)
 
-    const bufferedHashes = versionedHashes.map((el) => Buffer.from(el))
-
     const tx1 = BlobEIP4844Transaction.fromTxData(
       {
-        versionedHashes: bufferedHashes,
+        versionedHashes,
         blobs,
         kzgCommitments: commitments,
         maxFeePerDataGas: 100000000n,
@@ -176,7 +173,7 @@ tape('transaction validation tests', async (t) => {
     ).sign(randomBytes(32))
     const tx2 = BlobEIP4844Transaction.fromTxData(
       {
-        versionedHashes: bufferedHashes,
+        versionedHashes,
         blobs,
         kzgCommitments: commitments,
         maxFeePerDataGas: 1n,

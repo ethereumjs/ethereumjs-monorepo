@@ -28,8 +28,8 @@ export interface EVMInterface {
  */
 export interface EEIInterface extends EVMStateAccess {
   getBlockHash(num: bigint): Promise<bigint>
-  storageStore(address: Address, key: Buffer, value: Buffer): Promise<void>
-  storageLoad(address: Address, key: Buffer, original: boolean): Promise<Buffer>
+  storageStore(address: Address, key: Uint8Array, value: Uint8Array): Promise<void>
+  storageLoad(address: Address, key: Uint8Array, original: boolean): Promise<Uint8Array>
   copy(): EEIInterface
 }
 
@@ -41,15 +41,16 @@ export interface EEIInterface extends EVMStateAccess {
  * An implementation of this can be found in the `@ethereumjs/vm` package.
  */
 export interface EVMStateAccess extends StateAccess {
-  addWarmedAddress(address: Buffer): void
-  isWarmedAddress(address: Buffer): boolean
-  addWarmedStorage(address: Buffer, slot: Buffer): void
-  isWarmedStorage(address: Buffer, slot: Buffer): boolean
+  addWarmedAddress(address: Uint8Array): void
+  isWarmedAddress(address: Uint8Array): boolean
+  addWarmedStorage(address: Uint8Array, slot: Uint8Array): void
+  isWarmedStorage(address: Uint8Array, slot: Uint8Array): boolean
   clearWarmedAccounts(): void
   generateAccessList?(addressesRemoved: Address[], addressesOnlyStorage: Address[]): AccessList
   clearOriginalStorageCache(): void
   cleanupTouchedAccounts(): Promise<void>
   generateCanonicalGenesis(initState: any): Promise<void>
+  accountIsEmptyOrNonExistent(address: Address): Promise<boolean>
 }
 
 export type DeleteOpcode = {
@@ -101,11 +102,11 @@ export interface EVMRunCallOpts {
   /**
    * The data for the call.
    */
-  data?: Buffer
+  data?: Uint8Array
   /**
    * This is for CALLCODE where the code to load is different than the code from the `opts.to` address.
    */
-  code?: Buffer
+  code?: Uint8Array
   /**
    * The call depth. Defaults to `0`
    */
@@ -121,7 +122,7 @@ export interface EVMRunCallOpts {
   /**
    * An optional salt to pass to CREATE2.
    */
-  salt?: Buffer
+  salt?: Uint8Array
   /**
    * Addresses to selfdestruct. Defaults to none.
    */
@@ -146,7 +147,7 @@ export interface EVMRunCallOpts {
   /**
    * Versioned hashes for each blob in a blob transaction
    */
-  versionedHashes?: Buffer[]
+  versionedHashes?: Uint8Array[]
 }
 
 /**
@@ -176,11 +177,11 @@ export interface EVMRunCodeOpts {
   /**
    * The EVM code to run.
    */
-  code?: Buffer
+  code?: Uint8Array
   /**
    * The input data.
    */
-  data?: Buffer
+  data?: Uint8Array
   /**
    * The gas limit for the call.
    */
@@ -212,13 +213,13 @@ export interface EVMRunCodeOpts {
   /**
    * Versioned hashes for each blob in a blob transaction
    */
-  versionedHashes?: Buffer[]
+  versionedHashes?: Uint8Array[]
 }
 
 interface NewContractEvent {
   address: Address
   // The deployment code
-  code: Buffer
+  code: Uint8Array
 }
 
 export type EVMEvents = {
@@ -231,7 +232,7 @@ export type EVMEvents = {
 /**
  * Log that the contract emits.
  */
-export type Log = [address: Buffer, topics: Buffer[], data: Buffer]
+export type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
 
 declare type AccessListItem = {
   address: PrefixedHexString
@@ -259,24 +260,23 @@ type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'storageRoot' |
 
 interface StateAccess {
   accountExists(address: Address): Promise<boolean>
-  getAccount(address: Address): Promise<Account>
+  getAccount(address: Address): Promise<Account | undefined>
   putAccount(address: Address, account: Account): Promise<void>
-  accountIsEmpty(address: Address): Promise<boolean>
   deleteAccount(address: Address): Promise<void>
   modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void>
-  putContractCode(address: Address, value: Buffer): Promise<void>
-  getContractCode(address: Address): Promise<Buffer>
-  getContractStorage(address: Address, key: Buffer): Promise<Buffer>
-  putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void>
+  putContractCode(address: Address, value: Uint8Array): Promise<void>
+  getContractCode(address: Address): Promise<Uint8Array>
+  getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
+  putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void>
   clearContractStorage(address: Address): Promise<void>
   checkpoint(): Promise<void>
   commit(): Promise<void>
   revert(): Promise<void>
-  getStateRoot(): Promise<Buffer>
-  setStateRoot(stateRoot: Buffer): Promise<void>
-  getProof?(address: Address, storageSlots: Buffer[]): Promise<Proof>
+  getStateRoot(): Promise<Uint8Array>
+  setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void>
+  getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
   verifyProof?(proof: Proof): Promise<boolean>
-  hasStateRoot(root: Buffer): Promise<boolean>
+  hasStateRoot(root: Uint8Array): Promise<boolean>
 }
 
 export type Block = {
@@ -286,15 +286,15 @@ export type Block = {
     coinbase: Address
     timestamp: bigint
     difficulty: bigint
-    prevRandao: Buffer
+    prevRandao: Uint8Array
     gasLimit: bigint
     baseFeePerGas?: bigint
   }
 }
 
 export interface TransientStorageInterface {
-  get(addr: Address, key: Buffer): Buffer
-  put(addr: Address, key: Buffer, value: Buffer): void
+  get(addr: Address, key: Uint8Array): Uint8Array
+  put(addr: Address, key: Uint8Array, value: Uint8Array): void
   commit(): void
   checkpoint(): void
   revert(): void

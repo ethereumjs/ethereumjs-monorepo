@@ -1,5 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { bytesToHex } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { Blockchain } from '../src'
@@ -64,7 +65,7 @@ tape('Proof of Stake - inserting blocks into blockchain', async (t) => {
     })
     const genesisHeader = await blockchain.getCanonicalHeadHeader()
     t.equal(
-      genesisHeader.hash().toString('hex'),
+      bytesToHex(genesisHeader.hash()),
       '1119dc5ff680bf7b4c3d9cd41168334dee127d46b3626482076025cdd498ed0b',
       'genesis hash matches'
     )

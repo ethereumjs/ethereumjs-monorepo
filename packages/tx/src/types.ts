@@ -24,7 +24,7 @@ import type { AccessListEIP2930Transaction } from './eip2930Transaction'
 import type { BlobEIP4844Transaction } from './eip4844Transaction'
 import type { Transaction } from './legacyTransaction'
 import type { Common } from '@ethereumjs/common'
-import type { AddressLike, BigIntLike, BufferLike, PrefixedHexString } from '@ethereumjs/util'
+import type { AddressLike, BigIntLike, BytesLike, PrefixedHexString } from '@ethereumjs/util'
 
 const Bytes20 = new ByteVectorType(20)
 const Bytes32 = new ByteVectorType(32)
@@ -108,15 +108,13 @@ export type AccessListItem = {
 }
 
 /*
- * An Access List as a tuple of [address: Buffer, storageKeys: Buffer[]]
+ * An Access List as a tuple of [address: Uint8Array, storageKeys: Uint8Array[]]
  */
-export type AccessListBufferItem = [Buffer, Buffer[]]
-export type AccessListBuffer = AccessListBufferItem[]
+export type AccessListBytesItem = [Uint8Array, Uint8Array[]]
+export type AccessListBytes = AccessListBytesItem[]
 export type AccessList = AccessListItem[]
 
-export function isAccessListBuffer(
-  input: AccessListBuffer | AccessList
-): input is AccessListBuffer {
+export function isAccessListBytes(input: AccessListBytes | AccessList): input is AccessListBytes {
   if (input.length === 0) {
     return true
   }
@@ -127,8 +125,8 @@ export function isAccessListBuffer(
   return false
 }
 
-export function isAccessList(input: AccessListBuffer | AccessList): input is AccessList {
-  return !isAccessListBuffer(input) // This is exactly the same method, except the output is negated.
+export function isAccessList(input: AccessListBytes | AccessList): input is AccessList {
+  return !isAccessListBytes(input) // This is exactly the same method, except the output is negated.
 }
 
 /**
@@ -175,7 +173,7 @@ export type TxData = {
   /**
    * This will contain the data of the message or the init of a contract.
    */
-  data?: BufferLike
+  data?: BytesLike
 
   /**
    * EC recovery ID.
@@ -211,7 +209,7 @@ export interface AccessListEIP2930TxData extends TxData {
   /**
    * The access list which contains the addresses/storage slots which the transaction wishes to access
    */
-  accessList?: AccessListBuffer | AccessList | null
+  accessList?: AccessListBytes | AccessList | null
 }
 
 /**
@@ -240,7 +238,7 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   /**
    * The versioned hashes used to validate the blobs attached to a transaction
    */
-  versionedHashes?: BufferLike[]
+  versionedHashes?: BytesLike[]
   /**
    * The maximum fee per data gas paid for the transaction
    */
@@ -248,55 +246,55 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   /**
    * The blobs associated with a transaction
    */
-  blobs?: BufferLike[]
+  blobs?: BytesLike[]
   /**
    * The KZG commitments corresponding to the versioned hashes for each blob
    */
-  kzgCommitments?: BufferLike[]
+  kzgCommitments?: BytesLike[]
   /**
-   * The aggregate KZG proof associated with the transaction
+   * The KZG proofs associated with the transaction
    */
-  kzgProof?: BufferLike
+  kzgProofs?: BytesLike[]
 }
 
 /**
- * Buffer values array for a legacy {@link Transaction}
+ * Bytes values array for a legacy {@link Transaction}
  */
-export type TxValuesArray = Buffer[]
+export type TxValuesArray = Uint8Array[]
 
 /**
- * Buffer values array for an {@link AccessListEIP2930Transaction}
+ * Bytes values array for an {@link AccessListEIP2930Transaction}
  */
 export type AccessListEIP2930ValuesArray = [
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  AccessListBuffer,
-  Buffer?,
-  Buffer?,
-  Buffer?
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  AccessListBytes,
+  Uint8Array?,
+  Uint8Array?,
+  Uint8Array?
 ]
 
 /**
- * Buffer values array for a {@link FeeMarketEIP1559Transaction}
+ * Bytes values array for a {@link FeeMarketEIP1559Transaction}
  */
 export type FeeMarketEIP1559ValuesArray = [
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  AccessListBuffer,
-  Buffer?,
-  Buffer?,
-  Buffer?
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  AccessListBytes,
+  Uint8Array?,
+  Uint8Array?,
+  Uint8Array?
 ]
 
 type JsonAccessListItem = { address: string; storageKeys: string[] }
@@ -404,5 +402,5 @@ export const BlobNetworkTransactionWrapper = new ContainerType({
     new ByteVectorType(FIELD_ELEMENTS_PER_BLOB * BYTES_PER_FIELD_ELEMENT),
     LIMIT_BLOBS_PER_TX
   ),
-  kzgAggregatedProof: KZGProofType,
+  blobKzgProofs: new ListCompositeType(KZGProofType, MAX_TX_WRAP_KZG_COMMITMENTS),
 })

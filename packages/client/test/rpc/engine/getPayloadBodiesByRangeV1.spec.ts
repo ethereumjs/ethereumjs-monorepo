@@ -2,7 +2,7 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { Address } from '@ethereumjs/util'
+import { Account, Address, bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { INVALID_PARAMS, TOO_LARGE_REQUEST } from '../../../lib/rpc/error-code'
@@ -50,15 +50,13 @@ tape(`${method}: call with valid parameters`, async (t) => {
     hardfork: Hardfork.ShardingForkDev,
   })
   common.setHardfork(Hardfork.ShardingForkDev)
-  const pkey = Buffer.from(
-    '9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355',
-    'hex'
-  )
+  const pkey = hexStringToBytes('9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
   const address = Address.fromPrivateKey(pkey)
+  await service.execution.vm.stateManager.putAccount(address, new Account())
   const account = await service.execution.vm.stateManager.getAccount(address)
 
-  account.balance = 0xfffffffffffffffn
-  await service.execution.vm.stateManager.putAccount(address, account)
+  account!.balance = 0xfffffffffffffffn
+  await service.execution.vm.stateManager.putAccount(address, account!)
   const tx = TransactionFactory.fromTxData(
     {
       type: 0x01,
@@ -107,7 +105,7 @@ tape(`${method}: call with valid parameters`, async (t) => {
   const expectRes = (res: any) => {
     t.equal(
       res.body.result[0].transactions[0],
-      '0x' + tx.serialize().toString('hex'),
+      bytesToPrefixedHexString(tx.serialize()),
       'got expected transaction from first payload'
     )
     t.equal(
@@ -145,15 +143,13 @@ tape(`${method}: call with valid parameters on pre-Shanghai hardfork`, async (t)
     hardfork: Hardfork.London,
   })
   common.setHardfork(Hardfork.London)
-  const pkey = Buffer.from(
-    '9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355',
-    'hex'
-  )
+  const pkey = hexStringToBytes('9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
   const address = Address.fromPrivateKey(pkey)
+  await service.execution.vm.stateManager.putAccount(address, new Account())
   const account = await service.execution.vm.stateManager.getAccount(address)
 
-  account.balance = 0xfffffffffffffffn
-  await service.execution.vm.stateManager.putAccount(address, account)
+  account!.balance = 0xfffffffffffffffn
+  await service.execution.vm.stateManager.putAccount(address, account!)
   const tx = TransactionFactory.fromTxData(
     {
       type: 0x01,

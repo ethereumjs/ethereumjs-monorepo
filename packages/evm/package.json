@@ -28,7 +28,8 @@
     "src"
   ],
   "scripts": {
-    "build": "../../config/cli/ts-build.sh",
+    "rustbnHotFix": "sed -i -e \"s/.toString('hex')), 'hex'//g\" ../../node_modules/rustbn.js/index.js && sed -i -e \"s/Buffer.from(//g\" ../../node_modules/rustbn.js/index.js",
+    "build": "npm run rustbnHotFix && ../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "c8 --all --reporter=lcov --reporter=text npm run coverage:test",
     "coverage:test": "npm run test && cd ../vm && npm run tester -- --state",
@@ -47,7 +48,6 @@
   },
   "dependencies": {
     "@ethereumjs/common": "^3.1.1",
-    "@ethereumjs/tx": "^4.1.1",
     "@ethereumjs/util": "^8.0.5",
     "@ethersproject/providers": "^5.7.1",
     "debug": "^4.3.3",
@@ -64,7 +64,7 @@
     "@types/minimist": "^1.2.2",
     "@types/node-dir": "^0.0.34",
     "benchmark": "^2.1.4",
-    "c-kzg": "^1.0.8",
+    "c-kzg": "^2.0.4",
     "level": "^8.0.0",
     "memory-level": "^1.0.0",
     "minimist": "^1.2.5",

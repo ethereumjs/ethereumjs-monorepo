@@ -86,7 +86,7 @@ export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
 /**
  * Like types
  */
-export type Key = Buffer
+export type Key = Uint8Array
 export type KeyLike = string | Key
 
 export type MultiaddrLike = string | string[] | Multiaddr | Multiaddr[]
@@ -144,6 +144,8 @@ export interface ClientOpts {
   maxPeers?: number
   dnsAddr?: string
   numBlocksPerIteration?: number
+  accountCache?: number
+  storageCache?: number
   dnsNetworks?: string[]
   executeBlocks?: string
   debugCode?: boolean

@@ -27,7 +27,7 @@ tape('[Synchronizer]', async (t) => {
   PeerPool.prototype.close = td.func<any>()
 
   t.test('should sync', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     config.syncTargetHeight = BigInt(1)
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
@@ -44,7 +44,7 @@ tape('[Synchronizer]', async (t) => {
     })
     void sync.start()
     ;(sync as any).chain._headers = {
-      latest: { hash: () => Buffer.from([]), number: BigInt(1) },
+      latest: { hash: () => new Uint8Array(0), number: BigInt(1) },
       td: BigInt(0),
       height: BigInt(1),
     }

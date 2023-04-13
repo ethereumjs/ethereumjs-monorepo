@@ -31,16 +31,16 @@ export enum DBTarget {
  */
 export interface DBOpData {
   type?: string
-  key: Buffer | string
+  key: Uint8Array | string
   keyEncoding: string
   valueEncoding?: string
-  value?: Buffer | object
+  value?: Uint8Array | object
 }
 
 // a Database Key is identified by a block hash, a block number, or both
 export type DatabaseKey = {
   blockNumber?: bigint
-  blockHash?: Buffer
+  blockHash?: Uint8Array
 }
 
 /**
@@ -56,8 +56,8 @@ export class DBOp {
 
     this.baseDBOp = {
       key: '',
-      keyEncoding: 'buffer',
-      valueEncoding: 'buffer',
+      keyEncoding: 'view',
+      valueEncoding: 'view',
     }
 
     switch (operationTarget) {
@@ -107,7 +107,11 @@ export class DBOp {
   }
 
   // set operation: note: value/key is not in default order
-  public static set(operationTarget: DBTarget, value: Buffer | object, key?: DatabaseKey): DBOp {
+  public static set(
+    operationTarget: DBTarget,
+    value: Uint8Array | object,
+    key?: DatabaseKey
+  ): DBOp {
     const dbOperation = new DBOp(operationTarget, key)
     dbOperation.baseDBOp.value = value
     dbOperation.baseDBOp.type = 'put'
@@ -115,7 +119,7 @@ export class DBOp {
     if (operationTarget === DBTarget.Heads) {
       dbOperation.baseDBOp.valueEncoding = 'json'
     } else {
-      dbOperation.baseDBOp.valueEncoding = 'binary'
+      dbOperation.baseDBOp.valueEncoding = 'view'
     }
 
     return dbOperation
@@ -130,7 +134,7 @@ export class DBOp {
   public updateCache(cacheMap: CacheMap) {
     if (this.cacheString !== undefined && cacheMap[this.cacheString] !== undefined) {
       if (this.baseDBOp.type === 'put') {
-        Buffer.isBuffer(this.baseDBOp.value) &&
+        this.baseDBOp.value instanceof Uint8Array &&
           cacheMap[this.cacheString].set(this.baseDBOp.key, this.baseDBOp.value)
       } else if (this.baseDBOp.type === 'del') {
         cacheMap[this.cacheString].del(this.baseDBOp.key)

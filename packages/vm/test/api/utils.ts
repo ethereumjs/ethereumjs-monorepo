@@ -6,6 +6,7 @@ import {
   getBlobs,
 } from '@ethereumjs/tx/dist/utils/blobHelpers'
 import { Account } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import { MemoryLevel } from 'memory-level'
 
 import { VM } from '../../src/vm'
@@ -29,7 +30,7 @@ export async function setBalance(vm: VM, address: Address, balance = BigInt(1000
 export async function setupVM(opts: VMOpts & { genesisBlock?: Block } = {}) {
   const db: any = new MemoryLevel()
   const { common, genesisBlock } = opts
-  if (!opts.blockchain) {
+  if (opts.blockchain === undefined) {
     opts.blockchain = await Blockchain.create({
       db,
       validateBlocks: false,
@@ -109,9 +110,8 @@ export function getTransaction(
   const tx = TransactionFactory.fromTxData(txParams, { common, freeze: false })
 
   if (sign) {
-    const privateKey = Buffer.from(
-      'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-      'hex'
+    const privateKey = hexToBytes(
+      'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
     )
     return tx.sign(privateKey)
   }

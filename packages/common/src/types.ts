@@ -37,8 +37,8 @@ export interface ChainConfig {
 
 export interface GenesisBlockConfig {
   timestamp?: string
-  gasLimit: number
-  difficulty: number
+  gasLimit: number | string
+  difficulty: number | string
   nonce: string
   extraData: string
   baseFeePerGas?: string
@@ -117,6 +117,6 @@ export interface CustomCommonOpts extends BaseOpts {
 
 export interface GethConfigOpts extends BaseOpts {
   chain?: string
-  genesisHash?: Buffer
+  genesisHash?: Uint8Array
   mergeForkIdPostMerge?: boolean
 }

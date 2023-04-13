@@ -7,7 +7,7 @@ import {
   ConsensusType,
   Hardfork,
 } from '@ethereumjs/common'
-import { Address } from '@ethereumjs/util'
+import { Address, hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Chain } from '../../lib/blockchain'
@@ -65,14 +65,14 @@ tape('[Integration:Merge]', async (t) => {
     },
     { baseChain: ChainCommon.Ropsten, hardfork: Hardfork.London }
   )
-  const accounts: [Address, Buffer][] = [
+  const accounts: [Address, Uint8Array][] = [
     [
-      new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
-      Buffer.from('64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993', 'hex'),
+      new Address(hexStringToBytes('0b90087d864e82a284dca15923f3776de6bb016f')),
+      hexStringToBytes('64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
     ],
   ]
   async function minerSetup(common: Common): Promise<[MockServer, FullEthereumService]> {
-    const config = new Config({ common })
+    const config = new Config({ common, accountCache: 10000, storageCache: 1000 })
     const server = new MockServer({ config })
     const blockchain = await Blockchain.create({
       common,

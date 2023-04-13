@@ -6,8 +6,9 @@ import {
 } from '@ethereumjs/blockchain/dist/db/helpers'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { CacheType } from '@ethereumjs/statemanager/dist/cache'
 import { Trie } from '@ethereumjs/trie'
-import { Lock, bufferToHex } from '@ethereumjs/util'
+import { Lock, bytesToHex, bytesToPrefixedHexString, equalsBytes } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
 import { Event } from '../types'
@@ -35,6 +36,12 @@ export class VMExecution extends Execution {
   private MAX_TOLERATED_BLOCK_TIME = 12
 
   /**
+   * Display state cache stats every num blocks
+   */
+  private CACHE_STATS_NUM_BLOCKS = 500
+  private cacheStatsCount = 0
+
+  /**
    * Create new VM execution module
    */
   constructor(options: ExecutionOptions) {
@@ -46,8 +53,20 @@ export class VMExecution extends Execution {
         useKeyHashing: true,
       })
 
+      this.config.logger.info(`Initializing account cache size=${this.config.accountCache}`)
+      this.config.logger.info(`Initializing storage cache size=${this.config.storageCache}`)
       const stateManager = new DefaultStateManager({
         trie,
+        accountCacheOpts: {
+          deactivate: false,
+          type: CacheType.LRU,
+          size: this.config.accountCache,
+        },
+        storageCacheOpts: {
+          deactivate: false,
+          type: CacheType.LRU,
+          size: this.config.storageCache,
+        },
       })
 
       this.vm = new (VM as any)({
@@ -138,7 +157,7 @@ export class VMExecution extends Execution {
       }
       if (receipts !== undefined) {
         // Save receipts
-        this.pendingReceipts?.set(block.hash().toString('hex'), receipts)
+        this.pendingReceipts?.set(bytesToHex(block.hash()), receipts)
       }
       // Bypass updating head by using blockchain db directly
       const [hash, num] = [block.hash(), block.header.number]
@@ -202,10 +221,10 @@ export class VMExecution extends Execution {
       // skip emitting the chain update event as we will manually do it
       await this.chain.putBlocks(blocks, true, true)
       for (const block of blocks) {
-        const receipts = this.pendingReceipts?.get(block.hash().toString('hex'))
+        const receipts = this.pendingReceipts?.get(bytesToHex(block.hash()))
         if (receipts) {
           void this.receiptsManager?.saveReceipts(block, receipts)
-          this.pendingReceipts?.delete(block.hash().toString('hex'))
+          this.pendingReceipts?.delete(bytesToHex(block.hash()))
         }
       }
 
@@ -215,7 +234,7 @@ export class VMExecution extends Execution {
           continue
         }
         const blockByNumber = await this.chain.getBlock(block.header.number)
-        if (!blockByNumber.hash().equals(block.hash())) {
+        if (!equalsBytes(blockByNumber.hash(), block.hash())) {
           throw Error(`${blockName} not in canonical chain`)
         }
       }
@@ -255,7 +274,7 @@ export class VMExecution extends Execution {
     )
 
     let headBlock: Block | undefined
-    let parentState: Buffer | undefined
+    let parentState: Uint8Array | undefined
     let errorBlock: Block | undefined
 
     while (
@@ -265,7 +284,7 @@ export class VMExecution extends Execution {
           canonicalHead.header.number - startHeadBlock.header.number >=
             BigInt(this.config.numBlocksPerIteration))) &&
       (numExecuted === undefined || (loop && numExecuted === this.config.numBlocksPerIteration)) &&
-      startHeadBlock.hash().equals(canonicalHead.hash()) === false
+      equalsBytes(startHeadBlock.hash(), canonicalHead.hash()) === false
     ) {
       let txCounter = 0
       headBlock = undefined
@@ -274,12 +293,18 @@ export class VMExecution extends Execution {
       this.vmPromise = blockchain.iterator(
         'vm',
         async (block: Block, reorg: boolean) => {
-          if (errorBlock) return
+          if (errorBlock !== undefined) return
           // determine starting state for block run
           // if we are just starting or if a chain reorg has happened
-          if (!headBlock || reorg) {
+          if (headBlock === undefined || reorg) {
             const headBlock = await blockchain.getBlock(block.header.parentHash)
             parentState = headBlock.header.stateRoot
+
+            if (reorg) {
+              this.config.logger.info(
+                `Chain reorg happened, set new head to block number=${headBlock.header.number}, clearing state cache for VM execution.`
+              )
+            }
           }
           // run block, update head if valid
           try {
@@ -314,9 +339,11 @@ export class VMExecution extends Execution {
                 throw Error('Execution stopped')
               }
               const beforeTS = Date.now()
+              this.cacheStats(this.vm)
               const result = await this.vm.runBlock({
                 block,
                 root: parentState,
+                clearCache: reorg ? true : false,
                 skipBlockValidation,
                 skipHeaderValidation: true,
               })
@@ -326,7 +353,7 @@ export class VMExecution extends Execution {
               if (diffSec > this.MAX_TOLERATED_BLOCK_TIME) {
                 const msg = `Slow block execution for block num=${
                   block.header.number
-                } hash=0x${block.hash().toString('hex')} txs=${block.transactions.length} gasUsed=${
+                } hash=0x${bytesToHex(block.hash())} txs=${block.transactions.length} gasUsed=${
                   result.gasUsed
                 } time=${diffSec}secs`
                 this.config.logger.warn(msg)
@@ -482,7 +509,7 @@ export class VMExecution extends Execution {
       const block = await vm.blockchain.getBlock(blockNumber)
       const parentBlock = await vm.blockchain.getBlock(block.header.parentHash)
       // Set the correct state root
-      await vm.stateManager.setStateRoot(parentBlock.header.stateRoot)
+      const root = parentBlock.header.stateRoot
       if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
         throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
       }
@@ -493,12 +520,18 @@ export class VMExecution extends Execution {
         // we are skipping header validation because the block has been picked from the
         // blockchain and header should have already been validated while putBlock
         const beforeTS = Date.now()
-        const res = await vm.runBlock({ block, skipHeaderValidation: true })
+        this.cacheStats(vm)
+        const res = await vm.runBlock({
+          block,
+          root,
+          clearCache: false,
+          skipHeaderValidation: true,
+        })
         const afterTS = Date.now()
         const diffSec = Math.round((afterTS - beforeTS) / 1000)
-        const msg = `Executed block num=${blockNumber} hash=0x${block.hash().toString('hex')} txs=${
-          block.transactions.length
-        } gasUsed=${res.gasUsed} time=${diffSec}secs`
+        const msg = `Executed block num=${blockNumber} hash=${bytesToPrefixedHexString(
+          block.hash()
+        )} txs=${block.transactions.length} gasUsed=${res.gasUsed} time=${diffSec}secs`
         if (diffSec <= this.MAX_TOLERATED_BLOCK_TIME) {
           this.config.logger.info(msg)
         } else {
@@ -510,7 +543,7 @@ export class VMExecution extends Execution {
         // Useful e.g. to trace slow txs
         const allTxs = txHashes.length === 1 && txHashes[0] === '*' ? true : false
         for (const tx of block.transactions) {
-          const txHash = bufferToHex(tx.hash())
+          const txHash = bytesToHex(tx.hash())
           if (allTxs || txHashes.includes(txHash)) {
             const res = await vm.runTx({ block, tx })
             this.config.logger.info(
@@ -527,6 +560,21 @@ export class VMExecution extends Execution {
           }
         }
       }
+    }
+  }
+
+  cacheStats(vm: VM) {
+    this.cacheStatsCount += 1
+    if (this.cacheStatsCount === this.CACHE_STATS_NUM_BLOCKS) {
+      let stats = (vm.stateManager as any)._accountCache.stats()
+      this.config.logger.info(
+        `Account cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
+      )
+      stats = (vm.stateManager as any)._storageCache.stats()
+      this.config.logger.info(
+        `Storage cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
+      )
+      this.cacheStatsCount = 0
     }
   }
 }

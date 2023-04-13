@@ -1,6 +1,8 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
+import { bytesToPrefixedHexString } from '@ethereumjs/util'
+import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
 import { MemoryLevel } from 'memory-level'
 
 import { Event } from '../types'
@@ -104,11 +106,17 @@ export class Miner {
       // delay signing by rand(SIGNER_COUNT * 500ms)
       const [signerAddress] = this.config.accounts[0]
       const { blockchain } = this.service.chain
+      const parentBlock = this.service.chain.blocks.latest!
+      //eslint-disable-next-line
+      const number = parentBlock.header.number + BigInt(1)
       const inTurn = await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
-        signerAddress
+        signerAddress,
+        number
       )
       if (inTurn === false) {
-        const signerCount = (blockchain.consensus as CliqueConsensus).cliqueActiveSigners().length
+        const signerCount = (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+          number
+        ).length
         timeout += Math.random() * signerCount * 500
       }
     }
@@ -132,7 +140,7 @@ export class Miner {
     const header = this.latestBlockHeader()
     this.ethashMiner = this.ethash.getMiner(header)
     const solution = await this.ethashMiner.iterate(-1)
-    if (!header.hash().equals(this.latestBlockHeader().hash())) {
+    if (!equalsBytes(header.hash(), this.latestBlockHeader().hash())) {
       // New block was inserted while iterating so we will discard solution
       return
     }
@@ -239,7 +247,8 @@ export class Miner {
       cliqueSigner = signerPrivKey
       // Determine if signer is INTURN (2) or NOTURN (1)
       inTurn = await (vmCopy.blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
-        signerAddress
+        signerAddress,
+        number
       )
       difficulty = inTurn ? 2 : 1
     }
@@ -319,17 +328,17 @@ export class Miner {
           // We can here decide to keep a tx in pool if it belongs to future hf
           // but for simplicity just remove the tx as the sender can always retransmit
           // the tx
-          this.service.txPool.removeByHash(txs[index].hash().toString('hex'))
+          this.service.txPool.removeByHash(bytesToHex(txs[index].hash()))
           this.config.logger.error(
-            `Pending: Removed from txPool tx 0x${txs[index]
-              .hash()
-              .toString('hex')} having different hf=${txs[
-              index
-            ].common.hardfork()} than block vm hf=${blockBuilder['vm']._common.hardfork()}`
+            `Pending: Removed from txPool tx ${bytesToPrefixedHexString(
+              txs[index].hash()
+            )} having different hf=${txs[index].common.hardfork()} than block vm hf=${blockBuilder[
+              'vm'
+            ]._common.hardfork()}`
           )
         } else {
           // If there is an error adding a tx, it will be skipped
-          const hash = '0x' + txs[index].hash().toString('hex')
+          const hash = bytesToPrefixedHexString(txs[index].hash())
           this.config.logger.debug(
             `Skipping tx ${hash}, error encountered when trying to add tx:\n${error}`
           )

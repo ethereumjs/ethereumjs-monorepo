@@ -83,13 +83,21 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@chainsafe/ssz": "^0.10.2",
+    "@chainsafe/ssz": "^0.11.0",
     "@ethereumjs/rlp": "^4.0.1",
     "ethereum-cryptography": "^1.1.2"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.0",
     "@types/secp256k1": "^4.0.1"
+  },
+  "peerDependencies": {
+    "c-kzg": "^2.0.4"
+  },
+  "peerDependenciesMeta": {
+    "c-kzg": {
+      "optional": true
+    }
   },
   "engines": {
     "node": ">=14"

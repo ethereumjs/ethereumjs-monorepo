@@ -2,7 +2,7 @@
 // needed for karma-typescript bundling
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
-import { Buffer } from 'buffer' // eslint-disable-line @typescript-eslint/no-unused-vars
+import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -11,7 +11,7 @@ import { Config } from '../../lib/config'
 
 import type { BlockData, HeaderData } from '@ethereumjs/block'
 
-const config = new Config()
+const config = new Config({ accountCache: 10000, storageCache: 1000 })
 
 tape('[Chain]', (t) => {
   t.test('should test blockchain DB is initialized', async (t) => {
@@ -34,11 +34,11 @@ tape('[Chain]', (t) => {
     t.equal(chain.blocks.td.toString(10), '17179869184', 'get chain.blocks.td')
     t.equal(chain.blocks.height.toString(10), '0', 'get chain.blocks.height')
     t.equal(
-      chain.genesis.hash().toString('hex'),
+      bytesToHex(chain.genesis.hash()),
       'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
       'get chain.genesis'
     )
-    t.ok(chain.genesis.hash().equals(chain.blocks.latest!.hash()), 'get chain.block.latest')
+    t.ok(equalsBytes(chain.genesis.hash(), chain.blocks.latest!.hash()), 'get chain.block.latest')
     await chain.close()
     t.end()
   })

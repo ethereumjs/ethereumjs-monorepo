@@ -3,19 +3,27 @@ import { MemoryLevel } from 'memory-level'
 import type { BatchDBOp, DB } from '@ethereumjs/trie'
 import type { AbstractLevel } from 'abstract-level'
 
-const ENCODING_OPTS = { keyEncoding: 'buffer', valueEncoding: 'buffer' }
+const ENCODING_OPTS = { keyEncoding: 'view', valueEncoding: 'view' }
 
 export class LevelDB implements DB {
-  readonly _leveldb: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  readonly _leveldb: AbstractLevel<
+    string | Uint8Array | Uint8Array,
+    string | Uint8Array,
+    string | Uint8Array
+  >
 
   constructor(
-    leveldb?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer> | null
+    leveldb?: AbstractLevel<
+      string | Uint8Array | Uint8Array,
+      string | Uint8Array,
+      string | Uint8Array
+    > | null
   ) {
     this._leveldb = leveldb ?? new MemoryLevel(ENCODING_OPTS)
   }
 
-  async get(key: Buffer): Promise<Buffer | null> {
-    let value: Buffer | null = null
+  async get(key: Uint8Array): Promise<Uint8Array | null> {
+    let value: Uint8Array | null = null
     try {
       value = await this._leveldb.get(key, ENCODING_OPTS)
     } catch (error: any) {
@@ -29,11 +37,11 @@ export class LevelDB implements DB {
     return value
   }
 
-  async put(key: Buffer, val: Buffer): Promise<void> {
+  async put(key: Uint8Array, val: Uint8Array): Promise<void> {
     await this._leveldb.put(key, val, ENCODING_OPTS)
   }
 
-  async del(key: Buffer): Promise<void> {
+  async del(key: Uint8Array): Promise<void> {
     await this._leveldb.del(key, ENCODING_OPTS)
   }
 

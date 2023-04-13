@@ -1,4 +1,4 @@
-import { bufferToHex } from '@ethereumjs/util'
+import { bytesToHex } from '@ethereumjs/util'
 
 import { getClientVersion } from '../../util'
 import { middleware } from '../validation'
@@ -41,8 +41,8 @@ export class Admin {
 
     const latestHeader = this._chain.headers.latest!
     const difficulty = latestHeader.difficulty.toString()
-    const genesis = bufferToHex(this._chain.genesis.hash())
-    const head = bufferToHex(latestHeader.mixHash)
+    const genesis = bytesToHex(this._chain.genesis.hash())
+    const head = bytesToHex(latestHeader.mixHash)
     const network = this._chain.networkId.toString()
 
     const nodeInfo = {

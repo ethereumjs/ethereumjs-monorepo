@@ -1,12 +1,13 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EOF } from '@ethereumjs/evm/dist/eof'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Address, privateToAddress } from '@ethereumjs/util'
+import { Account, Address, concatBytesNoTypeCheck, privateToAddress } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
 
-const pkey = Buffer.from('20'.repeat(32), 'hex')
+const pkey = hexToBytes('20'.repeat(32))
 const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
 
@@ -31,29 +32,36 @@ tape('EIP 3540 tests', (t) => {
   })
 
   t.test('EOF > codeAnalysis() tests', async (st) => {
-    const eofHeader = Buffer.from([EOF.FORMAT, EOF.MAGIC, EOF.VERSION])
+    const eofHeader = Uint8Array.from([EOF.FORMAT, EOF.MAGIC, EOF.VERSION])
     st.ok(
-      EOF.codeAnalysis(Buffer.concat([eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00])]))
-        ?.code! > 0,
+      EOF.codeAnalysis(
+        concatBytesNoTypeCheck(eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00]))
+      )?.code! > 0,
       'valid code section'
     )
     st.ok(
       EOF.codeAnalysis(
-        Buffer.concat([
+        concatBytesNoTypeCheck(
           eofHeader,
-          Uint8Array.from([0x01, 0x00, 0x01, 0x02, 0x00, 0x01, 0x00, 0x00, 0xaa]),
-        ])
+          Uint8Array.from([0x01, 0x00, 0x01, 0x02, 0x00, 0x01, 0x00, 0x00, 0xaa])
+        )
       )?.data! > 0,
       'valid data section'
     )
     st.ok(
-      !EOF.codeAnalysis(
-        Buffer.concat([eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00, 0x00])])
+      !(
+        EOF.codeAnalysis(
+          concatBytesNoTypeCheck(eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00, 0x00]))
+        ) !== undefined
       ),
       'invalid container length (too long)'
     )
     st.ok(
-      !EOF.codeAnalysis(Buffer.concat([eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00])])),
+      !(
+        EOF.codeAnalysis(
+          concatBytesNoTypeCheck(eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00]))
+        ) !== undefined
+      ),
       'invalid container length (too short)'
     )
     st.end()
@@ -66,10 +74,11 @@ tape('EIP 3540 tests', (t) => {
       eips: [3540],
     })
     const vm = await VM.create({ common })
+    await vm.stateManager.putAccount(sender, new Account())
     const account = await vm.stateManager.getAccount(sender)
     const balance = GWEI * BigInt(21000) * BigInt(10000000)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
+    account!.balance = balance
+    await vm.stateManager.putAccount(sender, account!)
 
     let data = '0x67' + 'EF0001' + '01000100' + '00' + '60005260086018F3'
     let res = await runTx(vm, data, 0)
@@ -82,10 +91,11 @@ tape('EIP 3540 tests', (t) => {
 
   t.test('invalid EOF format / contract creation', async (st) => {
     const vm = await VM.create({ common })
+    await vm.stateManager.putAccount(sender, new Account())
     const account = await vm.stateManager.getAccount(sender)
     const balance = GWEI * BigInt(21000) * BigInt(10000000)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
+    account!.balance = balance
+    await vm.stateManager.putAccount(sender, account!)
 
     let data = '0x60EF60005360016000F3'
     let res = await runTx(vm, data, 0)
@@ -152,10 +162,11 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
       eips: [3540],
     })
     const vm = await VM.create({ common })
+    await vm.stateManager.putAccount(sender, new Account())
     const account = await vm.stateManager.getAccount(sender)
     const balance = GWEI * BigInt(21000) * BigInt(10000000)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
+    account!.balance = balance
+    await vm.stateManager.putAccount(sender, account!)
 
     let data = generateEOFCode('60016001F3')
     const res = await runTx(vm, data, 0)
@@ -175,10 +186,11 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
       eips: [3540],
     })
     const vm = await VM.create({ common })
+    await vm.stateManager.putAccount(sender, new Account())
     const account = await vm.stateManager.getAccount(sender)
     const balance = GWEI * BigInt(21000) * BigInt(10000000)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
+    account!.balance = balance
+    await vm.stateManager.putAccount(sender, account!)
 
     let data = deployCreateCode(generateEOFCode('60016001F3').substring(2))
     const res = await runTx(vm, data, 0)
@@ -199,10 +211,11 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
       eips: [3540],
     })
     const vm = await VM.create({ common })
+    await vm.stateManager.putAccount(sender, new Account())
     const account = await vm.stateManager.getAccount(sender)
     const balance = GWEI * BigInt(21000) * BigInt(10000000)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
+    account!.balance = balance
+    await vm.stateManager.putAccount(sender, account!)
 
     let data = deployCreate2Code(generateEOFCode('60016001F3').substring(2))
     const res = await runTx(vm, data, 0)

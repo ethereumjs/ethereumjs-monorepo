@@ -3,14 +3,14 @@ import { MemoryLevel } from 'memory-level'
 import type { BatchDBOp, DB } from '@ethereumjs/trie'
 import type { AbstractLevel } from 'abstract-level'
 
-export const ENCODING_OPTS = { keyEncoding: 'buffer', valueEncoding: 'buffer' }
+export const ENCODING_OPTS = { keyEncoding: 'view', valueEncoding: 'view' }
 
 /**
  * LevelDB is a thin wrapper around the underlying levelup db,
  * which validates inputs and sets encoding type.
  */
 export class LevelDB implements DB {
-  _leveldb: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  _leveldb: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   /**
    * Initialize a DB instance. If `leveldb` is not provided, DB
@@ -18,7 +18,7 @@ export class LevelDB implements DB {
    * @param leveldb - An abstract-leveldown compliant store
    */
   constructor(
-    leveldb?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+    leveldb?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
   ) {
     this._leveldb = leveldb ?? new MemoryLevel(ENCODING_OPTS)
   }
@@ -26,7 +26,7 @@ export class LevelDB implements DB {
   /**
    * @inheritDoc
    */
-  async get(key: Buffer): Promise<Buffer | null> {
+  async get(key: Uint8Array): Promise<Uint8Array | null> {
     let value = null
     try {
       value = await this._leveldb.get(key, ENCODING_OPTS)
@@ -38,20 +38,20 @@ export class LevelDB implements DB {
         throw error
       }
     }
-    return value as Buffer | null
+    return value as Uint8Array | null
   }
 
   /**
    * @inheritDoc
    */
-  async put(key: Buffer, val: Buffer): Promise<void> {
+  async put(key: Uint8Array, val: Uint8Array): Promise<void> {
     await this._leveldb.put(key, val, ENCODING_OPTS)
   }
 
   /**
    * @inheritDoc
    */
-  async del(key: Buffer): Promise<void> {
+  async del(key: Uint8Array): Promise<void> {
     await this._leveldb.del(key, ENCODING_OPTS)
   }
 

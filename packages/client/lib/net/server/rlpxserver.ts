@@ -1,4 +1,5 @@
 import { DPT as Devp2pDPT, RLPx as Devp2pRLPx } from '@ethereumjs/devp2p'
+import { bytesToHex, utf8ToBytes } from 'ethereum-cryptography/utils'
 
 import { Event } from '../../types'
 import { getClientVersion } from '../../util'
@@ -28,8 +29,8 @@ const ignoredErrors = new RegExp(
 
     // DPT message decoding
     'Hash verification failed',
-    'Invalid address buffer',
-    'Invalid timestamp buffer',
+    'Invalid address bytes',
+    'Invalid timestamp bytes',
     'Invalid type',
     'Timeout error: ping', // connection
     'Peer is banned', // connection
@@ -104,7 +105,7 @@ export class RlpxServer extends Server {
         ports: { discovery: this.config.port, listener: this.config.port },
       }
     }
-    const id = this.rlpx._id.toString('hex')
+    const id = bytesToHex(this.rlpx._id)
     return {
       enode: `enode://${id}@${listenAddr}`,
       id,
@@ -239,7 +240,7 @@ export class RlpxServer extends Server {
   private async initRlpx() {
     return new Promise<void>((resolve) => {
       this.rlpx = new Devp2pRLPx(this.key, {
-        clientId: Buffer.from(getClientVersion()),
+        clientId: utf8ToBytes(getClientVersion()),
         dpt: this.dpt!,
         maxPeers: this.config.maxPeers,
         capabilities: RlpxPeer.capabilities(Array.from(this.protocols)),
@@ -251,7 +252,7 @@ export class RlpxServer extends Server {
       this.rlpx.on('peer:added', async (rlpxPeer: Devp2pRLPxPeer) => {
         const peer = new RlpxPeer({
           config: this.config,
-          id: rlpxPeer.getId()!.toString('hex'),
+          id: bytesToHex(rlpxPeer.getId()!),
           host: rlpxPeer._socket.remoteAddress!,
           port: rlpxPeer._socket.remotePort!,
           protocols: Array.from(this.protocols),
@@ -270,7 +271,7 @@ export class RlpxServer extends Server {
       })
 
       this.rlpx.on('peer:removed', (rlpxPeer: Devp2pRLPxPeer, reason: any) => {
-        const id = (rlpxPeer.getId() as Buffer).toString('hex')
+        const id = bytesToHex(rlpxPeer.getId() as Uint8Array)
         const peer = this.peers.get(id)
         if (peer) {
           this.peers.delete(peer.id)
@@ -281,13 +282,7 @@ export class RlpxServer extends Server {
         }
       })
 
-      this.rlpx.on('peer:error', (rlpxPeer: Devp2pRLPxPeer, error: Error) => {
-        const peerId = rlpxPeer.getId()
-        if (peerId === null) {
-          return this.error(error)
-        }
-        this.error(error)
-      })
+      this.rlpx.on('peer:error', (rlpxPeer: Devp2pRLPxPeer, error: Error) => this.error(error))
 
       this.rlpx.on('error', (e: Error) => this.error(e))
 
