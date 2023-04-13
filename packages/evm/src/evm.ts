@@ -635,7 +635,7 @@ export class EVM implements EVMInterface {
         //await this._state.putContractCode(message.to, result.returnValue)
         //const account = await this.eei.getAccount(message.to)
         const account = await this.eei.getAccount(message.to)
-        await this.eei.putAccount(message.to, account!)
+        await this.eei.putAccount(message.to, account ?? new Account())
       }
     }
 
