@@ -661,7 +661,7 @@ export class TxPool {
           tip: (tx as AccessListEIP2930Transaction).gasPrice,
         }
       case 2:
-      case 5:
+      case 3:
         return {
           maxFee: (tx as FeeMarketEIP1559Transaction).maxFeePerGas,
           tip: (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas,
