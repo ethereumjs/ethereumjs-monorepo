@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { Address, bytesToHex, equalsBytes, toBytes } from '@ethereumjs/util'
+import { Account, Address, bytesToHex, equalsBytes, toBytes } from '@ethereumjs/util'
 
 import { EVM } from '../../../../evm/src'
 import { EEI } from '../../../src'
@@ -104,7 +104,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   // Even if no txs are ran, coinbase should always be created
   const coinbaseAddress = Address.fromString(testData.env.currentCoinbase)
   const account = await (<VM>vm).eei.getAccount(coinbaseAddress)
-  await (<VM>vm).eei.putAccount(coinbaseAddress, account!)
+  await (<VM>vm).eei.putAccount(coinbaseAddress, account ?? new Account())
 
   const stepHandler = (e: InterpreterStep) => {
     let hexStack = []
