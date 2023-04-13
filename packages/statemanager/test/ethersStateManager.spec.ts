@@ -216,7 +216,10 @@ tape('runTx test: replay mainnet transactions', async (t) => {
     const blockTag = 15496077n
     common.setHardforkByBlockNumber(blockTag)
     const txHash = '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0'
-    const tx = await TransactionFactory.fromEthersProvider(provider, txHash, { common })
+    const tx = await TransactionFactory.fromRPCTx(
+      await provider.send('eth_getTransactionByHash', [txHash]),
+      { common }
+    )
     const state = new EthersStateManager({
       provider,
       // Set the state manager to look at the state of the chain before the block has been executed
@@ -251,7 +254,13 @@ tape('runBlock test', async (t) => {
     common.setHardforkByBlockNumber(blockTag - 1n)
 
     const vm = await VM.create({ common, stateManager: state })
-    const block = await Block.fromEthersProvider(provider, blockTag, { common })
+    const block = Block.fromRPC(
+      await provider.send('eth_getBlockByNumber', ['0x' + blockTag.toString(16)]),
+      [],
+      {
+        common,
+      }
+    )
     try {
       const res = await vm.runBlock({
         block,

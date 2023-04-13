@@ -7,7 +7,7 @@ import * as testdata from './testdata.json'
 
 tape('DNS', async (t) => {
   const mockData = testdata.dns
-  const mockDns = td.replace('dns')
+  const mockDns = td.replace<any>('dns')
 
   let dns: DNS
   function initializeDns() {
