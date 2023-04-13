@@ -26,7 +26,7 @@ tape('[FullSynchronizer]', async (t) => {
   BlockFetcher.prototype.fetch = td.func<any>()
   BlockFetcher.prototype.clear = td.func<any>()
   BlockFetcher.prototype.destroy = td.func<any>()
-  td.replace('../../lib/sync/fetcher', { BlockFetcher })
+  td.replace<any>('../../lib/sync/fetcher', { BlockFetcher })
 
   const { FullSynchronizer } = await import('../../lib/sync/fullsync')
 

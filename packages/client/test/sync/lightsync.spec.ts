@@ -19,7 +19,7 @@ tape('[LightSynchronizer]', async (t) => {
     destroy() {}
   }
   HeaderFetcher.prototype.fetch = td.func<any>()
-  td.replace('../../lib/sync/fetcher', { HeaderFetcher })
+  td.replace<any>('../../lib/sync/fetcher', { HeaderFetcher })
 
   const { LightSynchronizer } = await import('../../lib/sync/lightsync')
 

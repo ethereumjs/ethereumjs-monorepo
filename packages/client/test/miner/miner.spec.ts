@@ -45,11 +45,11 @@ const setBalance = async (vm: VM, address: Address, balance: bigint) => {
 tape('[Miner]', async (t) => {
   const originalValidate = BlockHeader.prototype._consensusFormatValidation
   BlockHeader.prototype._consensusFormatValidation = td.func<any>()
-  td.replace('@ethereumjs/block', { BlockHeader })
+  td.replace<any>('@ethereumjs/block', { BlockHeader })
 
   const originalSetStateRoot = VmState.prototype.setStateRoot
   VmState.prototype.setStateRoot = td.func<any>()
-  td.replace('@ethereumjs/vm/dist/vmState', { VmState })
+  td.replace<any>('@ethereumjs/vm/dist/vmState', { VmState })
 
   // Stub out setStateRoot so txPool.validate checks will pass since correct state root
   // doesn't exist in fakeChain state anyway
