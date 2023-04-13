@@ -486,7 +486,7 @@ export class Interpreter {
     await this._eei.storageStore(this._env.address, key, value)
     const account = await this._eei.getAccount(this._env.address)
     if (!account) {
-      throw new Error('could not read account along persisting memory')
+      throw new Error('could not read account while persisting memory')
     }
     this._env.contract = account
   }
