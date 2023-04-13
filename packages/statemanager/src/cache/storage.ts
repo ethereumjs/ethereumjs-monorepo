@@ -223,7 +223,7 @@ export class StorageCache extends Cache {
           itDiffStorage.next()
         }
       } else {
-        throw new Error('Inconsistent cache state')
+        throw new Error('internal error: storage cache map for account should be defined')
       }
       it.next()
     }
