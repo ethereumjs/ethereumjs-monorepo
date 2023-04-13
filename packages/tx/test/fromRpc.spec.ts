@@ -1,5 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import * as tape from 'tape'
+import * as td from 'testdouble'
 
 import { TransactionFactory } from '../src'
 import { normalizeTxParams } from '../src/fromRpc'
@@ -11,8 +12,20 @@ const optimismTx = require('./json/optimismTx.json')
 const txTypes = [0, 1, 2]
 
 tape('[fromEthersProvider]', async (t) => {
+  const fakeFetch = async (_url: string, req: any) => {
+    if (
+      req.method === 'eth_getTransactionByHash' &&
+      req.params[0] === '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0'
+    ) {
+      const block = await import(`./json/rpcTx.json`)
+      return block
+    }
+  }
+
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
   const provider = new MockProvider()
+  const providerUtils = require('@ethereumjs/util/dist/provider')
+  td.replace(providerUtils, 'fetchFromProvider', fakeFetch)
   const txHash = '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0'
   const tx = await TransactionFactory.fromEthersProvider(provider, txHash, { common })
   t.equal(
@@ -20,6 +33,7 @@ tape('[fromEthersProvider]', async (t) => {
     txHash,
     'generated correct tx from transaction RPC data'
   )
+  td.reset()
   t.end()
 })
 

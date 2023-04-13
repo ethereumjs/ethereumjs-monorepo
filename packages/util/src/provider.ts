@@ -1,6 +1,10 @@
 import fetch from 'cross-fetch'
 
-export const fetchFromProvider = async (url: string, params: any) => {
+type rpcParams = {
+  method: string
+  params: (string | boolean | number)[]
+}
+export const fetchFromProvider = async (url: string, params: rpcParams) => {
   const res = await fetch(url, {
     method: 'POST',
     headers: {
@@ -20,7 +24,7 @@ export const fetchFromProvider = async (url: string, params: any) => {
 export const getProvider = (provider: string | any) => {
   if (typeof provider === 'string') {
     return provider
-  } else if (provider.connection.url !== undefined) {
+  } else if (provider?.connection?.url !== undefined) {
     return provider.connection.url
   } else {
     throw new Error('Must provide valid provider URL or Web3Provider')

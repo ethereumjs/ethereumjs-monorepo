@@ -256,6 +256,7 @@ export class Block {
     ) {
       blockData = await fetchFromProvider(providerUrl, {
         method: 'eth_getBlockByNumber',
+        params: [blockTag, true],
       })
     } else {
       throw new Error(
