@@ -28,8 +28,8 @@ tape('EEI.copy()', async (t) => {
     'copied EEI should have the same hardfork'
   )
   t.equal(
-    (await copy.getAccount(ZeroAddress)).nonce,
-    (await eei.getAccount(ZeroAddress)).nonce,
+    (await copy.getAccount(ZeroAddress))!.nonce,
+    (await eei.getAccount(ZeroAddress))!.nonce,
     'copy should have same State data'
   )
 })
@@ -42,7 +42,7 @@ tape('EEI', (t) => {
       await Blockchain.create()
     ) // create a dummy EEI (no VM, no EVM, etc.)
     st.notOk(await eei.accountExists(ZeroAddress))
-    st.ok(await eei.accountIsEmpty(ZeroAddress))
+    st.ok(await eei.accountIsEmptyOrNonExistent(ZeroAddress))
     st.end()
   })
 
@@ -57,12 +57,12 @@ tape('EEI', (t) => {
       // create empty account
       await eei.putAccount(ZeroAddress, new Account())
       st.ok(await eei.accountExists(ZeroAddress))
-      st.ok(await eei.accountIsEmpty(ZeroAddress))
+      st.ok(await eei.accountIsEmptyOrNonExistent(ZeroAddress))
       // now put a non-empty account
       const nonEmptyAccount = Account.fromAccountData({ nonce: 1 })
       await eei.putAccount(ZeroAddress, nonEmptyAccount)
       st.ok(await eei.accountExists(ZeroAddress))
-      st.notOk(await eei.accountIsEmpty(ZeroAddress))
+      st.notOk(await eei.accountIsEmptyOrNonExistent(ZeroAddress))
       st.end()
     }
   )
@@ -76,10 +76,10 @@ tape('EEI', (t) => {
     // create empty account
     await eei.putAccount(ZeroAddress, new Account())
     st.ok(await eei.accountExists(ZeroAddress)) // sanity check: account exists before we delete it
-    st.ok(await eei.accountIsEmpty(ZeroAddress)) // it is obviously empty
+    st.ok(await eei.accountIsEmptyOrNonExistent(ZeroAddress)) // it is obviously empty
     await eei.deleteAccount(ZeroAddress) // delete the account
     st.notOk(await eei.accountExists(ZeroAddress)) // account should not exist
-    st.ok(await eei.accountIsEmpty(ZeroAddress)) // account is empty
+    st.ok(await eei.accountIsEmptyOrNonExistent(ZeroAddress)) // account is empty
     st.end()
   })
 
@@ -107,8 +107,8 @@ tape('EEI', (t) => {
     const accountFromEEI = await vm.eei.getAccount(address)
     const accountFromEVM = await vm.evm.eei.getAccount(address)
     st.equal(
-      accountFromEEI.balance,
-      accountFromEVM.balance,
+      accountFromEEI!.balance,
+      accountFromEVM!.balance,
       'vm.eei and evm.eei produce the same accounts'
     )
   })

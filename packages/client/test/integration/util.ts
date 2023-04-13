@@ -28,7 +28,15 @@ export async function setup(
 
   const lightserv = syncmode === 'full'
   const common = options.common?.copy()
-  const config = new Config({ syncmode, lightserv, minPeers, common, safeReorgDistance: 0 })
+  const config = new Config({
+    syncmode,
+    lightserv,
+    minPeers,
+    common,
+    safeReorgDistance: 0,
+    accountCache: 10000,
+    storageCache: 1000,
+  })
 
   const server = new MockServer({ config, location })
   const blockchain = await Blockchain.create({

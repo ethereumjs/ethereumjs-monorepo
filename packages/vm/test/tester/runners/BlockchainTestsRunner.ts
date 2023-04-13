@@ -2,6 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { bytesToBigInt, isHexPrefixed, stripHexPrefix, toBytes } from '@ethereumjs/util'
@@ -40,10 +41,13 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   // fix for BlockchainTests/GeneralStateTests/stRandom/*
   testData.lastblockhash = stripHexPrefix(testData.lastblockhash)
 
-  const cacheDB = new Level('./.cachedb')
-  const state = new Trie({ useKeyHashing: true })
+  let cacheDB = new Level('./.cachedb')
+  let state = new Trie({ useKeyHashing: true })
+  let stateManager = new DefaultStateManager({
+    trie: state,
+  })
 
-  const { common }: { common: Common } = options
+  let common = options.common.copy() as Common
   common.setHardforkByBlockNumber(0)
 
   let validatePow = false
@@ -67,7 +71,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     t.deepEquals(genesisBlock.serialize(), rlp, 'correct genesis RLP')
   }
 
-  const blockchain = await Blockchain.create({
+  let blockchain = await Blockchain.create({
     db: new MemoryLevel(),
     common,
     validateBlocks: true,
@@ -88,8 +92,8 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   const begin = Date.now()
 
-  const vm = await VM.create({
-    state,
+  let vm = await VM.create({
+    stateManager,
     blockchain,
     common,
     hardforkByBlockNumber: true,
@@ -239,4 +243,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   const timeSpent = `${(end - begin) / 1000} secs`
   t.comment(`Time: ${timeSpent}`)
   await cacheDB.close()
+
+  // @ts-ignore Explicitly delete objects for memory optimization (early GC)
+  common = blockchain = state = stateManager = vm = cacheDB = null // eslint-disable-line
 }

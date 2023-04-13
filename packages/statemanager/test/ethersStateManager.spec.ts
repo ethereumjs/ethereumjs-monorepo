@@ -2,6 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
 import {
+  Account,
   Address,
   bigIntToBytes,
   equalsBytes,
@@ -58,11 +59,13 @@ tape('Ethers State Manager API tests', async (t) => {
     const state = new EthersStateManager({ provider, blockTag: 1n })
     const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
     const account = await state.getAccount(vitalikDotEth)
-    t.ok(account.nonce > 0n, 'Vitalik.eth returned a valid nonce')
+    t.ok(account!.nonce > 0n, 'Vitalik.eth returned a valid nonce')
 
-    await state.putAccount(vitalikDotEth, account)
+    await state.putAccount(vitalikDotEth, account!)
 
-    const retrievedVitalikAccount = (state as any)._cache.get(vitalikDotEth)
+    const retrievedVitalikAccount = Account.fromRlpSerializedAccount(
+      (state as any)._accountCache.get(vitalikDotEth)!.accountRLP
+    )
 
     t.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
     const doesThisAccountExist = await state.accountExists(

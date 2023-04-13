@@ -19,7 +19,12 @@ import { TxPool } from '../../lib/service/txpool'
 import type { StateManager } from '@ethereumjs/statemanager'
 
 const setup = () => {
-  const config = new Config({ transports: [], logger: getLogger({ loglevel: 'info' }) })
+  const config = new Config({
+    transports: [],
+    accountCache: 10000,
+    storageCache: 1000,
+    logger: getLogger({ loglevel: 'info' }),
+  })
   const service: any = {
     chain: {
       headers: { height: BigInt(0) },
@@ -40,7 +45,7 @@ const setup = () => {
 }
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-const config = new Config({ transports: [] })
+const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
 
 const handleTxs = async (
   txs: any[],

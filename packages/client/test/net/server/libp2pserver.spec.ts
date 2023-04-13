@@ -42,7 +42,7 @@ tape('[Libp2pServer]', async (t) => {
   const { Libp2pServer } = await import('../../../lib/net/server/libp2pserver')
 
   t.test('should initialize correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const multiaddrs = [
       multiaddr('/ip4/192.0.2.1/tcp/12345'),
       multiaddr('/ip4/192.0.2.1/tcp/23456'),
@@ -70,7 +70,7 @@ tape('[Libp2pServer]', async (t) => {
   })
 
   t.test('should get peer info', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const server = new Libp2pServer({ config })
     const connection = td.object<any>()
     connection.remotePeer = 'id0'
@@ -79,7 +79,7 @@ tape('[Libp2pServer]', async (t) => {
   })
 
   t.test('should create peer', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const multiaddrs = [multiaddr('/ip4/6.6.6.6')]
     const server = new Libp2pServer({ config, multiaddrs })
     const peerId = {
@@ -95,7 +95,12 @@ tape('[Libp2pServer]', async (t) => {
 
   t.test('should start/stop server and test banning', async (t) => {
     t.plan(12)
-    const config = new Config({ transports: [], logger: getLogger({ loglevel: 'off' }) })
+    const config = new Config({
+      transports: [],
+      logger: getLogger({ loglevel: 'off' }),
+      accountCache: 10000,
+      storageCache: 1000,
+    })
     const multiaddrs = [multiaddr('/ip4/6.6.6.6')]
     const server = new Libp2pServer({ config, multiaddrs, key: utf8ToBytes('4') })
     const protos: any = [

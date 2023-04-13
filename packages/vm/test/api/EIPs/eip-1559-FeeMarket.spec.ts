@@ -5,7 +5,7 @@ import {
   FeeMarketEIP1559Transaction,
   Transaction,
 } from '@ethereumjs/tx'
-import { Address, bigIntToBytes, privateToAddress, setLengthLeft } from '@ethereumjs/util'
+import { Account, Address, bigIntToBytes, privateToAddress, setLengthLeft } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
@@ -77,10 +77,11 @@ tape('EIP1559 tests', (t) => {
     )
     const block = makeBlock(GWEI, tx, 2)
     const vm = await VM.create({ common })
+    await vm.stateManager.putAccount(sender, new Account())
     let account = await vm.stateManager.getAccount(sender)
     const balance = GWEI * BigInt(21000) * BigInt(10)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
+    account!.balance = balance
+    await vm.stateManager.putAccount(sender, account!)
     const results = await vm.runTx({
       tx: block.transactions[0],
       block,
@@ -98,9 +99,9 @@ tape('EIP1559 tests', (t) => {
 
     let miner = await vm.stateManager.getAccount(coinbase)
 
-    st.equal(miner.balance, expectedMinerBalance, 'miner balance correct')
+    st.equal(miner!.balance, expectedMinerBalance, 'miner balance correct')
     account = await vm.stateManager.getAccount(sender)
-    st.equal(account.balance, expectedAccountBalance, 'account balance correct')
+    st.equal(account!.balance, expectedAccountBalance, 'account balance correct')
     st.equal(results.amountSpent, expectedCost, 'reported cost correct')
 
     const tx2 = new AccessListEIP2930Transaction(
@@ -126,9 +127,9 @@ tape('EIP1559 tests', (t) => {
 
     miner = await vm.stateManager.getAccount(coinbase)
 
-    st.equal(miner.balance, expectedMinerBalance, 'miner balance correct')
+    st.equal(miner!.balance, expectedMinerBalance, 'miner balance correct')
     account = await vm.stateManager.getAccount(sender)
-    st.equal(account.balance, expectedAccountBalance, 'account balance correct')
+    st.equal(account!.balance, expectedAccountBalance, 'account balance correct')
     st.equal(results2.amountSpent, expectedCost, 'reported cost correct')
 
     const tx3 = new Transaction(
@@ -154,9 +155,9 @@ tape('EIP1559 tests', (t) => {
 
     miner = await vm.stateManager.getAccount(coinbase)
 
-    st.equal(miner.balance, expectedMinerBalance, 'miner balance correct')
+    st.equal(miner!.balance, expectedMinerBalance, 'miner balance correct')
     account = await vm.stateManager.getAccount(sender)
-    st.equal(account.balance, expectedAccountBalance, 'account balance correct')
+    st.equal(account!.balance, expectedAccountBalance, 'account balance correct')
     st.equal(results3.amountSpent, expectedCost, 'reported cost correct')
 
     st.end()

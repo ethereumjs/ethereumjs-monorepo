@@ -335,6 +335,7 @@ export async function setupPreConditions(state: VmState, testData: any) {
 
     const addressBuf = format(addressStr)
     const address = new Address(addressBuf)
+    await state.putAccount(address, new Account())
 
     const codeBuf = format(code)
     const codeHash = keccak256(codeBuf)
@@ -352,7 +353,7 @@ export async function setupPreConditions(state: VmState, testData: any) {
     // Put contract code
     await state.putContractCode(address, codeBuf)
 
-    const storageRoot = (await state.getAccount(address)).storageRoot
+    const storageRoot = (await state.getAccount(address))!.storageRoot
 
     if (testData.exec?.address === addressStr) {
       testData.root(storageRoot)

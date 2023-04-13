@@ -15,7 +15,7 @@ tape('[PeerPool]', async (t) => {
   const { PeerPool } = await import('../../lib/net/peerpool')
 
   t.test('should initialize', (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool({ config })
     t.notOk((pool as any).pool.size, 'empty pool')
     t.notOk((pool as any).opened, 'not open')
@@ -25,7 +25,11 @@ tape('[PeerPool]', async (t) => {
   t.test('should open/close', async (t) => {
     t.plan(3)
     const server = {}
-    const config = new Config({ servers: [server as RlpxServer] })
+    const config = new Config({
+      servers: [server as RlpxServer],
+      accountCache: 10000,
+      storageCache: 1000,
+    })
     const pool = new PeerPool({ config })
     const peer = new MockPeer({
       id: 'peer',
@@ -52,7 +56,7 @@ tape('[PeerPool]', async (t) => {
   t.test('should connect/disconnect peer', (t) => {
     t.plan(2)
     const peer = new EventEmitter() as any
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool({ config })
     ;(peer as any).id = 'abc'
     ;(peer as any).handleMessageQueue = td.func()
@@ -68,7 +72,7 @@ tape('[PeerPool]', async (t) => {
 
   t.test('should check contains', (t) => {
     const peer = new Peer('abc')
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool({ config })
     pool.add(peer)
     t.ok(pool.contains(peer.id), 'found peer')
@@ -77,7 +81,7 @@ tape('[PeerPool]', async (t) => {
 
   t.test('should get idle peers', (t) => {
     const peers = [new Peer(1), new Peer(2), new Peer(3)]
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool({ config })
     peers[1].idle = true
     for (const p of peers) {
@@ -94,7 +98,7 @@ tape('[PeerPool]', async (t) => {
 
   t.test('should ban peer', (t) => {
     const peers = [{ id: 1 }, { id: 2, server: { ban: td.func() } }]
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool({ config })
     for (const p of peers as any) {
       pool.add(p)

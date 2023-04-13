@@ -60,8 +60,8 @@ tape('EIP 3860 tests', (t) => {
     const evmWithout3860 = await EVM.create({ common: commonWithout3860, eei: eei.copy() })
     const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     const contractAccount = await evm.eei.getAccount(contractFactory)
-    await evm.eei.putAccount(contractFactory, contractAccount)
-    await evmWithout3860.eei.putAccount(contractFactory, contractAccount)
+    await evm.eei.putAccount(contractFactory, contractAccount!)
+    await evmWithout3860.eei.putAccount(contractFactory, contractAccount!)
     const factoryCode = hexToBytes(
       '7f600a80600080396000f3000000000000000000000000000000000000000000006000526000355a8160006000f05a8203600a55806000556001600155505050'
     )
@@ -102,8 +102,8 @@ tape('EIP 3860 tests', (t) => {
     const evmWithout3860 = await EVM.create({ common: commonWithout3860, eei: eei.copy() })
     const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     const contractAccount = await evm.eei.getAccount(contractFactory)
-    await evm.eei.putAccount(contractFactory, contractAccount)
-    await evmWithout3860.eei.putAccount(contractFactory, contractAccount)
+    await evm.eei.putAccount(contractFactory, contractAccount!)
+    await evmWithout3860.eei.putAccount(contractFactory, contractAccount!)
     const factoryCode = hexToBytes(
       '7f600a80600080396000f3000000000000000000000000000000000000000000006000526000355a60008260006000f55a8203600a55806000556001600155505050'
     )
@@ -177,8 +177,8 @@ tape('EIP 3860 tests', (t) => {
       })
       const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
       const contractAccount = await evm.eei.getAccount(contractFactory)
-      await evm.eei.putAccount(contractFactory, contractAccount)
-      await evmDisabled.eei.putAccount(contractFactory, contractAccount)
+      await evm.eei.putAccount(contractFactory, contractAccount!)
+      await evmDisabled.eei.putAccount(contractFactory, contractAccount!)
       // This factory code:
       // -> reads 32 bytes from the calldata (X)
       // Attempts to create a contract of X size

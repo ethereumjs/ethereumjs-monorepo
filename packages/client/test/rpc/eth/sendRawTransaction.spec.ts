@@ -3,6 +3,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import {
+  Account,
   blobsToCommitments,
   bytesToPrefixedHexString,
   commitmentsToVersionedHashes,
@@ -47,9 +48,10 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const address = transaction.getSenderAddress()
   const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
 
+  await vm.stateManager.putAccount(address, new Account())
   const account = await vm.stateManager.getAccount(address)
-  account.balance = BigInt('40100000')
-  await vm.stateManager.putAccount(address, account)
+  account!.balance = BigInt('40100000')
+  await vm.stateManager.putAccount(address, account!)
 
   const req = params(method, [txData])
   const expectRes = (res: any) => {
@@ -191,9 +193,10 @@ tape(`${method}: call with no peers`, async (t) => {
   const address = transaction.getSenderAddress()
   const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
 
+  await vm.stateManager.putAccount(address, new Account())
   const account = await vm.stateManager.getAccount(address)
-  account.balance = BigInt('40100000')
-  await vm.stateManager.putAccount(address, account)
+  account!.balance = BigInt('40100000')
+  await vm.stateManager.putAccount(address, account!)
 
   const req = params(method, [txData])
 
@@ -267,9 +270,10 @@ tape('blob EIP 4844 transaction', async (t) => {
     { common }
   ).sign(pk)
   const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
+  await vm.stateManager.putAccount(tx.getSenderAddress(), new Account())
   const account = await vm.stateManager.getAccount(tx.getSenderAddress())
-  account.balance = BigInt(0xfffffffffffff)
-  await vm.stateManager.putAccount(tx.getSenderAddress(), account)
+  account!.balance = BigInt(0xfffffffffffff)
+  await vm.stateManager.putAccount(tx.getSenderAddress(), account!)
 
   const req = params(method, [bytesToPrefixedHexString(tx.serializeNetworkWrapper())])
   const req2 = params(method, [bytesToPrefixedHexString(replacementTx.serializeNetworkWrapper())])

@@ -1,3 +1,4 @@
+import { Account, Address } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
@@ -80,6 +81,8 @@ tape('VM.runCode: interpreter', (t) => {
 
   t.test('should throw on non-EvmError', async (st) => {
     const eei = await getEEI()
+    const address = Address.fromString(`0x${'00'.repeat(20)}`)
+    await eei.putAccount(address, new Account())
     eei.putContractStorage = (..._args) => {
       throw new Error('Test')
     }

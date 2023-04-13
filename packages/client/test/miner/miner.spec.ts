@@ -90,7 +90,14 @@ tape('[Miner]', async (t) => {
   const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berlin })
   common.setMaxListeners(50)
   const accounts: [Address, Uint8Array][] = [[A.address, A.privateKey]]
-  const config = new Config({ transports: [], accounts, mine: true, common })
+  const config = new Config({
+    transports: [],
+    accountCache: 10000,
+    storageCache: 1000,
+    accounts,
+    mine: true,
+    common,
+  })
   config.events.setMaxListeners(50)
 
   const createTx = (
@@ -270,7 +277,15 @@ tape('[Miner]', async (t) => {
   t.test('assembleBlocks() -> with saveReceipts', async (t) => {
     t.plan(9)
     const chain = new FakeChain() as any
-    const config = new Config({ transports: [], accounts, mine: true, common, saveReceipts: true })
+    const config = new Config({
+      transports: [],
+      accountCache: 10000,
+      storageCache: 1000,
+      accounts,
+      mine: true,
+      common,
+      saveReceipts: true,
+    })
     const service = new FullEthereumService({
       config,
       chain,
@@ -327,7 +342,14 @@ tape('[Miner]', async (t) => {
       baseChain: CommonChain.Rinkeby,
       hardfork: Hardfork.London,
     })
-    const config = new Config({ transports: [], accounts, mine: true, common })
+    const config = new Config({
+      transports: [],
+      accountCache: 10000,
+      storageCache: 1000,
+      accounts,
+      mine: true,
+      common,
+    })
     const chain = new FakeChain() as any
     const block = Block.fromBlockData({}, { common })
     Object.defineProperty(chain, 'headers', {
@@ -429,7 +451,14 @@ tape('[Miner]', async (t) => {
   t.test('assembleBlocks() -> should stop assembling when a new block is received', async (t) => {
     t.plan(2)
     const chain = new FakeChain() as any
-    const config = new Config({ transports: [], accounts, mine: true, common })
+    const config = new Config({
+      transports: [],
+      accountCache: 10000,
+      storageCache: 1000,
+      accounts,
+      mine: true,
+      common,
+    })
     const service = new FullEthereumService({
       config,
       chain,
@@ -482,7 +511,14 @@ tape('[Miner]', async (t) => {
     }
     const common = Common.custom(customChainParams, { baseChain: CommonChain.Rinkeby })
     common.setHardforkByBlockNumber(0)
-    const config = new Config({ transports: [], accounts, mine: true, common })
+    const config = new Config({
+      transports: [],
+      accountCache: 10000,
+      storageCache: 1000,
+      accounts,
+      mine: true,
+      common,
+    })
     const chain = await Chain.create({ config })
     await chain.open()
     const service = new FullEthereumService({
@@ -549,7 +585,14 @@ tape('[Miner]', async (t) => {
   t.test('should handle mining ethash PoW', async (t) => {
     const common = new Common({ chain: CommonChain.Ropsten, hardfork: Hardfork.Istanbul })
     ;(common as any)._chainParams['genesis'].difficulty = 1
-    const config = new Config({ transports: [], accounts, mine: true, common })
+    const config = new Config({
+      transports: [],
+      accountCache: 10000,
+      storageCache: 1000,
+      accounts,
+      mine: true,
+      common,
+    })
     const chain = await Chain.create({ config })
     await chain.open()
     const service = new FullEthereumService({

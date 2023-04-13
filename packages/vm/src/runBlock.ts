@@ -42,6 +42,7 @@ const DAORefundContract = DAOConfig.DAORefundContract
 export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
   const state = this.eei
   const { root } = opts
+  const clearCache = opts.clearCache ?? true
   let { block } = opts
   const generateFields = opts.generate === true
 
@@ -80,7 +81,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     if (this.DEBUG) {
       debug(`Set provided state root ${bytesToHex(root)}`)
     }
-    await state.setStateRoot(root)
+    await state.setStateRoot(root, clearCache)
   }
 
   // check for DAO support and if we should apply the DAO fork
@@ -91,7 +92,9 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     if (this.DEBUG) {
       debug(`Apply DAO hardfork`)
     }
+    await state.checkpoint()
     await _applyDAOHardfork(state)
+    await state.commit()
   }
 
   // Checkpoint state
@@ -400,7 +403,10 @@ export async function rewardAccount(
   address: Address,
   reward: bigint
 ): Promise<Account> {
-  const account = await state.getAccount(address)
+  let account = await state.getAccount(address)
+  if (account === undefined) {
+    account = new Account()
+  }
   account.balance += reward
   await state.putAccount(address, account)
   return account
@@ -435,12 +441,18 @@ async function _applyDAOHardfork(state: EVMStateAccess) {
   if ((await state.accountExists(DAORefundContractAddress)) === false) {
     await state.putAccount(DAORefundContractAddress, new Account())
   }
-  const DAORefundAccount = await state.getAccount(DAORefundContractAddress)
+  let DAORefundAccount = await state.getAccount(DAORefundContractAddress)
+  if (DAORefundAccount === undefined) {
+    DAORefundAccount = new Account()
+  }
 
   for (const addr of DAOAccountList) {
     // retrieve the account and add it to the DAO's Refund accounts' balance.
     const address = new Address(hexToBytes(addr))
-    const account = await state.getAccount(address)
+    let account = await state.getAccount(address)
+    if (account === undefined) {
+      account = new Account()
+    }
     DAORefundAccount.balance += account.balance
     // clear the accounts' balance
     account.balance = BigInt(0)

@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { Address, privateToAddress } from '@ethereumjs/util'
+import { Account, Address, privateToAddress } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
@@ -33,10 +33,11 @@ const contractAddress = new Address(hexToBytes('ee'.repeat(20)))
 
 async function getVM(common: Common) {
   const vm = await VM.create({ common })
+  await vm.stateManager.putAccount(sender, new Account())
   const account = await vm.stateManager.getAccount(sender)
   const balance = GWEI * BigInt(21000) * BigInt(10000000)
-  account.balance = balance
-  await vm.stateManager.putAccount(sender, account)
+  account!.balance = balance
+  await vm.stateManager.putAccount(sender, account!)
 
   await vm.stateManager.putContractCode(contractAddress, code)
   return vm

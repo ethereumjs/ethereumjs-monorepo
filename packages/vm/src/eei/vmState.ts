@@ -132,7 +132,7 @@ export class VmState implements EVMStateAccess {
     }
   }
 
-  async getAccount(address: Address): Promise<Account> {
+  async getAccount(address: Address): Promise<Account | undefined> {
     return this._stateManager.getAccount(address)
   }
 
@@ -180,11 +180,11 @@ export class VmState implements EVMStateAccess {
     return this._stateManager.accountExists(address)
   }
 
-  async setStateRoot(stateRoot: Uint8Array): Promise<void> {
+  async setStateRoot(stateRoot: Uint8Array, clearCache: boolean = true): Promise<void> {
     if (this._checkpointCount !== 0) {
       throw new Error('Cannot set state root with uncommitted checkpoints')
     }
-    return this._stateManager.setStateRoot(stateRoot)
+    return this._stateManager.setStateRoot(stateRoot, clearCache)
   }
 
   async getStateRoot(): Promise<Uint8Array> {
@@ -267,6 +267,7 @@ export class VmState implements EVMStateAccess {
     }
     await this._stateManager.flush()
     // If any empty accounts are put, these should not be marked as touched (when first tx is ran, this account is deleted when it cleans up the accounts)
+    // TODO: not 100% sure if to keep this line or not along cache refactor rebase, 2023-04-11
     this.touchedJournal.clear()
   }
 
@@ -279,7 +280,7 @@ export class VmState implements EVMStateAccess {
       const touchedArray = Array.from(this.touchedJournal.journal)
       for (const addressHex of touchedArray) {
         const address = new Address(hexToBytes(addressHex))
-        const empty = await this.accountIsEmpty(address)
+        const empty = await this.accountIsEmptyOrNonExistent(address)
         if (empty) {
           await this._stateManager.deleteAccount(address)
           if (this.DEBUG) {
@@ -478,7 +479,11 @@ export class VmState implements EVMStateAccess {
    * EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
    * @param address - Address to check
    */
-  async accountIsEmpty(address: Address): Promise<boolean> {
-    return this._stateManager.accountIsEmpty(address)
+  async accountIsEmptyOrNonExistent(address: Address): Promise<boolean> {
+    const account = await this._stateManager.getAccount(address)
+    if (account === undefined || account.isEmpty()) {
+      return true
+    }
+    return false
   }
 }

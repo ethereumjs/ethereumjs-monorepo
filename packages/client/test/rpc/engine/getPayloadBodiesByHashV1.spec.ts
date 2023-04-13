@@ -2,7 +2,13 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { Address, bytesToPrefixedHexString, hexStringToBytes, randomBytes } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  bytesToPrefixedHexString,
+  hexStringToBytes,
+  randomBytes,
+} from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { TOO_LARGE_REQUEST } from '../../../lib/rpc/error-code'
@@ -43,10 +49,11 @@ tape(`${method}: call with valid parameters`, async (t) => {
   common.setHardfork(Hardfork.ShardingForkDev)
   const pkey = hexStringToBytes('9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
   const address = Address.fromPrivateKey(pkey)
+  await service.execution.vm.stateManager.putAccount(address, new Account())
   const account = await service.execution.vm.stateManager.getAccount(address)
 
-  account.balance = 0xfffffffffffffffn
-  await service.execution.vm.stateManager.putAccount(address, account)
+  account!.balance = 0xfffffffffffffffn
+  await service.execution.vm.stateManager.putAccount(address, account!)
   const tx = TransactionFactory.fromTxData(
     {
       type: 0x01,
@@ -132,10 +139,11 @@ tape(`${method}: call with valid parameters on pre-Shanghai block`, async (t) =>
   common.setHardfork(Hardfork.London)
   const pkey = hexStringToBytes('9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
   const address = Address.fromPrivateKey(pkey)
+  await service.execution.vm.stateManager.putAccount(address, new Account())
   const account = await service.execution.vm.stateManager.getAccount(address)
 
-  account.balance = 0xfffffffffffffffn
-  await service.execution.vm.stateManager.putAccount(address, account)
+  account!.balance = 0xfffffffffffffffn
+  await service.execution.vm.stateManager.putAccount(address, account!)
   const tx = TransactionFactory.fromTxData(
     {
       type: 0x01,

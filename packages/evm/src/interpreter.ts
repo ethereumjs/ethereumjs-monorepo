@@ -1,5 +1,12 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
-import { MAX_UINT64, bigIntToHex, bytesToBigInt, bytesToHex, intToHex } from '@ethereumjs/util'
+import {
+  Account,
+  MAX_UINT64,
+  bigIntToHex,
+  bytesToBigInt,
+  bytesToHex,
+  intToHex,
+} from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { EOF } from './eof'
@@ -13,7 +20,7 @@ import type { EVM, EVMResult } from './evm'
 import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes'
 import type { Block, EEIInterface, Log } from './types'
 import type { Common } from '@ethereumjs/common'
-import type { Account, Address } from '@ethereumjs/util'
+import type { Address } from '@ethereumjs/util'
 
 const debugGas = createDebugLogger('evm:eei:gas')
 
@@ -465,7 +472,11 @@ export class Interpreter {
       return this._env.contract.balance
     }
 
-    return (await this._eei.getAccount(address)).balance
+    let account = await this._eei.getAccount(address)
+    if (!account) {
+      account = new Account()
+    }
+    return account.balance
   }
 
   /**
@@ -474,6 +485,9 @@ export class Interpreter {
   async storageStore(key: Uint8Array, value: Uint8Array): Promise<void> {
     await this._eei.storageStore(this._env.address, key, value)
     const account = await this._eei.getAccount(this._env.address)
+    if (!account) {
+      throw new Error('could not read account along persisting memory')
+    }
     this._env.contract = account
   }
 
@@ -850,6 +864,9 @@ export class Interpreter {
       Object.assign(this._result.selfdestruct, selfdestruct)
       // update stateRoot on current contract
       const account = await this._eei.getAccount(this._env.address)
+      if (!account) {
+        throw new Error('could not read contract account')
+      }
       this._env.contract = account
       this._runState.gasRefund = results.execResult.gasRefund ?? BigInt(0)
     }
@@ -933,6 +950,9 @@ export class Interpreter {
       Object.assign(this._result.selfdestruct, selfdestruct)
       // update stateRoot on current contract
       const account = await this._eei.getAccount(this._env.address)
+      if (!account) {
+        throw new Error('could not read contract account')
+      }
       this._env.contract = account
       this._runState.gasRefund = results.execResult.gasRefund ?? BigInt(0)
       if (results.createdAddress) {
@@ -976,7 +996,10 @@ export class Interpreter {
     this._result.selfdestruct[bytesToHex(this._env.address.bytes)] = toAddress.bytes
 
     // Add to beneficiary balance
-    const toAccount = await this._eei.getAccount(toAddress)
+    let toAccount = await this._eei.getAccount(toAddress)
+    if (!toAccount) {
+      toAccount = new Account()
+    }
     toAccount.balance += this._env.contract.balance
     await this._eei.putAccount(toAddress, toAccount)
 
