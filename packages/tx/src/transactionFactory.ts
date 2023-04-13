@@ -41,7 +41,7 @@ export class TransactionFactory {
         return AccessListEIP2930Transaction.fromTxData(<AccessListEIP2930TxData>txData, txOptions)
       } else if (txType === 2) {
         return FeeMarketEIP1559Transaction.fromTxData(<FeeMarketEIP1559TxData>txData, txOptions)
-      } else if (txType === 5) {
+      } else if (txType === 3) {
         return BlobEIP4844Transaction.fromTxData(<BlobEIP4844TxData>txData, txOptions)
       } else {
         throw new Error(`Tx instantiation with type ${txType} not supported`)
