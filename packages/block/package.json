@@ -43,7 +43,7 @@
     "@ethereumjs/trie": "^5.0.4",
     "@ethereumjs/tx": "^4.1.1",
     "@ethereumjs/util": "^8.0.5",
-    "ethereum-cryptography": "^1.1.2"
+    "ethereum-cryptography": "^2.0.0"
   },
   "devDependencies": {
     "c-kzg": "^2.0.4",

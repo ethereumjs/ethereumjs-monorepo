@@ -48,8 +48,8 @@
     "@ethereumjs/rlp": "^4.0.1",
     "@ethereumjs/util": "^8.0.5",
     "@types/readable-stream": "^2.3.13",
-    "ethereum-cryptography": "^1.1.2",
     "lru-cache": "^7.18.3",
+    "ethereum-cryptography": "^2.0.0",
     "readable-stream": "^3.6.0"
   },
   "devDependencies": {

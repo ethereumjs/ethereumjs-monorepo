@@ -1,7 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import { debug as createDebugLogger } from 'debug'
 import { keccak256 as _keccak256 } from 'ethereum-cryptography/keccak'
-import { utils } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat'
 import { bytesToHex, concatBytes, equalsBytes } from 'ethereum-cryptography/utils'
 
@@ -16,8 +16,8 @@ export function keccak256(...bytes: Uint8Array[]) {
 }
 
 export function genPrivateKey(): Uint8Array {
-  const privateKey = utils.randomPrivateKey()
-  return utils.isValidPrivateKey(privateKey) ? privateKey : genPrivateKey()
+  const privateKey = secp256k1.utils.randomPrivateKey()
+  return secp256k1.utils.isValidPrivateKey(privateKey) === true ? privateKey : genPrivateKey()
 }
 
 export function pk2id(pk: Uint8Array): Uint8Array {

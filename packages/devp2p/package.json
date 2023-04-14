@@ -55,7 +55,7 @@
     "@scure/base": "1.1.1",
     "@types/k-bucket": "^5.0.0",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^1.1.2",
+    "ethereum-cryptography": "^2.0.0",
     "k-bucket": "^5.0.0",
     "lru-cache": "^7.18.3",
     "ms": "^0.7.1",

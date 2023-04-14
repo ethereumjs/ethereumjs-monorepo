@@ -44,7 +44,7 @@
     "@ethereumjs/common": "^3.1.1",
     "@ethereumjs/rlp": "^4.0.1",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^1.1.2",
+    "ethereum-cryptography": "^2.0.0",
     "ethers": "^5.7.1",
     "js-sdsl": "^4.1.4",
     "lru-cache": "^7.18.3"
@@ -57,7 +57,7 @@
     "@types/tape": "^4.13.2",
     "debug": "^4.3.3",
     "eslint": "^8.0.0",
-    "ethereum-cryptography": "^1.1.2",
+    "ethereum-cryptography": "^2.0.0",
     "functional-red-black-tree": "^1.0.1",
     "karma": "^6.3.2",
     "karma-chrome-launcher": "^3.1.0",
