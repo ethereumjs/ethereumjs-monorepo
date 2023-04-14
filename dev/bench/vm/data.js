@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1681454562288,
+  "lastUpdate": 1681481335694,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "99640d6a84dbbc5abec0dcb0095d5ba17ae9ad1a",
-          "message": "util/tx: Shift ssz back to case dependency free ES2019 compatible version (#2564)\n\n* util/tx: Shift ssz back to case dependency free ES2019 compatible version\r\n\r\n* update package lock\r\n\r\n* update karma ecma version",
-          "timestamp": "2023-03-03T21:16:45+05:30",
-          "tree_id": "1ca9e957e3f90f61fe1a9d06573f77460672f378",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/99640d6a84dbbc5abec0dcb0095d5ba17ae9ad1a"
-        },
-        "date": 1677858570080,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15709,
-            "range": "±2.11%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 15351,
-            "range": "±3.73%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 15457,
-            "range": "±1.72%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 14765,
-            "range": "±6.67%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 15033,
-            "range": "±1.87%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±7.46%",
             "unit": "ops/sec",
             "extra": "81 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "paul@paulmillr.com",
+            "name": "Paul Miller",
+            "username": "paulmillr"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b4b1f82a8a34dde2831b2f6c1aadd7af0fc17190",
+          "message": "Update ethereum-cryptography from 1.2 to 2.0 (#2641)",
+          "timestamp": "2023-04-14T15:45:42+02:00",
+          "tree_id": "7d4fd165d35c31761cad4c7fabc4c7ff97f3a925",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b4b1f82a8a34dde2831b2f6c1aadd7af0fc17190"
+        },
+        "date": 1681481334538,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 15827,
+            "range": "±1.66%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 15581,
+            "range": "±1.93%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 14936,
+            "range": "±8.93%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15326,
+            "range": "±1.80%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 15070,
+            "range": "±1.88%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
           }
         ]
       }
