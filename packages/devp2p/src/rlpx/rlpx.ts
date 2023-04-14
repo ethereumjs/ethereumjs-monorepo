@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { getPublicKey } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import { EventEmitter } from 'events'
 import * as LRUCache from 'lru-cache'
 import ms = require('ms')
@@ -59,7 +59,7 @@ export class RLPx extends EventEmitter {
     super()
 
     this._privateKey = Buffer.from(privateKey)
-    this._id = pk2id(Buffer.from(getPublicKey(this._privateKey, false)))
+    this._id = pk2id(Buffer.from(secp256k1.getPublicKey(this._privateKey, false)))
 
     // options
     this._timeout = options.timeout ?? ms('10s')

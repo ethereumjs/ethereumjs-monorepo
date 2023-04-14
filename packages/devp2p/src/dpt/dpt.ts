@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto'
-import { getPublicKey } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import { EventEmitter } from 'events'
 import ms = require('ms')
 
@@ -107,7 +107,7 @@ export class DPT extends EventEmitter {
     super()
 
     this.privateKey = Buffer.from(privateKey)
-    this._id = pk2id(Buffer.from(getPublicKey(this.privateKey, false)))
+    this._id = pk2id(Buffer.from(secp256k1.getPublicKey(this.privateKey, false)))
     this._shouldFindNeighbours = options.shouldFindNeighbours ?? true
     this._shouldGetDnsPeers = options.shouldGetDnsPeers ?? false
     // By default, tries to connect to 12 new peers every 3s

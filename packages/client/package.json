@@ -75,7 +75,7 @@
     "cors": "^2.8.5",
     "c-kzg": "^1.0.8",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^1.1.2",
+    "ethereum-cryptography": "^2.0.0",
     "fs-extra": "^10.1.0",
     "it-pipe": "^1.1.0",
     "jayson": "^4.0.0",

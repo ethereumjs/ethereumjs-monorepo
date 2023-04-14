@@ -58,7 +58,7 @@
     "@types/lru-cache": "^5.1.0",
     "bl": "^1.1.2",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^1.1.2",
+    "ethereum-cryptography": "^2.0.0",
     "ip": "^1.1.3",
     "k-bucket": "^5.0.0",
     "lru-cache": "^5.1.1",
