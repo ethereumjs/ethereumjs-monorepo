@@ -112,6 +112,7 @@ type BlobsBundleV1 = {
   blockHash: string
   kzgs: Bytes48[]
   blobs: Blob[]
+  proofs: Bytes48[]
 }
 
 type ExecutionPayloadBodyV1 = {
@@ -1074,6 +1075,7 @@ export class Engine {
       blockHash: bundle.blockHash,
       kzgs: bundle.kzgCommitments.map(bytesToPrefixedHexString),
       blobs: bundle.blobs.map(bytesToPrefixedHexString),
+      proofs: bundle.proofs.map(bytesToPrefixedHexString),
     }
   }
 

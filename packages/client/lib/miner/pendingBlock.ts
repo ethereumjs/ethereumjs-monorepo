@@ -37,6 +37,7 @@ interface BlobBundle {
   blockHash: string
   blobs: Uint8Array[]
   kzgCommitments: Uint8Array[]
+  proofs: Uint8Array[]
 }
 /**
  * In the future this class should build a pending block by keeping the
@@ -323,10 +324,12 @@ export class PendingBlock {
   ) => {
     let blobs: Uint8Array[] = []
     let kzgCommitments: Uint8Array[] = []
+    let proofs: Uint8Array[] = []
     const bundle = this.blobBundles.get(payloadId)
     if (bundle !== undefined) {
       blobs = bundle.blobs
       kzgCommitments = bundle.kzgCommitments
+      proofs = bundle.proofs
     }
 
     for (let tx of txs) {
@@ -334,12 +337,14 @@ export class PendingBlock {
       if (tx.blobs !== undefined && tx.blobs.length > 0) {
         blobs = blobs.concat(tx.blobs)
         kzgCommitments = kzgCommitments.concat(tx.kzgCommitments!)
+        proofs = proofs.concat(tx.kzgProofs!)
       }
     }
     this.blobBundles.set(payloadId, {
       blockHash: bytesToPrefixedHexString(blockHash),
       blobs,
       kzgCommitments,
+      proofs,
     })
   }
 }
