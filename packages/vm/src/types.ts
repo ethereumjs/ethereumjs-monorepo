@@ -6,7 +6,7 @@ import type { EEIInterface, EVMInterface, EVMResult, Log } from '@ethereumjs/evm
 import type { StateManager } from '@ethereumjs/statemanager'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import type { BigIntLike, WithdrawalData } from '@ethereumjs/util'
-export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt
+export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt | EIP4844BlobTxReceipt
 
 /**
  * Abstract interface with common transaction receipt fields

@@ -186,8 +186,8 @@ const jsonRpcReceipt = async (
     ((receipt as PostByzantiumTxReceipt).status as unknown) instanceof Uint8Array
       ? intToHex((receipt as PostByzantiumTxReceipt).status)
       : undefined,
-  dataGasUsed: dataGasUsed !== undefined ? '0x' + bigIntToHex(dataGasUsed) : undefined,
-  dataGasPrice: dataGasPrice !== undefined ? '0x' + bigIntToHex(dataGasPrice) : undefined,
+  dataGasUsed: dataGasUsed !== undefined ? bigIntToHex(dataGasUsed) : undefined,
+  dataGasPrice: dataGasPrice !== undefined ? bigIntToHex(dataGasPrice) : undefined,
 })
 
 /**
@@ -775,8 +775,9 @@ export class Eth {
         root: parentBlock.header.stateRoot,
         skipBlockValidation: true,
       })
+
       const { totalGasSpent, createdAddress } = runBlockResult.results[txIndex]
-      const { dataGasUsed, dataGasPrice } = receipt as EIP4844BlobTxReceipt
+      const { dataGasPrice, dataGasUsed } = runBlockResult.receipts[txIndex] as EIP4844BlobTxReceipt
       return await jsonRpcReceipt(
         receipt,
         totalGasSpent,

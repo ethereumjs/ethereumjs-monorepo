@@ -661,7 +661,7 @@ export async function generateTxReceipt(
     }
   } else {
     // Typed EIP-2718 Transaction
-    if (tx.type === 5) {
+    if (tx.type === 3) {
       receipt = {
         dataGasUsed,
         dataGasPrice,

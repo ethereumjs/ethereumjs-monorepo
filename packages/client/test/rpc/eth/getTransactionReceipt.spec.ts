@@ -88,7 +88,7 @@ tape(`${method}: call with unknown tx hash`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: get dataGasUsed in blob tx receipt`, async (t) => {
+tape(`${method}: get dataGasUsed/dataGasPrice in blob tx receipt`, async (t) => {
   initKZG(kzg, __dirname + '/../../../lib/trustedSetups/devnet4.txt')
   const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
   const common = Common.fromGethGenesis(gethGenesis, {
@@ -123,6 +123,7 @@ tape(`${method}: get dataGasUsed in blob tx receipt`, async (t) => {
   const req = params(method, [bytesToPrefixedHexString(tx.hash())])
   const expectRes = (res: any) => {
     t.equal(res.body.result.dataGasUsed, '0x20000', 'receipt has correct data gas usage')
+    t.equal(res.body.result.dataGasPrice, '0x1', 'receipt has correct data gas price')
   }
 
   await baseRequest(t, server, req, 200, expectRes)
