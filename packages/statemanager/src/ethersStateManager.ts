@@ -7,7 +7,12 @@ import { ethers } from 'ethers'
 import { AccountCache, CacheType, StorageCache } from './cache'
 
 import type { Proof } from '.'
-import type { AccountFields, StateManagerInterface, StorageDump } from '@ethereumjs/common'
+import type {
+  AccessList,
+  AccountFields,
+  EVMStateManagerInterface,
+  StorageDump,
+} from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 
 const log = debug('statemanager')
@@ -17,7 +22,7 @@ export interface EthersStateManagerOpts {
   blockTag: bigint | 'earliest'
 }
 
-export class EthersStateManager implements StateManagerInterface {
+export class EthersStateManager implements EVMStateManagerInterface {
   private provider: ethers.providers.StaticJsonRpcProvider | ethers.providers.JsonRpcProvider
   private contractCache: Map<string, Uint8Array>
   private storageCache: StorageCache
@@ -333,6 +338,40 @@ export class EthersStateManager implements StateManagerInterface {
    * @deprecated This method is not used by the Ethers State Manager and is a stub required by the State Manager interface
    */
   hasStateRoot = () => {
+    throw new Error('function not implemented')
+  }
+
+  accountIsEmptyOrNonExistent(_address: Address): Promise<boolean> {
+    throw new Error('function not implemented')
+  }
+  getOriginalContractStorage(_address: Address, _key: Uint8Array): Promise<Uint8Array> {
+    throw new Error('function not implemented')
+  }
+  clearWarmedAccounts(): void {
+    // throw new Error('function not implemented')
+  }
+  cleanupTouchedAccounts(): Promise<void> {
+    return Promise.resolve()
+  }
+  clearOriginalStorageCache(): void {
+    // throw new Error('function not implemented')
+  }
+  addWarmedAddress(address: Uint8Array): void {
+    //  throw new Error('function not implemented')
+  }
+  isWarmedAddress(address: Uint8Array): boolean {
+    throw new Error('function not implemented')
+  }
+  addWarmedStorage(address: Uint8Array, slot: Uint8Array): void {
+    //   throw new Error('function not implemented')
+  }
+  isWarmedStorage(address: Uint8Array, slot: Uint8Array): boolean {
+    throw new Error('function not implemented')
+  }
+  generateCanonicalGenesis(_initState: any): Promise<void> {
+    return Promise.resolve()
+  }
+  generateAccessList(addressesRemoved: Address[], addressesOnlyStorage: Address[]): AccessList {
     throw new Error('function not implemented')
   }
 }

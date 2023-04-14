@@ -81,7 +81,7 @@ const setup = () => {
 tape('[PendingBlock]', async (t) => {
   const originalValidate = BlockHeader.prototype._consensusFormatValidation
   BlockHeader.prototype._consensusFormatValidation = td.func<any>()
-  td.replace('@ethereumjs/block', { BlockHeader })
+  td.replace<any>('@ethereumjs/block', { BlockHeader })
 
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   DefaultStateManager.prototype.setStateRoot = td.func<any>()

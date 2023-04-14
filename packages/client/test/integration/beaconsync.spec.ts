@@ -16,7 +16,7 @@ tape('[Integration:BeaconSync]', async (t) => {
 
   t.test('should sync blocks', async (t) => {
     BlockHeader.prototype._consensusFormatValidation = td.func<any>()
-    td.replace('@ethereumjs/block', { BlockHeader })
+    td.replace<any>('@ethereumjs/block', { BlockHeader })
 
     const [remoteServer, remoteService] = await setup({ location: '127.0.0.2', height: 20, common })
     const [localServer, localService] = await setup({ location: '127.0.0.1', height: 0, common })
