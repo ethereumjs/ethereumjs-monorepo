@@ -1,16 +1,20 @@
-import type { MapDB } from './db'
-import type ReadStream from 'readable-stream'
+import type {
+  BatchDBOpV,
+  CreateTrieOptsV,
+  DBv,
+  EmbeddedNodeV,
+  FoundNodeFunctionV,
+  NibblesV,
+  PathV,
+  TrieNodeV,
+  TrieVersion,
+} from './v1Types'
+import type { ReadStream } from 'fs'
 
-type BatchDBOp = {
-  type: 'del' | 'put'
-  key: Uint8Array
-  value: Uint8Array
-}
-
-export interface IpatriciaMerkleTrie {
-  db: MapDB
-  store(): Promise<MapDB>
-  fromDB(db: MapDB): Promise<IpatriciaMerkleTrie>
+export interface IexternalTrieV<TVersion extends TrieVersion> {
+  db: DBv<TVersion>
+  store(): Promise<DBv<TVersion>>
+  fromDB(db: DBv<TVersion>): Promise<IexternalTrieV<TVersion>>
   root(): Promise<Uint8Array>
   persistRoot(): Promise<void>
   checkRoot(root: Uint8Array): Promise<boolean>
@@ -22,8 +26,8 @@ export interface IpatriciaMerkleTrie {
   commit(): Promise<void>
   revert(): Promise<void>
   flushCheckpoints(): Promise<void>
-  batch(ops: BatchDBOp[]): Promise<void>
-  copy(): Promise<IpatriciaMerkleTrie>
+  batch(ops: BatchDBOpV<0>[]): Promise<void>
+  copy(includeCheckpoints?: boolean): Promise<IexternalTrieV<TVersion>>
   createProof(key: Uint8Array): Promise<Uint8Array[] | undefined>
   createRangeProof(
     firstKey: Uint8Array | undefined,
@@ -43,13 +47,13 @@ export interface IpatriciaMerkleTrie {
     values: Uint8Array[],
     proof: Uint8Array[] | undefined
   ): Promise<boolean>
-  fromProof(key: Uint8Array, proof: Uint8Array[]): Promise<IpatriciaMerkleTrie>
+  fromProof(key: Uint8Array, proof: Uint8Array[]): Promise<IexternalTrieV<TVersion>>
   fromRangeProof(
     firstKey: Uint8Array | undefined,
     lastKey: Uint8Array | undefined,
     keys: Uint8Array[],
     values: Uint8Array[],
     proof: Uint8Array[]
-  ): Promise<IpatriciaMerkleTrie>
+  ): Promise<IexternalTrieV<TVersion>>
   createReadStream(): Promise<ReadStream>
 }
