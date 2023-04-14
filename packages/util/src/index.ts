@@ -65,3 +65,4 @@ export {
   toAscii,
 } from './internal'
 export * from './lock'
+export * from './provider'

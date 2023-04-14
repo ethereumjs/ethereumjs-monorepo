@@ -1,5 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { randomBytes } from 'crypto'
 import * as tape from 'tape'
+import * as td from 'testdouble'
 
 import { blockFromRpc } from '../src/from-rpc'
 import { blockHeaderFromRpc } from '../src/header-from-rpc'
@@ -185,7 +187,23 @@ tape('[fromRPC] - Alchemy/Infura API block responses', (t) => {
 
 tape('[fromEthersProvider]', async (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-  const provider = new MockProvider()
+  const provider = new MockProvider() // mimics some properties of an Ethers JsonRPCProvider
+
+  const fakeFetch = async (_url: string, req: any) => {
+    if (
+      req.method === 'eth_getBlockByHash' &&
+      req.params[0] === '0x1850b014065b23d804ecf71a8a4691d076ca87c2e6fb8fe81ee20a4d8e884c24'
+    ) {
+      const block = await import(`./testdata/infura15571241wtxns.json`)
+      return block
+    } else {
+      return null // Infura returns null if no block is found
+    }
+  }
+
+  const providerUtils = require('@ethereumjs/util/dist/provider')
+  td.replace<any>(providerUtils, 'fetchFromProvider', fakeFetch)
+
   const blockHash = '0x1850b014065b23d804ecf71a8a4691d076ca87c2e6fb8fe81ee20a4d8e884c24'
   const block = await Block.fromEthersProvider(provider, blockHash, { common })
   t.equal(
@@ -193,5 +211,15 @@ tape('[fromEthersProvider]', async (t) => {
     blockHash,
     'assembled a block from blockdata from a provider'
   )
+  try {
+    await Block.fromEthersProvider(provider, '0x' + randomBytes(32).toString('hex'), {})
+    t.fail('should throw')
+  } catch (err: any) {
+    t.ok(
+      err.message.includes('No block data returned from provider'),
+      'returned correct error message'
+    )
+  }
+  td.reset()
   t.end()
 })
