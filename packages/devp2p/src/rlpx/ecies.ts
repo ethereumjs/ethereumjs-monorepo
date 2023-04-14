@@ -2,7 +2,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { bufArrToArr } from '@ethereumjs/util'
 import * as crypto from 'crypto'
 import { debug as createDebugLogger } from 'debug'
-import { getPublicKey } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import { ecdh, ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
 
 import {
@@ -82,7 +82,7 @@ export class ECIES {
 
     this._nonce = crypto.randomBytes(32)
     this._ephemeralPrivateKey = genPrivateKey()
-    this._ephemeralPublicKey = Buffer.from(getPublicKey(this._ephemeralPrivateKey, false))
+    this._ephemeralPublicKey = Buffer.from(secp256k1.getPublicKey(this._ephemeralPrivateKey, false))
   }
 
   _encryptMessage(data: Buffer, sharedMacData: Buffer | null = null): Buffer | undefined {
@@ -108,7 +108,7 @@ export class ECIES {
       .update(Buffer.concat([dataIV, sharedMacData]))
       .digest()
 
-    const publicKey = getPublicKey(privateKey, false)
+    const publicKey = secp256k1.getPublicKey(privateKey, false)
     return Buffer.concat([publicKey, dataIV, tag])
   }
 

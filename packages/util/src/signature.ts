@@ -1,5 +1,5 @@
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { recoverPublicKey, signSync } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 
 import { bufferToBigInt, bufferToHex, bufferToInt, setLengthLeft, toBuffer } from './bytes'
 import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants'
@@ -18,15 +18,15 @@ export interface ECDSASignature {
  * accordingly, otherwise return a "static" `v` just derived from the `recovery` bit
  */
 export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: bigint): ECDSASignature {
-  const [signature, recovery] = signSync(msgHash, privateKey, { recovered: true, der: false })
-
-  const r = Buffer.from(signature.slice(0, 32))
-  const s = Buffer.from(signature.slice(32, 64))
+  const sig = secp256k1.sign(msgHash, privateKey)
+  const buf = sig.toCompactRawBytes()
+  const r = Buffer.from(buf.slice(0, 32))
+  const s = Buffer.from(buf.slice(32, 64))
 
   const v =
     chainId === undefined
-      ? BigInt(recovery + 27)
-      : BigInt(recovery + 35) + BigInt(chainId) * BigInt(2)
+      ? BigInt(sig.recovery! + 27)
+      : BigInt(sig.recovery! + 35) + BigInt(chainId) * BigInt(2)
 
   return { r, s, v }
 }
@@ -62,8 +62,9 @@ export const ecrecover = function (
     throw new Error('Invalid signature v value')
   }
 
-  const senderPubKey = recoverPublicKey(msgHash, signature, Number(recovery))
-  return Buffer.from(senderPubKey.slice(1))
+  const sig = secp256k1.Signature.fromCompact(signature).addRecoveryBit(Number(recovery))
+  const senderPubKey = sig.recoverPublicKey(msgHash)
+  return Buffer.from(senderPubKey.toRawBytes(false).slice(1))
 }
 
 /**
