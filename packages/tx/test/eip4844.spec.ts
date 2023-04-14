@@ -108,6 +108,19 @@ tape('fromTxData using from a json', (t) => {
   }
 })
 
+tape('fromSerializedTx - from bytes', (t) => {
+  const serializedBlobTx = hexToBytes(
+    '034500000001a34a3d6d997350dfa6c9645624b0a02b1c79591fe90d574f2ee5599103fbcff03e2156483cc73cac5648fa0348b487c90cc2713a7d636df7335333ca1b18c650010000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000ff0000000000000000000000000000000000000000000000000000000000000040420f0000000000c00000000000000000000000000000000000000000000000000000000000000000000000d5000000d5000000e803000000000000000000000000000000000000000000000000000000000000d5000000013da33b9a0894b908ddbb00d96399e506515a1009016ebc7b0ffa71dc019db13caaf539032134295cc5e652fa5b82c8e67f0fd9e1'
+  )
+  try {
+    BlobEIP4844Transaction.fromSerializedTx(serializedBlobTx, { common })
+    t.pass('Should correctly deserialize blob tx from bytes')
+  } catch (e) {
+    t.fail(`Could not deserialize blob tx from bytes, Error: ${(e as Error).message}`)
+  }
+  t.end()
+})
+
 tape('EIP4844 constructor tests - invalid scenarios', (t) => {
   if (isBrowser() === true) {
     t.end()
@@ -198,6 +211,29 @@ tape('Network wrapper tests', async (t) => {
     t.ok(
       equalsBytes(minimalTx.hash(), deserializedTx.hash()),
       'has the same hash as the network wrapper version'
+    )
+
+    const txWithEmptyBlob = BlobEIP4844Transaction.fromTxData(
+      {
+        versionedHashes: [],
+        blobs: [],
+        kzgCommitments: [],
+        kzgProofs: [],
+        maxFeePerDataGas: 100000000n,
+        gasLimit: 0xffffffn,
+        to: randomBytes(20),
+      },
+      { common }
+    )
+
+    const serializedWithEmptyBlob = txWithEmptyBlob.serializeNetworkWrapper()
+    t.throws(
+      () =>
+        BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(serializedWithEmptyBlob, {
+          common,
+        }),
+      (err: any) => err.message === 'Invalid transaction with empty blobs',
+      'throws a transaction with no blobs'
     )
 
     const txWithMissingBlob = BlobEIP4844Transaction.fromTxData(
