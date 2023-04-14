@@ -6,7 +6,7 @@ import type { EEIInterface, EVMInterface, EVMResult, Log } from '@ethereumjs/evm
 import type { StateManager } from '@ethereumjs/statemanager'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import type { BigIntLike, WithdrawalData } from '@ethereumjs/util'
-export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt
+export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt | EIP4844BlobTxReceipt
 
 /**
  * Abstract interface with common transaction receipt fields
@@ -46,6 +46,23 @@ export interface PostByzantiumTxReceipt extends BaseTxReceipt {
    * Status of transaction, `1` if successful, `0` if an exception occurred
    */
   status: 0 | 1
+}
+
+export interface EIP4844BlobTxReceipt extends PostByzantiumTxReceipt {
+  /**
+   * Data gas consumed by a transaction
+   *
+   * Note: This value is not included in the receiptRLP used for encoding the receiptsRoot in a block
+   * and is only provided as part of receipt metadata.
+   */
+  dataGasUsed: bigint
+  /**
+   * Data gas price for block transaction was included in
+   *
+   * Note: This valus is not included in the `receiptRLP` used for encoding the `receiptsRoot` in a block
+   * and is only provided as part of receipt metadata.
+   */
+  dataGasPrice: bigint
 }
 
 export type VMEvents = {
@@ -383,6 +400,11 @@ export interface RunTxResult extends EVMResult {
    * The value that accrues to the miner by this transaction
    */
   minerValue: bigint
+
+  /**
+   * This is the data gas units times the fee per data gas for 4844 transactions
+   */
+  dataGasUsed?: bigint
 }
 
 export interface AfterTxEvent extends RunTxResult {
