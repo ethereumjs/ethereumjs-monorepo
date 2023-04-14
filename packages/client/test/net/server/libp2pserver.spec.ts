@@ -9,7 +9,7 @@ import { Event } from '../../../lib/types'
 import { wait } from '../../integration/util'
 
 tape('[Libp2pServer]', async (t) => {
-  const Libp2pPeer = td.replace('../../../lib/net/peer/libp2ppeer')
+  const Libp2pPeer = td.replace<any>('../../../lib/net/peer/libp2ppeer')
   Libp2pPeer.id = 'id0'
 
   class Libp2pNode extends EventEmitter {
@@ -23,7 +23,7 @@ tape('[Libp2pServer]', async (t) => {
   Libp2pNode.prototype.handle = td.func<any>()
   Libp2pNode.prototype.start = td.func<any>()
   Libp2pNode.prototype.stop = td.func<any>()
-  td.replace('../../../lib/net/peer/libp2pnode', { Libp2pNode })
+  td.replace<any>('../../../lib/net/peer/libp2pnode', { Libp2pNode })
 
   const conn0 = 'conn0' as any
   const conn1 = 'conn1' as any

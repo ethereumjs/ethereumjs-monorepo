@@ -1,5 +1,4 @@
-import { bufferToBigInt, toBuffer } from '@ethereumjs/util'
-import { JsonRpcProvider } from '@ethersproject/providers'
+import { bufferToBigInt, fetchFromProvider, getProvider, toBuffer } from '@ethereumjs/util'
 
 import { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 import { AccessListEIP2930Transaction } from './eip2930Transaction'
@@ -101,12 +100,18 @@ export class TransactionFactory {
    * @returns the transaction specified by `txHash`
    */
   public static async fromEthersProvider(
-    provider: string | JsonRpcProvider,
+    provider: string | any,
     txHash: string,
     txOptions?: TxOptions
   ) {
-    const prov = typeof provider === 'string' ? new JsonRpcProvider(provider) : provider
-    const txData = await prov.send('eth_getTransactionByHash', [txHash])
+    const prov = getProvider(provider)
+    const txData = await fetchFromProvider(prov, {
+      method: 'eth_getTransactionByHash',
+      params: [txHash],
+    })
+    if (txData === null) {
+      throw new Error('No data returned from provider')
+    }
     return TransactionFactory.fromRPCTx(txData, txOptions)
   }
 

@@ -1,5 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { randomBytes } from 'crypto'
 import * as tape from 'tape'
+import * as td from 'testdouble'
 
 import { TransactionFactory } from '../src'
 import { normalizeTxParams } from '../src/fromRpc'
@@ -11,8 +13,22 @@ const optimismTx = require('./json/optimismTx.json')
 const txTypes = [0, 1, 2]
 
 tape('[fromEthersProvider]', async (t) => {
+  const fakeFetch = async (_url: string, req: any) => {
+    if (
+      req.method === 'eth_getTransactionByHash' &&
+      req.params[0] === '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0'
+    ) {
+      const txData = await import(`./json/rpcTx.json`)
+      return txData
+    } else {
+      return null // This is the value Infura returns if no transaction is found matching the provided hash
+    }
+  }
+
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
   const provider = new MockProvider()
+  const providerUtils = require('@ethereumjs/util/dist/provider')
+  td.replace<any>(providerUtils, 'fetchFromProvider', fakeFetch)
   const txHash = '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0'
   const tx = await TransactionFactory.fromEthersProvider(provider, txHash, { common })
   t.equal(
@@ -20,6 +36,20 @@ tape('[fromEthersProvider]', async (t) => {
     txHash,
     'generated correct tx from transaction RPC data'
   )
+  try {
+    await TransactionFactory.fromEthersProvider(
+      provider,
+      '0x' + randomBytes(32).toString('hex'),
+      {}
+    )
+    t.fail('should throw')
+  } catch (err: any) {
+    t.ok(
+      err.message.includes('No data returned from provider'),
+      'throws correct error when no tx returned'
+    )
+  }
+  td.reset()
   t.end()
 })
 

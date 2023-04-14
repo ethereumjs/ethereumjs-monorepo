@@ -74,11 +74,11 @@ const setup = () => {
 tape('[PendingBlock]', async (t) => {
   const originalValidate = BlockHeader.prototype._consensusFormatValidation
   BlockHeader.prototype._consensusFormatValidation = td.func<any>()
-  td.replace('@ethereumjs/block', { BlockHeader })
+  td.replace<any>('@ethereumjs/block', { BlockHeader })
 
   const originalSetStateRoot = VmState.prototype.setStateRoot
   VmState.prototype.setStateRoot = td.func<any>()
-  td.replace('@ethereumjs/vm/dist/vmState', { VmState })
+  td.replace<any>('@ethereumjs/vm/dist/vmState', { VmState })
 
   const createTx = (
     from = A,
