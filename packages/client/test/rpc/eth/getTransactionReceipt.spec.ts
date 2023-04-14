@@ -89,7 +89,11 @@ tape(`${method}: call with unknown tx hash`, async (t) => {
 })
 
 tape(`${method}: get dataGasUsed/dataGasPrice in blob tx receipt`, async (t) => {
-  initKZG(kzg, __dirname + '/../../../lib/trustedSetups/devnet4.txt')
+  try {
+    // Verified KZG is loaded correctly -- NOOP if throws
+    initKZG(kzg, __dirname + '/../../../lib/trustedSetups/devnet4.txt')
+    //eslint-disable-next-line
+  } catch {}
   const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
   const common = Common.fromGethGenesis(gethGenesis, {
     chain: 'customChain',
