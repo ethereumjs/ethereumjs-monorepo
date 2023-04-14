@@ -26,7 +26,13 @@ import type { Block, JsonRpcBlock } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'
 import type { FeeMarketEIP1559Transaction, Transaction, TypedTransaction } from '@ethereumjs/tx'
-import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt, VM } from '@ethereumjs/vm'
+import type {
+  EIP4844BlobTxReceipt,
+  PostByzantiumTxReceipt,
+  PreByzantiumTxReceipt,
+  TxReceipt,
+  VM,
+} from '@ethereumjs/vm'
 
 type GetLogsParams = {
   fromBlock?: string // QUANTITY, block number or "earliest" or "latest" (default: "latest")
@@ -58,6 +64,7 @@ type JsonRpcReceipt = {
   root?: string // DATA, 32 bytes of post-transaction stateroot (pre Byzantium)
   status?: string // QUANTITY, either 1 (success) or 0 (failure)
   dataGasUsed?: string // QUANTITY, data gas consumed by transaction (if blob transaction)
+  dataGasPrice?: string // QUAntity, data gas price for block including this transaction (if blob transaction)
 }
 type JsonRpcLog = {
   removed: boolean // TAG - true when the log was removed, due to a chain reorganization. false if it's a valid log.
@@ -154,7 +161,8 @@ const jsonRpcReceipt = async (
   txIndex: number,
   logIndex: number,
   contractAddress?: Address,
-  dataGasUsed?: bigint
+  dataGasUsed?: bigint,
+  dataGasPrice?: bigint
 ): Promise<JsonRpcReceipt> => ({
   transactionHash: bytesToPrefixedHexString(tx.hash()),
   transactionIndex: intToHex(txIndex),
@@ -178,6 +186,8 @@ const jsonRpcReceipt = async (
     ((receipt as PostByzantiumTxReceipt).status as unknown) instanceof Uint8Array
       ? intToHex((receipt as PostByzantiumTxReceipt).status)
       : undefined,
+  dataGasUsed: dataGasUsed !== undefined ? '0x' + bigIntToHex(dataGasUsed) : undefined,
+  dataGasPrice: dataGasPrice !== undefined ? '0x' + bigIntToHex(dataGasPrice) : undefined,
 })
 
 /**
@@ -739,6 +749,7 @@ export class Eth {
    */
   async getTransactionReceipt(params: [string]) {
     const [txHash] = params
+
     try {
       if (!this.receiptsManager) throw new Error('missing receiptsManager')
       const result = await this.receiptsManager.getReceiptByTxHash(hexStringToBytes(txHash))
@@ -764,7 +775,8 @@ export class Eth {
         root: parentBlock.header.stateRoot,
         skipBlockValidation: true,
       })
-      const { totalGasSpent, createdAddress, dataGasUsed } = runBlockResult.results[txIndex]
+      const { totalGasSpent, createdAddress } = runBlockResult.results[txIndex]
+      const { dataGasUsed, dataGasPrice } = receipt as EIP4844BlobTxReceipt
       return await jsonRpcReceipt(
         receipt,
         totalGasSpent,
@@ -774,7 +786,8 @@ export class Eth {
         txIndex,
         logIndex,
         createdAddress,
-        dataGasUsed
+        dataGasUsed,
+        dataGasPrice
       )
     } catch (error: any) {
       throw {

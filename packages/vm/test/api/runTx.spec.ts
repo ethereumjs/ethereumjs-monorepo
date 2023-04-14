@@ -921,7 +921,7 @@ tape('EIP 4844 transaction tests', async (t) => {
     const blockchain = await Blockchain.create({ validateBlocks: false, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
 
-    const tx = getTransaction(common, 5, true) as BlobEIP4844Transaction
+    const tx = getTransaction(common, 3, true) as BlobEIP4844Transaction
 
     const block = Block.fromBlockData(
       {
@@ -945,5 +945,4 @@ tape('EIP 4844 transaction tests', async (t) => {
     Blockchain.prototype.getBlock = oldGetBlockFunction
     t.end()
   }
-  t.end()
 })
