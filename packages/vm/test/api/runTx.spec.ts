@@ -945,4 +945,5 @@ tape('EIP 4844 transaction tests', async (t) => {
     Blockchain.prototype.getBlock = oldGetBlockFunction
     t.end()
   }
+  t.end()
 })

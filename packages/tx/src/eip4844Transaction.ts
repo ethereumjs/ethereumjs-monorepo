@@ -37,7 +37,7 @@ import type {
 import type { ValueOf } from '@chainsafe/ssz'
 import type { Common } from '@ethereumjs/common'
 
-const TRANSACTION_TYPE = 0x05
+const TRANSACTION_TYPE = 0x03
 const TRANSACTION_TYPE_BYTES = hexStringToBytes(TRANSACTION_TYPE.toString(16).padStart(2, '0'))
 
 const validateBlobTransactionNetworkWrapper = (
@@ -50,6 +50,10 @@ const validateBlobTransactionNetworkWrapper = (
   if (!(versionedHashes.length === blobs.length && blobs.length === commitments.length)) {
     throw new Error('Number of versionedHashes, blobs, and commitments not all equal')
   }
+  if (versionedHashes.length === 0) {
+    throw new Error('Invalid transaction with empty blobs')
+  }
+
   try {
     kzg.verifyBlobKzgProofBatch(blobs, commitments, kzgProofs)
   } catch (e) {
@@ -265,7 +269,8 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       const accessListItem: AccessListBytesItem = [listItem.address, listItem.storageKeys]
       accessList.push(accessListItem)
     }
-    const to = tx.to.value === null ? undefined : Address.fromString(bytesToHex(tx.to.value))
+    const to =
+      tx.to.value === null ? undefined : Address.fromString(bytesToPrefixedHexString(tx.to.value))
     const versionedHashes = tx.blobVersionedHashes
     const txData = {
       ...tx,
@@ -366,7 +371,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       tx: { ...blobTxToNetworkWrapperDataFormat(this), ...to },
       blobKzgProofs: this.kzgProofs?.map((proof) => Uint8Array.from(proof)) ?? [],
     })
-    return concatBytes(new Uint8Array([0x05]), serializedTxWrapper)
+    return concatBytes(new Uint8Array([0x03]), serializedTxWrapper)
   }
 
   getMessageToSign(hashMessage: false): Uint8Array | Uint8Array[]
