@@ -34,8 +34,8 @@ module.exports = function (config) {
             '@chainsafe/as-sha256/hashObject':
               '../../node_modules/@chainsafe/as-sha256/lib/hashObject.js',
           },
-          ignore: ['c-kzg', 'safer-buffer'],
         },
+        ignore: ['c-kzg', 'safer-buffer'],
       },
     },
 
