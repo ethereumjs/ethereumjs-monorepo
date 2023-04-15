@@ -71,6 +71,10 @@ export interface BlockOptions {
   skipConsensusFormatValidation?: boolean
 }
 
+export interface VerkleState {
+  [key: PrefixedHexString]: PrefixedHexString
+}
+
 /**
  * A block header's data.
  */
@@ -94,6 +98,12 @@ export interface HeaderData {
   withdrawalsRoot?: BytesLike
   dataGasUsed?: BigIntLike
   excessDataGas?: BigIntLike
+  /**
+   * Verkle Proof Data (experimental)
+   * Fake-EIP 999001 (see Common library)
+   */
+  verkleProof?: BytesLike
+  verklePreState?: VerkleState
 }
 
 /**
@@ -114,6 +124,11 @@ export type WithdrawalsBytes = WithdrawalBytes[]
 export type BlockBytes =
   | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes]
   | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes]
+
+/**
+ * BlockHeaderBuffer is a Buffer array, except for the Verkle PreState which is an array of prestate arrays.
+ * TODO: The verkle prestate type properly
+ */
 export type BlockHeaderBytes = Uint8Array[]
 export type BlockBodyBytes = [TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes?]
 /**
