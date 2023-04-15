@@ -25,6 +25,7 @@ import * as eip4895 from './4895.json'
 import * as eip5133 from './5133.json'
 import * as eip5656 from './5656.json'
 import * as eip6780 from './6780.json'
+import * as eip999001 from './999001.json'
 
 export const EIPs: { [key: number]: any } = {
   1153: eip1153,
@@ -54,4 +55,5 @@ export const EIPs: { [key: number]: any } = {
   5133: eip5133,
   5656: eip5656,
   6780: eip6780,
+  999001: eip999001,
 }
