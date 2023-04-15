@@ -428,6 +428,14 @@ export const concatBytes = (...arrays: Uint8Array[]): Uint8Array => {
   }
   return result
 }
+/**
+ * @notice Read a 32-bit little-endian integer from a Uint8Array
+ * @param {Uint8Array} bytes The input Uint8Array from which to read the 32-bit integer.
+ * @return {number} The 32-bit little-endian integer read from the input Uint8Arrays.
+ */
+export function readInt32LE(bytes: Uint8Array): number {
+  return (bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)) >>> 0
+}
 
 // eslint-disable-next-line no-restricted-imports
 export { bytesToUtf8, equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
