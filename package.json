@@ -46,7 +46,8 @@
     "ts-node": "10.9.1",
     "typedoc": "0.23.10",
     "typedoc-plugin-markdown": "3.13.4",
-    "typescript": "4.7.4"
+    "typescript": "4.7.4",
+    "eslint-plugin-ethereumjs": "file:./eslint"
   },
   "engines": {
     "node": ">=14",

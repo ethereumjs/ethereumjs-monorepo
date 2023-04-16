@@ -106,7 +106,7 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
       4,
       4096,
       pkey,
-      '0x' + randomBytes(20).toString('hex'),
+      bytesToPrefixedHexString(randomBytes(20)),
       undefined,
       { common }
     )

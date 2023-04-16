@@ -1,5 +1,5 @@
 import { short } from '@ethereumjs/util'
-import { equalsBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
 
 import { EvmErrorResult, OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
@@ -75,7 +75,7 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   const returnValue = BLS12_381_FromG1Point(result)
 
   if (opts._debug !== undefined) {
-    opts._debug(`BLS12G1ADD (0x0a) return value=${returnValue.toString('hex')}`)
+    opts._debug(`BLS12G1ADD (0x0a) return value=${bytesToHex(returnValue)}`)
   }
 
   return {

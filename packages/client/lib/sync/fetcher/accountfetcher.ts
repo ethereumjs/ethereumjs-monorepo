@@ -1,6 +1,6 @@
 import { Trie } from '@ethereumjs/trie'
 import {
-  KECCAK256_NULL_S,
+  KECCAK256_NULL,
   KECCAK256_RLP,
   accountBodyToRLP,
   bigIntToBytes,
@@ -349,14 +349,13 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       return
     }
     const storageFetchRequests = new Set()
-    const byteCodeFetchRequests = new Set<Buffer>()
+    const byteCodeFetchRequests = new Set<Uint8Array>()
     for (const account of result) {
       await this.accountTrie.put(account.hash, accountBodyToRLP(account.body))
 
       // build record of accounts that need storage slots to be fetched
-      const storageRoot: Uint8Array =
-        account.body[2] instanceof Uint8Array ? account.body[2] : Uint8Array.from(account.body[2])
-      if (!equalsBytes(storageRoot, KECCAK256_RLP)) {
+      const storageRoot: Uint8Array = account.body[2]
+      if (equalsBytes(storageRoot, KECCAK256_RLP) === false) {
         storageFetchRequests.add({
           accountHash: account.hash,
           storageRoot,
@@ -365,9 +364,8 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         })
       }
       // build record of accounts that need bytecode to be fetched
-      const codeHash: Buffer =
-        account.body[3] instanceof Buffer ? account.body[3] : Buffer.from(account.body[3])
-      if (codeHash.compare(Buffer.from(KECCAK256_NULL_S, 'hex')) !== 0) {
+      const codeHash: Uint8Array = account.body[3]
+      if (!(equalsBytes(codeHash, KECCAK256_NULL) === true)) {
         byteCodeFetchRequests.add(codeHash)
       }
     }
@@ -377,7 +375,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       )
     if (byteCodeFetchRequests.size > 0)
       this.byteCodeFetcher.enqueueByByteCodeRequestList(
-        Array.from(byteCodeFetchRequests) as Buffer[]
+        Array.from(byteCodeFetchRequests) as Uint8Array[]
       )
   }
 
