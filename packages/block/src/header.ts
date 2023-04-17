@@ -278,6 +278,8 @@ export class BlockHeader {
     this.withdrawalsRoot = withdrawalsRoot
     this.dataGasUsed = dataGasUsed
     this.excessDataGas = excessDataGas
+    this.verklePreState = verklePreState
+    this.verkleProof = verkleProof
     this._genericFormatValidation()
     this._validateDAOExtraData()
 
@@ -382,7 +384,6 @@ export class BlockHeader {
         throw new Error(`Invalid block: verkle proof missing`)
       }
 
-      // check if verklePreState is present
       if (this.verklePreState === undefined) {
         throw new Error(`Invalid block: verkle preState missing`)
       }
