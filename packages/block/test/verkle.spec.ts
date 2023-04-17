@@ -1,6 +1,5 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { toBuffer } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Block } from '../src'
@@ -10,7 +9,7 @@ import * as verkleBlockJSON from './testdata/verkleBlock.json'
 import * as verkleBlockRawJSON from './testdata/verkleBlockRaw.json'
 
 tape('[VerkleBlock]: Verkle Block Functionality (Fake-EIP-999001)', function (t) {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [999001] })
+  const common = new Common({ chain: Chain.Mainnet, eips: [999001] })
   const verkleBlock = Block.fromBlockData(verkleBlockJSON, { common })
 
   t.test('should test block initialization', function (st) {
@@ -18,7 +17,7 @@ tape('[VerkleBlock]: Verkle Block Functionality (Fake-EIP-999001)', function (t)
     const value = '0xe703c84e676dc11b000000000000000000000000000000000000000000000000'
     st.equal(verkleBlock.header.verklePreState![key], value, 'should read in the verkle state')
 
-    const proofStart = '0x000000000600000008'
+    const proofStart = '00000000060000000808'
     st.equal(
       verkleBlock.header.verkleProof!.slice(0, 20),
       proofStart,
@@ -30,8 +29,8 @@ tape('[VerkleBlock]: Verkle Block Functionality (Fake-EIP-999001)', function (t)
   t.test('Should create verkle block from array of values ', function (st) {
     const encodedRlp = RLP.encode(verkleBlockRawJSON)
 
-    const block = Block.fromRLPSerializedBlock(toBuffer(encodedRlp), {
-      common: new Common({ chain: testnetVerkleJSON, hardfork: Hardfork.London, eips: [999001] }),
+    const block = Block.fromRLPSerializedBlock(encodedRlp, {
+      common: new Common({ chain: testnetVerkleJSON, eips: [999001] }),
     })
 
     // Should retrieve a verkle preState value
