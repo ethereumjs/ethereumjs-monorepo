@@ -448,13 +448,30 @@ export function readBigInt64LE(bytes: Uint8Array): bigint {
 
   return (hi << BigInt(32)) | lo
 }
+
+/**
+ * @notice Write a 32-bit little-endian number to a Uint8Array.
+ * @param {number} number The number value to write to the Uint8Array.
+ * @return {Uint8Array} A Uint8Array of length 32 containing the 32-bit little-endian number.
+ */
+export function writeInt32LE(number: number): Uint8Array {
+  const bytes = new Uint8Array(32)
+
+  bytes[0] = number & 0xff
+  bytes[1] = (number >> 8) & 0xff
+  bytes[2] = (number >> 16) & 0xff
+  bytes[3] = (number >> 24) & 0xff
+
+  return bytes
+}
+
 /**
  * @notice Write a 64-bit little-endian bigint to a Uint8Array.
  * @param {bigint} bigint The bigint value to write to the Uint8Array.
- * @return {Uint8Array} A Uint8Array of length 8 containing the 64-bit little-endian bigint.
+ * @return {Uint8Array} A Uint8Array of length 32 containing the 64-bit little-endian bigint.
  */
 export function writeBigInt64LE(bigint: bigint): Uint8Array {
-  const bytes = new Uint8Array(8)
+  const bytes = new Uint8Array(32)
 
   const lo = BigInt.asUintN(32, bigint)
   const hi = BigInt.asUintN(32, bigint >> BigInt(32))
