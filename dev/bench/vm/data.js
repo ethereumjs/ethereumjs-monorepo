@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1681735170394,
+  "lastUpdate": 1681750729495,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "6cd35aac660f82d831799830db7f7fd438dd0c96",
-          "message": "EVM: Memory Fix & Other Optimizations (#2570)\n\n* EVM: Rename evm debug logger to evm:evm (one for package, one for class), consistency, also, logger will otherwise be left out when run with evm:*\r\n\r\n* VM: Rename message checkpoint to state checkpoint in debug message (there is a dedicated message checkpoint msg along msg logging)\r\n\r\n* EVM: CALL/CREATE debug exit msg differentiation\r\n\r\n* EVM: avoid buffer copy in memory read (performance)\r\n\r\n* EVM: Rewrite runCall() checkpoint/revert conditional for readability/simplification\r\n\r\n* EVM: Added EIP check for transient storage checkpointing",
-          "timestamp": "2023-03-07T11:32:33+01:00",
-          "tree_id": "78b158a5afae36bf2a20695935c3e556c5192b34",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6cd35aac660f82d831799830db7f7fd438dd0c96"
-        },
-        "date": 1678185370605,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 7819,
-            "range": "±2.62%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 7458,
-            "range": "±2.81%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 7894,
-            "range": "±2.39%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 7405,
-            "range": "±5.38%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 7255,
-            "range": "±2.44%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.24%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "konjou@gmail.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1726a8652df3c40a87a3b6c7c25cd6a33bc70f24",
+          "message": "Fix karma dependency resolution in `vm` (#2645)\n\n* Fix karma dependency resolution\r\n\r\n* Update karma\r\n\r\n* Update ethash dep version",
+          "timestamp": "2023-04-17T18:55:42+02:00",
+          "tree_id": "7df172adfe298476c71d44c12f6efd8496d32f36",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/1726a8652df3c40a87a3b6c7c25cd6a33bc70f24"
+        },
+        "date": 1681750727995,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 7498,
+            "range": "±2.88%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 8024,
+            "range": "±3.05%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 8145,
+            "range": "±2.46%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 7271,
+            "range": "±7.92%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 7762,
+            "range": "±2.12%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
           }
         ]
       }
