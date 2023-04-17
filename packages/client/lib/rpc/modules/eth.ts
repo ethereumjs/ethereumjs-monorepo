@@ -613,25 +613,30 @@ export class Eth {
    *   3. integer block number, or the string "latest", "earliest" or "pending"
    */
   async getStorageAt(params: [string, string, string]) {
-    const [addressHex, positionHex, blockOpt] = params
-    const block = await getBlockByOption(blockOpt, this._chain)
+    const [addressHex, keyHex] = params
+    const emptySlotStr = `0x${'00'.repeat(32)}`
 
     if (this._vm === undefined) {
       throw new Error('missing vm')
     }
 
     const vm = await this._vm.copy()
-    await vm.stateManager.setStateRoot(block.header.stateRoot)
+    // TODO: this needs more thought, keep on latest for now
+    // const block = await getBlockByOption(blockOpt, this._chain)
+    // await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = Address.fromString(addressHex)
-    const storageTrie = await (vm.stateManager as any)._getStorageTrie(address)
-    const position = setLengthLeft(hexStringToBytes(positionHex), 32)
-    const storage = await storageTrie.get(position)
+    const account = await vm.stateManager.getAccount(address)
+    if (account === undefined) {
+      return emptySlotStr
+    }
+    const key = setLengthLeft(hexStringToBytes(keyHex), 32)
+    const storage = await vm.stateManager.getContractStorage(address, key)
     return storage !== null && storage !== undefined
       ? bytesToPrefixedHexString(
           setLengthLeft(RLP.decode(Uint8Array.from(storage)) as Uint8Array, 32)
         )
-      : '0x'
+      : emptySlotStr
   }
 
   /**
