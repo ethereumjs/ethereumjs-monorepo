@@ -38,10 +38,6 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: 'npm'
 
-      - name: Use npm v7 for workspaces support
-        run: npm i -g npm@7
-        if: ${{ matrix.node-version < 16 }}
-
       - run: npm ci
 
       # Added a check to ensure we only run on NodeJS 14 or later to all jobs until the `node-testable-versions` script stops picking up 12.
@@ -49,12 +45,12 @@ jobs:
       - name: Test Block
         run: npm run test
         working-directory: packages/block
-        if: ${{ matrix.node >= 14 }}
+        if: ${{ matrix.node >= 16 }}
 
       - name: Test Blockchain
         run: npm run test
         working-directory: packages/blockchain
-        if: ${{ matrix.node >= 14 }}
+        if: ${{ matrix.node >= 16 }}
 
       # Client and Devp2p temporarily disabled for Node < 15 due to browser build
       # error along node-versions CI run "TextDecoder is not defined" triggered in
@@ -66,54 +62,54 @@ jobs:
       - name: Test Client
         run: npm run test:unit
         working-directory: packages/client
-        if: ${{ matrix.node >= 14 }}
+        if: ${{ matrix.node >= 16 }}
 
       - name: Test Devp2p
         run: npm run test
         working-directory: packages/devp2p
-        if: ${{ matrix.node >= 14 }}
+        if: ${{ matrix.node >= 16 }}
 
       - name: Test Common
         run: npm run test
         working-directory: packages/common
-        if: ${{ matrix.node >= 14 }}
+        if: ${{ matrix.node >= 16 }}
 
       - name: Test Ethash
         run: npm run test
         working-directory: packages/ethash
-        if: ${{ matrix.node >= 14 }}
+        if: ${{ matrix.node >= 16 }}
 
       - name: Test EVM
         run: npm run test
         working-directory: packages/evm
-        if: ${{ matrix.node >= 14 }}
+        if: ${{ matrix.node >= 16 }}
 
       - name: Test Trie
         run: npm run test
         working-directory: packages/trie
-        if: ${{ matrix.node >= 14 }}
+        if: ${{ matrix.node >= 16 }}
 
       - name: Test Tx
         run: npm run test
         working-directory: packages/tx
-        if: ${{ matrix.node >= 14 }}
+        if: ${{ matrix.node >= 16 }}
 
       - name: Test Util
         run: npm run test
         working-directory: packages/util
-        if: ${{ matrix.node >= 14 }}
+        if: ${{ matrix.node >= 16 }}
 
       - name: Test StateManager
         run: npm run test
         working-directory: packages/statemanager
-        if: ${{ matrix.node >= 14 }}
+        if: ${{ matrix.node >= 16 }}
 
       - name: Test VM
         run: npm run test:API
         working-directory: packages/vm
-        if: ${{ matrix.node >= 14 }}
+        if: ${{ matrix.node >= 16 }}
 
       - name: Test RLP
         run: npm run test
         working-directory: packages/rlp
-        if: ${{ matrix.node >= 14 }}
+        if: ${{ matrix.node >= 16 }}
