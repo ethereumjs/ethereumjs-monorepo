@@ -413,7 +413,8 @@ export class StatelessVerkleStateManager implements StateManager {
    */
   async checkpoint(): Promise<void> {
     this._checkpoints.push(this._state)
-    this._accountCache!.checkpoint()
+    this._accountCache?.checkpoint()
+    this._storageCache?.checkpoint()
   }
 
   /**
@@ -436,8 +437,8 @@ export class StatelessVerkleStateManager implements StateManager {
    */
   async revert(): Promise<void> {
     // setup trie checkpointing
-    this._storageCache?.revert()
     this._accountCache?.revert()
+    this._storageCache?.revert()
     this._codeCache = {}
   }
 
