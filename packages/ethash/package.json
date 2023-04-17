@@ -40,7 +40,7 @@
     "@ethereumjs/block": "^4.2.1",
     "@ethereumjs/rlp": "^4.0.1",
     "@ethereumjs/util": "^8.0.5",
-    "bigint-crypto-utils": "^3.0.23",
+    "bigint-crypto-utils": "^3.2.2",
     "ethereum-cryptography": "^2.0.0"
   },
   "devDependencies": {
