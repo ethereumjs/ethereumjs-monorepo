@@ -37,6 +37,5 @@ export let kzg: Kzg = {
  */
 export function initKZG(kzgLib: Kzg, trustedSetupPath: string) {
   kzg = kzgLib
-
   kzg.loadTrustedSetup(trustedSetupPath)
 }

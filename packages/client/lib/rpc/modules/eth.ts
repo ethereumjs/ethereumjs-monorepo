@@ -26,7 +26,13 @@ import type { Block, JsonRpcBlock } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'
 import type { FeeMarketEIP1559Transaction, Transaction, TypedTransaction } from '@ethereumjs/tx'
-import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt, VM } from '@ethereumjs/vm'
+import type {
+  EIP4844BlobTxReceipt,
+  PostByzantiumTxReceipt,
+  PreByzantiumTxReceipt,
+  TxReceipt,
+  VM,
+} from '@ethereumjs/vm'
 
 type GetLogsParams = {
   fromBlock?: string // QUANTITY, block number or "earliest" or "latest" (default: "latest")
@@ -57,6 +63,8 @@ type JsonRpcReceipt = {
   // It also returns either:
   root?: string // DATA, 32 bytes of post-transaction stateroot (pre Byzantium)
   status?: string // QUANTITY, either 1 (success) or 0 (failure)
+  dataGasUsed?: string // QUANTITY, data gas consumed by transaction (if blob transaction)
+  dataGasPrice?: string // QUAntity, data gas price for block including this transaction (if blob transaction)
 }
 type JsonRpcLog = {
   removed: boolean // TAG - true when the log was removed, due to a chain reorganization. false if it's a valid log.
@@ -152,7 +160,9 @@ const jsonRpcReceipt = async (
   tx: TypedTransaction,
   txIndex: number,
   logIndex: number,
-  contractAddress?: Address
+  contractAddress?: Address,
+  dataGasUsed?: bigint,
+  dataGasPrice?: bigint
 ): Promise<JsonRpcReceipt> => ({
   transactionHash: bytesToPrefixedHexString(tx.hash()),
   transactionIndex: intToHex(txIndex),
@@ -176,6 +186,8 @@ const jsonRpcReceipt = async (
     ((receipt as PostByzantiumTxReceipt).status as unknown) instanceof Uint8Array
       ? intToHex((receipt as PostByzantiumTxReceipt).status)
       : undefined,
+  dataGasUsed: dataGasUsed !== undefined ? bigIntToHex(dataGasUsed) : undefined,
+  dataGasPrice: dataGasPrice !== undefined ? bigIntToHex(dataGasPrice) : undefined,
 })
 
 /**
@@ -763,7 +775,9 @@ export class Eth {
         root: parentBlock.header.stateRoot,
         skipBlockValidation: true,
       })
+
       const { totalGasSpent, createdAddress } = runBlockResult.results[txIndex]
+      const { dataGasPrice, dataGasUsed } = runBlockResult.receipts[txIndex] as EIP4844BlobTxReceipt
       return await jsonRpcReceipt(
         receipt,
         totalGasSpent,
@@ -772,7 +786,9 @@ export class Eth {
         tx,
         txIndex,
         logIndex,
-        createdAddress
+        createdAddress,
+        dataGasUsed,
+        dataGasPrice
       )
     } catch (error: any) {
       throw {

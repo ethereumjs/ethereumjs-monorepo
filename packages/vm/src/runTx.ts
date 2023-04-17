@@ -17,6 +17,7 @@ import { Bloom } from './bloom'
 import type {
   AfterTxEvent,
   BaseTxReceipt,
+  EIP4844BlobTxReceipt,
   PostByzantiumTxReceipt,
   PreByzantiumTxReceipt,
   RunTxOpts,
@@ -474,6 +475,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debugGas(`tx add baseFee ${txBaseFee} to totalGasSpent (-> ${results.totalGasSpent})`)
   }
 
+  // Add data gas used to result
+  if (tx.type === 3) {
+    results.dataGasUsed = totalDataGas
+  }
+
   // Process any gas refund
   let gasRefund = results.execResult.gasRefund ?? BigInt(0)
   results.gasRefund = gasRefund
@@ -554,7 +560,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Generate the tx receipt
   const gasUsed = opts.blockGasUsed !== undefined ? opts.blockGasUsed : block.header.gasUsed
   const cumulativeGasUsed = gasUsed + results.totalGasSpent
-  results.receipt = await generateTxReceipt.bind(this)(tx, results, cumulativeGasUsed)
+  results.receipt = await generateTxReceipt.bind(this)(
+    tx,
+    results,
+    cumulativeGasUsed,
+    totalDataGas,
+    dataGasPrice
+  )
 
   /**
    * The `afterTx` event
@@ -603,12 +615,16 @@ function txLogsBloom(logs?: any[]): Bloom {
  * @param tx The transaction
  * @param txResult The tx result
  * @param cumulativeGasUsed The gas used in the block including this tx
+ * @param dataGasUsed The data gas used in the tx
+ * @param dataGasPrice The data gas price for the block including this tx
  */
 export async function generateTxReceipt(
   this: VM,
   tx: TypedTransaction,
   txResult: RunTxResult,
-  cumulativeGasUsed: bigint
+  cumulativeGasUsed: bigint,
+  dataGasUsed?: bigint,
+  dataGasPrice?: bigint
 ): Promise<TxReceipt> {
   const baseReceipt: BaseTxReceipt = {
     cumulativeBlockGasUsed: cumulativeGasUsed,
@@ -645,12 +661,20 @@ export async function generateTxReceipt(
     }
   } else {
     // Typed EIP-2718 Transaction
-    receipt = {
-      status: txResult.execResult.exceptionError !== undefined ? 0 : 1,
-      ...baseReceipt,
-    } as PostByzantiumTxReceipt
+    if (tx.type === 3) {
+      receipt = {
+        dataGasUsed,
+        dataGasPrice,
+        status: txResult.execResult.exceptionError ? 0 : 1,
+        ...baseReceipt,
+      } as EIP4844BlobTxReceipt
+    } else {
+      receipt = {
+        status: txResult.execResult.exceptionError ? 0 : 1,
+        ...baseReceipt,
+      } as PostByzantiumTxReceipt
+    }
   }
-
   return receipt
 }
 
