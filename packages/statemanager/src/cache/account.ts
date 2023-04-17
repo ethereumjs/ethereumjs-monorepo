@@ -65,8 +65,8 @@ export class AccountCache extends Cache {
 
   /**
    * Puts account to cache under its address.
-   * @param key - Address of account or undefined if account doesn't exist in the trie
-   * @param val - Account
+   * @param address - Address of account
+   * @param account - Account or undefined if account doesn't exist in the trie
    */
   put(address: Address, account: Account | undefined): void {
     const addressHex = bytesToHex(address.bytes)
@@ -88,7 +88,7 @@ export class AccountCache extends Cache {
 
   /**
    * Returns the queried account or undefined if account doesn't exist
-   * @param key - Address of account
+   * @param address - Address of account
    */
   get(address: Address): AccountCacheElement | undefined {
     const addressHex = bytesToHex(address.bytes)
@@ -111,7 +111,7 @@ export class AccountCache extends Cache {
 
   /**
    * Marks address as deleted in cache.
-   * @param key - Address
+   * @param address - Address
    */
   del(address: Address): void {
     const addressHex = bytesToHex(address.bytes)

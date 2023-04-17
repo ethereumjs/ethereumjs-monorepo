@@ -124,7 +124,9 @@ export class StorageCache extends Cache {
    * Returns the queried slot as the RLP encoded storage value
    * hexStringToBytes('80'): slot is known to be empty
    * undefined: slot is not in cache
-   * @param key - Address of account
+   * @param address - Address of account
+   * @param key - Storage key
+   * @returns Storage value or undefined
    */
   get(address: Address, key: Uint8Array): Uint8Array | undefined {
     const addressHex = bytesToHex(address.bytes)
@@ -223,7 +225,7 @@ export class StorageCache extends Cache {
           itDiffStorage.next()
         }
       } else {
-        throw new Error('Inconsistent cache state')
+        throw new Error('internal error: storage cache map for account should be defined')
       }
       it.next()
     }

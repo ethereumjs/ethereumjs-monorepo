@@ -1,4 +1,4 @@
-import { Account, bytesToBigInt } from '@ethereumjs/util'
+import { bytesToBigInt } from '@ethereumjs/util'
 
 import { VmState } from './vmState'
 
@@ -39,9 +39,9 @@ export class EEI extends VmState implements EEIInterface {
    * @param address - Address of account
    */
   async getExternalBalance(address: Address): Promise<bigint> {
-    let account = await this.getAccount(address)
+    const account = await this.getAccount(address)
     if (!account) {
-      account = new Account()
+      return BigInt(0)
     }
     return account.balance
   }

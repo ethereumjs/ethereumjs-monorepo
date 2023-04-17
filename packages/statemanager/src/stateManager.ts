@@ -297,8 +297,7 @@ export class DefaultStateManager implements StateManager {
     }
 
     const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
-    // @ts-expect-error
-    await this._trie._db.put(key, value)
+    await this._trie.database().put(key, value)
 
     const keyHex = bytesToHex(key)
     this._codeCache[keyHex] = value
@@ -306,7 +305,7 @@ export class DefaultStateManager implements StateManager {
     if (this.DEBUG) {
       this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
     }
-    if (!(await this.getAccount(address))) {
+    if ((await this.getAccount(address)) === undefined) {
       await this.putAccount(address, new Account())
     }
     await this.modifyAccountFields(address, { codeHash })
@@ -334,9 +333,7 @@ export class DefaultStateManager implements StateManager {
     if (keyHex in this._codeCache) {
       return this._codeCache[keyHex]
     } else {
-      // `db` is a protected member of the `trie` class so telling Typescript to expect this error to avoid casting `db` to `any`
-      // @ts-expect-error
-      const code = (await this._trie._db.get(key)) ?? new Uint8Array(0)
+      const code = (await this._trie.database().get(key)) ?? new Uint8Array(0)
       this._codeCache[keyHex] = code
       return code
     }
@@ -355,6 +352,7 @@ export class DefaultStateManager implements StateManager {
       const storageTrie = this._trie.copy(false)
       storageTrie.root(account.storageRoot)
       storageTrie.flushCheckpoints()
+      this._storageTries[addressHex] = storageTrie
       return storageTrie
     }
     return storageTrie
@@ -484,9 +482,9 @@ export class DefaultStateManager implements StateManager {
    * @param address -  Address to clear the storage of
    */
   async clearContractStorage(address: Address): Promise<void> {
-    const account = await this.getAccount(address)
+    let account = await this.getAccount(address)
     if (!account) {
-      throw new Error(`clearContractStorage() called on non-existing account (${address})`)
+      account = new Account()
     }
     this._storageCache?.clearContractStorage(address)
     await this._modifyContractStorage(address, account, (storageTrie, done) => {

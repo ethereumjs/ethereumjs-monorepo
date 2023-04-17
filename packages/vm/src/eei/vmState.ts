@@ -266,8 +266,8 @@ export class VmState implements EVMStateAccess {
       }
     }
     await this._stateManager.flush()
-    // If any empty accounts are put, these should not be marked as touched (when first tx is ran, this account is deleted when it cleans up the accounts)
-    // TODO: not 100% sure if to keep this line or not along cache refactor rebase, 2023-04-11
+    // If any empty accounts are put, these should not be marked as touched
+    // (when first tx is ran, this account is deleted when it cleans up the accounts)
     this.touchedJournal.clear()
   }
 
