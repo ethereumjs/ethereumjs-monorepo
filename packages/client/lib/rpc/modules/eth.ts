@@ -621,18 +621,19 @@ export class Eth {
       throw new Error('missing vm')
     }
 
-    const vm = await this._vm.copy()
+    // TODO: why does this._vm work but not the copy?
+    // const vm = await this._vm.copy()
     // TODO: this needs more thought, keep on latest for now
     // const block = await getBlockByOption(blockOpt, this._chain)
     // await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = Address.fromString(addressHex)
-    const account = await vm.stateManager.getAccount(address)
+    const account = await this._vm.stateManager.getAccount(address)
     if (account === undefined) {
       return EMPTY_SLOT
     }
     const key = setLengthLeft(hexStringToBytes(keyHex), 32)
-    const storage = await vm.stateManager.getContractStorage(address, key)
+    const storage = await this._vm.stateManager.getContractStorage(address, key)
     return storage !== null && storage !== undefined
       ? bytesToPrefixedHexString(
           setLengthLeft(RLP.decode(Uint8Array.from(storage)) as Uint8Array, 32)
