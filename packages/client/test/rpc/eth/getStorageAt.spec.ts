@@ -33,6 +33,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   const key = `0x${'01'.repeat(32)}`
   const value = `0x01`
+  const valueAsBytes32 = `0x${'00'.repeat(31)}01`
   await execution.vm.stateManager.putContractStorage(
     address,
     hexStringToBytes(key),
@@ -42,7 +43,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   req = params(method, [address.toString(), key, 'latest'])
   expectRes = (res: any) => {
     const msg = 'should return the correct slot value'
-    t.equal(res.body.result, value, msg)
+    t.equal(res.body.result, valueAsBytes32, msg)
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
