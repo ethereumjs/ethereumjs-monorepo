@@ -26,7 +26,7 @@ const validPayloadAttributes = {
 const validPayload = [validForkChoiceState, { ...validPayloadAttributes, withdrawals: [] }]
 
 initKZG(kzg, __dirname + '/../../../lib/trustedSetups/devnet4.txt')
-const method = 'engine_getBlobsBundleV1'
+const method = 'engine_getPayloadV3'
 
 tape(`${method}: call with invalid payloadId`, async (t) => {
   const { server } = baseSetup({ engine: true, includeVM: true })
@@ -98,16 +98,6 @@ tape(`${method}: call with known payload`, async (t) => {
   }
 
   await baseRequest(t, server, req, 200, expectRes, false)
-  req = params(method, [payloadId])
-  expectRes = (res: any) => {
-    t.equal(
-      res.body.result.blockHash,
-      '0x4f3068842f4977e1358719f03868cae636e654eca60cf97a1b5619aa006b7185',
-      'got expected blockHash'
-    )
-  }
-  await baseRequest(t, server, req, 200, expectRes, false)
-  // Restore setStateRoot
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
   DefaultStateManager.prototype.copy = originalStateManagerCopy
 })
