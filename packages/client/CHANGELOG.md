@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.7.1 - 2023-04-20
+
 ## 0.7.0 - 2023-02-16
 
 This client release comes with finalized `Shanghai` hardfork support, fully integrates with a (non final) version of `EIP-4844` and allows to setup and run respective testnets, substantially improves on post-Merge UX and comes with a ton of bugfixes and (robustness) improvements being done during January 2023 core dev interop in Austria. So we felt this to be worth a minor version bump! 🙂 🎉 ❤️
