@@ -34,6 +34,8 @@ import type {
   VM,
 } from '@ethereumjs/vm'
 
+const EMPTY_SLOT = `0x${'00'.repeat(32)}`
+
 type GetLogsParams = {
   fromBlock?: string // QUANTITY, block number or "earliest" or "latest" (default: "latest")
   toBlock?: string // QUANTITY, block number or "latest" (default: "latest")
@@ -614,7 +616,6 @@ export class Eth {
    */
   async getStorageAt(params: [string, string, string]) {
     const [addressHex, keyHex] = params
-    const emptySlotStr = `0x${'00'.repeat(32)}`
 
     if (this._vm === undefined) {
       throw new Error('missing vm')
@@ -628,7 +629,7 @@ export class Eth {
     const address = Address.fromString(addressHex)
     const account = await vm.stateManager.getAccount(address)
     if (account === undefined) {
-      return emptySlotStr
+      return EMPTY_SLOT
     }
     const key = setLengthLeft(hexStringToBytes(keyHex), 32)
     const storage = await vm.stateManager.getContractStorage(address, key)
@@ -636,7 +637,7 @@ export class Eth {
       ? bytesToPrefixedHexString(
           setLengthLeft(RLP.decode(Uint8Array.from(storage)) as Uint8Array, 32)
         )
-      : emptySlotStr
+      : EMPTY_SLOT
   }
 
   /**
