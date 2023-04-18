@@ -1,7 +1,17 @@
 import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { Account, Address, hexStringToBytes, initKZG } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  blobsToCommitments,
+  blobsToProofs,
+  bytesToPrefixedHexString,
+  commitmentsToVersionedHashes,
+  getBlobs,
+  hexStringToBytes,
+  initKZG,
+} from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import * as tape from 'tape'
 
@@ -74,10 +84,19 @@ tape(`${method}: call with known payload`, async (t) => {
     payloadId = res.body.result.payloadId
   }
   await baseRequest(t, server, req, 200, expectRes, false)
+
+  const txBlobs = getBlobs('hello world')
+  const txCommitments = blobsToCommitments(txBlobs)
+  const txVersionedHashes = commitmentsToVersionedHashes(txCommitments)
+  const txProofs = blobsToProofs(txBlobs, txCommitments)
+
   const tx = TransactionFactory.fromTxData(
     {
       type: 0x03,
-      versionedHashes: [],
+      versionedHashes: txVersionedHashes,
+      blobs: txBlobs,
+      kzgCommitments: txCommitments,
+      kzgProofs: txProofs,
       maxFeePerDataGas: 1n,
       maxFeePerGas: 10000000000n,
       maxPriorityFeePerGas: 100000000n,
@@ -90,11 +109,21 @@ tape(`${method}: call with known payload`, async (t) => {
   await service.txPool.add(tx, true)
   req = params('engine_getPayloadV3', [payloadId])
   expectRes = (res: any) => {
+    const { executionPayload, blobsBundle } = res.body.result
     t.equal(
-      res.body.result.executionPayload.blockHash,
-      '0x4f3068842f4977e1358719f03868cae636e654eca60cf97a1b5619aa006b7185',
+      executionPayload.blockHash,
+      '0x3c599ece59439d2dc938e7a2b5e1c675cf8173b6be654f0a689b96936eba96e2',
       'built expected block'
     )
+    const { commitments, proofs, blobs } = blobsBundle
+    t.ok(
+      commitments.length === proofs.length && commitments.length === blobs.length,
+      'equal commitments, proofs and blobs'
+    )
+    t.equal(blobs.length, 1, '1 blob should be returned')
+    t.equal(proofs[0], bytesToPrefixedHexString(txProofs[0]), 'proof should match')
+    t.equal(commitments[0], bytesToPrefixedHexString(txCommitments[0]), 'commitment should match')
+    t.equal(blobs[0], bytesToPrefixedHexString(txBlobs[0]), 'blob should match')
   }
 
   await baseRequest(t, server, req, 200, expectRes, false)
