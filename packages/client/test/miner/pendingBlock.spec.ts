@@ -5,6 +5,7 @@ import {
   Account,
   Address,
   blobsToCommitments,
+  blobsToProofs,
   bytesToHex,
   bytesToPrefixedHexString,
   commitmentsToVersionedHashes,
@@ -277,12 +278,14 @@ tape('[PendingBlock]', async (t) => {
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(blobs)
     const versionedHashes = commitmentsToVersionedHashes(commitments)
+    const proofs = blobsToProofs(blobs, commitments)
 
     const txA01 = BlobEIP4844Transaction.fromTxData(
       {
         versionedHashes,
         blobs,
         kzgCommitments: commitments,
+        kzgProofs: proofs,
         maxFeePerDataGas: 100000000n,
         gasLimit: 0xffffffn,
         maxFeePerGas: 1000000000n,
@@ -298,8 +301,13 @@ tape('[PendingBlock]', async (t) => {
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     await pendingBlock.build(payloadId)
-    const pendingBlob = pendingBlock.blobBundles.get(bytesToPrefixedHexString(payloadId))?.blobs[0]
+
+    const blobBundle = pendingBlock.blobBundles.get(bytesToPrefixedHexString(payloadId))!
+    st.ok(blobBundle !== undefined)
+    const pendingBlob = blobBundle.blobs[0]
     st.ok(pendingBlob !== undefined && equalsBytes(pendingBlob, blobs[0]))
+    const blobProof = blobBundle.proofs[0]
+    st.ok(blobProof !== undefined && equalsBytes(blobProof, proofs[0]))
     st.end()
   })
   t.test('should reset td', (st) => {
