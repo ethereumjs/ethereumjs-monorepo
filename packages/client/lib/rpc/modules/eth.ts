@@ -615,8 +615,14 @@ export class Eth {
    *   3. integer block number, or the string "latest", "earliest" or "pending"
    */
   async getStorageAt(params: [string, string, string]) {
-    const [addressHex, keyHex] = params
+    const [addressHex, keyHex, blockOpt] = params
 
+    if (blockOpt === 'pending') {
+      throw {
+        code: INVALID_PARAMS,
+        message: '"pending" is not yet supported',
+      }
+    }
     if (this._vm === undefined) {
       throw new Error('missing vm')
     }
