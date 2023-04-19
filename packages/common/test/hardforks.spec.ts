@@ -20,7 +20,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
       Hardfork.ArrowGlacier,
       Hardfork.GrayGlacier,
       Hardfork.Shanghai,
-      Hardfork.Merge,
+      Hardfork.Paris,
     ]
     let c
 
@@ -46,7 +46,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.equal(c.getHardforkByBlockNumber(13773000), Hardfork.ArrowGlacier, msg)
     st.equal(c.getHardforkByBlockNumber(15050000), Hardfork.GrayGlacier, msg)
     // merge is now specified at 15537394 in config
-    st.equal(c.getHardforkByBlockNumber(999999999999), Hardfork.Merge, msg)
+    st.equal(c.getHardforkByBlockNumber(999999999999), Hardfork.Paris, msg)
     msg = 'should set HF correctly'
 
     st.equal(c.setHardforkByBlockNumber(0), Hardfork.Chainstart, msg)
@@ -58,7 +58,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.equal(c.setHardforkByBlockNumber(13773000), Hardfork.ArrowGlacier, msg)
     st.equal(c.setHardforkByBlockNumber(15050000), Hardfork.GrayGlacier, msg)
     // merge is now specified at 15537394 in config
-    st.equal(c.setHardforkByBlockNumber(999999999999), Hardfork.Merge, msg)
+    st.equal(c.setHardforkByBlockNumber(999999999999), Hardfork.Paris, msg)
 
     c = new Common({ chain: Chain.Ropsten })
     st.equal(c.setHardforkByBlockNumber(0), 'tangerineWhistle', msg)
@@ -383,7 +383,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
       'should provide the correct initial chain consensus configuration'
     )
 
-    c = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Merge })
+    c = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Paris })
     st.equal(
       c.consensusType(),
       ConsensusType.ProofOfStake,
@@ -408,7 +408,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     let c = new Common({ chain: Chain.Sepolia, hardfork: Hardfork.London })
     st.equal(
       c['HARDFORK_CHANGES'][11][0],
-      Hardfork.Merge,
+      Hardfork.Paris,
       'should correctly apply hardfork changes'
     )
     st.equal(
@@ -423,7 +423,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
       ConsensusType.ProofOfWork,
       'should provide the correct initial chain consensus type'
     )
-    c.setHardfork(Hardfork.Merge)
+    c.setHardfork(Hardfork.Paris)
     st.equal(
       c.consensusType(),
       ConsensusType.ProofOfStake,
@@ -451,7 +451,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     )
     st.equal(
       c['HARDFORK_CHANGES'][11][0],
-      Hardfork.Merge,
+      Hardfork.Paris,
       'should correctly apply hardfork changes'
     )
 
@@ -462,7 +462,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
       ConsensusType.ProofOfWork,
       'should provide the correct initial chain consensus type'
     )
-    c.setHardfork(Hardfork.Merge)
+    c.setHardfork(Hardfork.Paris)
     st.equal(
       c.consensusType(),
       ConsensusType.ProofOfStake,

@@ -14,7 +14,7 @@ import { BlockHeader } from '../src/header'
 
 const common = new Common({
   chain: Chain.Mainnet,
-  hardfork: Hardfork.Merge,
+  hardfork: Hardfork.Paris,
 })
 
 function validateMergeHeader(st: tape.Test, header: BlockHeader) {

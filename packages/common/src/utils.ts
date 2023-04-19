@@ -164,7 +164,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     // - Merge hardfork has to be placed just after genesis if any of the genesis hardforks make CL
     //   necessary for e.g. withdrawals
     const mergeConfig = {
-      name: Hardfork.Merge,
+      name: Hardfork.Paris,
       ttd: config.terminalTotalDifficulty,
       block: null,
     }

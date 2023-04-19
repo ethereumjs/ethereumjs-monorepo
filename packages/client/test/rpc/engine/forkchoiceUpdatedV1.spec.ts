@@ -31,7 +31,7 @@ const validPayloadAttributes = {
   suggestedFeeRecipient: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
 }
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
 
 function createBlock(parentBlock: Block) {
   const prevRandao = crypto.randomBytes(32)

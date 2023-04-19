@@ -92,7 +92,7 @@ tape('[Utils/Parse]', (t) => {
       st.equal(hf.forkHash, kilnForkHashes[hf.name], `${hf.name} forkHash should match`)
     }
 
-    st.equal(common.hardfork(), Hardfork.Merge, 'should correctly infer current hardfork')
+    st.equal(common.hardfork(), Hardfork.Paris, 'should correctly infer current hardfork')
 
     // Ok lets schedule shanghai at block 0, this should force merge to be scheduled at just after
     // genesis if even mergeForkIdTransition is not confirmed to be post merge
@@ -152,12 +152,12 @@ tape('[Utils/Parse]', (t) => {
     )
 
     st.equal(common.getHardforkByBlockNumber(0), Hardfork.London, 'london at genesis')
-    st.equal(common.getHardforkByBlockNumber(1, BigInt(2)), Hardfork.Merge, 'merge at block 1')
+    st.equal(common.getHardforkByBlockNumber(1, BigInt(2)), Hardfork.Paris, 'merge at block 1')
     // shanghai is at timestamp 8
     st.equal(common.getHardforkByBlockNumber(8), Hardfork.London, 'without timestamp still london')
     st.equal(
       common.getHardforkByBlockNumber(8, BigInt(2)),
-      Hardfork.Merge,
+      Hardfork.Paris,
       'without timestamp at merge'
     )
     st.equal(

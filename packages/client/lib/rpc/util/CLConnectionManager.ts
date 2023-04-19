@@ -282,11 +282,11 @@ export class CLConnectionManager {
 
     if (
       !this.oneTimeMergeCLConnectionCheck &&
-      this.config.chainCommon.hardfork() === Hardfork.Merge
+      this.config.chainCommon.hardfork() === Hardfork.Paris
     ) {
       if (this.connectionStatus === ConnectionStatus.Disconnected) {
         this.config.logger.info(
-          'Merge HF activated, CL client connection is needed for continued block processing'
+          'Paris (Merge) HF activated, CL client connection is needed for continued block processing'
         )
         this.config.logger.info(
           '(note that CL client might need to be synced up to beacon chain Merge transition slot until communication starts)'

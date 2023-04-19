@@ -294,13 +294,13 @@ export class Chain {
     )
 
     // Check and log if this is a terminal block and next block could be merge
-    if (!this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+    if (!this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
       const nextBlockHf = this.config.chainCommon.getHardforkByBlockNumber(
         headers.height + BigInt(1),
         headers.td,
         undefined
       )
-      if (this.config.chainCommon.hardforkGteHardfork(nextBlockHf, Hardfork.Merge)) {
+      if (this.config.chainCommon.hardforkGteHardfork(nextBlockHf, Hardfork.Paris)) {
         this.config.logger.info('*'.repeat(85))
         this.config.logger.info(
           `Merge hardfork reached 🐼 👉 👈 🐼 ! block=${headers.height} td=${headers.td}`
@@ -386,7 +386,7 @@ export class Chain {
     }
 
     for (const [i, b] of newBlocks.entries()) {
-      if (!fromEngine && this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+      if (!fromEngine && this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
         if (i > 0) {
           // emitOnLast below won't be reached, so run an update here
           await this.update(!skipUpdateEmit)
@@ -443,7 +443,7 @@ export class Chain {
 
     let numAdded = 0
     for (const [i, h] of headers.entries()) {
-      if (!mergeIncludes && this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+      if (!mergeIncludes && this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
         if (i > 0) {
           // emitOnLast below won't be reached, so run an update here
           await this.update(true)

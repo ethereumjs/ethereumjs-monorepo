@@ -9,7 +9,7 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
   t.test('hardforkTTD()', function (st: tape.Test) {
     const customChains = [testnetMerge]
     const c = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
-    st.equal(c.hardforkTTD(Hardfork.Merge), BigInt(5000), 'should get the HF total difficulty')
+    st.equal(c.hardforkTTD(Hardfork.Paris), BigInt(5000), 'should get the HF total difficulty')
     st.equal(
       c.hardforkTTD('thisHardforkDoesNotExist'),
       null,
@@ -206,7 +206,7 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
     const c = Common.fromGethGenesis(json, { chain: 'post-merge' })
     const msg = 'should get HF correctly'
     st.equal(c.getHardforkByBlockNumber(0), Hardfork.London, msg)
-    st.equal(c.getHardforkByBlockNumber(0, BigInt(0)), Hardfork.Merge, msg)
+    st.equal(c.getHardforkByBlockNumber(0, BigInt(0)), Hardfork.Paris, msg)
   })
 
   t.test('test post merge hardforks using Sepolia with block null', function (st: tape.Test) {
@@ -222,7 +222,7 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
     // should get Hardfork.London even though happened with 1450408 as terminal as config doesn't have that info
     st.equal(c.getHardforkByBlockNumber(1450409), Hardfork.London, msg)
     // however with correct td in input it should select merge
-    st.equal(c.getHardforkByBlockNumber(1450409, BigInt('17000000000000000')), Hardfork.Merge, msg)
+    st.equal(c.getHardforkByBlockNumber(1450409, BigInt('17000000000000000')), Hardfork.Paris, msg)
     // should select MergeForkIdTransition even without td specified as the block is set for this hardfork
     st.equal(c.getHardforkByBlockNumber(1735371), Hardfork.MergeForkIdTransition, msg)
     // also with td specified
@@ -244,7 +244,7 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
       `should get nextHardforkBlockOrTimestamp correctly`
     )
     st.equal(
-      c.nextHardforkBlockOrTimestamp(Hardfork.Merge),
+      c.nextHardforkBlockOrTimestamp(Hardfork.Paris),
       1735371n,
       `should get nextHardforkBlockOrTimestamp correctly`
     )
@@ -264,7 +264,7 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
 
     st.equal(c.setHardforkByBlockNumber(0), Hardfork.London, msg)
     st.equal(c.setHardforkByBlockNumber(1450409), Hardfork.London, msg)
-    st.equal(c.setHardforkByBlockNumber(1450409, BigInt('17000000000000000')), Hardfork.Merge, msg)
+    st.equal(c.setHardforkByBlockNumber(1450409, BigInt('17000000000000000')), Hardfork.Paris, msg)
     st.equal(c.setHardforkByBlockNumber(1735371), Hardfork.MergeForkIdTransition, msg)
     st.equal(
       c.setHardforkByBlockNumber(1735371, BigInt('17000000000000000')),
@@ -300,10 +300,10 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
       const msg = 'should get HF correctly'
 
       // should get merge even without td supplied as the merge hf now has the block specified
-      st.equal(c.setHardforkByBlockNumber(1450409), Hardfork.Merge, msg)
+      st.equal(c.setHardforkByBlockNumber(1450409), Hardfork.Paris, msg)
       st.equal(
         c.setHardforkByBlockNumber(1450409, BigInt('17000000000000000')),
-        Hardfork.Merge,
+        Hardfork.Paris,
         msg
       )
       st.equal(c.setHardforkByBlockNumber(1735371), Hardfork.MergeForkIdTransition, msg)
@@ -320,7 +320,7 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
         `should get nextHardforkBlockOrTimestamp correctly`
       )
       st.equal(
-        c.nextHardforkBlockOrTimestamp(Hardfork.Merge),
+        c.nextHardforkBlockOrTimestamp(Hardfork.Paris),
         1735371n,
         `should get nextHardforkBlockOrTimestamp correctly`
       )

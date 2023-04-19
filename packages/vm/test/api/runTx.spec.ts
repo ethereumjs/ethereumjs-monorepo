@@ -101,7 +101,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
     await vm.eei.putAccount(caller, acc)
     const block = Block.fromBlockData({}, { common: vm._common.copy() })
 
-    block._common.setHardfork(Hardfork.Merge)
+    block._common.setHardfork(Hardfork.Paris)
     try {
       await vm.runTx({ tx, block })
       st.fail('vm/block mismatched hardfork should have failed')
@@ -115,7 +115,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
     }
 
     tx.common.setHardfork(Hardfork.London)
-    block._common.setHardfork(Hardfork.Merge)
+    block._common.setHardfork(Hardfork.Paris)
     try {
       await vm.runTx({ tx, block })
       st.fail('vm/tx mismatched hardfork should have failed')
@@ -135,7 +135,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
   })
 
   t.test('should ignore merge in hardfork mismatch', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
     const vm = await VM.create({
       common,
       blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),

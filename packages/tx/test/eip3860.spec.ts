@@ -6,7 +6,7 @@ import { TransactionFactory } from '../src'
 
 const common = new Common({
   chain: Chain.Mainnet,
-  hardfork: Hardfork.Merge,
+  hardfork: Hardfork.Paris,
   eips: [3860, 4844, 4895],
 })
 

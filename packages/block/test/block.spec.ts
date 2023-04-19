@@ -94,7 +94,7 @@ tape('[Block]: block functions', function (t) {
     )
     st.equal(
       block._common.hardfork(),
-      Hardfork.Merge,
+      Hardfork.Paris,
       'should use hardforkByTTD option (td > threshold)'
     )
 

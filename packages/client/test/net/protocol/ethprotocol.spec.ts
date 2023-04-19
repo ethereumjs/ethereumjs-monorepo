@@ -214,7 +214,7 @@ tape('[EthProtocol]', (t) => {
       transports: [],
       common: new Common({
         chain: Config.CHAIN_DEFAULT,
-        hardfork: Hardfork.Merge,
+        hardfork: Hardfork.Paris,
         eips: [4895, 4844],
       }),
       accountCache: 10000,
