@@ -16,8 +16,18 @@ tape('VM Copy Test', async (t) => {
     st.ok(await vm.stateManager.accountExists(address), 'account exists before copy')
 
     const vmCopy = await vm.copy()
+    st.notok(
+      await vmCopy.stateManager.accountExists(address),
+      'non-committed checkpoints will not be copied'
+    )
 
-    st.ok(await vmCopy.stateManager.accountExists(address), 'account exists after copy')
+    await vm.stateManager.checkpoint()
+    await vm.stateManager.commit()
+    await vm.stateManager.flush()
+
+    const vmCopy2 = await vm.copy()
+
+    st.ok(await vmCopy2.stateManager.accountExists(address), 'committed checkpoints will be copied')
 
     st.end()
   })
