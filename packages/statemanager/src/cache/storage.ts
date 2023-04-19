@@ -76,9 +76,6 @@ export class StorageCache extends Cache {
           oldStorage = oldStorageMap.getElementByKey(keyHex)
         }
       }
-      if (oldStorage === undefined) {
-        oldStorage = hexStringToBytes('80')
-      }
       diffStorageMap.setElement(keyHex, oldStorage)
       this._diffCache[this._checkpoints].setElement(addressHex, diffStorageMap)
     }

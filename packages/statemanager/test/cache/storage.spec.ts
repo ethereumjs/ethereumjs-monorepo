@@ -57,8 +57,6 @@ tape('Storage Cache: put and get account', (t) => {
 
 tape('Storage Cache: checkpointing', (t) => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
-    const cache = new StorageCache({ size: 100, type })
-
     const addr = new Address(hexToBytes('10'.repeat(20)))
     const key = hexToBytes('01')
     const value = hexToBytes('01')
@@ -66,6 +64,7 @@ tape('Storage Cache: checkpointing', (t) => {
     const updatedValue = hexToBytes('02')
 
     t.test('should revert to correct state', async (st) => {
+      const cache = new StorageCache({ size: 100, type })
       cache.put(addr, key, value)
       cache.checkpoint()
       cache.put(addr, key, updatedValue)
@@ -77,6 +76,23 @@ tape('Storage Cache: checkpointing', (t) => {
 
       elem = cache.get(addr, key)
       st.ok(elem !== undefined && equalsBytes(elem, value))
+
+      st.end()
+    })
+
+    t.test('should revert to unknown if nonexistent in cache before', async (st) => {
+      const cache = new StorageCache({ size: 100, type })
+
+      cache.checkpoint()
+      cache.put(addr, key, value)
+
+      let elem = cache.get(addr, key)
+      st.ok(elem !== undefined && equalsBytes(elem, value))
+
+      cache.revert()
+
+      elem = cache.get(addr, key)
+      st.ok(elem === undefined)
 
       st.end()
     })
