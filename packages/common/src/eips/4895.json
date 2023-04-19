@@ -4,7 +4,7 @@
   "comment": "Beacon chain push withdrawals as operations",
   "url": "https://eips.ethereum.org/EIPS/eip-4895",
   "status": "Review",
-  "minimumHardfork": "merge",
+  "minimumHardfork": "paris",
   "requiredEIPs": [],
   "gasConfig": {},
   "gasPrices": {},

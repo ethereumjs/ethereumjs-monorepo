@@ -4,7 +4,7 @@
   "comment": "Shard Blob Transactions",
   "url": "https://eips.ethereum.org/EIPS/eip-4844",
   "status": "Draft",
-  "minimumHardfork": "merge",
+  "minimumHardfork": "paris",
   "requiredEIPs": [1559, 2718, 2930, 4895],
   "gasConfig": {
     "dataGasPerBlob": {

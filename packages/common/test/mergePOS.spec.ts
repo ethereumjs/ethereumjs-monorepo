@@ -30,9 +30,9 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
       msg = 'block number > last HF block number set, without TD set'
       st.equal(c.getHardforkByBlockNumber(14), 'london', msg)
       msg = 'block number > last HF block number set, TD set and equal'
-      st.equal(c.getHardforkByBlockNumber(15, 5000), 'merge', msg)
+      st.equal(c.getHardforkByBlockNumber(15, 5000), 'paris', msg)
       msg = 'block number > last HF block number set, TD set and higher'
-      st.equal(c.getHardforkByBlockNumber(15, 5001), 'merge', msg)
+      st.equal(c.getHardforkByBlockNumber(15, 5001), 'paris', msg)
       msg = 'block number > last HF block number set, TD set and smaller'
       st.equal(c.getHardforkByBlockNumber(15, 4999), 'london', msg)
       msg = 'block number < last HF block number set, TD set and smaller'
@@ -53,11 +53,11 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
       let msg = 'block number < last HF block number set, without TD set'
       st.equal(c.getHardforkByBlockNumber(0), 'chainstart', msg)
       msg = 'block number > last HF block number set, without TD set'
-      st.equal(c.getHardforkByBlockNumber(16), 'merge', msg)
+      st.equal(c.getHardforkByBlockNumber(16), 'paris', msg)
       msg = 'block number > last HF block number set, TD set and equal'
-      st.equal(c.getHardforkByBlockNumber(16, 5000), 'merge', msg)
+      st.equal(c.getHardforkByBlockNumber(16, 5000), 'paris', msg)
       msg = 'block number > last HF block number set, TD set and higher'
-      st.equal(c.getHardforkByBlockNumber(16, 5001), 'merge', msg)
+      st.equal(c.getHardforkByBlockNumber(16, 5001), 'paris', msg)
       msg = 'block number < last HF block number set, TD set and smaller'
       st.equal(c.getHardforkByBlockNumber(12, 4999), 'berlin', msg)
 
@@ -109,9 +109,9 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
       msg = 'block number > last HF block number set, without TD set'
       st.equal(c.setHardforkByBlockNumber(14), 'london', msg)
       msg = 'block number > last HF block number set, TD set and equal'
-      st.equal(c.setHardforkByBlockNumber(15, 5000), 'merge', msg)
+      st.equal(c.setHardforkByBlockNumber(15, 5000), 'paris', msg)
       msg = 'block number > last HF block number set, TD set and higher'
-      st.equal(c.setHardforkByBlockNumber(15, 5001), 'merge', msg)
+      st.equal(c.setHardforkByBlockNumber(15, 5001), 'paris', msg)
       msg = 'block number > last HF block number set, TD set and smaller'
       st.equal(c.setHardforkByBlockNumber(15, 4999), 'london', msg)
       msg = 'block number < last HF block number set, TD set and smaller'
@@ -132,11 +132,11 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
       let msg = 'block number < last HF block number set, without TD set'
       st.equal(c.setHardforkByBlockNumber(0), 'chainstart', msg)
       msg = 'block number > last HF block number set, without TD set'
-      st.equal(c.setHardforkByBlockNumber(16), 'merge', msg)
+      st.equal(c.setHardforkByBlockNumber(16), 'paris', msg)
       msg = 'block number > last HF block number set, TD set and equal'
-      st.equal(c.setHardforkByBlockNumber(16, 5000), 'merge', msg)
+      st.equal(c.setHardforkByBlockNumber(16, 5000), 'paris', msg)
       msg = 'block number > last HF block number set, TD set and higher'
-      st.equal(c.setHardforkByBlockNumber(16, 5001), 'merge', msg)
+      st.equal(c.setHardforkByBlockNumber(16, 5001), 'paris', msg)
       msg = 'block number < last HF block number set, TD set and smaller'
       st.equal(c.setHardforkByBlockNumber(12, 4999), 'berlin', msg)
 

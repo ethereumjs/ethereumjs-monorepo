@@ -83,7 +83,7 @@ tape('[Utils/Parse]', (t) => {
         'berlin',
         'london',
         'mergeForkIdTransition',
-        'merge',
+        'paris',
       ],
       'hardfork parse order should be correct'
     )
@@ -116,7 +116,7 @@ tape('[Utils/Parse]', (t) => {
         'istanbul',
         'berlin',
         'london',
-        'merge',
+        'paris',
         'mergeForkIdTransition',
         'shanghai',
       ],
@@ -145,7 +145,7 @@ tape('[Utils/Parse]', (t) => {
         'muirGlacier',
         'berlin',
         'london',
-        'merge',
+        'paris',
         'shanghai',
       ],
       'hardfork parse order should be correct'
@@ -197,5 +197,5 @@ const kilnForkHashes: any = {
   berlin: '0xbcadf543',
   london: '0xbcadf543',
   mergeForkIdTransition: '0x013fd1b5',
-  merge: '0x013fd1b5',
+  paris: '0x013fd1b5',
 }
