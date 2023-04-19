@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 4.2.2 - 2023-04-20
 
+### Bugfixes
+
+- Throw if EIP-4895 is active and no withdrawals are available, PR [#2601](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2601)
+
+### Maintenance
+
 - Removed `Ethers` dependency, alternative `fromEthersProvider()` static constructor implementation, PR [#2633](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2633)
 - Update ethereum-cryptography from 1.2 to 2.0 (switch from noble-secp256k1 to noble-curves), PR [#2641](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2641)
 

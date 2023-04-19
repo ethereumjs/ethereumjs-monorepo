@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.1.2 - 2023-04-20
+
+- Schedule Shanghai block on mainnet, PR [#2591](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2591)
+- Remove and replace some EF bootnodes for `mainnet`, PR [#2576](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2576)
+
 ## 3.1.1 - 2023-02-27
 
 - Pinned `@ethereumjs/util` `@chainsafe/ssz` dependency to `v0.9.4` due to ES2021 features used in `v0.10.+` causing compatibility issues, PR [#2555](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2555)
