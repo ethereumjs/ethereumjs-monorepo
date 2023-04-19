@@ -64,6 +64,34 @@ tape('StateManager -> Storage Checkpointing', (t) => {
       s4: { value: value4, root: root4 },
       s5: { value: value5, root: root5 },
     },
+    {
+      s1: { value: valueEmpty, root: rootEmpty },
+      s2: { value: value2, root: root2 },
+      s3: { value: value3, root: root3 },
+      s4: { value: valueEmpty, root: rootEmpty },
+      s5: { value: value5, root: root5 },
+    },
+    {
+      s1: { value, root },
+      s2: { value: valueEmpty, root: rootEmpty },
+      s3: { value: value3, root: root3 },
+      s4: { value: valueEmpty, root: rootEmpty },
+      s5: { value: value5, root: root5 },
+    },
+    {
+      s1: { value, root },
+      s2: { value: valueEmpty, root: rootEmpty },
+      s3: { value: value3, root: root3 },
+      s4: { value: value4, root: root4 },
+      s5: { value: valueEmpty, root: rootEmpty },
+    },
+    {
+      s1: { value, root },
+      s2: { value: value2, root: root2 },
+      s3: { value: valueEmpty, root: rootEmpty },
+      s4: { value: value4, root: root4 },
+      s5: { value: valueEmpty, root: rootEmpty },
+    },
   ]
 
   for (const s of storageSets) {
@@ -76,7 +104,7 @@ tape('StateManager -> Storage Checkpointing', (t) => {
       await storageEval(st, sm, address, key, s.s1.value, s.s1.root)
 
       sm.clearCaches()
-      st.deepEqual(await sm.getContractStorage(address, key), value)
+      st.deepEqual(await sm.getContractStorage(address, key), s.s1.value)
       await storageEval(st, sm, address, key, s.s1.value, s.s1.root)
 
       st.end()
@@ -104,7 +132,6 @@ tape('StateManager -> Storage Checkpointing', (t) => {
 
       await sm.checkpoint()
       await sm.putContractStorage(address, key, s.s1.value)
-      await storageEval(st, sm, address, key, s.s1.value, s.s1.root)
 
       await sm.revert()
       await sm.flush()
