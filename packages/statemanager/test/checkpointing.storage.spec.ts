@@ -3,15 +3,44 @@ import * as tape from 'tape'
 
 import { DefaultStateManager } from '../src'
 
+const storageEval = async (
+  st: tape.Test,
+  sm: DefaultStateManager,
+  address: Address,
+  key: Uint8Array,
+  value: Uint8Array,
+  root: Uint8Array
+) => {
+  st.deepEqual(await sm.getContractStorage(address, key), value)
+  const accountCMP = await sm.getAccount(address)
+  st.deepEqual(accountCMP!.storageRoot, root)
+}
+
 tape('StateManager -> Storage Checkpointing', (t) => {
   const address = new Address(hexStringToBytes('11'.repeat(20)))
   const account = new Account()
+
   const key = hexStringToBytes('01'.repeat(32))
+
   const value = hexStringToBytes('01')
+  const root = hexStringToBytes('561a011235f3fe8a4d292eba6d462e09015bbef9f8c3373dd70760bbc86f9a6c')
+
   const value2 = hexStringToBytes('02')
+  const root2 = hexStringToBytes('38f95e481a23df7b41934aee346cc960becc5388ad4c67e51f60ac03e8687626')
+
   const value3 = hexStringToBytes('03')
+  const root3 = hexStringToBytes('dedbee161cad6e3afcc99901dfca9122c16ad48af559d78c4a8b5bec2f5f304b')
+
   const value4 = hexStringToBytes('04')
+  const root4 = hexStringToBytes('e5ccf4afccb012ac0900d0f64f6567a1bceb89f16ff5050da2a64427da94b618')
+
   const value5 = hexStringToBytes('05')
+  const root5 = hexStringToBytes('b5b5deaf640a41912217f37f6ee338d49c6a476e0912c81188c2954fd1e959f8')
+
+  const valueEmpty = new Uint8Array(0)
+  const rootEmpty = hexStringToBytes(
+    '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
+  )
 
   t.test('No CP -> S1 -> Flush() (-> S1)', async (st) => {
     const sm = new DefaultStateManager()
@@ -19,10 +48,12 @@ tape('StateManager -> Storage Checkpointing', (t) => {
 
     await sm.putContractStorage(address, key, value)
     await sm.flush()
-    st.deepEqual(await sm.getContractStorage(address, key), value)
+    await storageEval(st, sm, address, key, value, root)
 
     sm.clearCaches()
     st.deepEqual(await sm.getContractStorage(address, key), value)
+    accountCMP = await sm.getAccount(address)
+    await storageEval(st, sm, address, key, value, root)
 
     st.end()
   })
@@ -35,10 +66,10 @@ tape('StateManager -> Storage Checkpointing', (t) => {
     await sm.putContractStorage(address, key, value)
     await sm.commit()
     await sm.flush()
-    st.deepEqual(await sm.getContractStorage(address, key), value)
+    await storageEval(st, sm, address, key, value, root)
 
     sm.clearCaches()
-    st.deepEqual(await sm.getContractStorage(address, key), value)
+    await storageEval(st, sm, address, key, value, root)
 
     st.end()
   })
@@ -49,13 +80,15 @@ tape('StateManager -> Storage Checkpointing', (t) => {
 
     await sm.checkpoint()
     await sm.putContractStorage(address, key, value)
+    await storageEval(st, sm, address, key, value, root)
+
     await sm.revert()
     await sm.flush()
-    st.deepEqual(await sm.getContractStorage(address, key), new Uint8Array(0))
+    await storageEval(st, sm, address, key, valueEmpty, rootEmpty)
 
     sm.clearCaches()
 
-    st.deepEqual(await sm.getContractStorage(address, key), new Uint8Array(0))
+    await storageEval(st, sm, address, key, valueEmpty, rootEmpty)
 
     st.end()
   })
@@ -68,10 +101,10 @@ tape('StateManager -> Storage Checkpointing', (t) => {
     await sm.checkpoint()
     await sm.commit()
     await sm.flush()
-    st.deepEqual(await sm.getContractStorage(address, key), value)
+    await storageEval(st, sm, address, key, value, root)
 
     sm.clearCaches()
-    st.deepEqual(await sm.getContractStorage(address, key), value)
+    await storageEval(st, sm, address, key, value, root)
 
     st.end()
   })
@@ -84,10 +117,10 @@ tape('StateManager -> Storage Checkpointing', (t) => {
     await sm.checkpoint()
     await sm.revert()
     await sm.flush()
-    st.deepEqual(await sm.getContractStorage(address, key), value)
+    await storageEval(st, sm, address, key, value, root)
 
     sm.clearCaches()
-    st.deepEqual(await sm.getContractStorage(address, key), value)
+    await storageEval(st, sm, address, key, value, root)
 
     st.end()
   })
@@ -101,10 +134,10 @@ tape('StateManager -> Storage Checkpointing', (t) => {
     await sm.putContractStorage(address, key, value2)
     await sm.commit()
     await sm.flush()
-    st.deepEqual(await sm.getContractStorage(address, key), value2)
+    await storageEval(st, sm, address, key, value2, root2)
 
     sm.clearCaches()
-    st.deepEqual(await sm.getContractStorage(address, key), value2)
+    await storageEval(st, sm, address, key, value2, root2)
 
     st.end()
   })
@@ -119,10 +152,10 @@ tape('StateManager -> Storage Checkpointing', (t) => {
     await sm.commit()
     await sm.putContractStorage(address, key, value3)
     await sm.flush()
-    st.deepEqual(await sm.getContractStorage(address, key), value3)
+    await storageEval(st, sm, address, key, value3, root3)
 
     sm.clearCaches()
-    st.deepEqual(await sm.getContractStorage(address, key), value3)
+    await storageEval(st, sm, address, key, value3, root3)
 
     st.end()
   })
@@ -137,10 +170,10 @@ tape('StateManager -> Storage Checkpointing', (t) => {
     await sm.putContractStorage(address, key, value3)
     await sm.commit()
     await sm.flush()
-    st.deepEqual(await sm.getContractStorage(address, key), value3)
+    await storageEval(st, sm, address, key, value3, root3)
 
     sm.clearCaches()
-    st.deepEqual(await sm.getContractStorage(address, key), value3)
+    await storageEval(st, sm, address, key, value3, root3)
 
     st.end()
   })
@@ -154,10 +187,10 @@ tape('StateManager -> Storage Checkpointing', (t) => {
     await sm.putContractStorage(address, key, value2)
     await sm.commit()
     await sm.flush()
-    st.deepEqual((await sm.getContractStorage(address, key))!, value2)
+    await storageEval(st, sm, address, key, value2, root2)
 
     sm.clearCaches()
-    st.deepEqual((await sm.getContractStorage(address, key))!, value2)
+    await storageEval(st, sm, address, key, value2, root2)
 
     st.end()
   })
@@ -172,10 +205,10 @@ tape('StateManager -> Storage Checkpointing', (t) => {
     await sm.putContractStorage(address, key, value2)
     await sm.revert()
     await sm.flush()
-    st.deepEqual(await sm.getContractStorage(address, key), new Uint8Array(0))
+    await storageEval(st, sm, address, key, valueEmpty, rootEmpty)
 
     sm.clearCaches()
-    st.deepEqual(await sm.getContractStorage(address, key), new Uint8Array(0))
+    await storageEval(st, sm, address, key, valueEmpty, rootEmpty)
 
     st.end()
   })
@@ -189,10 +222,10 @@ tape('StateManager -> Storage Checkpointing', (t) => {
     await sm.putContractStorage(address, key, value2)
     await sm.revert()
     await sm.flush()
-    st.deepEqual(await sm.getContractStorage(address, key), value)
+    await storageEval(st, sm, address, key, value, root)
 
     sm.clearCaches()
-    st.deepEqual(await sm.getContractStorage(address, key), value)
+    await storageEval(st, sm, address, key, value, root)
 
     st.end()
   })
@@ -211,10 +244,10 @@ tape('StateManager -> Storage Checkpointing', (t) => {
       await sm.commit()
       await sm.commit()
       await sm.flush()
-      st.deepEqual(await sm.getContractStorage(address, key), value3)
+      await storageEval(st, sm, address, key, value3, root3)
 
       sm.clearCaches()
-      st.deepEqual(await sm.getContractStorage(address, key), value3)
+      await storageEval(st, sm, address, key, value3, root3)
 
       st.end()
     }
@@ -234,10 +267,10 @@ tape('StateManager -> Storage Checkpointing', (t) => {
       await sm.commit()
       await sm.revert()
       await sm.flush()
-      st.deepEqual(await sm.getContractStorage(address, key), value)
+      await storageEval(st, sm, address, key, value, root)
 
       sm.clearCaches()
-      st.deepEqual(await sm.getContractStorage(address, key), value)
+      await storageEval(st, sm, address, key, value, root)
 
       st.end()
     }
@@ -257,10 +290,10 @@ tape('StateManager -> Storage Checkpointing', (t) => {
       await sm.revert()
       await sm.commit()
       await sm.flush()
-      st.deepEqual(await sm.getContractStorage(address, key), value2)
+      await storageEval(st, sm, address, key, value2, root2)
 
       sm.clearCaches()
-      st.deepEqual(await sm.getContractStorage(address, key), value2)
+      await storageEval(st, sm, address, key, value2, root2)
 
       st.end()
     }
@@ -281,10 +314,10 @@ tape('StateManager -> Storage Checkpointing', (t) => {
       await sm.putContractStorage(address, key, value4)
       await sm.commit()
       await sm.flush()
-      st.deepEqual(await sm.getContractStorage(address, key), value4)
+      await storageEval(st, sm, address, key, value4, root4)
 
       sm.clearCaches()
-      st.deepEqual(await sm.getContractStorage(address, key), value4)
+      await storageEval(st, sm, address, key, value4, root4)
 
       st.end()
     }
@@ -308,10 +341,10 @@ tape('StateManager -> Storage Checkpointing', (t) => {
       await sm.commit()
       await sm.commit()
       await sm.flush()
-      st.deepEqual(await sm.getContractStorage(address, key), value5)
+      await storageEval(st, sm, address, key, value5, root5)
 
       sm.clearCaches()
-      st.deepEqual(await sm.getContractStorage(address, key), value5)
+      await storageEval(st, sm, address, key, value5, root5)
 
       st.end()
     }
