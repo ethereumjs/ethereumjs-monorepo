@@ -23,6 +23,9 @@ tape(`${method}: call with valid arguments`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes, false)
 
   await execution.vm.stateManager.putAccount(address, new Account())
+  await execution.vm.stateManager.checkpoint()
+  await execution.vm.stateManager.commit()
+  await execution.vm.stateManager.flush()
 
   req = params(method, [address.toString(), '0x0', 'latest'])
   expectRes = (res: any) => {
@@ -39,6 +42,9 @@ tape(`${method}: call with valid arguments`, async (t) => {
     hexStringToBytes(key),
     hexStringToBytes(value)
   )
+  await execution.vm.stateManager.checkpoint()
+  await execution.vm.stateManager.commit()
+  await execution.vm.stateManager.flush()
 
   req = params(method, [address.toString(), key, 'latest'])
   expectRes = (res: any) => {
