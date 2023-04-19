@@ -208,10 +208,9 @@ export class AccountCache extends Cache {
     const it = diffMap.begin()
     while (!it.equals(diffMap.end())) {
       const addressHex = it.pointer[0]
-      const element = it.pointer[1]
       const oldElem = this._diffCache[this._checkpoints].getElementByKey(addressHex)
       if (oldElem === undefined) {
-        this._diffCache[this._checkpoints].setElement(addressHex, element)
+        this._diffCache[this._checkpoints].setElement(addressHex, undefined)
       }
       it.next()
     }

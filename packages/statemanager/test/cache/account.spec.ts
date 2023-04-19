@@ -1,10 +1,8 @@
-import { Address, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
+import { Account, Address, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { AccountCache, CacheType } from '../../src/cache'
 import { createAccount } from '../util'
-
-import type { Account } from '@ethereumjs/util'
 
 tape('Account Cache: initialization', (t) => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
@@ -82,6 +80,20 @@ tape('Account Cache: checkpointing', (t) => {
       st.ok(elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, accRLP))
 
       st.end()
+    })
+
+    t.test('should use outer revert', async (st) => {
+      const cache = new AccountCache({ size: 100, type: CacheType.LRU })
+
+      const account1 = new Account(undefined, 1n)
+      cache.checkpoint()
+      cache.put(addr, account1)
+      cache.checkpoint()
+      cache.put(addr, account1)
+      cache.commit()
+      cache.revert()
+      const accCmp = cache.get(addr)
+      st.ok(accCmp === undefined)
     })
 
     t.test('cache clearing', async (st) => {
