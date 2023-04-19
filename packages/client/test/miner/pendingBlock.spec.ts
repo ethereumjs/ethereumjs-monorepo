@@ -302,11 +302,11 @@ tape('[PendingBlock]', async (t) => {
     const payloadId = await pendingBlock.start(vm, parentBlock)
     await pendingBlock.build(payloadId)
 
-    const blobBundle = pendingBlock.blobBundles.get(bytesToPrefixedHexString(payloadId))!
-    st.ok(blobBundle !== undefined)
-    const pendingBlob = blobBundle.blobs[0]
+    const blobsBundles = pendingBlock.blobsBundles.get(bytesToPrefixedHexString(payloadId))!
+    st.ok(blobsBundles !== undefined)
+    const pendingBlob = blobsBundles.blobs[0]
     st.ok(pendingBlob !== undefined && equalsBytes(pendingBlob, blobs[0]))
-    const blobProof = blobBundle.proofs[0]
+    const blobProof = blobsBundles.proofs[0]
     st.ok(blobProof !== undefined && equalsBytes(blobProof, proofs[0]))
     st.end()
   })

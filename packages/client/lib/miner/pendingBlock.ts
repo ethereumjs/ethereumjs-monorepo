@@ -1,4 +1,3 @@
-import { BlockHeader } from '@ethereumjs/block'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
   TypeOutput,
@@ -33,10 +32,9 @@ interface PendingBlockOpts {
   skipHardForkValidation?: boolean
 }
 
-interface BlobBundle {
-  blockHash: string
+export interface BlobsBundle {
   blobs: Uint8Array[]
-  kzgCommitments: Uint8Array[]
+  commitments: Uint8Array[]
   proofs: Uint8Array[]
 }
 /**
@@ -55,7 +53,7 @@ export class PendingBlock {
   txPool: TxPool
 
   pendingPayloads: Map<string, BlockBuilder> = new Map()
-  blobBundles: Map<string, BlobBundle> = new Map()
+  blobsBundles: Map<string, BlobsBundle> = new Map()
 
   private skipHardForkValidation?: boolean
 
@@ -114,7 +112,7 @@ export class PendingBlock {
       return payloadIdBytes
     }
 
-    // Prune the builders and blobbundles
+    // Prune the builders and blobsbundles
     this.pruneSetToMax(MAX_PAYLOAD_CACHE)
 
     if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
@@ -191,20 +189,7 @@ export class PendingBlock {
 
     // Construct initial blobs bundle when payload is constructed
     if (vm._common.isActivatedEIP(4844)) {
-      const header = BlockHeader.fromHeaderData(
-        {
-          ...headerData,
-          number,
-          gasLimit,
-          baseFeePerGas,
-          excessDataGas,
-        },
-        {
-          hardforkByTTD: td,
-          common: vm._common,
-        }
-      )
-      this.constructBlobsBundle(payloadId, blobTxs, header.hash())
+      this.constructBlobsBundle(payloadId, blobTxs)
     }
     return payloadIdBytes
   }
@@ -221,7 +206,7 @@ export class PendingBlock {
     void builder.revert()
     // Remove from pendingPayloads
     this.pendingPayloads.delete(payloadId)
-    this.blobBundles.delete(payloadId)
+    this.blobsBundles.delete(payloadId)
   }
 
   /**
@@ -229,7 +214,7 @@ export class PendingBlock {
    */
   async build(
     payloadIdBytes: Uint8Array | string
-  ): Promise<void | [block: Block, receipts: TxReceipt[], value: bigint]> {
+  ): Promise<void | [block: Block, receipts: TxReceipt[], value: bigint, blobs?: BlobsBundle]> {
     const payloadId =
       typeof payloadIdBytes !== 'string' ? bytesToPrefixedHexString(payloadIdBytes) : payloadIdBytes
     const builder = this.pendingPayloads.get(payloadId)
@@ -304,11 +289,11 @@ export class PendingBlock {
     )
 
     // Construct blobs bundle
-    if (block._common.isActivatedEIP(4844)) {
-      this.constructBlobsBundle(payloadId, blobTxs, block.header.hash())
-    }
+    const blobs = block._common.isActivatedEIP(4844)
+      ? this.constructBlobsBundle(payloadId, blobTxs)
+      : undefined
 
-    return [block, builder.transactionReceipts, builder.minerValue]
+    return [block, builder.transactionReceipts, builder.minerValue, blobs]
   }
 
   /**
@@ -317,18 +302,14 @@ export class PendingBlock {
    * @param txs an array of {@BlobEIP4844Transaction } transactions
    * @param blockHash the blockhash of the pending block (computed from the header data provided)
    */
-  private constructBlobsBundle = (
-    payloadId: string,
-    txs: BlobEIP4844Transaction[],
-    blockHash: Uint8Array
-  ) => {
+  private constructBlobsBundle = (payloadId: string, txs: BlobEIP4844Transaction[]) => {
     let blobs: Uint8Array[] = []
-    let kzgCommitments: Uint8Array[] = []
+    let commitments: Uint8Array[] = []
     let proofs: Uint8Array[] = []
-    const bundle = this.blobBundles.get(payloadId)
+    const bundle = this.blobsBundles.get(payloadId)
     if (bundle !== undefined) {
       blobs = bundle.blobs
-      kzgCommitments = bundle.kzgCommitments
+      commitments = bundle.commitments
       proofs = bundle.proofs
     }
 
@@ -336,15 +317,17 @@ export class PendingBlock {
       tx = tx as BlobEIP4844Transaction
       if (tx.blobs !== undefined && tx.blobs.length > 0) {
         blobs = blobs.concat(tx.blobs)
-        kzgCommitments = kzgCommitments.concat(tx.kzgCommitments!)
+        commitments = commitments.concat(tx.kzgCommitments!)
         proofs = proofs.concat(tx.kzgProofs!)
       }
     }
-    this.blobBundles.set(payloadId, {
-      blockHash: bytesToPrefixedHexString(blockHash),
+
+    const blobsBundle = {
       blobs,
-      kzgCommitments,
+      commitments,
       proofs,
-    })
+    }
+    this.blobsBundles.set(payloadId, blobsBundle)
+    return blobsBundle
   }
 }
