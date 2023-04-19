@@ -22,6 +22,7 @@ import type { Chain } from '../../blockchain'
 import type { EthereumClient } from '../../client'
 import type { Config } from '../../config'
 import type { VMExecution } from '../../execution'
+import type { BlobsBundle } from '../../miner'
 import type { FullEthereumService } from '../../service'
 import type { HeaderData } from '@ethereumjs/block'
 import type { VM } from '@ethereumjs/vm'
@@ -109,8 +110,7 @@ type TransitionConfigurationV1 = {
 }
 
 type BlobsBundleV1 = {
-  blockHash: string
-  kzgs: Bytes48[]
+  commitments: Bytes48[]
   blobs: Blob[]
   proofs: Bytes48[]
 }
@@ -170,12 +170,19 @@ const payloadAttributesFieldValidatorsV2 = {
 /**
  * Formats a block to {@link ExecutionPayloadV1}.
  */
-export const blockToExecutionPayload = (block: Block, value: bigint) => {
+export const blockToExecutionPayload = (block: Block, value: bigint, bundle?: BlobsBundle) => {
   const blockJson = block.toJSON()
   const header = blockJson.header!
   const transactions =
     block.transactions.map((tx) => bytesToPrefixedHexString(tx.serialize())) ?? []
   const withdrawalsArr = blockJson.withdrawals ? { withdrawals: blockJson.withdrawals } : {}
+  const blobsBundle: BlobsBundleV1 | undefined = bundle
+    ? {
+        commitments: bundle.commitments.map(bytesToPrefixedHexString),
+        blobs: bundle.blobs.map(bytesToPrefixedHexString),
+        proofs: bundle.proofs.map(bytesToPrefixedHexString),
+      }
+    : undefined
 
   const executionPayload: ExecutionPayload = {
     blockNumber: header.number!,
@@ -195,7 +202,7 @@ export const blockToExecutionPayload = (block: Block, value: bigint) => {
     transactions,
     ...withdrawalsArr,
   }
-  return { executionPayload, blockValue: bigIntToHex(value) }
+  return { executionPayload, blockValue: bigIntToHex(value), blobsBundle }
 }
 
 /**
@@ -472,11 +479,6 @@ export class Engine {
           }),
         ],
       ]),
-      () => this.connectionManager.updateStatus()
-    )
-
-    this.getBlobsBundleV1 = cmMiddleware(
-      middleware(this.getBlobsBundleV1.bind(this), 1, [[validators.bytes8]]),
       () => this.connectionManager.updateStatus()
     )
 
@@ -1003,9 +1005,9 @@ export class Engine {
       }
       // The third arg returned is the minerValue which we will use to
       // value the block
-      const [block, receipts, value] = built
+      const [block, receipts, value, blobs] = built
       await this.execution.runWithoutSetHead({ block }, receipts)
-      return blockToExecutionPayload(block, value)
+      return blockToExecutionPayload(block, value, blobs)
     } catch (error: any) {
       if (error === EngineError.UnknownPayload) throw error
       throw {
@@ -1056,27 +1058,6 @@ export class Engine {
     // Note: our client does not yet support block whitelisting (terminalBlockHash/terminalBlockNumber)
     // since we are not yet fast enough to run along tip-of-chain mainnet execution
     return { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber }
-  }
-
-  /**
-   *
-   * @param params a payloadId for a pending block
-   * @returns a BlobsBundle consisting of the blockhash, the blobs, and the corresponding kzg commitments
-   */
-  private async getBlobsBundleV1(params: [Bytes8]): Promise<BlobsBundleV1> {
-    const payloadId = params[0]
-
-    const bundle = this.pendingBlock.blobBundles.get(payloadId)
-    if (bundle === undefined) {
-      throw EngineError.UnknownPayload
-    }
-
-    return {
-      blockHash: bundle.blockHash,
-      kzgs: bundle.kzgCommitments.map(bytesToPrefixedHexString),
-      blobs: bundle.blobs.map(bytesToPrefixedHexString),
-      proofs: bundle.proofs.map(bytesToPrefixedHexString),
-    }
   }
 
   /**
