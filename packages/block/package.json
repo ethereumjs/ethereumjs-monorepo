@@ -42,7 +42,7 @@
     "@ethereumjs/rlp": "^4.0.1",
     "@ethereumjs/trie": "^5.0.4",
     "@ethereumjs/tx": "^4.1.1",
-    "@ethereumjs/util": "^8.0.5",
+    "@ethereumjs/util": "^8.0.6",
     "ethereum-cryptography": "^2.0.0"
   },
   "devDependencies": {
