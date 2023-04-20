@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        fork: ['London', 'Berlin', 'Merge', 'MuirGlacier', 'Istanbul', 'Shanghai']
+        fork: ['London', 'Berlin', 'Paris', 'MuirGlacier', 'Istanbul', 'Shanghai']
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
@@ -69,7 +69,7 @@ jobs:
         fork:
           [
             'Shanghai',
-            'Merge',
+            'Paris',
             'London',
             'Berlin',
             'MuirGlacier',
