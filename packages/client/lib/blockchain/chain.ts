@@ -303,7 +303,7 @@ export class Chain {
       if (this.config.chainCommon.hardforkGteHardfork(nextBlockHf, Hardfork.Paris)) {
         this.config.logger.info('*'.repeat(85))
         this.config.logger.info(
-          `Merge hardfork reached 🐼 👉 👈 🐼 ! block=${headers.height} td=${headers.td}`
+          `Paris (Merge) hardfork reached 🐼 👉 👈 🐼 ! block=${headers.height} td=${headers.td}`
         )
         this.config.logger.info('-'.repeat(85))
         this.config.logger.info(' ')
