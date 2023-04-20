@@ -152,6 +152,10 @@ export function getRequiredForkConfigAlias(forkConfig: string) {
   if (String(forkConfig).match(/^petersburg$/i)) {
     return 'ConstantinopleFix'
   }
+  // Paris is named Merge
+  if (String(forkConfig).match(/^paris/i)) {
+    return 'Merge'
+  }
   return forkConfig
 }
 
