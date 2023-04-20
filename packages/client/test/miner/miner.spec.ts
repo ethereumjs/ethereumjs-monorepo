@@ -209,7 +209,7 @@ tape('[Miner]', async (t) => {
     await setBalance(vm, A.address, BigInt('200000000000001'))
 
     // add tx
-    txA011.common.setHardfork(Hardfork.Merge)
+    txA011.common.setHardfork(Hardfork.Paris)
     await txPool.add(txA011)
     t.equal(txPool.txsInPool, 1, 'transaction should be in pool')
 

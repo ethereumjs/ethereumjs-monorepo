@@ -235,7 +235,7 @@ export class Common extends EventEmitter {
     super()
     this._customChains = opts.customChains ?? []
     this._chainParams = this.setChain(opts.chain)
-    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Merge
+    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Paris
     // Assign hardfork changes in the sequence of the applied hardforks
     this.HARDFORK_CHANGES = this.hardforks().map((hf) => [
       hf.name as HardforkSpecKeys,
@@ -739,7 +739,7 @@ export class Common extends EventEmitter {
     let hfIndex = hfs.findIndex((hf) => hf.name === hardfork)
     // If the current hardfork is merge, go one behind as merge hf is not part of these
     // calcs even if the merge hf block is set
-    if (hardfork === Hardfork.Merge) {
+    if (hardfork === Hardfork.Paris) {
       hfIndex -= 1
     }
     // Hardfork not found
@@ -758,7 +758,7 @@ export class Common extends EventEmitter {
       hfTimeOrBlock =
         hfTimeOrBlock !== null && hfTimeOrBlock !== undefined ? Number(hfTimeOrBlock) : null
       return (
-        hf.name !== Hardfork.Merge &&
+        hf.name !== Hardfork.Paris &&
         hfTimeOrBlock !== null &&
         hfTimeOrBlock !== undefined &&
         hfTimeOrBlock !== currHfTimeOrBlock
@@ -788,11 +788,11 @@ export class Common extends EventEmitter {
     let hfBlock = this.hardforkBlock(hardfork)
     // If this is a merge hardfork with block not set, then we fallback to previous hardfork
     // to find the nextHardforkBlock
-    if (hfBlock === null && hardfork === Hardfork.Merge) {
+    if (hfBlock === null && hardfork === Hardfork.Paris) {
       const hfs = this.hardforks()
       const mergeIndex = hfs.findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined)
       if (mergeIndex < 0) {
-        throw Error(`Merge hardfork should have been found`)
+        throw Error(`Paris (Merge) hardfork should have been found`)
       }
       hfBlock = this.hardforkBlock(hfs[mergeIndex - 1].name)
     }
@@ -852,7 +852,7 @@ export class Common extends EventEmitter {
         typeof blockOrTime === 'number' &&
         blockOrTime !== 0 &&
         blockOrTime !== prevBlockOrTime &&
-        name !== Hardfork.Merge
+        name !== Hardfork.Paris
       ) {
         const hfBlockBytes = hexStringToBytes(blockOrTime.toString(16).padStart(16, '0'))
         hfBytes = concatBytes(hfBytes, hfBlockBytes)

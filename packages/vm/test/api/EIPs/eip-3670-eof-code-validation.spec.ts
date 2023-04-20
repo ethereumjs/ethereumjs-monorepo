@@ -95,7 +95,7 @@ tape('EIP 3670 tests', (t) => {
   t.test('ensure invalid eof headers are rejected when calling', async (st) => {
     const common = new Common({
       chain: Chain.Mainnet,
-      hardfork: Hardfork.Merge,
+      hardfork: Hardfork.Paris,
       eips: [3540, 3670],
     })
     const vm = await VM.create({ common })

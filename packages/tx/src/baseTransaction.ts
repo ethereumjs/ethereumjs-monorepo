@@ -87,7 +87,7 @@ export abstract class BaseTransaction<TransactionObject> {
    *
    * @hidden
    */
-  protected DEFAULT_HARDFORK: string | Hardfork = Hardfork.Merge
+  protected DEFAULT_HARDFORK: string | Hardfork = Hardfork.Paris
 
   constructor(txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData, opts: TxOptions) {
     const { nonce, gasLimit, to, value, data, v, r, s, type } = txData

@@ -313,7 +313,7 @@ export class EthProtocol extends Protocol {
     super(options)
 
     this.chain = options.chain
-    const chainTTD = this.config.chainCommon.hardforkTTD(Hardfork.Merge)
+    const chainTTD = this.config.chainCommon.hardforkTTD(Hardfork.Paris)
     if (chainTTD !== null && chainTTD !== undefined) {
       this.chainTTD = chainTTD
     }

@@ -14,7 +14,7 @@ import type { WithdrawalBytes, WithdrawalData } from '@ethereumjs/util'
 
 const common = new Common({
   chain: Chain.Mainnet,
-  hardfork: Hardfork.Merge,
+  hardfork: Hardfork.Paris,
   eips: [4895],
 })
 

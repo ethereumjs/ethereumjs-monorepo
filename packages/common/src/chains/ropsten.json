@@ -2,7 +2,7 @@
   "name": "ropsten",
   "chainId": 3,
   "networkId": 3,
-  "defaultHardfork": "merge",
+  "defaultHardfork": "paris",
   "consensus": {
     "type": "pow",
     "algorithm": "ethash",
@@ -74,7 +74,7 @@
     },
     {
       "//_comment": "The forkHash will remain same as mergeForkIdTransition is post merge",
-      "name": "merge",
+      "name": "paris",
       "ttd": "50000000000000000",
       "block": null,
       "forkHash": "0x7119b6b3"

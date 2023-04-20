@@ -9,7 +9,7 @@ export const DEFAULT_TESTS_PATH = path.resolve('../ethereum-tests')
 /**
  * Default hardfork rules to run tests against
  */
-export const DEFAULT_FORK_CONFIG = 'Merge'
+export const DEFAULT_FORK_CONFIG = 'Paris'
 
 /**
  * Tests which should be fixed
@@ -152,6 +152,10 @@ export function getRequiredForkConfigAlias(forkConfig: string) {
   if (String(forkConfig).match(/^petersburg$/i)) {
     return 'ConstantinopleFix'
   }
+  // Paris is named Merge
+  if (String(forkConfig).match(/^paris/i)) {
+    return 'Merge'
+  }
   return forkConfig
 }
 
@@ -168,7 +172,7 @@ const normalHardforks = [
   'muirGlacier',
   'berlin',
   'london',
-  'merge',
+  'paris',
   'shanghai',
   'arrowGlacier', // This network has no tests, but need to add it due to common generation logic
 ]
@@ -223,7 +227,7 @@ const retestethAlias = {
   EIP150: 'tangerineWhistle',
   EIP158: 'spuriousDragon',
   ConstantinopleFix: 'petersburg',
-  Merged: 'merge',
+  Merged: 'paris',
 }
 
 const testLegacy = {
@@ -238,7 +242,7 @@ const testLegacy = {
   muirGlacier: false,
   berlin: false,
   london: false,
-  merge: false,
+  paris: false,
   ByzantiumToConstantinopleFixAt5: false,
   EIP158ToByzantiumAt5: false,
   FrontierToHomesteadAt5: false,
@@ -308,7 +312,7 @@ function setupCommonWithNetworks(network: string, ttd?: number) {
           //forkHash: hf.forkHash,
           block: null,
         })
-      } else if (hf.name === 'merge') {
+      } else if (hf.name === 'paris') {
         // merge will currently always be after a hardfork, so add it here
         testHardforks.push({
           name: hf.name,
@@ -429,7 +433,7 @@ const expectedTestsFull: {
     Berlin: 41365,
     London: 61197,
     ArrowGlacier: 0,
-    Merge: 60373,
+    Paris: 60373,
     Shanghai: 61563,
     ByzantiumToConstantinopleFixAt5: 3,
     EIP158ToByzantiumAt5: 3,
@@ -451,7 +455,7 @@ const expectedTestsFull: {
     MuirGlacier: 12439,
     Berlin: 13214,
     London: 19449,
-    Merge: 19598,
+    Paris: 19598,
     Shanghai: 19564,
     ByzantiumToConstantinopleFixAt5: 0,
     EIP158ToByzantiumAt5: 0,

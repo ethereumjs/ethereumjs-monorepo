@@ -93,7 +93,7 @@ export class Miner {
       this.service.chain.headers.td,
       undefined
     )
-    if (this.config.chainCommon.hardforkGteHardfork(nextBlockHf, Hardfork.Merge)) {
+    if (this.config.chainCommon.hardforkGteHardfork(nextBlockHf, Hardfork.Paris)) {
       this.config.logger.info('Miner: reached merge hardfork - stopping')
       this.stop()
       return
