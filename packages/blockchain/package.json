@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/blockchain",
-  "version": "6.2.1",
+  "version": "6.2.2",
   "description": "A module to store and interact with blocks",
   "keywords": [
     "ethereum",
