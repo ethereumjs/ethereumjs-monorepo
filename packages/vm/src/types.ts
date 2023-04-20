@@ -83,7 +83,7 @@ export interface VMOpts {
    * ### Possible Values
    *
    * - `chain`: all chains supported by `Common` or a custom chain
-   * - `hardfork`: `mainnet` hardforks up to the `Merge` hardfork
+   * - `hardfork`: `mainnet` hardforks up to the `Paris` hardfork
    * - `eips`: `2537` (usage e.g. `eips: [ 2537, ]`)
    *
    * Note: check the associated `@ethereumjs/evm` instance options
@@ -94,7 +94,7 @@ export interface VMOpts {
    * Default setup if no `Common` instance is provided:
    *
    * - `chain`: `mainnet`
-   * - `hardfork`: `merge`
+   * - `hardfork`: `paris`
    * - `eips`: `[]`
    */
   common?: Common
@@ -136,13 +136,13 @@ export interface VMOpts {
    */
   hardforkByBlockNumber?: boolean
   /**
-   * Select the HF by total difficulty (Merge HF)
+   * Select the HF by total difficulty (Paris Merge HF)
    *
    * This option is a superset of `hardforkByBlockNumber` (so only use one of both options)
    * and determines the HF by both the block number and the TD.
    *
    * Since the TD is only a threshold the block number will in doubt take precedence (imagine
-   * e.g. both Merge and Shanghai HF blocks set and the block number from the block provided
+   * e.g. both Paris (Merge) and Shanghai HF blocks set and the block number from the block provided
    * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
    */
   hardforkByTTD?: BigIntLike
