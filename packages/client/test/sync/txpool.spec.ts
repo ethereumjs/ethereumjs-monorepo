@@ -478,15 +478,19 @@ tape('[TxPool]', async (t) => {
   })
 
   t.test('announcedTxHashes() -> reject txs with too much data', async (t) => {
-    const txs = []
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
 
+    const txs = []
     txs.push(
-      FeeMarketEIP1559Transaction.fromTxData({
-        maxFeePerGas: 1000000000,
-        maxPriorityFeePerGas: 1000000000,
-        nonce: 0,
-        data: '0x' + '00'.repeat(128 * 1024 + 1),
-      }).sign(A.privateKey)
+      FeeMarketEIP1559Transaction.fromTxData(
+        {
+          maxFeePerGas: 1000000000,
+          maxPriorityFeePerGas: 1000000000,
+          nonce: 0,
+          data: '0x' + '00'.repeat(128 * 1024 + 1),
+        },
+        { common }
+      ).sign(A.privateKey)
     )
 
     t.notOk(
