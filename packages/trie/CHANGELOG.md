@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## 5.0.5 - 2023-04-20
 
 - Update ethereum-cryptography from 1.2 to 2.0 (switch from noble-secp256k1 to noble-curves), PR [#2641](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2641)
-- Bump `@ethereumjs/util` `@chainsafe/ssz` dependency to 0.11.0 (no WASM, native SHA-256 implementation, ES2019 compatible), PRs [#2622](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2622) and PR [#2564](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2564)
+- Bump `@ethereumjs/util` `@chainsafe/ssz` dependency to 0.11.1 (no WASM, native SHA-256 implementation, ES2019 compatible, explicit imports), PRs [#2622](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2622), [#2564](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2564) and [#2656](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2656)
 
 ## 5.0.4 - 2023-02-27
 

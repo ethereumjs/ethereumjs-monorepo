@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 - Schedule Shanghai block on mainnet, PR [#2591](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2591)
 - Remove and replace some EF bootnodes for `mainnet`, PR [#2576](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2576)
-- Bump `@ethereumjs/util` `@chainsafe/ssz` dependency to 0.11.0 (no WASM, native SHA-256 implementation, ES2019 compatible), PRs [#2622](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2622) and PR [#2564](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2564)
+- Bump `@ethereumjs/util` `@chainsafe/ssz` dependency to 0.11.1 (no WASM, native SHA-256 implementation, ES2019 compatible, explicit imports), PRs [#2622](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2622), [#2564](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2564) and [#2656](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2656)
 
 ## 3.1.1 - 2023-02-27
 
