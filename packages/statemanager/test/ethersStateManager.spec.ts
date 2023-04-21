@@ -182,7 +182,7 @@ tape('runTx custom transaction test', async (t) => {
     // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
     t.end()
   } else {
-    const common = new Common({ chain: Chain.Mainnet })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const provider =
       process.env.PROVIDER !== undefined
         ? new StaticJsonRpcProvider(process.env.PROVIDER, 1)
