@@ -256,7 +256,7 @@ const validBlock = async (hash: Uint8Array, chain: Chain): Promise<Block | null>
  * Validates that the block satisfies post-merge conditions.
  */
 const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolean> => {
-  const ttd = chain.config.chainCommon.hardforkTTD(Hardfork.Merge)
+  const ttd = chain.config.chainCommon.hardforkTTD(Hardfork.Paris)
   if (ttd === null) return false
   const blockTd = await chain.getTd(block.hash(), block.header.number)
 
@@ -289,7 +289,7 @@ const assembleBlock = async (
   const common = config.chainCommon.copy()
 
   // This is a post merge block, so set its common accordingly
-  const ttd = common.hardforkTTD(Hardfork.Merge)
+  const ttd = common.hardforkTTD(Hardfork.Paris)
   common.setHardforkByBlockNumber(number, ttd !== null ? ttd : undefined, timestamp)
 
   const txs = []
@@ -571,7 +571,7 @@ export class Engine {
 
     try {
       const parent = await this.chain.getBlock(hexStringToBytes(parentHash))
-      if (!parent._common.gteHardfork(Hardfork.Merge)) {
+      if (!parent._common.gteHardfork(Hardfork.Paris)) {
         const validTerminalBlock = await validateTerminalBlock(parent, this.chain)
         if (!validTerminalBlock) {
           const response = {
@@ -807,7 +807,7 @@ export class Engine {
     // Only validate this as terminal block if this block's difficulty is non-zero,
     // else this is a PoS block but its hardfork could be indeterminable if the skeleton
     // is not yet connected.
-    if (!headBlock._common.gteHardfork(Hardfork.Merge) && headBlock.header.difficulty > BigInt(0)) {
+    if (!headBlock._common.gteHardfork(Hardfork.Paris) && headBlock.header.difficulty > BigInt(0)) {
       const validTerminalBlock = await validateTerminalBlock(headBlock, this.chain)
       if (!validTerminalBlock) {
         const response = {
@@ -1040,7 +1040,7 @@ export class Engine {
     params: [TransitionConfigurationV1]
   ): Promise<TransitionConfigurationV1> {
     const { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber } = params[0]
-    const ttd = this.chain.config.chainCommon.hardforkTTD(Hardfork.Merge)
+    const ttd = this.chain.config.chainCommon.hardforkTTD(Hardfork.Paris)
     if (ttd === undefined || ttd === null) {
       throw {
         code: INTERNAL_ERROR,

@@ -229,7 +229,7 @@ export class PeerPool {
    */
   async _statusCheck() {
     let NO_PEER_PERIOD_COUNT = 3
-    if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+    if (this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
       NO_PEER_PERIOD_COUNT = 6
     }
     if (this.size === 0 && this.config.maxPeers > 0) {

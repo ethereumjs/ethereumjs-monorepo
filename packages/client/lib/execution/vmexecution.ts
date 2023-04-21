@@ -443,7 +443,7 @@ export class VMExecution extends Execution {
             ? `baseFee=${endHeadBlock.header.baseFeePerGas} `
             : ''
         const tdAdd =
-          this.config.execCommon.gteHardfork(Hardfork.Merge) === true
+          this.config.execCommon.gteHardfork(Hardfork.Paris) === true
             ? ''
             : `td=${this.chain.blocks.td} `
         this.config.logger.info(

@@ -143,7 +143,7 @@ tape('[PendingBlock]', async (t) => {
     await setBalance(vm, A.address, BigInt(5000000000000000))
     await setBalance(vm, B.address, BigInt(5000000000000000))
 
-    txA011.common.setHardfork(Hardfork.Merge)
+    txA011.common.setHardfork(Hardfork.Paris)
     await txPool.add(txA011)
     t.equal(txPool.txsInPool, 1, '1 txA011 should be added')
     // skip hardfork validation for ease
@@ -160,7 +160,7 @@ tape('[PendingBlock]', async (t) => {
       'txA011 should be in block'
     )
 
-    txB011.common.setHardfork(Hardfork.Merge)
+    txB011.common.setHardfork(Hardfork.Paris)
     await txPool.add(txB011)
     t.equal(txPool.txsInPool, 2, '1 txB011 should be added')
     const built = await pendingBlock.build(payloadId)

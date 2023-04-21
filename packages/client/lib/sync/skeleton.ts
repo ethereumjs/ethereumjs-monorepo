@@ -93,7 +93,7 @@ export class Skeleton extends MetaDBManager {
     super(opts)
     this.status = { progress: { subchains: [] }, linked: false, canonicalHeadReset: true }
     this.started = 0
-    const chainTTD = this.config.chainCommon.hardforkTTD(Hardfork.Merge)
+    const chainTTD = this.config.chainCommon.hardforkTTD(Hardfork.Paris)
     if (chainTTD === undefined || chainTTD === null) {
       throw Error('Cannot create skeleton as merge not set')
     }

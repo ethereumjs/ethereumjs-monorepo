@@ -305,7 +305,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
       headerData['baseFeePerGas'] = parentBlockHeader.calcNextBaseFee()
     }
   }
-  if (opts?.common && opts.common.gteHardfork('merge')) {
+  if (opts?.common && opts.common.gteHardfork('paris')) {
     headerData['mixHash'] = currentRandom
     headerData['difficulty'] = 0
   }

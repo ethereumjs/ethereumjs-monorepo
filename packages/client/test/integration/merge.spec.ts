@@ -35,7 +35,7 @@ tape('[Integration:Merge]', async (t) => {
         { name: 'chainstart', block: 0 },
         { name: 'london', block: 0 },
         {
-          name: 'merge',
+          name: 'paris',
           block: null,
           forkHash: null,
           ttd: BigInt(5),
@@ -56,7 +56,7 @@ tape('[Integration:Merge]', async (t) => {
         { name: 'chainstart', block: 0 },
         { name: 'london', block: 0 },
         {
-          name: 'merge',
+          name: 'paris',
           block: null,
           forkHash: null,
           ttd: BigInt(1000),

@@ -43,7 +43,7 @@ const buildChain = async (blockchain: Blockchain, common: Common, height: number
 tape('Proof of Stake - inserting blocks into blockchain', async (t) => {
   const testnetOnlyTD = JSON.parse(JSON.stringify(testnet))
   testnetOnlyTD['hardforks'][11] = {
-    name: 'merge',
+    name: 'paris',
     ttd: BigInt(1313600),
     block: null,
   }
@@ -76,7 +76,7 @@ tape('Proof of Stake - inserting blocks into blockchain', async (t) => {
 
     t.equal(
       (blockchain as any)._common.hardfork(),
-      'merge',
+      'paris',
       'HF should have been correctly updated'
     )
     const td = await blockchain.getTotalDifficulty(latestHeader.hash())

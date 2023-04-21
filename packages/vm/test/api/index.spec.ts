@@ -42,7 +42,7 @@ tape('VM -> basic instantiation / boolean switches', (t) => {
       KECCAK256_RLP,
       'it has default trie'
     )
-    st.equal(vm._common.hardfork(), Hardfork.Merge, 'it has correct default HF')
+    st.equal(vm._common.hardfork(), Hardfork.Paris, 'it has correct default HF')
     st.end()
   })
 
@@ -77,7 +77,7 @@ tape('VM -> supportedHardforks', (t) => {
       Hardfork.ArrowGlacier,
       Hardfork.GrayGlacier,
       Hardfork.MergeForkIdTransition,
-      Hardfork.Merge,
+      Hardfork.Paris,
     ]
     try {
       await VM.create({ common })

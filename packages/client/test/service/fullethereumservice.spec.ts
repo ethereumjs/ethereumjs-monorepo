@@ -209,7 +209,7 @@ tape('[FullEthereumService]', async (t) => {
 
   t.test('should ban peer for sending NewBlock/NewBlockHashes after merge', async (t) => {
     t.plan(2)
-    const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Merge })
+    const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Paris })
     const config = new Config({ common, transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })

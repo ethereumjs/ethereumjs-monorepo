@@ -109,7 +109,7 @@ export abstract class Synchronizer {
    * Start synchronization
    */
   async start(): Promise<void | boolean> {
-    if (this.running || this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
+    if (this.running || this.config.chainCommon.gteHardfork(Hardfork.Paris) === true) {
       return false
     }
     this.running = true
@@ -122,7 +122,7 @@ export abstract class Synchronizer {
     const timeout = setTimeout(() => {
       this.forceSync = true
     }, this.interval * 30)
-    while (this.running && this.config.chainCommon.gteHardfork(Hardfork.Merge) === false) {
+    while (this.running && this.config.chainCommon.gteHardfork(Hardfork.Paris) === false) {
       try {
         await this.sync()
       } catch (error: any) {

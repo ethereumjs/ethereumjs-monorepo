@@ -67,7 +67,7 @@ export class FullEthereumService extends EthereumService {
         interval: this.interval,
       })
     } else {
-      if (this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
+      if (this.config.chainCommon.gteHardfork(Hardfork.Paris) === true) {
         if (!this.config.disableBeaconSync) {
           void this.switchToBeaconSync()
         }
@@ -153,7 +153,7 @@ export class FullEthereumService extends EthereumService {
     }
     await super.start()
     this.miner?.start()
-    if (!this.config.execCommon.gteHardfork(Hardfork.Merge)) {
+    if (!this.config.execCommon.gteHardfork(Hardfork.Paris)) {
       void this.execution.run(true, true)
     }
     return true
@@ -264,7 +264,7 @@ export class FullEthereumService extends EthereumService {
         break
       }
       case 'NewBlockHashes': {
-        if (this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
+        if (this.config.chainCommon.gteHardfork(Hardfork.Paris) === true) {
           this.config.logger.debug(
             `Dropping peer ${peer.id} for sending NewBlockHashes after merge (EIP-3675)`
           )
@@ -279,7 +279,7 @@ export class FullEthereumService extends EthereumService {
         break
       }
       case 'NewBlock': {
-        if (this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
+        if (this.config.chainCommon.gteHardfork(Hardfork.Paris) === true) {
           this.config.logger.debug(
             `Dropping peer ${peer.id} for sending NewBlock after merge (EIP-3675)`
           )

@@ -47,7 +47,7 @@ tape('bloom', (t: tape.Test) => {
       const str = testCase.hf + 'ToMergeAtDiff' + testCase.TTD.toString(16)
       const common = getCommon(str)
       st.ok(common.hardfork() === testCase.hf)
-      st.ok(common.hardforkTTD('merge') === BigInt(testCase.TTD))
+      st.ok(common.hardforkTTD('paris') === BigInt(testCase.TTD))
     })
     st.end()
   })

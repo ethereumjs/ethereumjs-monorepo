@@ -49,7 +49,7 @@ function execHardfork(
   hardfork: Hardfork | string,
   preMergeHf: Hardfork | string
 ): string | Hardfork {
-  return hardfork !== Hardfork.Merge ? hardfork : preMergeHf
+  return hardfork !== Hardfork.Paris ? hardfork : preMergeHf
 }
 
 /**
