@@ -25,14 +25,20 @@ tape('EIP 3860 tests', (t) => {
     await vm.stateManager.putAccount(sender, account!)
 
     const bytes = new Uint8Array(1000000).fill(0x60)
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
-      data:
-        '0x7F6000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060005260206000F3' +
-        bytesToHex(bytes),
-      gasLimit: 100000000000,
-      maxFeePerGas: 7,
-      nonce: 0,
-    }).sign(pkey)
+    // We create a tx with a common which has eip not yet activated else tx creation will
+    // throw error
+    const txCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const tx = FeeMarketEIP1559Transaction.fromTxData(
+      {
+        data:
+          '0x7F6000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060005260206000F3' +
+          bytesToHex(bytes),
+        gasLimit: 100000000000,
+        maxFeePerGas: 7,
+        nonce: 0,
+      },
+      { common: txCommon }
+    ).sign(pkey)
     const result = await vm.runTx({ tx })
     st.ok(
       (result.execResult.exceptionError?.error as string) === 'initcode exceeds max initcode size',

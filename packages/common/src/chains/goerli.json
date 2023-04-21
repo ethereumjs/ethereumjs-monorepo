@@ -2,7 +2,7 @@
   "name": "goerli",
   "chainId": 5,
   "networkId": 5,
-  "defaultHardfork": "paris",
+  "defaultHardfork": "shanghai",
   "consensus": {
     "type": "poa",
     "algorithm": "clique",
