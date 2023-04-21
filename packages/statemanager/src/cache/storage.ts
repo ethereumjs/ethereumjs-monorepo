@@ -303,6 +303,9 @@ export class StorageCache extends Cache {
       while (!itHigherHeightStorageDiff.equals(higherHeightStorageDiff.end())) {
         const keyHex = itHigherHeightStorageDiff.pointer[0]
         const lowerHeightDiffStorage = lowerHeightStorageDiff.getElementByKey(keyHex)
+        // TODO: analyze if this should compare to the iterator as in account cache
+        // and then instead of setting `undefined` set the upper height storage value
+        // (trials on this lead to lot of test failures)
         if (lowerHeightDiffStorage === undefined) {
           lowerHeightStorageDiff.setElement(keyHex, undefined)
         }
