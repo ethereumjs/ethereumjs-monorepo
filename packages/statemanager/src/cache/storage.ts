@@ -302,10 +302,10 @@ export class StorageCache extends Cache {
 
       while (!itHigherHeightStorageDiff.equals(higherHeightStorageDiff.end())) {
         const keyHex = itHigherHeightStorageDiff.pointer[0]
-        const value = itHigherHeightStorageDiff.pointer[1]
-        const lowerHeightDiffStorage = lowerHeightStorageDiff.getElementByKey(keyHex)
-        if (lowerHeightDiffStorage === undefined) {
-          lowerHeightStorageDiff.setElement(keyHex, value)
+        const lowerHeightIt = lowerHeightStorageDiff.find(keyHex)
+        if (lowerHeightIt.equals(lowerHeightStorageDiff.end())) {
+          const elem = itHigherHeightStorageDiff.pointer[1]
+          lowerHeightStorageDiff.setElement(keyHex, elem)
         }
         itHigherHeightStorageDiff.next()
       }

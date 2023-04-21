@@ -80,6 +80,20 @@ tape('Storage Cache: checkpointing', (t) => {
       st.end()
     })
 
+    t.test('should use outer revert', async (st) => {
+      const cache = new StorageCache({ size: 100, type })
+
+      cache.checkpoint()
+      cache.put(addr, key, value)
+      cache.checkpoint()
+      cache.put(addr, key, value)
+      cache.commit()
+      cache.revert()
+
+      const elem = cache.get(addr, key)
+      st.ok(elem === undefined)
+    })
+
     t.test('should revert to unknown if nonexistent in cache before', async (st) => {
       const cache = new StorageCache({ size: 100, type })
 
