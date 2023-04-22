@@ -336,12 +336,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           // We are at or after Spurious Dragon
           // Call new account gas: account is DEAD and we transfer nonzero value
           if (
-            (await runState.eei.accountIsEmptyOrNonExistent(toAddress)) &&
+            (await runState.stateManager.accountIsEmptyOrNonExistent(toAddress)) &&
             !(value === BigInt(0))
           ) {
             gas += common.param('gasPrices', 'callNewAccount')
           }
-        } else if (!(await runState.eei.accountExists(toAddress))) {
+        } else if (!(await runState.stateManager.accountExists(toAddress))) {
           // We are before Spurious Dragon and the account does not exist.
           // Call new account gas: account does not exist (it is not in the state trie, not even as an "empty" account)
           gas += common.param('gasPrices', 'callNewAccount')
@@ -523,7 +523,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (value > BigInt(0)) {
           gas += common.param('gasPrices', 'authcallValueTransfer')
-          const account = await runState.eei.getAccount(toAddress)
+          const account = await runState.stateManager.getAccount(toAddress)
           if (!account) {
             gas += common.param('gasPrices', 'callNewAccount')
           }
@@ -599,14 +599,16 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           )
           if (balance > BigInt(0)) {
             // This technically checks if account is empty or non-existent
-            const empty = await runState.eei.accountIsEmptyOrNonExistent(selfdestructToAddress)
+            const empty = await runState.stateManager.accountIsEmptyOrNonExistent(
+              selfdestructToAddress
+            )
             if (empty) {
               deductGas = true
             }
           }
         } else if (common.gteHardfork(Hardfork.TangerineWhistle)) {
           // EIP-150 (Tangerine Whistle) gas semantics
-          const exists = await runState.eei.accountExists(selfdestructToAddress)
+          const exists = await runState.stateManager.accountExists(selfdestructToAddress)
           if (!exists) {
             deductGas = true
           }

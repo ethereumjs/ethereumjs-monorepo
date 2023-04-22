@@ -23,8 +23,14 @@ import type { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 import type { AccessListEIP2930Transaction } from './eip2930Transaction'
 import type { BlobEIP4844Transaction } from './eip4844Transaction'
 import type { Transaction } from './legacyTransaction'
-import type { Common } from '@ethereumjs/common'
-import type { AddressLike, BigIntLike, BytesLike, PrefixedHexString } from '@ethereumjs/util'
+import type { AccessList, AccessListBytes, Common } from '@ethereumjs/common'
+import type { AddressLike, BigIntLike, BytesLike } from '@ethereumjs/util'
+export type {
+  AccessList,
+  AccessListBytes,
+  AccessListBytesItem,
+  AccessListItem,
+} from '@ethereumjs/common'
 
 const Bytes20 = new ByteVectorType(20)
 const Bytes32 = new ByteVectorType(32)
@@ -97,22 +103,6 @@ export interface TxOptions {
    */
   allowUnlimitedInitCodeSize?: boolean
 }
-
-/*
- * Access List types
- */
-
-export type AccessListItem = {
-  address: PrefixedHexString
-  storageKeys: PrefixedHexString[]
-}
-
-/*
- * An Access List as a tuple of [address: Uint8Array, storageKeys: Uint8Array[]]
- */
-export type AccessListBytesItem = [Uint8Array, Uint8Array[]]
-export type AccessListBytes = AccessListBytesItem[]
-export type AccessList = AccessListItem[]
 
 export function isAccessListBytes(input: AccessListBytes | AccessList): input is AccessListBytes {
   if (input.length === 0) {

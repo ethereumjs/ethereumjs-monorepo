@@ -1,5 +1,6 @@
 import { CURVE } from 'ethereum-cryptography/secp256k1'
 import { hexToBytes } from 'ethereum-cryptography/utils'
+import { Address } from './address'
 
 /**
  * 2^64-1
@@ -69,3 +70,5 @@ export const KECCAK256_RLP = hexToBytes(KECCAK256_RLP_S)
 export const RLP_EMPTY_STRING = Uint8Array.from([0x80])
 
 export const MAX_WITHDRAWALS_PER_PAYLOAD = 16
+
+export const RIPEMD160_ADDRESS_STRING = '0000000000000000000000000000000000000003'

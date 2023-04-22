@@ -1,8 +1,11 @@
+import { zeros } from '@ethereumjs/util'
+
 import type { EVM, EVMResult, ExecResult } from './evm'
 import type { InterpreterStep } from './interpreter'
 import type { Message } from './message'
 import type { OpHandler, OpcodeList } from './opcodes'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
+import type { StateManagerInterface } from '@ethereumjs/common'
 import type { Account, Address, AsyncEventEmitter, PrefixedHexString } from '@ethereumjs/util'
 
 /**
@@ -14,7 +17,7 @@ export interface EVMInterface {
   getActiveOpcodes?(): OpcodeList
   precompiles: Map<string, any> // Note: the `any` type is used because EVM only needs to have the addresses of the precompiles (not their functions)
   copy(): EVMInterface
-  eei: EEIInterface
+  stateManager: StateManagerInterface
   events?: AsyncEventEmitter<EVMEvents>
 }
 
@@ -300,4 +303,26 @@ export interface TransientStorageInterface {
   revert(): void
   toJSON(): { [address: string]: { [key: string]: string } }
   clear(): void
+}
+
+type MockBlock = {
+  hash(): Uint8Array
+}
+
+export interface Blockchain {
+  getBlock(blockId: number): Promise<MockBlock>
+  copy(): Blockchain
+}
+
+export class DefaultBlockchain implements Blockchain {
+  async getBlock() {
+    return {
+      hash() {
+        return zeros(32)
+      },
+    }
+  }
+  copy() {
+    return this
+  }
 }
