@@ -32,6 +32,7 @@ interface MessageOpts {
   delegatecall?: boolean
   authcallOrigin?: Address
   gasRefund?: bigint
+  versionedHashes?: Buffer[]
 }
 
 export class Message {
@@ -59,6 +60,10 @@ export class Message {
    */
   authcallOrigin?: Address
   gasRefund: bigint // Keeps track of the gasRefund at the start of the frame (used for journaling purposes)
+  /**
+   * List of versioned hashes if message is a blob transaction in the outer VM
+   */
+  versionedHashes?: Buffer[]
 
   constructor(opts: MessageOpts) {
     this.to = opts.to
@@ -76,7 +81,7 @@ export class Message {
     this.delegatecall = opts.delegatecall ?? defaults.delegatecall
     this.authcallOrigin = opts.authcallOrigin
     this.gasRefund = opts.gasRefund ?? defaults.gasRefund
-
+    this.versionedHashes = opts.versionedHashes
     if (this.value < 0) {
       throw new Error(`value field cannot be negative, received ${this.value}`)
     }

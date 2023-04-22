@@ -151,10 +151,8 @@ export class VM {
       promisify(this.events.emit.bind(this.events))
     )
 
-    // Safeguard if "process" is not available (browser)
-    if (process !== undefined && typeof process.env.DEBUG !== 'undefined') {
-      this.DEBUG = true
-    }
+    // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
+    this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
   }
 
   async init(): Promise<void> {
@@ -245,8 +243,15 @@ export class VM {
    * Returns a copy of the {@link VM} instance.
    */
   async copy(): Promise<VM> {
-    const evmCopy = this.evm.copy()
-    const eeiCopy: EEIInterface = evmCopy.eei
+    const common = this._common.copy()
+    common.setHardfork(this._common.hardfork())
+    const eeiCopy = new EEI(this.stateManager.copy(), common, this.blockchain.copy())
+    const evmOpts = {
+      ...(this.evm as any)._optsCached,
+      common,
+      eei: eeiCopy,
+    }
+    const evmCopy = new EVM(evmOpts)
     return VM.create({
       stateManager: (eeiCopy as any)._stateManager,
       blockchain: (eeiCopy as any)._blockchain,

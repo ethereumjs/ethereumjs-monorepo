@@ -1,6 +1,7 @@
 import { DPT as Devp2pDPT, RLPx as Devp2pRLPx } from '@ethereumjs/devp2p'
 
 import { Event } from '../../types'
+import { getClientVersion } from '../../util'
 import { RlpxPeer } from '../peer/rlpxpeer'
 
 import { Server } from './server'
@@ -54,15 +55,16 @@ export class RlpxServer extends Server {
 
   public rlpx: Devp2pRLPx | null = null
   public dpt: Devp2pDPT | null = null
-  public ip: string = '::'
+  public ip: string
 
   /**
    * Create new DevP2P/RLPx server
    */
   constructor(options: RlpxServerOptions) {
     super(options)
-
-    this.ip = options.config.extIP ?? '::'
+    // As of now, the devp2p dpt server listens on the ip4 protocol by default and hence the ip in the
+    // bootnode needs to be of ip4 by default
+    this.ip = options.config.extIP ?? '0.0.0.0'
     this.discovery = options.config.discV4 || options.config.discDns
     this.clientFilter = options.clientFilter ?? [
       'go1.5',
@@ -89,21 +91,25 @@ export class RlpxServer extends Server {
    */
   getRlpxInfo() {
     // TODO: return undefined? note that this.rlpx might be undefined if called before initRlpx
+    const listenAddr = this.ip.match(/^(\d+\.\d+\.\d+\.\d+)$/)
+      ? `${this.ip}:${this.config.port}`
+      : `[${this.ip}]:${this.config.port}`
+
     if (this.rlpx === undefined || this.rlpx === null) {
       return {
         enode: undefined,
         id: undefined,
         ip: this.ip,
-        listenAddr: `[${this.ip}]:${this.config.port}`,
+        listenAddr,
         ports: { discovery: this.config.port, listener: this.config.port },
       }
     }
     const id = this.rlpx._id.toString('hex')
     return {
-      enode: `enode://${id}@[${this.ip}]:${this.config.port}`,
+      enode: `enode://${id}@${listenAddr}`,
       id,
       ip: this.ip,
-      listenAddr: `[${this.ip}]:${this.config.port}`,
+      listenAddr,
       ports: { discovery: this.config.port, listener: this.config.port },
     }
   }
@@ -233,6 +239,7 @@ export class RlpxServer extends Server {
   private async initRlpx() {
     return new Promise<void>((resolve) => {
       this.rlpx = new Devp2pRLPx(this.key, {
+        clientId: Buffer.from(getClientVersion()),
         dpt: this.dpt!,
         maxPeers: this.config.maxPeers,
         capabilities: RlpxPeer.capabilities(Array.from(this.protocols)),

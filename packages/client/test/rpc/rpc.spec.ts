@@ -91,7 +91,7 @@ tape('call JSON-RPC auth protected server with a valid token', (t) => {
 tape('call JSON-RPC auth protected server with a valid but stale token', (t) => {
   const server = startRPC({}, undefined, { jwtSecret })
   const req = 'plaintext'
-  const claims = { iat: Math.floor(new Date().getTime() / 1000 - 6) }
+  const claims = { iat: Math.floor(new Date().getTime() / 1000 - 61) }
   const token = encode(claims, jwtSecret as never as string, 'HS256' as TAlgorithm)
 
   request(server)

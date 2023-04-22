@@ -34,5 +34,8 @@ export function mockBlockchain(options: any = {}) {
       return Block.fromBlockData().header
     },
     genesisBlock: block,
+    copy() {
+      return this
+    },
   }
 }

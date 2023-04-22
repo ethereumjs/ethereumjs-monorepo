@@ -41,8 +41,8 @@ export function getEpoc(blockNumber: bigint) {
 }
 
 /**
- * Generates a seed give the end epoc and optional the begining epoc and the
- * begining epoc seed
+ * Generates a seed give the end epoc and optional the beginning epoc and the
+ * beginning epoc seed
  * @method getSeed
  * @param seed Buffer
  * @param begin Number

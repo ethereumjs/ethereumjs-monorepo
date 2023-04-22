@@ -133,7 +133,7 @@ export class Cache {
 
   /**
    * Marks current state of cache as checkpoint, which can
-   * later on be reverted or commited.
+   * later on be reverted or committed.
    */
   checkpoint(): void {
     this._checkpoints.push(new OrderedMap(this._cache))
@@ -174,7 +174,7 @@ export class Cache {
    *
    * @param key
    * @param value
-   * @param modified - Has the value been modfied or is it coming unchanged from the trie (also used for deleted accounts)
+   * @param modified - Has the value been modified or is it coming unchanged from the trie (also used for deleted accounts)
    * @param deleted - Delete operation on an account
    * @param virtual - Account doesn't exist in the underlying trie
    */

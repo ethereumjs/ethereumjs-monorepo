@@ -80,7 +80,7 @@ Add `.nycrc`:
 }
 ```
 
-Use scipt above in `package.json`:
+Use script above in `package.json`:
 
 ```json
   "scripts": {

@@ -48,6 +48,7 @@ export interface Env {
   codeAddress: Address /* Different than address for DELEGATECALL and CALLCODE */
   gasRefund: bigint /* Current value (at begin of the frame) of the gas refund */
   containerCode?: Buffer /** Full container code for EOF1 contracts */
+  versionedHashes: Buffer[] /** Versioned hashes for blob transactions */
 }
 
 export interface RunState {

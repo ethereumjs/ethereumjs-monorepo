@@ -27,7 +27,7 @@
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L39)
+[exceptions.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L44)
 
 ## Properties
 
@@ -37,7 +37,7 @@
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L36)
+[exceptions.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L41)
 
 ___
 
@@ -47,4 +47,4 @@ ___
 
 #### Defined in
 
-[packages/evm/src/exceptions.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L37)
+[exceptions.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L42)

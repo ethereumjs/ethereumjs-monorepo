@@ -6,6 +6,8 @@ import { short, timeDiff } from '../../util'
 import type { Config } from '../../config'
 import type {
   ExecutionPayloadV1,
+  ExecutionPayloadV2,
+  ExecutionPayloadV3,
   ForkchoiceResponseV1,
   ForkchoiceStateV1,
   PayloadStatusV1,
@@ -23,7 +25,7 @@ type CLConnectionManagerOpts = {
 }
 
 type NewPayload = {
-  payload: ExecutionPayloadV1
+  payload: ExecutionPayloadV1 | ExecutionPayloadV2 | ExecutionPayloadV3
   response?: PayloadStatusV1
 }
 
@@ -32,6 +34,13 @@ type ForkchoiceUpdate = {
   response?: ForkchoiceResponseV1
   headBlock?: Block
   error?: string
+}
+
+type PayloadToPayloadStats = {
+  blockCount: number
+  minBlockNumber?: BigInt
+  maxBlockNumber?: BigInt
+  txs: { [key: number]: number }
 }
 
 export class CLConnectionManager {
@@ -65,6 +74,13 @@ export class CLConnectionManager {
   private lastRequestTimestamp = 0
 
   private _lastPayload?: NewPayload
+  private _payloadToPayloadStats: PayloadToPayloadStats = {
+    blockCount: 0,
+    minBlockNumber: undefined,
+    maxBlockNumber: undefined,
+    txs: {},
+  }
+
   private _lastForkchoiceUpdate?: ForkchoiceUpdate
 
   private _initialPayload?: NewPayload
@@ -105,11 +121,11 @@ export class CLConnectionManager {
       this.DEFAULT_CONNECTION_CHECK_INTERVAL
     )
     this._payloadLogInterval = setInterval(
-      this.payloadLog.bind(this),
+      this.lastPayloadLog.bind(this),
       this.DEFAULT_PAYLOAD_LOG_INTERVAL
     )
     this._forkchoiceLogInterval = setInterval(
-      this.forkchoiceLog.bind(this),
+      this.lastForkchoiceLog.bind(this),
       this.DEFAULT_FORKCHOICE_LOG_INTERVAL
     )
   }
@@ -130,13 +146,20 @@ export class CLConnectionManager {
   }
 
   private _getPayloadLogMsg(payload: NewPayload) {
-    const msg = `number=${Number(payload.payload.blockNumber)} hash=${short(
+    let msg = `number=${Number(payload.payload.blockNumber)} hash=${short(
       payload.payload.blockHash
     )} parentHash=${short(payload.payload.parentHash)}  status=${
       payload.response ? payload.response.status : '-'
     } gasUsed=${this.compactNum(Number(payload.payload.gasUsed))} baseFee=${Number(
       payload.payload.baseFeePerGas
     )} txs=${payload.payload.transactions.length}`
+
+    if ('withdrawals' in payload.payload && payload.payload.withdrawals !== null) {
+      msg += ` withdrawals=${(payload.payload as ExecutionPayloadV2).withdrawals.length}`
+    }
+    if ('excessDataGas' in payload.payload && payload.payload.excessDataGas !== null) {
+      msg += ` excessDataGas=${(payload.payload as ExecutionPayloadV3).excessDataGas}`
+    }
     return msg
   }
 
@@ -188,6 +211,33 @@ export class CLConnectionManager {
     this._lastPayload = payload
   }
 
+  updatePayloadStats(block: Block) {
+    this._payloadToPayloadStats['blockCount'] += 1
+    const num = block.header.number
+    if (
+      this._payloadToPayloadStats['minBlockNumber'] === undefined ||
+      this._payloadToPayloadStats['minBlockNumber'] > num
+    ) {
+      this._payloadToPayloadStats['minBlockNumber'] = num
+    }
+    if (
+      this._payloadToPayloadStats['maxBlockNumber'] === undefined ||
+      this._payloadToPayloadStats['maxBlockNumber'] < num
+    ) {
+      this._payloadToPayloadStats['maxBlockNumber'] = num
+    }
+    for (const tx of block.transactions) {
+      this._payloadToPayloadStats['txs'][tx.type] += 1
+    }
+  }
+
+  clearPayloadStats() {
+    this._payloadToPayloadStats['blockCount'] = 0
+    this._payloadToPayloadStats['minBlockNumber'] = undefined
+    this._payloadToPayloadStats['maxBlockNumber'] = undefined
+    this._payloadToPayloadStats['txs'] = {}
+  }
+
   /**
    * Updates the Consensus Client connection status on new RPC requests
    */
@@ -235,10 +285,10 @@ export class CLConnectionManager {
       this.config.chainCommon.hardfork() === Hardfork.Merge
     ) {
       if (this.connectionStatus === ConnectionStatus.Disconnected) {
-        this.config.logger.warn(
+        this.config.logger.info(
           'Merge HF activated, CL client connection is needed for continued block processing'
         )
-        this.config.logger.warn(
+        this.config.logger.info(
           '(note that CL client might need to be synced up to beacon chain Merge transition slot until communication starts)'
         )
       }
@@ -249,32 +299,72 @@ export class CLConnectionManager {
   /**
    * Regular payload request logs
    */
-  private payloadLog() {
+  private lastPayloadLog() {
     if (this.connectionStatus !== ConnectionStatus.Connected) {
       return
     }
-    if (!this._lastPayload) {
-      this.config.logger.info('No consensus payload received yet')
-    } else {
-      this.config.logger.info(`Last consensus payload received  ${this._getPayloadLogMsg(
-        this._lastPayload
-      )}
-      `)
+    if (!this.config.synchronized) {
+      if (!this._lastPayload) {
+        this.config.logger.info('No consensus payload received yet')
+      } else {
+        const payloadMsg = this._getPayloadLogMsg(this._lastPayload)
+        this.config.logger.info(`Last consensus payload received  ${payloadMsg}`)
+        const count = this._payloadToPayloadStats['blockCount']
+        const min = this._payloadToPayloadStats['minBlockNumber']
+        const max = this._payloadToPayloadStats['maxBlockNumber']
+
+        let txsMsg = ''
+        for (const [type, count] of Object.entries(this._payloadToPayloadStats['txs'])) {
+          txsMsg += `${count}(${type})`
+        }
+
+        this.config.logger.info(
+          `Payload stats blocks count=${count} minBlockNum=${min} maxBlockNum=${max} txsPerType=${
+            txsMsg !== '' ? txsMsg : '0'
+          }`
+        )
+        this.clearPayloadStats()
+      }
+    }
+  }
+
+  /**
+   * Externally triggered payload logs
+   */
+  public newPayloadLog() {
+    if (this._lastPayload) {
+      const payloadMsg = this._getPayloadLogMsg(this._lastPayload)
+      this.config.logger.info(`New consensus payload received  ${payloadMsg}`)
     }
   }
 
   /**
    * Regular forkchoice request logs
    */
-  private forkchoiceLog() {
+  private lastForkchoiceLog() {
     if (this.connectionStatus !== ConnectionStatus.Connected) {
       return
     }
-    if (!this._lastForkchoiceUpdate) {
-      this.config.logger.info('No consensus forkchoice update received yet')
-    } else {
+    if (!this.config.synchronized) {
+      if (!this._lastForkchoiceUpdate) {
+        this.config.logger.info('No consensus forkchoice update received yet')
+      } else {
+        this.config.logger.info(
+          `Last consensus forkchoice update ${this._getForkchoiceUpdateLogMsg(
+            this._lastForkchoiceUpdate
+          )}`
+        )
+      }
+    }
+  }
+
+  /**
+   * Externally triggered forkchoice log
+   */
+  public newForkchoiceLog() {
+    if (this._lastForkchoiceUpdate) {
       this.config.logger.info(
-        `Last consensus forkchoice update ${this._getForkchoiceUpdateLogMsg(
+        `New chain head set (forkchoice update) ${this._getForkchoiceUpdateLogMsg(
           this._lastForkchoiceUpdate
         )}`
       )

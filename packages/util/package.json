@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/util",
-  "version": "8.0.2",
+  "version": "8.0.5",
   "description": "A collection of utility functions for Ethereum",
   "keywords": [
     "ethereum",
@@ -83,8 +83,8 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/rlp": "4.0.0-beta.2",
-    "async": "^3.2.4",
+    "@chainsafe/ssz": "0.9.4",
+    "@ethereumjs/rlp": "4.0.1",
     "ethereum-cryptography": "^1.1.2"
   },
   "devDependencies": {

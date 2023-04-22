@@ -34,7 +34,7 @@ function ecdhX(publicKey: Buffer, privateKey: Buffer) {
   return Buffer.from(ecdh(publicKey, privateKey, { hashfn }, Buffer.alloc(32)))
 }
 
-// a straigth rip from python interop w/go ecies implementation
+// a straight rip from python interop w/go ecies implementation
 // for sha3, blocksize is 136 bytes
 // for sha256, blocksize is 64 bytes
 // NIST SP 800-56a Concatenation Key Derivation Function (see section 5.8.1).
