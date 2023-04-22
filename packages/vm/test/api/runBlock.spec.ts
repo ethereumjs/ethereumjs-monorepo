@@ -61,7 +61,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       'actual gas used should equal blockHeader gasUsed'
     )
     st.equal(
-      (<any>vm.stateManager.cache!)._comparand,
+      (<any>vm.stateManager).cache!._comparand,
       BigInt(5),
       'should pass through the cache clearing options'
     )

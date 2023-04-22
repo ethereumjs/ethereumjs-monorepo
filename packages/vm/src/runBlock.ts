@@ -40,7 +40,7 @@ const DAORefundContract = DAOConfig.DAORefundContract
  * @ignore
  */
 export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
-  const state = this.evm.eei
+  const state = this.stateManager
   const { root } = opts
   const clearCache = opts.clearCache ?? true
   let { block } = opts
@@ -254,7 +254,7 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   const blockResults = await applyTransactions.bind(this)(block, opts)
   if (this._common.isActivatedEIP(4895)) {
     await assignWithdrawals.bind(this)(block)
-    await this.evm.eei.cleanupTouchedAccounts()
+    await this.stateManager.cleanupTouchedAccounts()
   }
   // Pay ommers and miners
   if (block._common.consensusType() === ConsensusType.ProofOfWork) {
@@ -338,7 +338,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
 }
 
 async function assignWithdrawals(this: VM, block: Block): Promise<void> {
-  const state = this.evm.eei
+  const state = this.stateManager
   const withdrawals = block.withdrawals!
   for (const withdrawal of withdrawals) {
     const { address, amount } = withdrawal
@@ -358,7 +358,7 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
   if (this.DEBUG) {
     debug(`Assign block rewards`)
   }
-  const state = this.evm.eei
+  const state = this.stateManager
   const minerReward = this._common.param('pow', 'minerReward')
   const ommers = block.uncleHeaders
   // Reward ommers

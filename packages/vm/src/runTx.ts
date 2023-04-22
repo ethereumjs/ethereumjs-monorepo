@@ -88,7 +88,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     throw new Error(msg)
   }
 
-  const state = this.evm.eei
+  const state = this.stateManager
 
   if (opts.reportAccessList === true && !('generateAccessList' in state)) {
     const msg = _errorMsg(
@@ -121,16 +121,6 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       await state.revert()
       const msg = _errorMsg(
         'Cannot run transaction: EIP 2930 is not activated.',
-        this,
-        opts.block,
-        opts.tx
-      )
-      throw new Error(msg)
-    }
-    if (opts.reportAccessList === true && !('generateAccessList' in state)) {
-      await state.revert()
-      const msg = _errorMsg(
-        'StateManager needs to implement generateAccessList() when running with reportAccessList option',
         this,
         opts.block,
         opts.tx
@@ -197,7 +187,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 }
 
 async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
-  const state = this.evm.eei
+  const state = this.stateManager
 
   const { tx, block } = opts
 

@@ -21,7 +21,6 @@ import type {
   VMOpts,
 } from './types'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
-import type { StateManagerInterface } from '@ethereumjs/common'
 import type { EVMInterface } from '@ethereumjs/evm'
 
 /**
@@ -34,7 +33,7 @@ export class VM {
   /**
    * The StateManager used by the VM
    */
-  readonly stateManager: StateManagerInterface
+  readonly stateManager: DefaultStateManager
 
   /**
    * The blockchain the VM operates on
@@ -150,7 +149,7 @@ export class VM {
     if (!this._opts.stateManager) {
       if (this._opts.activateGenesisState === true) {
         if (typeof (<any>this.blockchain).genesisState === 'function') {
-          await this.evm.eei.generateCanonicalGenesis((<any>this.blockchain).genesisState())
+          await this.stateManager.generateCanonicalGenesis((<any>this.blockchain).genesisState())
         } else {
           throw new Error(
             'cannot activate genesis state: blockchain object has no `genesisState` method'
@@ -160,11 +159,11 @@ export class VM {
     }
 
     if (this._opts.activatePrecompiles === true && typeof this._opts.stateManager === 'undefined') {
-      await this.evm.eei.checkpoint()
+      await this.stateManager.checkpoint()
       // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
       for (const [addressStr] of getActivePrecompiles(this._common)) {
         const address = new Address(hexToBytes(addressStr))
-        let account = await this.evm.eei.getAccount(address)
+        let account = await this.stateManager.getAccount(address)
         // Only do this if it is not overridden in genesis
         // Note: in the case that custom genesis has storage fields, this is preserved
         if (account === undefined) {
@@ -173,10 +172,10 @@ export class VM {
             balance: 1,
             storageRoot: account.storageRoot,
           })
-          await this.evm.eei.putAccount(address, newAccount)
+          await this.stateManager.putAccount(address, newAccount)
         }
       }
-      await this.evm.eei.commit()
+      await this.stateManager.commit()
     }
     this._isInitialized = true
   }

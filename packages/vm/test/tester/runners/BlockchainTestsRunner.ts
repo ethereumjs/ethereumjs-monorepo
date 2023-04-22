@@ -93,7 +93,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   })
 
   // set up pre-state
-  await setupPreConditions(vm.evm.eei, testData)
+  await setupPreConditions(vm.stateManager, testData)
 
   t.deepEquals(vm.stateManager._trie.root(), genesisBlock.header.stateRoot, 'correct pre stateRoot')
 

@@ -188,7 +188,7 @@ tape('runTx custom transaction test', async (t) => {
         ? new StaticJsonRpcProvider(process.env.PROVIDER, 1)
         : new MockProvider()
     const state = new EthersStateManager({ provider, blockTag: 1n })
-    const vm = await VM.create({ common, stateManager: state })
+    const vm = await VM.create({ common, stateManager: <any>state }) // TODO fix the type DefaultStateManager back to StateManagerInterface in VM
 
     const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
     const privateKey = hexStringToBytes(
@@ -231,7 +231,7 @@ tape('runTx test: replay mainnet transactions', async (t) => {
       // Set the state manager to look at the state of the chain before the block has been executed
       blockTag: blockTag - 1n,
     })
-    const vm = await VM.create({ common, stateManager: state })
+    const vm = await VM.create({ common, stateManager: <any>state })
     const res = await vm.runTx({ tx })
     t.equal(res.totalGasSpent, 21000n, 'calculated correct total gas spent for simple transfer')
     t.end()
@@ -259,7 +259,7 @@ tape('runBlock test', async (t) => {
     // blocks, also for post merge network, ttd should also be passed
     common.setHardforkByBlockNumber(blockTag - 1n)
 
-    const vm = await VM.create({ common, stateManager: state })
+    const vm = await VM.create({ common, stateManager: <any>state })
     const block = await Block.fromEthersProvider(provider, blockTag, { common })
     try {
       const res = await vm.runBlock({
