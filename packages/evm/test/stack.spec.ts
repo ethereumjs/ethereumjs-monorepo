@@ -155,9 +155,9 @@ tape('Stack', (t) => {
           PUSH1 0x00
           RETURN        stack: [0, 0x20] (we thus return the stack item which was originally pushed as 0, and then DUPed)
     */
-    await evm.eei.putAccount(addr, account)
-    await evm.eei.putContractCode(addr, hexToBytes(code))
-    await evm.eei.putAccount(caller, new Account(BigInt(0), BigInt(0x11)))
+    await evm.stateManager.putAccount(addr, account)
+    await evm.stateManager.putContractCode(addr, hexToBytes(code))
+    await evm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11)))
     const runCallArgs = {
       caller,
       gasLimit: BigInt(0xffffffffff),

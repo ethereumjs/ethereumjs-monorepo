@@ -74,8 +74,8 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
         RETURN          [0x00, 0x20]
     */
 
-  await evm.eei.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
-  await evm.eei.putAccount(caller, new Account(BigInt(0), BigInt(0x11111111))) // give the calling account a big balance so we don't run out of funds
+  await evm.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
+  await evm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11111111))) // give the calling account a big balance so we don't run out of funds
   const codeHash = keccak256(new Uint8Array())
   for (let value = 0; value <= 1000; value += 20) {
     // setup the call arguments
@@ -134,8 +134,8 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
         STOP
     */
 
-  await evmByzantium.eei.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
-  await evmConstantinople.eei.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
+  await evmByzantium.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
+  await evmConstantinople.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
 
   const runCallArgs = {
     caller, // call address
@@ -192,8 +192,12 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
 
     */
 
-  await evm.eei.putContractCode(address, hexToBytes(code))
-  await evm.eei.putContractStorage(address, new Uint8Array(32), hexToBytes('00'.repeat(31) + '01'))
+  await evm.stateManager.putContractCode(address, hexToBytes(code))
+  await evm.stateManager.putContractStorage(
+    address,
+    new Uint8Array(32),
+    hexToBytes('00'.repeat(31) + '01')
+  )
 
   // setup the call arguments
   const runCallArgs = {
@@ -224,7 +228,7 @@ tape('ensure correct gas for pre-constantinople sstore', async (t) => {
   // push 1 push 0 sstore stop
   const code = '600160015500'
 
-  await evm.eei.putContractCode(address, hexToBytes(code))
+  await evm.stateManager.putContractCode(address, hexToBytes(code))
 
   // setup the call arguments
   const runCallArgs = {
@@ -255,7 +259,7 @@ tape('ensure correct gas for calling non-existent accounts in homestead', async 
   // code to call 0x00..00dd, which does not exist
   const code = '6000600060006000600060DD61FFFF5A03F100'
 
-  await evm.eei.putContractCode(address, hexToBytes(code))
+  await evm.stateManager.putContractCode(address, hexToBytes(code))
 
   // setup the call arguments
   const runCallArgs = {
@@ -291,7 +295,7 @@ tape(
     // but using too much memory
     const code = '61FFFF60FF60006000600060EE6000F200'
 
-    await evm.eei.putContractCode(address, hexToBytes(code))
+    await evm.stateManager.putContractCode(address, hexToBytes(code))
 
     // setup the call arguments
     const runCallArgs = {
@@ -326,7 +330,7 @@ tape('ensure selfdestruct pays for creating new accounts', async (t) => {
   // this should thus go OOG
   const code = '60FEFF'
 
-  await evm.eei.putContractCode(address, hexToBytes(code))
+  await evm.stateManager.putContractCode(address, hexToBytes(code))
 
   // setup the call arguments
   const runCallArgs = {
@@ -360,12 +364,12 @@ tape('ensure that sstores pay for the right gas costs pre-byzantium', async (t) 
   // this should thus go OOG
   const code = '3460005500'
 
-  await evm.eei.putAccount(caller, new Account())
-  await evm.eei.putContractCode(address, hexToBytes(code))
+  await evm.stateManager.putAccount(caller, new Account())
+  await evm.stateManager.putContractCode(address, hexToBytes(code))
 
-  const account = await evm.eei.getAccount(caller)
+  const account = await evm.stateManager.getAccount(caller)
   account!.balance = BigInt(100)
-  await evm.eei.putAccount(caller, account!)
+  await evm.stateManager.putAccount(caller, account!)
 
   /*
     Situation:
@@ -443,11 +447,11 @@ tape(
           STOP
     */
 
-    await evm.eei.putContractCode(address, hexToBytes(code))
+    await evm.stateManager.putContractCode(address, hexToBytes(code))
 
-    const account = await evm.eei.getAccount(address)
+    const account = await evm.stateManager.getAccount(address)
     account!.nonce = MAX_UINT64 - BigInt(1)
-    await evm.eei.putAccount(address, account!)
+    await evm.stateManager.putAccount(address, account!)
 
     // setup the call arguments
     const runCallArgs = {
@@ -457,7 +461,7 @@ tape(
     }
 
     await evm.runCall(runCallArgs)
-    let storage = await evm.eei.getContractStorage(address, slot)
+    let storage = await evm.stateManager.getContractStorage(address, slot)
 
     // The nonce is MAX_UINT64 - 1, so we are allowed to create a contract (nonce of creating contract is now MAX_UINT64)
     t.notDeepEqual(storage, emptyBytes, 'successfully created contract')
@@ -465,7 +469,7 @@ tape(
     await evm.runCall(runCallArgs)
 
     // The nonce is MAX_UINT64, so we are NOT allowed to create a contract (nonce of creating contract is now MAX_UINT64)
-    storage = await evm.eei.getContractStorage(address, slot)
+    storage = await evm.stateManager.getContractStorage(address, slot)
     t.deepEquals(
       storage,
       emptyBytes,
@@ -494,7 +498,7 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
   const account = new Account()
   account!.nonce = BigInt(1) // ensure nonce for contract is correct
   account!.balance = BigInt(10000000000000000)
-  await evm.eei.putAccount(caller, account!)
+  await evm.stateManager.putAccount(caller, account!)
 
   // setup the call arguments
   const runCallArgs = {
@@ -510,7 +514,7 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
     '00000000000000000000000028373a29d17af317e669579d97e7dddc9da6e3e2e7dddc9da6e3e200000000000000000000000000000000000000000000000000'
 
   t.equals(result.createdAddress?.toString(), expectedAddress, 'created address correct')
-  const deployedCode = await evm.eei.getContractCode(result.createdAddress!)
+  const deployedCode = await evm.stateManager.getContractCode(result.createdAddress!)
   t.equals(bytesToHex(deployedCode), expectedCode, 'deployed code correct')
 
   t.end()
@@ -553,7 +557,7 @@ tape('runCall() -> skipBalance behavior', async (t) => {
   // runCall against a contract to reach `_reduceSenderBalance`
   const contractCode = hexToBytes('00') // 00: STOP
   const contractAddress = Address.fromString('0x000000000000000000000000636F6E7472616374')
-  await evm.eei.putContractCode(contractAddress, contractCode)
+  await evm.stateManager.putContractCode(contractAddress, contractCode)
   const senderKey = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
   const sender = Address.fromPrivateKey(senderKey)
 
@@ -566,10 +570,10 @@ tape('runCall() -> skipBalance behavior', async (t) => {
   }
 
   for (const balance of [undefined, BigInt(5)]) {
-    await evm.eei.modifyAccountFields(sender, { nonce: BigInt(0), balance })
+    await evm.stateManager.modifyAccountFields(sender, { nonce: BigInt(0), balance })
     const res = await evm.runCall(runCallArgs)
     t.pass('runCall should not throw with no balance and skipBalance')
-    const senderBalance = (await evm.eei.getAccount(sender))!.balance
+    const senderBalance = (await evm.stateManager.getAccount(sender))!.balance
     t.equal(
       senderBalance,
       balance ?? BigInt(0),
@@ -668,7 +672,7 @@ tape('step event: ensure EVM memory and not internal memory gets reported', asyn
 
   const contractCode = hexToBytes('600060405200') // PUSH 0 PUSH 40 MSTORE STOP
   const contractAddress = Address.fromString('0x000000000000000000000000636F6E7472616374')
-  await evm.eei.putContractCode(contractAddress, contractCode)
+  await evm.stateManager.putContractCode(contractAddress, contractCode)
 
   const runCallArgs = {
     gasLimit: BigInt(21000),

@@ -69,15 +69,15 @@ tape('EIP 3860 tests', (t) => {
       enableDefaultBlockchain: true,
     })
     const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-    const contractAccount = await evm.eei.getAccount(contractFactory)
-    await evm.eei.putAccount(contractFactory, contractAccount!)
-    await evmWithout3860.eei.putAccount(contractFactory, contractAccount!)
+    const contractAccount = await evm.stateManager.getAccount(contractFactory)
+    await evm.stateManager.putAccount(contractFactory, contractAccount!)
+    await evmWithout3860.stateManager.putAccount(contractFactory, contractAccount!)
     const factoryCode = hexToBytes(
       '7f600a80600080396000f3000000000000000000000000000000000000000000006000526000355a8160006000f05a8203600a55806000556001600155505050'
     )
 
-    await evm.eei.putContractCode(contractFactory, factoryCode)
-    await evmWithout3860.eei.putContractCode(contractFactory, factoryCode)
+    await evm.stateManager.putContractCode(contractFactory, factoryCode)
+    await evmWithout3860.stateManager.putContractCode(contractFactory, factoryCode)
     const data = hexToBytes('000000000000000000000000000000000000000000000000000000000000c000')
     const runCallArgs = {
       from: caller,
@@ -118,15 +118,15 @@ tape('EIP 3860 tests', (t) => {
       enableDefaultBlockchain: true,
     })
     const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-    const contractAccount = await evm.eei.getAccount(contractFactory)
-    await evm.eei.putAccount(contractFactory, contractAccount!)
-    await evmWithout3860.eei.putAccount(contractFactory, contractAccount!)
+    const contractAccount = await evm.stateManager.getAccount(contractFactory)
+    await evm.stateManager.putAccount(contractFactory, contractAccount!)
+    await evmWithout3860.stateManager.putAccount(contractFactory, contractAccount!)
     const factoryCode = hexToBytes(
       '7f600a80600080396000f3000000000000000000000000000000000000000000006000526000355a60008260006000f55a8203600a55806000556001600155505050'
     )
 
-    await evm.eei.putContractCode(contractFactory, factoryCode)
-    await evmWithout3860.eei.putContractCode(contractFactory, factoryCode)
+    await evm.stateManager.putContractCode(contractFactory, factoryCode)
+    await evmWithout3860.stateManager.putContractCode(contractFactory, factoryCode)
     const data = hexToBytes('000000000000000000000000000000000000000000000000000000000000c000')
     const runCallArgs = {
       from: caller,
@@ -198,9 +198,9 @@ tape('EIP 3860 tests', (t) => {
         allowUnlimitedInitCodeSize: false,
       })
       const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-      const contractAccount = await evm.eei.getAccount(contractFactory)
-      await evm.eei.putAccount(contractFactory, contractAccount!)
-      await evmDisabled.eei.putAccount(contractFactory, contractAccount!)
+      const contractAccount = await evm.stateManager.getAccount(contractFactory)
+      await evm.stateManager.putAccount(contractFactory, contractAccount!)
+      await evmDisabled.stateManager.putAccount(contractFactory, contractAccount!)
       // This factory code:
       // -> reads 32 bytes from the calldata (X)
       // Attempts to create a contract of X size
@@ -209,8 +209,8 @@ tape('EIP 3860 tests', (t) => {
       // This is either the contract address if it was succesful, or 0 in case of error
       const factoryCode = hexToBytes('600060003560006000' + code + '600055')
 
-      await evm.eei.putContractCode(contractFactory, factoryCode)
-      await evmDisabled.eei.putContractCode(contractFactory, factoryCode)
+      await evm.stateManager.putContractCode(contractFactory, factoryCode)
+      await evmDisabled.stateManager.putContractCode(contractFactory, factoryCode)
 
       const runCallArgs = {
         from: caller,
@@ -223,8 +223,11 @@ tape('EIP 3860 tests', (t) => {
       await evmDisabled.runCall(runCallArgs)
 
       const key0 = hexToBytes('00'.repeat(32))
-      const storageActive = await evm.eei.getContractStorage(contractFactory, key0)
-      const storageInactive = await evmDisabled.eei.getContractStorage(contractFactory, key0)
+      const storageActive = await evm.stateManager.getContractStorage(contractFactory, key0)
+      const storageInactive = await evmDisabled.stateManager.getContractStorage(
+        contractFactory,
+        key0
+      )
 
       st.ok(
         !equalsBytes(storageActive, new Uint8Array()),

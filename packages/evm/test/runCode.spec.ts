@@ -86,7 +86,7 @@ tape('VM.runCode: interpreter', (t) => {
       stateManager: new DefaultStateManager(),
       enableDefaultBlockchain: true,
     })
-    evm.eei.putContractStorage = (..._args) => {
+    evm.stateManager.putContractStorage = (..._args) => {
       throw new Error('Test')
     }
 
