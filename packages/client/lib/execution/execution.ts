@@ -24,9 +24,10 @@ export abstract class Execution {
   protected chain: Chain
 
   public running: boolean = false
+  public started: boolean = false
 
   /**
-   * Create new excution module
+   * Create new execution module
    * @memberof module:sync/execution
    */
   constructor(options: ExecutionOptions) {
@@ -44,10 +45,18 @@ export abstract class Execution {
   abstract run(): Promise<number>
 
   /**
+   * Starts execution
+   */
+  async open(): Promise<void> {
+    this.started = true
+    this.config.logger.info('Setup EVM execution.')
+  }
+
+  /**
    * Stop execution. Returns a promise that resolves once stopped.
    */
   async stop(): Promise<boolean> {
-    this.running = false
+    this.started = false
     this.config.logger.info('Stopped execution.')
     return true
   }

@@ -42,8 +42,9 @@ tape('[CLConnectionManager]', (t) => {
     st.ok(manager.running, 'should start')
     manager.stop()
     st.ok(!manager.running, 'should stop')
+    const prevMergeForkBlock = (genesisJSON.config as any).mergeForkBlock
     ;(genesisJSON.config as any).mergeForkBlock = 0
-    const params = parseGethGenesis(genesisJSON, 'post-merge')
+    const params = parseGethGenesis(genesisJSON, 'post-merge', false)
     let common = new Common({
       chain: params.name,
       customChains: [params],
@@ -53,7 +54,6 @@ tape('[CLConnectionManager]', (t) => {
     manager = new CLConnectionManager({ config })
     st.ok(manager.running, 'starts on instantiation if hardfork is MergeForkBlock')
     manager.stop()
-    const prevMergeForkBlock = (genesisJSON.config as any).mergeForkBlock
     ;(genesisJSON.config as any).mergeForkBlock = 10
     common = new Common({
       chain: params.name,

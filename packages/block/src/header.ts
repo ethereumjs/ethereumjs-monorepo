@@ -51,6 +51,8 @@ export class BlockHeader {
   public readonly mixHash: Buffer
   public readonly nonce: Buffer
   public readonly baseFeePerGas?: bigint
+  public readonly withdrawalsRoot?: Buffer
+  public readonly excessDataGas?: bigint
 
   public readonly _common: Common
 
@@ -137,6 +139,7 @@ export class BlockHeader {
     }
 
     const skipValidateConsensusFormat = options.skipConsensusFormatValidation ?? false
+
     const defaults = {
       parentHash: zeros(32),
       uncleHash: KECCAK256_RLP_ARRAY,
@@ -153,7 +156,6 @@ export class BlockHeader {
       extraData: Buffer.from([]),
       mixHash: zeros(32),
       nonce: zeros(8),
-      baseFeePerGas: undefined,
     }
 
     const parentHash = toType(headerData.parentHash, TypeOutput.Buffer) ?? defaults.parentHash
@@ -174,28 +176,42 @@ export class BlockHeader {
     const extraData = toType(headerData.extraData, TypeOutput.Buffer) ?? defaults.extraData
     const mixHash = toType(headerData.mixHash, TypeOutput.Buffer) ?? defaults.mixHash
     const nonce = toType(headerData.nonce, TypeOutput.Buffer) ?? defaults.nonce
-    let baseFeePerGas =
-      toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? defaults.baseFeePerGas
 
     const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
     if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
-      this._common.setHardforkByBlockNumber(number, options.hardforkByTTD)
+      this._common.setHardforkByBlockNumber(number, options.hardforkByTTD, timestamp)
     }
 
-    if (this._common.isActivatedEIP(1559) === true) {
-      if (baseFeePerGas === undefined) {
-        if (number === this._common.hardforkBlock(Hardfork.London)) {
-          baseFeePerGas = this._common.param('gasConfig', 'initialBaseFee')
-        } else {
-          // Minimum possible value for baseFeePerGas is 7,
-          // so we use it as the default if the field is missing.
-          baseFeePerGas = BigInt(7)
-        }
-      }
-    } else {
-      if (baseFeePerGas) {
-        throw new Error('A base fee for a block can only be set with EIP1559 being activated')
-      }
+    // Hardfork defaults which couldn't be paired with earlier defaults
+    const hardforkDefaults = {
+      baseFeePerGas: this._common.isActivatedEIP(1559)
+        ? number === this._common.hardforkBlock(Hardfork.London)
+          ? this._common.param('gasConfig', 'initialBaseFee')
+          : BigInt(7)
+        : undefined,
+      withdrawalsRoot: this._common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
+      excessDataGas: this._common.isActivatedEIP(4844) ? BigInt(0) : undefined,
+    }
+
+    const baseFeePerGas =
+      toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? hardforkDefaults.baseFeePerGas
+    const withdrawalsRoot =
+      toType(headerData.withdrawalsRoot, TypeOutput.Buffer) ?? hardforkDefaults.withdrawalsRoot
+    const excessDataGas =
+      toType(headerData.excessDataGas, TypeOutput.BigInt) ?? hardforkDefaults.excessDataGas
+
+    if (!this._common.isActivatedEIP(1559) && baseFeePerGas !== undefined) {
+      throw new Error('A base fee for a block can only be set with EIP1559 being activated')
+    }
+
+    if (!this._common.isActivatedEIP(4895) && withdrawalsRoot !== undefined) {
+      throw new Error(
+        'A withdrawalsRoot for a header can only be provided with EIP4895 being activated'
+      )
+    }
+
+    if (!this._common.isActivatedEIP(4844) && headerData.excessDataGas !== undefined) {
+      throw new Error('excess data gas can only be provided with EIP4844 activated')
     }
 
     this.parentHash = parentHash
@@ -214,7 +230,8 @@ export class BlockHeader {
     this.mixHash = mixHash
     this.nonce = nonce
     this.baseFeePerGas = baseFeePerGas
-
+    this.withdrawalsRoot = withdrawalsRoot
+    this.excessDataGas = excessDataGas
     this._genericFormatValidation()
     this._validateDAOExtraData()
 
@@ -310,6 +327,19 @@ export class BlockHeader {
         }
       }
     }
+
+    if (this._common.isActivatedEIP(4895) === true) {
+      if (this.withdrawalsRoot === undefined) {
+        const msg = this._errorMsg('EIP4895 block has no withdrawalsRoot field')
+        throw new Error(msg)
+      }
+      if (this.withdrawalsRoot?.length !== 32) {
+        const msg = this._errorMsg(
+          `withdrawalsRoot must be 32 bytes, received ${this.withdrawalsRoot!.length} bytes`
+        )
+        throw new Error(msg)
+      }
+    }
   }
 
   /**
@@ -317,15 +347,17 @@ export class BlockHeader {
    * @throws if any check fails
    */
   _consensusFormatValidation() {
-    const { nonce, uncleHash, difficulty, extraData } = this
+    const { nonce, uncleHash, difficulty, extraData, number } = this
     const hardfork = this._common.hardfork()
 
     // Consensus type dependent checks
     if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Ethash) {
       // PoW/Ethash
       if (
+        number > BigInt(0) &&
         this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)
       ) {
+        // Check length of data on all post-genesis blocks
         const msg = this._errorMsg('invalid amount of extra data')
         throw new Error(msg)
       }
@@ -374,19 +406,22 @@ export class BlockHeader {
         )} (expected: ${KECCAK256_RLP_ARRAY.toString('hex')})`
         error = true
       }
-      if (difficulty !== BigInt(0)) {
-        errorMsg += `, difficulty: ${difficulty} (expected: 0)`
-        error = true
-      }
-      if (extraData.length > 32) {
-        errorMsg += `, extraData: ${extraData.toString(
-          'hex'
-        )} (cannot exceed 32 bytes length, received ${extraData.length} bytes)`
-        error = true
-      }
-      if (!nonce.equals(zeros(8))) {
-        errorMsg += `, nonce: ${nonce.toString('hex')} (expected: ${zeros(8).toString('hex')})`
-        error = true
+      if (number !== BigInt(0)) {
+        // Skip difficulty, nonce, and extraData check for PoS genesis block as genesis block may have non-zero difficulty (if TD is > 0)
+        if (difficulty !== BigInt(0)) {
+          errorMsg += `, difficulty: ${difficulty} (expected: 0)`
+          error = true
+        }
+        if (extraData.length > 32) {
+          errorMsg += `, extraData: ${extraData.toString(
+            'hex'
+          )} (cannot exceed 32 bytes length, received ${extraData.length} bytes)`
+          error = true
+        }
+        if (!nonce.equals(zeros(8))) {
+          errorMsg += `, nonce: ${nonce.toString('hex')} (expected: ${zeros(8).toString('hex')})`
+          error = true
+        }
       }
       if (error) {
         const msg = this._errorMsg(`Invalid PoS block${errorMsg}`)
@@ -508,6 +543,13 @@ export class BlockHeader {
 
     if (this._common.isActivatedEIP(1559) === true) {
       rawItems.push(bigIntToUnpaddedBuffer(this.baseFeePerGas!))
+    }
+
+    if (this._common.isActivatedEIP(4895) === true) {
+      rawItems.push(this.withdrawalsRoot!)
+    }
+    if (this._common.isActivatedEIP(4844) === true) {
+      rawItems.push(bigIntToUnpaddedBuffer(this.excessDataGas!))
     }
 
     return rawItems
@@ -748,12 +790,16 @@ export class BlockHeader {
    * Returns the block header in JSON format.
    */
   toJSON(): JsonHeader {
+    const withdrawalAttr = this.withdrawalsRoot
+      ? { withdrawalsRoot: '0x' + this.withdrawalsRoot.toString('hex') }
+      : {}
     const jsonDict: JsonHeader = {
       parentHash: '0x' + this.parentHash.toString('hex'),
       uncleHash: '0x' + this.uncleHash.toString('hex'),
       coinbase: this.coinbase.toString(),
       stateRoot: '0x' + this.stateRoot.toString('hex'),
       transactionsTrie: '0x' + this.transactionsTrie.toString('hex'),
+      ...withdrawalAttr,
       receiptTrie: '0x' + this.receiptTrie.toString('hex'),
       logsBloom: '0x' + this.logsBloom.toString('hex'),
       difficulty: bigIntToHex(this.difficulty),
@@ -767,6 +813,9 @@ export class BlockHeader {
     }
     if (this._common.isActivatedEIP(1559) === true) {
       jsonDict.baseFeePerGas = bigIntToHex(this.baseFeePerGas!)
+    }
+    if (this._common.isActivatedEIP(4844) === true) {
+      jsonDict.excessDataGas = bigIntToHex(this.excessDataGas!)
     }
     return jsonDict
   }

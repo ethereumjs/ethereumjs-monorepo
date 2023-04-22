@@ -31,7 +31,7 @@ passed in via [customChains](CommonOpts.md#customchains).
 
 #### Defined in
 
-[packages/common/src/types.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L91)
+[packages/common/src/types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L92)
 
 ___
 
@@ -51,7 +51,7 @@ const common = new Common({ chain: 'myCustomChain1', customChains: [ myCustomCha
 
 #### Defined in
 
-[packages/common/src/types.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L103)
+[packages/common/src/types.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L104)
 
 ___
 
@@ -72,7 +72,7 @@ BaseOpts.eips
 
 #### Defined in
 
-[packages/common/src/types.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L79)
+[packages/common/src/types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L80)
 
 ___
 
@@ -90,4 +90,4 @@ BaseOpts.hardfork
 
 #### Defined in
 
-[packages/common/src/types.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L70)
+[packages/common/src/types.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L71)

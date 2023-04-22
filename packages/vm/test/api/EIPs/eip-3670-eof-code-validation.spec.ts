@@ -144,7 +144,7 @@ tape('EIP 3670 tests', (t) => {
 
       await vm.stateManager.putAccount(sender, acc)
 
-      const ret = await vm.runTx({ tx })
+      const ret = await vm.runTx({ tx, skipHardForkValidation: true })
       nonce++
 
       const expectReturn = returnValues[i]

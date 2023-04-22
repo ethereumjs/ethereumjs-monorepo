@@ -17,6 +17,8 @@ and we cannot guarantee a stable interface yet.
 
 - **`BaseStateManager`**
 
+  ↳ [`EthersStateManager`](EthersStateManager.md)
+
   ↳ [`DefaultStateManager`](DefaultStateManager.md)
 
 ## Table of contents
@@ -28,7 +30,6 @@ and we cannot guarantee a stable interface yet.
 ### Properties
 
 - [\_cache](BaseStateManager.md#_cache)
-- [\_common](BaseStateManager.md#_common)
 - [\_debug](BaseStateManager.md#_debug)
 
 ### Methods
@@ -50,7 +51,7 @@ and we cannot guarantee a stable interface yet.
 
 ### constructor
 
-• **new BaseStateManager**(`opts`)
+• **new BaseStateManager**(`_opts`)
 
 Needs to be called from the subclass constructor
 
@@ -58,27 +59,17 @@ Needs to be called from the subclass constructor
 
 | Name | Type |
 | :------ | :------ |
-| `opts` | `DefaultStateManagerOpts` |
+| `_opts` | `DefaultStateManagerOpts` |
 
 #### Defined in
 
-[baseStateManager.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L40)
+[baseStateManager.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L38)
 
 ## Properties
 
 ### \_cache
 
 • **\_cache**: `Cache`
-
-#### Defined in
-
-[baseStateManager.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L25)
-
-___
-
-### \_common
-
-• **\_common**: `Common`
 
 #### Defined in
 
@@ -92,7 +83,7 @@ ___
 
 #### Defined in
 
-[baseStateManager.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L24)
+[baseStateManager.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L22)
 
 ## Methods
 
@@ -112,7 +103,7 @@ ___
 
 #### Defined in
 
-[baseStateManager.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L106)
+[baseStateManager.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L97)
 
 ___
 
@@ -132,7 +123,7 @@ Partial implementation, called from the subclass.
 
 #### Defined in
 
-[baseStateManager.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L122)
+[baseStateManager.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L113)
 
 ___
 
@@ -151,7 +142,7 @@ Partial implementation, called from the subclass.
 
 #### Defined in
 
-[baseStateManager.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L132)
+[baseStateManager.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L123)
 
 ___
 
@@ -173,7 +164,7 @@ Deletes an account from state under the provided `address`. The account will als
 
 #### Defined in
 
-[baseStateManager.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L99)
+[baseStateManager.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L90)
 
 ___
 
@@ -187,7 +178,7 @@ ___
 
 #### Defined in
 
-[baseStateManager.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L148)
+[baseStateManager.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L139)
 
 ___
 
@@ -209,7 +200,7 @@ Gets the account associated with `address`. Returns an empty account if the acco
 
 #### Defined in
 
-[baseStateManager.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L58)
+[baseStateManager.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L49)
 
 ___
 
@@ -230,7 +221,7 @@ ___
 
 #### Defined in
 
-[baseStateManager.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L112)
+[baseStateManager.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L103)
 
 ___
 
@@ -255,7 +246,7 @@ fields, then saves the account into state. Account fields can include
 
 #### Defined in
 
-[baseStateManager.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L86)
+[baseStateManager.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L77)
 
 ___
 
@@ -278,7 +269,7 @@ Saves an account into state under the provided `address`.
 
 #### Defined in
 
-[baseStateManager.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L68)
+[baseStateManager.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L59)
 
 ___
 
@@ -299,7 +290,7 @@ ___
 
 #### Defined in
 
-[baseStateManager.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L111)
+[baseStateManager.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L102)
 
 ___
 
@@ -321,7 +312,7 @@ ___
 
 #### Defined in
 
-[baseStateManager.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L113)
+[baseStateManager.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L104)
 
 ___
 
@@ -340,4 +331,4 @@ Partial implementation , called from the subclass.
 
 #### Defined in
 
-[baseStateManager.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L143)
+[baseStateManager.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L134)

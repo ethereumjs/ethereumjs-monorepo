@@ -21,5 +21,7 @@ export const EIPs: { [key: number]: any } = {
   3860: require('./3860.json'),
   4345: require('./4345.json'),
   4399: require('./4399.json'),
+  4844: require('./4844.json'),
+  4895: require('./4895.json'),
   5133: require('./5133.json'),
 }

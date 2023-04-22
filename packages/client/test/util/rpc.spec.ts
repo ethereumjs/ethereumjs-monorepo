@@ -14,9 +14,9 @@ import {
 const request = require('supertest')
 
 tape('[Util/RPC]', (t) => {
-  t.test('should return enabled RPC servers', (st) => {
+  t.test('should return enabled RPC servers', async (st) => {
     const config = new Config({ transports: [] })
-    const client = new EthereumClient({ config })
+    const client = await EthereumClient.create({ config })
     const manager = new RPCManager(client, config)
     const { logger } = config
     for (const methodConfig of Object.values(MethodConfig)) {
@@ -54,7 +54,7 @@ tape('[Util/RPC]', (t) => {
 
 tape('[Util/RPC/Engine eth methods]', async (t) => {
   const config = new Config({ transports: [], saveReceipts: true })
-  const client = new EthereumClient({ config })
+  const client = await EthereumClient.create({ config })
   const manager = new RPCManager(client, config)
   const { server } = createRPCServer(manager, {
     methodConfig: MethodConfig.EngineOnly,

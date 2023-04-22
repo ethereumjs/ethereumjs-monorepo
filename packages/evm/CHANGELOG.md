@@ -6,6 +6,67 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 1.3.1 - 2023-02-27
+
+- Pinned `@ethereumjs/util` `@chainsafe/ssz` dependency to `v0.9.4` due to ES2021 features used in `v0.10.+` causing compatibility issues, PR [#2555](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2555)
+
+## 1.3.0 - 2023-02-21
+
+**DEPRECATED**: Release is deprecated due to broken dependencies, please update to the subsequent bugfix release version.
+
+### Functional Shanghai Support
+
+This release fully supports all EIPs included in the [Shanghai](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/shanghai.md) feature hardfork scheduled for early 2023. Note that a `timestamp` to trigger the `Shanghai` fork update is only added for the `sepolia` testnet and not yet for `goerli` or `mainnet`.
+
+You can instantiate a Shanghai-enabled Common instance for your transactions with:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+```
+
+Note: that this is only a finalizing release by e.g. integrating an updated `@ethereumjs/common` library with an updated Shanghai HF setting and all Shanghai related EIP functionality has been already released in former releases. Do a fulltext search on the EIP numbers in the EVM/VM CHANGELOG files for additional information and usage instructions.
+
+### Experimental EIP-4844 Shard Blob Transactions Support
+
+This release supports an experimental version of the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023), see PR [#2349](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2349) as well as PRs [#2522](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2522) and [#2526](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2526).
+
+#### Initialization
+
+To run EVM related EIP-4844 functionality you have to active the EIP in the associated `@ethereumjs/common` library:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+```
+
+#### DATAHASH Opcode
+
+The EVM now supports the `DATAHASH` opcode which can return the versioned hash from blobs if blobs are associated with a submitting transaction (see EIP-4844 specification).
+
+#### Point Evaluation Precompile
+
+The EVM now integrates a new point evaluation precompile at address `0x14` to "verify a KZG proof which claims that a blob (represented by a commitment) evaluates to a given value at a given point" (from the EIP definition).
+
+**Note:** Usage of the point evaluation precompile needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
+
+### Other Changes
+
+- Fix bug in how precompiles activated by EIP are identified, PR [#2489](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2489)
+- EVM copy fixes, PR [#2529](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2529)
+
+## 1.2.3 - 2022-12-09
+
+### Bug Fixes and Other Changes
+
+- Gas cost fixes for `EIP-3860` (experimental), PR [#2397](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2397)
+- More correctly timed `nonce` updates to avoid certain consensus-critical `nonce`/`account` update constallations. PR [#2404](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2404)
+- Fixed chainstart/Frontier mainnet bug, PR [#2439](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2439)
+- EVM memory expansion performance optimizations, PR [#2405](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2405)
+- `EIP-4895` beacon chain withdrawals support (see `@ethereumjs/vm` for full documentation), PRs [#2353](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2353) and [#2401](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2401)
+
 ## 1.2.2 - 2022-10-26
 
 - Fixed `EIP-3540` bug where EOF header validation was incorrectly applied to legacy contract code in EVM calls, PR [#2381](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2381)

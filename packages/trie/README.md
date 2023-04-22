@@ -28,17 +28,16 @@ This class implements the basic [Modified Merkle Patricia Trie](https://ethereum
 
 **Note:** Up to v4 of the Trie library the secure trie was implemented as a separate `SecureTrie` class, see the [upgrade guide](./UPGRADING.md) for more infos.
 
-An additional `CheckpointTrie` implementation adds checkpointing functionality to `Trie` through the methods `checkpoint`, `commit` and `revert`.
+Checkpointing functionality to `Trie` through the methods `checkpoint`, `commit` and `revert`.
 
 It is best to select the variant that is most appropriate for your unique use case.
 
 ### Initialization and Basic Usage
 
 ```typescript
-import { Trie, LevelDB } from '@ethereumjs/trie'
-import { Level } from 'level'
+import { Trie, MapDB } from '@ethereumjs/trie'
 
-const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
+const trie = new Trie({ db: new MapDB() })
 
 async function test() {
   await trie.put(Buffer.from('test'), Buffer.from('one'))
@@ -49,41 +48,37 @@ async function test() {
 test()
 ```
 
-You can also review our [examples](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples) for database implementations. The [level.js](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples/level.js) example is the default implementation while [lmdb.js](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples/lmdb.js) is an alternative implementation that uses the popular [LMDB](https://en.wikipedia.org/wiki/Lightning_Memory-Mapped_Database) as its underlying database.
-
-> If no `db` option is provided, an in-memory database powered by [Map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map) will fulfill this role.
-
-### Database
-
-> By default the only supported database is LevelDB via the `level` module.
-
-The 5.0.0 release introduced the `DB` interface to allow for the decoupling of the database layer from the previously tightly-coupled `LevelDB` integration. The `DB` interface defines the methods `get`, `put`, `del`, `batch` and `copy` that a concrete implementation of the `DB` interface will need to implement. The default implementation of the `DB` interface is now an in-memory storage based on the native [Map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map) and functions identically to pre-5.0.0 releases.
-
-The base trie implementation (`Trie`) as well as all subclass implementations (`CheckpointTrie` and `SecureTrie`) accept any database implementation that adheres to the `DB` interface as the `db` option. It is possible to use alternative implementations like [LevelDB](#leveldb) if you wish to.
-
-#### Node Deletion
-
-By default, the deletion of trie nodes from the underlying database does not occur in order to avoid corrupting older trie states (as of `v4.2.0`). Should you only wish to work with the latest state of a trie, you can switch to a delete behavior (for example, if you wish to save disk space) by using the `deleteFromDB` constructor option (see related release notes in the changelog for further details).
-
-#### Persistence
-
-You can enable persistence by setting the `useRootPersistence` option to `true` when constructing a trie through the `Trie.create` function. As such, this value is preserved when creating copies of the trie and is incapable of being modified once a trie is instantiated.
+### Use with static constructor
 
 ```typescript
-import { Trie, LevelDB } from '@ethereumjs/trie'
-import { Level } from 'level'
+import { Trie, MapDB } from '@ethereumjs/trie'
 
-const trie = await Trie.create({
-  db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')),
-  useRootPersistence: true,
-})
+const trie = Trie.create()
+
+async function test() {
+  await trie.put(Buffer.from('test'), Buffer.from('one'))
+  const value = await trie.get(Buffer.from('test'))
+  console.log(value.toString()) // 'one'
+}
+
+test()
 ```
 
-The `Trie.create` function is asynchronous and will read the root from your database before returning the trie instance. If you don't have the need for automatic restoration of the root then you can use the `new Trie` constructor with the same options and get persistence without the automatic restoration.
+When the static `Trie.create` constructor is used without any options, the `trie` object is instantiated with defaults configured to match the Etheruem production spec (i.e. keys are hashed using SHA256). It also persists the state root of the tree on each write operation, ensuring that your trie remains in the state you left it when you start your application the next time.
 
-#### LevelDB
+### `Trie` Configuration Options
 
-If you wish to continue to rely on `LevelDB` for all operations then you should create a file with the [following implementation from our recipes](./recipes//level.ts) in your project. It is then possible to use the `LevelDB` implementation as follows:
+#### Database Options
+
+The `DB` opt in the `TrieOpts` allows you to use any database that conforms to the `DB` interface to store the trie data in. We provide several [examples](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples) for database implementations. The [level.js](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples/level.js) example is used in the `ethereumjs client` while [lmdb.js](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples/lmdb.js) is an alternative implementation that uses the popular [LMDB](https://en.wikipedia.org/wiki/Lightning_Memory-Mapped_Database) as its underlying database.
+
+If no `db` option is provided, an in-memory database powered by [a Javascript Map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map) will fulfill this role.
+
+If you want to use an alternative database, you can integrate your own by writing a DB wrapper that conforms to the [`DB` interface](./src/types.ts#L85). The `DB` interface defines the methods `get`, `put`, `del`, `batch` and `copy` that a concrete implementation of the `DB` interface will need to implement.
+
+##### LevelDB
+
+As an example, to leveage `LevelDB` for all operations then you should create a file with the [following implementation from our recipes](./recipes//level.ts) in your project. Then instantiate your DB and trie as below:
 
 ```typescript
 import { Trie } from '@ethereumjs/trie'
@@ -92,6 +87,23 @@ import { Level } from 'level'
 import { LevelDB } from './your-level-implementation'
 
 const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
+```
+
+#### Node Deletion (Pruning)
+
+By default, the deletion of trie nodes from the underlying database does not occur in order to avoid corrupting older trie states (as of `v4.2.0`). Should you only wish to work with the latest state of a trie, you can switch to a delete behavior (for example, if you wish to save disk space) by using the `deleteFromDB` constructor option (see related release notes in the changelog for further details).
+
+#### Root Persistence
+
+You can enable persistence by setting the `useRootPersistence` option to `true` when constructing a trie through the `Trie.create` function. As such, this value is preserved when creating copies of the trie and is incapable of being modified once a trie is instantiated.
+
+```typescript
+import { Trie, MapDB } from '@ethereumjs/trie'
+
+const trie = await Trie.create({
+  db: new MapDB(),
+  useRootPersistence: true,
+})
 ```
 
 ## Proofs
@@ -168,6 +180,8 @@ You may use the `Trie.verifyRangeProof()` function to confirm if the given leaf 
 import { Level } from 'level'
 import { LevelDB, Trie } from '@ethereumjs/trie'
 
+import { LevelDB } from './your-level-implementation'
+
 // Set stateRoot to block #222
 const stateRoot = '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'
 // Convert the state root to a Buffer (strip the 0x prefix)
@@ -192,6 +206,8 @@ import { Level } from 'level'
 import { Trie, LevelDB } from '@ethereumjs/trie'
 import { Account, bufferToHex } from '@ethereumjs/util'
 import { RLP } from '@ethereumjs/rlp'
+
+import { LevelDB } from './your-level-implementation'
 
 const stateRoot = 'STATE_ROOT_OF_A_BLOCK'
 

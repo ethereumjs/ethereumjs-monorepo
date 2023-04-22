@@ -92,17 +92,21 @@ export class VMExecution extends Execution {
    */
   async open(): Promise<void> {
     return this.runWithLock<void>(async () => {
+      // if already opened or stopping midway
+      if (this.started || this.vmPromise !== undefined) {
+        return
+      }
       await this.vm.init()
       if (typeof this.vm.blockchain.getIteratorHead !== 'function') {
         throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
       }
       const headBlock = await this.vm.blockchain.getIteratorHead()
-      const { number } = headBlock.header
+      const { number, timestamp } = headBlock.header
       if (typeof this.vm.blockchain.getTotalDifficulty !== 'function') {
         throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
       }
       const td = await this.vm.blockchain.getTotalDifficulty(headBlock.header.hash())
-      this.config.execCommon.setHardforkByBlockNumber(number, td)
+      this.config.execCommon.setHardforkByBlockNumber(number, td, timestamp)
       this.hardfork = this.config.execCommon.hardfork()
       this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
       if (number === BigInt(0)) {
@@ -111,6 +115,7 @@ export class VMExecution extends Execution {
         }
         await this.vm.eei.generateCanonicalGenesis(this.vm.blockchain.genesisState())
       }
+      await super.open()
       // TODO: Should a run be started to execute any left over blocks?
       // void this.run()
     })
@@ -145,7 +150,8 @@ export class VMExecution extends Execution {
         DBSetTD(td, num, hash),
         ...DBSetBlockOrHeader(block),
         DBSetHashToNumber(hash, num),
-        ...DBSaveLookups(hash, num),
+        // Skip the op for number to hash to not alter canonical chain
+        ...DBSaveLookups(hash, num, true),
       ])
     })
   }
@@ -185,7 +191,7 @@ export class VMExecution extends Execution {
    * @returns number of blocks executed
    */
   async run(loop = true, runOnlybatched = false): Promise<number> {
-    if (this.running) return 0
+    if (this.running || !this.started) return 0
     this.running = true
     let numExecuted: number | undefined
 
@@ -208,6 +214,7 @@ export class VMExecution extends Execution {
     let errorBlock: Block | undefined
 
     while (
+      this.started &&
       (!runOnlybatched ||
         (runOnlybatched &&
           canonicalHead.header.number - startHeadBlock.header.number >=
@@ -227,12 +234,11 @@ export class VMExecution extends Execution {
           // if we are just starting or if a chain reorg has happened
           if (!headBlock || reorg) {
             const headBlock = await blockchain.getBlock(block.header.parentHash)
-            if (headBlock === null) throw new Error('No parent block found')
             parentState = headBlock.header.stateRoot
           }
           // run block, update head if valid
           try {
-            const { number } = block.header
+            const { number, timestamp } = block.header
             if (typeof blockchain.getTotalDifficulty !== 'function') {
               throw new Error(
                 'cannot get iterator head: blockchain has no getTotalDifficulty function'
@@ -240,13 +246,13 @@ export class VMExecution extends Execution {
             }
             const td = await blockchain.getTotalDifficulty(block.header.parentHash)
 
-            const hardfork = this.config.execCommon.getHardforkByBlockNumber(number, td)
+            const hardfork = this.config.execCommon.getHardforkByBlockNumber(number, td, timestamp)
             if (hardfork !== this.hardfork) {
               const hash = short(block.hash())
               this.config.logger.info(
                 `Execution hardfork switch on block number=${number} hash=${hash} old=${this.hardfork} new=${hardfork}`
               )
-              this.hardfork = this.config.execCommon.setHardforkByBlockNumber(number, td)
+              this.hardfork = this.config.execCommon.setHardforkByBlockNumber(number, td, timestamp)
             }
             let skipBlockValidation = false
             if (this.config.execCommon.consensusType() === ConsensusType.ProofOfAuthority) {
@@ -259,6 +265,9 @@ export class VMExecution extends Execution {
             await this.runWithLock<void>(async () => {
               // we are skipping header validation because the block has been picked from the
               // blockchain and header should have already been validated while putBlock
+              if (!this.started) {
+                throw Error('Execution stopped')
+              }
               const result = await this.vm.runBlock({
                 block,
                 root: parentState,
@@ -356,7 +365,7 @@ export class VMExecution extends Execution {
           `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} txs=${txCounter}`
         )
       } else {
-        this.config.logger.warn(
+        this.config.logger.debug(
           `No blocks executed past chain head hash=${short(endHeadBlock.hash())} number=${
             endHeadBlock.header.number
           }`
@@ -378,13 +387,22 @@ export class VMExecution extends Execution {
    * Stop VM execution. Returns a promise that resolves once its stopped.
    */
   async stop(): Promise<boolean> {
+    // Stop with the lock to be concurrency safe and flip started flag so that
+    // vmPromise can resolve early
     await this.runWithLock<void>(async () => {
-      if (this.vmPromise) {
-        // ensure that we wait that the VM finishes executing the block (and flushing the trie cache)
-        await this.vmPromise
-      }
-      await this.stateDB?.close()
       await super.stop()
+    })
+    // Resolve this promise outside lock since promise also acquires the lock while
+    // running the iterator
+    if (this.vmPromise) {
+      // ensure that we wait that the VM finishes executing the block (and flushing the trie cache)
+      await this.vmPromise
+    }
+    // Since we don't allow open unless vmPromise is undefined, no opens can happen
+    // midway and we can safely close
+    await this.runWithLock<void>(async () => {
+      this.vmPromise = undefined
+      await this.stateDB?.close()
     })
     return true
   }
@@ -404,16 +422,14 @@ export class VMExecution extends Execution {
 
     for (let blockNumber = first; blockNumber <= last; blockNumber++) {
       const block = await vm.blockchain.getBlock(blockNumber)
-      if (block === null) throw new Error('No block found')
       const parentBlock = await vm.blockchain.getBlock(block.header.parentHash)
-      if (parentBlock === null) throw new Error('No block found')
       // Set the correct state root
       await vm.stateManager.setStateRoot(parentBlock.header.stateRoot)
       if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
         throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
       }
       const td = await vm.blockchain.getTotalDifficulty(block.header.parentHash)
-      vm._common.setHardforkByBlockNumber(blockNumber, td)
+      vm._common.setHardforkByBlockNumber(blockNumber, td, block.header.timestamp)
 
       if (txHashes.length === 0) {
         // we are skipping header validation because the block has been picked from the

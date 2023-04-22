@@ -1,21 +1,24 @@
 import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { Capability, TransactionFactory } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
   KECCAK256_RLP,
+  Withdrawal,
   arrToBufArr,
   bigIntToHex,
   bufArrToArr,
   bufferToHex,
   intToHex,
   isHexPrefixed,
+  ssz,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { ethers } from 'ethers'
 
 import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
+import { getDataGasPrice } from './helpers'
 
 import type { BlockBuffer, BlockData, BlockOptions, JsonBlock, JsonRpcBlock } from './types'
 import type { Common } from '@ethereumjs/common'
@@ -25,6 +28,7 @@ import type {
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
+import type { WithdrawalBuffer } from '@ethereumjs/util'
 
 /**
  * An object that represents the block.
@@ -33,8 +37,43 @@ export class Block {
   public readonly header: BlockHeader
   public readonly transactions: TypedTransaction[] = []
   public readonly uncleHeaders: BlockHeader[] = []
+  public readonly withdrawals?: Withdrawal[]
   public readonly txTrie = new Trie()
   public readonly _common: Common
+
+  /**
+   * Returns the withdrawals trie root for array of Withdrawal.
+   * @param wts array of Withdrawal to compute the root of
+   * @param optional emptyTrie to use to generate the root
+   */
+  public static async genWithdrawalsTrieRoot(wts: Withdrawal[], emptyTrie?: Trie) {
+    const trie = emptyTrie ?? new Trie()
+    for (const [i, wt] of wts.entries()) {
+      await trie.put(Buffer.from(RLP.encode(i)), arrToBufArr(RLP.encode(wt.raw())))
+    }
+    return trie.root()
+  }
+
+  /**
+   * Returns the ssz root for array of withdrawal transactions.
+   * @param wts array of Withdrawal to compute the root of
+   */
+  public static async generateWithdrawalsSSZRoot(withdrawals: Withdrawal[]) {
+    ssz.Withdrawals.hashTreeRoot(withdrawals.map((wt) => wt.toValue()))
+  }
+
+  /**
+   * Returns the txs trie root for array of TypedTransaction
+   * @param txs array of TypedTransaction to compute the root of
+   * @param optional emptyTrie to use to generate the root
+   */
+  public static async genTransactionsTrieRoot(txs: TypedTransaction[], emptyTrie?: Trie) {
+    const trie = emptyTrie ?? new Trie()
+    for (const [i, tx] of txs.entries()) {
+      await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
+    }
+    return trie.root()
+  }
 
   /**
    * Static constructor to create a block from a block data dictionary
@@ -43,7 +82,12 @@ export class Block {
    * @param opts
    */
   public static fromBlockData(blockData: BlockData = {}, opts?: BlockOptions) {
-    const { header: headerData, transactions: txsData, uncleHeaders: uhsData } = blockData
+    const {
+      header: headerData,
+      transactions: txsData,
+      uncleHeaders: uhsData,
+      withdrawals: withdrawalsData,
+    } = blockData
     const header = BlockHeader.fromHeaderData(headerData, opts)
 
     // parse transactions
@@ -78,7 +122,9 @@ export class Block {
       uncleHeaders.push(uh)
     }
 
-    return new Block(header, transactions, uncleHeaders, opts)
+    const withdrawals = withdrawalsData?.map(Withdrawal.fromWithdrawalData)
+
+    return new Block(header, transactions, uncleHeaders, opts, withdrawals)
   }
 
   /**
@@ -104,11 +150,10 @@ export class Block {
    * @param opts
    */
   public static fromValuesArray(values: BlockBuffer, opts?: BlockOptions) {
-    if (values.length > 3) {
+    if (values.length > 4) {
       throw new Error('invalid block. More values than expected were received')
     }
-
-    const [headerData, txsData, uhsData] = values
+    const [headerData, txsData, uhsData, withdrawalsBuffer] = values
 
     const header = BlockHeader.fromValuesArray(headerData, opts)
 
@@ -144,7 +189,16 @@ export class Block {
       uncleHeaders.push(BlockHeader.fromValuesArray(uncleHeaderData, uncleOpts))
     }
 
-    return new Block(header, transactions, uncleHeaders, opts)
+    const withdrawals = (withdrawalsBuffer as WithdrawalBuffer[])
+      ?.map(([index, validatorIndex, address, amount]) => ({
+        index,
+        validatorIndex,
+        address,
+        amount,
+      }))
+      ?.map(Withdrawal.fromWithdrawalData)
+
+    return new Block(header, transactions, uncleHeaders, opts, withdrawals)
   }
 
   /**
@@ -212,12 +266,15 @@ export class Block {
     header?: BlockHeader,
     transactions: TypedTransaction[] = [],
     uncleHeaders: BlockHeader[] = [],
-    opts: BlockOptions = {}
+    opts: BlockOptions = {},
+    withdrawals?: Withdrawal[]
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
-    this.transactions = transactions
-    this.uncleHeaders = uncleHeaders
     this._common = this.header._common
+
+    this.transactions = transactions
+    this.withdrawals = withdrawals ?? (this._common.isActivatedEIP(4895) ? [] : undefined)
+    this.uncleHeaders = uncleHeaders
     if (uncleHeaders.length > 0) {
       this.validateUncles()
       if (this._common.consensusType() === ConsensusType.ProofOfAuthority) {
@@ -234,6 +291,10 @@ export class Block {
       }
     }
 
+    if (!this._common.isActivatedEIP(4895) && withdrawals !== undefined) {
+      throw new Error('Cannot have a withdrawals field if EIP 4895 is not active')
+    }
+
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -244,13 +305,18 @@ export class Block {
    * Returns a Buffer Array of the raw Buffers of this block, in order.
    */
   raw(): BlockBuffer {
-    return [
+    const bufferArray = <BlockBuffer>[
       this.header.raw(),
       this.transactions.map((tx) =>
         tx.supports(Capability.EIP2718TypedTransaction) ? tx.serialize() : tx.raw()
       ) as Buffer[],
       this.uncleHeaders.map((uh) => uh.raw()),
     ]
+    const withdrawalsRaw = this.withdrawals?.map((wt) => wt.raw())
+    if (withdrawalsRaw) {
+      bufferArray.push(withdrawalsRaw)
+    }
+    return bufferArray
   }
 
   /**
@@ -279,12 +345,7 @@ export class Block {
    */
   async genTxTrie(): Promise<void> {
     const { transactions, txTrie } = this
-    for (let i = 0; i < transactions.length; i++) {
-      const tx = transactions[i]
-      const key = Buffer.from(RLP.encode(i))
-      const value = tx.serialize()
-      await txTrie.put(key, value)
-    }
+    await Block.genTransactionsTrieRoot(transactions, txTrie)
   }
 
   /**
@@ -315,6 +376,10 @@ export class Block {
   validateTransactions(stringError: true): string[]
   validateTransactions(stringError = false) {
     const errors: string[] = []
+    let blockDataGas = BigInt(0)
+    const dataGasLimit = this._common.param('gasConfig', 'maxDataGasPerBlock')
+    const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
+
     // eslint-disable-next-line prefer-const
     for (let [i, tx] of this.transactions.entries()) {
       const errs = <string[]>tx.validate(true)
@@ -328,6 +393,16 @@ export class Block {
           tx = tx as Transaction
           if (tx.gasPrice < this.header.baseFeePerGas!) {
             errs.push('tx unable to pay base fee (non EIP-1559 tx)')
+          }
+        }
+      }
+      if (this._common.isActivatedEIP(4844) === true) {
+        if (tx instanceof BlobEIP4844Transaction) {
+          blockDataGas += BigInt(tx.numBlobs()) * dataGasPerBlob
+          if (blockDataGas > dataGasLimit) {
+            errs.push(
+              `tx causes total data gas of ${blockDataGas} to exceed maximum data gas per block of ${dataGasLimit}`
+            )
           }
         }
       }
@@ -369,6 +444,32 @@ export class Block {
       const msg = this._errorMsg('invalid uncle hash')
       throw new Error(msg)
     }
+
+    if (this._common.isActivatedEIP(4895) && !(await this.validateWithdrawalsTrie())) {
+      const msg = this._errorMsg('invalid withdrawals trie')
+      throw new Error(msg)
+    }
+  }
+
+  /**
+   * Validates that data gas fee for each transaction is greater than or equal to the
+   * dataGasPrice for the block and that total data gas in block is less than maximum
+   * data gas per block
+   * @param parentHeader header of parent block
+   */
+  validateBlobTransactions(parentHeader: BlockHeader) {
+    for (const tx of this.transactions) {
+      if (tx instanceof BlobEIP4844Transaction) {
+        const dataGasPrice = getDataGasPrice(parentHeader)
+        if (tx.maxFeePerDataGas < dataGasPrice) {
+          throw new Error(
+            `blob transaction maxFeePerDataGas ${
+              tx.maxFeePerDataGas
+            } < than block data gas price ${dataGasPrice} - ${this.errorStr()}`
+          )
+        }
+      }
+    }
   }
 
   /**
@@ -378,6 +479,17 @@ export class Block {
     const uncles = this.uncleHeaders.map((uh) => uh.raw())
     const raw = RLP.encode(bufArrToArr(uncles))
     return Buffer.from(keccak256(raw)).equals(this.header.uncleHash)
+  }
+
+  /**
+   * Validates the withdrawal root
+   */
+  async validateWithdrawalsTrie(): Promise<boolean> {
+    if (!this._common.isActivatedEIP(4895)) {
+      throw new Error('EIP 4895 is not activated')
+    }
+    const withdrawalsRoot = await Block.genWithdrawalsTrieRoot(this.withdrawals!)
+    return withdrawalsRoot.equals(this.header.withdrawalsRoot!)
   }
 
   /**
@@ -431,10 +543,16 @@ export class Block {
    * Returns the block in JSON format.
    */
   toJSON(): JsonBlock {
+    const withdrawalsAttr = this.withdrawals
+      ? {
+          withdrawals: this.withdrawals.map((wt) => wt.toJSON()),
+        }
+      : {}
     return {
       header: this.header.toJSON(),
       transactions: this.transactions.map((tx) => tx.toJSON()),
       uncleHeaders: this.uncleHeaders.map((uh) => uh.toJSON()),
+      ...withdrawalsAttr,
     }
   }
 

@@ -45,7 +45,10 @@ function DBSetBlockOrHeader(blockBody: Block | BlockHeader): DBOp[] {
 
   if (
     isGenesis ||
-    (blockBody instanceof Block && (blockBody.transactions.length || blockBody.uncleHeaders.length))
+    (blockBody instanceof Block &&
+      (blockBody.transactions.length ||
+        (blockBody.withdrawals?.length ?? 0) ||
+        blockBody.uncleHeaders.length))
   ) {
     const bodyValue = Buffer.from(RLP.encode(bufArrToArr(blockBody.raw()).slice(1)))
     dbOps.push(
@@ -66,9 +69,11 @@ function DBSetHashToNumber(blockHash: Buffer, blockNumber: bigint): DBOp {
   })
 }
 
-function DBSaveLookups(blockHash: Buffer, blockNumber: bigint): DBOp[] {
+function DBSaveLookups(blockHash: Buffer, blockNumber: bigint, skipNumIndex?: boolean): DBOp[] {
   const ops = []
-  ops.push(DBOp.set(DBTarget.NumberToHash, blockHash, { blockNumber }))
+  if (skipNumIndex !== true) {
+    ops.push(DBOp.set(DBTarget.NumberToHash, blockHash, { blockNumber }))
+  }
 
   const blockNumber8Bytes = bufBE8(blockNumber)
   ops.push(

@@ -156,7 +156,7 @@ tape('[Skeleton] / initSync', async (t) => {
     // header. We expect the old subchain to be truncated and extended with
     // the new head.
     {
-      name: 'Duplicate annoucement should not modify subchain',
+      name: 'Duplicate announcement should not modify subchain',
       blocks: [block49, block50],
       oldState: [{ head: BigInt(100), tail: BigInt(5) }],
       head: block50,
@@ -195,7 +195,7 @@ tape('[Skeleton] / initSync', async (t) => {
         transports: [],
         logger: getLogger({ loglevel: 'debug' }),
       })
-      const chain = new Chain({ config })
+      const chain = await Chain.create({ config })
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       await skeleton.open()
 
@@ -309,7 +309,7 @@ tape('[Skeleton] / setHead', async (t) => {
         transports: [],
         logger: getLogger({ loglevel: 'debug' }),
       })
-      const chain = new Chain({ config })
+      const chain = await Chain.create({ config })
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       await skeleton.open()
       for (const block of testCase.blocks ?? []) {
@@ -376,7 +376,7 @@ tape('[Skeleton] / setHead', async (t) => {
     }
     const common = Common.fromGethGenesis(genesis, { chain: 'merge-not-set' })
     const config = new Config({ common, transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
     try {
       new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -386,9 +386,113 @@ tape('[Skeleton] / setHead', async (t) => {
     st.end()
   })
 
+  t.test('should init/setHead properly from genesis', async (st) => {
+    const config = new Config({ common, transports: [] })
+    const chain = await Chain.create({ config })
+    ;(chain.blockchain as any)._validateBlocks = false
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+    await chain.open()
+
+    const genesis = await chain.getBlock(BigInt(0))
+    const block1 = Block.fromBlockData(
+      { header: { number: 1, parentHash: genesis.hash(), difficulty: 100 } },
+      { common, hardforkByBlockNumber: true }
+    )
+    const block2 = Block.fromBlockData(
+      { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
+      { common, hardforkByBlockNumber: true }
+    )
+    const block3 = Block.fromBlockData(
+      { header: { number: 3, difficulty: 100 } },
+      { common, hardforkByBlockNumber: true }
+    )
+
+    await skeleton.open()
+    let reorg
+
+    reorg = await skeleton.initSync(genesis)
+    st.equal(reorg, false, 'should not reorg on genesis init')
+
+    reorg = await skeleton.setHead(genesis, false)
+    st.equal(reorg, false, 'should not reorg on genesis announcement')
+
+    reorg = await skeleton.setHead(genesis, true)
+    st.equal(reorg, false, 'should not reorg on genesis setHead')
+
+    st.equal(
+      (skeleton as any).status.progress.subchains.length,
+      0,
+      'no subchain should have been created'
+    )
+    try {
+      await skeleton.putBlocks([block1])
+      st.fail('should have not allowed putBlocks since no subchain set')
+    } catch (_e) {
+      st.pass('should not allow putBlocks since no subchain set')
+    }
+    st.equal(chain.blocks.height, BigInt(0), 'canonical height should be at genesis')
+
+    reorg = await skeleton.setHead(block1, false)
+    st.equal(reorg, false, 'should not reorg on valid first block')
+    st.equal(
+      (skeleton as any).status.progress.subchains.length,
+      0,
+      'no subchain should have been created'
+    )
+    reorg = await skeleton.setHead(block1, true)
+    st.equal(reorg, false, 'should not reorg on valid first block')
+    st.equal(
+      (skeleton as any).status.progress.subchains.length,
+      1,
+      'subchain should have been created'
+    )
+    st.equal(
+      (skeleton as any).status.progress.subchains[0].head,
+      BigInt(1),
+      'head should be set to first block'
+    )
+    st.equal(skeleton.isLinked(), true, 'subchain status should be linked')
+
+    reorg = await skeleton.setHead(block2, true)
+    st.equal(reorg, false, 'should not reorg on valid second block')
+    st.equal((skeleton as any).status.progress.subchains.length, 1, 'subchain should be same')
+    st.equal(
+      (skeleton as any).status.progress.subchains[0].head,
+      BigInt(2),
+      'head should be set to first block'
+    )
+    st.equal(skeleton.isLinked(), true, 'subchain status should stay linked')
+
+    reorg = await skeleton.setHead(block3, false)
+    st.equal(reorg, true, 'should not extend on invalid third block')
+    // since its not a forced update so shouldn't affect subchain status
+    st.equal((skeleton as any).status.progress.subchains.length, 1, 'subchain should be same')
+    st.equal(
+      (skeleton as any).status.progress.subchains[0].head,
+      BigInt(2),
+      'head should be set to second block'
+    )
+    st.equal(skeleton.isLinked(), true, 'subchain status should stay linked')
+
+    reorg = await skeleton.setHead(block3, true)
+    st.equal(reorg, true, 'should not extend on invalid third block')
+    // since its not a forced update so shouldn't affect subchain status
+    st.equal(
+      (skeleton as any).status.progress.subchains.length,
+      2,
+      'new subchain should be created'
+    )
+    st.equal(
+      (skeleton as any).status.progress.subchains[0].head,
+      BigInt(3),
+      'head should be set to third block'
+    )
+    st.equal(skeleton.isLinked(), false, 'subchain status should not be linked anymore')
+  })
+
   t.test('should fill the canonical chain after being linked to genesis', async (st) => {
     const config = new Config({ common, transports: [] })
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     await chain.open()
@@ -458,7 +562,7 @@ tape('[Skeleton] / setHead', async (t) => {
     'should fill the canonical chain after being linked to a canonical block past genesis',
     async (st) => {
       const config = new Config({ common, transports: [] })
-      const chain = new Chain({ config })
+      const chain = await Chain.create({ config })
       ;(chain.blockchain as any)._validateBlocks = false
 
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -545,7 +649,7 @@ tape('[Skeleton] / setHead', async (t) => {
         transports: [],
         common,
       })
-      const chain = new Chain({ config })
+      const chain = await Chain.create({ config })
       ;(chain.blockchain as any)._validateBlocks = false
       await chain.open()
       const genesisBlock = await chain.getBlock(BigInt(0))
@@ -650,7 +754,7 @@ tape('[Skeleton] / setHead', async (t) => {
         transports: [],
         common,
       })
-      const chain = new Chain({ config })
+      const chain = await Chain.create({ config })
       ;(chain.blockchain as any)._validateBlocks = false
       ;(chain.blockchain as any)._validateConsensus = false
       await chain.open()
@@ -714,7 +818,7 @@ tape('[Skeleton] / setHead', async (t) => {
         logger: getLogger({ loglevel: 'debug' }),
       })
 
-      const chain = new Chain({ config })
+      const chain = await Chain.create({ config })
       ;(chain.blockchain as any)._validateConsensus = false
       // Only add td validations to the validateBlock
       chain.blockchain.validateBlock = async (block: Block) => {

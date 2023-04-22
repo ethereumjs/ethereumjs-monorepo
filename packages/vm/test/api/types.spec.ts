@@ -21,7 +21,7 @@ tape('[Types]', function (t) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 
     // Block
-    const block: Required<BlockData> = Block.fromBlockData({}, { common })
+    const block: Omit<Required<BlockData>, 'withdrawals'> = Block.fromBlockData({}, { common })
     st.ok(block, 'block')
 
     // Transactions

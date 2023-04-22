@@ -6,6 +6,75 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.1.1 - 2023-02-27
+
+- Pinned `@ethereumjs/util` `@chainsafe/ssz` dependency to `v0.9.4` due to ES2021 features used in `v0.10.+` causing compatibility issues, PR [#2555](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2555)
+
+## 3.1.0 - 2023-02-21
+
+**DEPRECATED**: Release is deprecated due to broken dependencies, please update to the subsequent bugfix release version.
+
+### Functional Shanghai Support
+
+This release fully supports all EIPs included in the [Shanghai](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/shanghai.md) feature hardfork scheduled for early 2023. Note that a `timestamp` to trigger the `Shanghai` fork update is only added for the `sepolia` testnet and not yet for `goerli` or `mainnet`.
+
+You can instantiate a Shanghai-enabled Common instance with:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+```
+
+#### Changes
+
+- Added final Shanghai EIPs to HF file, PR [#2459](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2459)
+- Added `timestamp` and `forkHash` for the Sepolia Shanghai HF, PR [#2527](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2527)
+- Updated `forkHash` calculation for timebased hardforks, PR [#2458](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2458)
+- Updated `setForkHashes()` to update timebased hardfork `forkHash` values, PR [#2461](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2461)
+
+### Experimental EIP-4844 Shard Blob Transactions Support
+
+This release supports an experimental version of [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) Shard Blob Transactions as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023), see PR [#2349](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2349).
+
+You can instantiate an `EIP-4844` enabled Common instance with:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+```
+
+### Other Changes and Bugfixes
+
+- Added `eips` option to `Common.fromGethGenesis()` constructor options, PR [#2469](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2469)
+- Set alternative default HF in `Common.fromGethGenesis()` if `mergeForkBlock` not present, PR [#2414](https://github.com/ethereumjs/ethereumjs-monorepo/issues/2414)
+- Fixed some minor custom chain bugs, PR [#2448](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2448)
+- Allow genesis to be post merge in `Common.fromGethGenesis()`, PR [#2530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2530)
+
+## 3.0.2 - 2022-12-09
+
+### Experimental EIP-4895 Beacon Chain Withdrawals Support
+
+This release comes with experimental [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals support, see PR [#2353](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2353) for the plain implementation and PR [#2401](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2401) for updated calls for the CL/EL engine API. Also note that there is a new helper module in [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) with a new dedicated `Withdrawal` class together with additional TypeScript types to ease withdrawal handling.
+
+Withdrawals support can be activated by initializing a respective `Common` object:
+
+```typescript
+import { Common, Chain } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet, eips: [4895] })
+```
+
+### Hardfork-By-Time Support
+
+The Common library now supports setting and retrieving hardforks which are triggered by timestamp instead of a specific block number, see PR [#2437](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2437). This mechanism will be first applied for the upcoming `Shanghai` HF. The methods `getHardforkByBlockNumber()`, `setHardforkByBlockNumber()` and `paramByBlock()` have been altered to take in an additional `timestamp` value, method naming remains for now for backwards compatibility. There are two new utility methods `hardforkTimestamp()` and `nextHardforkBlockOrTimestamp()`.
+
+### Other Changes
+
+- Support for initialization with Arbitrum One Chain ID, PR [#2426](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2426)
+- Post-Merge hardfork fix in `Common.fromGethGenesis()` static constructor, PR [#2427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2427)
+- Fixed minor custom chain bugs, PR [#2448](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2448)
+
 ## 3.0.1 - 2022-10-18
 
 ### Support for Geth genesis.json Genesis Format

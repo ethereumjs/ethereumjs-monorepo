@@ -91,7 +91,7 @@
 
 #### Defined in
 
-[packages/devp2p/src/dns/dns.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/dns.ts#L23)
+[packages/devp2p/src/dns/dns.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/dns.ts#L22)
 
 ___
 
