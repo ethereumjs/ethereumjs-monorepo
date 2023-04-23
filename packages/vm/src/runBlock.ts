@@ -28,7 +28,7 @@ import type {
   TxReceipt,
 } from './types'
 import type { VM } from './vm'
-import type { EVMStateAccess } from '@ethereumjs/evm'
+import type { DefaultStateManager } from '@ethereumjs/statemanager'
 
 const debug = createDebugLogger('vm:block')
 
@@ -399,7 +399,7 @@ export function calculateMinerReward(minerReward: bigint, ommersNum: number): bi
 }
 
 export async function rewardAccount(
-  state: EVMStateAccess,
+  state: DefaultStateManager,
   address: Address,
   reward: bigint
 ): Promise<Account> {
@@ -408,7 +408,7 @@ export async function rewardAccount(
     account = new Account()
   }
   account.balance += reward
-  await state.putAccount(address, account)
+  await state.putAccount(address, account, true)
   return account
 }
 
@@ -436,10 +436,10 @@ export function encodeReceipt(receipt: TxReceipt, txType: number) {
 /**
  * Apply the DAO fork changes to the VM
  */
-async function _applyDAOHardfork(state: EVMStateAccess) {
+async function _applyDAOHardfork(state: DefaultStateManager) {
   const DAORefundContractAddress = new Address(hexToBytes(DAORefundContract))
   if ((await state.accountExists(DAORefundContractAddress)) === false) {
-    await state.putAccount(DAORefundContractAddress, new Account())
+    await state.putAccount(DAORefundContractAddress, new Account(), true)
   }
   let DAORefundAccount = await state.getAccount(DAORefundContractAddress)
   if (DAORefundAccount === undefined) {
@@ -456,11 +456,11 @@ async function _applyDAOHardfork(state: EVMStateAccess) {
     DAORefundAccount.balance += account.balance
     // clear the accounts' balance
     account.balance = BigInt(0)
-    await state.putAccount(address, account)
+    await state.putAccount(address, account, true)
   }
 
   // finally, put the Refund Account
-  await state.putAccount(DAORefundContractAddress, DAORefundAccount)
+  await state.putAccount(DAORefundContractAddress, DAORefundAccount, true)
 }
 
 async function _genTxTrie(block: Block) {
