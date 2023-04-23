@@ -20,7 +20,7 @@
 		"arrowGlacierBlock": 0,
 		"grayGlacierBlock": 0,
         "shanghaiTime": XXX,
-        "shardingForkTime": YYY,
+        "cancunTime": YYY,
 		"ethash": {
 		},
 		"terminalTotalDifficulty": 50
