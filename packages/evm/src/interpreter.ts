@@ -492,7 +492,7 @@ export class Interpreter {
    * Store 256-bit a value in memory to persistent storage.
    */
   async storageStore(key: Uint8Array, value: Uint8Array): Promise<void> {
-    await this._stateManager.putContractStorage(this._env.address, key, value)
+    await this._stateManager.putContractStorage(this._env.address, key, value, true)
     const account = await this._stateManager.getAccount(this._env.address)
     if (!account) {
       throw new Error('could not read account while persisting memory')
@@ -917,7 +917,7 @@ export class Interpreter {
     }
 
     this._env.contract.nonce += BigInt(1)
-    await this._stateManager.putAccount(this._env.address, this._env.contract)
+    await this._stateManager.putAccount(this._env.address, this._env.contract, true)
 
     if (this._common.isActivatedEIP(3860)) {
       if (

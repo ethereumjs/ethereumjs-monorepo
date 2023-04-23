@@ -505,7 +505,7 @@ export class EVM implements EVMInterface {
     }
 
     await this.stateManager.putAccount(message.to, toAccount, true)
-    await this.stateManager.clearContractStorage(message.to)
+    await this.stateManager.clearContractStorage(message.to, true)
 
     const newContractEvent = {
       address: message.to,
@@ -994,7 +994,7 @@ export class EVM implements EVMInterface {
     }
     toAccount.balance = newBalance
     // putAccount as the nonce may have changed for contract creation
-    const result = this.stateManager.putAccount(message.to, toAccount)
+    const result = this.stateManager.putAccount(message.to, toAccount, true)
     if (this.DEBUG) {
       debug(`Added toAccount (${message.to}) balance (-> ${toAccount.balance})`)
     }
@@ -1006,7 +1006,7 @@ export class EVM implements EVMInterface {
     if (!account) {
       account = new Account()
     }
-    return this.stateManager.putAccount(address, account)
+    return this.stateManager.putAccount(address, account, true)
   }
 
   /**
