@@ -2,7 +2,7 @@ import type { Bloom } from './bloom'
 import type { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
-import type { EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
+import type { EVM, EVMResult, Log } from '@ethereumjs/evm'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import type { BigIntLike, WithdrawalData } from '@ethereumjs/util'
@@ -150,7 +150,7 @@ export interface VMOpts {
   /**
    * Use a custom EVM to run Messages on. If this is not present, use the default EVM.
    */
-  evm?: EVMInterface
+  evm?: EVM
 }
 
 /**

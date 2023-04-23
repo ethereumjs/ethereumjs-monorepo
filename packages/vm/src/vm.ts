@@ -21,7 +21,6 @@ import type {
   VMOpts,
 } from './types'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
-import type { EVMInterface } from '@ethereumjs/evm'
 
 /**
  * Execution engine which can be used to run a blockchain, individual
@@ -46,7 +45,7 @@ export class VM {
   /**
    * The EVM used for bytecode execution
    */
-  readonly evm: EVMInterface
+  readonly evm: EVM
 
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
