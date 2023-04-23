@@ -13,7 +13,7 @@
     "berlinBlock": 0,
     "londonBlock": 0,
     "shanghaiTime": 0,
-    "shardingForkTime": 0,
+    "cancunTime": 0,
     "clique": {
       "blockperiodseconds": 5,
       "epochlength": 30000

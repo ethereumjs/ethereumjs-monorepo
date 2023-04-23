@@ -30,7 +30,7 @@ tape('[Common]: Timestamp Hardfork logic', function (t: tape.Test) {
 
   t.test('schedule sharding on shanghai-time', function (st: tape.Test) {
     const config = Object.assign({}, timestampJson.config, {
-      shardingForkTime: timestampJson.config.shanghaiTime,
+      cancunTime: timestampJson.config.shanghaiTime,
     })
     const modifiedJson = Object.assign({}, timestampJson, { config })
     const c = Common.fromGethGenesis(modifiedJson, {
@@ -52,7 +52,7 @@ tape('[Common]: Timestamp Hardfork logic', function (t: tape.Test) {
 
   t.test('schedule sharding post shanghai-time', function (st: tape.Test) {
     const config = Object.assign({}, timestampJson.config, {
-      shardingForkTime: timestampJson.config.shanghaiTime + 1000,
+      cancunTime: timestampJson.config.shanghaiTime + 1000,
     })
     const modifiedJson = Object.assign({}, timestampJson, { config })
     const c = Common.fromGethGenesis(modifiedJson, {
