@@ -128,7 +128,7 @@ export class PendingBlock {
 
     // Set the state root to ensure the resulting state
     // is based on the parent block's state
-    await vm.evm.eei.setStateRoot(parentBlock.header.stateRoot)
+    await vm.stateManager.setStateRoot(parentBlock.header.stateRoot)
 
     const builder = await vm.buildBlock({
       parentBlock,
