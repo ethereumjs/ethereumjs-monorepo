@@ -1,6 +1,5 @@
 import { CURVE } from 'ethereum-cryptography/secp256k1'
 import { hexToBytes } from 'ethereum-cryptography/utils'
-import { Address } from './address'
 
 /**
  * 2^64-1
