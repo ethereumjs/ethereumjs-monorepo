@@ -16,5 +16,5 @@ export const hardforks = {
   grayGlacier: require('./grayGlacier.json'),
   mergeForkIdTransition: require('./mergeForkIdTransition.json'),
   paris: require('./paris.json'),
-  Cancun: require('./cancun.json'),
+  cancun: require('./cancun.json'),
 }
