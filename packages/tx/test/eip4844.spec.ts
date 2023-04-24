@@ -26,7 +26,7 @@ if (isBrowser() === false) initKZG(kzg, __dirname + '/../../client/lib/trustedSe
 const gethGenesis = require('../../block/test/testdata/4844-hardfork.json')
 const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
-  hardfork: Hardfork.ShardingForkDev,
+  hardfork: Hardfork.Cancun,
 })
 
 tape('EIP4844 constructor tests - valid scenarios', (t) => {

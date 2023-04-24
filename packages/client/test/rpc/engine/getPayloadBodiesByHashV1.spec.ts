@@ -44,9 +44,9 @@ tape(`${method}: call with valid parameters`, async (t) => {
   }
   const { chain, service, server, common } = await setupChain(genesisJSON, 'post-merge', {
     engine: true,
-    hardfork: Hardfork.ShardingForkDev,
+    hardfork: Hardfork.Cancun,
   })
-  common.setHardfork(Hardfork.ShardingForkDev)
+  common.setHardfork(Hardfork.Cancun)
   const pkey = hexStringToBytes('9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
   const address = Address.fromPrivateKey(pkey)
   await service.execution.vm.stateManager.putAccount(address, new Account())

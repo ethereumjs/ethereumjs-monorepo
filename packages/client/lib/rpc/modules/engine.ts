@@ -683,7 +683,7 @@ export class Engine {
   ): Promise<PayloadStatusV1> {
     const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
     const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp(
-      Hardfork.ShardingForkDev
+      Hardfork.Cancun
     )
     if (shanghaiTimestamp === null || parseInt(params[0].timestamp) < shanghaiTimestamp) {
       if ('withdrawals' in params[0]) {

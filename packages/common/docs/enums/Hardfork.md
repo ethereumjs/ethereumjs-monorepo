@@ -21,7 +21,7 @@
 - [MuirGlacier](Hardfork.md#muirglacier)
 - [Petersburg](Hardfork.md#petersburg)
 - [Shanghai](Hardfork.md#shanghai)
-- [ShardingForkDev](Hardfork.md#shardingforkdev)
+- [Cancun](Hardfork.md#Cancun)
 - [SpuriousDragon](Hardfork.md#spuriousdragon)
 - [TangerineWhistle](Hardfork.md#tangerinewhistle)
 
@@ -177,9 +177,9 @@ ___
 
 ___
 
-### ShardingForkDev
+### Cancun
 
-• **ShardingForkDev** = ``"shardingFork"``
+• **Cancun** = ``"cancun"``
 
 #### Defined in
 

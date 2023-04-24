@@ -26,7 +26,7 @@ initKZG(kzg, __dirname + '/../../../lib/trustedSetups/devnet4.txt')
 const sender = Address.fromPrivateKey(pkey)
 const common = Common.fromGethGenesis(genesisJson, {
   chain: genesisJson.ChainName ?? 'devnet',
-  hardfork: Hardfork.ShardingForkDev,
+  hardfork: Hardfork.Cancun,
 })
 async function getNonce(client: Client, account: string) {
   const nonce = await client.request('eth_getTransactionCount', [account, 'latest'], 2.0)
