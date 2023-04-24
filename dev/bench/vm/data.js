@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1682101264372,
+  "lastUpdate": 1682321914594,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "26a8dcda9ae74921574d0b8198ce170901f300ab",
-          "message": "tx: ensure eip3860 txs can have more than max_initcode_size data if to field is non-empty (#2575)",
-          "timestamp": "2023-03-09T14:06:38+01:00",
-          "tree_id": "842fa808aa9956a40f6f582c377189f8bc91787c",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/26a8dcda9ae74921574d0b8198ce170901f300ab"
-        },
-        "date": 1678367442231,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 8154,
-            "range": "±4.19%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 8304,
-            "range": "±2.79%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 7727,
-            "range": "±4.48%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 8003,
-            "range": "±2.83%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 7850,
-            "range": "±2.98%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.33%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "49c2d93b94e70887d4fafff123eec19ef6a35fec",
+          "message": "New Maintenance Release Round (#2648)\n\n* Draft various release notes\r\n\r\n* CHANGELOG updates\r\n\r\n* Version bump, updated upstream dependency versions, @ethereumjs/util v8.0.6\r\n\r\n* Version bump, updated upstream dependency versions, @ethereumjs/common v3.1.2\r\n\r\n* Version bump, updated upstream dependency versions, @ethereumjs/tx v4.1.2\r\n\r\n* Version bump, updated upstream dependency versions, @ethereumjs/trie v5.0.5\r\n\r\n* Add additional @chainsafe/ssz notes to CHANGELOG files of other libraries\r\n\r\n* Version bump, updated upstream dependency versions, updated (all) client @ethereumjs dependencies, @ethereumjs/devp2p v5.1.2\r\n\r\n* Version bump, updated upstream dependency versions, @ethereumjs/statemanager v1.0.5\r\n\r\n* Version bump, updated upstream dependency versions, @ethereumjs/block v4.2.2\r\n\r\n* Version bump, updated upstream dependency versions, @ethereumjs/ethash v2.0.5\r\n\r\n* Version bump, updated upstream dependency versions, @ethereumjs/blockchain v6.2.2\r\n\r\n* Version bump, updated upstream dependency versions, @ethereumjs/evm v1.3.2\r\n\r\n* Version bump, updated upstream dependency versions, @ethereumjs/vm v6.4.2\r\n\r\n* Version bump, @ethereumjs/client v0.7.1\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Rebuild relevant documentation\r\n\r\n* Updated @chainsafe/ssz related CHANGELOG entries",
+          "timestamp": "2023-04-24T09:35:03+02:00",
+          "tree_id": "686e597b52cade8fe1be5c8b69f54e519b61c5b5",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/49c2d93b94e70887d4fafff123eec19ef6a35fec"
+        },
+        "date": 1682321913141,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 8171,
+            "range": "±2.34%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 8619,
+            "range": "±3.75%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 8476,
+            "range": "±2.57%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 7979,
+            "range": "±6.18%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 8388,
+            "range": "±2.04%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
           }
         ]
       }
