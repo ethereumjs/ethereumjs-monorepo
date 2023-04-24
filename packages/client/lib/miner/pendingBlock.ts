@@ -21,6 +21,8 @@ import type { WithdrawalData } from '@ethereumjs/util'
 import type { TxReceipt, VM } from '@ethereumjs/vm'
 import type { BlockBuilder } from '@ethereumjs/vm/dist/buildBlock'
 
+const MAX_BLOBS_PER_BLOCK = 4
+
 interface PendingBlockOpts {
   /* Config */
   config: Config
@@ -149,7 +151,10 @@ export class PendingBlock {
     this.pendingPayloads.set(payloadId, builder)
 
     // Add current txs in pool
-    const txs = await this.txPool.txsByPriceAndNonce(vm, baseFeePerGas)
+    const txs = await this.txPool.txsByPriceAndNonce(vm, {
+      baseFee: baseFeePerGas,
+      allowedBlobs: MAX_BLOBS_PER_BLOCK,
+    })
     this.config.logger.info(
       `Pending: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`
     )
@@ -227,8 +232,14 @@ export class PendingBlock {
     }
     const { vm, headerData } = builder as any
 
+    // get the number of blobs that can be further added
+    const bundle = this.blobsBundles.get(payloadId) ?? { blobs: [], commitments: [], proofs: [] }
+    const allowedBlobs = MAX_BLOBS_PER_BLOCK - bundle.blobs.length
+
     // Add new txs that the pool received
-    const txs = (await this.txPool.txsByPriceAndNonce(vm, headerData.baseFeePerGas)).filter(
+    const txs = (
+      await this.txPool.txsByPriceAndNonce(vm, { baseFee: headerData.baseFeePerGas, allowedBlobs })
+    ).filter(
       (tx) =>
         (builder as any).transactions.some((t: TypedTransaction) =>
           equalsBytes(t.hash(), tx.hash())
