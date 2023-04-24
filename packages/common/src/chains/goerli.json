@@ -88,6 +88,11 @@
       "block": null,
       "timestamp": "1678832736",
       "forkHash": "0xf9843abf"
+    },
+    {
+      "name": "cancun",
+      "block": null,
+      "forkHash": null
     }
   ],
   "bootstrapNodes": [
