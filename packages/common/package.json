@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/common",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "description": "Resources common to all Ethereum implementations",
   "keywords": [
     "ethereum",
@@ -48,7 +48,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/util": "^8.0.5",
+    "@ethereumjs/util": "^8.0.6",
     "crc-32": "^1.2.0"
   }
 }

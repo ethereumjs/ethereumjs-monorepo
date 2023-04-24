@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 1.3.2 - 2023-04-20
+
+### Features
+
+- Add `allowUnlimitedInitcodeSize` option to partially disable EIP-3860, PR [#2594](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2594)
+
+### Bugfixes
+
+- Fixed `EIP-3860` (max init code size) for CREATE and CREATE2, PR [#2601](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2601)
+- Fixed block hash calculation when creating a new block object From JSON RPC (Shanghai), PR [#2600](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2600)
+- Fix `memory` in `step` event to report the actual memory which the EVM sees, PR [#2598](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2598)
+
+### Performance
+
+- Avoid memory.read() Memory Copy (performance), PR [#2573](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2573)
+- Memory Fix & selected performance optimizations, PR [#2570](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2570)
+- `bnadd`/`bnmul` Precompile Performance Optimization, PR [#2568](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2568)
+
+### Maintenance
+
+- Update ethereum-cryptography from 1.2 to 2.0 (switch from noble-secp256k1 to noble-curves), PR [#2641](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2641)
+- Bump `@ethereumjs/util` `@chainsafe/ssz` dependency to 0.11.1 (no WASM, native SHA-256 implementation, ES2019 compatible, explicit imports), PRs [#2622](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2622), [#2564](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2564) and [#2656](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2656)
+- Precompile Debug Logger Improvements, PR [#2572](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2572)
+
 ## 1.3.1 - 2023-02-27
 
 - Pinned `@ethereumjs/util` `@chainsafe/ssz` dependency to `v0.9.4` due to ES2021 features used in `v0.10.+` causing compatibility issues, PR [#2555](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2555)

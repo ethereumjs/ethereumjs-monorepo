@@ -77,8 +77,11 @@
 - [bufferToBigInt](README.md#buffertobigint)
 - [bufferToHex](README.md#buffertohex)
 - [bufferToInt](README.md#buffertoint)
+- [bytesToNibbles](README.md#bytestonibbles)
+- [compactBytesToNibbles](README.md#compactbytestonibbles)
 - [ecrecover](README.md#ecrecover)
 - [ecsign](README.md#ecsign)
+- [fetchFromProvider](README.md#fetchfromprovider)
 - [fromAscii](README.md#fromascii)
 - [fromRpcSig](README.md#fromrpcsig)
 - [fromSigned](README.md#fromsigned)
@@ -87,6 +90,8 @@
 - [generateAddress2](README.md#generateaddress2)
 - [getBinarySize](README.md#getbinarysize)
 - [getKeys](README.md#getkeys)
+- [getProvider](README.md#getprovider)
+- [hasTerminator](README.md#hasterminator)
 - [hashPersonalMessage](README.md#hashpersonalmessage)
 - [importPublic](README.md#importpublic)
 - [intToBuffer](README.md#inttobuffer)
@@ -100,6 +105,8 @@
 - [isValidPublic](README.md#isvalidpublic)
 - [isValidSignature](README.md#isvalidsignature)
 - [isZeroAddress](README.md#iszeroaddress)
+- [nibblesToBytes](README.md#nibblestobytes)
+- [nibblesToCompactBytes](README.md#nibblestocompactbytes)
 - [padToEven](README.md#padtoeven)
 - [privateToAddress](README.md#privatetoaddress)
 - [privateToPublic](README.md#privatetopublic)
@@ -279,7 +286,7 @@ Keccak-256 hash of null
 
 #### Defined in
 
-[packages/util/src/constants.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L39)
+[packages/util/src/constants.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L43)
 
 ___
 
@@ -291,7 +298,7 @@ Keccak-256 hash of null
 
 #### Defined in
 
-[packages/util/src/constants.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L34)
+[packages/util/src/constants.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L38)
 
 ___
 
@@ -303,7 +310,7 @@ Keccak-256 hash of the RLP of null
 
 #### Defined in
 
-[packages/util/src/constants.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L60)
+[packages/util/src/constants.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L64)
 
 ___
 
@@ -315,7 +322,7 @@ Keccak-256 of an RLP of an empty array
 
 #### Defined in
 
-[packages/util/src/constants.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L50)
+[packages/util/src/constants.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L54)
 
 ___
 
@@ -327,7 +334,7 @@ Keccak-256 of an RLP of an empty array
 
 #### Defined in
 
-[packages/util/src/constants.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L44)
+[packages/util/src/constants.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L48)
 
 ___
 
@@ -339,7 +346,7 @@ Keccak-256 hash of the RLP of null
 
 #### Defined in
 
-[packages/util/src/constants.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L55)
+[packages/util/src/constants.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L59)
 
 ___
 
@@ -360,10 +367,12 @@ ___
 • `Const` **MAX\_INTEGER\_BIGINT**: `bigint`
 
 The max integer that the evm can handle (2^256-1) as a bigint
+2^256-1 equals to 340282366920938463463374607431768211455
+We use literal value instead of calculated value for compatibility issue.
 
 #### Defined in
 
-[packages/util/src/constants.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L19)
+[packages/util/src/constants.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L21)
 
 ___
 
@@ -385,7 +394,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/constants.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L67)
+[packages/util/src/constants.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L71)
 
 ___
 
@@ -397,17 +406,17 @@ RLP encoded empty string
 
 #### Defined in
 
-[packages/util/src/constants.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L65)
+[packages/util/src/constants.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L69)
 
 ___
 
 ### SECP256K1\_ORDER
 
-• `Const` **SECP256K1\_ORDER**: `bigint` = `CURVE.n`
+• `Const` **SECP256K1\_ORDER**: `bigint` = `secp256k1.CURVE.n`
 
 #### Defined in
 
-[packages/util/src/constants.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L21)
+[packages/util/src/constants.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L25)
 
 ___
 
@@ -417,7 +426,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/constants.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L22)
+[packages/util/src/constants.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L26)
 
 ___
 
@@ -429,7 +438,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/constants.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L27)
+[packages/util/src/constants.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L31)
 
 ## Functions
 
@@ -449,7 +458,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/account.ts:347](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L347)
+[packages/util/src/account.ts:349](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L349)
 
 ___
 
@@ -457,22 +466,24 @@ ___
 
 ▸ **accountBodyToRLP**(`body`, `couldBeSlim?`): `Buffer`
 
-Converts a slim account RLP to a normal account RLP
+Converts a slim account (per snap protocol spec) to the RLP encoded version of the account
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `body` | [`AccountBodyBuffer`](README.md#accountbodybuffer) | `undefined` |
-| `couldBeSlim` | `boolean` | `true` |
+| Name | Type | Default value | Description |
+| :------ | :------ | :------ | :------ |
+| `body` | [`AccountBodyBuffer`](README.md#accountbodybuffer) | `undefined` | Array of 4 Buffer-like items to represent the account |
+| `couldBeSlim` | `boolean` | `true` | - |
 
 #### Returns
 
 `Buffer`
 
+RLP encoded version of the account
+
 #### Defined in
 
-[packages/util/src/account.ts:371](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L371)
+[packages/util/src/account.ts:375](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L375)
 
 ___
 
@@ -492,7 +503,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/account.ts:358](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L358)
+[packages/util/src/account.ts:360](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L360)
 
 ___
 
@@ -812,6 +823,46 @@ If the input number exceeds 53 bits.
 
 ___
 
+### bytesToNibbles
+
+▸ **bytesToNibbles**(`str`): `Uint8Array`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `str` | `Uint8Array` |
+
+#### Returns
+
+`Uint8Array`
+
+#### Defined in
+
+[packages/util/src/encoding.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/encoding.ts#L40)
+
+___
+
+### compactBytesToNibbles
+
+▸ **compactBytesToNibbles**(`compact`): `Uint8Array`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `compact` | `Uint8Array` |
+
+#### Returns
+
+`Uint8Array`
+
+#### Defined in
+
+[packages/util/src/encoding.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/encoding.ts#L54)
+
+___
+
 ### ecrecover
 
 ▸ **ecrecover**(`msgHash`, `v`, `r`, `s`, `chainId?`): `Buffer`
@@ -868,6 +919,27 @@ accordingly, otherwise return a "static" `v` just derived from the `recovery` bi
 
 ___
 
+### fetchFromProvider
+
+▸ **fetchFromProvider**(`url`, `params`): `Promise`<`any`\>
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `url` | `string` |
+| `params` | `rpcParams` |
+
+#### Returns
+
+`Promise`<`any`\>
+
+#### Defined in
+
+[packages/util/src/provider.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/provider.ts#L7)
+
+___
+
 ### fromAscii
 
 ▸ **fromAscii**(`stringValue`): `string`
@@ -915,7 +987,7 @@ it's a signed message (EIP-191 or EIP-712) adding `27` at the end. Remove if nee
 
 #### Defined in
 
-[packages/util/src/signature.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L112)
+[packages/util/src/signature.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L113)
 
 ___
 
@@ -1070,6 +1142,49 @@ getKeys([{a: '1', b: '2'}, {a: '3', b: '4'}], 'a') => ['1', '3']
 
 ___
 
+### getProvider
+
+▸ **getProvider**(`provider`): `any`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `provider` | `any` |
+
+#### Returns
+
+`any`
+
+#### Defined in
+
+[packages/util/src/provider.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/provider.ts#L24)
+
+___
+
+### hasTerminator
+
+▸ **hasTerminator**(`nibbles`): `boolean`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `nibbles` | `Uint8Array` |
+
+#### Returns
+
+`boolean`
+
+boolean indicating if input hex nibble sequence has terminator indicating leaf-node
+         terminator is represented with 16 because a nibble ranges from 0 - 15(f)
+
+#### Defined in
+
+[packages/util/src/encoding.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/encoding.ts#L8)
+
+___
+
 ### hashPersonalMessage
 
 ▸ **hashPersonalMessage**(`message`): `Buffer`
@@ -1091,7 +1206,7 @@ used to produce the signature.
 
 #### Defined in
 
-[packages/util/src/signature.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L189)
+[packages/util/src/signature.ts:190](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L190)
 
 ___
 
@@ -1113,7 +1228,7 @@ Converts a public key to the Ethereum format.
 
 #### Defined in
 
-[packages/util/src/account.ts:316](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L316)
+[packages/util/src/account.ts:318](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L318)
 
 ___
 
@@ -1350,7 +1465,7 @@ NOTE: Accepts `v === 0 | v === 1` for EIP1559 transactions
 
 #### Defined in
 
-[packages/util/src/signature.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L149)
+[packages/util/src/signature.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L150)
 
 ___
 
@@ -1372,7 +1487,48 @@ Checks if a given address is the zero address.
 
 #### Defined in
 
-[packages/util/src/account.ts:336](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L336)
+[packages/util/src/account.ts:338](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L338)
+
+___
+
+### nibblesToBytes
+
+▸ **nibblesToBytes**(`nibbles`, `bytes`): `void`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `nibbles` | `Uint8Array` |
+| `bytes` | `Uint8Array` |
+
+#### Returns
+
+`void`
+
+#### Defined in
+
+[packages/util/src/encoding.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/encoding.ts#L12)
+
+___
+
+### nibblesToCompactBytes
+
+▸ **nibblesToCompactBytes**(`nibbles`): `Uint8Array`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `nibbles` | `Uint8Array` |
+
+#### Returns
+
+`Uint8Array`
+
+#### Defined in
+
+[packages/util/src/encoding.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/encoding.ts#L18)
 
 ___
 
@@ -1418,7 +1574,7 @@ Returns the ethereum address of a given private key.
 
 #### Defined in
 
-[packages/util/src/account.ts:309](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L309)
+[packages/util/src/account.ts:311](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L311)
 
 ___
 
@@ -1700,7 +1856,7 @@ Signature
 
 #### Defined in
 
-[packages/util/src/signature.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L89)
+[packages/util/src/signature.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L90)
 
 ___
 
@@ -1728,7 +1884,7 @@ Signature
 
 #### Defined in
 
-[packages/util/src/signature.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L74)
+[packages/util/src/signature.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L75)
 
 ___
 
@@ -1983,7 +2139,7 @@ Returns the zero address.
 
 #### Defined in
 
-[packages/util/src/account.ts:327](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L327)
+[packages/util/src/account.ts:329](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L329)
 
 ___
 

@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/blockchain",
-  "version": "6.2.1",
+  "version": "6.2.2",
   "description": "A module to store and interact with blocks",
   "keywords": [
     "ethereum",
@@ -38,13 +38,13 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "^4.2.1",
-    "@ethereumjs/common": "^3.1.1",
-    "@ethereumjs/ethash": "^2.0.4",
+    "@ethereumjs/block": "^4.2.2",
+    "@ethereumjs/common": "^3.1.2",
+    "@ethereumjs/ethash": "^2.0.5",
     "@ethereumjs/rlp": "^4.0.1",
-    "@ethereumjs/trie": "^5.0.4",
-    "@ethereumjs/tx": "^4.1.1",
-    "@ethereumjs/util": "^8.0.5",
+    "@ethereumjs/trie": "^5.0.5",
+    "@ethereumjs/tx": "^4.1.2",
+    "@ethereumjs/util": "^8.0.6",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.0.0",
     "level": "^8.0.0",
