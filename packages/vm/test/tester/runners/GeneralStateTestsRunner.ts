@@ -104,7 +104,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   // Even if no txs are ran, coinbase should always be created
   const coinbaseAddress = Address.fromString(testData.env.currentCoinbase)
   const account = await (<VM>vm).stateManager.getAccount(coinbaseAddress)
-  await (<VM>vm).stateManager.putAccount(coinbaseAddress, account ?? new Account())
+  await (<VM>vm).stateManager.putAccount(coinbaseAddress, account ?? new Account(), true)
 
   const stepHandler = (e: InterpreterStep) => {
     let hexStack = []
