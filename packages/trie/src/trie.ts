@@ -167,10 +167,11 @@ export class Trie {
    * @returns A Promise that resolves to `Uint8Array` if a value was found or `null` if no value was found.
    */
   async get(key: Uint8Array, throwIfMissing = false): Promise<Uint8Array | null> {
-    const { node, remaining } = await this.findPath(this.appliedKey(key), throwIfMissing)
+    const { remaining, stack } = await this.findPath2(this.appliedKey(key), throwIfMissing)
     let value: Uint8Array | null = null
-    if (node && remaining.length === 0) {
-      value = node.value()
+    if (remaining.length === 0) {
+      const last = stack.pop()!
+      value = last.value()
     }
     return value
   }
@@ -340,6 +341,76 @@ export class Trie {
       // Resolve if walkTrie finishes without finding any nodes
       resolve({ node: null, remaining: [], stack })
     })
+  }
+
+  async processNode(nodeKey: Uint8Array, stack: TrieNode[], progress: Nibbles, remaining: Nibbles) {
+    const node = await this.lookupNode(nodeKey)
+
+    if (node === null) {
+      throw new Error('Path not found')
+    }
+    stack.push(node)
+    const current = remaining[0]!
+    progress.push(current)
+    remaining = remaining.slice(1)
+
+    if (node instanceof BranchNode) {
+      if (remaining.length === 0) {
+        // we exhausted the key without finding a node
+        return
+      } else {
+        const branchNode = node.getBranch(current)
+        if (!branchNode) {
+          // there are no more nodes to find and we didn't find the key
+          return
+        } else {
+          // node found, continuing search
+          // this can be optimized as this calls getBranch again.
+          //walkController.onlyBranchIndex(node, progress, branchIndex)
+          await this.processNode(branchNode as Uint8Array, stack, progress, remaining)
+        }
+      }
+    } else if (node instanceof LeafNode) {
+      if (doKeysMatch(remaining, node.key())) {
+        return
+      }
+    } else if (node instanceof ExtensionNode) {
+      const matchingLen = matchingNibbleLength(remaining, node.key())
+      if (matchingLen !== node.key().length) {
+        return
+      } else {
+        // keys match, continue search
+        const children = [[node.key(), node.value()]]
+        for (const child of children) {
+          const childRef = child[1] as Uint8Array
+          //this.pushNodeToQueue(childRef, childKey, priority)
+          await this.processNode(childRef, stack, progress, remaining)
+        }
+      }
+    }
+  }
+
+  /**
+   * Tries to find a path to the node for the given key.
+   * It returns a `stack` of nodes to the closest node.
+   * @param key - the search key
+   * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
+   */
+  async findPath2(key: Uint8Array, throwIfMissing = false): Promise<Path> {
+    const stack: TrieNode[] = []
+    const nodeKey = this.root()
+    const progress: Nibbles = []
+    const remaining = bytesToNibbles(key)
+    try {
+      await this.processNode(nodeKey, stack, progress, remaining)
+    } catch (error: any) {
+      if (error.message === 'Missing node in DB' && !throwIfMissing) {
+        // pass
+      } else {
+        throw error
+      }
+    }
+    return { node: null, stack, remaining }
   }
 
   /**
