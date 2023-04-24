@@ -101,10 +101,10 @@ tape(`${method}: get dataGasUsed/dataGasPrice in blob tx receipt`, async (t) => 
     const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
-      hardfork: Hardfork.ShardingForkDev,
+      hardfork: Hardfork.Cancun,
     })
     const { chain, execution, server } = await setupChain(gethGenesis, 'customChain')
-    common.setHardfork(Hardfork.ShardingForkDev)
+    common.setHardfork(Hardfork.Cancun)
 
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(blobs)

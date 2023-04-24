@@ -272,7 +272,7 @@ tape('[PendingBlock]', async (t) => {
     const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
-      hardfork: Hardfork.ShardingForkDev,
+      hardfork: Hardfork.Cancun,
     })
     const { txPool } = setup()
     const blobs = getBlobs('hello world')

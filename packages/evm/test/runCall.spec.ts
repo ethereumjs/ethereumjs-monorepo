@@ -581,7 +581,7 @@ tape('runCall() => use DATAHASH opcode from EIP 4844', async (t) => {
   const genesisJSON = require('../../client/test/testdata/geth-genesis/eip4844.json')
   const common = Common.fromGethGenesis(genesisJSON, {
     chain: 'custom',
-    hardfork: Hardfork.ShardingForkDev,
+    hardfork: Hardfork.Cancun,
   })
   const eei = await getEEI()
   const evm = await EVM.create({ common, eei })

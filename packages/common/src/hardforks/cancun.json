@@ -1,0 +1,7 @@
+{
+  "name": "cancun",
+  "comment": "Next feature hardfork after the shanghai having proto-danksharding EIP 4844 blobs (still WIP hence not for production use)",
+  "url": "https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/cancun.md",
+  "status": "Experimental",
+  "eips": [4844]
+}

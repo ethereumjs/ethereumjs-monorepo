@@ -227,9 +227,9 @@ tape('blob EIP 4844 transaction', async (t) => {
   const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
   const common = Common.fromGethGenesis(gethGenesis, {
     chain: 'customChain',
-    hardfork: Hardfork.ShardingForkDev,
+    hardfork: Hardfork.Cancun,
   })
-  common.setHardfork(Hardfork.ShardingForkDev)
+  common.setHardfork(Hardfork.Cancun)
   const { server, client } = baseSetup({
     commonChain: common,
     includeVM: true,
