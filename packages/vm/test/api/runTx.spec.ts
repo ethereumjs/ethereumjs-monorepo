@@ -899,9 +899,9 @@ tape('EIP 4844 transaction tests', async (t) => {
     const genesisJson = require('../../../block/test/testdata/4844-hardfork.json')
     const common = Common.fromGethGenesis(genesisJson, {
       chain: 'customChain',
-      hardfork: Hardfork.ShardingForkDev,
+      hardfork: Hardfork.Cancun,
     })
-    common.setHardfork(Hardfork.ShardingForkDev)
+    common.setHardfork(Hardfork.Cancun)
     const oldGetBlockFunction = Blockchain.prototype.getBlock
 
     // Stub getBlock to produce a valid parent header under EIP 4844

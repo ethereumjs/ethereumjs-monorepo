@@ -179,7 +179,7 @@ export class EVM implements EVMInterface {
     Hardfork.MergeForkIdTransition,
     Hardfork.Paris,
     Hardfork.Shanghai,
-    Hardfork.ShardingForkDev,
+    Hardfork.Cancun,
   ]
   protected _tx?: {
     gasPrice: bigint
