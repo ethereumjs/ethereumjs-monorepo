@@ -60,7 +60,7 @@ async function runTransition(argsIn: any) {
     blockchain = await Blockchain.create({ common, genesisBlock: genesis })
   }
   const vm = blockchain ? await VM.create({ common, blockchain }) : await VM.create({ common })
-  await setupPreConditions(<any>vm.evm.eei, { pre: alloc })
+  await setupPreConditions(vm.stateManager, { pre: alloc })
 
   const block = makeBlockFromEnv(inputEnv, { common })
 
@@ -125,10 +125,10 @@ async function runTransition(argsIn: any) {
   const logsBloom = builder.logsBloom()
   const logsHash = keccak256(logsBloom)
 
-  await vm.eei.cleanupTouchedAccounts()
+  await vm.stateManager.cleanupTouchedAccounts()
 
   const output = {
-    stateRoot: bytesToPrefixedHexString(await vm.evm.eei.getStateRoot()),
+    stateRoot: bytesToPrefixedHexString(await vm.stateManager.getStateRoot()),
     txRoot: bytesToPrefixedHexString(await builder.transactionsTrie()),
     receiptsRoot: bytesToPrefixedHexString(await builder.receiptTrie()),
     logsHash: bytesToPrefixedHexString(logsHash),
