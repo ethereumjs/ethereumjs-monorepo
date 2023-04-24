@@ -1,7 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
-import { VmState } from '@ethereumjs/evm'
-import { BlobEIP4844Transaction, Transaction, initKZG } from '@ethereumjs/tx'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { BlobEIP4844Transaction, Transaction } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -83,9 +83,8 @@ tape('[PendingBlock]', async (t) => {
   BlockHeader.prototype._consensusFormatValidation = td.func<any>()
   td.replace('@ethereumjs/block', { BlockHeader })
 
-  const originalSetStateRoot = VmState.prototype.setStateRoot
-  VmState.prototype.setStateRoot = td.func<any>()
-  td.replace('@ethereumjs/evm', { VmState })
+  const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
+  DefaultStateManager.prototype.setStateRoot = td.func<any>()
 
   const createTx = (
     from = A,
@@ -316,7 +315,7 @@ tape('[PendingBlock]', async (t) => {
     // mocking indirect dependencies is not properly supported, but it works for us in this file,
     // so we will replace the original functions to avoid issues in other tests that come after
     BlockHeader.prototype._consensusFormatValidation = originalValidate
-    VmState.prototype.setStateRoot = originalSetStateRoot
+    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
 
     st.end()
   })
