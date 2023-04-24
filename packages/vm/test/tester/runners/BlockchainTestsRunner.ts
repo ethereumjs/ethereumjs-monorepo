@@ -34,14 +34,15 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   // fix for BlockchainTests/GeneralStateTests/stRandom/*
   testData.lastblockhash = stripHexPrefix(testData.lastblockhash)
 
+  let common = options.common.copy() as Common
+  common.setHardforkByBlockNumber(0)
+
   let cacheDB = new Level('./.cachedb')
   let state = new Trie({ useKeyHashing: true })
   let stateManager = new DefaultStateManager({
     trie: state,
+    common,
   })
-
-  let common = options.common.copy() as Common
-  common.setHardforkByBlockNumber(0)
 
   let validatePow = false
   // Only run with block validation when sealEngine present in test file

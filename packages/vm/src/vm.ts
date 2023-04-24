@@ -104,7 +104,7 @@ export class VM {
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
     } else {
-      this.stateManager = new DefaultStateManager({})
+      this.stateManager = new DefaultStateManager({ common: this._common })
     }
 
     this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this._common })

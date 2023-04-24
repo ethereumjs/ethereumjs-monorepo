@@ -544,7 +544,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
   }
 
-  await state.cleanupTouchedAccounts()
+  if (this._common.gteHardfork(Hardfork.SpuriousDragon)) {
+    await state.cleanupTouchedAccounts()
+  }
   state.clearOriginalStorageCache()
 
   // Generate the tx receipt
