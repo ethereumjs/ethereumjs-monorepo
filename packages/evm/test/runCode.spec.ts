@@ -1,4 +1,5 @@
 import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { Account, Address } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
@@ -86,6 +87,13 @@ tape('VM.runCode: interpreter', (t) => {
       stateManager: new DefaultStateManager(),
       enableDefaultBlockchain: true,
     })
+    // NOTE: due to now throwing on `getContractStorage` if account does not exist
+    // this now means that if `runCode` is called and the address it runs on (default: zero address)
+    // does not exist, then if SSTORE/SLOAD is used, the runCode will immediately fail because StateManager now throws
+    // TODO: is this behavior which we should fix? (Either in StateManager OR in runCode where we load the account first,
+    // then re-put the account after (if account === undefined put empty account, such that the account exists))
+    const address = Address.fromString(`0x${'00'.repeat(20)}`)
+    await evm.stateManager.putAccount(address, new Account())
     evm.stateManager.putContractStorage = (..._args) => {
       throw new Error('Test')
     }
