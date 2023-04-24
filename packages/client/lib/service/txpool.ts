@@ -757,14 +757,16 @@ export class TxPool {
           byPrice.insert(accTxs[0])
           byNonce.set(address, accTxs.slice(1))
         }
-        // Accumulate the best priced transaction
+        // Accumulate the best priced transaction and increment blobs count
         txs.push(best)
+        if (best instanceof BlobEIP4844Transaction) {
+          blobsCount += ((best as BlobEIP4844Transaction).blobs ?? []).length
+        }
       } else {
         // Since no more blobs can fit in the block, not only skip inserting in byPrice but also remove all other
         // txs (blobs or not) of this sender address from further consideration
         skippedStats.byBlobsLimit += 1 + accTxs.length
         byNonce.set(address, [])
-        blobsCount++
       }
     }
     this.config.logger.info(
