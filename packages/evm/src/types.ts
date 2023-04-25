@@ -6,7 +6,7 @@ import type { Message } from './message'
 import type { OpHandler, OpcodeList } from './opcodes'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
 import type { StateManagerInterface } from '@ethereumjs/common'
-import type { Account, Address, AsyncEventEmitter, PrefixedHexString } from '@ethereumjs/util'
+import type { Address, AsyncEventEmitter } from '@ethereumjs/util'
 
 /**
  * API of the EVM
@@ -19,41 +19,6 @@ export interface EVMInterface {
   copy(): EVMInterface
   stateManager: StateManagerInterface
   events?: AsyncEventEmitter<EVMEvents>
-}
-
-/**
- * API for an EEI (Ethereum Environment Interface) implementation
- *
- * This can be used to connect the EVM to different (chain) environments.
- * An implementation for an EEI to connect to an Ethereum execution chain
- * environment (`mainnet`, `sepolia`,...) can be found in the
- * `@ethereumjs/vm` package.
- */
-export interface EEIInterface extends EVMStateAccess {
-  getBlockHash(num: bigint): Promise<bigint>
-  storageStore(address: Address, key: Uint8Array, value: Uint8Array): Promise<void>
-  storageLoad(address: Address, key: Uint8Array, original: boolean): Promise<Uint8Array>
-  copy(): EEIInterface
-}
-
-/**
- * API for EVM state access, this extends the base interface from
- * the `@ethereumjs/statemanager` package and is part of the broader
- * EEI (see EEI interface).
- *
- * An implementation of this can be found in the `@ethereumjs/vm` package.
- */
-export interface EVMStateAccess extends StateAccess {
-  addWarmedAddress(address: Uint8Array): void
-  isWarmedAddress(address: Uint8Array): boolean
-  addWarmedStorage(address: Uint8Array, slot: Uint8Array): void
-  isWarmedStorage(address: Uint8Array, slot: Uint8Array): boolean
-  clearWarmedAccounts(): void
-  generateAccessList?(addressesRemoved: Address[], addressesOnlyStorage: Address[]): AccessList
-  clearOriginalStorageCache(): void
-  cleanupTouchedAccounts(): Promise<void>
-  generateCanonicalGenesis(initState: any): Promise<void>
-  accountIsEmptyOrNonExistent(address: Address): Promise<boolean>
 }
 
 export type DeleteOpcode = {
@@ -236,51 +201,6 @@ export type EVMEvents = {
  * Log that the contract emits.
  */
 export type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
-
-declare type AccessListItem = {
-  address: PrefixedHexString
-  storageKeys: PrefixedHexString[]
-}
-
-declare type AccessList = AccessListItem[]
-
-declare type StorageProof = {
-  key: PrefixedHexString
-  proof: PrefixedHexString[]
-  value: PrefixedHexString
-}
-declare type Proof = {
-  address: PrefixedHexString
-  balance: PrefixedHexString
-  codeHash: PrefixedHexString
-  nonce: PrefixedHexString
-  storageHash: PrefixedHexString
-  accountProof: PrefixedHexString[]
-  storageProof: StorageProof[]
-}
-
-type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'storageRoot' | 'codeHash'>>
-
-interface StateAccess {
-  accountExists(address: Address): Promise<boolean>
-  getAccount(address: Address): Promise<Account | undefined>
-  putAccount(address: Address, account: Account): Promise<void>
-  deleteAccount(address: Address): Promise<void>
-  modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void>
-  putContractCode(address: Address, value: Uint8Array): Promise<void>
-  getContractCode(address: Address): Promise<Uint8Array>
-  getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
-  putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void>
-  clearContractStorage(address: Address): Promise<void>
-  checkpoint(): Promise<void>
-  commit(): Promise<void>
-  revert(): Promise<void>
-  getStateRoot(): Promise<Uint8Array>
-  setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void>
-  getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
-  verifyProof?(proof: Proof): Promise<boolean>
-  hasStateRoot(root: Uint8Array): Promise<boolean>
-}
 
 export type Block = {
   header: {

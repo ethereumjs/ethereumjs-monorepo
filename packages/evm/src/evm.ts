@@ -1001,14 +1001,6 @@ export class EVM implements EVMInterface {
     return result
   }
 
-  protected async _touchAccount(address: Address): Promise<void> {
-    let account = await this.stateManager.getAccount(address)
-    if (!account) {
-      account = new Account()
-    }
-    return this.stateManager.putAccount(address, account, true)
-  }
-
   /**
    * Once the interpreter has finished depth 0, a post-message cleanup should be done
    */

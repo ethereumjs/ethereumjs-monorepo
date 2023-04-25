@@ -363,7 +363,7 @@ export class DefaultStateManager implements StateManagerInterface {
    * event. Touched accounts that are empty will be cleared
    * at the end of the tx.
    */
-  touchAccount(address: Address): void {
+  protected touchAccount(address: Address): void {
     this.touchedJournal.addJournalItem(address.toString().slice(2))
   }
 
@@ -449,7 +449,7 @@ export class DefaultStateManager implements StateManagerInterface {
    * cache or does a lookup.
    * @private
    */
-  async _getStorageTrie(address: Address, account: Account): Promise<Trie> {
+  private async _getStorageTrie(address: Address, account: Account): Promise<Trie> {
     // from storage cache
     const addressHex = bytesToHex(address.bytes)
     const storageTrie = this._storageTries[addressHex]
@@ -544,7 +544,7 @@ export class DefaultStateManager implements StateManagerInterface {
    * @param address -  Address of the account whose storage is to be modified
    * @param modifyTrie - Function to modify the storage trie of the account
    */
-  async _modifyContractStorage(
+  private async _modifyContractStorage(
     address: Address,
     account: Account,
     modifyTrie: (storageTrie: Trie, done: Function) => void
@@ -566,7 +566,7 @@ export class DefaultStateManager implements StateManagerInterface {
     })
   }
 
-  async _writeContractStorage(
+  private async _writeContractStorage(
     address: Address,
     account: Account,
     key: Uint8Array,
