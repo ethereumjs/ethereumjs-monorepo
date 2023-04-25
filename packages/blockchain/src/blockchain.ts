@@ -1211,8 +1211,14 @@ export class Blockchain implements BlockchainInterface {
    * @hidden
    */
   private _saveHeadOps(): DBOp[] {
+    // Convert DB heads to hex strings for efficient storage in DB
+    // LevelDB doesn't handle Uint8Arrays properly when they are part
+    // of a JSON object being stored as a value in the DB
+    const hexHeads = Object.fromEntries(
+      Object.entries(this._heads).map((entry) => [entry[0], bytesToHex(entry[1])])
+    )
     return [
-      DBOp.set(DBTarget.Heads, this._heads),
+      DBOp.set(DBTarget.Heads, hexHeads),
       DBOp.set(DBTarget.HeadHeader, this._headHeaderHash!),
       DBOp.set(DBTarget.HeadBlock, this._headBlockHash!),
     ]
