@@ -746,8 +746,6 @@ export class TxPool {
       //   i) this is not a blob tx,
       //   ii) or there is no blobs limit provided
       //   iii) or blobs are still within limit if this best tx's blobs are included
-      //     (it is possible that there is a tx with lets say 10 blobs which can never be included
-      //     if 4 is block blobs limit)
       if (
         !(best instanceof BlobEIP4844Transaction) ||
         allowedBlobs === undefined ||

@@ -21,8 +21,6 @@ import type { WithdrawalData } from '@ethereumjs/util'
 import type { TxReceipt, VM } from '@ethereumjs/vm'
 import type { BlockBuilder } from '@ethereumjs/vm/dist/buildBlock'
 
-const MAX_BLOBS_PER_BLOCK = 4
-
 interface PendingBlockOpts {
   /* Config */
   config: Config
@@ -150,10 +148,19 @@ export class PendingBlock {
 
     this.pendingPayloads.set(payloadId, builder)
 
+    // Get if and how many blobs are allowed in the tx
+    let allowedBlobs
+    if (vm._common.isActivatedEIP(4844)) {
+      const dataGasLimit = vm._common.param('gasConfig', 'maxDataGasPerBlock')
+      const dataGasPerBlob = vm._common.param('gasConfig', 'dataGasPerBlob')
+      allowedBlobs = Number(dataGasLimit / dataGasPerBlob)
+    } else {
+      allowedBlobs = 0
+    }
     // Add current txs in pool
     const txs = await this.txPool.txsByPriceAndNonce(vm, {
       baseFee: baseFeePerGas,
-      allowedBlobs: MAX_BLOBS_PER_BLOCK,
+      allowedBlobs,
     })
     this.config.logger.info(
       `Pending: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`
@@ -230,15 +237,25 @@ export class PendingBlock {
     if (blockStatus.status === BuildStatus.Build) {
       return [blockStatus.block, builder.transactionReceipts, builder.minerValue]
     }
-    const { vm, headerData } = builder as any
+    const { vm, headerData } = builder as unknown as { vm: VM; headerData: HeaderData }
 
     // get the number of blobs that can be further added
-    const bundle = this.blobsBundles.get(payloadId) ?? { blobs: [], commitments: [], proofs: [] }
-    const allowedBlobs = MAX_BLOBS_PER_BLOCK - bundle.blobs.length
+    let allowedBlobs
+    if (vm._common.isActivatedEIP(4844)) {
+      const bundle = this.blobsBundles.get(payloadId) ?? { blobs: [], commitments: [], proofs: [] }
+      const dataGasLimit = vm._common.param('gasConfig', 'maxDataGasPerBlock')
+      const dataGasPerBlob = vm._common.param('gasConfig', 'dataGasPerBlob')
+      allowedBlobs = Number(dataGasLimit / dataGasPerBlob) - bundle.blobs.length
+    } else {
+      allowedBlobs = 0
+    }
 
     // Add new txs that the pool received
     const txs = (
-      await this.txPool.txsByPriceAndNonce(vm, { baseFee: headerData.baseFeePerGas, allowedBlobs })
+      await this.txPool.txsByPriceAndNonce(vm, {
+        baseFee: headerData.baseFeePerGas! as bigint,
+        allowedBlobs,
+      })
     ).filter(
       (tx) =>
         (builder as any).transactions.some((t: TypedTransaction) =>
