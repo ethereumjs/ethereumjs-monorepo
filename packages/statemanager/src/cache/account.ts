@@ -33,8 +33,7 @@ export class AccountCache extends Cache {
    * to the account), the element didn't exist in the cache
    * before.
    */
-  _diffCache: OrderedMap<string, AccountCacheElement | undefined>[] = []
-
+  _diffCache: Map<string, AccountCacheElement | undefined>[] = []
   constructor(opts: CacheOpts) {
     super()
     if (opts.type === CacheType.LRU) {
@@ -46,20 +45,20 @@ export class AccountCache extends Cache {
       this._orderedMapCache = new OrderedMap()
     }
 
-    this._diffCache.push(new OrderedMap())
+    this._diffCache.push(new Map<string, AccountCacheElement | undefined>())
     this._debug = createDebugLogger('statemanager:cache:account')
   }
 
   _saveCachePreState(cacheKeyHex: string) {
-    const it = this._diffCache[this._checkpoints].find(cacheKeyHex)
-    if (it.equals(this._diffCache[this._checkpoints].end())) {
+    const it = this._diffCache[this._checkpoints].get(cacheKeyHex)
+    if (it === undefined) {
       let oldElem: AccountCacheElement | undefined
       if (this._lruCache) {
         oldElem = this._lruCache!.get(cacheKeyHex)
       } else {
         oldElem = this._orderedMapCache!.getElementByKey(cacheKeyHex)
       }
-      this._diffCache[this._checkpoints].setElement(cacheKeyHex, oldElem)
+      this._diffCache[this._checkpoints].set(cacheKeyHex, oldElem)
     }
   }
 
@@ -142,12 +141,11 @@ export class AccountCache extends Cache {
     }
 
     const diffMap = this._diffCache[this._checkpoints]!
-    const it = diffMap.begin()
 
     const items: [string, AccountCacheElement][] = []
 
-    while (!it.equals(diffMap.end())) {
-      const cacheKeyHex = it.pointer[0]
+    for (const entry of diffMap.entries()) {
+      const cacheKeyHex = entry[0]
       let elem: AccountCacheElement | undefined
       if (this._lruCache) {
         elem = this._lruCache!.get(cacheKeyHex)
@@ -158,9 +156,8 @@ export class AccountCache extends Cache {
       if (elem !== undefined) {
         items.push([cacheKeyHex, elem])
       }
-      it.next()
     }
-    this._diffCache[this._checkpoints] = new OrderedMap()
+    this._diffCache[this._checkpoints] = new Map<string, AccountCacheElement | undefined>()
     return items
   }
 
@@ -173,11 +170,9 @@ export class AccountCache extends Cache {
       this._debug(`Revert to checkpoint ${this._checkpoints}`)
     }
     const diffMap = this._diffCache.pop()!
-
-    const it = diffMap.begin()
-    while (!it.equals(diffMap.end())) {
-      const addressHex = it.pointer[0]
-      const elem = it.pointer[1]
+    for (const entry of diffMap.entries()) {
+      const addressHex = entry[0]
+      const elem = entry[1]
       if (elem === undefined) {
         if (this._lruCache) {
           this._lruCache!.delete(addressHex)
@@ -191,7 +186,6 @@ export class AccountCache extends Cache {
           this._orderedMapCache!.setElement(addressHex, elem)
         }
       }
-      it.next()
     }
   }
 
@@ -205,15 +199,13 @@ export class AccountCache extends Cache {
     }
     const diffMap = this._diffCache.pop()!
 
-    const it = diffMap.begin()
-    while (!it.equals(diffMap.end())) {
-      const addressHex = it.pointer[0]
-      const itOld = this._diffCache[this._checkpoints].find(addressHex)
-      if (itOld.equals(this._diffCache[this._checkpoints].end())) {
-        const elem = it.pointer[1]
-        this._diffCache[this._checkpoints].setElement(addressHex, elem)
+    for (const entry of diffMap.entries()) {
+      const addressHex = entry[0]
+      const oldEntry = this._diffCache[this._checkpoints].has(addressHex)
+      if (oldEntry === undefined) {
+        const elem = entry[1]
+        this._diffCache[this._checkpoints].set(addressHex, elem)
       }
-      it.next()
     }
   }
 
@@ -226,7 +218,7 @@ export class AccountCache extends Cache {
     if (this.DEBUG) {
       this._debug(`New checkpoint ${this._checkpoints}`)
     }
-    this._diffCache.push(new OrderedMap())
+    this._diffCache.push(new Map<string, AccountCacheElement | undefined>())
   }
 
   /**
