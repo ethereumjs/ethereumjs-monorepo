@@ -1,6 +1,9 @@
 import { bytesToHex, hexStringToBytes } from '@ethereumjs/util'
 
 import type { BatchDBOp, Checkpoint, DB } from '../types'
+import type LRUCache from 'lru-cache'
+
+const LRU = require('lru-cache')
 
 /**
  * DB is a thin wrapper around the underlying levelup db,
@@ -10,6 +13,14 @@ export class CheckpointDB implements DB {
   public checkpoints: Checkpoint[]
   public db: DB
 
+  protected _cache: LRUCache<string, Uint8Array | null>
+
+  _cnt = {
+    LRU: 0,
+    CP: 0,
+    DB: 0,
+  }
+
   /**
    * Initialize a DB instance.
    */
@@ -17,6 +28,11 @@ export class CheckpointDB implements DB {
     this.db = db
     // Roots of trie at the moment of checkpoint
     this.checkpoints = []
+
+    this._cache = new LRU({
+      max: 1000000,
+      updateAgeOnGet: true,
+    })
   }
 
   /**
@@ -72,6 +88,13 @@ export class CheckpointDB implements DB {
         }
       }
       await this.batch(batchOp)
+      console.log(this._cache.length)
+      console.log(`LRU:${this._cnt.LRU} CP:${this._cnt.CP} DB:${this._cnt.DB}`)
+      this._cnt = {
+        LRU: 0,
+        CP: 0,
+        DB: 0,
+      }
     } else {
       // dump everything into the current (higher level) cache
       const currentKeyValueMap = this.checkpoints[this.checkpoints.length - 1].keyValueMap
@@ -93,16 +116,25 @@ export class CheckpointDB implements DB {
    * @inheritDoc
    */
   async get(key: Uint8Array): Promise<Uint8Array | null> {
+    const keyHex = bytesToHex(key)
+    let value = this._cache.get(keyHex)
+    if (value !== undefined) {
+      this._cnt.LRU += 1
+      return value
+    }
     // Lookup the value in our cache. We return the latest checkpointed value (which should be the value on disk)
     for (let index = this.checkpoints.length - 1; index >= 0; index--) {
       const value = this.checkpoints[index].keyValueMap.get(bytesToHex(key))
       if (value !== undefined) {
+        this._cnt.CP += 1
         return value
       }
     }
     // Nothing has been found in cache, look up from disk
 
-    const value = await this.db.get(key)
+    value = await this.db.get(key)
+    this._cnt.DB += 1
+    this._cache.set(keyHex, value)
     if (this.hasCheckpoints()) {
       // Since we are a checkpoint, put this value in cache, so future `get` calls will not look the key up again from disk.
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(bytesToHex(key), value)
@@ -114,12 +146,14 @@ export class CheckpointDB implements DB {
   /**
    * @inheritDoc
    */
-  async put(key: Uint8Array, val: Uint8Array): Promise<void> {
+  async put(key: Uint8Array, value: Uint8Array): Promise<void> {
+    const keyHex = bytesToHex(key)
+    this._cache.set(keyHex, value)
     if (this.hasCheckpoints()) {
       // put value in cache
-      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(bytesToHex(key), val)
+      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(bytesToHex(key), value)
     } else {
-      await this.db.put(key, val)
+      await this.db.put(key, value)
     }
   }
 
@@ -127,6 +161,8 @@ export class CheckpointDB implements DB {
    * @inheritDoc
    */
   async del(key: Uint8Array): Promise<void> {
+    const keyHex = bytesToHex(key)
+    this._cache.set(keyHex, null)
     if (this.hasCheckpoints()) {
       // delete the value in the current cache
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(bytesToHex(key), null)
