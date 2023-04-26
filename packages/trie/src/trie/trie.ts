@@ -39,6 +39,7 @@ export class Trie {
     useKeyHashingFunction: keccak256,
     useRootPersistence: false,
     useNodePruning: false,
+    cacheSize: 1000,
   }
 
   /** The root for an empty trie */
@@ -96,7 +97,7 @@ export class Trie {
         throw new Error('Cannot pass in an instance of CheckpointDB')
       }
 
-      this._db = new CheckpointDB(db)
+      this._db = new CheckpointDB({ db, cacheSize: this._opts.cacheSize })
     }
 
     return this._db
