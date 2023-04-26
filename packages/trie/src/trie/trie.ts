@@ -39,7 +39,7 @@ export class Trie {
     useKeyHashingFunction: keccak256,
     useRootPersistence: false,
     useNodePruning: false,
-    cacheSize: 1000,
+    cacheSize: 0,
   }
 
   /** The root for an empty trie */

@@ -64,10 +64,9 @@ export interface TrieOpts {
   useNodePruning?: boolean
 
   /**
-   * The trie library uses a permanent LRU cache to store nodes for faster
-   * retrieval. Set to 0 to deactivate LRU cache completely.
+   * LRU cache for trie nodes to allow for faster node retrieval.
    *
-   * Default: 1000
+   * Default: 0 (deactivated)
    */
   cacheSize?: number
 }
