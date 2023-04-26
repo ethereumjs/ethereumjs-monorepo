@@ -62,6 +62,13 @@ export interface TrieOpts {
    * unreachable nodes will be pruned (deleted) from the trie
    */
   useNodePruning?: boolean
+
+  /**
+   * LRU cache for trie nodes to allow for faster node retrieval.
+   *
+   * Default: 0 (deactivated)
+   */
+  cacheSize?: number
 }
 
 export type TrieOptsWithDefaults = TrieOpts & {
@@ -69,6 +76,19 @@ export type TrieOptsWithDefaults = TrieOpts & {
   useKeyHashingFunction: HashKeysFunction
   useRootPersistence: boolean
   useNodePruning: boolean
+  cacheSize: number
+}
+
+export interface CheckpointDBOpts {
+  /**
+   * A database instance.
+   */
+  db: DB
+
+  /**
+   * Cache size (default: 0)
+   */
+  cacheSize?: number
 }
 
 export type BatchDBOp = PutBatch | DelBatch

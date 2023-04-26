@@ -204,6 +204,11 @@ export interface ConfigOptions {
   storageCache?: number
 
   /**
+   * Size for the trie cache (max number of trie nodes)
+   */
+  trieCache?: number
+
+  /**
    * Generate code for local debugging, currently providing a
    * code snippet which can be used to run blocks on the
    * EthereumJS VM on execution errors
@@ -307,6 +312,7 @@ export class Config {
   public static readonly NUM_BLOCKS_PER_ITERATION = 50
   public static readonly ACCOUNT_CACHE = 1000000
   public static readonly STORAGE_CACHE = 200000
+  public static readonly TRIE_CACHE = 500000
   public static readonly DEBUGCODE_DEFAULT = false
   public static readonly SAFE_REORG_DISTANCE = 100
   public static readonly SKELETON_FILL_CANONICAL_BACKSTEP = 100
@@ -341,6 +347,7 @@ export class Config {
   public readonly numBlocksPerIteration: number
   public readonly accountCache: number
   public readonly storageCache: number
+  public readonly trieCache: number
   public readonly debugCode: boolean
   public readonly discDns: boolean
   public readonly discV4: boolean
@@ -397,6 +404,7 @@ export class Config {
     this.numBlocksPerIteration = options.numBlocksPerIteration ?? Config.NUM_BLOCKS_PER_ITERATION
     this.accountCache = options.accountCache ?? Config.ACCOUNT_CACHE
     this.storageCache = options.storageCache ?? Config.STORAGE_CACHE
+    this.trieCache = options.trieCache ?? Config.TRIE_CACHE
     this.debugCode = options.debugCode ?? Config.DEBUGCODE_DEFAULT
     this.mine = options.mine ?? false
     this.isSingleNode = options.isSingleNode ?? false
