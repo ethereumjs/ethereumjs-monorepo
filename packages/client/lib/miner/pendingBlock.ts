@@ -309,17 +309,20 @@ export class PendingBlock {
     }
 
     const block = await builder.build()
-    const withdrawalsStr = block.withdrawals ? ` withdrawals=${block.withdrawals.length}` : ''
-    this.config.logger.info(
-      `Pending: Built block number=${block.header.number} txs=${
-        block.transactions.length
-      }${withdrawalsStr} skippedByAddErrors=${skippedByAddErrors}  hash=${bytesToHex(block.hash())}`
-    )
-
     // Construct blobs bundle
     const blobs = block._common.isActivatedEIP(4844)
       ? this.constructBlobsBundle(payloadId, blobTxs)
       : undefined
+
+    const withdrawalsStr = block.withdrawals ? ` withdrawals=${block.withdrawals.length}` : ''
+    const blobsStr = blobs ? ` blobs=${blobs.blobs.length}` : ''
+    this.config.logger.info(
+      `Pending: Built block number=${block.header.number} txs=${
+        block.transactions.length
+      }${withdrawalsStr}${blobsStr} skippedByAddErrors=${skippedByAddErrors}  hash=${bytesToHex(
+        block.hash()
+      )}`
+    )
 
     return [block, builder.transactionReceipts, builder.minerValue, blobs]
   }
