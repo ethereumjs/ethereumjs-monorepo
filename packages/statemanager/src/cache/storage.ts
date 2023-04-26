@@ -16,8 +16,8 @@ const LRU = require('lru-cache')
  *
  * undefined: storage value is known not to exist in the cache
  */
-type DiffStorageCacheMap = OrderedMap<string, Uint8Array | undefined>
-type StorageCacheMap = OrderedMap<string, Uint8Array>
+type DiffStorageCacheMap = Map<string, Uint8Array | undefined>
+type StorageCacheMap = Map<string, Uint8Array>
 
 export class StorageCache extends Cache {
   _lruCache: LRUCache<string, StorageCacheMap> | undefined
@@ -32,7 +32,7 @@ export class StorageCache extends Cache {
    * to the account), the element didn't exist in the cache
    * before.
    */
-  _diffCache: OrderedMap<string, DiffStorageCacheMap>[] = []
+  _diffCache: Map<string, DiffStorageCacheMap>[] = []
 
   constructor(opts: CacheOpts) {
     super()
@@ -45,7 +45,7 @@ export class StorageCache extends Cache {
       this._orderedMapCache = new OrderedMap()
     }
 
-    this._diffCache.push(new OrderedMap())
+    this._diffCache.push(new Map())
 
     if (this.DEBUG) {
       this._debug = createDebugLogger('statemanager:cache:storage')
@@ -53,31 +53,30 @@ export class StorageCache extends Cache {
   }
 
   _saveCachePreState(addressHex: string, keyHex: string) {
-    const itAddress = this._diffCache[this._checkpoints].find(addressHex)
+    const addressStoragePreState = this._diffCache[this._checkpoints].get(addressHex)
     let diffStorageMap: DiffStorageCacheMap
-    if (itAddress.equals(this._diffCache[this._checkpoints].end())) {
-      diffStorageMap = new OrderedMap()
+    if (addressStoragePreState === undefined) {
+      diffStorageMap = new Map()
     } else {
-      diffStorageMap = itAddress.pointer[1]
+      diffStorageMap = addressStoragePreState
     }
 
-    const itKey = diffStorageMap.find(keyHex)
-    if (itKey.equals(diffStorageMap.end())) {
+    if (!diffStorageMap.has(keyHex)) {
       let oldStorageMap: StorageCacheMap | undefined
       let oldStorage: Uint8Array | undefined = undefined
       if (this._lruCache) {
         oldStorageMap = this._lruCache!.get(addressHex)
         if (oldStorageMap) {
-          oldStorage = oldStorageMap.getElementByKey(keyHex)
+          oldStorage = oldStorageMap.get(keyHex)
         }
       } else {
         oldStorageMap = this._orderedMapCache!.getElementByKey(addressHex)
         if (oldStorageMap) {
-          oldStorage = oldStorageMap.getElementByKey(keyHex)
+          oldStorage = oldStorageMap.get(keyHex)
         }
       }
-      diffStorageMap.setElement(keyHex, oldStorage)
-      this._diffCache[this._checkpoints].setElement(addressHex, diffStorageMap)
+      diffStorageMap.set(keyHex, oldStorage)
+      this._diffCache[this._checkpoints].set(addressHex, diffStorageMap)
     }
   }
 
@@ -102,16 +101,16 @@ export class StorageCache extends Cache {
     if (this._lruCache) {
       let storageMap = this._lruCache!.get(addressHex)
       if (!storageMap) {
-        storageMap = new OrderedMap()
+        storageMap = new Map()
       }
-      storageMap.setElement(keyHex, value)
+      storageMap.set(keyHex, value)
       this._lruCache!.set(addressHex, storageMap)
     } else {
       let storageMap = this._orderedMapCache!.getElementByKey(addressHex)
       if (!storageMap) {
-        storageMap = new OrderedMap()
+        storageMap = new Map()
       }
-      storageMap.setElement(keyHex, value)
+      storageMap.set(keyHex, value)
       this._orderedMapCache!.setElement(addressHex, storageMap)
     }
     this._stats.writes += 1
@@ -141,7 +140,7 @@ export class StorageCache extends Cache {
     this._stats.reads += 1
     if (storageMap) {
       this._stats.hits += 1
-      return storageMap.getElementByKey(keyHex)
+      return storageMap.get(keyHex)
     }
   }
 
@@ -160,16 +159,16 @@ export class StorageCache extends Cache {
     if (this._lruCache) {
       let storageMap = this._lruCache!.get(addressHex)
       if (!storageMap) {
-        storageMap = new OrderedMap()
+        storageMap = new Map()
       }
-      storageMap.setElement(keyHex, hexStringToBytes('80'))
+      storageMap.set(keyHex, hexStringToBytes('80'))
       this._lruCache!.set(addressHex, storageMap)
     } else {
       let storageMap = this._orderedMapCache!.getElementByKey(addressHex)
       if (!storageMap) {
-        storageMap = new OrderedMap()
+        storageMap = new Map()
       }
-      storageMap.setElement(keyHex, hexStringToBytes('80'))
+      storageMap.set(keyHex, hexStringToBytes('80'))
       this._orderedMapCache!.setElement(addressHex, storageMap)
     }
 
@@ -183,9 +182,9 @@ export class StorageCache extends Cache {
   clearContractStorage(address: Address): void {
     const addressHex = bytesToHex(address.bytes)
     if (this._lruCache) {
-      this._lruCache!.set(addressHex, new OrderedMap())
+      this._lruCache!.set(addressHex, new Map())
     } else {
-      this._orderedMapCache!.setElement(addressHex, new OrderedMap())
+      this._orderedMapCache!.setElement(addressHex, new Map())
     }
   }
 
@@ -199,13 +198,12 @@ export class StorageCache extends Cache {
     }
 
     const diffMap = this._diffCache[this._checkpoints]!
-    const it = diffMap.begin()
 
     const items: [string, string, Uint8Array | undefined][] = []
 
-    while (!it.equals(diffMap.end())) {
-      const addressHex = it.pointer[0]
-      const diffStorageMap = it.pointer[1]
+    for (const entry of diffMap.entries()) {
+      const addressHex = entry[0]
+      const diffStorageMap = entry[1]
       let storageMap: StorageCacheMap | undefined
       if (this._lruCache) {
         storageMap = this._lruCache!.get(addressHex)
@@ -214,19 +212,16 @@ export class StorageCache extends Cache {
       }
 
       if (storageMap !== undefined) {
-        const itDiffStorage = diffStorageMap.begin()
-        while (!itDiffStorage.equals(diffStorageMap.end())) {
-          const keyHex = itDiffStorage.pointer[0]
-          const value = storageMap.getElementByKey(keyHex)
+        for (const entry of diffStorageMap.entries()) {
+          const keyHex = entry[0]
+          const value = storageMap.get(keyHex)
           items.push([addressHex, keyHex, value])
-          itDiffStorage.next()
         }
       } else {
         throw new Error('internal error: storage cache map for account should be defined')
       }
-      it.next()
     }
-    this._diffCache[this._checkpoints] = new OrderedMap()
+    this._diffCache[this._checkpoints] = new Map()
     return items
   }
 
@@ -240,39 +235,35 @@ export class StorageCache extends Cache {
     }
     const diffMap = this._diffCache.pop()!
 
-    const it = diffMap.begin()
-    while (!it.equals(diffMap.end())) {
-      const addressHex = it.pointer[0]
-      const diffStorageMap = it.pointer[1]
+    for (const entry of diffMap.entries()) {
+      const addressHex = entry[0]
+      const diffStorageMap = entry[1]
 
-      const itStorage = diffStorageMap.begin()
-      while (!itStorage.equals(diffStorageMap.end())) {
-        const keyHex = itStorage.pointer[0]
-        const value = itStorage.pointer[1]
+      for (const entry of diffStorageMap.entries()) {
+        const keyHex = entry[0]
+        const value = entry[1]
         if (this._lruCache) {
-          const storageMap = this._lruCache.get(addressHex) ?? new OrderedMap()
+          const storageMap = this._lruCache.get(addressHex) ?? new Map()
           if (value === undefined) {
             // Value is known not to be in the cache before
             // -> delete from cache
-            storageMap.eraseElementByKey(keyHex)
+            storageMap.delete(keyHex)
           } else {
             // Value is known to be in the cache before
             // (being either some storage value or the RLP-encoded empty Uint8Array)
-            storageMap.setElement(keyHex, value)
+            storageMap.set(keyHex, value)
           }
           this._lruCache.set(addressHex, storageMap)
         } else {
-          const storageMap = this._orderedMapCache!.getElementByKey(addressHex) ?? new OrderedMap()
+          const storageMap = this._orderedMapCache!.getElementByKey(addressHex) ?? new Map()
           if (!value) {
-            storageMap.eraseElementByKey(keyHex)
+            storageMap.delete(keyHex)
           } else {
-            storageMap.setElement(keyHex, value)
+            storageMap.set(keyHex, value)
           }
           this._orderedMapCache!.setElement(addressHex, storageMap)
         }
-        itStorage.next()
       }
-      it.next()
     }
   }
 
@@ -287,30 +278,24 @@ export class StorageCache extends Cache {
     const higherHeightDiffMap = this._diffCache.pop()!
     const lowerHeightDiffMap = this._diffCache[this._checkpoints]
 
-    const it = higherHeightDiffMap.begin()
     // Go through diffMap from the pre-commit checkpoint height.
     // 1. Iterate through all state pre states
     // 2. If state pre-state is not in the new (lower) height diff map, take pre commit pre state value
     // 3. If state is in new map, take this one, since this superseeds subsequent changes
-    while (!it.equals(higherHeightDiffMap.end())) {
-      const addressHex = it.pointer[0]
-      const higherHeightStorageDiff = it.pointer[1]
+    for (const entry of higherHeightDiffMap.entries()) {
+      const addressHex = entry[0]
+      const higherHeightStorageDiff = entry[1]
 
-      const itHigherHeightStorageDiff = higherHeightStorageDiff.begin()
-      const lowerHeightStorageDiff =
-        lowerHeightDiffMap.getElementByKey(addressHex) ?? new OrderedMap()
+      const lowerHeightStorageDiff = lowerHeightDiffMap.get(addressHex) ?? new Map()
 
-      while (!itHigherHeightStorageDiff.equals(higherHeightStorageDiff.end())) {
-        const keyHex = itHigherHeightStorageDiff.pointer[0]
-        const lowerHeightIt = lowerHeightStorageDiff.find(keyHex)
-        if (lowerHeightIt.equals(lowerHeightStorageDiff.end())) {
-          const elem = itHigherHeightStorageDiff.pointer[1]
-          lowerHeightStorageDiff.setElement(keyHex, elem)
+      for (const entry of higherHeightStorageDiff.entries()) {
+        const keyHex = entry[0]
+        if (!lowerHeightStorageDiff.has(keyHex)) {
+          const elem = entry[1]
+          lowerHeightStorageDiff.set(keyHex, elem)
         }
-        itHigherHeightStorageDiff.next()
       }
-      lowerHeightDiffMap.setElement(addressHex, lowerHeightStorageDiff)
-      it.next()
+      lowerHeightDiffMap.set(addressHex, lowerHeightStorageDiff)
     }
   }
 
@@ -323,7 +308,7 @@ export class StorageCache extends Cache {
     if (this.DEBUG) {
       this._debug(`New checkpoint ${this._checkpoints}`)
     }
-    this._diffCache.push(new OrderedMap())
+    this._diffCache.push(new Map())
   }
 
   /**
