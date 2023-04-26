@@ -253,6 +253,11 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     number: true,
     default: Config.STORAGE_CACHE,
   })
+  .option('trieCache', {
+    describe: 'Size for the trie cache (max number of trie nodes)',
+    number: true,
+    default: Config.TRIE_CACHE,
+  })
   .option('debugCode', {
     describe: 'Generate code for local debugging (internal usage mostly)',
     boolean: true,
@@ -733,6 +738,7 @@ async function run() {
     numBlocksPerIteration: args.numBlocksPerIteration,
     accountCache: args.accountCache,
     storageCache: args.storageCache,
+    trieCache: args.trieCache,
     dnsNetworks: args.dnsNetworks,
     extIP: args.extIP,
     key,

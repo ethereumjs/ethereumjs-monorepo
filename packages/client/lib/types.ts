@@ -146,6 +146,7 @@ export interface ClientOpts {
   numBlocksPerIteration?: number
   accountCache?: number
   storageCache?: number
+  trieCache?: number
   dnsNetworks?: string[]
   executeBlocks?: string
   debugCode?: boolean
