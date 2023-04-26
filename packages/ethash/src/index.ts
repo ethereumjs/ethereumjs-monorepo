@@ -4,12 +4,14 @@ import {
   TWO_POW256,
   bigIntToBytes,
   bytesToBigInt,
+  bytesToHex,
   concatBytes,
   equalsBytes,
   setLengthLeft,
   zeros,
 } from '@ethereumjs/util'
 import { keccak256, keccak512 } from 'ethereum-cryptography/keccak'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import {
   bytesReverse,
@@ -156,10 +158,10 @@ export type EthashCacheDB = AbstractLevel<
   string | Uint8Array,
   string | Uint8Array,
   {
-    cache: Uint8Array[]
+    cache: string[]
     fullSize: number
     cacheSize: number
-    seed: Uint8Array
+    seed: string
   }
 >
 
@@ -302,7 +304,13 @@ export class Ethash {
       }
       let data
       try {
-        data = await this.cacheDB!.get(epoc, this.dbOpts)
+        const dbData = await this.cacheDB!.get(epoc, this.dbOpts)
+        data = {
+          cache: dbData.cache.map((el) => hexToBytes(el)),
+          fullSize: dbData.fullSize,
+          cacheSize: dbData.cacheSize,
+          seed: hexToBytes(dbData.seed),
+        }
       } catch (error: any) {
         if (error.code !== 'LEVEL_NOT_FOUND') {
           throw error
@@ -317,10 +325,13 @@ export class Ethash {
 
     let data
     try {
-      data = await this.cacheDB!.get(epoc, this.dbOpts)
-      // Fix uint8Arrays that get stored in DB as JSON dictionary of array indices and values
-      data.seed = Uint8Array.from(Object.values(data.seed))
-      data.cache = data.cache.map((el) => Uint8Array.from(Object.values(el)))
+      const dbData = await this.cacheDB!.get(epoc, this.dbOpts)
+      data = {
+        cache: dbData.cache.map((el) => hexToBytes(el)),
+        fullSize: dbData.fullSize,
+        cacheSize: dbData.cacheSize,
+        seed: hexToBytes(dbData.seed),
+      }
     } catch (error: any) {
       if (error.code !== 'LEVEL_NOT_FOUND') {
         throw error
@@ -340,8 +351,8 @@ export class Ethash {
         {
           cacheSize: this.cacheSize,
           fullSize: this.fullSize,
-          seed: this.seed,
-          cache,
+          seed: bytesToHex(this.seed),
+          cache: cache.map((el) => bytesToHex(el)),
         },
         this.dbOpts
       )
