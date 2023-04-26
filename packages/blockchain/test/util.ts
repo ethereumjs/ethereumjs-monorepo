@@ -8,7 +8,7 @@ import { MemoryLevel } from 'memory-level'
 
 import { Blockchain } from '../src'
 
-import type { Level } from 'level'
+import type { AbstractLevel } from 'abstract-level'
 
 export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {
   const blocks = existingBlocks ? existingBlocks : []
@@ -115,7 +115,9 @@ export const isConsecutive = (blocks: Block[]) => {
   })
 }
 
-export const createTestDB = async (): Promise<[Level<any, any>, Block]> => {
+export const createTestDB = async (): Promise<
+  [AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>, Block]
+> => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
   const genesis = Block.fromBlockData({ header: { number: 0 } }, { common })
   const db = new MemoryLevel<any, any>()
