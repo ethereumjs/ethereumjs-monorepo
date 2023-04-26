@@ -100,7 +100,7 @@ export class CheckpointDB implements DB {
       }
       await this.batch(batchOp)
     } else {
-      // dump everything into the current (higher level) cache
+      // dump everything into the current (higher level) diff cache
       const currentKeyValueMap = this.checkpoints[this.checkpoints.length - 1].keyValueMap
       for (const [key, value] of keyValueMap.entries()) {
         currentKeyValueMap.set(key, value)
@@ -130,15 +130,14 @@ export class CheckpointDB implements DB {
       }
     }
 
-    // Lookup the value in our cache. We return the latest checkpointed value (which should be the value on disk)
+    // Lookup the value in our diff cache. We return the latest checkpointed value (which should be the value on disk)
     for (let index = this.checkpoints.length - 1; index >= 0; index--) {
       const value = this.checkpoints[index].keyValueMap.get(bytesToHex(key))
       if (value !== undefined) {
         return value
       }
     }
-    // Nothing has been found in cache, look up from disk
-
+    // Nothing has been found in diff cache, look up from disk
     const value = await this.db.get(key)
     this._stats.db.reads += 1
     if (value !== null) {
@@ -146,7 +145,8 @@ export class CheckpointDB implements DB {
     }
     this._cache?.set(keyHex, value)
     if (this.hasCheckpoints()) {
-      // Since we are a checkpoint, put this value in cache, so future `get` calls will not look the key up again from disk.
+      // Since we are a checkpoint, put this value in diff cache,
+      // so future `get` calls will not look the key up again from disk.
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(bytesToHex(key), value)
     }
 
@@ -163,7 +163,7 @@ export class CheckpointDB implements DB {
       this._stats.cache.writes += 1
     }
     if (this.hasCheckpoints()) {
-      // put value in cache
+      // put value in diff cache
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(bytesToHex(key), value)
     } else {
       await this.db.put(key, value)
@@ -176,9 +176,12 @@ export class CheckpointDB implements DB {
    */
   async del(key: Uint8Array): Promise<void> {
     const keyHex = bytesToHex(key)
-    this._cache?.set(keyHex, null)
+    if (this._cache !== undefined) {
+      this._cache.set(keyHex, null)
+      this._stats.cache.writes += 1
+    }
     if (this.hasCheckpoints()) {
-      // delete the value in the current cache
+      // delete the value in the current diff cache
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(bytesToHex(key), null)
     } else {
       // delete the value on disk
