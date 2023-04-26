@@ -576,6 +576,11 @@ export class VMExecution extends Execution {
       this.config.logger.info(
         `Storage cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
       )
+      const tStats = ((vm.stateManager as any)._trie as Trie).database().stats()
+      this.config.logger.info(
+        `Trie cache stats size=${tStats.size} reads=${tStats.cache.reads} hits=${tStats.cache.hits} ` +
+          `writes=${tStats.cache.writes} readsDB=${tStats.db.reads} hitsDB=${tStats.db.hits} writesDB=${tStats.db.writes}`
+      )
       this.cacheStatsCount = 0
     }
   }
