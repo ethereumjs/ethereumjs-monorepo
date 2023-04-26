@@ -299,6 +299,10 @@ tape('[PendingBlock]', async (t) => {
     const vm = await VM.create({ common })
     await setBalance(vm, A.address, BigInt(5000000000000000))
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
+    // stub the vm's common set hf to do nothing but stay in cancun
+    vm._common.setHardforkByBlockNumber = (_a: bigint, _b?: bigint, _c?: bigint) => {
+      return vm._common.hardfork()
+    }
     const payloadId = await pendingBlock.start(vm, parentBlock)
     await pendingBlock.build(payloadId)
 
