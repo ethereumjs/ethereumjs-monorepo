@@ -30,7 +30,7 @@ export class CheckpointDB implements DB {
     this.checkpoints = []
 
     this._cache = new LRU({
-      max: 1000000,
+      max: 500000,
       updateAgeOnGet: true,
     })
   }
@@ -88,8 +88,8 @@ export class CheckpointDB implements DB {
         }
       }
       await this.batch(batchOp)
-      console.log(this._cache.length)
-      console.log(`LRU:${this._cnt.LRU} CP:${this._cnt.CP} DB:${this._cnt.DB}`)
+      //console.log(this._cache.length)
+      //console.log(`LRU:${this._cnt.LRU} CP:${this._cnt.CP} DB:${this._cnt.DB}`)
       this._cnt = {
         LRU: 0,
         CP: 0,
