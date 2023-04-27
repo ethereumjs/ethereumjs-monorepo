@@ -46,7 +46,7 @@ tape(`${method}: should return highest block header unavailable error`, async (t
   const manager = createManager(client)
   const rpcServer = startRPC(manager.getMethods())
 
-  const synchronizer = client.services[0].synchronizer
+  const synchronizer = client.services[0].synchronizer!
   synchronizer.best = td.func<typeof synchronizer['best']>()
   td.when(synchronizer.best()).thenResolve('peer')
 
