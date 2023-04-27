@@ -11,11 +11,7 @@ export class MapDB implements DB {
   async get(key: Uint8Array): Promise<Uint8Array | null> {
     const result = this._database.get(bytesToHex(key))
 
-    if (result !== undefined) {
-      return result
-    }
-
-    return null
+    return result ?? null
   }
 
   async put(key: Uint8Array, val: Uint8Array): Promise<void> {

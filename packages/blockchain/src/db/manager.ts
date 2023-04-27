@@ -1,6 +1,13 @@
 import { Block, BlockHeader, valuesArrayToHeaderData } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
-import { KECCAK256_RLP, KECCAK256_RLP_ARRAY, bytesToBigInt, equalsBytes } from '@ethereumjs/util'
+import {
+  DB,
+  KECCAK256_RLP,
+  KECCAK256_RLP_ARRAY,
+  bytesToBigInt,
+  equalsBytes,
+  toBytes,
+} from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { Cache } from './cache'
@@ -9,7 +16,6 @@ import { DBOp, DBTarget } from './operation'
 import type { DBOpData, DatabaseKey } from './operation'
 import type { BlockBodyBytes, BlockBytes, BlockOptions } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type { AbstractLevel } from 'abstract-level'
 
 class NotFoundError extends Error {
   public code: string = 'LEVEL_NOT_FOUND'
@@ -43,12 +49,9 @@ export type CacheMap = { [key: string]: Cache<Uint8Array> }
 export class DBManager {
   private _cache: CacheMap
   private _common: Common
-  private _db: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+  private _db: DB<Uint8Array | string, Uint8Array | string>
 
-  constructor(
-    db: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>,
-    common: Common
-  ) {
+  constructor(db: DB<Uint8Array | string, Uint8Array | string>, common: Common) {
     this._db = db
     this._common = common
     this._cache = {
@@ -219,9 +222,10 @@ export class DBManager {
       }
       let value = this._cache[cacheString].get(dbKey)
       if (!value) {
-        value = await this._db.get(dbKey, dbOpts)
+        value = ((await this._db.get(dbKey)) as Uint8Array | null) ?? undefined
 
         if (value !== undefined) {
+          // TODO: Check if this comment is still valid
           // Always cast values to Uint8Array since db sometimes returns values as `Buffer`
           this._cache[cacheString].set(dbKey, Uint8Array.from(value))
         }
@@ -230,7 +234,7 @@ export class DBManager {
       return value
     }
 
-    return this._db.get(dbKey, dbOpts)
+    return this._db.get(dbKey /* , dbOpts */)
   }
 
   /**

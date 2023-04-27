@@ -11,6 +11,7 @@ import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from './util'
 
 import type { BlockOptions } from '@ethereumjs/block'
+import { MapDB } from '@ethereumjs/trie'
 
 tape('blockchain test', (t) => {
   t.test('should not crash on getting head of a blockchain without a genesis', async (st) => {
@@ -609,7 +610,7 @@ tape('blockchain test', (t) => {
   })
 
   t.test('should save headers', async (st) => {
-    const db = new MemoryLevel<string | Uint8Array, string | Uint8Array>()
+    const db = new MapDB()
     const gasLimit = 8000000
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })

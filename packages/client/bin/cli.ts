@@ -6,6 +6,7 @@ import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
+  DB,
   bytesToHex,
   bytesToPrefixedHexString,
   hexStringToBytes,
@@ -424,7 +425,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
   if (customGenesisState !== undefined) {
     const validateConsensus = config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique
     blockchain = await Blockchain.create({
-      db: dbs.chainDB,
+      db: dbs.chainDB as any,
       genesisState: customGenesisState,
       common: config.chainCommon,
       hardforkByHeadBlockNumber: true,

@@ -155,7 +155,7 @@ export class Chain {
     this.config = options.config
     this.blockchain = options.blockchain!
 
-    this.chainDB = this.blockchain.db
+    this.chainDB = this.blockchain.db as any
     this.opened = false
   }
 
@@ -213,7 +213,7 @@ export class Chain {
    */
   async open(): Promise<boolean | void> {
     if (this.opened) return false
-    await this.blockchain.db.open()
+    await (this.blockchain.db as any)?.open()
     await (this.blockchain as any)._init()
     this.opened = true
     await this.update(false)
@@ -231,7 +231,7 @@ export class Chain {
   async close(): Promise<boolean | void> {
     if (!this.opened) return false
     this.reset()
-    await this.blockchain.db.close()
+    await (this.blockchain.db as any)?.close()
     this.opened = false
   }
 
