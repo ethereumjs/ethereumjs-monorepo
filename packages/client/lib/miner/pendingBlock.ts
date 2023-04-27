@@ -148,8 +148,20 @@ export class PendingBlock {
 
     this.pendingPayloads.set(payloadId, builder)
 
+    // Get if and how many blobs are allowed in the tx
+    let allowedBlobs
+    if (vm._common.isActivatedEIP(4844)) {
+      const dataGasLimit = vm._common.param('gasConfig', 'maxDataGasPerBlock')
+      const dataGasPerBlob = vm._common.param('gasConfig', 'dataGasPerBlob')
+      allowedBlobs = Number(dataGasLimit / dataGasPerBlob)
+    } else {
+      allowedBlobs = 0
+    }
     // Add current txs in pool
-    const txs = await this.txPool.txsByPriceAndNonce(vm, baseFeePerGas)
+    const txs = await this.txPool.txsByPriceAndNonce(vm, {
+      baseFee: baseFeePerGas,
+      allowedBlobs,
+    })
     this.config.logger.info(
       `Pending: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`
     )
@@ -225,10 +237,26 @@ export class PendingBlock {
     if (blockStatus.status === BuildStatus.Build) {
       return [blockStatus.block, builder.transactionReceipts, builder.minerValue]
     }
-    const { vm, headerData } = builder as any
+    const { vm, headerData } = builder as unknown as { vm: VM; headerData: HeaderData }
+
+    // get the number of blobs that can be further added
+    let allowedBlobs
+    if (vm._common.isActivatedEIP(4844)) {
+      const bundle = this.blobsBundles.get(payloadId) ?? { blobs: [], commitments: [], proofs: [] }
+      const dataGasLimit = vm._common.param('gasConfig', 'maxDataGasPerBlock')
+      const dataGasPerBlob = vm._common.param('gasConfig', 'dataGasPerBlob')
+      allowedBlobs = Number(dataGasLimit / dataGasPerBlob) - bundle.blobs.length
+    } else {
+      allowedBlobs = 0
+    }
 
     // Add new txs that the pool received
-    const txs = (await this.txPool.txsByPriceAndNonce(vm, headerData.baseFeePerGas)).filter(
+    const txs = (
+      await this.txPool.txsByPriceAndNonce(vm, {
+        baseFee: headerData.baseFeePerGas! as bigint,
+        allowedBlobs,
+      })
+    ).filter(
       (tx) =>
         (builder as any).transactions.some((t: TypedTransaction) =>
           equalsBytes(t.hash(), tx.hash())
@@ -281,17 +309,20 @@ export class PendingBlock {
     }
 
     const block = await builder.build()
-    const withdrawalsStr = block.withdrawals ? ` withdrawals=${block.withdrawals.length}` : ''
-    this.config.logger.info(
-      `Pending: Built block number=${block.header.number} txs=${
-        block.transactions.length
-      }${withdrawalsStr} skippedByAddErrors=${skippedByAddErrors}  hash=${bytesToHex(block.hash())}`
-    )
-
     // Construct blobs bundle
     const blobs = block._common.isActivatedEIP(4844)
       ? this.constructBlobsBundle(payloadId, blobTxs)
       : undefined
+
+    const withdrawalsStr = block.withdrawals ? ` withdrawals=${block.withdrawals.length}` : ''
+    const blobsStr = blobs ? ` blobs=${blobs.blobs.length}` : ''
+    this.config.logger.info(
+      `Pending: Built block number=${block.header.number} txs=${
+        block.transactions.length
+      }${withdrawalsStr}${blobsStr} skippedByAddErrors=${skippedByAddErrors}  hash=${bytesToHex(
+        block.hash()
+      )}`
+    )
 
     return [block, builder.transactionReceipts, builder.minerValue, blobs]
   }

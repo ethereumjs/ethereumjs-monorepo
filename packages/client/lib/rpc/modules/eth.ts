@@ -924,6 +924,17 @@ export class Eth {
       if (txBuf[0] === 0x03) {
         // Blob Transactions sent over RPC are expected to be in Network Wrapper format
         tx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txBuf, { common })
+
+        const dataGasLimit = common.param('gasConfig', 'maxDataGasPerBlock')
+        const dataGasPerBlob = common.param('gasConfig', 'dataGasPerBlob')
+
+        if (BigInt((tx.blobs ?? []).length) * dataGasPerBlob > dataGasLimit) {
+          throw Error(
+            `tx blobs=${(tx.blobs ?? []).length} exceeds block limit=${
+              dataGasLimit / dataGasPerBlob
+            }`
+          )
+        }
       } else {
         tx = TransactionFactory.fromSerializedData(txBuf, { common })
       }

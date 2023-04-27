@@ -1,6 +1,7 @@
 import { Block, BlockHeader, valuesArrayToHeaderData } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import { KECCAK256_RLP, KECCAK256_RLP_ARRAY, bytesToBigInt, equalsBytes } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { Cache } from './cache'
 import { DBOp, DBTarget } from './operation'
@@ -65,11 +66,10 @@ export class DBManager {
   async getHeads(): Promise<{ [key: string]: Uint8Array }> {
     const heads = await this.get(DBTarget.Heads)
     for (const key of Object.keys(heads)) {
-      // DB incorrectly stores the `uint8Array` representation of each head hash
-      // as a JSON object of key value pairs where the key is the array index
-      // and the value is the uint8 from that index of the original array
-      // so we convert it back to a Uint8Array before storing the heads
-      heads[key] = Uint8Array.from(Object.values(heads[key]))
+      // Heads are stored in DB as hex strings since Level converts Uint8Arrays
+      // to nested JSON objects when they are included in a value being stored
+      // in the DB
+      heads[key] = hexToBytes(heads[key])
     }
     return heads
   }

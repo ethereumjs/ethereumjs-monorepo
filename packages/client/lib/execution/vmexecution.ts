@@ -51,10 +51,12 @@ export class VMExecution extends Execution {
       const trie = new Trie({
         db: new LevelDB(this.stateDB),
         useKeyHashing: true,
+        cacheSize: this.config.trieCache,
       })
 
       this.config.logger.info(`Initializing account cache size=${this.config.accountCache}`)
       this.config.logger.info(`Initializing storage cache size=${this.config.storageCache}`)
+      this.config.logger.info(`Initializing trie cache size=${this.config.trieCache}`)
       const stateManager = new DefaultStateManager({
         trie,
         accountCacheOpts: {
@@ -573,6 +575,11 @@ export class VMExecution extends Execution {
       stats = (vm.stateManager as any)._storageCache.stats()
       this.config.logger.info(
         `Storage cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
+      )
+      const tStats = ((vm.stateManager as any)._trie as Trie).database().stats()
+      this.config.logger.info(
+        `Trie cache stats size=${tStats.size} reads=${tStats.cache.reads} hits=${tStats.cache.hits} ` +
+          `writes=${tStats.cache.writes} readsDB=${tStats.db.reads} hitsDB=${tStats.db.hits} writesDB=${tStats.db.writes}`
       )
       this.cacheStatsCount = 0
     }

@@ -3,7 +3,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { toBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import { MemoryLevel } from 'memory-level'
 
 import { Blockchain } from '../src'
@@ -179,7 +179,7 @@ export const createTestDB = async (): Promise<[Level<any, any>, Block]> => {
       type: 'put',
       key: 'heads',
       valueEncoding: 'json',
-      value: { head0: [171, 205] },
+      value: { head0: bytesToHex(Uint8Array.from([171, 205])) },
     },
   ])
   return [db as any, genesis]

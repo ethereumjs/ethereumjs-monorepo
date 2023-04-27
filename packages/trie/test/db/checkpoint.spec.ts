@@ -12,7 +12,7 @@ tape('DB tests', (t) => {
   const v3 = utf8ToBytes('v3')
 
   t.test('Checkpointing: revert -> put (add)', async (st) => {
-    const db = new CheckpointDB(new MapDB())
+    const db = new CheckpointDB({ db: new MapDB() })
     db.checkpoint(hexStringToBytes('01'))
     await db.put(k, v)
     st.deepEqual(await db.get(k), v, 'before revert: v1')
@@ -22,7 +22,7 @@ tape('DB tests', (t) => {
   })
 
   t.test('Checkpointing: revert -> put (update)', async (st) => {
-    const db = new CheckpointDB(new MapDB())
+    const db = new CheckpointDB({ db: new MapDB() })
     await db.put(k, v)
     st.deepEqual(await db.get(k), v, 'before CP: v1')
     db.checkpoint(hexStringToBytes('01'))
@@ -34,7 +34,7 @@ tape('DB tests', (t) => {
   })
 
   t.test('Checkpointing: revert -> put (update) batched', async (st) => {
-    const db = new CheckpointDB(new MapDB())
+    const db = new CheckpointDB({ db: new MapDB() })
     await db.put(k, v)
     st.deepEqual(await db.get(k), v, 'before CP: v1')
     db.checkpoint(hexStringToBytes('01'))
@@ -49,7 +49,7 @@ tape('DB tests', (t) => {
   })
 
   t.test('Checkpointing: revert -> del', async (st) => {
-    const db = new CheckpointDB(new MapDB())
+    const db = new CheckpointDB({ db: new MapDB() })
     await db.put(k, v)
     st.deepEqual(await db.get(k), v, 'before CP: v1')
     db.checkpoint(hexStringToBytes('01'))
@@ -61,7 +61,7 @@ tape('DB tests', (t) => {
   })
 
   t.test('Checkpointing: nested checkpoints -> commit -> revert', async (st) => {
-    const db = new CheckpointDB(new MapDB())
+    const db = new CheckpointDB({ db: new MapDB() })
     await db.put(k, v)
 
     st.deepEqual(await db.get(k), v, 'before CP: v1')
