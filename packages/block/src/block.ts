@@ -8,12 +8,13 @@ import {
   bigIntToHex,
   bytesToHex,
   equalsBytes,
+  fetchFromProvider,
+  getProvider,
   intToHex,
   isHexPrefixed,
   ssz,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { ethers } from 'ethers'
 
 import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
@@ -223,44 +224,57 @@ export class Block {
   }
 
   /**
-   *  Method to retrieve a block from the provider and format as a {@link Block}
-   * @param provider an Ethers JsonRPCProvider
+   *  Method to retrieve a block from a JSON-RPC provider and format as a {@link Block}
+   * @param provider either a url for a remote provider or an Ethers JsonRpcProvider object
    * @param blockTag block hash or block number to be run
    * @param opts {@link BlockOptions}
    * @returns the block specified by `blockTag`
    */
-  public static fromEthersProvider = async (
-    provider: ethers.providers.JsonRpcProvider | string,
+  public static fromJsonRpcProvider = async (
+    provider: any,
     blockTag: string | bigint,
     opts: BlockOptions
   ) => {
     let blockData
-    const prov =
-      typeof provider === 'string' ? new ethers.providers.JsonRpcProvider(provider) : provider
+    const providerUrl = getProvider(provider)
+
     if (typeof blockTag === 'string' && blockTag.length === 66) {
-      blockData = await prov.send('eth_getBlockByHash', [blockTag, true])
+      blockData = await fetchFromProvider(providerUrl, {
+        method: 'eth_getBlockByHash',
+        params: [blockTag, true],
+      })
     } else if (typeof blockTag === 'bigint') {
-      blockData = await prov.send('eth_getBlockByNumber', [bigIntToHex(blockTag), true])
+      blockData = await fetchFromProvider(providerUrl, {
+        method: 'eth_getBlockByNumber',
+        params: [bigIntToHex(blockTag), true],
+      })
     } else if (
       isHexPrefixed(blockTag) ||
       blockTag === 'latest' ||
       blockTag === 'earliest' ||
       blockTag === 'pending'
     ) {
-      blockData = await prov.send('eth_getBlockByNumber', [blockTag, true])
+      blockData = await fetchFromProvider(providerUrl, {
+        method: 'eth_getBlockByNumber',
+        params: [blockTag, true],
+      })
     } else {
       throw new Error(
         `expected blockTag to be block hash, bigint, hex prefixed string, or earliest/latest/pending; got ${blockTag}`
       )
     }
 
+    if (blockData === null) {
+      throw new Error('No block data returned from provider')
+    }
+
     const uncleHeaders = []
     if (blockData.uncles.length > 0) {
       for (let x = 0; x < blockData.uncles.length; x++) {
-        const headerData = await prov.send('eth_getUncleByBlockHashAndIndex', [
-          blockData.hash,
-          intToHex(x),
-        ])
+        const headerData = await fetchFromProvider(providerUrl, {
+          method: 'eth_getUncleByBlockHashAndIndex',
+          params: [blockData.hash, intToHex(x)],
+        })
         uncleHeaders.push(headerData)
       }
     }
