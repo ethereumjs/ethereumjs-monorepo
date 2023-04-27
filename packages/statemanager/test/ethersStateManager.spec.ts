@@ -145,7 +145,7 @@ tape('Ethers State Manager API tests', async (t) => {
     t.ok(await state.accountExists(vitalikDotEth), 'account should not exist after being deleted')
 
     try {
-      await Block.fromEthersProvider(provider, 'fakeBlockTag', {} as any)
+      await Block.fromJsonRpcProvider(provider, 'fakeBlockTag', {} as any)
       t.fail('should have thrown')
     } catch (err: any) {
       t.ok(
@@ -225,7 +225,7 @@ tape('runTx test: replay mainnet transactions', async (t) => {
     const blockTag = 15496077n
     common.setHardforkByBlockNumber(blockTag)
     const txHash = '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0'
-    const tx = await TransactionFactory.fromEthersProvider(provider, txHash, { common })
+    const tx = await TransactionFactory.fromJsonRpcProvider(provider, txHash, { common })
     const state = new EthersStateManager({
       provider,
       // Set the state manager to look at the state of the chain before the block has been executed
@@ -260,7 +260,7 @@ tape('runBlock test', async (t) => {
     common.setHardforkByBlockNumber(blockTag - 1n)
 
     const vm = await VM.create({ common, stateManager: state })
-    const block = await Block.fromEthersProvider(provider, blockTag, { common })
+    const block = await Block.fromJsonRpcProvider(provider, blockTag, { common })
     try {
       const res = await vm.runBlock({
         block,

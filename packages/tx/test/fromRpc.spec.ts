@@ -12,7 +12,7 @@ const optimismTx = require('./json/optimismTx.json')
 
 const txTypes = [0, 1, 2]
 
-tape('[fromEthersProvider]', async (t) => {
+tape('[fromJsonRpcProvider]', async (t) => {
   const fakeFetch = async (_url: string, req: any) => {
     if (
       req.method === 'eth_getTransactionByHash' &&
