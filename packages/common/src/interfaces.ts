@@ -47,61 +47,6 @@ export type Proof = {
   storageProof: StorageProof[]
 }
 
-type Stats = {
-  cache: {
-    size: number
-    reads: number
-    hits: number
-    writes: number
-    dels: number
-  }
-  trie: {
-    reads: number
-    writes: number
-    dels: number
-  }
-}
-
-export interface CacheInterface {
-  getOrLoad(address: Address): Promise<Account | undefined>
-  flush(): Promise<void>
-  clear(cacheClearingOpts?: CacheClearingOpts): void
-  put(address: Address, account: Account | undefined): void
-  del(address: Address): void
-  checkpoint(): void
-  revert(): void
-  commit(): void
-  stats(reset?: boolean): Stats
-}
-
-export interface StateAccess {
-  accountExists(address: Address): Promise<boolean>
-  getAccount(address: Address): Promise<Account | undefined>
-  putAccount(address: Address, account: Account): Promise<void>
-  deleteAccount(address: Address): Promise<void>
-  modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void>
-  putContractCode(address: Address, value: Uint8Array): Promise<void>
-  getContractCode(address: Address): Promise<Uint8Array>
-  getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
-  putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void>
-  clearContractStorage(address: Address): Promise<void>
-  checkpoint(): Promise<void>
-  commit(): Promise<void>
-  revert(): Promise<void>
-  getStateRoot(): Promise<Uint8Array>
-  setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void>
-  getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
-  verifyProof?(proof: Proof): Promise<boolean>
-  hasStateRoot(root: Uint8Array): Promise<boolean>
-}
-
-export interface StateManagerInterface extends StateAccess {
-  cache?: CacheInterface
-  copy(): StateManagerInterface
-  flush(): Promise<void>
-  dumpStorage(address: Address): Promise<StorageDump>
-}
-
 /*
  * Access List types
  */
@@ -117,3 +62,49 @@ export type AccessListItem = {
 export type AccessListBytesItem = [Uint8Array, Uint8Array[]]
 export type AccessListBytes = AccessListBytesItem[]
 export type AccessList = AccessListItem[]
+
+export interface EVMStateManagerInterface {
+  checkpoint(): Promise<void>
+  commit(): Promise<void>
+  revert(): Promise<void>
+
+  getAccount(address: Address): Promise<Account | undefined>
+  putAccount(address: Address, account: Account, touch?: boolean): Promise<void>
+  deleteAccount(address: Address, touch?: boolean): Promise<void>
+  modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void>
+  accountIsEmptyOrNonExistent(address: Address): Promise<boolean>
+  accountExists(address: Address): Promise<boolean>
+
+  getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
+  getOriginalContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
+  dumpStorage(address: Address): Promise<StorageDump> // only used in client
+  putContractStorage(
+    address: Address,
+    key: Uint8Array,
+    value: Uint8Array,
+    touch?: boolean
+  ): Promise<void>
+  clearContractStorage(address: Address, touch: boolean): Promise<void>
+
+  putContractCode(address: Address, value: Uint8Array): Promise<void>
+  getContractCode(address: Address): Promise<Uint8Array>
+
+  setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void>
+  getStateRoot(): Promise<Uint8Array>
+  hasStateRoot(root: Uint8Array): Promise<boolean> // only used in client
+
+  clearWarmedAccounts(): void
+  cleanupTouchedAccounts(): Promise<void>
+  clearOriginalStorageCache(): void
+
+  addWarmedAddress(address: Uint8Array): void
+  isWarmedAddress(address: Uint8Array): boolean
+  addWarmedStorage(address: Uint8Array, slot: Uint8Array): void
+  isWarmedStorage(address: Uint8Array, slot: Uint8Array): boolean
+
+  generateCanonicalGenesis(initState: any): Promise<void> // TODO make input more typesafe
+  generateAccessList(addressesRemoved: Address[], addressesOnlyStorage: Address[]): AccessList
+  getProof(address: Address, storageSlots?: Uint8Array[]): Promise<Proof>
+
+  copy(): EVMStateManagerInterface
+}

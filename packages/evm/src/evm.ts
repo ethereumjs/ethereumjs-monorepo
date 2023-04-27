@@ -41,6 +41,7 @@ import type {
   EVMRunCodeOpts,
   Log,
 } from './types'
+import type { EVMStateManagerInterface } from '@ethereumjs/common'
 
 const debug = createDebugLogger('evm:evm')
 const debugGas = createDebugLogger('evm:gas')
@@ -139,7 +140,7 @@ export interface EVMOpts {
   /*
    * The StateManager which is used to update the trie
    */
-  stateManager: DefaultStateManager
+  stateManager: EVMStateManagerInterface
 
   /**
    *
@@ -189,7 +190,7 @@ export class EVM implements EVMInterface {
 
   readonly _common: Common
 
-  public stateManager: DefaultStateManager
+  public stateManager: EVMStateManagerInterface
   public blockchain: Blockchain
 
   public readonly _transientStorage: TransientStorage

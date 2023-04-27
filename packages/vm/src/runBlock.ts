@@ -28,7 +28,7 @@ import type {
   TxReceipt,
 } from './types'
 import type { VM } from './vm'
-import type { DefaultStateManager } from '@ethereumjs/statemanager'
+import type { EVMStateManagerInterface } from '@ethereumjs/common'
 
 const debug = createDebugLogger('vm:block')
 
@@ -399,7 +399,7 @@ export function calculateMinerReward(minerReward: bigint, ommersNum: number): bi
 }
 
 export async function rewardAccount(
-  state: DefaultStateManager,
+  state: EVMStateManagerInterface,
   address: Address,
   reward: bigint
 ): Promise<Account> {
@@ -436,7 +436,7 @@ export function encodeReceipt(receipt: TxReceipt, txType: number) {
 /**
  * Apply the DAO fork changes to the VM
  */
-async function _applyDAOHardfork(state: DefaultStateManager) {
+async function _applyDAOHardfork(state: EVMStateManagerInterface) {
   const DAORefundContractAddress = new Address(hexToBytes(DAORefundContract))
   if ((await state.accountExists(DAORefundContractAddress)) === false) {
     await state.putAccount(DAORefundContractAddress, new Account(), true)

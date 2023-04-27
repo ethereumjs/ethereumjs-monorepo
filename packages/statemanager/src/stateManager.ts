@@ -31,7 +31,7 @@ import { Journaling } from './cache/journaling'
 import type {
   AccessListItem,
   AccountFields,
-  StateManagerInterface,
+  EVMStateManagerInterface,
   StorageDump,
 } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -143,7 +143,7 @@ export interface DefaultStateManagerOpts {
  * The default state manager implementation uses a
  * `@ethereumjs/trie` trie as a data backend.
  */
-export class DefaultStateManager implements StateManagerInterface {
+export class DefaultStateManager implements EVMStateManagerInterface {
   _debug: Debugger
   _accountCache?: AccountCache
   _storageCache?: StorageCache

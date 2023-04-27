@@ -21,6 +21,7 @@ import type {
   VMOpts,
 } from './types'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
+import type { EVMStateManagerInterface } from '@ethereumjs/common'
 
 /**
  * Execution engine which can be used to run a blockchain, individual
@@ -32,7 +33,7 @@ export class VM {
   /**
    * The StateManager used by the VM
    */
-  readonly stateManager: DefaultStateManager
+  readonly stateManager: EVMStateManagerInterface
 
   /**
    * The blockchain the VM operates on

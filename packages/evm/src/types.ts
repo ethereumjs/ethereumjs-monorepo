@@ -5,7 +5,7 @@ import type { InterpreterStep } from './interpreter'
 import type { Message } from './message'
 import type { OpHandler, OpcodeList } from './opcodes'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
-import type { StateManagerInterface } from '@ethereumjs/common'
+import type { EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Address, AsyncEventEmitter } from '@ethereumjs/util'
 
 /**
@@ -17,7 +17,7 @@ export interface EVMInterface {
   getActiveOpcodes?(): OpcodeList
   precompiles: Map<string, any> // Note: the `any` type is used because EVM only needs to have the addresses of the precompiles (not their functions)
   copy(): EVMInterface
-  stateManager: StateManagerInterface
+  stateManager: EVMStateManagerInterface
   events?: AsyncEventEmitter<EVMEvents>
 }
 

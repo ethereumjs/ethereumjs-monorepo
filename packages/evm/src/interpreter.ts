@@ -19,8 +19,7 @@ import { Stack } from './stack'
 import type { EVM, EVMResult } from './evm'
 import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes'
 import type { Block, Blockchain, Log } from './types'
-import type { Common } from '@ethereumjs/common'
-import type { DefaultStateManager } from '@ethereumjs/statemanager'
+import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 
 const debugGas = createDebugLogger('evm:eei:gas')
@@ -70,7 +69,7 @@ export interface RunState {
   code: Uint8Array
   shouldDoJumpAnalysis: boolean
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
-  stateManager: DefaultStateManager
+  stateManager: EVMStateManagerInterface
   blockchain: Blockchain
   env: Env
   messageGasLimit?: bigint // Cache value from `gas.ts` to save gas limit for a message call
@@ -89,7 +88,7 @@ export interface InterpreterResult {
 export interface InterpreterStep {
   gasLeft: bigint
   gasRefund: bigint
-  stateManager: DefaultStateManager
+  stateManager: EVMStateManagerInterface
   stack: bigint[]
   returnStack: bigint[]
   pc: number
@@ -113,7 +112,7 @@ export interface InterpreterStep {
 export class Interpreter {
   protected _vm: any
   protected _runState: RunState
-  protected _stateManager: DefaultStateManager
+  protected _stateManager: EVMStateManagerInterface
   protected _common: Common
   public _evm: EVM
   _env: Env
@@ -130,7 +129,7 @@ export class Interpreter {
   // TODO remove gasLeft as constructor argument
   constructor(
     evm: EVM,
-    stateManager: DefaultStateManager,
+    stateManager: EVMStateManagerInterface,
     blockchain: Blockchain,
     env: Env,
     gasLeft: bigint
