@@ -21,6 +21,8 @@ import { Level } from 'level'
 import { homedir } from 'os'
 import * as path from 'path'
 import * as readline from 'readline'
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
 
 import { EthereumClient } from '../lib/client'
 import { Config, DataDirectory, SyncMode } from '../lib/config'
@@ -38,15 +40,13 @@ import type { BlockBytes } from '@ethereumjs/block'
 import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
 import type { AbstractLevel } from 'abstract-level'
 
-const { hideBin } = require('yargs/helpers')
-const yargs = require('yargs/yargs')
-
 type Account = [address: Address, privateKey: Uint8Array]
 
 const networks = Object.entries(Common._getInitializedChains().names)
 
 let logger: Logger
 
+// @ts-ignore
 const args: ClientOpts = yargs(hideBin(process.argv))
   .option('network', {
     describe: 'Network',
