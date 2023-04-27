@@ -24,12 +24,6 @@ tape('getProvider', (t) => {
 })
 
 tape('fetchFromProvider', async (t) => {
-  // Hack to detect if running in browser or not
-  const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
-
-  // This test verifies that the fetch is attempted made to the correct provider URL in
-  // the nodejs test branch since trying to stub out `cross-fetch` seems to be impossible
-  // without introducing a new testing tool not used in the monorepo currently (e.g. jest)
   try {
     await fetchFromProvider(providerUrl, {
       method: 'eth_getBalance',
@@ -37,11 +31,11 @@ tape('fetchFromProvider', async (t) => {
     })
     t.fail('should throw')
   } catch (err: any) {
-    if (isBrowser() === true) {
-      t.pass('tries to fetch')
+    if (global.fetch !== undefined) {
+      t.ok(err.message.includes('fetch'), 'tried to fetch and failed')
     } else {
       t.ok(
-        err.message.includes(providerUrl.split('//')[1]),
+        err.toString().includes(providerUrl.split('//')[1]),
         'tries to fetch from specified provider url'
       )
     }
