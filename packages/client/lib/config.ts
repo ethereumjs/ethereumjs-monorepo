@@ -147,7 +147,7 @@ export interface ConfigOptions {
   /**
    * Max items per block or header request
    *
-   * Default: `50``
+   * Default: `100`
    */
   maxPerRequest?: number
 
@@ -304,13 +304,13 @@ export class Config {
   public static readonly DATADIR_DEFAULT = `./datadir`
   public static readonly TRANSPORTS_DEFAULT = ['rlpx']
   public static readonly PORT_DEFAULT = 30303
-  public static readonly MAXPERREQUEST_DEFAULT = 50
+  public static readonly MAXPERREQUEST_DEFAULT = 100
   public static readonly MAXFETCHERJOBS_DEFAULT = 100
   public static readonly MAXFETCHERREQUESTS_DEFAULT = 5
   public static readonly MINPEERS_DEFAULT = 1
   public static readonly MAXPEERS_DEFAULT = 25
   public static readonly DNSADDR_DEFAULT = '8.8.8.8'
-  public static readonly NUM_BLOCKS_PER_ITERATION = 50
+  public static readonly NUM_BLOCKS_PER_ITERATION = 100
   public static readonly ACCOUNT_CACHE = 1000000
   public static readonly STORAGE_CACHE = 200000
   public static readonly TRIE_CACHE = 500000
