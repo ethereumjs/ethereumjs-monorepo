@@ -1,8 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
-import { KECCAK256_RLP, Lock, concatBytesNoTypeCheck } from '@ethereumjs/util'
+import { DB, KECCAK256_RLP, Lock, concatBytesNoTypeCheck } from '@ethereumjs/util'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
-import { MemoryLevel } from 'memory-level'
 
 import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus'
 import { DBOp, DBSaveLookups, DBSetBlockOrHeader, DBSetHashToNumber, DBSetTD } from './db/helpers'
@@ -17,14 +16,14 @@ import type { BlockchainInterface, BlockchainOptions, OnBlock } from './types'
 import type { BlockData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { BigIntLike } from '@ethereumjs/util'
-import type { AbstractLevel } from 'abstract-level'
+import { MapDB } from './db/map'
 
 /**
  * This class stores and interacts with blocks.
  */
 export class Blockchain implements BlockchainInterface {
   consensus: Consensus
-  db: AbstractLevel<string | Uint8Array | Uint8Array, string | Uint8Array, string | Uint8Array>
+  db: DB<Uint8Array | string, Uint8Array | string>
   dbManager: DBManager
 
   private _genesisBlock?: Block /** The genesis block of this blockchain */
@@ -115,7 +114,7 @@ export class Blockchain implements BlockchainInterface {
     this._validateBlocks = opts.validateBlocks ?? true
     this._customGenesisState = opts.genesisState
 
-    this.db = opts.db ? opts.db : new MemoryLevel()
+    this.db = opts.db ? opts.db : new MapDB()
     this.dbManager = new DBManager(this.db, this._common)
 
     if (opts.consensus) {

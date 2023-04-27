@@ -1,46 +1,55 @@
-export type BatchDBOp = PutBatch | DelBatch
+export type BatchDBOp<
+  TKey extends Uint8Array | string = Uint8Array,
+  TValue extends Uint8Array | string = Uint8Array
+> = PutBatch<TKey, TValue> | DelBatch<TKey>
 
-export interface PutBatch {
+export interface PutBatch<
+  TKey extends Uint8Array | string = Uint8Array,
+  TValue extends Uint8Array | string = Uint8Array
+> {
   type: 'put'
-  key: Uint8Array
-  value: Uint8Array
+  key: TKey
+  value: TValue
 }
 
-export interface DelBatch {
+export interface DelBatch<TKey extends Uint8Array | string = Uint8Array> {
   type: 'del'
-  key: Uint8Array
+  key: TKey
 }
 
-export interface DB {
+export interface DB<
+  TKey extends Uint8Array | string = Uint8Array,
+  TValue extends Uint8Array | string = Uint8Array
+> {
   /**
    * Retrieves a raw value from db.
    * @param key
    * @returns A Promise that resolves to `Uint8Array` if a value is found or `null` if no value is found.
    */
-  get(key: Uint8Array): Promise<Uint8Array | null>
+  get(key: TKey): Promise<TValue | null>
 
   /**
    * Writes a value directly to db.
-   * @param key The key as a `Uint8Array`
+   * @param key The key as a `TValue`
    * @param value The value to be stored
    */
-  put(key: Uint8Array, val: Uint8Array): Promise<void>
+  put(key: TKey, val: TValue): Promise<void>
 
   /**
    * Removes a raw value in the underlying db.
    * @param keys
    */
-  del(key: Uint8Array): Promise<void>
+  del(key: TKey): Promise<void>
 
   /**
    * Performs a batch operation on db.
    * @param opStack A stack of levelup operations
    */
-  batch(opStack: BatchDBOp[]): Promise<void>
+  batch(opStack: BatchDBOp<TKey, TValue>[]): Promise<void>
 
   /**
    * Returns a copy of the DB instance, with a reference
    * to the **same** underlying db instance.
    */
-  copy(): DB
+  copy(): DB<TKey, TValue>
 }
