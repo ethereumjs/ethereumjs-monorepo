@@ -1,9 +1,7 @@
-import { hexStringToBytes, utf8ToBytes } from '@ethereumjs/util'
+import { BatchDBOp, hexStringToBytes, utf8ToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { CheckpointDB, MapDB } from '../../src'
-
-import type { BatchDBOp } from '../../src'
 
 tape('DB tests', (t) => {
   const k = utf8ToBytes('k1')

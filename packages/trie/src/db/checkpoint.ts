@@ -1,6 +1,6 @@
-import { bytesToHex, hexStringToBytes } from '@ethereumjs/util'
+import { BatchDBOp, DB, bytesToHex, hexStringToBytes } from '@ethereumjs/util'
 
-import type { BatchDBOp, Checkpoint, CheckpointDBOpts, DB } from '../types'
+import type { Checkpoint, CheckpointDBOpts } from '../types'
 import type LRUCache from 'lru-cache'
 
 const LRU = require('lru-cache')

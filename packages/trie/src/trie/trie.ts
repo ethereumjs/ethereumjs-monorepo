@@ -1,4 +1,12 @@
-import { RLP_EMPTY_STRING, bytesToHex, bytesToUtf8, equalsBytes } from '@ethereumjs/util'
+import {
+  BatchDBOp,
+  DB,
+  PutBatch,
+  RLP_EMPTY_STRING,
+  bytesToHex,
+  bytesToUtf8,
+  equalsBytes,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { CheckpointDB, MapDB } from '../db'
@@ -12,13 +20,10 @@ import { WalkController } from '../util/walkController'
 import { BranchNode, ExtensionNode, LeafNode, decodeNode, decodeRawNode, isRawNode } from './node'
 
 import type {
-  BatchDBOp,
-  DB,
   EmbeddedNode,
   FoundNodeFunction,
   Nibbles,
   Proof,
-  PutBatch,
   TrieNode,
   TrieOpts,
   TrieOptsWithDefaults,

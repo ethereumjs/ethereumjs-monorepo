@@ -1,6 +1,5 @@
+import { DB, BatchDBOp } from '@ethereumjs/util'
 import { bytesToHex } from 'ethereum-cryptography/utils'
-
-import type { BatchDBOp, DB } from '../types'
 
 export class MapDB implements DB {
   _database: Map<string, Uint8Array>

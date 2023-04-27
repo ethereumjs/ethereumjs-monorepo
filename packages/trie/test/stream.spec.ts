@@ -2,8 +2,7 @@ import { utf8ToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { Trie } from '../src'
-
-import type { BatchDBOp } from '../src'
+import { BatchDBOp } from '@ethereumjs/util'
 
 tape('kv stream test', function (tester) {
   const it = tester.test

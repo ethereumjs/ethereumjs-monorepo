@@ -19,6 +19,11 @@ export * from './account'
 export * from './address'
 
 /**
+ * DB type
+ */
+export * from './db'
+
+/**
  * Withdrawal type
  */
 export * from './withdrawal'
