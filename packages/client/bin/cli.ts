@@ -58,7 +58,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     choices: networks.map((n) => parseInt(n[0])),
     default: undefined,
   })
-  .option('syncMode', {
+  .option('sync', {
     describe: 'Blockchain sync mode (light sync experimental)',
     choices: Object.values(SyncMode),
     default: Config.SYNCMODE_DEFAULT,
@@ -754,7 +754,7 @@ async function run() {
     multiaddrs,
     port: args.port,
     saveReceipts: args.saveReceipts,
-    syncmode: args.syncMode,
+    syncmode: args.sync,
     disableBeaconSync: args.disableBeaconSync,
     forceSnapSync: args.forceSnapSync,
     transports: args.transports,

@@ -105,7 +105,7 @@ export type Libp2pMuxedStream = MuxedStream
 export interface ClientOpts {
   network?: string
   networkId?: number
-  syncMode?: SyncMode
+  sync?: SyncMode
   lightServe?: boolean
   dataDir?: string
   customChain?: string
