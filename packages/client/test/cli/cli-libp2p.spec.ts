@@ -47,7 +47,7 @@ tape('[CLI] rpc', (t) => {
             '--mine=false',
             '--dev',
             '--multiaddrs=/ip4/0.0.0.0/tcp/50506',
-            '--syncMode=light',
+            '--sync=light',
             '--logLevel=debug',
           ],
         ])

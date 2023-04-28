@@ -100,7 +100,7 @@ tape('[FullEthereumService]', async (t) => {
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     await service.open()
-    td.verify(service.synchronizer.open())
+    td.verify(service.synchronizer!.open())
     td.verify(server.addProtocols(td.matchers.anything()))
     service.config.events.on(Event.SYNC_SYNCHRONIZED, () => t.pass('synchronized'))
     service.config.events.on(Event.SYNC_ERROR, (err) => {
@@ -122,10 +122,10 @@ tape('[FullEthereumService]', async (t) => {
     const service = new FullEthereumService({ config, chain })
 
     await service.start()
-    td.verify(service.synchronizer.start())
+    td.verify(service.synchronizer!.start())
     t.notOk(await service.start(), 'already started')
     await service.stop()
-    td.verify(service.synchronizer.stop())
+    td.verify(service.synchronizer!.stop())
     t.notOk(await service.stop(), 'already stopped')
     t.end()
   })
