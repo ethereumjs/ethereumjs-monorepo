@@ -193,7 +193,8 @@ export async function baseRequest(
   req: Object,
   expect: number,
   expectRes: Function,
-  endOnFinish = true
+  endOnFinish = true,
+  doCloseRPCOnSuccess = true
 ) {
   try {
     await request(server)
@@ -202,7 +203,9 @@ export async function baseRequest(
       .send(req)
       .expect(expect)
       .expect(expectRes)
-    closeRPC(server)
+    if (doCloseRPCOnSuccess) {
+      closeRPC(server)
+    }
     if (endOnFinish) {
       t.end()
     }
