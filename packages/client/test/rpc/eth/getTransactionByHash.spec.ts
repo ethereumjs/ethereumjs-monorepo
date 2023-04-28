@@ -32,7 +32,7 @@ tape(`${method}: call with legacy tx`, async (t) => {
     const msg = 'should return the correct tx'
     t.equal(res.body.result.hash, bytesToPrefixedHexString(tx.hash()), msg)
   }
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(t, server, req, 200, expectRes, false, false)
 
   // run a block to ensure tx hash index is cleaned up when txLookupLimit=1
   await runBlockWithTxs(chain, execution, [])

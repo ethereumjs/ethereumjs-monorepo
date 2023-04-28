@@ -59,7 +59,7 @@ export interface EthereumClientOptions {
 export class EthereumClient {
   public config: Config
   public chain: Chain
-  public services: (FullEthereumService | LightEthereumService)[]
+  public services: (FullEthereumService | LightEthereumService)[] = []
 
   public opened: boolean
   public started: boolean
@@ -82,7 +82,7 @@ export class EthereumClient {
     this.config = options.config
     this.chain = chain
 
-    if (this.config.syncmode === SyncMode.Full) {
+    if (this.config.syncmode === SyncMode.Full || this.config.syncmode === SyncMode.None) {
       this.services = [
         new FullEthereumService({
           config: this.config,
@@ -92,7 +92,8 @@ export class EthereumClient {
           chain,
         }),
       ]
-    } else {
+    }
+    if (this.config.syncmode === SyncMode.Light) {
       this.services = [
         new LightEthereumService({
           config: this.config,

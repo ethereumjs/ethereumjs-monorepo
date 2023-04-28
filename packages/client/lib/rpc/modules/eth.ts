@@ -1028,6 +1028,9 @@ export class Eth {
     const currentBlock = bigIntToHex(currentBlockHeader.number)
 
     const synchronizer = this.client.services[0].synchronizer
+    if (!synchronizer) {
+      return false
+    }
     const { syncTargetHeight } = this.client.config
     const startingBlock = bigIntToHex(synchronizer.startingBlock)
 
