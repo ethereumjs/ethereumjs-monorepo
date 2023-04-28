@@ -48,6 +48,9 @@ let logger: Logger
 
 // @ts-ignore
 const args: ClientOpts = yargs(hideBin(process.argv))
+  .parserConfiguration({
+    'dot-notation': false,
+  })
   .option('network', {
     describe: 'Network',
     choices: networks.map((n) => n[1]),
