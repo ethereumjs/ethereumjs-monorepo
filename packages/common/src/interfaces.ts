@@ -6,31 +6,6 @@ export interface StorageDump {
 
 export type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'storageRoot' | 'codeHash'>>
 
-export type CacheClearingOpts = {
-  /**
-   * Full cache clearing
-   * (overrides the useThreshold option)
-   *
-   * default: true
-   */
-  clear: boolean
-  /**
-   * Clean up the cache by deleting cache elements
-   * where stored comparand is below the given
-   * threshold.
-   */
-  useThreshold?: bigint
-  /**
-   * Comparand stored along a cache element with a
-   * read or write access.
-   *
-   * This can be a block number, timestamp,
-   * consecutive number or any other bigint
-   * which makes sense as a comparison value.
-   */
-  comparand?: bigint
-}
-
 export type StorageProof = {
   key: PrefixedHexString
   proof: PrefixedHexString[]
@@ -63,20 +38,35 @@ export type AccessListBytesItem = [Uint8Array, Uint8Array[]]
 export type AccessListBytes = AccessListBytesItem[]
 export type AccessList = AccessListItem[]
 
-export interface EVMStateManagerInterface {
+export interface StateManagerInterface {
+  accountExists(address: Address): Promise<boolean>
+  getAccount(address: Address): Promise<Account | undefined>
+  putAccount(address: Address, account: Account): Promise<void>
+  deleteAccount(address: Address): Promise<void>
+  modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void>
+  putContractCode(address: Address, value: Uint8Array): Promise<void>
+  getContractCode(address: Address): Promise<Uint8Array>
+  getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
+  putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void>
+  clearContractStorage(address: Address): Promise<void>
   checkpoint(): Promise<void>
   commit(): Promise<void>
   revert(): Promise<void>
+  getStateRoot(): Promise<Uint8Array>
+  setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void>
+  getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
+  hasStateRoot(root: Uint8Array): Promise<boolean> // only used in client
+  copy(): StateManagerInterface
+}
 
-  getAccount(address: Address): Promise<Account | undefined>
+export interface EVMStateManagerInterface extends StateManagerInterface {
+  // TODO check if all these `touch?` interfaces can be moved into StateManagerInterface
   putAccount(address: Address, account: Account, touch?: boolean): Promise<void>
   deleteAccount(address: Address, touch?: boolean): Promise<void>
-  modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void>
   accountIsEmptyOrNonExistent(address: Address): Promise<boolean>
-  accountExists(address: Address): Promise<boolean>
 
-  getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
   getOriginalContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
+
   dumpStorage(address: Address): Promise<StorageDump> // only used in client
   putContractStorage(
     address: Address,
@@ -84,14 +74,8 @@ export interface EVMStateManagerInterface {
     value: Uint8Array,
     touch?: boolean
   ): Promise<void>
-  clearContractStorage(address: Address, touch: boolean): Promise<void>
 
-  putContractCode(address: Address, value: Uint8Array): Promise<void>
-  getContractCode(address: Address): Promise<Uint8Array>
-
-  setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void>
-  getStateRoot(): Promise<Uint8Array>
-  hasStateRoot(root: Uint8Array): Promise<boolean> // only used in client
+  clearContractStorage(address: Address, touch?: boolean): Promise<void>
 
   clearWarmedAccounts(): void
   cleanupTouchedAccounts(): Promise<void>
