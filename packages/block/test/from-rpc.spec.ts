@@ -8,7 +8,6 @@ import { blockFromRpc } from '../src/from-rpc'
 import { blockHeaderFromRpc } from '../src/header-from-rpc'
 import { Block } from '../src/index'
 
-import { MockProvider } from './mockProvider'
 import * as alchemy14151203 from './testdata/alchemy14151203.json'
 import * as infura15571241woTxs from './testdata/infura15571241.json'
 import * as infura15571241wTxs from './testdata/infura15571241wtxns.json'
@@ -188,7 +187,7 @@ tape('[fromRPC] - Alchemy/Infura API block responses', (t) => {
 
 tape('[fromJsonRpcProvider]', async (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-  const provider = new MockProvider() // mimics some properties of an Ethers JsonRPCProvider
+  const provider = 'https://my.json.rpc.provider.com:8545'
 
   const fakeFetch = async (_url: string, req: any) => {
     if (

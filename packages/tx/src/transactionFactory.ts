@@ -14,6 +14,7 @@ import type {
   TxOptions,
   TypedTransaction,
 } from './types'
+import type { EthersProvider } from '@ethereumjs/util'
 
 export class TransactionFactory {
   // It is not possible to instantiate a TransactionFactory object.
@@ -100,7 +101,7 @@ export class TransactionFactory {
    * @returns the transaction specified by `txHash`
    */
   public static async fromJsonRpcProvider(
-    provider: string | any,
+    provider: string | EthersProvider,
     txHash: string,
     txOptions?: TxOptions
   ) {

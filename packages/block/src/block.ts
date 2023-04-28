@@ -28,7 +28,7 @@ import type {
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import type { WithdrawalBytes } from '@ethereumjs/util'
+import type { EthersProvider, WithdrawalBytes } from '@ethereumjs/util'
 
 /**
  * An object that represents the block.
@@ -231,7 +231,7 @@ export class Block {
    * @returns the block specified by `blockTag`
    */
   public static fromJsonRpcProvider = async (
-    provider: any,
+    provider: string | EthersProvider,
     blockTag: string | bigint,
     opts: BlockOptions
   ) => {

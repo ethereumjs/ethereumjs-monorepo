@@ -6,8 +6,6 @@ import * as td from 'testdouble'
 import { TransactionFactory } from '../src'
 import { normalizeTxParams } from '../src/fromRpc'
 
-import { MockProvider } from './mockProvider'
-
 const optimismTx = require('./json/optimismTx.json')
 
 const txTypes = [0, 1, 2]
@@ -26,7 +24,7 @@ tape('[fromJsonRpcProvider]', async (t) => {
   }
 
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-  const provider = new MockProvider()
+  const provider = 'https://my.json.rpc.provider.com:8545'
   const providerUtils = require('@ethereumjs/util/dist/provider')
   td.replace<any>(providerUtils, 'fetchFromProvider', fakeFetch)
   const txHash = '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0'
