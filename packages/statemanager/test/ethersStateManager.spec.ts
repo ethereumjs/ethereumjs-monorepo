@@ -36,9 +36,8 @@ tape('Ethers State Manager initialization tests', (t) => {
   state = new EthersStateManager({ provider, blockTag: 1n })
   t.equal((state as any).blockTag, '0x1', 'State Manager instantiated with predefined blocktag')
 
-  state = new EthersStateManager({ provider: 'http://localhost:8545', blockTag: 1n })
+  state = new EthersStateManager({ provider: 'https://google.com', blockTag: 1n })
   t.ok(state instanceof EthersStateManager, 'was able to instantiate state manager with valid url')
-
   const invalidProvider = new BaseProvider('mainnet')
   t.throws(
     () => new EthersStateManager({ provider: invalidProvider as any, blockTag: 1n }),
@@ -224,8 +223,8 @@ tape('runTx test: replay mainnet transactions', async (t) => {
 
     const blockTag = 15496077n
     common.setHardforkByBlockNumber(blockTag)
-    const txHash = '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0'
-    const tx = await TransactionFactory.fromJsonRpcProvider(provider, txHash, { common })
+    const txData = require('./testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.json')
+    const tx = await TransactionFactory.fromRPCTx(txData, { common })
     const state = new EthersStateManager({
       provider,
       // Set the state manager to look at the state of the chain before the block has been executed
@@ -260,7 +259,8 @@ tape('runBlock test', async (t) => {
     common.setHardforkByBlockNumber(blockTag - 1n)
 
     const vm = await VM.create({ common, stateManager: state })
-    const block = await Block.fromJsonRpcProvider(provider, blockTag, { common })
+    const blockData = require('./testdata/providerData/blocks/block0x7a120.json')
+    const block = Block.fromRPC(blockData, [], { common })
     try {
       const res = await vm.runBlock({
         block,
