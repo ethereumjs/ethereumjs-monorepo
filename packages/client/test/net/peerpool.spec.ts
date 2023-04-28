@@ -9,7 +9,7 @@ import { MockPeer } from '../integration/mocks/mockpeer'
 import type { RlpxServer } from '../../lib/net/server'
 
 tape('[PeerPool]', async (t) => {
-  const Peer = td.replace('../../lib/net/peer/peer', function (this: any, id: string) {
+  const Peer = td.replace<any>('../../lib/net/peer/peer', function (this: any, id: string) {
     this.id = id // eslint-disable-line no-invalid-this
   })
   const { PeerPool } = await import('../../lib/net/peerpool')

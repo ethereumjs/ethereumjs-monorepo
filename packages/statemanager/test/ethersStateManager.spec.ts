@@ -38,6 +38,7 @@ tape('Ethers State Manager initialization tests', (t) => {
 
   state = new EthersStateManager({ provider: 'https://google.com', blockTag: 1n })
   t.ok(state instanceof EthersStateManager, 'was able to instantiate state manager with valid url')
+
   const invalidProvider = new BaseProvider('mainnet')
   t.throws(
     () => new EthersStateManager({ provider: invalidProvider as any, blockTag: 1n }),

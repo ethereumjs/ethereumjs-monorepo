@@ -10,7 +10,7 @@ import { Event } from '../../../lib/types'
 import { wait } from '../../integration/util'
 
 tape('[Libp2pServer]', async (t) => {
-  const Libp2pPeer = td.replace('../../../lib/net/peer/libp2ppeer')
+  const Libp2pPeer = td.replace<any>('../../../lib/net/peer/libp2ppeer')
   Libp2pPeer.id = 'id0'
 
   class Libp2pNode extends EventEmitter {
