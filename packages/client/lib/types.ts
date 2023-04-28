@@ -162,6 +162,5 @@ export interface ClientOpts {
   txLookupLimit?: number
   startBlock?: number
   isSingleNode?: boolean
-  opened: boolean
   loadBlocksFromRlp?: string
 }

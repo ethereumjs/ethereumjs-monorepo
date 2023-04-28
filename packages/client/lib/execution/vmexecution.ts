@@ -257,7 +257,7 @@ export class VMExecution extends Execution {
    * @returns number of blocks executed
    */
   async run(loop = true, runOnlybatched = false): Promise<number> {
-    if (this.running || !this.started) return 0
+    if (this.running || !this.started || this.shutdown) return 0
     this.running = true
     let numExecuted: number | undefined
 
@@ -281,6 +281,7 @@ export class VMExecution extends Execution {
 
     while (
       this.started &&
+      !this.shutdown &&
       (!runOnlybatched ||
         (runOnlybatched &&
           canonicalHead.header.number - startHeadBlock.header.number >=
