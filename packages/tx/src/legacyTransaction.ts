@@ -190,7 +190,7 @@ export class Transaction extends BaseTransaction<Transaction> {
     ]
 
     if (this.supports(Capability.EIP155ReplayProtection)) {
-      values.push(toBuffer(this.common.chainId()))
+      values.push(bigIntToUnpaddedBuffer(this.common.chainId()))
       values.push(unpadBuffer(toBuffer(0)))
       values.push(unpadBuffer(toBuffer(0)))
     }
