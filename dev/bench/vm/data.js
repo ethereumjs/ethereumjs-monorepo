@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1682321914594,
+  "lastUpdate": 1682785670039,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "572a2e5d3339f0a56fed40c9c3b589c120fc58bf",
-          "message": "EVM: Avoid memory.read() Memory Copy (#2573)\n\n* EVM: added avoidCopy parameter to memory.read() function, first test on CREATE opcode\r\n\r\n* EVM: Add direct memory read to all calling opcodes\r\n\r\n* EVM: Copy over memory on IDENTITY precompile\r\n\r\n* EVM: remove length checks and return buffer 0-filling in Memory.read() (memory is uncoditionally being extended properly anyhow)\r\n\r\n* Some optimizations",
-          "timestamp": "2023-03-09T14:50:09+01:00",
-          "tree_id": "87127feaf245fc5a242a9afcc69fef40b3be7456",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/572a2e5d3339f0a56fed40c9c3b589c120fc58bf"
-        },
-        "date": 1678370006713,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 8763,
-            "range": "±2.54%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 8593,
-            "range": "±5.02%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 8777,
-            "range": "±2.43%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 8742,
-            "range": "±2.33%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 8146,
-            "range": "±6.66%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.04%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "micah@zoltu.net",
+            "name": "Micah Zoltu",
+            "username": "MicahZoltu"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c9b0a455032a204f9a1dfc724eedbc4ec9fc7780",
+          "message": " tx: Fix EIP-155 transaction encoding on chain ID 0\n\nWhen preparing Ethereum data for RLP encoding, you must convert all values to either byte arrays or lists.  Scalar values (positive integers) are converted to byte arrays by using the fewest bytes possible to represent the value in big endian format.  The canonical form of any scalar value prepped for RLP encoding is that any leading `0` bytes stripped.  In the case of `0`, this means that the only byte (`0x00`) is stripped and you are left with an empty array.\r\n\r\nMost of the values in this code are properly 0-stripped using `bigIntToUnpaddedBuffer`.  Unfortunately, it appears that the `chainId` was added without stripping leading zeros.  In most cases this doesn't matter, but if someone is running a chainId 0 blockchain and they want to EIP-155 encode their transaction, the previous code would result in an invalid transaction because only the canonical form is allowed.\r\n\r\nThis change fixes this bug and correctly prepares the chainId in EIP-155 transactions for RLP encoding.",
+          "timestamp": "2023-04-29T21:55:42+05:30",
+          "tree_id": "504941f4779c745c1b6bfc3d2797db5ce88b5d9c",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c9b0a455032a204f9a1dfc724eedbc4ec9fc7780"
+        },
+        "date": 1682785669299,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 16231,
+            "range": "±2.19%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 15484,
+            "range": "±4.00%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 16302,
+            "range": "±1.39%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 15689,
+            "range": "±1.70%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 14940,
+            "range": "±5.00%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
