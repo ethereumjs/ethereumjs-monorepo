@@ -687,11 +687,14 @@ export class TxPool {
    *
    * @param baseFee Provide a baseFee to exclude txs with a lower gasPrice
    */
-  async txsByPriceAndNonce(vm: VM, baseFee?: bigint) {
+  async txsByPriceAndNonce(
+    vm: VM,
+    { baseFee, allowedBlobs }: { baseFee?: bigint; allowedBlobs?: number } = {}
+  ) {
     const txs: TypedTransaction[] = []
     // Separate the transactions by account and sort by nonce
     const byNonce = new Map<string, TypedTransaction[]>()
-    const skippedStats = { byNonce: 0, byPrice: 0 }
+    const skippedStats = { byNonce: 0, byPrice: 0, byBlobsLimit: 0 }
     for (const [address, poolObjects] of this.pool) {
       let txsSortedByNonce = poolObjects
         .map((obj) => obj.tx)
@@ -729,22 +732,43 @@ export class TxPool {
       byNonce.set(address, txs.slice(1))
     }
     // Merge by replacing the best with the next from the same account
+    let blobsCount = 0
     while (byPrice.length > 0) {
       // Retrieve the next best transaction by price
       const best = byPrice.remove()
       if (!best) break
+
       // Push in its place the next transaction from the same account
       const address = best.getSenderAddress().toString().slice(2)
       const accTxs = byNonce.get(address)!
-      if (accTxs.length > 0) {
-        byPrice.insert(accTxs[0])
-        byNonce.set(address, accTxs.slice(1))
+
+      // Insert the best tx into byPrice if
+      //   i) this is not a blob tx,
+      //   ii) or there is no blobs limit provided
+      //   iii) or blobs are still within limit if this best tx's blobs are included
+      if (
+        !(best instanceof BlobEIP4844Transaction) ||
+        allowedBlobs === undefined ||
+        ((best as BlobEIP4844Transaction).blobs ?? []).length + blobsCount <= allowedBlobs
+      ) {
+        if (accTxs.length > 0) {
+          byPrice.insert(accTxs[0])
+          byNonce.set(address, accTxs.slice(1))
+        }
+        // Accumulate the best priced transaction and increment blobs count
+        txs.push(best)
+        if (best instanceof BlobEIP4844Transaction) {
+          blobsCount += ((best as BlobEIP4844Transaction).blobs ?? []).length
+        }
+      } else {
+        // Since no more blobs can fit in the block, not only skip inserting in byPrice but also remove all other
+        // txs (blobs or not) of this sender address from further consideration
+        skippedStats.byBlobsLimit += 1 + accTxs.length
+        byNonce.set(address, [])
       }
-      // Accumulate the best priced transaction
-      txs.push(best)
     }
     this.config.logger.info(
-      `txsByPriceAndNonce selected txs=${txs.length}, skipped byNonce=${skippedStats.byNonce} byPrice=${skippedStats.byPrice}`
+      `txsByPriceAndNonce selected txs=${txs.length}, skipped byNonce=${skippedStats.byNonce} byPrice=${skippedStats.byPrice} byBlobsLimit=${skippedStats.byBlobsLimit}`
     )
     return txs
   }

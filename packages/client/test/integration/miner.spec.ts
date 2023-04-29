@@ -102,7 +102,7 @@ tape('[Integration:Miner]', async (t) => {
           t.end()
         }
       })
-      await remoteService.synchronizer.start()
+      await remoteService.synchronizer!.start()
       await new Promise(() => {}) // resolves once t.end() is called
     }
   )

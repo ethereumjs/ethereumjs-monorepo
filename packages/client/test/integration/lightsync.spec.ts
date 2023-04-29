@@ -17,14 +17,14 @@ tape('[Integration:LightSync]', async (t) => {
       height: 0,
       syncmode: SyncMode.Light,
     })
-    await localService.synchronizer.stop()
+    await localService.synchronizer!.stop()
     await localServer.discover('remotePeer1', '127.0.0.2')
     localService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
       t.equals(localService.chain.headers.height, BigInt(20), 'synced')
       await destroy(localServer, localService)
       await destroy(remoteServer, remoteService)
     })
-    await localService.synchronizer.start()
+    await localService.synchronizer!.start()
   })
 
   t.test('should not sync with stale peers', async (t) => {
@@ -64,7 +64,7 @@ tape('[Integration:LightSync]', async (t) => {
       height: 0,
       syncmode: SyncMode.Light,
     })
-    await localService.synchronizer.stop()
+    await localService.synchronizer!.stop()
     await localServer.discover('remotePeer1', '127.0.0.2')
     await localServer.discover('remotePeer2', '127.0.0.3')
     localService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
@@ -75,6 +75,6 @@ tape('[Integration:LightSync]', async (t) => {
         await destroy(remoteServer2, remoteService2)
       }
     })
-    await localService.synchronizer.start()
+    await localService.synchronizer!.start()
   })
 })

@@ -21,6 +21,8 @@ import { Level } from 'level'
 import { homedir } from 'os'
 import * as path from 'path'
 import * as readline from 'readline'
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
 
 import { EthereumClient } from '../lib/client'
 import { Config, DataDirectory, SyncMode } from '../lib/config'
@@ -38,16 +40,17 @@ import type { BlockBytes } from '@ethereumjs/block'
 import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
 import type { AbstractLevel } from 'abstract-level'
 
-const { hideBin } = require('yargs/helpers')
-const yargs = require('yargs/yargs')
-
 type Account = [address: Address, privateKey: Uint8Array]
 
 const networks = Object.entries(Common._getInitializedChains().names)
 
 let logger: Logger
 
+// @ts-ignore
 const args: ClientOpts = yargs(hideBin(process.argv))
+  .parserConfiguration({
+    'dot-notation': false,
+  })
   .option('network', {
     describe: 'Network',
     choices: networks.map((n) => n[1]),
@@ -58,7 +61,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     choices: networks.map((n) => parseInt(n[0])),
     default: undefined,
   })
-  .option('syncMode', {
+  .option('sync', {
     describe: 'Blockchain sync mode (light sync experimental)',
     choices: Object.values(SyncMode),
     default: Config.SYNCMODE_DEFAULT,
@@ -252,6 +255,11 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe: 'Size for the storage cache (max number of contracts)',
     number: true,
     default: Config.STORAGE_CACHE,
+  })
+  .option('trieCache', {
+    describe: 'Size for the trie cache (max number of trie nodes)',
+    number: true,
+    default: Config.TRIE_CACHE,
   })
   .option('debugCode', {
     describe: 'Generate code for local debugging (internal usage mostly)',
@@ -733,6 +741,7 @@ async function run() {
     numBlocksPerIteration: args.numBlocksPerIteration,
     accountCache: args.accountCache,
     storageCache: args.storageCache,
+    trieCache: args.trieCache,
     dnsNetworks: args.dnsNetworks,
     extIP: args.extIP,
     key,
@@ -748,7 +757,7 @@ async function run() {
     multiaddrs,
     port: args.port,
     saveReceipts: args.saveReceipts,
-    syncmode: args.syncMode,
+    syncmode: args.sync,
     disableBeaconSync: args.disableBeaconSync,
     forceSnapSync: args.forceSnapSync,
     transports: args.transports,

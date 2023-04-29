@@ -23,6 +23,7 @@ export enum DataDirectory {
 export enum SyncMode {
   Full = 'full',
   Light = 'light',
+  None = 'none',
 }
 
 export interface ConfigOptions {
@@ -146,7 +147,7 @@ export interface ConfigOptions {
   /**
    * Max items per block or header request
    *
-   * Default: `50``
+   * Default: `100`
    */
   maxPerRequest?: number
 
@@ -202,6 +203,11 @@ export interface ConfigOptions {
    * Size for the storage cache (max number of contracts)
    */
   storageCache?: number
+
+  /**
+   * Size for the trie cache (max number of trie nodes)
+   */
+  trieCache?: number
 
   /**
    * Generate code for local debugging, currently providing a
@@ -298,15 +304,16 @@ export class Config {
   public static readonly DATADIR_DEFAULT = `./datadir`
   public static readonly TRANSPORTS_DEFAULT = ['rlpx']
   public static readonly PORT_DEFAULT = 30303
-  public static readonly MAXPERREQUEST_DEFAULT = 50
+  public static readonly MAXPERREQUEST_DEFAULT = 100
   public static readonly MAXFETCHERJOBS_DEFAULT = 100
   public static readonly MAXFETCHERREQUESTS_DEFAULT = 5
   public static readonly MINPEERS_DEFAULT = 1
   public static readonly MAXPEERS_DEFAULT = 25
   public static readonly DNSADDR_DEFAULT = '8.8.8.8'
-  public static readonly NUM_BLOCKS_PER_ITERATION = 50
+  public static readonly NUM_BLOCKS_PER_ITERATION = 100
   public static readonly ACCOUNT_CACHE = 1000000
   public static readonly STORAGE_CACHE = 200000
+  public static readonly TRIE_CACHE = 500000
   public static readonly DEBUGCODE_DEFAULT = false
   public static readonly SAFE_REORG_DISTANCE = 100
   public static readonly SKELETON_FILL_CANONICAL_BACKSTEP = 100
@@ -341,6 +348,7 @@ export class Config {
   public readonly numBlocksPerIteration: number
   public readonly accountCache: number
   public readonly storageCache: number
+  public readonly trieCache: number
   public readonly debugCode: boolean
   public readonly discDns: boolean
   public readonly discV4: boolean
@@ -397,6 +405,7 @@ export class Config {
     this.numBlocksPerIteration = options.numBlocksPerIteration ?? Config.NUM_BLOCKS_PER_ITERATION
     this.accountCache = options.accountCache ?? Config.ACCOUNT_CACHE
     this.storageCache = options.storageCache ?? Config.STORAGE_CACHE
+    this.trieCache = options.trieCache ?? Config.TRIE_CACHE
     this.debugCode = options.debugCode ?? Config.DEBUGCODE_DEFAULT
     this.mine = options.mine ?? false
     this.isSingleNode = options.isSingleNode ?? false

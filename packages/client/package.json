@@ -94,13 +94,14 @@
     "qheap": "^1.4.0",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.5",
-    "yargs": "^17.2.1"
+    "yargs": "^17.7.1"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.2",
     "@types/connect": "^3.4.35",
     "@types/fs-extra": "^9.0.13",
     "@types/jwt-simple": "^0.5.33",
+    "@types/yargs": "^17.0.24",
     "constants-browserify": "^1.0.0",
     "crypto-browserify": "^3.12.0",
     "file-replace-loader": "^1.2.0",

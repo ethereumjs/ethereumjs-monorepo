@@ -3,7 +3,7 @@ import * as tape from 'tape'
 
 // get args for --network and --syncmode
 const cliArgs = process.argv.filter(
-  (arg) => arg.startsWith('--network') || arg.startsWith('--syncMode')
+  (arg) => arg.startsWith('--network') || arg.startsWith('--sync')
 )
 
 tape('[CLI] sync', (t) => {

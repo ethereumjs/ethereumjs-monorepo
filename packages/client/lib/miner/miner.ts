@@ -293,7 +293,7 @@ export class Miner {
       },
     })
 
-    const txs = await this.service.txPool.txsByPriceAndNonce(vmCopy, baseFeePerGas)
+    const txs = await this.service.txPool.txsByPriceAndNonce(vmCopy, { baseFee: baseFeePerGas })
     this.config.logger.info(
       `Miner: Assembling block from ${txs.length} eligible txs ${
         typeof baseFeePerGas === 'bigint' && baseFeePerGas !== BigInt(0)
