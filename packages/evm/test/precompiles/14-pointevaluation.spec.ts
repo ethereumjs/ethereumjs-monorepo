@@ -28,7 +28,6 @@ tape('Precompiles: point evaluation', async (t) => {
   const evm = await EVM.create({
     common,
     stateManager: new DefaultStateManager(),
-    enableDefaultBlockchain: true,
   })
   const addressStr = '0000000000000000000000000000000000000014'
   const pointEvaluation = getActivePrecompiles(common).get(addressStr)!

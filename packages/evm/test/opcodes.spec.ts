@@ -13,7 +13,6 @@ tape('EVM -> getActiveOpcodes()', (t) => {
     const evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
     st.equal(
       evm.getActiveOpcodes().get(CHAINID),
@@ -28,7 +27,6 @@ tape('EVM -> getActiveOpcodes()', (t) => {
     let evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
     st.equal(
       evm.getActiveOpcodes().get(CHAINID)!.name,
@@ -40,7 +38,6 @@ tape('EVM -> getActiveOpcodes()', (t) => {
     evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
     st.equal(
       evm.getActiveOpcodes().get(CHAINID)!.name,
@@ -56,7 +53,6 @@ tape('EVM -> getActiveOpcodes()', (t) => {
     let evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
     st.equal(
       evm.getActiveOpcodes().get(BEGINSUB)!.name,
@@ -68,7 +64,6 @@ tape('EVM -> getActiveOpcodes()', (t) => {
     evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
     st.equal(
       evm.getActiveOpcodes().get(BEGINSUB),
@@ -84,7 +79,6 @@ tape('EVM -> getActiveOpcodes()', (t) => {
     const evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
 
     common.setHardfork(Hardfork.Byzantium)

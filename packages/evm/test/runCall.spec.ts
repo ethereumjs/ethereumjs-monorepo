@@ -29,7 +29,6 @@ tape('Create where FROM account nonce is 0', async (t) => {
   const evm = await EVM.create({
     common,
     stateManager: new DefaultStateManager(),
-    enableDefaultBlockchain: true,
   })
   const res = await evm.runCall({ to: undefined })
   t.equals(
@@ -57,7 +56,6 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
   const evm = await EVM.create({
     common,
     stateManager: new DefaultStateManager(),
-    enableDefaultBlockchain: true,
   })
   const code = '3460008080F560005260206000F3'
   /*
@@ -118,12 +116,10 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
   const evmByzantium = await EVM.create({
     common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium }),
     stateManager: new DefaultStateManager(),
-    enableDefaultBlockchain: true,
   })
   const evmConstantinople = await EVM.create({
     common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople }),
     stateManager: new DefaultStateManager(),
-    enableDefaultBlockchain: true,
   })
   const code = '600160011B00'
   /*
@@ -168,7 +164,6 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
   const evm = await EVM.create({
     common,
     stateManager: new DefaultStateManager(),
-    enableDefaultBlockchain: true,
   })
   const code = '61000260005561000160005500'
   /*
@@ -223,7 +218,6 @@ tape('ensure correct gas for pre-constantinople sstore', async (t) => {
   const evm = await EVM.create({
     common,
     stateManager: new DefaultStateManager(),
-    enableDefaultBlockchain: true,
   })
   // push 1 push 0 sstore stop
   const code = '600160015500'
@@ -254,7 +248,6 @@ tape('ensure correct gas for calling non-existent accounts in homestead', async 
   const evm = await EVM.create({
     common,
     stateManager: new DefaultStateManager(),
-    enableDefaultBlockchain: true,
   })
   // code to call 0x00..00dd, which does not exist
   const code = '6000600060006000600060DD61FFFF5A03F100'
@@ -289,7 +282,6 @@ tape(
     const evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
     // code to call back into the calling account (0x00..00EE),
     // but using too much memory
@@ -323,7 +315,6 @@ tape('ensure selfdestruct pays for creating new accounts', async (t) => {
   const evm = await EVM.create({
     common,
     stateManager: new DefaultStateManager(),
-    enableDefaultBlockchain: true,
   })
   // code to call 0x00..00fe, with the GAS opcode used as gas
   // this cannot be paid, since we also have to pay for CALL (40 gas)
@@ -357,7 +348,6 @@ tape('ensure that sstores pay for the right gas costs pre-byzantium', async (t) 
   const evm = await EVM.create({
     common,
     stateManager: new DefaultStateManager(),
-    enableDefaultBlockchain: true,
   })
   // code to call 0x00..00fe, with the GAS opcode used as gas
   // this cannot be paid, since we also have to pay for CALL (40 gas)
@@ -432,7 +422,6 @@ tape(
     const evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
     const code = '60008080F060005500'
     /*
@@ -491,7 +480,6 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
   const evm = await EVM.create({
     common,
     stateManager: new DefaultStateManager(),
-    enableDefaultBlockchain: true,
   })
   const code = '3034526020600760203460045afa602034343e604034f3'
 
@@ -526,7 +514,6 @@ tape('Throws on negative call value', async (t) => {
   const evm = await EVM.create({
     common,
     stateManager: new DefaultStateManager(),
-    enableDefaultBlockchain: true,
   })
 
   // setup the call arguments
@@ -551,7 +538,6 @@ tape('runCall() -> skipBalance behavior', async (t) => {
   const evm = await EVM.create({
     common,
     stateManager: new DefaultStateManager(),
-    enableDefaultBlockchain: true,
   })
 
   // runCall against a contract to reach `_reduceSenderBalance`
@@ -598,7 +584,6 @@ tape('runCall() => allows to detect for max code size deposit errors', async (t)
   const evm = await EVM.create({
     common,
     stateManager: new DefaultStateManager(),
-    enableDefaultBlockchain: true,
   })
 
   // setup the call arguments
@@ -628,7 +613,6 @@ tape('runCall() => use DATAHASH opcode from EIP 4844', async (t) => {
   const evm = await EVM.create({
     common,
     stateManager: new DefaultStateManager(),
-    enableDefaultBlockchain: true,
   })
 
   // setup the call arguments
@@ -667,7 +651,6 @@ tape('step event: ensure EVM memory and not internal memory gets reported', asyn
   const evm = await EVM.create({
     common,
     stateManager: new DefaultStateManager(),
-    enableDefaultBlockchain: true,
   })
 
   const contractCode = hexToBytes('600060405200') // PUSH 0 PUSH 40 MSTORE STOP

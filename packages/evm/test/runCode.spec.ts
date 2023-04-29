@@ -24,7 +24,6 @@ const testCases = [
 tape('VM.runCode: initial program counter', async (t) => {
   const evm = await EVM.create({
     stateManager: new DefaultStateManager(),
-    enableDefaultBlockchain: true,
   })
 
   for (const [i, testData] of testCases.entries()) {
@@ -62,7 +61,6 @@ tape('VM.runCode: interpreter', (t) => {
   t.test('should return a EvmError as an exceptionError on the result', async (st) => {
     const evm = await EVM.create({
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
 
     const INVALID_opcode = 'fe'
@@ -85,7 +83,6 @@ tape('VM.runCode: interpreter', (t) => {
   t.test('should throw on non-EvmError', async (st) => {
     const evm = await EVM.create({
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
     // NOTE: due to now throwing on `getContractStorage` if account does not exist
     // this now means that if `runCode` is called and the address it runs on (default: zero address)
@@ -118,7 +115,6 @@ tape('VM.runCode: RunCodeOptions', (t) => {
   t.test('should throw on negative value args', async (st) => {
     const evm = await EVM.create({
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
 
     const runCodeArgs = {

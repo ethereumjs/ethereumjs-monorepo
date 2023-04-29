@@ -146,13 +146,6 @@ export interface EVMOpts {
    *
    */
   blockchain?: Blockchain
-
-  /**
-   * This optional flag should be set to `true` if no blockchain is provided
-   * This is used the warn users that if they do not provide a blockchain,
-   * the default blockchain will be used, which always returns the 0 hash if a block is
-   */
-  enableDefaultBlockchain?: boolean
 }
 
 /**
@@ -279,12 +272,8 @@ export class EVM implements EVMInterface {
 
     let blockchain: Blockchain
 
-    if (opts.blockchain === undefined && opts.enableDefaultBlockchain === true) {
+    if (opts.blockchain === undefined) {
       blockchain = new DefaultBlockchain()
-    } else if (opts.blockchain === undefined) {
-      throw new Error(
-        'Cannot create EVM: no blockchain is provided, and enableDefaultBlockchain is not set to true'
-      )
     } else {
       blockchain = opts.blockchain
     }

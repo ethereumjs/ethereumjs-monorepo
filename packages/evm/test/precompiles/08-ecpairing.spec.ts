@@ -12,7 +12,6 @@ tape('Precompiles: ECPAIRING', (t) => {
     const evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
     const addressStr = '0000000000000000000000000000000000000008'
     const ECPAIRING = getActivePrecompiles(common).get(addressStr)!

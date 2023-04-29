@@ -12,7 +12,6 @@ tape('async events', async (t) => {
   const evm = await EVM.create({
     common,
     stateManager: new DefaultStateManager(),
-    enableDefaultBlockchain: true,
   })
   evm.events.on('step', async (event, next) => {
     const startTime = Date.now()

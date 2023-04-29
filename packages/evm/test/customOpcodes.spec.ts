@@ -29,7 +29,6 @@ tape('VM: custom opcodes', (t) => {
     const evm = await EVM.create({
       customOpcodes: [testOpcode],
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
     const gas = 123456
     let correctOpcodeName = false
@@ -51,7 +50,6 @@ tape('VM: custom opcodes', (t) => {
     const evm = await EVM.create({
       customOpcodes: [{ opcode: 0x20 }], // deletes KECCAK opcode
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
     const gas = BigInt(123456)
     const res = await evm.runCode({
@@ -67,7 +65,6 @@ tape('VM: custom opcodes', (t) => {
     const evm = await EVM.create({
       customOpcodes: [{ opcode: 0x01 }], // deletes ADD opcode
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
     const gas = BigInt(123456)
     const res = await evm.runCode({
@@ -78,7 +75,6 @@ tape('VM: custom opcodes', (t) => {
 
     const evmDefault = await EVM.create({
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
 
     // PUSH 04
@@ -101,7 +97,6 @@ tape('VM: custom opcodes', (t) => {
     const evm = await EVM.create({
       customOpcodes: [testOpcode],
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
     const gas = 123456
     const res = await evm.runCode({
@@ -128,7 +123,6 @@ tape('VM: custom opcodes', (t) => {
     const evm = await EVM.create({
       customOpcodes: [testOpcode],
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
     const evmCopy = evm.copy()
 

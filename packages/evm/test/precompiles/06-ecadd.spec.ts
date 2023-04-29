@@ -11,7 +11,6 @@ tape('Precompiles: ECADD', (t) => {
     const evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
     const addressStr = '0000000000000000000000000000000000000006'
     const ECADD = getActivePrecompiles(common).get(addressStr)!

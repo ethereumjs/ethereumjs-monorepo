@@ -11,7 +11,6 @@ tape('Precompiles: ECMUL', (t) => {
     const evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
     const ECMUL = getActivePrecompiles(common).get('0000000000000000000000000000000000000007')!
 

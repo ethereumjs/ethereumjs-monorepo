@@ -27,7 +27,6 @@ tape('EIP-2537 BLS tests', (t) => {
     const evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
 
     for (const address of precompiles) {
@@ -62,7 +61,6 @@ tape('EIP-2537 BLS tests', (t) => {
     const evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
 
     for (const address of precompiles) {
@@ -104,7 +102,6 @@ tape('EIP-2537 BLS tests', (t) => {
     const evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
     const BLS12G2MultiExp = getActivePrecompiles(common).get(
       '000000000000000000000000000000000000000f'

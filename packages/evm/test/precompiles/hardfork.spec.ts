@@ -26,7 +26,6 @@ tape('Precompiles: hardfork availability', (t) => {
     let evm = await EVM.create({
       common: commonByzantium,
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
     let result = await evm.runCall({
       caller: Address.zero(),
@@ -49,7 +48,6 @@ tape('Precompiles: hardfork availability', (t) => {
     evm = await EVM.create({
       common: commonPetersburg,
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
     result = await evm.runCall({
       caller: Address.zero(),
@@ -73,7 +71,6 @@ tape('Precompiles: hardfork availability', (t) => {
     evm = await EVM.create({
       common: commonHomestead,
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
 
     result = await evm.runCall({

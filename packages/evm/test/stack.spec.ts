@@ -132,7 +132,6 @@ tape('Stack', (t) => {
     const addr = new Address(hexToBytes('00000000000000000000000000000000000000ff'))
     const evm = await EVM.create({
       stateManager: new DefaultStateManager(),
-      enableDefaultBlockchain: true,
     })
     const account = createAccount(BigInt(0), BigInt(0))
     const code = '60008080808060013382F15060005260206000F3'
