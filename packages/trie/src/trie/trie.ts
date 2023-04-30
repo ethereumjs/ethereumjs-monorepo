@@ -882,9 +882,9 @@ export class Trie {
     function keyChk(key: Nibbles) {
       const keyBytes = setLengthRight(nibblestoBytes(key), startingHash.length)
 
-      if (compareBytes(startingHash, keyBytes) >= 0) {
+      if (compareBytes(startingHash, keyBytes) <= 0) {
         // Larger or equal to starting hash
-        if (compareBytes(limitHash, keyBytes) <= 0) {
+        if (compareBytes(limitHash, keyBytes) >= 0) {
           // Lower or equal to highKeyNibbles
           return true
         }
@@ -943,10 +943,12 @@ export class Trie {
           }
           const key = nibblestoBytes(targetKey!)
 
-          keyValueItems.push({
-            key,
-            value: node.value()!,
-          })
+          if (keyCheck(targetKey!)) {
+            keyValueItems.push({
+              key,
+              value: node.value()!,
+            })
+          }
         }
       })
     }

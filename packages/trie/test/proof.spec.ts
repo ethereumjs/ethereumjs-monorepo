@@ -202,7 +202,7 @@ tape('createRangeProof()', function (tester) {
     await trie.put(hexStringToBytes('3330'), hexStringToBytes('c'))
 
     const lKey = hexStringToBytes('00'.repeat(32))
-    const rKey = hexStringToBytes('1234' + '00'.repeat(30))
+    const rKey = hexStringToBytes('00'.repeat(32))
 
     const proof = await trie.createRangeProof(lKey, rKey)
 
