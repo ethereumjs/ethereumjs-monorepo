@@ -1,5 +1,6 @@
-import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
+import { bytesToUtf8, compareBytes, utf8ToBytes } from '@ethereumjs/util'
 import { randomBytes } from 'crypto'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { Trie } from '../src'
@@ -165,11 +166,11 @@ tape('createRangeProof()', function (tester) {
       useKeyHashing: true,
     })
 
-    await trie.put(Buffer.from('1000', 'hex'), Buffer.from('a'))
-    await trie.put(Buffer.from('1100', 'hex'), Buffer.from('a'))
+    await trie.put(hexToBytes('1000'), hexToBytes('a'))
+    await trie.put(hexToBytes('1100'), hexToBytes('a'))
 
-    const lKey = Buffer.from('ff'.repeat(32), 'hex')
-    const rKey = Buffer.from('00'.repeat(32), 'hex')
+    const lKey = hexToBytes('ff'.repeat(32))
+    const rKey = hexToBytes('00'.repeat(32))
     try {
       await trie.createRangeProof(lKey, rKey)
       t.fail('cannot reach this')
@@ -187,20 +188,20 @@ tape('createRangeProof()', function (tester) {
 
     const proverTrie = new Trie()
 
-    await trie.put(Buffer.from('1000', 'hex'), Buffer.from('a'))
-    await trie.put(Buffer.from('1100', 'hex'), Buffer.from('a'))
-    await trie.put(Buffer.from('1110', 'hex'), Buffer.from('a'))
+    await trie.put(hexToBytes('1000'), hexToBytes('a'))
+    await trie.put(hexToBytes('1100'), hexToBytes('a'))
+    await trie.put(hexToBytes('1110'), hexToBytes('a'))
 
-    await trie.put(Buffer.from('2000', 'hex'), Buffer.from('b'))
-    await trie.put(Buffer.from('2200', 'hex'), Buffer.from('b'))
-    await trie.put(Buffer.from('2220', 'hex'), Buffer.from('b'))
+    await trie.put(hexToBytes('2000'), hexToBytes('b'))
+    await trie.put(hexToBytes('2200'), hexToBytes('b'))
+    await trie.put(hexToBytes('2220'), hexToBytes('b'))
 
-    await trie.put(Buffer.from('3000', 'hex'), Buffer.from('c'))
-    await trie.put(Buffer.from('3300', 'hex'), Buffer.from('c'))
-    await trie.put(Buffer.from('3330', 'hex'), Buffer.from('c'))
+    await trie.put(hexToBytes('3000'), hexToBytes('c'))
+    await trie.put(hexToBytes('3300'), hexToBytes('c'))
+    await trie.put(hexToBytes('3330'), hexToBytes('c'))
 
-    const lKey = Buffer.from('00'.repeat(32), 'hex')
-    const rKey = Buffer.from('1234' + '00'.repeat(30), 'hex')
+    const lKey = hexToBytes('00'.repeat(32))
+    const rKey = hexToBytes('1234' + '00'.repeat(30))
 
     const proof = await trie.createRangeProof(lKey, rKey)
 
@@ -228,20 +229,20 @@ tape('createRangeProof()', function (tester) {
 
     const proverTrie = new Trie()
 
-    await trie.put(Buffer.from('1000', 'hex'), Buffer.from('a'))
-    await trie.put(Buffer.from('1100', 'hex'), Buffer.from('a'))
-    await trie.put(Buffer.from('1110', 'hex'), Buffer.from('a'))
+    await trie.put(hexToBytes('1000'), hexToBytes('a'))
+    await trie.put(hexToBytes('1100'), hexToBytes('a'))
+    await trie.put(hexToBytes('1110'), hexToBytes('a'))
 
-    await trie.put(Buffer.from('2000', 'hex'), Buffer.from('b'))
-    await trie.put(Buffer.from('2200', 'hex'), Buffer.from('b'))
-    await trie.put(Buffer.from('2220', 'hex'), Buffer.from('b'))
+    await trie.put(hexToBytes('2000'), hexToBytes('b'))
+    await trie.put(hexToBytes('2200'), hexToBytes('b'))
+    await trie.put(hexToBytes('2220'), hexToBytes('b'))
 
-    await trie.put(Buffer.from('3000', 'hex'), Buffer.from('c'))
-    await trie.put(Buffer.from('3300', 'hex'), Buffer.from('c'))
-    await trie.put(Buffer.from('3330', 'hex'), Buffer.from('c'))
+    await trie.put(hexToBytes('3000'), hexToBytes('c'))
+    await trie.put(hexToBytes('3300'), hexToBytes('c'))
+    await trie.put(hexToBytes('3330'), hexToBytes('c'))
 
-    const lKey = Buffer.from('00'.repeat(32), 'hex')
-    const rKey = Buffer.from('9999' + '00'.repeat(30), 'hex')
+    const lKey = hexToBytes('00'.repeat(32))
+    const rKey = hexToBytes('9999' + '00'.repeat(30))
 
     const proof = await trie.createRangeProof(lKey, rKey)
 
@@ -273,20 +274,20 @@ tape('createRangeProof()', function (tester) {
 
     const proverTrie = new Trie()
 
-    await trie.put(Buffer.from('1000', 'hex'), Buffer.from('a'))
-    await trie.put(Buffer.from('1100', 'hex'), Buffer.from('a'))
-    await trie.put(Buffer.from('1110', 'hex'), Buffer.from('a'))
+    await trie.put(hexToBytes('1000'), hexToBytes('a'))
+    await trie.put(hexToBytes('1100'), hexToBytes('a'))
+    await trie.put(hexToBytes('1110'), hexToBytes('a'))
 
-    await trie.put(Buffer.from('2000', 'hex'), Buffer.from('b'))
-    await trie.put(Buffer.from('2200', 'hex'), Buffer.from('b'))
-    await trie.put(Buffer.from('2220', 'hex'), Buffer.from('b'))
+    await trie.put(hexToBytes('2000'), hexToBytes('b'))
+    await trie.put(hexToBytes('2200'), hexToBytes('b'))
+    await trie.put(hexToBytes('2220'), hexToBytes('b'))
 
-    await trie.put(Buffer.from('3000', 'hex'), Buffer.from('c'))
-    await trie.put(Buffer.from('3300', 'hex'), Buffer.from('c'))
-    await trie.put(Buffer.from('3330', 'hex'), Buffer.from('c'))
+    await trie.put(hexToBytes('3000'), hexToBytes('c'))
+    await trie.put(hexToBytes('3300'), hexToBytes('c'))
+    await trie.put(hexToBytes('3330'), hexToBytes('c'))
 
-    const lKey = Buffer.from('EF'.repeat(32), 'hex')
-    const rKey = Buffer.from('FF'.repeat(32), 'hex')
+    const lKey = hexToBytes('EF'.repeat(32))
+    const rKey = hexToBytes('FF'.repeat(32))
 
     const proof = await trie.createRangeProof(lKey, rKey)
 
@@ -310,20 +311,20 @@ tape('createRangeProof()', function (tester) {
 
     const proverTrie = new Trie()
 
-    await trie.put(Buffer.from('1000', 'hex'), Buffer.from('a'))
-    await trie.put(Buffer.from('1100', 'hex'), Buffer.from('a'))
-    await trie.put(Buffer.from('1110', 'hex'), Buffer.from('a'))
+    await trie.put(hexToBytes('1000'), hexToBytes('a'))
+    await trie.put(hexToBytes('1100'), hexToBytes('a'))
+    await trie.put(hexToBytes('1110'), hexToBytes('a'))
 
-    await trie.put(Buffer.from('2000', 'hex'), Buffer.from('b'))
-    await trie.put(Buffer.from('2200', 'hex'), Buffer.from('b'))
-    await trie.put(Buffer.from('2220', 'hex'), Buffer.from('b'))
+    await trie.put(hexToBytes('2000'), hexToBytes('b'))
+    await trie.put(hexToBytes('2200'), hexToBytes('b'))
+    await trie.put(hexToBytes('2220'), hexToBytes('b'))
 
-    await trie.put(Buffer.from('3000', 'hex'), Buffer.from('c'))
-    await trie.put(Buffer.from('3300', 'hex'), Buffer.from('c'))
-    await trie.put(Buffer.from('3330', 'hex'), Buffer.from('c'))
+    await trie.put(hexToBytes('3000'), hexToBytes('c'))
+    await trie.put(hexToBytes('3300'), hexToBytes('c'))
+    await trie.put(hexToBytes('3330'), hexToBytes('c'))
 
-    const lKey = Buffer.from('00'.repeat(32), 'hex')
-    const rKey = Buffer.from('FF'.repeat(32), 'hex')
+    const lKey = hexToBytes('00'.repeat(32))
+    const rKey = hexToBytes('FF'.repeat(32))
 
     const proof = await trie.createRangeProof(lKey, rKey)
 
@@ -364,14 +365,14 @@ tape('createRangeProof()', function (tester) {
       for (let j = 0; j < 1000; j++) {
         const lKey = randomBytes(32)
         let rKey = randomBytes(32)
-        while (Buffer.compare(lKey, rKey) > 0) {
+        while (compareBytes(lKey, rKey) > 0) {
           rKey = randomBytes(32)
         }
         const proof = await trie.createRangeProof(lKey, rKey)
         const proverTrie = new Trie()
         if (proof.values.length === 1) {
           const reportedLKey = proof.keys[0]
-          if (Buffer.compare(reportedLKey, rKey) > 0) {
+          if (compareBytes(reportedLKey, rKey) > 0) {
             try {
               await proverTrie.verifyRangeProof(
                 trie.root(),

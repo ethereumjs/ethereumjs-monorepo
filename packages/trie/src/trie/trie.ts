@@ -12,13 +12,7 @@ import { CheckpointDB, MapDB } from '../db'
 import { verifyRangeProof } from '../proof/range'
 import { ROOT_DB_KEY } from '../types'
 import { Lock } from '../util/lock'
-import {
-  bytesToNibbles,
-  doKeysMatch,
-  matchingNibbleLength,
-  nibblesCompare,
-  nibblestoBytes,
-} from '../util/nibbles'
+import { bytesToNibbles, doKeysMatch, matchingNibbleLength, nibblesCompare } from '../util/nibbles'
 import { TrieReadStream as ReadStream } from '../util/readStream'
 import { WalkController } from '../util/walkController'
 
