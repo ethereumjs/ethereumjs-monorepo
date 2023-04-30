@@ -71,7 +71,7 @@ export const fetchFromProvider = async (url: string, params: rpcParams) => {
 export const getProvider = (provider: string | EthersProvider) => {
   if (typeof provider === 'string') {
     return provider
-  } else if (provider.connection.url !== undefined) {
+  } else if (typeof provider === 'object' && provider.connection.url !== undefined) {
     return provider.connection.url
   } else {
     throw new Error('Must provide valid provider URL or Web3Provider')

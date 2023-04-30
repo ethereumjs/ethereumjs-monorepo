@@ -16,7 +16,7 @@ tape('getProvider', (t) => {
     'returned correct provider url string'
   )
   t.throws(
-    () => getProvider(1),
+    () => getProvider(<any>1),
     (err: any) => err.message.includes('Must provide valid provider URL or Web3Provider'),
     'throws correct error'
   )
