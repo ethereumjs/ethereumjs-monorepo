@@ -252,7 +252,9 @@ export class Block {
       isHexPrefixed(blockTag) ||
       blockTag === 'latest' ||
       blockTag === 'earliest' ||
-      blockTag === 'pending'
+      blockTag === 'pending' ||
+      blockTag === 'finalized' ||
+      blockTag === 'safe'
     ) {
       blockData = await fetchFromProvider(providerUrl, {
         method: 'eth_getBlockByNumber',
