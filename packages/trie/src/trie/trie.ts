@@ -1,4 +1,11 @@
-import { RLP_EMPTY_STRING, bytesToHex, bytesToUtf8, compareBytes, equalsBytes, nibblesToBytes } from '@ethereumjs/util'
+import {
+  RLP_EMPTY_STRING,
+  bytesToHex,
+  bytesToUtf8,
+  compareBytes,
+  equalsBytes,
+  nibblesToBytes,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { CheckpointDB, MapDB } from '../db'
@@ -863,8 +870,8 @@ export class Trie {
    * @param startingHash This is the starting (hash) key item (note on non-hashed tries this is just a key)
    * @param limitHash This is the limit (hash) key item (note on non-hashed tries this is just a key)
    */
-  async createRangeProof(startingHash: Buffer, limitHash: Buffer) {
-    if (Buffer.compare(startingHash, limitHash) === 1) {
+  async createRangeProof(startingHash: Uint8Array, limitHash: Uint8Array) {
+    if (compareBytes(startingHash, limitHash) === 1) {
       throw new Error('startingHash is higher than limitHash')
     }
 
@@ -963,16 +970,16 @@ export class Trie {
     }
 
     let maxValueIndex = -1
-    let maxKeyBuffer = new Uint8Array()
+    let maxKeyBytes = new Uint8Array()
     for (let i = 0; i < keyValueItems.length; i++) {
-      if (Buffer.compare(keyValueItems[i].key, maxKeyBuffer) === 1) {
+      if (compareBytes(keyValueItems[i].key, maxKeyBytes) === 1) {
         maxValueIndex = i
-        maxKeyBuffer = keyValueItems[i].key
+        maxKeyBytes = keyValueItems[i].key
       }
     }
 
     if (maxValueIndex !== -1) {
-      const rightValueProof = await this.createProof(maxKeyBuffer)
+      const rightValueProof = await this.createProof(maxKeyBytes)
       for (let i = 0; i < rightValueProof.length; i++) {
         // Check if proof node exists
         let found = false
@@ -1010,7 +1017,7 @@ export class Trie {
     }
 
     keys.sort((a, b) => {
-      return compareBytes(a,b) 
+      return compareBytes(a, b)
     })
 
     for (let i = 0; i < keys.length; i++) {
@@ -1031,7 +1038,7 @@ export class Trie {
   }
 
   /**
-   * The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Buffers.
+   * The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Uint8Arrays.
    * @return Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `trie`
    */
   createReadStream(): ReadStream {
