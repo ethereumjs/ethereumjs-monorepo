@@ -1,4 +1,4 @@
-import { equalsBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
 
 import { BranchNode, ExtensionNode, LeafNode, Trie } from '../trie'
 import { nibblesCompare, nibblestoBytes } from '../util/nibbles'

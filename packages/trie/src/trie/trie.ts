@@ -4,7 +4,8 @@ import {
   bytesToUtf8,
   compareBytes,
   equalsBytes,
-  nibblesToBytes,
+  setLengthRight,
+  zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
@@ -12,7 +13,7 @@ import { CheckpointDB, MapDB } from '../db'
 import { verifyRangeProof } from '../proof/range'
 import { ROOT_DB_KEY } from '../types'
 import { Lock } from '../util/lock'
-import { bytesToNibbles, doKeysMatch, matchingNibbleLength, nibblesCompare } from '../util/nibbles'
+import { bytesToNibbles, doKeysMatch, matchingNibbleLength, nibblestoBytes } from '../util/nibbles'
 import { TrieReadStream as ReadStream } from '../util/readStream'
 import { WalkController } from '../util/walkController'
 
@@ -740,9 +741,10 @@ export class Trie {
   /**
    * Creates a proof from a trie and key that can be verified using {@link Trie.verifyProof}.
    * @param key
+   * @param ignoreAppliedKey If set to `true`, use the raw key, instead of applied key (which sometimes hashes the key). Defaults to `false`.
    */
-  async createProof(key: Uint8Array): Promise<Proof> {
-    const { stack } = await this.findPath(this.appliedKey(key))
+  async createProof(key: Uint8Array, ignoreAppliedKey = false): Promise<Proof> {
+    const { stack } = await this.findPath(ignoreAppliedKey ? key : this.appliedKey(key))
     const p = stack.map((stackElem) => {
       return stackElem.serialize()
     })
@@ -869,17 +871,20 @@ export class Trie {
       throw new Error('startingHash is higher than limitHash')
     }
 
-    const lowKeyNibbles = bytesToNibbles(startingHash)
-    const highKeyNibbles = bytesToNibbles(limitHash)
+    if (startingHash.length !== limitHash.length) {
+      throw new Error('can only create proofs where key lengths are equal')
+    }
 
-    const proof = await this.createProof(startingHash)
+    const proof = await this.createProof(startingHash, true)
 
     const keyValueItems: RangeProofItem[] = []
 
     function keyChk(key: Nibbles) {
-      if (lowKeyNibbles.length < key.length || nibblesCompare(lowKeyNibbles, key) <= 0) {
+      const keyBytes = setLengthRight(nibblestoBytes(key), startingHash.length)
+
+      if (compareBytes(startingHash, keyBytes) >= 0) {
         // Larger or equal to starting hash
-        if (nibblesCompare(highKeyNibbles, key) >= 0) {
+        if (compareBytes(limitHash, keyBytes) <= 0) {
           // Lower or equal to highKeyNibbles
           return true
         }
@@ -936,8 +941,8 @@ export class Trie {
           } else if (node instanceof LeafNode) {
             targetKey = [...keyProgress, ...node._nibbles]
           }
-          const key = new Uint8Array([])
-          nibblesToBytes(new Uint8Array(targetKey!), key)
+          const key = nibblestoBytes(targetKey!)
+
           keyValueItems.push({
             key,
             value: node.value()!,
@@ -954,7 +959,8 @@ export class Trie {
       // This is thus higher than the requested `limitHash`
       await walkTrie(
         function (key: Nibbles) {
-          return nibblesCompare(highKeyNibbles, key) < 0
+          const keyBytes = setLengthRight(nibblestoBytes(key), startingHash.length)
+          return compareBytes(limitHash, keyBytes) > 0
         },
         true,
         function () {
@@ -964,7 +970,7 @@ export class Trie {
     }
 
     let maxValueIndex = -1
-    let maxKeyBytes = new Uint8Array()
+    let maxKeyBytes = zeros(startingHash.length)
     for (let i = 0; i < keyValueItems.length; i++) {
       if (compareBytes(keyValueItems[i].key, maxKeyBytes) === 1) {
         maxValueIndex = i
@@ -973,7 +979,7 @@ export class Trie {
     }
 
     if (maxValueIndex !== -1) {
-      const rightValueProof = await this.createProof(maxKeyBytes)
+      const rightValueProof = await this.createProof(maxKeyBytes, true)
       for (let i = 0; i < rightValueProof.length; i++) {
         // Check if proof node exists
         let found = false
