@@ -1,6 +1,7 @@
-import { BatchDBOp, DB, bytesToHex, hexStringToBytes } from '@ethereumjs/util'
+import { bytesToHex, hexStringToBytes } from '@ethereumjs/util'
 
 import type { Checkpoint, CheckpointDBOpts } from '../types'
+import type { BatchDBOp, DB } from '@ethereumjs/util'
 import type LRUCache from 'lru-cache'
 
 const LRU = require('lru-cache')
@@ -14,7 +15,7 @@ export class CheckpointDB implements DB {
   public db: DB
   public readonly cacheSize: number
 
-  protected _cache?: LRUCache<string, Uint8Array | null>
+  protected _cache?: LRUCache<string, Uint8Array | undefined>
 
   _stats = {
     cache: {
@@ -85,7 +86,7 @@ export class CheckpointDB implements DB {
       // This was the final checkpoint, we should now commit and flush everything to disk
       const batchOp: BatchDBOp[] = []
       for (const [key, value] of keyValueMap.entries()) {
-        if (value === null) {
+        if (value === undefined) {
           batchOp.push({
             type: 'del',
             key: hexStringToBytes(key),
@@ -119,7 +120,7 @@ export class CheckpointDB implements DB {
   /**
    * @inheritDoc
    */
-  async get(key: Uint8Array): Promise<Uint8Array | null> {
+  async get(key: Uint8Array): Promise<Uint8Array | undefined> {
     const keyHex = bytesToHex(key)
     if (this._cache !== undefined) {
       const value = this._cache.get(keyHex)
@@ -177,12 +178,12 @@ export class CheckpointDB implements DB {
   async del(key: Uint8Array): Promise<void> {
     const keyHex = bytesToHex(key)
     if (this._cache !== undefined) {
-      this._cache.set(keyHex, null)
+      this._cache.set(keyHex, undefined)
       this._stats.cache.writes += 1
     }
     if (this.hasCheckpoints()) {
       // delete the value in the current diff cache
-      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(bytesToHex(key), null)
+      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(bytesToHex(key), undefined)
     } else {
       // delete the value on disk
       await this.db.del(key)

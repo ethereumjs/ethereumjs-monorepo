@@ -1,5 +1,4 @@
-import { DB, BatchDBOp } from '@ethereumjs/util'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import type { BatchDBOp, DB } from '@ethereumjs/util'
 
 export class MapDB<TKey extends Uint8Array | string, TValue extends Uint8Array | string>
   implements DB<TKey, TValue>
@@ -10,10 +9,8 @@ export class MapDB<TKey extends Uint8Array | string, TValue extends Uint8Array |
     this._database = database ?? new Map<TKey, TValue>()
   }
 
-  async get(key: TKey): Promise<TValue | null> {
-    const result = this._database.get(key)
-
-    return result ?? null
+  async get(key: TKey): Promise<TValue | undefined> {
+    return this._database.get(key)
   }
 
   async put(key: TKey, val: TValue): Promise<void> {

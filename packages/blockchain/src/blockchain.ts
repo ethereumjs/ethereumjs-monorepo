@@ -1,11 +1,12 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
-import { DB, KECCAK256_RLP, Lock, concatBytesNoTypeCheck } from '@ethereumjs/util'
+import { KECCAK256_RLP, Lock, concatBytesNoTypeCheck } from '@ethereumjs/util'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus'
 import { DBOp, DBSaveLookups, DBSetBlockOrHeader, DBSetHashToNumber, DBSetTD } from './db/helpers'
 import { DBManager } from './db/manager'
+import { MapDB } from './db/map'
 import { DBTarget } from './db/operation'
 import { genesisStateRoot } from './genesisStates'
 import {} from './utils'
@@ -15,8 +16,7 @@ import type { GenesisState } from './genesisStates'
 import type { BlockchainInterface, BlockchainOptions, OnBlock } from './types'
 import type { BlockData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
-import type { BigIntLike } from '@ethereumjs/util'
-import { MapDB } from './db/map'
+import type { BigIntLike, DB } from '@ethereumjs/util'
 
 /**
  * This class stores and interacts with blocks.
@@ -114,7 +114,8 @@ export class Blockchain implements BlockchainInterface {
     this._validateBlocks = opts.validateBlocks ?? true
     this._customGenesisState = opts.genesisState
 
-    this.db = opts.db ? opts.db : new MapDB()
+    this.db = opts.db !== undefined ? opts.db : new MapDB()
+
     this.dbManager = new DBManager(this.db, this._common)
 
     if (opts.consensus) {
@@ -190,17 +191,12 @@ export class Blockchain implements BlockchainInterface {
     await this.consensus.setup({ blockchain: this })
 
     if (this._isInitialized) return
-    let dbGenesisBlock
-    try {
-      const genesisHash = await this.dbManager.numberToHash(BigInt(0))
-      dbGenesisBlock = await this.dbManager.getBlock(genesisHash)
-    } catch (error: any) {
-      if (error.code !== 'LEVEL_NOT_FOUND') {
-        throw error
-      }
-    }
 
-    if (!genesisBlock) {
+    let genesisHash = await this.dbManager.numberToHash(BigInt(0))
+
+    const dbGenesisBlock = await this.dbManager.getBlock(genesisHash)
+
+    if (genesisBlock === undefined) {
       let stateRoot
       if (this._common.chainId() === BigInt(1) && this._customGenesisState === undefined) {
         // For mainnet use the known genesis stateRoot to quicken setup
@@ -213,13 +209,13 @@ export class Blockchain implements BlockchainInterface {
 
     // If the DB has a genesis block, then verify that the genesis block in the
     // DB is indeed the Genesis block generated or assigned.
-    if (dbGenesisBlock && !equalsBytes(genesisBlock.hash(), dbGenesisBlock.hash())) {
+    if (dbGenesisBlock !== undefined && !equalsBytes(genesisBlock.hash(), dbGenesisBlock.hash())) {
       throw new Error(
         'The genesis block in the DB has a different hash than the provided genesis block.'
       )
     }
 
-    const genesisHash = genesisBlock.hash()
+    genesisHash = genesisBlock.hash()
 
     if (!dbGenesisBlock) {
       // If there is no genesis block put the genesis block in the DB.
@@ -238,37 +234,16 @@ export class Blockchain implements BlockchainInterface {
     this._genesisBlock = genesisBlock
 
     // load verified iterator heads
-    try {
-      const heads = await this.dbManager.getHeads()
-      this._heads = heads
-    } catch (error: any) {
-      if (error.code !== 'LEVEL_NOT_FOUND') {
-        throw error
-      }
-      this._heads = {}
-    }
+    const heads = await this.dbManager.getHeads()
+    this._heads = heads !== undefined ? heads : {}
 
     // load headerchain head
-    try {
-      const hash = await this.dbManager.getHeadHeader()
-      this._headHeaderHash = hash
-    } catch (error: any) {
-      if (error.code !== 'LEVEL_NOT_FOUND') {
-        throw error
-      }
-      this._headHeaderHash = genesisHash
-    }
+    let hash = await this.dbManager.getHeadHeader()
+    this._headHeaderHash = hash !== undefined ? hash : genesisHash
 
     // load blockchain head
-    try {
-      const hash = await this.dbManager.getHeadBlock()
-      this._headBlockHash = hash
-    } catch (error: any) {
-      if (error.code !== 'LEVEL_NOT_FOUND') {
-        throw error
-      }
-      this._headBlockHash = genesisHash
-    }
+    hash = await this.dbManager.getHeadBlock()
+    this._headBlockHash = hash !== undefined ? hash : genesisHash
 
     if (this._hardforkByHeadBlockNumber) {
       const latestHeader = await this._getHeader(this._headHeaderHash)
@@ -737,18 +712,16 @@ export class Blockchain implements BlockchainInterface {
     // in the `VM` if we encounter a `BLOCKHASH` opcode: then a bigint is used we
     // need to then read the block from the canonical chain Q: is this safe? We
     // know it is OK if we call it from the iterator... (runBlock)
-    try {
-      return await this.dbManager.getBlock(blockId)
-    } catch (error: any) {
-      if (error.code === 'LEVEL_NOT_FOUND') {
-        if (typeof blockId === 'object') {
-          error.message = `Block with hash ${bytesToHex(blockId)} not found in DB (NotFound)`
-        } else {
-          error.message = `Block number ${blockId} not found in DB (NotFound)`
-        }
+    const block = await this.dbManager.getBlock(blockId)
+
+    if (block === undefined) {
+      if (typeof blockId === 'object') {
+        throw new Error(`Block with hash ${bytesToHex(blockId)} not found in DB`)
+      } else {
+        throw new Error(`Block number ${blockId} not found in DB`)
       }
-      throw error
     }
+    return block
   }
 
   /**
@@ -790,15 +763,9 @@ export class Blockchain implements BlockchainInterface {
       let i = -1
 
       const nextBlock = async (blockId: Uint8Array | bigint | number): Promise<any> => {
-        let block
-        try {
-          block = await this.getBlock(blockId)
-        } catch (error: any) {
-          if (error.code !== 'LEVEL_NOT_FOUND') {
-            throw error
-          }
-          return
-        }
+        const block = await this.getBlock(blockId)
+        if (block === undefined) return
+
         i++
         const nextBlockNumber = block.header.number + BigInt(reverse ? -1 : 1)
         if (i !== 0 && skip && i % (skip + 1) !== 0) {
@@ -831,14 +798,8 @@ export class Blockchain implements BlockchainInterface {
       mid = min = 0
 
       while (max >= min) {
-        let number
-        try {
-          number = await this.dbManager.hashToNumber(hashes[mid])
-        } catch (error: any) {
-          if (error.code !== 'LEVEL_NOT_FOUND') {
-            throw error
-          }
-        }
+        const number = await this.dbManager.hashToNumber(hashes[mid])
+
         if (number !== undefined) {
           min = mid + 1
         } else {
@@ -941,13 +902,9 @@ export class Blockchain implements BlockchainInterface {
       this._headBlockHash = headHash
     }
 
-    try {
-      const childHeader = await this.getCanonicalHeader(blockNumber + BigInt(1))
+    const childHeader = await this.getCanonicalHeader(blockNumber + BigInt(1))
+    if (childHeader !== undefined) {
       await this._delChild(childHeader.hash(), childHeader.number, headHash, ops)
-    } catch (error: any) {
-      if (error.code !== 'LEVEL_NOT_FOUND') {
-        throw error
-      }
     }
   }
 
@@ -1008,7 +965,7 @@ export class Blockchain implements BlockchainInterface {
           nextBlockNumber++
           blocksRanCounter++
         } catch (error: any) {
-          if (error.code === 'LEVEL_NOT_FOUND') {
+          if ((error.message as string).includes('not found in DB')) {
             break
           } else {
             throw error
@@ -1181,13 +1138,9 @@ export class Blockchain implements BlockchainInterface {
         staleHeadBlock = true
       }
 
-      try {
-        header = await this._getHeader(header.parentHash, --currentNumber)
-      } catch (error: any) {
+      header = await this._getHeader(header.parentHash, --currentNumber)
+      if (header === undefined) {
         staleHeads = []
-        if (error.code !== 'LEVEL_NOT_FOUND') {
-          throw error
-        }
         break
       }
     }
@@ -1294,15 +1247,8 @@ export class Blockchain implements BlockchainInterface {
    * @param number
    */
   async safeNumberToHash(number: bigint): Promise<Uint8Array | false> {
-    try {
-      const hash = await this.dbManager.numberToHash(number)
-      return hash
-    } catch (error: any) {
-      if (error.code !== 'LEVEL_NOT_FOUND') {
-        throw error
-      }
-      return false
-    }
+    const hash = await this.dbManager.numberToHash(number)
+    return hash !== undefined ? hash : false
   }
 
   /**

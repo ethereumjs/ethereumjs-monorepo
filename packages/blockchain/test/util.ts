@@ -1,12 +1,14 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { DB, toBytes } from '@ethereumjs/util'
+import { toBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
-import { MemoryLevel } from 'memory-level'
 
 import { Blockchain } from '../src'
+import { MapDB } from '../src/db/map'
+
+import type { DB } from '@ethereumjs/util'
 
 export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {
   const blocks = existingBlocks ? existingBlocks : []
@@ -118,34 +120,27 @@ export const createTestDB = async (): Promise<
 > => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
   const genesis = Block.fromBlockData({ header: { number: 0 } }, { common })
-  const db = new MemoryLevel<any, any>()
+  const db = new MapDB<any, any>()
+
   await db.batch([
     {
       type: 'put',
       key: hexToBytes('6800000000000000006e'),
-      keyEncoding: 'view',
-      valueEncoding: 'view',
       value: genesis.hash(),
     },
     {
       type: 'put',
       key: hexToBytes('48d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'),
-      keyEncoding: 'view',
-      valueEncoding: 'view',
       value: hexToBytes('00'),
     },
     {
       type: 'put',
       key: 'LastHeader',
-      keyEncoding: 'view',
-      valueEncoding: 'view',
       value: genesis.hash(),
     },
     {
       type: 'put',
       key: 'LastBlock',
-      keyEncoding: 'view',
-      valueEncoding: 'view',
       value: genesis.hash(),
     },
     {
@@ -153,8 +148,6 @@ export const createTestDB = async (): Promise<
       key: hexToBytes(
         '680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
       ),
-      keyEncoding: 'view',
-      valueEncoding: 'view',
       value: genesis.header.serialize(),
     },
     {
@@ -162,8 +155,6 @@ export const createTestDB = async (): Promise<
       key: hexToBytes(
         '680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa374'
       ),
-      keyEncoding: 'view',
-      valueEncoding: 'view',
       value: RLP.encode(toBytes(17179869184)),
     },
     {
@@ -171,14 +162,11 @@ export const createTestDB = async (): Promise<
       key: hexToBytes(
         '620000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
       ),
-      keyEncoding: 'view',
-      valueEncoding: 'view',
       value: RLP.encode(genesis.raw().slice(1)),
     },
     {
       type: 'put',
       key: 'heads',
-      valueEncoding: 'json',
       value: { head0: bytesToHex(Uint8Array.from([171, 205])) },
     },
   ])

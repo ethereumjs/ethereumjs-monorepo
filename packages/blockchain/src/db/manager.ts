@@ -1,13 +1,6 @@
 import { Block, BlockHeader, valuesArrayToHeaderData } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
-import {
-  DB,
-  KECCAK256_RLP,
-  KECCAK256_RLP_ARRAY,
-  bytesToBigInt,
-  equalsBytes,
-  toBytes,
-} from '@ethereumjs/util'
+import { KECCAK256_RLP, KECCAK256_RLP_ARRAY, bytesToBigInt, equalsBytes } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { Cache } from './cache'
@@ -16,19 +9,7 @@ import { DBOp, DBTarget } from './operation'
 import type { DBOpData, DatabaseKey } from './operation'
 import type { BlockBodyBytes, BlockBytes, BlockOptions } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-
-class NotFoundError extends Error {
-  public code: string = 'LEVEL_NOT_FOUND'
-
-  constructor(blockNumber: bigint) {
-    super(`Key ${blockNumber.toString()} was not found`)
-
-    // `Error.captureStackTrace` is not defined in some browser contexts
-    if (typeof Error.captureStackTrace !== 'undefined') {
-      Error.captureStackTrace(this, this.constructor)
-    }
-  }
-}
+import type { DB } from '@ethereumjs/util'
 
 /**
  * @hidden
@@ -68,6 +49,7 @@ export class DBManager {
    */
   async getHeads(): Promise<{ [key: string]: Uint8Array }> {
     const heads = await this.get(DBTarget.Heads)
+    if (heads === undefined) return heads
     for (const key of Object.keys(heads)) {
       // Heads are stored in DB as hex strings since Level converts Uint8Arrays
       // to nested JSON objects when they are included in a value being stored
@@ -80,14 +62,14 @@ export class DBManager {
   /**
    * Fetches header of the head block.
    */
-  async getHeadHeader(): Promise<Uint8Array> {
+  async getHeadHeader(): Promise<Uint8Array | undefined> {
     return this.get(DBTarget.HeadHeader)
   }
 
   /**
    * Fetches head block.
    */
-  async getHeadBlock(): Promise<Uint8Array> {
+  async getHeadBlock(): Promise<Uint8Array | undefined> {
     return this.get(DBTarget.HeadBlock)
   }
 
@@ -95,13 +77,14 @@ export class DBManager {
    * Fetches a block (header and body) given a block id,
    * which can be either its hash or its number.
    */
-  async getBlock(blockId: Uint8Array | bigint | number): Promise<Block> {
+  async getBlock(blockId: Uint8Array | bigint | number): Promise<Block | undefined> {
     if (typeof blockId === 'number' && Number.isInteger(blockId)) {
       blockId = BigInt(blockId)
     }
 
     let number
     let hash
+    if (blockId === undefined) return undefined
     if (blockId instanceof Uint8Array) {
       hash = blockId
       number = await this.hashToNumber(blockId)
@@ -112,28 +95,24 @@ export class DBManager {
       throw new Error('Unknown blockId type')
     }
 
+    if (hash === undefined) return undefined
     const header = await this.getHeader(hash, number)
     let body: BlockBodyBytes
-    try {
-      body = await this.getBody(hash, number)
-    } catch (error: any) {
-      if (error.code !== 'LEVEL_NOT_FOUND') {
-        throw error
-      }
-
+    body = await this.getBody(hash, number)
+    if (body === undefined) {
       // Do extra validations on the header since we are assuming empty transactions and uncles
-      if (
-        !equalsBytes(header.transactionsTrie, KECCAK256_RLP) ||
-        !equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY)
-      ) {
-        throw error
+      if (!equalsBytes(header.transactionsTrie, KECCAK256_RLP)) {
+        throw new Error('transactionsTrie root should be equal to hash of null')
+      }
+      if (!equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY)) {
+        throw new Error('uncle hash should be equal to hash of empty array')
       }
       body = [[], []]
       // If this block had empty withdrawals push an empty array in body
       if (header.withdrawalsRoot !== undefined) {
         // Do extra validations for withdrawal before assuming empty withdrawals
         if (!equalsBytes(header.withdrawalsRoot, KECCAK256_RLP)) {
-          throw error
+          throw new Error('withdrawals root shoot be equal to hash of null')
         }
         body.push([])
       }
@@ -197,10 +176,6 @@ export class DBManager {
    * Performs a block number to block hash lookup.
    */
   async numberToHash(blockNumber: bigint): Promise<Uint8Array> {
-    if (blockNumber < BigInt(0)) {
-      throw new NotFoundError(blockNumber)
-    }
-
     return this.get(DBTarget.NumberToHash, { blockNumber })
   }
 
@@ -214,16 +189,13 @@ export class DBManager {
 
     const cacheString = dbGetOperation.cacheString
     const dbKey = dbGetOperation.baseDBOp.key
-    const dbOpts = dbGetOperation.baseDBOp
-
     if (cacheString !== undefined) {
       if (this._cache[cacheString] === undefined) {
         throw new Error(`Invalid cache: ${cacheString}`)
       }
       let value = this._cache[cacheString].get(dbKey)
-      if (!value) {
-        value = ((await this._db.get(dbKey)) as Uint8Array | null) ?? undefined
-
+      if (value === undefined) {
+        value = (await this._db.get(dbKey)) as Uint8Array | undefined
         if (value !== undefined) {
           // TODO: Check if this comment is still valid
           // Always cast values to Uint8Array since db sometimes returns values as `Buffer`
@@ -234,7 +206,7 @@ export class DBManager {
       return value
     }
 
-    return this._db.get(dbKey /* , dbOpts */)
+    return this._db.get(dbKey)
   }
 
   /**
