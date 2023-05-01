@@ -69,7 +69,7 @@ tape(`running txes on ${rpcUrl}`, async (t) => {
     st.pass(`fetched ${sender}'s  nonce=${nonce} for blob txs`)
 
     const txns = await createBlobTxs(
-      numTxs,
+      numTxs - 1,
       4096,
       pkey,
       nonce,
