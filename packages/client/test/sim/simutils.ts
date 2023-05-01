@@ -362,8 +362,8 @@ export const createBlobTxs = async (
   numTxs: number,
   blobSize = 2 ** 17 - 1,
   pkey: Uint8Array,
-  to?: string,
-  value?: bigint,
+  startNonce: number = 0,
+  txMeta: { to?: string; value?: bigint; chainId?: number } = {},
   opts?: TxOptions
 ) => {
   const txHashes: string[] = []
@@ -372,39 +372,33 @@ export const createBlobTxs = async (
   const commitments = blobsToCommitments(blobs)
   const proofs = blobsToProofs(blobs, commitments)
   const hashes = commitmentsToVersionedHashes(commitments)
+  const txns = []
 
-  for (let x = 1; x <= numTxs; x++) {
+  for (let x = startNonce; x <= startNonce + numTxs; x++) {
     const sender = Address.fromPrivateKey(pkey)
     const txData = {
       from: sender.toString(),
-      to,
-      data: '0x',
-      chainId: '0x1',
+      ...txMeta,
       blobs,
       kzgCommitments: commitments,
       kzgProofs: proofs,
       versionedHashes: hashes,
       gas: undefined,
-      maxFeePerDataGas: undefined,
-      maxPriorityFeePerGas: undefined,
-      maxFeePerGas: undefined,
+      maxFeePerDataGas: BigInt(1000) as any,
+      maxPriorityFeePerGas: BigInt(1) as any,
+      maxFeePerGas: '0xff' as any,
       nonce: BigInt(x),
-      gasLimit: undefined,
-      value,
+      gasLimit: BigInt(1000000) as any,
     }
-
-    txData['maxFeePerGas'] = '0xff' as any
-    txData['maxPriorityFeePerGas'] = BigInt(1) as any
-    txData['maxFeePerDataGas'] = BigInt(1000) as any
-    txData['gasLimit'] = BigInt(1000000) as any
 
     const blobTx = BlobEIP4844Transaction.fromTxData(txData, opts).sign(pkey)
 
     const serializedWrapper = blobTx.serializeNetworkWrapper()
     await fs.appendFile('./blobs.txt', bytesToPrefixedHexString(serializedWrapper) + '\n')
+    txns.push(bytesToPrefixedHexString(serializedWrapper))
     txHashes.push(bytesToPrefixedHexString(blobTx.hash()))
   }
-  return txHashes
+  return txns
 }
 
 export const runBlobTxsFromFile = async (client: Client, path: string) => {
