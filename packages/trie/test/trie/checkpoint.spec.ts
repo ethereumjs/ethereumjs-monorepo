@@ -1,9 +1,11 @@
-import { BatchDBOp, bytesToHex, bytesToUtf8, equalsBytes, utf8ToBytes } from '@ethereumjs/util'
+import { bytesToHex, bytesToUtf8, equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { createHash } from 'crypto'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
 import { MapDB, ROOT_DB_KEY, Trie } from '../../src'
+
+import type { BatchDBOp } from '@ethereumjs/util'
 
 tape('testing checkpoints', function (tester) {
   const it = tester.test

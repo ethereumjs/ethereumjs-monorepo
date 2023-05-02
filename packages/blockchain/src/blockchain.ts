@@ -1277,7 +1277,7 @@ export class Blockchain implements BlockchainInterface {
 
   /**
    * This method either returns a Uint8Array if there exists one in the DB or if it
-   * does not exist (DB throws a `NotFoundError`) then return false If DB throws
+   * does not exist then return false If DB throws
    * any other error, this function throws.
    * @param number
    */

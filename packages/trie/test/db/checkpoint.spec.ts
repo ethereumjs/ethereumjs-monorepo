@@ -1,4 +1,4 @@
-import { bytesToHex, hexStringToBytes, utf8ToBytes } from '@ethereumjs/util'
+import { hexStringToBytes, utf8ToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { CheckpointDB, MapDB } from '../../src'
@@ -54,8 +54,6 @@ tape('DB tests', (t) => {
     st.deepEqual(await db.get(k), v, 'before CP: v1')
     db.checkpoint(hexStringToBytes('01'))
     await db.del(k)
-    console.log(db.checkpoints)
-    console.log(await db.get(k), bytesToHex(k))
     st.deepEqual(await db.get(k), undefined, 'before revert: undefined')
     await db.revert()
     st.deepEqual(await db.get(k), v, 'after revert: v1')
