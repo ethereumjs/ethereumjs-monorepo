@@ -789,13 +789,32 @@ export class DefaultStateManager implements StateManager {
    * Copies the current instance of the `StateManager`
    * at the last fully committed point, i.e. as if all current
    * checkpoints were reverted.
+   *
+   * Note on caches:
+   * 1. For caches instantiated as an LRU cache type
+   * the copy() method will instantiate with an ORDERED_MAP cache
+   * instead, since copied instantances are mostly used in
+   * short-term usage contexts and LRU cache instantation would create
+   * a large overhead here.
+   * 2. Cache values are generally not copied along
    */
   copy(): StateManager {
+    const trie = this._trie.copy(false)
+    const prefixCodeHashes = this._prefixCodeHashes
+    let accountCacheOpts = { ...this._accountCacheSettings }
+    if (!this._accountCacheSettings.deactivate) {
+      accountCacheOpts = { ...accountCacheOpts, type: CacheType.ORDERED_MAP }
+    }
+    let storageCacheOpts = { ...this._storageCacheSettings }
+    if (!this._storageCacheSettings.deactivate) {
+      storageCacheOpts = { ...storageCacheOpts, type: CacheType.ORDERED_MAP }
+    }
+
     return new DefaultStateManager({
-      trie: this._trie.copy(false),
-      prefixCodeHashes: this._prefixCodeHashes,
-      accountCacheOpts: this._accountCacheSettings,
-      storageCacheOpts: this._storageCacheSettings,
+      trie,
+      prefixCodeHashes,
+      accountCacheOpts,
+      storageCacheOpts,
     })
   }
 

@@ -10,15 +10,6 @@ import { createAccount } from './util'
 
 tape('StateManager -> General/Account', (t) => {
   for (const accountCacheOpts of [{ deactivate: false }, { deactivate: true }]) {
-    t.test('should instantiate', async (st) => {
-      const stateManager = new DefaultStateManager({ accountCacheOpts })
-
-      st.deepEqual(stateManager._trie.root(), KECCAK256_RLP, 'it has default root')
-      const res = await stateManager.getStateRoot()
-      st.deepEqual(res, KECCAK256_RLP, 'it has default root')
-      st.end()
-    })
-
     t.test('should set the state root to empty', async (st) => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       st.ok(equalsBytes(stateManager._trie.root(), KECCAK256_RLP), 'it has default root')
