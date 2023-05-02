@@ -763,8 +763,8 @@ tape('blockchain test', (t) => {
   })
 })
 
-tape.only('initialization tests', (t) => {
-  /*  t.test('should read genesis from database', async (st) => {
+tape('initialization tests', (t) => {
+  t.test('should read genesis from database', async (st) => {
     const common = new Common({
       chain: Chain.Ropsten,
       hardfork: Hardfork.Chainstart,
@@ -818,7 +818,7 @@ tape.only('initialization tests', (t) => {
     )
     st.end()
   })
-*/
+
   t.test('should not allow to change the genesis block in the database', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const genesisBlock = Block.fromBlockData(

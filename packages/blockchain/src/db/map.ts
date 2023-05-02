@@ -10,15 +10,18 @@ export class MapDB<TKey extends Uint8Array | string, TValue extends Uint8Array |
   }
 
   async get(key: TKey): Promise<TValue | undefined> {
-    return this._database.get(key)
+    const dbKey = key.toString()
+    return this._database.get(dbKey as TKey)
   }
 
   async put(key: TKey, val: TValue): Promise<void> {
-    this._database.set(key, val)
+    const dbKey = key.toString()
+    this._database.set(dbKey as TKey, val)
   }
 
   async del(key: TKey): Promise<void> {
-    this._database.delete(key)
+    const dbKey = key.toString()
+    this._database.delete(dbKey as TKey)
   }
 
   async batch(opStack: BatchDBOp<TKey, TValue>[]): Promise<void> {
