@@ -52,4 +52,10 @@ export interface DB<
    * to the **same** underlying db instance.
    */
   copy(): DB<TKey, TValue>
+
+  /**
+   * Opens the database -- if applicable
+   */
+  open(): Promise<void>
+  // TODO - decide if we actually need open/close - it's not required for maps and Level automatically opens the DB when you instantiate it
 }

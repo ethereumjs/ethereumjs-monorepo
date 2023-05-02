@@ -36,4 +36,8 @@ export class MapDB implements DB {
   copy(): DB {
     return new MapDB(this._database)
   }
+
+  open() {
+    return Promise.resolve(undefined)
+  }
 }

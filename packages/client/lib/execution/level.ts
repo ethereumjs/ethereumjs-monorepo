@@ -26,10 +26,12 @@ export class LevelDB implements DB {
   /**
    * @inheritDoc
    */
-  async get(key: Uint8Array): Promise<Uint8Array | null> {
-    let value = null
+  // @ts-expect-error
+  async get(key: Uint8Array): Promise<Uint8Array | string | undefined> {
+    let value
     try {
       value = await this._leveldb.get(key, ENCODING_OPTS)
+      if (value === null) return undefined
     } catch (error: any) {
       // https://github.com/Level/abstract-level/blob/915ad1317694d0ce8c580b5ab85d81e1e78a3137/abstract-level.js#L309
       // This should be `true` if the error came from LevelDB
@@ -38,7 +40,7 @@ export class LevelDB implements DB {
         throw error
       }
     }
-    return value as Uint8Array | null
+    return value
   }
 
   /**
@@ -66,6 +68,11 @@ export class LevelDB implements DB {
    * @inheritDoc
    */
   copy(): DB {
+    //@ts-expect-error
     return new LevelDB(this._leveldb)
+  }
+
+  open() {
+    return this._leveldb.open()
   }
 }

@@ -231,7 +231,7 @@ export class Chain {
   async close(): Promise<boolean | void> {
     if (!this.opened) return false
     this.reset()
-    await (this.blockchain.db as any)?.close()
+    await (this.blockchain.db as any)?.close?.()
     this.opened = false
   }
 

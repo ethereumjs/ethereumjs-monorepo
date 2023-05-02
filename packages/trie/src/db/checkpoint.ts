@@ -231,4 +231,8 @@ export class CheckpointDB implements DB {
   copy(): CheckpointDB {
     return new CheckpointDB({ db: this.db, cacheSize: this.cacheSize })
   }
+
+  open() {
+    return Promise.resolve()
+  }
 }

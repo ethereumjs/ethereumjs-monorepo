@@ -161,6 +161,7 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
       },
     ])
     expectRes = async (res: any) => {
+      console.log(res.result)
       t.equal(res.body.result.payloadStatus.status, 'VALID')
     }
     await baseRequest(t, server, req, 200, expectRes)

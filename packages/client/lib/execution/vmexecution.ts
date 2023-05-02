@@ -21,6 +21,7 @@ import { ReceiptsManager } from './receipt'
 
 import type { ExecutionOptions } from './execution'
 import type { Block } from '@ethereumjs/block'
+import type { DB } from '@ethereumjs/util'
 import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 
 export class VMExecution extends Execution {
@@ -49,7 +50,7 @@ export class VMExecution extends Execution {
 
     if (this.config.vm === undefined) {
       const trie = new Trie({
-        db: new LevelDB(this.stateDB),
+        db: new LevelDB(this.stateDB) as DB<Uint8Array, Uint8Array>,
         useKeyHashing: true,
         cacheSize: this.config.trieCache,
       })

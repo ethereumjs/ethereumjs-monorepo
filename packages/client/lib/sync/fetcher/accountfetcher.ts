@@ -25,6 +25,7 @@ import type { EventBusType } from '../../types'
 import type { FetcherOptions } from './fetcher'
 import type { StorageRequest } from './storagefetcher'
 import type { Job } from './types'
+import type { DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 type AccountDataResponse = AccountData[] & { completed?: boolean }
@@ -202,7 +203,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       }
     }
 
-    const trie = new Trie({ db: new LevelDB() })
+    const trie = new Trie({ db: new LevelDB() as DB<Uint8Array, Uint8Array> })
     const keys = accounts.map((acc: any) => acc.hash)
     const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
     // convert the request to the right values

@@ -39,4 +39,8 @@ export class MapDB<TKey extends Uint8Array | string, TValue extends Uint8Array |
   copy(): DB<TKey, TValue> {
     return new MapDB<TKey, TValue>(this._database)
   }
+
+  open() {
+    return Promise.resolve()
+  }
 }
