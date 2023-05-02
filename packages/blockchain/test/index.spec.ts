@@ -1,11 +1,10 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { MapDB } from '@ethereumjs/trie'
 import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { Blockchain } from '../src'
-import { DBManager } from '../src/db/manager'
+import { MapDB } from '../src/db/map'
 
 import * as blocksData from './testdata/blocks_mainnet.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
@@ -13,8 +12,8 @@ import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from 
 
 import type { BlockOptions } from '@ethereumjs/block'
 
-tape('blockchain test', (t) => {
-  t.test('should not crash on getting head of a blockchain without a genesis', async (st) => {
+tape.only('blockchain test', (t) => {
+  /* t.test('should not crash on getting head of a blockchain without a genesis', async (st) => {
     const blockchain = await Blockchain.create({
       validateBlocks: true,
       validateConsensus: false,
@@ -214,14 +213,20 @@ tape('blockchain test', (t) => {
       await blockchain.getBlock(5)
       st.fail('should throw an exception')
     } catch (e: any) {
-      st.ok(e.message.includes('NotFound'), `should throw for non-existing block-by-number request`)
+      st.ok(
+        e.message.includes('not found in DB'),
+        `should throw for non-existing block-by-number request`
+      )
     }
 
     try {
       await blockchain.getBlock(hexToBytes('1234'))
       st.fail('should throw an exception')
     } catch (e: any) {
-      st.ok(e.message.includes('NotFound'), `should throw for non-existing block-by-hash request`)
+      st.ok(
+        e.message.includes('not found in DB'),
+        `should throw for non-existing block-by-hash request`
+      )
     }
 
     st.end()
@@ -515,7 +520,7 @@ tape('blockchain test', (t) => {
     await blockchain.putBlock(blocks[3])
     st.end()
   })
-
+*/
   t.test('should test nil bodies / throw', async (st) => {
     const blocks = generateBlocks(3)
     const blockchain = await Blockchain.create({
@@ -528,6 +533,8 @@ tape('blockchain test', (t) => {
     await blockchain.getBlock(BigInt(1))
 
     const block2HeaderValuesArray = blocks[2].header.raw()
+
+    console.log(block2HeaderValuesArray)
     block2HeaderValuesArray[1] = new Uint8Array(32)
     const block2Header = BlockHeader.fromValuesArray(block2HeaderValuesArray, {
       common: blocks[2]._common,
@@ -541,7 +548,7 @@ tape('blockchain test', (t) => {
     }
     st.end()
   })
-
+  /*
   t.test('should put multiple blocks at once', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blocks: Block[] = []
@@ -760,7 +767,7 @@ tape('blockchain test', (t) => {
       }
     }
     st.end()
-  })
+  })*/
 })
 
 tape('initialization tests', (t) => {

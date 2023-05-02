@@ -1,6 +1,12 @@
 import { Block, BlockHeader, valuesArrayToHeaderData } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
-import { KECCAK256_RLP, KECCAK256_RLP_ARRAY, bytesToBigInt, equalsBytes } from '@ethereumjs/util'
+import {
+  KECCAK256_RLP,
+  KECCAK256_RLP_ARRAY,
+  bytesToBigInt,
+  bytesToPrefixedHexString,
+  equalsBytes,
+} from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { Cache } from './cache'
@@ -95,7 +101,7 @@ export class DBManager {
       throw new Error('Unknown blockId type')
     }
 
-    if (hash === undefined) return undefined
+    if (hash === undefined || number === undefined) return undefined
     const header = await this.getHeader(hash, number)
     let body: BlockBodyBytes
     body = await this.getBody(hash, number)
@@ -167,16 +173,20 @@ export class DBManager {
   /**
    * Performs a block hash to block number lookup.
    */
-  async hashToNumber(blockHash: Uint8Array): Promise<bigint> {
+  async hashToNumber(blockHash: Uint8Array): Promise<bigint | undefined> {
     const value = await this.get(DBTarget.HashToNumber, { blockHash })
-    return bytesToBigInt(value)
+    if (value === undefined) {
+      throw new Error(`value for ${bytesToPrefixedHexString(blockHash)} not found in DB`)
+    }
+    return value !== undefined ? bytesToBigInt(value) : undefined
   }
 
   /**
    * Performs a block number to block hash lookup.
    */
-  async numberToHash(blockNumber: bigint): Promise<Uint8Array> {
-    return this.get(DBTarget.NumberToHash, { blockNumber })
+  async numberToHash(blockNumber: bigint): Promise<Uint8Array | undefined> {
+    const value = await this.get(DBTarget.NumberToHash, { blockNumber })
+    return value
   }
 
   /**
@@ -205,7 +215,6 @@ export class DBManager {
 
       return value
     }
-
     return this._db.get(dbKey)
   }
 
