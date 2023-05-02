@@ -103,9 +103,8 @@ export class DBManager {
 
     if (hash === undefined || number === undefined) return undefined
     const header = await this.getHeader(hash, number)
-    let body: BlockBodyBytes
-    body = await this.getBody(hash, number)
-    if (body === undefined) {
+    const body = await this.getBody(hash, number)
+    if (body[0].length === 0 && body[1].length === 0) {
       // Do extra validations on the header since we are assuming empty transactions and uncles
       if (!equalsBytes(header.transactionsTrie, KECCAK256_RLP)) {
         throw new Error('transactionsTrie root should be equal to hash of null')
@@ -113,7 +112,6 @@ export class DBManager {
       if (!equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY)) {
         throw new Error('uncle hash should be equal to hash of empty array')
       }
-      body = [[], []]
       // If this block had empty withdrawals push an empty array in body
       if (header.withdrawalsRoot !== undefined) {
         // Do extra validations for withdrawal before assuming empty withdrawals
@@ -139,6 +137,9 @@ export class DBManager {
    */
   async getBody(blockHash: Uint8Array, blockNumber: bigint): Promise<BlockBodyBytes> {
     const body = await this.get(DBTarget.Body, { blockHash, blockNumber })
+    if (body === undefined) {
+      return [[], []]
+    }
     return RLP.decode(body) as BlockBodyBytes
   }
 
@@ -199,6 +200,7 @@ export class DBManager {
 
     const cacheString = dbGetOperation.cacheString
     const dbKey = dbGetOperation.baseDBOp.key
+
     if (cacheString !== undefined) {
       if (this._cache[cacheString] === undefined) {
         throw new Error(`Invalid cache: ${cacheString}`)
