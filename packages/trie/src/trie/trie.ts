@@ -1,12 +1,4 @@
-import {
-  BatchDBOp,
-  DB,
-  PutBatch,
-  RLP_EMPTY_STRING,
-  bytesToHex,
-  bytesToUtf8,
-  equalsBytes,
-} from '@ethereumjs/util'
+import { RLP_EMPTY_STRING, bytesToHex, bytesToUtf8, equalsBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { CheckpointDB, MapDB } from '../db'
@@ -28,6 +20,7 @@ import type {
   TrieOpts,
   TrieOptsWithDefaults,
 } from '../types'
+import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
 
 interface Path {
   node: TrieNode | null

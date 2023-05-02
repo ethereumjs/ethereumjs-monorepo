@@ -133,9 +133,8 @@ export class CheckpointDB implements DB {
 
     // Lookup the value in our diff cache. We return the latest checkpointed value (which should be the value on disk)
     for (let index = this.checkpoints.length - 1; index >= 0; index--) {
-      const value = this.checkpoints[index].keyValueMap.get(bytesToHex(key))
-      if (value !== undefined) {
-        return value
+      if (this.checkpoints[index].keyValueMap.has(bytesToHex(key))) {
+        return this.checkpoints[index].keyValueMap.get(bytesToHex(key))
       }
     }
     // Nothing has been found in diff cache, look up from disk

@@ -1,7 +1,9 @@
-import { BatchDBOp, hexStringToBytes, utf8ToBytes } from '@ethereumjs/util'
+import { bytesToHex, hexStringToBytes, utf8ToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { CheckpointDB, MapDB } from '../../src'
+
+import type { BatchDBOp } from '@ethereumjs/util'
 
 tape('DB tests', (t) => {
   const k = utf8ToBytes('k1')
@@ -15,7 +17,7 @@ tape('DB tests', (t) => {
     await db.put(k, v)
     st.deepEqual(await db.get(k), v, 'before revert: v1')
     await db.revert()
-    st.deepEqual(await db.get(k), null, 'after revert: null')
+    st.deepEqual(await db.get(k), undefined, 'after revert: null')
     st.end()
   })
 
@@ -52,7 +54,9 @@ tape('DB tests', (t) => {
     st.deepEqual(await db.get(k), v, 'before CP: v1')
     db.checkpoint(hexStringToBytes('01'))
     await db.del(k)
-    st.deepEqual(await db.get(k), null, 'before revert: null')
+    console.log(db.checkpoints)
+    console.log(await db.get(k), bytesToHex(k))
+    st.deepEqual(await db.get(k), undefined, 'before revert: undefined')
     await db.revert()
     st.deepEqual(await db.get(k), v, 'after revert: v1')
     st.end()
