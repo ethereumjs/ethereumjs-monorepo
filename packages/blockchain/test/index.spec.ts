@@ -12,8 +12,8 @@ import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from 
 
 import type { BlockOptions } from '@ethereumjs/block'
 
-tape.only('blockchain test', (t) => {
-  /* t.test('should not crash on getting head of a blockchain without a genesis', async (st) => {
+tape('blockchain test', (t) => {
+  t.test('should not crash on getting head of a blockchain without a genesis', async (st) => {
     const blockchain = await Blockchain.create({
       validateBlocks: true,
       validateConsensus: false,
@@ -520,7 +520,7 @@ tape.only('blockchain test', (t) => {
     await blockchain.putBlock(blocks[3])
     st.end()
   })
-*/
+
   t.test('should test nil bodies / throw', async (st) => {
     const blocks = generateBlocks(3)
     const blockchain = await Blockchain.create({
@@ -534,7 +534,6 @@ tape.only('blockchain test', (t) => {
 
     const block2HeaderValuesArray = blocks[2].header.raw()
 
-    console.log(block2HeaderValuesArray)
     block2HeaderValuesArray[1] = new Uint8Array(32)
     const block2Header = BlockHeader.fromValuesArray(block2HeaderValuesArray, {
       common: blocks[2]._common,
@@ -548,7 +547,7 @@ tape.only('blockchain test', (t) => {
     }
     st.end()
   })
-  /*
+
   t.test('should put multiple blocks at once', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blocks: Block[] = []
@@ -767,7 +766,7 @@ tape.only('blockchain test', (t) => {
       }
     }
     st.end()
-  })*/
+  })
 })
 
 tape('initialization tests', (t) => {
