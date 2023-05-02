@@ -311,9 +311,9 @@ export class Config {
   public static readonly MAXPEERS_DEFAULT = 25
   public static readonly DNSADDR_DEFAULT = '8.8.8.8'
   public static readonly NUM_BLOCKS_PER_ITERATION = 100
-  public static readonly ACCOUNT_CACHE = 1000000
+  public static readonly ACCOUNT_CACHE = 400000
   public static readonly STORAGE_CACHE = 200000
-  public static readonly TRIE_CACHE = 500000
+  public static readonly TRIE_CACHE = 200000
   public static readonly DEBUGCODE_DEFAULT = false
   public static readonly SAFE_REORG_DISTANCE = 100
   public static readonly SKELETON_FILL_CANONICAL_BACKSTEP = 100
