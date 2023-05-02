@@ -38,8 +38,8 @@ export class VMExecution extends Execution {
   /**
    * Display state cache stats every num blocks
    */
-  private CACHE_STATS_NUM_BLOCKS = 500
-  private cacheStatsCount = 0
+  private STATS_NUM_BLOCKS = 500
+  private statsCount = 0
 
   /**
    * Create new VM execution module
@@ -342,7 +342,7 @@ export class VMExecution extends Execution {
                 throw Error('Execution stopped')
               }
               const beforeTS = Date.now()
-              this.cacheStats(this.vm)
+              this.stats(this.vm)
               const result = await this.vm.runBlock({
                 block,
                 root: parentState,
@@ -523,7 +523,7 @@ export class VMExecution extends Execution {
         // we are skipping header validation because the block has been picked from the
         // blockchain and header should have already been validated while putBlock
         const beforeTS = Date.now()
-        this.cacheStats(vm)
+        this.stats(vm)
         const res = await vm.runBlock({
           block,
           root,
@@ -566,9 +566,9 @@ export class VMExecution extends Execution {
     }
   }
 
-  cacheStats(vm: VM) {
-    this.cacheStatsCount += 1
-    if (this.cacheStatsCount === this.CACHE_STATS_NUM_BLOCKS) {
+  stats(vm: VM) {
+    this.statsCount += 1
+    if (this.statsCount === this.STATS_NUM_BLOCKS) {
       let stats = (vm.stateManager as any)._accountCache.stats()
       this.config.logger.info(
         `Account cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
@@ -582,7 +582,12 @@ export class VMExecution extends Execution {
         `Trie cache stats size=${tStats.size} reads=${tStats.cache.reads} hits=${tStats.cache.hits} ` +
           `writes=${tStats.cache.writes} readsDB=${tStats.db.reads} hitsDB=${tStats.db.hits} writesDB=${tStats.db.writes}`
       )
-      this.cacheStatsCount = 0
+
+      if (process !== undefined) {
+        const heapUsed = Math.round(process.memoryUsage().heapUsed / 1000 / 1000) // MB
+        this.config.logger.info(`Memory stats usage=${heapUsed} MB`)
+      }
+      this.statsCount = 0
     }
   }
 }
