@@ -114,7 +114,6 @@ export class DBManager {
       }
       // If this block had empty withdrawals push an empty array in body
       if (header.withdrawalsRoot !== undefined) {
-        console.log(header.withdrawalsRoot, body)
         // Do extra validations for withdrawal before assuming empty withdrawals
         if (!equalsBytes(header.withdrawalsRoot, KECCAK256_RLP)) {
           throw new Error('withdrawals root shoot be equal to hash of null')
