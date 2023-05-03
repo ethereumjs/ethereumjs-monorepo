@@ -1,5 +1,4 @@
 import { Blockchain } from '@ethereumjs/blockchain'
-import { LevelDB } from '@ethereumjs/client/lib/execution/level'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { Account, blobsToCommitments, computeVersionedHash, getBlobs } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
@@ -7,6 +6,7 @@ import { hexToBytes } from 'ethereum-cryptography/utils'
 import { MemoryLevel } from 'memory-level'
 
 import { VM } from '../../src/vm'
+import { LevelDB } from '../level'
 
 import type { VMOpts } from '../../src/types'
 import type { Block } from '@ethereumjs/block'
