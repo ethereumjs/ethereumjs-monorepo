@@ -5,6 +5,7 @@ import { Level } from 'level'
 
 import { EthereumClient } from '../lib/client'
 import { Config } from '../lib/config'
+import { LevelDB } from '../lib/execution/level'
 import { parseMultiaddrs } from '../lib/util'
 
 import { getLogger } from './logging'
@@ -75,7 +76,7 @@ export async function createClient(args: any) {
   )
 
   const blockchain = await Blockchain.create({
-    db: chainDB,
+    db: new LevelDB(chainDB),
     common: config.chainCommon,
     hardforkByHeadBlockNumber: true,
     validateBlocks: true,

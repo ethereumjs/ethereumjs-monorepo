@@ -6,7 +6,6 @@ import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
-  DB,
   bytesToHex,
   bytesToPrefixedHexString,
   hexStringToBytes,
