@@ -1,4 +1,5 @@
 import { Blockchain } from '@ethereumjs/blockchain'
+import { LevelDB } from '@ethereumjs/client/lib/execution/level'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { Account, blobsToCommitments, computeVersionedHash, getBlobs } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
@@ -24,7 +25,7 @@ export async function setBalance(vm: VM, address: Address, balance = BigInt(1000
 }
 
 export async function setupVM(opts: VMOpts & { genesisBlock?: Block } = {}) {
-  const db: any = new MemoryLevel()
+  const db: any = new LevelDB(new MemoryLevel())
   const { common, genesisBlock } = opts
   if (opts.blockchain === undefined) {
     opts.blockchain = await Blockchain.create({
