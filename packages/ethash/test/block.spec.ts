@@ -7,10 +7,11 @@ import { MemoryLevel } from 'memory-level'
 import * as tape from 'tape'
 
 import { Ethash } from '../src'
+import { LevelDB } from '../src/level'
 
 import type { BlockBytes } from '@ethereumjs/block'
 
-const cacheDB = new MemoryLevel()
+const cacheDB = new LevelDB(new MemoryLevel())
 
 const { validBlockRlp, invalidBlockRlp } = require('./ethash_block_rlp_tests.json')
 

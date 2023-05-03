@@ -25,7 +25,7 @@ import {
 } from './util'
 
 import type { BlockData, HeaderData } from '@ethereumjs/block'
-import type { AbstractLevel } from 'abstract-level'
+import type { DB } from '@ethereumjs/util'
 
 function xor(a: Uint8Array, b: Uint8Array) {
   const len = Math.max(a.length, b.length)
@@ -154,27 +154,16 @@ export class Miner {
   }
 }
 
-export type EthashCacheDB = AbstractLevel<
-  string | Uint8Array,
-  string | Uint8Array,
-  {
-    cache: string[]
-    fullSize: number
-    cacheSize: number
-    seed: string
-  }
->
-
 export class Ethash {
   dbOpts: Object
-  cacheDB?: EthashCacheDB
+  cacheDB?: DB<any, any>
   cache: Uint8Array[]
   epoc?: number
   fullSize?: number
   cacheSize?: number
   seed?: Uint8Array
 
-  constructor(cacheDB?: EthashCacheDB) {
+  constructor(cacheDB?: DB) {
     this.dbOpts = {
       valueEncoding: 'json',
     }
@@ -302,21 +291,15 @@ export class Ethash {
       if (epoc === 0) {
         return [zeros(32), 0]
       }
-      let data
-      try {
-        const dbData = await this.cacheDB!.get(epoc, this.dbOpts)
-        data = {
-          cache: dbData.cache.map((el) => hexToBytes(el)),
+
+      const dbData = await this.cacheDB!.get(epoc)
+      if (dbData !== undefined) {
+        const data = {
+          cache: dbData.cache.map((el: string) => hexToBytes(el)),
           fullSize: dbData.fullSize,
           cacheSize: dbData.cacheSize,
           seed: hexToBytes(dbData.seed),
         }
-      } catch (error: any) {
-        if (error.code !== 'LEVEL_NOT_FOUND') {
-          throw error
-        }
-      }
-      if (data) {
         return [data.seed, epoc]
       } else {
         return findLastSeed(epoc - 1)
@@ -324,20 +307,15 @@ export class Ethash {
     }
 
     let data
-    try {
-      const dbData = await this.cacheDB!.get(epoc, this.dbOpts)
+    const dbData = await this.cacheDB!.get(epoc)
+    if (dbData !== undefined) {
       data = {
-        cache: dbData.cache.map((el) => hexToBytes(el)),
+        cache: dbData.cache.map((el: string) => hexToBytes(el)),
         fullSize: dbData.fullSize,
         cacheSize: dbData.cacheSize,
         seed: hexToBytes(dbData.seed),
       }
-    } catch (error: any) {
-      if (error.code !== 'LEVEL_NOT_FOUND') {
-        throw error
-      }
     }
-
     if (!data) {
       this.cacheSize = await getCacheSize(epoc)
       this.fullSize = await getFullSize(epoc)
@@ -346,16 +324,12 @@ export class Ethash {
       this.seed = getSeed(seed, foundEpoc, epoc)
       const cache = this.mkcache(this.cacheSize!, this.seed!)
       // store the generated cache
-      await this.cacheDB!.put(
-        epoc,
-        {
-          cacheSize: this.cacheSize,
-          fullSize: this.fullSize,
-          seed: bytesToHex(this.seed),
-          cache: cache.map((el) => bytesToHex(el)),
-        },
-        this.dbOpts
-      )
+      await this.cacheDB!.put(epoc as any, {
+        cacheSize: this.cacheSize,
+        fullSize: this.fullSize,
+        seed: bytesToHex(this.seed),
+        cache: cache.map((el) => bytesToHex(el)),
+      })
     } else {
       this.cache = data.cache.map((a: Uint8Array) => {
         return Uint8Array.from(a)
