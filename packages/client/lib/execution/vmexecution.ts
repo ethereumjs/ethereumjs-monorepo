@@ -137,10 +137,8 @@ export class VMExecution extends Execution {
       }
       const td = await this.vm.blockchain.getTotalDifficulty(headBlock.header.hash())
       this.config.execCommon.setHardforkByBlockNumber(number, td, timestamp)
-      if (this.config.execution) {
-        this.hardfork = this.config.execCommon.hardfork()
-        this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
-      }
+      this.hardfork = this.config.execCommon.hardfork()
+      this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
       if (number === BigInt(0)) {
         if (typeof this.vm.blockchain.genesisState !== 'function') {
           throw new Error('cannot get iterator head: blockchain has no genesisState function')
@@ -480,6 +478,40 @@ export class VMExecution extends Execution {
     }
     this.running = false
     return numExecuted ?? 0
+  }
+
+  /**
+   * Start execution
+   */
+  async start(): Promise<boolean> {
+    const { blockchain } = this.vm
+    if (this.running || !this.started) {
+      return false
+    }
+
+    if (typeof blockchain.getIteratorHead !== 'function') {
+      throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
+    }
+    const vmHeadBlock = await blockchain.getIteratorHead()
+    if (typeof blockchain.getCanonicalHeadBlock !== 'function') {
+      throw new Error('cannot get iterator head: blockchain has no getCanonicalHeadBlock function')
+    }
+    const canonicalHead = await blockchain.getCanonicalHeadBlock()
+
+    const infoStr = `vmHead=${vmHeadBlock.header.number} canonicalHead=${
+      canonicalHead.header.number
+    } hardfork=${this.config.execCommon.hardfork()} execution=${this.config.execution}`
+    if (
+      !this.config.execCommon.gteHardfork(Hardfork.Paris) &&
+      this.config.execution &&
+      vmHeadBlock.header.number < canonicalHead.header.number
+    ) {
+      this.config.logger.info(`Starting execution run ${infoStr}`)
+      void this.run(true, true)
+    } else {
+      this.config.logger.info(`Skipped execution run ${infoStr}`)
+    }
+    return true
   }
 
   /**

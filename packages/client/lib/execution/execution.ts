@@ -56,11 +56,7 @@ export abstract class Execution {
    */
   async open(): Promise<void> {
     this.started = true
-    if (this.config.execution) {
-      this.config.logger.info('Setup EVM execution.')
-    } else {
-      this.config.logger.info('EVM execution skipped.')
-    }
+    this.config.logger.info('Setup EVM execution.')
   }
 
   /**
@@ -68,9 +64,7 @@ export abstract class Execution {
    */
   async stop(): Promise<boolean> {
     this.started = false
-    if (this.config.execution) {
-      this.config.logger.info('Stopped execution.')
-    }
+    this.config.logger.info('Stopped execution.')
     return true
   }
 }
