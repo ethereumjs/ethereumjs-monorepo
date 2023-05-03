@@ -12,19 +12,23 @@ import { Lock, bytesToHex, bytesToPrefixedHexString, equalsBytes } from '@ethere
 import { VM } from '@ethereumjs/vm'
 
 import { Event } from '../types'
-import { short } from '../util'
+import { getV8Engine, short } from '../util'
 import { debugCodeReplayBlock } from '../util/debug'
 
 import { Execution } from './execution'
 import { LevelDB } from './level'
 import { ReceiptsManager } from './receipt'
 
+import type { V8Engine } from '../util'
 import type { ExecutionOptions } from './execution'
 import type { Block } from '@ethereumjs/block'
 import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 
 export class VMExecution extends Execution {
   private _lock = new Lock()
+  // A handle to v8Engine lib for mem stats, assigned on open if running in node
+  private v8Engine: V8Engine | null = null
+
   public vm: VM
   public hardfork: string = ''
 
@@ -117,6 +121,11 @@ export class VMExecution extends Execution {
       if (this.started || this.vmPromise !== undefined) {
         return
       }
+
+      if (this.v8Engine === null) {
+        this.v8Engine = await getV8Engine()
+      }
+
       await this.vm.init()
       if (typeof this.vm.blockchain.getIteratorHead !== 'function') {
         throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
@@ -583,9 +592,12 @@ export class VMExecution extends Execution {
           `writes=${tStats.cache.writes} readsDB=${tStats.db.reads} hitsDB=${tStats.db.hits} writesDB=${tStats.db.writes}`
       )
 
-      if (process !== undefined) {
-        const heapUsed = Math.round(process.memoryUsage().heapUsed / 1000 / 1000) // MB
-        this.config.logger.info(`Memory stats usage=${heapUsed} MB`)
+      if (this.v8Engine !== null) {
+        const { used_heap_size, heap_size_limit } = this.v8Engine.getHeapStatistics()
+
+        const heapUsed = Math.round(used_heap_size / 1000 / 1000) // MB
+        const percentage = Math.round((100 * used_heap_size) / heap_size_limit)
+        this.config.logger.info(`Memory stats usage=${heapUsed} MB percentage=${percentage}%`)
       }
       this.statsCount = 0
     }
