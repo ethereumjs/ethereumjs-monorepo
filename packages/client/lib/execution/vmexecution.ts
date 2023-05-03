@@ -137,8 +137,10 @@ export class VMExecution extends Execution {
       }
       const td = await this.vm.blockchain.getTotalDifficulty(headBlock.header.hash())
       this.config.execCommon.setHardforkByBlockNumber(number, td, timestamp)
-      this.hardfork = this.config.execCommon.hardfork()
-      this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
+      if (this.config.execution) {
+        this.hardfork = this.config.execCommon.hardfork()
+        this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
+      }
       if (number === BigInt(0)) {
         if (typeof this.vm.blockchain.genesisState !== 'function') {
           throw new Error('cannot get iterator head: blockchain has no genesisState function')

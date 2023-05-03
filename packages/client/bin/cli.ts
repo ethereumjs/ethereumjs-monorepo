@@ -236,6 +236,11 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe: 'EIP-1459 ENR tree urls to query for peer discovery targets',
     array: true,
   })
+  .option('execution', {
+    describe: 'Start continuous VM execution (pre-Merge setting)',
+    boolean: true,
+    default: Config.EXECUTION,
+  })
   .option('numBlocksPerIteration', {
     describe: 'Number of blocks to execute in batch mode and logged to console',
     number: true,
@@ -738,6 +743,7 @@ async function run() {
     discDns: args.discDns,
     discV4: args.discV4,
     dnsAddr: args.dnsAddr,
+    execution: args.execution,
     numBlocksPerIteration: args.numBlocksPerIteration,
     accountCache: args.accountCache,
     storageCache: args.storageCache,

@@ -162,7 +162,7 @@ export class FullEthereumService extends EthereumService {
     }
     await super.start()
     this.miner?.start()
-    if (!this.config.execCommon.gteHardfork(Hardfork.Paris)) {
+    if (!this.config.execCommon.gteHardfork(Hardfork.Paris) && this.config.execution) {
       void this.execution.run(true, true)
     }
     return true

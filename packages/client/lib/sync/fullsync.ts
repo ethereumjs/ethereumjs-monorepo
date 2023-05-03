@@ -75,7 +75,9 @@ export class FullSynchronizer extends Synchronizer {
 
     this.config.events.on(Event.SYNC_FETCHED_BLOCKS, this.processBlocks)
     this.config.events.on(Event.SYNC_EXECUTION_VM_ERROR, this.stop)
-    this.config.events.on(Event.CHAIN_UPDATED, this.runExecution)
+    if (this.config.execution) {
+      this.config.events.on(Event.CHAIN_UPDATED, this.runExecution)
+    }
 
     await this.pool.open()
     const { height: number, td } = this.chain.blocks
@@ -404,7 +406,9 @@ export class FullSynchronizer extends Synchronizer {
   async stop(): Promise<boolean> {
     this.config.events.removeListener(Event.SYNC_FETCHED_BLOCKS, this.processBlocks)
     this.config.events.removeListener(Event.SYNC_EXECUTION_VM_ERROR, this.stop)
-    this.config.events.removeListener(Event.CHAIN_UPDATED, this.runExecution)
+    if (this.config.execution) {
+      this.config.events.removeListener(Event.CHAIN_UPDATED, this.runExecution)
+    }
     return super.stop()
   }
 
