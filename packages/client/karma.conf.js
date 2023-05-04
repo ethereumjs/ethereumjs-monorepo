@@ -17,7 +17,7 @@ module.exports = function (config) {
           ecmaVersion: 12,
         },
         //  sourceMap: true,
-        exclude: ['async_hooks'],
+        exclude: ['async_hooks', 'node:v8'],
         resolve: {
           alias: {
             // Hotfix for `multiformats` client browser build error in Node 16, #1346, 2021-07-12

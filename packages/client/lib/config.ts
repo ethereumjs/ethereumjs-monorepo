@@ -190,6 +190,11 @@ export interface ConfigOptions {
   dnsNetworks?: string[]
 
   /**
+   * Start continuous VM execution (pre-Merge setting)
+   */
+  execution?: boolean
+
+  /**
    * Number of blocks to execute in batch mode and logged to console
    */
   numBlocksPerIteration?: number
@@ -310,10 +315,11 @@ export class Config {
   public static readonly MINPEERS_DEFAULT = 1
   public static readonly MAXPEERS_DEFAULT = 25
   public static readonly DNSADDR_DEFAULT = '8.8.8.8'
+  public static readonly EXECUTION = true
   public static readonly NUM_BLOCKS_PER_ITERATION = 100
-  public static readonly ACCOUNT_CACHE = 1000000
+  public static readonly ACCOUNT_CACHE = 400000
   public static readonly STORAGE_CACHE = 200000
-  public static readonly TRIE_CACHE = 500000
+  public static readonly TRIE_CACHE = 200000
   public static readonly DEBUGCODE_DEFAULT = false
   public static readonly SAFE_REORG_DISTANCE = 100
   public static readonly SKELETON_FILL_CANONICAL_BACKSTEP = 100
@@ -345,6 +351,7 @@ export class Config {
   public readonly minPeers: number
   public readonly maxPeers: number
   public readonly dnsAddr: string
+  public readonly execution: boolean
   public readonly numBlocksPerIteration: number
   public readonly accountCache: number
   public readonly storageCache: number
@@ -402,6 +409,7 @@ export class Config {
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT
     this.dnsAddr = options.dnsAddr ?? Config.DNSADDR_DEFAULT
+    this.execution = options.execution ?? Config.EXECUTION
     this.numBlocksPerIteration = options.numBlocksPerIteration ?? Config.NUM_BLOCKS_PER_ITERATION
     this.accountCache = options.accountCache ?? Config.ACCOUNT_CACHE
     this.storageCache = options.storageCache ?? Config.STORAGE_CACHE

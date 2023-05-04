@@ -143,6 +143,7 @@ export interface ClientOpts {
   minPeers?: number
   maxPeers?: number
   dnsAddr?: string
+  execution?: boolean
   numBlocksPerIteration?: number
   accountCache?: number
   storageCache?: number
