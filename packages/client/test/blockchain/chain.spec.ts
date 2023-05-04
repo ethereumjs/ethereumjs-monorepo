@@ -23,7 +23,7 @@ tape('[Chain]', (t) => {
 
     await db.put(testKey, testValue)
     const value = await db.get(testKey)
-    t.equal(testValue, value, 'read value matches written value')
+    t.equal(value, testValue, 'read value matches written value')
     t.end()
   })
 
