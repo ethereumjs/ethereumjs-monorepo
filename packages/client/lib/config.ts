@@ -382,6 +382,8 @@ export class Config {
   public lastSyncDate: number
   /** Best known block height */
   public syncTargetHeight?: bigint
+  /** Client is in the process of shutting down */
+  public shutdown: boolean = false
 
   public readonly chainCommon: Common
   public readonly execCommon: Common
@@ -472,6 +474,10 @@ export class Config {
         }
       })
     }
+
+    this.events.once(Event.CLIENT_SHUTDOWN, () => {
+      this.shutdown = true
+    })
   }
 
   /**

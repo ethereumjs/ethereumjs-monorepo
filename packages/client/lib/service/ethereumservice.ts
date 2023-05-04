@@ -46,7 +46,13 @@ export class EthereumService extends Service {
   /**
    * Interval for client stats output (e.g. memory) (in ms)
    */
-  private STATS_INTERVAL = 40000
+  private STATS_INTERVAL = 30000
+
+  /**
+   * Shutdown the client when memory threshold is reached (in percent)
+   *
+   */
+  private MEMORY_SHUTDOWN_THRESHOLD = 95
 
   private _statsInterval: NodeJS.Timeout | undefined /* global NodeJS */
 
@@ -113,6 +119,11 @@ export class EthereumService extends Service {
       const heapUsed = Math.round(used_heap_size / 1000 / 1000) // MB
       const percentage = Math.round((100 * used_heap_size) / heap_size_limit)
       this.config.logger.info(`Memory stats usage=${heapUsed} MB percentage=${percentage}%`)
+
+      if (percentage >= this.MEMORY_SHUTDOWN_THRESHOLD && !this.config.shutdown) {
+        this.config.logger.error('EMERGENCY SHUTDOWN DUE TO HIGH MEMORY LOAD...')
+        process.kill(process.pid, 'SIGINT')
+      }
     }
   }
 
