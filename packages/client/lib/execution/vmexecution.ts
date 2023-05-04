@@ -42,7 +42,7 @@ export class VMExecution extends Execution {
   /**
    * Display state cache stats every num blocks
    */
-  private STATS_NUM_BLOCKS = 500
+  private STATS_NUM_BLOCKS = 1000
   private statsCount = 0
 
   /**
