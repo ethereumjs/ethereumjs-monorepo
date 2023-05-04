@@ -5,6 +5,7 @@ import { bytesToPrefixedHexString } from '@ethereumjs/util'
 import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
 import { MemoryLevel } from 'memory-level'
 
+import { LevelDB } from '../execution/level'
 import { Event } from '../types'
 
 import type { Config } from '../config'
@@ -65,7 +66,7 @@ export class Miner {
       ((this.config.chainCommon.consensusConfig() as CliqueConfig).period ?? this.DEFAULT_PERIOD) *
       1000 // defined in ms for setTimeout use
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfWork) {
-      this.ethash = new Ethash(new MemoryLevel())
+      this.ethash = new Ethash(new LevelDB(new MemoryLevel()) as any)
     }
   }
 

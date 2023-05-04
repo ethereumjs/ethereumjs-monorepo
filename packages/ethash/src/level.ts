@@ -3,26 +3,36 @@ import { MemoryLevel } from 'memory-level'
 import type { BatchDBOp, DB } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
-const ENCODING_OPTS = { keyEncoding: 'view', valueEncoding: 'view' }
+const ENCODING_OPTS = { valueEncoding: 'json' }
 
 export class LevelDB implements DB {
   readonly _leveldb: AbstractLevel<
-    string | Uint8Array | Uint8Array,
     string | Uint8Array,
-    string | Uint8Array
+    string | Uint8Array,
+    {
+      cache: string[]
+      fullSize: number
+      cacheSize: number
+      seed: string
+    }
   >
 
   constructor(
     leveldb?: AbstractLevel<
-      string | Uint8Array | Uint8Array,
       string | Uint8Array,
-      string | Uint8Array
-    > | null
+      string | Uint8Array,
+      {
+        cache: string[]
+        fullSize: number
+        cacheSize: number
+        seed: string
+      }
+    >
   ) {
     this._leveldb = leveldb ?? new MemoryLevel(ENCODING_OPTS)
   }
 
-  async get(key: Uint8Array): Promise<Uint8Array | undefined> {
+  async get(key: any): Promise<any> {
     let value
     try {
       value = await this._leveldb.get(key, ENCODING_OPTS)
@@ -37,12 +47,12 @@ export class LevelDB implements DB {
     return value
   }
 
-  async put(key: Uint8Array, val: Uint8Array): Promise<void> {
+  async put(key: Uint8Array, val: any): Promise<void> {
     await this._leveldb.put(key, val, ENCODING_OPTS)
   }
 
-  async del(key: Uint8Array): Promise<void> {
-    await this._leveldb.del(key, ENCODING_OPTS)
+  async del(key: any): Promise<void> {
+    await this._leveldb.del(key)
   }
 
   async batch(opStack: BatchDBOp[]): Promise<void> {
@@ -51,5 +61,9 @@ export class LevelDB implements DB {
 
   copy(): DB {
     return new LevelDB(this._leveldb)
+  }
+
+  open() {
+    return this._leveldb.open()
   }
 }

@@ -1,6 +1,6 @@
 import { Database, open } from 'lmdb'
 
-import type { BatchDBOp, DB } from '@ethereumjs/trie'
+import type { BatchDBOp, DB } from '@ethereumjs/util'
 
 export class LMDB implements DB {
   readonly _path: string
@@ -15,7 +15,7 @@ export class LMDB implements DB {
     })
   }
 
-  async get(key: Uint8Array): Promise<Uint8Array | null> {
+  async get(key: Uint8Array): Promise<Uint8Array | undefined> {
     return this._database.get(key)
   }
 
@@ -41,5 +41,9 @@ export class LMDB implements DB {
 
   copy(): DB {
     return new LMDB(this._path)
+  }
+
+  open() {
+    return Promise.resolve()
   }
 }

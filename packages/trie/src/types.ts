@@ -2,7 +2,7 @@ import { utf8ToBytes } from 'ethereum-cryptography/utils'
 
 import type { BranchNode, ExtensionNode, LeafNode } from './trie'
 import type { WalkController } from './util/walkController'
-import { DB } from '@ethereumjs/util'
+import type { DB } from '@ethereumjs/util'
 
 export type TrieNode = BranchNode | ExtensionNode | LeafNode
 
@@ -95,7 +95,7 @@ export interface CheckpointDBOpts {
 export type Checkpoint = {
   // We cannot use a Uint8Array => Uint8Array map directly. If you create two Uint8Arrays with the same internal value,
   // then when setting a value on the Map, it actually creates two indices.
-  keyValueMap: Map<string, Uint8Array | null>
+  keyValueMap: Map<string, Uint8Array | undefined>
   root: Uint8Array
 }
 

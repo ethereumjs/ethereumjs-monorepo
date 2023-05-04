@@ -4,9 +4,10 @@ import { MemoryLevel } from 'memory-level'
 import * as tape from 'tape'
 
 import { Ethash } from '../src'
+import { LevelDB } from '../src/level'
 
 import type { BlockHeader } from '@ethereumjs/block'
-const cacheDb = new MemoryLevel()
+const cacheDb = new LevelDB(new MemoryLevel())
 const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Petersburg })
 
 tape('Check if miner works as expected', async function (t) {

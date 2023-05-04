@@ -237,7 +237,10 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
       .runBlock({ block })
       .then(() => t.fail('should have returned error'))
       .catch((e) => {
-        t.ok(e.code.includes('LEVEL_NOT_FOUND'), 'block failed validation due to no parent header')
+        t.ok(
+          e.message.includes('not found in DB'),
+          'block failed validation due to no parent header'
+        )
       })
   })
 

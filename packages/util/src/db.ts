@@ -24,9 +24,9 @@ export interface DB<
   /**
    * Retrieves a raw value from db.
    * @param key
-   * @returns A Promise that resolves to `Uint8Array` if a value is found or `null` if no value is found.
+   * @returns A Promise that resolves to `Uint8Array` if a value is found or `undefined` if no value is found.
    */
-  get(key: TKey): Promise<TValue | null>
+  get(key: TKey): Promise<TValue | undefined>
 
   /**
    * Writes a value directly to db.
@@ -52,4 +52,10 @@ export interface DB<
    * to the **same** underlying db instance.
    */
   copy(): DB<TKey, TValue>
+
+  /**
+   * Opens the database -- if applicable
+   */
+  open(): Promise<void>
+  // TODO - decide if we actually need open/close - it's not required for maps and Level automatically opens the DB when you instantiate it
 }

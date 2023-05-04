@@ -20,6 +20,7 @@ import * as net from 'node:net'
 
 import { EthereumClient } from '../../lib/client'
 import { Config } from '../../lib/config'
+import { LevelDB } from '../../lib/execution/level'
 
 import type { Common } from '@ethereumjs/common'
 import type { TxOptions } from '@ethereumjs/tx'
@@ -432,7 +433,7 @@ export async function createInlineClient(config: any, common: any, customGenesis
   )
 
   const blockchain = await Blockchain.create({
-    db: chainDB,
+    db: new LevelDB(chainDB),
     genesisState: customGenesisState,
     common: config.chainCommon,
     hardforkByHeadBlockNumber: true,

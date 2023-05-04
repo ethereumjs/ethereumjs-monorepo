@@ -6,6 +6,7 @@ import { hexToBytes } from 'ethereum-cryptography/utils'
 import { MemoryLevel } from 'memory-level'
 
 import { VM } from '../../src/vm'
+import { LevelDB } from '../level'
 
 import type { VMOpts } from '../../src/types'
 import type { Block } from '@ethereumjs/block'
@@ -24,7 +25,7 @@ export async function setBalance(vm: VM, address: Address, balance = BigInt(1000
 }
 
 export async function setupVM(opts: VMOpts & { genesisBlock?: Block } = {}) {
-  const db: any = new MemoryLevel()
+  const db: any = new LevelDB(new MemoryLevel())
   const { common, genesisBlock } = opts
   if (opts.blockchain === undefined) {
     opts.blockchain = await Blockchain.create({

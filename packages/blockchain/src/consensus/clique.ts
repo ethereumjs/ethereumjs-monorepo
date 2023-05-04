@@ -2,7 +2,7 @@ import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Address, TypeOutput, bigIntToBytes, bytesToBigInt, toType } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
-import { equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import type { Blockchain } from '..'
 import type { Consensus, ConsensusOptions } from './interface'
@@ -24,11 +24,6 @@ const CLIQUE_BLOCK_SIGNERS_SNAPSHOT_KEY = 'CliqueBlockSignersSnapshot'
 export const CLIQUE_DIFF_INTURN = BigInt(2)
 // Block difficulty for out-of-turn signatures
 export const CLIQUE_DIFF_NOTURN = BigInt(1)
-
-const DB_OPTS = {
-  keyEncoding: 'view',
-  valueEncoding: 'view',
-}
 
 // Clique Signer State
 type CliqueSignerState = [blockNumber: bigint, signers: Address[]]
@@ -523,10 +518,7 @@ export class CliqueConsensus implements Consensus {
       bigIntToBytes(b[0]),
       b[1].toBytes(),
     ])
-    await this.blockchain!.db.put(
-      CLIQUE_BLOCK_SIGNERS_SNAPSHOT_KEY,
-      RLP.encode(formatted) /* , DB_OPTS */
-    )
+    await this.blockchain!.db.put(CLIQUE_BLOCK_SIGNERS_SNAPSHOT_KEY, RLP.encode(formatted))
   }
 
   /**
@@ -534,23 +526,14 @@ export class CliqueConsensus implements Consensus {
    * @hidden
    */
   private async getCliqueLatestSignerStates(): Promise<CliqueLatestSignerStates> {
-    try {
-      const signerStates = await this.blockchain!.db.get(
-        CLIQUE_SIGNERS_KEY
-        /* DB_OPTS */
-      )
-      const states = RLP.decode(signerStates) as [Uint8Array, Uint8Array[]]
-      return states.map((state) => {
-        const blockNum = bytesToBigInt(state[0] as Uint8Array)
-        const addrs = (<any>state[1]).map((bytes: Uint8Array) => new Address(bytes))
-        return [blockNum, addrs]
-      }) as CliqueLatestSignerStates
-    } catch (error: any) {
-      if (error.code === 'LEVEL_NOT_FOUND') {
-        return []
-      }
-      throw error
-    }
+    const signerStates = await this.blockchain!.db.get(CLIQUE_SIGNERS_KEY)
+    if (signerStates === undefined) return []
+    const states = RLP.decode(signerStates) as [Uint8Array, Uint8Array[]]
+    return states.map((state) => {
+      const blockNum = bytesToBigInt(state[0] as Uint8Array)
+      const addrs = (<any>state[1]).map((bytes: Uint8Array) => new Address(bytes))
+      return [blockNum, addrs]
+    }) as CliqueLatestSignerStates
   }
 
   /**
@@ -558,25 +541,16 @@ export class CliqueConsensus implements Consensus {
    * @hidden
    */
   private async getCliqueLatestVotes(): Promise<CliqueLatestVotes> {
-    try {
-      const signerVotes = await this.blockchain!.db.get(
-        CLIQUE_VOTES_KEY
-        /* DB_OPTS */
-      )
-      const votes = RLP.decode(signerVotes) as [Uint8Array, [Uint8Array, Uint8Array, Uint8Array]]
-      return votes.map((vote) => {
-        const blockNum = bytesToBigInt(vote[0] as Uint8Array)
-        const signer = new Address((vote[1] as any)[0])
-        const beneficiary = new Address((vote[1] as any)[1])
-        const nonce = (vote[1] as any)[2]
-        return [blockNum, [signer, beneficiary, nonce]]
-      }) as CliqueLatestVotes
-    } catch (error: any) {
-      if (error.code === 'LEVEL_NOT_FOUND') {
-        return []
-      }
-      throw error
-    }
+    const signerVotes = await this.blockchain!.db.get(CLIQUE_VOTES_KEY)
+    if (signerVotes === undefined) return []
+    const votes = RLP.decode(signerVotes) as [Uint8Array, [Uint8Array, Uint8Array, Uint8Array]]
+    return votes.map((vote) => {
+      const blockNum = bytesToBigInt(vote[0] as Uint8Array)
+      const signer = new Address((vote[1] as any)[0])
+      const beneficiary = new Address((vote[1] as any)[1])
+      const nonce = (vote[1] as any)[2]
+      return [blockNum, [signer, beneficiary, nonce]]
+    }) as CliqueLatestVotes
   }
 
   /**
@@ -584,22 +558,14 @@ export class CliqueConsensus implements Consensus {
    * @hidden
    */
   private async getCliqueLatestBlockSigners(): Promise<CliqueLatestBlockSigners> {
-    try {
-      const blockSigners = await this.blockchain!.db.get(
-        CLIQUE_BLOCK_SIGNERS_SNAPSHOT_KEY /* DB_OPTS */
-      )
-      const signers = RLP.decode(blockSigners) as [Uint8Array, Uint8Array][]
-      return signers.map((s) => {
-        const blockNum = bytesToBigInt(s[0] as Uint8Array)
-        const signer = new Address(s[1] as any)
-        return [blockNum, signer]
-      }) as CliqueLatestBlockSigners
-    } catch (error: any) {
-      if (error.code === 'LEVEL_NOT_FOUND') {
-        return []
-      }
-      throw error
-    }
+    const blockSigners = await this.blockchain!.db.get(CLIQUE_BLOCK_SIGNERS_SNAPSHOT_KEY)
+    if (blockSigners === undefined) return []
+    const signers = RLP.decode(blockSigners) as [Uint8Array, Uint8Array][]
+    return signers.map((s) => {
+      const blockNum = bytesToBigInt(s[0] as Uint8Array)
+      const signer = new Address(s[1] as any)
+      return [blockNum, signer]
+    }) as CliqueLatestBlockSigners
   }
 
   /**

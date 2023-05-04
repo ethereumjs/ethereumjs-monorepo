@@ -1,8 +1,8 @@
-import { DB } from '@ethereumjs/util'
 import type { Consensus } from './consensus'
 import type { GenesisState } from './genesisStates'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
+import type { DB } from '@ethereumjs/util'
 
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 

@@ -98,7 +98,7 @@ for (const { constructor, defaults, title } of [
       })
 
       // @ts-expect-error
-      st.equal(await trie._db.get(ROOT_DB_KEY), null)
+      st.equal(await trie._db.get(ROOT_DB_KEY), undefined)
 
       await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
 
@@ -137,12 +137,12 @@ for (const { constructor, defaults, title } of [
         })
 
         // @ts-expect-error
-        st.equal(await trie._db.get(ROOT_DB_KEY), null)
+        st.equal(await trie._db.get(ROOT_DB_KEY), undefined)
 
         await trie.put(utf8ToBytes('do_not_persist_with_db'), utf8ToBytes('bar'))
 
         // @ts-expect-error
-        st.equal(await trie._db.get(ROOT_DB_KEY), null)
+        st.equal(await trie._db.get(ROOT_DB_KEY), undefined)
 
         st.end()
       }
@@ -152,12 +152,12 @@ for (const { constructor, defaults, title } of [
       const trie = await constructor.create({ ...defaults, useRootPersistence: true })
 
       // @ts-expect-error
-      st.equal(await trie._db.get(ROOT_DB_KEY), null)
+      st.equal(await trie._db.get(ROOT_DB_KEY), undefined)
 
       await trie.put(utf8ToBytes('do_not_persist_without_db'), utf8ToBytes('bar'))
 
       // @ts-expect-error
-      st.notEqual(await trie._db.get(ROOT_DB_KEY), null)
+      st.notEqual(await trie._db.get(ROOT_DB_KEY), undefined)
 
       st.end()
     })
@@ -167,7 +167,7 @@ for (const { constructor, defaults, title } of [
 
       const trie = await constructor.create({ ...defaults, db, useRootPersistence: true })
       // @ts-expect-error
-      st.equal(await trie._db.get(ROOT_DB_KEY), null)
+      st.equal(await trie._db.get(ROOT_DB_KEY), undefined)
       await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
       // @ts-expect-error
       st.equal(bytesToHex(await trie._db.get(ROOT_DB_KEY)), EXPECTED_ROOTS)
@@ -184,7 +184,7 @@ for (const { constructor, defaults, title } of [
         useRootPersistence: true,
       })
       // @ts-expect-error
-      st.equal(await empty._db.get(ROOT_DB_KEY), null)
+      st.equal(await empty._db.get(ROOT_DB_KEY), undefined)
 
       st.end()
     })
@@ -195,7 +195,7 @@ for (const { constructor, defaults, title } of [
       try {
         await trie.put(BASE_DB_KEY, utf8ToBytes('bar'))
         st.fail("Attempting to set '__root__' should fail but it did not.")
-      } catch ({ message }) {
+      } catch ({ message }: any) {
         st.equal(message, "Attempted to set '__root__' key but it is not allowed.")
       }
 

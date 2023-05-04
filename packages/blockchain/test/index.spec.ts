@@ -1,17 +1,16 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
-import { MemoryLevel } from 'memory-level'
 import * as tape from 'tape'
 
 import { Blockchain } from '../src'
+import { MapDB } from '../src/db/map'
 
 import * as blocksData from './testdata/blocks_mainnet.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from './util'
 
 import type { BlockOptions } from '@ethereumjs/block'
-import { MapDB } from '@ethereumjs/trie'
 
 tape('blockchain test', (t) => {
   t.test('should not crash on getting head of a blockchain without a genesis', async (st) => {
@@ -214,14 +213,20 @@ tape('blockchain test', (t) => {
       await blockchain.getBlock(5)
       st.fail('should throw an exception')
     } catch (e: any) {
-      st.ok(e.message.includes('NotFound'), `should throw for non-existing block-by-number request`)
+      st.ok(
+        e.message.includes('not found in DB'),
+        `should throw for non-existing block-by-number request`
+      )
     }
 
     try {
       await blockchain.getBlock(hexToBytes('1234'))
       st.fail('should throw an exception')
     } catch (e: any) {
-      st.ok(e.message.includes('NotFound'), `should throw for non-existing block-by-hash request`)
+      st.ok(
+        e.message.includes('not found in DB'),
+        `should throw for non-existing block-by-hash request`
+      )
     }
 
     st.end()
@@ -528,6 +533,7 @@ tape('blockchain test', (t) => {
     await blockchain.getBlock(BigInt(1))
 
     const block2HeaderValuesArray = blocks[2].header.raw()
+
     block2HeaderValuesArray[1] = new Uint8Array(32)
     const block2Header = BlockHeader.fromValuesArray(block2HeaderValuesArray, {
       common: blocks[2]._common,
