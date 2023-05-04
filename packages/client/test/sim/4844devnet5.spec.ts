@@ -79,6 +79,11 @@ tape(`running txes on ${rpcUrl}`, async (t) => {
     const txHashes = []
     for (const txn of txns) {
       const res = await client.request('eth_sendRawTransaction', [txn], 2.0)
+      if(res.result===undefined){
+        console.log("eth_sendRawTransaction returned invalid response",res);
+        st.fail(`Unable to post all txs`);
+        break;
+      }
       st.pass(`posted tx with hash=${res.result}`)
       txHashes.push(res.result)
     }
