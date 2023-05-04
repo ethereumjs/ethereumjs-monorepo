@@ -1,25 +1,28 @@
+export type DBObject = {
+  [key: string]: string | string[] | number
+}
 export type BatchDBOp<
-  TKey extends Uint8Array | string = Uint8Array,
-  TValue extends Uint8Array | string = Uint8Array
+  TKey extends Uint8Array | string | number = Uint8Array,
+  TValue extends Uint8Array | string | DBObject = Uint8Array
 > = PutBatch<TKey, TValue> | DelBatch<TKey>
 
 export interface PutBatch<
-  TKey extends Uint8Array | string = Uint8Array,
-  TValue extends Uint8Array | string = Uint8Array
+  TKey extends Uint8Array | string | number = Uint8Array,
+  TValue extends Uint8Array | string | DBObject = Uint8Array
 > {
   type: 'put'
   key: TKey
   value: TValue
 }
 
-export interface DelBatch<TKey extends Uint8Array | string = Uint8Array> {
+export interface DelBatch<TKey extends Uint8Array | string | number = Uint8Array> {
   type: 'del'
   key: TKey
 }
 
 export interface DB<
-  TKey extends Uint8Array | string = Uint8Array,
-  TValue extends Uint8Array | string = Uint8Array
+  TKey extends Uint8Array | string | number = Uint8Array,
+  TValue extends Uint8Array | string | DBObject = Uint8Array
 > {
   /**
    * Retrieves a raw value from db.

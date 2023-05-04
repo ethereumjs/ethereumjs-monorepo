@@ -15,7 +15,7 @@ import { DBOp, DBTarget } from './operation'
 import type { DBOpData, DatabaseKey } from './operation'
 import type { BlockBodyBytes, BlockBytes, BlockOptions } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type { DB } from '@ethereumjs/util'
+import type { DB, DBObject } from '@ethereumjs/util'
 
 /**
  * @hidden
@@ -36,7 +36,7 @@ export type CacheMap = { [key: string]: Cache<Uint8Array> }
 export class DBManager {
   private _cache: CacheMap
   private _common: Common
-  private _db: DB<Uint8Array | string, Uint8Array | string>
+  private _db: DB<Uint8Array | string, Uint8Array | string | DBObject>
 
   constructor(db: DB<Uint8Array | string, Uint8Array | string>, common: Common) {
     this._db = db
@@ -54,15 +54,16 @@ export class DBManager {
    * Fetches iterator heads from the db.
    */
   async getHeads(): Promise<{ [key: string]: Uint8Array }> {
-    const heads = await this.get(DBTarget.Heads)
+    const heads = (await this.get(DBTarget.Heads)) as DBObject
     if (heads === undefined) return heads
+    const decodedHeads: { [key: string]: Uint8Array } = {}
     for (const key of Object.keys(heads)) {
       // Heads are stored in DB as hex strings since Level converts Uint8Arrays
       // to nested JSON objects when they are included in a value being stored
       // in the DB
-      heads[key] = hexToBytes(heads[key])
+      decodedHeads[key] = hexToBytes(heads[key] as string)
     }
-    return heads
+    return decodedHeads
   }
 
   /**

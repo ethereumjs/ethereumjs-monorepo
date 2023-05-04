@@ -25,7 +25,7 @@ import {
 } from './util'
 
 import type { BlockData, HeaderData } from '@ethereumjs/block'
-import type { DB } from '@ethereumjs/util'
+import type { DB, DBObject } from '@ethereumjs/util'
 
 function xor(a: Uint8Array, b: Uint8Array) {
   const len = Math.max(a.length, b.length)
@@ -156,14 +156,14 @@ export class Miner {
 
 export class Ethash {
   dbOpts: Object
-  cacheDB?: DB<any, any>
+  cacheDB?: DB<number, DBObject>
   cache: Uint8Array[]
   epoc?: number
   fullSize?: number
   cacheSize?: number
   seed?: Uint8Array
 
-  constructor(cacheDB?: DB) {
+  constructor(cacheDB?: DB<number, DBObject>) {
     this.dbOpts = {
       valueEncoding: 'json',
     }
@@ -295,10 +295,10 @@ export class Ethash {
       const dbData = await this.cacheDB!.get(epoc)
       if (dbData !== undefined) {
         const data = {
-          cache: dbData.cache.map((el: string) => hexToBytes(el)),
+          cache: (dbData.cache as string[]).map((el: string) => hexToBytes(el)),
           fullSize: dbData.fullSize,
           cacheSize: dbData.cacheSize,
-          seed: hexToBytes(dbData.seed),
+          seed: hexToBytes(dbData.seed as string),
         }
         return [data.seed, epoc]
       } else {
@@ -310,10 +310,10 @@ export class Ethash {
     const dbData = await this.cacheDB!.get(epoc)
     if (dbData !== undefined) {
       data = {
-        cache: dbData.cache.map((el: string) => hexToBytes(el)),
+        cache: (dbData.cache as string[]).map((el: string) => hexToBytes(el)),
         fullSize: dbData.fullSize,
         cacheSize: dbData.cacheSize,
-        seed: hexToBytes(dbData.seed),
+        seed: hexToBytes(dbData.seed as string),
       }
     }
     if (!data) {
@@ -334,8 +334,8 @@ export class Ethash {
       this.cache = data.cache.map((a: Uint8Array) => {
         return Uint8Array.from(a)
       })
-      this.cacheSize = data.cacheSize
-      this.fullSize = data.fullSize
+      this.cacheSize = data.cacheSize as number
+      this.fullSize = data.fullSize as number
       this.seed = Uint8Array.from(data.seed)
     }
   }

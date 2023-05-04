@@ -1,4 +1,3 @@
-import { RLP } from '@ethereumjs/rlp'
 import { MemoryLevel } from 'memory-level'
 
 import type { BatchDBOp, DB } from '@ethereumjs/util'
