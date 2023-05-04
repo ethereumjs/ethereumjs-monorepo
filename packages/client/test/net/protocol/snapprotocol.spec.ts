@@ -202,7 +202,7 @@ tape('[SnapProtocol]', (t) => {
       resData
     )
 
-    const trie = new Trie({ db: new LevelDB() as DB<Uint8Array, Uint8Array> })
+    const trie = new Trie({ db: new LevelDB() as DB })
     try {
       const keys = accounts.map((acc: any) => acc.hash)
       const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
@@ -342,7 +342,7 @@ tape('[SnapProtocol]', (t) => {
     // lastAccount
     const lastAccountSlots = slots[0]
     const lastAccountStorageRoot = (lastAccount.body as any)[2]
-    const trie = new Trie({ db: new LevelDB() as DB<Uint8Array, Uint8Array> })
+    const trie = new Trie({ db: new LevelDB() as DB })
     try {
       const keys = lastAccountSlots.map((acc: any) => acc.hash)
       const values = lastAccountSlots.map((acc: any) => acc.body)
