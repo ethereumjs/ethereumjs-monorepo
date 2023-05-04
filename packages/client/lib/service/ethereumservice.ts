@@ -36,7 +36,7 @@ export class EthereumService extends Service {
   public chain: Chain
   public interval: number
   public timeout: number
-  public synchronizer!: Synchronizer
+  public synchronizer?: Synchronizer
 
   /**
    * Create new ETH service
@@ -67,7 +67,7 @@ export class EthereumService extends Service {
     }
     await super.open()
     await this.chain.open()
-    await this.synchronizer.open()
+    await this.synchronizer?.open()
     return true
   }
 
@@ -79,7 +79,7 @@ export class EthereumService extends Service {
       return false
     }
     await super.start()
-    void this.synchronizer.start()
+    void this.synchronizer?.start()
     return true
   }
 
@@ -90,7 +90,7 @@ export class EthereumService extends Service {
     if (!this.running) {
       return false
     }
-    await this.synchronizer.stop()
+    await this.synchronizer?.stop()
     await super.stop()
     return true
   }
@@ -100,7 +100,7 @@ export class EthereumService extends Service {
    */
   async close() {
     if (this.opened) {
-      await this.synchronizer.close()
+      await this.synchronizer?.close()
     }
     await super.close()
   }

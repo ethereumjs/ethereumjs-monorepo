@@ -12,13 +12,14 @@ import { Lock, bytesToHex, bytesToPrefixedHexString, equalsBytes } from '@ethere
 import { VM } from '@ethereumjs/vm'
 
 import { Event } from '../types'
-import { short } from '../util'
+import { getV8Engine, short } from '../util'
 import { debugCodeReplayBlock } from '../util/debug'
 
 import { Execution } from './execution'
 import { LevelDB } from './level'
 import { ReceiptsManager } from './receipt'
 
+import type { V8Engine } from '../util'
 import type { ExecutionOptions } from './execution'
 import type { Block } from '@ethereumjs/block'
 import type { DB } from '@ethereumjs/util'
@@ -26,6 +27,9 @@ import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 
 export class VMExecution extends Execution {
   private _lock = new Lock()
+  // A handle to v8Engine lib for mem stats, assigned on open if running in node
+  private v8Engine: V8Engine | null = null
+
   public vm: VM
   public hardfork: string = ''
 
@@ -39,8 +43,8 @@ export class VMExecution extends Execution {
   /**
    * Display state cache stats every num blocks
    */
-  private CACHE_STATS_NUM_BLOCKS = 500
-  private cacheStatsCount = 0
+  private STATS_NUM_BLOCKS = 500
+  private statsCount = 0
 
   /**
    * Create new VM execution module
@@ -118,6 +122,11 @@ export class VMExecution extends Execution {
       if (this.started || this.vmPromise !== undefined) {
         return
       }
+
+      if (this.v8Engine === null) {
+        this.v8Engine = await getV8Engine()
+      }
+
       await this.vm.init()
       if (typeof this.vm.blockchain.getIteratorHead !== 'function') {
         throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
@@ -258,7 +267,7 @@ export class VMExecution extends Execution {
    * @returns number of blocks executed
    */
   async run(loop = true, runOnlybatched = false): Promise<number> {
-    if (this.running || !this.started) return 0
+    if (this.running || !this.started || this.shutdown) return 0
     this.running = true
     let numExecuted: number | undefined
 
@@ -282,6 +291,7 @@ export class VMExecution extends Execution {
 
     while (
       this.started &&
+      !this.shutdown &&
       (!runOnlybatched ||
         (runOnlybatched &&
           canonicalHead.header.number - startHeadBlock.header.number >=
@@ -342,7 +352,7 @@ export class VMExecution extends Execution {
                 throw Error('Execution stopped')
               }
               const beforeTS = Date.now()
-              this.cacheStats(this.vm)
+              this.stats(this.vm)
               const result = await this.vm.runBlock({
                 block,
                 root: parentState,
@@ -472,6 +482,40 @@ export class VMExecution extends Execution {
   }
 
   /**
+   * Start execution
+   */
+  async start(): Promise<boolean> {
+    const { blockchain } = this.vm
+    if (this.running || !this.started) {
+      return false
+    }
+
+    if (typeof blockchain.getIteratorHead !== 'function') {
+      throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
+    }
+    const vmHeadBlock = await blockchain.getIteratorHead()
+    if (typeof blockchain.getCanonicalHeadBlock !== 'function') {
+      throw new Error('cannot get iterator head: blockchain has no getCanonicalHeadBlock function')
+    }
+    const canonicalHead = await blockchain.getCanonicalHeadBlock()
+
+    const infoStr = `vmHead=${vmHeadBlock.header.number} canonicalHead=${
+      canonicalHead.header.number
+    } hardfork=${this.config.execCommon.hardfork()} execution=${this.config.execution}`
+    if (
+      !this.config.execCommon.gteHardfork(Hardfork.Paris) &&
+      this.config.execution &&
+      vmHeadBlock.header.number < canonicalHead.header.number
+    ) {
+      this.config.logger.info(`Starting execution run ${infoStr}`)
+      void this.run(true, true)
+    } else {
+      this.config.logger.info(`Skipped execution run ${infoStr}`)
+    }
+    return true
+  }
+
+  /**
    * Stop VM execution. Returns a promise that resolves once its stopped.
    */
   async stop(): Promise<boolean> {
@@ -523,7 +567,7 @@ export class VMExecution extends Execution {
         // we are skipping header validation because the block has been picked from the
         // blockchain and header should have already been validated while putBlock
         const beforeTS = Date.now()
-        this.cacheStats(vm)
+        this.stats(vm)
         const res = await vm.runBlock({
           block,
           root,
@@ -566,9 +610,9 @@ export class VMExecution extends Execution {
     }
   }
 
-  cacheStats(vm: VM) {
-    this.cacheStatsCount += 1
-    if (this.cacheStatsCount === this.CACHE_STATS_NUM_BLOCKS) {
+  stats(vm: VM) {
+    this.statsCount += 1
+    if (this.statsCount === this.STATS_NUM_BLOCKS) {
       let stats = (vm.stateManager as any)._accountCache.stats()
       this.config.logger.info(
         `Account cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
@@ -582,7 +626,15 @@ export class VMExecution extends Execution {
         `Trie cache stats size=${tStats.size} reads=${tStats.cache.reads} hits=${tStats.cache.hits} ` +
           `writes=${tStats.cache.writes} readsDB=${tStats.db.reads} hitsDB=${tStats.db.hits} writesDB=${tStats.db.writes}`
       )
-      this.cacheStatsCount = 0
+
+      if (this.v8Engine !== null) {
+        const { used_heap_size, heap_size_limit } = this.v8Engine.getHeapStatistics()
+
+        const heapUsed = Math.round(used_heap_size / 1000 / 1000) // MB
+        const percentage = Math.round((100 * used_heap_size) / heap_size_limit)
+        this.config.logger.info(`Memory stats usage=${heapUsed} MB percentage=${percentage}%`)
+      }
+      this.statsCount = 0
     }
   }
 }

@@ -55,8 +55,7 @@
     "@ethereumjs/common": "^3.1.1",
     "@ethereumjs/rlp": "^4.0.1",
     "@ethereumjs/util": "^8.0.5",
-    "ethereum-cryptography": "^1.1.2",
-    "@ethersproject/providers": "^5.7.2"
+    "ethereum-cryptography": "^1.1.2"
   },
   "peerDependencies": {
     "c-kzg": "^2.0.4"
@@ -70,7 +69,8 @@
     "@types/minimist": "^1.2.0",
     "@types/node-dir": "^0.0.34",
     "minimist": "^1.2.0",
-    "node-dir": "^0.1.16"
+    "node-dir": "^0.1.16",
+    "testdouble": "^3.17.2"
   },
   "engines": {
     "node": ">=14"

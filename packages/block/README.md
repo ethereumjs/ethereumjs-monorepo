@@ -31,7 +31,7 @@ There are five static factories to instantiate a `Block`:
 - `Block.fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions)`
 - `Block.fromValuesArray(values: BlockBuffer, opts?: BlockOptions)`
 - `Block.fromRPC(blockData: JsonRpcBlock, uncles?: any[], opts?: BlockOptions)`
-- `Block.fromEthersProvider(provider: ethers.providers.JsonRpcProvider | string, blockTag: string | bigint, opts: BlockOptions)`
+- `Block.fromJsonRpcProvider(provider: string | EthersProvider, blockTag: string | bigint, opts: BlockOptions)`
 
 For `BlockHeader` instantiation analog factory methods exists, see API docs linked below.
 

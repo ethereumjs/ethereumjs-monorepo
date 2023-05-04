@@ -105,7 +105,7 @@ export type Libp2pMuxedStream = MuxedStream
 export interface ClientOpts {
   network?: string
   networkId?: number
-  syncMode?: SyncMode
+  sync?: SyncMode
   lightServe?: boolean
   dataDir?: string
   customChain?: string
@@ -143,6 +143,7 @@ export interface ClientOpts {
   minPeers?: number
   maxPeers?: number
   dnsAddr?: string
+  execution?: boolean
   numBlocksPerIteration?: number
   accountCache?: number
   storageCache?: number
@@ -162,6 +163,5 @@ export interface ClientOpts {
   txLookupLimit?: number
   startBlock?: number
   isSingleNode?: boolean
-  opened: boolean
   loadBlocksFromRlp?: string
 }

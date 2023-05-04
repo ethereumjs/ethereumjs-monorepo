@@ -1,5 +1,4 @@
-import { bytesToBigInt, toBytes } from '@ethereumjs/util'
-import { JsonRpcProvider } from '@ethersproject/providers'
+import { bytesToBigInt, fetchFromProvider, getProvider, toBytes } from '@ethereumjs/util'
 
 import { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 import { AccessListEIP2930Transaction } from './eip2930Transaction'
@@ -15,6 +14,7 @@ import type {
   TxOptions,
   TypedTransaction,
 } from './types'
+import type { EthersProvider } from '@ethereumjs/util'
 
 export class TransactionFactory {
   // It is not possible to instantiate a TransactionFactory object.
@@ -95,18 +95,24 @@ export class TransactionFactory {
 
   /**
    *  Method to retrieve a transaction from the provider
-   * @param provider - An Ethers JsonRPCProvider
+   * @param provider - a url string for a JSON-RPC provider or an Ethers JsonRPCProvider object
    * @param txHash - Transaction hash
    * @param txOptions - The transaction options
    * @returns the transaction specified by `txHash`
    */
-  public static async fromEthersProvider(
-    provider: string | JsonRpcProvider,
+  public static async fromJsonRpcProvider(
+    provider: string | EthersProvider,
     txHash: string,
     txOptions?: TxOptions
   ) {
-    const prov = typeof provider === 'string' ? new JsonRpcProvider(provider) : provider
-    const txData = await prov.send('eth_getTransactionByHash', [txHash])
+    const prov = getProvider(provider)
+    const txData = await fetchFromProvider(prov, {
+      method: 'eth_getTransactionByHash',
+      params: [txHash],
+    })
+    if (txData === null) {
+      throw new Error('No data returned from provider')
+    }
     return TransactionFactory.fromRPCTx(txData, txOptions)
   }
 

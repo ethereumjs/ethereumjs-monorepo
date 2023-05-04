@@ -2,6 +2,7 @@ import { Hardfork } from '@ethereumjs/common'
 import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
 import { concatBytes } from 'ethereum-cryptography/utils'
 
+import { SyncMode } from '../config'
 import { VMExecution } from '../execution'
 import { Miner } from '../miner'
 import { EthProtocol } from '../net/protocol/ethprotocol'
@@ -28,7 +29,7 @@ interface FullEthereumServiceOptions extends EthereumServiceOptions {
  * @memberof module:service
  */
 export class FullEthereumService extends EthereumService {
-  public synchronizer!: BeaconSynchronizer | FullSynchronizer | SnapSynchronizer
+  public synchronizer?: BeaconSynchronizer | FullSynchronizer | SnapSynchronizer
   public lightserv: boolean
   public miner: Miner | undefined
   public execution: VMExecution
@@ -73,14 +74,16 @@ export class FullEthereumService extends EthereumService {
         }
         this.config.logger.info(`Post-merge 🐼 client mode: run with CL client.`)
       } else {
-        this.synchronizer = new FullSynchronizer({
-          config: this.config,
-          pool: this.pool,
-          chain: this.chain,
-          txPool: this.txPool,
-          execution: this.execution,
-          interval: this.interval,
-        })
+        if (this.config.syncmode === SyncMode.Full) {
+          this.synchronizer = new FullSynchronizer({
+            config: this.config,
+            pool: this.pool,
+            chain: this.chain,
+            txPool: this.txPool,
+            execution: this.execution,
+            interval: this.interval,
+          })
+        }
       }
     }
 
@@ -129,11 +132,17 @@ export class FullEthereumService extends EthereumService {
   }
 
   async open() {
-    this.config.logger.info(
-      `Preparing for sync using FullEthereumService with ${
-        this.synchronizer instanceof BeaconSynchronizer ? 'BeaconSynchronizer' : 'FullSynchronizer'
-      }.`
-    )
+    if (this.synchronizer !== undefined) {
+      this.config.logger.info(
+        `Preparing for sync using FullEthereumService with ${
+          this.synchronizer instanceof BeaconSynchronizer
+            ? 'BeaconSynchronizer'
+            : 'FullSynchronizer'
+        }.`
+      )
+    } else {
+      this.config.logger.info('Starting FullEthereumService with no syncing.')
+    }
     await super.open()
     await this.execution.open()
     this.txPool.open()
@@ -153,9 +162,7 @@ export class FullEthereumService extends EthereumService {
     }
     await super.start()
     this.miner?.start()
-    if (!this.config.execCommon.gteHardfork(Hardfork.Paris)) {
-      void this.execution.run(true, true)
-    }
+    await this.execution.start()
     return true
   }
 
@@ -168,7 +175,7 @@ export class FullEthereumService extends EthereumService {
     }
     this.txPool.stop()
     this.miner?.stop()
-    await this.synchronizer.stop()
+    await this.synchronizer?.stop()
     await this.execution.stop()
     await super.stop()
     return true

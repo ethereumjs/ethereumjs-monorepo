@@ -130,7 +130,7 @@ tape('[Integration:Merge]', async (t) => {
         t.fail('chain should not exceed merge TTD')
       }
     })
-    await remoteService.synchronizer.start()
+    await remoteService.synchronizer!.start()
     await new Promise(() => {}) // resolves once t.end() is called
   })
 
@@ -169,7 +169,7 @@ tape('[Integration:Merge]', async (t) => {
         t.fail('chain should not exceed merge terminal block')
       }
     })
-    await remoteService.synchronizer.start()
+    await remoteService.synchronizer!.start()
     await new Promise(() => {}) // resolves once t.end() is called
   })
 })
