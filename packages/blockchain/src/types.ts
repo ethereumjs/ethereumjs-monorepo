@@ -2,7 +2,7 @@ import type { Consensus } from './consensus'
 import type { GenesisState } from './genesisStates'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type { DB } from '@ethereumjs/util'
+import type { DB, DBObject } from '@ethereumjs/util'
 
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
@@ -107,7 +107,7 @@ export interface BlockchainOptions {
    * Database to store blocks and metadata.
    * Can be any database implementation that adheres to the `DB` interface
    */
-  db?: DB<Uint8Array | string, Uint8Array | string>
+  db?: DB<Uint8Array | string | number, Uint8Array | string | DBObject>
 
   /**
    * This flags indicates if a block should be validated along the consensus algorithm

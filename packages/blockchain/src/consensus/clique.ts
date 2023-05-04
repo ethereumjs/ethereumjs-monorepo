@@ -528,7 +528,7 @@ export class CliqueConsensus implements Consensus {
   private async getCliqueLatestSignerStates(): Promise<CliqueLatestSignerStates> {
     const signerStates = await this.blockchain!.db.get(CLIQUE_SIGNERS_KEY)
     if (signerStates === undefined) return []
-    const states = RLP.decode(signerStates) as [Uint8Array, Uint8Array[]]
+    const states = RLP.decode(signerStates as Uint8Array) as [Uint8Array, Uint8Array[]]
     return states.map((state) => {
       const blockNum = bytesToBigInt(state[0] as Uint8Array)
       const addrs = (<any>state[1]).map((bytes: Uint8Array) => new Address(bytes))
@@ -543,7 +543,10 @@ export class CliqueConsensus implements Consensus {
   private async getCliqueLatestVotes(): Promise<CliqueLatestVotes> {
     const signerVotes = await this.blockchain!.db.get(CLIQUE_VOTES_KEY)
     if (signerVotes === undefined) return []
-    const votes = RLP.decode(signerVotes) as [Uint8Array, [Uint8Array, Uint8Array, Uint8Array]]
+    const votes = RLP.decode(signerVotes as Uint8Array) as [
+      Uint8Array,
+      [Uint8Array, Uint8Array, Uint8Array]
+    ]
     return votes.map((vote) => {
       const blockNum = bytesToBigInt(vote[0] as Uint8Array)
       const signer = new Address((vote[1] as any)[0])
@@ -560,7 +563,7 @@ export class CliqueConsensus implements Consensus {
   private async getCliqueLatestBlockSigners(): Promise<CliqueLatestBlockSigners> {
     const blockSigners = await this.blockchain!.db.get(CLIQUE_BLOCK_SIGNERS_SNAPSHOT_KEY)
     if (blockSigners === undefined) return []
-    const signers = RLP.decode(blockSigners) as [Uint8Array, Uint8Array][]
+    const signers = RLP.decode(blockSigners as Uint8Array) as [Uint8Array, Uint8Array][]
     return signers.map((s) => {
       const blockNum = bytesToBigInt(s[0] as Uint8Array)
       const signer = new Address(s[1] as any)

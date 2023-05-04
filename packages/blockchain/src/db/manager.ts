@@ -38,7 +38,7 @@ export class DBManager {
   private _common: Common
   private _db: DB<Uint8Array | string, Uint8Array | string | DBObject>
 
-  constructor(db: DB<Uint8Array | string, Uint8Array | string>, common: Common) {
+  constructor(db: DB<Uint8Array | string, Uint8Array | string | DBObject>, common: Common) {
     this._db = db
     this._common = common
     this._cache = {

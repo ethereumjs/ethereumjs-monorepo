@@ -21,14 +21,14 @@ import type { GenesisState } from './genesisStates'
 import type { BlockchainInterface, BlockchainOptions, OnBlock } from './types'
 import type { BlockData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
-import type { BigIntLike, DB } from '@ethereumjs/util'
+import type { BigIntLike, DB, DBObject } from '@ethereumjs/util'
 
 /**
  * This class stores and interacts with blocks.
  */
 export class Blockchain implements BlockchainInterface {
   consensus: Consensus
-  db: DB<Uint8Array | string, Uint8Array | string>
+  db: DB<Uint8Array | string, Uint8Array | string | DBObject>
   dbManager: DBManager
 
   private _genesisBlock?: Block /** The genesis block of this blockchain */

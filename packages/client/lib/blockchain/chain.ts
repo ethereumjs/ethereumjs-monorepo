@@ -7,7 +7,7 @@ import { LevelDB } from '../execution/level'
 import { Event } from '../types'
 
 import type { Config } from '../config'
-import type { DB } from '@ethereumjs/util'
+import type { DB, DBObject } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
 /**
@@ -100,7 +100,7 @@ export interface ChainHeaders {
  */
 export class Chain {
   public config: Config
-  public chainDB: DB<string | Uint8Array, string | Uint8Array>
+  public chainDB: DB<string | Uint8Array, string | Uint8Array | DBObject>
   public blockchain: Blockchain
   public opened: boolean
 
