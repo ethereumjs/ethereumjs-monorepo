@@ -20,8 +20,8 @@ tape('[Chain]', (t) => {
     const db = chain.chainDB
     const testKey = 'name'
     const testValue = 'test'
-
     await db.put(testKey, testValue)
+
     const value = await db.get(testKey)
     t.equal(value, testValue, 'read value matches written value')
     t.end()

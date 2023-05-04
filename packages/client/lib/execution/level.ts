@@ -1,6 +1,6 @@
 import { MemoryLevel } from 'memory-level'
 
-import type { BatchDBOp, DB } from '@ethereumjs/util'
+import type { BatchDBOp, DB, DBObject } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
 //export const ENCODING_OPTS = { keyEncoding: 'view', valueEncoding: 'view' }
@@ -27,7 +27,7 @@ export class LevelDB implements DB {
    * @inheritDoc
    */
   // @ts-expect-error
-  async get(key: Uint8Array | string): Promise<Uint8Array | string | undefined> {
+  async get(key: Uint8Array | string): Promise<Uint8Array | string | DBObject | undefined> {
     let value
     let encoding = undefined
     // Set value encoding based on key type or specific key names so values are interpreted correctly by Level
@@ -62,10 +62,10 @@ export class LevelDB implements DB {
   /**
    * @inheritDoc
    */
-  async put(key: Uint8Array | string, val: Uint8Array | string | any): Promise<void> {
-    let valEncoding: string
+  async put(key: Uint8Array | string, val: Uint8Array | string | DBObject): Promise<void> {
+    let valEncoding: string = ''
     if (typeof val === 'string') {
-      valEncoding = 'string'
+      valEncoding = 'utf8'
     } else if (val instanceof Uint8Array) {
       valEncoding = 'view'
     } else valEncoding = 'json'
