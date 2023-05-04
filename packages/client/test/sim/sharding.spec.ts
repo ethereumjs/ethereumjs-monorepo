@@ -106,8 +106,9 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
       4,
       4096,
       pkey,
-      bytesToPrefixedHexString(randomBytes(20)),
-      undefined,
+      // Start with nonce of 1 since a tx previous has already been posted
+      1,
+      { to: bytesToPrefixedHexString(randomBytes(20)), chainId: 1 },
       { common }
     )
     const txHashes = []
