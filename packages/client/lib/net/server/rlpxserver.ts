@@ -250,7 +250,7 @@ export class RlpxServer extends Server {
       })
 
       this.rlpx.on('peer:added', async (rlpxPeer: Devp2pRLPxPeer) => {
-        const peer = new RlpxPeer({
+        let peer: RlpxPeer | null = new RlpxPeer({
           config: this.config,
           id: bytesToHex(rlpxPeer.getId()!),
           host: rlpxPeer._socket.remoteAddress!,
@@ -266,6 +266,9 @@ export class RlpxServer extends Server {
           this.config.logger.debug(`Peer connected: ${peer}`)
           this.config.events.emit(Event.PEER_CONNECTED, peer)
         } catch (error: any) {
+          // Fixes a memory leak where RlpxPeer objects could not be GCed,
+          // likely to the complex two-way bound-protocol logic
+          peer = null
           this.error(error)
         }
       })
