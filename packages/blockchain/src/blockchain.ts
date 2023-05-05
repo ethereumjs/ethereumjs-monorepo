@@ -1016,7 +1016,7 @@ export class Blockchain implements BlockchainInterface {
               }
             }
 
-            // if there was no reorg, updated head
+            // if there was no reorg, update head
             if (!reorgWhileOnBlock) {
               this._heads[name] = nextBlock.hash()
               lastBlock = nextBlock
