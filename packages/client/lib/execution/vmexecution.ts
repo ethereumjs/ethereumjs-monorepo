@@ -398,6 +398,7 @@ export class VMExecution extends Execution {
           // release lock on this callback so other blockchain ops can happen while this block is being executed
           true
         )
+        // Ensure to catch and not throw as this would lead to unCaughtException with process exit
         .catch(async (error) => {
           if (errorBlock !== undefined) {
             // TODO: determine if there is a way to differentiate between the cases
@@ -450,7 +451,6 @@ export class VMExecution extends Execution {
           }
         })
 
-      // Promise never errors as its catch and handled so that it cannot interrupt and end the process
       numExecuted = await this.vmPromise
       if (numExecuted !== null) {
         let endHeadBlock
