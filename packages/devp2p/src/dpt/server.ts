@@ -59,7 +59,7 @@ export class Server extends EventEmitter {
     this._dpt = dpt
     this._privateKey = privateKey
 
-    this._timeout = options.timeout ?? ms('10s')
+    this._timeout = options.timeout ?? ms('2s')
     this._endpoint = options.endpoint ?? { address: '0.0.0.0', udpPort: null, tcpPort: null }
     this._requests = new Map()
     this._requestsCache = new LRU({ max: 1000, ttl: ms('1s'), stale: false })
