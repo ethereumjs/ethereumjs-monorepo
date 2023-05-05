@@ -134,6 +134,7 @@ export class EthereumService extends Service {
     if (!this.running) {
       return false
     }
+    clearInterval(this._statsInterval)
     await this.synchronizer?.stop()
     await super.stop()
     return true
