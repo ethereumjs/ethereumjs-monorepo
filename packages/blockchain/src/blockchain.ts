@@ -995,6 +995,9 @@ export class Blockchain implements BlockchainInterface {
               nextBlockNumber = headBlockNumber + BigInt(1)
               nextBlock = await this.getBlock(nextBlockNumber)
             }
+
+            // While running onBlock with released lock, reorgs can happen via putBlocks
+            let reorgWhileOnBlock = false
             if (releaseLockOnCallback === true) {
               this._lock.release()
             }
@@ -1003,13 +1006,23 @@ export class Blockchain implements BlockchainInterface {
             } finally {
               if (releaseLockOnCallback === true) {
                 await this._lock.acquire()
+                // If lock was released check if reorg occured
+                const nextBlockMayBeReorged = await this.getBlock(nextBlockNumber).catch(
+                  (_e) => null
+                )
+                reorgWhileOnBlock = nextBlockMayBeReorged
+                  ? !equalsBytes(nextBlockMayBeReorged.hash(), nextBlock.hash())
+                  : true
               }
             }
 
+            // if there was no reorg, updated head
+            if (!reorgWhileOnBlock) {
+              this._heads[name] = nextBlock.hash()
+              lastBlock = nextBlock
+              nextBlockNumber++
+            }
             // Successful execution of onBlock, move the head pointer
-            this._heads[name] = nextBlock.hash()
-            lastBlock = nextBlock
-            nextBlockNumber++
             blocksRanCounter++
           } catch (error: any) {
             if (error.code === 'LEVEL_NOT_FOUND') {
