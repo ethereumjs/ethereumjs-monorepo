@@ -2,7 +2,9 @@ import { debug as createDebugLogger } from 'debug'
 import * as dgram from 'dgram'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import { EventEmitter } from 'events'
-import LRUCache = require('lru-cache')
+import type LRUCache from 'lru-cache'
+
+const LRU = require('lru-cache')
 import ms = require('ms')
 
 import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util'
@@ -60,7 +62,7 @@ export class Server extends EventEmitter {
     this._timeout = options.timeout ?? ms('10s')
     this._endpoint = options.endpoint ?? { address: '0.0.0.0', udpPort: null, tcpPort: null }
     this._requests = new Map()
-    this._requestsCache = new LRUCache({ max: 1000, maxAge: ms('1s'), stale: false })
+    this._requestsCache = new LRU({ max: 1000, ttl: ms('1s'), stale: false })
 
     const createSocket = options.createSocket ?? dgram.createSocket.bind(null, { type: 'udp4' })
     this._socket = createSocket()

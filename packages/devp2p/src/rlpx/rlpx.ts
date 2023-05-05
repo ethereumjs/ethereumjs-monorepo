@@ -3,7 +3,9 @@ import { debug as createDebugLogger } from 'debug'
 import { getPublicKey } from 'ethereum-cryptography/secp256k1'
 import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import { EventEmitter } from 'events'
-import * as LRUCache from 'lru-cache'
+import type LRUCache from 'lru-cache'
+
+const LRU = require('lru-cache')
 import ms = require('ms')
 import * as net from 'net'
 import * as os from 'os'
@@ -115,7 +117,7 @@ export class RLPx extends EventEmitter {
         : devp2pDebug.extend(DEBUG_BASE_NAME)
     this._peers = new Map()
     this._peersQueue = []
-    this._peersLRU = new LRUCache({ max: 25000 })
+    this._peersLRU = new LRU({ max: 25000 })
     const REFILL_INTERVALL = ms('10s')
     const refillIntervalSubdivided = Math.floor(REFILL_INTERVALL / 10)
     this._refillIntervalId = setInterval(() => this._refillConnections(), refillIntervalSubdivided)
