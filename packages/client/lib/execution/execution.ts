@@ -1,5 +1,3 @@
-import { Event } from '../types'
-
 import type { Chain } from '../blockchain'
 import type { Config } from '../config'
 import type { AbstractLevel } from 'abstract-level'
@@ -27,7 +25,6 @@ export abstract class Execution {
 
   public running: boolean = false
   public started: boolean = false
-  public shutdown: boolean = false
 
   /**
    * Create new execution module
@@ -38,10 +35,6 @@ export abstract class Execution {
     this.chain = options.chain
     this.stateDB = options.stateDB
     this.metaDB = options.metaDB
-
-    this.config.events.once(Event.CLIENT_SHUTDOWN, () => {
-      this.shutdown = true
-    })
   }
 
   /**

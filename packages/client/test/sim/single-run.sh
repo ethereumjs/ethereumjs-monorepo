@@ -195,7 +195,7 @@ if [ "$MULTIPEER" == "peer1" ]
 then
   case $ELCLIENT in 
     ethereumjs)
-      ejsCmd="npm run client:start -- --dataDir $DATADIR/ethereumjs --gethGenesis $scriptDir/configs/$NETWORK.json --rpc --rpcEngine --rpcEngineAuth false $EL_PORT_ARGS"
+      ejsCmd="npm run client:start:ts -- --dataDir $DATADIR/ethereumjs --gethGenesis $scriptDir/configs/$NETWORK.json --rpc --rpcEngine --rpcEngineAuth false $EL_PORT_ARGS"
       ;;
     geth)
       # geth will be mounted in docker with DATADIR to /data

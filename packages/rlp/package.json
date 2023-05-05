@@ -49,6 +49,6 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   }
 }
