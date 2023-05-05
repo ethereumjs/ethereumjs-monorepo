@@ -981,44 +981,48 @@ export class Blockchain implements BlockchainInterface {
       let blocksRanCounter = 0
       let lastBlock: Block | undefined
 
-      while (maxBlocks !== blocksRanCounter) {
-        try {
-          let nextBlock = await this.getBlock(nextBlockNumber)
-          const reorg = lastBlock
-            ? !equalsBytes(lastBlock.hash(), nextBlock.header.parentHash)
-            : false
-          if (reorg) {
-            // If reorg has happened, the _heads must have been updated so lets reload the counters
-            headHash = this._heads[name] ?? this.genesisBlock.hash()
-            headBlockNumber = await this.dbManager.hashToNumber(headHash)
-            nextBlockNumber = headBlockNumber + BigInt(1)
-            nextBlock = await this.getBlock(nextBlockNumber)
-          }
-          this._heads[name] = nextBlock.hash()
-          lastBlock = nextBlock
-          if (releaseLockOnCallback === true) {
-            this._lock.release()
-          }
+      try {
+        while (maxBlocks !== blocksRanCounter) {
           try {
-            await onBlock(nextBlock, reorg)
-          } finally {
+            let nextBlock = await this.getBlock(nextBlockNumber)
+            const reorg = lastBlock
+              ? !equalsBytes(lastBlock.hash(), nextBlock.header.parentHash)
+              : false
+            if (reorg) {
+              // If reorg has happened, the _heads must have been updated so lets reload the counters
+              headHash = this._heads[name] ?? this.genesisBlock.hash()
+              headBlockNumber = await this.dbManager.hashToNumber(headHash)
+              nextBlockNumber = headBlockNumber + BigInt(1)
+              nextBlock = await this.getBlock(nextBlockNumber)
+            }
             if (releaseLockOnCallback === true) {
-              await this._lock.acquire()
+              this._lock.release()
+            }
+            try {
+              await onBlock(nextBlock, reorg)
+            } finally {
+              if (releaseLockOnCallback === true) {
+                await this._lock.acquire()
+              }
+            }
+
+            // Successful execution of onBlock, move the head pointer
+            this._heads[name] = nextBlock.hash()
+            lastBlock = nextBlock
+            nextBlockNumber++
+            blocksRanCounter++
+          } catch (error: any) {
+            if (error.code === 'LEVEL_NOT_FOUND') {
+              break
+            } else {
+              throw error
             }
           }
-          nextBlockNumber++
-          blocksRanCounter++
-        } catch (error: any) {
-          if (error.code === 'LEVEL_NOT_FOUND') {
-            break
-          } else {
-            throw error
-          }
         }
+        return blocksRanCounter
+      } finally {
+        await this._saveHeads()
       }
-
-      await this._saveHeads()
-      return blocksRanCounter
     })
   }
 
