@@ -3,9 +3,6 @@ import { debug as createDebugLogger } from 'debug'
 import { getPublicKey } from 'ethereum-cryptography/secp256k1'
 import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import { EventEmitter } from 'events'
-import type LRUCache from 'lru-cache'
-
-const LRU = require('lru-cache')
 import ms = require('ms')
 import * as net from 'net'
 import * as os from 'os'
@@ -18,6 +15,9 @@ import type { DPT, PeerInfo } from '../dpt'
 import type { Capabilities } from './peer'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
+import type LRUCache from 'lru-cache'
+
+const LRU = require('lru-cache')
 
 // note: relative path only valid in .js file in dist
 const { version: pVersion } = require('../../package.json')

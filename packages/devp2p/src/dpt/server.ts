@@ -2,9 +2,6 @@ import { debug as createDebugLogger } from 'debug'
 import * as dgram from 'dgram'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import { EventEmitter } from 'events'
-import type LRUCache from 'lru-cache'
-
-const LRU = require('lru-cache')
 import ms = require('ms')
 
 import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util'
@@ -14,6 +11,9 @@ import { decode, encode } from './message'
 import type { DPT, PeerInfo } from './dpt'
 import type { Debugger } from 'debug'
 import type { Socket as DgramSocket, RemoteInfo } from 'dgram'
+import type LRUCache from 'lru-cache'
+
+const LRU = require('lru-cache')
 
 const DEBUG_BASE_NAME = 'dpt:server'
 const verbose = createDebugLogger('verbose').enabled
