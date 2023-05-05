@@ -87,9 +87,9 @@ export class RLPx extends EventEmitter {
           this._debug(`banning peer with missing tcp port: ${peer.address}`)
           return
         }
-
-        if (this._peersLRU.has(bytesToHex(peer.id!))) return
-        this._peersLRU.set(bytesToHex(peer.id!), true)
+        const key = bytesToHex(peer.id!)
+        if (this._peersLRU.has(key)) return
+        this._peersLRU.set(key, true)
 
         if (this._getOpenSlots() > 0) {
           return this._connectToPeer(peer)
