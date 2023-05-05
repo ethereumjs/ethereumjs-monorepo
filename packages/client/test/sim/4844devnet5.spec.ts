@@ -73,7 +73,14 @@ tape(`running txes on ${rpcUrl}`, async (t) => {
       4096,
       pkey,
       nonce,
-      { to: bytesToPrefixedHexString(randomBytes(20)), chainId },
+      {
+        to: bytesToPrefixedHexString(randomBytes(20)),
+        chainId,
+        maxFeePerDataGas: BigInt(process.env.MAX_DATAFEE ?? 100000000n),
+        maxPriorityFeePerGas: BigInt(process.env.MAX_PRIORITY ?? 100000000n),
+        maxFeePerGas: BigInt(process.env.MAX_FEE ?? 1000000000n),
+        gasLimit: BigInt(process.env.GAS_LIMIT ?? 0xffffffn),
+      },
       { common }
     )
     const txHashes = []

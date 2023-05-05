@@ -363,7 +363,15 @@ export const createBlobTxs = async (
   blobSize = 2 ** 17 - 1,
   pkey: Uint8Array,
   startNonce: number = 0,
-  txMeta: { to?: string; value?: bigint; chainId?: number } = {},
+  txMeta: {
+    to?: string
+    value?: bigint
+    chainId?: number
+    maxFeePerDataGas: bigint
+    maxPriorityFeePerGas: bigint
+    maxFeePerGas: bigint
+    gasLimit: bigint
+  },
   opts?: TxOptions
 ) => {
   const txHashes: string[] = []
@@ -383,12 +391,8 @@ export const createBlobTxs = async (
       kzgCommitments: commitments,
       kzgProofs: proofs,
       versionedHashes: hashes,
-      gas: undefined,
-      maxFeePerDataGas: BigInt(1000) as any,
-      maxPriorityFeePerGas: BigInt(1) as any,
-      maxFeePerGas: '0xff' as any,
       nonce: BigInt(x),
-      gasLimit: BigInt(1000000) as any,
+      gas: undefined,
     }
 
     const blobTx = BlobEIP4844Transaction.fromTxData(txData, opts).sign(pkey)
