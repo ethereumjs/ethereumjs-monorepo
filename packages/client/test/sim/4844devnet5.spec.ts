@@ -95,22 +95,6 @@ tape(`running txes on ${rpcUrl}`, async (t) => {
       txHashes.push(res.result)
     }
     st.pass(`posted txs=${txHashes.length}`)
-
-    // let done = false
-    // let txReceipt
-    // while (!done) {
-    //   txReceipt = await client.request('eth_getTransactionReceipt', [txHashes[0]], 2.0)
-    //   if (txReceipt.result !== null) {
-    //     done = true
-    //   }
-    //   await sleep(2000)
-    // }
-    // const block1 = await client.request(
-    //   'eth_getBlockByHash',
-    //   [txReceipt.result.blockHash, false],
-    //   2.0
-    // )
-    // st.ok(BigInt(block1.result.excessDataGas) > 0n, 'block1 has excess data gas > 0')
   })
 
   t.test('cleanup', async (st) => {
