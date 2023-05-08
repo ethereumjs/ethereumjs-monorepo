@@ -210,7 +210,7 @@ export class CheckpointDB implements DB {
   }
 
   stats(reset = true) {
-    const stats = { ...this._stats, size: this._cache?.length ?? 0 }
+    const stats = { ...this._stats, size: this._cache?.size ?? 0 }
     if (reset) {
       this._stats = {
         cache: {
