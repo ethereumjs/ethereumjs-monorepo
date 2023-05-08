@@ -3,7 +3,15 @@ import { MemoryLevel } from 'memory-level'
 import type { BatchDBOp, DB, DBObject } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
-//export const ENCODING_OPTS = { keyEncoding: 'view', valueEncoding: 'view' }
+// Helper to infer the `valueEncoding` option for `putting` a value in a levelDB
+const inferValueEncoding = (value: Uint8Array | string | DBObject) => {
+  if (typeof value === 'string') {
+    return 'utf8'
+  } else if (value instanceof Uint8Array) {
+    return 'view'
+  }
+  return 'json'
+}
 
 /**
  * LevelDB is a thin wrapper around the underlying levelup db,
@@ -63,19 +71,14 @@ export class LevelDB implements DB {
    * @inheritDoc
    */
   async put(key: Uint8Array | string, val: Uint8Array | string | DBObject): Promise<void> {
-    let valEncoding: string = ''
-    if (typeof val === 'string') {
-      valEncoding = 'utf8'
-    } else if (val instanceof Uint8Array) {
-      valEncoding = 'view'
-    } else valEncoding = 'json'
-    await this._leveldb.put(key, val, { valueEncoding: valEncoding })
+    const encoding = inferValueEncoding(val)
+    await this._leveldb.put(key, val, { valueEncoding: encoding })
   }
 
   /**
    * @inheritDoc
    */
-  async del(key: Uint8Array): Promise<void> {
+  async del(key: Uint8Array | string): Promise<void> {
     await this._leveldb.del(key)
   }
 
@@ -83,7 +86,16 @@ export class LevelDB implements DB {
    * @inheritDoc
    */
   async batch(opStack: BatchDBOp[]): Promise<void> {
-    await this._leveldb.batch(opStack)
+    const levelOps = []
+    for (const op of opStack) {
+      if (op.type === 'put') {
+        const encoding = inferValueEncoding(op.value)
+        levelOps.push({ ...op, valueEncoding: encoding })
+      } else {
+        levelOps.push(op)
+      }
+    }
+    await this._leveldb.batch(levelOps)
   }
 
   /**
