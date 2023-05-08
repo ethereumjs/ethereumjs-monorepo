@@ -158,16 +158,17 @@ export class CheckpointDB implements DB {
    */
   async put(key: Uint8Array, value: Uint8Array): Promise<void> {
     const keyHex = bytesToHex(key)
-    if (this._cache !== undefined) {
-      this._cache.set(keyHex, value)
-      this._stats.cache.writes += 1
-    }
     if (this.hasCheckpoints()) {
       // put value in diff cache
-      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(bytesToHex(key), value)
+      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, value)
     } else {
       await this.db.put(key, value)
       this._stats.db.writes += 1
+
+      if (this._cache !== undefined) {
+        this._cache.set(keyHex, value)
+        this._stats.cache.writes += 1
+      }
     }
   }
 
@@ -176,16 +177,18 @@ export class CheckpointDB implements DB {
    */
   async del(key: Uint8Array): Promise<void> {
     const keyHex = bytesToHex(key)
-    if (this._cache !== undefined) {
-      this._cache.set(keyHex, null)
-      this._stats.cache.writes += 1
-    }
     if (this.hasCheckpoints()) {
       // delete the value in the current diff cache
-      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(bytesToHex(key), null)
+      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, null)
     } else {
       // delete the value on disk
       await this.db.del(key)
+      this._stats.db.writes += 1
+
+      if (this._cache !== undefined) {
+        this._cache.set(keyHex, null)
+        this._stats.cache.writes += 1
+      }
     }
   }
 
