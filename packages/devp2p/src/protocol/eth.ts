@@ -237,7 +237,7 @@ export class ETH extends Protocol {
         status[5] !== undefined ? bytesToPrefixedHexString(status[5][0] as Uint8Array) : '-'
       }`
       sStr += `, ForkNext: ${
-        (status[5][1] as Uint8Array).length > 0 ? bytesToInt(status[5][1] as Uint8Array) : '-'
+        (status[5][1] as Uint8Array).length > 0 ? bytesToHex(status[5][1] as Uint8Array) : '-'
       }`
     }
     sStr += `]`

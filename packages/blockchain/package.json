@@ -47,15 +47,14 @@
     "@ethereumjs/util": "^8.0.5",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.1.2",
-    "lru-cache": "^5.1.1",
-    "memory-level": "^1.0.0"
+    "level": "^8.0.0",
+    "lru-cache": "^7.18.3"
   },
   "devDependencies": {
     "@types/async": "^2.4.1",
-    "@types/level-errors": "^3.0.0",
-    "@types/lru-cache": "^5.1.0"
+    "@types/level-errors": "^3.0.0"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   }
 }

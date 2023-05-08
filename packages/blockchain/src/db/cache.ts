@@ -1,5 +1,8 @@
 import { bytesToHex } from 'ethereum-cryptography/utils'
-import * as LRUCache from 'lru-cache'
+
+import type LRUCache from 'lru-cache'
+
+const LRU = require('lru-cache')
 
 /**
  * Simple LRU Cache that allows for keys of type Uint8Array
@@ -9,7 +12,7 @@ export class Cache<V> {
   _cache: LRUCache<string, V>
 
   constructor(opts: LRUCache.Options<string, V>) {
-    this._cache = new LRUCache(opts)
+    this._cache = new LRU(opts)
   }
 
   set(key: string | Uint8Array, value: V): void {

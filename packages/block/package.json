@@ -46,11 +46,10 @@
     "ethereum-cryptography": "^1.1.2"
   },
   "devDependencies": {
-    "@types/lru-cache": "^5.1.0",
     "c-kzg": "^2.0.4",
     "testdouble": "^3.17.2"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   }
 }

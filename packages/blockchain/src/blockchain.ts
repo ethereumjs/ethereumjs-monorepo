@@ -967,44 +967,61 @@ export class Blockchain implements BlockchainInterface {
       let blocksRanCounter = 0
       let lastBlock: Block | undefined
 
-      while (maxBlocks !== blocksRanCounter) {
-        try {
-          let nextBlock = await this.getBlock(nextBlockNumber)
-          const reorg = lastBlock
-            ? !equalsBytes(lastBlock.hash(), nextBlock.header.parentHash)
-            : false
-          if (reorg) {
-            // If reorg has happened, the _heads must have been updated so lets reload the counters
-            headHash = this._heads[name] ?? this.genesisBlock.hash()
-            headBlockNumber = await this.dbManager.hashToNumber(headHash)
-            nextBlockNumber = headBlockNumber! + BigInt(1)
-            nextBlock = await this.getBlock(nextBlockNumber)
-          }
-          this._heads[name] = nextBlock.hash()
-          lastBlock = nextBlock
-          if (releaseLockOnCallback === true) {
-            this._lock.release()
-          }
+      try {
+        while (maxBlocks !== blocksRanCounter) {
           try {
-            await onBlock(nextBlock, reorg)
-          } finally {
+            let nextBlock = await this.getBlock(nextBlockNumber)
+            const reorg = lastBlock
+              ? !equalsBytes(lastBlock.hash(), nextBlock.header.parentHash)
+              : false
+            if (reorg) {
+              // If reorg has happened, the _heads must have been updated so lets reload the counters
+              headHash = this._heads[name] ?? this.genesisBlock.hash()
+              headBlockNumber = await this.dbManager.hashToNumber(headHash)
+              nextBlockNumber = headBlockNumber! + BigInt(1)
+              nextBlock = await this.getBlock(nextBlockNumber)
+            }
+
+            // While running onBlock with released lock, reorgs can happen via putBlocks
+            let reorgWhileOnBlock = false
             if (releaseLockOnCallback === true) {
-              await this._lock.acquire()
+              this._lock.release()
+            }
+            try {
+              await onBlock(nextBlock, reorg)
+            } finally {
+              if (releaseLockOnCallback === true) {
+                await this._lock.acquire()
+                // If lock was released check if reorg occured
+                const nextBlockMayBeReorged = await this.getBlock(nextBlockNumber).catch(
+                  (_e) => null
+                )
+                reorgWhileOnBlock = nextBlockMayBeReorged
+                  ? !equalsBytes(nextBlockMayBeReorged.hash(), nextBlock.hash())
+                  : true
+              }
+            }
+
+            // if there was no reorg, update head
+            if (!reorgWhileOnBlock) {
+              this._heads[name] = nextBlock.hash()
+              lastBlock = nextBlock
+              nextBlockNumber++
+            }
+            // Successful execution of onBlock, move the head pointer
+            blocksRanCounter++
+          } catch (error: any) {
+            if ((error.message as string).includes('not found in DB')) {
+              break
+            } else {
+              throw error
             }
           }
-          nextBlockNumber++
-          blocksRanCounter++
-        } catch (error: any) {
-          if ((error.message as string).includes('not found in DB')) {
-            break
-          } else {
-            throw error
-          }
         }
+        return blocksRanCounter
+      } finally {
+        await this._saveHeads()
       }
-
-      await this._saveHeads()
-      return blocksRanCounter
     })
   }
 

@@ -58,7 +58,6 @@
     "@ethereumjs/statemanager": "^1.0.4",
     "@types/benchmark": "^1.0.33",
     "@types/core-js": "^2.5.0",
-    "@types/lru-cache": "^5.1.0",
     "@types/minimist": "^1.2.2",
     "@types/node-dir": "^0.0.34",
     "benchmark": "^2.1.4",
@@ -70,6 +69,6 @@
     "solc": "^0.8.1"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   }
 }
