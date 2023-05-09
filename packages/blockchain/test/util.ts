@@ -1,12 +1,11 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { toBytes } from '@ethereumjs/util'
+import { MapDB, toBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 
 import { Blockchain } from '../src'
-import { MapDB } from '../src/db/map'
 
 import type { DB } from '@ethereumjs/util'
 

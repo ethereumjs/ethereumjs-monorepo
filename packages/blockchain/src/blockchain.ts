@@ -3,6 +3,7 @@ import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@eth
 import {
   KECCAK256_RLP,
   Lock,
+  MapDB,
   bytesToPrefixedHexString,
   concatBytesNoTypeCheck,
 } from '@ethereumjs/util'
@@ -11,7 +12,6 @@ import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils
 import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus'
 import { DBOp, DBSaveLookups, DBSetBlockOrHeader, DBSetHashToNumber, DBSetTD } from './db/helpers'
 import { DBManager } from './db/manager'
-import { MapDB } from './db/map'
 import { DBTarget } from './db/operation'
 import { genesisStateRoot } from './genesisStates'
 import {} from './utils'

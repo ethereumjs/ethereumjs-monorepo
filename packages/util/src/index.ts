@@ -72,4 +72,5 @@ export {
 } from './internal'
 export * from './kzg'
 export * from './lock'
+export * from './mapDB'
 export * from './provider'

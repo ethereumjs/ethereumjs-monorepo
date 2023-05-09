@@ -1,8 +1,8 @@
-import { KECCAK256_RLP, bytesToHex, equalsBytes, utf8ToBytes } from '@ethereumjs/util'
+import { KECCAK256_RLP, MapDB, bytesToHex, equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
-import { ROOT_DB_KEY as BASE_DB_KEY, MapDB, Trie } from '../../src'
+import { ROOT_DB_KEY as BASE_DB_KEY, Trie } from '../../src'
 
 for (const { constructor, defaults, title } of [
   {
@@ -163,7 +163,7 @@ for (const { constructor, defaults, title } of [
     })
 
     t.test('persist and restore the root', async function (st) {
-      const db = new MapDB()
+      const db = new MapDB<Uint8Array, Uint8Array>()
 
       const trie = await constructor.create({ ...defaults, db, useRootPersistence: true })
       // @ts-expect-error

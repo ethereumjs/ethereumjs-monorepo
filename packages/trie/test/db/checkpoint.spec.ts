@@ -1,7 +1,7 @@
-import { hexStringToBytes, utf8ToBytes } from '@ethereumjs/util'
+import { MapDB, hexStringToBytes, utf8ToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { CheckpointDB, MapDB } from '../../src'
+import { CheckpointDB } from '../../src'
 
 import type { BatchDBOp } from '@ethereumjs/util'
 

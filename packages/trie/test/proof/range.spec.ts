@@ -1,4 +1,5 @@
 import {
+  MapDB,
   compareBytes,
   concatBytes,
   hexStringToBytes,
@@ -8,7 +9,7 @@ import {
 import * as crypto from 'crypto'
 import * as tape from 'tape'
 
-import { MapDB, Trie } from '../../src'
+import { Trie } from '../../src'
 
 import type { DB } from '@ethereumjs/util'
 

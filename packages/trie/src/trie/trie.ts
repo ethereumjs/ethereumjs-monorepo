@@ -1,7 +1,7 @@
-import { RLP_EMPTY_STRING, bytesToHex, bytesToUtf8, equalsBytes } from '@ethereumjs/util'
+import { MapDB, RLP_EMPTY_STRING, bytesToHex, bytesToUtf8, equalsBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { CheckpointDB, MapDB } from '../db'
+import { CheckpointDB } from '../db'
 import { verifyRangeProof } from '../proof/range'
 import { ROOT_DB_KEY } from '../types'
 import { Lock } from '../util/lock'
@@ -60,7 +60,7 @@ export class Trie {
       this._opts = { ...this._opts, ...opts }
     }
 
-    this.database(opts?.db ?? new MapDB())
+    this.database(opts?.db ?? new MapDB<Uint8Array, Uint8Array>())
 
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
