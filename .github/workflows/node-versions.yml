@@ -9,7 +9,6 @@ on:
 
 jobs:
   tests:
-    needs: get-node-versions
     runs-on: ubuntu-latest
     strategy:
       matrix:
