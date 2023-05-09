@@ -248,7 +248,7 @@ export class CliqueConsensus implements Consensus {
       bigIntToBytes(state[0]),
       state[1].map((a) => a.toBytes()),
     ])
-    await this.blockchain!.db.put(CLIQUE_SIGNERS_KEY, RLP.encode(formatted) /* , DB_OPTS */)
+    await this.blockchain!.db.put(CLIQUE_SIGNERS_KEY, RLP.encode(formatted))
     // Output active signers for debugging purposes
     if (signerState !== undefined) {
       let i = 0
@@ -409,7 +409,7 @@ export class CliqueConsensus implements Consensus {
       bigIntToBytes(v[0]),
       [v[1][0].toBytes(), v[1][1].toBytes(), v[1][2]],
     ])
-    await this.blockchain!.db.put(CLIQUE_VOTES_KEY, RLP.encode(formatted) /* , DB_OPTS */)
+    await this.blockchain!.db.put(CLIQUE_VOTES_KEY, RLP.encode(formatted))
   }
 
   /**
