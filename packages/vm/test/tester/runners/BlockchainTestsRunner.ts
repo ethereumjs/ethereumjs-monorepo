@@ -1,17 +1,15 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
-import { LevelDB } from '@ethereumjs/ethash/dist/level'
 import { RLP } from '@ethereumjs/rlp'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { bytesToBigInt, isHexPrefixed, stripHexPrefix, toBytes } from '@ethereumjs/util'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
-import { Level } from 'level'
-import { MemoryLevel } from 'memory-level'
 
 import { setupPreConditions, verifyPostConditions } from '../../util'
+import { MapDB } from '../mapDB'
 
 import type { EthashConsensus } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
@@ -35,7 +33,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   // fix for BlockchainTests/GeneralStateTests/stRandom/*
   testData.lastblockhash = stripHexPrefix(testData.lastblockhash)
 
-  let cacheDB = new LevelDB(new Level('./.cachedb'))
+  let cacheDB = new MapDB()
   let state = new Trie({ useKeyHashing: true })
   let stateManager = new DefaultStateManager({
     trie: state,
@@ -66,7 +64,6 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   }
 
   let blockchain = await Blockchain.create({
-    db: new LevelDB(new MemoryLevel()),
     common,
     validateBlocks: true,
     validateConsensus: validatePow,
@@ -215,7 +212,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         throw e
       }
 
-      await cacheDB._leveldb.close()
+      //  await cacheDB._leveldb.close()
 
       if (expectException !== false) {
         t.fail(`expected exception but test did not throw an exception: ${expectException}`)
@@ -236,7 +233,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`
   t.comment(`Time: ${timeSpent}`)
-  await cacheDB._leveldb.close()
+  // await cacheDB._leveldb.close()
 
   // @ts-ignore Explicitly delete objects for memory optimization (early GC)
   common = blockchain = state = stateManager = vm = cacheDB = null // eslint-disable-line
