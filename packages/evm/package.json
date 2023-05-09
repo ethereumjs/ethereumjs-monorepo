@@ -50,7 +50,6 @@
     "@ethereumjs/statemanager": "^1.0.4",
     "@ethereumjs/common": "^3.1.1",
     "@ethereumjs/util": "^8.0.5",
-    "@ethersproject/providers": "^5.7.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^1.1.2",
     "mcl-wasm": "^0.7.1",
@@ -58,9 +57,9 @@
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.0.12",
+    "@ethereumjs/statemanager": "^1.0.4",
     "@types/benchmark": "^1.0.33",
     "@types/core-js": "^2.5.0",
-    "@types/lru-cache": "^5.1.0",
     "@types/minimist": "^1.2.2",
     "@types/node-dir": "^0.0.34",
     "benchmark": "^2.1.4",
@@ -72,6 +71,6 @@
     "solc": "^0.8.1"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   }
 }

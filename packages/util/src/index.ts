@@ -67,3 +67,4 @@ export {
 } from './internal'
 export * from './kzg'
 export * from './lock'
+export * from './provider'

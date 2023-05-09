@@ -9,11 +9,11 @@ import type { Libp2pPeer } from '../../../lib/net/peer'
 import type { Protocol } from '../../../lib/net/protocol'
 
 tape('[Libp2pPeer]', async (t) => {
-  const _PeerId = td.replace('peer-id')
+  td.replace('peer-id')
 
   const Libp2pNode = td.constructor(['start', 'stop', 'dial', 'dialProtocol'] as any)
   td.replace('../../../lib/net/peer/libp2pnode', { Libp2pNode })
-  const Libp2pSender = td.replace('../../../lib/net/protocol/libp2psender')
+  const Libp2pSender = td.replace<any>('../../../lib/net/protocol/libp2psender')
 
   td.when(Libp2pNode.prototype.start()).thenResolve(null)
   td.when(Libp2pNode.prototype.dial(td.matchers.anything())).thenResolve(null)

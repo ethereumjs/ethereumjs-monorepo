@@ -56,3 +56,16 @@ export function timeDiff(timestamp: number) {
   const diff = new Date().getTime() / 1000 - timestamp
   return timeDuration(diff)
 }
+
+// Dynamically load v8 for tracking mem stats
+const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
+export type V8Engine = {
+  getHeapStatistics: () => { heap_size_limit: number; used_heap_size: number }
+}
+let v8Engine: V8Engine | null = null
+export async function getV8Engine(): Promise<V8Engine | null> {
+  if (isBrowser() === false && v8Engine === null) {
+    v8Engine = (await import('node:v8')) as V8Engine
+  }
+  return v8Engine
+}

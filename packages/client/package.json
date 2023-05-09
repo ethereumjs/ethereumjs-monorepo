@@ -36,7 +36,9 @@
     "build:common": "../../config/cli/ts-build.sh",
     "bundle": "webpack",
     "clean": "../../config/cli/clean-package.sh",
-    "client:start": "ts-node bin/cli.ts",
+    "client:start:ts": "ts-node bin/cli.ts",
+    "client:start:js": "npm run build && node dist/bin/cli.js",
+    "client:start": "npm run client:start:js --",
     "client:start:dev1": "npm run client:start -- --discDns=false --discV4=false --bootnodes",
     "client:start:dev2": "npm run client:start -- --discDns=false --discV4=false --port=30304 --dataDir=datadir-dev2",
     "coverage": "c8 --all --reporter=lcov --reporter=text npm run test:unit",
@@ -120,7 +122,7 @@
     "webpack-cli": "^4.8.0"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   },
   "devDependenciesComments": {
     "node-fetch": "Hotfix for client browser build error in older Node versions (12/14), #1305, 2021-06-18"

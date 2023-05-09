@@ -1,9 +1,11 @@
 import { Chain } from '../blockchain'
 import { FlowControl } from '../net/protocol/flowcontrol'
+import { getV8Engine } from '../util'
 
 import { Service } from './service'
 
 import type { Synchronizer } from '../sync'
+import type { V8Engine } from '../util'
 import type { ServiceOptions } from './service'
 import type { AbstractLevel } from 'abstract-level'
 
@@ -37,6 +39,22 @@ export class EthereumService extends Service {
   public interval: number
   public timeout: number
   public synchronizer?: Synchronizer
+
+  // A handle to v8Engine lib for mem stats, assigned on open if running in node
+  private v8Engine: V8Engine | null = null
+
+  /**
+   * Interval for client stats output (e.g. memory) (in ms)
+   */
+  private STATS_INTERVAL = 30000
+
+  /**
+   * Shutdown the client when memory threshold is reached (in percent)
+   *
+   */
+  private MEMORY_SHUTDOWN_THRESHOLD = 95
+
+  private _statsInterval: NodeJS.Timeout | undefined /* global NodeJS */
 
   /**
    * Create new ETH service
@@ -80,7 +98,33 @@ export class EthereumService extends Service {
     }
     await super.start()
     void this.synchronizer?.start()
+
+    if (this.v8Engine === null) {
+      this.v8Engine = await getV8Engine()
+    }
+
+    this._statsInterval = setInterval(
+      // eslint-disable-next-line @typescript-eslint/await-thenable
+      await this.stats.bind(this),
+      this.STATS_INTERVAL
+    )
+
     return true
+  }
+
+  stats() {
+    if (this.v8Engine !== null) {
+      const { used_heap_size, heap_size_limit } = this.v8Engine.getHeapStatistics()
+
+      const heapUsed = Math.round(used_heap_size / 1000 / 1000) // MB
+      const percentage = Math.round((100 * used_heap_size) / heap_size_limit)
+      this.config.logger.info(`Memory stats usage=${heapUsed} MB percentage=${percentage}%`)
+
+      if (percentage >= this.MEMORY_SHUTDOWN_THRESHOLD && !this.config.shutdown) {
+        this.config.logger.error('EMERGENCY SHUTDOWN DUE TO HIGH MEMORY LOAD...')
+        process.kill(process.pid, 'SIGINT')
+      }
+    }
   }
 
   /**
@@ -90,6 +134,7 @@ export class EthereumService extends Service {
     if (!this.running) {
       return false
     }
+    clearInterval(this._statsInterval)
     await this.synchronizer?.stop()
     await super.stop()
     return true
