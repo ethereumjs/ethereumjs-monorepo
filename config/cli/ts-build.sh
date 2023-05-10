@@ -44,6 +44,35 @@ build_node() {
     echo "\n";
 }
 
+build_esm() {
+    blue "[ESM build] "
+    echo "Using tsconfig.prod.esm.json"
+
+    echo "> tsc --build ./tsconfig.prod.esm.json"
+    printf "${BLUE}[ESM build] Working... "
+
+    tsc --build ./tsconfig.prod.esm.json
+    green "DONE"
+
+    echo "\n";
+}
+
+post_build_fixes() {
+    blue "[Post Build Fixes]"
+    echo "Adding ./dist/cjs/package.json"
+    cat <<EOT >> ./dist/cjs/package.json
+{
+    "type": "commonjs"
+}
+EOT
+    echo "Adding ./dist/esm/package.json"
+    cat <<EOT >> ./dist/esm/package.json
+{
+    "type": "module"
+}
+EOT
+}
+
 build_browser() {
     if [ -f ./tsconfig.browser.json ];
     then
@@ -77,4 +106,6 @@ then
     build_browser
 else
     build_node
+    build_esm
+    post_build_fixes
 fi

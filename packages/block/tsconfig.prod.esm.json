@@ -1,9 +1,9 @@
 {
-  "extends": "../../config/tsconfig.prod.json",
+  "extends": "../../config/tsconfig.prod.esm.json",
   "compilerOptions": {
     "lib": ["dom"],
     "rootDir": "src",
-    "outDir": "dist/cjs",
+    "outDir": "dist/esm",
     "composite": true
   },
   "include": ["src/**/*.ts"],
