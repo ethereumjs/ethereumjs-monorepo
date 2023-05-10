@@ -113,7 +113,7 @@ The [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/mast
 
 ## Browser
 
-To build the EVM for standalone use in the browser, see: [Running the EVM in a browser](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm/examples/run-code-browser.js).
+To build the EVM for standalone use in the browser, see: [Running the EVM in a browser](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/examples/runCode.ts).
 
 ## Setup
 
