@@ -45,32 +45,42 @@ build_node() {
 }
 
 build_esm() {
-    blue "[ESM build] "
-    echo "Using tsconfig.prod.esm.json"
+    if [ -f ./tsconfig.prod.esm.json ];
+    then
+        blue "[ESM build] "
+        echo "Using tsconfig.prod.esm.json"
 
-    echo "> tsc --build ./tsconfig.prod.esm.json"
-    printf "${BLUE}[ESM build] Working... "
+        echo "> tsc --build ./tsconfig.prod.esm.json"
+        printf "${BLUE}[ESM build] Working... "
 
-    tsc --build ./tsconfig.prod.esm.json
-    green "DONE"
+        tsc --build ./tsconfig.prod.esm.json
+        green "DONE"
 
-    echo "\n";
+        echo "\n";
+    else
+        dim "Skipping ESM build (no config available)."
+    fi
 }
 
 post_build_fixes() {
     blue "[Post Build Fixes]"
-    echo "Adding ./dist/cjs/package.json"
-    cat <<EOT >> ./dist/cjs/package.json
-{
-    "type": "commonjs"
-}
-EOT
-    echo "Adding ./dist/esm/package.json"
-    cat <<EOT >> ./dist/esm/package.json
+    if [ -f ./dist/esm/index.js ];
+    then
+        echo "Adding ./dist/cjs/package.json"
+        cat <<EOT >> ./dist/cjs/package.json
+    {
+        "type": "commonjs"
+    }
+    EOT
+        echo "Adding ./dist/esm/package.json"
+        cat <<EOT >> ./dist/esm/package.json
 {
     "type": "module"
 }
 EOT
+    else
+        dim "Skipping post build fixes (no ESM setup yet)."
+    fi
 }
 
 build_browser() {
