@@ -1,9 +1,11 @@
 import { bytesToHex } from 'ethereum-cryptography/utils'
 
-import type { BatchDBOp, DB } from './db'
+import type { BatchDBOp, DB, DBObject } from './db'
 
-export class MapDB<TKey extends Uint8Array | string, TValue extends Uint8Array | string>
-  implements DB<TKey, TValue>
+export class MapDB<
+  TKey extends Uint8Array | string | number,
+  TValue extends Uint8Array | string | DBObject
+> implements DB<TKey, TValue>
 {
   _database: Map<TKey, TValue>
 

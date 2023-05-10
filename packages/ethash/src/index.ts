@@ -1,7 +1,9 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
+  KeyEncoding,
   TWO_POW256,
+  ValueEncoding,
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
@@ -292,7 +294,10 @@ export class Ethash {
         return [zeros(32), 0]
       }
 
-      const dbData = await this.cacheDB!.get(epoc)
+      const dbData = await this.cacheDB!.get(epoc, {
+        keyEncoding: KeyEncoding.Number,
+        valueEncoding: ValueEncoding.JSON,
+      })
       if (dbData !== undefined) {
         const data = {
           cache: (dbData.cache as string[]).map((el: string) => hexToBytes(el)),
@@ -307,7 +312,10 @@ export class Ethash {
     }
 
     let data
-    const dbData = await this.cacheDB!.get(epoc)
+    const dbData = await this.cacheDB!.get(epoc, {
+      keyEncoding: KeyEncoding.Number,
+      valueEncoding: ValueEncoding.JSON,
+    })
     if (dbData !== undefined) {
       data = {
         cache: (dbData.cache as string[]).map((el: string) => hexToBytes(el)),
@@ -324,12 +332,19 @@ export class Ethash {
       this.seed = getSeed(seed, foundEpoc, epoc)
       const cache = this.mkcache(this.cacheSize!, this.seed!)
       // store the generated cache
-      await this.cacheDB!.put(epoc as any, {
-        cacheSize: this.cacheSize,
-        fullSize: this.fullSize,
-        seed: bytesToHex(this.seed),
-        cache: cache.map((el) => bytesToHex(el)),
-      })
+      await this.cacheDB!.put(
+        epoc,
+        {
+          cacheSize: this.cacheSize,
+          fullSize: this.fullSize,
+          seed: bytesToHex(this.seed),
+          cache: cache.map((el) => bytesToHex(el)),
+        },
+        {
+          keyEncoding: KeyEncoding.Number,
+          valueEncoding: ValueEncoding.JSON,
+        }
+      )
     } else {
       this.cache = data.cache.map((a: Uint8Array) => {
         return Uint8Array.from(a)
