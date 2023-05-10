@@ -1,4 +1,4 @@
-import { bytesToHex, hexStringToBytes } from '@ethereumjs/util'
+import { KeyEncoding, ValueEncoding, bytesToHex, hexStringToBytes } from '@ethereumjs/util'
 
 import type { Checkpoint, CheckpointDBOpts } from '../types'
 import type { BatchDBOp, DB } from '@ethereumjs/util'
@@ -138,7 +138,10 @@ export class CheckpointDB implements DB {
       }
     }
     // Nothing has been found in diff cache, look up from disk
-    const value = await this.db.get(key)
+    const value = await this.db.get(key, {
+      keyEncoding: KeyEncoding.Bytes,
+      valueEncoding: ValueEncoding.Bytes,
+    })
     this._stats.db.reads += 1
     if (value !== null) {
       this._stats.db.hits += 1
@@ -162,7 +165,10 @@ export class CheckpointDB implements DB {
       // put value in diff cache
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, value)
     } else {
-      await this.db.put(key, value)
+      await this.db.put(key, value, {
+        keyEncoding: KeyEncoding.Bytes,
+        valueEncoding: ValueEncoding.Bytes,
+      })
       this._stats.db.writes += 1
 
       if (this._cache !== undefined) {
@@ -182,7 +188,9 @@ export class CheckpointDB implements DB {
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, undefined)
     } else {
       // delete the value on disk
-      await this.db.del(key)
+      await this.db.del(key, {
+        keyEncoding: KeyEncoding.Bytes,
+      })
       this._stats.db.writes += 1
 
       if (this._cache !== undefined) {

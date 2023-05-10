@@ -1,23 +1,45 @@
+import { KeyEncoding, ValueEncoding } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
-import type { BatchDBOp, DB, DBObject } from '@ethereumjs/util'
+import type { BatchDBOp, DB, DBObject, EncodingOpts } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
 // Helper to infer the `valueEncoding` option for `putting` a value in a levelDB
-const inferValueEncoding = (value: Uint8Array | string | DBObject) => {
-  if (typeof value === 'string') {
-    return 'utf8'
-  } else if (value instanceof Uint8Array) {
-    return 'view'
+const getEncodings = (opts: EncodingOpts = {}) => {
+  const encodings = { keyEncoding: '', valueEncoding: '' }
+  switch (opts.valueEncoding) {
+    case ValueEncoding.String:
+      encodings.valueEncoding = 'utf8'
+      break
+    case ValueEncoding.Bytes:
+      encodings.valueEncoding = 'view'
+      break
+    case ValueEncoding.JSON:
+      encodings.valueEncoding = 'json'
+      break
+    default:
+      encodings.valueEncoding = 'view'
   }
-  return 'json'
+  switch (opts.keyEncoding) {
+    case KeyEncoding.Bytes:
+      encodings.keyEncoding = 'view'
+      break
+    case KeyEncoding.Number:
+    case KeyEncoding.String:
+      encodings.keyEncoding = 'utf8'
+      break
+    default:
+      encodings.keyEncoding = 'utf8'
+  }
+
+  return encodings
 }
 
 /**
  * LevelDB is a thin wrapper around the underlying levelup db,
  * which validates inputs and sets encoding type.
  */
-export class LevelDB implements DB {
+export class LevelDB implements DB<Uint8Array | string, Uint8Array | string | DBObject> {
   _leveldb: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   /**
@@ -34,25 +56,15 @@ export class LevelDB implements DB {
   /**
    * @inheritDoc
    */
-  // @ts-expect-error
-  async get(key: Uint8Array | string): Promise<Uint8Array | string | DBObject | undefined> {
+  async get(
+    key: Uint8Array | string,
+    opts?: EncodingOpts
+  ): Promise<Uint8Array | string | DBObject | undefined> {
     let value
-    let encoding = undefined
-    // Set value encoding based on key type or specific key names so values are interpreted correctly by Level
-    if (
-      key instanceof Uint8Array ||
-      key === 'CliqueSigners' ||
-      key === 'CliqueVotes' ||
-      key === 'CliqueBlockSignersSnapshot'
-    )
-      encoding = 'view'
-    if (key === 'heads' || typeof key === 'number') {
-      encoding = 'json'
-    }
+    const encodings = getEncodings(opts)
+
     try {
-      value = await this._leveldb.get(key, {
-        valueEncoding: encoding,
-      })
+      value = await this._leveldb.get(key, encodings)
       if (value === null) return undefined
     } catch (error: any) {
       // https://github.com/Level/abstract-level/blob/915ad1317694d0ce8c580b5ab85d81e1e78a3137/abstract-level.js#L309
@@ -70,9 +82,13 @@ export class LevelDB implements DB {
   /**
    * @inheritDoc
    */
-  async put(key: Uint8Array | string, val: Uint8Array | string | DBObject): Promise<void> {
-    const encoding = inferValueEncoding(val)
-    await this._leveldb.put(key, val, { valueEncoding: encoding })
+  async put(
+    key: Uint8Array | string,
+    val: Uint8Array | string | DBObject,
+    opts?: {}
+  ): Promise<void> {
+    const encodings = getEncodings(opts)
+    await this._leveldb.put(key, val, encodings)
   }
 
   /**
@@ -88,13 +104,10 @@ export class LevelDB implements DB {
   async batch(opStack: BatchDBOp[]): Promise<void> {
     const levelOps = []
     for (const op of opStack) {
-      if (op.type === 'put') {
-        const encoding = inferValueEncoding(op.value)
-        levelOps.push({ ...op, valueEncoding: encoding })
-      } else {
-        levelOps.push(op)
-      }
+      const encodings = getEncodings(op.opts)
+      levelOps.push({ ...op, ...encodings })
     }
+
     await this._leveldb.batch(levelOps)
   }
 

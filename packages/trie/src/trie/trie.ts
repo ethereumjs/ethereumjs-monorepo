@@ -1,4 +1,12 @@
-import { MapDB, RLP_EMPTY_STRING, bytesToHex, bytesToUtf8, equalsBytes } from '@ethereumjs/util'
+import {
+  KeyEncoding,
+  MapDB,
+  RLP_EMPTY_STRING,
+  ValueEncoding,
+  bytesToHex,
+  bytesToUtf8,
+  equalsBytes,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { CheckpointDB } from '../db'
@@ -80,9 +88,16 @@ export class Trie {
 
     if (opts?.db !== undefined && opts?.useRootPersistence === true) {
       if (opts?.root === undefined) {
-        opts.root = (await opts?.db.get(key)) ?? undefined
+        opts.root =
+          (await opts?.db.get(key, {
+            keyEncoding: KeyEncoding.Bytes,
+            valueEncoding: ValueEncoding.Bytes,
+          })) ?? undefined
       } else {
-        await opts?.db.put(key, opts.root)
+        await opts?.db.put(key, opts.root, {
+          keyEncoding: KeyEncoding.Bytes,
+          valueEncoding: ValueEncoding.Bytes,
+        })
       }
     }
 
@@ -191,6 +206,9 @@ export class Trie {
             return {
               type: 'del',
               key: e,
+              opts: {
+                keyEncoding: KeyEncoding.Bytes,
+              },
             }
           })
         }
@@ -227,6 +245,9 @@ export class Trie {
         return {
           type: 'del',
           key: e,
+          opts: {
+            keyEncoding: KeyEncoding.Bytes,
+          },
         }
       })
     }

@@ -27,7 +27,7 @@ export interface TrieOpts {
   /**
    * A database instance.
    */
-  db?: DB
+  db?: DB<Uint8Array, Uint8Array>
 
   /**
    * A `Uint8Array` for the root of a previously stored trie
