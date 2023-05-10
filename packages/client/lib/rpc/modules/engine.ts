@@ -260,22 +260,16 @@ const assembleBlock = async (
 
   try {
     const block = await Block.fromExecutionPayload(payload, { common })
-    if (!equalsBytes(block.hash(), hexStringToBytes(payload.blockHash))) {
-      const validationError = `Invalid blockHash, expected: ${
-        payload.blockHash
-      }, received: ${bytesToPrefixedHexString(block.hash())}`
-      config.logger.debug(validationError)
-      const latestValidHash = await validHash(block.header.parentHash, chain)
-      const response = { status: Status.INVALID_BLOCK_HASH, latestValidHash, validationError }
-      return { error: response }
-    }
     return { block }
   } catch (error) {
-
     const validationError = `Error assembling block during from payload: ${error}`
     config.logger.error(validationError)
     const latestValidHash = await validHash(hexStringToBytes(payload.parentHash), chain)
-    const response = { status: Status.INVALID, latestValidHash, validationError }
+    const response = {
+      status: `${error}`.includes('Invalid blockHash') ? Status.INVALID_BLOCK_HASH : Status.INVALID,
+      latestValidHash,
+      validationError,
+    }
     return { error: response }
   }
 }
