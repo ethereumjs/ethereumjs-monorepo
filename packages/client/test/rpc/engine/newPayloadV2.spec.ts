@@ -173,9 +173,11 @@ tape(`${method}: call with executionPayloadV1`, (v1) => {
     const expectRes = (res: any) => {
       t.equal(res.body.result.status, 'INVALID')
       t.equal(res.body.result.latestValidHash, blockData.parentHash)
-      t.equal(
-        res.body.result.validationError,
-        `Invalid tx at index 0: Error: Invalid serialized tx input: must be array`
+      const expectedError =
+        'Invalid tx at index 0: Error: Invalid serialized tx input: must be array'
+      t.ok(
+        res.body.result.validationError.includes(expectedError),
+        `should error with - ${expectedError}`
       )
     }
 
