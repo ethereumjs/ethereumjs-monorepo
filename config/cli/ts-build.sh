@@ -55,11 +55,10 @@ build_esm() {
 
         tsc --build ./tsconfig.prod.esm.json
         green "DONE"
-
-        echo "\n";
     else
         echo "Skipping ESM build (no config available)."
     fi
+    echo "\n";
 }
 
 post_build_fixes() {
@@ -81,6 +80,7 @@ EOT
     else
         echo "Skipping post build fixes (no ESM setup yet)."
     fi
+    echo "\n";
 }
 
 build_browser() {
