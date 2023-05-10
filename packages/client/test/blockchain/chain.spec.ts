@@ -5,8 +5,6 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { KeyEncoding, ValueEncoding } from '@ethereumjs/util'
 import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
-import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
-import { string } from 'yargs'
 
 import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
