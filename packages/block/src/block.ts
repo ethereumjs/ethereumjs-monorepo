@@ -298,10 +298,9 @@ export class Block {
 
   /**
    *  Method to retrieve a block from an execution payload
-   * @param provider either a url for a remote provider or an Ethers JsonRpcProvider object
-   * @param blockTag block hash or block number to be run
+   * @param execution payload constructed from beacon payload
    * @param opts {@link BlockOptions}
-   * @returns the block specified by `blockTag`
+   * @returns the block constructed block
    */
   public static async fromExecutionPayload(
     payload: ExecutionPayload,
@@ -344,26 +343,26 @@ export class Block {
       coinbase,
     }
 
-    let block: Block
-    try {
-      // we are not setting hardforkByBlockNumber or hardforkByTTD as common is already
-      // correctly set to the correct hf
-      block = Block.fromBlockData({ header, transactions: txs, withdrawals }, options)
-      // Verify blockHash matches payload
-      if (!equalsBytes(block.hash(), hexStringToBytes(payload.blockHash))) {
-        const validationError = `Invalid blockHash, expected: ${
-          payload.blockHash
-        }, received: ${bytesToPrefixedHexString(block.hash())}`
-        throw Error(validationError)
-      }
-    } catch (error) {
-      const validationError = `Error verifying block during init: ${error}`
+    // we are not setting hardforkByBlockNumber or hardforkByTTD as common is already
+    // correctly set to the correct hf
+    const block = Block.fromBlockData({ header, transactions: txs, withdrawals }, options)
+    // Verify blockHash matches payload
+    if (!equalsBytes(block.hash(), hexStringToBytes(payload.blockHash))) {
+      const validationError = `Invalid blockHash, expected: ${
+        payload.blockHash
+      }, received: ${bytesToPrefixedHexString(block.hash())}`
       throw Error(validationError)
     }
 
     return block
   }
 
+  /**
+   *  Method to retrieve a block from a beacon payload json
+   * @param payload json of a beacon beacon fetched from beacon apis
+   * @param opts {@link BlockOptions}
+   * @returns the block constructed block
+   */
   public static async fromBeaconPayload(
     payload: BeaconPayload,
     options?: BlockOptions
