@@ -12,10 +12,10 @@ import { hexToBytes } from 'ethereum-cryptography/utils'
 import { Cache } from './cache'
 import { DBOp, DBTarget } from './operation'
 
-import type { DBOpData, DatabaseKey } from './operation'
+import type { DatabaseKey } from './operation'
 import type { BlockBodyBytes, BlockBytes, BlockOptions } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type { DB, DBObject } from '@ethereumjs/util'
+import type { BatchDBOp, DB, DBObject, DelBatch, PutBatch } from '@ethereumjs/util'
 
 /**
  * @hidden
@@ -211,26 +211,48 @@ export class DBManager {
       }
       let value = this._cache[cacheString].get(dbKey)
       if (value === undefined) {
-        value = (await this._db.get(dbKey)) as Uint8Array | undefined
+        value = (await this._db.get(dbKey, {
+          keyEncoding: dbGetOperation.baseDBOp.keyEncoding,
+          valueEncoding: dbGetOperation.baseDBOp.valueEncoding,
+        })) as Uint8Array | undefined
         if (value !== undefined) {
-          // TODO: Check if this comment is still valid
-          // Always cast values to Uint8Array since db sometimes returns values as `Buffer`
-          this._cache[cacheString].set(dbKey, Uint8Array.from(value))
+          this._cache[cacheString].set(dbKey, value)
         }
       }
 
       return value
     }
-    return this._db.get(dbKey)
+    return this._db.get(dbKey, {
+      keyEncoding: dbGetOperation.baseDBOp.keyEncoding,
+      valueEncoding: dbGetOperation.baseDBOp.valueEncoding,
+    })
   }
 
   /**
    * Performs a batch operation on db.
    */
   async batch(ops: DBOp[]) {
-    const convertedOps: DBOpData[] = ops.map((op) => op.baseDBOp)
+    const convertedOps: BatchDBOp[] = ops.map((op) => {
+      const type =
+        op.baseDBOp.type !== undefined
+          ? op.baseDBOp.type
+          : op.baseDBOp.value !== undefined
+          ? 'put'
+          : 'del'
+      const convertedOp = {
+        key: op.baseDBOp.key,
+        value: op.baseDBOp.value,
+        type,
+        opts: {
+          keyEncoding: op.baseDBOp.keyEncoding,
+          valueEncoding: op.baseDBOp.valueEncoding,
+        },
+      }
+      if (type === 'put') return convertedOp as PutBatch
+      else return convertedOp as DelBatch
+    })
     // update the current cache for each operation
     ops.map((op) => op.updateCache(this._cache))
-    return this._db.batch(convertedOps as any)
+    return this._db.batch(convertedOps)
   }
 }

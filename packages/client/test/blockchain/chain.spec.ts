@@ -2,13 +2,16 @@
 // needed for karma-typescript bundling
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
+import { KeyEncoding, ValueEncoding } from '@ethereumjs/util'
 import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
+import { string } from 'yargs'
 
 import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
 
+import type { LevelDB } from '../../lib/execution/level'
 import type { BlockData, HeaderData } from '@ethereumjs/block'
 
 const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -17,12 +20,18 @@ tape('[Chain]', (t) => {
   t.test('should test blockchain DB is initialized', async (t) => {
     const chain = await Chain.create({ config })
 
-    const db = chain.chainDB
+    const db = chain.chainDB as LevelDB
     const testKey = 'name'
     const testValue = 'test'
-    await db.put(testKey, testValue)
+    await db.put(testKey, testValue, {
+      keyEncoding: KeyEncoding.String,
+      valueEncoding: ValueEncoding.String,
+    })
 
-    const value = await db.get(testKey)
+    const value = await db.get(testKey, {
+      keyEncoding: KeyEncoding.String,
+      valueEncoding: ValueEncoding.String,
+    })
     t.equal(value, testValue, 'read value matches written value')
     t.end()
   })

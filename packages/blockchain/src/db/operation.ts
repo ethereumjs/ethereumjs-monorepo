@@ -1,3 +1,5 @@
+import { KeyEncoding, ValueEncoding } from '@ethereumjs/util'
+
 import {
   HEADS_KEY,
   HEAD_BLOCK_KEY,
@@ -30,10 +32,10 @@ export enum DBTarget {
  * @hidden
  */
 export interface DBOpData {
-  type?: string
+  type?: 'put' | 'del'
   key: Uint8Array | string
-  keyEncoding: string
-  valueEncoding?: string
+  keyEncoding: KeyEncoding
+  valueEncoding?: ValueEncoding
   value?: Uint8Array | object
 }
 
@@ -56,22 +58,24 @@ export class DBOp {
 
     this.baseDBOp = {
       key: '',
-      keyEncoding: 'view',
-      valueEncoding: 'view',
+      keyEncoding: KeyEncoding.Bytes,
+      valueEncoding: ValueEncoding.Bytes,
     }
 
     switch (operationTarget) {
       case DBTarget.Heads: {
         this.baseDBOp.key = HEADS_KEY
-        this.baseDBOp.valueEncoding = 'json'
+        this.baseDBOp.valueEncoding = ValueEncoding.JSON
         break
       }
       case DBTarget.HeadHeader: {
         this.baseDBOp.key = HEAD_HEADER_KEY
+        this.baseDBOp.keyEncoding = KeyEncoding.String
         break
       }
       case DBTarget.HeadBlock: {
         this.baseDBOp.key = HEAD_BLOCK_KEY
+        this.baseDBOp.keyEncoding = KeyEncoding.String
         break
       }
       case DBTarget.HashToNumber: {
@@ -117,9 +121,9 @@ export class DBOp {
     dbOperation.baseDBOp.type = 'put'
 
     if (operationTarget === DBTarget.Heads) {
-      dbOperation.baseDBOp.valueEncoding = 'json'
+      dbOperation.baseDBOp.valueEncoding = ValueEncoding.JSON
     } else {
-      dbOperation.baseDBOp.valueEncoding = 'view'
+      dbOperation.baseDBOp.valueEncoding = ValueEncoding.Bytes
     }
 
     return dbOperation
