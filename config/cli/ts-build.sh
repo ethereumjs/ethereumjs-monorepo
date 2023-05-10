@@ -58,7 +58,7 @@ build_esm() {
 
         echo "\n";
     else
-        dim "Skipping ESM build (no config available)."
+        echo "Skipping ESM build (no config available)."
     fi
 }
 
@@ -79,7 +79,7 @@ post_build_fixes() {
 }
 EOT
     else
-        dim "Skipping post build fixes (no ESM setup yet)."
+        echo "Skipping post build fixes (no ESM setup yet)."
     fi
 }
 
