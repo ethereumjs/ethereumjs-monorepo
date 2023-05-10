@@ -78,7 +78,7 @@ The root for an empty trie
 ▸ **batch**(`ops`): `Promise`<`void`\>
 
 The given hash of operations (key additions or deletions) are executed on the trie
-(delete operations are only executed on DB with `deleteFromDB` set to `true`)
+(delete operations are only executed on DB with `useNodePruning` set to `true`)
 
 **`Example`**
 
@@ -256,7 +256,7 @@ ___
 ▸ **del**(`key`): `Promise`<`void`\>
 
 Deletes a value given a `key` from the trie
-(delete operations are only executed on DB with `deleteFromDB` set to `true`)
+(delete operations are only executed on DB with `useNodePruning` set to `true`)
 
 #### Parameters
 
@@ -422,7 +422,7 @@ ___
 ▸ **put**(`key`, `value`): `Promise`<`void`\>
 
 Stores a given `value` at the given `key` or do a delete if `value` is empty
-(delete operations are only executed on DB with `deleteFromDB` set to `true`)
+(delete operations are only executed on DB with `useNodePruning` set to `true`)
 
 #### Parameters
 
