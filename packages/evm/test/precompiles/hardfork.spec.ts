@@ -1,11 +1,11 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { EVM } from '../../src'
 import { getActivePrecompiles } from '../../src/precompiles'
-import { getEEI } from '../utils'
 
 tape('Precompiles: hardfork availability', (t) => {
   t.test('Test ECPAIRING availability', async (st) => {
@@ -23,8 +23,10 @@ tape('Precompiles: hardfork availability', (t) => {
       st.pass('ECPAIRING available in petersburg')
     }
 
-    const eeiByzantium = await getEEI()
-    let evm = await EVM.create({ common: commonByzantium, eei: eeiByzantium })
+    let evm = await EVM.create({
+      common: commonByzantium,
+      stateManager: new DefaultStateManager(),
+    })
     let result = await evm.runCall({
       caller: Address.zero(),
       gasLimit: BigInt(0xffffffffff),
@@ -43,8 +45,10 @@ tape('Precompiles: hardfork availability', (t) => {
       st.pass('ECPAIRING available in petersburg')
     }
 
-    const eeiPetersburg = await getEEI()
-    evm = await EVM.create({ common: commonPetersburg, eei: eeiPetersburg })
+    evm = await EVM.create({
+      common: commonPetersburg,
+      stateManager: new DefaultStateManager(),
+    })
     result = await evm.runCall({
       caller: Address.zero(),
       gasLimit: BigInt(0xffffffffff),
@@ -64,8 +68,10 @@ tape('Precompiles: hardfork availability', (t) => {
       st.pass('ECPAIRING not available in homestead')
     }
 
-    const eeiHomestead = await getEEI()
-    evm = await EVM.create({ common: commonHomestead, eei: eeiHomestead })
+    evm = await EVM.create({
+      common: commonHomestead,
+      stateManager: new DefaultStateManager(),
+    })
 
     result = await evm.runCall({
       caller: Address.zero(),

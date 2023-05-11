@@ -1,4 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
   Account,
   Address,
@@ -23,6 +24,7 @@ import { Message } from './message'
 import { getOpcodesForHF } from './opcodes'
 import { getActivePrecompiles } from './precompiles'
 import { TransientStorage } from './transientStorage'
+import { DefaultBlockchain } from './types'
 
 import type { InterpreterOpts, RunState } from './interpreter'
 import type { MessageWithTo } from './message'
@@ -31,16 +33,15 @@ import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/ga
 import type { CustomPrecompile, PrecompileFunc } from './precompiles'
 import type {
   Block,
+  Blockchain,
   CustomOpcode,
-  EEIInterface,
   EVMEvents,
   EVMInterface,
   EVMRunCallOpts,
   EVMRunCodeOpts,
-  /*ExternalInterface,*/
-  /*ExternalInterfaceFactory,*/
   Log,
 } from './types'
+import type { EVMStateManagerInterface } from '@ethereumjs/common'
 
 const debug = createDebugLogger('evm:evm')
 const debugGas = createDebugLogger('evm:gas')
@@ -137,9 +138,14 @@ export interface EVMOpts {
   customPrecompiles?: CustomPrecompile[]
 
   /*
-   * The External Interface Factory, used to build an External Interface when this is necessary
+   * The StateManager which is used to update the trie
    */
-  eei: EEIInterface
+  stateManager: EVMStateManagerInterface
+
+  /**
+   *
+   */
+  blockchain?: Blockchain
 }
 
 /**
@@ -177,7 +183,8 @@ export class EVM implements EVMInterface {
 
   readonly _common: Common
 
-  public eei: EEIInterface
+  public stateManager: EVMStateManagerInterface
+  public blockchain: Blockchain
 
   public readonly _transientStorage: TransientStorage
 
@@ -254,8 +261,6 @@ export class EVM implements EVMInterface {
 
     this._optsCached = opts
 
-    this.eei = opts.eei
-
     this._transientStorage = new TransientStorage()
 
     if (opts.common) {
@@ -264,6 +269,17 @@ export class EVM implements EVMInterface {
       const DEFAULT_CHAIN = Chain.Mainnet
       this._common = new Common({ chain: DEFAULT_CHAIN })
     }
+
+    let blockchain: Blockchain
+
+    if (opts.blockchain === undefined) {
+      blockchain = new DefaultBlockchain()
+    } else {
+      blockchain = opts.blockchain
+    }
+
+    this.blockchain = blockchain
+    this.stateManager = opts.stateManager ?? new DefaultStateManager()
 
     // Supported EIPs
     const supportedEIPs = [
@@ -348,7 +364,7 @@ export class EVM implements EVMInterface {
   }
 
   protected async _executeCall(message: MessageWithTo): Promise<EVMResult> {
-    let account = await this.eei.getAccount(message.authcallOrigin ?? message.caller)
+    let account = await this.stateManager.getAccount(message.authcallOrigin ?? message.caller)
     if (!account) {
       account = new Account()
     }
@@ -362,7 +378,7 @@ export class EVM implements EVMInterface {
       }
     }
     // Load `to` account
-    let toAccount = await this.eei.getAccount(message.to)
+    let toAccount = await this.stateManager.getAccount(message.to)
     if (!toAccount) {
       toAccount = new Account()
     }
@@ -426,7 +442,7 @@ export class EVM implements EVMInterface {
   }
 
   protected async _executeCreate(message: Message): Promise<EVMResult> {
-    let account = await this.eei.getAccount(message.caller)
+    let account = await this.stateManager.getAccount(message.caller)
     if (!account) {
       account = new Account()
     }
@@ -455,7 +471,7 @@ export class EVM implements EVMInterface {
     if (this.DEBUG) {
       debug(`Generated CREATE contract address ${message.to}`)
     }
-    let toAccount = await this.eei.getAccount(message.to)
+    let toAccount = await this.stateManager.getAccount(message.to)
     if (!toAccount) {
       toAccount = new Account()
     }
@@ -478,8 +494,8 @@ export class EVM implements EVMInterface {
       }
     }
 
-    await this.eei.putAccount(message.to, toAccount)
-    await this.eei.clearContractStorage(message.to)
+    await this.stateManager.putAccount(message.to, toAccount, true)
+    await this.stateManager.clearContractStorage(message.to, true)
 
     const newContractEvent = {
       address: message.to,
@@ -488,7 +504,7 @@ export class EVM implements EVMInterface {
 
     await this._emit('newContract', newContractEvent)
 
-    toAccount = await this.eei.getAccount(message.to)
+    toAccount = await this.stateManager.getAccount(message.to)
     if (!toAccount) {
       toAccount = new Account()
     }
@@ -621,7 +637,7 @@ export class EVM implements EVMInterface {
       result.returnValue !== undefined &&
       result.returnValue.length !== 0
     ) {
-      await this.eei.putContractCode(message.to, result.returnValue)
+      await this.stateManager.putContractCode(message.to, result.returnValue)
       if (this.DEBUG) {
         debug(`Code saved on new contract creation`)
       }
@@ -632,8 +648,8 @@ export class EVM implements EVMInterface {
         // This contract would be considered "DEAD" in later hard forks.
         // It is thus an unnecessary default item, which we have to save to disk
         // It does change the state root, but it only wastes storage.
-        const account = await this.eei.getAccount(message.to)
-        await this.eei.putAccount(message.to, account ?? new Account())
+        const account = await this.stateManager.getAccount(message.to)
+        await this.stateManager.putAccount(message.to, account ?? new Account(), true)
       }
     }
 
@@ -651,7 +667,7 @@ export class EVM implements EVMInterface {
     message: Message,
     opts: InterpreterOpts = {}
   ): Promise<ExecResult> {
-    let contract = await this.eei.getAccount(message.to ?? Address.zero())
+    let contract = await this.stateManager.getAccount(message.to ?? Address.zero())
     if (!contract) {
       contract = new Account()
     }
@@ -673,7 +689,13 @@ export class EVM implements EVMInterface {
       versionedHashes: message.versionedHashes ?? [],
     }
 
-    const interpreter = new Interpreter(this, this.eei, env, message.gasLimit)
+    const interpreter = new Interpreter(
+      this,
+      this.stateManager,
+      this.blockchain,
+      env,
+      message.gasLimit
+    )
     if (message.selfdestruct) {
       interpreter._result.selfdestruct = message.selfdestruct as { [key: string]: Uint8Array }
     }
@@ -731,14 +753,14 @@ export class EVM implements EVMInterface {
 
       const value = opts.value ?? BigInt(0)
       if (opts.skipBalance === true) {
-        callerAccount = await this.eei.getAccount(caller)
+        callerAccount = await this.stateManager.getAccount(caller)
         if (!callerAccount) {
           callerAccount = new Account()
         }
         if (callerAccount.balance < value) {
           // if skipBalance and balance less than value, set caller balance to `value` to ensure sufficient funds
           callerAccount.balance = value
-          await this.eei.putAccount(caller, callerAccount)
+          await this.stateManager.putAccount(caller, callerAccount, true)
         }
       }
 
@@ -761,13 +783,13 @@ export class EVM implements EVMInterface {
 
     if (message.depth === 0) {
       if (!callerAccount) {
-        callerAccount = await this.eei.getAccount(message.caller)
+        callerAccount = await this.stateManager.getAccount(message.caller)
       }
       if (!callerAccount) {
         callerAccount = new Account()
       }
       callerAccount.nonce++
-      await this.eei.putAccount(message.caller, callerAccount)
+      await this.stateManager.putAccount(message.caller, callerAccount, true)
       if (this.DEBUG) {
         debug(`Update fromAccount (caller) nonce (-> ${callerAccount.nonce}))`)
       }
@@ -777,10 +799,10 @@ export class EVM implements EVMInterface {
 
     if (!message.to && this._common.isActivatedEIP(2929) === true) {
       message.code = message.data
-      this.eei.addWarmedAddress((await this._generateAddress(message)).bytes)
+      this.stateManager.addWarmedAddress((await this._generateAddress(message)).bytes)
     }
 
-    await this.eei.checkpoint()
+    await this.stateManager.checkpoint()
     if (this._common.isActivatedEIP(1153)) this._transientStorage.checkpoint()
     if (this.DEBUG) {
       debug('-'.repeat(100))
@@ -830,13 +852,13 @@ export class EVM implements EVMInterface {
       !(this._common.hardfork() === Hardfork.Chainstart && err.error === ERROR.CODESTORE_OUT_OF_GAS)
     ) {
       result.execResult.logs = []
-      await this.eei.revert()
+      await this.stateManager.revert()
       if (this._common.isActivatedEIP(1153)) this._transientStorage.revert()
       if (this.DEBUG) {
         debug(`message checkpoint reverted`)
       }
     } else {
-      await this.eei.commit()
+      await this.stateManager.commit()
       if (this._common.isActivatedEIP(1153)) this._transientStorage.commit()
       if (this.DEBUG) {
         debug(`message checkpoint committed`)
@@ -913,7 +935,7 @@ export class EVM implements EVMInterface {
         message.code = precompile
         message.isCompiled = true
       } else {
-        message.containerCode = await this.eei.getContractCode(message.codeAddress)
+        message.containerCode = await this.stateManager.getContractCode(message.codeAddress)
         message.isCompiled = false
         if (this._common.isActivatedEIP(3540)) {
           message.code = getEOFCode(message.containerCode)
@@ -929,7 +951,7 @@ export class EVM implements EVMInterface {
     if (message.salt) {
       addr = generateAddress2(message.caller.bytes, message.salt, message.code as Uint8Array)
     } else {
-      let acc = await this.eei.getAccount(message.caller)
+      let acc = await this.stateManager.getAccount(message.caller)
       if (!acc) {
         acc = new Account()
       }
@@ -944,7 +966,11 @@ export class EVM implements EVMInterface {
     if (account.balance < BigInt(0)) {
       throw new EvmError(ERROR.INSUFFICIENT_BALANCE)
     }
-    const result = this.eei.putAccount(message.authcallOrigin ?? message.caller, account)
+    const result = this.stateManager.putAccount(
+      message.authcallOrigin ?? message.caller,
+      account,
+      true
+    )
     if (this.DEBUG) {
       debug(`Reduced sender (${message.caller}) balance (-> ${account.balance})`)
     }
@@ -958,19 +984,11 @@ export class EVM implements EVMInterface {
     }
     toAccount.balance = newBalance
     // putAccount as the nonce may have changed for contract creation
-    const result = this.eei.putAccount(message.to, toAccount)
+    const result = this.stateManager.putAccount(message.to, toAccount, true)
     if (this.DEBUG) {
       debug(`Added toAccount (${message.to}) balance (-> ${toAccount.balance})`)
     }
     return result
-  }
-
-  protected async _touchAccount(address: Address): Promise<void> {
-    let account = await this.eei.getAccount(address)
-    if (!account) {
-      account = new Account()
-    }
-    return this.eei.putAccount(address, account)
   }
 
   /**
@@ -987,9 +1005,9 @@ export class EVM implements EVMInterface {
     const opts = {
       ...this._optsCached,
       common,
-      eei: this.eei.copy(),
+      stateManager: this.stateManager.copy(),
     }
-    ;(opts.eei as any)._common = common
+    ;(opts.stateManager as any)._common = common
     return new EVM(opts)
   }
 }

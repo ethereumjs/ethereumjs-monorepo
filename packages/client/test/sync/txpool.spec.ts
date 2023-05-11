@@ -16,8 +16,6 @@ import { getLogger } from '../../lib/logging'
 import { PeerPool } from '../../lib/net/peerpool'
 import { TxPool } from '../../lib/service/txpool'
 
-import type { StateManager } from '@ethereumjs/statemanager'
-
 const setup = () => {
   const config = new Config({
     transports: [],
@@ -50,7 +48,7 @@ const config = new Config({ transports: [], accountCache: 10000, storageCache: 1
 const handleTxs = async (
   txs: any[],
   failMessage: string,
-  stateManager?: StateManager,
+  stateManager?: DefaultStateManager,
   pool?: TxPool
 ) => {
   if (pool === undefined) {
