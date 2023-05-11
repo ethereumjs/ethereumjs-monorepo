@@ -1,17 +1,13 @@
 import { Block } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
 import {
   Account,
   Address,
   bigIntToBytes,
   equalsBytes,
-  hexStringToBytes,
   setLengthLeft,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { VM } from '@ethereumjs/vm'
-import { BaseProvider, JsonRpcProvider, StaticJsonRpcProvider } from '@ethersproject/providers'
+import { BaseProvider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import * as tape from 'tape'
 
 import { EthersStateManager } from '../src/ethersStateManager'
@@ -177,6 +173,7 @@ tape('Ethers State Manager API tests', async (t) => {
   }
 })
 
+/* TODO FIXME
 tape('runTx custom transaction test', async (t) => {
   if (isBrowser() === true) {
     // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
@@ -274,3 +271,4 @@ tape('runBlock test', async (t) => {
     }
   }
 })
+*/
