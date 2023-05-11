@@ -3,7 +3,6 @@ import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Address, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
-import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
 import { AbstractLevel } from 'abstract-level'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
@@ -31,19 +30,15 @@ const B = {
 }
 
 const setBalance = async (vm: VM, address: Address, balance: bigint) => {
-  await vm.eei.checkpoint()
-  await vm.eei.modifyAccountFields(address, { balance })
-  await vm.eei.commit()
+  await vm.stateManager.checkpoint()
+  await vm.stateManager.modifyAccountFields(address, { balance })
+  await vm.stateManager.commit()
 }
 
 tape('[Miner]', async (t) => {
   const originalValidate = BlockHeader.prototype._consensusFormatValidation
   BlockHeader.prototype._consensusFormatValidation = td.func<any>()
   td.replace('@ethereumjs/block', { BlockHeader })
-
-  const originalSetStateRoot = VmState.prototype.setStateRoot
-  VmState.prototype.setStateRoot = td.func<any>()
-  td.replace('@ethereumjs/vm/dist/vmState', { VmState })
 
   // Stub out setStateRoot so txPool.validate checks will pass since correct state root
   // doesn't exist in fakeChain state anyway
@@ -620,7 +615,6 @@ tape('[Miner]', async (t) => {
     // mocking indirect dependencies is not properly supported, but it works for us in this file,
     // so we will replace the original functions to avoid issues in other tests that come after
     BlockHeader.prototype._consensusFormatValidation = originalValidate
-    VmState.prototype.setStateRoot = originalSetStateRoot
     DefaultStateManager.prototype.setStateRoot = ogStateManagerSetStateRoot
     t.end()
   })

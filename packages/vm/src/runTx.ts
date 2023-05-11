@@ -88,7 +88,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     throw new Error(msg)
   }
 
-  const state = this.eei
+  const state = this.stateManager
 
   if (opts.reportAccessList === true && !('generateAccessList' in state)) {
     const msg = _errorMsg(
@@ -121,16 +121,6 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       await state.revert()
       const msg = _errorMsg(
         'Cannot run transaction: EIP 2930 is not activated.',
-        this,
-        opts.block,
-        opts.tx
-      )
-      throw new Error(msg)
-    }
-    if (opts.reportAccessList === true && !('generateAccessList' in state)) {
-      await state.revert()
-      const msg = _errorMsg(
-        'StateManager needs to implement generateAccessList() when running with reportAccessList option',
         this,
         opts.block,
         opts.tx
@@ -197,7 +187,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 }
 
 async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
-  const state = this.eei
+  const state = this.stateManager
 
   const { tx, block } = opts
 
@@ -293,7 +283,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       if (tx.supports(Capability.EIP1559FeeMarket) === false) {
         // if skipBalance and not EIP1559 transaction, ensure caller balance is enough to run transaction
         fromAccount.balance = upFrontCost
-        await this.stateManager.putAccount(caller, fromAccount)
+        await this.stateManager.putAccount(caller, fromAccount, true)
       }
     } else {
       const msg = _errorMsg(
@@ -356,7 +346,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     if (opts.skipBalance === true && fromAccount.balance < maxCost) {
       // if skipBalance, ensure caller balance is enough to run transaction
       fromAccount.balance = maxCost
-      await this.stateManager.putAccount(caller, fromAccount)
+      await this.stateManager.putAccount(caller, fromAccount, true)
     } else {
       const msg = _errorMsg(
         `sender doesn't have enough funds to send tx. The max cost is: ${maxCost} and the sender's account (${caller}) only has: ${balance}`,
@@ -415,7 +405,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (opts.skipBalance === true && fromAccount.balance < BigInt(0)) {
     fromAccount.balance = BigInt(0)
   }
-  await state.putAccount(caller, fromAccount)
+  await state.putAccount(caller, fromAccount, true)
   if (this.DEBUG) {
     debug(`Update fromAccount (caller) balance (-> ${fromAccount.balance}))`)
   }
@@ -506,7 +496,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const actualTxCost = results.totalGasSpent * gasPrice
   const txCostDiff = txCost - actualTxCost
   fromAccount.balance += txCostDiff
-  await state.putAccount(caller, fromAccount)
+  await state.putAccount(caller, fromAccount, true)
   if (this.DEBUG) {
     debug(
       `Refunded txCostDiff (${txCostDiff}) to fromAccount (caller) balance (-> ${fromAccount.balance})`
@@ -535,7 +525,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Put the miner account into the state. If the balance of the miner account remains zero, note that
   // the state.putAccount function puts this into the "touched" accounts. This will thus be removed when
   // we clean the touched accounts below in case we are in a fork >= SpuriousDragon
-  await state.putAccount(miner, minerAccount)
+  await state.putAccount(miner, minerAccount, true)
   if (this.DEBUG) {
     debug(`tx update miner account (${miner}) balance (-> ${minerAccount.balance})`)
   }
@@ -547,14 +537,16 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const keys = Object.keys(results.execResult.selfdestruct)
     for (const k of keys) {
       const address = new Address(hexToBytes(k))
-      await state.deleteAccount(address)
+      await state.deleteAccount(address, true)
       if (this.DEBUG) {
         debug(`tx selfdestruct on address=${address}`)
       }
     }
   }
 
-  await state.cleanupTouchedAccounts()
+  if (this._common.gteHardfork(Hardfork.SpuriousDragon)) {
+    await state.cleanupTouchedAccounts()
+  }
   state.clearOriginalStorageCache()
 
   // Generate the tx receipt

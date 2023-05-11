@@ -11,8 +11,8 @@ import { Stack } from './stack'
 
 import type { EVM, EVMResult } from './evm'
 import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes'
-import type { Block, EEIInterface, Log } from './types'
-import type { Common } from '@ethereumjs/common'
+import type { Block, Blockchain, Log } from './types'
+import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 
 const debugGas = createDebugLogger('evm:eei:gas')
@@ -62,7 +62,8 @@ export interface RunState {
   code: Uint8Array
   shouldDoJumpAnalysis: boolean
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
-  eei: EEIInterface
+  stateManager: EVMStateManagerInterface
+  blockchain: Blockchain
   env: Env
   messageGasLimit?: bigint // Cache value from `gas.ts` to save gas limit for a message call
   interpreter: Interpreter
@@ -80,7 +81,7 @@ export interface InterpreterResult {
 export interface InterpreterStep {
   gasLeft: bigint
   gasRefund: bigint
-  eei: EEIInterface
+  stateManager: EVMStateManagerInterface
   stack: bigint[]
   returnStack: bigint[]
   pc: number
@@ -104,7 +105,7 @@ export interface InterpreterStep {
 export class Interpreter {
   protected _vm: any
   protected _runState: RunState
-  protected _eei: EEIInterface
+  protected _stateManager: EVMStateManagerInterface
   protected _common: Common
   public _evm: EVM
   _env: Env
@@ -119,9 +120,15 @@ export class Interpreter {
   // TODO remove eei from constructor this can be directly read from EVM
   // EEI gets created on EVM creation and will not be re-instantiated
   // TODO remove gasLeft as constructor argument
-  constructor(evm: EVM, eei: EEIInterface, env: Env, gasLeft: bigint) {
+  constructor(
+    evm: EVM,
+    stateManager: EVMStateManagerInterface,
+    blockchain: Blockchain,
+    env: Env,
+    gasLeft: bigint
+  ) {
     this._evm = evm
-    this._eei = eei
+    this._stateManager = stateManager
     this._common = this._evm._common
     this._runState = {
       programCounter: 0,
@@ -133,7 +140,8 @@ export class Interpreter {
       returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
       code: new Uint8Array(0),
       validJumps: Uint8Array.from([]),
-      eei: this._eei,
+      stateManager: this._stateManager,
+      blockchain,
       env,
       shouldDoJumpAnalysis: true,
       interpreter: this,
@@ -308,7 +316,7 @@ export class Interpreter {
       memory: this._runState.memory._store.subarray(0, Number(this._runState.memoryWordCount) * 32),
       memoryWordCount: this._runState.memoryWordCount,
       codeAddress: this._env.codeAddress,
-      eei: this._runState.eei,
+      stateManager: this._runState.stateManager,
     }
 
     if (this._evm.DEBUG) {
@@ -465,7 +473,7 @@ export class Interpreter {
       return this._env.contract.balance
     }
 
-    let account = await this._eei.getAccount(address)
+    let account = await this._stateManager.getAccount(address)
     if (!account) {
       account = new Account()
     }
@@ -476,8 +484,8 @@ export class Interpreter {
    * Store 256-bit a value in memory to persistent storage.
    */
   async storageStore(key: Uint8Array, value: Uint8Array): Promise<void> {
-    await this._eei.storageStore(this._env.address, key, value)
-    const account = await this._eei.getAccount(this._env.address)
+    await this._stateManager.putContractStorage(this._env.address, key, value, true)
+    const account = await this._stateManager.getAccount(this._env.address)
     if (!account) {
       throw new Error('could not read account while persisting memory')
     }
@@ -490,7 +498,11 @@ export class Interpreter {
    * @param original - If true, return the original storage value (default: false)
    */
   async storageLoad(key: Uint8Array, original = false): Promise<Uint8Array> {
-    return this._eei.storageLoad(this._env.address, key, original)
+    if (original) {
+      return this._stateManager.getOriginalContractStorage(this._env.address, key)
+    } else {
+      return this._stateManager.getContractStorage(this._env.address, key)
+    }
   }
 
   /**
@@ -856,7 +868,7 @@ export class Interpreter {
     if (!results.execResult.exceptionError) {
       Object.assign(this._result.selfdestruct, selfdestruct)
       // update stateRoot on current contract
-      const account = await this._eei.getAccount(this._env.address)
+      const account = await this._stateManager.getAccount(this._env.address)
       if (!account) {
         throw new Error('could not read contract account')
       }
@@ -897,7 +909,7 @@ export class Interpreter {
     }
 
     this._env.contract.nonce += BigInt(1)
-    await this._eei.putAccount(this._env.address, this._env.contract)
+    await this._stateManager.putAccount(this._env.address, this._env.contract, true)
 
     if (this._common.isActivatedEIP(3860)) {
       if (
@@ -942,7 +954,7 @@ export class Interpreter {
     ) {
       Object.assign(this._result.selfdestruct, selfdestruct)
       // update stateRoot on current contract
-      const account = await this._eei.getAccount(this._env.address)
+      const account = await this._stateManager.getAccount(this._env.address)
       if (!account) {
         throw new Error('could not read contract account')
       }
@@ -989,15 +1001,15 @@ export class Interpreter {
     this._result.selfdestruct[bytesToHex(this._env.address.bytes)] = toAddress.bytes
 
     // Add to beneficiary balance
-    let toAccount = await this._eei.getAccount(toAddress)
+    let toAccount = await this._stateManager.getAccount(toAddress)
     if (!toAccount) {
       toAccount = new Account()
     }
     toAccount.balance += this._env.contract.balance
-    await this._eei.putAccount(toAddress, toAccount)
+    await this._stateManager.putAccount(toAddress, toAccount, true)
 
     // Subtract from contract balance
-    await this._eei.modifyAccountFields(this._env.address, {
+    await this._stateManager.modifyAccountFields(this._env.address, {
       balance: BigInt(0),
     })
 

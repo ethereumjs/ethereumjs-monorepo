@@ -7,7 +7,6 @@ import { hexToBytes } from 'ethereum-cryptography/utils'
 import { promisify } from 'util'
 
 import { buildBlock } from './buildBlock'
-import { EEI } from './eei/eei'
 import { runBlock } from './runBlock'
 import { runTx } from './runTx'
 
@@ -22,8 +21,7 @@ import type {
   VMOpts,
 } from './types'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
-import type { EEIInterface, EVMInterface } from '@ethereumjs/evm'
-import type { StateManager } from '@ethereumjs/statemanager'
+import type { EVMStateManagerInterface } from '@ethereumjs/common'
 
 /**
  * Execution engine which can be used to run a blockchain, individual
@@ -35,7 +33,7 @@ export class VM {
   /**
    * The StateManager used by the VM
    */
-  readonly stateManager: StateManager
+  readonly stateManager: EVMStateManagerInterface
 
   /**
    * The blockchain the VM operates on
@@ -48,8 +46,7 @@ export class VM {
   /**
    * The EVM used for bytecode execution
    */
-  readonly evm: EVMInterface
-  readonly eei: EEIInterface
+  readonly evm: EVM
 
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
@@ -108,32 +105,19 @@ export class VM {
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
     } else {
-      this.stateManager = new DefaultStateManager({})
+      this.stateManager = new DefaultStateManager({ common: this._common })
     }
 
     this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this._common })
 
     // TODO tests
-    if (opts.eei !== undefined) {
-      if (opts.evm !== undefined) {
-        throw new Error('cannot specify EEI if EVM opt provided')
-      }
-      this.eei = opts.eei
-    } else {
-      if (opts.evm !== undefined) {
-        this.eei = opts.evm.eei
-      } else {
-        this.eei = new EEI(this.stateManager, this._common, this.blockchain)
-      }
-    }
-
-    // TODO tests
-    if (opts.evm !== undefined) {
+    if (opts.evm) {
       this.evm = opts.evm
     } else {
       this.evm = new EVM({
         common: this._common,
-        eei: this.eei,
+        stateManager: this.stateManager,
+        blockchain: this.blockchain,
       })
     }
 
@@ -165,7 +149,7 @@ export class VM {
     if (!this._opts.stateManager) {
       if (this._opts.activateGenesisState === true) {
         if (typeof (<any>this.blockchain).genesisState === 'function') {
-          await this.eei.generateCanonicalGenesis((<any>this.blockchain).genesisState())
+          await this.stateManager.generateCanonicalGenesis((<any>this.blockchain).genesisState())
         } else {
           throw new Error(
             'cannot activate genesis state: blockchain object has no `genesisState` method'
@@ -175,11 +159,11 @@ export class VM {
     }
 
     if (this._opts.activatePrecompiles === true && typeof this._opts.stateManager === 'undefined') {
-      await this.eei.checkpoint()
+      await this.stateManager.checkpoint()
       // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
       for (const [addressStr] of getActivePrecompiles(this._common)) {
         const address = new Address(hexToBytes(addressStr))
-        let account = await this.eei.getAccount(address)
+        let account = await this.stateManager.getAccount(address)
         // Only do this if it is not overridden in genesis
         // Note: in the case that custom genesis has storage fields, this is preserved
         if (account === undefined) {
@@ -188,10 +172,10 @@ export class VM {
             balance: 1,
             storageRoot: account.storageRoot,
           })
-          await this.eei.putAccount(address, newAccount)
+          await this.stateManager.putAccount(address, newAccount)
         }
       }
-      await this.eei.commit()
+      await this.stateManager.commit()
     }
     this._isInitialized = true
   }
@@ -247,17 +231,19 @@ export class VM {
   async copy(): Promise<VM> {
     const common = this._common.copy()
     common.setHardfork(this._common.hardfork())
-    const eeiCopy = new EEI(this.stateManager.copy(), common, this.blockchain.copy())
+    const blockchain = this.blockchain.copy()
+    const stateManager = this.stateManager.copy()
     const evmOpts = {
       ...(this.evm as any)._optsCached,
       common,
-      eei: eeiCopy,
+      blockchain,
+      stateManager,
     }
     const evmCopy = new EVM(evmOpts)
     return VM.create({
-      stateManager: (eeiCopy as any)._stateManager,
-      blockchain: (eeiCopy as any)._blockchain,
-      common: (eeiCopy as any)._common,
+      stateManager,
+      blockchain: this.blockchain,
+      common,
       evm: evmCopy,
       hardforkByBlockNumber: this._hardforkByBlockNumber ? true : undefined,
       hardforkByTTD: this._hardforkByTTD,

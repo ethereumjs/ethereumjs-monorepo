@@ -28,7 +28,7 @@ import type {
   TxReceipt,
 } from './types'
 import type { VM } from './vm'
-import type { EVMStateAccess } from '@ethereumjs/evm'
+import type { EVMStateManagerInterface } from '@ethereumjs/common'
 
 const debug = createDebugLogger('vm:block')
 
@@ -40,7 +40,7 @@ const DAORefundContract = DAOConfig.DAORefundContract
  * @ignore
  */
 export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
-  const state = this.eei
+  const state = this.stateManager
   const { root } = opts
   const clearCache = opts.clearCache ?? true
   let { block } = opts
@@ -254,7 +254,7 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   const blockResults = await applyTransactions.bind(this)(block, opts)
   if (this._common.isActivatedEIP(4895)) {
     await assignWithdrawals.bind(this)(block)
-    await this.eei.cleanupTouchedAccounts()
+    await this.stateManager.cleanupTouchedAccounts()
   }
   // Pay ommers and miners
   if (block._common.consensusType() === ConsensusType.ProofOfWork) {
@@ -338,7 +338,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
 }
 
 async function assignWithdrawals(this: VM, block: Block): Promise<void> {
-  const state = this.eei
+  const state = this.stateManager
   const withdrawals = block.withdrawals!
   for (const withdrawal of withdrawals) {
     const { address, amount } = withdrawal
@@ -358,7 +358,7 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
   if (this.DEBUG) {
     debug(`Assign block rewards`)
   }
-  const state = this.eei
+  const state = this.stateManager
   const minerReward = this._common.param('pow', 'minerReward')
   const ommers = block.uncleHeaders
   // Reward ommers
@@ -399,7 +399,7 @@ export function calculateMinerReward(minerReward: bigint, ommersNum: number): bi
 }
 
 export async function rewardAccount(
-  state: EVMStateAccess,
+  state: EVMStateManagerInterface,
   address: Address,
   reward: bigint
 ): Promise<Account> {
@@ -408,7 +408,7 @@ export async function rewardAccount(
     account = new Account()
   }
   account.balance += reward
-  await state.putAccount(address, account)
+  await state.putAccount(address, account, true)
   return account
 }
 
@@ -436,10 +436,10 @@ export function encodeReceipt(receipt: TxReceipt, txType: number) {
 /**
  * Apply the DAO fork changes to the VM
  */
-async function _applyDAOHardfork(state: EVMStateAccess) {
+async function _applyDAOHardfork(state: EVMStateManagerInterface) {
   const DAORefundContractAddress = new Address(hexToBytes(DAORefundContract))
   if ((await state.accountExists(DAORefundContractAddress)) === false) {
-    await state.putAccount(DAORefundContractAddress, new Account())
+    await state.putAccount(DAORefundContractAddress, new Account(), true)
   }
   let DAORefundAccount = await state.getAccount(DAORefundContractAddress)
   if (DAORefundAccount === undefined) {
@@ -456,11 +456,11 @@ async function _applyDAOHardfork(state: EVMStateAccess) {
     DAORefundAccount.balance += account.balance
     // clear the accounts' balance
     account.balance = BigInt(0)
-    await state.putAccount(address, account)
+    await state.putAccount(address, account, true)
   }
 
   // finally, put the Refund Account
-  await state.putAccount(DAORefundContractAddress, DAORefundAccount)
+  await state.putAccount(DAORefundContractAddress, DAORefundAccount, true)
 }
 
 async function _genTxTrie(block: Block) {

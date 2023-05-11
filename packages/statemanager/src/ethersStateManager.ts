@@ -6,8 +6,8 @@ import { ethers } from 'ethers'
 
 import { AccountCache, CacheType } from './cache'
 
-import type { Proof, StateManager } from '.'
-import type { AccountFields, StorageDump } from './interface'
+import type { Proof } from '.'
+import type { AccountFields, StateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 
 const log = debug('statemanager')
@@ -17,7 +17,7 @@ export interface EthersStateManagerOpts {
   blockTag: bigint | 'earliest'
 }
 
-export class EthersStateManager implements StateManager {
+export class EthersStateManager implements StateManagerInterface {
   private provider: ethers.providers.StaticJsonRpcProvider | ethers.providers.JsonRpcProvider
   private contractCache: Map<string, Uint8Array>
   private storageCache: Map<string, Map<string, Uint8Array>>

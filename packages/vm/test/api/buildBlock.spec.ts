@@ -149,7 +149,7 @@ tape('BlockBuilder', async (t) => {
     const vm = await VM.create({ common, blockchain })
 
     // add balance for tx
-    await vm.eei.putAccount(signer.address, Account.fromAccountData({ balance: 100000 }))
+    await vm.stateManager.putAccount(signer.address, Account.fromAccountData({ balance: 100000 }))
 
     const blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,

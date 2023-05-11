@@ -1,16 +1,18 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { EVM } from '../../src'
 import { getActivePrecompiles } from '../../src/precompiles'
-import { getEEI } from '../utils'
 
 tape('Precompiles: ECPAIRING', (t) => {
   t.test('ECPAIRING', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    const eei = await getEEI()
-    const evm = await EVM.create({ common, eei })
+    const evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+    })
     const addressStr = '0000000000000000000000000000000000000008'
     const ECPAIRING = getActivePrecompiles(common).get(addressStr)!
     const result = await ECPAIRING({

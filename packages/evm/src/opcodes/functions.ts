@@ -487,7 +487,8 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState) {
       const addressBigInt = runState.stack.pop()
       const size = BigInt(
-        (await runState.eei.getContractCode(new Address(addresstoBytes(addressBigInt)))).length
+        (await runState.stateManager.getContractCode(new Address(addresstoBytes(addressBigInt))))
+          .length
       )
       runState.stack.push(size)
     },
@@ -499,7 +500,9 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [addressBigInt, memOffset, codeOffset, dataLength] = runState.stack.popN(4)
 
       if (dataLength !== BigInt(0)) {
-        const code = await runState.eei.getContractCode(new Address(addresstoBytes(addressBigInt)))
+        const code = await runState.stateManager.getContractCode(
+          new Address(addresstoBytes(addressBigInt))
+        )
 
         const data = getDataSlice(code, codeOffset, dataLength)
         const memOffsetNum = Number(memOffset)
@@ -514,7 +517,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState) {
       const addressBigInt = runState.stack.pop()
       const address = new Address(addresstoBytes(addressBigInt))
-      const account = await runState.eei.getAccount(address)
+      const account = await runState.stateManager.getAccount(address)
       if (!account || account.isEmpty()) {
         runState.stack.push(BigInt(0))
         return
@@ -569,8 +572,9 @@ export const handlers: Map<number, OpHandler> = new Map([
         return
       }
 
-      const hash = await runState.eei.getBlockHash(number)
-      runState.stack.push(hash)
+      const block = await runState.blockchain.getBlock(Number(number))
+
+      runState.stack.push(bytesToBigInt(block.hash()))
     },
   ],
   // 0x41: COINBASE
