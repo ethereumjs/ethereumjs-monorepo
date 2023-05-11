@@ -8,7 +8,6 @@ import {
   KECCAK256_NULL_S,
   KECCAK256_RLP,
   KECCAK256_RLP_S,
-  RIPEMD160_ADDRESS_STRING,
   bigIntToHex,
   bytesToHex,
   bytesToPrefixedHexString,

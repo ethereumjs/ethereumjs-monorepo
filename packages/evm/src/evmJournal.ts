@@ -1,15 +1,20 @@
-import { Account, Address, RIPEMD160_ADDRESS_STRING } from '@ethereumjs/util'
-import { Journaling } from './journaling'
-import { Common, EVMStateManagerInterface, Hardfork } from '@ethereumjs/common'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { Hardfork } from '@ethereumjs/common'
+import { Address, RIPEMD160_ADDRESS_STRING } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
+import { hexToBytes } from 'ethereum-cryptography/utils'
+
+import { Journaling } from './journaling'
+
+import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
+import type { Account } from '@ethereumjs/util'
+import type { Debugger } from 'debug'
 
 export class EvmJournal {
   private touchedJournal: Journaling<string>
   private stateManager: EVMStateManagerInterface
   private common: Common
   private DEBUG: boolean
-  private _debug: debug.Debugger
+  private _debug: Debugger
 
   constructor(stateManager: EVMStateManagerInterface, common: Common) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables

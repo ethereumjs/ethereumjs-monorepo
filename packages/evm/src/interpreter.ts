@@ -10,11 +10,11 @@ import { trap } from './opcodes'
 import { Stack } from './stack'
 
 import type { EVM, EVMResult } from './evm'
+import type { EvmJournal } from './evmJournal'
 import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes'
 import type { Block, Blockchain, Log } from './types'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
-import { EvmJournal } from './evmJournal'
 
 const debugGas = createDebugLogger('evm:eei:gas')
 

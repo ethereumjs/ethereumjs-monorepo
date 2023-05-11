@@ -18,6 +18,7 @@ import { debug as createDebugLogger } from 'debug'
 import { promisify } from 'util'
 
 import { EOF, getEOFCode } from './eof'
+import { EvmJournal } from './evmJournal'
 import { ERROR, EvmError } from './exceptions'
 import { Interpreter } from './interpreter'
 import { Message } from './message'
@@ -42,7 +43,6 @@ import type {
   Log,
 } from './types'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
-import { EvmJournal } from './evmJournal'
 
 const debug = createDebugLogger('evm:evm')
 const debugGas = createDebugLogger('evm:gas')
@@ -807,7 +807,7 @@ export class EVM implements EVMInterface {
       this.stateManager.addWarmedAddress((await this._generateAddress(message)).bytes)
     }
 
-    await this.stateManager.checkpoint()
+    await this.evmJournal.checkpoint()
     if (this._common.isActivatedEIP(1153)) this._transientStorage.checkpoint()
     if (this.DEBUG) {
       debug('-'.repeat(100))
@@ -857,13 +857,13 @@ export class EVM implements EVMInterface {
       !(this._common.hardfork() === Hardfork.Chainstart && err.error === ERROR.CODESTORE_OUT_OF_GAS)
     ) {
       result.execResult.logs = []
-      await this.stateManager.revert()
+      await this.evmJournal.revert()
       if (this._common.isActivatedEIP(1153)) this._transientStorage.revert()
       if (this.DEBUG) {
         debug(`message checkpoint reverted`)
       }
     } else {
-      await this.stateManager.commit()
+      await this.evmJournal.commit()
       if (this._common.isActivatedEIP(1153)) this._transientStorage.commit()
       if (this.DEBUG) {
         debug(`message checkpoint committed`)
