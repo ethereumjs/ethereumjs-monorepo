@@ -8,6 +8,7 @@ import {
   equalsBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { CheckpointDB } from '../db'
 import { verifyRangeProof } from '../proof/range'
@@ -68,7 +69,7 @@ export class Trie {
       this._opts = { ...this._opts, ...opts }
     }
 
-    this.database(opts?.db ?? new MapDB<Uint8Array, Uint8Array>())
+    this.database(opts?.db ?? new MapDB<string, string>())
 
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
@@ -88,15 +89,15 @@ export class Trie {
 
     if (opts?.db !== undefined && opts?.useRootPersistence === true) {
       if (opts?.root === undefined) {
-        opts.root =
-          (await opts?.db.get(key, {
-            keyEncoding: KeyEncoding.Bytes,
-            valueEncoding: ValueEncoding.Bytes,
-          })) ?? undefined
+        const rootHex = await opts?.db.get(bytesToHex(key), {
+          keyEncoding: KeyEncoding.String,
+          valueEncoding: ValueEncoding.String,
+        })
+        opts.root = rootHex !== undefined ? hexToBytes(rootHex) : undefined
       } else {
-        await opts?.db.put(key, opts.root, {
-          keyEncoding: KeyEncoding.Bytes,
-          valueEncoding: ValueEncoding.Bytes,
+        await opts?.db.put(bytesToHex(key), bytesToHex(opts.root), {
+          keyEncoding: KeyEncoding.String,
+          valueEncoding: ValueEncoding.String,
         })
       }
     }
@@ -104,7 +105,7 @@ export class Trie {
     return new Trie(opts)
   }
 
-  database(db?: DB) {
+  database(db?: DB<string, string>) {
     if (db !== undefined) {
       if (db instanceof CheckpointDB) {
         throw new Error('Cannot pass in an instance of CheckpointDB')
@@ -392,6 +393,7 @@ export class Trie {
     const toSave: BatchDBOp[] = []
     const lastNode = stack.pop()
     if (!lastNode) {
+      console.trace('no last node!')
       throw new Error('Stack underflow')
     }
 
