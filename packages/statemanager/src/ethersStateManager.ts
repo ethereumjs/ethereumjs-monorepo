@@ -46,7 +46,7 @@ export class EthersStateManager implements StateManagerInterface {
       blockTag: BigInt(this.blockTag),
     })
     ;(newState as any).contractCache = new Map(this.contractCache)
-    ;(newState as any).storageCache = this.storageCache
+    ;(newState as any).storageCache = new StorageCache({ size: 10000, type: CacheType.LRU })
     ;(newState as any)._accountCache = this._accountCache
     return newState
   }
