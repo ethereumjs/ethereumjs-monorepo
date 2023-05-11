@@ -1,12 +1,5 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
-import {
-  Account,
-  MAX_UINT64,
-  bigIntToHex,
-  bytesToBigInt,
-  bytesToHex,
-  intToHex,
-} from '@ethereumjs/util'
+import { Account, MAX_UINT64, bigIntToHex, bytesToBigInt, bytesToHex } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
 import { EOF } from './eof'
@@ -339,7 +332,7 @@ export class Interpreter {
         pc: eventObj.pc,
         op: name,
         gas: bigIntToHex(eventObj.gasLeft),
-        gasCost: intToHex(eventObj.opcode.fee),
+        gasCost: bigIntToHex(dynamicFee),
         stack: hexStack,
         depth: eventObj.depth,
       }
