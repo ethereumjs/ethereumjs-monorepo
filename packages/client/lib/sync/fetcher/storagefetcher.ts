@@ -18,7 +18,6 @@ import type { Peer } from '../../net/peer'
 import type { StorageData } from '../../net/protocol/snapprotocol'
 import type { FetcherOptions } from './fetcher'
 import type { Job } from './types'
-import type { DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 const TOTAL_RANGE_END = BigInt(2) ** BigInt(256) - BigInt(1)

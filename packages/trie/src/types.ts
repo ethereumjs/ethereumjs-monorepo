@@ -27,7 +27,7 @@ export interface TrieOpts {
   /**
    * A database instance.
    */
-  db?: DB<Uint8Array, Uint8Array>
+  db?: DB<string, string>
 
   /**
    * A `Uint8Array` for the root of a previously stored trie
@@ -84,7 +84,7 @@ export interface CheckpointDBOpts {
   /**
    * A database instance.
    */
-  db: DB
+  db: DB<string, string>
 
   /**
    * Cache size (default: 0)

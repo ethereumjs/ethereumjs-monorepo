@@ -21,7 +21,6 @@ import { ReceiptsManager } from './receipt'
 
 import type { ExecutionOptions } from './execution'
 import type { Block } from '@ethereumjs/block'
-import type { DB } from '@ethereumjs/util'
 import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 
 export class VMExecution extends Execution {
@@ -137,7 +136,7 @@ export class VMExecution extends Execution {
         if (typeof this.vm.blockchain.genesisState !== 'function') {
           throw new Error('cannot get iterator head: blockchain has no genesisState function')
         }
-        await this.vm.eei.generateCanonicalGenesis(this.vm.blockchain.genesisState())
+        await this.vm.stateManager.generateCanonicalGenesis(this.vm.blockchain.genesisState())
       }
       await super.open()
       // TODO: Should a run be started to execute any left over blocks?

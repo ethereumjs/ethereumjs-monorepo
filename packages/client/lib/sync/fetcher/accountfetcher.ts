@@ -25,7 +25,6 @@ import type { EventBusType } from '../../types'
 import type { FetcherOptions } from './fetcher'
 import type { StorageRequest } from './storagefetcher'
 import type { Job } from './types'
-import type { DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 type AccountDataResponse = AccountData[] & { completed?: boolean }

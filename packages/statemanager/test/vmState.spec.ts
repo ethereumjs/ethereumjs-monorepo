@@ -1,17 +1,25 @@
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Address } from '@ethereumjs/util'
+import { Account, Address } from '@ethereumjs/util'
 import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
-import { VmState } from '../../src/eei/vmState'
-
-import { createAccount, isRunningInKarma } from './utils'
+export function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {
+  return new Account(nonce, balance)
+}
+/**
+ * Checks if in a karma test runner.
+ * @returns boolean whether running in karma
+ */
+export function isRunningInKarma(): boolean {
+  // eslint-disable-next-line no-undef
+  return typeof (<any>globalThis).window !== 'undefined' && (<any>globalThis).window.__karma__
+}
 
 const StateManager = DefaultStateManager
 
-tape('vmState', (t) => {
+tape('stateManager', (t) => {
   // TODO (@Jochem): reactivate along EEI/VMState moving to VM
   /*t.test(
     'should generate the genesis state root correctly for mainnet from ethereum/tests data',
@@ -22,10 +30,10 @@ tape('vmState', (t) => {
       }
       const genesisData = getSingleFile('BasicTests/genesishashestest.json')
 
-      const vmState = new VmState({ stateManager: new StateManager() })
+      const stateManager = new VmState({ stateManager: new StateManager() })
       const blockchain = await Blockchain.create()
-      await vmState.generateCanonicalGenesis(blockchain.genesisState())
-      const stateRoot = await vmState.getStateRoot()
+      await stateManager.generateCanonicalGenesis(blockchain.genesisState())
+      const stateRoot = await stateManager.getStateRoot()
       st.equal(
         bytesToHex(stateRoot),
         genesisData.genesis_state_root,
@@ -46,10 +54,9 @@ tape('vmState', (t) => {
     )
     const stateManager = new StateManager({})
 
-    const vmState = new VmState({ stateManager, common })
     const blockchain = await Blockchain.create({ common })
-    await vmState.generateCanonicalGenesis(blockchain.genesisState())
-    const stateRoot = await vmState.getStateRoot()
+    await stateManager.generateCanonicalGenesis(blockchain.genesisState())
+    const stateRoot = await stateManager.getStateRoot()
 
     st.deepEquals(
       stateRoot,
@@ -82,11 +89,10 @@ tape('vmState', (t) => {
     for (const [chain, expectedStateRoot] of chains) {
       const common = new Common({ chain, hardfork: Hardfork.Chainstart })
       const stateManager = new DefaultStateManager({})
-      const vmState = new VmState({ stateManager, common })
 
       const blockchain = await Blockchain.create({ common })
-      await vmState.generateCanonicalGenesis(blockchain.genesisState())
-      const stateRoot = await vmState.getStateRoot()
+      await stateManager.generateCanonicalGenesis(blockchain.genesisState())
+      const stateRoot = await stateManager.getStateRoot()
 
       st.deepEquals(
         stateRoot,
@@ -100,49 +106,48 @@ tape('vmState', (t) => {
 
 tape('Original storage cache', async (t) => {
   const stateManager = new DefaultStateManager()
-  const vmState = new VmState({ stateManager })
 
   const address = new Address(hexToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
   const account = createAccount()
-  await vmState.putAccount(address, account)
+  await stateManager.putAccount(address, account)
 
   const key = hexToBytes('1234567890123456789012345678901234567890123456789012345678901234')
   const value = hexToBytes('1234')
 
   t.test('should initially have empty storage value', async (st) => {
-    await vmState.checkpoint()
-    const res = await vmState.getContractStorage(address, key)
+    await stateManager.checkpoint()
+    const res = await stateManager.getContractStorage(address, key)
     st.deepEqual(res, new Uint8Array(0))
 
-    const origRes = await (<any>vmState).getOriginalContractStorage(address, key)
+    const origRes = await (<any>stateManager).getOriginalContractStorage(address, key)
     st.deepEqual(origRes, new Uint8Array(0))
 
-    await vmState.commit()
+    await stateManager.commit()
 
     st.end()
   })
 
   t.test('should set original storage value', async (st) => {
-    await vmState.putContractStorage(address, key, value)
-    const res = await vmState.getContractStorage(address, key)
+    await stateManager.putContractStorage(address, key, value)
+    const res = await stateManager.getContractStorage(address, key)
     st.deepEqual(res, value)
 
     st.end()
   })
 
   t.test('should get original storage value', async (st) => {
-    const res = await (<any>vmState).getOriginalContractStorage(address, key)
+    const res = await (<any>stateManager).getOriginalContractStorage(address, key)
     st.deepEqual(res, value)
     st.end()
   })
 
   t.test('should return correct original value after modification', async (st) => {
     const newValue = hexToBytes('1235')
-    await vmState.putContractStorage(address, key, newValue)
-    const res = await vmState.getContractStorage(address, key)
+    await stateManager.putContractStorage(address, key, newValue)
+    const res = await stateManager.getContractStorage(address, key)
     st.deepEqual(res, newValue)
 
-    const origRes = await (<any>vmState).getOriginalContractStorage(address, key)
+    const origRes = await (<any>stateManager).getOriginalContractStorage(address, key)
     st.deepEqual(origRes, value)
     st.end()
   })
@@ -151,24 +156,24 @@ tape('Original storage cache', async (t) => {
     const key2 = hexToBytes('0000000000000000000000000000000000000000000000000000000000000012')
     const value2 = utf8ToBytes('12')
     const value3 = utf8ToBytes('123')
-    await vmState.putContractStorage(address, key2, value2)
+    await stateManager.putContractStorage(address, key2, value2)
 
-    let res = await vmState.getContractStorage(address, key2)
+    let res = await stateManager.getContractStorage(address, key2)
     st.deepEqual(res, value2)
-    let origRes = await (<any>vmState).getOriginalContractStorage(address, key2)
+    let origRes = await (<any>stateManager).getOriginalContractStorage(address, key2)
     st.deepEqual(origRes, value2)
 
-    await vmState.putContractStorage(address, key2, value3)
+    await stateManager.putContractStorage(address, key2, value3)
 
-    res = await vmState.getContractStorage(address, key2)
+    res = await stateManager.getContractStorage(address, key2)
     st.deepEqual(res, value3)
-    origRes = await (<any>vmState).getOriginalContractStorage(address, key2)
+    origRes = await (<any>stateManager).getOriginalContractStorage(address, key2)
     st.deepEqual(origRes, value2)
 
     // Check previous key
-    res = await vmState.getContractStorage(address, key)
+    res = await stateManager.getContractStorage(address, key)
     st.deepEqual(res, hexToBytes('1235'))
-    origRes = await (<any>vmState).getOriginalContractStorage(address, key)
+    origRes = await (<any>stateManager).getOriginalContractStorage(address, key)
     st.deepEqual(origRes, value)
 
     st.end()
@@ -176,7 +181,7 @@ tape('Original storage cache', async (t) => {
 
   t.test("getOriginalContractStorage should validate the key's length", async (st) => {
     try {
-      await (<any>vmState).getOriginalContractStorage(address, new Uint8Array(12))
+      await (<any>stateManager).getOriginalContractStorage(address, new Uint8Array(12))
     } catch (e: any) {
       st.equal(e.message, 'Storage key must be 32 bytes long')
       st.end()
@@ -203,11 +208,10 @@ tape('StateManager - generateAccessList', (tester) => {
 
   function getStateManagerAliases() {
     const stateManager = new DefaultStateManager()
-    const vmState = new VmState({ stateManager })
-    const addA = vmState.addWarmedAddress.bind(vmState)
-    const addS = vmState.addWarmedStorage.bind(vmState)
-    const gen = vmState.generateAccessList.bind(vmState)
-    const sm = vmState
+    const addA = stateManager.addWarmedAddress.bind(stateManager)
+    const addS = stateManager.addWarmedStorage.bind(stateManager)
+    const gen = stateManager.generateAccessList.bind(stateManager)
+    const sm = stateManager
     return { addA, addS, gen, sm }
   }
 

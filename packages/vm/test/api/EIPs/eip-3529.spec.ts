@@ -139,7 +139,7 @@ tape('EIP-3529 tests', (t) => {
       )
 
       await vm.stateManager.getContractStorage(address, key)
-      vm.eei.addWarmedStorage(address.toBytes(), key)
+      vm.stateManager.addWarmedStorage(address.bytes, key)
 
       await vm.evm.runCode!({
         code,
@@ -153,7 +153,7 @@ tape('EIP-3529 tests', (t) => {
       st.equal(gasUsed, BigInt(testCase.usedGas), 'correct used gas')
 
       // clear the storage cache, otherwise next test will use current original value
-      vm.eei.clearOriginalStorageCache()
+      vm.stateManager.clearOriginalStorageCache()
     }
 
     st.end()

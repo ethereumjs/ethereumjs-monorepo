@@ -2,7 +2,7 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { RLP } from '@ethereumjs/rlp'
 import { Transaction, TransactionFactory } from '@ethereumjs/tx'
-import { bytesToPrefixedHexString } from '@ethereumjs/util'
+import { Account, bytesToPrefixedHexString } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import { readFileSync, writeFileSync } from 'fs'
@@ -59,13 +59,12 @@ async function runTransition(argsIn: any) {
     const genesis = Block.fromBlockData({ header: BlockHeader.fromHeaderData(genesisBlockData) })
     blockchain = await Blockchain.create({ common, genesisBlock: genesis })
   }
-  const vm =
-    blockchain !== undefined ? await VM.create({ common, blockchain }) : await VM.create({ common })
-  await setupPreConditions(<any>vm.eei, { pre: alloc })
+  const vm = blockchain ? await VM.create({ common, blockchain }) : await VM.create({ common })
+  await setupPreConditions(vm.stateManager, { pre: alloc })
 
   const block = makeBlockFromEnv(inputEnv, { common })
 
-  const acc = await vm.stateManager.getAccount(block.header.coinbase)
+  const acc = (await vm.stateManager.getAccount(block.header.coinbase)) ?? new Account()
   await vm.stateManager.putAccount(block.header.coinbase, acc)
 
   const txsData = RLP.decode(hexToBytes(rlpTxs.slice(2)))
@@ -126,10 +125,10 @@ async function runTransition(argsIn: any) {
   const logsBloom = builder.logsBloom()
   const logsHash = keccak256(logsBloom)
 
-  await vm.eei.cleanupTouchedAccounts()
+  await vm.stateManager.cleanupTouchedAccounts()
 
   const output = {
-    stateRoot: bytesToPrefixedHexString(await vm.eei.getStateRoot()),
+    stateRoot: bytesToPrefixedHexString(await vm.stateManager.getStateRoot()),
     txRoot: bytesToPrefixedHexString(await builder.transactionsTrie()),
     receiptsRoot: bytesToPrefixedHexString(await builder.receiptTrie()),
     logsHash: bytesToPrefixedHexString(logsHash),
