@@ -37,7 +37,7 @@ const getEncodings = (opts: EncodingOpts = {}) => {
 
 /**
  * LevelDB is a thin wrapper around the underlying levelup db,
- * which validates inputs and sets encoding type.
+ * corresponding to the {@link DB}
  */
 export class LevelDB implements DB<Uint8Array | string, Uint8Array | string | DBObject> {
   _leveldb: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>

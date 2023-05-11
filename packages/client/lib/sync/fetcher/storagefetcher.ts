@@ -125,7 +125,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
           )
         }
       }
-      const trie = new Trie({ db: new LevelDB() as DB })
+      const trie = new Trie({ db: new LevelDB() as any })
       const keys = slots.map((slot: any) => slot.hash)
       const values = slots.map((slot: any) => slot.body)
       return await trie.verifyRangeProof(
@@ -156,7 +156,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
           )
         }
       }
-      const trie = new Trie({ db: new LevelDB() as DB })
+      const trie = new Trie({ db: new LevelDB() as any })
       await trie.batch(
         slots.map((s) => {
           return {
