@@ -1,10 +1,11 @@
+import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { Account, bigIntToHex, bytesToBigInt, bytesToHex, toBytes } from '@ethereumjs/util'
 import { debug } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { ethers } from 'ethers'
 
-import { AccountCache, CacheType } from './cache'
+import { AccountCache, CacheType, StorageCache } from './cache'
 
 import type { Proof } from '.'
 import type { AccountFields, StateManagerInterface, StorageDump } from '@ethereumjs/common'
@@ -20,7 +21,7 @@ export interface EthersStateManagerOpts {
 export class EthersStateManager implements StateManagerInterface {
   private provider: ethers.providers.StaticJsonRpcProvider | ethers.providers.JsonRpcProvider
   private contractCache: Map<string, Uint8Array>
-  private storageCache: Map<string, Map<string, Uint8Array>>
+  private storageCache: StorageCache
   private blockTag: string
   _accountCache: AccountCache
 
@@ -36,8 +37,7 @@ export class EthersStateManager implements StateManagerInterface {
     this.blockTag = opts.blockTag === 'earliest' ? opts.blockTag : bigIntToHex(opts.blockTag)
 
     this.contractCache = new Map()
-    this.storageCache = new Map()
-
+    this.storageCache = new StorageCache({ size: 10000, type: CacheType.LRU })
     this._accountCache = new AccountCache({ size: 100000, type: CacheType.LRU })
   }
 
@@ -47,7 +47,7 @@ export class EthersStateManager implements StateManagerInterface {
       blockTag: BigInt(this.blockTag),
     })
     ;(newState as any).contractCache = new Map(this.contractCache)
-    ;(newState as any).storageCache = new Map(this.storageCache)
+    ;(newState as any).storageCache = this.storageCache
     ;(newState as any)._accountCache = this._accountCache
     return newState
   }
@@ -109,24 +109,22 @@ export class EthersStateManager implements StateManagerInterface {
    */
   async getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     // Check storage slot in cache
-    const accountStorage: Map<string, Uint8Array> | undefined = this.storageCache.get(
-      address.toString()
-    )
-    let storage: Uint8Array | string | undefined
-    if (accountStorage !== undefined) {
-      storage = accountStorage.get(bytesToHex(key))
-      if (storage !== undefined) {
-        return storage
-      }
+    if (key.length !== 32) {
+      throw new Error('Storage key must be 32 bytes long')
+    }
+
+    let value = this.storageCache!.get(address, key)
+    if (value !== undefined) {
+      return value
     }
 
     // Retrieve storage slot from provider if not found in cache
-    storage = await this.provider.getStorageAt(
+    const storage = await this.provider.getStorageAt(
       address.toString(),
       bytesToBigInt(key),
       this.blockTag
     )
-    const value = toBytes(storage)
+    value = toBytes(storage)
 
     await this.putContractStorage(address, key, value)
     return value
@@ -142,12 +140,7 @@ export class EthersStateManager implements StateManagerInterface {
    * If it is empty or filled with zeros, deletes the value.
    */
   async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
-    let accountStorage = this.storageCache.get(address.toString())
-    if (accountStorage === undefined) {
-      this.storageCache.set(address.toString(), new Map<string, Uint8Array>())
-      accountStorage = this.storageCache.get(address.toString())
-    }
-    accountStorage?.set(bytesToHex(key), value)
+    this.storageCache.put(address, key, value)
   }
 
   /**
@@ -155,7 +148,7 @@ export class EthersStateManager implements StateManagerInterface {
    * @param address - Address to clear the storage of
    */
   async clearContractStorage(address: Address): Promise<void> {
-    this.storageCache.delete(address.toString())
+    this.storageCache.clearContractStorage(address)
   }
 
   /**
@@ -166,10 +159,10 @@ export class EthersStateManager implements StateManagerInterface {
    * Both are represented as `0x` prefixed hex strings.
    */
   dumpStorage(address: Address): Promise<StorageDump> {
-    const addressStorage = this.storageCache.get(address.toString())
+    const storageMap = this.storageCache._lruCache?.get(address.toString())
     const dump: StorageDump = {}
-    if (addressStorage !== undefined) {
-      for (const slot of addressStorage) {
+    if (storageMap !== undefined) {
+      for (const slot of storageMap) {
         dump[slot[0]] = bytesToHex(slot[1])
       }
     }
