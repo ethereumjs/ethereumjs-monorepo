@@ -569,7 +569,7 @@ export class Config {
    * Returns the config level db.
    */
   static getConfigDB(networkDir: string) {
-    return new Level<string | Uint8Array, Uint8Array>(`${networkDir}/config` as any)
+    return new Level<string | Uint8Array, Uint8Array>(`${networkDir}/config`)
   }
 
   /**

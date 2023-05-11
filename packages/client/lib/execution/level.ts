@@ -39,7 +39,11 @@ const getEncodings = (opts: EncodingOpts = {}) => {
  * LevelDB is a thin wrapper around the underlying levelup db,
  * which validates inputs and sets encoding type.
  */
-export class LevelDB implements DB<Uint8Array | string, Uint8Array | string | DBObject> {
+export class LevelDB<
+  TKey extends Uint8Array | string = Uint8Array | string,
+  TValue extends Uint8Array | string | DBObject = Uint8Array | string | DBObject
+> implements DB<TKey, TValue>
+{
   _leveldb: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   /**
@@ -56,10 +60,7 @@ export class LevelDB implements DB<Uint8Array | string, Uint8Array | string | DB
   /**
    * @inheritDoc
    */
-  async get(
-    key: Uint8Array | string,
-    opts?: EncodingOpts
-  ): Promise<Uint8Array | string | DBObject | undefined> {
+  async get(key: TKey, opts?: EncodingOpts): Promise<TValue | undefined> {
     let value
     const encodings = getEncodings(opts)
 
@@ -76,17 +77,13 @@ export class LevelDB implements DB<Uint8Array | string, Uint8Array | string | DB
     }
     // eslint-disable-next-line
     if (value instanceof Buffer) value = Uint8Array.from(value)
-    return value
+    return value as TValue
   }
 
   /**
    * @inheritDoc
    */
-  async put(
-    key: Uint8Array | string,
-    val: Uint8Array | string | DBObject,
-    opts?: {}
-  ): Promise<void> {
+  async put(key: TKey, val: TValue, opts?: {}): Promise<void> {
     const encodings = getEncodings(opts)
     await this._leveldb.put(key, val, encodings)
   }
@@ -94,29 +91,29 @@ export class LevelDB implements DB<Uint8Array | string, Uint8Array | string | DB
   /**
    * @inheritDoc
    */
-  async del(key: Uint8Array | string): Promise<void> {
+  async del(key: TKey): Promise<void> {
     await this._leveldb.del(key)
   }
 
   /**
    * @inheritDoc
    */
-  async batch(opStack: BatchDBOp[]): Promise<void> {
+  async batch(opStack: BatchDBOp<TKey, TValue>[]): Promise<void> {
     const levelOps = []
     for (const op of opStack) {
       const encodings = getEncodings(op.opts)
       levelOps.push({ ...op, ...encodings })
     }
 
-    await this._leveldb.batch(levelOps)
+    // TODO: Investigate why as any is necessary
+    await this._leveldb.batch(levelOps as any)
   }
 
   /**
    * @inheritDoc
    */
-  copy(): DB {
-    //@ts-expect-error
-    return new LevelDB(this._leveldb)
+  copy(): DB<TKey, TValue> {
+    return new LevelDB<TKey, TValue>(this._leveldb)
   }
 
   open() {
