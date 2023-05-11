@@ -800,7 +800,7 @@ export class Trie {
   // If this method returns `true`, the Trie is correctly pruned and all keys are reachable
   async verifyPrunedIntegrity(): Promise<boolean> {
     const roots = [this.root().toString('hex'), this.appliedKey(ROOT_DB_KEY).toString('hex')]
-    for (const dbkey of (<any>this)._db.db._database.keys()) {
+    for (const dbkey of await (<any>this)._db.db.keys()) {
       if (roots.includes(dbkey)) {
         // The root key can never be found from the trie, otherwise this would
         // convert the tree from a directed acyclic graph to a directed cycling graph
