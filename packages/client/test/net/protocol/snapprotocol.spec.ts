@@ -18,8 +18,6 @@ import { Chain } from '../../../lib/blockchain'
 import { Config } from '../../../lib/config'
 import { LevelDB } from '../../../lib/execution/level'
 import { SnapProtocol } from '../../../lib/net/protocol'
-
-import type { DB } from '@ethereumjs/util'
 ;(BigInt.prototype as any).toJSON = function () {
   return this.toString()
 }
@@ -202,7 +200,7 @@ tape('[SnapProtocol]', (t) => {
       resData
     )
 
-    const trie = new Trie({ db: new LevelDB() as DB })
+    const trie = new Trie({ db: new LevelDB() as any })
     try {
       const keys = accounts.map((acc: any) => acc.hash)
       const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
@@ -342,7 +340,7 @@ tape('[SnapProtocol]', (t) => {
     // lastAccount
     const lastAccountSlots = slots[0]
     const lastAccountStorageRoot = (lastAccount.body as any)[2]
-    const trie = new Trie({ db: new LevelDB() as DB })
+    const trie = new Trie({ db: new LevelDB() as any })
     try {
       const keys = lastAccountSlots.map((acc: any) => acc.hash)
       const values = lastAccountSlots.map((acc: any) => acc.body)
