@@ -393,7 +393,6 @@ export class Trie {
     const toSave: BatchDBOp[] = []
     const lastNode = stack.pop()
     if (!lastNode) {
-      console.trace('no last node!')
       throw new Error('Stack underflow')
     }
 

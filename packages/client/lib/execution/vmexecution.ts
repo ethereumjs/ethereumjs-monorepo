@@ -21,7 +21,6 @@ import { ReceiptsManager } from './receipt'
 
 import type { ExecutionOptions } from './execution'
 import type { Block } from '@ethereumjs/block'
-import type { DB } from '@ethereumjs/util'
 import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 
 export class VMExecution extends Execution {
