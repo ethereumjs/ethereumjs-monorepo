@@ -50,7 +50,7 @@ export class VMExecution extends Execution {
 
     if (this.config.vm === undefined) {
       const trie = new Trie({
-        db: new LevelDB<Uint8Array, Uint8Array>(this.stateDB),
+        db: new LevelDB(this.stateDB),
         useKeyHashing: true,
         cacheSize: this.config.trieCache,
       })
