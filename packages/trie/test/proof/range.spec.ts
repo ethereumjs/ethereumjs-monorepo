@@ -22,7 +22,7 @@ const TRIE_SIZE = 512
  * @param addKey - whether to add 100 ordered keys
  * @returns Trie object and sorted entries
  */
-async function randomTrie(db: DB, addKey: boolean = true) {
+async function randomTrie(db: DB<string, string>, addKey: boolean = true) {
   const entries: [Uint8Array, Uint8Array][] = []
   const trie = new Trie({ db })
 

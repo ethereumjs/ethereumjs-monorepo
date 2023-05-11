@@ -163,7 +163,7 @@ for (const { constructor, defaults, title } of [
     })
 
     t.test('persist and restore the root', async function (st) {
-      const db = new MapDB<Uint8Array, Uint8Array>()
+      const db = new MapDB<string, string>()
 
       const trie = await constructor.create({ ...defaults, db, useRootPersistence: true })
       // @ts-expect-error
