@@ -42,6 +42,7 @@ import type {
   Log,
 } from './types'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
+import { EvmJournal } from './evmJournal'
 
 const debug = createDebugLogger('evm:evm')
 const debugGas = createDebugLogger('evm:gas')
@@ -185,6 +186,7 @@ export class EVM implements EVMInterface {
 
   public stateManager: EVMStateManagerInterface
   public blockchain: Blockchain
+  public evmJournal: EvmJournal
 
   public readonly _transientStorage: TransientStorage
 
@@ -303,6 +305,8 @@ export class EVM implements EVMInterface {
     this._allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
     this._customOpcodes = opts.customOpcodes
     this._customPrecompiles = opts.customPrecompiles
+
+    this.evmJournal = new EvmJournal(this.stateManager, this._common)
 
     this._common.on('hardforkChanged', () => {
       this.getActiveOpcodes()
@@ -494,8 +498,8 @@ export class EVM implements EVMInterface {
       }
     }
 
-    await this.stateManager.putAccount(message.to, toAccount, true)
-    await this.stateManager.clearContractStorage(message.to, true)
+    await this.evmJournal.putAccount(message.to, toAccount)
+    await this.stateManager.clearContractStorage(message.to)
 
     const newContractEvent = {
       address: message.to,
@@ -649,7 +653,7 @@ export class EVM implements EVMInterface {
         // It is thus an unnecessary default item, which we have to save to disk
         // It does change the state root, but it only wastes storage.
         const account = await this.stateManager.getAccount(message.to)
-        await this.stateManager.putAccount(message.to, account ?? new Account(), true)
+        await this.evmJournal.putAccount(message.to, account ?? new Account())
       }
     }
 
@@ -694,7 +698,8 @@ export class EVM implements EVMInterface {
       this.stateManager,
       this.blockchain,
       env,
-      message.gasLimit
+      message.gasLimit,
+      this.evmJournal
     )
     if (message.selfdestruct) {
       interpreter._result.selfdestruct = message.selfdestruct as { [key: string]: Uint8Array }
@@ -760,7 +765,7 @@ export class EVM implements EVMInterface {
         if (callerAccount.balance < value) {
           // if skipBalance and balance less than value, set caller balance to `value` to ensure sufficient funds
           callerAccount.balance = value
-          await this.stateManager.putAccount(caller, callerAccount, true)
+          await this.evmJournal.putAccount(caller, callerAccount)
         }
       }
 
@@ -789,7 +794,7 @@ export class EVM implements EVMInterface {
         callerAccount = new Account()
       }
       callerAccount.nonce++
-      await this.stateManager.putAccount(message.caller, callerAccount, true)
+      await this.evmJournal.putAccount(message.caller, callerAccount)
       if (this.DEBUG) {
         debug(`Update fromAccount (caller) nonce (-> ${callerAccount.nonce}))`)
       }
@@ -966,11 +971,7 @@ export class EVM implements EVMInterface {
     if (account.balance < BigInt(0)) {
       throw new EvmError(ERROR.INSUFFICIENT_BALANCE)
     }
-    const result = this.stateManager.putAccount(
-      message.authcallOrigin ?? message.caller,
-      account,
-      true
-    )
+    const result = this.evmJournal.putAccount(message.authcallOrigin ?? message.caller, account)
     if (this.DEBUG) {
       debug(`Reduced sender (${message.caller}) balance (-> ${account.balance})`)
     }
@@ -984,7 +985,7 @@ export class EVM implements EVMInterface {
     }
     toAccount.balance = newBalance
     // putAccount as the nonce may have changed for contract creation
-    const result = this.stateManager.putAccount(message.to, toAccount, true)
+    const result = this.evmJournal.putAccount(message.to, toAccount)
     if (this.DEBUG) {
       debug(`Added toAccount (${message.to}) balance (-> ${toAccount.balance})`)
     }

@@ -14,6 +14,7 @@ import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes'
 import type { Block, Blockchain, Log } from './types'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
+import { EvmJournal } from './evmJournal'
 
 const debugGas = createDebugLogger('evm:eei:gas')
 
@@ -108,6 +109,7 @@ export class Interpreter {
   protected _stateManager: EVMStateManagerInterface
   protected _common: Common
   public _evm: EVM
+  public evmJournal: EvmJournal
   _env: Env
 
   // Keep track of this Interpreter run result
@@ -125,7 +127,8 @@ export class Interpreter {
     stateManager: EVMStateManagerInterface,
     blockchain: Blockchain,
     env: Env,
-    gasLeft: bigint
+    gasLeft: bigint,
+    evmJournal: EvmJournal
   ) {
     this._evm = evm
     this._stateManager = stateManager
@@ -149,6 +152,7 @@ export class Interpreter {
       gasLeft,
       returnBytes: new Uint8Array(0),
     }
+    this.evmJournal = evmJournal
     this._env = env
     this._result = {
       logs: [],
@@ -463,6 +467,10 @@ export class Interpreter {
     this._runState.gasLeft += amount
   }
 
+  async putAccount() {}
+
+  async deleteAccount() {}
+
   /**
    * Returns balance of the given account.
    * @param address - Address of account
@@ -484,7 +492,7 @@ export class Interpreter {
    * Store 256-bit a value in memory to persistent storage.
    */
   async storageStore(key: Uint8Array, value: Uint8Array): Promise<void> {
-    await this._stateManager.putContractStorage(this._env.address, key, value, true)
+    await this._stateManager.putContractStorage(this._env.address, key, value)
     const account = await this._stateManager.getAccount(this._env.address)
     if (!account) {
       throw new Error('could not read account while persisting memory')
@@ -909,7 +917,7 @@ export class Interpreter {
     }
 
     this._env.contract.nonce += BigInt(1)
-    await this._stateManager.putAccount(this._env.address, this._env.contract, true)
+    await this.evmJournal.putAccount(this._env.address, this._env.contract)
 
     if (this._common.isActivatedEIP(3860)) {
       if (
@@ -1006,7 +1014,7 @@ export class Interpreter {
       toAccount = new Account()
     }
     toAccount.balance += this._env.contract.balance
-    await this._stateManager.putAccount(toAddress, toAccount, true)
+    await this.evmJournal.putAccount(toAddress, toAccount)
 
     // Subtract from contract balance
     await this._stateManager.modifyAccountFields(this._env.address, {

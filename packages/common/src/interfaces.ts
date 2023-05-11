@@ -41,7 +41,7 @@ export type AccessList = AccessListItem[]
 export interface StateManagerInterface {
   accountExists(address: Address): Promise<boolean>
   getAccount(address: Address): Promise<Account | undefined>
-  putAccount(address: Address, account: Account): Promise<void>
+  putAccount(address: Address, account?: Account): Promise<void>
   deleteAccount(address: Address): Promise<void>
   modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void>
   putContractCode(address: Address, value: Uint8Array): Promise<void>
@@ -60,9 +60,6 @@ export interface StateManagerInterface {
 }
 
 export interface EVMStateManagerInterface extends StateManagerInterface {
-  // TODO check if all these `touch?` interfaces can be moved into StateManagerInterface
-  putAccount(address: Address, account: Account, touch?: boolean): Promise<void>
-  deleteAccount(address: Address, touch?: boolean): Promise<void>
   accountIsEmptyOrNonExistent(address: Address): Promise<boolean>
 
   getOriginalContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
@@ -75,10 +72,7 @@ export interface EVMStateManagerInterface extends StateManagerInterface {
     touch?: boolean
   ): Promise<void>
 
-  clearContractStorage(address: Address, touch?: boolean): Promise<void>
-
   clearWarmedAccounts(): void
-  cleanupTouchedAccounts(): Promise<void>
   clearOriginalStorageCache(): void
 
   addWarmedAddress(address: Uint8Array): void

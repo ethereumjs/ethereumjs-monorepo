@@ -26,7 +26,6 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { AccountCache, CacheType, StorageCache } from './cache'
-import { Journaling } from './cache/journaling'
 
 import type {
   AccessListItem,
@@ -172,8 +171,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
   protected _originalStorageCache: Map<string, Map<string, Uint8Array>>
 
-  protected readonly touchedJournal: Journaling<string>
-
   protected readonly _prefixCodeHashes: boolean
   protected readonly _accountCacheSettings: CacheSettings
   protected readonly _storageCacheSettings: CacheSettings
@@ -212,8 +209,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     this._originalStorageCache = new Map()
     this._accessedStorage = [new Map()]
     this._accessedStorageReverted = [new Map()]
-
-    this.touchedJournal = new Journaling<string>()
 
     this._prefixCodeHashes = opts.prefixCodeHashes ?? true
     this._accountCacheSettings = {
@@ -286,7 +281,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param account - The account to store or undefined if to be deleted
    * @param touch - If the account should be touched or not (for state clearing, see TangerineWhistle / SpuriousDragon hardforks)
    */
-  async putAccount(address: Address, account: Account | undefined, touch = false): Promise<void> {
+  async putAccount(address: Address, account: Account | undefined): Promise<void> {
     if (this.DEBUG) {
       this._debug(
         `Save account address=${address} nonce=${account?.nonce} balance=${
@@ -309,9 +304,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       } else {
         this._accountCache!.del(address)
       }
-    }
-    if (touch) {
-      this.touchAccount(address)
     }
   }
 
@@ -337,9 +329,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   /**
    * Deletes an account from state under the provided `address`.
    * @param address - Address of the account which should be deleted
-   * @param touch - If the account should be touched or not (for state clearing, see TangerineWhistle / SpuriousDragon hardforks)
    */
-  async deleteAccount(address: Address, touch = false) {
+  async deleteAccount(address: Address) {
     if (this.DEBUG) {
       this._debug(`Delete account ${address}`)
     }
@@ -351,41 +342,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (!this._storageCacheSettings.deactivate) {
       this._storageCache?.clearContractStorage(address)
     }
-    if (touch) {
-      this.touchAccount(address)
-    }
-  }
-
-  /**
-   * Marks an account as touched, according to the definition
-   * in [EIP-158](https://eips.ethereum.org/EIPS/eip-158).
-   * This happens when the account is triggered for a state-changing
-   * event. Touched accounts that are empty will be cleared
-   * at the end of the tx.
-   */
-  protected touchAccount(address: Address): void {
-    this.touchedJournal.addJournalItem(address.toString().slice(2))
-  }
-
-  /**
-   * Removes accounts form the state trie that have been touched,
-   * as defined in EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
-   */
-  async cleanupTouchedAccounts(): Promise<void> {
-    if (this._common.gteHardfork(Hardfork.SpuriousDragon) === true) {
-      const touchedArray = Array.from(this.touchedJournal.journal)
-      for (const addressHex of touchedArray) {
-        const address = new Address(hexToBytes(addressHex))
-        const empty = await this.accountIsEmptyOrNonExistent(address)
-        if (empty) {
-          await this.deleteAccount(address)
-          if (this.DEBUG) {
-            this._debug(`Cleanup touched account address=${address} (>= SpuriousDragon)`)
-          }
-        }
-      }
-    }
-    this.touchedJournal.clear()
   }
 
   /**
@@ -599,14 +555,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param value - Value to set at `key` for account corresponding to `address`.
    * Cannot be more than 32 bytes. Leading zeros are stripped.
    * If it is a empty or filled with zeros, deletes the value.
-   * @param touch - If the account should be touched or not (for state clearing, see TangerineWhistle / SpuriousDragon hardforks)
    */
-  async putContractStorage(
-    address: Address,
-    key: Uint8Array,
-    value: Uint8Array,
-    touch = false
-  ): Promise<void> {
+  async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')
     }
@@ -627,17 +577,13 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     } else {
       await this._writeContractStorage(address, account, key, value)
     }
-    if (touch) {
-      this.touchAccount(address)
-    }
   }
 
   /**
    * Clears all storage entries for the account corresponding to `address`.
    * @param address -  Address to clear the storage of
-   * @param touch - If the account should be touched or not (for state clearing, see TangerineWhistle / SpuriousDragon hardforks)
    */
-  async clearContractStorage(address: Address, touch = false): Promise<void> {
+  async clearContractStorage(address: Address): Promise<void> {
     let account = await this.getAccount(address)
     if (!account) {
       account = new Account()
@@ -647,9 +593,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       storageTrie.root(storageTrie.EMPTY_TRIE_ROOT)
       done()
     })
-    if (touch) {
-      this.touchAccount(address)
-    }
   }
 
   /**
@@ -665,7 +608,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       this._accessedStorage.push(new Map())
     }
     this._checkpointCount++
-    this.touchedJournal.checkpoint()
   }
 
   /**
@@ -684,7 +626,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         this._accessedStorageMerge(this._accessedStorage, storageMap)
       }
     }
-    this.touchedJournal.commit()
     this._checkpointCount--
 
     if (this._checkpointCount === 0) {
@@ -715,7 +656,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         this._accessedStorageReverted.push(lastItem)
       }
     }
-    this.touchedJournal.revert(RIPEMD160_ADDRESS_STRING)
 
     this._checkpointCount--
 
@@ -1128,9 +1068,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       }
     }
     await this.flush()
-    // If any empty accounts are put, these should not be marked as touched
-    // (when first tx is ran, this account is deleted when it cleans up the accounts)
-    this.touchedJournal.clear()
   }
 
   /**
