@@ -31,6 +31,7 @@ module.exports = function (config) {
             'bigint-crypto-utils': '../../node_modules/bigint-crypto-utils/dist/bundle.umd.js',
           },
         },
+        ignore: ['c-kzg'],
       },
     },
 

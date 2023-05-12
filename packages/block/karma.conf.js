@@ -13,6 +13,7 @@ module.exports = function (config) {
         acornOptions: {
           ecmaVersion: 12,
         },
+        ignore: ['c-kzg'],
       },
     },
     concurrency: 1,
