@@ -91,7 +91,7 @@ const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
 
 #### Node Deletion (Pruning)
 
-By default, the deletion of trie nodes from the underlying database does not occur in order to avoid corrupting older trie states (as of `v4.2.0`). Should you only wish to work with the latest state of a trie, you can switch to a delete behavior (for example, if you wish to save disk space) by using the `deleteFromDB` constructor option (see related release notes in the changelog for further details).
+By default, the deletion of trie nodes from the underlying database does not occur in order to avoid corrupting older trie states (as of `v4.2.0`). Should you only wish to work with the latest state of a trie, you can switch to a delete behavior (for example, if you wish to save disk space) by using the `useNodePruning` constructor option (see related release notes in the changelog for further details).
 
 #### Root Persistence
 

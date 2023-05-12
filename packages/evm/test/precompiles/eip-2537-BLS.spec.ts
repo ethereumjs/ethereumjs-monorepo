@@ -4,7 +4,6 @@ import { Address, bytesToPrefixedHexString } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
-import { isRunningInKarma } from '../../../vm/test/util'
 import { getActivePrecompiles } from '../../src'
 import { EVM } from '../../src/evm'
 
@@ -12,6 +11,15 @@ const precompileAddressStart = 0x0a
 const precompileAddressEnd = 0x12
 
 const precompiles: string[] = []
+
+/**
+ * Checks if in a karma test runner.
+ * @returns boolean whether running in karma
+ */
+export function isRunningInKarma(): boolean {
+  // eslint-disable-next-line no-undef
+  return typeof (<any>globalThis).window !== 'undefined' && (<any>globalThis).window.__karma__
+}
 
 for (let address = precompileAddressStart; address <= precompileAddressEnd; address++) {
   precompiles.push(address.toString(16).padStart(40, '0'))

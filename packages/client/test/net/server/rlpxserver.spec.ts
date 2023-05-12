@@ -23,7 +23,7 @@ tape('[RlpxServer]', async (t) => {
   }
   RlpxPeer.prototype.accept = td.func<any>()
   RlpxPeer.capabilities = td.func<any>()
-  td.replace('../../../lib/net/peer/rlpxpeer', { RlpxPeer })
+  td.replace<any>('../../../lib/net/peer/rlpxpeer', { RlpxPeer })
 
   class RLPx extends EventEmitter {
     listen(_: any, _2: any) {}
@@ -36,7 +36,7 @@ tape('[RlpxServer]', async (t) => {
   DPT.prototype.bind = td.func<any>()
   DPT.prototype.getDnsPeers = td.func<any>()
 
-  td.replace('@ethereumjs/devp2p', { DPT, RLPx })
+  td.replace<any>('@ethereumjs/devp2p', { DPT, RLPx })
 
   const { RlpxServer } = await import('../../../lib/net/server/rlpxserver')
 

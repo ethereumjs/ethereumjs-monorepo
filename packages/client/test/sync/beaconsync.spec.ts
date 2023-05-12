@@ -37,7 +37,7 @@ tape('[BeaconSynchronizer]', async (t) => {
   ReverseBlockFetcher.prototype.fetch = td.func<any>()
   ReverseBlockFetcher.prototype.clear = td.func<any>()
   ReverseBlockFetcher.prototype.destroy = td.func<any>()
-  td.replace('../../lib/sync/fetcher', { ReverseBlockFetcher })
+  td.replace<any>('../../lib/sync/fetcher', { ReverseBlockFetcher })
 
   const { BeaconSynchronizer } = await import('../../lib/sync/beaconsync')
 

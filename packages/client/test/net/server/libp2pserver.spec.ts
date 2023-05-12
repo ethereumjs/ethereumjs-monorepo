@@ -24,7 +24,7 @@ tape('[Libp2pServer]', async (t) => {
   Libp2pNode.prototype.handle = td.func<any>()
   Libp2pNode.prototype.start = td.func<any>()
   Libp2pNode.prototype.stop = td.func<any>()
-  td.replace('../../../lib/net/peer/libp2pnode', { Libp2pNode })
+  td.replace<any>('../../../lib/net/peer/libp2pnode', { Libp2pNode })
 
   const conn0 = 'conn0' as any
   const conn1 = 'conn1' as any

@@ -143,7 +143,7 @@ tape(`${method}: invalid terminal block`, async (t) => {
   }
 
   BlockHeader.prototype._consensusFormatValidation = td.func<any>()
-  td.replace('@ethereumjs/block', { BlockHeader })
+  td.replace<any>('@ethereumjs/block', { BlockHeader })
 
   const { server } = await setupChain(genesisWithHigherTtd, 'post-merge', {
     engine: true,

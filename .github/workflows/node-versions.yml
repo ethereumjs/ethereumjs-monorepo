@@ -1,6 +1,3 @@
-# This special file aims to run node tests for each relevant node version.
-# A relevant node version can be: active, current, maintenance or EOL with some months of tolerance
-# For more details, please check https://github.com/evertonfraga/testable-node-versions
 name: Node versions
 on:
   schedule:
@@ -8,24 +5,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  get-node-versions:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 16
-
-      - id: set-matrix
-        run: echo "::set-output name=matrix::$(npx testable-node-versions)"
-
   tests:
-    needs: get-node-versions
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: ${{ fromJson(needs.get-node-versions.outputs.matrix) }}
+        node-version: [16,18,20]
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
@@ -35,85 +19,60 @@ jobs:
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
-          node-version: ${{ matrix.node }}
+          node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - name: Use npm v7 for workspaces support
-        run: npm i -g npm@7
-        if: ${{ matrix.node-version < 16 }}
-
       - run: npm ci
-
-      # Added a check to ensure we only run on NodeJS 14 or later to all jobs until the `node-testable-versions` script stops picking up 12.
 
       - name: Test Block
         run: npm run test
         working-directory: packages/block
-        if: ${{ matrix.node >= 14 }}
 
       - name: Test Blockchain
         run: npm run test
         working-directory: packages/blockchain
-        if: ${{ matrix.node >= 14 }}
 
-      # Client and Devp2p temporarily disabled for Node < 15 due to browser build
-      # error along node-versions CI run "TextDecoder is not defined" triggered in
-      # older Noder versions (Node 12/14)
-      # https://github.com/ethereumjs/ethereumjs-monorepo/pull/1305
-      # 2021-06-18
-      #
       # Switch client to unit tests only due to `async_hooks` dependency build error in browser tests: 2022-06-15
       - name: Test Client
         run: npm run test:unit
         working-directory: packages/client
-        if: ${{ matrix.node >= 14 }}
 
       - name: Test Devp2p
         run: npm run test
         working-directory: packages/devp2p
-        if: ${{ matrix.node >= 14 }}
 
       - name: Test Common
         run: npm run test
         working-directory: packages/common
-        if: ${{ matrix.node >= 14 }}
 
       - name: Test Ethash
         run: npm run test
         working-directory: packages/ethash
-        if: ${{ matrix.node >= 14 }}
 
       - name: Test EVM
         run: npm run test
         working-directory: packages/evm
-        if: ${{ matrix.node >= 14 }}
 
       - name: Test Trie
         run: npm run test
         working-directory: packages/trie
-        if: ${{ matrix.node >= 14 }}
 
       - name: Test Tx
         run: npm run test
         working-directory: packages/tx
-        if: ${{ matrix.node >= 14 }}
 
       - name: Test Util
         run: npm run test
         working-directory: packages/util
-        if: ${{ matrix.node >= 14 }}
 
       - name: Test StateManager
         run: npm run test
         working-directory: packages/statemanager
-        if: ${{ matrix.node >= 14 }}
 
       - name: Test VM
         run: npm run test:API
         working-directory: packages/vm
-        if: ${{ matrix.node >= 14 }}
 
       - name: Test RLP
         run: npm run test
         working-directory: packages/rlp
-        if: ${{ matrix.node >= 14 }}

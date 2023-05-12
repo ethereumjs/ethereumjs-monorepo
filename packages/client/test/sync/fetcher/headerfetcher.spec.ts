@@ -12,7 +12,7 @@ tape('[HeaderFetcher]', async (t) => {
   }
   PeerPool.prototype.idle = td.func<any>()
   PeerPool.prototype.ban = td.func<any>()
-  td.replace('../../lib/net/peerpool', { PeerPool })
+  td.replace<any>('../../lib/net/peerpool', { PeerPool })
 
   const { HeaderFetcher } = await import('../../../lib/sync/fetcher/headerfetcher')
 

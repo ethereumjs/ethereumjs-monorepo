@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.7.1 - 2023-04-20
+
+### Features
+
+- New `numBlocksPerIteration` option to allow to set the number of blocks executed in bulk, other UX optimizations, PR [#2586](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2586)
+
+### Bugfixes / Maintenance
+
+- Stability and reorg improvements regarding safe and finalized blocks, PR [#2585](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2585)
+- Beacon sync fixes, PR [#2584](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2584)
+- Engine API timestamp checks, PR [#2579](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2579)
+- Ensure safe/finalized blocks are part of the canonical chain on Engine API `forkchoiceUpdated`, PR [#2577](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2577)
+- Engine API: ensure invalid blockhash status gets reported correctly, PR [#2583](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2583)
+- Turn off libp2p transport by default, PR [#2557](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2557)
+
 ## 0.7.0 - 2023-02-16
 
 This client release comes with finalized `Shanghai` hardfork support, fully integrates with a (non final) version of `EIP-4844` and allows to setup and run respective testnets, substantially improves on post-Merge UX and comes with a ton of bugfixes and (robustness) improvements being done during January 2023 core dev interop in Austria. So we felt this to be worth a minor version bump! 🙂 🎉 ❤️

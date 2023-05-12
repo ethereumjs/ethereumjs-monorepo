@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { Point, utils } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import {
   bytesToHex,
   concatBytes,
@@ -245,7 +245,7 @@ export const generateAddress2 = function (
  * Checks if the private key satisfies the rules of the curve secp256k1.
  */
 export const isValidPrivate = function (privateKey: Uint8Array): boolean {
-  return utils.isValidPrivateKey(privateKey)
+  return secp256k1.utils.isValidPrivateKey(privateKey)
 }
 
 /**
@@ -260,7 +260,7 @@ export const isValidPublic = function (publicKey: Uint8Array, sanitize: boolean 
     // Convert to SEC1 for secp256k1
     // Automatically checks whether point is on curve
     try {
-      Point.fromHex(concatBytes(Uint8Array.from([4]), publicKey))
+      secp256k1.ProjectivePoint.fromHex(concatBytes(Uint8Array.from([4]), publicKey))
       return true
     } catch (e) {
       return false
@@ -272,7 +272,7 @@ export const isValidPublic = function (publicKey: Uint8Array, sanitize: boolean 
   }
 
   try {
-    Point.fromHex(publicKey)
+    secp256k1.ProjectivePoint.fromHex(publicKey)
     return true
   } catch (e) {
     return false
@@ -288,7 +288,7 @@ export const isValidPublic = function (publicKey: Uint8Array, sanitize: boolean 
 export const pubToAddress = function (pubKey: Uint8Array, sanitize: boolean = false): Uint8Array {
   assertIsBytes(pubKey)
   if (sanitize && pubKey.length !== 64) {
-    pubKey = Point.fromHex(pubKey).toRawBytes(false).subarray(1)
+    pubKey = secp256k1.ProjectivePoint.fromHex(pubKey).toRawBytes(false).slice(1)
   }
   if (pubKey.length !== 64) {
     throw new Error('Expected pubKey to be of length 64')
@@ -305,7 +305,7 @@ export const publicToAddress = pubToAddress
 export const privateToPublic = function (privateKey: Uint8Array): Uint8Array {
   assertIsBytes(privateKey)
   // skip the type flag and use the X, Y points
-  return Point.fromPrivateKey(privateKey).toRawBytes(false).subarray(1)
+  return secp256k1.ProjectivePoint.fromPrivateKey(privateKey).toRawBytes(false).slice(1)
 }
 
 /**
@@ -322,7 +322,7 @@ export const privateToAddress = function (privateKey: Uint8Array): Uint8Array {
 export const importPublic = function (publicKey: Uint8Array): Uint8Array {
   assertIsBytes(publicKey)
   if (publicKey.length !== 64) {
-    publicKey = Point.fromHex(publicKey).toRawBytes(false).subarray(1)
+    publicKey = secp256k1.ProjectivePoint.fromHex(publicKey).toRawBytes(false).slice(1)
   }
   return publicKey
 }

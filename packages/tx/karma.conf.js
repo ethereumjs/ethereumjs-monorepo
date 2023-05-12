@@ -16,14 +16,6 @@ module.exports = function (config) {
           ecmaVersion: 12,
         },
         ignore: ['c-kzg', 'safer-buffer'],
-        resolve: {
-          alias: {
-            '@chainsafe/persistent-merkle-tree/hasher':
-              '../../node_modules/@chainsafe/persistent-merkle-tree/lib/hasher/noble.js',
-            '@chainsafe/as-sha256/hashObject':
-              '../../node_modules/@chainsafe/as-sha256/lib/hashObject.js',
-          },
-        },
       },
     },
     browsers: ['FirefoxHeadless', 'ChromeHeadless'],

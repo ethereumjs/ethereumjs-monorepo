@@ -23,14 +23,14 @@ tape('[FullEthereumService]', async (t) => {
   PeerPool.prototype.close = td.func<any>()
   PeerPool.prototype.start = td.func<any>()
   PeerPool.prototype.stop = td.func<any>()
-  td.replace('../../lib/net/peerpool', { PeerPool })
+  td.replace<any>('../../lib/net/peerpool', { PeerPool })
   const MockChain = td.constructor([] as any)
   MockChain.prototype.open = td.func<any>()
-  td.replace('../../lib/blockchain', { Chain: MockChain })
+  td.replace<any>('../../lib/blockchain', { Chain: MockChain })
   const EthProtocol = td.constructor([] as any)
   const LesProtocol = td.constructor([] as any)
-  td.replace('../../lib/net/protocol/ethprotocol', { EthProtocol })
-  td.replace('../../lib/net/protocol/lesprotocol', { LesProtocol })
+  td.replace<any>('../../lib/net/protocol/ethprotocol', { EthProtocol })
+  td.replace<any>('../../lib/net/protocol/lesprotocol', { LesProtocol })
   class FullSynchronizer {
     start() {}
     stop() {}
@@ -55,14 +55,14 @@ tape('[FullEthereumService]', async (t) => {
   BeaconSynchronizer.prototype.stop = td.func<any>()
   BeaconSynchronizer.prototype.open = td.func<any>()
   BeaconSynchronizer.prototype.close = td.func<any>()
-  td.replace('../../lib/sync', { FullSynchronizer, BeaconSynchronizer })
+  td.replace<any>('../../lib/sync', { FullSynchronizer, BeaconSynchronizer })
 
   class Block {
     static fromValuesArray() {
       return {}
     }
   }
-  td.replace('@ethereumjs/block', { Block })
+  td.replace<any>('@ethereumjs/block', { Block })
   const { FullEthereumService } = await import('../../lib/service/fullethereumservice')
 
   t.test('should initialize correctly', async (t) => {

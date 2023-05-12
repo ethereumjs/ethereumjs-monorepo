@@ -1,6 +1,6 @@
 import { bytesToInt } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
-import { getPublicKey } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import { EventEmitter } from 'events'
 import ms = require('ms')
@@ -63,7 +63,7 @@ export class RLPx extends EventEmitter {
     super()
 
     this._privateKey = privateKey
-    this._id = pk2id(getPublicKey(this._privateKey, false))
+    this._id = pk2id(secp256k1.getPublicKey(this._privateKey, false))
 
     // options
     this._timeout = options.timeout ?? ms('10s')

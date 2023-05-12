@@ -12,7 +12,7 @@ tape('[RlpxPeer]', async (t) => {
     connect(_: any) {}
   }
   RLPx.prototype.connect = td.func<any>()
-  td.replace('@ethereumjs/devp2p', { DPT, ETH, LES, SNAP, RLPx })
+  td.replace<any>('@ethereumjs/devp2p', { DPT, ETH, LES, SNAP, RLPx })
   const { RlpxPeer } = await import('../../../lib/net/peer/rlpxpeer')
 
   t.test('should initialize correctly', async (t) => {

@@ -1,13 +1,18 @@
 import { Block } from '@ethereumjs/block'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
 import {
   Account,
   Address,
   bigIntToBytes,
   equalsBytes,
+  hexStringToBytes,
   setLengthLeft,
   utf8ToBytes,
 } from '@ethereumjs/util'
+import { VM } from '@ethereumjs/vm'
 import { BaseProvider, StaticJsonRpcProvider } from '@ethersproject/providers'
+import { ethers } from 'ethers'
 import * as tape from 'tape'
 
 import { EthersStateManager } from '../src/ethersStateManager'
@@ -173,7 +178,6 @@ tape('Ethers State Manager API tests', async (t) => {
   }
 })
 
-/* TODO FIXME
 tape('runTx custom transaction test', async (t) => {
   if (isBrowser() === true) {
     // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
@@ -216,7 +220,7 @@ tape('runTx test: replay mainnet transactions', async (t) => {
 
     const provider =
       process.env.PROVIDER !== undefined
-        ? new JsonRpcProvider(process.env.PROVIDER)
+        ? new ethers.providers.JsonRpcProvider(process.env.PROVIDER)
         : new MockProvider()
 
     const blockTag = 15496077n
@@ -243,7 +247,7 @@ tape('runBlock test', async (t) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const provider =
       process.env.PROVIDER !== undefined
-        ? new JsonRpcProvider(process.env.PROVIDER)
+        ? new ethers.providers.JsonRpcProvider(process.env.PROVIDER)
         : new MockProvider()
     const blockTag = 500000n
     const state = new EthersStateManager({
@@ -271,4 +275,3 @@ tape('runBlock test', async (t) => {
     }
   }
 })
-*/

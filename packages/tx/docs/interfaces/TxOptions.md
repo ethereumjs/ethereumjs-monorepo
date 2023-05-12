@@ -8,10 +8,24 @@ The options for initializing a [Transaction](../classes/Transaction.md).
 
 ### Properties
 
+- [allowUnlimitedInitCodeSize](TxOptions.md#allowunlimitedinitcodesize)
 - [common](TxOptions.md#common)
 - [freeze](TxOptions.md#freeze)
 
 ## Properties
+
+### allowUnlimitedInitCodeSize
+
+• `Optional` **allowUnlimitedInitCodeSize**: `boolean`
+
+Allows unlimited contract code-size init while debugging. This (partially) disables EIP-3860.
+Gas cost for initcode size analysis will still be charged. Use with caution.
+
+#### Defined in
+
+[types.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L98)
+
+___
 
 ### common
 
@@ -28,7 +42,7 @@ Current default hardfork: `istanbul`
 
 #### Defined in
 
-[types.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L51)
+[types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L80)
 
 ___
 
@@ -48,4 +62,4 @@ Default: true
 
 #### Defined in
 
-[types.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L63)
+[types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L92)

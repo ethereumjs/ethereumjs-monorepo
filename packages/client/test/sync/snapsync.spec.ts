@@ -34,7 +34,7 @@ tape('[SnapSynchronizer]', async (t) => {
   AccountFetcher.prototype.fetch = td.func<any>()
   AccountFetcher.prototype.clear = td.func<any>()
   AccountFetcher.prototype.destroy = td.func<any>()
-  td.replace('../../lib/sync/fetcher', { AccountFetcher })
+  td.replace<any>('../../lib/sync/fetcher', { AccountFetcher })
 
   const { SnapSynchronizer } = await import('../../lib/sync/snapsync')
 
