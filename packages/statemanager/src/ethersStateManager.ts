@@ -347,31 +347,29 @@ export class EthersStateManager implements EVMStateManagerInterface {
   getOriginalContractStorage(_address: Address, _key: Uint8Array): Promise<Uint8Array> {
     throw new Error('function not implemented')
   }
-  clearWarmedAccounts(): void {
-    // throw new Error('function not implemented')
-  }
+  clearWarmedAccounts(): void {}
   cleanupTouchedAccounts(): Promise<void> {
     return Promise.resolve()
   }
   clearOriginalStorageCache(): void {
     // throw new Error('function not implemented')
   }
-  addWarmedAddress(address: Uint8Array): void {
+  addWarmedAddress(_address: Uint8Array): void {
     //  throw new Error('function not implemented')
   }
-  isWarmedAddress(address: Uint8Array): boolean {
+  isWarmedAddress(_address: Uint8Array): boolean {
     throw new Error('function not implemented')
   }
-  addWarmedStorage(address: Uint8Array, slot: Uint8Array): void {
+  addWarmedStorage(_address: Uint8Array, _slot: Uint8Array): void {
     //   throw new Error('function not implemented')
   }
-  isWarmedStorage(address: Uint8Array, slot: Uint8Array): boolean {
+  isWarmedStorage(_address: Uint8Array, _slot: Uint8Array): boolean {
     throw new Error('function not implemented')
   }
   generateCanonicalGenesis(_initState: any): Promise<void> {
     return Promise.resolve()
   }
-  generateAccessList(addressesRemoved: Address[], addressesOnlyStorage: Address[]): AccessList {
+  generateAccessList(_addressesRemoved: Address[], _addressesOnlyStorage: Address[]): AccessList {
     throw new Error('function not implemented')
   }
 }
