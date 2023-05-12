@@ -1,4 +1,5 @@
 import {
+  MapDB,
   compareBytes,
   concatBytes,
   hexStringToBytes,
@@ -8,9 +9,9 @@ import {
 import * as crypto from 'crypto'
 import * as tape from 'tape'
 
-import { MapDB, Trie } from '../../src'
+import { Trie } from '../../src'
 
-import type { DB } from '../../src'
+import type { DB } from '@ethereumjs/util'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof_test.go
 
@@ -21,7 +22,7 @@ const TRIE_SIZE = 512
  * @param addKey - whether to add 100 ordered keys
  * @returns Trie object and sorted entries
  */
-async function randomTrie(db: DB, addKey: boolean = true) {
+async function randomTrie(db: DB<string, string>, addKey: boolean = true) {
   const entries: [Uint8Array, Uint8Array][] = []
   const trie = new Trie({ db })
 

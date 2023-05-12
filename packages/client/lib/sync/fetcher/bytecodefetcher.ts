@@ -9,7 +9,7 @@ import { Fetcher } from './fetcher'
 import type { Peer } from '../../net/peer'
 import type { FetcherOptions } from './fetcher'
 import type { Job } from './types'
-import type { BatchDBOp } from '@ethereumjs/trie'
+import type { BatchDBOp } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 type ByteCodeDataResponse = Uint8Array[] & { completed?: boolean }

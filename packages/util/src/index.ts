@@ -19,6 +19,11 @@ export * from './account'
 export * from './address'
 
 /**
+ * DB type
+ */
+export * from './db'
+
+/**
  * Withdrawal type
  */
 export * from './withdrawal'
@@ -67,4 +72,5 @@ export {
 } from './internal'
 export * from './kzg'
 export * from './lock'
+export * from './mapDB'
 export * from './provider'

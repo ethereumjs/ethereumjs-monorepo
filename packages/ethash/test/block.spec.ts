@@ -1,16 +1,15 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { toBytes } from '@ethereumjs/util'
+import { MapDB, toBytes } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
-import { MemoryLevel } from 'memory-level'
 import * as tape from 'tape'
 
 import { Ethash } from '../src'
 
 import type { BlockBytes } from '@ethereumjs/block'
 
-const cacheDB = new MemoryLevel()
+const cacheDB = new MapDB()
 
 const { validBlockRlp, invalidBlockRlp } = require('./ethash_block_rlp_tests.json')
 

@@ -26,6 +26,7 @@ import { hideBin } from 'yargs/helpers'
 
 import { EthereumClient } from '../lib/client'
 import { Config, DataDirectory, SyncMode } from '../lib/config'
+import { LevelDB } from '../lib/execution/level'
 import { getLogger } from '../lib/logging'
 import { Event } from '../lib/types'
 import { parseMultiaddrs } from '../lib/util'
@@ -432,7 +433,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
   if (customGenesisState !== undefined) {
     const validateConsensus = config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique
     blockchain = await Blockchain.create({
-      db: dbs.chainDB,
+      db: new LevelDB(dbs.chainDB),
       genesisState: customGenesisState,
       common: config.chainCommon,
       hardforkByHeadBlockNumber: true,

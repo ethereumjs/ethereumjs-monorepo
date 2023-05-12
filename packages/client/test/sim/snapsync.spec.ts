@@ -139,7 +139,7 @@ tape('simple mainnet test run', async (t) => {
     try {
       if (ejsClient !== null && snapCompleted !== undefined) {
         // call sync if not has been called yet
-        void ejsClient.services[0].synchronizer.sync()
+        void ejsClient.services[0].synchronizer?.sync()
         // wait on the sync promise to complete if it has been called independently
         const snapSyncTimeout = new Promise((_resolve, reject) => setTimeout(reject, 40000))
         try {

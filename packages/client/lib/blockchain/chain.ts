@@ -3,9 +3,11 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { equalsBytes } from 'ethereum-cryptography/utils'
 
+import { LevelDB } from '../execution/level'
 import { Event } from '../types'
 
 import type { Config } from '../config'
+import type { DB, DBObject } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
 /**
@@ -98,7 +100,7 @@ export interface ChainHeaders {
  */
 export class Chain {
   public config: Config
-  public chainDB: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+  public chainDB: DB<string | Uint8Array, string | Uint8Array | DBObject>
   public blockchain: Blockchain
   public opened: boolean
 
@@ -133,7 +135,7 @@ export class Chain {
     options.blockchain =
       options.blockchain ??
       new (Blockchain as any)({
-        db: options.chainDB,
+        db: new LevelDB(options.chainDB),
         common: options.config.chainCommon,
         hardforkByHeadBlockNumber: true,
         validateBlocks: true,
@@ -231,7 +233,7 @@ export class Chain {
   async close(): Promise<boolean | void> {
     if (!this.opened) return false
     this.reset()
-    await this.blockchain.db.close()
+    await (this.blockchain.db as any)?.close?.()
     this.opened = false
   }
 

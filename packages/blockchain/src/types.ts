@@ -2,7 +2,7 @@ import type { Consensus } from './consensus'
 import type { GenesisState } from './genesisStates'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type { AbstractLevel } from 'abstract-level'
+import type { DB, DBObject } from '@ethereumjs/util'
 
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
@@ -105,14 +105,9 @@ export interface BlockchainOptions {
 
   /**
    * Database to store blocks and metadata.
-   * Should be an `abstract-leveldown` compliant store
-   * wrapped with `encoding-down`.
-   * For example:
-   *   `levelup(encode(leveldown('./db1')))`
-   * or use the `level` convenience package:
-   *   `new MemoryLevel('./db1')`
+   * Can be any database implementation that adheres to the `DB` interface
    */
-  db?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+  db?: DB<Uint8Array | string | number, Uint8Array | string | DBObject>
 
   /**
    * This flags indicates if a block should be validated along the consensus algorithm

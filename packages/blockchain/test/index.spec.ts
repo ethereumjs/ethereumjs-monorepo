@@ -1,7 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { MapDB } from '@ethereumjs/util'
 import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
-import { MemoryLevel } from 'memory-level'
 import * as tape from 'tape'
 
 import { Blockchain } from '../src'
@@ -213,14 +213,20 @@ tape('blockchain test', (t) => {
       await blockchain.getBlock(5)
       st.fail('should throw an exception')
     } catch (e: any) {
-      st.ok(e.message.includes('NotFound'), `should throw for non-existing block-by-number request`)
+      st.ok(
+        e.message.includes('not found in DB'),
+        `should throw for non-existing block-by-number request`
+      )
     }
 
     try {
       await blockchain.getBlock(hexToBytes('1234'))
       st.fail('should throw an exception')
     } catch (e: any) {
-      st.ok(e.message.includes('NotFound'), `should throw for non-existing block-by-hash request`)
+      st.ok(
+        e.message.includes('not found in DB'),
+        `should throw for non-existing block-by-hash request`
+      )
     }
 
     st.end()
@@ -527,6 +533,7 @@ tape('blockchain test', (t) => {
     await blockchain.getBlock(BigInt(1))
 
     const block2HeaderValuesArray = blocks[2].header.raw()
+
     block2HeaderValuesArray[1] = new Uint8Array(32)
     const block2Header = BlockHeader.fromValuesArray(block2HeaderValuesArray, {
       common: blocks[2]._common,
@@ -609,7 +616,7 @@ tape('blockchain test', (t) => {
   })
 
   t.test('should save headers', async (st) => {
-    const db = new MemoryLevel<string | Uint8Array, string | Uint8Array>()
+    const db = new MapDB()
     const gasLimit = 8000000
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })

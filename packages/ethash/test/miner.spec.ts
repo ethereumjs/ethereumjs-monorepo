@@ -1,16 +1,18 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { MemoryLevel } from 'memory-level'
+import { MapDB } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Ethash } from '../src'
 
 import type { BlockHeader } from '@ethereumjs/block'
-const cacheDb = new MemoryLevel()
+import type { DBObject } from '@ethereumjs/util'
+
+const cacheDb = new MapDB<number, DBObject>()
 const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Petersburg })
 
 tape('Check if miner works as expected', async function (t) {
-  const e = new Ethash(cacheDb as any)
+  const e = new Ethash(cacheDb)
 
   const block = Block.fromBlockData(
     {

@@ -1,12 +1,10 @@
-import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
+import { MapDB, equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { MapDB } from '../../src'
-
-import type { BatchDBOp } from '../../src'
+import type { BatchDBOp } from '@ethereumjs/util'
 
 tape('DB tests', (t) => {
-  const db = new MapDB()
+  const db = new MapDB<Uint8Array, Uint8Array>()
 
   const k = utf8ToBytes('k1')
   const v = utf8ToBytes('v1')

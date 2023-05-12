@@ -1,11 +1,11 @@
-import { bytesToHex, bytesToUtf8, equalsBytes, utf8ToBytes } from '@ethereumjs/util'
+import { MapDB, bytesToHex, bytesToUtf8, equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { createHash } from 'crypto'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
-import { MapDB, ROOT_DB_KEY, Trie } from '../../src'
+import { ROOT_DB_KEY, Trie } from '../../src'
 
-import type { BatchDBOp } from '../../src'
+import type { BatchDBOp } from '@ethereumjs/util'
 
 tape('testing checkpoints', function (tester) {
   const it = tester.test
@@ -277,7 +277,7 @@ tape('testing checkpoints', function (tester) {
     // I.e. the trie is pruned.
     t.deepEqual(
       // @ts-expect-error
-      [...CommittedState._db.db._database.values()].map((value) => bytesToHex(value)),
+      [...CommittedState._db.db._database.values()].map((value) => value),
       [
         'd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb',
         'e3a1202418cf7414b1e6c2c8d92b4673eecdb4aac88f7f58623e3be903aefb2fd4655c32',
