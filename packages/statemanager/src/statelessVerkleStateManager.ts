@@ -3,6 +3,7 @@
 import {
   Account,
   bytesToHex,
+  bytesToPrefixedHexString,
   readBigInt64LE,
   readInt32LE,
   setLengthLeft,
@@ -15,12 +16,16 @@ import {
 import { concatBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { AccountCache, CacheType, StorageCache } from './cache'
-import { Cache } from './cache/cache'
 
-import type { StateManager } from '.'
-import type { AccountFields, StorageDump } from './interface'
+import type {
+  AccessList,
+  AccountFields,
+  Common,
+  EVMStateManagerInterface,
+  Proof,
+  StorageDump,
+} from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
-import type { Debugger } from 'debug'
 
 const wasm = require('../../rust-verkle-wasm/rust_verkle_wasm')
 
@@ -76,6 +81,10 @@ type CacheSettings = {
  */
 export interface StatelessVerkleStateManagerOpts {
   accountCacheOpts?: CacheOptions
+  /**
+   * The common to use
+   */
+  common?: Common
   storageCacheOpts?: CacheOptions
 }
 
@@ -97,7 +106,7 @@ const PUSH_OFFSET = 95
 const PUSH1 = PUSH_OFFSET + 1
 const PUSH32 = PUSH_OFFSET + 32
 
-export class StatelessVerkleStateManager implements StateManager {
+export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   _accountCache?: AccountCache
   _storageCache?: StorageCache
   _codeCache: { [key: string]: Uint8Array }
@@ -196,27 +205,27 @@ export class StatelessVerkleStateManager implements StateManager {
     return treeKey
   }
 
-  private getTreeKeyForVersion(address: Address) {
+  getTreeKeyForVersion(address: Address) {
     return this.getTreeKey(address, 0, VERSION_LEAF_KEY)
   }
 
-  private getTreeKeyForBalance(address: Address) {
+  getTreeKeyForBalance(address: Address) {
     return this.getTreeKey(address, 0, BALANCE_LEAF_KEY)
   }
 
-  private getTreeKeyForNonce(address: Address) {
+  getTreeKeyForNonce(address: Address) {
     return this.getTreeKey(address, 0, NONCE_LEAF_KEY)
   }
 
-  private getTreeKeyForCodeHash(address: Address) {
+  getTreeKeyForCodeHash(address: Address) {
     return this.getTreeKey(address, 0, CODE_KECCAK_LEAF_KEY)
   }
 
-  private getTreeKeyForCodeSize(address: Address) {
+  getTreeKeyForCodeSize(address: Address) {
     return this.getTreeKey(address, 0, CODE_SIZE_LEAF_KEY)
   }
 
-  private getTreeKeyForCodeChunk(address: Address, chunkId: number) {
+  getTreeKeyForCodeChunk(address: Address, chunkId: number) {
     return this.getTreeKey(
       address,
       Math.floor((CODE_OFFSET + chunkId) / VERKLE_NODE_WIDTH),
@@ -224,7 +233,7 @@ export class StatelessVerkleStateManager implements StateManager {
     )
   }
 
-  private chunkifyCode(code: Uint8Array) {
+  chunkifyCode(code: Uint8Array) {
     // Pad code to multiple of 31 bytes
     if (code.length % 31 !== 0) {
       const paddingLength = 31 - (code.length % 31)
@@ -250,7 +259,7 @@ export class StatelessVerkleStateManager implements StateManager {
     ] */
   }
 
-  private getTreeKeyForStorageSlot(address: Address, storageKey: number) {
+  getTreeKeyForStorageSlot(address: Address, storageKey: number) {
     let position: number
     if (storageKey < CODE_OFFSET - HEADER_STORAGE_OFFSET) {
       position = HEADER_STORAGE_OFFSET + storageKey
@@ -270,7 +279,7 @@ export class StatelessVerkleStateManager implements StateManager {
    * at the last fully committed point, i.e. as if all current
    * checkpoints were reverted.
    */
-  copy(): StateManager {
+  copy(): EVMStateManagerInterface {
     const stateManager = new StatelessVerkleStateManager()
     stateManager.initPreState(this._proof, this._state)
     return stateManager
@@ -297,7 +306,7 @@ export class StatelessVerkleStateManager implements StateManager {
     const codeHashKey = this.getTreeKeyForCodeHash(address)
     const codeSizeKey = this.getTreeKeyForCodeSize(address)
 
-    const codeSizeLE = hexToBytes(this._state[bytesToHex(codeSizeKey)])
+    const codeSizeLE = hexToBytes(this._state[bytesToPrefixedHexString(codeSizeKey)])
 
     // Calculate number of chunks
     const chunks = Math.ceil(readInt32LE(codeSizeLE) / 32)
@@ -327,7 +336,7 @@ export class StatelessVerkleStateManager implements StateManager {
    */
   async getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     const storageKey = this.getTreeKeyForStorageSlot(address, Number(bytesToHex(key)))
-    const storage = toBytes(this._state[bytesToHex(storageKey)])
+    const storage = toBytes(this._state[bytesToPrefixedHexString(storageKey)])
 
     return storage
   }
@@ -341,7 +350,7 @@ export class StatelessVerkleStateManager implements StateManager {
    */
   async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
     const storageKey = this.getTreeKeyForStorageSlot(address, Number(bytesToHex(key)))
-    this._state[bytesToHex(storageKey)] = bytesToHex(value)
+    this._state[bytesToPrefixedHexString(storageKey)] = bytesToPrefixedHexString(value)
   }
 
   /**
@@ -359,9 +368,9 @@ export class StatelessVerkleStateManager implements StateManager {
     const nonceKey = this.getTreeKeyForNonce(address)
     const codeHashKey = this.getTreeKeyForCodeHash(address)
 
-    const balanceLE = toBytes(this._state[bytesToHex(balanceKey)])
-    const nonceLE = toBytes(this._state[bytesToHex(nonceKey)])
-    const codeHash = toBytes(this._state[bytesToHex(codeHashKey)])
+    const balanceLE = toBytes(this._state[bytesToPrefixedHexString(balanceKey)])
+    const nonceLE = toBytes(this._state[bytesToPrefixedHexString(nonceKey)])
+    const codeHash = toBytes(this._state[bytesToPrefixedHexString(codeHashKey)])
 
     return Account.fromAccountData({
       balance: balanceLE.length > 0 ? readBigInt64LE(balanceLE) : 0n,
@@ -379,9 +388,9 @@ export class StatelessVerkleStateManager implements StateManager {
     const balanceBuf = writeBigInt64LE(account.balance)
     const nonceBuf = writeBigInt64LE(account.nonce)
 
-    this._state[bytesToHex(balanceKey)] = bytesToHex(balanceBuf)
-    this._state[bytesToHex(nonceKey)] = bytesToHex(nonceBuf)
-    this._state[bytesToHex(codeHashKey)] = bytesToHex(account.codeHash)
+    this._state[bytesToPrefixedHexString(balanceKey)] = bytesToPrefixedHexString(balanceBuf)
+    this._state[bytesToPrefixedHexString(nonceKey)] = bytesToPrefixedHexString(nonceBuf)
+    this._state[bytesToPrefixedHexString(codeHashKey)] = bytesToPrefixedHexString(account.codeHash)
   }
 
   /**
@@ -500,5 +509,42 @@ export class StatelessVerkleStateManager implements StateManager {
   clearCaches() {
     this._accountCache?.clear()
     this._storageCache?.clear()
+  }
+
+  accountIsEmptyOrNonExistent(_address: Address): Promise<boolean> {
+    throw new Error('function not implemented')
+  }
+  getOriginalContractStorage(_address: Address, _key: Uint8Array): Promise<Uint8Array> {
+    throw new Error('function not implemented')
+  }
+
+  getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
+    throw new Error('function not implemented')
+  }
+
+  clearWarmedAccounts(): void {}
+  cleanupTouchedAccounts(): Promise<void> {
+    return Promise.resolve()
+  }
+  clearOriginalStorageCache(): void {
+    // throw new Error('function not implemented')
+  }
+  addWarmedAddress(_address: Uint8Array): void {
+    //  throw new Error('function not implemented')
+  }
+  isWarmedAddress(_address: Uint8Array): boolean {
+    throw new Error('function not implemented')
+  }
+  addWarmedStorage(_address: Uint8Array, _slot: Uint8Array): void {
+    //   throw new Error('function not implemented')
+  }
+  isWarmedStorage(_address: Uint8Array, _slot: Uint8Array): boolean {
+    throw new Error('function not implemented')
+  }
+  generateCanonicalGenesis(_initState: any): Promise<void> {
+    return Promise.resolve()
+  }
+  generateAccessList(_addressesRemoved: Address[], _addressesOnlyStorage: Address[]): AccessList {
+    throw new Error('function not implemented')
   }
 }
