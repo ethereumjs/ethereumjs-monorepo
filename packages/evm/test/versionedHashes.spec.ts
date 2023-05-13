@@ -65,7 +65,7 @@ tape('DATAHASH: access versionedHashes in static call', async (t) => {
     '7300000000000000000000000000000000000000FF' +
     // push whatever gas is available and static call
     '5AFA' +
-    // Copy returndata to memory offset and then return the same
+    // copy returndata to memory offset and then return the same
     '60205F5F3E60206000F3'
 
   // setup the call arguments
