@@ -60,17 +60,11 @@ tape('DATAHASH: access versionedHashes in static call', async (t) => {
   // Call the contract via static call and return the returned DATAHASH
   const staticCallCode =
     // return, args and value
-    '5F' +
-    '5F' +
-    '5F' +
-    '5F' +
-    '5F' +
+    '5F5F5F5F5F' +
     // push 20 bytes address of contract to call
-    '73' +
-    '00000000000000000000000000000000000000FF' +
+    '7300000000000000000000000000000000000000FF' +
     // push whatever gas is available and static call
-    '5A' +
-    'FA' +
+    '5AFA' +
     // Copy returndata to memory offset and then return the same
     '60205F5F3E60206000F3'
 
