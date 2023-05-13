@@ -11,7 +11,7 @@ type BeaconWithdrawal = {
 
 // Payload json that one gets using the beacon apis
 // curl localhost:5052/eth/v2/beacon/blocks/56610 | jq .data.message.body.execution_payload
-export type BeaconPayload = {
+export type BeaconPayloadJson = {
   parent_hash: string
   fee_recipient: string
   state_root: string
@@ -30,7 +30,11 @@ export type BeaconPayload = {
   excess_data_gas?: string
 }
 
-export function beaconToExecutionPayload(payload: BeaconPayload): ExecutionPayload {
+/**
+ * Converts a beacon block execution payload JSON object {@link BeaconPayloadJson} to the {@link ExecutionPayload} data needed to construct a {@link Block}.
+ * The JSON data can be retrieved from a consensus layer (CL) client on this Beacon API `/eth/v2/beacon/blocks/[block number]`
+ */
+export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): ExecutionPayload {
   const executionPayload: ExecutionPayload = {
     parentHash: payload.parent_hash,
     feeRecipient: payload.fee_recipient,

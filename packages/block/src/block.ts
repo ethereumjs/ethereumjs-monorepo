@@ -18,12 +18,12 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { beaconToExecutionPayload } from './from-beacon-payload'
+import { executionPayloadFromBeaconPayload } from './from-beacon-payload'
 import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
 import { getDataGasPrice } from './helpers'
 
-import type { BeaconPayload } from './from-beacon-payload'
+import type { BeaconPayloadJson } from './from-beacon-payload'
 import type {
   BlockBytes,
   BlockData,
@@ -363,11 +363,11 @@ export class Block {
    * @param opts {@link BlockOptions}
    * @returns the block constructed block
    */
-  public static async fromBeaconPayload(
-    payload: BeaconPayload,
+  public static async fromBeaconPayloadJson(
+    payload: BeaconPayloadJson,
     options?: BlockOptions
   ): Promise<Block> {
-    const executionPayload = beaconToExecutionPayload(payload)
+    const executionPayload = executionPayloadFromBeaconPayload(payload)
     return Block.fromExecutionPayload(executionPayload, options)
   }
 

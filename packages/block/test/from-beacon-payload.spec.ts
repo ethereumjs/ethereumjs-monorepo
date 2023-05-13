@@ -6,7 +6,7 @@ import { Block } from '../src/index'
 import * as payload87335 from './testdata/payload-slot-87335.json'
 import * as payload87475 from './testdata/payload-slot-87475.json'
 
-tape('[fromExecutionPayload]: 4844 devnet 5', async function (t) {
+tape('[fromExecutionPayloadJson]: 4844 devnet 5', async function (t) {
   const network = 'sharding'
   const shardingJson = require(`../../client/test/sim/configs/sharding.json`)
 
@@ -19,7 +19,7 @@ tape('[fromExecutionPayload]: 4844 devnet 5', async function (t) {
   t.test('reconstruct cancun block with blob txs', async function (st) {
     for (const payload of [payload87335, payload87475]) {
       try {
-        const block = await Block.fromBeaconPayload(payload, { common })
+        const block = await Block.fromBeaconPayloadJson(payload, { common })
         st.pass(`successfully constructed block=${block.header.number}`)
       } catch (e) {
         st.fail(`failed to construct block, error: ${e}`)
@@ -30,7 +30,7 @@ tape('[fromExecutionPayload]: 4844 devnet 5', async function (t) {
 
   t.test('should validate block hash', async function (st) {
     try {
-      await Block.fromBeaconPayload(
+      await Block.fromBeaconPayloadJson(
         { ...payload87335, block_hash: payload87475.block_hash },
         { common }
       )
