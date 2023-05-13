@@ -38,7 +38,7 @@ tape('DATAHASH / access versionedHashes in calldata', async (t) => {
   t.end()
 })
 
-tape('DATAHASH: access versionedHashes in static call', async (t) => {
+tape(`DATAHASH: access versionedHashes within contract calls`, async (t) => {
   // setup the evm
   const genesisJSON = require('../../client/test/testdata/geth-genesis/eip4844.json')
   const common = Common.fromGethGenesis(genesisJSON, {
@@ -57,30 +57,33 @@ tape('DATAHASH: access versionedHashes in static call', async (t) => {
   const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee')) // caller address
   await evm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11111111))) // give the calling account a big balance so we don't run out of funds
 
-  // Call the contract via static call and return the returned DATAHASH
-  const staticCallCode =
-    // return, args and value
-    '5F5F5F5F5F' +
-    // push 20 bytes address of contract to call
-    '7300000000000000000000000000000000000000FF' +
-    // push whatever gas is available and static call
-    '5AFA' +
-    // copy returndata to memory offset and then return the same
-    '60205F5F3E60206000F3'
+  for (const callCode of ['F1', 'F4', 'F2', 'FA']) {
+    // Call the contract via static call and return the returned DATAHASH
+    const staticCallCode =
+      // return, args and value
+      '5F5F5F5F5F' +
+      // push 20 bytes address of contract to call
+      '7300000000000000000000000000000000000000FF' +
+      // push whatever gas is available and add the call
+      '5A' +
+      callCode +
+      // copy returndata to memory offset and then return the same
+      '60205F5F3E60206000F3'
 
-  // setup the call arguments
-  const runCallArgs: EVMRunCallOpts = {
-    gasLimit: BigInt(0xffffffffff),
-    // calldata -- retrieves the versioned hash at index 0 and returns it from memory
-    data: hexToBytes(staticCallCode),
-    versionedHashes: [hexToBytes('ab')],
+    // setup the call arguments
+    const runCallArgs: EVMRunCallOpts = {
+      gasLimit: BigInt(0xffffffffff),
+      // calldata -- retrieves the versioned hash at index 0 and returns it from memory
+      data: hexToBytes(staticCallCode),
+      versionedHashes: [hexToBytes('ab')],
+    }
+    const res = await evm.runCall(runCallArgs)
+
+    t.equal(
+      bytesToHex(unpadBytes(res.execResult.returnValue)),
+      'ab',
+      `retrieved correct versionedHash from runState through callCode=${callCode}`
+    )
   }
-  const res = await evm.runCall(runCallArgs)
-
-  t.equal(
-    bytesToHex(unpadBytes(res.execResult.returnValue)),
-    'ab',
-    'retrieved correct versionedHash from runState'
-  )
   t.end()
 })
