@@ -32,6 +32,7 @@
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
+    "tape": "tape -r ts-node/register",
     "test": "tape -r ts-node/register test/*.spec.ts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
@@ -39,15 +40,13 @@
     "@ethereumjs/block": "^4.2.2",
     "@ethereumjs/rlp": "^4.0.1",
     "@ethereumjs/util": "^8.0.6",
-    "abstract-level": "^1.0.3",
     "bigint-crypto-utils": "^3.2.2",
     "ethereum-cryptography": "^2.0.0"
   },
   "devDependencies": {
-    "@ethereumjs/common": "^3.1.2",
-    "memory-level": "^1.0.0"
+    "@ethereumjs/common": "^3.1.2"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   }
 }

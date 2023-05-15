@@ -85,14 +85,21 @@
   "dependencies": {
     "@chainsafe/ssz": "^0.11.1",
     "@ethereumjs/rlp": "^4.0.1",
-    "ethereum-cryptography": "^2.0.0",
-    "micro-ftch": "^0.3.1"
+    "ethereum-cryptography": "^2.0.0"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.0",
     "@types/secp256k1": "^4.0.1"
   },
+  "peerDependencies": {
+    "c-kzg": "^2.0.4"
+  },
+  "peerDependenciesMeta": {
+    "c-kzg": {
+      "optional": true
+    }
+  },
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   }
 }

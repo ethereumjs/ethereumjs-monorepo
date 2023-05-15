@@ -1,3 +1,4 @@
+import { bytesToPrefixedHexString, hexStringToBytes, utf8ToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Trie } from '../src'
@@ -12,15 +13,15 @@ tape('official tests', async function (t) {
     const expect = jsonTests[testName].root
     for (const input of inputs) {
       for (let i = 0; i < 2; i++) {
-        if (input[i] !== undefined && input[i] !== null && input[i].slice(0, 2) === '0x') {
-          input[i] = Buffer.from(input[i].slice(2), 'hex')
+        if (typeof input[i] === 'string' && input[i].slice(0, 2) === '0x') {
+          input[i] = hexStringToBytes(input[i])
         } else if (typeof input[i] === 'string') {
-          input[i] = Buffer.from(input[i])
+          input[i] = utf8ToBytes(input[i])
         }
-        await trie.put(Buffer.from(input[0]), input[1])
+        await trie.put(input[0], input[1])
       }
     }
-    t.equal('0x' + trie.root().toString('hex'), expect)
+    t.equal(bytesToPrefixedHexString(trie.root()), expect)
     trie = new Trie()
   }
   t.end()
@@ -37,17 +38,21 @@ tape('official tests any order', async function (t) {
     for (key of keys) {
       let val = test.in[key]
 
-      if (key.slice(0, 2) === '0x') {
-        key = Buffer.from(key.slice(2), 'hex')
+      if (typeof key === 'string' && key.slice(0, 2) === '0x') {
+        key = hexStringToBytes(key)
+      } else if (typeof key === 'string') {
+        key = utf8ToBytes(key)
       }
 
-      if (val !== undefined && val !== null && val.slice(0, 2) === '0x') {
-        val = Buffer.from(val.slice(2), 'hex')
+      if (typeof val === 'string' && val.slice(0, 2) === '0x') {
+        val = hexStringToBytes(val)
+      } else if (typeof val === 'string') {
+        val = utf8ToBytes(val)
       }
 
-      await trie.put(Buffer.from(key), Buffer.from(val))
+      await trie.put(key, val)
     }
-    t.equal('0x' + trie.root().toString('hex'), test.root)
+    t.equal(bytesToPrefixedHexString(trie.root()), test.root)
     trie = new Trie()
   }
   t.end()

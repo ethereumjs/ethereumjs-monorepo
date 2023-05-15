@@ -78,8 +78,8 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     networkId: chainId,
     genesis: {
       timestamp,
-      gasLimit: parseInt(gasLimit), // geth gasLimit and difficulty are hex strings while ours are `number`s
-      difficulty: parseInt(difficulty),
+      gasLimit,
+      difficulty,
       nonce,
       extraData,
       mixHash,
@@ -123,7 +123,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     [Hardfork.London]: { name: 'londonBlock' },
     [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: mergeForkIdPostMerge },
     [Hardfork.Shanghai]: { name: 'shanghaiTime', postMerge: true, isTimestamp: true },
-    [Hardfork.ShardingForkDev]: { name: 'shardingForkTime', postMerge: true, isTimestamp: true },
+    [Hardfork.Cancun]: { name: 'cancunTime', postMerge: true, isTimestamp: true },
   }
 
   // forkMapRev is the map from config field name to Hardfork
@@ -164,7 +164,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     // - Merge hardfork has to be placed just after genesis if any of the genesis hardforks make CL
     //   necessary for e.g. withdrawals
     const mergeConfig = {
-      name: Hardfork.Merge,
+      name: Hardfork.Paris,
       ttd: config.terminalTotalDifficulty,
       block: null,
     }

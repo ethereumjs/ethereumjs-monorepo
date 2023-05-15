@@ -1,12 +1,12 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
-import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
+import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { bufferToBigInt, isHexPrefixed, stripHexPrefix, toBuffer } from '@ethereumjs/util'
-import { Level } from 'level'
-import { MemoryLevel } from 'memory-level'
+import { MapDB, bytesToBigInt, isHexPrefixed, stripHexPrefix, toBytes } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { setupPreConditions, verifyPostConditions } from '../../util'
 
@@ -23,13 +23,6 @@ function formatBlockHeader(data: any) {
 }
 
 export async function runBlockchainTest(options: any, testData: any, t: tape.Test) {
-  if (
-    options.common.hardfork() === Hardfork.Homestead &&
-    testData._info.source.includes('ShanghaiLove') === true
-  ) {
-    t.comment('temporarily skipping ShanghaiLove test on Homestead, see issue 2406')
-    return
-  }
   // ensure that the test data is the right fork data
   if (testData.network !== options.forkConfigTestSuite) {
     t.comment(`skipping test: no data available for ${options.forkConfigTestSuite}`)
@@ -39,11 +32,15 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   // fix for BlockchainTests/GeneralStateTests/stRandom/*
   testData.lastblockhash = stripHexPrefix(testData.lastblockhash)
 
-  const cacheDB = new Level('./.cachedb')
-  const state = new Trie({ useKeyHashing: true })
-
-  const { common }: { common: Common } = options
+  let common = options.common.copy() as Common
   common.setHardforkByBlockNumber(0)
+
+  let cacheDB = new MapDB()
+  let state = new Trie({ useKeyHashing: true })
+  let stateManager = new DefaultStateManager({
+    trie: state,
+    common,
+  })
 
   let validatePow = false
   // Only run with block validation when sealEngine present in test file
@@ -62,12 +59,11 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   const genesisBlock = Block.fromBlockData(blockData, { common })
 
   if (typeof testData.genesisRLP === 'string') {
-    const rlp = toBuffer(testData.genesisRLP)
-    t.ok(genesisBlock.serialize().equals(rlp), 'correct genesis RLP')
+    const rlp = toBytes(testData.genesisRLP)
+    t.deepEquals(genesisBlock.serialize(), rlp, 'correct genesis RLP')
   }
 
-  const blockchain = await Blockchain.create({
-    db: new MemoryLevel(),
+  let blockchain = await Blockchain.create({
     common,
     validateBlocks: true,
     validateConsensus: validatePow,
@@ -87,17 +83,17 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   const begin = Date.now()
 
-  const vm = await VM.create({
-    state,
+  let vm = await VM.create({
+    stateManager,
     blockchain,
     common,
     hardforkByBlockNumber: true,
   })
 
   // set up pre-state
-  await setupPreConditions(vm.eei, testData)
+  await setupPreConditions(vm.stateManager, testData)
 
-  t.ok(vm.stateManager._trie.root().equals(genesisBlock.header.stateRoot), 'correct pre stateRoot')
+  t.deepEquals(vm.stateManager._trie.root(), genesisBlock.header.stateRoot, 'correct pre stateRoot')
 
   async function handleError(error: string | undefined, expectException: string | boolean) {
     if (expectException !== false) {
@@ -122,16 +118,16 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     // Here we decode the rlp to extract the block number
     // The block library cannot be used, as this throws on certain EIP1559 blocks when trying to convert
     try {
-      const blockRlp = Buffer.from((raw.rlp as string).slice(2), 'hex')
+      const blockRlp = hexToBytes((raw.rlp as string).slice(2))
       const decodedRLP: any = RLP.decode(Uint8Array.from(blockRlp))
-      currentBlock = bufferToBigInt(decodedRLP[0][8])
+      currentBlock = bytesToBigInt(decodedRLP[0][8])
     } catch (e: any) {
       await handleError(e, expectException)
       continue
     }
 
     try {
-      const blockRlp = Buffer.from((raw.rlp as string).slice(2), 'hex')
+      const blockRlp = hexToBytes((raw.rlp as string).slice(2))
       // Update common HF
       let TD: bigint | undefined = undefined
       let timestamp: bigint | undefined = undefined
@@ -139,7 +135,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         const decoded: any = RLP.decode(blockRlp)
         const parentHash = decoded[0][0]
         TD = await blockchain.getTotalDifficulty(parentHash)
-        timestamp = bufferToBigInt(decoded[0][11])
+        timestamp = bytesToBigInt(decoded[0][11])
         // eslint-disable-next-line no-empty
       } catch (e) {}
 
@@ -160,7 +156,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         >[]) {
           const shouldFail = txData.valid === 'false'
           try {
-            const txRLP = Buffer.from(txData.rawBytes.slice(2), 'hex')
+            const txRLP = hexToBytes(txData.rawBytes.slice(2))
             const tx = TransactionFactory.fromSerializedData(txRLP, { common })
             await blockBuilder.addTransaction(tx)
             if (shouldFail) {
@@ -216,7 +212,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         throw e
       }
 
-      await cacheDB.close()
+      //  await cacheDB._leveldb.close()
 
       if (expectException !== false) {
         t.fail(`expected exception but test did not throw an exception: ${expectException}`)
@@ -229,7 +225,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     }
   }
   t.equal(
-    (blockchain as any)._headHeaderHash.toString('hex'),
+    bytesToHex((blockchain as any)._headHeaderHash),
     testData.lastblockhash,
     'correct last header block'
   )
@@ -237,5 +233,8 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`
   t.comment(`Time: ${timeSpent}`)
-  await cacheDB.close()
+  // await cacheDB._leveldb.close()
+
+  // @ts-ignore Explicitly delete objects for memory optimization (early GC)
+  common = blockchain = state = stateManager = vm = cacheDB = null // eslint-disable-line
 }

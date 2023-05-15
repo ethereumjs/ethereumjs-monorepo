@@ -10,9 +10,9 @@ import type {
 import type {
   AddressLike,
   BigIntLike,
-  BufferLike,
+  BytesLike,
   JsonRpcWithdrawal,
-  WithdrawalBuffer,
+  WithdrawalBytes,
   WithdrawalData,
 } from '@ethereumjs/util'
 
@@ -76,7 +76,7 @@ export interface BlockOptions {
    * Provide a clique signer's privateKey to seal this block.
    * Will throw if provided on a non-PoA chain.
    */
-  cliqueSigner?: Buffer
+  cliqueSigner?: Uint8Array
   /**
    *  Skip consensus format validation checks on header if set. Defaults to false.
    */
@@ -87,23 +87,23 @@ export interface BlockOptions {
  * A block header's data.
  */
 export interface HeaderData {
-  parentHash?: BufferLike
-  uncleHash?: BufferLike
+  parentHash?: BytesLike
+  uncleHash?: BytesLike
   coinbase?: AddressLike
-  stateRoot?: BufferLike
-  transactionsTrie?: BufferLike
-  receiptTrie?: BufferLike
-  logsBloom?: BufferLike
+  stateRoot?: BytesLike
+  transactionsTrie?: BytesLike
+  receiptTrie?: BytesLike
+  logsBloom?: BytesLike
   difficulty?: BigIntLike
   number?: BigIntLike
   gasLimit?: BigIntLike
   gasUsed?: BigIntLike
   timestamp?: BigIntLike
-  extraData?: BufferLike
-  mixHash?: BufferLike
-  nonce?: BufferLike
+  extraData?: BytesLike
+  mixHash?: BytesLike
+  nonce?: BytesLike
   baseFeePerGas?: BigIntLike
-  withdrawalsRoot?: BufferLike
+  withdrawalsRoot?: BytesLike
   excessDataGas?: BigIntLike
 }
 
@@ -120,18 +120,18 @@ export interface BlockData {
   withdrawals?: Array<WithdrawalData>
 }
 
-export type WithdrawalsBuffer = WithdrawalBuffer[]
+export type WithdrawalsBytes = WithdrawalBytes[]
 
-export type BlockBuffer =
-  | [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer]
-  | [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer, WithdrawalsBuffer]
-export type BlockHeaderBuffer = Buffer[]
-export type BlockBodyBuffer = [TransactionsBuffer, UncleHeadersBuffer, WithdrawalsBuffer?]
+export type BlockBytes =
+  | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes]
+  | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes]
+export type BlockHeaderBytes = Uint8Array[]
+export type BlockBodyBytes = [TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes?]
 /**
- * TransactionsBuffer can be an array of serialized txs for Typed Transactions or an array of Buffer Arrays for legacy transactions.
+ * TransactionsBytes can be an array of serialized txs for Typed Transactions or an array of Uint8Array Arrays for legacy transactions.
  */
-export type TransactionsBuffer = Buffer[][] | Buffer[]
-export type UncleHeadersBuffer = Buffer[][]
+export type TransactionsBytes = Uint8Array[][] | Uint8Array[]
+export type UncleHeadersBytes = Uint8Array[][]
 
 /**
  * An object with the block's data represented as strings.

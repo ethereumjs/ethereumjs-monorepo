@@ -1,5 +1,5 @@
 import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
-import { Address, bufferToHex } from '@ethereumjs/util'
+import { Account, Address, bytesToHex, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
 import Heap = require('qheap')
 
 import type { Config } from '../config'
@@ -279,8 +279,8 @@ export class TxPool {
       // Replace pooled txs with the same nonce
       const existingTxn = inPool.find((poolObj) => poolObj.tx.nonce === tx.nonce)
       if (existingTxn) {
-        if (existingTxn.tx.hash().equals(tx.hash())) {
-          throw new Error(`${bufferToHex(tx.hash())}: this transaction is already in the TxPool`)
+        if (equalsBytes(existingTxn.tx.hash(), tx.hash())) {
+          throw new Error(`${bytesToHex(tx.hash())}: this transaction is already in the TxPool`)
         }
         this.validateTxGasBump(existingTxn.tx, tx)
       }
@@ -303,7 +303,10 @@ export class TxPool {
     const vmCopy = await this.vm.copy()
     // Set state root to latest block so that account balance is correct when doing balance check
     await vmCopy.stateManager.setStateRoot(block.stateRoot)
-    const account = await vmCopy.stateManager.getAccount(senderAddress)
+    let account = await vmCopy.stateManager.getAccount(senderAddress)
+    if (account === undefined) {
+      account = new Account()
+    }
     if (account.nonce > tx.nonce) {
       throw new Error(
         `0x${sender} tries to send a tx with nonce ${tx.nonce}, but account has nonce ${account.nonce} (tx nonce too low)`
@@ -327,7 +330,7 @@ export class TxPool {
    * @param isLocalTransaction if this is a local transaction (loosens some constraints) (default: false)
    */
   async add(tx: TypedTransaction, isLocalTransaction: boolean = false) {
-    const hash: UnprefixedHash = tx.hash().toString('hex')
+    const hash: UnprefixedHash = bytesToHex(tx.hash())
     const added = Date.now()
     const address: UnprefixedAddress = tx.getSenderAddress().toString().slice(2)
     try {
@@ -353,10 +356,10 @@ export class TxPool {
    * @param txHashes
    * @returns Array with tx objects
    */
-  getByHash(txHashes: Buffer[]): TypedTransaction[] {
+  getByHash(txHashes: Uint8Array[]): TypedTransaction[] {
     const found = []
     for (const txHash of txHashes) {
-      const txHashStr = txHash.toString('hex')
+      const txHashStr = bytesToHex(txHash)
       const handled = this.handled.get(txHashStr)
       if (!handled) continue
       const inPool = this.pool.get(handled.address)?.filter((poolObj) => poolObj.hash === txHashStr)
@@ -395,21 +398,21 @@ export class TxPool {
    * @param peer
    * @returns Array with txs which are new to the list
    */
-  addToKnownByPeer(txHashes: Buffer[], peer: Peer): Buffer[] {
+  addToKnownByPeer(txHashes: Uint8Array[], peer: Peer): Uint8Array[] {
     // Make sure data structure is initialized
     if (!this.knownByPeer.has(peer.id)) {
       this.knownByPeer.set(peer.id, [])
     }
 
-    const newHashes: Buffer[] = []
+    const newHashes: Uint8Array[] = []
     for (const hash of txHashes) {
       const inSent = this.knownByPeer
         .get(peer.id)!
-        .filter((sentObject) => sentObject.hash === hash.toString('hex')).length
+        .filter((sentObject) => sentObject.hash === bytesToHex(hash)).length
       if (inSent === 0) {
         const added = Date.now()
         const add = {
-          hash: hash.toString('hex'),
+          hash: bytesToHex(hash),
           added,
         }
         this.knownByPeer.get(peer.id)!.push(add)
@@ -428,7 +431,7 @@ export class TxPool {
    * @param txHashes Array with transactions to send
    * @param peers
    */
-  async sendNewTxHashes(txHashes: Buffer[], peers: Peer[]) {
+  async sendNewTxHashes(txHashes: Uint8Array[], peers: Peer[]) {
     for (const peer of peers) {
       // Make sure data structure is initialized
       if (!this.knownByPeer.has(peer.id)) {
@@ -464,8 +467,8 @@ export class TxPool {
         // This is used to avoid re-sending along pooledTxHashes
         // announcements/re-broadcasts
         const newHashes = this.addToKnownByPeer(hashes, peer)
-        const newHashesHex = newHashes.map((txHash) => txHash.toString('hex'))
-        const newTxs = txs.filter((tx) => newHashesHex.includes(tx.hash().toString('hex')))
+        const newHashesHex = newHashes.map((txHash) => bytesToHex(txHash))
+        const newTxs = txs.filter((tx) => newHashesHex.includes(bytesToHex(tx.hash())))
         peer.eth?.request('Transactions', newTxs).catch((e) => {
           this.markFailedSends(peer, newHashes, e as Error)
         })
@@ -473,11 +476,11 @@ export class TxPool {
     }
   }
 
-  private markFailedSends(peer: Peer, failedHashes: Buffer[], e: Error): void {
+  private markFailedSends(peer: Peer, failedHashes: Uint8Array[], e: Error): void {
     for (const txHash of failedHashes) {
       const sendobject = this.knownByPeer
         .get(peer.id)
-        ?.filter((sendObject) => sendObject.hash === txHash.toString('hex'))[0]
+        ?.filter((sendObject) => sendObject.hash === bytesToHex(txHash))[0]
       if (sendobject) {
         sendobject.error = e
       }
@@ -506,7 +509,7 @@ export class TxPool {
         newTxHashes.push(tx.hash())
       } catch (error: any) {
         this.config.logger.debug(
-          `Error adding tx to TxPool: ${error.message} (tx hash: ${bufferToHex(tx.hash())})`
+          `Error adding tx to TxPool: ${error.message} (tx hash: ${bytesToHex(tx.hash())})`
         )
       }
     }
@@ -524,13 +527,13 @@ export class TxPool {
    * @param peer Announcing peer
    * @param peerPool Reference to the peer pool
    */
-  async handleAnnouncedTxHashes(txHashes: Buffer[], peer: Peer, peerPool: PeerPool) {
+  async handleAnnouncedTxHashes(txHashes: Uint8Array[], peer: Peer, peerPool: PeerPool) {
     if (!this.running || txHashes.length === 0) return
     this.addToKnownByPeer(txHashes, peer)
 
     const reqHashes = []
     for (const txHash of txHashes) {
-      const txHashStr: UnprefixedHash = txHash.toString('hex')
+      const txHashStr: UnprefixedHash = bytesToHex(txHash)
       if (this.pending.includes(txHashStr) || this.handled.has(txHashStr)) {
         continue
       }
@@ -541,7 +544,7 @@ export class TxPool {
 
     this.config.logger.debug(`TxPool: received new tx hashes number=${reqHashes.length}`)
 
-    const reqHashesStr: UnprefixedHash[] = reqHashes.map((hash) => hash.toString('hex'))
+    const reqHashesStr: UnprefixedHash[] = reqHashes.map(bytesToHex)
     this.pending = this.pending.concat(reqHashesStr)
     this.config.logger.debug(
       `TxPool: requesting txs number=${reqHashes.length} pending=${this.pending.length}`
@@ -565,7 +568,7 @@ export class TxPool {
         await this.add(tx)
       } catch (error: any) {
         this.config.logger.debug(
-          `Error adding tx to TxPool: ${error.message} (tx hash: ${bufferToHex(tx.hash())})`
+          `Error adding tx to TxPool: ${error.message} (tx hash: ${bytesToHex(tx.hash())})`
         )
       }
       newTxHashes.push(tx.hash())
@@ -580,7 +583,7 @@ export class TxPool {
     if (!this.running) return
     for (const block of newBlocks) {
       for (const tx of block.transactions) {
-        const txHash: UnprefixedHash = tx.hash().toString('hex')
+        const txHash: UnprefixedHash = bytesToHex(tx.hash())
         this.removeByHash(txHash)
       }
     }
@@ -658,7 +661,7 @@ export class TxPool {
           tip: (tx as AccessListEIP2930Transaction).gasPrice,
         }
       case 2:
-      case 5:
+      case 3:
         return {
           maxFee: (tx as FeeMarketEIP1559Transaction).maxFeePerGas,
           tip: (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas,
@@ -684,17 +687,24 @@ export class TxPool {
    *
    * @param baseFee Provide a baseFee to exclude txs with a lower gasPrice
    */
-  async txsByPriceAndNonce(vm: VM, baseFee?: bigint) {
+  async txsByPriceAndNonce(
+    vm: VM,
+    { baseFee, allowedBlobs }: { baseFee?: bigint; allowedBlobs?: number } = {}
+  ) {
     const txs: TypedTransaction[] = []
     // Separate the transactions by account and sort by nonce
     const byNonce = new Map<string, TypedTransaction[]>()
-    const skippedStats = { byNonce: 0, byPrice: 0 }
+    const skippedStats = { byNonce: 0, byPrice: 0, byBlobsLimit: 0 }
     for (const [address, poolObjects] of this.pool) {
       let txsSortedByNonce = poolObjects
         .map((obj) => obj.tx)
         .sort((a, b) => Number(a.nonce - b.nonce))
       // Check if the account nonce matches the lowest known tx nonce
-      const { nonce } = await vm.eei.getAccount(new Address(Buffer.from(address, 'hex')))
+      let account = await vm.stateManager.getAccount(new Address(hexStringToBytes(address)))
+      if (account === undefined) {
+        account = new Account()
+      }
+      const { nonce } = account
       if (txsSortedByNonce[0].nonce !== nonce) {
         // Account nonce does not match the lowest known tx nonce,
         // therefore no txs from this address are currently executable
@@ -722,22 +732,43 @@ export class TxPool {
       byNonce.set(address, txs.slice(1))
     }
     // Merge by replacing the best with the next from the same account
+    let blobsCount = 0
     while (byPrice.length > 0) {
       // Retrieve the next best transaction by price
       const best = byPrice.remove()
       if (!best) break
+
       // Push in its place the next transaction from the same account
       const address = best.getSenderAddress().toString().slice(2)
       const accTxs = byNonce.get(address)!
-      if (accTxs.length > 0) {
-        byPrice.insert(accTxs[0])
-        byNonce.set(address, accTxs.slice(1))
+
+      // Insert the best tx into byPrice if
+      //   i) this is not a blob tx,
+      //   ii) or there is no blobs limit provided
+      //   iii) or blobs are still within limit if this best tx's blobs are included
+      if (
+        !(best instanceof BlobEIP4844Transaction) ||
+        allowedBlobs === undefined ||
+        ((best as BlobEIP4844Transaction).blobs ?? []).length + blobsCount <= allowedBlobs
+      ) {
+        if (accTxs.length > 0) {
+          byPrice.insert(accTxs[0])
+          byNonce.set(address, accTxs.slice(1))
+        }
+        // Accumulate the best priced transaction and increment blobs count
+        txs.push(best)
+        if (best instanceof BlobEIP4844Transaction) {
+          blobsCount += ((best as BlobEIP4844Transaction).blobs ?? []).length
+        }
+      } else {
+        // Since no more blobs can fit in the block, not only skip inserting in byPrice but also remove all other
+        // txs (blobs or not) of this sender address from further consideration
+        skippedStats.byBlobsLimit += 1 + accTxs.length
+        byNonce.set(address, [])
       }
-      // Accumulate the best priced transaction
-      txs.push(best)
     }
     this.config.logger.info(
-      `txsByPriceAndNonce selected txs=${txs.length}, skipped byNonce=${skippedStats.byNonce} byPrice=${skippedStats.byPrice}`
+      `txsByPriceAndNonce selected txs=${txs.length}, skipped byNonce=${skippedStats.byNonce} byPrice=${skippedStats.byPrice} byBlobsLimit=${skippedStats.byBlobsLimit}`
     )
     return txs
   }

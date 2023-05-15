@@ -30,7 +30,7 @@ type CreateRPCServerListenerOpts = {
   withEngineMiddleware?: WithEngineMiddleware
 }
 type CreateWSServerOpts = CreateRPCServerListenerOpts & { httpServer?: HttpServer }
-type WithEngineMiddleware = { jwtSecret: Buffer; unlessFn?: (req: IncomingMessage) => boolean }
+type WithEngineMiddleware = { jwtSecret: Uint8Array; unlessFn?: (req: IncomingMessage) => boolean }
 
 export enum MethodConfig {
   WithEngine = 'withengine',
@@ -117,8 +117,9 @@ export function createRPCServer(
       break
     case MethodConfig.EngineOnly: {
       /**
-       * Filter eth methods to be exposed with engine as per kiln spec 2.1
-       * From: https://github.com/ethereum/execution-apis/blob/v1.0.0-alpha.8/src/engine/specification.md#underlying-protocol
+       * Filter eth methods which should be strictly exposed if only the engine is started:
+       * https://github.com/ethereum/execution-apis/blob/6d2c035e4caafef7224cbb5fac7993b820bb61ce/src/engine/common.md#underlying-protocol
+       * (Feb 3 2023)
        */
       const ethMethodsToBeIncluded = [
         'eth_blockNumber',
@@ -130,8 +131,6 @@ export function createRPCServer(
         'eth_getLogs',
         'eth_sendRawTransaction',
         'eth_syncing',
-        'eth_getTransactionCount',
-        'eth_getTransactionReceipt',
       ]
       const ethEngineSubsetMethods: { [key: string]: Function } = {}
       for (const method of ethMethodsToBeIncluded) {
@@ -150,7 +149,7 @@ export function createRPCServer(
   return { server, methods, namespaces }
 }
 
-function checkHeaderAuth(req: any, jwtSecret: Buffer): void {
+function checkHeaderAuth(req: any, jwtSecret: Uint8Array): void {
   const header = (req.headers['Authorization'] ?? req.headers['authorization']) as string
   if (!header) throw Error(`Missing auth header`)
   const token = header.trim().split(' ')[1]

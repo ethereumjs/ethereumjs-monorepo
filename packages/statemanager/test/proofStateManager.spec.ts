@@ -1,5 +1,12 @@
 import { Trie } from '@ethereumjs/trie'
-import { Address, toBuffer, zeros } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  bytesToHex,
+  hexStringToBytes,
+  randomBytes,
+  zeros,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
@@ -13,25 +20,32 @@ tape('ProofStateManager', (t) => {
   t.test('should get and verify EIP 1178 proofs', async (st) => {
     const address = Address.zero()
     const key = zeros(32)
-    const value = Buffer.from('0000aabb00', 'hex')
-    const code = Buffer.from('6000', 'hex')
+    const value = hexStringToBytes('0000aabb00')
+    const code = hexStringToBytes('6000')
     const stateManager = new DefaultStateManager()
     await stateManager.checkpoint()
+    await stateManager.putAccount(address, new Account())
     await stateManager.putContractStorage(address, key, value)
     await stateManager.putContractCode(address, code)
     const account = await stateManager.getAccount(address)
-    account.balance = BigInt(1)
-    account.nonce = BigInt(2)
-    await stateManager.putAccount(address, account)
-    const address2 = new Address(Buffer.from('20'.repeat(20), 'hex'))
+    account!.balance = BigInt(1)
+    account!.nonce = BigInt(2)
+    await stateManager.putAccount(address, account!)
+    const address2 = new Address(hexStringToBytes('20'.repeat(20)))
     const account2 = await stateManager.getAccount(address2)
-    account.nonce = BigInt(2)
-    await stateManager.putAccount(address2, account2)
+    account!.nonce = BigInt(2)
+    await stateManager.putAccount(address2, account2!)
     await stateManager.commit()
     await stateManager.flush()
 
     const proof = await stateManager.getProof(address, [key])
     st.ok(await stateManager.verifyProof(proof))
+    const nonExistenceProof = await stateManager.getProof(Address.fromPrivateKey(randomBytes(32)))
+    st.equals(
+      await stateManager.verifyProof(nonExistenceProof),
+      true,
+      'verified proof of non-existence of account'
+    )
     st.end()
   })
 
@@ -41,13 +55,13 @@ tape('ProofStateManager', (t) => {
     // Account: 0xc626553e7c821d0f8308c28d56c60e3c15f8d55a
     // Storage slots: empty list
     const address = Address.fromString('0xc626553e7c821d0f8308c28d56c60e3c15f8d55a')
-    const trie = new Trie({ useKeyHashing: true })
+    const trie = await Trie.create({ useKeyHashing: true })
     const stateManager = new DefaultStateManager({ trie })
     // Dump all the account proof data in the DB
-    let stateRoot: Buffer | undefined
+    let stateRoot: Uint8Array | undefined
     for (const proofData of ropsten_validAccount.accountProof) {
-      const bufferData = toBuffer(proofData)
-      const key = Buffer.from(keccak256(bufferData))
+      const bufferData = hexStringToBytes(proofData)
+      const key = keccak256(bufferData)
       if (stateRoot === undefined) {
         stateRoot = key
       }
@@ -72,10 +86,10 @@ tape('ProofStateManager', (t) => {
       const trie = new Trie({ useKeyHashing: true })
       const stateManager = new DefaultStateManager({ trie })
       // Dump all the account proof data in the DB
-      let stateRoot: Buffer | undefined
+      let stateRoot: Uint8Array | undefined
       for (const proofData of ropsten_nonexistentAccount.accountProof) {
-        const bufferData = toBuffer(proofData)
-        const key = Buffer.from(keccak256(bufferData))
+        const bufferData = hexStringToBytes(proofData)
+        const key = keccak256(bufferData)
         if (stateRoot === undefined) {
           stateRoot = key
         }
@@ -83,6 +97,7 @@ tape('ProofStateManager', (t) => {
         await trie._db.put(key, bufferData)
       }
       trie.root(stateRoot!)
+      await stateManager.putAccount(address, new Account())
       const proof = await stateManager.getProof(address)
       st.deepEqual(ropsten_nonexistentAccount, proof)
       st.ok(await stateManager.verifyProof(ropsten_nonexistentAccount))
@@ -101,10 +116,10 @@ tape('ProofStateManager', (t) => {
       const trie = new Trie({ useKeyHashing: true })
       const stateManager = new DefaultStateManager({ trie })
       // Dump all the account proof data in the DB
-      let stateRoot: Buffer | undefined
+      let stateRoot: Uint8Array | undefined
       for (const proofData of ropsten_contractWithStorage.accountProof) {
-        const bufferData = toBuffer(proofData)
-        const key = Buffer.from(keccak256(bufferData))
+        const bufferData = hexStringToBytes(proofData)
+        const key = keccak256(bufferData)
         if (stateRoot === undefined) {
           stateRoot = key
         }
@@ -113,17 +128,17 @@ tape('ProofStateManager', (t) => {
       }
       const storageRoot = ropsten_contractWithStorage.storageHash
       const storageTrie = new Trie({ useKeyHashing: true })
-      const storageKeys: Buffer[] = []
+      const storageKeys: Uint8Array[] = []
       for (const storageProofsData of ropsten_contractWithStorage.storageProof) {
-        storageKeys.push(toBuffer(storageProofsData.key))
+        storageKeys.push(hexStringToBytes(storageProofsData.key))
         for (const storageProofData of storageProofsData.proof) {
-          const key = Buffer.from(keccak256(toBuffer(storageProofData)))
+          const key = keccak256(hexStringToBytes(storageProofData))
           // @ts-expect-error
-          await storageTrie._db.put(key, toBuffer(storageProofData))
+          await storageTrie._db.put(key, hexStringToBytes(storageProofData))
         }
       }
-      storageTrie.root(toBuffer(storageRoot))
-      const addressHex = address.buf.toString('hex')
+      storageTrie.root(hexStringToBytes(storageRoot))
+      const addressHex = bytesToHex(address.bytes)
       stateManager._storageTries[addressHex] = storageTrie
       trie.root(stateRoot!)
 
@@ -143,10 +158,10 @@ tape('ProofStateManager', (t) => {
     const trie = new Trie({ useKeyHashing: true })
     const stateManager = new DefaultStateManager({ trie })
     // Dump all the account proof data in the DB
-    let stateRoot: Buffer | undefined
+    let stateRoot: Uint8Array | undefined
     for (const proofData of ropsten_contractWithStorage.accountProof) {
-      const bufferData = toBuffer(proofData)
-      const key = Buffer.from(keccak256(bufferData))
+      const bufferData = hexStringToBytes(proofData)
+      const key = keccak256(bufferData)
       if (stateRoot === undefined) {
         stateRoot = key
       }
@@ -155,17 +170,17 @@ tape('ProofStateManager', (t) => {
     }
     const storageRoot = ropsten_contractWithStorage.storageHash
     const storageTrie = new Trie({ useKeyHashing: true })
-    const storageKeys: Buffer[] = []
+    const storageKeys: Uint8Array[] = []
     for (const storageProofsData of ropsten_contractWithStorage.storageProof) {
-      storageKeys.push(toBuffer(storageProofsData.key))
+      storageKeys.push(hexStringToBytes(storageProofsData.key))
       for (const storageProofData of storageProofsData.proof) {
-        const key = Buffer.from(keccak256(toBuffer(storageProofData)))
+        const key = keccak256(hexStringToBytes(storageProofData))
         // @ts-expect-error
-        await storageTrie._db.put(key, toBuffer(storageProofData))
+        await storageTrie._db.put(key, hexStringToBytes(storageProofData))
       }
     }
-    storageTrie.root(toBuffer(storageRoot))
-    const addressHex = address.buf.toString('hex')
+    storageTrie.root(hexStringToBytes(storageRoot))
+    const addressHex = bytesToHex(address.bytes)
     stateManager._storageTries[addressHex] = storageTrie
     trie.root(stateRoot!)
 
@@ -212,10 +227,10 @@ tape('ProofStateManager', (t) => {
     const trie = new Trie({ useKeyHashing: true })
     const stateManager = new DefaultStateManager({ trie })
     // Dump all the account proof data in the DB
-    let stateRoot: Buffer | undefined
+    let stateRoot: Uint8Array | undefined
     for (const proofData of ropsten_nonexistentAccount.accountProof) {
-      const bufferData = toBuffer(proofData)
-      const key = Buffer.from(keccak256(bufferData))
+      const bufferData = hexStringToBytes(proofData)
+      const key = keccak256(bufferData)
       if (stateRoot === undefined) {
         stateRoot = key
       }
@@ -224,8 +239,8 @@ tape('ProofStateManager', (t) => {
     }
     const storageRoot = ropsten_nonexistentAccount.storageHash
     const storageTrie = new Trie({ useKeyHashing: true })
-    storageTrie.root(toBuffer(storageRoot))
-    const addressHex = address.buf.toString('hex')
+    storageTrie.root(hexStringToBytes(storageRoot))
+    const addressHex = bytesToHex(address.bytes)
     stateManager._storageTries[addressHex] = storageTrie
     trie.root(stateRoot!)
 

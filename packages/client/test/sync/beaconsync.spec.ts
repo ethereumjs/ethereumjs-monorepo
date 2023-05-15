@@ -42,7 +42,7 @@ tape('[BeaconSynchronizer]', async (t) => {
   const { BeaconSynchronizer } = await import('../../lib/sync/beaconsync')
 
   t.test('should initialize correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -52,7 +52,7 @@ tape('[BeaconSynchronizer]', async (t) => {
   })
 
   t.test('should open', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -67,7 +67,7 @@ tape('[BeaconSynchronizer]', async (t) => {
   })
 
   t.test('should get height', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -83,7 +83,7 @@ tape('[BeaconSynchronizer]', async (t) => {
   })
 
   t.test('should find best', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -115,6 +115,8 @@ tape('[BeaconSynchronizer]', async (t) => {
       transports: [],
       safeReorgDistance: 0,
       skeletonSubchainMergeMinimum: 0,
+      accountCache: 10000,
+      storageCache: 1000,
     })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
@@ -127,7 +129,7 @@ tape('[BeaconSynchronizer]', async (t) => {
     td.when(sync.best()).thenResolve('peer')
     td.when(sync.latest('peer' as any)).thenResolve({
       number: BigInt(2),
-      hash: () => Buffer.from([]),
+      hash: () => new Uint8Array(0),
     })
     td.when(ReverseBlockFetcher.prototype.fetch(), { delay: 100, times: 3 }).thenResolve(undefined)
     ;(skeleton as any).status.progress.subchains = [
@@ -166,6 +168,8 @@ tape('[BeaconSynchronizer]', async (t) => {
       transports: [],
       safeReorgDistance: 0,
       skeletonSubchainMergeMinimum: 1000,
+      accountCache: 10000,
+      storageCache: 1000,
     })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
@@ -178,7 +182,7 @@ tape('[BeaconSynchronizer]', async (t) => {
     td.when(sync.best()).thenResolve('peer')
     td.when(sync.latest('peer' as any)).thenResolve({
       number: BigInt(2),
-      hash: () => Buffer.from([]),
+      hash: () => new Uint8Array(0),
     })
     td.when(ReverseBlockFetcher.prototype.fetch(), { delay: 100, times: 1 }).thenResolve(undefined)
     ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(6) }]
@@ -195,7 +199,7 @@ tape('[BeaconSynchronizer]', async (t) => {
   })
 
   t.test('should extend and set with a valid head', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -224,7 +228,7 @@ tape('[BeaconSynchronizer]', async (t) => {
   })
 
   t.test('syncWithPeer should return early if skeleton is already linked', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })

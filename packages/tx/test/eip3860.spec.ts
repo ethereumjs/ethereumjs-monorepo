@@ -6,17 +6,17 @@ import { TransactionFactory } from '../src'
 
 const common = new Common({
   chain: Chain.Mainnet,
-  hardfork: Hardfork.Merge,
+  hardfork: Hardfork.Paris,
   eips: [3860, 4844, 4895],
 })
 
 const maxInitCodeSize = common.param('vm', 'maxInitCodeSize')
-const txTypes = [0, 1, 2, 5]
+const txTypes = [0, 1, 2, 3]
 const addressZero = Address.zero()
 
 tape('[EIP3860 tests]', function (t) {
   t.test('Should instantiate create txs with MAX_INITCODE_SIZE', (st) => {
-    const data = Buffer.alloc(Number(maxInitCodeSize))
+    const data = new Uint8Array(Number(maxInitCodeSize))
     for (const txType of txTypes) {
       try {
         TransactionFactory.fromTxData({ data, type: txType }, { common })
@@ -29,7 +29,7 @@ tape('[EIP3860 tests]', function (t) {
   })
 
   t.test('Should instantiate txs with MAX_INITCODE_SIZE data', (st) => {
-    const data = Buffer.alloc(Number(maxInitCodeSize))
+    const data = new Uint8Array(Number(maxInitCodeSize))
     for (const txType of txTypes) {
       try {
         TransactionFactory.fromTxData({ data, type: txType, to: addressZero }, { common })
@@ -42,7 +42,7 @@ tape('[EIP3860 tests]', function (t) {
   })
 
   t.test('Should not instantiate create txs with MAX_INITCODE_SIZE+1 data', (st) => {
-    const data = Buffer.alloc(Number(maxInitCodeSize) + 1)
+    const data = new Uint8Array(Number(maxInitCodeSize) + 1)
     for (const txType of txTypes) {
       try {
         TransactionFactory.fromTxData({ data, type: txType }, { common })
@@ -55,7 +55,7 @@ tape('[EIP3860 tests]', function (t) {
   })
 
   t.test('Should instantiate txs with MAX_INITCODE_SIZE+1 data', (st) => {
-    const data = Buffer.alloc(Number(maxInitCodeSize) + 1)
+    const data = new Uint8Array(Number(maxInitCodeSize) + 1)
     for (const txType of txTypes) {
       try {
         TransactionFactory.fromTxData({ data, type: txType, to: addressZero }, { common })
@@ -70,7 +70,7 @@ tape('[EIP3860 tests]', function (t) {
   tape(
     'Should allow txs with MAX_INITCODE_SIZE+1 data if allowUnlimitedInitCodeSize is active',
     (st) => {
-      const data = Buffer.alloc(Number(maxInitCodeSize) + 1)
+      const data = new Uint8Array(Number(maxInitCodeSize) + 1)
       for (const txType of txTypes) {
         try {
           TransactionFactory.fromTxData(
@@ -87,7 +87,7 @@ tape('[EIP3860 tests]', function (t) {
   )
 
   tape('Should charge initcode analysis gas is allowUnlimitedInitCodeSize is active', (st) => {
-    const data = Buffer.alloc(Number(maxInitCodeSize))
+    const data = new Uint8Array(Number(maxInitCodeSize))
     for (const txType of txTypes) {
       const eip3860ActiveTx = TransactionFactory.fromTxData(
         { data, type: txType },

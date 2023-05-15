@@ -1,3 +1,4 @@
+import { hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Chain, Common, Hardfork } from '../src'
@@ -29,7 +30,7 @@ tape('[Common]: Timestamp Hardfork logic', function (t: tape.Test) {
 
   t.test('schedule sharding on shanghai-time', function (st: tape.Test) {
     const config = Object.assign({}, timestampJson.config, {
-      shardingForkTime: timestampJson.config.shanghaiTime,
+      cancunTime: timestampJson.config.shanghaiTime,
     })
     const modifiedJson = Object.assign({}, timestampJson, { config })
     const c = Common.fromGethGenesis(modifiedJson, {
@@ -51,7 +52,7 @@ tape('[Common]: Timestamp Hardfork logic', function (t: tape.Test) {
 
   t.test('schedule sharding post shanghai-time', function (st: tape.Test) {
     const config = Object.assign({}, timestampJson.config, {
-      shardingForkTime: timestampJson.config.shanghaiTime + 1000,
+      cancunTime: timestampJson.config.shanghaiTime + 1000,
     })
     const modifiedJson = Object.assign({}, timestampJson, { config })
     const c = Common.fromGethGenesis(modifiedJson, {
@@ -79,7 +80,7 @@ tape('[Common]: Timestamp Hardfork logic', function (t: tape.Test) {
   t.test('forkHash', function (st) {
     const mainnet = new Common({ chain: Chain.Mainnet })
     const hfs = mainnet.hardforks()
-    const mergeIndex = hfs.findIndex((hf) => hf.name === Hardfork.Merge)
+    const mergeIndex = hfs.findIndex((hf) => hf.name === Hardfork.Paris)
     const hardforks = hfs.slice(0, mergeIndex + 1).concat([
       // Add these hardforks as specified here:
       //   https://github.com/ethereum/EIPs/pull/6122/files
@@ -97,9 +98,8 @@ tape('[Common]: Timestamp Hardfork logic', function (t: tape.Test) {
     ])
 
     const c = Common.custom({ hardforks }, { baseChain: Chain.Mainnet })
-    const mainnetGenesisHash = Buffer.from(
-      'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-      'hex'
+    const mainnetGenesisHash = hexStringToBytes(
+      'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
     )
     for (const hf of c.hardforks()) {
       if (typeof hf.forkHash === 'string') {
@@ -125,7 +125,7 @@ tape('[Common]: Timestamp Hardfork logic', function (t: tape.Test) {
   t.test('setForkHashes', function (st) {
     const mainnet = new Common({ chain: Chain.Mainnet })
     const hfs = mainnet.hardforks()
-    const mergeIndex = hfs.findIndex((hf) => hf.name === Hardfork.Merge)
+    const mergeIndex = hfs.findIndex((hf) => hf.name === Hardfork.Paris)
     const hardforks = hfs.slice(0, mergeIndex + 1).concat([
       // Add these hardforks as specified here:
       //   https://github.com/ethereum/EIPs/pull/6122/files
@@ -141,9 +141,8 @@ tape('[Common]: Timestamp Hardfork logic', function (t: tape.Test) {
     ])
 
     const c = Common.custom({ hardforks }, { baseChain: Chain.Mainnet })
-    const mainnetGenesisHash = Buffer.from(
-      'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-      'hex'
+    const mainnetGenesisHash = hexStringToBytes(
+      'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
     )
 
     let noForkHashes = c.hardforks().reduce((acc, hf) => {

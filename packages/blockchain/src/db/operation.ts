@@ -1,3 +1,5 @@
+import { KeyEncoding, ValueEncoding } from '@ethereumjs/util'
+
 import {
   HEADS_KEY,
   HEAD_BLOCK_KEY,
@@ -30,17 +32,17 @@ export enum DBTarget {
  * @hidden
  */
 export interface DBOpData {
-  type?: string
-  key: Buffer | string
-  keyEncoding: string
-  valueEncoding?: string
-  value?: Buffer | object
+  type?: 'put' | 'del'
+  key: Uint8Array | string
+  keyEncoding: KeyEncoding
+  valueEncoding?: ValueEncoding
+  value?: Uint8Array | object
 }
 
 // a Database Key is identified by a block hash, a block number, or both
 export type DatabaseKey = {
   blockNumber?: bigint
-  blockHash?: Buffer
+  blockHash?: Uint8Array
 }
 
 /**
@@ -56,22 +58,24 @@ export class DBOp {
 
     this.baseDBOp = {
       key: '',
-      keyEncoding: 'buffer',
-      valueEncoding: 'buffer',
+      keyEncoding: KeyEncoding.Bytes,
+      valueEncoding: ValueEncoding.Bytes,
     }
 
     switch (operationTarget) {
       case DBTarget.Heads: {
         this.baseDBOp.key = HEADS_KEY
-        this.baseDBOp.valueEncoding = 'json'
+        this.baseDBOp.valueEncoding = ValueEncoding.JSON
         break
       }
       case DBTarget.HeadHeader: {
         this.baseDBOp.key = HEAD_HEADER_KEY
+        this.baseDBOp.keyEncoding = KeyEncoding.String
         break
       }
       case DBTarget.HeadBlock: {
         this.baseDBOp.key = HEAD_BLOCK_KEY
+        this.baseDBOp.keyEncoding = KeyEncoding.String
         break
       }
       case DBTarget.HashToNumber: {
@@ -107,15 +111,19 @@ export class DBOp {
   }
 
   // set operation: note: value/key is not in default order
-  public static set(operationTarget: DBTarget, value: Buffer | object, key?: DatabaseKey): DBOp {
+  public static set(
+    operationTarget: DBTarget,
+    value: Uint8Array | object,
+    key?: DatabaseKey
+  ): DBOp {
     const dbOperation = new DBOp(operationTarget, key)
     dbOperation.baseDBOp.value = value
     dbOperation.baseDBOp.type = 'put'
 
     if (operationTarget === DBTarget.Heads) {
-      dbOperation.baseDBOp.valueEncoding = 'json'
+      dbOperation.baseDBOp.valueEncoding = ValueEncoding.JSON
     } else {
-      dbOperation.baseDBOp.valueEncoding = 'binary'
+      dbOperation.baseDBOp.valueEncoding = ValueEncoding.Bytes
     }
 
     return dbOperation
@@ -130,7 +138,7 @@ export class DBOp {
   public updateCache(cacheMap: CacheMap) {
     if (this.cacheString !== undefined && cacheMap[this.cacheString] !== undefined) {
       if (this.baseDBOp.type === 'put') {
-        Buffer.isBuffer(this.baseDBOp.value) &&
+        this.baseDBOp.value instanceof Uint8Array &&
           cacheMap[this.cacheString].set(this.baseDBOp.key, this.baseDBOp.value)
       } else if (this.baseDBOp.type === 'del') {
         cacheMap[this.cacheString].del(this.baseDBOp.key)

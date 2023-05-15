@@ -2,17 +2,17 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { EEI } from '@ethereumjs/vm'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 
 const main = async () => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
   const stateManager = new DefaultStateManager()
   const blockchain = await Blockchain.create()
-  const eei = new EEI(stateManager, common, blockchain)
 
   const evm = new EVM({
     common,
-    eei,
+    stateManager,
+    blockchain,
   })
 
   const STOP = '00'
@@ -29,11 +29,11 @@ const main = async () => {
 
   evm
     .runCode({
-      code: Buffer.from(code.join(''), 'hex'),
+      code: hexToBytes(code.join('')),
       gasLimit: BigInt(0xffff),
     })
     .then((results) => {
-      console.log(`Returned: ${results.returnValue.toString('hex')}`)
+      console.log(`Returned: ${bytesToHex(results.returnValue)}`)
       console.log(`gasUsed: ${results.executionGasUsed.toString()}`)
     })
     .catch(console.error)

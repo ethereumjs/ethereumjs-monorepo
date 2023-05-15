@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { toBuffer, zeros } from '@ethereumjs/util'
+import { bytesToHex, equalsBytes, hexStringToBytes, toBytes, zeros } from '@ethereumjs/util'
 import * as tape from 'tape'
 // explicitly import util, needed for karma-typescript bundling
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, simple-import-sort/imports
@@ -15,14 +15,14 @@ import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
 
-import type { BlockBuffer } from '../src'
+import type { BlockBytes } from '../src'
 import type { NestedUint8Array } from '@ethereumjs/util'
 
 tape('[Block]: block functions', function (t) {
   t.test('should test block initialization', function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const genesis = Block.fromBlockData({}, { common })
-    st.ok(genesis.hash().toString('hex'), 'block should initialize')
+    st.ok(bytesToHex(genesis.hash()), 'block should initialize')
 
     // test default freeze values
     // also test if the options are carried over to the constructor
@@ -39,22 +39,22 @@ tape('[Block]: block functions', function (t) {
     block = Block.fromRLPSerializedBlock(rlpBlock, { freeze: false })
     st.ok(!Object.isFrozen(block), 'block should not be frozen when freeze deactivated in options')
 
-    const zero = Buffer.alloc(0)
+    const zero = new Uint8Array(0)
     const headerArray = []
     for (let item = 0; item < 15; item++) {
       headerArray.push(zero)
     }
 
     // mock header data (if set to zeros(0) header throws)
-    headerArray[0] = zeros(32) //parentHash
-    headerArray[2] = zeros(20) //coinbase
-    headerArray[3] = zeros(32) //stateRoot
-    headerArray[4] = zeros(32) //transactionsTrie
-    headerArray[5] = zeros(32) //receiptTrie
+    headerArray[0] = zeros(32) // parentHash
+    headerArray[2] = zeros(20) // coinbase
+    headerArray[3] = zeros(32) // stateRoot
+    headerArray[4] = zeros(32) // transactionsTrie
+    headerArray[5] = zeros(32) // receiptTrie
     headerArray[13] = zeros(32) // mixHash
     headerArray[14] = zeros(8) // nonce
 
-    const valuesArray = <BlockBuffer>[headerArray, [], []]
+    const valuesArray = <BlockBytes>[headerArray, [], []]
 
     block = Block.fromValuesArray(valuesArray, { common })
     st.ok(Object.isFrozen(block), 'block should be frozen by default')
@@ -77,7 +77,7 @@ tape('[Block]: block functions', function (t) {
       {
         header: {
           number: 12, // Berlin block
-          extraData: Buffer.alloc(97),
+          extraData: new Uint8Array(97),
         },
       },
       { common, hardforkByBlockNumber: true }
@@ -94,7 +94,7 @@ tape('[Block]: block functions', function (t) {
     )
     st.equal(
       block._common.hardfork(),
-      Hardfork.Merge,
+      Hardfork.Paris,
       'should use hardforkByTTD option (td > threshold)'
     )
 
@@ -102,7 +102,7 @@ tape('[Block]: block functions', function (t) {
       {
         header: {
           number: 12, // Berlin block,
-          extraData: Buffer.alloc(97),
+          extraData: new Uint8Array(97),
         },
       },
       { common, hardforkByTTD: 3000 }
@@ -151,7 +151,7 @@ tape('[Block]: block functions', function (t) {
     function (st) {
       const common = new Common({ chain: Chain.Rinkeby })
       const uncleBlock = Block.fromBlockData(
-        { header: { extraData: Buffer.alloc(117) } },
+        { header: { extraData: new Uint8Array(117) } },
         { common }
       )
       st.throws(function () {
@@ -163,7 +163,7 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should test block validation on pow chain', async function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const blockRlp = toBuffer(testDataPreLondon.blocks[0].rlp)
+    const blockRlp = toBytes(testDataPreLondon.blocks[0].rlp)
     try {
       Block.fromRLPSerializedBlock(blockRlp, { common })
       st.pass('should pass')
@@ -189,11 +189,11 @@ tape('[Block]: block functions', function (t) {
   }
 
   t.test('should test transaction validation', async function (st) {
-    const blockRlp = toBuffer(testDataPreLondon.blocks[0].rlp)
+    const blockRlp = toBytes(testDataPreLondon.blocks[0].rlp)
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     await testTransactionValidation(st, block)
-    ;(block.header as any).transactionsTrie = Buffer.alloc(32)
+    ;(block.header as any).transactionsTrie = new Uint8Array(32)
     try {
       await block.validateData()
       st.fail('should throw')
@@ -209,7 +209,7 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should test transaction validation with legacy tx in london', async function (st) {
     const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.London })
-    const blockRlp = toBuffer(testDataPreLondon.blocks[0].rlp)
+    const blockRlp = toBytes(testDataPreLondon.blocks[0].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     await testTransactionValidation(st, block)
     ;(block.transactions[0] as any).gasPrice = BigInt(0)
@@ -222,10 +222,10 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should test uncles hash validation', async function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const blockRlp = toBuffer(testDataPreLondon2.blocks[2].rlp)
+    const blockRlp = toBytes(testDataPreLondon2.blocks[2].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     st.equal(block.validateUnclesHash(), true)
-    ;(block.header as any).uncleHash = Buffer.alloc(32)
+    ;(block.header as any).uncleHash = new Uint8Array(32)
     try {
       await block.validateData()
       st.fail('should throw')
@@ -253,10 +253,10 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should test genesis hashes (mainnet default)', function (st) {
     const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
-    const rlp = Buffer.from(testDataGenesis.test.genesis_rlp_hex, 'hex')
-    const hash = Buffer.from(testDataGenesis.test.genesis_hash, 'hex')
+    const rlp = hexStringToBytes(testDataGenesis.test.genesis_rlp_hex)
+    const hash = hexStringToBytes(testDataGenesis.test.genesis_hash)
     const block = Block.fromRLPSerializedBlock(rlp, { common })
-    st.ok(block.hash().equals(hash), 'genesis hash match')
+    st.ok(equalsBytes(block.hash(), hash), 'genesis hash match')
     st.end()
   })
 
@@ -272,17 +272,17 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should return the same block data from raw()', function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const block = Block.fromRLPSerializedBlock(toBuffer(testDataPreLondon2.blocks[2].rlp), {
+    const block = Block.fromRLPSerializedBlock(toBytes(testDataPreLondon2.blocks[2].rlp), {
       common,
     })
     const blockFromRaw = Block.fromValuesArray(block.raw(), { common })
-    st.ok(block.hash().equals(blockFromRaw.hash()))
+    st.ok(equalsBytes(block.hash(), blockFromRaw.hash()))
     st.end()
   })
 
   t.test('should test toJSON', function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const block = Block.fromRLPSerializedBlock(toBuffer(testDataPreLondon2.blocks[2].rlp), {
+    const block = Block.fromRLPSerializedBlock(toBytes(testDataPreLondon2.blocks[2].rlp), {
       common,
     })
     st.equal(typeof block.toJSON(), 'object')
@@ -292,22 +292,22 @@ tape('[Block]: block functions', function (t) {
   t.test('DAO hardfork', function (st) {
     const blockData = RLP.decode(testDataPreLondon2.blocks[0].rlp) as NestedUint8Array
     // Set block number from test block to mainnet DAO fork block 1920000
-    blockData[0][8] = Buffer.from('1D4C00', 'hex')
+    blockData[0][8] = hexStringToBytes('1D4C00')
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Dao })
     st.throws(
       function () {
-        Block.fromValuesArray(blockData as BlockBuffer, { common })
+        Block.fromValuesArray(blockData as BlockBytes, { common })
       },
       /Error: extraData should be 'dao-hard-fork'/,
       'should throw on DAO HF block with wrong extra data'
     ) // eslint-disable-line
 
     // Set extraData to dao-hard-fork
-    blockData[0][12] = Buffer.from('64616f2d686172642d666f726b', 'hex')
+    blockData[0][12] = hexStringToBytes('64616f2d686172642d666f726b')
 
     st.doesNotThrow(function () {
-      Block.fromValuesArray(blockData as BlockBuffer, { common })
+      Block.fromValuesArray(blockData as BlockBytes, { common })
     }, 'should not throw on DAO HF block with correct extra data')
     st.end()
   })

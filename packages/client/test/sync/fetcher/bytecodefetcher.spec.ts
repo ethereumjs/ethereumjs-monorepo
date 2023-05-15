@@ -1,5 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
+import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
@@ -30,16 +31,14 @@ tape('[ByteCodeFetcher]', async (t) => {
       config,
       pool,
       trie: new Trie({ useKeyHashing: false }),
-      hashes: [
-        Buffer.from('2034f79e0e33b0ae6bef948532021baceb116adf2616478703bec6b17329f1cc', 'hex'),
-      ],
+      hashes: [hexToBytes('2034f79e0e33b0ae6bef948532021baceb116adf2616478703bec6b17329f1cc')],
     })
     fetcher.next = () => false
     t.notOk((fetcher as any).running, 'not started')
     t.equals((fetcher as any).in.length, 0, 'No jobs have yet been added')
     t.equal((fetcher as any).hashes.length, 1, 'one codehash have been added')
     fetcher.enqueueByByteCodeRequestList([
-      Buffer.from('2034f79e0e33b0ae6bef948532021baceb116adf2616478703bec6b17329f1cc', 'hex'),
+      hexToBytes('2034f79e0e33b0ae6bef948532021baceb116adf2616478703bec6b17329f1cc'),
     ])
     t.equals((fetcher as any).in.length, 1, 'A new task has been queued')
     const job = (fetcher as any).in.peek()
@@ -65,12 +64,12 @@ tape('[ByteCodeFetcher]', async (t) => {
       hashes: [],
     })
 
-    const fullResult: any = [Buffer.from('')]
+    const fullResult: any = [utf8ToBytes('')]
 
-    const ByteCodeResponse: any = [Buffer.from('')]
+    const ByteCodeResponse: any = [utf8ToBytes('')]
     ByteCodeResponse.completed = true
     const task = {
-      hashes: [Buffer.from('')],
+      hashes: [utf8ToBytes('')],
     }
     ;(fetcher as any).running = true
     fetcher.enqueueTask(task)
@@ -89,10 +88,10 @@ tape('[ByteCodeFetcher]', async (t) => {
       trie: new Trie({ useKeyHashing: false }),
       hashes: [],
     })
-    const ByteCodeResponse: any = [Buffer.from(''), Buffer.from('')]
+    const ByteCodeResponse: any = [utf8ToBytes(''), utf8ToBytes('')]
     ByteCodeResponse.completed = false
     const task = {
-      hashes: [Buffer.from('')],
+      hashes: [utf8ToBytes('')],
     }
     ;(fetcher as any).running = true
     fetcher.enqueueTask(task)
@@ -101,7 +100,7 @@ tape('[ByteCodeFetcher]', async (t) => {
     t.equal((fetcher as any).in.length, 1, 'Fetcher should still have same job')
     t.equal(job?.partialResult.length, 2, 'Should have two partial results')
     t.equal(results, undefined, 'Process should not return full results yet')
-    const remainingBytesCodeData: any = [Buffer.from(''), Buffer.from(''), Buffer.from('')]
+    const remainingBytesCodeData: any = [utf8ToBytes(''), utf8ToBytes(''), utf8ToBytes('')]
     remainingBytesCodeData.completed = true
     results = fetcher.process(job as any, remainingBytesCodeData)
     t.equal((results as any).length, 5, 'Should return full results')
@@ -122,14 +121,14 @@ tape('[ByteCodeFetcher]', async (t) => {
 
     const task = {
       hashes: [
-        Buffer.from('28ec5c6e71bc4243030bc6aa069616b4497c150c883c019dee059279f0593cd8', 'hex'),
-        Buffer.from('418df730969850c4f5c10d09ca929d018ee4c5d71243aa7440560e2265c37aab', 'hex'),
-        Buffer.from('01b45b4d94f26e3f7a84ea31f7338c0f621d3f3ee38e439611a0954da7e2d728', 'hex'),
-        Buffer.from('6bd103c66d7d0908a75ae23d5f6de62865be2784408cf07906eaffe515616212', 'hex'),
-        Buffer.from('0c9d7b40fa7bb308c9b029f7b2840bc1071760c55cdf136b08f0f81ace379399', 'hex'),
+        hexToBytes('28ec5c6e71bc4243030bc6aa069616b4497c150c883c019dee059279f0593cd8'),
+        hexToBytes('418df730969850c4f5c10d09ca929d018ee4c5d71243aa7440560e2265c37aab'),
+        hexToBytes('01b45b4d94f26e3f7a84ea31f7338c0f621d3f3ee38e439611a0954da7e2d728'),
+        hexToBytes('6bd103c66d7d0908a75ae23d5f6de62865be2784408cf07906eaffe515616212'),
+        hexToBytes('0c9d7b40fa7bb308c9b029f7b2840bc1071760c55cdf136b08f0f81ace379399'),
       ],
     }
-    const resData = RLP.decode(Buffer.from(_byteCodesRLP, 'hex')) as unknown
+    const resData = RLP.decode(hexToBytes(_byteCodesRLP)) as unknown
     const res = p.decode(p.messages.filter((message) => message.name === 'ByteCodes')[0], resData)
     const { reqId, codes } = res
     const mockedGetByteCodes = td.func<any>()
@@ -170,7 +169,7 @@ tape('[ByteCodeFetcher]', async (t) => {
       config,
       pool,
       trie: new Trie({ useKeyHashing: false }),
-      hashes: [Buffer.from('')],
+      hashes: [utf8ToBytes('')],
     })
     td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
     t.equals(fetcher.peer(), 'peer0', 'found peer')

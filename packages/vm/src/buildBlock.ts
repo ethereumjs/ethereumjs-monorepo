@@ -3,7 +3,7 @@ import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
-import { Address, GWEI_TO_WEI, TypeOutput, Withdrawal, toBuffer, toType } from '@ethereumjs/util'
+import { Address, GWEI_TO_WEI, TypeOutput, Withdrawal, toBytes, toType } from '@ethereumjs/util'
 
 import { Bloom } from './bloom'
 import { calculateMinerReward, encodeReceipt, rewardAccount } from './runBlock'
@@ -118,7 +118,7 @@ export class BlockBuilder {
     for (const [i, txResult] of this.transactionResults.entries()) {
       const tx = this.transactions[i]
       const encodedReceipt = encodeReceipt(txResult.receipt, tx.type)
-      await receiptTrie.put(Buffer.from(RLP.encode(i)), encodedReceipt)
+      await receiptTrie.put(RLP.encode(i), encodedReceipt)
     }
     return receiptTrie.root()
   }
@@ -131,9 +131,9 @@ export class BlockBuilder {
     const reward = calculateMinerReward(minerReward, 0)
     const coinbase =
       this.headerData.coinbase !== undefined
-        ? new Address(toBuffer(this.headerData.coinbase))
+        ? new Address(toBytes(this.headerData.coinbase))
         : Address.zero()
-    await rewardAccount(this.vm.eei, coinbase, reward)
+    await rewardAccount(this.vm.stateManager, coinbase, reward)
   }
 
   /**
@@ -149,7 +149,7 @@ export class BlockBuilder {
       if (amount === 0n) continue
       // Withdrawal amount is represented in Gwei so needs to be
       // converted to wei
-      await rewardAccount(this.vm.eei, address, amount * GWEI_TO_WEI)
+      await rewardAccount(this.vm.stateManager, address, amount * GWEI_TO_WEI)
     }
   }
 
@@ -192,7 +192,9 @@ export class BlockBuilder {
         throw new Error('block data gas limit reached')
       }
 
-      const parentHeader = await this.vm.blockchain.getBlock(this.headerData.parentHash! as Buffer)
+      const parentHeader = await this.vm.blockchain.getBlock(
+        this.headerData.parentHash! as Uint8Array
+      )
       excessDataGas = calcExcessDataGas(
         parentHeader!.header,
         (tx as BlobEIP4844Transaction).blobs?.length ?? 0
@@ -271,9 +273,9 @@ export class BlockBuilder {
     if (this.vm._common.isActivatedEIP(4844)) {
       let parentHeader = null
       if (this.headerData.parentHash !== undefined) {
-        parentHeader = await this.vm.blockchain.getBlock(toBuffer(this.headerData.parentHash))
+        parentHeader = await this.vm.blockchain.getBlock(toBytes(this.headerData.parentHash))
       }
-      if (parentHeader !== null && parentHeader.header._common.isActivatedEIP(4844)) {
+      if (parentHeader !== null && parentHeader.header._common.isActivatedEIP(4844) === true) {
         // Compute total number of blobs in block
         const blobTxns = this.transactions.filter((tx) => tx instanceof BlobEIP4844Transaction)
         let newBlobs = 0

@@ -19,6 +19,11 @@ export * from './account'
 export * from './address'
 
 /**
+ * DB type
+ */
+export * from './db'
+
+/**
  * Withdrawal type
  */
 export * from './withdrawal'
@@ -29,7 +34,7 @@ export * from './withdrawal'
 export * from './signature'
 
 /**
- * Utilities for manipulating Buffers, byte arrays, etc.
+ * Utilities for manipulating bytes, Uint8Arrays, etc.
  */
 export * from './bytes'
 
@@ -52,6 +57,7 @@ export * from './encoding'
  * Export ethjs-util methods
  */
 export * from './asyncEventEmitter'
+export * from './blobHelpers'
 export {
   arrayContainsArray,
   fromAscii,
@@ -64,5 +70,7 @@ export {
   stripHexPrefix,
   toAscii,
 } from './internal'
+export * from './kzg'
 export * from './lock'
+export * from './mapDB'
 export * from './provider'

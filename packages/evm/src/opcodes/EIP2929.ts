@@ -21,12 +21,12 @@ export function accessAddressEIP2929(
 ): bigint {
   if (common.isActivatedEIP(2929) === false) return BigInt(0)
 
-  const eei = runState.eei
-  const addressStr = address.buf
+  const stateManager = runState.stateManager
+  const addressStr = address.bytes
 
   // Cold
-  if (!eei.isWarmedAddress(addressStr)) {
-    eei.addWarmedAddress(addressStr)
+  if (!stateManager.isWarmedAddress(addressStr)) {
+    stateManager.addWarmedAddress(addressStr)
 
     // CREATE, CREATE2 opcodes have the address warmed for free.
     // selfdestruct beneficiary address reads are charged an *additional* cold access
@@ -45,24 +45,24 @@ export function accessAddressEIP2929(
  * Adjusts cost incurred for executing opcode based on whether storage read
  * is warm/cold. (EIP 2929)
  * @param {RunState} runState
- * @param {Buffer} key (to storage slot)
+ * @param {Uint8Array} key (to storage slot)
  * @param {Common} common
  */
 export function accessStorageEIP2929(
   runState: RunState,
-  key: Buffer,
+  key: Uint8Array,
   isSstore: boolean,
   common: Common
 ): bigint {
   if (common.isActivatedEIP(2929) === false) return BigInt(0)
 
-  const eei = runState.eei
-  const address = runState.interpreter.getAddress().buf
-  const slotIsCold = !eei.isWarmedStorage(address, key)
+  const stateManager = runState.stateManager
+  const address = runState.interpreter.getAddress().bytes
+  const slotIsCold = !stateManager.isWarmedStorage(address, key)
 
   // Cold (SLOAD and SSTORE)
   if (slotIsCold) {
-    eei.addWarmedStorage(address, key)
+    stateManager.addWarmedStorage(address, key)
     return common.param('gasPrices', 'coldsload')
   } else if (!isSstore) {
     return common.param('gasPrices', 'warmstorageread')
@@ -74,7 +74,7 @@ export function accessStorageEIP2929(
  * Adjusts cost of SSTORE_RESET_GAS or SLOAD (aka sstorenoop) (EIP-2200) downward when storage
  * location is already warm
  * @param  {RunState} runState
- * @param  {Buffer}   key          storage slot
+ * @param  {Uint8Array}   key          storage slot
  * @param  {BigInt}   defaultCost  SSTORE_RESET_GAS / SLOAD
  * @param  {string}   costName     parameter name ('noop')
  * @param  {Common}   common
@@ -82,19 +82,19 @@ export function accessStorageEIP2929(
  */
 export function adjustSstoreGasEIP2929(
   runState: RunState,
-  key: Buffer,
+  key: Uint8Array,
   defaultCost: bigint,
   costName: string,
   common: Common
 ): bigint {
   if (common.isActivatedEIP(2929) === false) return defaultCost
 
-  const eei = runState.eei
-  const address = runState.interpreter.getAddress().buf
+  const stateManager = runState.stateManager
+  const address = runState.interpreter.getAddress().bytes
   const warmRead = common.param('gasPrices', 'warmstorageread')
   const coldSload = common.param('gasPrices', 'coldsload')
 
-  if (eei.isWarmedStorage(address, key)) {
+  if (stateManager.isWarmedStorage(address, key)) {
     switch (costName) {
       case 'noop':
         return warmRead

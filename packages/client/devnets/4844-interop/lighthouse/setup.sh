@@ -56,5 +56,5 @@ CAPELLA_TIME=$((GENESIS_TIME + (CAPELLA_FORK_EPOCH * 32 * SECONDS_PER_SLOT)))
 EIP4844_TIME=$((GENESIS_TIME + (EIP4844_FORK_EPOCH * 32 * SECONDS_PER_SLOT)))
 
 sed -i 's/"shanghaiTime".*$/"shanghaiTime": '"$CAPELLA_TIME"',/g' $DATADIR/genesis.json
-sed -i 's/"shardingForkTime".*$/"shardingForkTime": '"$EIP4844_TIME"',/g' $DATADIR/genesis.json
+sed -i 's/"cancunTime".*$/"cancunTime": '"$EIP4844_TIME"',/g' $DATADIR/genesis.json
 cp $DATADIR/genesis.json $TESTNET_DIR/genesis.json

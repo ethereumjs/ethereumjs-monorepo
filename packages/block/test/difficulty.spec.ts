@@ -1,5 +1,4 @@
 import { Chain, Common } from '@ethereumjs/common'
-import { bufferToInt } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Block } from '../src'
@@ -112,7 +111,7 @@ tape('[Header]: difficulty tests', (t) => {
             header: {
               timestamp: test.parentTimestamp,
               difficulty: test.parentDifficulty,
-              number: bufferToInt(test.currentBlockNumber) - 1,
+              number: BigInt(test.currentBlockNumber) - BigInt(1),
               uncleHash,
             },
           },

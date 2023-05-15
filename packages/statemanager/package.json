@@ -37,7 +37,7 @@
     "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
-    "test:node": "npm run tape -- test/*.spec.ts",
+    "test:node": "npm run tape -- 'test/**/*.spec.ts'",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
@@ -46,7 +46,8 @@
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.0.0",
     "ethers": "^5.7.1",
-    "js-sdsl": "^4.1.4"
+    "js-sdsl": "^4.1.4",
+    "lru-cache": "^7.18.3"
   },
   "devDependencies": {
     "@ethereumjs/block": "^4.2.2",

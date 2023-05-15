@@ -1,4 +1,11 @@
-import { TypeOutput, intToBuffer, toType } from '@ethereumjs/util'
+import {
+  TypeOutput,
+  bytesToHex,
+  concatBytes,
+  hexStringToBytes,
+  intToBytes,
+  toType,
+} from '@ethereumjs/util'
 import { buf as crc32Buffer } from 'crc-32'
 import { EventEmitter } from 'events'
 
@@ -228,7 +235,7 @@ export class Common extends EventEmitter {
     super()
     this._customChains = opts.customChains ?? []
     this._chainParams = this.setChain(opts.chain)
-    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Merge
+    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Shanghai
     // Assign hardfork changes in the sequence of the applied hardforks
     this.HARDFORK_CHANGES = this.hardforks().map((hf) => [
       hf.name as HardforkSpecKeys,
@@ -732,7 +739,7 @@ export class Common extends EventEmitter {
     let hfIndex = hfs.findIndex((hf) => hf.name === hardfork)
     // If the current hardfork is merge, go one behind as merge hf is not part of these
     // calcs even if the merge hf block is set
-    if (hardfork === Hardfork.Merge) {
+    if (hardfork === Hardfork.Paris) {
       hfIndex -= 1
     }
     // Hardfork not found
@@ -751,7 +758,7 @@ export class Common extends EventEmitter {
       hfTimeOrBlock =
         hfTimeOrBlock !== null && hfTimeOrBlock !== undefined ? Number(hfTimeOrBlock) : null
       return (
-        hf.name !== Hardfork.Merge &&
+        hf.name !== Hardfork.Paris &&
         hfTimeOrBlock !== null &&
         hfTimeOrBlock !== undefined &&
         hfTimeOrBlock !== currHfTimeOrBlock
@@ -781,11 +788,11 @@ export class Common extends EventEmitter {
     let hfBlock = this.hardforkBlock(hardfork)
     // If this is a merge hardfork with block not set, then we fallback to previous hardfork
     // to find the nextHardforkBlock
-    if (hfBlock === null && hardfork === Hardfork.Merge) {
+    if (hfBlock === null && hardfork === Hardfork.Paris) {
       const hfs = this.hardforks()
       const mergeIndex = hfs.findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined)
       if (mergeIndex < 0) {
-        throw Error(`Merge hardfork should have been found`)
+        throw Error(`Paris (Merge) hardfork should have been found`)
       }
       hfBlock = this.hardforkBlock(hfs[mergeIndex - 1].name)
     }
@@ -828,8 +835,8 @@ export class Common extends EventEmitter {
    * @param genesisHash Genesis block hash of the chain
    * @returns Fork hash as hex string
    */
-  _calcForkHash(hardfork: string | Hardfork, genesisHash: Buffer) {
-    let hfBuffer = Buffer.alloc(0)
+  _calcForkHash(hardfork: string | Hardfork, genesisHash: Uint8Array) {
+    let hfBytes = new Uint8Array(0)
     let prevBlockOrTime = 0
     for (const hf of this.hardforks()) {
       const { block, timestamp, name } = hf
@@ -845,20 +852,20 @@ export class Common extends EventEmitter {
         typeof blockOrTime === 'number' &&
         blockOrTime !== 0 &&
         blockOrTime !== prevBlockOrTime &&
-        name !== Hardfork.Merge
+        name !== Hardfork.Paris
       ) {
-        const hfBlockBuffer = Buffer.from(blockOrTime.toString(16).padStart(16, '0'), 'hex')
-        hfBuffer = Buffer.concat([hfBuffer, hfBlockBuffer])
+        const hfBlockBytes = hexStringToBytes(blockOrTime.toString(16).padStart(16, '0'))
+        hfBytes = concatBytes(hfBytes, hfBlockBytes)
         prevBlockOrTime = blockOrTime
       }
 
       if (hf.name === hardfork) break
     }
-    const inputBuffer = Buffer.concat([genesisHash, hfBuffer])
+    const inputBytes = concatBytes(genesisHash, hfBytes)
 
     // CRC32 delivers result as signed (negative) 32-bit integer,
     // convert to hex string
-    const forkhash = intToBuffer(crc32Buffer(inputBuffer) >>> 0).toString('hex')
+    const forkhash = bytesToHex(intToBytes(crc32Buffer(inputBytes) >>> 0))
     return `0x${forkhash}`
   }
 
@@ -867,7 +874,7 @@ export class Common extends EventEmitter {
    * @param hardfork Hardfork name, optional if HF set
    * @param genesisHash Genesis block hash of the chain, optional if already defined and not needed to be calculated
    */
-  forkHash(hardfork?: string | Hardfork, genesisHash?: Buffer): string {
+  forkHash(hardfork?: string | Hardfork, genesisHash?: Uint8Array): string {
     hardfork = hardfork ?? this._hardfork
     const data = this._getHardfork(hardfork)
     if (
@@ -901,7 +908,7 @@ export class Common extends EventEmitter {
    * @param common The {@link Common} to set the forkHashes for
    * @param genesisHash The genesis block hash
    */
-  setForkHashes(genesisHash: Buffer) {
+  setForkHashes(genesisHash: Uint8Array) {
     for (const hf of this.hardforks()) {
       const blockOrTime = hf.timestamp ?? hf.block
       if (

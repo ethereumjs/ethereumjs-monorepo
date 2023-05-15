@@ -2,10 +2,9 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { Address, toBuffer } from '@ethereumjs/util'
+import { Account, Address, bytesToHex, equalsBytes, toBytes } from '@ethereumjs/util'
 
 import { EVM } from '../../../../evm/src'
-import { EEI } from '../../../src'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
 
 import type { VM } from '../../../src'
@@ -74,7 +73,9 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     ;({ VM } = require('../../../src'))
   }
   const begin = Date.now()
-  const common = options.common
+  // Copy the common object to not create long-lasting
+  // references in memory which might prevent GC
+  const common = options.common.copy()
 
   // Have to create a blockchain with empty block as genesisBlock for Merge
   // Otherwise mainnet genesis will throw since this has difficulty nonzero
@@ -83,12 +84,13 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const state = new Trie({ useKeyHashing: true })
   const stateManager = new DefaultStateManager({
     trie: state,
+    common,
   })
-  const eei = new EEI(stateManager, common, blockchain)
-  const evm = new EVM({ common, eei })
+
+  const evm = new EVM({ common, stateManager, blockchain })
   const vm = await VM.create({ state, stateManager, common, blockchain, evm })
 
-  await setupPreConditions(vm.eei, testData)
+  await setupPreConditions(vm.stateManager, testData)
 
   let execInfo = ''
   let tx
@@ -100,39 +102,43 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   }
 
   // Even if no txs are ran, coinbase should always be created
-  const coinbaseAddress = new Address(Buffer.from(testData.env.currentCoinbase.slice(2), 'hex'))
-  const account = await (<VM>vm).eei.getAccount(coinbaseAddress)
-  await (<VM>vm).eei.putAccount(coinbaseAddress, account)
+  const coinbaseAddress = Address.fromString(testData.env.currentCoinbase)
+  const account = await (<VM>vm).stateManager.getAccount(coinbaseAddress)
+  await (<VM>vm).stateManager.putAccount(coinbaseAddress, account ?? new Account(), true)
+
+  const stepHandler = (e: InterpreterStep) => {
+    let hexStack = []
+    hexStack = e.stack.map((item: bigint) => {
+      return '0x' + item.toString(16)
+    })
+
+    const opTrace = {
+      pc: e.pc,
+      op: e.opcode.name,
+      gas: '0x' + e.gasLeft.toString(16),
+      gasCost: '0x' + e.opcode.fee.toString(16),
+      stack: hexStack,
+      depth: e.depth,
+      opName: e.opcode.name,
+    }
+
+    t.comment(JSON.stringify(opTrace))
+  }
+
+  const afterTxHandler = async () => {
+    const stateRoot = {
+      stateRoot: bytesToHex(vm.stateManager._trie.root),
+    }
+    t.comment(JSON.stringify(stateRoot))
+  }
 
   if (tx) {
     if (tx.validate()) {
       const block = makeBlockFromEnv(testData.env, { common })
 
       if (options.jsontrace === true) {
-        vm.evm.events.on('step', function (e: InterpreterStep) {
-          let hexStack = []
-          hexStack = e.stack.map((item: bigint) => {
-            return '0x' + item.toString(16)
-          })
-
-          const opTrace = {
-            pc: e.pc,
-            op: e.opcode.name,
-            gas: '0x' + e.gasLeft.toString(16),
-            gasCost: '0x' + e.opcode.fee.toString(16),
-            stack: hexStack,
-            depth: e.depth,
-            opName: e.opcode.name,
-          }
-
-          t.comment(JSON.stringify(opTrace))
-        })
-        vm.events.on('afterTx', async () => {
-          const stateRoot = {
-            stateRoot: vm.stateManager._trie.root.toString('hex'),
-          }
-          t.comment(JSON.stringify(stateRoot))
-        })
+        vm.evm.events.on('step', stepHandler)
+        vm.events.on('afterTx', afterTxHandler)
       }
       try {
         await vm.runTx({ tx, block })
@@ -146,17 +152,25 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   }
 
   // Cleanup touched accounts (this wipes coinbase if it is empty on HFs >= TangerineWhistle)
-  await (<VM>vm).eei.cleanupTouchedAccounts()
-  await (<VM>vm).eei.getStateRoot() // Ensure state root is updated (flush all changes to trie)
+  await (<VM>vm).stateManager.cleanupTouchedAccounts()
+  await (<VM>vm).stateManager.getStateRoot() // Ensure state root is updated (flush all changes to trie)
 
   const stateManagerStateRoot = vm.stateManager._trie.root()
-  const testDataPostStateRoot = toBuffer(testData.postStateRoot)
-  const stateRootsAreEqual = stateManagerStateRoot.equals(testDataPostStateRoot)
+  const testDataPostStateRoot = toBytes(testData.postStateRoot)
+  const stateRootsAreEqual = equalsBytes(stateManagerStateRoot, testDataPostStateRoot)
 
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`
 
   t.ok(stateRootsAreEqual, `[ ${timeSpent} ] the state roots should match (${execInfo})`)
+
+  vm.evm.events.removeListener('step', stepHandler)
+  vm.events.removeListener('afterTx', afterTxHandler)
+
+  // @ts-ignore Explicitly delete objects for memory optimization (early GC)
+  // TODO FIXME
+  //common = blockchain = state = stateManager = evm = vm = null // eslint-disable-line
+
   return parseFloat(timeSpent)
 }
 

@@ -1,20 +1,18 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import {
-  BlobEIP4844Transaction,
-  FeeMarketEIP1559Transaction,
-  Transaction,
-  initKZG,
-} from '@ethereumjs/tx'
-import {
+  Account,
   blobsToCommitments,
+  bytesToPrefixedHexString,
   commitmentsToVersionedHashes,
   getBlobs,
-} from '@ethereumjs/tx/dist/utils/blobHelpers'
-import { toBuffer } from '@ethereumjs/util'
+  hexStringToBytes,
+  initKZG,
+  randomBytes,
+} from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../lib/rpc/error-code'
@@ -46,15 +44,14 @@ tape(`${method}: call with valid arguments`, async (t) => {
   // Mainnet EIP-1559 tx
   const txData =
     '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
-  const transaction = FeeMarketEIP1559Transaction.fromSerializedTx(
-    Buffer.from(txData.slice(2), 'hex')
-  )
+  const transaction = FeeMarketEIP1559Transaction.fromSerializedTx(hexStringToBytes(txData))
   const address = transaction.getSenderAddress()
   const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
 
+  await vm.stateManager.putAccount(address, new Account())
   const account = await vm.stateManager.getAccount(address)
-  account.balance = BigInt('40100000')
-  await vm.stateManager.putAccount(address, account)
+  account!.balance = BigInt('40100000')
+  await vm.stateManager.putAccount(address, account!)
 
   const req = params(method, [txData])
   const expectRes = (res: any) => {
@@ -82,9 +79,9 @@ tape(`${method}: send local tx with gasprice lower than minimum`, async (t) => {
     gasLimit: 21000,
     gasPrice: 0,
     nonce: 0,
-  }).sign(Buffer.from('42'.repeat(32), 'hex'))
+  }).sign(hexStringToBytes('42'.repeat(32)))
 
-  const txData = '0x' + transaction.serialize().toString('hex')
+  const txData = bytesToPrefixedHexString(transaction.serialize())
 
   const req = params(method, [txData])
   const expectRes = (res: any) => {
@@ -157,14 +154,14 @@ tape(`${method}: call with unsigned tx`, async (t) => {
   const txData =
     '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-  const tx = FeeMarketEIP1559Transaction.fromSerializedTx(toBuffer(txData), {
+  const tx = FeeMarketEIP1559Transaction.fromSerializedTx(hexStringToBytes(txData), {
     common,
     freeze: false,
   })
   ;(tx as any).v = undefined
   ;(tx as any).r = undefined
   ;(tx as any).s = undefined
-  const txHex = '0x' + tx.serialize().toString('hex')
+  const txHex = bytesToPrefixedHexString(tx.serialize())
   const req = params(method, [txHex])
 
   const expectRes = checkError(t, INVALID_PARAMS, 'tx needs to be signed')
@@ -192,13 +189,14 @@ tape(`${method}: call with no peers`, async (t) => {
   // Mainnet EIP-1559 tx
   const txData =
     '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
-  const transaction = FeeMarketEIP1559Transaction.fromSerializedTx(toBuffer(txData))
+  const transaction = FeeMarketEIP1559Transaction.fromSerializedTx(hexStringToBytes(txData))
   const address = transaction.getSenderAddress()
   const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
 
+  await vm.stateManager.putAccount(address, new Account())
   const account = await vm.stateManager.getAccount(address)
-  account.balance = BigInt('40100000')
-  await vm.stateManager.putAccount(address, account)
+  account!.balance = BigInt('40100000')
+  await vm.stateManager.putAccount(address, account!)
 
   const req = params(method, [txData])
 
@@ -223,17 +221,15 @@ tape('blob EIP 4844 transaction', async (t) => {
   const consensusFormatValidation = BlockHeader.prototype._consensusFormatValidation
   BlockHeader.prototype._consensusFormatValidation = (): any => {}
   try {
-    kzg.freeTrustedSetup()
-  } catch {
-    // NOOP - just verifying KZG is ready if not already
-  }
-  initKZG(kzg, __dirname + '/../../../lib/trustedSetups/devnet4.txt')
+    initKZG(kzg, __dirname + '/../../../lib/trustedSetups/devnet4.txt')
+    // eslint-disable-next-line
+  } catch {}
   const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
   const common = Common.fromGethGenesis(gethGenesis, {
     chain: 'customChain',
-    hardfork: Hardfork.ShardingForkDev,
+    hardfork: Hardfork.Cancun,
   })
-  common.setHardfork(Hardfork.ShardingForkDev)
+  common.setHardfork(Hardfork.Cancun)
   const { server, client } = baseSetup({
     commonChain: common,
     includeVM: true,
@@ -242,15 +238,14 @@ tape('blob EIP 4844 transaction', async (t) => {
   const blobs = getBlobs('hello world')
   const commitments = blobsToCommitments(blobs)
   const versionedHashes = commitmentsToVersionedHashes(commitments)
-  const proof = kzg.computeAggregateKzgProof(blobs.map((blob) => Uint8Array.from(blob)))
-  const bufferedHashes = versionedHashes.map((el) => Buffer.from(el))
+  const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
   const pk = randomBytes(32)
   const tx = BlobEIP4844Transaction.fromTxData(
     {
-      versionedHashes: bufferedHashes,
+      versionedHashes,
       blobs,
       kzgCommitments: commitments,
-      kzgProof: proof,
+      kzgProofs: proofs,
       maxFeePerDataGas: 1000000n,
       gasLimit: 0xffffn,
       maxFeePerGas: 10000000n,
@@ -262,10 +257,10 @@ tape('blob EIP 4844 transaction', async (t) => {
 
   const replacementTx = BlobEIP4844Transaction.fromTxData(
     {
-      versionedHashes: bufferedHashes,
+      versionedHashes,
       blobs,
       kzgCommitments: commitments,
-      kzgProof: proof,
+      kzgProofs: proofs,
       maxFeePerDataGas: 1000000n,
       gasLimit: 0xfffffn,
       maxFeePerGas: 100000000n,
@@ -275,12 +270,13 @@ tape('blob EIP 4844 transaction', async (t) => {
     { common }
   ).sign(pk)
   const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
+  await vm.stateManager.putAccount(tx.getSenderAddress(), new Account())
   const account = await vm.stateManager.getAccount(tx.getSenderAddress())
-  account.balance = BigInt(0xfffffffffffff)
-  await vm.stateManager.putAccount(tx.getSenderAddress(), account)
+  account!.balance = BigInt(0xfffffffffffff)
+  await vm.stateManager.putAccount(tx.getSenderAddress(), account!)
 
-  const req = params(method, ['0x' + tx.serializeNetworkWrapper().toString('hex')])
-  const req2 = params(method, ['0x' + replacementTx.serializeNetworkWrapper().toString('hex')])
+  const req = params(method, [bytesToPrefixedHexString(tx.serializeNetworkWrapper())])
+  const req2 = params(method, [bytesToPrefixedHexString(replacementTx.serializeNetworkWrapper())])
   const expectRes = (res: any) => {
     t.equal(res.body.error, undefined, 'initial blob transaction accepted')
   }

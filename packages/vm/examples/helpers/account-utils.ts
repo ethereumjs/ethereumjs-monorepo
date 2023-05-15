@@ -17,8 +17,12 @@ export const insertAccount = async (vm: VM, address: Address) => {
   await vm.stateManager.putAccount(address, account)
 }
 
-export const getAccountNonce = async (vm: VM, accountPrivateKey: Buffer) => {
+export const getAccountNonce = async (vm: VM, accountPrivateKey: Uint8Array) => {
   const address = Address.fromPrivateKey(accountPrivateKey)
   const account = await vm.stateManager.getAccount(address)
-  return account.nonce
+  if (account) {
+    return account.nonce
+  } else {
+    return BigInt(0)
+  }
 }

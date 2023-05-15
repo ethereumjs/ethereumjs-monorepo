@@ -1,6 +1,7 @@
 /**
  * @module util
  */
+import { bytesToPrefixedHexString } from '@ethereumjs/util'
 import { platform } from 'os'
 
 import { version as packageVersion } from '../../package.json'
@@ -8,12 +9,12 @@ import { version as packageVersion } from '../../package.json'
 export * from './parse'
 export * from './rpc'
 
-export function short(buf: Buffer | string): string {
-  if (buf === null || buf === undefined || buf === '') return ''
-  const bufStr = Buffer.isBuffer(buf) ? `0x${buf.toString('hex')}` : buf
-  let str = bufStr.substring(0, 6) + '…'
-  if (bufStr.length === 66) {
-    str += bufStr.substring(62)
+export function short(bytes: Uint8Array | string): string {
+  if (bytes === null || bytes === undefined || bytes === '') return ''
+  const bytesString = bytes instanceof Uint8Array ? bytesToPrefixedHexString(bytes) : bytes
+  let str = bytesString.substring(0, 6) + '…'
+  if (bytesString.length === 66) {
+    str += bytesString.substring(62)
   }
   return str
 }
@@ -54,4 +55,17 @@ export function timeDuration(time: number) {
 export function timeDiff(timestamp: number) {
   const diff = new Date().getTime() / 1000 - timestamp
   return timeDuration(diff)
+}
+
+// Dynamically load v8 for tracking mem stats
+const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
+export type V8Engine = {
+  getHeapStatistics: () => { heap_size_limit: number; used_heap_size: number }
+}
+let v8Engine: V8Engine | null = null
+export async function getV8Engine(): Promise<V8Engine | null> {
+  if (isBrowser() === false && v8Engine === null) {
+    v8Engine = (await import('node:v8')) as V8Engine
+  }
+  return v8Engine
 }

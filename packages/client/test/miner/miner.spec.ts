@@ -2,8 +2,7 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
-import { Address } from '@ethereumjs/util'
-import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
+import { Address, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
 import { AbstractLevel } from 'abstract-level'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
@@ -21,35 +20,25 @@ import type { CliqueConsensus } from '@ethereumjs/blockchain'
 import type { VM } from '@ethereumjs/vm'
 
 const A = {
-  address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
-  privateKey: Buffer.from(
-    '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
-    'hex'
-  ),
+  address: new Address(hexStringToBytes('0b90087d864e82a284dca15923f3776de6bb016f')),
+  privateKey: hexStringToBytes('64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
 }
 
 const B = {
-  address: new Address(Buffer.from('6f62d8382bf2587361db73ceca28be91b2acb6df', 'hex')),
-  privateKey: Buffer.from(
-    '2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6',
-    'hex'
-  ),
+  address: new Address(hexStringToBytes('6f62d8382bf2587361db73ceca28be91b2acb6df')),
+  privateKey: hexStringToBytes('2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'),
 }
 
 const setBalance = async (vm: VM, address: Address, balance: bigint) => {
-  await vm.eei.checkpoint()
-  await vm.eei.modifyAccountFields(address, { balance })
-  await vm.eei.commit()
+  await vm.stateManager.checkpoint()
+  await vm.stateManager.modifyAccountFields(address, { balance })
+  await vm.stateManager.commit()
 }
 
 tape('[Miner]', async (t) => {
   const originalValidate = BlockHeader.prototype._consensusFormatValidation
   BlockHeader.prototype._consensusFormatValidation = td.func<any>()
   td.replace<any>('@ethereumjs/block', { BlockHeader })
-
-  const originalSetStateRoot = VmState.prototype.setStateRoot
-  VmState.prototype.setStateRoot = td.func<any>()
-  td.replace<any>('@ethereumjs/vm/dist/vmState', { VmState })
 
   // Stub out setStateRoot so txPool.validate checks will pass since correct state root
   // doesn't exist in fakeChain state anyway
@@ -95,8 +84,15 @@ tape('[Miner]', async (t) => {
 
   const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berlin })
   common.setMaxListeners(50)
-  const accounts: [Address, Buffer][] = [[A.address, A.privateKey]]
-  const config = new Config({ transports: [], accounts, mine: true, common })
+  const accounts: [Address, Uint8Array][] = [[A.address, A.privateKey]]
+  const config = new Config({
+    transports: [],
+    accountCache: 10000,
+    storageCache: 1000,
+    accounts,
+    mine: true,
+    common,
+  })
   config.events.setMaxListeners(50)
 
   const createTx = (
@@ -208,7 +204,7 @@ tape('[Miner]', async (t) => {
     await setBalance(vm, A.address, BigInt('200000000000001'))
 
     // add tx
-    txA011.common.setHardfork(Hardfork.Merge)
+    txA011.common.setHardfork(Hardfork.Paris)
     await txPool.add(txA011)
     t.equal(txPool.txsInPool, 1, 'transaction should be in pool')
 
@@ -263,7 +259,8 @@ tape('[Miner]', async (t) => {
         const msg = 'txs in block should be properly ordered by gasPrice and nonce'
         const expectedOrder = [txB01, txA01, txA02, txA03]
         for (const [index, tx] of expectedOrder.entries()) {
-          t.ok(blocks[0].transactions[index]?.hash().equals(tx.hash()), msg)
+          const txHash = blocks[0].transactions[index]?.hash()
+          t.ok(txHash !== undefined && equalsBytes(txHash, tx.hash()), msg)
         }
         miner.stop()
         txPool.stop()
@@ -275,7 +272,15 @@ tape('[Miner]', async (t) => {
   t.test('assembleBlocks() -> with saveReceipts', async (t) => {
     t.plan(9)
     const chain = new FakeChain() as any
-    const config = new Config({ transports: [], accounts, mine: true, common, saveReceipts: true })
+    const config = new Config({
+      transports: [],
+      accountCache: 10000,
+      storageCache: 1000,
+      accounts,
+      mine: true,
+      common,
+      saveReceipts: true,
+    })
     const service = new FullEthereumService({
       config,
       chain,
@@ -307,7 +312,8 @@ tape('[Miner]', async (t) => {
       const msg = 'txs in block should be properly ordered by gasPrice and nonce'
       const expectedOrder = [txB01, txA01, txA02, txA03]
       for (const [index, tx] of expectedOrder.entries()) {
-        t.ok(blocks[0].transactions[index]?.hash().equals(tx.hash()), msg)
+        const txHash = blocks[0].transactions[index]?.hash()
+        t.ok(txHash !== undefined && equalsBytes(txHash, tx.hash()), msg)
       }
       miner.stop()
       txPool.stop()
@@ -331,7 +337,14 @@ tape('[Miner]', async (t) => {
       baseChain: CommonChain.Rinkeby,
       hardfork: Hardfork.London,
     })
-    const config = new Config({ transports: [], accounts, mine: true, common })
+    const config = new Config({
+      transports: [],
+      accountCache: 10000,
+      storageCache: 1000,
+      accounts,
+      mine: true,
+      common,
+    })
     const chain = new FakeChain() as any
     const block = Block.fromBlockData({}, { common })
     Object.defineProperty(chain, 'headers', {
@@ -433,7 +446,14 @@ tape('[Miner]', async (t) => {
   t.test('assembleBlocks() -> should stop assembling when a new block is received', async (t) => {
     t.plan(2)
     const chain = new FakeChain() as any
-    const config = new Config({ transports: [], accounts, mine: true, common })
+    const config = new Config({
+      transports: [],
+      accountCache: 10000,
+      storageCache: 1000,
+      accounts,
+      mine: true,
+      common,
+    })
     const service = new FullEthereumService({
       config,
       chain,
@@ -452,7 +472,7 @@ tape('[Miner]', async (t) => {
     await setBalance(vm, A.address, BigInt('200000000000001'))
 
     // add many txs to slow assembling
-    let privateKey = Buffer.from(keccak256(Buffer.from('')))
+    let privateKey = keccak256(new Uint8Array(0))
     for (let i = 0; i < 1000; i++) {
       // In order not to pollute TxPool with too many txs from the same address
       // (or txs which are already known), keep generating a new address for each tx
@@ -460,7 +480,7 @@ tape('[Miner]', async (t) => {
       await setBalance(vm, address, BigInt('200000000000001'))
       const tx = createTx({ address, privateKey })
       await txPool.add(tx)
-      privateKey = Buffer.from(keccak256(privateKey))
+      privateKey = keccak256(privateKey)
     }
 
     chain.putBlocks = () => {
@@ -486,7 +506,14 @@ tape('[Miner]', async (t) => {
     }
     const common = Common.custom(customChainParams, { baseChain: CommonChain.Rinkeby })
     common.setHardforkByBlockNumber(0)
-    const config = new Config({ transports: [], accounts, mine: true, common })
+    const config = new Config({
+      transports: [],
+      accountCache: 10000,
+      storageCache: 1000,
+      accounts,
+      mine: true,
+      common,
+    })
     const chain = await Chain.create({ config })
     await chain.open()
     const service = new FullEthereumService({
@@ -553,7 +580,14 @@ tape('[Miner]', async (t) => {
   t.test('should handle mining ethash PoW', async (t) => {
     const common = new Common({ chain: CommonChain.Ropsten, hardfork: Hardfork.Istanbul })
     ;(common as any)._chainParams['genesis'].difficulty = 1
-    const config = new Config({ transports: [], accounts, mine: true, common })
+    const config = new Config({
+      transports: [],
+      accountCache: 10000,
+      storageCache: 1000,
+      accounts,
+      mine: true,
+      common,
+    })
     const chain = await Chain.create({ config })
     await chain.open()
     const service = new FullEthereumService({
@@ -581,7 +615,6 @@ tape('[Miner]', async (t) => {
     // mocking indirect dependencies is not properly supported, but it works for us in this file,
     // so we will replace the original functions to avoid issues in other tests that come after
     BlockHeader.prototype._consensusFormatValidation = originalValidate
-    VmState.prototype.setStateRoot = originalSetStateRoot
     DefaultStateManager.prototype.setStateRoot = ogStateManagerSetStateRoot
     t.end()
   })

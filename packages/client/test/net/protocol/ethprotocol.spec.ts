@@ -1,8 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
-import { bigIntToBuffer, bufferToBigInt } from '@ethereumjs/util'
-import { randomBytes } from 'crypto'
+import { bigIntToBytes, bytesToBigInt, hexStringToBytes, randomBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Chain } from '../../../lib/blockchain/chain'
@@ -11,7 +10,7 @@ import { EthProtocol } from '../../../lib/net/protocol'
 
 tape('[EthProtocol]', (t) => {
   t.test('should get properties', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     t.ok(typeof p.name === 'string', 'get name')
@@ -21,7 +20,7 @@ tape('[EthProtocol]', (t) => {
   })
 
   t.test('should open correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     await p.open()
@@ -31,7 +30,7 @@ tape('[EthProtocol]', (t) => {
   })
 
   t.test('should encode/decode status', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     Object.defineProperty(chain, 'networkId', {
@@ -55,17 +54,17 @@ tape('[EthProtocol]', (t) => {
     t.deepEquals(
       p.encodeStatus(),
       {
-        networkId: Buffer.from('01', 'hex'),
-        td: Buffer.from('64', 'hex'),
+        networkId: hexStringToBytes('01'),
+        td: hexStringToBytes('64'),
         bestHash: '0xaa',
         genesisHash: '0xbb',
-        latestBlock: Buffer.from('0a', 'hex'),
+        latestBlock: hexStringToBytes('0a'),
       },
       'encode status'
     )
     const status = p.decodeStatus({
       networkId: [0x01],
-      td: Buffer.from('64', 'hex'),
+      td: hexStringToBytes('64'),
       bestHash: '0xaa',
       genesisHash: '0xbb',
     })
@@ -80,31 +79,31 @@ tape('[EthProtocol]', (t) => {
   })
 
   t.test('verify that NewBlock handler encodes/decodes correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     const td = BigInt(100)
     const block = Block.fromBlockData({}, { common: config.chainCommon })
     const res = p.decode(p.messages.filter((message) => message.name === 'NewBlock')[0], [
       block.raw(),
-      bigIntToBuffer(td),
+      bigIntToBytes(td),
     ])
     const res2 = p.encode(p.messages.filter((message) => message.name === 'NewBlock')[0], [
       block,
       td,
     ])
     t.deepEquals(res[0].hash(), block.hash(), 'correctly decoded block')
-    t.equal(bufferToBigInt(res2[1]), td, 'correctly encoded td')
+    t.equal(bytesToBigInt(res2[1]), td, 'correctly encoded td')
     t.end()
   })
 
   t.test('verify that GetReceipts handler encodes/decodes correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     const block = Block.fromBlockData({})
     const res = p.decode(p.messages.filter((message) => message.name === 'GetReceipts')[0], [
-      BigInt(1),
+      bigIntToBytes(1n),
       [block.hash()],
     ])
     const res2 = p.encode(p.messages.filter((message) => message.name === 'GetReceipts')[0], {
@@ -112,9 +111,9 @@ tape('[EthProtocol]', (t) => {
       hashes: [block.hash()],
     })
     t.equal(res.reqId, BigInt(1), 'correctly decoded reqId')
-    t.ok(res.hashes[0].equals(block.hash()), 'correctly decoded blockHash')
-    t.equal(bufferToBigInt(res2[0]), BigInt(1), 'correctly encoded reqId')
-    t.ok(res2[1][0].equals(block.hash()), 'correctly encoded blockHash')
+    t.deepEquals(res.hashes[0], block.hash(), 'correctly decoded blockHash')
+    t.equal(bytesToBigInt(res2[0]), BigInt(1), 'correctly encoded reqId')
+    t.deepEquals(res2[1][0], block.hash(), 'correctly encoded blockHash')
     t.end()
   })
 
@@ -122,6 +121,8 @@ tape('[EthProtocol]', (t) => {
     const config = new Config({
       transports: [],
       common: new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.London }),
+      accountCache: 10000,
+      storageCache: 1000,
     })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
@@ -138,7 +139,7 @@ tape('[EthProtocol]', (t) => {
       reqId: BigInt(1),
       txs: [tx],
     })
-    t.equal(bufferToBigInt(res[0]), BigInt(1), 'correctly encoded reqId')
+    t.equal(bytesToBigInt(res[0]), BigInt(1), 'correctly encoded reqId')
     t.deepEqual(res[1][0], tx.serialize(), 'EIP1559 transaction correctly encoded')
     t.end()
   })
@@ -147,6 +148,8 @@ tape('[EthProtocol]', (t) => {
     const config = new Config({
       transports: [],
       common: new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.London }),
+      accountCache: 10000,
+      storageCache: 1000,
     })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
@@ -154,15 +157,27 @@ tape('[EthProtocol]', (t) => {
       {
         status: 1 as 0 | 1,
         cumulativeBlockGasUsed: BigInt(100),
-        bitvector: Buffer.alloc(256),
-        logs: [[Buffer.alloc(20), [Buffer.alloc(32), Buffer.alloc(32, 1)], Buffer.alloc(10)]],
+        bitvector: new Uint8Array(256),
+        logs: [
+          [
+            new Uint8Array(20),
+            [new Uint8Array(32), new Uint8Array(32).fill(1)],
+            new Uint8Array(10),
+          ],
+        ],
         txType: 2,
       },
       {
         status: 0 as 0 | 1,
         cumulativeBlockGasUsed: BigInt(1000),
-        bitvector: Buffer.alloc(256, 1),
-        logs: [[Buffer.alloc(20, 1), [Buffer.alloc(32, 1), Buffer.alloc(32, 1)], Buffer.alloc(10)]],
+        bitvector: new Uint8Array(256).fill(1),
+        logs: [
+          [
+            new Uint8Array(20).fill(1),
+            [new Uint8Array(32).fill(1), new Uint8Array(32).fill(1)],
+            new Uint8Array(10),
+          ],
+        ],
         txType: 0,
       },
     ]
@@ -172,15 +187,13 @@ tape('[EthProtocol]', (t) => {
       reqId: BigInt(1),
       receipts,
     })
-    t.equal(bufferToBigInt(res[0]), BigInt(1), 'correctly encoded reqId')
+    t.equal(bytesToBigInt(res[0]), BigInt(1), 'correctly encoded reqId')
     const expectedSerializedReceipts = [
-      Buffer.from(
-        '02f9016d0164b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f866f864940000000000000000000000000000000000000000f842a00000000000000000000000000000000000000000000000000000000000000000a001010101010101010101010101010101010101010101010101010101010101018a00000000000000000000',
-        'hex'
+      hexStringToBytes(
+        '02f9016d0164b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f866f864940000000000000000000000000000000000000000f842a00000000000000000000000000000000000000000000000000000000000000000a001010101010101010101010101010101010101010101010101010101010101018a00000000000000000000'
       ),
-      Buffer.from(
-        'f9016f808203e8b9010001010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101f866f864940101010101010101010101010101010101010101f842a00101010101010101010101010101010101010101010101010101010101010101a001010101010101010101010101010101010101010101010101010101010101018a00000000000000000000',
-        'hex'
+      hexStringToBytes(
+        'f9016f808203e8b9010001010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101f866f864940101010101010101010101010101010101010101f842a00101010101010101010101010101010101010101010101010101010101010101a001010101010101010101010101010101010101010101010101010101010101018a00000000000000000000'
       ),
     ]
     t.deepEqual(res[1], expectedSerializedReceipts, 'correctly encoded receipts')
@@ -201,9 +214,11 @@ tape('[EthProtocol]', (t) => {
       transports: [],
       common: new Common({
         chain: Config.CHAIN_DEFAULT,
-        hardfork: Hardfork.Merge,
+        hardfork: Hardfork.Paris,
         eips: [4895, 4844],
       }),
+      accountCache: 10000,
+      storageCache: 1000,
     })
     config.synchronized = true
     const chain = await Chain.create({ config })
@@ -212,7 +227,7 @@ tape('[EthProtocol]', (t) => {
     const legacyTx = TransactionFactory.fromTxData({ type: 0 })
     const eip2929Tx = TransactionFactory.fromTxData({ type: 1 })
     const eip1559Tx = TransactionFactory.fromTxData({ type: 2 })
-    const blobTx = TransactionFactory.fromTxData({ type: 5 }, { common: config.chainCommon })
+    const blobTx = TransactionFactory.fromTxData({ type: 3 }, { common: config.chainCommon })
     const res = p.encode(p.messages.filter((message) => message.name === 'Transactions')[0], [
       legacyTx,
       eip2929Tx,
@@ -238,6 +253,8 @@ tape('[EthProtocol]', (t) => {
     const config = new Config({
       transports: [],
       common: new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.London }),
+      accountCache: 10000,
+      storageCache: 1000,
     })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })

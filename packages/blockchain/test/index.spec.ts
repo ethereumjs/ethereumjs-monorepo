@@ -1,6 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { MemoryLevel } from 'memory-level'
+import { MapDB } from '@ethereumjs/util'
+import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { Blockchain } from '../src'
@@ -27,8 +28,9 @@ tape('blockchain test', (t) => {
 
     const iteratorHead = await blockchain.getIteratorHead()
 
-    st.ok(
-      iteratorHead.hash().equals(blockchain.genesisBlock.hash()),
+    st.deepEquals(
+      iteratorHead.hash(),
+      blockchain.genesisBlock.hash(),
       'correct genesis hash (getIteratorHead())'
     )
 
@@ -76,8 +78,9 @@ tape('blockchain test', (t) => {
       validateConsensus: false,
       genesisBlock,
     })
-    st.ok(
-      genesisBlock.hash().equals((await blockchain.getCanonicalHeadHeader()).hash()),
+    st.deepEquals(
+      genesisBlock.hash(),
+      (await blockchain.getCanonicalHeadHeader()).hash(),
       'genesis block hash should be correct'
     )
     st.end()
@@ -185,7 +188,7 @@ tape('blockchain test', (t) => {
 
     const returnedBlock = await blockchain.getBlock(1)
     if (typeof returnedBlock !== 'undefined') {
-      st.ok(returnedBlock.hash().equals(blocks[1].hash()))
+      st.deepEquals(returnedBlock.hash(), blocks[1].hash())
     } else {
       st.fail('block is not defined!')
     }
@@ -204,20 +207,26 @@ tape('blockchain test', (t) => {
       genesisBlock,
     })
     const block = await blockchain.getBlock(genesisBlock.hash())
-    st.ok(block.hash().equals(genesisBlock.hash()))
+    st.deepEquals(block.hash(), genesisBlock.hash())
 
     try {
       await blockchain.getBlock(5)
       st.fail('should throw an exception')
     } catch (e: any) {
-      st.ok(e.message.includes('NotFound'), `should throw for non-existing block-by-number request`)
+      st.ok(
+        e.message.includes('not found in DB'),
+        `should throw for non-existing block-by-number request`
+      )
     }
 
     try {
-      await blockchain.getBlock(Buffer.from('1234', 'hex'))
+      await blockchain.getBlock(hexToBytes('1234'))
       st.fail('should throw an exception')
     } catch (e: any) {
-      st.ok(e.message.includes('NotFound'), `should throw for non-existing block-by-hash request`)
+      st.ok(
+        e.message.includes('not found in DB'),
+        `should throw for non-existing block-by-hash request`
+      )
     }
 
     st.end()
@@ -262,8 +271,8 @@ tape('blockchain test', (t) => {
     const newblock22 = await blockchain.getBlock(22)
     st.equal(newblock22.header.number, BigInt(22), 'canonical references should be restored')
     st.equal(
-      newblock22.hash().toString('hex'),
-      newblock22.hash().toString('hex'),
+      bytesToHex(newblock22.hash()),
+      bytesToHex(newblock22.hash()),
       'fetched block should match'
     )
     const newheader22 = await blockchain.getCanonicalHeader(BigInt(22))
@@ -406,13 +415,13 @@ tape('blockchain test', (t) => {
   t.test('should find needed hashes', async (st) => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
     st.error(error, 'no error')
-    const neededHash = Buffer.from('abcdef', 'hex')
+    const neededHash = hexToBytes('abcdef')
     const hashes = await blockchain.selectNeededHashes([
       blocks[0].hash(),
       blocks[9].hash(),
       neededHash,
     ])
-    st.ok(hashes[0].equals(neededHash))
+    st.deepEquals(hashes[0], neededHash)
     st.end()
   })
 
@@ -438,8 +447,8 @@ tape('blockchain test', (t) => {
 
     await blockchain.putHeader(forkHeader)
 
-    st.ok(blockchain._heads['staletest'].equals(blocks[14].hash()), 'should update stale head')
-    st.ok(blockchain._headBlockHash.equals(blocks[14].hash()), 'should update stale headBlock')
+    st.deepEquals(blockchain._heads['staletest'], blocks[14].hash(), 'should update stale head')
+    st.deepEquals(blockchain._headBlockHash, blocks[14].hash(), 'should update stale headBlock')
     st.end()
   })
 
@@ -464,13 +473,13 @@ tape('blockchain test', (t) => {
 
     await blockchain.putHeader(forkHeader)
 
-    st.ok(blockchain._heads['staletest'].equals(blocks[14].hash()), 'should update stale head')
-    st.ok(blockchain._headBlockHash.equals(blocks[14].hash()), 'should update stale headBlock')
+    st.deepEquals(blockchain._heads['staletest'], blocks[14].hash(), 'should update stale head')
+    st.deepEquals(blockchain._headBlockHash, blocks[14].hash(), 'should update stale headBlock')
 
     await blockchain.delBlock(forkHeader.hash())
 
-    st.ok(blockchain._headHeaderHash.equals(blocks[14].hash()), 'should reset headHeader')
-    st.ok(blockchain._headBlockHash.equals(blocks[14].hash()), 'should not change headBlock')
+    st.deepEquals(blockchain._headHeaderHash, blocks[14].hash(), 'should reset headHeader')
+    st.deepEquals(blockchain._headBlockHash, blocks[14].hash(), 'should not change headBlock')
     st.end()
   })
 
@@ -487,7 +496,7 @@ tape('blockchain test', (t) => {
     }
 
     await delNextBlock(9)
-    st.ok(blockchain._headHeaderHash.equals(blocks[5].hash()), 'should have block 5 as head')
+    st.deepEquals(blockchain._headHeaderHash, blocks[5].hash(), 'should have block 5 as head')
     st.end()
   })
 
@@ -495,7 +504,7 @@ tape('blockchain test', (t) => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
     st.error(error, 'no error')
     await blockchain.delBlock(blocks[1].hash())
-    st.ok(blockchain._headHeaderHash.equals(blocks[0].hash()), 'should have genesis as head')
+    st.deepEquals(blockchain._headHeaderHash, blocks[0].hash(), 'should have genesis as head')
     st.end()
   })
 
@@ -524,7 +533,8 @@ tape('blockchain test', (t) => {
     await blockchain.getBlock(BigInt(1))
 
     const block2HeaderValuesArray = blocks[2].header.raw()
-    block2HeaderValuesArray[1] = Buffer.alloc(32)
+
+    block2HeaderValuesArray[1] = new Uint8Array(32)
     const block2Header = BlockHeader.fromValuesArray(block2HeaderValuesArray, {
       common: blocks[2]._common,
     })
@@ -572,7 +582,7 @@ tape('blockchain test', (t) => {
 
   t.test('should add block with body', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const genesisRlp = Buffer.from(testDataPreLondon.genesisRLP.slice(2), 'hex')
+    const genesisRlp = hexToBytes(testDataPreLondon.genesisRLP.slice(2))
     const genesisBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
     const blockchain = await Blockchain.create({
       validateBlocks: true,
@@ -580,7 +590,7 @@ tape('blockchain test', (t) => {
       genesisBlock,
     })
 
-    const blockRlp = Buffer.from(testDataPreLondon.blocks[0].rlp.slice(2), 'hex')
+    const blockRlp = hexToBytes(testDataPreLondon.blocks[0].rlp.slice(2))
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
     await blockchain.putBlock(block)
     st.end()
@@ -597,7 +607,7 @@ tape('blockchain test', (t) => {
     st.equal(number, BigInt(0), 'should perform _hashToNumber correctly')
 
     const hash = await blockchain.dbManager.numberToHash(BigInt(0))
-    st.ok(genesis.hash().equals(hash), 'should perform _numberToHash correctly')
+    st.deepEquals(genesis.hash(), hash, 'should perform _numberToHash correctly')
 
     // cast the blockchain as <any> in order to get access to the private getTotalDifficulty
     const td = await (<any>blockchain).getTotalDifficulty(genesis.hash(), BigInt(0))
@@ -606,7 +616,7 @@ tape('blockchain test', (t) => {
   })
 
   t.test('should save headers', async (st) => {
-    const db = new MemoryLevel<string | Buffer, string | Buffer>()
+    const db = new MapDB()
     const gasLimit = 8000000
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
@@ -638,10 +648,10 @@ tape('blockchain test', (t) => {
     })
 
     const latestHeader = await blockchain.getCanonicalHeadHeader()
-    st.ok(latestHeader.hash().equals(header.hash()), 'should save headHeader')
+    st.deepEquals(latestHeader.hash(), header.hash(), 'should save headHeader')
 
     const latestBlock = await blockchain.getCanonicalHeadBlock()
-    st.ok(latestBlock.hash().equals(genesisBlock.hash()), 'should save headBlock')
+    st.deepEquals(latestBlock.hash(), genesisBlock.hash(), 'should save headBlock')
     st.end()
   })
 
@@ -691,18 +701,18 @@ tape('blockchain test', (t) => {
     await blockchain.putHeaders(headers)
 
     const latestHeader = await blockchain.getCanonicalHeadHeader()
-    st.ok(latestHeader.hash().equals(headers[1].hash()), 'should update latest header')
+    st.deepEquals(latestHeader.hash(), headers[1].hash(), 'should update latest header')
 
     const latestBlock = await blockchain.getCanonicalHeadBlock()
-    st.ok(latestBlock.hash().equals(genesisBlock.hash()), 'should not change latest block')
+    st.deepEquals(latestBlock.hash(), genesisBlock.hash(), 'should not change latest block')
 
     await blockchain.putBlock(block)
 
     const latestHeader2 = await blockchain.getCanonicalHeadHeader()
-    st.ok(latestHeader2.hash().equals(headers[1].hash()), 'should not change latest header')
+    st.deepEquals(latestHeader2.hash(), headers[1].hash(), 'should not change latest header')
 
     const getBlock = await blockchain.getCanonicalHeadBlock()
-    st.ok(getBlock!.hash().equals(block.hash()), 'should update latest block')
+    st.deepEquals(getBlock!.hash(), block.hash(), 'should update latest block')
     st.end()
   })
 
@@ -768,8 +778,9 @@ tape('initialization tests', (t) => {
     const blockchain = await Blockchain.create({ common })
     const genesisHash = blockchain.genesisBlock.hash()
 
-    st.ok(
-      (await blockchain.getIteratorHead()).hash().equals(genesisHash),
+    st.deepEquals(
+      (await blockchain.getIteratorHead()).hash(),
+      genesisHash,
       'head hash should equal expected ropsten genesis hash'
     )
 
@@ -777,8 +788,9 @@ tape('initialization tests', (t) => {
 
     const newBlockchain = await Blockchain.create({ db, common })
 
-    st.ok(
-      (await newBlockchain.getIteratorHead()).hash().equals(genesisHash),
+    st.deepEquals(
+      (await newBlockchain.getIteratorHead()).hash(),
+      genesisHash,
       'head hash should be read from the provided db'
     )
     st.end()
@@ -789,7 +801,7 @@ tape('initialization tests', (t) => {
     const genesisBlock = Block.fromBlockData(
       {
         header: {
-          extraData: Buffer.from('custom extra data'),
+          extraData: utf8ToBytes('custom extra data'),
         },
       },
       { common }
@@ -798,14 +810,16 @@ tape('initialization tests', (t) => {
     const blockchain = await Blockchain.create({ common, genesisBlock })
     const db = blockchain.db
 
-    st.ok(
-      (await blockchain.getIteratorHead()).hash().equals(hash),
+    st.deepEquals(
+      (await blockchain.getIteratorHead()).hash(),
+      hash,
       'blockchain should put custom genesis block'
     )
 
     const newBlockchain = await Blockchain.create({ db, genesisBlock })
-    st.ok(
-      (await newBlockchain.getIteratorHead()).hash().equals(hash),
+    st.deepEquals(
+      (await newBlockchain.getIteratorHead()).hash(),
+      hash,
       'head hash should be read from the provided db'
     )
     st.end()
@@ -816,7 +830,7 @@ tape('initialization tests', (t) => {
     const genesisBlock = Block.fromBlockData(
       {
         header: {
-          extraData: Buffer.from('custom extra data'),
+          extraData: utf8ToBytes('custom extra data'),
         },
       },
       { common }
@@ -828,14 +842,14 @@ tape('initialization tests', (t) => {
     const otherGenesisBlock = Block.fromBlockData(
       {
         header: {
-          extraData: Buffer.from('other extra data'),
+          extraData: utf8ToBytes('other extra data'),
         },
       },
       { common }
     )
 
     // assert that this is a block with a new hash
-    if (otherGenesisBlock.hash().equals(hash)) {
+    if (equalsBytes(otherGenesisBlock.hash(), hash)) {
       st.fail('other genesis block should have a different hash than the genesis block')
     }
 
@@ -861,16 +875,14 @@ tape('initialization tests', (t) => {
   t.test('should correctly derive ropsten genesis block hash and stateRoot', async (st) => {
     const common = new Common({ chain: Chain.Ropsten })
     const blockchain = await Blockchain.create({ common })
-    const ropstenGenesisBlockHash = Buffer.from(
-      '41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d',
-      'hex'
+    const ropstenGenesisBlockHash = hexToBytes(
+      '41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d'
     )
-    const ropstenGenesisStateRoot = Buffer.from(
-      '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b',
-      'hex'
+    const ropstenGenesisStateRoot = hexToBytes(
+      '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
     )
-    st.ok(blockchain.genesisBlock.hash().equals(ropstenGenesisBlockHash))
-    st.ok(blockchain.genesisBlock.header.stateRoot.equals(ropstenGenesisStateRoot))
+    st.deepEquals(blockchain.genesisBlock.hash(), ropstenGenesisBlockHash)
+    st.deepEquals(blockchain.genesisBlock.header.stateRoot, ropstenGenesisStateRoot)
     st.end()
   })
 })

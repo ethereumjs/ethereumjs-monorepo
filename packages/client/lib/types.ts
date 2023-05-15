@@ -86,7 +86,7 @@ export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
 /**
  * Like types
  */
-export type Key = Buffer
+export type Key = Uint8Array
 export type KeyLike = string | Key
 
 export type MultiaddrLike = string | string[] | Multiaddr | Multiaddr[]
@@ -105,7 +105,7 @@ export type Libp2pMuxedStream = MuxedStream
 export interface ClientOpts {
   network?: string
   networkId?: number
-  syncMode?: SyncMode
+  sync?: SyncMode
   lightServe?: boolean
   dataDir?: string
   customChain?: string
@@ -143,7 +143,11 @@ export interface ClientOpts {
   minPeers?: number
   maxPeers?: number
   dnsAddr?: string
+  execution?: boolean
   numBlocksPerIteration?: number
+  accountCache?: number
+  storageCache?: number
+  trieCache?: number
   dnsNetworks?: string[]
   executeBlocks?: string
   debugCode?: boolean
@@ -159,6 +163,5 @@ export interface ClientOpts {
   txLookupLimit?: number
   startBlock?: number
   isSingleNode?: boolean
-  opened: boolean
   loadBlocksFromRlp?: string
 }

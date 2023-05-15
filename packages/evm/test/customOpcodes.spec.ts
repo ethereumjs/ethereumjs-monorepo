@@ -1,8 +1,8 @@
+import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { EVM } from '../src/evm'
-
-import { getEEI } from './utils'
 
 import type { InterpreterStep, RunState } from '../src/interpreter'
 import type { AddOpcode } from '../src/types'
@@ -28,7 +28,7 @@ tape('VM: custom opcodes', (t) => {
   t.test('should add custom opcodes to the EVM', async (st) => {
     const evm = await EVM.create({
       customOpcodes: [testOpcode],
-      eei: await getEEI(),
+      stateManager: new DefaultStateManager(),
     })
     const gas = 123456
     let correctOpcodeName = false
@@ -38,7 +38,7 @@ tape('VM: custom opcodes', (t) => {
       }
     })
     const res = await evm.runCode({
-      code: Buffer.from('21', 'hex'),
+      code: hexToBytes('21'),
       gasLimit: BigInt(gas),
     })
     st.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')
@@ -49,11 +49,11 @@ tape('VM: custom opcodes', (t) => {
   t.test('should delete opcodes from the EVM', async (st) => {
     const evm = await EVM.create({
       customOpcodes: [{ opcode: 0x20 }], // deletes KECCAK opcode
-      eei: await getEEI(),
+      stateManager: new DefaultStateManager(),
     })
     const gas = BigInt(123456)
     const res = await evm.runCode({
-      code: Buffer.from('20', 'hex'),
+      code: hexToBytes('20'),
       gasLimit: BigInt(gas),
     })
     st.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
@@ -64,17 +64,18 @@ tape('VM: custom opcodes', (t) => {
     // Thus, each time you recreate a EVM, it is in a clean state
     const evm = await EVM.create({
       customOpcodes: [{ opcode: 0x01 }], // deletes ADD opcode
-      eei: await getEEI(),
+      stateManager: new DefaultStateManager(),
     })
     const gas = BigInt(123456)
     const res = await evm.runCode({
-      code: Buffer.from('01', 'hex'),
+      code: hexToBytes('01'),
       gasLimit: BigInt(gas),
     })
     st.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
 
-    const eei = await getEEI()
-    const evmDefault = await EVM.create({ eei })
+    const evmDefault = await EVM.create({
+      stateManager: new DefaultStateManager(),
+    })
 
     // PUSH 04
     // PUSH 01
@@ -85,21 +86,21 @@ tape('VM: custom opcodes', (t) => {
     // PUSH 1F // RETURNDATA offset
     // RETURN  // Returns 0x05
     const result = await evmDefault.runCode!({
-      code: Buffer.from('60046001016000526001601FF3', 'hex'),
+      code: hexToBytes('60046001016000526001601FF3'),
       gasLimit: BigInt(gas),
     })
-    st.ok(result.returnValue.equals(Buffer.from('05', 'hex')))
+    st.ok(equalsBytes(result.returnValue, hexToBytes('05')))
   })
 
   t.test('should override opcodes in the EVM', async (st) => {
     testOpcode.opcode = 0x20 // Overrides KECCAK
     const evm = await EVM.create({
       customOpcodes: [testOpcode],
-      eei: await getEEI(),
+      stateManager: new DefaultStateManager(),
     })
     const gas = 123456
     const res = await evm.runCode({
-      code: Buffer.from('20', 'hex'),
+      code: hexToBytes('20'),
       gasLimit: BigInt(gas),
     })
     st.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')
@@ -121,7 +122,7 @@ tape('VM: custom opcodes', (t) => {
 
     const evm = await EVM.create({
       customOpcodes: [testOpcode],
-      eei: await getEEI(),
+      stateManager: new DefaultStateManager(),
     })
     const evmCopy = evm.copy()
 

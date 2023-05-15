@@ -2,7 +2,7 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { randomBytes } from 'crypto'
+import { randomBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
@@ -25,7 +25,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
   t.notEqual(execution, undefined, 'should have valid execution')
   const { vm } = execution
-  await vm.eei.generateCanonicalGenesis(blockchain.genesisState())
+  await vm.stateManager.generateCanonicalGenesis(blockchain.genesisState())
   const gasLimit = 2000000
   const parent = await blockchain.getCanonicalHeadHeader()
   const block = Block.fromBlockData(

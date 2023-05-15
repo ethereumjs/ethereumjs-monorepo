@@ -28,7 +28,7 @@ tape(`${method}: ensure balance deducts after a tx`, async (t) => {
 
   // since synchronizer.run() is not executed in the mock setup,
   // manually run stateManager.generateCanonicalGenesis()
-  await vm.eei.generateCanonicalGenesis(blockchain.genesisState())
+  await vm.stateManager.generateCanonicalGenesis(blockchain.genesisState())
 
   // genesis address with balance
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
@@ -81,6 +81,14 @@ tape(`${method}: ensure balance deducts after a tx`, async (t) => {
   // call with height that exceeds chain height
   req = params(method, [address.toString(), '0x1'])
   expectRes = checkError(t, INVALID_PARAMS, 'specified block greater than current height')
+  await baseRequest(t, server, req, 200, expectRes, false)
+
+  // call with nonexistent account
+  req = params(method, [`0x${'11'.repeat(20)}`, 'latest'])
+  expectRes = (res: any) => {
+    const msg = 'should return 0x0 for nonexistent account'
+    t.equal(res.body.result, `0x0`, msg)
+  }
   await baseRequest(t, server, req, 200, expectRes)
 })
 

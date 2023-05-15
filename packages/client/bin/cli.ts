@@ -4,19 +4,29 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { initKZG } from '@ethereumjs/tx'
-import { Address, arrToBufArr, short, toBuffer } from '@ethereumjs/util'
+import {
+  Address,
+  bytesToHex,
+  bytesToPrefixedHexString,
+  hexStringToBytes,
+  initKZG,
+  randomBytes,
+  short,
+  toBytes,
+} from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { randomBytes } from 'crypto'
 import { existsSync, writeFileSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import { Level } from 'level'
 import { homedir } from 'os'
 import * as path from 'path'
 import * as readline from 'readline'
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
 
 import { EthereumClient } from '../lib/client'
 import { Config, DataDirectory, SyncMode } from '../lib/config'
+import { LevelDB } from '../lib/execution/level'
 import { getLogger } from '../lib/logging'
 import { Event } from '../lib/types'
 import { parseMultiaddrs } from '../lib/util'
@@ -27,20 +37,21 @@ import type { Logger } from '../lib/logging'
 import type { FullEthereumService } from '../lib/service'
 import type { ClientOpts } from '../lib/types'
 import type { RPCArgs } from './startRpc'
-import type { BlockBuffer } from '@ethereumjs/block'
+import type { BlockBytes } from '@ethereumjs/block'
 import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
 import type { AbstractLevel } from 'abstract-level'
 
-const { hideBin } = require('yargs/helpers')
-const yargs = require('yargs/yargs')
-
-type Account = [address: Address, privateKey: Buffer]
+type Account = [address: Address, privateKey: Uint8Array]
 
 const networks = Object.entries(Common._getInitializedChains().names)
 
 let logger: Logger
 
+// @ts-ignore
 const args: ClientOpts = yargs(hideBin(process.argv))
+  .parserConfiguration({
+    'dot-notation': false,
+  })
   .option('network', {
     describe: 'Network',
     choices: networks.map((n) => n[1]),
@@ -51,7 +62,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     choices: networks.map((n) => parseInt(n[0])),
     default: undefined,
   })
-  .option('syncMode', {
+  .option('sync', {
     describe: 'Blockchain sync mode (light sync experimental)',
     choices: Object.values(SyncMode),
     default: Config.SYNCMODE_DEFAULT,
@@ -226,6 +237,11 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe: 'EIP-1459 ENR tree urls to query for peer discovery targets',
     array: true,
   })
+  .option('execution', {
+    describe: 'Start continuous VM execution (pre-Merge setting)',
+    boolean: true,
+    default: Config.EXECUTION,
+  })
   .option('numBlocksPerIteration', {
     describe: 'Number of blocks to execute in batch mode and logged to console',
     number: true,
@@ -235,6 +251,21 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe:
       'Debug mode for reexecuting existing blocks (no services will be started), allowed input formats: 5,5-10',
     string: true,
+  })
+  .option('accountCache', {
+    describe: 'Size for the account cache (max number of accounts)',
+    number: true,
+    default: Config.ACCOUNT_CACHE,
+  })
+  .option('storageCache', {
+    describe: 'Size for the storage cache (max number of contracts)',
+    number: true,
+    default: Config.STORAGE_CACHE,
+  })
+  .option('trieCache', {
+    describe: 'Size for the trie cache (max number of trie nodes)',
+    number: true,
+    default: Config.TRIE_CACHE,
   })
   .option('debugCode', {
     describe: 'Generate code for local debugging (internal usage mostly)',
@@ -311,24 +342,24 @@ const args: ClientOpts = yargs(hideBin(process.argv))
  * Initializes and returns the databases needed for the client
  */
 function initDBs(config: Config): {
-  chainDB: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
-  stateDB: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
-  metaDB: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
+  chainDB: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+  stateDB: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+  metaDB: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 } {
   // Chain DB
   const chainDataDir = config.getDataDirectory(DataDirectory.Chain)
   ensureDirSync(chainDataDir)
-  const chainDB = new Level<string | Buffer, string | Buffer>(chainDataDir)
+  const chainDB = new Level<string | Uint8Array, string | Uint8Array>(chainDataDir)
 
   // State DB
   const stateDataDir = config.getDataDirectory(DataDirectory.State)
   ensureDirSync(stateDataDir)
-  const stateDB = new Level<string | Buffer, string | Buffer>(stateDataDir)
+  const stateDB = new Level<string | Uint8Array, string | Uint8Array>(stateDataDir)
 
   // Meta DB (receipts, logs, indexes, skeleton chain)
   const metaDataDir = config.getDataDirectory(DataDirectory.Meta)
   ensureDirSync(metaDataDir)
-  const metaDB = new Level<string | Buffer, string | Buffer>(metaDataDir)
+  const metaDB = new Level<string | Uint8Array, string | Uint8Array>(metaDataDir)
 
   return { chainDB, stateDB, metaDB }
 }
@@ -402,7 +433,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
   if (customGenesisState !== undefined) {
     const validateConsensus = config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique
     blockchain = await Blockchain.create({
-      db: dbs.chainDB,
+      db: new LevelDB(dbs.chainDB),
       genesisState: customGenesisState,
       common: config.chainCommon,
       hardforkByHeadBlockNumber: true,
@@ -447,14 +478,14 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
     let buf = RLP.decode(blockRlp, true)
     while (buf.data?.length > 0 || buf.remainder?.length > 0) {
       try {
-        const block = Block.fromValuesArray(arrToBufArr(buf.data) as unknown as BlockBuffer, {
+        const block = Block.fromValuesArray(buf.data as BlockBytes, {
           common: config.chainCommon,
           hardforkByBlockNumber: true,
         })
         blocks.push(block)
         buf = RLP.decode(buf.remainder, true)
         config.logger.info(
-          `Preloading block hash=0x${short(block.header.hash().toString('hex'))} number=${
+          `Preloading block hash=0x${short(bytesToHex(block.header.hash()))} number=${
             block.header.number
           }`
         )
@@ -574,7 +605,7 @@ async function inputAccounts() {
           `Please enter the 0x-prefixed private key to unlock ${address}:\n`
         )
         ;(rl as any).history = (rl as any).history.slice(1)
-        const privKey = toBuffer(inputKey)
+        const privKey = toBytes(inputKey)
         const derivedAddress = Address.fromPrivateKey(privKey)
         if (address.equals(derivedAddress)) {
           accounts.push([address, privKey])
@@ -586,8 +617,8 @@ async function inputAccounts() {
         }
       }
     } else {
-      const acc = readFileSync(path.resolve(args.unlock!), 'utf-8')
-      const privKey = Buffer.from(acc, 'hex')
+      const acc = readFileSync(path.resolve(args.unlock!), 'utf-8').replace(/(\r\n|\n|\r)/gm, '')
+      const privKey = hexStringToBytes(acc)
       const derivedAddress = Address.fromPrivateKey(privKey)
       accounts.push([derivedAddress, privKey])
     }
@@ -608,7 +639,7 @@ function generateAccount(): Account {
   console.log('='.repeat(50))
   console.log('Account generated for mining blocks:')
   console.log(`Address: ${address}`)
-  console.log(`Private key: 0x${privKey.toString('hex')}`)
+  console.log(`Private key: ${bytesToPrefixedHexString(privKey)}`)
   console.log('WARNING: Do not use this account for mainnet funds')
   console.log('='.repeat(50))
   return [address, privKey]
@@ -713,7 +744,11 @@ async function run() {
     discDns: args.discDns,
     discV4: args.discV4,
     dnsAddr: args.dnsAddr,
+    execution: args.execution,
     numBlocksPerIteration: args.numBlocksPerIteration,
+    accountCache: args.accountCache,
+    storageCache: args.storageCache,
+    trieCache: args.trieCache,
     dnsNetworks: args.dnsNetworks,
     extIP: args.extIP,
     key,
@@ -729,7 +764,7 @@ async function run() {
     multiaddrs,
     port: args.port,
     saveReceipts: args.saveReceipts,
-    syncmode: args.syncMode,
+    syncmode: args.sync,
     disableBeaconSync: args.disableBeaconSync,
     forceSnapSync: args.forceSnapSync,
     transports: args.transports,
@@ -746,27 +781,47 @@ async function run() {
       config.logger.error(`Error writing listener details to disk: ${(e as Error).message}`)
     }
   })
-  if (customGenesisState) {
+  if (customGenesisState !== undefined) {
     const numAccounts = Object.keys(customGenesisState).length
     config.logger.info(`Reading custom genesis state accounts=${numAccounts}`)
   }
 
-  const client = await startClient(config, customGenesisState)
-  const servers =
-    args.rpc === true || args.rpcEngine === true ? startRPCServers(client, args as RPCArgs) : []
-  if (
-    client.config.chainCommon.gteHardfork(Hardfork.Merge) === true &&
-    (args.rpcEngine === false || args.rpcEngine === undefined)
-  ) {
-    config.logger.warn(`Engine RPC endpoint not activated on a post-Merge HF setup.`)
-  }
+  // Do not wait for client to be fully started so that we can hookup SIGINT handling
+  // else a SIGINT before may kill the process in unclean manner
+  const clientStartPromise = startClient(config, customGenesisState)
+    .then((client) => {
+      const servers =
+        args.rpc === true || args.rpcEngine === true ? startRPCServers(client, args as RPCArgs) : []
+      if (
+        client.config.chainCommon.gteHardfork(Hardfork.Paris) === true &&
+        (args.rpcEngine === false || args.rpcEngine === undefined)
+      ) {
+        config.logger.warn(`Engine RPC endpoint not activated on a post-Merge HF setup.`)
+      }
+      config.logger.info('Client started successfully')
+      return { client, servers }
+    })
+    .catch((e) => {
+      config.logger.error('Error starting client', e)
+      return null
+    })
+
   process.on('SIGINT', async () => {
-    config.logger.info('Caught interrupt signal. Shutting down...')
-    for (const s of servers) {
-      s.http().close()
+    config.logger.info('Caught interrupt signal. Obtaining client handle for clean shutdown...')
+    config.logger.info('(This might take a little longer if client not yet fully started)')
+    const clientHandle = await clientStartPromise
+    if (clientHandle !== null) {
+      config.logger.info('Shutting down the client and the servers...')
+      const { client, servers } = clientHandle
+      for (const s of servers) {
+        s.http().close()
+      }
+      await client.stop()
+      config.logger.info('Exiting.')
+    } else {
+      config.logger.info('Client did not start properly, exiting ...')
     }
-    await client.stop()
-    config.logger.info('Exiting.')
+
     process.exit()
   })
 }

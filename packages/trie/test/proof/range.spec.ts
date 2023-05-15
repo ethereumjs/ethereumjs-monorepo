@@ -1,10 +1,17 @@
-import { setLengthLeft, toBuffer } from '@ethereumjs/util'
+import {
+  MapDB,
+  compareBytes,
+  concatBytes,
+  hexStringToBytes,
+  setLengthLeft,
+  toBytes,
+} from '@ethereumjs/util'
 import * as crypto from 'crypto'
 import * as tape from 'tape'
 
-import { MapDB, Trie } from '../../src'
+import { Trie } from '../../src'
 
-import type { DB } from '../../src'
+import type { DB } from '@ethereumjs/util'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof_test.go
 
@@ -15,14 +22,14 @@ const TRIE_SIZE = 512
  * @param addKey - whether to add 100 ordered keys
  * @returns Trie object and sorted entries
  */
-async function randomTrie(db: DB, addKey: boolean = true) {
-  const entries: [Buffer, Buffer][] = []
+async function randomTrie(db: DB<string, string>, addKey: boolean = true) {
+  const entries: [Uint8Array, Uint8Array][] = []
   const trie = new Trie({ db })
 
   if (addKey) {
     for (let i = 0; i < 100; i++) {
-      const key = setLengthLeft(toBuffer(i), 32)
-      const val = toBuffer(i)
+      const key = setLengthLeft(toBytes(i), 32)
+      const val = toBytes(i)
       await trie.put(key, val)
       entries.push([key, val])
     }
@@ -39,7 +46,7 @@ async function randomTrie(db: DB, addKey: boolean = true) {
 
   return {
     trie,
-    entries: entries.sort(([k1], [k2]) => k1.compare(k2)),
+    entries: entries.sort(([k1], [k2]) => compareBytes(k1, k2)),
   }
 }
 
@@ -52,31 +59,31 @@ function getRandomIntInclusive(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
-function decreaseKey(key: Buffer) {
+function decreaseKey(key: Uint8Array) {
   for (let i = key.length - 1; i >= 0; i--) {
     if (key[i] > 0) {
-      return Buffer.concat([key.slice(0, i), toBuffer(key[i] - 1), key.slice(i + 1)])
+      return concatBytes(key.slice(0, i), toBytes(key[i] - 1), key.slice(i + 1))
     }
   }
 }
 
-function increaseKey(key: Buffer) {
+function increaseKey(key: Uint8Array) {
   for (let i = key.length - 1; i >= 0; i--) {
     if (key[i] < 255) {
-      return Buffer.concat([key.slice(0, i), toBuffer(key[i] + 1), key.slice(i + 1)])
+      return concatBytes(key.slice(0, i), toBytes(key[i] + 1), key.slice(i + 1))
     }
   }
 }
 
 async function verify(
   trie: Trie,
-  entries: [Buffer, Buffer][],
+  entries: [Uint8Array, Uint8Array][],
   start: number,
   end: number,
-  startKey?: Buffer,
-  endKey?: Buffer,
-  keys?: Buffer[],
-  vals?: Buffer[]
+  startKey?: Uint8Array,
+  endKey?: Uint8Array,
+  keys?: Uint8Array[],
+  vals?: Uint8Array[]
 ) {
   startKey = startKey ?? entries[start][0]
   endKey = endKey ?? entries[end][0]
@@ -116,12 +123,18 @@ tape('simple merkle range proofs generation and verification', function (tester)
       const end = getRandomIntInclusive(start, entries.length - 1)
 
       const startKey = decreaseKey(entries[start][0])
-      if (!startKey || (start > 0 && entries[start - 1][0].compare(startKey) >= 0)) {
+      if (
+        startKey === undefined ||
+        (start > 0 && compareBytes(entries[start - 1][0], startKey) >= 0)
+      ) {
         continue
       }
 
       const endKey = increaseKey(entries[end][0])
-      if (!endKey || (end < entries.length - 1 && endKey.compare(entries[end + 1][0]) >= 0)) {
+      if (
+        endKey === undefined ||
+        (end < entries.length - 1 && compareBytes(endKey, entries[end + 1][0]) >= 0)
+      ) {
         continue
       }
 
@@ -129,8 +142,8 @@ tape('simple merkle range proofs generation and verification', function (tester)
     }
 
     // Special case, two edge proofs for two edge key.
-    const startKey = Buffer.from('00'.repeat(32), 'hex')
-    const endKey = Buffer.from('ff'.repeat(32), 'hex')
+    const startKey = hexStringToBytes('00'.repeat(32))
+    const endKey = hexStringToBytes('ff'.repeat(32))
     t.equal(await verify(trie, entries, 0, entries.length - 1, startKey, endKey), false)
 
     t.end()
@@ -187,10 +200,12 @@ tape('simple merkle range proofs generation and verification', function (tester)
 
     // Test the mini trie with only a single element.
     const tinyTrie = new Trie()
-    const tinyEntries: [Buffer, Buffer][] = [[crypto.randomBytes(32), crypto.randomBytes(20)]]
+    const tinyEntries: [Uint8Array, Uint8Array][] = [
+      [crypto.randomBytes(32), crypto.randomBytes(20)],
+    ]
     await tinyTrie.put(tinyEntries[0][0], tinyEntries[0][1])
 
-    const tinyStartKey = Buffer.from('00'.repeat(32), 'hex')
+    const tinyStartKey = hexStringToBytes('00'.repeat(32))
     t.equal(await verify(tinyTrie, tinyEntries, 0, 0, tinyStartKey), false)
   })
 
@@ -219,15 +234,15 @@ tape('simple merkle range proofs generation and verification', function (tester)
         entries,
         0,
         entries.length - 1,
-        Buffer.from('00'.repeat(32), 'hex'),
-        Buffer.from('ff'.repeat(32), 'hex')
+        hexStringToBytes('00'.repeat(32)),
+        hexStringToBytes('ff'.repeat(32))
       ),
       false
     )
   })
 
   it('create a single side range proof and verify it', async (t) => {
-    const startKey = Buffer.from('00'.repeat(32), 'hex')
+    const startKey = hexStringToBytes('00'.repeat(32))
     const { trie, entries } = await randomTrie(new MapDB(), false)
 
     const cases = [0, 1, 200, entries.length - 1]
@@ -237,7 +252,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('create a revert single side range proof and verify it', async (t) => {
-    const endKey = Buffer.from('ff'.repeat(32), 'hex')
+    const endKey = hexStringToBytes('ff'.repeat(32))
     const { trie, entries } = await randomTrie(new MapDB(), false)
 
     const cases = [0, 1, 200, entries.length - 1]
@@ -247,7 +262,9 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('create a bad range proof and verify it', async (t) => {
-    const runTest = async (cb: (trie: Trie, entries: [Buffer, Buffer][]) => Promise<void>) => {
+    const runTest = async (
+      cb: (trie: Trie, entries: [Uint8Array, Uint8Array][]) => Promise<void>
+    ) => {
       const { trie, entries } = await randomTrie(new MapDB(), false)
 
       let result = false
@@ -306,17 +323,17 @@ tape('simple merkle range proofs generation and verification', function (tester)
 
   it('create a gapped range proof and verify it', async (t) => {
     const trie = new Trie()
-    const entries: [Buffer, Buffer][] = []
+    const entries: [Uint8Array, Uint8Array][] = []
     for (let i = 0; i < 10; i++) {
-      const key = setLengthLeft(toBuffer(i), 32)
-      const val = toBuffer(i)
+      const key = setLengthLeft(toBytes(i), 32)
+      const val = toBytes(i)
       await trie.put(key, val)
       entries.push([key, val])
     }
 
     const start = 2
     const end = 8
-    const targetRange: [Buffer, Buffer][] = []
+    const targetRange: [Uint8Array, Uint8Array][] = []
     for (let i = start; i <= end; i++) {
       if (i === (start + end) / 2) {
         continue
@@ -433,19 +450,19 @@ tape('simple merkle range proofs generation and verification', function (tester)
 
     // eslint-disable-next-line prefer-const
     for (let { start, end, expect } of cases) {
-      let startKey: Buffer
-      let endKey: Buffer
+      let startKey: Uint8Array
+      let endKey: Uint8Array
 
       if (start === -1) {
         start = 0
-        startKey = Buffer.from('00'.repeat(32), 'hex')
+        startKey = hexStringToBytes('00'.repeat(32))
       } else {
         startKey = entries[start][0]
       }
 
       if (end === -1) {
         end = entries.length - 1
-        endKey = Buffer.from('ff'.repeat(32), 'hex')
+        endKey = hexStringToBytes('ff'.repeat(32))
       } else {
         endKey = entries[end][0]
       }
@@ -457,7 +474,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   it('create a bloated range proof and verify it', async (t) => {
     const { trie, entries } = await randomTrie(new MapDB(), false)
 
-    let bloatedProof: Buffer[] = []
+    let bloatedProof: Uint8Array[] = []
     for (let i = 0; i < TRIE_SIZE; i++) {
       bloatedProof = bloatedProof.concat(await trie.createProof(entries[i][0]))
     }

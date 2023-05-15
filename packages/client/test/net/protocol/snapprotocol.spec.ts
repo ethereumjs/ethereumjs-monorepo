@@ -4,10 +4,14 @@ import {
   KECCAK256_NULL,
   KECCAK256_RLP,
   accountBodyToRLP,
-  bigIntToBuffer,
+  bigIntToBytes,
+  bytesToHex,
+  equalsBytes,
+  hexStringToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { Chain } from '../../../lib/blockchain'
@@ -20,7 +24,7 @@ import { SnapProtocol } from '../../../lib/net/protocol'
 
 tape('[SnapProtocol]', (t) => {
   t.test('should get properties', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     t.ok(typeof p.name === 'string', 'get name')
@@ -30,7 +34,7 @@ tape('[SnapProtocol]', (t) => {
   })
 
   t.test('should open correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     await p.open()
@@ -40,18 +44,16 @@ tape('[SnapProtocol]', (t) => {
   })
 
   t.test('GetAccountRange should encode/decode correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
-    const root = Buffer.from([])
+    const root = new Uint8Array(0)
     const reqId = BigInt(1)
-    const origin = Buffer.from(
-      '0000000000000000000000000000000000000000000000000000000000000000',
-      'hex'
+    const origin = hexStringToBytes(
+      '0000000000000000000000000000000000000000000000000000000000000000'
     )
-    const limit = Buffer.from(
-      '0000000000000000000000000f00000000000000000000000000000000000010',
-      'hex'
+    const limit = hexStringToBytes(
+      '0000000000000000000000000f00000000000000000000000000000000000010'
     )
     const bytes = BigInt(5000000)
 
@@ -67,7 +69,7 @@ tape('[SnapProtocol]', (t) => {
     )
 
     t.ok(
-      JSON.stringify(payload[0]) === JSON.stringify(bigIntToBuffer(BigInt(1))),
+      JSON.stringify(payload[0]) === JSON.stringify(bigIntToBytes(BigInt(1))),
       'correctly encoded reqId'
     )
     t.ok(
@@ -77,7 +79,7 @@ tape('[SnapProtocol]', (t) => {
     t.ok(JSON.stringify(payload[2]) === JSON.stringify(origin), 'correctly encoded origin')
     t.ok(JSON.stringify(payload[3]) === JSON.stringify(limit), 'correctly encoded limit')
     t.ok(
-      JSON.stringify(payload[4]) === JSON.stringify(bigIntToBuffer(bytes)),
+      JSON.stringify(payload[4]) === JSON.stringify(bigIntToBytes(bytes)),
       'correctly encoded bytes'
     )
     t.ok(payload)
@@ -100,11 +102,11 @@ tape('[SnapProtocol]', (t) => {
   })
 
   t.test('AccountRange should encode/decode correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     /* eslint-disable @typescript-eslint/no-use-before-define */
-    const data = RLP.decode(Buffer.from(contractAccountRangeRLP, 'hex')) as unknown
+    const data = RLP.decode(hexStringToBytes(contractAccountRangeRLP)) as unknown
     const { reqId, accounts, proof } = p.decode(
       p.messages.filter((message) => message.name === 'AccountRange')[0],
       data
@@ -119,12 +121,12 @@ tape('[SnapProtocol]', (t) => {
     t.ok(firstAccount[2].length === 0, 'Slim format storageRoot for first account')
     t.ok(firstAccount[3].length === 0, 'Slim format codehash for first account')
     t.ok(
-      secondAccount[2].toString('hex') ===
+      bytesToHex(secondAccount[2]) ===
         '3dc6d3cfdc6210b8591ea852961d880821298c7891dea399e02d87550af9d40e',
       'storageHash of the second account'
     )
     t.ok(
-      secondAccount[3].toString('hex') ===
+      bytesToHex(secondAccount[3]) ===
         'e68fe0bb7c4a483affd0f19cc2b989105242bd6b256c6de3afd738f8acd80c66',
       'codeHash of the second account'
     )
@@ -136,19 +138,19 @@ tape('[SnapProtocol]', (t) => {
       })
     )
     t.ok(
-      contractAccountRangeRLP === Buffer.from(payload).toString('hex'),
+      contractAccountRangeRLP === bytesToHex(payload),
       'Re-encoded payload should match with original'
     )
     t.end()
   })
 
   t.test('AccountRange encode/decode should handle account slim body correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const pSlim = new SnapProtocol({ config, chain })
     const pFull = new SnapProtocol({ config, chain, convertSlimBody: true })
     // accountRangeRLP is the corresponding response to getAccountRangeRLP
-    const resData = RLP.decode(Buffer.from(accountRangeRLP, 'hex')) as unknown
+    const resData = RLP.decode(hexStringToBytes(accountRangeRLP))
 
     const fullData = pFull.decode(
       pFull.messages.filter((message) => message.name === 'AccountRange')[0],
@@ -157,8 +159,8 @@ tape('[SnapProtocol]', (t) => {
     const { accounts: accountsFull } = fullData
     t.ok(accountsFull.length === 3, '3 accounts should be decoded in accountsFull')
     const accountFull = accountsFull[0].body
-    t.ok(accountFull[2].equals(KECCAK256_RLP), 'storageRoot should be KECCAK256_RLP')
-    t.ok(accountFull[3].equals(KECCAK256_NULL), 'codeHash should be KECCAK256_NULL')
+    t.ok(equalsBytes(accountFull[2], KECCAK256_RLP), 'storageRoot should be KECCAK256_RLP')
+    t.ok(equalsBytes(accountFull[3], KECCAK256_NULL), 'codeHash should be KECCAK256_NULL')
 
     // Lets encode fullData as it should be encoded in slim format and upon decoding
     // we shpuld get slim format
@@ -181,18 +183,18 @@ tape('[SnapProtocol]', (t) => {
   })
 
   t.test('AccountRange should verify a real sample', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
     /* eslint-disable @typescript-eslint/no-use-before-define */
-    const reqData = RLP.decode(Buffer.from(getAccountRangeRLP, 'hex'))
+    const reqData = RLP.decode(hexStringToBytes(getAccountRangeRLP))
     const { root: stateRoot } = p.decode(
       p.messages.filter((message) => message.name === 'GetAccountRange')[0],
       reqData
     )
     // accountRangeRLP is the corresponding response to getAccountRangeRLP
-    const resData = RLP.decode(Buffer.from(accountRangeRLP, 'hex')) as unknown
+    const resData = RLP.decode(hexStringToBytes(accountRangeRLP))
     const { accounts, proof } = p.decode(
       p.messages.filter((message) => message.name === 'AccountRange')[0],
       resData
@@ -214,30 +216,28 @@ tape('[SnapProtocol]', (t) => {
       t.fail(`AccountRange proof verification failed with message=${(e as Error).message}`)
     }
     t.ok(
-      Buffer.from(keccak256(proof[0])).toString('hex') === stateRoot.toString('hex'),
+      equalsBytes(keccak256(proof[0]), stateRoot),
       'Proof should link to the requested stateRoot'
     )
     t.end()
   })
 
   t.test('GetStorageRanges should encode/decode correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
-    const root = Buffer.from([])
+    const root = new Uint8Array(0)
     const reqId = BigInt(1)
-    const origin = Buffer.from(
-      '0000000000000000000000000000000000000000000000000000000000000000',
-      'hex'
+    const origin = hexStringToBytes(
+      '0000000000000000000000000000000000000000000000000000000000000000'
     )
-    const limit = Buffer.from(
-      '0000000000000000000000000f00000000000000000000000000000000000010',
-      'hex'
+    const limit = hexStringToBytes(
+      '0000000000000000000000000f00000000000000000000000000000000000010'
     )
     const bytes = BigInt(5000000)
     const accounts = [
-      Buffer.from(keccak256(Buffer.from('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'hex'))),
-      Buffer.from('0000000000000000000000000f00000000000000000000000000000000000010', 'hex'),
+      keccak256(hexStringToBytes('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')),
+      hexStringToBytes('0000000000000000000000000f00000000000000000000000000000000000010'),
     ]
 
     const payload = p.encode(
@@ -253,7 +253,7 @@ tape('[SnapProtocol]', (t) => {
     )
 
     t.ok(
-      JSON.stringify(payload[0]) === JSON.stringify(bigIntToBuffer(BigInt(1))),
+      JSON.stringify(payload[0]) === JSON.stringify(bigIntToBytes(BigInt(1))),
       'correctly encoded reqId'
     )
     t.ok(
@@ -264,7 +264,7 @@ tape('[SnapProtocol]', (t) => {
     t.ok(JSON.stringify(payload[3]) === JSON.stringify(origin), 'correctly encoded origin')
     t.ok(JSON.stringify(payload[4]) === JSON.stringify(limit), 'correctly encoded limit')
     t.ok(
-      JSON.stringify(payload[5]) === JSON.stringify(bigIntToBuffer(bytes)),
+      JSON.stringify(payload[5]) === JSON.stringify(bigIntToBytes(bytes)),
       'correctly encoded bytes'
     )
     t.ok(payload)
@@ -287,12 +287,12 @@ tape('[SnapProtocol]', (t) => {
   })
 
   t.test('StorageRanges should encode/decode correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
     /* eslint-disable @typescript-eslint/no-use-before-define */
-    const data = RLP.decode(Buffer.from(storageRangesRLP, 'hex')) as unknown
+    const data = RLP.decode(hexStringToBytes(storageRangesRLP)) as unknown
     const { reqId, slots, proof } = p.decode(
       p.messages.filter((message) => message.name === 'StorageRanges')[0],
       data
@@ -301,10 +301,10 @@ tape('[SnapProtocol]', (t) => {
     t.ok(slots.length === 1 && slots[0].length === 3, 'correctly decoded slots')
     const { hash, body } = slots[0][2]
     t.ok(
-      hash.toString('hex') === '60264186ee63f748d340388f07b244d96d007fff5cbc397bbd69f8747c421f79',
+      bytesToHex(hash) === '60264186ee63f748d340388f07b244d96d007fff5cbc397bbd69f8747c421f79',
       'Slot 3 key'
     )
-    t.ok(body.toString('hex') === '8462b66ae7', 'Slot 3 value')
+    t.ok(bytesToHex(body) === '8462b66ae7', 'Slot 3 value')
 
     const payload = RLP.encode(
       p.encode(p.messages.filter((message) => message.name === 'StorageRanges')[0], {
@@ -313,20 +313,17 @@ tape('[SnapProtocol]', (t) => {
         proof,
       })
     )
-    t.ok(
-      storageRangesRLP === Buffer.from(payload).toString('hex'),
-      'Re-encoded payload should match with original'
-    )
+    t.ok(storageRangesRLP === bytesToHex(payload), 'Re-encoded payload should match with original')
     t.end()
   })
 
   t.test('StorageRanges should verify a real sample', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
     // Get the handle on the data for the account for which storageRanges has been fetched
-    const accountsData = RLP.decode(Buffer.from(contractAccountRangeRLP, 'hex')) as unknown
+    const accountsData = RLP.decode(hexStringToBytes(contractAccountRangeRLP))
     const { accounts } = p.decode(
       p.messages.filter((message) => message.name === 'AccountRange')[0],
       accountsData
@@ -334,7 +331,7 @@ tape('[SnapProtocol]', (t) => {
     const lastAccount = accounts[accounts.length - 1]
 
     /* eslint-disable @typescript-eslint/no-use-before-define */
-    const data = RLP.decode(Buffer.from(storageRangesRLP, 'hex')) as unknown
+    const data = RLP.decode(hexStringToBytes(storageRangesRLP))
     const { proof, slots } = p.decode(
       p.messages.filter((message) => message.name === 'StorageRanges')[0],
       data
@@ -359,20 +356,20 @@ tape('[SnapProtocol]', (t) => {
       t.fail(`StorageRange proof verification failed with message=${(e as Error).message}`)
     }
     t.ok(
-      Buffer.from(keccak256(proof[0])).toString('hex') === lastAccountStorageRoot.toString('hex'),
+      equalsBytes(keccak256(proof[0]), lastAccountStorageRoot),
       'Proof should link to the accounts storageRoot'
     )
     t.end()
   })
 
   t.test('GetByteCodes should encode/decode correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     const reqId = BigInt(1)
     const hashes = [
-      Buffer.from(keccak256(Buffer.from('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'hex'))),
-      Buffer.from('0000000000000000000000000f00000000000000000000000000000000000010', 'hex'),
+      keccak256(hexStringToBytes('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')),
+      hexStringToBytes('0000000000000000000000000f00000000000000000000000000000000000010'),
     ]
     const bytes = BigInt(5000000)
 
@@ -383,12 +380,12 @@ tape('[SnapProtocol]', (t) => {
     })
 
     t.ok(
-      JSON.stringify(payload[0]) === JSON.stringify(bigIntToBuffer(BigInt(1))),
+      JSON.stringify(payload[0]) === JSON.stringify(bigIntToBytes(BigInt(1))),
       'correctly encoded reqId'
     )
     t.ok(JSON.stringify(payload[1]) === JSON.stringify(hashes), 'correctly encoded hashes')
     t.ok(
-      JSON.stringify(payload[2]) === JSON.stringify(bigIntToBuffer(bytes)),
+      JSON.stringify(payload[2]) === JSON.stringify(bigIntToBytes(bytes)),
       'correctly encoded bytes'
     )
     t.ok(payload)
@@ -406,11 +403,11 @@ tape('[SnapProtocol]', (t) => {
   })
 
   t.test('ByteCodes should encode/decode correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
-    const codesRes = RLP.decode(Buffer.from(byteCodesRLP, 'hex')) as unknown
+    const codesRes = RLP.decode(hexStringToBytes(byteCodesRLP))
     const { reqId, codes } = p.decode(
       p.messages.filter((message) => message.name === 'ByteCodes')[0],
       codesRes
@@ -425,49 +422,40 @@ tape('[SnapProtocol]', (t) => {
         codes,
       })
     )
-    t.ok(
-      byteCodesRLP === Buffer.from(payload).toString('hex'),
-      'Re-encoded payload should match with original'
-    )
+    t.ok(byteCodesRLP === bytesToHex(payload), 'Re-encoded payload should match with original')
     t.end()
   })
 
   t.test('ByteCodes should verify a real sample', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
     /* eslint-disable @typescript-eslint/no-use-before-define */
-    const codesReq = RLP.decode(Buffer.from(getByteCodesRLP, 'hex')) as unknown
+    const codesReq = RLP.decode(hexStringToBytes(getByteCodesRLP))
     const { hashes } = p.decode(
       p.messages.filter((message) => message.name === 'GetByteCodes')[0],
       codesReq
     )
     const codeHash = hashes[0]
-    const codesRes = RLP.decode(Buffer.from(byteCodesRLP, 'hex')) as unknown
+    const codesRes = RLP.decode(hexStringToBytes(byteCodesRLP))
     const { codes } = p.decode(
       p.messages.filter((message) => message.name === 'ByteCodes')[0],
       codesRes
     )
     const code = codes[0]
-    t.ok(
-      Buffer.from(keccak256(code)).toString('hex') === codeHash.toString('hex'),
-      'Code should match the requested codeHash'
-    )
+    t.ok(equalsBytes(keccak256(code), codeHash), 'Code should match the requested codeHash')
     t.end()
   })
 
   t.test('GetTrieNodes should encode/decode correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
     const reqId = BigInt(1)
-    const root = Buffer.from(
-      '04157502e6177a76ca4dbf7784e5ec1a926049db6a91e13efb70a095a72a45d9',
-      'hex'
-    )
-    const paths = [[Buffer.from('0x0', 'hex')], [Buffer.from('0x0', 'hex')]]
+    const root = hexToBytes('04157502e6177a76ca4dbf7784e5ec1a926049db6a91e13efb70a095a72a45d9')
+    const paths = [[hexToBytes('0x00')], [hexToBytes('0x00')]]
     const bytes = BigInt(5000000)
 
     const payload = p.encode(p.messages.filter((message) => message.name === 'GetTrieNodes')[0], {
@@ -478,13 +466,13 @@ tape('[SnapProtocol]', (t) => {
     })
 
     t.ok(
-      JSON.stringify(payload[0]) === JSON.stringify(bigIntToBuffer(reqId)),
+      JSON.stringify(payload[0]) === JSON.stringify(bigIntToBytes(reqId)),
       'correctly encoded reqId'
     )
     t.ok(JSON.stringify(payload[1]) === JSON.stringify(root), 'correctly encoded root')
     t.ok(JSON.stringify(payload[2]) === JSON.stringify(paths), 'correctly encoded paths')
     t.ok(
-      JSON.stringify(payload[3]) === JSON.stringify(bigIntToBuffer(bytes)),
+      JSON.stringify(payload[3]) === JSON.stringify(bigIntToBytes(bytes)),
       'correctly encoded bytes'
     )
     t.ok(payload)
@@ -503,11 +491,11 @@ tape('[SnapProtocol]', (t) => {
   })
 
   t.test('TrieNodes should encode/decode correctly with real sample', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
-    const nodesRes = RLP.decode(Buffer.from(trieNodesRLP, 'hex')) as unknown
+    const nodesRes = RLP.decode(hexToBytes(trieNodesRLP)) as unknown
     const { reqId, nodes } = p.decode(
       p.messages.filter((message) => message.name === 'TrieNodes')[0],
       nodesRes
@@ -518,7 +506,7 @@ tape('[SnapProtocol]', (t) => {
 
     // check that raw node data that exists is valid
     for (let i = 0; i < nodes.length; i++) {
-      const node: Buffer = nodes[i]
+      const node: Uint8Array = nodes[i]
       if (node !== null) {
         t.ok(decodeNode(node), 'raw node data should decode without error')
       }
@@ -530,10 +518,7 @@ tape('[SnapProtocol]', (t) => {
         nodes,
       })
     )
-    t.ok(
-      trieNodesRLP === Buffer.from(payload).toString('hex'),
-      'Re-encoded payload should match with original'
-    )
+    t.ok(trieNodesRLP === bytesToHex(payload), 'Re-encoded payload should match with original')
     t.end()
   })
 })
@@ -545,11 +530,10 @@ const accountRangeRLP =
 
 //await peer!.snap!.getAccountRange({
 //   root: stateRoot,
-//   origin: Buffer.from(
-//     '27be64f6a1510e4166b35201a920e543e0579df3b947b8743458736e51549f0c',
-//     'hex'
+//   origin: hexToBytes(
+//     '27be64f6a1510e4166b35201a920e543e0579df3b947b8743458736e51549f0c'
 //   ),
-//   limit: Buffer.from('f000000000000000000000000f00000000000000000000000000000000000010', 'hex'),
+//   limit: hexStringToBytes('f000000000000000000000000f00000000000000000000000000000000000010'),
 //   bytes: BigInt(100),
 // })
 const contractAccountRangeRLP =
@@ -560,13 +544,11 @@ const contractAccountRangeRLP =
 //  await peer!.snap!.getStorageRanges({
 //   root: stateRoot,
 //   accounts: [
-//     Buffer.from('27be7c29a7a7d6da542205ed52b91990e625039a545702874be74db9f40fb215', 'hex'),
+//     hexStringToBytes('27be7c29a7a7d6da542205ed52b91990e625039a545702874be74db9f40fb215'),
 //   ],
-//   origin: Buffer.from(
-//     '0000000000000000000000000f00000000000000000000000000000000000000',
-//     'hex'
-//   ),
-//   limit: Buffer.from('f000000000000000000000000f00000000000000000000000000000000000010', 'hex'),
+//   origin: hexStringToBytes(
+//     '0000000000000000000000000f00000000000000000000000000000000000000'),
+//   limit: hexStringToBytes('f000000000000000000000000f00000000000000000000000000000000000010'),
 //   bytes: BigInt(100),
 // })
 const _getStorageRangesRLP =
@@ -576,7 +558,7 @@ const storageRangesRLP =
 
 // await peer!.snap!.getByteCodes({
 //   hashes: [
-//     Buffer.from('e68fe0bb7c4a483affd0f19cc2b989105242bd6b256c6de3afd738f8acd80c66', 'hex'),
+//     hexStringToBytes('e68fe0bb7c4a483affd0f19cc2b989105242bd6b256c6de3afd738f8acd80c66'),
 //   ],
 //   bytes: BigInt(50000),
 // })

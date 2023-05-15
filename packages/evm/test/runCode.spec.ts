@@ -1,8 +1,9 @@
+import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { Account, Address } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { EVM } from '../src'
-
-import { getEEI } from './utils'
 
 const STOP = '00'
 const JUMP = '56'
@@ -21,12 +22,13 @@ const testCases = [
 ]
 
 tape('VM.runCode: initial program counter', async (t) => {
-  const eei = await getEEI()
-  const evm = await EVM.create({ eei })
+  const evm = await EVM.create({
+    stateManager: new DefaultStateManager(),
+  })
 
   for (const [i, testData] of testCases.entries()) {
     const runCodeArgs = {
-      code: Buffer.from(testData.code.join(''), 'hex'),
+      code: hexToBytes(testData.code.join('')),
       pc: testData.pc,
       gasLimit: BigInt(0xffff),
     }
@@ -57,12 +59,13 @@ tape('VM.runCode: initial program counter', async (t) => {
 
 tape('VM.runCode: interpreter', (t) => {
   t.test('should return a EvmError as an exceptionError on the result', async (st) => {
-    const eei = await getEEI()
-    const evm = await EVM.create({ eei })
+    const evm = await EVM.create({
+      stateManager: new DefaultStateManager(),
+    })
 
     const INVALID_opcode = 'fe'
     const runCodeArgs = {
-      code: Buffer.from(INVALID_opcode, 'hex'),
+      code: hexToBytes(INVALID_opcode),
       gasLimit: BigInt(0xffff),
     }
 
@@ -78,15 +81,23 @@ tape('VM.runCode: interpreter', (t) => {
   })
 
   t.test('should throw on non-EvmError', async (st) => {
-    const eei = await getEEI()
-    eei.putContractStorage = (..._args) => {
+    const evm = await EVM.create({
+      stateManager: new DefaultStateManager(),
+    })
+    // NOTE: due to now throwing on `getContractStorage` if account does not exist
+    // this now means that if `runCode` is called and the address it runs on (default: zero address)
+    // does not exist, then if SSTORE/SLOAD is used, the runCode will immediately fail because StateManager now throws
+    // TODO: is this behavior which we should fix? (Either in StateManager OR in runCode where we load the account first,
+    // then re-put the account after (if account === undefined put empty account, such that the account exists))
+    const address = Address.fromString(`0x${'00'.repeat(20)}`)
+    await evm.stateManager.putAccount(address, new Account())
+    evm.stateManager.putContractStorage = (..._args) => {
       throw new Error('Test')
     }
-    const evm = await EVM.create({ eei })
 
     const SSTORE = '55'
     const runCodeArgs = {
-      code: Buffer.from([PUSH1, '01', PUSH1, '05', SSTORE].join(''), 'hex'),
+      code: hexToBytes([PUSH1, '01', PUSH1, '05', SSTORE].join('')),
       gasLimit: BigInt(0xffff),
     }
 
@@ -102,8 +113,9 @@ tape('VM.runCode: interpreter', (t) => {
 
 tape('VM.runCode: RunCodeOptions', (t) => {
   t.test('should throw on negative value args', async (st) => {
-    const eei = await getEEI()
-    const evm = await EVM.create({ eei })
+    const evm = await EVM.create({
+      stateManager: new DefaultStateManager(),
+    })
 
     const runCodeArgs = {
       value: BigInt(-10),

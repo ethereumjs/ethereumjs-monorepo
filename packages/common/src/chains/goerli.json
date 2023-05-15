@@ -2,7 +2,7 @@
   "name": "goerli",
   "chainId": 5,
   "networkId": 5,
-  "defaultHardfork": "merge",
+  "defaultHardfork": "shanghai",
   "consensus": {
     "type": "poa",
     "algorithm": "clique",
@@ -73,7 +73,7 @@
     },
     {
       "//_comment": "The forkHash will remain same as mergeForkIdTransition is post merge, terminal block: https://goerli.etherscan.io/block/7382818",
-      "name": "merge",
+      "name": "paris",
       "ttd": "10790000",
       "block": 7382819,
       "forkHash": "0xb8c6299d"
@@ -88,6 +88,11 @@
       "block": null,
       "timestamp": "1678832736",
       "forkHash": "0xf9843abf"
+    },
+    {
+      "name": "cancun",
+      "block": null,
+      "forkHash": null
     }
   ],
   "bootstrapNodes": [

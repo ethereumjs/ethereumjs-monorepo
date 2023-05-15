@@ -1,11 +1,12 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, privateToAddress } from '@ethereumjs/util'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { Address, concatBytesNoTypeCheck, privateToAddress } from '@ethereumjs/util'
+import { concatBytes, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { EVM } from '../../src'
-import { getEEI } from '../utils'
 
-const pkey = Buffer.from('20'.repeat(32), 'hex')
+const pkey = hexToBytes('20'.repeat(32))
 const sender = new Address(privateToAddress(pkey))
 
 tape('EIP 3860 tests', (t) => {
@@ -15,10 +16,12 @@ tape('EIP 3860 tests', (t) => {
       hardfork: Hardfork.London,
       eips: [3860],
     })
-    const eei = await getEEI()
-    const evm = await EVM.create({ common, eei })
+    const evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+    })
 
-    const buffer = Buffer.allocUnsafe(1000000).fill(0x60)
+    const buffer = new Uint8Array(1000000).fill(0x60)
 
     // setup the call arguments
     const runCallArgs = {
@@ -27,13 +30,12 @@ tape('EIP 3860 tests', (t) => {
       // Simple test, PUSH <big number> PUSH 0 RETURN
       // It tries to deploy a contract too large, where the code is all zeros
       // (since memory which is not allocated/resized to yet is always defaulted to 0)
-      data: Buffer.concat([
-        Buffer.from(
-          '0x7F6000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060005260206000F3',
-          'hex'
+      data: concatBytesNoTypeCheck(
+        hexToBytes(
+          '0x7F6000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060005260206000F3'
         ),
-        buffer,
-      ]),
+        buffer
+      ),
     }
     const result = await evm.runCall(runCallArgs)
     st.ok(
@@ -55,24 +57,25 @@ tape('EIP 3860 tests', (t) => {
       eips: [],
     })
     const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-    const eei = await getEEI()
-    const evm = await EVM.create({ common: commonWith3860, eei })
-    const evmWithout3860 = await EVM.create({ common: commonWithout3860, eei: eei.copy() })
+    const evm = await EVM.create({
+      common: commonWith3860,
+      stateManager: new DefaultStateManager(),
+    })
+    const evmWithout3860 = await EVM.create({
+      common: commonWithout3860,
+      stateManager: new DefaultStateManager(),
+    })
     const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-    const contractAccount = await evm.eei.getAccount(contractFactory)
-    await evm.eei.putAccount(contractFactory, contractAccount)
-    await evmWithout3860.eei.putAccount(contractFactory, contractAccount)
-    const factoryCode = Buffer.from(
-      '7f600a80600080396000f3000000000000000000000000000000000000000000006000526000355a8160006000f05a8203600a55806000556001600155505050',
-      'hex'
+    const contractAccount = await evm.stateManager.getAccount(contractFactory)
+    await evm.stateManager.putAccount(contractFactory, contractAccount!)
+    await evmWithout3860.stateManager.putAccount(contractFactory, contractAccount!)
+    const factoryCode = hexToBytes(
+      '7f600a80600080396000f3000000000000000000000000000000000000000000006000526000355a8160006000f05a8203600a55806000556001600155505050'
     )
 
-    await evm.eei.putContractCode(contractFactory, factoryCode)
-    await evmWithout3860.eei.putContractCode(contractFactory, factoryCode)
-    const data = Buffer.from(
-      '000000000000000000000000000000000000000000000000000000000000c000',
-      'hex'
-    )
+    await evm.stateManager.putContractCode(contractFactory, factoryCode)
+    await evmWithout3860.stateManager.putContractCode(contractFactory, factoryCode)
+    const data = hexToBytes('000000000000000000000000000000000000000000000000000000000000c000')
     const runCallArgs = {
       from: caller,
       to: contractFactory,
@@ -101,24 +104,25 @@ tape('EIP 3860 tests', (t) => {
       eips: [],
     })
     const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-    const eei = await getEEI()
-    const evm = await EVM.create({ common: commonWith3860, eei })
-    const evmWithout3860 = await EVM.create({ common: commonWithout3860, eei: eei.copy() })
+    const evm = await EVM.create({
+      common: commonWith3860,
+      stateManager: new DefaultStateManager(),
+    })
+    const evmWithout3860 = await EVM.create({
+      common: commonWithout3860,
+      stateManager: new DefaultStateManager(),
+    })
     const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-    const contractAccount = await evm.eei.getAccount(contractFactory)
-    await evm.eei.putAccount(contractFactory, contractAccount)
-    await evmWithout3860.eei.putAccount(contractFactory, contractAccount)
-    const factoryCode = Buffer.from(
-      '7f600a80600080396000f3000000000000000000000000000000000000000000006000526000355a60008260006000f55a8203600a55806000556001600155505050',
-      'hex'
+    const contractAccount = await evm.stateManager.getAccount(contractFactory)
+    await evm.stateManager.putAccount(contractFactory, contractAccount!)
+    await evmWithout3860.stateManager.putAccount(contractFactory, contractAccount!)
+    const factoryCode = hexToBytes(
+      '7f600a80600080396000f3000000000000000000000000000000000000000000006000526000355a60008260006000f55a8203600a55806000556001600155505050'
     )
 
-    await evm.eei.putContractCode(contractFactory, factoryCode)
-    await evmWithout3860.eei.putContractCode(contractFactory, factoryCode)
-    const data = Buffer.from(
-      '000000000000000000000000000000000000000000000000000000000000c000',
-      'hex'
-    )
+    await evm.stateManager.putContractCode(contractFactory, factoryCode)
+    await evmWithout3860.stateManager.putContractCode(contractFactory, factoryCode)
+    const data = hexToBytes('000000000000000000000000000000000000000000000000000000000000c000')
     const runCallArgs = {
       from: caller,
       to: contractFactory,
@@ -140,10 +144,14 @@ tape('EIP 3860 tests', (t) => {
       hardfork: Hardfork.London,
       eips: [3860],
     })
-    const eei = await getEEI()
-    const evm = await EVM.create({ common, eei, allowUnlimitedInitCodeSize: true })
+    const evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
 
-    const buffer = Buffer.allocUnsafe(1000000).fill(0x60)
+      allowUnlimitedInitCodeSize: true,
+    })
+
+    const bytes = new Uint8Array(1000000).fill(0x60)
 
     // setup the call arguments
     const runCallArgs = {
@@ -152,10 +160,10 @@ tape('EIP 3860 tests', (t) => {
       // Simple test, PUSH <big number> PUSH 0 RETURN
       // It tries to deploy a contract too large, where the code is all zeros
       // (since memory which is not allocated/resized to yet is always defaulted to 0)
-      data: Buffer.concat([
-        Buffer.from('00'.repeat(Number(common.param('vm', 'maxInitCodeSize')) + 1), 'hex'),
-        buffer,
-      ]),
+      data: concatBytes(
+        hexToBytes('00'.repeat(Number(common.param('vm', 'maxInitCodeSize')) + 1)),
+        bytes
+      ),
     }
     const result = await evm.runCall(runCallArgs)
     st.ok(
@@ -172,52 +180,56 @@ tape('EIP 3860 tests', (t) => {
     })
     const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     for (const code of ['F0', 'F5']) {
-      const eei = await getEEI()
       const evm = await EVM.create({
         common: commonWith3860,
-        eei,
+        stateManager: new DefaultStateManager(),
+
         allowUnlimitedInitCodeSize: true,
       })
       const evmDisabled = await EVM.create({
         common: commonWith3860,
-        eei: eei.copy(),
+        stateManager: new DefaultStateManager(),
+
         allowUnlimitedInitCodeSize: false,
       })
       const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-      const contractAccount = await evm.eei.getAccount(contractFactory)
-      await evm.eei.putAccount(contractFactory, contractAccount)
-      await evmDisabled.eei.putAccount(contractFactory, contractAccount)
+      const contractAccount = await evm.stateManager.getAccount(contractFactory)
+      await evm.stateManager.putAccount(contractFactory, contractAccount!)
+      await evmDisabled.stateManager.putAccount(contractFactory, contractAccount!)
       // This factory code:
       // -> reads 32 bytes from the calldata (X)
       // Attempts to create a contract of X size
       // (the initcode of this contract is just zeros, so STOP opcode
       // It stores the topmost stack item of this CREATE(2) at slot 0
       // This is either the contract address if it was succesful, or 0 in case of error
-      const factoryCode = Buffer.from('600060003560006000' + code + '600055', 'hex')
+      const factoryCode = hexToBytes('600060003560006000' + code + '600055')
 
-      await evm.eei.putContractCode(contractFactory, factoryCode)
-      await evmDisabled.eei.putContractCode(contractFactory, factoryCode)
+      await evm.stateManager.putContractCode(contractFactory, factoryCode)
+      await evmDisabled.stateManager.putContractCode(contractFactory, factoryCode)
 
       const runCallArgs = {
         from: caller,
         to: contractFactory,
         gasLimit: BigInt(0xfffffffff),
-        data: Buffer.from('00'.repeat(30) + 'C001', 'hex'),
+        data: hexToBytes('00'.repeat(30) + 'C001'),
       }
 
       const res = await evm.runCall(runCallArgs)
       await evmDisabled.runCall(runCallArgs)
 
-      const key0 = Buffer.from('00'.repeat(32), 'hex')
-      const storageActive = await evm.eei.getContractStorage(contractFactory, key0)
-      const storageInactive = await evmDisabled.eei.getContractStorage(contractFactory, key0)
+      const key0 = hexToBytes('00'.repeat(32))
+      const storageActive = await evm.stateManager.getContractStorage(contractFactory, key0)
+      const storageInactive = await evmDisabled.stateManager.getContractStorage(
+        contractFactory,
+        key0
+      )
 
       st.ok(
-        !storageActive.equals(Buffer.from('')),
+        !equalsBytes(storageActive, new Uint8Array()),
         'created contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=true'
       )
       st.ok(
-        storageInactive.equals(Buffer.from('')),
+        equalsBytes(storageInactive, new Uint8Array()),
         'did not create contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=false'
       )
 
@@ -227,7 +239,7 @@ tape('EIP 3860 tests', (t) => {
         from: caller,
         to: contractFactory,
         gasLimit: BigInt(0xfffffffff),
-        data: Buffer.from('00'.repeat(30) + 'C000', 'hex'),
+        data: hexToBytes('00'.repeat(30) + 'C000'),
       }
 
       // Test:

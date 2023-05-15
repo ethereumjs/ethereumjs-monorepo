@@ -1,4 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
+import { equalsBytes } from 'ethereum-cryptography/utils'
 
 import { Event } from '../types'
 import { short } from '../util'
@@ -19,7 +20,7 @@ interface FullSynchronizerOptions extends SynchronizerOptions {
 }
 
 interface HandledObject {
-  hash: Buffer
+  hash: Uint8Array
   added: number
 }
 
@@ -74,7 +75,9 @@ export class FullSynchronizer extends Synchronizer {
 
     this.config.events.on(Event.SYNC_FETCHED_BLOCKS, this.processBlocks)
     this.config.events.on(Event.SYNC_EXECUTION_VM_ERROR, this.stop)
-    this.config.events.on(Event.CHAIN_UPDATED, this.runExecution)
+    if (this.config.execution) {
+      this.config.events.on(Event.CHAIN_UPDATED, this.runExecution)
+    }
 
     await this.pool.open()
     const { height: number, td } = this.chain.blocks
@@ -201,10 +204,10 @@ export class FullSynchronizer extends Synchronizer {
    * Process blocks fetched from the fetcher.
    */
   async processBlocks(blocks: Block[]) {
-    if (this.config.chainCommon.gteHardfork(Hardfork.Merge) === true) {
+    if (this.config.chainCommon.gteHardfork(Hardfork.Paris) === true) {
       if (this.fetcher !== null) {
         // If we are beyond the merge block we should stop the fetcher
-        this.config.logger.info('Merge hardfork reached, stopping block fetcher')
+        this.config.logger.info('Paris (Merge) hardfork reached, stopping block fetcher')
         this.clearFetcher()
       }
     }
@@ -235,13 +238,13 @@ export class FullSynchronizer extends Synchronizer {
     } else {
       if (
         this.config.chainCommon.hardfork() === Hardfork.MergeForkIdTransition &&
-        this.config.chainCommon.gteHardfork(Hardfork.Merge) === false
+        this.config.chainCommon.gteHardfork(Hardfork.Paris) === false
       ) {
-        const mergeTTD = this.config.chainCommon.hardforkTTD(Hardfork.Merge)!
+        const mergeTTD = this.config.chainCommon.hardforkTTD(Hardfork.Paris)!
         const td = this.chain.blocks.td
         const remaining = mergeTTD - td
         if (remaining <= mergeTTD / BigInt(10)) {
-          attentionHF = `Merge HF in ${remaining} TD`
+          attentionHF = `Paris (Merge) HF in ${remaining} TD`
         }
       }
     }
@@ -268,9 +271,9 @@ export class FullSynchronizer extends Synchronizer {
    * @param peer
    * @returns true if block has already been sent to peer
    */
-  private addToKnownByPeer(blockHash: Buffer, peer: Peer): boolean {
+  private addToKnownByPeer(blockHash: Uint8Array, peer: Peer): boolean {
     const knownBlocks = this.newBlocksKnownByPeer.get(peer.id) ?? []
-    if (knownBlocks.find((knownBlock) => knownBlock.hash.equals(blockHash))) {
+    if (knownBlocks.find((knownBlock) => equalsBytes(knownBlock.hash, blockHash))) {
       return true
     }
     knownBlocks.push({ hash: blockHash, added: Date.now() })
@@ -321,7 +324,11 @@ export class FullSynchronizer extends Synchronizer {
     // https://github.com/ethereum/devp2p/blob/master/caps/eth.md#block-propagation
     const numPeersToShareWith = Math.floor(Math.sqrt(this.pool.peers.length))
     await this.sendNewBlock(block, this.pool.peers.slice(0, numPeersToShareWith))
-    if (this.chain.blocks.latest?.hash().equals(block.header.parentHash) === true) {
+    const latestBlockHash = this.chain.blocks.latest?.hash()
+    if (
+      latestBlockHash !== undefined &&
+      equalsBytes(latestBlockHash, block.header.parentHash) === true
+    ) {
       // If new block is child of current chain tip, insert new block into chain
       await this.chain.putBlocks([block])
       // Check if new sync target height can be set
@@ -350,10 +357,10 @@ export class FullSynchronizer extends Synchronizer {
    * Chain was updated, new block hashes received
    * @param data new block hash announcements
    */
-  handleNewBlockHashes(data: [Buffer, bigint][]) {
+  handleNewBlockHashes(data: [Uint8Array, bigint][]) {
     if (!data.length || !this.fetcher || this.fetcher.syncErrored) return
     let min = BigInt(-1)
-    let newSyncHeight: [Buffer, bigint] | undefined
+    let newSyncHeight: [Uint8Array, bigint] | undefined
     const blockNumberList: bigint[] = []
     for (const value of data) {
       const blockNumber = value[1]
@@ -392,14 +399,16 @@ export class FullSynchronizer extends Synchronizer {
       this.config.syncTargetHeight !== BigInt(0) &&
       this.chain.blocks.height <= this.config.syncTargetHeight - BigInt(50)
     this.execution.run(true, shouldRunOnlyBatched).catch((e) => {
-      this.config.logger.error(`Full sync execution trigger erored`, {}, e)
+      this.config.logger.error(`Full sync execution trigger errored`, {}, e)
     })
   }
 
   async stop(): Promise<boolean> {
     this.config.events.removeListener(Event.SYNC_FETCHED_BLOCKS, this.processBlocks)
     this.config.events.removeListener(Event.SYNC_EXECUTION_VM_ERROR, this.stop)
-    this.config.events.removeListener(Event.CHAIN_UPDATED, this.runExecution)
+    if (this.config.execution) {
+      this.config.events.removeListener(Event.CHAIN_UPDATED, this.runExecution)
+    }
     return super.stop()
   }
 

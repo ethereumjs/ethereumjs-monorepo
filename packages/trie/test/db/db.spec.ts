@@ -1,21 +1,20 @@
+import { MapDB, equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { MapDB } from '../../src'
-
-import type { BatchDBOp } from '../../src'
+import type { BatchDBOp } from '@ethereumjs/util'
 
 tape('DB tests', (t) => {
-  const db = new MapDB()
+  const db = new MapDB<Uint8Array, Uint8Array>()
 
-  const k = Buffer.from('k1')
-  const v = Buffer.from('v1')
-  const k2 = Buffer.from('k2')
-  const v2 = Buffer.from('v2')
+  const k = utf8ToBytes('k1')
+  const v = utf8ToBytes('v1')
+  const k2 = utf8ToBytes('k2')
+  const v2 = utf8ToBytes('v2')
 
   t.test('Operations: puts and gets value', async (st) => {
     await db.put(k, v)
     const res = await db.get(k)
-    st.ok(v.equals(res!))
+    st.ok(equalsBytes(v, res!))
     st.end()
   })
 
@@ -33,7 +32,7 @@ tape('DB tests', (t) => {
     ] as BatchDBOp[]
     await db.batch(ops)
     const res = await db.get(k2)
-    st.ok(v2.equals(res!))
+    st.ok(equalsBytes(v2, res!))
     st.end()
   })
 })

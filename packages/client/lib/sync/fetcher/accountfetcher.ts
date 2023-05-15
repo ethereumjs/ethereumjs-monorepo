@@ -1,12 +1,12 @@
 import { Trie } from '@ethereumjs/trie'
 import {
-  KECCAK256_NULL_S,
+  KECCAK256_NULL,
   KECCAK256_RLP,
   accountBodyToRLP,
-  bigIntToBuffer,
-  bufArrToArr,
-  bufferToBigInt,
-  bufferToHex,
+  bigIntToBytes,
+  bytesToBigInt,
+  bytesToHex,
+  equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
@@ -35,7 +35,7 @@ type AccountDataResponse = AccountData[] & { completed?: boolean }
  */
 export interface AccountFetcherOptions extends FetcherOptions {
   /** Root hash of the account trie to serve */
-  root: Buffer
+  root: Uint8Array
 
   /** The origin to start account fetcher from */
   first: bigint
@@ -60,13 +60,13 @@ export type FetcherDoneFlags = {
   accountFetcherDone: boolean
   byteCodeFetcherDone: boolean
   eventBus?: EventBusType | undefined
-  stateRoot?: Buffer | undefined
+  stateRoot?: Uint8Array | undefined
 }
 
 export function snapFetchersCompleted(
   fetcherDoneFlags: FetcherDoneFlags,
   fetcherType: Object,
-  root?: Buffer,
+  root?: Uint8Array,
   eventBus?: EventBusType
 ) {
   switch (fetcherType) {
@@ -88,10 +88,7 @@ export function snapFetchersCompleted(
     fetcherDoneFlags.storageFetcherDone &&
     fetcherDoneFlags.byteCodeFetcherDone
   ) {
-    fetcherDoneFlags.eventBus!.emit(
-      Event.SYNC_SNAPSYNC_COMPLETE,
-      bufArrToArr(fetcherDoneFlags.stateRoot as Buffer)
-    )
+    fetcherDoneFlags.eventBus!.emit(Event.SYNC_SNAPSYNC_COMPLETE, fetcherDoneFlags.stateRoot!)
   }
 }
 
@@ -102,7 +99,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    * The stateRoot for the fetcher which sorts of pin it to a snapshot.
    * This might eventually be removed as the snapshots are moving and not static
    */
-  root: Buffer
+  root: Uint8Array
 
   /** The origin to start account fetcher from (including), by default starts from 0 (0x0000...) */
   first: bigint
@@ -184,19 +181,19 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   }
 
   private async verifyRangeProof(
-    stateRoot: Buffer,
-    origin: Buffer,
-    { accounts, proof }: { accounts: AccountData[]; proof: Buffer[] }
+    stateRoot: Uint8Array,
+    origin: Uint8Array,
+    { accounts, proof }: { accounts: AccountData[]; proof: Uint8Array[] }
   ): Promise<boolean> {
     this.debug(
-      `verifyRangeProof accounts:${accounts.length} first=${bufferToHex(
+      `verifyRangeProof accounts:${accounts.length} first=${bytesToHex(
         accounts[0].hash
       )} last=${short(accounts[accounts.length - 1].hash)}`
     )
 
     for (let i = 0; i < accounts.length - 1; i++) {
       // ensure the range is monotonically increasing
-      if (accounts[i].hash.compare(accounts[i + 1].hash) === 1) {
+      if (bytesToBigInt(accounts[i].hash) > bytesToBigInt(accounts[i + 1].hash)) {
         throw Error(
           `Account hashes not monotonically increasing: ${i} ${accounts[i].hash} vs ${i + 1} ${
             accounts[i + 1].hash
@@ -212,28 +209,32 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     return trie.verifyRangeProof(stateRoot, origin, keys[keys.length - 1], keys, values, <any>proof)
   }
 
-  private getOrigin(job: Job<JobTask, AccountData[], AccountData>): Buffer {
+  private getOrigin(job: Job<JobTask, AccountData[], AccountData>): Uint8Array {
     const { task, partialResult } = job
     const { first } = task
     // Snap protocol will automatically pad it with 32 bytes left, so we don't need to worry
     const origin = partialResult
-      ? bigIntToBuffer(bufferToBigInt(partialResult[partialResult.length - 1].hash) + BigInt(1))
-      : bigIntToBuffer(first)
+      ? bigIntToBytes(bytesToBigInt(partialResult[partialResult.length - 1].hash) + BigInt(1))
+      : bigIntToBytes(first)
     return setLengthLeft(origin, 32)
   }
 
-  private getLimit(job: Job<JobTask, AccountData[], AccountData>): Buffer {
+  private getLimit(job: Job<JobTask, AccountData[], AccountData>): Uint8Array {
     const { task } = job
     const { first, count } = task
-    const limit = bigIntToBuffer(first + BigInt(count) - BigInt(1))
+    const limit = bigIntToBytes(first + BigInt(count) - BigInt(1))
     return setLengthLeft(limit, 32)
   }
 
   private isMissingRightRange(
-    limit: Buffer,
-    { accounts, proof: _proof }: { accounts: AccountData[]; proof: Buffer[] }
+    limit: Uint8Array,
+    { accounts, proof: _proof }: { accounts: AccountData[]; proof: Uint8Array[] }
   ): boolean {
-    if (accounts.length > 0 && accounts[accounts.length - 1]?.hash.compare(limit) >= 0) {
+    if (
+      accounts.length > 0 &&
+      accounts[accounts.length - 1] !== undefined &&
+      bytesToBigInt(accounts[accounts.length - 1].hash) >= bytesToBigInt(limit)
+    ) {
       return false
     } else {
       // TODO: Check if there is a proof of missing limit in state
@@ -267,7 +268,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
     if (
       rangeResult.accounts.length === 0 ||
-      limit.compare(bigIntToBuffer(BigInt(2) ** BigInt(256))) === 0
+      equalsBytes(limit, bigIntToBytes(BigInt(2) ** BigInt(256))) === true
     ) {
       // TODO have to check proof of nonexistence -- as a shortcut for now, we can mark as completed if a proof is present
       if (rangeResult.proof.length > 0) {
@@ -288,9 +289,9 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       let completed: boolean
       if (isMissingRightRange && this.isMissingRightRange(limit, rangeResult)) {
         this.debug(
-          `Peer ${peerInfo} returned missing right range account=${rangeResult.accounts[
-            rangeResult.accounts.length - 1
-          ].hash.toString('hex')} limit=${limit.toString('hex')}`
+          `Peer ${peerInfo} returned missing right range account=${bytesToHex(
+            rangeResult.accounts[rangeResult.accounts.length - 1].hash
+          )} limit=${bytesToHex(limit)}`
         )
         completed = false
       } else {
@@ -348,14 +349,13 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       return
     }
     const storageFetchRequests = new Set()
-    const byteCodeFetchRequests = new Set<Buffer>()
+    const byteCodeFetchRequests = new Set<Uint8Array>()
     for (const account of result) {
       await this.accountTrie.put(account.hash, accountBodyToRLP(account.body))
 
       // build record of accounts that need storage slots to be fetched
-      const storageRoot: Buffer =
-        account.body[2] instanceof Buffer ? account.body[2] : Buffer.from(account.body[2])
-      if (storageRoot.compare(KECCAK256_RLP) !== 0) {
+      const storageRoot: Uint8Array = account.body[2]
+      if (equalsBytes(storageRoot, KECCAK256_RLP) === false) {
         storageFetchRequests.add({
           accountHash: account.hash,
           storageRoot,
@@ -364,9 +364,8 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         })
       }
       // build record of accounts that need bytecode to be fetched
-      const codeHash: Buffer =
-        account.body[3] instanceof Buffer ? account.body[3] : Buffer.from(account.body[3])
-      if (codeHash.compare(Buffer.from(KECCAK256_NULL_S, 'hex')) !== 0) {
+      const codeHash: Uint8Array = account.body[3]
+      if (!(equalsBytes(codeHash, KECCAK256_NULL) === true)) {
         byteCodeFetchRequests.add(codeHash)
       }
     }
@@ -376,7 +375,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       )
     if (byteCodeFetchRequests.size > 0)
       this.byteCodeFetcher.enqueueByByteCodeRequestList(
-        Array.from(byteCodeFetchRequests) as Buffer[]
+        Array.from(byteCodeFetchRequests) as Uint8Array[]
       )
   }
 
@@ -391,7 +390,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   tasks(first = this.first, count = this.count, maxTasks = this.config.maxFetcherJobs): JobTask[] {
     const max = this.config.maxAccountRange
     const tasks: JobTask[] = []
-    let debugStr = `origin=${short(setLengthLeft(bigIntToBuffer(first), 32))}`
+    let debugStr = `origin=${short(setLengthLeft(bigIntToBytes(first), 32))}`
     let pushedCount = BigInt(0)
     const startedWith = first
 
@@ -416,7 +415,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     }
 
     debugStr += ` limit=${short(
-      setLengthLeft(bigIntToBuffer(startedWith + pushedCount - BigInt(1)), 32)
+      setLengthLeft(bigIntToBytes(startedWith + pushedCount - BigInt(1)), 32)
     )}`
     this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)
     return tasks

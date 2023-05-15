@@ -1,14 +1,23 @@
 import { Block, getDataGasPrice } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
-import { Address, KECCAK256_NULL, short, toBuffer } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  KECCAK256_NULL,
+  bytesToPrefixedHexString,
+  short,
+  toBytes,
+} from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
+import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { Bloom } from './bloom'
 
 import type {
   AfterTxEvent,
   BaseTxReceipt,
+  EIP4844BlobTxReceipt,
   PostByzantiumTxReceipt,
   PreByzantiumTxReceipt,
   RunTxOpts,
@@ -40,7 +49,7 @@ function execHardfork(
   hardfork: Hardfork | string,
   preMergeHf: Hardfork | string
 ): string | Hardfork {
-  return hardfork !== Hardfork.Merge ? hardfork : preMergeHf
+  return hardfork !== Hardfork.Paris ? hardfork : preMergeHf
 }
 
 /**
@@ -79,7 +88,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     throw new Error(msg)
   }
 
-  const state = this.eei
+  const state = this.stateManager
 
   if (opts.reportAccessList === true && !('generateAccessList' in state)) {
     const msg = _errorMsg(
@@ -118,16 +127,6 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       )
       throw new Error(msg)
     }
-    if (opts.reportAccessList === true && !('generateAccessList' in state)) {
-      await state.revert()
-      const msg = _errorMsg(
-        'StateManager needs to implement generateAccessList() when running with reportAccessList option',
-        this,
-        opts.block,
-        opts.tx
-      )
-      throw new Error(msg)
-    }
     if (
       opts.tx.supports(Capability.EIP1559FeeMarket) &&
       this._common.isActivatedEIP(1559) === false
@@ -145,10 +144,10 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const castedTx = <AccessListEIP2930Transaction>opts.tx
 
     for (const accessListItem of castedTx.AccessListJSON) {
-      const address = toBuffer(accessListItem.address)
+      const address = toBytes(accessListItem.address)
       state.addWarmedAddress(address)
       for (const storageKey of accessListItem.storageKeys) {
-        state.addWarmedStorage(address, toBuffer(storageKey))
+        state.addWarmedStorage(address, toBytes(storageKey))
       }
     }
   }
@@ -188,7 +187,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 }
 
 async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
-  const state = this.eei
+  const state = this.stateManager
 
   const { tx, block } = opts
 
@@ -209,7 +208,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (this.DEBUG) {
     debug(
       `New tx run hash=${
-        opts.tx.isSigned() ? opts.tx.hash().toString('hex') : 'unsigned'
+        opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
       } sender=${caller}`
     )
   }
@@ -218,15 +217,15 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // Add origin and precompiles to warm addresses
     const activePrecompiles = this.evm.precompiles
     for (const [addressStr] of activePrecompiles.entries()) {
-      state.addWarmedAddress(Buffer.from(addressStr, 'hex'))
+      state.addWarmedAddress(hexToBytes(addressStr))
     }
-    state.addWarmedAddress(caller.buf)
+    state.addWarmedAddress(caller.bytes)
     if (tx.to) {
       // Note: in case we create a contract, we do this in EVMs `_executeCreate` (this is also correct in inner calls, per the EIP)
-      state.addWarmedAddress(tx.to.buf)
+      state.addWarmedAddress(tx.to.bytes)
     }
     if (this._common.isActivatedEIP(3651) === true) {
-      state.addWarmedAddress(block.header.coinbase.buf)
+      state.addWarmedAddress(block.header.coinbase.bytes)
     }
   }
 
@@ -261,10 +260,18 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Check from account's balance and nonce
   let fromAccount = await state.getAccount(caller)
+  if (fromAccount === undefined) {
+    fromAccount = new Account()
+  }
   const { nonce, balance } = fromAccount
-  debug(`Sender's pre-tx balance is ${balance}`)
+  if (this.DEBUG) {
+    debug(`Sender's pre-tx balance is ${balance}`)
+  }
   // EIP-3607: Reject transactions from senders with deployed code
-  if (this._common.isActivatedEIP(3607) === true && !fromAccount.codeHash.equals(KECCAK256_NULL)) {
+  if (
+    this._common.isActivatedEIP(3607) === true &&
+    !equalsBytes(fromAccount.codeHash, KECCAK256_NULL)
+  ) {
     const msg = _errorMsg('invalid sender address, address is not EOA (EIP-3607)', this, block, tx)
     throw new Error(msg)
   }
@@ -276,7 +283,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       if (tx.supports(Capability.EIP1559FeeMarket) === false) {
         // if skipBalance and not EIP1559 transaction, ensure caller balance is enough to run transaction
         fromAccount.balance = upFrontCost
-        await this.stateManager.putAccount(caller, fromAccount)
+        await this.stateManager.putAccount(caller, fromAccount, true)
       }
     } else {
       const msg = _errorMsg(
@@ -339,7 +346,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     if (opts.skipBalance === true && fromAccount.balance < maxCost) {
       // if skipBalance, ensure caller balance is enough to run transaction
       fromAccount.balance = maxCost
-      await this.stateManager.putAccount(caller, fromAccount)
+      await this.stateManager.putAccount(caller, fromAccount, true)
     } else {
       const msg = _errorMsg(
         `sender doesn't have enough funds to send tx. The max cost is: ${maxCost} and the sender's account (${caller}) only has: ${balance}`,
@@ -398,7 +405,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (opts.skipBalance === true && fromAccount.balance < BigInt(0)) {
     fromAccount.balance = BigInt(0)
   }
-  await state.putAccount(caller, fromAccount)
+  await state.putAccount(caller, fromAccount, true)
   if (this.DEBUG) {
     debug(`Update fromAccount (caller) balance (-> ${fromAccount.balance}))`)
   }
@@ -411,7 +418,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (this.DEBUG) {
     debug(
       `Running tx=0x${
-        tx.isSigned() ? tx.hash().toString('hex') : 'unsigned'
+        tx.isSigned() ? bytesToHex(tx.hash()) : 'unsigned'
       } with caller=${caller} gasLimit=${gasLimit} to=${
         to?.toString() ?? 'none'
       } value=${value} data=0x${short(data)}`
@@ -438,7 +445,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug('-'.repeat(100))
     debug(
       `Received tx execResult: [ executionGasUsed=${executionGasUsed} exceptionError=${
-        exceptionError ? `'${exceptionError.error}'` : 'none'
+        exceptionError !== undefined ? `'${exceptionError.error}'` : 'none'
       } returnValue=0x${short(returnValue)} gasRefund=${results.gasRefund ?? 0} ]`
     )
   }
@@ -456,6 +463,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   results.totalGasSpent = results.execResult.executionGasUsed + txBaseFee
   if (this.DEBUG) {
     debugGas(`tx add baseFee ${txBaseFee} to totalGasSpent (-> ${results.totalGasSpent})`)
+  }
+
+  // Add data gas used to result
+  if (tx.type === 3) {
+    results.dataGasUsed = totalDataGas
   }
 
   // Process any gas refund
@@ -478,10 +490,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Update sender's balance
   fromAccount = await state.getAccount(caller)
+  if (fromAccount === undefined) {
+    fromAccount = new Account()
+  }
   const actualTxCost = results.totalGasSpent * gasPrice
   const txCostDiff = txCost - actualTxCost
   fromAccount.balance += txCostDiff
-  await state.putAccount(caller, fromAccount)
+  await state.putAccount(caller, fromAccount, true)
   if (this.DEBUG) {
     debug(
       `Refunded txCostDiff (${txCostDiff}) to fromAccount (caller) balance (-> ${fromAccount.balance})`
@@ -496,7 +511,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     miner = block.header.coinbase
   }
 
-  const minerAccount = await state.getAccount(miner)
+  let minerAccount = await state.getAccount(miner)
+  if (minerAccount === undefined) {
+    minerAccount = new Account()
+  }
   // add the amount spent on gas to the miner's account
   results.minerValue =
     this._common.isActivatedEIP(1559) === true
@@ -507,7 +525,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Put the miner account into the state. If the balance of the miner account remains zero, note that
   // the state.putAccount function puts this into the "touched" accounts. This will thus be removed when
   // we clean the touched accounts below in case we are in a fork >= SpuriousDragon
-  await state.putAccount(miner, minerAccount)
+  await state.putAccount(miner, minerAccount, true)
   if (this.DEBUG) {
     debug(`tx update miner account (${miner}) balance (-> ${minerAccount.balance})`)
   }
@@ -515,24 +533,32 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   /*
    * Cleanup accounts
    */
-  if (results.execResult.selfdestruct) {
+  if (results.execResult.selfdestruct !== undefined) {
     const keys = Object.keys(results.execResult.selfdestruct)
     for (const k of keys) {
-      const address = new Address(Buffer.from(k, 'hex'))
-      await state.deleteAccount(address)
+      const address = new Address(hexToBytes(k))
+      await state.deleteAccount(address, true)
       if (this.DEBUG) {
         debug(`tx selfdestruct on address=${address}`)
       }
     }
   }
 
-  await state.cleanupTouchedAccounts()
+  if (this._common.gteHardfork(Hardfork.SpuriousDragon)) {
+    await state.cleanupTouchedAccounts()
+  }
   state.clearOriginalStorageCache()
 
   // Generate the tx receipt
   const gasUsed = opts.blockGasUsed !== undefined ? opts.blockGasUsed : block.header.gasUsed
   const cumulativeGasUsed = gasUsed + results.totalGasSpent
-  results.receipt = await generateTxReceipt.bind(this)(tx, results, cumulativeGasUsed)
+  results.receipt = await generateTxReceipt.bind(this)(
+    tx,
+    results,
+    cumulativeGasUsed,
+    totalDataGas,
+    dataGasPrice
+  )
 
   /**
    * The `afterTx` event
@@ -546,7 +572,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (this.DEBUG) {
     debug(
       `tx run finished hash=${
-        opts.tx.isSigned() ? opts.tx.hash().toString('hex') : 'unsigned'
+        opts.tx.isSigned() ? bytesToPrefixedHexString(opts.tx.hash()) : 'unsigned'
       } sender=${caller}`
     )
   }
@@ -581,12 +607,16 @@ function txLogsBloom(logs?: any[]): Bloom {
  * @param tx The transaction
  * @param txResult The tx result
  * @param cumulativeGasUsed The gas used in the block including this tx
+ * @param dataGasUsed The data gas used in the tx
+ * @param dataGasPrice The data gas price for the block including this tx
  */
 export async function generateTxReceipt(
   this: VM,
   tx: TypedTransaction,
   txResult: RunTxResult,
-  cumulativeGasUsed: bigint
+  cumulativeGasUsed: bigint,
+  dataGasUsed?: bigint,
+  dataGasPrice?: bigint
 ): Promise<TxReceipt> {
   const baseReceipt: BaseTxReceipt = {
     cumulativeBlockGasUsed: cumulativeGasUsed,
@@ -610,7 +640,7 @@ export async function generateTxReceipt(
     if (this._common.gteHardfork(Hardfork.Byzantium) === true) {
       // Post-Byzantium
       receipt = {
-        status: txResult.execResult.exceptionError ? 0 : 1, // Receipts have a 0 as status on error
+        status: txResult.execResult.exceptionError !== undefined ? 0 : 1, // Receipts have a 0 as status on error
         ...baseReceipt,
       } as PostByzantiumTxReceipt
     } else {
@@ -623,12 +653,20 @@ export async function generateTxReceipt(
     }
   } else {
     // Typed EIP-2718 Transaction
-    receipt = {
-      status: txResult.execResult.exceptionError ? 0 : 1,
-      ...baseReceipt,
-    } as PostByzantiumTxReceipt
+    if (tx.type === 3) {
+      receipt = {
+        dataGasUsed,
+        dataGasPrice,
+        status: txResult.execResult.exceptionError ? 0 : 1,
+        ...baseReceipt,
+      } as EIP4844BlobTxReceipt
+    } else {
+      receipt = {
+        status: txResult.execResult.exceptionError ? 0 : 1,
+        ...baseReceipt,
+      } as PostByzantiumTxReceipt
+    }
   }
-
   return receipt
 }
 

@@ -1,18 +1,16 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { randomBytes } from 'crypto'
+import { bytesToHex, bytesToPrefixedHexString, randomBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
 import { TransactionFactory } from '../src'
 import { normalizeTxParams } from '../src/fromRpc'
 
-import { MockProvider } from './mockProvider'
-
 const optimismTx = require('./json/optimismTx.json')
 
 const txTypes = [0, 1, 2]
 
-tape('[fromEthersProvider]', async (t) => {
+tape('[fromJsonRpcProvider]', async (t) => {
   const fakeFetch = async (_url: string, req: any) => {
     if (
       req.method === 'eth_getTransactionByHash' &&
@@ -26,20 +24,20 @@ tape('[fromEthersProvider]', async (t) => {
   }
 
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-  const provider = new MockProvider()
+  const provider = 'https://my.json.rpc.provider.com:8545'
   const providerUtils = require('@ethereumjs/util/dist/provider')
   td.replace<any>(providerUtils, 'fetchFromProvider', fakeFetch)
   const txHash = '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0'
-  const tx = await TransactionFactory.fromEthersProvider(provider, txHash, { common })
+  const tx = await TransactionFactory.fromJsonRpcProvider(provider, txHash, { common })
   t.equal(
-    '0x' + tx.hash().toString('hex'),
+    bytesToPrefixedHexString(tx.hash()),
     txHash,
     'generated correct tx from transaction RPC data'
   )
   try {
-    await TransactionFactory.fromEthersProvider(
+    await TransactionFactory.fromJsonRpcProvider(
       provider,
-      '0x' + randomBytes(32).toString('hex'),
+      bytesToPrefixedHexString(randomBytes(32)),
       {}
     )
     t.fail('should throw')
@@ -59,7 +57,7 @@ tape('[normalizeTxParams]', (t) => {
   const tx = TransactionFactory.fromTxData(normedTx)
   t.equal(normedTx.gasLimit, 21000n, 'correctly converted "gas" to "gasLimit"')
   t.equal(
-    tx.hash().toString('hex'),
+    bytesToHex(tx.hash()),
     rpcTx.hash.slice(2),
     'converted normed tx data to transaction objec'
   )

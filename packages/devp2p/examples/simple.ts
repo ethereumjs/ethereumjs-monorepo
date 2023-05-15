@@ -1,5 +1,6 @@
 import { Chain, Common } from '@ethereumjs/common'
 import chalk from 'chalk'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { DPT } from '../src/index'
 
@@ -15,7 +16,7 @@ const BOOTNODES = bootstrapNodes.map((node: any) => {
   }
 })
 
-const dpt = new DPT(Buffer.from(PRIVATE_KEY, 'hex'), {
+const dpt = new DPT(hexToBytes(PRIVATE_KEY), {
   endpoint: {
     address: '0.0.0.0',
     udpPort: null,
@@ -27,14 +28,12 @@ const dpt = new DPT(Buffer.from(PRIVATE_KEY, 'hex'), {
 dpt.on('error', (err) => console.error(chalk.red(err.stack ?? err)))
 
 dpt.on('peer:added', (peer) => {
-  const info = `(${peer.id.toString('hex')},${peer.address},${peer.udpPort},${peer.tcpPort})`
+  const info = `(${bytesToHex(peer.id)},${peer.address},${peer.udpPort},${peer.tcpPort})`
   console.log(chalk.green(`New peer: ${info} (total: ${dpt.getPeers().length})`))
 })
 
 dpt.on('peer:removed', (peer) => {
-  console.log(
-    chalk.yellow(`Remove peer: ${peer.id.toString('hex')} (total: ${dpt.getPeers().length})`)
-  )
+  console.log(chalk.yellow(`Remove peer: ${bytesToHex(peer.id)} (total: ${dpt.getPeers().length})`))
 })
 
 // for accept incoming connections uncomment next line

@@ -1,6 +1,7 @@
 import { sha256 } from 'ethereum-cryptography/sha256'
+import { utf8ToBytes } from 'ethereum-cryptography/utils'
 
-import { kzg } from '../kzg/kzg'
+import { kzg } from './kzg'
 
 /**
  * These utilities for constructing blobs are borrowed from https://github.com/Inphi/eip4844-interop.git
@@ -12,28 +13,27 @@ const MAX_BLOBS_PER_TX = 2
 const MAX_USEFUL_BYTES_PER_TX = USEFUL_BYTES_PER_BLOB * MAX_BLOBS_PER_TX - 1
 const BLOB_SIZE = BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB
 
-function get_padded(data: Buffer, blobs_len: number) {
-  const pdata = Buffer.alloc(blobs_len * USEFUL_BYTES_PER_BLOB)
-  const datalen = Buffer.byteLength(data)
-  pdata.fill(data, 0, datalen)
-  pdata[datalen] = 0x80
+function get_padded(data: Uint8Array, blobs_len: number): Uint8Array {
+  const pdata = new Uint8Array(blobs_len * USEFUL_BYTES_PER_BLOB).fill(0)
+  pdata.set(data)
+  pdata[data.byteLength] = 0x80
   return pdata
 }
 
-function get_blob(data: Buffer) {
-  const blob = Buffer.alloc(BLOB_SIZE, 'binary')
+function get_blob(data: Uint8Array): Uint8Array {
+  const blob = new Uint8Array(BLOB_SIZE)
   for (let i = 0; i < FIELD_ELEMENTS_PER_BLOB; i++) {
-    const chunk = Buffer.alloc(32, 'binary')
-    chunk.fill(data.subarray(i * 31, (i + 1) * 31), 0, 31)
-    blob.fill(chunk, i * 32, (i + 1) * 32)
+    const chunk = new Uint8Array(32)
+    chunk.set(data.subarray(i * 31, (i + 1) * 31), 0)
+    blob.set(chunk, i * 32)
   }
 
   return blob
 }
 
 export const getBlobs = (input: string) => {
-  const data = Buffer.from(input, 'binary')
-  const len = Buffer.byteLength(data)
+  const data = utf8ToBytes(input)
+  const len = data.byteLength
   if (len === 0) {
     throw Error('invalid blob data')
   }
@@ -45,7 +45,7 @@ export const getBlobs = (input: string) => {
 
   const pdata = get_padded(data, blobs_len)
 
-  const blobs = []
+  const blobs: Uint8Array[] = []
   for (let i = 0; i < blobs_len; i++) {
     const chunk = pdata.subarray(i * USEFUL_BYTES_PER_BLOB, (i + 1) * USEFUL_BYTES_PER_BLOB)
     const blob = get_blob(chunk)
@@ -55,12 +55,18 @@ export const getBlobs = (input: string) => {
   return blobs
 }
 
-export const blobsToCommitments = (blobs: Buffer[]) => {
-  const commitments = []
+export const blobsToCommitments = (blobs: Uint8Array[]) => {
+  const commitments: Uint8Array[] = []
   for (const blob of blobs) {
-    commitments.push(Buffer.from(kzg.blobToKzgCommitment(blob)))
+    commitments.push(kzg.blobToKzgCommitment(blob))
   }
   return commitments
+}
+
+export const blobsToProofs = (blobs: Uint8Array[], commitments: Uint8Array[]) => {
+  const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
+
+  return proofs
 }
 
 /**
@@ -74,7 +80,7 @@ export const blobsToCommitments = (blobs: Buffer[]) => {
 export const computeVersionedHash = (commitment: Uint8Array, blobCommitmentVersion: number) => {
   const computedVersionedHash = new Uint8Array(32)
   computedVersionedHash.set([blobCommitmentVersion], 0)
-  computedVersionedHash.set(sha256(commitment).slice(1), 1)
+  computedVersionedHash.set(sha256(commitment).subarray(1), 1)
   return computedVersionedHash
 }
 
@@ -84,10 +90,10 @@ export const computeVersionedHash = (commitment: Uint8Array, blobCommitmentVersi
  * @returns array of versioned hashes
  * Note: assumes KZG commitments (version 1 version hashes)
  */
-export const commitmentsToVersionedHashes = (commitments: Buffer[]) => {
-  const hashes = []
+export const commitmentsToVersionedHashes = (commitments: Uint8Array[]) => {
+  const hashes: Uint8Array[] = []
   for (const commitment of commitments) {
-    hashes.push(Buffer.from(computeVersionedHash(commitment, 0x01)))
+    hashes.push(computeVersionedHash(commitment, 0x01))
   }
   return hashes
 }

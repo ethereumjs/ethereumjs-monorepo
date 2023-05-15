@@ -8,7 +8,7 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
     st.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
     st.equal(c.chainId(), BigInt(1), 'should return correct chain Id')
     st.equal(c.networkId(), BigInt(1), 'should return correct network Id')
-    st.equal(c.hardfork(), Hardfork.Merge, 'should set hardfork to current default hardfork')
+    st.equal(c.hardfork(), Hardfork.Shanghai, 'should set hardfork to current default hardfork')
     st.equal(
       c.hardfork(),
       c.DEFAULT_HARDFORK,
@@ -26,7 +26,7 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
     st.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
     st.equal(c.chainId(), BigInt(1), 'should return correct chain Id')
     st.equal(c.networkId(), BigInt(1), 'should return correct network Id')
-    st.equal(c.hardfork(), Hardfork.Merge, 'should set hardfork to current default hardfork')
+    st.equal(c.hardfork(), Hardfork.Shanghai, 'should set hardfork to current default hardfork')
     st.equal(
       c.hardfork(),
       c.DEFAULT_HARDFORK,

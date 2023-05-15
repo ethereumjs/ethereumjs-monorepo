@@ -2,7 +2,7 @@
   "name": "mainnet",
   "chainId": 1,
   "networkId": 1,
-  "defaultHardfork": "merge",
+  "defaultHardfork": "shanghai",
   "consensus": {
     "type": "pow",
     "algorithm": "ethash",
@@ -89,7 +89,7 @@
     },
     {
       "//_comment": "The forkHash will remain same as mergeForkIdTransition is post merge, terminal block: https://etherscan.io/block/15537393",
-      "name": "merge",
+      "name": "paris",
       "ttd": "58750000000000000000000",
       "block": 15537394,
       "forkHash": "0xf0afd0e3"
@@ -104,6 +104,11 @@
       "block": null,
       "timestamp": "1681338455",
       "forkHash": "0xdce96c2d"
+    },
+    {
+      "name": "cancun",
+      "block": null,
+      "forkHash": null
     }
   ],
   "bootstrapNodes": [

@@ -1,6 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { bufferToHex, zeros } from '@ethereumjs/util'
+import { bytesToHex, bytesToPrefixedHexString, zeros } from '@ethereumjs/util'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
@@ -31,7 +31,7 @@ const validPayloadAttributes = {
   suggestedFeeRecipient: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
 }
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
 
 function createBlock(parentBlock: Block) {
   const prevRandao = crypto.randomBytes(32)
@@ -161,7 +161,7 @@ tape(`${method}: invalid terminal block with only genesis block`, async (t) => {
   const req = params(method, [validForkChoiceState, null])
   const expectRes = (res: any) => {
     t.equal(res.body.result.payloadStatus.status, 'INVALID')
-    t.equal(res.body.result.payloadStatus.latestValidHash, bufferToHex(zeros(32)))
+    t.equal(res.body.result.payloadStatus.latestValidHash, bytesToHex(zeros(32)))
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
@@ -187,7 +187,7 @@ tape(`${method}: invalid terminal block with 1+ blocks`, async (t) => {
         number: blocks[0].blockNumber,
         parentHash: blocks[0].parentHash,
         difficulty: 1,
-        extraData: Buffer.alloc(97),
+        extraData: new Uint8Array(97),
       },
     },
     { common }
@@ -195,12 +195,12 @@ tape(`${method}: invalid terminal block with 1+ blocks`, async (t) => {
 
   await chain.putBlocks([newBlock])
   const req = params(method, [
-    { ...validForkChoiceState, headBlockHash: '0x' + newBlock.hash().toString('hex') },
+    { ...validForkChoiceState, headBlockHash: bytesToPrefixedHexString(newBlock.hash()) },
     null,
   ])
   const expectRes = (res: any) => {
     t.equal(res.body.result.payloadStatus.status, 'INVALID')
-    t.equal(res.body.result.payloadStatus.latestValidHash, bufferToHex(zeros(32)))
+    t.equal(res.body.result.payloadStatus.latestValidHash, bytesToHex(zeros(32)))
   }
   await baseRequest(t, server, req, 200, expectRes)
 })

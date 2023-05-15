@@ -1,5 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { randomBytes } from 'crypto'
+import { bytesToPrefixedHexString, hexStringToBytes, randomBytes } from '@ethereumjs/util'
+import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
@@ -7,7 +8,6 @@ import { blockFromRpc } from '../src/from-rpc'
 import { blockHeaderFromRpc } from '../src/header-from-rpc'
 import { Block } from '../src/index'
 
-import { MockProvider } from './mockProvider'
 import * as alchemy14151203 from './testdata/alchemy14151203.json'
 import * as infura15571241woTxs from './testdata/infura15571241.json'
 import * as infura15571241wTxs from './testdata/infura15571241wtxns.json'
@@ -34,8 +34,8 @@ tape('[fromRPC]: block #2924874', function (t) {
 
   t.test('should create a block header with the correct hash', function (st) {
     const block = blockHeaderFromRpc(blockData, { common })
-    const hash = Buffer.from(blockData.hash.slice(2), 'hex')
-    st.ok(block.hash().equals(hash))
+    const hash = hexStringToBytes(blockData.hash)
+    st.ok(equalsBytes(block.hash(), hash))
     st.end()
   })
 })
@@ -105,7 +105,7 @@ tape('[fromRPC]:', function (t) {
       `0x${block.header.baseFeePerGas?.toString(16)}`,
       testDataFromRpcGoerliLondon.baseFeePerGas
     )
-    st.equal(`0x${block.hash().toString('hex')}`, testDataFromRpcGoerliLondon.hash)
+    st.equal(bytesToPrefixedHexString(block.hash()), testDataFromRpcGoerliLondon.hash)
     st.end()
   })
 
@@ -128,8 +128,8 @@ tape('[fromRPC]:', function (t) {
     function (st) {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
       const block = blockHeaderFromRpc(blockDataWithWithdrawals, { common })
-      const hash = Buffer.from(blockDataWithWithdrawals.hash.slice(2), 'hex')
-      st.ok(block.hash().equals(hash))
+      const hash = blockDataWithWithdrawals.hash.slice(2)
+      st.equal(bytesToHex(block.hash()), hash)
       st.end()
     }
   )
@@ -139,7 +139,7 @@ tape('[fromRPC] - Alchemy/Infura API block responses', (t) => {
   t.test('should create pre merge block from Alchemy API response to eth_getBlockByHash', (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const block = blockFromRpc(alchemy14151203, [], { common })
-    st.equal(`0x${block.hash().toString('hex')}`, alchemy14151203.hash)
+    st.equal(bytesToPrefixedHexString(block.hash()), alchemy14151203.hash)
     st.end()
   })
 
@@ -149,13 +149,13 @@ tape('[fromRPC] - Alchemy/Infura API block responses', (t) => {
       const common = new Common({ chain: Chain.Mainnet })
       let block = blockFromRpc(infura2000004woTxs, [], { common, hardforkByBlockNumber: true })
       st.equal(
-        `0x${block.hash().toString('hex')}`,
+        bytesToPrefixedHexString(block.hash()),
         infura2000004woTxs.hash,
         'created premerge block w/o txns'
       )
       block = blockFromRpc(infura2000004wTxs, [], { common, hardforkByBlockNumber: true })
       st.equal(
-        `0x${block.hash().toString('hex')}`,
+        bytesToPrefixedHexString(block.hash()),
         infura2000004wTxs.hash,
         'created premerge block with txns'
       )
@@ -164,7 +164,7 @@ tape('[fromRPC] - Alchemy/Infura API block responses', (t) => {
         hardforkByTTD: 58750000000000000000000n,
       })
       st.equal(
-        `0x${block.hash().toString('hex')}`,
+        bytesToPrefixedHexString(block.hash()),
         infura15571241woTxs.hash,
         'created post merge block without txns'
       )
@@ -174,7 +174,7 @@ tape('[fromRPC] - Alchemy/Infura API block responses', (t) => {
         hardforkByTTD: 58750000000000000000000n,
       })
       st.equal(
-        `0x${block.hash().toString('hex')}`,
+        bytesToPrefixedHexString(block.hash()),
         infura15571241wTxs.hash,
         'created post merge block with txns'
       )
@@ -185,9 +185,9 @@ tape('[fromRPC] - Alchemy/Infura API block responses', (t) => {
   t.end()
 })
 
-tape('[fromEthersProvider]', async (t) => {
+tape('[fromJsonRpcProvider]', async (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-  const provider = new MockProvider() // mimics some properties of an Ethers JsonRPCProvider
+  const provider = 'https://my.json.rpc.provider.com:8545'
 
   const fakeFetch = async (_url: string, req: any) => {
     if (
@@ -205,14 +205,14 @@ tape('[fromEthersProvider]', async (t) => {
   td.replace<any>(providerUtils, 'fetchFromProvider', fakeFetch)
 
   const blockHash = '0x1850b014065b23d804ecf71a8a4691d076ca87c2e6fb8fe81ee20a4d8e884c24'
-  const block = await Block.fromEthersProvider(provider, blockHash, { common })
+  const block = await Block.fromJsonRpcProvider(provider, blockHash, { common })
   t.equal(
-    '0x' + block.hash().toString('hex'),
+    bytesToPrefixedHexString(block.hash()),
     blockHash,
     'assembled a block from blockdata from a provider'
   )
   try {
-    await Block.fromEthersProvider(provider, '0x' + randomBytes(32).toString('hex'), {})
+    await Block.fromJsonRpcProvider(provider, bytesToPrefixedHexString(randomBytes(32)), {})
     t.fail('should throw')
   } catch (err: any) {
     t.ok(

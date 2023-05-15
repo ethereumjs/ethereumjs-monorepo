@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, toBuffer } from '@ethereumjs/util'
+import { Address, hexStringToBytes, toBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import {
@@ -14,21 +14,21 @@ import type {
   FeeMarketEIP1559ValuesArray,
   TxValuesArray,
 } from '../src'
-import type { AddressLike, BigIntLike, BufferLike } from '@ethereumjs/util'
+import type { AddressLike, BigIntLike, BytesLike } from '@ethereumjs/util'
 
 // @returns: Array with subtypes of the AddressLike type for a given address
 function generateAddressLikeValues(address: string): AddressLike[] {
-  return [address, toBuffer(address), new Address(toBuffer(address))]
+  return [address, toBytes(address), new Address(toBytes(address))]
 }
 
 // @returns: Array with subtypes of the BigIntLike type for a given number
 function generateBigIntLikeValues(value: number): BigIntLike[] {
-  return [value, BigInt(value), `0x${value.toString(16)}`, toBuffer(value)]
+  return [value, BigInt(value), `0x${value.toString(16)}`, toBytes(value)]
 }
 
-// @returns: Array with subtypes of the BufferLike type for a given string
-function generateBufferLikeValues(value: string): BufferLike[] {
-  return [value, toBuffer(value)]
+// @returns: Array with subtypes of the BytesLike type for a given string
+function generateBytesLikeValues(value: string): BytesLike[] {
+  return [value, toBytes(value)]
 }
 
 interface GenerateCombinationsArgs {
@@ -89,7 +89,7 @@ function getRandomSubarray<TArrayItem>(array: TArrayItem[], size: number) {
 }
 
 const baseTxValues = {
-  data: generateBufferLikeValues('0x65'),
+  data: generateBytesLikeValues('0x65'),
   gasLimit: generateBigIntLikeValues(100000),
   nonce: generateBigIntLikeValues(0),
   to: generateAddressLikeValues('0x0000000000000000000000000000000000000000'),
@@ -153,7 +153,7 @@ tape('[Invalid Array Input values]', (t) => {
     for (const txType of txTypes) {
       let tx = TransactionFactory.fromTxData({ type: txType })
       if (signed) {
-        tx = tx.sign(Buffer.from('42'.repeat(32), 'hex'))
+        tx = tx.sign(hexStringToBytes('42'.repeat(32)))
       }
       const rawValues = tx.raw()
       for (let x = 0; x < rawValues.length; x++) {
@@ -215,14 +215,14 @@ tape('[Invalid Access Lists]', (t) => {
             accessList: <any>invalidAccessListItem,
           })
           if (signed) {
-            tx = tx.sign(Buffer.from('42'.repeat(32), 'hex'))
+            tx = tx.sign(hexStringToBytes('42'.repeat(32)))
           }
           t.fail('did not fail on `fromTxData`')
         } catch (e: any) {
           t.pass('failed ok on decoding in `fromTxData`')
           tx = TransactionFactory.fromTxData({ type: txType })
           if (signed) {
-            tx = tx.sign(Buffer.from('42'.repeat(32), 'hex'))
+            tx = tx.sign(hexStringToBytes('42'.repeat(32)))
           }
         }
         const rawValues = tx!.raw()

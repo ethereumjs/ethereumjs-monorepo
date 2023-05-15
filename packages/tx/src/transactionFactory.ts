@@ -1,4 +1,4 @@
-import { bufferToBigInt, fetchFromProvider, getProvider, toBuffer } from '@ethereumjs/util'
+import { bytesToBigInt, fetchFromProvider, getProvider, toBytes } from '@ethereumjs/util'
 
 import { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 import { AccessListEIP2930Transaction } from './eip2930Transaction'
@@ -14,6 +14,7 @@ import type {
   TxOptions,
   TypedTransaction,
 } from './types'
+import type { EthersProvider } from '@ethereumjs/util'
 
 export class TransactionFactory {
   // It is not possible to instantiate a TransactionFactory object.
@@ -33,14 +34,14 @@ export class TransactionFactory {
       // Assume legacy transaction
       return Transaction.fromTxData(<TxData>txData, txOptions)
     } else {
-      const txType = Number(bufferToBigInt(toBuffer(txData.type)))
+      const txType = Number(bytesToBigInt(toBytes(txData.type)))
       if (txType === 0) {
         return Transaction.fromTxData(<TxData>txData, txOptions)
       } else if (txType === 1) {
         return AccessListEIP2930Transaction.fromTxData(<AccessListEIP2930TxData>txData, txOptions)
       } else if (txType === 2) {
         return FeeMarketEIP1559Transaction.fromTxData(<FeeMarketEIP1559TxData>txData, txOptions)
-      } else if (txType === 5) {
+      } else if (txType === 3) {
         return BlobEIP4844Transaction.fromTxData(<BlobEIP4844TxData>txData, txOptions)
       } else {
         throw new Error(`Tx instantiation with type ${txType} not supported`)
@@ -51,10 +52,10 @@ export class TransactionFactory {
   /**
    * This method tries to decode serialized data.
    *
-   * @param data - The data Buffer
+   * @param data - The data Uint8Array
    * @param txOptions - The transaction options
    */
-  public static fromSerializedData(data: Buffer, txOptions: TxOptions = {}): TypedTransaction {
+  public static fromSerializedData(data: Uint8Array, txOptions: TxOptions = {}): TypedTransaction {
     if (data[0] <= 0x7f) {
       // Determine the type.
       switch (data[0]) {
@@ -62,7 +63,7 @@ export class TransactionFactory {
           return AccessListEIP2930Transaction.fromSerializedTx(data, txOptions)
         case 2:
           return FeeMarketEIP1559Transaction.fromSerializedTx(data, txOptions)
-        case 5:
+        case 3:
           return BlobEIP4844Transaction.fromSerializedTx(data, txOptions)
         default:
           throw new Error(`TypedTransaction with ID ${data[0]} unknown`)
@@ -74,15 +75,15 @@ export class TransactionFactory {
 
   /**
    * When decoding a BlockBody, in the transactions field, a field is either:
-   * A Buffer (a TypedTransaction - encoded as TransactionType || rlp(TransactionPayload))
-   * A Buffer[] (Legacy Transaction)
+   * A Uint8Array (a TypedTransaction - encoded as TransactionType || rlp(TransactionPayload))
+   * A Uint8Array[] (Legacy Transaction)
    * This method returns the right transaction.
    *
-   * @param data - A Buffer or Buffer[]
+   * @param data - A Uint8Array or Uint8Array[]
    * @param txOptions - The transaction options
    */
-  public static fromBlockBodyData(data: Buffer | Buffer[], txOptions: TxOptions = {}) {
-    if (Buffer.isBuffer(data)) {
+  public static fromBlockBodyData(data: Uint8Array | Uint8Array[], txOptions: TxOptions = {}) {
+    if (data instanceof Uint8Array) {
       return this.fromSerializedData(data, txOptions)
     } else if (Array.isArray(data)) {
       // It is a legacy transaction
@@ -94,13 +95,13 @@ export class TransactionFactory {
 
   /**
    *  Method to retrieve a transaction from the provider
-   * @param provider - An Ethers JsonRPCProvider
+   * @param provider - a url string for a JSON-RPC provider or an Ethers JsonRPCProvider object
    * @param txHash - Transaction hash
    * @param txOptions - The transaction options
    * @returns the transaction specified by `txHash`
    */
-  public static async fromEthersProvider(
-    provider: string | any,
+  public static async fromJsonRpcProvider(
+    provider: string | EthersProvider,
     txHash: string,
     txOptions?: TxOptions
   ) {

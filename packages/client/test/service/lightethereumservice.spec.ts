@@ -33,7 +33,7 @@ tape('[LightEthereumService]', async (t) => {
   const { LightEthereumService } = await import('../../lib/service/lightethereumservice')
 
   t.test('should initialize correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
     t.ok(service.synchronizer instanceof LightSynchronizer, 'light sync')
@@ -42,7 +42,7 @@ tape('[LightEthereumService]', async (t) => {
   })
 
   t.test('should get protocols', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
     t.ok(service.protocols[0] instanceof LesProtocol, 'light protocols')
@@ -52,7 +52,7 @@ tape('[LightEthereumService]', async (t) => {
   t.test('should open', async (t) => {
     t.plan(3)
     const server = td.object() as any
-    const config = new Config({ servers: [server] })
+    const config = new Config({ servers: [server], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
     await service.open()
@@ -73,7 +73,7 @@ tape('[LightEthereumService]', async (t) => {
 
   t.test('should start/stop', async (t) => {
     const server = td.object() as any
-    const config = new Config({ servers: [server] })
+    const config = new Config({ servers: [server], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
     await service.start()

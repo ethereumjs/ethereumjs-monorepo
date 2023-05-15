@@ -1,7 +1,16 @@
 import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { Withdrawal, bigIntToHex, bufferToHex, toBuffer, zeros } from '@ethereumjs/util'
+import {
+  Withdrawal,
+  bigIntToHex,
+  bytesToHex,
+  bytesToPrefixedHexString,
+  equalsBytes,
+  hexStringToBytes,
+  toBytes,
+  zeros,
+} from '@ethereumjs/util'
 
 import { PendingBlock } from '../../miner'
 import { short } from '../../util'
@@ -13,6 +22,7 @@ import type { Chain } from '../../blockchain'
 import type { EthereumClient } from '../../client'
 import type { Config } from '../../config'
 import type { VMExecution } from '../../execution'
+import type { BlobsBundle } from '../../miner'
 import type { FullEthereumService } from '../../service'
 import type { HeaderData } from '@ethereumjs/block'
 import type { VM } from '@ethereumjs/vm'
@@ -100,9 +110,9 @@ type TransitionConfigurationV1 = {
 }
 
 type BlobsBundleV1 = {
-  blockHash: string
-  kzgs: Bytes48[]
+  commitments: Bytes48[]
   blobs: Blob[]
+  proofs: Bytes48[]
 }
 
 type ExecutionPayloadBodyV1 = {
@@ -160,11 +170,19 @@ const payloadAttributesFieldValidatorsV2 = {
 /**
  * Formats a block to {@link ExecutionPayloadV1}.
  */
-export const blockToExecutionPayload = (block: Block, value: bigint) => {
+export const blockToExecutionPayload = (block: Block, value: bigint, bundle?: BlobsBundle) => {
   const blockJson = block.toJSON()
   const header = blockJson.header!
-  const transactions = block.transactions.map((tx) => bufferToHex(tx.serialize())) ?? []
+  const transactions =
+    block.transactions.map((tx) => bytesToPrefixedHexString(tx.serialize())) ?? []
   const withdrawalsArr = blockJson.withdrawals ? { withdrawals: blockJson.withdrawals } : {}
+  const blobsBundle: BlobsBundleV1 | undefined = bundle
+    ? {
+        commitments: bundle.commitments.map(bytesToPrefixedHexString),
+        blobs: bundle.blobs.map(bytesToPrefixedHexString),
+        proofs: bundle.proofs.map(bytesToPrefixedHexString),
+      }
+    : undefined
 
   const executionPayload: ExecutionPayload = {
     blockNumber: header.number!,
@@ -179,25 +197,30 @@ export const blockToExecutionPayload = (block: Block, value: bigint) => {
     extraData: header.extraData!,
     baseFeePerGas: header.baseFeePerGas!,
     excessDataGas: header.excessDataGas,
-    blockHash: bufferToHex(block.hash()),
+    blockHash: bytesToPrefixedHexString(block.hash()),
     prevRandao: header.mixHash!,
     transactions,
     ...withdrawalsArr,
   }
-  return { executionPayload, blockValue: bigIntToHex(value) }
+  return { executionPayload, blockValue: bigIntToHex(value), blobsBundle }
 }
 
 /**
  * Recursively finds parent blocks starting from the parentHash.
  */
-const recursivelyFindParents = async (vmHeadHash: Buffer, parentHash: Buffer, chain: Chain) => {
-  if (parentHash.equals(vmHeadHash) || parentHash.equals(Buffer.alloc(32))) {
+const recursivelyFindParents = async (
+  vmHeadHash: Uint8Array,
+  parentHash: Uint8Array,
+  chain: Chain
+) => {
+  if (equalsBytes(parentHash, vmHeadHash) || equalsBytes(parentHash, new Uint8Array(32))) {
     return []
   }
+
   const parentBlocks = []
   const block = await chain.getBlock(parentHash)
   parentBlocks.push(block)
-  while (!parentBlocks[parentBlocks.length - 1].hash().equals(parentHash)) {
+  while (!equalsBytes(parentBlocks[parentBlocks.length - 1].hash(), parentHash)) {
     const block: Block = await chain.getBlock(
       parentBlocks[parentBlocks.length - 1].header.parentHash
     )
@@ -209,19 +232,19 @@ const recursivelyFindParents = async (vmHeadHash: Buffer, parentHash: Buffer, ch
 /**
  * Returns the block hash as a 0x-prefixed hex string if found valid in the blockchain, otherwise returns null.
  */
-const validHash = async (hash: Buffer, chain: Chain): Promise<string | null> => {
+const validHash = async (hash: Uint8Array, chain: Chain): Promise<string | null> => {
   try {
     await chain.getBlock(hash)
   } catch (error: any) {
     return null
   }
-  return bufferToHex(hash)
+  return bytesToPrefixedHexString(hash)
 }
 
 /**
  * Returns the block hash as a 0x-prefixed hex string if found valid in the blockchain, otherwise returns null.
  */
-const validBlock = async (hash: Buffer, chain: Chain): Promise<Block | null> => {
+const validBlock = async (hash: Uint8Array, chain: Chain): Promise<Block | null> => {
   try {
     return await chain.getBlock(hash)
   } catch (error: any) {
@@ -233,7 +256,7 @@ const validBlock = async (hash: Buffer, chain: Chain): Promise<Block | null> => 
  * Validates that the block satisfies post-merge conditions.
  */
 const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolean> => {
-  const ttd = chain.config.chainCommon.hardforkTTD(Hardfork.Merge)
+  const ttd = chain.config.chainCommon.hardforkTTD(Hardfork.Paris)
   if (ttd === null) return false
   const blockTd = await chain.getTd(block.hash(), block.header.number)
 
@@ -266,18 +289,18 @@ const assembleBlock = async (
   const common = config.chainCommon.copy()
 
   // This is a post merge block, so set its common accordingly
-  const ttd = common.hardforkTTD(Hardfork.Merge)
+  const ttd = common.hardforkTTD(Hardfork.Paris)
   common.setHardforkByBlockNumber(number, ttd !== null ? ttd : undefined, timestamp)
 
   const txs = []
   for (const [index, serializedTx] of transactions.entries()) {
     try {
-      const tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), { common })
+      const tx = TransactionFactory.fromSerializedData(hexStringToBytes(serializedTx), { common })
       txs.push(tx)
     } catch (error) {
       const validationError = `Invalid tx at index ${index}: ${error}`
       config.logger.error(validationError)
-      const latestValidHash = await validHash(toBuffer(payload.parentHash), chain)
+      const latestValidHash = await validHash(hexStringToBytes(payload.parentHash), chain)
       const response = { status: Status.INVALID, latestValidHash, validationError }
       return { error: response }
     }
@@ -302,19 +325,19 @@ const assembleBlock = async (
     // correctly set to the correct hf
     block = Block.fromBlockData({ header, transactions: txs, withdrawals }, { common })
     // Verify blockHash matches payload
-    if (!block.hash().equals(toBuffer(payload.blockHash))) {
+    if (!equalsBytes(block.hash(), hexStringToBytes(payload.blockHash))) {
       const validationError = `Invalid blockHash, expected: ${
         payload.blockHash
-      }, received: ${bufferToHex(block.hash())}`
+      }, received: ${bytesToPrefixedHexString(block.hash())}`
       config.logger.debug(validationError)
-      const latestValidHash = null
+      const latestValidHash = await validHash(toBytes(header.parentHash), chain)
       const response = { status: Status.INVALID_BLOCK_HASH, latestValidHash, validationError }
       return { error: response }
     }
   } catch (error) {
     const validationError = `Error verifying block during init: ${error}`
     config.logger.debug(validationError)
-    const latestValidHash = await validHash(toBuffer(header.parentHash), chain)
+    const latestValidHash = await validHash(toBytes(header.parentHash), chain)
     const response = { status: Status.INVALID, latestValidHash, validationError }
     return { error: response }
   }
@@ -323,7 +346,7 @@ const assembleBlock = async (
 }
 
 const getPayloadBody = (block: Block): ExecutionPayloadBodyV1 => {
-  const transactions = block.transactions.map((tx) => bufferToHex(tx.serialize()))
+  const transactions = block.transactions.map((tx) => bytesToPrefixedHexString(tx.serialize()))
   const withdrawals = block.withdrawals?.map((wt) => wt.toJSON()) ?? null
 
   return {
@@ -459,11 +482,6 @@ export class Engine {
       () => this.connectionManager.updateStatus()
     )
 
-    this.getBlobsBundleV1 = cmMiddleware(
-      middleware(this.getBlobsBundleV1.bind(this), 1, [[validators.bytes8]]),
-      () => this.connectionManager.updateStatus()
-    )
-
     this.exchangeCapabilities = cmMiddleware(
       middleware(this.exchangeCapabilities.bind(this), 0, []),
       () => this.connectionManager.updateStatus()
@@ -514,7 +532,7 @@ export class Engine {
       if (!response) {
         const validationError = `Error assembling block during init`
         this.config.logger.debug(validationError)
-        const latestValidHash = await validHash(toBuffer(payload.parentHash), this.chain)
+        const latestValidHash = await validHash(hexStringToBytes(payload.parentHash), this.chain)
         response = { status: Status.INVALID, latestValidHash, validationError }
       }
       return response
@@ -538,7 +556,7 @@ export class Engine {
     // is pow block which this client would like to mint and attempt proposing it
     const optimisticLookup = await this.service.beaconSync?.extendChain(block)
 
-    const blockExists = await validBlock(toBuffer(blockHash), this.chain)
+    const blockExists = await validBlock(hexStringToBytes(blockHash), this.chain)
     if (blockExists) {
       const isBlockExecuted = await this.vm.stateManager.hasStateRoot(blockExists.header.stateRoot)
       if (isBlockExecuted) {
@@ -552,14 +570,14 @@ export class Engine {
     }
 
     try {
-      const parent = await this.chain.getBlock(toBuffer(parentHash))
-      if (!parent._common.gteHardfork(Hardfork.Merge)) {
+      const parent = await this.chain.getBlock(hexStringToBytes(parentHash))
+      if (!parent._common.gteHardfork(Hardfork.Paris)) {
         const validTerminalBlock = await validateTerminalBlock(parent, this.chain)
         if (!validTerminalBlock) {
           const response = {
             status: Status.INVALID,
             validationError: null,
-            latestValidHash: bufferToHex(zeros(32)),
+            latestValidHash: bytesToPrefixedHexString(zeros(32)),
           }
           return response
         }
@@ -575,7 +593,7 @@ export class Engine {
         optimisticLookup === true ? Status.SYNCING : Status.ACCEPTED
       if (status === Status.ACCEPTED) {
         // Stash the block for a potential forced forkchoice update to it later.
-        this.remoteBlocks.set(block.hash().toString('hex'), block)
+        this.remoteBlocks.set(bytesToHex(block.hash()), block)
       }
       const response = { status, validationError: null, latestValidHash: null }
       return response
@@ -620,11 +638,11 @@ export class Engine {
       return response
     }
 
-    this.remoteBlocks.set(block.hash().toString('hex'), block)
+    this.remoteBlocks.set(bytesToHex(block.hash()), block)
 
     const response = {
       status: Status.VALID,
-      latestValidHash: bufferToHex(block.hash()),
+      latestValidHash: bytesToPrefixedHexString(block.hash()),
       validationError: null,
     }
     return response
@@ -664,9 +682,7 @@ export class Engine {
     params: [ExecutionPayloadV3 | ExecutionPayloadV2 | ExecutionPayloadV1]
   ): Promise<PayloadStatusV1> {
     const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
-    const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp(
-      Hardfork.ShardingForkDev
-    )
+    const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Cancun)
     if (shanghaiTimestamp === null || parseInt(params[0].timestamp) < shanghaiTimestamp) {
       if ('withdrawals' in params[0]) {
         throw {
@@ -723,10 +739,10 @@ export class Engine {
     const { headBlockHash, finalizedBlockHash, safeBlockHash } = params[0]
     const payloadAttributes = params[1]
 
-    const safe = toBuffer(safeBlockHash)
-    const finalized = toBuffer(finalizedBlockHash)
+    const safe = toBytes(safeBlockHash)
+    const finalized = toBytes(finalizedBlockHash)
 
-    if (!finalized.equals(zeroBlockHash) && safe.equals(zeroBlockHash)) {
+    if (!equalsBytes(finalized, zeroBlockHash) && equalsBytes(safe, zeroBlockHash)) {
       throw {
         code: INVALID_PARAMS,
         message: 'safe block can not be zero if finalized is not zero',
@@ -749,10 +765,10 @@ export class Engine {
      */
     let headBlock: Block | undefined
     try {
-      headBlock = await this.chain.getBlock(toBuffer(headBlockHash))
+      headBlock = await this.chain.getBlock(toBytes(headBlockHash))
     } catch (error) {
       headBlock =
-        (await this.service.beaconSync?.skeleton.getBlockByHash(toBuffer(headBlockHash))) ??
+        (await this.service.beaconSync?.skeleton.getBlockByHash(toBytes(headBlockHash))) ??
         this.remoteBlocks.get(headBlockHash.slice(2))
       if (headBlock === undefined) {
         this.config.logger.debug(`Forkchoice requested unknown head hash=${short(headBlockHash)}`)
@@ -789,14 +805,14 @@ export class Engine {
     // Only validate this as terminal block if this block's difficulty is non-zero,
     // else this is a PoS block but its hardfork could be indeterminable if the skeleton
     // is not yet connected.
-    if (!headBlock._common.gteHardfork(Hardfork.Merge) && headBlock.header.difficulty > BigInt(0)) {
+    if (!headBlock._common.gteHardfork(Hardfork.Paris) && headBlock.header.difficulty > BigInt(0)) {
       const validTerminalBlock = await validateTerminalBlock(headBlock, this.chain)
       if (!validTerminalBlock) {
         const response = {
           payloadStatus: {
             status: Status.INVALID,
             validationError: null,
-            latestValidHash: bufferToHex(zeros(32)),
+            latestValidHash: bytesToHex(zeros(32)),
           },
           payloadId: null,
         }
@@ -822,8 +838,8 @@ export class Engine {
      */
     let safeBlock, finalizedBlock
 
-    if (!safe.equals(zeroBlockHash)) {
-      if (safe.equals(headBlock.hash())) {
+    if (!equalsBytes(safe, zeroBlockHash)) {
+      if (equalsBytes(safe, headBlock.hash())) {
         safeBlock = headBlock
       } else {
         try {
@@ -841,7 +857,7 @@ export class Engine {
       safeBlock = undefined
     }
 
-    if (!finalized.equals(zeroBlockHash)) {
+    if (!equalsBytes(finalized, zeroBlockHash)) {
       try {
         // Right now only check if the block is available, canonicality check is done
         // in setHead after chain.putBlocks so as to reflect latest canonical chain
@@ -857,7 +873,7 @@ export class Engine {
     }
 
     const vmHeadHash = this.chain.headers.latest!.hash()
-    if (!vmHeadHash.equals(headBlock.hash())) {
+    if (!equalsBytes(vmHeadHash, headBlock.hash())) {
       let parentBlocks: Block[] = []
       if (this.chain.headers.latest && this.chain.headers.latest.number < headBlock.header.number) {
         try {
@@ -923,7 +939,7 @@ export class Engine {
       )
       const latestValidHash = await validHash(headBlock.hash(), this.chain)
       const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
-      const response = { payloadStatus, payloadId: bufferToHex(payloadId), headBlock }
+      const response = { payloadStatus, payloadId: bytesToPrefixedHexString(payloadId), headBlock }
       return response
     }
 
@@ -979,7 +995,7 @@ export class Engine {
    * @returns Instance of {@link ExecutionPayloadV1} or an error
    */
   private async getPayload(params: [Bytes8]) {
-    const payloadId = toBuffer(params[0])
+    const payloadId = hexStringToBytes(params[0])
     try {
       const built = await this.pendingBlock.build(payloadId)
       if (!built) {
@@ -987,9 +1003,9 @@ export class Engine {
       }
       // The third arg returned is the minerValue which we will use to
       // value the block
-      const [block, receipts, value] = built
+      const [block, receipts, value, blobs] = built
       await this.execution.runWithoutSetHead({ block }, receipts)
-      return blockToExecutionPayload(block, value)
+      return blockToExecutionPayload(block, value, blobs)
     } catch (error: any) {
       if (error === EngineError.UnknownPayload) throw error
       throw {
@@ -1022,7 +1038,7 @@ export class Engine {
     params: [TransitionConfigurationV1]
   ): Promise<TransitionConfigurationV1> {
     const { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber } = params[0]
-    const ttd = this.chain.config.chainCommon.hardforkTTD(Hardfork.Merge)
+    const ttd = this.chain.config.chainCommon.hardforkTTD(Hardfork.Paris)
     if (ttd === undefined || ttd === null) {
       throw {
         code: INTERNAL_ERROR,
@@ -1040,26 +1056,6 @@ export class Engine {
     // Note: our client does not yet support block whitelisting (terminalBlockHash/terminalBlockNumber)
     // since we are not yet fast enough to run along tip-of-chain mainnet execution
     return { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber }
-  }
-
-  /**
-   *
-   * @param params a payloadId for a pending block
-   * @returns a BlobsBundle consisting of the blockhash, the blobs, and the corresponding kzg commitments
-   */
-  private async getBlobsBundleV1(params: [Bytes8]): Promise<BlobsBundleV1> {
-    const payloadId = params[0]
-
-    const bundle = this.pendingBlock.blobBundles.get(payloadId)
-    if (bundle === undefined) {
-      throw EngineError.UnknownPayload
-    }
-
-    return {
-      blockHash: bundle.blockHash,
-      kzgs: bundle.kzgCommitments.map((commitment) => '0x' + commitment.toString('hex')),
-      blobs: bundle.blobs.map((blob) => '0x' + blob.toString('hex')),
-    }
   }
 
   /**
@@ -1085,7 +1081,7 @@ export class Engine {
         message: 'More than 32 execution payload bodies requested',
       }
     }
-    const hashes = params[0].map((hash) => toBuffer(hash))
+    const hashes = params[0].map(hexStringToBytes)
     const blocks: (ExecutionPayloadBodyV1 | null)[] = []
     for (const hash of hashes) {
       try {

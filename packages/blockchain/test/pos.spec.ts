@@ -1,5 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { bytesToHex } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { Blockchain } from '../src'
@@ -42,7 +43,7 @@ const buildChain = async (blockchain: Blockchain, common: Common, height: number
 tape('Proof of Stake - inserting blocks into blockchain', async (t) => {
   const testnetOnlyTD = JSON.parse(JSON.stringify(testnet))
   testnetOnlyTD['hardforks'][11] = {
-    name: 'merge',
+    name: 'paris',
     ttd: BigInt(1313600),
     block: null,
   }
@@ -64,7 +65,7 @@ tape('Proof of Stake - inserting blocks into blockchain', async (t) => {
     })
     const genesisHeader = await blockchain.getCanonicalHeadHeader()
     t.equal(
-      genesisHeader.hash().toString('hex'),
+      bytesToHex(genesisHeader.hash()),
       '1119dc5ff680bf7b4c3d9cd41168334dee127d46b3626482076025cdd498ed0b',
       'genesis hash matches'
     )
@@ -75,7 +76,7 @@ tape('Proof of Stake - inserting blocks into blockchain', async (t) => {
 
     t.equal(
       (blockchain as any)._common.hardfork(),
-      'merge',
+      'paris',
       'HF should have been correctly updated'
     )
     const td = await blockchain.getTotalDifficulty(latestHeader.hash())

@@ -1,4 +1,4 @@
-import { TypeOutput, setLengthLeft, toBuffer, toType } from '@ethereumjs/util'
+import { TypeOutput, setLengthLeft, toBytes, toType } from '@ethereumjs/util'
 
 import type { TxData } from './types'
 
@@ -15,7 +15,7 @@ export const normalizeTxParams = (_txParams: any): TxData => {
   // strict byte length checking
   txParams.to =
     txParams.to !== null && txParams.to !== undefined
-      ? setLengthLeft(toBuffer(txParams.to), 20)
+      ? setLengthLeft(toBytes(txParams.to), 20)
       : null
 
   // Normalize the v/r/s values. If RPC returns '0x0', ensure v/r/s are set to `undefined` in the tx.

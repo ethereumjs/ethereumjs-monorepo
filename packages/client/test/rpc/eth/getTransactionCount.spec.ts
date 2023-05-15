@@ -32,7 +32,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   // since synchronizer.run() is not executed in the mock setup,
   // manually run stateManager.generateCanonicalGenesis()
-  await vm.eei.generateCanonicalGenesis(blockchain.genesisState())
+  await vm.stateManager.generateCanonicalGenesis(blockchain.genesisState())
 
   // a genesis address
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
@@ -73,6 +73,14 @@ tape(`${method}: call with valid arguments`, async (t) => {
   expectRes = (res: any) => {
     const msg = 'should return the correct nonce (1)'
     t.equal(res.body.result, '0x1', msg)
+  }
+  await baseRequest(t, server, req, 200, expectRes, false)
+
+  // call with nonexistent account
+  req = params(method, [`0x${'11'.repeat(20)}`, 'latest'])
+  expectRes = (res: any) => {
+    const msg = 'should return 0x0 for nonexistent account'
+    t.equal(res.body.result, `0x0`, msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })

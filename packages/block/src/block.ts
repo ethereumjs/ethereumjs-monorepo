@@ -5,10 +5,9 @@ import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereu
 import {
   KECCAK256_RLP,
   Withdrawal,
-  arrToBufArr,
   bigIntToHex,
-  bufArrToArr,
-  bufferToHex,
+  bytesToHex,
+  equalsBytes,
   fetchFromProvider,
   getProvider,
   intToHex,
@@ -21,7 +20,7 @@ import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
 import { getDataGasPrice } from './helpers'
 
-import type { BlockBuffer, BlockData, BlockOptions, JsonBlock, JsonRpcBlock } from './types'
+import type { BlockBytes, BlockData, BlockOptions, JsonBlock, JsonRpcBlock } from './types'
 import type { Common } from '@ethereumjs/common'
 import type {
   FeeMarketEIP1559Transaction,
@@ -29,7 +28,7 @@ import type {
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import type { WithdrawalBuffer } from '@ethereumjs/util'
+import type { EthersProvider, WithdrawalBytes } from '@ethereumjs/util'
 
 /**
  * An object that represents the block.
@@ -50,7 +49,7 @@ export class Block {
   public static async genWithdrawalsTrieRoot(wts: Withdrawal[], emptyTrie?: Trie) {
     const trie = emptyTrie ?? new Trie()
     for (const [i, wt] of wts.entries()) {
-      await trie.put(Buffer.from(RLP.encode(i)), arrToBufArr(RLP.encode(wt.raw())))
+      await trie.put(RLP.encode(i), RLP.encode(wt.raw()))
     }
     return trie.root()
   }
@@ -71,7 +70,7 @@ export class Block {
   public static async genTransactionsTrieRoot(txs: TypedTransaction[], emptyTrie?: Trie) {
     const trie = emptyTrie ?? new Trie()
     for (const [i, tx] of txs.entries()) {
-      await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
+      await trie.put(RLP.encode(i), tx.serialize())
     }
     return trie.root()
   }
@@ -134,8 +133,8 @@ export class Block {
    * @param serialized
    * @param opts
    */
-  public static fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions) {
-    const values = arrToBufArr(RLP.decode(Uint8Array.from(serialized))) as BlockBuffer
+  public static fromRLPSerializedBlock(serialized: Uint8Array, opts?: BlockOptions) {
+    const values = RLP.decode(Uint8Array.from(serialized)) as BlockBytes
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized block input. Must be array')
@@ -145,28 +144,29 @@ export class Block {
   }
 
   /**
-   * Static constructor to create a block from an array of Buffer values
+   * Static constructor to create a block from an array of Bytes values
    *
    * @param values
    * @param opts
    */
-  public static fromValuesArray(values: BlockBuffer, opts?: BlockOptions) {
+  public static fromValuesArray(values: BlockBytes, opts?: BlockOptions) {
     if (values.length > 4) {
       throw new Error('invalid block. More values than expected were received')
     }
+
+    // First try to load header so that we can use its common (in case of hardforkByBlockNumber being activated)
+    // to correctly make checks on the hardforks
+    const [headerData, txsData, uhsData, withdrawalBytes] = values
+    const header = BlockHeader.fromValuesArray(headerData, opts)
+
     if (
-      opts?.common !== undefined &&
-      opts?.common?.isActivatedEIP(4895) &&
+      header._common.isActivatedEIP(4895) &&
       (values[3] === undefined || !Array.isArray(values[3]))
     ) {
       throw new Error(
         'Invalid serialized block input: EIP-4895 is active, and no withdrawals were provided as array'
       )
     }
-
-    const [headerData, txsData, uhsData, withdrawalsBuffer] = values
-
-    const header = BlockHeader.fromValuesArray(headerData, opts)
 
     // parse transactions
     const transactions = []
@@ -200,7 +200,7 @@ export class Block {
       uncleHeaders.push(BlockHeader.fromValuesArray(uncleHeaderData, uncleOpts))
     }
 
-    const withdrawals = (withdrawalsBuffer as WithdrawalBuffer[])
+    const withdrawals = (withdrawalBytes as WithdrawalBytes[])
       ?.map(([index, validatorIndex, address, amount]) => ({
         index,
         validatorIndex,
@@ -224,14 +224,14 @@ export class Block {
   }
 
   /**
-   *  Method to retrieve a block from the provider and format as a {@link Block}
-   * @param provider an Ethers JsonRPCProvider
+   *  Method to retrieve a block from a JSON-RPC provider and format as a {@link Block}
+   * @param provider either a url for a remote provider or an Ethers JsonRpcProvider object
    * @param blockTag block hash or block number to be run
    * @param opts {@link BlockOptions}
    * @returns the block specified by `blockTag`
    */
-  public static fromEthersProvider = async (
-    provider: any,
+  public static fromJsonRpcProvider = async (
+    provider: string | EthersProvider,
     blockTag: string | bigint,
     opts: BlockOptions
   ) => {
@@ -252,7 +252,9 @@ export class Block {
       isHexPrefixed(blockTag) ||
       blockTag === 'latest' ||
       blockTag === 'earliest' ||
-      blockTag === 'pending'
+      blockTag === 'pending' ||
+      blockTag === 'finalized' ||
+      blockTag === 'safe'
     ) {
       blockData = await fetchFromProvider(providerUrl, {
         method: 'eth_getBlockByNumber',
@@ -326,27 +328,27 @@ export class Block {
   }
 
   /**
-   * Returns a Buffer Array of the raw Buffers of this block, in order.
+   * Returns a Array of the raw Bytes Arays of this block, in order.
    */
-  raw(): BlockBuffer {
-    const bufferArray = <BlockBuffer>[
+  raw(): BlockBytes {
+    const bytesArray = <BlockBytes>[
       this.header.raw(),
       this.transactions.map((tx) =>
         tx.supports(Capability.EIP2718TypedTransaction) ? tx.serialize() : tx.raw()
-      ) as Buffer[],
+      ) as Uint8Array[],
       this.uncleHeaders.map((uh) => uh.raw()),
     ]
     const withdrawalsRaw = this.withdrawals?.map((wt) => wt.raw())
     if (withdrawalsRaw) {
-      bufferArray.push(withdrawalsRaw)
+      bytesArray.push(withdrawalsRaw)
     }
-    return bufferArray
+    return bytesArray
   }
 
   /**
    * Returns the hash of the block.
    */
-  hash(): Buffer {
+  hash(): Uint8Array {
     return this.header.hash()
   }
 
@@ -360,8 +362,8 @@ export class Block {
   /**
    * Returns the rlp encoding of the block.
    */
-  serialize(): Buffer {
-    return Buffer.from(RLP.encode(bufArrToArr(this.raw())))
+  serialize(): Uint8Array {
+    return RLP.encode(this.raw())
   }
 
   /**
@@ -379,14 +381,14 @@ export class Block {
   async validateTransactionsTrie(): Promise<boolean> {
     let result
     if (this.transactions.length === 0) {
-      result = this.header.transactionsTrie.equals(KECCAK256_RLP)
+      result = equalsBytes(this.header.transactionsTrie, KECCAK256_RLP)
       return result
     }
 
-    if (this.txTrie.root().equals(KECCAK256_RLP)) {
+    if (equalsBytes(this.txTrie.root(), KECCAK256_RLP)) {
       await this.genTxTrie()
     }
-    result = this.txTrie.root().equals(this.header.transactionsTrie)
+    result = equalsBytes(this.txTrie.root(), this.header.transactionsTrie)
     return result
   }
 
@@ -501,8 +503,8 @@ export class Block {
    */
   validateUnclesHash(): boolean {
     const uncles = this.uncleHeaders.map((uh) => uh.raw())
-    const raw = RLP.encode(bufArrToArr(uncles))
-    return Buffer.from(keccak256(raw)).equals(this.header.uncleHash)
+    const raw = RLP.encode(uncles)
+    return equalsBytes(keccak256(raw), this.header.uncleHash)
   }
 
   /**
@@ -513,7 +515,7 @@ export class Block {
       throw new Error('EIP 4895 is not activated')
     }
     const withdrawalsRoot = await Block.genWithdrawalsTrieRoot(this.withdrawals!)
-    return withdrawalsRoot.equals(this.header.withdrawalsRoot!)
+    return equalsBytes(withdrawalsRoot, this.header.withdrawalsRoot!)
   }
 
   /**
@@ -537,7 +539,7 @@ export class Block {
     }
 
     // Header does not count an uncle twice.
-    const uncleHashes = this.uncleHeaders.map((header) => header.hash().toString('hex'))
+    const uncleHashes = this.uncleHeaders.map((header) => bytesToHex(header.hash()))
     if (!(new Set(uncleHashes).size === uncleHashes.length)) {
       const msg = this._errorMsg('duplicate uncles')
       throw new Error(msg)
@@ -586,7 +588,7 @@ export class Block {
   public errorStr() {
     let hash = ''
     try {
-      hash = bufferToHex(this.hash())
+      hash = bytesToHex(this.hash())
     } catch (e: any) {
       hash = 'error'
     }
