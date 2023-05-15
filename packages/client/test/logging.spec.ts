@@ -3,8 +3,20 @@ import * as tape from 'tape'
 import { getLogger } from '../lib/logging'
 
 tape('[Logging]', (t) => {
-  const logger = getLogger()
+  const logger = getLogger({ logLevel: 'info', logFile: 'ethereumjs.log', logLevelFile: 'info' })
   const format = logger.transports.find((t: any) => t.name === 'console')!.format!
+
+  t.test('should have correct transports', (st) => {
+    st.ok(
+      logger.transports.find((t: any) => t.name === 'console') !== undefined,
+      'should have stdout transport'
+    )
+    st.ok(
+      logger.transports.find((t: any) => t.name === 'file') !== undefined,
+      'should have file transport'
+    )
+    st.end()
+  })
 
   t.test('should log error stacks properly', (st) => {
     try {
