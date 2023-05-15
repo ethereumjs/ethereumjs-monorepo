@@ -59,7 +59,23 @@ export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
       )} z=${bytesToHex(z)} y=${bytesToHex(y)} kzgProof=${bytesToHex(kzgProof)}`
     )
   }
-  kzg.verifyKzgProof(commitment, z, y, kzgProof)
+  try {
+    const res = kzg.verifyKzgProof(commitment, z, y, kzgProof)
+    if (res === false) {
+      return EvmErrorResult(new EvmError(ERROR.INVALID_PROOF), opts.gasLimit)
+    }
+  } catch (err: any) {
+    if (err.message.includes('C_KZG_BADARGS') === true) {
+      if (opts._debug !== undefined) {
+        opts._debug(`KZG_POINT_EVALUATION (0x14) failed: INVALID_INPUTS`)
+      }
+      return EvmErrorResult(new EvmError(ERROR.INVALID_INPUTS), opts.gasLimit)
+    }
+    if (opts._debug !== undefined) {
+      opts._debug(`KZG_POINT_EVALUATION (0x14) failed: Unknown error - ${err.message}`)
+    }
+    return EvmErrorResult(new EvmError(ERROR.REVERT), opts.gasLimit)
+  }
 
   // Return value - FIELD_ELEMENTS_PER_BLOB and BLS_MODULUS as padded 32 byte big endian values
   const fieldElementsBuffer = setLengthLeft(bigIntToBytes(fieldElementsPerBlob), 32)

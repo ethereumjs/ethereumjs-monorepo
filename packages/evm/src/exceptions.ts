@@ -35,6 +35,8 @@ export enum ERROR {
   // Point Evaluation Errors
   POINT_GREATER_THAN_BLS_MODULUS = 'point greater than BLS modulus',
   INVALID_COMMITMENT = 'kzg commitment does not match versioned hash',
+  INVALID_INPUTS = 'kzg inputs invalid',
+  INVALID_PROOF = 'kzg proof invalid',
 }
 
 export class EvmError {

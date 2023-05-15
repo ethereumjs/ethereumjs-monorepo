@@ -5,7 +5,15 @@ import { RLP } from '@ethereumjs/rlp'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { MapDB, bytesToBigInt, isHexPrefixed, stripHexPrefix, toBytes } from '@ethereumjs/util'
+import {
+  MapDB,
+  bytesToBigInt,
+  initKZG,
+  isHexPrefixed,
+  stripHexPrefix,
+  toBytes,
+} from '@ethereumjs/util'
+import * as kzg from 'c-kzg'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { setupPreConditions, verifyPostConditions } from '../../util'
@@ -13,6 +21,8 @@ import { setupPreConditions, verifyPostConditions } from '../../util'
 import type { EthashConsensus } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
 import type * as tape from 'tape'
+
+initKZG(kzg, __dirname + '/../../../../client/lib/trustedSetups/devnet4.txt')
 
 function formatBlockHeader(data: any) {
   const formatted: any = {}
