@@ -1,5 +1,5 @@
 {
-  "extends": "../../config/tsconfig.prod.json",
+  "extends": "../../config/tsconfig.prod.cjs.json",
   "exclude": ["test", "examples", "scripts", "node_modules", "dist"],
   "compilerOptions": {
     "baseUrl": "./",
@@ -9,8 +9,8 @@
     "composite": true
   },
   "references": [
-    { "path": "../common/tsconfig.prod.json" },
-    { "path": "../rlp/tsconfig.prod.json" },
-    { "path": "../util/tsconfig.prod.json" }
+    { "path": "../common/tsconfig.prod.cjs.json" },
+    { "path": "../rlp/tsconfig.prod.cjs.json" },
+    { "path": "../util/tsconfig.prod.cjs.json" }
   ]
 }

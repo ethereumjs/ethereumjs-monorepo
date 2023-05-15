@@ -1,5 +1,5 @@
 {
-  "extends": "../../config/tsconfig.prod.json",
+  "extends": "../../config/tsconfig.prod.cjs.json",
   "include": ["bin", "lib", "test"],
   "compilerOptions": {
     "typeRoots": ["node_modules/@types", "lib/@types"]

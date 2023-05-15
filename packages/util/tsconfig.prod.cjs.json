@@ -1,10 +1,10 @@
 {
-  "extends": "../../config/tsconfig.prod.json",
+  "extends": "../../config/tsconfig.prod.cjs.json",
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist/cjs",
     "composite": true
   },
   "include": ["src/**/*.ts"],
-  "references": [{ "path": "../rlp/tsconfig.prod.json" }]
+  "references": [{ "path": "../rlp/tsconfig.prod.cjs.json" }]
 }
