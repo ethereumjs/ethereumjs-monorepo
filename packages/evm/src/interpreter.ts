@@ -934,6 +934,7 @@ export class Interpreter {
       depth,
       selfdestruct,
       gasRefund: this._runState.gasRefund,
+      versionedHashes: this._env.versionedHashes,
     })
 
     const results = await this._evm.runCall({ message })
