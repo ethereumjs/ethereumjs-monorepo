@@ -1,8 +1,8 @@
 {
   "extends": "../../config/tsconfig.prod.json",
   "compilerOptions": {
-    "rootDir": "./src",
-    "outDir": "./dist",
+    "rootDir": "src",
+    "outDir": "dist/cjs",
     "types": ["node"],
     "typeRoots": ["node_modules/@types"],
     "composite": true
