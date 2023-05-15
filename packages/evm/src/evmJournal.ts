@@ -33,6 +33,7 @@ export class EvmJournal {
 
   async deleteAccount(address: Address) {
     this.touchAccount(address)
+    await this.stateManager.deleteAccount(address)
   }
 
   private touchAccount(address: Address): void {
