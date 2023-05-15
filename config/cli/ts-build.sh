@@ -68,10 +68,10 @@ post_build_fixes() {
         echo "Adding ./dist/cjs/package.json"
         rm -f ./dist/cjs/package.json
         cat <<EOT >> ./dist/cjs/package.json
-    {
-        "type": "commonjs"
-    }
-    EOT
+{
+    "type": "commonjs"
+}
+EOT
         echo "Adding ./dist/esm/package.json"
         rm -f ./dist/esm/package.json
         cat <<EOT >> ./dist/esm/package.json
