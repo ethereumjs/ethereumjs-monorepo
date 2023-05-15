@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { EOF } from '@ethereumjs/evm/dist/eof'
+import { EOF } from '@ethereumjs/evm'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Account, Address, privateToAddress } from '@ethereumjs/util'
 import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
