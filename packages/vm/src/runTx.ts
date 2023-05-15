@@ -283,7 +283,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       if (tx.supports(Capability.EIP1559FeeMarket) === false) {
         // if skipBalance and not EIP1559 transaction, ensure caller balance is enough to run transaction
         fromAccount.balance = upFrontCost
-        await this.stateManager.putAccount(caller, fromAccount, true)
+        await this.evm.evmJournal.putAccount(caller, fromAccount)
       }
     } else {
       const msg = _errorMsg(
@@ -346,7 +346,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     if (opts.skipBalance === true && fromAccount.balance < maxCost) {
       // if skipBalance, ensure caller balance is enough to run transaction
       fromAccount.balance = maxCost
-      await this.stateManager.putAccount(caller, fromAccount, true)
+      await this.evm.evmJournal.putAccount(caller, fromAccount)
     } else {
       const msg = _errorMsg(
         `sender doesn't have enough funds to send tx. The max cost is: ${maxCost} and the sender's account (${caller}) only has: ${balance}`,
@@ -405,7 +405,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (opts.skipBalance === true && fromAccount.balance < BigInt(0)) {
     fromAccount.balance = BigInt(0)
   }
-  await state.putAccount(caller, fromAccount, true)
+  await this.evm.evmJournal.putAccount(caller, fromAccount)
   if (this.DEBUG) {
     debug(`Update fromAccount (caller) balance (-> ${fromAccount.balance}))`)
   }
@@ -496,7 +496,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const actualTxCost = results.totalGasSpent * gasPrice
   const txCostDiff = txCost - actualTxCost
   fromAccount.balance += txCostDiff
-  await state.putAccount(caller, fromAccount, true)
+  await this.evm.evmJournal.putAccount(caller, fromAccount)
   if (this.DEBUG) {
     debug(
       `Refunded txCostDiff (${txCostDiff}) to fromAccount (caller) balance (-> ${fromAccount.balance})`
@@ -525,7 +525,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Put the miner account into the state. If the balance of the miner account remains zero, note that
   // the state.putAccount function puts this into the "touched" accounts. This will thus be removed when
   // we clean the touched accounts below in case we are in a fork >= SpuriousDragon
-  await state.putAccount(miner, minerAccount, true)
+  await this.evm.evmJournal.putAccount(miner, minerAccount)
   if (this.DEBUG) {
     debug(`tx update miner account (${miner}) balance (-> ${minerAccount.balance})`)
   }
@@ -537,7 +537,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const keys = Object.keys(results.execResult.selfdestruct)
     for (const k of keys) {
       const address = new Address(hexToBytes(k))
-      await state.deleteAccount(address, true)
+      await this.evm.evmJournal.deleteAccount(address)
       if (this.DEBUG) {
         debug(`tx selfdestruct on address=${address}`)
       }
@@ -545,7 +545,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   if (this._common.gteHardfork(Hardfork.SpuriousDragon)) {
-    await state.cleanupTouchedAccounts()
+    await this.evm.evmJournal.cleanupTouchedAccounts()
   }
   state.clearOriginalStorageCache()
 
