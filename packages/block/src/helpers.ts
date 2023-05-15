@@ -116,10 +116,11 @@ export const fakeExponential = (factor: bigint, numerator: bigint, denominator: 
   let numerator_accum = factor * denominator
   while (numerator_accum > BigInt(0)) {
     output += numerator_accum
-    numerator_accum = BigInt(Math.floor(Number((numerator_accum * numerator) / (denominator * i))))
+    numerator_accum = (numerator_accum * numerator) / (denominator * i)
     i++
   }
-  return BigInt(Math.floor(Number(output / denominator)))
+
+  return output / denominator
 }
 
 /**

@@ -13,9 +13,8 @@ import {
   stripHexPrefix,
   toBytes,
 } from '@ethereumjs/util'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
-
 import * as kzg from 'c-kzg'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { setupPreConditions, verifyPostConditions } from '../../util'
 
