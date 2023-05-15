@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1684154122479,
+  "lastUpdate": 1684176776886,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b6bb0a22460e1bacd4f7b65274ad573babf5a6fc",
-          "message": "Setup to dev/test snapsync with sim architecture (#2574)\n\n* Setup to dev/test snapsync with sim architecture\r\n\r\n* modfiy single-run to setup a lodestar<>geth node to snapsync from\r\n\r\n* setup an ethereumjs inline client and get it to peer with geth\r\n\r\n* cleanup setup a bit\r\n\r\n* snapsync run spec\r\n\r\n* get the snap testdev sim working\r\n\r\n* finalize the test infra and update usage doc\r\n\r\n* enhance coverage\r\n\r\n* Use geth RPC to connect to ethJS\r\n\r\n* refac wait for snap sync completion\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-03-14T23:20:22+05:30",
-          "tree_id": "9ea0fa5055c4dcfbb109f6b0eef16fdb105c3c66",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b6bb0a22460e1bacd4f7b65274ad573babf5a6fc"
-        },
-        "date": 1678816387217,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15189,
-            "range": "±2.78%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 14779,
-            "range": "±4.85%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 15494,
-            "range": "±1.85%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 15073,
-            "range": "±2.15%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 13440,
-            "range": "±8.18%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.20%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2143619e786ad1e31d0d5dc3f96aef42a9c23ff0",
+          "message": "evm: Fix the availability of versioned hashes in contract calls (#2694)\n\n* evm: Fix the availability of versioned hashes in contract calls\r\n\r\n* add spec tests\r\n\r\n* compress comments\r\n\r\n* compress comments\r\n\r\n* increase coverage\r\n\r\n* evm: ensure DATAHASH also works in CREATE/CREATE2 frames\r\n\r\n* vm: load c-kzg in tests\r\n\r\n* Fix dataGasPrice logic\r\n\r\n* Add precompile error handling\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: acolytec3 <konjou@gmail.com>",
+          "timestamp": "2023-05-15T14:50:03-04:00",
+          "tree_id": "63bc9af2f1e753fac9f136c7bbd8b5f0805f8202",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2143619e786ad1e31d0d5dc3f96aef42a9c23ff0"
+        },
+        "date": 1684176775398,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 17579,
+            "range": "±5.29%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 17596,
+            "range": "±3.20%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18094,
+            "range": "±3.39%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 16387,
+            "range": "±8.64%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 17436,
+            "range": "±3.20%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
           }
         ]
       }
