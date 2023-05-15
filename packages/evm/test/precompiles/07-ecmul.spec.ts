@@ -2,8 +2,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import * as tape from 'tape'
 
-import { EVM } from '../../src'
-import { getActivePrecompiles } from '../../src/precompiles'
+import { EVM, getActivePrecompiles } from '../../src'
 
 tape('Precompiles: ECMUL', (t) => {
   t.test('ECMUL', async (st) => {

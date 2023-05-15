@@ -3,8 +3,7 @@ import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
-import { EVM } from '../../src'
-import { getActivePrecompiles } from '../../src/precompiles'
+import { EVM, getActivePrecompiles } from '../../src'
 
 tape('Precompiles: ECPAIRING', (t) => {
   t.test('ECPAIRING', async (st) => {

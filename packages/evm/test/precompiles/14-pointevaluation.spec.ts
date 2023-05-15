@@ -13,10 +13,15 @@ import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { EVM, getActivePrecompiles } from '../../src'
-import { BLS_MODULUS } from '../../src/precompiles/14-kzg-point-evaluation'
 
-import type { PrecompileInput } from '../../src/precompiles'
+import type { PrecompileInput } from '../../src'
+
+const BLS_MODULUS = BigInt(
+  '52435875175126190479447740508185965837690552500527637822603658699938581184513'
+)
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
+
+initKZG(kzg, __dirname + '/../../../client/lib/trustedSetups/devnet4.txt')
 
 tape('Precompiles: point evaluation', async (t) => {
   if (isBrowser() === true) {
