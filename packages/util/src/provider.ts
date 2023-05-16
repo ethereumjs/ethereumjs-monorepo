@@ -47,6 +47,7 @@ export const fetchFromProvider = async (url: string, params: rpcParams) => {
     jsonrpc: '2.0',
     id: 1,
   })
+
   if (global.fetch !== undefined) {
     const res = await fetch(url, {
       headers: {

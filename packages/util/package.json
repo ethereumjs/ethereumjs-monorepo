@@ -67,10 +67,6 @@
     ".": {
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
-    },
-    "./provider": {
-      "import": "./dist/esm/provider.js",
-      "require": "./dist/cjs/provider.js"
     }
   },
   "files": [
