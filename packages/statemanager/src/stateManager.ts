@@ -876,6 +876,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param address - The address (as a Uint8Array) to check
    */
   isWarmedAddress(address: Uint8Array): boolean {
+    throw new Error('REMOVE ME')
     for (let i = this._accessedStorage.length - 1; i >= 0; i--) {
       const currentMap = this._accessedStorage[i]
       if (currentMap.has(bytesToHex(address))) {
@@ -890,6 +891,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param address - The address (as a Uint8Array) to check
    */
   addWarmedAddress(address: Uint8Array): void {
+    throw new Error('REMOVE ME')
     const key = bytesToHex(address)
     const storageSet = this._accessedStorage[this._accessedStorage.length - 1].get(key)
     if (!storageSet) {
@@ -904,6 +906,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param slot - The slot (as a Uint8Array) to check
    */
   isWarmedStorage(address: Uint8Array, slot: Uint8Array): boolean {
+    throw new Error('REMOVE ME')
     const addressKey = bytesToHex(address)
     const storageKey = bytesToHex(slot)
 
@@ -923,6 +926,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param slot - The slot (as a Uint8Array) to check
    */
   addWarmedStorage(address: Uint8Array, slot: Uint8Array): void {
+    throw new Error('REMOVE ME')
     const addressKey = bytesToHex(address)
     let storageSet = this._accessedStorage[this._accessedStorage.length - 1].get(addressKey)
     if (!storageSet) {
@@ -936,6 +940,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * Clear the warm accounts and storage. To be called after a transaction finished.
    */
   clearWarmedAccounts(): void {
+    throw new Error('REMOVE ME')
     this._accessedStorage = [new Map()]
     this._accessedStorageReverted = [new Map()]
   }
