@@ -1,5 +1,5 @@
 import { BranchNode, Trie, decodeNode } from '@ethereumjs/trie'
-import { bufferToHex, bytesToNibbles, getPathTo, nibblesToCompactBytes } from '@ethereumjs/util'
+import { bytesToNibbles, getPathTo, nibblesToCompactBytes } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { OrderedMap } from 'js-sdsl'
@@ -11,14 +11,14 @@ import type { FetcherOptions } from './fetcher'
 import type { Job } from './types'
 import type { Debugger } from 'debug'
 
-type TrieNodesResponse = Buffer[] & { completed?: boolean }
+type TrieNodesResponse = Uint8Array[] & { completed?: boolean }
 
 /**
  * Implements an snap1 based bytecode fetcher
  * @memberof module:sync/fetcher
  */
 export interface TrieNodeFetcherOptions extends FetcherOptions {
-  root: Buffer
+  root: Uint8Array
   accountTrie?: Trie
   codeTrie?: Trie
   accountToStorageTrie?: Map<String, Trie>
@@ -29,12 +29,12 @@ export interface TrieNodeFetcherOptions extends FetcherOptions {
 
 export type JobTask = {
   pathStrings: string[]
-  paths: Buffer[][] // paths to nodes for requesting from SNAP API
+  paths: Uint8Array[][] // paths to nodes for requesting from SNAP API
 }
 
-export class TrieNodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
+export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> {
   protected debug: Debugger
-  root: Buffer
+  root: Uint8Array
 
   // Holds all paths and nodes that need to be requested
   pathToNodeHash: OrderedMap<string, string>
@@ -61,7 +61,10 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
     this.debug = createDebugLogger('client:TrieNodeFetcher')
 
     // will always start with root node as first request
-    this.pathToNodeHash.setElement(getPathTo(0, this.root).join('/'), bufferToHex(this.root))
+    this.pathToNodeHash.setElement(
+      getPathTo(0, this.root).join('/'),
+      Buffer.from(this.root).toString('hex')
+    )
 
     this.debug(
       `Trie node fetcher instantiated with ${this.pathToNodeHash.size()} node requests destroyWhenDone=${
@@ -105,14 +108,14 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
       this.debug(rangeResult.nodes.length)
       this.debug(rangeResult.nodes)
       for (let i = 0; i < rangeResult.nodes.length; i++) {
-        this.debug(`rangeResult: ${bufferToHex(rangeResult.nodes[i])}`)
+        this.debug(`rangeResult: ${Buffer.from(rangeResult.nodes[i]).toString('hex')}`)
         this.debug(`decoded node: ${JSON.stringify(decodeNode(rangeResult.nodes[i]))}`)
       }
 
       // While results are in the same order as requested hashes but there could be gaps/misses in the results
       // if the node doesn't has the bytecode. We need an index to move forward through the hashes which are
       // absent in the receieved responses
-      const receievedNodes: Buffer[] = []
+      const receievedNodes: Uint8Array[] = []
       const requestedNodes = new Set(Array.from(this.requestedNodeToPath.keys()))
       for (let i = 0; i < rangeResult.nodes.length; i++) {
         const receivedNode = rangeResult.nodes[i]
@@ -135,7 +138,10 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
    * @param job fetch job
    * @param result result data
    */
-  process(job: Job<JobTask, Buffer[], Buffer>, result: TrieNodesResponse): Buffer[] | undefined {
+  process(
+    job: Job<JobTask, Uint8Array[], Uint8Array>,
+    result: TrieNodesResponse
+  ): Uint8Array[] | undefined {
     const fullResult = (job.partialResult ?? []).concat(result)
     job.partialResult = undefined
     if (result.completed === true) {
@@ -150,7 +156,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
    * Store fetch result. Resolves once store operation is complete.
    * @param result fetch result
    */
-  async store(result: Buffer[]): Promise<void> {
+  async store(result: Uint8Array[]): Promise<void> {
     console.log('dbg2')
     console.log(JSON.stringify(result))
 
@@ -174,7 +180,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
                 // if node doesn't exist, error is thrown and node request is created for fetching
                 this.pathToNodeHash.setElement(
                   nibblesToCompactBytes(bytesToNibbles(embeddedNode[0] as Buffer)).toString(),
-                  bufferToHex(embeddedNode[0] as Buffer) // TODO confused on how to get key from a embedded node
+                  Buffer.from(embeddedNode[0] as Uint8Array).toString('hex') // TODO confused on how to get key from a embedded node
                 )
               }
             }
@@ -192,7 +198,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Buffer[], Buffer> {
                 // if node doesn't exist, error is thrown and node request is created for fetching
                 this.pathToNodeHash.setElement(
                   nibblesToCompactBytes(bytesToNibbles(embeddedNode[0] as Buffer)).toString(),
-                  bufferToHex(embeddedNode[0] as Buffer)
+                  Buffer.from(embeddedNode[0] as Uint8Array).toString('hex')
                 )
               }
             }

@@ -76,7 +76,7 @@ export const compactBytesToNibbles = (compact: Uint8Array) => {
  *  or use this to implement a function that will
  *  for now assuming the mentioned return type
  */
-export const getPathTo = (tillBytes: number, key: Buffer) => {
+export const getPathTo = (tillBytes: number, key: Uint8Array) => {
   const hexNibbles = bytesToNibbles(key).subarray(0, tillBytes)
   // Remove the terminator if its there, although it would be there only if tillBytes >= key.length
   // This seems to be a test helper to generate paths so correctness of this isn't necessary
