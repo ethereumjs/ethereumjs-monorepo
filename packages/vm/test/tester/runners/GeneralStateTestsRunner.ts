@@ -8,7 +8,7 @@ import { EVM } from '../../../../evm/src'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
 
 import type { VM } from '../../../src'
-import type { InterpreterStep } from '@ethereumjs/evm/dist//interpreter'
+import type { InterpreterStep } from '@ethereumjs/evm'
 import type * as tape from 'tape'
 
 function parseTestCases(
