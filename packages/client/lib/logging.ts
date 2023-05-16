@@ -6,6 +6,10 @@ import type { Logger as WinstonLogger } from 'winston'
 const DailyRotateFile = require('winston-daily-rotate-file')
 
 export type Logger = WinstonLogger
+type LoggerArgs = { logFile: string; logLevelFile: 'error' | 'warn' | 'info' | 'debug' } & {
+  logRotate?: Boolean
+  logMaxFiles?: number
+}
 
 const { combine, timestamp, label, printf } = format
 
@@ -102,8 +106,8 @@ function formatConfig(colors = false) {
 /**
  * Returns a transport with log file saving (rotates if args.logRotate is true)
  */
-function logFileTransport(args: any) {
-  let filename = args.logFile === true ? 'ethereumjs.log' : args.logFile
+function logFileTransport(args: LoggerArgs) {
+  let filename = args.logFile
   const opts = {
     level: args.logLevelFile,
     format: formatConfig(),
@@ -137,7 +141,7 @@ export function getLogger(args: { [key: string]: any } = { logLevel: 'info' }) {
     }),
   ]
   if (typeof args.logFile === 'string') {
-    transports.push(logFileTransport(args))
+    transports.push(logFileTransport(args as LoggerArgs))
   }
   const logger = createLogger({
     transports,
