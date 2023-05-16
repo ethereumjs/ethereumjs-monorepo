@@ -1,11 +1,11 @@
-export class Journaling<T> {
-  public journal: Set<T>
-  protected journalStack: { [key: number]: Set<T> }
-  protected journalHeight: Map<T, number>
+export class Journaling<K, V> {
+  public journal: Map<K, V>
+  protected journalStack: { [key: number]: Set<K> }
+  protected journalHeight: Map<K, number>
   protected height: number
 
   constructor() {
-    this.journal = new Set()
+    this.journal = new Map()
     this.journalStack = {}
     this.journalHeight = new Map()
     this.height = 0
@@ -22,7 +22,7 @@ export class Journaling<T> {
     this.height++
   }
 
-  revert(ignoreItem?: T) {
+  revert(ignoreItem?: K) {
     const height = this.height
     if (height in this.journalStack) {
       for (const key of this.journalStack[height]) {
@@ -59,7 +59,7 @@ export class Journaling<T> {
           }
         }
       } else {
-        this.journal = new Set()
+        this.journal = new Map()
         this.journalHeight = new Map()
       }
       delete this.journalStack[height]
@@ -67,16 +67,16 @@ export class Journaling<T> {
     this.height--
   }
 
-  addJournalItem(input: T) {
+  addJournalItem(key: K, value: V) {
     const height = this.height
     if (!(height in this.journalStack)) {
       this.journalStack[height] = new Set()
     }
-    this.journalStack[height].add(input)
+    this.journalStack[height].add(key)
 
-    this.journal.add(input)
-    if (this.journalHeight.get(input) === undefined) {
-      this.journalHeight.set(input, height)
+    this.journal.set(key, value)
+    if (this.journalHeight.get(key) === undefined) {
+      this.journalHeight.set(key, height)
     }
   }
 }

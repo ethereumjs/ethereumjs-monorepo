@@ -10,7 +10,7 @@ import type { Account } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 export class EvmJournal {
-  private touchedJournal: Journaling<string>
+  private touchedJournal: Journaling<string, Set<string>>
   private stateManager: EVMStateManagerInterface
   private common: Common
   private DEBUG: boolean
@@ -21,7 +21,7 @@ export class EvmJournal {
     this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
     this._debug = createDebugLogger('statemanager:statemanager')
 
-    this.touchedJournal = new Journaling<string>()
+    this.touchedJournal = new Journaling()
     this.stateManager = stateManager
     this.common = common
   }
@@ -37,7 +37,7 @@ export class EvmJournal {
   }
 
   private touchAccount(address: Address): void {
-    this.touchedJournal.addJournalItem(address.toString().slice(2))
+    this.touchedJournal.addJournalItem(address.toString().slice(2), new Set())
   }
 
   async commit() {
@@ -62,7 +62,7 @@ export class EvmJournal {
   async cleanupTouchedAccounts(): Promise<void> {
     if (this.common.gteHardfork(Hardfork.SpuriousDragon) === true) {
       const touchedArray = Array.from(this.touchedJournal.journal)
-      for (const addressHex of touchedArray) {
+      for (const [addressHex] of touchedArray) {
         const address = new Address(hexToBytes(addressHex))
         const empty = await this.stateManager.accountIsEmptyOrNonExistent(address)
         if (empty) {
