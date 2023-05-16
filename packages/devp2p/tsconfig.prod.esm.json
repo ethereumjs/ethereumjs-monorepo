@@ -2,7 +2,6 @@
   "extends": "../../config/tsconfig.prod.esm.json",
   "exclude": ["test", "examples", "scripts", "node_modules", "dist"],
   "compilerOptions": {
-    "baseUrl": "./",
     "outDir": "dist/esm",
     "rootDir": "src",
     "typeRoots": ["node_modules/@types", "src/@types"],

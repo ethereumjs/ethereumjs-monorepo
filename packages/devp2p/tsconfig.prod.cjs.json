@@ -2,7 +2,6 @@
   "extends": "../../config/tsconfig.prod.cjs.json",
   "exclude": ["test", "examples", "scripts", "node_modules", "dist"],
   "compilerOptions": {
-    "baseUrl": "./",
     "outDir": "dist/cjs",
     "rootDir": "src",
     "typeRoots": ["node_modules/@types", "src/@types"],

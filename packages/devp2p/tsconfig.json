@@ -2,7 +2,6 @@
   "extends": "../../config/tsconfig.json",
   "include": ["src/**/*.ts", "test/**/*.ts", "examples/**/*.ts", "scripts/**/*.ts"],
   "compilerOptions": {
-    "baseUrl": ".",
     "typeRoots": ["node_modules/@types", "src/@types"]
   }
 }
