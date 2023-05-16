@@ -76,7 +76,7 @@ tape('[normalizeTxParams]', (t) => {
 })
 
 tape(
-  'fromRPCTx: ensure v/r/s values of 0x0 are interpreted as undefined for Optimism system txs',
+  'fromRPC: ensure v/r/s values of 0x0 are interpreted as undefined for Optimism system txs',
   async function (st) {
     for (const txType of txTypes) {
       optimismTx.type = txType
@@ -92,7 +92,7 @@ tape(
 // This test ensures that "normal" txs of non-legacy type are correctly decoded if the
 // `v` value is 0. This is the case in ~50% of the EIP2930 and EIP1559 txs
 // The `v` value is either 0 or 1 there.
-tape('fromRPCTx: ensure `v="0x0"` is correctly decoded for signed txs', async function (st) {
+tape('fromRPC: ensure `v="0x0"` is correctly decoded for signed txs', async function (st) {
   for (const txType of txTypes) {
     if (txType === 0) {
       // legacy tx cannot have v=0
