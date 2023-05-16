@@ -61,8 +61,9 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
     this.debug = createDebugLogger('client:TrieNodeFetcher')
 
-    // will always start with root node as first request
-    this.pathToNodeHash.setElement(getPathTo(0, this.root).join('/'), bytesToHex(this.root))
+    // will always start with root node as first set of node requests
+    for (let i = 0; i < 16; i++)
+      this.pathToNodeHash.setElement(getPathTo(i, this.root).join('/'), bytesToHex(this.root))
 
     this.debug(
       `Trie node fetcher instantiated with ${this.pathToNodeHash.size()} node requests destroyWhenDone=${
@@ -109,23 +110,22 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       this.debug(rangeResult.nodes)
       for (let i = 0; i < rangeResult.nodes.length; i++) {
         this.debug(`rangeResult: ${bytesToHex(rangeResult.nodes[i])}`)
-        this.debug(`decoded node: ${JSON.stringify(decodeNode(rangeResult.nodes[i]))}`)
       }
 
       // While results are in the same order as requested hashes but there could be gaps/misses in the results
       // if the node doesn't has the bytecode. We need an index to move forward through the hashes which are
       // absent in the receieved responses
-      const receievedNodes: Uint8Array[] = []
+      const receivedNodes: Uint8Array[] = []
       const requestedNodes = new Set(Array.from(this.requestedNodeToPath.keys()))
       for (let i = 0; i < rangeResult.nodes.length; i++) {
         const receivedNode = rangeResult.nodes[i]
-        const receivedHash = bytesToHex(keccak256(receivedNode))
+        const receivedHash = bytesToHex(keccak256(receivedNode) as Uint8Array)
         if (requestedNodes.has(receivedHash)) {
           // TODO need to remove filled nodes from both pathToNodeHash and nodeHashToPath
-          receievedNodes.push(rangeResult.nodes[i])
+          receivedNodes.push(rangeResult.nodes[i])
         }
       }
-      return Object.assign([], [receievedNodes], { completed: true })
+      return Object.assign([], [receivedNodes], { completed: true })
     } catch (e) {
       this.debug(e)
     }
@@ -177,12 +177,15 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
                 await this.accountTrie.lookupNode(embeddedNode)
               } catch (e) {
                 // if node doesn't exist, error is thrown and node request is created for fetching
-                this.pathToNodeHash.setElement(
-                  nibblesToCompactBytes(bytesToNibbles(embeddedNode[0] as Uint8Array)).toString(),
-                  bytesToHex(embeddedNode[0] as Uint8Array) // TODO confused on how to get key from a embedded node
-                )
+                for (let i = 0; i < 16; i++)
+                  this.pathToNodeHash.setElement(
+                    getPathTo(i, embeddedNode as Uint8Array).join('/'),
+                    bytesToHex(embeddedNode as Uint8Array) // TODO confused on how to get key from a embedded node
+                  )
               }
             }
+          } else {
+            console.log('not a branch node')
           }
 
           // process storage node
@@ -207,6 +210,9 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         // remove filled requests
         this.requestedNodeToPath.delete(nodeHash)
         // this.pathToNodeHash.eraseElementByKey(pathString as string)
+
+        console.log('dbg3')
+        console.log(this.pathToNodeHash.forEach((e) => console.log(e)))
       }
     } catch (e) {
       this.debug(e)
