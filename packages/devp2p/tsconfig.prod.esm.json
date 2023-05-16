@@ -1,16 +1,16 @@
 {
-  "extends": "../../config/tsconfig.prod.cjs.json",
+  "extends": "../../config/tsconfig.prod.esm.json",
   "exclude": ["test", "examples", "scripts", "node_modules", "dist"],
   "compilerOptions": {
     "baseUrl": "./",
-    "outDir": "dist/cjs",
+    "outDir": "dist/esm",
     "rootDir": "src",
     "typeRoots": ["node_modules/@types", "src/@types"],
     "composite": true
   },
   "references": [
-    { "path": "../common/tsconfig.prod.cjs.json" },
-    { "path": "../rlp/tsconfig.prod.cjs.json" },
-    { "path": "../util/tsconfig.prod.cjs.json" }
+    { "path": "../common/tsconfig.prod.esm.json" },
+    { "path": "../rlp/tsconfig.prod.esm.json" },
+    { "path": "../util/tsconfig.prod.esm.json" }
   ]
 }

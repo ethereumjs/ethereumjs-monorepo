@@ -1,5 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
-import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
+import { encodeReceipt } from '@ethereumjs/vm'
 import { concatBytes } from 'ethereum-cryptography/utils'
 
 import { SyncMode } from '../config'

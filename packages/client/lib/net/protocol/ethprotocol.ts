@@ -8,7 +8,7 @@ import {
   bytesToInt,
   intToUnpaddedBytes,
 } from '@ethereumjs/util'
-import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
+import { encodeReceipt } from '@ethereumjs/vm'
 
 import { Protocol } from './protocol'
 

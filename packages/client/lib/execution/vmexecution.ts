@@ -3,10 +3,9 @@ import {
   DBSetBlockOrHeader,
   DBSetHashToNumber,
   DBSetTD,
-} from '@ethereumjs/blockchain/dist/db/helpers'
+} from '@ethereumjs/blockchain'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { CacheType } from '@ethereumjs/statemanager/dist/cache'
+import { CacheType, DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { Lock, bytesToHex, bytesToPrefixedHexString, equalsBytes } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'

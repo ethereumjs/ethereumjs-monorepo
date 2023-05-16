@@ -10,7 +10,7 @@ import {
   toType,
   zeros,
 } from '@ethereumjs/util'
-import { BuildStatus } from '@ethereumjs/vm/dist/buildBlock'
+import { BuildStatus } from '@ethereumjs/vm'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import type { Config } from '../config'
