@@ -734,7 +734,7 @@ async function run() {
   ensureDirSync(configDirectory)
   const key = await Config.getClientKey(datadir, common)
 
-  // logFile is either filename or string "true"
+  // logFile is either filename or boolean true or false to enable (with default) or disable
   if (typeof args.logFile === 'boolean') {
     args.logFile = args.logFile ? `${networkDir}/ethereumjs.log` : undefined
   }
