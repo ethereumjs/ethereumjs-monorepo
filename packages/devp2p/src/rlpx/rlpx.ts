@@ -16,10 +16,9 @@ import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type LRUCache from 'lru-cache'
 
-const LRU = require('lru-cache')
-
 // note: relative path only valid in .js file in dist
-const { version: pVersion } = require('../../package.json')
+
+const LRU = require('lru-cache')
 
 const DEBUG_BASE_NAME = 'rlpx'
 const verbose = createDebugLogger('verbose').enabled
@@ -70,7 +69,7 @@ export class RLPx extends EventEmitter {
 
     this._clientId = options.clientId
       ? options.clientId
-      : utf8ToBytes(`ethereumjs-devp2p/v${pVersion}/${os.platform()}-${os.arch()}/nodejs`)
+      : utf8ToBytes(`ethereumjs-devp2p/${os.platform()}-${os.arch()}/nodejs`)
 
     this._remoteClientIdFilter = options.remoteClientIdFilter
     this._capabilities = options.capabilities
