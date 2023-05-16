@@ -876,7 +876,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param address - The address (as a Uint8Array) to check
    */
   isWarmedAddress(address: Uint8Array): boolean {
-    throw new Error('REMOVE ME')
     for (let i = this._accessedStorage.length - 1; i >= 0; i--) {
       const currentMap = this._accessedStorage[i]
       if (currentMap.has(bytesToHex(address))) {
@@ -906,7 +905,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param slot - The slot (as a Uint8Array) to check
    */
   isWarmedStorage(address: Uint8Array, slot: Uint8Array): boolean {
-    throw new Error('REMOVE ME')
     const addressKey = bytesToHex(address)
     const storageKey = bytesToHex(slot)
 

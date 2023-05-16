@@ -1,5 +1,5 @@
 export class Journaling<K, V> {
-  public journal: Map<K, V>
+  public journal: Map<K, Map<V, number>>
   protected journalStack: { [key: number]: Set<K> }
   protected journalHeight: Map<K, number>
   protected height: number
