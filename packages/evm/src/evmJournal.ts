@@ -1,11 +1,11 @@
 import { Hardfork } from '@ethereumjs/common'
-import { Address, RIPEMD160_ADDRESS_STRING } from '@ethereumjs/util'
+import { Address, RIPEMD160_ADDRESS_STRING, stripHexPrefix } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { Journaling } from './journaling'
 
-import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
+import type { AccessList, Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Account } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
@@ -16,12 +16,15 @@ export class EvmJournal {
   private DEBUG: boolean
   private _debug: Debugger
 
+  private preWarmed: Map<string, Set<string>>
+
   constructor(stateManager: EVMStateManagerInterface, common: Common) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
     this._debug = createDebugLogger('statemanager:statemanager')
 
     this.touchedJournal = new Journaling()
+    this.preWarmed = new Map()
     this.stateManager = stateManager
     this.common = common
   }
@@ -58,8 +61,9 @@ export class EvmJournal {
   /**
    * Removes accounts form the state trie that have been touched,
    * as defined in EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
+   * Also cleanups any other internal fields
    */
-  async cleanupTouchedAccounts(): Promise<void> {
+  async cleanup(): Promise<void> {
     if (this.common.gteHardfork(Hardfork.SpuriousDragon) === true) {
       const touchedArray = Array.from(this.touchedJournal.journal)
       for (const [addressHex] of touchedArray) {
@@ -74,5 +78,33 @@ export class EvmJournal {
       }
     }
     this.touchedJournal.clear()
+    this.preWarmed = new Map()
+  }
+
+  /**
+   * Adds pre-warmed addresses and slots to the warm addresses list
+   * @param accessList The access list provided by the tx
+   * @param extras Any extra addressess which should be warmed as well (precompiles, sender, receipient, coinbase (EIP 3651))
+   */
+  addPreWarmed(accessList: AccessList, extras: string[]) {
+    for (const entry of accessList) {
+      const address = stripHexPrefix(entry.address)
+      let set: Set<string>
+      if (!this.preWarmed.has(address)) {
+        set = new Set<string>()
+      } else {
+        set = this.preWarmed.get(address)!
+      }
+      for (const slots of entry.storageKeys) {
+        set.add(stripHexPrefix(slots))
+      }
+      this.preWarmed.set(address, set)
+    }
+    for (const addressMaybePrefixed of extras) {
+      const address = stripHexPrefix(addressMaybePrefixed)
+      if (!this.preWarmed.has(address)) {
+        this.preWarmed.set(address, new Set())
+      }
+    }
   }
 }
