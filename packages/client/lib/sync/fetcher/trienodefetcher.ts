@@ -2,6 +2,7 @@ import { BranchNode, Trie, decodeNode } from '@ethereumjs/trie'
 import { bytesToNibbles, getPathTo, nibblesToCompactBytes } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 import { OrderedMap } from 'js-sdsl'
 
 import { Fetcher } from './fetcher'
@@ -61,10 +62,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     this.debug = createDebugLogger('client:TrieNodeFetcher')
 
     // will always start with root node as first request
-    this.pathToNodeHash.setElement(
-      getPathTo(0, this.root).join('/'),
-      Buffer.from(this.root).toString('hex')
-    )
+    this.pathToNodeHash.setElement(getPathTo(0, this.root).join('/'), bytesToHex(this.root))
 
     this.debug(
       `Trie node fetcher instantiated with ${this.pathToNodeHash.size()} node requests destroyWhenDone=${
@@ -84,7 +82,9 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
    * @param job
    * @param peer
    */
-  async request(job: Job<JobTask, Buffer[], Buffer>): Promise<TrieNodesResponse | undefined> {
+  async request(
+    job: Job<JobTask, Uint8Array[], Uint8Array>
+  ): Promise<TrieNodesResponse | undefined> {
     const { task, peer } = job
     const { pathStrings, paths } = task
 
@@ -108,7 +108,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       this.debug(rangeResult.nodes.length)
       this.debug(rangeResult.nodes)
       for (let i = 0; i < rangeResult.nodes.length; i++) {
-        this.debug(`rangeResult: ${Buffer.from(rangeResult.nodes[i]).toString('hex')}`)
+        this.debug(`rangeResult: ${bytesToHex(rangeResult.nodes[i])}`)
         this.debug(`decoded node: ${JSON.stringify(decodeNode(rangeResult.nodes[i]))}`)
       }
 
@@ -119,8 +119,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       const requestedNodes = new Set(Array.from(this.requestedNodeToPath.keys()))
       for (let i = 0; i < rangeResult.nodes.length; i++) {
         const receivedNode = rangeResult.nodes[i]
-        const receivedHash = Buffer.from(keccak256(receivedNode))
-        if (requestedNodes.has('0x' + receivedHash.toString('hex'))) {
+        const receivedHash = bytesToHex(keccak256(receivedNode))
+        if (requestedNodes.has(receivedHash)) {
           // TODO need to remove filled nodes from both pathToNodeHash and nodeHashToPath
           receievedNodes.push(rangeResult.nodes[i])
         }
@@ -163,10 +163,9 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     try {
       // put node data into trie and request unkown nodes
       for (const nodeData of result[0]) {
-        console.log(nodeData)
-        const node = decodeNode(nodeData as unknown as Buffer)
-        const nodeHash = Buffer.from(keccak256(nodeData as unknown as Buffer)).toString('hex')
-        const pathString = this.requestedNodeToPath.get('0x' + nodeHash)
+        const node = decodeNode(nodeData as unknown as Uint8Array)
+        const nodeHash = bytesToHex(keccak256(nodeData as unknown as Uint8Array))
+        const pathString = this.requestedNodeToPath.get(nodeHash)
         const [accountPath, storagePath] = pathString!.split('/')
 
         // process account node
@@ -179,8 +178,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               } catch (e) {
                 // if node doesn't exist, error is thrown and node request is created for fetching
                 this.pathToNodeHash.setElement(
-                  nibblesToCompactBytes(bytesToNibbles(embeddedNode[0] as Buffer)).toString(),
-                  Buffer.from(embeddedNode[0] as Uint8Array).toString('hex') // TODO confused on how to get key from a embedded node
+                  nibblesToCompactBytes(bytesToNibbles(embeddedNode[0] as Uint8Array)).toString(),
+                  bytesToHex(embeddedNode[0] as Uint8Array) // TODO confused on how to get key from a embedded node
                 )
               }
             }
@@ -197,8 +196,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               } catch (e) {
                 // if node doesn't exist, error is thrown and node request is created for fetching
                 this.pathToNodeHash.setElement(
-                  nibblesToCompactBytes(bytesToNibbles(embeddedNode[0] as Buffer)).toString(),
-                  Buffer.from(embeddedNode[0] as Uint8Array).toString('hex')
+                  nibblesToCompactBytes(bytesToNibbles(embeddedNode[0] as Uint8Array)).toString(),
+                  bytesToHex(embeddedNode[0] as Uint8Array)
                 )
               }
             }
@@ -206,7 +205,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         }
 
         // remove filled requests
-        this.requestedNodeToPath.delete('0x' + nodeHash)
+        this.requestedNodeToPath.delete(nodeHash)
         // this.pathToNodeHash.eraseElementByKey(pathString as string)
       }
     } catch (e) {
@@ -226,7 +225,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   }
 
   mergeAndFormatPaths(pathStrings: string[]) {
-    return pathStrings.map((s) => [Buffer.from(s, 'hex')])
+    return pathStrings.map((s) => [hexToBytes(s)])
   }
 
   /**
@@ -306,7 +305,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
    * @param job
    * @param withIndex pass true to additionally output job.index
    */
-  jobStr(job: Job<JobTask, Buffer[], Buffer>, withIndex = false) {
+  jobStr(job: Job<JobTask, Uint8Array[], Uint8Array>, withIndex = false) {
     let str = ''
     if (withIndex) {
       str += `index=${job.index} `

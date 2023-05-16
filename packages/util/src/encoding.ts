@@ -1,4 +1,7 @@
 // Reference: https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/
+
+import { bytesToHex } from 'ethereum-cryptography/utils'
+
 /**
  *
  * @param s byte sequence
@@ -82,5 +85,5 @@ export const getPathTo = (tillBytes: number, key: Uint8Array) => {
   // This seems to be a test helper to generate paths so correctness of this isn't necessary
   hexNibbles[hexNibbles.length - 1] = 0
   const compactBytes = nibblesToCompactBytes(hexNibbles)
-  return [compactBytes.toString()]
+  return [bytesToHex(compactBytes)]
 }
