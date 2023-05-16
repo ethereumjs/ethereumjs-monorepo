@@ -21,8 +21,6 @@ const BLS_MODULUS = BigInt(
 )
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
-initKZG(kzg, __dirname + '/../../../client/lib/trustedSetups/devnet4.txt')
-
 tape('Precompiles: point evaluation', async (t) => {
   if (isBrowser() === true) {
     t.end()

@@ -5,7 +5,7 @@ import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
 
-import type { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
+import type { InterpreterStep } from '@ethereumjs/evm'
 import type { Address } from '@ethereumjs/util'
 
 const pkey = hexToBytes('20'.repeat(32))

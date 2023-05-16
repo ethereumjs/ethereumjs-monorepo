@@ -20,24 +20,24 @@
   },
   "license": "MPL-2.0",
   "author": "Vinay Pulim (v@pulim.com)",
-  "main": "dist/lib/index.js",
+  "main": "dist/cjs/lib/index.js",
   "browser": "dist/bundle.js",
-  "types": "dist/lib/index.d.ts",
+  "types": "dist/cjs/lib/index.d.ts",
   "bin": {
-    "ethereumjs": "dist/bin/cli.js"
+    "ethereumjs": "dist/cjs/bin/cli.js"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "binWorkaround": "test -f dist/bin/cli.js || echo 'install fails if bin script does not exist (https://github.com/npm/cli/issues/2632), creating placeholder file at \"dist/bin/cli.js\"' && mkdir -p 'dist/bin' && touch dist/bin/cli.js",
-    "build": "npm run build:common && mkdir -p ./lib/trustedSetup/ && cp -Rf ./lib/trustedSetups ./dist/lib/",
+    "binWorkaround": "test -f dist/cli/bin/cli.js || echo 'install fails if bin script does not exist (https://github.com/npm/cli/issues/2632), creating placeholder file at \"dist/bin/cli.js\"' && mkdir -p 'dist/bin' && touch dist/bin/cli.js",
+    "build": "npm run build:common && mkdir -p ./lib/trustedSetup/ && cp -Rf ./lib/trustedSetups ./dist/cjs/lib/",
     "build:browser": "../../config/cli/ts-build.sh browser && npm run bundle && rm -rf dist.browser",
     "build:common": "../../config/cli/ts-build.sh",
     "bundle": "webpack",
     "clean": "../../config/cli/clean-package.sh",
-    "client:start:ts": "ts-node bin/cli.ts",
-    "client:start:js": "npm run build && node dist/bin/cli.js",
+    "client:start:ts": "ts-node bin/cjs/cli.ts",
+    "client:start:js": "npm run build && node dist/cjs/bin/cli.js",
     "client:start": "npm run client:start:js --",
     "client:start:dev1": "npm run client:start -- --discDns=false --discV4=false --bootnodes",
     "client:start:dev2": "npm run client:start -- --discDns=false --discV4=false --port=30304 --dataDir=datadir-dev2",
