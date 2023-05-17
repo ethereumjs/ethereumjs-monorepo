@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1684220438250,
+  "lastUpdate": 1684307610320,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "178d07e1a99fc9f37990726c7e2779aa7f0f4ed9",
-          "message": "Client: Small Debug Helpers and CLI Improvements (#2586)\n\n* Client: new constant MAX_TOLERATED_BLOCK_TIME for execution, added warning for slowly executed blocks\r\n\r\n* Client -> Execution: NumBlocksPerIteration (default: 50) as an option\r\n\r\n* Client: only restart RLPx server or log peer stats if max peers is set to be greater than 0\r\n\r\n* Apply suggestions from code review\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* Apply suggestions from code review\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-03-17T00:22:41+01:00",
-          "tree_id": "bfdde3c3bbc9fc3d76b0c4751b749ed233f0ccf1",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/178d07e1a99fc9f37990726c7e2779aa7f0f4ed9"
-        },
-        "date": 1679009124664,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15883,
-            "range": "±1.78%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 15231,
-            "range": "±4.77%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 15905,
-            "range": "±1.54%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 15411,
-            "range": "±1.88%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 14333,
-            "range": "±7.21%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.45%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bef8f3f64b0a114e299c9ff402df031d148dca73",
+          "message": "Merge pull request #2685 from ethereumjs/switch-to-esm-cjs-build\n\nMonorepo: Switch to hybrid ESM/CJS Build (WIP)",
+          "timestamp": "2023-05-17T09:09:39+02:00",
+          "tree_id": "419f29f2413fba7f19f83be1bfbf4e550895cc0e",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/bef8f3f64b0a114e299c9ff402df031d148dca73"
+        },
+        "date": 1684307608998,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 22632,
+            "range": "±14.33%",
+            "unit": "ops/sec",
+            "extra": "56 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 29133,
+            "range": "±7.14%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 28584,
+            "range": "±8.14%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25881,
+            "range": "±11.01%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 17270,
+            "range": "±12.52%",
+            "unit": "ops/sec",
+            "extra": "68 samples"
           }
         ]
       }
