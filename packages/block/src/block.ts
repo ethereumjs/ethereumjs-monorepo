@@ -21,7 +21,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { executionPayloadFromBeaconPayload } from './from-beacon-payload'
 import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
-import { getDataGasPrice } from './helpers'
+import { calcExcessDataGas, getDataGasPrice } from './helpers'
 
 import type { BeaconPayloadJson } from './from-beacon-payload'
 import type {
@@ -564,17 +564,6 @@ export class Block {
     }
   }
 
-  private calcExcessDataGas(parentHeader: BlockHeader, newBlobs: number) {
-    const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
-    const consumedDataGas = BigInt(newBlobs) * dataGasPerBlob
-    const targetGasPerBlock = this._common.param('gasConfig', 'targetDataGasPerBlock')
-    if ((parentHeader.excessDataGas ?? BigInt(0)) + consumedDataGas < targetGasPerBlock) {
-      return BigInt(0)
-    } else {
-      return (parentHeader.excessDataGas ?? BigInt(0)) + consumedDataGas - targetGasPerBlock
-    }
-  }
-
   /**
    * Validates that data gas fee for each transaction is greater than or equal to the
    * dataGasPrice for the block and that total data gas in block is less than maximum
@@ -596,7 +585,7 @@ export class Block {
         numBlobs += tx.versionedHashes.length
       }
     }
-    const expectedExcessDataGas = this.calcExcessDataGas(parentHeader, numBlobs)
+    const expectedExcessDataGas = calcExcessDataGas(parentHeader, numBlobs)
     if (this.header.excessDataGas !== expectedExcessDataGas) {
       throw new Error(
         `block excessDataGas mismatch: have ${this.header.excessDataGas}, want ${expectedExcessDataGas}`
