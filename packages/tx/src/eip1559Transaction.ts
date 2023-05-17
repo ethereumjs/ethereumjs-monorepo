@@ -5,7 +5,6 @@ import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
-  bytesToPrefixedHexString,
   concatBytes,
   ecrecover,
   equalsBytes,
@@ -385,20 +384,14 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
    */
   toJSON(): JsonTx {
     const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
+    const baseJson = super.toJSON()
 
     return {
+      ...baseJson,
       chainId: bigIntToHex(this.chainId),
-      nonce: bigIntToHex(this.nonce),
       maxPriorityFeePerGas: bigIntToHex(this.maxPriorityFeePerGas),
       maxFeePerGas: bigIntToHex(this.maxFeePerGas),
-      gasLimit: bigIntToHex(this.gasLimit),
-      to: this.to !== undefined ? this.to.toString() : undefined,
-      value: bigIntToHex(this.value),
-      data: bytesToPrefixedHexString(this.data),
       accessList: accessListJSON,
-      v: this.v !== undefined ? bigIntToHex(this.v) : undefined,
-      r: this.r !== undefined ? bigIntToHex(this.r) : undefined,
-      s: this.s !== undefined ? bigIntToHex(this.s) : undefined,
     }
   }
 

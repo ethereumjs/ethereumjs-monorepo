@@ -4,7 +4,6 @@ import {
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
-  bytesToPrefixedHexString,
   ecrecover,
   toBytes,
   unpadBytes,
@@ -336,16 +335,10 @@ export class Transaction extends BaseTransaction<Transaction> {
    * Returns an object with the JSON representation of the transaction.
    */
   toJSON(): JsonTx {
+    const baseJson = super.toJSON()
     return {
-      nonce: bigIntToHex(this.nonce),
+      ...baseJson,
       gasPrice: bigIntToHex(this.gasPrice),
-      gasLimit: bigIntToHex(this.gasLimit),
-      to: this.to !== undefined ? this.to.toString() : undefined,
-      value: bigIntToHex(this.value),
-      data: bytesToPrefixedHexString(this.data),
-      v: this.v !== undefined ? bigIntToHex(this.v) : undefined,
-      r: this.r !== undefined ? bigIntToHex(this.r) : undefined,
-      s: this.s !== undefined ? bigIntToHex(this.s) : undefined,
     }
   }
 
