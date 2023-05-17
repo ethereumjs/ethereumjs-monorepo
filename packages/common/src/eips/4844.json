@@ -37,9 +37,9 @@
       "v": 50000,
       "d": "The fee associated with the point evaluation precompile"
     },
-    "datahash": {
+    "blobhash": {
       "v": 3,
-      "d": "Base fee of the DATAHASH opcode"
+      "d": "Base fee of the BLOBHASH opcode"
     }
   },
   "sharding": {
