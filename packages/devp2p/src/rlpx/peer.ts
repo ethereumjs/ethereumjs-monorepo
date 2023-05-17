@@ -10,7 +10,6 @@ import {
 import { debug as createDebugLogger } from 'debug'
 import { bytesToUtf8, hexToBytes } from 'ethereum-cryptography/utils'
 import { EventEmitter } from 'events'
-import ms = require('ms')
 import * as snappy from 'snappyjs'
 
 import { devp2pDebug, formatLogData } from '../util'
@@ -28,7 +27,7 @@ const verbose = createDebugLogger('verbose').enabled
 export const BASE_PROTOCOL_VERSION = 5
 export const BASE_PROTOCOL_LENGTH = 16
 
-export const PING_INTERVAL = ms('15s')
+export const PING_INTERVAL = 15000 // 15 sec * 1000
 
 export enum PREFIXES {
   HELLO = 0x00,
@@ -279,7 +278,7 @@ export class Peer extends EventEmitter {
     this._disconnectReason = reason
     this._disconnectWe = true
     this._closed = true
-    setTimeout(() => this._socket.end(), ms('2s'))
+    setTimeout(() => this._socket.end(), 2000) // 2 sec * 1000
   }
 
   /**

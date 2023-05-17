@@ -10,7 +10,7 @@ import {
   toType,
   zeros,
 } from '@ethereumjs/util'
-import { BuildStatus } from '@ethereumjs/vm/dist/buildBlock'
+import { BuildStatus } from '@ethereumjs/vm'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import type { Config } from '../config'
@@ -18,8 +18,7 @@ import type { TxPool } from '../service/txpool'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { WithdrawalData } from '@ethereumjs/util'
-import type { TxReceipt, VM } from '@ethereumjs/vm'
-import type { BlockBuilder } from '@ethereumjs/vm/dist/buildBlock'
+import type { BlockBuilder, TxReceipt, VM } from '@ethereumjs/vm'
 
 interface PendingBlockOpts {
   /* Config */
@@ -108,7 +107,7 @@ export class PendingBlock {
     const payloadId = bytesToPrefixedHexString(payloadIdBytes)
 
     // If payload has already been triggered, then return the payloadid
-    if (this.pendingPayloads.get(payloadId)) {
+    if (this.pendingPayloads.get(payloadId) !== undefined) {
       return payloadIdBytes
     }
 
@@ -230,7 +229,7 @@ export class PendingBlock {
     const payloadId =
       typeof payloadIdBytes !== 'string' ? bytesToPrefixedHexString(payloadIdBytes) : payloadIdBytes
     const builder = this.pendingPayloads.get(payloadId)
-    if (!builder) {
+    if (builder === undefined) {
       return
     }
     const blockStatus = builder.getStatus()
@@ -310,11 +309,13 @@ export class PendingBlock {
 
     const block = await builder.build()
     // Construct blobs bundle
-    const blobs = block._common.isActivatedEIP(4844)
-      ? this.constructBlobsBundle(payloadId, blobTxs)
-      : undefined
+    const blobs =
+      block._common.isActivatedEIP(4844) !== undefined
+        ? this.constructBlobsBundle(payloadId, blobTxs)
+        : undefined
 
-    const withdrawalsStr = block.withdrawals ? ` withdrawals=${block.withdrawals.length}` : ''
+    const withdrawalsStr =
+      block.withdrawals !== undefined ? ` withdrawals=${block.withdrawals.length}` : ''
     const blobsStr = blobs ? ` blobs=${blobs.blobs.length}` : ''
     this.config.logger.info(
       `Pending: Built block number=${block.header.number} txs=${

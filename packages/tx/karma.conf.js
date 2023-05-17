@@ -16,6 +16,11 @@ module.exports = function (config) {
           ecmaVersion: 12,
         },
         ignore: ['c-kzg', 'safer-buffer'],
+        resolve: {
+          alias: {
+            '@ethereumjs/util/provider': '../util/dist/cjs/provider.js',
+          },
+        },
       },
     },
     browsers: ['FirefoxHeadless', 'ChromeHeadless'],

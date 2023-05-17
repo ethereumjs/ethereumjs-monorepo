@@ -5,8 +5,8 @@ import * as tape from 'tape'
 
 import { EVM } from '../src/evm'
 
+import type { PrecompileInput } from '../src'
 import type { ExecResult } from '../src/evm'
-import type { PrecompileInput } from '../src/precompiles'
 
 const sender = new Address(hexToBytes('44'.repeat(20)))
 const newPrecompile = new Address(hexToBytes('ff'.repeat(20)))

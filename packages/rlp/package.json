@@ -24,8 +24,14 @@
     "Holger Drewes <Holger.Drewes@gmail.com>",
     "Paul Miller <pkg@paulmillr.com>"
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "bin": {
     "rlp": "bin/rlp"
   },

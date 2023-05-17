@@ -1,6 +1,7 @@
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import { EventEmitter } from 'events'
-import _KBucket = require('k-bucket')
+
+import { KBucket as _KBucket } from '../ext'
 
 import type { PeerInfo } from './dpt'
 
@@ -18,7 +19,8 @@ export class KBucket extends EventEmitter {
   constructor(localNodeId: Uint8Array) {
     super()
 
-    this._kbucket = new _KBucket<CustomContact>({
+    // new _KBucket<CustomContact>({
+    this._kbucket = new _KBucket({
       localNodeId,
       numberOfNodesPerKBucket: KBUCKET_SIZE,
       numberOfNodesToPing: KBUCKET_CONCURRENCY,

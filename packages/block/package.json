@@ -16,8 +16,14 @@
   },
   "license": "MPL-2.0",
   "author": "mjbecze (mb@ethdev.com)",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "files": [
     "dist",
     "src"
@@ -46,8 +52,7 @@
     "ethereum-cryptography": "^2.0.0"
   },
   "devDependencies": {
-    "c-kzg": "^2.0.4",
-    "testdouble": "^3.17.2"
+    "c-kzg": "^2.0.4"
   },
   "engines": {
     "node": ">=16"

@@ -1,0 +1,19 @@
+{
+  "extends": "../../config/tsconfig.prod.cjs.json",
+  "include": ["bin", "lib"],
+  "compilerOptions": {
+    "outDir": "dist",
+    "typeRoots": ["node_modules/@types", "lib/@types"]
+  },
+  "references": [
+    { "path": "../block/tsconfig.prod.cjs.json" },
+    { "path": "../blockchain/tsconfig.prod.cjs.json" },
+    { "path": "../common/tsconfig.prod.cjs.json" },
+    { "path": "../devp2p/tsconfig.prod.cjs.json" },
+    { "path": "../rlp/tsconfig.prod.cjs.json" },
+    { "path": "../trie/tsconfig.prod.cjs.json" },
+    { "path": "../tx/tsconfig.prod.cjs.json" },
+    { "path": "../util/tsconfig.prod.cjs.json" },
+    { "path": "../vm/tsconfig.prod.cjs.json" }
+  ]
+}
