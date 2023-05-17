@@ -603,7 +603,7 @@ tape('runCall() => allows to detect for max code size deposit errors', async (t)
     'reported error is correct'
   )
 })
-tape('runCall() => use DATAHASH opcode from EIP 4844', async (t) => {
+tape('runCall() => use BLOBHASH opcode from EIP 4844', async (t) => {
   // setup the evm
   const genesisJSON = require('../../client/test/testdata/geth-genesis/eip4844.json')
   const common = Common.fromGethGenesis(genesisJSON, {
