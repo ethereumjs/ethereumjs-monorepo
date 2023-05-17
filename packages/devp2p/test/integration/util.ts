@@ -165,8 +165,6 @@ export function twoPeerMsgExchange(
 
 export function destroyRLPXs(rlpxs: any) {
   for (const rlpx of rlpxs) {
-    // FIXME: Call destroy() on dpt instance from the rlpx.destroy() method
-    rlpx._dpt.destroy()
     rlpx.destroy()
   }
 }
