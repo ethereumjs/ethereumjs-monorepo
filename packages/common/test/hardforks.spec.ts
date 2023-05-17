@@ -124,24 +124,6 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.end()
   })
 
-  t.test('isHardforkBlock()', function (st: tape.Test) {
-    let c = new Common({ chain: Chain.Ropsten })
-    let msg = 'should return true for HF change block for byzantium (provided)'
-    st.equal(c.isHardforkBlock(1700000, Hardfork.Byzantium), true, msg)
-
-    msg = 'should return false for another block for byzantium (provided)'
-    st.equal(c.isHardforkBlock(1700001, Hardfork.Byzantium), false, msg)
-
-    c = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
-    msg = 'should return true for HF change block for byzantium (set)'
-    st.equal(c.isHardforkBlock(1700000), true, msg)
-
-    msg = 'should return false for another block for byzantium (set)'
-    st.equal(c.isHardforkBlock(1700001), false, msg)
-
-    st.end()
-  })
-
   t.test('nextHardforkBlockOrTimestamp()', function (st: tape.Test) {
     let c = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
     let msg =

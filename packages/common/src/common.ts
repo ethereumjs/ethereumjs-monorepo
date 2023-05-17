@@ -715,20 +715,6 @@ export class Common extends EventEmitter {
   }
 
   /**
-   * True if block number provided is the hardfork (given or set) change block
-   * @param blockNumber Number of the block to check
-   * @param hardfork Hardfork name, optional if HF set
-   * @returns True if blockNumber is HF block
-   * @deprecated
-   */
-  isHardforkBlock(blockNumber: BigIntLike, hardfork?: string | Hardfork): boolean {
-    blockNumber = toType(blockNumber, TypeOutput.BigInt)
-    hardfork = hardfork ?? this._hardfork
-    const block = this.hardforkBlock(hardfork)
-    return typeof block === 'bigint' && block !== BigInt(0) ? block === blockNumber : false
-  }
-
-  /**
    * Returns the change block for the next hardfork after the hardfork provided or set
    * @param hardfork Hardfork name, optional if HF set
    * @returns Block timestamp, number or null if not available
