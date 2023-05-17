@@ -34,11 +34,11 @@
       "v": 10,
       "d": "Times ceil(log256(exponent)) for the EXP instruction"
     },
-    "sha3": {
+    "keccak256": {
       "v": 30,
       "d": "Base fee of the SHA3 opcode"
     },
-    "sha3Word": {
+    "keccak256Word": {
       "v": 6,
       "d": "Once per word of the SHA3 operation's data"
     },

@@ -65,7 +65,7 @@ export function dumpState(state: any, cb: Function) {
       results.push(result)
     }
     for (let i = 0; i < results.length; i++) {
-      console.log("SHA3'd address: " + bytesToHex(results[i].address))
+      console.log('Hashed address: ' + bytesToHex(results[i].address))
       console.log('\tstorage root: ' + bytesToHex(results[i].storageRoot))
       console.log('\tstorage: ')
       for (const storageKey in results[i].storage) {
