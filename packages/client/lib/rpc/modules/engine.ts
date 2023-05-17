@@ -1,8 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
-import { TransactionFactory } from '@ethereumjs/tx'
 import {
-  Withdrawal,
   bigIntToHex,
   bytesToHex,
   bytesToPrefixedHexString,
@@ -24,7 +22,7 @@ import type { Config } from '../../config'
 import type { VMExecution } from '../../execution'
 import type { BlobsBundle } from '../../miner'
 import type { FullEthereumService } from '../../service'
-import type { HeaderData } from '@ethereumjs/block'
+import type { ExecutionPayload } from '@ethereumjs/block'
 import type { VM } from '@ethereumjs/vm'
 
 const zeroBlockHash = zeros(32)
@@ -43,36 +41,10 @@ type Bytes32 = string
 // type Root = Bytes32
 type Blob = Bytes32
 type Bytes48 = string
-type Bytes256 = string
-type VariableBytes32 = string
 type Uint64 = string
 type Uint256 = string
 
-export type WithdrawalV1 = {
-  index: Bytes8 // Quantity, 8 Bytes
-  validatorIndex: Bytes8 // Quantity, 8 bytes
-  address: Bytes20 // DATA, 20 bytes
-  amount: Bytes32 // Quantity, 32 bytes
-}
-
-export type ExecutionPayload = {
-  parentHash: Bytes32 // DATA, 32 Bytes
-  feeRecipient: Bytes20 // DATA, 20 Bytes
-  stateRoot: Bytes32 // DATA, 32 Bytes
-  receiptsRoot: Bytes32 // DATA, 32 bytes
-  logsBloom: Bytes256 // DATA, 256 Bytes
-  prevRandao: Bytes32 // DATA, 32 Bytes
-  blockNumber: Uint64 // QUANTITY, 64 Bits
-  gasLimit: Uint64 // QUANTITY, 64 Bits
-  gasUsed: Uint64 // QUANTITY, 64 Bits
-  timestamp: Uint64 // QUANTITY, 64 Bits
-  extraData: VariableBytes32 // DATA, 0 to 32 Bytes
-  baseFeePerGas: Uint256 // QUANTITY, 256 Bits
-  excessDataGas?: Uint256 // QUANTITY, 256 Bits
-  blockHash: Bytes32 // DATA, 32 Bytes
-  transactions: string[] // Array of DATA - Array of transaction rlp strings,
-  withdrawals?: WithdrawalV1[] // Array of withdrawal objects
-}
+type WithdrawalV1 = Exclude<ExecutionPayload['withdrawals'], undefined>[number]
 export type ExecutionPayloadV1 = Omit<ExecutionPayload, 'withdrawals' | 'excessDataGas'>
 export type ExecutionPayloadV2 = ExecutionPayload & { withdrawals: WithdrawalV1[] }
 export type ExecutionPayloadV3 = ExecutionPayload & { excessDataGas: Uint256 }
@@ -276,73 +248,30 @@ const assembleBlock = async (
   payload: ExecutionPayload,
   chain: Chain
 ): Promise<{ block?: Block; error?: PayloadStatusV1 }> => {
-  const {
-    blockNumber: number,
-    receiptsRoot: receiptTrie,
-    prevRandao: mixHash,
-    feeRecipient: coinbase,
-    transactions,
-    withdrawals: withdrawalsData,
-    timestamp,
-  } = payload
+  const { blockNumber, timestamp } = payload
   const { config } = chain
   const common = config.chainCommon.copy()
 
   // This is a post merge block, so set its common accordingly
+  // Can't use hardforkByTTD flag, as the transactions will need to be deserialized
+  // first before the header can be constucted with their roots
   const ttd = common.hardforkTTD(Hardfork.Paris)
-  common.setHardforkByBlockNumber(number, ttd !== null ? ttd : undefined, timestamp)
+  common.setHardforkByBlockNumber(blockNumber, ttd !== null ? ttd : undefined, timestamp)
 
-  const txs = []
-  for (const [index, serializedTx] of transactions.entries()) {
-    try {
-      const tx = TransactionFactory.fromSerializedData(hexStringToBytes(serializedTx), { common })
-      txs.push(tx)
-    } catch (error) {
-      const validationError = `Invalid tx at index ${index}: ${error}`
-      config.logger.error(validationError)
-      const latestValidHash = await validHash(hexStringToBytes(payload.parentHash), chain)
-      const response = { status: Status.INVALID, latestValidHash, validationError }
-      return { error: response }
-    }
-  }
-
-  const transactionsTrie = await Block.genTransactionsTrieRoot(txs)
-  const withdrawals = withdrawalsData?.map((wData) => Withdrawal.fromWithdrawalData(wData))
-  const withdrawalsRoot = withdrawals ? await Block.genWithdrawalsTrieRoot(withdrawals) : undefined
-  const header: HeaderData = {
-    ...payload,
-    number,
-    receiptTrie,
-    transactionsTrie,
-    withdrawalsRoot,
-    mixHash,
-    coinbase,
-  }
-
-  let block: Block
   try {
-    // we are not setting hardforkByBlockNumber or hardforkByTTD as common is already
-    // correctly set to the correct hf
-    block = Block.fromBlockData({ header, transactions: txs, withdrawals }, { common })
-    // Verify blockHash matches payload
-    if (!equalsBytes(block.hash(), hexStringToBytes(payload.blockHash))) {
-      const validationError = `Invalid blockHash, expected: ${
-        payload.blockHash
-      }, received: ${bytesToPrefixedHexString(block.hash())}`
-      config.logger.debug(validationError)
-      const latestValidHash = await validHash(toBytes(header.parentHash), chain)
-      const response = { status: Status.INVALID_BLOCK_HASH, latestValidHash, validationError }
-      return { error: response }
-    }
+    const block = await Block.fromExecutionPayload(payload, { common })
+    return { block }
   } catch (error) {
-    const validationError = `Error verifying block during init: ${error}`
-    config.logger.debug(validationError)
-    const latestValidHash = await validHash(toBytes(header.parentHash), chain)
-    const response = { status: Status.INVALID, latestValidHash, validationError }
+    const validationError = `Error assembling block during from payload: ${error}`
+    config.logger.error(validationError)
+    const latestValidHash = await validHash(hexStringToBytes(payload.parentHash), chain)
+    const response = {
+      status: `${error}`.includes('Invalid blockHash') ? Status.INVALID_BLOCK_HASH : Status.INVALID,
+      latestValidHash,
+      validationError,
+    }
     return { error: response }
   }
-
-  return { block }
 }
 
 const getPayloadBody = (block: Block): ExecutionPayloadBodyV1 => {
