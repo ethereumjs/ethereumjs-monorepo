@@ -564,6 +564,17 @@ export class Block {
     }
   }
 
+  private calcExcessDataGas(parentHeader: BlockHeader, newBlobs: number) {
+    const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
+    const consumedDataGas = BigInt(newBlobs) * dataGasPerBlob
+    const targetGasPerBlock = this._common.param('gasConfig', 'targetDataGasPerBlock')
+    if ((parentHeader.excessDataGas ?? BigInt(0)) + consumedDataGas < targetGasPerBlock) {
+      return BigInt(0)
+    } else {
+      return (parentHeader.excessDataGas ?? BigInt(0)) + consumedDataGas - targetGasPerBlock
+    }
+  }
+
   /**
    * Validates that data gas fee for each transaction is greater than or equal to the
    * dataGasPrice for the block and that total data gas in block is less than maximum
@@ -571,6 +582,7 @@ export class Block {
    * @param parentHeader header of parent block
    */
   validateBlobTransactions(parentHeader: BlockHeader) {
+    let numBlobs = 0
     for (const tx of this.transactions) {
       if (tx instanceof BlobEIP4844Transaction) {
         const dataGasPrice = getDataGasPrice(parentHeader)
@@ -581,7 +593,14 @@ export class Block {
             } < than block data gas price ${dataGasPrice} - ${this.errorStr()}`
           )
         }
+        numBlobs += tx.versionedHashes.length
       }
+    }
+    const expectedExcessDataGas = this.calcExcessDataGas(parentHeader, numBlobs)
+    if (this.header.excessDataGas !== expectedExcessDataGas) {
+      throw new Error(
+        `block excessDataGas mismatch: have ${this.header.excessDataGas}, want ${expectedExcessDataGas}`
+      )
     }
   }
 
