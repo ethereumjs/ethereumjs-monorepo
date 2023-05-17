@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1684316442274,
+  "lastUpdate": 1684326702059,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f5ab7fc592ff917fb2048283a61d628b183ffaa6",
-          "message": "VM: Diff-based Touched Accounts Checkpointing (#2581)\n\n* VM: Switched to a more efficient diff-based way of touched account checkpointing\r\n\r\n* VM: move accessed storage inefficient checkpointing problem to berlin, haha\r\n\r\n* EVM: avoid memory copy in MLOAD opcode function\r\n\r\n* Remove console.log() in EVM\r\n\r\n* vmState: ensure touched accounts delete stack gets properly updated on commit\r\n\r\n* vm/eei: save touched height\r\n\r\n* vm/vmState: new possible fix for touched accounts\r\n\r\n* vm/vmState: another attempt to fix touched accounts journaling\r\n\r\n* vm: add journaling\r\n\r\n* Check correct journal height on revert\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-03-17T21:41:34+01:00",
-          "tree_id": "18e1db87bfb5c7edac921db6ed896ffa66415dbb",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f5ab7fc592ff917fb2048283a61d628b183ffaa6"
-        },
-        "date": 1679085855972,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15626,
-            "range": "±4.06%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 16071,
-            "range": "±1.40%",
-            "unit": "ops/sec",
-            "extra": "92 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 15087,
-            "range": "±6.39%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 15857,
-            "range": "±1.45%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 15358,
-            "range": "±1.80%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.05%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5b393bf9feae0053521e04e6747214b2cc1b1af6",
+          "message": "Monorepo: Deprecation Cleanup Work (#2706)\n\n* Common: remove deprecated nextHardforkBlock() and isNextHardforkBlock() methods\r\n\r\n* Common: remove deprecated isHardforkBlock() method\r\n\r\n* Blockchain: remove deprecated getHead() method\r\n\r\n* EVM: Rename SHA3 opcode -> KECCAK256\r\n\r\n* EVM: rename DIFFICULTY opcode to PREVRANDAO post Merge\r\n\r\n* Common: add prevrandaio gas price to EIP-4399 definition file",
+          "timestamp": "2023-05-17T14:28:37+02:00",
+          "tree_id": "77bd0ac0193c90408ffca929b0ccf42bcb6c6f47",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5b393bf9feae0053521e04e6747214b2cc1b1af6"
+        },
+        "date": 1684326701382,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 32894,
+            "range": "±3.78%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 30767,
+            "range": "±5.16%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 32503,
+            "range": "±2.33%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 31608,
+            "range": "±2.36%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30157,
+            "range": "±2.73%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
           }
         ]
       }
