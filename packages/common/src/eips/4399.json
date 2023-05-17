@@ -7,7 +7,12 @@
   "minimumHardfork": "london",
   "requiredEIPs": [],
   "gasConfig": {},
-  "gasPrices": {},
+  "gasPrices": {
+    "prevrandao": {
+      "v": 2,
+      "d": "Base fee of the PREVRANDAO opcode (previously DIFFICULTY)"
+    }
+  },
   "vm": {},
   "pow": {}
 }
