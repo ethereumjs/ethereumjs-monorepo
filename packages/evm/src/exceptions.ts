@@ -21,6 +21,7 @@ export enum ERROR {
   INVALID_BYTECODE_RESULT = 'invalid bytecode deployed',
   INVALID_EOF_FORMAT = 'invalid EOF format',
   INITCODE_SIZE_VIOLATION = 'initcode exceeds max initcode size',
+  INVALID_INPUT_LENGTH = 'invalid input length',
 
   AUTHCALL_UNSET = 'attempting to AUTHCALL without AUTH set',
   AUTHCALL_NONZERO_VALUEEXT = 'attempting to execute AUTHCALL with nonzero external value',

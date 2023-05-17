@@ -9,7 +9,7 @@ import {
   short,
 } from '@ethereumjs/util'
 
-import { EvmErrorResult } from '../evm'
+import { EvmErrorResult, OOGResult } from '../evm'
 import { ERROR, EvmError } from '../exceptions'
 
 import type { ExecResult } from '../evm'
@@ -27,6 +27,17 @@ export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
         opts.data.length
       } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`
     )
+  }
+
+  if (opts.gasLimit < gasUsed) {
+    if (opts._debug !== undefined) {
+      opts._debug(`KZG_POINT_EVALUATION (0x14) failed: OOG`)
+    }
+    return OOGResult(opts.gasLimit)
+  }
+
+  if (opts.data.length !== 192) {
+    return EvmErrorResult(new EvmError(ERROR.INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
   const version = Number(opts._common.paramByEIP('sharding', 'blobCommitmentVersionKzg', 4844))
