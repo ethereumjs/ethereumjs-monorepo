@@ -175,7 +175,11 @@ export class RLPx extends EventEmitter {
 
   disconnect(id: Uint8Array) {
     const peer = this._peers.get(bytesToHex(id))
-    if (peer instanceof Peer) peer.disconnect(DISCONNECT_REASONS.CLIENT_QUITTING)
+    if (peer instanceof Peer) {
+      peer.disconnect(DISCONNECT_REASONS.CLIENT_QUITTING)
+      peer._onSocketClose()
+    }
+    if (peer instanceof net.Socket) peer.destroy()
   }
 
   _isAlive() {
