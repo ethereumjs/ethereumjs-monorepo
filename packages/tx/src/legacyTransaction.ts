@@ -4,7 +4,6 @@ import {
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
-  bytesToPrefixedHexString,
   ecrecover,
   toBytes,
   unpadBytes,
