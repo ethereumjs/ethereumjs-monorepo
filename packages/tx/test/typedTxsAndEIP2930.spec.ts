@@ -556,6 +556,7 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
     t.ok(equalsBytes(expectedHash, signed.hash()), 'hash correct')
 
     const expectedJSON = {
+      type: '0x1',
       chainId: '0x796f6c6f763378',
       nonce: '0x0',
       gasPrice: '0x3b9aca00',
