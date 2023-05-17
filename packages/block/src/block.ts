@@ -7,20 +7,32 @@ import {
   Withdrawal,
   bigIntToHex,
   bytesToHex,
+  bytesToPrefixedHexString,
   equalsBytes,
   fetchFromProvider,
   getProvider,
+  hexStringToBytes,
   intToHex,
   isHexPrefixed,
   ssz,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
+import { executionPayloadFromBeaconPayload } from './from-beacon-payload'
 import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
 import { getDataGasPrice } from './helpers'
 
-import type { BlockBytes, BlockData, BlockOptions, JsonBlock, JsonRpcBlock } from './types'
+import type { BeaconPayloadJson } from './from-beacon-payload'
+import type {
+  BlockBytes,
+  BlockData,
+  BlockOptions,
+  ExecutionPayload,
+  HeaderData,
+  JsonBlock,
+  JsonRpcBlock,
+} from './types'
 import type { Common } from '@ethereumjs/common'
 import type {
   FeeMarketEIP1559Transaction,
@@ -282,6 +294,81 @@ export class Block {
     }
 
     return blockFromRpc(blockData, uncleHeaders, opts)
+  }
+
+  /**
+   *  Method to retrieve a block from an execution payload
+   * @param execution payload constructed from beacon payload
+   * @param opts {@link BlockOptions}
+   * @returns the block constructed block
+   */
+  public static async fromExecutionPayload(
+    payload: ExecutionPayload,
+    options?: BlockOptions
+  ): Promise<Block> {
+    const {
+      blockNumber: number,
+      receiptsRoot: receiptTrie,
+      prevRandao: mixHash,
+      feeRecipient: coinbase,
+      transactions,
+      withdrawals: withdrawalsData,
+    } = payload
+
+    const txs = []
+    for (const [index, serializedTx] of transactions.entries()) {
+      try {
+        const tx = TransactionFactory.fromSerializedData(hexStringToBytes(serializedTx), {
+          common: options?.common,
+        })
+        txs.push(tx)
+      } catch (error) {
+        const validationError = `Invalid tx at index ${index}: ${error}`
+        throw validationError
+      }
+    }
+
+    const transactionsTrie = await Block.genTransactionsTrieRoot(txs)
+    const withdrawals = withdrawalsData?.map((wData) => Withdrawal.fromWithdrawalData(wData))
+    const withdrawalsRoot = withdrawals
+      ? await Block.genWithdrawalsTrieRoot(withdrawals)
+      : undefined
+    const header: HeaderData = {
+      ...payload,
+      number,
+      receiptTrie,
+      transactionsTrie,
+      withdrawalsRoot,
+      mixHash,
+      coinbase,
+    }
+
+    // we are not setting hardforkByBlockNumber or hardforkByTTD as common is already
+    // correctly set to the correct hf
+    const block = Block.fromBlockData({ header, transactions: txs, withdrawals }, options)
+    // Verify blockHash matches payload
+    if (!equalsBytes(block.hash(), hexStringToBytes(payload.blockHash))) {
+      const validationError = `Invalid blockHash, expected: ${
+        payload.blockHash
+      }, received: ${bytesToPrefixedHexString(block.hash())}`
+      throw Error(validationError)
+    }
+
+    return block
+  }
+
+  /**
+   *  Method to retrieve a block from a beacon payload json
+   * @param payload json of a beacon beacon fetched from beacon apis
+   * @param opts {@link BlockOptions}
+   * @returns the block constructed block
+   */
+  public static async fromBeaconPayloadJson(
+    payload: BeaconPayloadJson,
+    options?: BlockOptions
+  ): Promise<Block> {
+    const executionPayload = executionPayloadFromBeaconPayload(payload)
+    return Block.fromExecutionPayload(executionPayload, options)
   }
 
   /**
