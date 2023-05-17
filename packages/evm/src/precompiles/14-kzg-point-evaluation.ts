@@ -1,6 +1,5 @@
 import {
   bigIntToBytes,
-  bytesToBigInt,
   bytesToHex,
   computeVersionedHash,
   concatBytesNoTypeCheck,
@@ -18,6 +17,8 @@ import type { PrecompileInput } from './types'
 export const BLS_MODULUS = BigInt(
   '52435875175126190479447740508185965837690552500527637822603658699938581184513'
 )
+
+const modulusBuffer = setLengthLeft(bigIntToBytes(BLS_MODULUS), 32)
 
 export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
   const gasUsed = opts._common.param('gasPrices', 'kzgPointEvaluationGasPrecompilePrice')
@@ -47,14 +48,6 @@ export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
   const y = opts.data.subarray(64, 96)
   const commitment = opts.data.subarray(96, 144)
   const kzgProof = opts.data.subarray(144, 192)
-
-  if (bytesToBigInt(z) >= BLS_MODULUS || bytesToBigInt(y) >= BLS_MODULUS) {
-    if (opts._debug !== undefined) {
-      opts._debug(`KZG_POINT_EVALUATION (0x14) failed: POINT_GREATER_THAN_BLS_MODULUS`)
-    }
-
-    return EvmErrorResult(new EvmError(ERROR.POINT_GREATER_THAN_BLS_MODULUS), opts.gasLimit)
-  }
 
   if (bytesToHex(computeVersionedHash(commitment, version)) !== bytesToHex(versionedHash)) {
     if (opts._debug !== undefined) {
@@ -90,7 +83,6 @@ export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
 
   // Return value - FIELD_ELEMENTS_PER_BLOB and BLS_MODULUS as padded 32 byte big endian values
   const fieldElementsBuffer = setLengthLeft(bigIntToBytes(fieldElementsPerBlob), 32)
-  const modulusBuffer = setLengthLeft(bigIntToBytes(BLS_MODULUS), 32)
 
   if (opts._debug !== undefined) {
     opts._debug(
