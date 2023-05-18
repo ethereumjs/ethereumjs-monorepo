@@ -571,25 +571,27 @@ export class Block {
    * @param parentHeader header of parent block
    */
   validateBlobTransactions(parentHeader: BlockHeader) {
-    let numBlobs = 0
-    for (const tx of this.transactions) {
-      if (tx instanceof BlobEIP4844Transaction) {
-        const dataGasPrice = getDataGasPrice(parentHeader)
-        if (tx.maxFeePerDataGas < dataGasPrice) {
-          throw new Error(
-            `blob transaction maxFeePerDataGas ${
-              tx.maxFeePerDataGas
-            } < than block data gas price ${dataGasPrice} - ${this.errorStr()}`
-          )
+    if (this._common.isActivatedEIP(4844)) {
+      let numBlobs = 0
+      for (const tx of this.transactions) {
+        if (tx instanceof BlobEIP4844Transaction) {
+          const dataGasPrice = getDataGasPrice(parentHeader)
+          if (tx.maxFeePerDataGas < dataGasPrice) {
+            throw new Error(
+              `blob transaction maxFeePerDataGas ${
+                tx.maxFeePerDataGas
+              } < than block data gas price ${dataGasPrice} - ${this.errorStr()}`
+            )
+          }
+          numBlobs += tx.versionedHashes.length
         }
-        numBlobs += tx.versionedHashes.length
       }
-    }
-    const expectedExcessDataGas = calcExcessDataGas(parentHeader, numBlobs)
-    if (this.header.excessDataGas !== expectedExcessDataGas) {
-      throw new Error(
-        `block excessDataGas mismatch: have ${this.header.excessDataGas}, want ${expectedExcessDataGas}`
-      )
+      const expectedExcessDataGas = calcExcessDataGas(parentHeader, numBlobs)
+      if (this.header.excessDataGas !== expectedExcessDataGas) {
+        throw new Error(
+          `block excessDataGas mismatch: have ${this.header.excessDataGas}, want ${expectedExcessDataGas}`
+        )
+      }
     }
   }
 
