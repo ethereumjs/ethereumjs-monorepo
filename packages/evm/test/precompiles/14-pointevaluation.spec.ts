@@ -1,7 +1,6 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
-  bigIntToBytes,
   bytesToBigInt,
   computeVersionedHash,
   concatBytesNoTypeCheck,
@@ -68,26 +67,6 @@ tape('Precompiles: point evaluation', async (t) => {
       bytesToBigInt(unpadBytes(res.returnValue.slice(32))),
       BLS_MODULUS,
       'point evaluation precompile returned expected output'
-    )
-
-    const optsWithBigNumbers: PrecompileInput = {
-      data: concatBytesNoTypeCheck(
-        versionedHash,
-        testCase.InputPoint,
-        bigIntToBytes(BLS_MODULUS + 5n),
-        testCase.Commitment,
-        testCase.Proof
-      ),
-      gasLimit: 0xfffffffffn,
-      _EVM: evm,
-      _common: common,
-    }
-
-    res = await pointEvaluation(optsWithBigNumbers)
-    t.equal(
-      res.exceptionError?.error,
-      'point greater than BLS modulus',
-      'point evaluation precompile throws when points are too big'
     )
 
     const optsWithInvalidCommitment: PrecompileInput = {

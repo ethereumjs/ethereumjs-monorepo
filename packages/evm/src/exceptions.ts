@@ -34,7 +34,6 @@ export enum ERROR {
   BLS_12_381_FP_NOT_IN_FIELD = 'fp point not in field',
 
   // Point Evaluation Errors
-  POINT_GREATER_THAN_BLS_MODULUS = 'point greater than BLS modulus',
   INVALID_COMMITMENT = 'kzg commitment does not match versioned hash',
   INVALID_INPUTS = 'kzg inputs invalid',
   INVALID_PROOF = 'kzg proof invalid',
