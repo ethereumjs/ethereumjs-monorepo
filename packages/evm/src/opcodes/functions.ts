@@ -637,7 +637,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.stack.push(runState.interpreter.getBlockBaseFee())
     },
   ],
-  // 0x49: DATAHASH
+  // 0x49: BLOBHASH
   [
     0x49,
     function (runState) {
