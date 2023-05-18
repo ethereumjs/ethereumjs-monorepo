@@ -165,6 +165,11 @@ export function twoPeerMsgExchange(
 
 export function destroyRLPXs(rlpxs: any) {
   for (const rlpx of rlpxs) {
+    for (const peer of rlpx._peers) {
+      if (peer[1]._pingIntervalId !== null) {
+        clearInterval(peer[1]._pingIntervalId)
+      }
+    }
     rlpx.destroy()
   }
 }
