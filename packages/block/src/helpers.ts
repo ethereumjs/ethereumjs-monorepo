@@ -91,21 +91,23 @@ export function getDifficulty(headerData: HeaderData): bigint | null {
  * access to the "current" block's common instance to verify if 4844 is active or not.
  */
 export const calcExcessDataGas = (parent: BlockHeader, newBlobs: number) => {
+  let parentExcessDataGas
   if (!parent._common.isActivatedEIP(4844)) {
     // If 4844 isn't active on header, assume this is the first post-fork block so excess data gas is 0
-    return BigInt(0)
-  }
-  if (parent.excessDataGas === undefined) {
-    // Given 4844 is active on parent block, we expect it to have an excessDataGas field
-    throw new Error('parent header does not contain excessDataGas field')
+    parentExcessDataGas = BigInt(0)
+  } else {
+    if (parent.excessDataGas === undefined) {
+      throw new Error('parent block has no excessDataGas field')
+    }
+    parentExcessDataGas = parent.excessDataGas
   }
 
   const consumedDataGas = BigInt(newBlobs) * parent._common.param('gasConfig', 'dataGasPerBlob')
   const targetDataGasPerBlock = parent._common.param('gasConfig', 'targetDataGasPerBlock')
 
-  if (parent.excessDataGas + consumedDataGas < targetDataGasPerBlock) return BigInt(0)
+  if (parentExcessDataGas! + consumedDataGas < targetDataGasPerBlock) return BigInt(0)
   else {
-    return parent.excessDataGas + consumedDataGas - targetDataGasPerBlock
+    return parentExcessDataGas! + consumedDataGas - targetDataGasPerBlock
   }
 }
 
@@ -141,14 +143,18 @@ export const fakeExponential = (factor: bigint, numerator: bigint, denominator: 
  * @returns the price in gwei per unit of data gas spent
  */
 export const getDataGasPrice = (header: BlockHeader) => {
-  if (header.excessDataGas === undefined) {
-    throw new Error('parent header must have excessDataGas field populated')
+  if (!header._common.isActivatedEIP(4844)) {
+    return BigInt(0)
   }
-  return fakeExponential(
+  if (header.excessDataGas === undefined) {
+    throw new Error('header must have excessDataGas field populated')
+  }
+  const ret = fakeExponential(
     header._common.param('gasPrices', 'minDataGasPrice'),
     header.excessDataGas,
     header._common.param('gasConfig', 'dataGasPriceUpdateFraction')
   )
+  return ret
 }
 
 /**
@@ -158,7 +164,7 @@ export const getDataGasPrice = (header: BlockHeader) => {
  * @returns the total data gas fee for a transaction assuming it contains `numBlobs`
  */
 export const calcDataFee = (numBlobs: number, parent: BlockHeader) => {
-  if (parent.excessDataGas === undefined) {
+  if (parent.excessDataGas === undefined && parent._common.isActivatedEIP(4844)) {
     throw new Error('parent header must have excessDataGas field populated')
   }
   const totalDataGas = parent._common.param('gasConfig', 'dataGasPerBlob') * BigInt(numBlobs)

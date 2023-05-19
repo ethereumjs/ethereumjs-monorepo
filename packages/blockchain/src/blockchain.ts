@@ -603,7 +603,9 @@ export class Blockchain implements BlockchainInterface {
     // TODO: Rethink how validateHeader vs validateBlobTransactions works since the parentHeader is retrieved multiple times
     // (one for each uncle header and then for validateBlobTxs).
     const parentBlock = await this.getBlock(block.header.parentHash)
-    block.validateBlobTransactions(parentBlock.header)
+    if (parentBlock._common.isActivatedEIP(4844)) {
+      block.validateBlobTransactions(parentBlock.header)
+    }
   }
   /**
    * The following rules are checked in this method:
