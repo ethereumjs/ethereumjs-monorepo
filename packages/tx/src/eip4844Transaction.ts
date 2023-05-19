@@ -5,6 +5,7 @@ import {
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
+  bytesToHex,
   bytesToPrefixedHexString,
   computeVersionedHash,
   concatBytes,
@@ -309,10 +310,12 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     if (networkTxValues.length !== 4) {
       throw Error(`Expected 4 values in the deserialized network transaction`)
     }
-    const [txValues, kzgCommitments, blobs, kzgProofs] =
+    const [txValues, blobs, kzgCommitments, kzgProofs] =
       networkTxValues as BlobEIP4844NetworkValuesArray
-    const decodedTx = BlobEIP4844Transaction.fromValuesArray(txValues)
-    if (decodedTx.to !== undefined) {
+
+    // Construct the tx but don't freeze yet, we will assign blobs etc once validated
+    const decodedTx = BlobEIP4844Transaction.fromValuesArray(txValues, { ...opts, freeze: false })
+    if (decodedTx.to === undefined) {
       throw Error('BlobEIP4844Transaction can not be send without a valid `to`')
     }
 
@@ -329,6 +332,12 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     decodedTx.blobs = blobs
     decodedTx.kzgCommitments = kzgCommitments
     decodedTx.kzgProofs = kzgProofs
+
+    // freeze the tx
+    const freeze = opts?.freeze ?? true
+    if (freeze) {
+      Object.freeze(decodedTx)
+    }
 
     return decodedTx
   }
