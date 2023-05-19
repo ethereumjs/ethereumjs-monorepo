@@ -392,6 +392,27 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     return concatBytes(TRANSACTION_TYPE_BYTES, RLP.encode(base))
   }
 
+  /**
+   * @returns the serialized form of a blob transaction in the network wrapper format (used for gossipping mempool transactions over devp2p)
+   */
+  serializeNetworkWrapper(): Uint8Array {
+    if (
+      this.blobs === undefined ||
+      this.kzgCommitments === undefined ||
+      this.kzgProofs === undefined
+    ) {
+      throw new Error(
+        'cannot serialize network wrapper without blobs, KZG commitments and KZG proofs provided'
+      )
+    }
+
+    const tx_payload = this.raw()
+    return concatBytes(
+      TRANSACTION_TYPE_BYTES,
+      RLP.encode([tx_payload, this.blobs, this.kzgCommitments, this.kzgProofs])
+    )
+  }
+
   getMessageToSign(hashMessage = true): Uint8Array {
     const base = this.raw().slice(0, 11)
     const message = concatBytes(TRANSACTION_TYPE_BYTES, RLP.encode(base))
