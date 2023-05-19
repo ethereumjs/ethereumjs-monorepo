@@ -19,6 +19,7 @@ import {
   toType,
   zeros,
 } from '@ethereumjs/util'
+import { time } from 'console'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
@@ -108,13 +109,23 @@ export class BlockHeader {
    */
   public static fromValuesArray(values: BlockHeaderBytes, opts: BlockOptions = {}) {
     const headerData = valuesArrayToHeaderData(values)
-    const { number, baseFeePerGas } = headerData
+    const { number, baseFeePerGas, excessDataGas, timestamp } = headerData
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (opts.common?.isActivatedEIP(1559) && baseFeePerGas === undefined) {
       const eip1559ActivationBlock = bigIntToBytes(opts.common?.eipBlock(1559)!)
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
       if (eip1559ActivationBlock && equalsBytes(eip1559ActivationBlock, number as Uint8Array)) {
         throw new Error('invalid header. baseFeePerGas should be provided')
+      }
+    }
+    if (opts.common && number !== undefined) {
+      // For some reason we switch to Cancun at some block, but then import a Shanghai block,
+      // and then on this Shanghai block the provided common points to Cancun
+      // Shanghai has and should not have excessDataGas so it throws if we do not clone and set timestamp of the common
+      const clone = opts.common?.copy()
+      clone.setHardforkByBlockNumber(number, undefined, timestamp)
+      if (clone.isActivatedEIP(4844) && excessDataGas === undefined) {
+        throw new Error('invalid header. excessDataGas should be provided')
       }
     }
     return BlockHeader.fromHeaderData(headerData, opts)
