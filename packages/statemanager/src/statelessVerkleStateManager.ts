@@ -14,6 +14,7 @@ import {
   zeros,
 } from '@ethereumjs/util'
 import { concatBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import * as wasm from 'rust-verkle-wasm'
 
 import { AccountCache, CacheType, StorageCache } from './cache'
 
@@ -26,8 +27,6 @@ import type {
   StorageDump,
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
-
-const wasm = require('../../rust-verkle-wasm/rust_verkle_wasm')
 
 export interface VerkleState {
   [key: PrefixedHexString]: PrefixedHexString
