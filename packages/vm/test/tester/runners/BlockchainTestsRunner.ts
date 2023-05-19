@@ -144,8 +144,8 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       try {
         const decoded: any = RLP.decode(blockRlp)
         const parentHash = decoded[0][0]
-        TD = await blockchain.getTotalDifficulty(parentHash)
         timestamp = bytesToBigInt(decoded[0][11])
+        TD = await blockchain.getTotalDifficulty(parentHash)
         // eslint-disable-next-line no-empty
       } catch (e) {}
 

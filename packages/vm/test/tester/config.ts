@@ -278,7 +278,7 @@ export function getTestDirs(network: string, testType: string) {
  * @param ttd If set: total terminal difficulty to switch to merge
  * @returns
  */
-function setupCommonWithNetworks(network: string, ttd?: number) {
+function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: number) {
   let networkLowercase: string // This only consists of the target hardfork, so without the EIPs
   if (network.includes('+')) {
     const index = network.indexOf('+')
@@ -319,6 +319,13 @@ function setupCommonWithNetworks(network: string, ttd?: number) {
           name: hf.name,
           block: null,
           ttd: BigInt(ttd),
+        })
+      }
+      if (timestamp !== undefined && hf.name !== Hardfork.Dao) {
+        testHardforks.push({
+          name: hf.name,
+          block: null,
+          timestamp,
         })
       }
     }
@@ -367,6 +374,8 @@ export function getCommon(network: string): Common {
     const startNetwork = network.substring(0, start) // HF before the merge
     const TTD = Number('0x' + network.substring(end)) // Total difficulty to transition to PoS
     return setupCommonWithNetworks(startNetwork, TTD)
+  } else if (networkLowercase === 'shanghaitocancunattime15k') {
+    return setupCommonWithNetworks('Shanghai', undefined, 15000)
   } else {
     // Case 3: this is not a "default fork" network, but it is a "transition" network. Test the VM if it transitions the right way
     const transitionForks =
