@@ -7,18 +7,11 @@ import type { AccessList, Common, EVMStateManagerInterface } from '@ethereumjs/c
 import type { Account } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
-enum AddressState {
-  PreWarmUntouched,
-  PreWarmTouched,
-  Touched,
-}
-
-type WasPreWarm = boolean
 type WarmSlots = Set<string>
 type AddressString = string
 type SlotString = string
 
-type Journal = Map<AddressString, [WasPreWarm, WarmSlots]>
+type Journal = Map<AddressString, WarmSlots>
 
 /**
  * Journal Diff Item:
@@ -27,7 +20,8 @@ type Journal = Map<AddressString, [WasPreWarm, WarmSlots]>
  * TODO make it a set
  */
 
-type JournalDiffItem = AddressString | [AddressString, SlotString]
+type JournalDiffItem = [Set<AddressString>, Map<AddressString, Set<SlotString>>]
+//AddressString | Map<AddressString, SlotString>
 type JournalHeight = number
 
 export class EvmJournal {
@@ -37,8 +31,9 @@ export class EvmJournal {
   private _debug: Debugger
 
   private journal: Journal
+  private preWarmJournal: Map<AddressString, Set<SlotString>>
   private touched: Set<string>
-  private journalDiff: [JournalHeight, JournalDiffItem[]][]
+  private journalDiff: [JournalHeight, JournalDiffItem][]
 
   private journalHeight: number
 
@@ -49,6 +44,7 @@ export class EvmJournal {
 
     this.journalHeight = 0
     this.journal = new Map()
+    this.preWarmJournal = new Map()
     this.touched = new Set()
     this.journalDiff = []
 
@@ -78,12 +74,12 @@ export class EvmJournal {
       added = true
     }
     if (!this.journal.has(address)) {
-      this.journal.set(address, [false, new Set()])
+      this.journal.set(address, new Set())
       added = true
     }
     if (added) {
       const diffArr = this.journalDiff[this.journalDiff.length - 1][1]
-      diffArr.push(address)
+      diffArr[0].add(address)
     }
   }
   async commit() {
@@ -98,13 +94,13 @@ export class EvmJournal {
     // Checkpoint
     // Height: 2 (B)
     // Revert (now diff items of (B) are in same arr as (A) so (A) items also get reverted while those should be committed)
-    this.journalDiff.push([this.journalHeight, []])
+    this.journalDiff.push([this.journalHeight, [new Set(), new Map()]])
     await this.stateManager.commit()
   }
 
   async checkpoint() {
     this.journalHeight++
-    this.journalDiff.push([this.journalHeight, []])
+    this.journalDiff.push([this.journalHeight, [new Set(), new Map()]])
     await this.stateManager.checkpoint()
   }
 
@@ -121,27 +117,33 @@ export class EvmJournal {
         break
       }
 
-      for (const item of diff) {
-        if (Array.isArray(item)) {
-          const address = item[0]
-          const slot = item[1]
-          const slotsMap = this.journal.get(address)![1]
-          slotsMap.delete(slot)
-        } else {
-          // It is a string, so we have to delete it from touched accounts and warm addresses
-          // NOTE: only delete from warm addresses if it is not pre-warmed
-          const address = <string>item
-          if (address !== RIPEMD160_ADDRESS_STRING) {
-            // If RIPEMD160 is touched, keep it touched.
-            // Default behavior for others.
-            this.touched.delete(address)
-          }
+      const addressSet = diff[0]
+      const slotsMap = diff[1]
 
-          // Sanity check, journal should have the item
-          if (this.journal.has(address)) {
-            if (!this.journal.get(address)![0]) {
-              // It was not pre-warm, so now mark this address as cold
-            }
+      for (const address of addressSet) {
+        // Delete the address from the journal
+        // NOTE: only delete from warm addresses if it is not pre-warmed
+        if (address !== RIPEMD160_ADDRESS_STRING) {
+          // If RIPEMD160 is touched, keep it touched.
+          // Default behavior for others.
+          this.touched.delete(address)
+        }
+
+        // Sanity check, journal should have the item
+        if (this.journal.has(address)) {
+          if (!this.journal.get(address)) {
+            // It was not pre-warm, so now mark this address as cold
+            this.journal.delete(address)
+          }
+        }
+      }
+
+      for (const [address, delSlots] of slotsMap) {
+        // Sanity check, the address SHOULD be in the journal
+        if (this.journal.has(address)) {
+          const slots = this.journal.get(address)!
+          for (const delSlot of delSlots) {
+            slots.delete(delSlot)
           }
         }
       }
@@ -176,6 +178,7 @@ export class EvmJournal {
     }
     this.journalHeight = 0
     this.journal = new Map()
+    this.preWarmJournal = new Map()
     this.touched = new Set()
     this.journalDiff = []
   }
@@ -186,7 +189,7 @@ export class EvmJournal {
    * @param extras Any extra addressess which should be warmed as well (precompiles, sender, receipient, coinbase (EIP 3651))
    */
   addPreWarmed(accessList: AccessList, extras: string[]) {
-    for (const entry of accessList) {
+    /*for (const entry of accessList) {
       const address = stripHexPrefix(entry.address)
       if (!this.journal.has(address)) {
         this.journal.set(address, [true, new Set()]) // Mark as prewarmed (true) so it never gets cold
@@ -201,6 +204,23 @@ export class EvmJournal {
       if (!this.journal.has(address)) {
         this.journal.set(address, [true, new Set()]) // Mark as prewarmed (true) so it never gets cold
       }
+    }*/
+
+    for (const entry of accessList) {
+      const address = stripHexPrefix(entry.address)
+      if (!this.preWarmJournal.has(address)) {
+        this.preWarmJournal.set(address, new Set())
+      }
+      const slotsSet = this.preWarmJournal.get(address)!
+      for (const slot of entry.storageKeys) {
+        slotsSet.add(stripHexPrefix(slot))
+      }
+    }
+    for (const addressMaybePrefixed of extras) {
+      const address = stripHexPrefix(addressMaybePrefixed)
+      if (!this.preWarmJournal.has(address)) {
+        this.preWarmJournal.set(address, new Set())
+      }
     }
   }
 
@@ -210,7 +230,7 @@ export class EvmJournal {
    */
   isWarmedAddress(address: Uint8Array): boolean {
     const addressHex = bytesToHex(address)
-    return this.journal.has(addressHex)
+    return this.journal.has(addressHex) || this.preWarmJournal.has(addressHex)
   }
 
   /**
@@ -228,11 +248,14 @@ export class EvmJournal {
    */
   isWarmedStorage(address: Uint8Array, slot: Uint8Array): boolean {
     const addressHex = bytesToHex(address)
-    const items = this.journal.get(addressHex)
-    if (items === undefined) {
+    const slots = this.journal.get(addressHex)
+    if (slots === undefined) {
+      if (this.preWarmJournal.has(addressHex)) {
+        return this.preWarmJournal.get(addressHex)!.has(bytesToHex(slot))
+      }
       return false
     }
-    return items[1].has(bytesToHex(slot))
+    return slots.has(bytesToHex(slot))
   }
 
   /**
@@ -242,21 +265,21 @@ export class EvmJournal {
    */
   addWarmedStorage(address: Uint8Array, slot: Uint8Array): void {
     const addressHex = bytesToHex(address)
-    let items = this.journal.get(addressHex)
-    if (items === undefined) {
+    let slots = this.journal.get(addressHex)
+    if (slots === undefined) {
       this.addWarmedAddress(address)
-      items = this.journal.get(addressHex)
+      slots = this.journal.get(addressHex)
     }
-    const slots = items![1]
     const slotStr = bytesToHex(slot)
-    if (!slots.has(slotStr)) {
-      slots.add(slotStr)
+    if (!slots!.has(slotStr)) {
+      slots!.add(slotStr)
       const diff = this.journalDiff[this.journalDiff.length - 1][1]
-      // Note: move this to a set to avoid adding a load of array items, should just loop over the set
-      // So diff should probably be of type [Set<AddressString>, Map<AddressString, Set<SlotString>>]
-      // So you can loop over the addresses to be deleted, and loop over the slots per address to be deleted.
-      // For now this should work
-      diff.push([addressHex, slotStr])
+      const addressSlotMap = diff[1]
+      if (!addressSlotMap.has(addressHex)) {
+        addressSlotMap.set(addressHex, new Set())
+      }
+      const slotsSet = addressSlotMap.get(addressHex)!
+      slotsSet.add(slotStr)
     }
   }
 }
