@@ -166,7 +166,7 @@ export class BlockBuilder {
     this.checkStatus()
 
     if (!this.checkpointed) {
-      await this.vm.stateManager.checkpoint()
+      await this.vm.evm.evmJournal.checkpoint()
       this.checkpointed = true
     }
 
@@ -232,7 +232,7 @@ export class BlockBuilder {
    */
   async revert() {
     if (this.checkpointed) {
-      await this.vm.stateManager.revert()
+      await this.vm.evm.evmJournal.revert()
       this.checkpointed = false
     }
     this.blockStatus = { status: BuildStatus.Reverted }
@@ -318,7 +318,7 @@ export class BlockBuilder {
 
     this.blockStatus = { status: BuildStatus.Build, block }
     if (this.checkpointed) {
-      await this.vm.stateManager.commit()
+      await this.vm.evm.evmJournal.commit()
       this.checkpointed = false
     }
 

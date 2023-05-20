@@ -92,13 +92,13 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     if (this.DEBUG) {
       debug(`Apply DAO hardfork`)
     }
-    await state.checkpoint()
+    await this.evm.evmJournal.checkpoint()
     await _applyDAOHardfork(this.evm)
-    await state.commit()
+    await this.evm.evmJournal.commit()
   }
 
   // Checkpoint state
-  await state.checkpoint()
+  await this.evm.evmJournal.checkpoint()
   if (this.DEBUG) {
     debug(`block checkpoint`)
   }
@@ -116,7 +116,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       )
     }
   } catch (err: any) {
-    await state.revert()
+    await this.evm.evmJournal.revert()
     if (this.DEBUG) {
       debug(`block checkpoint reverted`)
     }
@@ -124,7 +124,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   }
 
   // Persist state
-  await state.commit()
+  await this.evm.evmJournal.commit()
   if (this.DEBUG) {
     debug(`block checkpoint committed`)
   }

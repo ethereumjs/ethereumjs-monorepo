@@ -35,10 +35,10 @@ export class EvmJournal {
   private DEBUG: boolean
   private _debug: Debugger
 
-  private journal: Journal
-  private preWarmJournal: Map<AddressString, Set<SlotString>>
-  private touched: Set<string>
-  private journalDiff: [JournalHeight, JournalDiffItem][]
+  private journal!: Journal
+  private preWarmJournal!: Map<AddressString, Set<SlotString>>
+  private touched!: Set<string>
+  private journalDiff!: [JournalHeight, JournalDiffItem][]
 
   private journalHeight: number
 
@@ -48,6 +48,7 @@ export class EvmJournal {
     this._debug = createDebugLogger('statemanager:statemanager')
 
     // TODO maybe call into this.clearJournal
+    this.cleanJournal()
     this.journalHeight = 0
     this.journal = new Map()
     this.preWarmJournal = new Map()
@@ -168,7 +169,7 @@ export class EvmJournal {
     this.journal = new Map()
     this.preWarmJournal = new Map()
     this.touched = new Set()
-    this.journalDiff = []
+    this.journalDiff = [[0, [new Set(), new Map()]]]
   }
 
   /**

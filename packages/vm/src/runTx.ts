@@ -96,7 +96,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Ensure we start with a clear warmed accounts Map
   this.evm.evmJournal.cleanJournal()
 
-  await state.checkpoint()
+  await this.evm.evmJournal.checkpoint()
   if (this.DEBUG) {
     debug('-'.repeat(100))
     debug(`tx checkpoint`)
@@ -109,7 +109,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   ) {
     // Is it an Access List transaction?
     if (this._common.isActivatedEIP(2930) === false) {
-      await state.revert()
+      await this.evm.evmJournal.revert()
       const msg = _errorMsg(
         'Cannot run transaction: EIP 2930 is not activated.',
         this,
@@ -122,7 +122,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       opts.tx.supports(Capability.EIP1559FeeMarket) &&
       this._common.isActivatedEIP(1559) === false
     ) {
-      await state.revert()
+      await this.evm.evmJournal.revert()
       const msg = _errorMsg(
         'Cannot run transaction: EIP 1559 is not activated.',
         this,
@@ -144,7 +144,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   try {
     const result = await _runTx.bind(this)(opts)
-    await state.commit()
+    await this.evm.evmJournal.commit()
     if (this.DEBUG) {
       debug(`tx checkpoint committed`)
     }
@@ -164,7 +164,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
     return result
   } catch (e: any) {
-    await state.revert()
+    await this.evm.evmJournal.revert()
     if (this.DEBUG) {
       debug(`tx checkpoint reverted`)
     }
