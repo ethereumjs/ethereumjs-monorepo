@@ -10,16 +10,12 @@ on:
 env:
   cwd: ${{github.workspace}}/packages/devp2p
 
-defaults:
-  run:
-    working-directory: packages/devp2p
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
-  test-devp2p:
+  build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -36,6 +32,21 @@ jobs:
       - run: npm ci
         working-directory: ${{github.workspace}}
 
+  test-devp2p:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
       - run: npm i wtfnode
 
       - uses: nick-fields/retry@v2
@@ -51,3 +62,31 @@ jobs:
         if: ${{ matrix.node-version == 16 }}
 
       - run: npm run lint
+
+  test-block:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - run: npm run lint
+        working-directory: ${{github.workspace}}/packages/block
+      - run: npm run coverage
+        working-directory: ${{github.workspace}}/packages/block
+
+      - uses: codecov/codecov-action@v3
+        with:
+          files: ${{ env.cwd }}/coverage/lcov.info
+          flags: block
+        if: ${{ matrix.node-version == 16 }}
