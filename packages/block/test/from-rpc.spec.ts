@@ -1,4 +1,4 @@
-import { Chain, Common, CustomChain, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToPrefixedHexString, hexStringToBytes, randomBytes } from '@ethereumjs/util'
 import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
@@ -40,7 +40,7 @@ tape('[fromRPC]: block #2924874', function (t) {
 })
 
 tape('[fromRPC]: Optimism (OP) bedrock goerli block', function (t) {
-  const common = Common.custom(CustomChain.OptimismGoerli)
+  const common = new Common({ chain: Chain.OptimismGoerli })
 
   t.test('should create a block with transactions with valid signatures', function (st) {
     const block = Block.fromRPC(optimismGoerliBlockData, [], { common })

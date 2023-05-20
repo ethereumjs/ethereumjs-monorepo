@@ -3,6 +3,7 @@ export enum Chain {
   Ropsten = 3,
   Rinkeby = 4,
   Goerli = 5,
+  OptimismGoerli = 420,
   Sepolia = 11155111,
 }
 
@@ -25,6 +26,9 @@ export enum Hardfork {
   Paris = 'paris',
   Shanghai = 'shanghai',
   Cancun = 'cancun',
+  // Optimism hardforks
+  Bedrock = 'bedrock',
+  Regolith = 'regolith',
 }
 
 export enum ConsensusType {

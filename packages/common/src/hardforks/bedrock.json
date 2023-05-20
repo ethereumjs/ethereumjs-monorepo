@@ -1,0 +1,11 @@
+{
+  "name": "bedrock",
+  "comment": "Optimism L2 hardfork to switch to the OP technology stack",
+  "url": "https://community.optimism.io/docs/developers/bedrock",
+  "status": "Final",
+  "eips": [],
+  "gasConfig": {},
+  "gasPrices": {},
+  "vm": {},
+  "pow": {}
+}

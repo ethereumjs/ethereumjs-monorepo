@@ -1,0 +1,11 @@
+{
+  "name": "regolith",
+  "comment": "Optimism L2 hardfork after Bedrock fixes some first-round issues",
+  "url": "https://github.com/ethereum-optimism/optimism/blob/develop/specs/network-upgrades.md#regolith",
+  "status": "Final",
+  "eips": [],
+  "gasConfig": {},
+  "gasPrices": {},
+  "vm": {},
+  "pow": {}
+}
