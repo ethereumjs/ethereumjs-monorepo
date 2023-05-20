@@ -1,7 +1,12 @@
 import { Hardfork } from '@ethereumjs/common'
-import { Address, RIPEMD160_ADDRESS_STRING, bytesToHex, stripHexPrefix } from '@ethereumjs/util'
+import {
+  Address,
+  RIPEMD160_ADDRESS_STRING,
+  bytesToHex,
+  stripHexPrefix,
+  toBytes,
+} from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
-import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import type { AccessList, Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Account } from '@ethereumjs/util'
@@ -42,6 +47,7 @@ export class EvmJournal {
     this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
     this._debug = createDebugLogger('statemanager:statemanager')
 
+    // TODO maybe call into this.clearJournal
     this.journalHeight = 0
     this.journal = new Map()
     this.preWarmJournal = new Map()
@@ -172,9 +178,8 @@ export class EvmJournal {
    */
   async cleanup(): Promise<void> {
     if (this.common.gteHardfork(Hardfork.SpuriousDragon) === true) {
-      const touchedArray = Array.from(this.touched)
-      for (const [addressHex] of touchedArray) {
-        const address = new Address(hexToBytes(addressHex))
+      for (const addressHex of this.touched) {
+        const address = new Address(toBytes('0x' + addressHex))
         const empty = await this.stateManager.accountIsEmptyOrNonExistent(address)
         if (empty) {
           await this.deleteAccount(address)
