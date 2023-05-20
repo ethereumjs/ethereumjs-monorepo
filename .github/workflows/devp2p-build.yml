@@ -81,8 +81,6 @@ jobs:
         node-version: [16]
     steps:
       - uses: actions/checkout@v3
-        with:
-          submodules: recursive
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
@@ -95,8 +93,6 @@ jobs:
           path: ${{github.workspace}}/packages/**/dist
           key: ${{hashFiles('packages/**/src')}}
           
-      - run: npm run lint
-        working-directory: ${{github.workspace}}/packages/block
       - run: npm run coverage
         working-directory: ${{github.workspace}}/packages/block
 
