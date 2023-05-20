@@ -804,7 +804,7 @@ export class EVM implements EVMInterface {
 
     if (!message.to && this._common.isActivatedEIP(2929) === true) {
       message.code = message.data
-      this.stateManager.addWarmedAddress((await this._generateAddress(message)).bytes)
+      this.evmJournal.addWarmedAddress((await this._generateAddress(message)).bytes)
     }
 
     await this.evmJournal.checkpoint()

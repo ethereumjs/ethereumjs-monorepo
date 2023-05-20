@@ -157,6 +157,14 @@ export class EvmJournal {
     await this.stateManager.revert()
   }
 
+  public cleanJournal() {
+    this.journalHeight = 0
+    this.journal = new Map()
+    this.preWarmJournal = new Map()
+    this.touched = new Set()
+    this.journalDiff = []
+  }
+
   /**
    * Removes accounts form the state trie that have been touched,
    * as defined in EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
@@ -176,11 +184,22 @@ export class EvmJournal {
         }
       }
     }
-    this.journalHeight = 0
-    this.journal = new Map()
-    this.preWarmJournal = new Map()
-    this.touched = new Set()
-    this.journalDiff = []
+    this.cleanJournal()
+  }
+
+  addPreWarmedAddress(addressStr: string) {
+    const address = stripHexPrefix(addressStr)
+    if (!this.preWarmJournal.has(address)) {
+      this.preWarmJournal.set(address, new Set())
+    }
+  }
+
+  addPreWarmedSlot(addressStr: string, slotStr: string) {
+    const address = stripHexPrefix(addressStr)
+    this.addPreWarmedAddress(address)
+    const slotsSet = this.preWarmJournal.get(address)!
+    const slot = stripHexPrefix(slotStr)
+    slotsSet.add(slot)
   }
 
   /**
@@ -189,6 +208,8 @@ export class EvmJournal {
    * @param extras Any extra addressess which should be warmed as well (precompiles, sender, receipient, coinbase (EIP 3651))
    */
   addPreWarmed(accessList: AccessList, extras: string[]) {
+    /** Cleanup al maps first to be sure */
+    this.cleanJournal()
     /*for (const entry of accessList) {
       const address = stripHexPrefix(entry.address)
       if (!this.journal.has(address)) {

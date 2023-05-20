@@ -72,13 +72,7 @@ export interface EVMStateManagerInterface extends StateManagerInterface {
     touch?: boolean
   ): Promise<void>
 
-  clearWarmedAccounts(): void
   clearOriginalStorageCache(): void
-
-  addWarmedAddress(address: Uint8Array): void
-  isWarmedAddress(address: Uint8Array): boolean
-  addWarmedStorage(address: Uint8Array, slot: Uint8Array): void
-  isWarmedStorage(address: Uint8Array, slot: Uint8Array): boolean
 
   generateCanonicalGenesis(initState: any): Promise<void> // TODO make input more typesafe
   generateAccessList(addressesRemoved: Address[], addressesOnlyStorage: Address[]): AccessList

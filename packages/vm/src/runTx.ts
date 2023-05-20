@@ -1,14 +1,7 @@
 import { Block, getDataGasPrice } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
-import {
-  Account,
-  Address,
-  KECCAK256_NULL,
-  bytesToPrefixedHexString,
-  short,
-  toBytes,
-} from '@ethereumjs/util'
+import { Account, Address, KECCAK256_NULL, bytesToPrefixedHexString, short } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
@@ -101,9 +94,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Ensure we start with a clear warmed accounts Map
-  if (this._common.isActivatedEIP(2929) === true) {
-    state.clearWarmedAccounts()
-  }
+  this.evm.evmJournal.cleanJournal()
 
   await state.checkpoint()
   if (this.DEBUG) {
@@ -144,10 +135,9 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const castedTx = <AccessListEIP2930Transaction>opts.tx
 
     for (const accessListItem of castedTx.AccessListJSON) {
-      const address = toBytes(accessListItem.address)
-      state.addWarmedAddress(address)
+      this.evm.evmJournal.addPreWarmedAddress(accessListItem.address)
       for (const storageKey of accessListItem.storageKeys) {
-        state.addWarmedStorage(address, toBytes(storageKey))
+        this.evm.evmJournal.addPreWarmedSlot(accessListItem.address, storageKey)
       }
     }
   }
@@ -181,7 +171,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     throw e
   } finally {
     if (this._common.isActivatedEIP(2929) === true) {
-      state.clearWarmedAccounts()
+      this.evm.evmJournal.cleanJournal()
     }
   }
 }
@@ -217,15 +207,15 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // Add origin and precompiles to warm addresses
     const activePrecompiles = this.evm.precompiles
     for (const [addressStr] of activePrecompiles.entries()) {
-      state.addWarmedAddress(hexToBytes(addressStr))
+      this.evm.evmJournal.addPreWarmedAddress(addressStr)
     }
-    state.addWarmedAddress(caller.bytes)
+    this.evm.evmJournal.addPreWarmedAddress(caller.toString())
     if (tx.to) {
       // Note: in case we create a contract, we do this in EVMs `_executeCreate` (this is also correct in inner calls, per the EIP)
-      state.addWarmedAddress(tx.to.bytes)
+      this.evm.evmJournal.addPreWarmedAddress(bytesToHex(tx.to.bytes))
     }
     if (this._common.isActivatedEIP(3651) === true) {
-      state.addWarmedAddress(block.header.coinbase.bytes)
+      this.evm.evmJournal.addPreWarmedAddress(bytesToHex(block.header.coinbase.bytes))
     }
   }
 

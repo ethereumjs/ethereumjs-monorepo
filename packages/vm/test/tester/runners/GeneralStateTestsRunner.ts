@@ -152,7 +152,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   }
 
   // Cleanup touched accounts (this wipes coinbase if it is empty on HFs >= TangerineWhistle)
-  await (<VM>vm).evm.evmJournal.cleanupTouchedAccounts()
+  await (<VM>vm).evm.evmJournal.cleanup()
   await (<VM>vm).stateManager.getStateRoot() // Ensure state root is updated (flush all changes to trie)
 
   const stateManagerStateRoot = vm.stateManager._trie.root()
