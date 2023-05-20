@@ -32,6 +32,11 @@ jobs:
       - run: npm ci
         working-directory: ${{github.workspace}}
 
+      - uses: actions/cache@v3
+        with:
+          path: ${{github.workspace}}/packages/**/dist
+          key: ${{hashFiles('packages/**/src')}}
+
   test-devp2p:
     needs: build
     runs-on: ubuntu-latest
@@ -46,6 +51,11 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
+
+      - uses: actions/cache/restore@v3
+        with:
+          path: ${{github.workspace}}/packages/**/dist
+          key: ${{hashFiles('packages/**/src')}}
 
       - run: npm i wtfnode
 
@@ -80,6 +90,11 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
+      - uses: actions/cache/restore@v3
+        with:
+          path: ${{github.workspace}}/packages/**/dist
+          key: ${{hashFiles('packages/**/src')}}
+          
       - run: npm run lint
         working-directory: ${{github.workspace}}/packages/block
       - run: npm run coverage
