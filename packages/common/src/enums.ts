@@ -76,16 +76,16 @@ export enum CustomChain {
   xDaiChain = 'x-dai-chain',
 
   /**
-   * Optimistic Kovan - testnet for Optimism roll-up
+   * Optimism Ethereum - Optimism roll-up Mainnet deployment
    *
-   * - [Documentation](https://community.optimism.io/docs/developers/tutorials.html)
+   * - [Documentation](https://community.optimism.io/docs/useful-tools/networks/#optimism-mainnet)
    */
-  OptimisticKovan = 'optimistic-kovan',
+  OptimismEthereum = 'optimism-ethereum',
 
   /**
-   * Optimistic Ethereum - mainnet for Optimism roll-up
+   * Optimism Ethereum - Optimism roll-up Goerli testnet
    *
-   * - [Documentation](https://community.optimism.io/docs/developers/tutorials.html)
+   * - [Documentation](https://community.optimism.io/docs/useful-tools/networks/#optimism-goerli)
    */
-  OptimisticEthereum = 'optimistic-ethereum',
+  OptimismGoerli = 'optimism-goerli',
 }

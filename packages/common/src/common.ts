@@ -148,24 +148,24 @@ export class Common extends EventEmitter {
         )
       }
 
-      if (chainParamsOrName === CustomChain.OptimisticKovan) {
+      if (chainParamsOrName === CustomChain.OptimismEthereum) {
         return Common.custom(
           {
-            name: CustomChain.OptimisticKovan,
-            chainId: 69,
-            networkId: 69,
+            name: CustomChain.OptimismEthereum,
+            chainId: 10,
+            networkId: 10,
           },
           // Optimism has not implemented the London hardfork yet (targeting Q1.22)
           { hardfork: Hardfork.Berlin, ...opts }
         )
       }
 
-      if (chainParamsOrName === CustomChain.OptimisticEthereum) {
+      if (chainParamsOrName === CustomChain.OptimismGoerli) {
         return Common.custom(
           {
-            name: CustomChain.OptimisticEthereum,
-            chainId: 10,
-            networkId: 10,
+            name: CustomChain.OptimismGoerli,
+            chainId: 420,
+            networkId: 420,
           },
           // Optimism has not implemented the London hardfork yet (targeting Q1.22)
           { hardfork: Hardfork.Berlin, ...opts }
