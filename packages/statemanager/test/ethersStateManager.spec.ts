@@ -226,7 +226,7 @@ tape('runTx test: replay mainnet transactions', async (t) => {
     const blockTag = 15496077n
     common.setHardforkByBlockNumber(blockTag)
     const txData = require('./testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.json')
-    const tx = await TransactionFactory.fromRPCTx(txData, { common })
+    const tx = await TransactionFactory.fromRPC(txData, { common })
     const state = new EthersStateManager({
       provider,
       // Set the state manager to look at the state of the chain before the block has been executed
