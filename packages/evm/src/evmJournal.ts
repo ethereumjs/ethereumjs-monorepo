@@ -50,10 +50,6 @@ export class EvmJournal {
     // TODO maybe call into this.clearJournal
     this.cleanJournal()
     this.journalHeight = 0
-    this.journal = new Map()
-    this.preWarmJournal = new Map()
-    this.touched = new Set()
-    this.journalDiff = []
 
     this.stateManager = stateManager
     this.common = common
@@ -75,6 +71,7 @@ export class EvmJournal {
   }
 
   private touchAccount(address: string) {
+    console.log('touch', address)
     let added = false
     if (!this.touched.has(address)) {
       this.touched.add(address)
@@ -90,6 +87,7 @@ export class EvmJournal {
     }
   }
   async commit() {
+    console.log('commit')
     this.journalHeight--
     // TODO figure out if we cant just index the journal diff by the journalHeight index?
     // not sure, might not be possible:
@@ -106,12 +104,14 @@ export class EvmJournal {
   }
 
   async checkpoint() {
+    console.log('checkpoint')
     this.journalHeight++
     this.journalDiff.push([this.journalHeight, [new Set(), new Map()]])
     await this.stateManager.checkpoint()
   }
 
   async revert() {
+    console.log('revert')
     // Loop backwards over the journal diff and stop if we are at a lower height than current journal height
     // During this process, delete all items.
     // TODO check this logic, if there is this array: height [4,3,4] and we revert height 4, then the final
@@ -140,6 +140,7 @@ export class EvmJournal {
         if (this.journal.has(address)) {
           if (!this.journal.get(address)) {
             // It was not pre-warm, so now mark this address as cold
+            console.log('delwarm', address)
             this.journal.delete(address)
           }
         }
@@ -257,7 +258,9 @@ export class EvmJournal {
    */
   isWarmedAddress(address: Uint8Array): boolean {
     const addressHex = bytesToHex(address)
-    return this.journal.has(addressHex) || this.preWarmJournal.has(addressHex)
+    const warm = this.journal.has(addressHex) || this.preWarmJournal.has(addressHex)
+    console.log('iswarm', addressHex, warm)
+    return warm
   }
 
   /**
@@ -265,6 +268,7 @@ export class EvmJournal {
    * @param address - The address (as a Uint8Array) to check
    */
   addWarmedAddress(address: Uint8Array): void {
+    console.log('addwarm', bytesToHex(address))
     this.touchAccount(bytesToHex(address))
   }
 

@@ -13,6 +13,7 @@ import { setupPreConditions, verifyPostConditions } from '../../util'
 import type { EthashConsensus } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
 import type * as tape from 'tape'
+import { VM } from '../../../src'
 
 function formatBlockHeader(data: any) {
   const formatted: any = {}
@@ -88,6 +89,10 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     blockchain,
     common,
     hardforkByBlockNumber: true,
+  })
+
+  ;(<VM>vm).evm.events.on('step', (e) => {
+    console.log(e.address.toString(), e.opcode.name, e.gasLeft)
   })
 
   // set up pre-state
@@ -221,6 +226,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     } catch (error: any) {
       // caught an error, reduce block number
       currentBlock--
+      console.log(error)
       await handleError(error, expectException)
     }
   }
@@ -229,6 +235,10 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     testData.lastblockhash,
     'correct last header block'
   )
+
+  if (bytesToHex((blockchain as any)._headHeaderHash) !== testData.lastblockhash) {
+    process.exit()
+  }
 
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`
