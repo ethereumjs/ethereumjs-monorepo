@@ -158,7 +158,7 @@ export class EvmJournal {
     }
 
     // the final diffs are reverted and we can dispose those
-    this.journalDiff = this.journalDiff.slice(0, finalI!)
+    this.journalDiff = this.journalDiff.slice(0, finalI! + 1)
 
     this.journalHeight--
 
