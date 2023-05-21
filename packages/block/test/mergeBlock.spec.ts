@@ -40,7 +40,7 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
     const header = BlockHeader.fromHeaderData({}, { common })
     validateMergeHeader(st, header)
 
-    const block = new Block(undefined, undefined, undefined, { common })
+    const block = new Block(undefined, undefined, undefined, undefined, { common })
     validateMergeHeader(st, block.header)
 
     st.end()
@@ -106,9 +106,15 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
 
   t.test('test that a PoS block with uncles cannot be produced', function (st) {
     try {
-      new Block(undefined, undefined, [BlockHeader.fromHeaderData(undefined, { common })], {
-        common,
-      })
+      new Block(
+        undefined,
+        undefined,
+        [BlockHeader.fromHeaderData(undefined, { common })],
+        undefined,
+        {
+          common,
+        }
+      )
       st.fail('should have thrown')
     } catch (e: any) {
       st.pass('should throw')
