@@ -113,7 +113,7 @@ export class TransactionFactory {
     if (txData === null) {
       throw new Error('No data returned from provider')
     }
-    return TransactionFactory.fromRPCTx(txData, txOptions)
+    return TransactionFactory.fromRPC(txData, txOptions)
   }
 
   /**
@@ -123,7 +123,7 @@ export class TransactionFactory {
    * @param txOptions The transaction options
    * @returns
    */
-  public static async fromRPCTx(
+  public static async fromRPC(
     txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData | BlobEIP4844TxData,
     txOptions: TxOptions = {}
   ) {
