@@ -13,6 +13,11 @@ module.exports = function (config) {
         acornOptions: {
           ecmaVersion: 12,
         },
+        resolve: {
+          alias: {
+            '@ethereumjs/util/provider': '../util/dist/cjs/provider.js',
+          },
+        },
         ignore: ['c-kzg'],
       },
     },

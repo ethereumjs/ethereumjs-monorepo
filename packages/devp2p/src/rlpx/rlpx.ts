@@ -3,7 +3,6 @@ import { debug as createDebugLogger } from 'debug'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import { EventEmitter } from 'events'
-import ms = require('ms')
 import * as net from 'net'
 import * as os from 'os'
 
@@ -17,10 +16,9 @@ import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type LRUCache from 'lru-cache'
 
-const LRU = require('lru-cache')
-
 // note: relative path only valid in .js file in dist
-const { version: pVersion } = require('../../package.json')
+
+const LRU = require('lru-cache')
 
 const DEBUG_BASE_NAME = 'rlpx'
 const verbose = createDebugLogger('verbose').enabled
@@ -66,12 +64,12 @@ export class RLPx extends EventEmitter {
     this._id = pk2id(secp256k1.getPublicKey(this._privateKey, false))
 
     // options
-    this._timeout = options.timeout ?? ms('10s')
+    this._timeout = options.timeout ?? 10000 // 10 sec * 1000
     this._maxPeers = options.maxPeers ?? 10
 
     this._clientId = options.clientId
       ? options.clientId
-      : utf8ToBytes(`ethereumjs-devp2p/v${pVersion}/${os.platform()}-${os.arch()}/nodejs`)
+      : utf8ToBytes(`ethereumjs-devp2p/${os.platform()}-${os.arch()}/nodejs`)
 
     this._remoteClientIdFilter = options.remoteClientIdFilter
     this._capabilities = options.capabilities
@@ -83,7 +81,7 @@ export class RLPx extends EventEmitter {
     if (this._dpt !== null) {
       this._dpt.on('peer:new', (peer: PeerInfo) => {
         if (peer.tcpPort === null || peer.tcpPort === undefined) {
-          this._dpt!.banPeer(peer, ms('5m'))
+          this._dpt!.banPeer(peer, 300000) // 5 min * 60 * 1000
           this._debug(`banning peer with missing tcp port: ${peer.address}`)
           return
         }
@@ -118,7 +116,7 @@ export class RLPx extends EventEmitter {
     this._peers = new Map()
     this._peersQueue = []
     this._peersLRU = new LRU({ max: 25000 })
-    const REFILL_INTERVALL = ms('10s')
+    const REFILL_INTERVALL = 10000 // 10 sec * 1000
     const refillIntervalSubdivided = Math.floor(REFILL_INTERVALL / 10)
     this._refillIntervalId = setInterval(() => this._refillConnections(), refillIntervalSubdivided)
   }
@@ -199,7 +197,7 @@ export class RLPx extends EventEmitter {
     this.connect(peer).catch((err) => {
       if (this._dpt === null) return
       if (err.code === 'ECONNRESET' || (err.toString() as string).includes('Connection timeout')) {
-        this._dpt.banPeer(peer, ms('5m'))
+        this._dpt.banPeer(peer, 300000) // 5 min * 60 * 1000
       }
     })
   }
@@ -269,7 +267,7 @@ export class RLPx extends EventEmitter {
               address: peer._socket.remoteAddress,
               tcpPort: peer._socket.remotePort,
             },
-            ts: (Date.now() + ms('5m')) as number,
+            ts: (Date.now() + 300000) as number, // 5 min * 60 * 1000
           })
         }
       }

@@ -38,7 +38,7 @@ import type { FullEthereumService } from '../lib/service'
 import type { ClientOpts } from '../lib/types'
 import type { RPCArgs } from './startRpc'
 import type { BlockBytes } from '@ethereumjs/block'
-import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
+import type { GenesisState } from '@ethereumjs/blockchain'
 import type { AbstractLevel } from 'abstract-level'
 
 type Account = [address: Address, privateKey: Uint8Array]
@@ -182,12 +182,14 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     default: 'info',
   })
   .option('logFile', {
-    describe: 'File to save log file (pass true for `ethereumjs.log`)',
+    describe:
+      'File to save log file (default logs to `$dataDir/ethereumjs.log`, pass false to disable)',
+    default: true,
   })
   .option('logLevelFile', {
     describe: 'Log level for logFile',
     choices: ['error', 'warn', 'info', 'debug'],
-    default: 'info',
+    default: 'debug',
   })
   .option('logRotate', {
     describe: 'Rotate log file daily',
@@ -727,9 +729,16 @@ async function run() {
   }
 
   const datadir = args.dataDir ?? Config.DATADIR_DEFAULT
-  const configDirectory = `${datadir}/${common.chainName()}/config`
+  const networkDir = `${datadir}/${common.chainName()}`
+  const configDirectory = `${networkDir}/config`
   ensureDirSync(configDirectory)
   const key = await Config.getClientKey(datadir, common)
+
+  // logFile is either filename or boolean true or false to enable (with default) or disable
+  if (typeof args.logFile === 'boolean') {
+    args.logFile = args.logFile ? `${networkDir}/ethereumjs.log` : undefined
+  }
+
   logger = getLogger(args)
   const bootnodes = args.bootnodes !== undefined ? parseMultiaddrs(args.bootnodes) : undefined
   const multiaddrs = args.multiaddrs !== undefined ? parseMultiaddrs(args.multiaddrs) : undefined

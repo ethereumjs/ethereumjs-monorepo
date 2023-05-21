@@ -1,7 +1,9 @@
+import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { TypeOutput, isHexString, toType } from '@ethereumjs/util'
 
 import type { BlockHeader } from './header'
 import type { BlockHeaderBytes, HeaderData } from './types'
+import type { TypedTransaction } from '@ethereumjs/tx'
 
 /**
  * Returns a 0x-prefixed hex number string from a hex string or string integer.
@@ -107,6 +109,16 @@ export const calcExcessDataGas = (parent: BlockHeader, newBlobs: number) => {
   }
 }
 
+export const getNumBlobs = (transactions: TypedTransaction[]) => {
+  let numBlobs = 0
+  for (const tx of transactions) {
+    if (tx instanceof BlobEIP4844Transaction) {
+      numBlobs += tx.versionedHashes.length
+    }
+  }
+  return numBlobs
+}
+
 /**
  * Approximates `factor * e ** (numerator / denominator)` using Taylor expansion
  */
@@ -116,10 +128,11 @@ export const fakeExponential = (factor: bigint, numerator: bigint, denominator: 
   let numerator_accum = factor * denominator
   while (numerator_accum > BigInt(0)) {
     output += numerator_accum
-    numerator_accum = BigInt(Math.floor(Number((numerator_accum * numerator) / (denominator * i))))
+    numerator_accum = (numerator_accum * numerator) / (denominator * i)
     i++
   }
-  return BigInt(Math.floor(Number(output / denominator)))
+
+  return output / denominator
 }
 
 /**

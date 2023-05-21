@@ -132,7 +132,7 @@ export interface ClientOpts {
   jwtSecret?: string
   helpRpc?: boolean
   logLevel?: string
-  logFile?: boolean
+  logFile?: boolean | string
   logLevelFile?: string
   logRotate?: boolean
   logMaxFiles?: number

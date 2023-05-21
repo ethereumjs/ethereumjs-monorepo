@@ -29,8 +29,14 @@
     "Martin Becze <mb@ethdev.com>",
     "Holger Drewes <holger.drewes@gmail.com>"
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "files": [
     "dist",
     "src"
@@ -56,9 +62,7 @@
     "@types/k-bucket": "^5.0.0",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.0.0",
-    "k-bucket": "^5.0.0",
     "lru-cache": "^7.18.3",
-    "ms": "^0.7.1",
     "multiaddr": "^10.0.1",
     "scanf": "^1.1.2",
     "snappyjs": "^0.6.1"
@@ -69,7 +73,6 @@
     "@types/chalk": "^2.2.0",
     "@types/debug": "^4.1.4",
     "@types/ip": "^1.1.0",
-    "@types/ms": "^0.7.30",
     "chalk": "^2.4.2",
     "testdouble": "^3.8.2"
   },

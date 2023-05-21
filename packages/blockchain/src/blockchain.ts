@@ -17,8 +17,7 @@ import { genesisStateRoot } from './genesisStates'
 import {} from './utils'
 
 import type { Consensus } from './consensus'
-import type { GenesisState } from './genesisStates'
-import type { BlockchainInterface, BlockchainOptions, OnBlock } from './types'
+import type { BlockchainInterface, BlockchainOptions, GenesisState, OnBlock } from './types'
 import type { BlockData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { BigIntLike, DB, DBObject } from '@ethereumjs/util'
@@ -280,7 +279,7 @@ export class Blockchain implements BlockchainInterface {
   /**
    * Returns the specified iterator head.
    *
-   * This function replaces the old {@link Blockchain.getHead} method. Note that
+   * This function replaces the old Blockchain.getHead() method. Note that
    * the function deviates from the old behavior and returns the
    * genesis hash instead of the current head block if an iterator
    * has not been run. This matches the behavior of {@link Blockchain.iterator}.
@@ -291,27 +290,6 @@ export class Blockchain implements BlockchainInterface {
     return this.runWithLock<Block>(async () => {
       // if the head is not found return the genesis hash
       const hash = this._heads[name] ?? this.genesisBlock.hash()
-      const block = await this.getBlock(hash)
-      return block
-    })
-  }
-
-  /**
-   * Returns the specified iterator head.
-   *
-   * @param name - Optional name of the iterator head (default: 'vm')
-   *
-   * @deprecated use {@link Blockchain.getIteratorHead} instead.
-   * Note that {@link Blockchain.getIteratorHead} doesn't return
-   * the `headHeader` but the genesis hash as an initial iterator
-   * head value (now matching the behavior of {@link Blockchain.iterator}
-   * on a first run)
-   */
-  async getHead(name = 'vm'): Promise<Block> {
-    return this.runWithLock<Block>(async () => {
-      // if the head is not found return the headHeader
-      const hash = this._heads[name] ?? this._headBlockHash
-      if (hash === undefined) throw new Error('No head found.')
       const block = await this.getBlock(hash)
       return block
     })

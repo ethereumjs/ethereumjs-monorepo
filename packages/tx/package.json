@@ -27,8 +27,14 @@
       "hireable": true
     }
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "files": [
     "dist",
     "src"
@@ -69,8 +75,7 @@
     "@types/minimist": "^1.2.0",
     "@types/node-dir": "^0.0.34",
     "minimist": "^1.2.0",
-    "node-dir": "^0.1.16",
-    "testdouble": "^3.17.2"
+    "node-dir": "^0.1.16"
   },
   "engines": {
     "node": ">=16"

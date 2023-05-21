@@ -1,0 +1,17 @@
+{
+  "extends": "../../config/tsconfig.prod.cjs.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist/cjs",
+    "types": ["node"],
+    "typeRoots": ["node_modules/@types"],
+    "composite": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.json"],
+  "references": [
+    { "path": "../common/tsconfig.prod.cjs.json" },
+    { "path": "../ethash/tsconfig.prod.cjs.json" },
+    { "path": "../rlp/tsconfig.prod.cjs.json" },
+    { "path": "../util/tsconfig.prod.cjs.json" }
+  ]
+}

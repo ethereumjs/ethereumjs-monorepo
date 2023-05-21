@@ -1,7 +1,6 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
-  bigIntToBytes,
   bytesToBigInt,
   computeVersionedHash,
   concatBytesNoTypeCheck,
@@ -13,9 +12,12 @@ import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { EVM, getActivePrecompiles } from '../../src'
-import { BLS_MODULUS } from '../../src/precompiles/14-kzg-point-evaluation'
 
-import type { PrecompileInput } from '../../src/precompiles'
+import type { PrecompileInput } from '../../src'
+
+const BLS_MODULUS = BigInt(
+  '52435875175126190479447740508185965837690552500527637822603658699938581184513'
+)
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
 tape('Precompiles: point evaluation', async (t) => {
@@ -65,26 +67,6 @@ tape('Precompiles: point evaluation', async (t) => {
       bytesToBigInt(unpadBytes(res.returnValue.slice(32))),
       BLS_MODULUS,
       'point evaluation precompile returned expected output'
-    )
-
-    const optsWithBigNumbers: PrecompileInput = {
-      data: concatBytesNoTypeCheck(
-        versionedHash,
-        testCase.InputPoint,
-        bigIntToBytes(BLS_MODULUS + 5n),
-        testCase.Commitment,
-        testCase.Proof
-      ),
-      gasLimit: 0xfffffffffn,
-      _EVM: evm,
-      _common: common,
-    }
-
-    res = await pointEvaluation(optsWithBigNumbers)
-    t.equal(
-      res.exceptionError?.error,
-      'point greater than BLS modulus',
-      'point evaluation precompile throws when points are too big'
     )
 
     const optsWithInvalidCommitment: PrecompileInput = {

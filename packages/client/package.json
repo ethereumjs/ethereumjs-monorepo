@@ -42,7 +42,7 @@
     "client:start:dev1": "npm run client:start -- --discDns=false --discV4=false --bootnodes",
     "client:start:dev2": "npm run client:start -- --discDns=false --discV4=false --port=30304 --dataDir=datadir-dev2",
     "coverage": "c8 --all --reporter=lcov --reporter=text npm run test:unit",
-    "docs:build": "typedoc --options typedoc.js --tsconfig tsconfig.prod.json",
+    "docs:build": "typedoc --options typedoc.js --tsconfig tsconfig.prod.cjs.json",
     "preinstall": "npm run binWorkaround",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",

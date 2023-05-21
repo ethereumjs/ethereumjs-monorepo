@@ -739,6 +739,7 @@ export class Interpreter {
       data,
       isStatic: this._env.isStatic,
       depth: this._env.depth + 1,
+      versionedHashes: this._env.versionedHashes,
     })
 
     return this._baseCall(msg)
@@ -762,6 +763,7 @@ export class Interpreter {
       isStatic: this._env.isStatic,
       depth: this._env.depth + 1,
       authcallOrigin: this._env.address,
+      versionedHashes: this._env.versionedHashes,
     })
 
     return this._baseCall(msg)
@@ -785,6 +787,7 @@ export class Interpreter {
       data,
       isStatic: this._env.isStatic,
       depth: this._env.depth + 1,
+      versionedHashes: this._env.versionedHashes,
     })
 
     return this._baseCall(msg)
@@ -809,6 +812,7 @@ export class Interpreter {
       data,
       isStatic: true,
       depth: this._env.depth + 1,
+      versionedHashes: this._env.versionedHashes,
     })
 
     return this._baseCall(msg)
@@ -834,6 +838,7 @@ export class Interpreter {
       isStatic: this._env.isStatic,
       delegatecall: true,
       depth: this._env.depth + 1,
+      versionedHashes: this._env.versionedHashes,
     })
 
     return this._baseCall(msg)
@@ -937,6 +942,7 @@ export class Interpreter {
       depth,
       selfdestruct,
       gasRefund: this._runState.gasRefund,
+      versionedHashes: this._env.versionedHashes,
     })
 
     const results = await this._evm.runCall({ message })

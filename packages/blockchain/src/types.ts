@@ -1,8 +1,7 @@
 import type { Consensus } from './consensus'
-import type { GenesisState } from './genesisStates'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type { DB, DBObject } from '@ethereumjs/util'
+import type { DB, DBObject, PrefixedHexString } from '@ethereumjs/util'
 
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
@@ -78,6 +77,19 @@ export interface BlockchainInterface {
    * Returns the latest full block in the canonical chain.
    */
   getCanonicalHeadBlock?(): Promise<Block>
+}
+
+export type StoragePair = [key: PrefixedHexString, value: PrefixedHexString]
+
+export type AccountState = [
+  balance: PrefixedHexString,
+  code: PrefixedHexString,
+  storage: Array<StoragePair>,
+  nonce: PrefixedHexString
+]
+
+export interface GenesisState {
+  [key: PrefixedHexString]: PrefixedHexString | AccountState
 }
 
 /**

@@ -7,7 +7,6 @@ import {
   intToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import ms = require('ms')
 import * as snappy from 'snappyjs'
 
 import { DISCONNECT_REASONS } from '../rlpx/peer'
@@ -29,7 +28,7 @@ export class LES extends Protocol {
 
     this._statusTimeoutId = setTimeout(() => {
       this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
-    }, ms('5s'))
+    }, 5000) // 5 sec * 1000
   }
 
   static les2 = { name: 'les', version: 2, length: 21, constructor: LES }

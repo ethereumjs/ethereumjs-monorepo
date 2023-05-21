@@ -4,8 +4,7 @@ import { Address } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
-import { EVM } from '../../src'
-import { getActivePrecompiles } from '../../src/precompiles'
+import { EVM, getActivePrecompiles } from '../../src'
 
 tape('Precompiles: hardfork availability', (t) => {
   t.test('Test ECPAIRING availability', async (st) => {

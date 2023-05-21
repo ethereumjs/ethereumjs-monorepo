@@ -6,7 +6,8 @@ import { hexToBytes } from 'ethereum-cryptography/utils'
 import { MemoryLevel } from 'memory-level'
 
 import { VM } from '../../src/vm'
-import { LevelDB } from '../level'
+
+import { LevelDB } from './level'
 
 import type { VMOpts } from '../../src/types'
 import type { Block } from '@ethereumjs/block'

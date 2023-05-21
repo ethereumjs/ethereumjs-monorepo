@@ -365,7 +365,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     },
   ],
   // 0x20 range - crypto
-  // 0x20: SHA3
+  // 0x20: KECCAK256
   [
     0x20,
     function (runState) {
@@ -637,7 +637,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.stack.push(runState.interpreter.getBlockBaseFee())
     },
   ],
-  // 0x49: DATAHASH
+  // 0x49: BLOBHASH
   [
     0x49,
     function (runState) {

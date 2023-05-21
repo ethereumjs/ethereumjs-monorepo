@@ -4,8 +4,10 @@ import {
   MAX_INTEGER,
   MAX_UINT64,
   SECP256K1_ORDER_DIV_2,
+  bigIntToHex,
   bytesToBigInt,
   bytesToHex,
+  bytesToPrefixedHexString,
   ecsign,
   publicToAddress,
   toBytes,
@@ -354,7 +356,19 @@ export abstract class BaseTransaction<TransactionObject> {
   /**
    * Returns an object with the JSON representation of the transaction
    */
-  abstract toJSON(): JsonTx
+  toJSON(): JsonTx {
+    return {
+      type: bigIntToHex(BigInt(this.type)),
+      nonce: bigIntToHex(this.nonce),
+      gasLimit: bigIntToHex(this.gasLimit),
+      to: this.to !== undefined ? this.to.toString() : undefined,
+      value: bigIntToHex(this.value),
+      data: bytesToPrefixedHexString(this.data),
+      v: this.v !== undefined ? bigIntToHex(this.v) : undefined,
+      r: this.r !== undefined ? bigIntToHex(this.r) : undefined,
+      s: this.s !== undefined ? bigIntToHex(this.s) : undefined,
+    }
+  }
 
   // Accept the v,r,s values from the `sign` method, and convert this into a TransactionObject
   protected abstract _processSignature(v: bigint, r: Uint8Array, s: Uint8Array): TransactionObject
