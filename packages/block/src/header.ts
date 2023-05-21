@@ -19,7 +19,6 @@ import {
   toType,
   zeros,
 } from '@ethereumjs/util'
-import { time } from 'console'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
