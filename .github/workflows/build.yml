@@ -1,6 +1,10 @@
-name: Devp2p
+name: Build
 on:
-  workflow_call:
+  push:
+    branches: [master, develop]
+    tags: ['*']
+  pull_request:
+    types: [opened, reopened, synchronize]
   workflow_dispatch:
 
 env:
@@ -11,14 +15,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-devp2p:
-    needs: build
+  build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [16]
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
@@ -26,21 +31,18 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - uses: actions/cache/restore@v3
+      - run: npm ci
+        working-directory: ${{github.workspace}}
+
+      - uses: actions/cache@v3
         with:
           path: ${{github.workspace}}
           key: ${{hashFiles('packages/**/src')}}
 
-      - run: npm i wtfnode
-
-      - uses: nick-fields/retry@v2
-        with:
-          timeout_minutes: 2
-          max_attempts: 1
-          command: cd ${{github.workspace}}/packages/devp2p && npx wtfnode ../../node_modules/tape/bin/tape -r ts-node/register './test/**/*.spec.ts'
-
-      - uses: codecov/codecov-action@v3
-        with:
-          files: ${{ github.workspace }}/packages/devp2p/coverage/lcov.info
-          flags: devp2p
-        if: ${{ matrix.node-version == 16 }}
+  call-block:
+    needs: build
+    uses: ./.github/workflows/block-build.yml
+  
+  call-devp2p:
+    needs: build
+    uses: ./.github/workflows/devp2p-build.yml
