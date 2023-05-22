@@ -474,7 +474,7 @@ export class Engine {
       if (versionedHashes === undefined) {
         validationError = `Error verifying versionedHashes: received none`
       } else {
-        // Collect versioned hashes in the flat array `txVersionedHashes` to match with recieved
+        // Collect versioned hashes in the flat array `txVersionedHashes` to match with received
         const txVersionedHashes = []
         for (const tx of block.transactions) {
           if (tx instanceof BlobEIP4844Transaction) {
