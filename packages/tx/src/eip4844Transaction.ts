@@ -1,4 +1,3 @@
-import { byteArrayEquals } from '@chainsafe/ssz'
 import { RLP } from '@ethereumjs/rlp'
 import {
   MAX_INTEGER,
@@ -58,7 +57,7 @@ const validateBlobTransactionNetworkWrapper = (
 
   for (let x = 0; x < versionedHashes.length; x++) {
     const computedVersionedHash = computeVersionedHash(commitments[x], version)
-    if (!byteArrayEquals(computedVersionedHash, versionedHashes[x])) {
+    if (!equalsBytes(computedVersionedHash, versionedHashes[x])) {
       throw new Error(`commitment for blob at index ${x} does not match versionedHash`)
     }
   }
