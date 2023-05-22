@@ -90,6 +90,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       opts.block,
       opts.tx
     )
+    // TODO: read the access list directly from the EVM journal (need to signal journal that we also track reverted slots)
     throw new Error(msg)
   }
 
