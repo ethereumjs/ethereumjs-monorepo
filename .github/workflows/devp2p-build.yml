@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  cwd: ${{github.workspace}}/packages/devp2p
+  cwd: ${{github.workspace}}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -22,6 +22,8 @@ jobs:
         node-version: [16]
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
@@ -67,11 +69,12 @@ jobs:
 
       - uses: codecov/codecov-action@v3
         with:
-          files: ${{ env.cwd }}/coverage/lcov.info
+          files: ${{ github.workspace }}/packages/devp2p/coverage/lcov.info
           flags: devp2p
         if: ${{ matrix.node-version == 16 }}
 
       - run: npm run lint
+        working-directory: {{ github.workspace}}/packages/devp2p
 
   test-block:
     needs: build
@@ -98,6 +101,6 @@ jobs:
 
       - uses: codecov/codecov-action@v3
         with:
-          files: ${{ env.cwd }}/coverage/lcov.info
+          files: ${{ github.workspace}}/packages/block/coverage/lcov.info
           flags: block
         if: ${{ matrix.node-version == 16 }}
