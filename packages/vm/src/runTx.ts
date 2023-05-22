@@ -94,7 +94,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Ensure we start with a clear warmed accounts Map
-  this.evm.evmJournal.cleanJournal()
+  await this.evm.evmJournal.cleanup()
 
   await this.evm.evmJournal.checkpoint()
   if (this.DEBUG) {
