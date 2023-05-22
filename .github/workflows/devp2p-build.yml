@@ -193,7 +193,12 @@ jobs:
         with:
           node-version: 16
           cache: 'npm'
-
+          
+      - uses: actions/cache/restore@v3
+        with:
+          path: ${{github.workspace}}
+          key: ${{hashFiles('packages/**/src')}}
+          
       - run: npm run test:blockchain
 
   vm-benchmarks:
