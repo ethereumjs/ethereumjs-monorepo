@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1684756962491,
+  "lastUpdate": 1684760044492,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "abe741e3439aa5ae4faf75b9bfabdb21250bde8f",
-          "message": "client: tests for getTrieNodes and trieNodes SNAP messages (#2282)\n\n* Add getTrieNodes function signature to SnapProtocolMethods interface\r\n\r\n* Add tests for GetTrieNodes and TrieNodes message encode/decode\r\n\r\n* Clean up comments\r\n\r\n* Add TODOs\r\n\r\n* Update tests\r\n\r\n* Implement compact encoding helpers\r\n\r\n* Add getTrieNodes function signature to SnapProtocolMethods interface\r\n\r\n* Add tests for GetTrieNodes and TrieNodes message encode/decode\r\n\r\n* Clean up comments\r\n\r\n* Add TODOs\r\n\r\n* Update tests\r\n\r\n* Implement compact encoding helpers\r\n\r\n* Update tests to check raw node data is valid\r\n\r\n* Remove unused import\r\n\r\n* Add pathTo function to encoding library\r\n\r\n* Fix bug in compactToHex\r\n\r\n* Add tests for compact encoding helpers\r\n\r\n* Correct test input\r\n\r\n* Update test title\r\n\r\n* Ignore unused-var error\r\n\r\n* Fix linting errors\r\n\r\n* Ignore unused variable\r\n\r\n* Include type for conditional\r\n\r\n* Check explicitly for null\r\n\r\n* Use expected operator\r\n\r\n* Fix karma configuration\r\n\r\n* Add docs for hasTerm method\r\n\r\n* Remove comment\r\n\r\n* Add block and network to example call\r\n\r\n* rename and comment clarify path encoding\r\n\r\n* fix snap spec\r\n\r\n* add reference\r\n\r\n* fix the coverage issue\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: harkamal <gajinder@g11.in>",
-          "timestamp": "2023-03-28T23:27:29+05:30",
-          "tree_id": "36abd26730fbcc653620a394e0eea44302a1053d",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/abe741e3439aa5ae4faf75b9bfabdb21250bde8f"
-        },
-        "date": 1680026412945,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15592,
-            "range": "±3.06%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 15755,
-            "range": "±1.64%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 15338,
-            "range": "±3.99%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 15319,
-            "range": "±1.81%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 15138,
-            "range": "±1.83%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.73%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d2a045150781d55d5b197bfeedf7540dde215c4a",
+          "message": "Monorepo: update README.md branch status (#2719)",
+          "timestamp": "2023-05-22T14:41:21+02:00",
+          "tree_id": "3c1177cef030691d360debc2b3ac2436b7867132",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d2a045150781d55d5b197bfeedf7540dde215c4a"
+        },
+        "date": 1684760043756,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 32823,
+            "range": "±3.16%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 32362,
+            "range": "±2.30%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 29667,
+            "range": "±7.79%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 31439,
+            "range": "±2.57%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30344,
+            "range": "±2.62%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
