@@ -474,7 +474,7 @@ export class Engine {
       if (versionedHashes === undefined) {
         validationError = `Error verifying versionedHashes: received none`
       } else {
-        // Collect versioned hashes to match
+        // Collect versioned hashes in the flat array `txVersionedHashes` to match with recieved
         const txVersionedHashes = []
         for (const tx of block.transactions) {
           if (tx instanceof BlobEIP4844Transaction) {
@@ -509,6 +509,11 @@ export class Engine {
         const response = { status: Status.INVALID, latestValidHash, validationError }
         return response
       }
+    } else if (versionedHashes !== undefined) {
+      const validationError = `Invalid versionedHashes before EIP-4844 is activated`
+      const latestValidHash = await validHash(hexStringToBytes(payload.parentHash), this.chain)
+      const response = { status: Status.INVALID, latestValidHash, validationError }
+      return response
     }
 
     this.connectionManager.updatePayloadStats(block)
@@ -662,7 +667,15 @@ export class Engine {
     ) {
       throw {
         code: INVALID_PARAMS,
-        message: 'Missing versionedHashes',
+        message: 'Missing versionedHashes after Cancun is activated',
+      }
+    } else if (
+      (eip4844Timestamp === null || parseInt(params[0].timestamp) < eip4844Timestamp) &&
+      params[1] !== undefined
+    ) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'Recieved versionedHashes before Cancun is activated',
       }
     }
 
@@ -681,14 +694,14 @@ export class Engine {
       if (!('extraDataGas' in params[0])) {
         throw {
           code: INVALID_PARAMS,
-          message: 'ExecutionPayloadV2 MUST be used if Shanghai is activated and EIP-4844 is not',
+          message: 'ExecutionPayloadV2 MUST be used if Shanghai is activated and Cancun is not',
         }
       }
     } else if (eip4844Timestamp === null || parseInt(params[0].timestamp) >= eip4844Timestamp) {
       if (!('extraData' in params[0])) {
         throw {
           code: INVALID_PARAMS,
-          message: 'ExecutionPayloadV3 MUST be used after EIP-4844 is activated',
+          message: 'ExecutionPayloadV3 MUST be used after Cancun is activated',
         }
       }
     }

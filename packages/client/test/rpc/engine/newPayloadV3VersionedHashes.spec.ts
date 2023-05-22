@@ -61,7 +61,7 @@ tape(`${method}: Cancun validations`, (v1) => {
         ...blockData,
         parentHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
         blockHash: '0x701f665755524486783d70ea3808f6d013ddfcd03972bd87eace1f29a44a83e8',
-        // two blob transactions but no versioned hashesh
+        // two blob transactions but no versioned hashes
         transactions: [txString, txString],
       },
     ]
@@ -74,7 +74,7 @@ tape(`${method}: Cancun validations`, (v1) => {
         ...blockData,
         parentHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
         blockHash: '0x701f665755524486783d70ea3808f6d013ddfcd03972bd87eace1f29a44a83e8',
-        // two blob transactions but missing versioned hashes of second
+        // two blob transactions but missing versioned hash of second
         transactions: [txString, txString],
       },
       txVersionedHashesString,
@@ -114,7 +114,7 @@ tape(`${method}: Cancun validations`, (v1) => {
         ...blockData,
         parentHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
         blockHash: '0x701f665755524486783d70ea3808f6d013ddfcd03972bd87eace1f29a44a83e8',
-        // two blob transactions but mismatching versioned hashes of second
+        // two blob transactions with matching versioned hashes
         transactions: [txString, txString],
       },
       [...txVersionedHashesString, ...txVersionedHashesString],
