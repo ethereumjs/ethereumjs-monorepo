@@ -1,9 +1,6 @@
 name: Block
 on:
-  workflow_run:
-    workflows: [Devp2p]
-    types:
-      - completed
+  workflow_call:
   workflow_dispatch:
 
 env:
