@@ -451,7 +451,9 @@ export class Engine {
    *      valid block in the branch defined by payload and its ancestors
    *   3. validationError: String|null - validation error message
    */
-  private async newPayload(params: [ExecutionPayload, Bytes32[]?]): Promise<PayloadStatusV1> {
+  private async newPayload(
+    params: [ExecutionPayload, (Bytes32[] | null)?]
+  ): Promise<PayloadStatusV1> {
     const [payload, versionedHashes] = params
     if (this.config.synchronized) {
       this.connectionManager.newPayloadLog()
@@ -471,7 +473,7 @@ export class Engine {
 
     if (block._common.isActivatedEIP(4844)) {
       let validationError: string | null = null
-      if (versionedHashes === undefined) {
+      if (versionedHashes === undefined || versionedHashes === null) {
         validationError = `Error verifying versionedHashes: received none`
       } else {
         // Collect versioned hashes in the flat array `txVersionedHashes` to match with received
@@ -509,7 +511,7 @@ export class Engine {
         const response = { status: Status.INVALID, latestValidHash, validationError }
         return response
       }
-    } else if (versionedHashes !== undefined) {
+    } else if (versionedHashes !== undefined && versionedHashes !== null) {
       const validationError = `Invalid versionedHashes before EIP-4844 is activated`
       const latestValidHash = await validHash(hexStringToBytes(payload.parentHash), this.chain)
       const response = { status: Status.INVALID, latestValidHash, validationError }
@@ -657,13 +659,13 @@ export class Engine {
   }
 
   async newPayloadV3(
-    params: [ExecutionPayloadV3 | ExecutionPayloadV2 | ExecutionPayloadV1, Bytes32[]?]
+    params: [ExecutionPayloadV3 | ExecutionPayloadV2 | ExecutionPayloadV1, (Bytes32[] | null)?]
   ): Promise<PayloadStatusV1> {
     const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Cancun)
     if (
       eip4844Timestamp !== null &&
       parseInt(params[0].timestamp) >= eip4844Timestamp &&
-      params[1] === undefined
+      (params[1] === undefined || params[1] === null)
     ) {
       throw {
         code: INVALID_PARAMS,
@@ -671,7 +673,8 @@ export class Engine {
       }
     } else if (
       (eip4844Timestamp === null || parseInt(params[0].timestamp) < eip4844Timestamp) &&
-      params[1] !== undefined
+      params[1] !== undefined &&
+      params[1] !== null
     ) {
       throw {
         code: INVALID_PARAMS,

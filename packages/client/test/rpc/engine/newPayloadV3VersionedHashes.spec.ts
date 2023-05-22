@@ -66,7 +66,7 @@ tape(`${method}: Cancun validations`, (v1) => {
       },
     ]
     req = params(method, blockDataNoneHashes)
-    expectRes = checkError(t, INVALID_PARAMS, 'Missing versionedHashes')
+    expectRes = checkError(t, INVALID_PARAMS, 'Missing versionedHashes after Cancun is activated')
     await baseRequest(t, server, req, 200, expectRes, false)
 
     const blockDataExtraMissingHashes1 = [
