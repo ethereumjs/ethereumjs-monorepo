@@ -125,6 +125,7 @@ jobs:
       - run: npm run lint --workspaces --if-present
 
   test-vm-api:
+    needs: build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -154,6 +155,7 @@ jobs:
           flags: vm
 
   test-vm-state:
+    needs: build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -177,6 +179,7 @@ jobs:
       - run: npm run test:state:selectedForks
 
   test-vm-blockchain:
+    needs: build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -194,6 +197,7 @@ jobs:
       - run: npm run test:blockchain
 
   vm-benchmarks:
+    needs: build
     runs-on: ubuntu-latest
     defaults:
       run:
