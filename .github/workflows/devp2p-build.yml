@@ -73,39 +73,6 @@ jobs:
           flags: devp2p
         if: ${{ matrix.node-version == 16 }}
 
-  test-block:
-    needs: build
-    defaults:
-      run:
-        working-directory: ${{github.workspace}}/packages/block
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [16]
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-
-      - uses: actions/cache/restore@v3
-        with:
-          path: ${{github.workspace}}
-          key: ${{hashFiles('packages/**/src')}}
-          
-      - run: npm run coverage
-
-      - uses: codecov/codecov-action@v3
-        with:
-          files: ${{ github.workspace}}/packages/block/coverage/lcov.info
-          flags: block
-        if: ${{ matrix.node-version == 16 }}
-
   lint:
     needs: build
     runs-on: ubuntu-latest
@@ -193,7 +160,7 @@ jobs:
         with:
           node-version: 16
           cache: 'npm'
-          
+
       - uses: actions/cache/restore@v3
         with:
           path: ${{github.workspace}}
