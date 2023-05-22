@@ -1,25 +1,21 @@
-name: Ethash
+name: Common
 on:
-  push:
-    branches: [master, develop]
-    tags: ['*']
-  pull_request:
-    types: [opened, reopened, synchronize]
+  workflow_call:
   workflow_dispatch:
 
 env:
-  cwd: ${{github.workspace}}/packages/ethash
+  cwd: ${{github.workspace}}/packages/common
 
 defaults:
   run:
-    working-directory: packages/ethash
+    working-directory: packages/common
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-common
   cancel-in-progress: true
 
 jobs:
-  test-ethash:
+  test-common:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -33,8 +29,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - run: npm ci
-        working-directory: ${{github.workspace}}
+      - uses: actions/cache/restore@v3
+        with:
+          path: ${{github.workspace}}
+          key: ${{hashFiles('packages/**/src')}}
 
       - run: npm run lint
       - run: npm run coverage
@@ -42,5 +40,5 @@ jobs:
       - uses: codecov/codecov-action@v3
         with:
           files: ${{ env.cwd }}/coverage/lcov.info
-          flags: ethash
+          flags: common
         if: ${{ matrix.node-version == 16 }}

@@ -46,3 +46,11 @@ jobs:
   call-devp2p:
     needs: build
     uses: ./.github/workflows/devp2p-build.yml
+
+  call-common:
+    needs: build
+    uses: ./.github/workflows/common-build.yml
+
+  call-ethash:
+    needs: build
+    uses: ./.github/workflows/ethash-build.yml

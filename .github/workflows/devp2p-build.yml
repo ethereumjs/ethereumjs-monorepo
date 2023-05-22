@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  cwd: ${{github.workspace}}
+  cwd: ${{github.workspace}}/packages/devp2p
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-devp2p
@@ -30,13 +30,11 @@ jobs:
           path: ${{github.workspace}}
           key: ${{hashFiles('packages/**/src')}}
 
-      - run: npm i wtfnode
-
       - uses: nick-fields/retry@v2
         with:
           timeout_minutes: 2
           max_attempts: 1
-          command: cd ${{github.workspace}}/packages/devp2p && npx wtfnode ../../node_modules/tape/bin/tape -r ts-node/register './test/**/*.spec.ts'
+          command: npm run test
 
       - uses: codecov/codecov-action@v3
         with:
