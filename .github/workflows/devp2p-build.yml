@@ -40,8 +40,9 @@ jobs:
           key: ${{hashFiles('packages/**/src')}}
 
   call-block:
+    needs: build
     uses: ./.github/workflows/block-build.yml
-    
+
   test-devp2p:
     needs: build
     runs-on: ubuntu-latest
