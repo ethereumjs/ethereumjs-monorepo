@@ -73,9 +73,6 @@ jobs:
           flags: devp2p
         if: ${{ matrix.node-version == 16 }}
 
-      - run: npm run lint
-        working-directory: ${{ github.workspace}}/packages/devp2p
-
   test-block:
     needs: build
     runs-on: ubuntu-latest
@@ -106,3 +103,15 @@ jobs:
           files: ${{ github.workspace}}/packages/block/coverage/lcov.info
           flags: block
         if: ${{ matrix.node-version == 16 }}
+
+  lint:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - run: npm run lint --workspaces --if-present
