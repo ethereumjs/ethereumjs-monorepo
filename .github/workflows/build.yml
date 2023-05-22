@@ -54,3 +54,11 @@ jobs:
   call-ethash:
     needs: build
     uses: ./.github/workflows/ethash-build.yml
+
+  call-rlp:
+    needs: build
+    uses: ./.github/workflows/rlp-build.yml
+
+  call-trie:
+    needs: build
+    uses: ./.github/workflows/trie-build.yml
