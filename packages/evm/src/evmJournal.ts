@@ -8,7 +8,7 @@ import {
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
-import type { AccessList, Common, EVMStateManagerInterface } from '@ethereumjs/common'
+import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Account } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
@@ -20,12 +20,12 @@ type Journal = Map<AddressString, WarmSlots>
 
 /**
  * Journal Diff Item:
- * If it is of type AddressString, delete the address from the journals
- * If it is an Array, then delete these storage slots from the journal (NOT the address)
- * TODO make it a set
+ * Index 0: remove warm address
+ * Index 1: remove warm slots for this warm address
+ * Index 2: remove touched
  */
 
-type JournalDiffItem = [Set<AddressString>, Map<AddressString, Set<SlotString>>]
+type JournalDiffItem = [Set<AddressString>, Map<AddressString, Set<SlotString>>, Set<AddressString>]
 //AddressString | Map<AddressString, SlotString>
 type JournalHeight = number
 
@@ -71,23 +71,13 @@ export class EvmJournal {
   }
 
   private touchAccount(address: string) {
-    console.log('touch', address)
-    let added = false
     if (!this.touched.has(address)) {
       this.touched.add(address)
-      added = true
-    }
-    if (!this.journal.has(address)) {
-      this.journal.set(address, new Set())
-      added = true
-    }
-    if (added) {
       const diffArr = this.journalDiff[this.journalDiff.length - 1][1]
-      diffArr[0].add(address)
+      diffArr[2].add(address)
     }
   }
   async commit() {
-    console.log('commit')
     this.journalHeight--
     // TODO figure out if we cant just index the journal diff by the journalHeight index?
     // not sure, might not be possible:
@@ -99,19 +89,17 @@ export class EvmJournal {
     // Checkpoint
     // Height: 2 (B)
     // Revert (now diff items of (B) are in same arr as (A) so (A) items also get reverted while those should be committed)
-    this.journalDiff.push([this.journalHeight, [new Set(), new Map()]])
+    this.journalDiff.push([this.journalHeight, [new Set(), new Map(), new Set()]])
     await this.stateManager.commit()
   }
 
   async checkpoint() {
-    console.log('checkpoint')
     this.journalHeight++
-    this.journalDiff.push([this.journalHeight, [new Set(), new Map()]])
+    this.journalDiff.push([this.journalHeight, [new Set(), new Map(), new Set()]])
     await this.stateManager.checkpoint()
   }
 
   async revert() {
-    console.log('revert')
     // Loop backwards over the journal diff and stop if we are at a lower height than current journal height
     // During this process, delete all items.
     // TODO check this logic, if there is this array: height [4,3,4] and we revert height 4, then the final
@@ -126,23 +114,12 @@ export class EvmJournal {
 
       const addressSet = diff[0]
       const slotsMap = diff[1]
+      const touchedSet = diff[2]
 
       for (const address of addressSet) {
-        // Delete the address from the journal
-        // NOTE: only delete from warm addresses if it is not pre-warmed
-        if (address !== RIPEMD160_ADDRESS_STRING) {
-          // If RIPEMD160 is touched, keep it touched.
-          // Default behavior for others.
-          this.touched.delete(address)
-        }
-
         // Sanity check, journal should have the item
         if (this.journal.has(address)) {
-          if (!this.journal.get(address)) {
-            // It was not pre-warm, so now mark this address as cold
-            console.log('delwarm', address)
-            this.journal.delete(address)
-          }
+          this.journal.delete(address)
         }
       }
 
@@ -153,6 +130,16 @@ export class EvmJournal {
           for (const delSlot of delSlots) {
             slots.delete(delSlot)
           }
+        }
+      }
+
+      for (const address of touchedSet) {
+        // Delete the address from the journal
+        // NOTE: only delete from warm addresses if it is not pre-warmed
+        if (address !== RIPEMD160_ADDRESS_STRING) {
+          // If RIPEMD160 is touched, keep it touched.
+          // Default behavior for others.
+          this.touched.delete(address)
         }
       }
     }
@@ -170,7 +157,7 @@ export class EvmJournal {
     this.journal = new Map()
     this.preWarmJournal = new Map()
     this.touched = new Set()
-    this.journalDiff = [[0, [new Set(), new Map()]]]
+    this.journalDiff = [[0, [new Set(), new Map(), new Set()]]]
   }
 
   /**
@@ -210,66 +197,26 @@ export class EvmJournal {
   }
 
   /**
-   * Adds pre-warmed addresses and slots to the warm addresses list
-   * @param accessList The access list provided by the tx
-   * @param extras Any extra addressess which should be warmed as well (precompiles, sender, receipient, coinbase (EIP 3651))
-   */
-  addPreWarmed(accessList: AccessList, extras: string[]) {
-    /** Cleanup al maps first to be sure */
-    this.cleanJournal()
-    /*for (const entry of accessList) {
-      const address = stripHexPrefix(entry.address)
-      if (!this.journal.has(address)) {
-        this.journal.set(address, [true, new Set()]) // Mark as prewarmed (true) so it never gets cold
-      }
-      const set = this.journal.get(address)![1]
-      for (const slots of entry.storageKeys) {
-        set.add(stripHexPrefix(slots))
-      }
-    }
-    for (const addressMaybePrefixed of extras) {
-      const address = stripHexPrefix(addressMaybePrefixed)
-      if (!this.journal.has(address)) {
-        this.journal.set(address, [true, new Set()]) // Mark as prewarmed (true) so it never gets cold
-      }
-    }*/
-
-    for (const entry of accessList) {
-      const address = stripHexPrefix(entry.address)
-      if (!this.preWarmJournal.has(address)) {
-        this.preWarmJournal.set(address, new Set())
-      }
-      const slotsSet = this.preWarmJournal.get(address)!
-      for (const slot of entry.storageKeys) {
-        slotsSet.add(stripHexPrefix(slot))
-      }
-    }
-    for (const addressMaybePrefixed of extras) {
-      const address = stripHexPrefix(addressMaybePrefixed)
-      if (!this.preWarmJournal.has(address)) {
-        this.preWarmJournal.set(address, new Set())
-      }
-    }
-  }
-
-  /**
    * Returns true if the address is warm in the current context
    * @param address - The address (as a Uint8Array) to check
    */
   isWarmedAddress(address: Uint8Array): boolean {
     const addressHex = bytesToHex(address)
     const warm = this.journal.has(addressHex) || this.preWarmJournal.has(addressHex)
-    console.log('iswarm', addressHex, warm)
     return warm
   }
 
   /**
    * Add a warm address in the current context
-   * @param address - The address (as a Uint8Array) to check
+   * @param addressArr - The address (as a Uint8Array) to check
    */
-  addWarmedAddress(address: Uint8Array): void {
-    console.log('addwarm', bytesToHex(address))
-    this.touchAccount(bytesToHex(address))
+  addWarmedAddress(addressArr: Uint8Array): void {
+    const address = bytesToHex(addressArr)
+    if (!this.journal.has(address)) {
+      this.journal.set(address, new Set())
+      const diffArr = this.journalDiff[this.journalDiff.length - 1][1]
+      diffArr[0].add(address)
+    }
   }
 
   /**
@@ -286,7 +233,12 @@ export class EvmJournal {
       }
       return false
     }
-    return slots.has(bytesToHex(slot))
+    if (slots.has(bytesToHex(slot))) {
+      return true
+    } else if (this.preWarmJournal.has(addressHex)) {
+      return this.preWarmJournal.get(addressHex)!.has(bytesToHex(slot))
+    }
+    return false
   }
 
   /**
