@@ -1,5 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
+import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
   bigIntToHex,
   bytesToHex,
@@ -348,6 +349,7 @@ export class Engine {
             validators.object(executionPayloadV3FieldValidators)
           ),
         ],
+        [validators.optional(validators.array(validators.bytes32))],
       ]),
       ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
     )
@@ -449,8 +451,8 @@ export class Engine {
    *      valid block in the branch defined by payload and its ancestors
    *   3. validationError: String|null - validation error message
    */
-  private async newPayload(params: [ExecutionPayload]): Promise<PayloadStatusV1> {
-    const [payload] = params
+  private async newPayload(params: [ExecutionPayload, Bytes32[]?]): Promise<PayloadStatusV1> {
+    const [payload, versionedHashes] = params
     if (this.config.synchronized) {
       this.connectionManager.newPayloadLog()
     }
@@ -465,6 +467,48 @@ export class Engine {
         response = { status: Status.INVALID, latestValidHash, validationError }
       }
       return response
+    }
+
+    if (block._common.isActivatedEIP(4844)) {
+      let validationError: string | null = null
+      if (versionedHashes === undefined) {
+        validationError = `Error verifying versionedHashes: received none`
+      } else {
+        // Collect versioned hashes to match
+        const txVersionedHashes = []
+        for (const tx of block.transactions) {
+          if (tx instanceof BlobEIP4844Transaction) {
+            for (const vHash of tx.versionedHashes) {
+              txVersionedHashes.push(vHash)
+            }
+          }
+        }
+
+        if (versionedHashes.length !== txVersionedHashes.length) {
+          validationError = `Error verifying versionedHashes: expected=${txVersionedHashes.length} received=${versionedHashes.length}`
+        } else {
+          // match individual hashes
+          for (let vIndex = 0; vIndex < versionedHashes.length; vIndex++) {
+            // if mismatch, record error and break
+            if (
+              !equalsBytes(hexStringToBytes(versionedHashes[vIndex]), txVersionedHashes[vIndex])
+            ) {
+              validationError = `Error verifying versionedHashes: mismatch at index=${vIndex} expected=${short(
+                txVersionedHashes[vIndex]
+              )} received=${short(versionedHashes[vIndex])}`
+              break
+            }
+          }
+        }
+      }
+
+      // if there was a validation error return invalid
+      if (validationError !== null) {
+        this.config.logger.debug(validationError)
+        const latestValidHash = await validHash(hexStringToBytes(payload.parentHash), this.chain)
+        const response = { status: Status.INVALID, latestValidHash, validationError }
+        return response
+      }
     }
 
     this.connectionManager.updatePayloadStats(block)
@@ -608,10 +652,21 @@ export class Engine {
   }
 
   async newPayloadV3(
-    params: [ExecutionPayloadV3 | ExecutionPayloadV2 | ExecutionPayloadV1]
+    params: [ExecutionPayloadV3 | ExecutionPayloadV2 | ExecutionPayloadV1, Bytes32[]?]
   ): Promise<PayloadStatusV1> {
-    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
     const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Cancun)
+    if (
+      eip4844Timestamp !== null &&
+      parseInt(params[0].timestamp) >= eip4844Timestamp &&
+      params[1] === undefined
+    ) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'Missing versionedHashes',
+      }
+    }
+
+    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
     if (shanghaiTimestamp === null || parseInt(params[0].timestamp) < shanghaiTimestamp) {
       if ('withdrawals' in params[0]) {
         throw {
