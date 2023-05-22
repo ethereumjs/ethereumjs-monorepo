@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1684753846886,
+  "lastUpdate": 1684756962491,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "rafael@skyle.net",
-            "name": "Rafael Matias",
-            "username": "skylenet"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "8910fe26a484e1049f059d7d49072c8c228b608a",
-          "message": "Remove and replace some EF bootnodes (#2576)\n\n* Remove deprecated EF bootnodes\r\n\r\n* Replace deprecated EF AWS nodes with Hetzner nodes",
-          "timestamp": "2023-03-28T12:11:09+02:00",
-          "tree_id": "1e28c95c0e65a65624b22ae1d663e78e942eaabc",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8910fe26a484e1049f059d7d49072c8c228b608a"
-        },
-        "date": 1679999008805,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15147,
-            "range": "±2.91%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 14553,
-            "range": "±5.54%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 15174,
-            "range": "±2.04%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 14835,
-            "range": "±2.27%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 13400,
-            "range": "±8.00%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.16%",
             "unit": "ops/sec",
             "extra": "76 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d3db69b4210d642eb3f0e708449a3cfd2a7cdacd",
+          "message": "util: Remove ssz from monorepo (#2717)",
+          "timestamp": "2023-05-22T13:59:41+02:00",
+          "tree_id": "c1222a272282ac747f5b9e1990ca3f72fccc8b04",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d3db69b4210d642eb3f0e708449a3cfd2a7cdacd"
+        },
+        "date": 1684756961719,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 32718,
+            "range": "±3.47%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 32315,
+            "range": "±2.37%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 28964,
+            "range": "±8.62%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 31392,
+            "range": "±2.72%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30572,
+            "range": "±2.73%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
