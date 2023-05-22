@@ -12,7 +12,6 @@ concurrency:
 
 jobs:
   test-devp2p:
-    needs: build
     runs-on: ubuntu-latest
     strategy:
       matrix:
