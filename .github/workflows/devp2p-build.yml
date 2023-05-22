@@ -74,7 +74,7 @@ jobs:
         if: ${{ matrix.node-version == 16 }}
 
       - run: npm run lint
-        working-directory: {{ github.workspace}}/packages/devp2p
+        working-directory: ${{ github.workspace}}/packages/devp2p
 
   test-block:
     needs: build
