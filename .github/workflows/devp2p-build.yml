@@ -34,7 +34,7 @@ jobs:
 
       - uses: actions/cache@v3
         with:
-          path: ${{github.workspace}}/packages/**/dist
+          path: ${{github.workspace}}
           key: ${{hashFiles('packages/**/src')}}
 
   test-devp2p:
@@ -54,7 +54,7 @@ jobs:
 
       - uses: actions/cache/restore@v3
         with:
-          path: ${{github.workspace}}/packages/**/dist
+          path: ${{github.workspace}}
           key: ${{hashFiles('packages/**/src')}}
 
       - run: npm i wtfnode
@@ -90,7 +90,7 @@ jobs:
 
       - uses: actions/cache/restore@v3
         with:
-          path: ${{github.workspace}}/packages/**/dist
+          path: ${{github.workspace}}
           key: ${{hashFiles('packages/**/src')}}
           
       - run: npm run coverage
