@@ -39,4 +39,3 @@ if (result.type === 'error') {
 }
 
 console.log(result)
-process.exit(1)
