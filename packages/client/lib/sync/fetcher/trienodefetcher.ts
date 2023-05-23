@@ -1,5 +1,10 @@
-import { BranchNode, Trie, decodeNode } from '@ethereumjs/trie'
-import { bytesToNibbles, getPathTo, nibblesToCompactBytes } from '@ethereumjs/util'
+import { BranchNode, ExtensionNode, Trie, decodeNode } from '@ethereumjs/trie'
+import {
+  bytesToNibbles,
+  compactBytesToNibbles,
+  getPathTo,
+  nibblesToCompactBytes,
+} from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
@@ -10,6 +15,7 @@ import { Fetcher } from './fetcher'
 import type { Peer } from '../../net/peer'
 import type { FetcherOptions } from './fetcher'
 import type { Job } from './types'
+import type { Nibbles, Node, TrieNode } from '@ethereumjs/trie'
 import type { Debugger } from 'debug'
 
 type TrieNodesResponse = Uint8Array[] & { completed?: boolean }
@@ -29,8 +35,19 @@ export interface TrieNodeFetcherOptions extends FetcherOptions {
 }
 
 export type JobTask = {
-  pathStrings: string[]
-  paths: Uint8Array[][] // paths to nodes for requesting from SNAP API
+  pathStrings: string[] // paths kept in hex encoding
+  paths: Uint8Array[][] // paths to nodes for requesting from SNAP API kept in compact encoding
+}
+
+type FetchedNodeData = {
+  parentHash: string
+  deps: number
+  nodeData: Uint8Array
+}
+
+type NodeRequestData = {
+  nodeHash: string
+  nodeParentHash: string
 }
 
 export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> {
@@ -38,10 +55,12 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   root: Uint8Array
 
   // Holds all paths and nodes that need to be requested
-  pathToNodeHash: OrderedMap<string, string>
+  pathToNodeRequestData: OrderedMap<string, NodeRequestData>
 
   // Holds active requests to remove after storing
   requestedNodeToPath: Map<string, string>
+
+  fetchedAccountNodes: Map<string, FetchedNodeData> // key is node hash
 
   accountTrie: Trie
   codeTrie: Trie
@@ -53,8 +72,9 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   constructor(options: TrieNodeFetcherOptions) {
     super(options)
     this.root = options.root
-    this.pathToNodeHash = new OrderedMap<string, string>()
+    this.pathToNodeRequestData = new OrderedMap<string, NodeRequestData>()
     this.requestedNodeToPath = new Map<string, string>()
+    this.fetchedAccountNodes = new Map<string, FetchedNodeData>()
     this.accountTrie = options.accountTrie ?? new Trie({ useKeyHashing: false })
     this.codeTrie = options.codeTrie ?? new Trie({ useKeyHashing: false })
     this.accountToStorageTrie = options.accountToStorageTrie ?? new Map<String, Trie>()
@@ -62,11 +82,20 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     this.debug = createDebugLogger('client:TrieNodeFetcher')
 
     // will always start with root node as first set of node requests
-    for (let i = 0; i < 16; i++)
-      this.pathToNodeHash.setElement(getPathTo(i, this.root).join('/'), bytesToHex(this.root))
+    // for (let i = 0; i < 16; i++)
+    //   this.pathToNodeHash.setElement(getPathTo(i, this.root).join('/'), {
+    //     nodeHash: bytesToHex(this.root),
+    //     nodeParentHash: '', // root node does not have a parent
+    //   } as RequestedNodeData)
+
+    this.pathToNodeRequestData.setElement(new Uint8Array(0).toString(), {
+      // TODO don't keep paths compact encoded until request is sent in request phase
+      nodeHash: bytesToHex(this.root),
+      nodeParentHash: '', // root node does not have a parent
+    } as NodeRequestData)
 
     this.debug(
-      `Trie node fetcher instantiated with ${this.pathToNodeHash.size()} node requests destroyWhenDone=${
+      `Trie node fetcher instantiated with ${this.pathToNodeRequestData.size()} node requests destroyWhenDone=${
         this.destroyWhenDone
       }`
     )
@@ -117,9 +146,12 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       // absent in the receieved responses
       const receivedNodes: Uint8Array[] = []
       const requestedNodes = new Set(Array.from(this.requestedNodeToPath.keys()))
+      console.log('dbg10')
+      console.log(requestedNodes)
       for (let i = 0; i < rangeResult.nodes.length; i++) {
         const receivedNode = rangeResult.nodes[i]
         const receivedHash = bytesToHex(keccak256(receivedNode) as Uint8Array)
+        console.log(receivedHash)
         if (requestedNodes.has(receivedHash)) {
           // TODO need to remove filled nodes from both pathToNodeHash and nodeHashToPath
           receivedNodes.push(rangeResult.nodes[i])
@@ -152,6 +184,28 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     }
   }
 
+  // getNodeKey(node: TrieNode) {
+  //   const encoded = node.serialize()
+  //   if (encoded.length >= 32) {
+  //     return keccak256(encoded)
+  //   }
+  //   return node.raw()
+  // }
+
+  /**
+   * Converts a nibble array into bytes.
+   * @private
+   * @param arr - Nibble array
+   */
+  nibblesToBytes(arr: Nibbles): Uint8Array {
+    const buf = new Uint8Array(arr.length / 2)
+    for (let i = 0; i < buf.length; i++) {
+      let q = i * 2
+      buf[i] = (arr[q] << 4) + arr[++q]
+    }
+    return buf
+  }
+
   /**
    * Store fetch result. Resolves once store operation is complete.
    * @param result fetch result
@@ -161,58 +215,82 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     console.log(JSON.stringify(result))
 
     try {
-      // put node data into trie and request unkown nodes
+      // process received node data and request unknown child nodes
+      console.log('dbg4')
       for (const nodeData of result[0]) {
         const node = decodeNode(nodeData as unknown as Uint8Array)
         const nodeHash = bytesToHex(keccak256(nodeData as unknown as Uint8Array))
         const pathString = this.requestedNodeToPath.get(nodeHash)
         const [accountPath, storagePath] = pathString!.split('/')
+        const nodePath = storagePath ?? accountPath
+        const childNodes = []
+        let childNodeCount = 0
 
-        // process account node
-        if (storagePath === undefined) {
-          // request unkown child nodes
-          if (node instanceof BranchNode) {
-            for (const [_, embeddedNode] of (node as BranchNode).getChildren()) {
-              try {
-                await this.accountTrie.lookupNode(embeddedNode)
-              } catch (e) {
-                // if node doesn't exist, error is thrown and node request is created for fetching
-                for (let i = 0; i < 16; i++)
-                  this.pathToNodeHash.setElement(
-                    getPathTo(i, embeddedNode as Uint8Array).join('/'),
-                    bytesToHex(embeddedNode as Uint8Array) // TODO confused on how to get key from a embedded node
-                  )
-              }
+        // get all children of received node
+        if (node instanceof BranchNode) {
+          const children = (node as BranchNode).getChildren()
+          for (const [i, embeddedNode] of children) {
+            if (embeddedNode !== null) {
+              childNodeCount += 1
+              childNodes.unshift({
+                node: embeddedNode,
+                path: nodePath.concat(i.toString(16)), // paths are kept in hex encoding
+              })
             }
-          } else {
-            console.log('not a branch node')
           }
-
-          // process storage node
+        } else if (node instanceof ExtensionNode) {
+          // TODO functionality unverified for extension node
+          childNodeCount += 1
+          childNodes.unshift({
+            node,
+            path: nodePath.concat(bytesToHex(this.nibblesToBytes(node.key()))),
+          })
         } else {
-          // request unkown child nodes
-          if (node instanceof BranchNode) {
-            for (const [_, embeddedNode] of (node as BranchNode).getChildren()) {
-              try {
-                const storageTrie = this.accountToStorageTrie.get(accountPath)
-                await storageTrie!.lookupNode(embeddedNode)
-              } catch (e) {
-                // if node doesn't exist, error is thrown and node request is created for fetching
-                this.pathToNodeHash.setElement(
-                  nibblesToCompactBytes(bytesToNibbles(embeddedNode[0] as Uint8Array)).toString(),
-                  bytesToHex(embeddedNode[0] as Uint8Array)
-                )
-              }
+          // TODO handle leaf node
+        }
+
+        // record new node for batched storing after all subtrie nodes have been received
+        const { nodeParentHash } = this.pathToNodeRequestData.getElementByKey(
+          nodePath
+        ) as NodeRequestData
+        this.fetchedAccountNodes.set(nodeHash, {
+          parentHash: nodeParentHash,
+          deps: childNodeCount,
+          nodeData,
+        } as unknown as FetchedNodeData)
+
+        // request unknown child nodes that have been freshly discovered
+        for (const childNode of childNodes) {
+          try {
+            if (storagePath !== undefined) {
+              // look up node in storage trie
+              const storageTrie = this.accountToStorageTrie.get(accountPath)
+              await storageTrie!.lookupNode(this.nibblesToBytes((childNode.node as Node).key()))
+            } else {
+              // look up node in account trie
+              await this.accountTrie.lookupNode(this.nibblesToBytes((childNode.node as Node).key()))
             }
+          } catch (e) {
+            // if error is thrown, than the node is unkown and should be queued for fetching
+            this.pathToNodeRequestData.setElement(childNode.path, {
+              // TODO don't keep paths compact encoded until request is sent in request phase
+              nodeHash: bytesToHex(this.nibblesToBytes((childNode.node as Node).key())),
+              nodeParentHash: nodeHash, // root node does not have a parent
+            } as NodeRequestData)
           }
         }
 
+        console.log('dbg3')
+        console.log(childNodeCount)
+        console.log(JSON.stringify(childNodes))
+        console.log(this.fetchedAccountNodes)
+        console.log(this.pathToNodeRequestData)
+
+        // TODO implement leaf callback for batching and putting all nodes when dependencies have been fetched
+
         // remove filled requests
         this.requestedNodeToPath.delete(nodeHash)
-        // this.pathToNodeHash.eraseElementByKey(pathString as string)
-
-        console.log('dbg3')
-        console.log(this.pathToNodeHash.forEach((e) => console.log(e)))
+        this.pathToNodeRequestData.eraseElementByKey(nodePath)
       }
     } catch (e) {
       this.debug(e)
@@ -224,7 +302,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   // TODO do merging here too and rename as getSortedAndMergedPaths
   getSortedPathStrings() {
     const pathStrings = []
-    for (const [pathString, _] of this.pathToNodeHash) {
+    for (const [pathString, _] of this.pathToNodeRequestData) {
       pathStrings.push(pathString) // keep this as a string in task
     }
     return { pathStrings }
@@ -241,15 +319,15 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   tasks(maxTasks = this.config.maxFetcherJobs): JobTask[] {
     const max = this.config.maxPerRequest
     const tasks: JobTask[] = []
-    if (this.pathToNodeHash.size() > 0) {
+    if (this.pathToNodeRequestData.size() > 0) {
       let { pathStrings } = this.getSortedPathStrings() // TODO pass in number of paths to return
       while (tasks.length < maxTasks && pathStrings.length > 0) {
         const requestedPathStrings = pathStrings.slice(0, max)
         pathStrings = pathStrings.slice(max + 1)
         for (const pathString of requestedPathStrings) {
-          const nodeHash = this.pathToNodeHash.getElementByKey(pathString) // TODO return node set too from sorted function and avoid lookups here
+          const nodeHash = this.pathToNodeRequestData.getElementByKey(pathString)?.nodeHash // TODO return node set too from sorted function and avoid lookups here
           if (nodeHash === undefined) throw Error('Path should exist')
-          this.requestedNodeToPath.set(nodeHash as string, pathString)
+          this.requestedNodeToPath.set(nodeHash as unknown as string, pathString)
         }
         tasks.push({
           pathStrings: requestedPathStrings,
@@ -265,7 +343,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   nextTasks(): void {
     try {
       if (this.in.length === 0) {
-        if (this.pathToNodeHash.size() > 0) {
+        if (this.pathToNodeRequestData.size() > 0) {
           const tasks = this.tasks()
           let count = 0
           for (const task of tasks) {
