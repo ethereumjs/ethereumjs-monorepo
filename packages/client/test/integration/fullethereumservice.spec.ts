@@ -7,9 +7,9 @@ import { Account, bytesToHex, equalsBytes, hexStringToBytes, toBytes } from '@et
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Config } from '../../lib/config'
-import { FullEthereumService } from '../../lib/service'
-import { Event } from '../../lib/types'
+import { Config } from '../../src/config'
+import { FullEthereumService } from '../../src/service'
+import { Event } from '../../src/types'
 
 import { MockChain } from './mocks/mockchain'
 import { MockServer } from './mocks/mockserver'

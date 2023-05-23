@@ -15,11 +15,11 @@ import {
 import * as kzg from 'c-kzg'
 import * as tape from 'tape'
 
-import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../lib/rpc/error-code'
+import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../src/rpc/error-code'
 import { baseRequest, baseSetup, params } from '../helpers'
 import { checkError } from '../util'
 
-import type { FullEthereumService } from '../../../lib/service'
+import type { FullEthereumService } from '../../../src/service'
 
 const method = 'eth_sendRawTransaction'
 
@@ -221,7 +221,7 @@ tape('blob EIP 4844 transaction', async (t) => {
   const consensusFormatValidation = BlockHeader.prototype._consensusFormatValidation
   BlockHeader.prototype._consensusFormatValidation = (): any => {}
   try {
-    initKZG(kzg, __dirname + '/../../../lib/trustedSetups/devnet4.txt')
+    initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet4.txt')
     // eslint-disable-next-line
   } catch {}
   const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')

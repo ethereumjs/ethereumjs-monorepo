@@ -14,10 +14,10 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
-import { Chain } from '../../../lib/blockchain'
-import { Config } from '../../../lib/config'
-import { LevelDB } from '../../../lib/execution/level'
-import { SnapProtocol } from '../../../lib/net/protocol'
+import { Chain } from '../../../src/blockchain'
+import { Config } from '../../../src/config'
+import { LevelDB } from '../../../src/execution/level'
+import { SnapProtocol } from '../../../src/net/protocol'
 ;(BigInt.prototype as any).toJSON = function () {
   return this.toString()
 }
