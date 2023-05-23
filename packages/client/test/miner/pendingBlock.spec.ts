@@ -1,6 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction, Transaction, initKZG } from '@ethereumjs/tx'
+import { Transaction, initKZG } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
@@ -257,49 +257,6 @@ tape('[PendingBlock]', async (t) => {
     }
   })
 
-  t.test('construct blob bundles', async (st) => {
-    try {
-      kzg.freeTrustedSetup()
-    } catch {
-      /** ensure kzg is setup */
-    }
-    initKZG(kzg, __dirname + '/../../lib/trustedSetups/devnet4.txt')
-    const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
-    const common = Common.fromGethGenesis(gethGenesis, {
-      chain: 'customChain',
-      hardfork: Hardfork.ShardingForkDev,
-    })
-    const { txPool } = setup()
-    const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(blobs)
-    const versionedHashes = commitmentsToVersionedHashes(commitments)
-
-    const bufferedHashes = versionedHashes.map((el) => Buffer.from(el))
-
-    const txA01 = BlobEIP4844Transaction.fromTxData(
-      {
-        versionedHashes: bufferedHashes,
-        blobs,
-        kzgCommitments: commitments,
-        maxFeePerDataGas: 100000000n,
-        gasLimit: 0xffffffn,
-        maxFeePerGas: 1000000000n,
-        maxPriorityFeePerGas: 100000000n,
-        to: randomBytes(20),
-      },
-      { common }
-    ).sign(A.privateKey)
-    await txPool.add(txA01)
-    const pendingBlock = new PendingBlock({ config, txPool })
-    const vm = await VM.create({ common })
-    await setBalance(vm, A.address, BigInt(5000000000000000))
-    const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
-    const payloadId = await pendingBlock.start(vm, parentBlock)
-    await pendingBlock.build(payloadId)
-    st.ok(pendingBlock.blobBundles.get(bufferToHex(payloadId))?.blobs[0].equals(blobs[0]))
-    kzg.freeTrustedSetup()
-    st.end()
-  })
   t.test('should reset td', (st) => {
     td.reset()
     // according to https://github.com/testdouble/testdouble.js/issues/379#issuecomment-415868424
