@@ -246,11 +246,12 @@ export class EthProtocol extends Protocol {
         return [
           bytesToBigInt(reqId),
           txs.map((txData) => {
+            // Blob transactions are deserialized with network wrapper
             if (txData[0] === 5) {
-              // Blob transactions are deserialized with network wrapper
-              return BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txData)
+              return BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txData, { common })
+            } else {
+              return TransactionFactory.fromBlockBodyData(txData, { common })
             }
-            return TransactionFactory.fromBlockBodyData(txData)
           }),
         ]
       },
