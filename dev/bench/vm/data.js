@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1684760044492,
+  "lastUpdate": 1684868482982,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "60995fb50aa56e5749d471eb7fa424403c3e6249",
-          "message": "Tx: correctly decode rpc txs (#2613)\n\n* tx: correctly decode rpc txs\r\n\r\n* tx/vm: fix test\r\n\r\n* tx: add fromRPC method\r\n\r\n* Reuse `fromRpcTx` in fromEthersProvider\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-04-05T12:54:13-04:00",
-          "tree_id": "ce2c9d1cc932e09bf367f23e4385aa3af4a2d3f9",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/60995fb50aa56e5749d471eb7fa424403c3e6249"
-        },
-        "date": 1680713818823,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15831,
-            "range": "±3.04%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 15354,
-            "range": "±5.08%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 15865,
-            "range": "±1.62%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 15406,
-            "range": "±1.79%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 14336,
-            "range": "±7.78%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.62%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "konjou@gmail.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c1b29730be0ceab98a28cadc4d06d06f248966f2",
+          "message": "Update rustbn.js and remove hotfix in evm (#2724)",
+          "timestamp": "2023-05-23T20:55:42+02:00",
+          "tree_id": "83c4a8c32ba80d272b11ffa685da537e88023290",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c1b29730be0ceab98a28cadc4d06d06f248966f2"
+        },
+        "date": 1684868482233,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31835,
+            "range": "±4.55%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31610,
+            "range": "±2.65%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 27724,
+            "range": "±8.93%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 31449,
+            "range": "±2.85%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30499,
+            "range": "±2.93%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
