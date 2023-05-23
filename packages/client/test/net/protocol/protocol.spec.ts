@@ -1,8 +1,8 @@
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Config } from '../../../lib/config'
-import { BoundProtocol, Protocol, Sender } from '../../../lib/net/protocol'
+import { Config } from '../../../src/config'
+import { BoundProtocol, Protocol, Sender } from '../../../src/net/protocol'
 
 tape('[Protocol]', (t) => {
   const testMessage = {

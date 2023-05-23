@@ -4,9 +4,9 @@ import { KECCAK256_RLP } from '@ethereumjs/util'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Chain } from '../../../lib/blockchain/chain'
-import { Config } from '../../../lib/config'
-import { Event } from '../../../lib/types'
+import { Chain } from '../../../src/blockchain/chain'
+import { Config } from '../../../src/config'
+import { Event } from '../../../src/types'
 import { wait } from '../../integration/util'
 
 tape('[BlockFetcher]', async (t) => {
@@ -17,7 +17,7 @@ tape('[BlockFetcher]', async (t) => {
   PeerPool.prototype.idle = td.func<any>()
   PeerPool.prototype.ban = td.func<any>()
 
-  const { BlockFetcher } = await import('../../../lib/sync/fetcher/blockfetcher')
+  const { BlockFetcher } = await import('../../../src/sync/fetcher/blockfetcher')
 
   t.test('should start/stop', async (t) => {
     const config = new Config({ maxPerRequest: 5, transports: [] })

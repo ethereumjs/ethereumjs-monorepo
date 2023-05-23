@@ -7,7 +7,7 @@ import * as tape from 'tape'
 
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 
-import type { FullEthereumService } from '../../../lib/service'
+import type { FullEthereumService } from '../../../src/service'
 
 const method = 'eth_getProof'
 

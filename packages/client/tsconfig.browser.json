@@ -1,9 +1,9 @@
 {
   "extends": "../../config/tsconfig.json",
   "include": ["browser/index.ts", "browser/util/index.ts"],
-  "exclude": ["lib/index.js", "lib/util/index.js"],
+  "exclude": ["src/index.js", "src/util/index.js"],
   "compilerOptions": {
     "outDir": "dist.browser",
-    "typeRoots": ["node_modules/@types", "lib/@types"]
+    "typeRoots": ["node_modules/@types", "src/@types"]
   }
 }

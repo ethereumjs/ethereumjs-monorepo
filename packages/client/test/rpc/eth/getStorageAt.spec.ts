@@ -6,11 +6,11 @@ import { Account, Address, bigIntToHex } from '@ethereumjs/util'
 //import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
-import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 import { checkError } from '../util'
 
-import type { FullEthereumService } from '../../../lib/service'
+import type { FullEthereumService } from '../../../src/service'
 
 const method = 'eth_getStorageAt'
 

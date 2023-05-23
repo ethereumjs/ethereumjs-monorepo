@@ -5,7 +5,7 @@ import { TransactionFactory } from '@ethereumjs/tx'
 import { Account, Address, bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { INVALID_PARAMS, TOO_LARGE_REQUEST } from '../../../lib/rpc/error-code'
+import { INVALID_PARAMS, TOO_LARGE_REQUEST } from '../../../src/rpc/error-code'
 import genesisJSON = require('../../testdata/geth-genesis/eip4844.json')
 import preShanghaiGenesisJSON = require('../../testdata/geth-genesis/post-merge.json')
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'

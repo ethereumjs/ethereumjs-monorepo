@@ -1,7 +1,7 @@
 {
   "extends": "../../config/tsconfig.prod.cjs.json",
-  "include": ["bin", "lib", "test"],
+  "include": ["bin", "src", "test"],
   "compilerOptions": {
-    "typeRoots": ["node_modules/@types", "lib/@types"]
+    "typeRoots": ["node_modules/@types", "src/@types"]
   }
 }

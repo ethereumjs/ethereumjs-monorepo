@@ -21,7 +21,7 @@ const MAX_BLOBS_PER_TX = 2
 const MAX_USEFUL_BYTES_PER_TX = USEFUL_BYTES_PER_BLOB * MAX_BLOBS_PER_TX - 1
 const BLOB_SIZE = BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB
 
-initKZG(kzg, __dirname + '/../../lib/trustedSetup/devnet4.txt')
+initKZG(kzg, __dirname + '/../../src/trustedSetup/devnet4.txt')
 const pkey = hexStringToBytes('45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
 const sender = Address.fromPrivateKey(pkey)
 
