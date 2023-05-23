@@ -11,7 +11,6 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
-import { BaseProvider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import { ethers } from 'ethers'
 import * as tape from 'tape'
 
@@ -40,7 +39,7 @@ tape('Ethers State Manager initialization tests', (t) => {
   state = new EthersStateManager({ provider: 'https://google.com', blockTag: 1n })
   t.ok(state instanceof EthersStateManager, 'was able to instantiate state manager with valid url')
 
-  const invalidProvider = new BaseProvider('mainnet')
+  const invalidProvider = new ethers.SocketProvider('mainnet')
   t.throws(
     () => new EthersStateManager({ provider: invalidProvider as any, blockTag: 1n }),
     'cannot instantiate state manager with invalid provider'
@@ -48,14 +47,14 @@ tape('Ethers State Manager initialization tests', (t) => {
   t.end()
 })
 
-tape('Ethers State Manager API tests', async (t) => {
+tape.only('Ethers State Manager API tests', async (t) => {
   if (isBrowser() === true) {
     // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
     t.end()
   } else {
     const provider =
       process.env.PROVIDER !== undefined
-        ? new StaticJsonRpcProvider(process.env.PROVIDER, 1)
+        ? new ethers.JsonRpcProvider(process.env.PROVIDER, 1)
         : new MockProvider()
     const state = new EthersStateManager({ provider, blockTag: 1n })
     const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
@@ -146,6 +145,7 @@ tape('Ethers State Manager API tests', async (t) => {
     t.ok(await state.accountExists(vitalikDotEth), 'account should not exist after being deleted')
 
     try {
+      //@ts-ignore
       await Block.fromJsonRpcProvider(provider, 'fakeBlockTag', {} as any)
       t.fail('should have thrown')
     } catch (err: any) {
@@ -186,7 +186,7 @@ tape('runTx custom transaction test', async (t) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const provider =
       process.env.PROVIDER !== undefined
-        ? new StaticJsonRpcProvider(process.env.PROVIDER, 1)
+        ? new ethers.JsonRpcProvider(process.env.PROVIDER, 1)
         : new MockProvider()
     const state = new EthersStateManager({ provider, blockTag: 1n })
     const vm = await VM.create({ common, stateManager: <any>state }) // TODO fix the type DefaultStateManager back to StateManagerInterface in VM
@@ -220,7 +220,7 @@ tape('runTx test: replay mainnet transactions', async (t) => {
 
     const provider =
       process.env.PROVIDER !== undefined
-        ? new ethers.providers.JsonRpcProvider(process.env.PROVIDER)
+        ? new ethers.JsonRpcProvider(process.env.PROVIDER)
         : new MockProvider()
 
     const blockTag = 15496077n
@@ -247,7 +247,7 @@ tape('runBlock test', async (t) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const provider =
       process.env.PROVIDER !== undefined
-        ? new ethers.providers.JsonRpcProvider(process.env.PROVIDER)
+        ? new ethers.JsonRpcProvider(process.env.PROVIDER)
         : new MockProvider()
     const blockTag = 500000n
     const state = new EthersStateManager({

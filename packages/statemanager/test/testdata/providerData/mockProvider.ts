@@ -1,7 +1,20 @@
-import { JsonRpcProvider } from '@ethersproject/providers'
+import { JsonRpcProvider, Network } from 'ethers'
+
+import type { FetchRequest, JsonRpcPayload, JsonRpcResult } from 'ethers'
 
 export class MockProvider extends JsonRpcProvider {
-  send = async (method: string, params: Array<any>) => {
+  constructor() {
+    super('localhost:8545', Network.from('mainnet'), { staticNetwork: Network.from('mainnet') })
+  }
+
+  _getConnection(): FetchRequest {
+    const fakeConnection = {
+      url: 'localhost:8545',
+    }
+    return fakeConnection as FetchRequest
+  }
+
+  private getAccountValue = async (method: string, params: Array<any>) => {
     switch (method) {
       case 'eth_getProof':
         return this.getProofValues(params as any)
@@ -20,6 +33,57 @@ export class MockProvider extends JsonRpcProvider {
     }
   }
 
+  _send = async (payload: JsonRpcPayload | JsonRpcPayload[]): Promise<JsonRpcResult[]> => {
+    console.log('got _send', payload)
+    const { method, params, id } = payload as JsonRpcPayload
+
+    switch (method) {
+      case 'eth_getProof':
+        return [
+          {
+            id,
+            result: this.getProofValues(params as any),
+          },
+        ]
+      case 'eth_getBlockByNumber':
+        return [
+          {
+            id,
+            result: this.getBlockValues(params as any),
+          },
+        ]
+      case 'eth_chainId': // Always pretends to be mainnet
+        return [
+          {
+            id,
+            result: 1,
+          },
+        ]
+      case 'eth_getTransactionByHash':
+        return [
+          {
+            id,
+            result: this.getTransactionData(params as any),
+          },
+        ]
+      case 'eth_getCode':
+        return [
+          {
+            id,
+            result: '0xab',
+          },
+        ]
+      case 'eth_getStorageAt':
+        return [
+          {
+            id,
+            result: '0xabcd',
+          },
+        ]
+      default:
+        throw new Error(`method ${method} not implemented`)
+    }
+  }
   private getProofValues = async (params: [address: string, _: [], blockTag: bigint | string]) => {
     const [address, _slot, blockTag] = params
     const account = await import(`./accounts/${address}.json`)
