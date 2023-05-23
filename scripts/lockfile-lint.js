@@ -22,6 +22,7 @@ if (result.type === 'error') {
       'd040533e57e4f25f9a7cc4715e219658ad454b5-5643f3998a3c2fbe779f17c25e28e82ee5f96e60'
     ) === false
   ) {
+    console.log(result)
     process.exit(1)
   }
 }
@@ -34,6 +35,7 @@ if (result.type === 'error') {
       'd040533e57e4f25f9a7cc4715e219658ad454b5-5643f3998a3c2fbe779f17c25e28e82ee5f96e60'
     ) === false
   ) {
+    console.log(result)
     process.exit(1)
   }
 }
