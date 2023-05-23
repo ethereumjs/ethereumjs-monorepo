@@ -25,6 +25,7 @@ export class MockProvider extends JsonRpcProvider {
       case 'eth_getTransactionByHash':
         return this.getTransactionData(params as any)
       case 'eth_getCode':
+        console.log('got code')
         return 0
       case 'eth_getStorageAt':
         return '0xabcd'
@@ -65,13 +66,18 @@ export class MockProvider extends JsonRpcProvider {
             result: this.getTransactionData(params as any),
           },
         ]
-      case 'eth_getCode':
+      case 'eth_getCode': {
+        let code = '0x'
+        if ((params as any[])[0] !== '0xd8da6bf26964af9d7eed9e03e53415d37aa96045') {
+          code = '0xab'
+        }
         return [
           {
             id,
-            result: '0xab',
+            result: code,
           },
         ]
+      }
       case 'eth_getStorageAt':
         return [
           {
