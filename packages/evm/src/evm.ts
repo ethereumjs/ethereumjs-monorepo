@@ -612,20 +612,30 @@ export class EVM implements EVMInterface {
       }
     } else {
       if (this._common.gteHardfork(Hardfork.Homestead)) {
-        if (this.DEBUG) {
-          debug(`Not enough gas or code size not allowed (>= Homestead)`)
+        if (!allowedCodeSize) {
+          if (this.DEBUG) {
+            debug(`Code size exceeds maximum code size (>= SpuriousDragon)`)
+          }
+          result = { ...result, ...CodesizeExceedsMaximumError(message.gasLimit) }
+        } else {
+          if (this.DEBUG) {
+            debug(`Contract creation: out of gas`)
+          }
+          result = { ...result, ...OOGResult(message.gasLimit) }
         }
-        result = { ...result, ...CodesizeExceedsMaximumError(message.gasLimit) }
       } else {
         // we are in Frontier
-        if (this.DEBUG) {
-          debug(`Not enough gas or code size not allowed (Frontier)`)
-        }
         if (totalGas - returnFee <= message.gasLimit) {
           // we cannot pay the code deposit fee (but the deposit code actually did run)
+          if (this.DEBUG) {
+            debug(`Not enough gas to pay the code deposit fee (Frontier)`)
+          }
           result = { ...result, ...COOGResult(totalGas - returnFee) }
           CodestoreOOG = true
         } else {
+          if (this.DEBUG) {
+            debug(`Contract creation: out of gas`)
+          }
           result = { ...result, ...OOGResult(message.gasLimit) }
         }
       }
