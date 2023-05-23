@@ -18,7 +18,6 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
-import { getDataGasPrice } from './helpers'
 
 import type { BlockBuffer, BlockData, BlockOptions, JsonBlock, JsonRpcBlock } from './types'
 import type { Common } from '@ethereumjs/common'
@@ -391,9 +390,6 @@ export class Block {
   validateTransactions(stringError: true): string[]
   validateTransactions(stringError = false) {
     const errors: string[] = []
-    let blockDataGas = BigInt(0)
-    const dataGasLimit = this._common.param('gasConfig', 'maxDataGasPerBlock')
-    const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
 
     // eslint-disable-next-line prefer-const
     for (let [i, tx] of this.transactions.entries()) {

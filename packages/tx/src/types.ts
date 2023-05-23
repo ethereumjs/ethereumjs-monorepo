@@ -1,13 +1,3 @@
-import {
-  BYTES_PER_FIELD_ELEMENT,
-  FIELD_ELEMENTS_PER_BLOB,
-  LIMIT_BLOBS_PER_TX,
-  MAX_ACCESS_LIST_SIZE,
-  MAX_CALLDATA_SIZE,
-  MAX_TX_WRAP_KZG_COMMITMENTS,
-  MAX_VERSIONED_HASHES_LIST_SIZE,
-} from './constants'
-
 import type { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 import type { AccessListEIP2930Transaction } from './eip2930Transaction'
 import type { Transaction } from './legacyTransaction'

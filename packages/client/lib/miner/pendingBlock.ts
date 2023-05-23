@@ -1,4 +1,3 @@
-import { BlockHeader } from '@ethereumjs/block'
 import {
   TypeOutput,
   bigIntToUnpaddedBuffer,
@@ -152,7 +151,6 @@ export class PendingBlock {
     )
     let index = 0
     let blockFull = false
-    const blobTxs = []
     while (index < txs.length && !blockFull) {
       try {
         const tx = txs[index]
@@ -183,22 +181,6 @@ export class PendingBlock {
       index++
     }
 
-    // Construct initial blobs bundle when payload is constructed
-    if (vm._common.isActivatedEIP(4844)) {
-      const header = BlockHeader.fromHeaderData(
-        {
-          ...headerData,
-          number,
-          gasLimit,
-          baseFeePerGas,
-          excessDataGas,
-        },
-        {
-          hardforkByTTD: td,
-          common: vm._common,
-        }
-      )
-    }
     return payloadIdBuffer
   }
 
@@ -245,7 +227,6 @@ export class PendingBlock {
     let index = 0
     let blockFull = false
     let skippedByAddErrors = 0
-    const blobTxs = []
     while (index < txs.length && !blockFull) {
       try {
         const tx = txs[index]

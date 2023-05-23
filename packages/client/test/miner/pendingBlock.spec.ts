@@ -1,15 +1,9 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import {
-  blobsToCommitments,
-  commitmentsToVersionedHashes,
-  getBlobs,
-} from '@ethereumjs/tx/dist/utils/blobHelpers'
 import { Account, Address, bufferToHex } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
-import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 

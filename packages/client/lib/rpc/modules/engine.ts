@@ -137,10 +137,6 @@ const executionPayloadV2FieldValidators = {
   ...executionPayloadV1FieldValidators,
   withdrawals: validators.array(validators.withdrawal()),
 }
-const executionPayloadV3FieldValidators = {
-  ...executionPayloadV2FieldValidators,
-  excessDataGas: validators.uint256,
-}
 
 const forkchoiceFieldValidators = {
   headBlockHash: validators.blockHash,

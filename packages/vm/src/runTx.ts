@@ -1,4 +1,4 @@
-import { Block, getDataGasPrice } from '@ethereumjs/block'
+import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Capability } from '@ethereumjs/tx'
 import { Address, KECCAK256_NULL, short, toBuffer } from '@ethereumjs/util'
@@ -291,8 +291,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Check balance against max potential cost (for EIP 1559 and 4844)
   let maxCost = tx.value
-  let dataGasPrice = BigInt(0)
-  let totalDataGas = BigInt(0)
+  const dataGasPrice = BigInt(0)
+  const totalDataGas = BigInt(0)
   if (tx.supports(Capability.EIP1559FeeMarket)) {
     // EIP-1559 spec:
     // The signer must be able to afford the transaction

@@ -1,4 +1,4 @@
-import { Block, calcExcessDataGas } from '@ethereumjs/block'
+import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
@@ -173,14 +173,11 @@ export class BlockBuilder {
     // cannot be greater than the remaining gas in the block
     const blockGasLimit = toType(this.headerData.gasLimit, TypeOutput.BigInt)
 
-    const dataGasLimit = this.vm._common.param('gasConfig', 'maxDataGasPerBlock')
-    const dataGasPerBlob = this.vm._common.param('gasConfig', 'dataGasPerBlob')
-
     const blockGasRemaining = blockGasLimit - this.gasUsed
     if (tx.gasLimit > blockGasRemaining) {
       throw new Error('tx has a higher gas limit than the remaining gas in the block')
     }
-    let excessDataGas = undefined
+    const excessDataGas = undefined
     const header = {
       ...this.headerData,
       gasUsed: this.gasUsed,
@@ -241,7 +238,7 @@ export class BlockBuilder {
     const logsBloom = this.logsBloom()
     const gasUsed = this.gasUsed
     const timestamp = this.headerData.timestamp ?? Math.round(Date.now() / 1000)
-    let excessDataGas = undefined
+    const excessDataGas = undefined
 
     const headerData = {
       ...this.headerData,

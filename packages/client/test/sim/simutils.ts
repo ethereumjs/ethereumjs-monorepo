@@ -1,14 +1,5 @@
 import { Blockchain } from '@ethereumjs/blockchain'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import {
-  blobsToCommitments,
-  commitmentsToVersionedHashes,
-  getBlobs,
-} from '@ethereumjs/tx/dist/utils/blobHelpers'
-import { Address } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
-import { randomBytes } from 'crypto'
-import * as fs from 'fs/promises'
 import { Level } from 'level'
 import { execSync, spawn } from 'node:child_process'
 import * as net from 'node:net'
