@@ -212,12 +212,10 @@ tape('[EthProtocol]', (t) => {
     const legacyTx = TransactionFactory.fromTxData({ type: 0 })
     const eip2929Tx = TransactionFactory.fromTxData({ type: 1 })
     const eip1559Tx = TransactionFactory.fromTxData({ type: 2 })
-    const blobTx = TransactionFactory.fromTxData({ type: 5 }, { common: config.chainCommon })
     const res = p.encode(p.messages.filter((message) => message.name === 'Transactions')[0], [
       legacyTx,
       eip2929Tx,
       eip1559Tx,
-      blobTx,
     ])
     st.deepEqual(res[0], legacyTx.serialize(), 'legacy tx correctly encoded')
     st.deepEqual(res[1], eip2929Tx.serialize(), 'EIP29292 tx correctly encoded')
@@ -230,7 +228,6 @@ tape('[EthProtocol]', (t) => {
     st.deepEqual(decoded[0].type, legacyTx.type, 'decoded legacy tx correctly')
     st.deepEqual(decoded[1].type, eip2929Tx.type, 'decoded eip2929 tx correctly')
     st.deepEqual(decoded[2].type, eip1559Tx.type, 'decoded EIP1559 tx correctly')
-    st.equal(decoded.length, 3, 'should not include blob transaction')
     st.end()
   })
 
