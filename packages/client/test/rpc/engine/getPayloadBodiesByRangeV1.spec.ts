@@ -62,7 +62,6 @@ tape(`${method}: call with valid parameters`, async (t) => {
   const tx = TransactionFactory.fromTxData(
     {
       type: 0x01,
-      maxFeePerDataGas: 1n,
       maxFeePerGas: 10000000000n,
       maxPriorityFeePerGas: 100000000n,
       gasLimit: 30000000n,
@@ -72,7 +71,6 @@ tape(`${method}: call with valid parameters`, async (t) => {
   const tx2 = TransactionFactory.fromTxData(
     {
       type: 0x01,
-      maxFeePerDataGas: 1n,
       maxFeePerGas: 10000000000n,
       maxPriorityFeePerGas: 100000000n,
       gasLimit: 30000000n,
@@ -157,7 +155,6 @@ tape(`${method}: call with valid parameters on pre-Shanghai hardfork`, async (t)
   const tx = TransactionFactory.fromTxData(
     {
       type: 0x01,
-      maxFeePerDataGas: 1n,
       maxFeePerGas: 10000000000n,
       maxPriorityFeePerGas: 100000000n,
       gasLimit: 30000000n,
@@ -167,7 +164,6 @@ tape(`${method}: call with valid parameters on pre-Shanghai hardfork`, async (t)
   const tx2 = TransactionFactory.fromTxData(
     {
       type: 0x01,
-      maxFeePerDataGas: 1n,
       maxFeePerGas: 10000000000n,
       maxPriorityFeePerGas: 100000000n,
       gasLimit: 30000000n,
