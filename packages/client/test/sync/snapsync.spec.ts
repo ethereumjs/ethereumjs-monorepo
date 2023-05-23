@@ -2,8 +2,8 @@ import { BlockHeader } from '@ethereumjs/block'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Chain } from '../../lib/blockchain'
-import { Config } from '../../lib/config'
+import { Chain } from '../../src/blockchain'
+import { Config } from '../../src/config'
 
 tape('[SnapSynchronizer]', async (t) => {
   class PeerPool {
@@ -34,9 +34,9 @@ tape('[SnapSynchronizer]', async (t) => {
   AccountFetcher.prototype.fetch = td.func<any>()
   AccountFetcher.prototype.clear = td.func<any>()
   AccountFetcher.prototype.destroy = td.func<any>()
-  td.replace<any>('../../lib/sync/fetcher', { AccountFetcher })
+  td.replace<any>('../../src/sync/fetcher', { AccountFetcher })
 
-  const { SnapSynchronizer } = await import('../../lib/sync/snapsync')
+  const { SnapSynchronizer } = await import('../../src/sync/snapsync')
 
   t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })

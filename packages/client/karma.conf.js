@@ -2,7 +2,7 @@ module.exports = function (config) {
   config.set({
     frameworks: ['karma-typescript', 'tap'],
 
-    files: ['lib/**/*.ts', 'test/blockchain/chain.spec.ts'],
+    files: ['src/**/*.ts', 'test/blockchain/chain.spec.ts'],
 
     preprocessors: {
       '**/*.ts': ['karma-typescript'],

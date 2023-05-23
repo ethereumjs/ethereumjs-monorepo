@@ -32,7 +32,7 @@ For blob transactions and other KZG related proof functionality (e.g. for EVM pr
 The following two manual installation steps for a KZG library and the trusted setup are needed.
 
 1. Install an additional dependency that supports the `kzg` interface defined in [the kzg interface](./src/kzg/kzg.ts). You can install the default option [c-kzg](https://github.com/ethereum/c-kzg-4844) by simply running `npm install c-kzg`.
-2. Download the trusted setup required for the KZG module. It can be found [here](../client/lib/trustedSetups/trusted_setup.txt) within the client package.
+2. Download the trusted setup required for the KZG module. It can be found [here](../client/src/trustedSetups/trusted_setup.txt) within the client package.
 
 #### Global Initialization
 

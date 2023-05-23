@@ -15,7 +15,7 @@ import {
 import * as kzg from 'c-kzg'
 import * as tape from 'tape'
 
-import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import genesisJSON = require('../../testdata/geth-genesis/eip4844.json')
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'
 import { checkError } from '../util'
@@ -35,7 +35,7 @@ const validPayloadAttributes = {
 
 const validPayload = [validForkChoiceState, { ...validPayloadAttributes, withdrawals: [] }]
 
-initKZG(kzg, __dirname + '/../../../lib/trustedSetups/devnet4.txt')
+initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet4.txt')
 const method = 'engine_getPayloadV3'
 
 tape(`${method}: call with invalid payloadId`, async (t) => {

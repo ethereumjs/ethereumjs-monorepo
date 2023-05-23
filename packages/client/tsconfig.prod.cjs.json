@@ -3,7 +3,7 @@
   "include": ["bin", "lib"],
   "compilerOptions": {
     "outDir": "dist",
-    "typeRoots": ["node_modules/@types", "lib/@types"]
+    "typeRoots": ["node_modules/@types", "src/@types"]
   },
   "references": [
     { "path": "../block/tsconfig.prod.cjs.json" },

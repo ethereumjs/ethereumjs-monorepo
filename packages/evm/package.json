@@ -34,8 +34,7 @@
     "src"
   ],
   "scripts": {
-    "rustbnHotFix": "sed -i -e \"s/.toString('hex')), 'hex'//g\" ../../node_modules/rustbn.js/index.js && sed -i -e \"s/Buffer.from(//g\" ../../node_modules/rustbn.js/index.js",
-    "build": "npm run rustbnHotFix && ../../config/cli/ts-build.sh",
+    "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "c8 --all --reporter=lcov --reporter=text npm run coverage:test",
     "coverage:test": "npm run test && cd ../vm && npm run tester -- --state",
@@ -59,7 +58,7 @@
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.0.0",
     "mcl-wasm": "^0.7.1",
-    "rustbn.js": "~0.2.0"
+    "rustbn.js": "^0.3.0"
   },
   "devDependencies": {
     "@ethereumjs/statemanager": "^1.0.5",

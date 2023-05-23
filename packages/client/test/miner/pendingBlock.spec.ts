@@ -21,10 +21,10 @@ import * as kzg from 'c-kzg'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Config } from '../../lib/config'
-import { getLogger } from '../../lib/logging'
-import { PendingBlock } from '../../lib/miner'
-import { TxPool } from '../../lib/service/txpool'
+import { Config } from '../../src/config'
+import { getLogger } from '../../src/logging'
+import { PendingBlock } from '../../src/miner'
+import { TxPool } from '../../src/service/txpool'
 import { mockBlockchain } from '../rpc/mockBlockchain'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
@@ -265,7 +265,7 @@ tape('[PendingBlock]', async (t) => {
 
   t.test('construct blob bundles', async (st) => {
     try {
-      initKZG(kzg, __dirname + '/../../lib/trustedSetups/devnet4.txt')
+      initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet4.txt')
       // eslint-disable-next-line
     } catch {}
     const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
