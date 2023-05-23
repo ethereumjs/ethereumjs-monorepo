@@ -1,7 +1,7 @@
 import * as tape from 'tape'
 
-import { SyncMode } from '../../lib/config'
-import { Event } from '../../lib/types'
+import { SyncMode } from '../../src/config'
+import { Event } from '../../src/types'
 
 import { destroy, setup, wait } from './util'
 

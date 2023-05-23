@@ -6,10 +6,10 @@ import { KeyEncoding, ValueEncoding } from '@ethereumjs/util'
 import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
-import { Chain } from '../../lib/blockchain'
-import { Config } from '../../lib/config'
+import { Chain } from '../../src/blockchain'
+import { Config } from '../../src/config'
 
-import type { LevelDB } from '../../lib/execution/level'
+import type { LevelDB } from '../../src/execution/level'
 import type { BlockData, HeaderData } from '@ethereumjs/block'
 
 const config = new Config({ accountCache: 10000, storageCache: 1000 })

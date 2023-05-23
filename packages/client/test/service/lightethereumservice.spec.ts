@@ -1,9 +1,9 @@
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Chain } from '../../lib/blockchain'
-import { Config } from '../../lib/config'
-import { Event } from '../../lib/types'
+import { Chain } from '../../src/blockchain'
+import { Config } from '../../src/config'
+import { Event } from '../../src/types'
 
 tape('[LightEthereumService]', async (t) => {
   class PeerPool {
@@ -12,12 +12,12 @@ tape('[LightEthereumService]', async (t) => {
   }
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
-  td.replace<any>('../../lib/net/peerpool', { PeerPool })
+  td.replace<any>('../../src/net/peerpool', { PeerPool })
   const MockChain = td.constructor([] as any)
   MockChain.prototype.open = td.func()
-  td.replace<any>('../../lib/blockchain', { MockChain })
+  td.replace<any>('../../src/blockchain', { MockChain })
   const LesProtocol = td.constructor([] as any)
-  td.replace<any>('../../lib/net/protocol/lesprotocol', { LesProtocol })
+  td.replace<any>('../../src/net/protocol/lesprotocol', { LesProtocol })
   class LightSynchronizer {
     start() {}
     stop() {}
@@ -28,9 +28,9 @@ tape('[LightEthereumService]', async (t) => {
   LightSynchronizer.prototype.stop = td.func<any>()
   LightSynchronizer.prototype.open = td.func<any>()
   LightSynchronizer.prototype.close = td.func<any>()
-  td.replace<any>('../../lib/sync/lightsync', { LightSynchronizer })
+  td.replace<any>('../../src/sync/lightsync', { LightSynchronizer })
 
-  const { LightEthereumService } = await import('../../lib/service/lightethereumservice')
+  const { LightEthereumService } = await import('../../src/service/lightethereumservice')
 
   t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })

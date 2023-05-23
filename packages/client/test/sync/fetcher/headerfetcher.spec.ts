@@ -1,9 +1,9 @@
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Chain } from '../../../lib/blockchain'
-import { Config } from '../../../lib/config'
-import { Event } from '../../../lib/types'
+import { Chain } from '../../../src/blockchain'
+import { Config } from '../../../src/config'
+import { Event } from '../../../src/types'
 
 tape('[HeaderFetcher]', async (t) => {
   class PeerPool {
@@ -12,9 +12,9 @@ tape('[HeaderFetcher]', async (t) => {
   }
   PeerPool.prototype.idle = td.func<any>()
   PeerPool.prototype.ban = td.func<any>()
-  td.replace<any>('../../lib/net/peerpool', { PeerPool })
+  td.replace<any>('../../src/net/peerpool', { PeerPool })
 
-  const { HeaderFetcher } = await import('../../../lib/sync/fetcher/headerfetcher')
+  const { HeaderFetcher } = await import('../../../src/sync/fetcher/headerfetcher')
 
   t.test('should process', (t) => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })

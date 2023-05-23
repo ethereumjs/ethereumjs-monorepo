@@ -3,9 +3,9 @@ import { MemoryLevel } from 'memory-level'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Chain } from '../../lib/blockchain'
-import { Config } from '../../lib/config'
-import { Skeleton } from '../../lib/sync'
+import { Chain } from '../../src/blockchain'
+import { Config } from '../../src/config'
+import { Skeleton } from '../../src/sync'
 
 tape('[BeaconSynchronizer]', async (t) => {
   const execution: any = { run: () => {} }
@@ -37,9 +37,9 @@ tape('[BeaconSynchronizer]', async (t) => {
   ReverseBlockFetcher.prototype.fetch = td.func<any>()
   ReverseBlockFetcher.prototype.clear = td.func<any>()
   ReverseBlockFetcher.prototype.destroy = td.func<any>()
-  td.replace<any>('../../lib/sync/fetcher', { ReverseBlockFetcher })
+  td.replace<any>('../../src/sync/fetcher', { ReverseBlockFetcher })
 
-  const { BeaconSynchronizer } = await import('../../lib/sync/beaconsync')
+  const { BeaconSynchronizer } = await import('../../src/sync/beaconsync')
 
   t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })

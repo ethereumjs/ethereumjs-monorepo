@@ -3,7 +3,7 @@ import { TransactionFactory } from '@ethereumjs/tx'
 import { bytesToPrefixedHexString } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../src/rpc/error-code'
 import genesisJSON = require('../../testdata/geth-genesis/debug.json')
 import { baseRequest, baseSetup, dummy, params, runBlockWithTxs, setupChain } from '../helpers'
 import { checkError } from '../util'
