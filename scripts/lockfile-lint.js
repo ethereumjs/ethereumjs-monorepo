@@ -1,4 +1,3 @@
-const { truncate } = require('fs')
 const { ValidateHost, ValidateScheme, ParseLockfile } = require('lockfile-lint-api')
 
 // path to the lockfile

@@ -27,4 +27,4 @@ jobs:
           cache: 'npm'
 
       - if: steps.changes.outputs.src == 'true'
-        run: npm i lockfile-lint-api && node scripts/lockfile-lint.js
+        run: npm install lockfile-lint-api && node scripts/lockfile-lint.js
