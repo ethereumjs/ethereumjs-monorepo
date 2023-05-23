@@ -119,6 +119,13 @@ tape('Ethers State Manager API tests', async (t) => {
       new Uint8Array(0)
     )
 
+    await state.modifyAccountFields(vitalikDotEth, { nonce: 39n })
+    t.equal(
+      (await state.getAccount(vitalikDotEth))?.nonce,
+      39n,
+      'modified account fields successfully'
+    )
+
     // Verify that provider is not called
     ;(state as any).getAccountFromProvider = function () {
       throw new Error('should not have called this!')
@@ -145,7 +152,6 @@ tape('Ethers State Manager API tests', async (t) => {
     t.ok(await state.accountExists(vitalikDotEth), 'account should not exist after being deleted')
 
     try {
-      //@ts-ignore
       await Block.fromJsonRpcProvider(provider, 'fakeBlockTag', {} as any)
       t.fail('should have thrown')
     } catch (err: any) {

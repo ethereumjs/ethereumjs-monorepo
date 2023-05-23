@@ -244,6 +244,9 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * @param account - The account to store
    */
   async putAccount(address: Address, account: Account): Promise<void> {
+    if (this.DEBUG) {
+      this._debug(`putting account data for ${address.toString()}`)
+    }
     this._accountCache.put(address, account)
   }
 
@@ -257,7 +260,16 @@ export class EthersStateManager implements EVMStateManagerInterface {
   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
     if (this.DEBUG) {
       this._debug(`modifying account fields for ${address.toString()}`)
-      this._debug(JSON.stringify(accountFields, undefined, 2))
+      this._debug(
+        JSON.stringify(
+          accountFields,
+          (k, v) => {
+            if (k === 'nonce') return v.toString()
+            return v
+          },
+          2
+        )
+      )
     }
     let account = await this.getAccount(address)
     if (!account) {
@@ -275,6 +287,9 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * @param address - Address of the account which should be deleted
    */
   async deleteAccount(address: Address) {
+    if (this.DEBUG) {
+      this._debug(`deleting account corresponding to ${address.toString()}`)
+    }
     this._accountCache.del(address)
   }
 
@@ -324,7 +339,6 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * Partial implementation , called from the subclass.
    */
   async revert(): Promise<void> {
-    // setup cache checkpointing
     this._accountCache.revert()
   }
 
