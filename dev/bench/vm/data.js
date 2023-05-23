@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1684871283605,
+  "lastUpdate": 1684876372209,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "frederik.bolding@gmail.com",
-            "name": "Frederik Bolding",
-            "username": "FrederikBolding"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "e8cf85bb8207a273d0ecdb0bf132d22b9b5304bc",
-          "message": "Bump `@chainsafe/ssz` to `0.11.0` (#2622)\n\n* Bump chainsafe/ssz to 0.11.0\r\n\r\n* Try fixing karma\r\n\r\n* Add karma aliases\r\n\r\n* Add `common` configuration\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-04-08T09:45:34+02:00",
-          "tree_id": "6aebdda2c413c1394f11f7b5ba61635087a02ec0",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e8cf85bb8207a273d0ecdb0bf132d22b9b5304bc"
-        },
-        "date": 1680940099318,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15077,
-            "range": "±2.88%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 14664,
-            "range": "±4.63%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 15104,
-            "range": "±1.99%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 14669,
-            "range": "±2.20%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 13259,
-            "range": "±8.73%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.82%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "453b60e8bd215bdf93211358cbee44cff3764ae9",
+          "message": "evm: better error handling for contract creation errors (#2723)\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-05-23T23:09:43+02:00",
+          "tree_id": "d9a230535ad677e99abe841bfca03fab07346938",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/453b60e8bd215bdf93211358cbee44cff3764ae9"
+        },
+        "date": 1684876370968,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31483,
+            "range": "±4.48%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31398,
+            "range": "±3.06%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 27473,
+            "range": "±9.16%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 30541,
+            "range": "±3.27%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 29316,
+            "range": "±3.46%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
           }
         ]
       }
