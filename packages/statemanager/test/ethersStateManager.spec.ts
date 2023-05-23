@@ -47,7 +47,7 @@ tape('Ethers State Manager initialization tests', (t) => {
   t.end()
 })
 
-tape.only('Ethers State Manager API tests', async (t) => {
+tape('Ethers State Manager API tests', async (t) => {
   if (isBrowser() === true) {
     // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
     t.end()
@@ -178,7 +178,7 @@ tape.only('Ethers State Manager API tests', async (t) => {
   }
 })
 
-tape('runTx custom transaction test', async (t) => {
+tape.only('runTx custom transaction test', async (t) => {
   if (isBrowser() === true) {
     // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
     t.end()

@@ -34,7 +34,6 @@ export class MockProvider extends JsonRpcProvider {
   }
 
   _send = async (payload: JsonRpcPayload | JsonRpcPayload[]): Promise<JsonRpcResult[]> => {
-    console.log('got _send', payload)
     const { method, params, id } = payload as JsonRpcPayload
 
     switch (method) {

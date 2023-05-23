@@ -255,6 +255,10 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * @param accountFields - Object containing account fields and values to modify
    */
   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
+    if (this.DEBUG) {
+      this._debug(`modifying account fields for ${address.toString()}`)
+      this._debug(JSON.stringify(accountFields, undefined, 2))
+    }
     let account = await this.getAccount(address)
     if (!account) {
       account = new Account()
@@ -281,6 +285,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * @returns an EIP-1186 formatted proof
    */
   async getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
+    if (this.DEBUG) this._debug(`retrieving proof from provider for ${address.toString()}`)
     const proof = await this.provider.send('eth_getProof', [
       address.toString(),
       [storageSlots.map((slot) => bytesToHex(slot))],
