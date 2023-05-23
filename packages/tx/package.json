@@ -56,14 +56,6 @@
     "@ethereumjs/util": "^8.0.6",
     "ethereum-cryptography": "^2.0.0"
   },
-  "peerDependencies": {
-    "c-kzg": "^1.0.8"
-  },
-  "peerDependenciesMeta": {
-    "c-kzg": {
-      "optional": true
-    }
-  },
   "devDependencies": {
     "@types/minimist": "^1.2.0",
     "@types/node-dir": "^0.0.34",

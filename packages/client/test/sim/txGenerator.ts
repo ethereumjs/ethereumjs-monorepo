@@ -1,5 +1,4 @@
 import { Address } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import { Client } from 'jayson/promise'
 const clientPort = process.argv[2]

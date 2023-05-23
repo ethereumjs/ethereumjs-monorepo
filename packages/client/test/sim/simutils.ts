@@ -1,5 +1,5 @@
 import { Blockchain } from '@ethereumjs/blockchain'
-import { FeeMarketEIP1559Transaction, initKZG } from '@ethereumjs/tx'
+import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
@@ -21,8 +21,6 @@ import type { ChildProcessWithoutNullStreams } from 'child_process'
 import type { Client } from 'jayson/promise'
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
-// Initialize the kzg object with the kzg library
-initKZG(kzg, __dirname + '/../../lib/trustedSetups/devnet4.txt')
 
 export async function waitForELOnline(client: Client): Promise<string> {
   for (let i = 0; i < 15; i++) {

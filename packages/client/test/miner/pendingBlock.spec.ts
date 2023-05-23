@@ -1,6 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
-import { Transaction, initKZG } from '@ethereumjs/tx'
+import { Transaction } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
@@ -9,7 +9,6 @@ import {
 import { Account, Address, bufferToHex } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import { VmState } from '@ethereumjs/vm/dist/eei/vmState'
-import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import * as tape from 'tape'
 import * as td from 'testdouble'
