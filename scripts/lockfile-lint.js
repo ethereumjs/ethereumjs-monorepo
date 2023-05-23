@@ -2,7 +2,7 @@ const { truncate } = require('fs')
 const { ValidateHost, ValidateScheme, ParseLockfile } = require('lockfile-lint-api')
 
 // path to the lockfile
-const lockfilePath = '../package-lock.json'
+const lockfilePath = './package-lock.json'
 const options = {
   lockfilePath: lockfilePath,
 }
