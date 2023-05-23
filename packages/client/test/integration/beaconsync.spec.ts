@@ -3,7 +3,7 @@ import { Common } from '@ethereumjs/common'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Event } from '../../lib/types'
+import { Event } from '../../src/types'
 import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
 
 import { destroy, setup, wait } from './util'

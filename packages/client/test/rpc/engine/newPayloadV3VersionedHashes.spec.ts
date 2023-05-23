@@ -2,7 +2,7 @@ import { BlockHeader } from '@ethereumjs/block'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import blocks = require('../../testdata/blocks/beacon.json')
 import genesisJSON = require('../../testdata/geth-genesis/eip4844.json')
 import { baseRequest, params, setupChain } from '../helpers'

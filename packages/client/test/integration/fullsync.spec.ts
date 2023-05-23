@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 
-import { Event } from '../../lib/types'
+import { Event } from '../../src/types'
 
 import { destroy, setup, wait } from './util'
 

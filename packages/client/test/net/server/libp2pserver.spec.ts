@@ -4,13 +4,13 @@ import { multiaddr } from 'multiaddr'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Config } from '../../../lib/config'
-import { getLogger } from '../../../lib/logging'
-import { Event } from '../../../lib/types'
+import { Config } from '../../../src/config'
+import { getLogger } from '../../../src/logging'
+import { Event } from '../../../src/types'
 import { wait } from '../../integration/util'
 
 tape('[Libp2pServer]', async (t) => {
-  const Libp2pPeer = td.replace<any>('../../../lib/net/peer/libp2ppeer')
+  const Libp2pPeer = td.replace<any>('../../../src/net/peer/libp2ppeer')
   Libp2pPeer.id = 'id0'
 
   class Libp2pNode extends EventEmitter {
@@ -24,7 +24,7 @@ tape('[Libp2pServer]', async (t) => {
   Libp2pNode.prototype.handle = td.func<any>()
   Libp2pNode.prototype.start = td.func<any>()
   Libp2pNode.prototype.stop = td.func<any>()
-  td.replace<any>('../../../lib/net/peer/libp2pnode', { Libp2pNode })
+  td.replace<any>('../../../src/net/peer/libp2pnode', { Libp2pNode })
 
   const conn0 = 'conn0' as any
   const conn1 = 'conn1' as any
@@ -39,7 +39,7 @@ tape('[Libp2pServer]', async (t) => {
   td.when(Libp2pNode.prototype.start()).thenResolve()
   td.when(Libp2pNode.prototype.stop()).thenResolve()
 
-  const { Libp2pServer } = await import('../../../lib/net/server/libp2pserver')
+  const { Libp2pServer } = await import('../../../src/net/server/libp2pserver')
 
   t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })

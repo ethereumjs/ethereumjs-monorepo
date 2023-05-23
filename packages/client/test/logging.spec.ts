@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 
-import { getLogger } from '../lib/logging'
+import { getLogger } from '../src/logging'
 
 tape('[Logging]', (t) => {
   const logger = getLogger({ logLevel: 'info', logFile: 'ethereumjs.log', logLevelFile: 'info' })

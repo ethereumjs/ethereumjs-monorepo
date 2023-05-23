@@ -4,9 +4,9 @@ import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Chain } from '../../../lib/blockchain'
-import { Config } from '../../../lib/config'
-import { SnapProtocol } from '../../../lib/net/protocol'
+import { Chain } from '../../../src/blockchain'
+import { Config } from '../../../src/config'
+import { SnapProtocol } from '../../../src/net/protocol'
 import { wait } from '../../integration/util'
 
 import { _accountRangeRLP } from './accountfetcher.spec'
@@ -22,7 +22,7 @@ tape('[ByteCodeFetcher]', async (t) => {
   PeerPool.prototype.idle = td.func<any>()
   PeerPool.prototype.ban = td.func<any>()
 
-  const { ByteCodeFetcher } = await import('../../../lib/sync/fetcher/bytecodefetcher')
+  const { ByteCodeFetcher } = await import('../../../src/sync/fetcher/bytecodefetcher')
 
   t.test('should start/stop', async (t) => {
     const config = new Config({ maxPerRequest: 5, transports: [] })
