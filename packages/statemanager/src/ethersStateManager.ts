@@ -44,8 +44,8 @@ export class EthersStateManager implements EVMStateManagerInterface {
     this.blockTag = opts.blockTag === 'earliest' ? opts.blockTag : bigIntToHex(opts.blockTag)
 
     this.contractCache = new Map()
-    this.storageCache = new StorageCache({ size: 10000, type: CacheType.LRU })
-    this._accountCache = new AccountCache({ size: 100000, type: CacheType.LRU })
+    this.storageCache = new StorageCache({ size: 100000, type: CacheType.ORDERED_MAP })
+    this._accountCache = new AccountCache({ size: 100000, type: CacheType.ORDERED_MAP })
   }
 
   copy(): EthersStateManager {
@@ -54,8 +54,14 @@ export class EthersStateManager implements EVMStateManagerInterface {
       blockTag: BigInt(this.blockTag),
     })
     ;(newState as any).contractCache = new Map(this.contractCache)
-    ;(newState as any).storageCache = new StorageCache({ size: 10000, type: CacheType.LRU })
-    ;(newState as any)._accountCache = new AccountCache({ size: 10000, type: CacheType.LRU })
+    ;(newState as any).storageCache = new StorageCache({
+      size: 100000,
+      type: CacheType.ORDERED_MAP,
+    })
+    ;(newState as any)._accountCache = new AccountCache({
+      size: 100000,
+      type: CacheType.ORDERED_MAP,
+    })
     return newState
   }
 
