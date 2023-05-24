@@ -58,6 +58,7 @@
   },
   "dependencies": {
     "@chainsafe/libp2p-noise": "^4.1.1",
+    "@crate-crypto/crypto-4844": "^0.2.0",
     "@ethereumjs/block": "4.2.2",
     "@ethereumjs/blockchain": "6.2.2",
     "@ethereumjs/common": "3.1.2",

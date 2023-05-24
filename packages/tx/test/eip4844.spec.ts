@@ -17,11 +17,13 @@ import * as tape from 'tape'
 
 import { BlobEIP4844Transaction, TransactionFactory } from '../src'
 
+import { TSKzg } from './tsKzg'
+
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
 const pk = randomBytes(32)
-if (isBrowser() === false) initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet4.txt')
+//if (isBrowser() === false) initKZG(tsK, __dirname + '/../../client/src/trustedSetups/devnet4.txt')
 
 const gethGenesis = require('../../block/test/testdata/4844-hardfork.json')
 const common = Common.fromGethGenesis(gethGenesis, {
@@ -29,10 +31,11 @@ const common = Common.fromGethGenesis(gethGenesis, {
   hardfork: Hardfork.Cancun,
 })
 
-tape('EIP4844 constructor tests - valid scenarios', (t) => {
+tape.only('EIP4844 constructor tests - valid scenarios', async (t) => {
   if (isBrowser() === true) {
     t.end()
   } else {
+    initKZG(await TSKzg.create(), '')
     const txData = {
       type: 0x03,
       versionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
