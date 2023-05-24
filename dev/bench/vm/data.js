@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1684876372209,
+  "lastUpdate": 1684914539117,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "da187d4a8143a9fd010ef9bfb49e6ad333e7a0d7",
-          "message": "client: Add snap bytecode fetcher (#2602)\n\n* Add account fetcher base\r\n\r\nAdd accountfetcher import\r\n\r\nAdd AccountFetcher as possible type for Synchronizer.fetcher\r\n\r\nPlace call to getAccountRange inside of fetcher\r\n\r\nPlace call to getAccountRange() in accountfetcher and comment it out\r\n\r\nAdd account fetcher base\r\n\r\nAdd accountfetcher import\r\n\r\nadd account fetcher getter setter in snapsync\r\n\r\nChange order of importing accountfetcher in index file\r\n\r\nChange bytes parameter to be per task\r\n\r\nRemove root and bytes from task inputs and make them fetcher variables\r\n\r\nCorrect log message\r\n\r\nAdd debug console log statement\r\n\r\nFix linting issues\r\n\r\nAdd account to mpt and check validity with root and proof\r\n\r\nSet root of trie\r\n\r\nAdd checks to fetcher.request()\r\n\r\nclient/snap: fix getAccountRange return type\r\n\r\nclient/snap: pass first proof\r\n\r\nclient/snap: add utility to convert slim account to a normal RLPd account\r\n\r\nclient/snap: implement account range db dump\r\n\r\nUpdate to use verifyRangeProof\r\n\r\nCorrect some messages\r\n\r\nUpdate verifyProofRange input for first account hash to be fetcher origin\r\n\r\nFix linting issues\r\n\r\nStore accounts in store phase\r\n\r\nAdd logic for dividing hash ranges and adding them as tasks\r\n\r\nIncrement count by 1 before next iteration\r\n\r\nclient/snap: remove unnecessary account fetcher logic\r\n\r\nclient/snap: correctly feed the right values to verifyRangeProof\r\n\r\nlint fixes\r\n\r\nsmall cleanup\r\n\r\nfix account fetcher with previous fixes\r\n\r\noverhaul and simplify the fetcher and add partial results handling\r\n\r\ncleanup comments\r\n\r\nfix fetch spec tests\r\n\r\nExperiment with putting accounts into DefaultStateManager and CheckpointTrie\r\n\r\nUse return value of verifyRangeProof for checking if there are more accounts left to fetch in the range\r\n\r\nRemove unused function\r\n\r\nExport storage data\r\n\r\nCreate storage fetcher\r\n\r\nRemove comment\r\n\r\nModify debug message\r\n\r\nUpdate comments to reflect specs\r\n\r\nModify comments and change storage fetcher to fetch only single account\r\n\r\nWIP: Queue storage fetches when accounts are received\r\n\r\nWIP:  Continue work on storage fetcher\r\n\r\nAdd storage fetcher tests\r\n\r\nComment out storage fetcher integration until multi-fetcher sync support is added\r\n\r\nWIP: Initialize and run storage fetcher in account fetcher\r\n\r\nAdd account field to JobTask type for storage fetcher and add enqueueByAccountList\r\n\r\nAdd accounts for storage fetching in account fetcher\r\n\r\nEnable single account fetches in storage fetcher\r\n\r\nSave changes so far\r\n\r\nIndex account body for storageRoot for use with storageFetcher\r\n\r\nUpdate comments and print statements\r\n\r\nAdd custom debuggers to new fetchers\r\n\r\nAdd limit check for continueing a task after partial resluts\r\n\r\nAdd limit check for continueing a task after partial resluts and clean up comments\r\n\r\nOptimize by removing invalidated tasks; Terminate using new conditions\r\n\r\nUpdate comments\r\n\r\nWIP: Implement multi-account storage requests\r\n\r\nWIP: Continue development of multi-account fetches and optimizing storage fetcher\r\n\r\nWIP: Impelemnt multi-account fetching\r\n\r\nWIP: Debug task null error\r\n\r\nAdd some checks for peer storage response\r\n\r\nSwitch structure of post-fetch validation\r\n\r\nDebug storage fetcher: Set starting origin to 0 and troubleshoot request logic\r\n\r\nAggregate partial results in embedded array\r\n\r\nUse larger task ranges for storage fetcher\r\n\r\nSet first and count in each task request\r\n\r\nDebug range logic\r\n\r\nCleanup code and fix task generation loop\r\n\r\nFix one-off error\r\n\r\nClean up comments and logging in accountfetcher\r\n\r\nImprove logging\r\n\r\nRefactor and clean up storagefetcher\r\n\r\nAdd commented code snippet for demo\r\n\r\nUse config value for maxRangeBytes\r\n\r\nReturn results in the case of a single, no-proof slot payload\r\n\r\nOnly enqueue storageRequests if more than 0 exist\r\n\r\nRun account fetcher in syncWithPeer\r\n\r\nFix linting issues\r\n\r\n* Update tests\r\n\r\n* Bufferize storage root if it is not a buffer already\r\n\r\n* Update storage fetcher tests\r\n\r\n* Move storage request processing in account fetcher into store phase\r\n\r\n* Update comments\r\n\r\n* Fix linting issues\r\n\r\n* Update comments\r\n\r\n* Update comments\r\n\r\n* Use config value for maxAccountRange\r\n\r\n* Update comment\r\n\r\n* Add tests for requests and proof verification\r\n\r\n* Initialize chain using helper\r\n\r\n* Setup to dev/test snapsync with sim architecture\r\n\r\n* modfiy single-run to setup a lodestar<>geth node to snapsync from\r\n\r\n* setup an ethereumjs inline client and get it to peer with geth\r\n\r\n* cleanup setup a bit\r\n\r\n* snapsync run spec\r\n\r\n* get the snap testdev sim working\r\n\r\n* finalize the test infra and update usage doc\r\n\r\n* enhance coverage\r\n\r\n* Fix lint error\r\n\r\n* Setup to dev/test snapsync with sim architecture\r\n\r\n* modfiy single-run to setup a lodestar<>geth node to snapsync from\r\n\r\n* setup an ethereumjs inline client and get it to peer with geth\r\n\r\n* cleanup setup a bit\r\n\r\n* snapsync run spec\r\n\r\n* get the snap testdev sim working\r\n\r\n* finalize the test infra and update usage doc\r\n\r\n* enhance coverage\r\n\r\n* Use geth RPC to connect to ethJS\r\n\r\n* refac wait for snap sync completion\r\n\r\n* Emit snap sync completion event in accountfetcher\r\n\r\n* Modify fetcher termination condition\r\n\r\n* Cluster snap config items together\r\n\r\n* Index account range starting from 0\r\n\r\n* Sync fetchers using helper\r\n\r\n* Put storage slots into tries\r\n\r\n* Use destroyWhenDone to terminate storage fetcher\r\n\r\n* End fetcher if finished tasks is greater than or equal to total\r\n\r\n* Create codefetcher base\r\n\r\n* setup writer just once if fetcher not destroyed\r\n\r\n* cleanup and codeflow simplification\r\n\r\n* cleanup\r\n\r\n* fix accountspec\r\n\r\n* increase coverage\r\n\r\n* Add accounts with nonempty codehash to codefetcher request list\r\n\r\n* fix the flag processing\r\n\r\n* Check if codeHash is empty by comparing it to hash of null\r\n\r\n* Implement request function of bytecode fetcher\r\n\r\n* Fix bug - Setup trie for storing codes\r\n\r\n* Implement store phase of bytecode fetcher\r\n\r\n* Remove unused import and typing changes\r\n\r\n* chunkify hashes request into multiple task\r\n\r\n* fix the response processing\r\n\r\n* resolve the hanging test\r\n\r\n* add bytecodefetcher spec\r\n\r\n* increase coverage\r\n\r\n* further increase coverage\r\n\r\n---------\r\n\r\nCo-authored-by: harkamal <gajinder@g11.in>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-04-12T16:02:50+05:30",
-          "tree_id": "f7cd6f88393ffa6ae38ccc2540bbe79ea7fb727a",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/da187d4a8143a9fd010ef9bfb49e6ad333e7a0d7"
-        },
-        "date": 1681295761799,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 12057,
-            "range": "±2.51%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 11853,
-            "range": "±3.93%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 12111,
-            "range": "±2.38%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 11133,
-            "range": "±7.77%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 12178,
-            "range": "±1.91%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.46%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "konjou@gmail.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fb6b221370ed688057d738d64576e2cca4c36d85",
+          "message": "Make `ethersStateManager` more awesome (#2720)\n\n* Update ethers to latest version\r\n\r\n* Update mockprovider to match v6 API\r\n\r\n* Add more logging\r\n\r\n* fix test\r\n\r\n* various cleanup\r\n\r\n* Tell Karma to parse more modern syntax\r\n\r\n* Fix test helper\r\n\r\n* update lockfile-lint\r\n\r\n* fix node version\r\n\r\n* fix lockfile path\r\n\r\n* more fixes\r\n\r\n* Remove error condition\r\n\r\n* Add error messaging\r\n\r\n* StateManager: switch to ORDERED_MAP caches for EthersStateManager, remove console.log() from tests\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-05-24T09:44:57+02:00",
+          "tree_id": "33729991e8054e63741880494f8100235cb3b6b5",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/fb6b221370ed688057d738d64576e2cca4c36d85"
+        },
+        "date": 1684914537763,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18105,
+            "range": "±5.98%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18242,
+            "range": "±2.94%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18400,
+            "range": "±2.76%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18034,
+            "range": "±2.92%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 17527,
+            "range": "±3.12%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
