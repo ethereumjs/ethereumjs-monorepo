@@ -36,7 +36,7 @@ import type {
 } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-import type { AccessList } from 'ethers/lib/utils'
+import type { AccessList } from 'ethers'
 
 export type StorageProof = {
   key: PrefixedHexString
