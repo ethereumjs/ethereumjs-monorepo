@@ -5,7 +5,7 @@ import * as tape from 'tape'
 import { TransactionFactory } from '../src'
 import { normalizeTxParams } from '../src/fromRpc'
 
-const optimismTx = require('./json/optimismTx.json')
+const optimismTx = require('./json/optimismTx_postRegolith_system.json')
 const v0Tx = require('./json/v0tx.json')
 
 const txTypes = [0, 1, 2]
