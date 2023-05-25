@@ -1,12 +1,7 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import {
-  BlobEIP4844Transaction,
-  FeeMarketEIP1559Transaction,
-  Transaction,
-  TransactionFactory,
-} from '@ethereumjs/tx'
+import { FeeMarketEIP1559Transaction, Transaction, TransactionFactory } from '@ethereumjs/tx'
 import { Account, Address, KECCAK256_NULL, MAX_INTEGER } from '@ethereumjs/util'
 import * as tape from 'tape'
 
@@ -252,7 +247,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
         // calculate expected coinbase balance
         const baseFee = block.header.baseFeePerGas!
         const inclusionFeePerGas =
-          tx instanceof FeeMarketEIP1559Transaction || tx instanceof BlobEIP4844Transaction
+          tx instanceof FeeMarketEIP1559Transaction
             ? tx.maxPriorityFeePerGas < tx.maxFeePerGas - baseFee
               ? tx.maxPriorityFeePerGas
               : tx.maxFeePerGas - baseFee
@@ -880,61 +875,3 @@ tape(
     t.end()
   }
 )
-
-tape('EIP 4844 transaction tests', async (t) => {
-  const genesisJson = require('../../../block/test/testdata/4844-hardfork.json')
-  const common = Common.fromGethGenesis(genesisJson, {
-    chain: 'customChain',
-    hardfork: Hardfork.ShardingForkDev,
-  })
-  common.setHardfork(Hardfork.ShardingForkDev)
-  const oldGetBlockFunction = Blockchain.prototype.getBlock
-
-  // Stub getBlock to produce a valid parent header under EIP 4844
-  Blockchain.prototype.getBlock = async () => {
-    return Block.fromBlockData(
-      {
-        header: BlockHeader.fromHeaderData(
-          {
-            excessDataGas: 0n,
-            number: 1,
-            parentHash: blockchain.genesisBlock.hash(),
-          },
-          {
-            common,
-            skipConsensusFormatValidation: true,
-          }
-        ),
-      },
-      {
-        common,
-        skipConsensusFormatValidation: true,
-      }
-    )
-  }
-  const blockchain = await Blockchain.create({ validateBlocks: false, validateConsensus: false })
-  const vm = await VM.create({ common, blockchain })
-
-  const tx = getTransaction(common, 5, true)
-
-  const block = Block.fromBlockData(
-    {
-      header: BlockHeader.fromHeaderData(
-        {
-          excessDataGas: 1n,
-          number: 2,
-          parentHash: (await blockchain.getBlock(1n)).hash(), // Faking parent hash with getBlock stub
-        },
-        {
-          common,
-          skipConsensusFormatValidation: true,
-        }
-      ),
-    },
-    { common, skipConsensusFormatValidation: true }
-  )
-  const res = await vm.runTx({ tx, block, skipBalance: true })
-  t.ok(res.execResult.exceptionError === undefined, 'simple blob tx run succeeds')
-  Blockchain.prototype.getBlock = oldGetBlockFunction
-  t.end()
-})

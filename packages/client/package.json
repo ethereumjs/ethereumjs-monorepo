@@ -73,7 +73,6 @@
     "chalk": "^4.1.2",
     "connect": "^3.7.0",
     "cors": "^2.8.5",
-    "c-kzg": "^1.0.8",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.0.0",
     "fs-extra": "^10.1.0",

@@ -11,7 +11,7 @@ const common = new Common({
 })
 
 const maxInitCodeSize = common.param('vm', 'maxInitCodeSize')
-const txTypes = [0, 1, 2, 5]
+const txTypes = [0, 1, 2]
 const addressZero = Address.zero()
 
 tape('[EIP3860 tests]', function (t) {

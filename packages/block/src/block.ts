@@ -1,7 +1,7 @@
 import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
+import { Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
   KECCAK256_RLP,
   Withdrawal,
@@ -13,13 +13,11 @@ import {
   getProvider,
   intToHex,
   isHexPrefixed,
-  ssz,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
-import { getDataGasPrice } from './helpers'
 
 import type { BlockBuffer, BlockData, BlockOptions, JsonBlock, JsonRpcBlock } from './types'
 import type { Common } from '@ethereumjs/common'
@@ -53,14 +51,6 @@ export class Block {
       await trie.put(Buffer.from(RLP.encode(i)), arrToBufArr(RLP.encode(wt.raw())))
     }
     return trie.root()
-  }
-
-  /**
-   * Returns the ssz root for array of withdrawal transactions.
-   * @param wts array of Withdrawal to compute the root of
-   */
-  public static async generateWithdrawalsSSZRoot(withdrawals: Withdrawal[]) {
-    ssz.Withdrawals.hashTreeRoot(withdrawals.map((wt) => wt.toValue()))
   }
 
   /**
@@ -400,9 +390,6 @@ export class Block {
   validateTransactions(stringError: true): string[]
   validateTransactions(stringError = false) {
     const errors: string[] = []
-    let blockDataGas = BigInt(0)
-    const dataGasLimit = this._common.param('gasConfig', 'maxDataGasPerBlock')
-    const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
 
     // eslint-disable-next-line prefer-const
     for (let [i, tx] of this.transactions.entries()) {
@@ -417,16 +404,6 @@ export class Block {
           tx = tx as Transaction
           if (tx.gasPrice < this.header.baseFeePerGas!) {
             errs.push('tx unable to pay base fee (non EIP-1559 tx)')
-          }
-        }
-      }
-      if (this._common.isActivatedEIP(4844) === true) {
-        if (tx instanceof BlobEIP4844Transaction) {
-          blockDataGas += BigInt(tx.numBlobs()) * dataGasPerBlob
-          if (blockDataGas > dataGasLimit) {
-            errs.push(
-              `tx causes total data gas of ${blockDataGas} to exceed maximum data gas per block of ${dataGasLimit}`
-            )
           }
         }
       }
@@ -472,27 +449,6 @@ export class Block {
     if (this._common.isActivatedEIP(4895) && !(await this.validateWithdrawalsTrie())) {
       const msg = this._errorMsg('invalid withdrawals trie')
       throw new Error(msg)
-    }
-  }
-
-  /**
-   * Validates that data gas fee for each transaction is greater than or equal to the
-   * dataGasPrice for the block and that total data gas in block is less than maximum
-   * data gas per block
-   * @param parentHeader header of parent block
-   */
-  validateBlobTransactions(parentHeader: BlockHeader) {
-    for (const tx of this.transactions) {
-      if (tx instanceof BlobEIP4844Transaction) {
-        const dataGasPrice = getDataGasPrice(parentHeader)
-        if (tx.maxFeePerDataGas < dataGasPrice) {
-          throw new Error(
-            `blob transaction maxFeePerDataGas ${
-              tx.maxFeePerDataGas
-            } < than block data gas price ${dataGasPrice} - ${this.errorStr()}`
-          )
-        }
-      }
     }
   }
 

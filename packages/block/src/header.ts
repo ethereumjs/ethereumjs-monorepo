@@ -210,10 +210,6 @@ export class BlockHeader {
       )
     }
 
-    if (!this._common.isActivatedEIP(4844) && headerData.excessDataGas !== undefined) {
-      throw new Error('excess data gas can only be provided with EIP4844 activated')
-    }
-
     this.parentHash = parentHash
     this.uncleHash = uncleHash
     this.coinbase = coinbase

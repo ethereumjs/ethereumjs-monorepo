@@ -4,9 +4,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { initKZG } from '@ethereumjs/tx'
 import { Address, arrToBufArr, short, toBuffer } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import { existsSync, writeFileSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
@@ -623,9 +621,6 @@ async function run() {
     return helprpc()
   }
 
-  // TODO sharding: Just initialize kzg library now, in future it can be optimized to be
-  // loaded and initialized on the sharding hardfork activation
-  initKZG(kzg, __dirname + '/../lib/trustedSetups/devnet4.txt')
   // Give network id precedence over network name
   const chain = args.networkId ?? args.network ?? Chain.Mainnet
 

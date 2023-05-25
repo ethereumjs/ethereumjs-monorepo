@@ -641,10 +641,6 @@ export class Blockchain implements BlockchainInterface {
     await this.validateHeader(block.header)
     await this._validateUncleHeaders(block)
     await block.validateData(false)
-    // TODO: Rethink how validateHeader vs validateBlobTransactions works since the parentHeader is retrieved multiple times
-    // (one for each uncle header and then for validateBlobTxs).
-    const parentBlock = await this.getBlock(block.header.parentHash)
-    block.validateBlobTransactions(parentBlock.header)
   }
   /**
    * The following rules are checked in this method:

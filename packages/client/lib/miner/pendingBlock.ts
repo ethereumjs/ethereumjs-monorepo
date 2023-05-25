@@ -1,5 +1,3 @@
-import { BlockHeader } from '@ethereumjs/block'
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
   TypeOutput,
   bigIntToUnpaddedBuffer,
@@ -153,14 +151,12 @@ export class PendingBlock {
     )
     let index = 0
     let blockFull = false
-    const blobTxs = []
     while (index < txs.length && !blockFull) {
       try {
         const tx = txs[index]
         await builder.addTransaction(tx, {
           skipHardForkValidation: this.skipHardForkValidation,
         })
-        if (tx instanceof BlobEIP4844Transaction) blobTxs.push(tx)
       } catch (error) {
         if (
           (error as Error).message ===
@@ -185,23 +181,6 @@ export class PendingBlock {
       index++
     }
 
-    // Construct initial blobs bundle when payload is constructed
-    if (vm._common.isActivatedEIP(4844)) {
-      const header = BlockHeader.fromHeaderData(
-        {
-          ...headerData,
-          number,
-          gasLimit,
-          baseFeePerGas,
-          excessDataGas,
-        },
-        {
-          hardforkByTTD: td,
-          common: vm._common,
-        }
-      )
-      this.constructBlobsBundle(payloadId, blobTxs, header.hash())
-    }
     return payloadIdBuffer
   }
 
@@ -248,13 +227,9 @@ export class PendingBlock {
     let index = 0
     let blockFull = false
     let skippedByAddErrors = 0
-    const blobTxs = []
     while (index < txs.length && !blockFull) {
       try {
         const tx = txs[index]
-        if (tx instanceof BlobEIP4844Transaction) {
-          blobTxs.push(tx)
-        }
         await builder.addTransaction(tx, {
           skipHardForkValidation: this.skipHardForkValidation,
         })
@@ -300,44 +275,6 @@ export class PendingBlock {
         .toString('hex')}`
     )
 
-    // Construct blobs bundle
-    if (block._common.isActivatedEIP(4844)) {
-      this.constructBlobsBundle(payloadId, blobTxs, block.header.hash())
-    }
-
     return [block, builder.transactionReceipts, builder.minerValue]
-  }
-
-  /**
-   * An internal helper for storing the blob bundle associated with each transaction in an EIP4844 world
-   * @param payloadId the payload Id of the pending block
-   * @param txs an array of {@BlobEIP4844Transaction } transactions
-   * @param blockHash the blockhash of the pending block (computed from the header data provided)
-   */
-  private constructBlobsBundle = (
-    payloadId: string,
-    txs: BlobEIP4844Transaction[],
-    blockHash: Buffer
-  ) => {
-    let blobs: Buffer[] = []
-    let kzgCommitments: Buffer[] = []
-    const bundle = this.blobBundles.get(payloadId)
-    if (bundle !== undefined) {
-      blobs = bundle.blobs
-      kzgCommitments = bundle.kzgCommitments
-    }
-
-    for (let tx of txs) {
-      tx = tx as BlobEIP4844Transaction
-      if (tx.blobs !== undefined && tx.blobs.length > 0) {
-        blobs = blobs.concat(tx.blobs)
-        kzgCommitments = kzgCommitments.concat(tx.kzgCommitments!)
-      }
-    }
-    this.blobBundles.set(payloadId, {
-      blockHash: '0x' + blockHash.toString('hex'),
-      blobs,
-      kzgCommitments,
-    })
   }
 }

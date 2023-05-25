@@ -1,6 +1,6 @@
-import { Block, getDataGasPrice } from '@ethereumjs/block'
+import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
+import { Capability } from '@ethereumjs/tx'
 import { Address, KECCAK256_NULL, short, toBuffer } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
@@ -291,48 +291,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Check balance against max potential cost (for EIP 1559 and 4844)
   let maxCost = tx.value
-  let dataGasPrice = BigInt(0)
-  let totalDataGas = BigInt(0)
+  const dataGasPrice = BigInt(0)
+  const totalDataGas = BigInt(0)
   if (tx.supports(Capability.EIP1559FeeMarket)) {
     // EIP-1559 spec:
     // The signer must be able to afford the transaction
     // `assert balance >= gas_limit * max_fee_per_gas`
     maxCost += tx.gasLimit * (tx as FeeMarketEIP1559Transaction).maxFeePerGas
-  }
-
-  if (tx instanceof BlobEIP4844Transaction) {
-    if (!this._common.isActivatedEIP(4844)) {
-      const msg = _errorMsg('blob transactions are only valid with EIP4844 active', this, block, tx)
-      throw new Error(msg)
-    }
-    // EIP-4844 spec
-    // the signer must be able to afford the transaction
-    // assert signer(tx).balance >= tx.message.gas * tx.message.max_fee_per_gas + get_total_data_gas(tx) * tx.message.max_fee_per_data_gas
-    const castTx = tx as BlobEIP4844Transaction
-    totalDataGas = castTx.common.param('gasConfig', 'dataGasPerBlob') * BigInt(castTx.numBlobs())
-    maxCost += totalDataGas * castTx.maxFeePerDataGas
-
-    // 4844 minimum datagas price check
-    if (opts.block === undefined) {
-      const msg = _errorMsg(
-        `Block option must be supplied to compute data gas price`,
-        this,
-        block,
-        tx
-      )
-      throw new Error(msg)
-    }
-    const parentBlock = await this.blockchain.getBlock(opts.block?.header.parentHash)
-    dataGasPrice = getDataGasPrice(parentBlock.header)
-    if (castTx.maxFeePerDataGas < dataGasPrice) {
-      const msg = _errorMsg(
-        `Transaction's maxFeePerDataGas ${castTx.maxFeePerDataGas}) is less than block dataGasPrice (${dataGasPrice}).`,
-        this,
-        block,
-        tx
-      )
-      throw new Error(msg)
-    }
   }
 
   if (fromAccount.balance < maxCost) {
@@ -386,9 +351,6 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // EIP-4844 tx
   let versionedHashes
-  if (tx instanceof BlobEIP4844Transaction) {
-    versionedHashes = (tx as BlobEIP4844Transaction).versionedHashes
-  }
 
   // Update from account's balance
   const txCost = tx.gasLimit * gasPrice
