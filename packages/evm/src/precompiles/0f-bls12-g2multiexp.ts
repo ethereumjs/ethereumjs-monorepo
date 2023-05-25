@@ -1,13 +1,13 @@
 import { short } from '@ethereumjs/util'
 import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
 
-import { EvmErrorResult, OOGResult } from '../evm'
-import { ERROR, EvmError } from '../exceptions'
+import { EvmErrorResult, OOGResult } from '../evm.js'
+import { ERROR, EvmError } from '../exceptions.js'
 
 import { gasDiscountPairs } from './util/bls12_381'
 
-import type { ExecResult } from '../evm'
-import type { PrecompileInput } from './types'
+import type { ExecResult } from '../evm.js'
+import type { PrecompileInput } from './types.js'
 
 const {
   BLS12_381_ToG2Point,

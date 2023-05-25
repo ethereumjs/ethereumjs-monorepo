@@ -1,5 +1,5 @@
-import type { Chain } from '../blockchain'
-import type { Config } from '../config'
+import type { Chain } from '../blockchain/chain.js'
+import type { Config } from '../config.js'
 import type { AbstractLevel } from 'abstract-level'
 
 export interface ExecutionOptions {

@@ -1,11 +1,11 @@
-import { Event } from '../../types'
+import { Event } from '../../types.js'
 
-import { BlockFetcherBase } from './blockfetcherbase'
+import { BlockFetcherBase } from './blockfetcherbase.js'
 
-import type { Peer } from '../../net/peer'
-import type { FlowControl } from '../../net/protocol'
-import type { BlockFetcherOptions, JobTask } from './blockfetcherbase'
-import type { Job } from './types'
+import type { Peer } from '../../net/peer/index.js'
+import type { FlowControl } from '../../net/protocol/index.js'
+import type { BlockFetcherOptions, JobTask } from './blockfetcherbase.js'
+import type { Job } from './types.js'
 import type { BlockHeader } from '@ethereumjs/block'
 
 export interface HeaderFetcherOptions extends BlockFetcherOptions {

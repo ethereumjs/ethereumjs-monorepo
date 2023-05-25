@@ -4,7 +4,7 @@ import { Account, isHexPrefixed, toBytes, unpadBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
-import type { AccountState, GenesisState } from '../types'
+import type { AccountState, GenesisState } from '../types.js'
 
 /**
  * Derives the stateRoot of the genesis block based on genesis allocations

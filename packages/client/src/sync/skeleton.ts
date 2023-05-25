@@ -12,10 +12,10 @@ import {
   zeros,
 } from '@ethereumjs/util'
 
-import { short, timeDuration } from '../util'
-import { DBKey, MetaDBManager } from '../util/metaDBManager'
+import { short, timeDuration } from '../util/index.js'
+import { DBKey, MetaDBManager } from '../util/metaDBManager.js'
 
-import type { MetaDBManagerOptions } from '../util/metaDBManager'
+import type { MetaDBManagerOptions } from '../util/metaDBManager.js'
 import type { BigIntLike } from '@ethereumjs/util'
 
 // Thanks to go-ethereum for the skeleton design

@@ -1,13 +1,13 @@
 import { DPT as Devp2pDPT, RLPx as Devp2pRLPx } from '@ethereumjs/devp2p'
 import { bytesToHex, utf8ToBytes } from 'ethereum-cryptography/utils'
 
-import { Event } from '../../types'
-import { getClientVersion } from '../../util'
-import { RlpxPeer } from '../peer/rlpxpeer'
+import { Event } from '../../types.js'
+import { getClientVersion } from '../../util/index.js'
+import { RlpxPeer } from '../peer/rlpxpeer.js'
 
-import { Server } from './server'
+import { Server } from './server.js'
 
-import type { ServerOptions } from './server'
+import type { ServerOptions } from './server.js'
 import type { Peer as Devp2pRLPxPeer } from '@ethereumjs/devp2p'
 
 export interface RlpxServerOptions extends ServerOptions {

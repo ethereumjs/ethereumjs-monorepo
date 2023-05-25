@@ -1,7 +1,7 @@
 import { Hardfork } from '@ethereumjs/common'
 import { Address, bigIntToBytes, setLengthLeft } from '@ethereumjs/util'
 
-import { ERROR } from '../exceptions'
+import { ERROR } from '../exceptions.js'
 
 import { updateSstoreGasEIP1283 } from './EIP1283'
 import { updateSstoreGasEIP2200 } from './EIP2200'
@@ -14,9 +14,9 @@ import {
   subMemUsage,
   trap,
   updateSstoreGas,
-} from './util'
+} from './util.js'
 
-import type { RunState } from '../interpreter'
+import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
 
 /**

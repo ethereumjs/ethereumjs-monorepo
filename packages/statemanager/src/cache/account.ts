@@ -2,10 +2,10 @@ import { bytesToHex } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { OrderedMap } from 'js-sdsl'
 
-import { Cache } from './cache'
-import { CacheType } from './types'
+import { Cache } from './cache.js'
+import { CacheType } from './types.js'
 
-import type { CacheOpts } from './types'
+import type { CacheOpts } from './types.js'
 import type { Account, Address } from '@ethereumjs/util'
 import type LRUCache from 'lru-cache'
 

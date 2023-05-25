@@ -5,11 +5,11 @@ import { Trie } from '@ethereumjs/trie'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { Address, GWEI_TO_WEI, TypeOutput, Withdrawal, toBytes, toType } from '@ethereumjs/util'
 
-import { Bloom } from './bloom'
-import { calculateMinerReward, encodeReceipt, rewardAccount } from './runBlock'
+import { Bloom } from './bloom/index.js'
+import { calculateMinerReward, encodeReceipt, rewardAccount } from './runBlock.js'
 
-import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types'
-import type { VM } from './vm'
+import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types.js'
+import type { VM } from './vm.js'
 import type { HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
 

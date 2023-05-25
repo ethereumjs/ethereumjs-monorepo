@@ -1,12 +1,12 @@
-import { Chain } from '../blockchain'
-import { FlowControl } from '../net/protocol/flowcontrol'
-import { getV8Engine } from '../util'
+import { Chain } from '../blockchain/index.js'
+import { FlowControl } from '../net/protocol/flowcontrol.js'
+import { getV8Engine } from '../util/index.js'
 
-import { Service } from './service'
+import { Service } from './service.js'
 
-import type { Synchronizer } from '../sync'
-import type { V8Engine } from '../util'
-import type { ServiceOptions } from './service'
+import type { Synchronizer } from '../sync/index.js'
+import type { V8Engine } from '../util/index.js'
+import type { ServiceOptions } from './service.js'
 import type { AbstractLevel } from 'abstract-level'
 
 export interface EthereumServiceOptions extends ServiceOptions {

@@ -10,11 +10,11 @@ import {
 } from '@ethereumjs/util'
 import { encodeReceipt } from '@ethereumjs/vm'
 
-import { Protocol } from './protocol'
+import { Protocol } from './protocol.js'
 
-import type { Chain } from '../../blockchain'
-import type { TxReceiptWithType } from '../../execution/receipt'
-import type { Message, ProtocolOptions } from './protocol'
+import type { Chain } from '../../blockchain/index.js'
+import type { TxReceiptWithType } from '../../execution/receipt.js'
+import type { Message, ProtocolOptions } from './protocol.js'
 import type { BlockBodyBytes, BlockBytes, BlockHeaderBytes } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'

@@ -1,9 +1,9 @@
 import { Hardfork } from '@ethereumjs/common'
 
-import { Event } from '../../types'
-import { short, timeDiff } from '../../util'
+import { Event } from '../../types.js'
+import { short, timeDiff } from '../../util/index.js'
 
-import type { Config } from '../../config'
+import type { Config } from '../../config.js'
 import type {
   ExecutionPayloadV1,
   ExecutionPayloadV2,
@@ -11,7 +11,7 @@ import type {
   ForkchoiceResponseV1,
   ForkchoiceStateV1,
   PayloadStatusV1,
-} from '../modules/engine'
+} from '../modules/engine.js'
 import type { Block } from '@ethereumjs/block'
 
 export enum ConnectionStatus {

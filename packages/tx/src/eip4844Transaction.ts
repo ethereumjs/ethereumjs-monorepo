@@ -17,9 +17,9 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { BaseTransaction } from './baseTransaction'
-import { LIMIT_BLOBS_PER_TX } from './constants'
-import { AccessLists } from './util'
+import { BaseTransaction } from './baseTransaction.js'
+import { LIMIT_BLOBS_PER_TX } from './constants.js'
+import { AccessLists } from './util.js'
 
 import type {
   AccessList,
@@ -29,7 +29,7 @@ import type {
   BlobEIP4844ValuesArray,
   JsonTx,
   TxOptions,
-} from './types'
+} from './types.js'
 import type { Common } from '@ethereumjs/common'
 
 const TRANSACTION_TYPE = 0x03

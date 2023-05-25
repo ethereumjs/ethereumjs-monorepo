@@ -6,10 +6,10 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 
-import { Protocol } from './protocol'
+import { Protocol } from './protocol.js'
 
-import type { Chain } from '../../blockchain'
-import type { Message, ProtocolOptions } from './protocol'
+import type { Chain } from '../../blockchain/index.js'
+import type { Message, ProtocolOptions } from './protocol.js'
 import type { AccountBodyBytes } from '@ethereumjs/util'
 
 interface SnapProtocolOptions extends ProtocolOptions {

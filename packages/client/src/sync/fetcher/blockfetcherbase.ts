@@ -1,8 +1,8 @@
-import { Fetcher } from './fetcher'
+import { Fetcher } from './fetcher.js'
 
-import type { Chain } from '../../blockchain'
-import type { FetcherOptions } from './fetcher'
-import type { Job } from './types'
+import type { Chain } from '../../blockchain/index.js'
+import type { FetcherOptions } from './fetcher.js'
+import type { Job } from './types.js'
 
 export interface BlockFetcherOptions extends FetcherOptions {
   /** Blockchain */

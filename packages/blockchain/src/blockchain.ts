@@ -9,15 +9,21 @@ import {
 } from '@ethereumjs/util'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
-import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus'
-import { DBOp, DBSaveLookups, DBSetBlockOrHeader, DBSetHashToNumber, DBSetTD } from './db/helpers'
-import { DBManager } from './db/manager'
-import { DBTarget } from './db/operation'
-import { genesisStateRoot } from './genesisStates'
-import {} from './utils'
+import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus/index.js'
+import {
+  DBOp,
+  DBSaveLookups,
+  DBSetBlockOrHeader,
+  DBSetHashToNumber,
+  DBSetTD,
+} from './db/helpers.js'
+import { DBManager } from './db/manager.js'
+import { DBTarget } from './db/operation.js'
+import { genesisStateRoot } from './genesisStates/index.js'
+import {} from './utils.js'
 
-import type { Consensus } from './consensus'
-import type { BlockchainInterface, BlockchainOptions, GenesisState, OnBlock } from './types'
+import type { Consensus } from './consensus/index.js'
+import type { BlockchainInterface, BlockchainOptions, GenesisState, OnBlock } from './types.js'
 import type { BlockData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { BigIntLike, DB, DBObject } from '@ethereumjs/util'

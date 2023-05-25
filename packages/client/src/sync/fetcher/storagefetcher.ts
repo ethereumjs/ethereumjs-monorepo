@@ -9,15 +9,15 @@ import {
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
-import { LevelDB } from '../../execution/level'
-import { short } from '../../util'
+import { LevelDB } from '../../execution/level.js'
+import { short } from '../../util/index.js'
 
-import { Fetcher } from './fetcher'
+import { Fetcher } from './fetcher.js'
 
-import type { Peer } from '../../net/peer'
-import type { StorageData } from '../../net/protocol/snapprotocol'
-import type { FetcherOptions } from './fetcher'
-import type { Job } from './types'
+import type { Peer } from '../../net/peer/index.js'
+import type { StorageData } from '../../net/protocol/snapprotocol.js'
+import type { FetcherOptions } from './fetcher.js'
+import type { Job } from './types.js'
 import type { Debugger } from 'debug'
 
 const TOTAL_RANGE_END = BigInt(2) ** BigInt(256) - BigInt(1)

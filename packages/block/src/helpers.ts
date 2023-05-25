@@ -1,8 +1,8 @@
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { TypeOutput, isHexString, toType } from '@ethereumjs/util'
 
-import type { BlockHeader } from './header'
-import type { BlockHeaderBytes, HeaderData } from './types'
+import type { BlockHeader } from './header.js'
+import type { BlockHeaderBytes, HeaderData } from './types.js'
 import type { TypedTransaction } from '@ethereumjs/tx'
 
 /**

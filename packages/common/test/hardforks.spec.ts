@@ -1,7 +1,8 @@
 import { hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src'
+import { Common } from '../src/common.js'
+import { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src/enums.js'
 
 tape('[Common]: Hardfork logic', function (t: tape.Test) {
   t.test('Hardfork access', function (st: tape.Test) {

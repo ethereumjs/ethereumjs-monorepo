@@ -24,7 +24,7 @@ import {
   getFullSize,
   getSeed,
   params,
-} from './util'
+} from './util.js'
 
 import type { BlockData, HeaderData } from '@ethereumjs/block'
 import type { DB, DBObject } from '@ethereumjs/util'

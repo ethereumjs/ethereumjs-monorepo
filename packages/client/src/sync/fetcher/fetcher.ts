@@ -2,13 +2,13 @@ import { debug as createDebugLogger } from 'debug'
 import Heap = require('qheap')
 import { Readable, Writable } from 'stream'
 
-import { Event } from '../../types'
+import { Event } from '../../types.js'
 
-import type { Config } from '../../config'
-import type { Peer } from '../../net/peer'
-import type { PeerPool } from '../../net/peerpool'
-import type { JobTask as BlockFetcherJobTask } from './blockfetcherbase'
-import type { Job } from './types'
+import type { Config } from '../../config.js'
+import type { Peer } from '../../net/peer/index.js'
+import type { PeerPool } from '../../net/peerpool.js'
+import type { JobTask as BlockFetcherJobTask } from './blockfetcherbase.js'
+import type { Job } from './types.js'
 import type { Debugger } from 'debug'
 
 export interface FetcherOptions {

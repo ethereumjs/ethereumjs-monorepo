@@ -3,9 +3,9 @@ import { RLP } from '@ethereumjs/rlp'
 import { isTerminator } from '../../util/hex'
 import { bytesToNibbles } from '../../util/nibbles'
 
-import { BranchNode } from './branch'
-import { ExtensionNode } from './extension'
-import { LeafNode } from './leaf'
+import { BranchNode } from './branch.js'
+import { ExtensionNode } from './extension.js'
+import { LeafNode } from './leaf.js'
 
 export function decodeRawNode(raw: Uint8Array[]) {
   if (raw.length === 17) {

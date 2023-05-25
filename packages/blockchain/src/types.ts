@@ -1,4 +1,4 @@
-import type { Consensus } from './consensus'
+import type { Consensus } from './consensus/index.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { DB, DBObject, PrefixedHexString } from '@ethereumjs/util'

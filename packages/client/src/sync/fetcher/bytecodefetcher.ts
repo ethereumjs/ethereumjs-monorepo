@@ -4,11 +4,11 @@ import { bytesToHex, concatBytes, equalsBytes } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { Fetcher } from './fetcher'
+import { Fetcher } from './fetcher.js'
 
-import type { Peer } from '../../net/peer'
-import type { FetcherOptions } from './fetcher'
-import type { Job } from './types'
+import type { Peer } from '../../net/peer/index.js'
+import type { FetcherOptions } from './fetcher.js'
+import type { Job } from './types.js'
 import type { BatchDBOp } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 

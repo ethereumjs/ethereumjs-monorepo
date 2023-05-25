@@ -1,7 +1,7 @@
 import * as tape from 'tape'
 
-import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src'
-
+import { Common } from '../src/common'
+import { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src/enums'
 tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
   t.test('Should initialize with chain provided', function (st: tape.Test) {
     let c = new Common({ chain: 'mainnet' })

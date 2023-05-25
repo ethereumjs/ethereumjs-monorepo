@@ -6,8 +6,8 @@ import { Server as RPCServer } from 'jayson/promise'
 import { decode } from 'jwt-simple'
 import { inspect } from 'util'
 
-import type { Logger } from '../logging'
-import type { RPCManager } from '../rpc'
+import type { Logger } from '../logging.js'
+import type { RPCManager } from '../rpc/index.js'
 import type { HttpServer } from 'jayson/promise'
 import type { TAlgorithm } from 'jwt-simple'
 

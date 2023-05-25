@@ -1,11 +1,11 @@
 import { equalsBytes } from 'ethereum-cryptography/utils'
 
-import { ERROR } from '../exceptions'
+import { ERROR } from '../exceptions.js'
 
 import { adjustSstoreGasEIP2929 } from './EIP2929'
-import { trap } from './util'
+import { trap } from './util.js'
 
-import type { RunState } from '../interpreter'
+import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
 
 /**

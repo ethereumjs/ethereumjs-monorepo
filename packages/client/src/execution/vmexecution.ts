@@ -10,15 +10,15 @@ import { Trie } from '@ethereumjs/trie'
 import { Lock, bytesToHex, bytesToPrefixedHexString, equalsBytes } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
-import { Event } from '../types'
-import { short } from '../util'
-import { debugCodeReplayBlock } from '../util/debug'
+import { Event } from '../types.js'
+import { debugCodeReplayBlock } from '../util/debug.js'
+import { short } from '../util/index.js'
 
-import { Execution } from './execution'
-import { LevelDB } from './level'
-import { ReceiptsManager } from './receipt'
+import { Execution } from './execution.js'
+import { LevelDB } from './level.js'
+import { ReceiptsManager } from './receipt.js'
 
-import type { ExecutionOptions } from './execution'
+import type { ExecutionOptions } from './execution.js'
 import type { Block } from '@ethereumjs/block'
 import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 

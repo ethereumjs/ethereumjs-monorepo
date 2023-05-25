@@ -14,8 +14,8 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { BaseTransaction } from './baseTransaction'
-import { AccessLists } from './util'
+import { BaseTransaction } from './baseTransaction.js'
+import { AccessLists } from './util.js'
 
 import type {
   AccessList,
@@ -24,7 +24,7 @@ import type {
   AccessListEIP2930ValuesArray,
   JsonTx,
   TxOptions,
-} from './types'
+} from './types.js'
 import type { Common } from '@ethereumjs/common'
 
 const TRANSACTION_TYPE = 1

@@ -1,10 +1,10 @@
 import { getRandomBytesSync } from 'ethereum-cryptography/random'
 import { bytesToHex, bytesToUtf8, hexToBytes } from 'ethereum-cryptography/utils'
 
-import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers'
-import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal'
+import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.js'
+import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal.js'
 
-import type { PrefixedHexString, TransformabletoBytes } from './types'
+import type { PrefixedHexString, TransformabletoBytes } from './types.js'
 
 /****************  Borrowed from @chainsafe/ssz */
 // Caching this info costs about ~1000 bytes and speeds up toHexString() by x6

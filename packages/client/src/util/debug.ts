@@ -1,8 +1,8 @@
 import { bytesToHex } from 'ethereum-cryptography/utils'
 
-import { DataDirectory } from '..'
+import { DataDirectory } from '../config.js'
 
-import type { VMExecution } from '../execution'
+import type { VMExecution } from '../execution/index.js'
 import type { Block } from '@ethereumjs/block'
 
 /**
@@ -28,9 +28,9 @@ export async function debugCodeReplayBlock(execution: VMExecution, block: Block)
 import { Level } from 'level';
 import { Common } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
-import { VM }  from './src'
+import { VM }  from './src.js'
 import { Trie } from '@ethereumjs/trie'
-import { DefaultStateManager } from './src/state'
+import { DefaultStateManager } from './src/state.js'
 import { Blockchain } from '@ethereumjs/blockchain'
 
 const main = async () => {

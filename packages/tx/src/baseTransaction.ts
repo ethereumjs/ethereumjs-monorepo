@@ -14,8 +14,8 @@ import {
   unpadBytes,
 } from '@ethereumjs/util'
 
-import { Capability } from './types'
-import { checkMaxInitCodeSize } from './util'
+import { Capability } from './types.js'
+import { checkMaxInitCodeSize } from './util.js'
 
 import type {
   AccessListEIP2930TxData,
@@ -28,7 +28,7 @@ import type {
   TxData,
   TxOptions,
   TxValuesArray,
-} from './types'
+} from './types.js'
 import type { BigIntLike } from '@ethereumjs/util'
 
 interface TransactionCache {

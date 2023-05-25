@@ -1,6 +1,7 @@
 import * as tape from 'tape'
 
-import { Chain, Common, ConsensusType, CustomChain, Hardfork } from '../src'
+import { Common } from '../src/common.js'
+import { Chain, ConsensusType, CustomChain, Hardfork } from '../src/enums.js'
 
 import * as testnet from './data/testnet.json'
 import * as testnet2 from './data/testnet2.json'

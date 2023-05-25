@@ -25,8 +25,8 @@ import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
-import { AccountCache, CacheType, StorageCache } from './cache'
-import { Journaling } from './cache/journaling'
+import { AccountCache, CacheType, StorageCache } from './cache/index.js'
+import { Journaling } from './cache/journaling.js'
 
 import type {
   AccessListItem,

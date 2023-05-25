@@ -1,7 +1,7 @@
 import { concatBytes, intToBytes } from '@ethereumjs/util'
 
-import type { Chain } from '../blockchain'
-import type { Config } from '../config'
+import type { Chain } from '../blockchain/index.js'
+import type { Config } from '../config.js'
 import type { AbstractLevel } from 'abstract-level'
 
 const encodingOpts = { keyEncoding: 'view', valueEncoding: 'view' }

@@ -1,6 +1,6 @@
 import { addHexPrefix } from '../../util/hex'
 
-import { Node } from './node'
+import { Node } from './node.js'
 
 import type { Nibbles } from '../../types'
 

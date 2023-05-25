@@ -1,12 +1,12 @@
 import { version as packageVersion } from '../package.json'
 
-import { Chain } from './blockchain'
-import { SyncMode } from './config'
-import { FullEthereumService, LightEthereumService } from './service'
-import { Event } from './types'
+import { Chain } from './blockchain/chain.js'
+import { SyncMode } from './config.js'
+import { FullEthereumService, LightEthereumService } from './service/index.js'
+import { Event } from './types.js'
 
-import type { Config } from './config'
-import type { MultiaddrLike } from './types'
+import type { Config } from './config.js'
+import type { MultiaddrLike } from './types.js'
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { AbstractLevel } from 'abstract-level'
 

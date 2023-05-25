@@ -1,4 +1,4 @@
-import type { BlockHeader } from './header'
+import type { BlockHeader } from './header.js'
 import type { Common } from '@ethereumjs/common'
 import type {
   AccessListEIP2930TxData,

@@ -1,4 +1,4 @@
-import { INVALID_PARAMS } from './error-code'
+import { INVALID_PARAMS } from './error-code.js'
 
 /**
  * middleware for parameters validation

@@ -1,16 +1,16 @@
 import { multiaddr } from 'multiaddr'
 import * as PeerId from 'peer-id'
 
-import { Event } from '../../types'
-import { Libp2pSender } from '../protocol/libp2psender'
+import { Event } from '../../types.js'
+import { Libp2pSender } from '../protocol/libp2psender.js'
 
-import { Libp2pNode } from './libp2pnode'
-import { Peer } from './peer'
+import { Libp2pNode } from './libp2pnode.js'
+import { Peer } from './peer.js'
 
-import type { Libp2pMuxedStream as MuxedStream } from '../../types'
-import type { Protocol } from '../protocol'
-import type { Libp2pServer } from '../server'
-import type { PeerOptions } from './peer'
+import type { Libp2pMuxedStream as MuxedStream } from '../../types.js'
+import type { Protocol } from '../protocol/index.js'
+import type { Libp2pServer } from '../server/index.js'
+import type { PeerOptions } from './peer.js'
 import type { Multiaddr } from 'multiaddr'
 
 export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transport'> {
@@ -24,9 +24,9 @@ export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transp
  * @example
  * ```typescript
  * import { multiaddr } from 'multiaddr'
- * import { Libp2pPeer } from './src/net/peer'
- * import { Chain } from './src/blockchain'
- * import { EthProtocol } from './src/net/protocol'
+ * import { Libp2pPeer } from './src/net/peer.js'
+ * import { Chain } from './src/blockchain.js'
+ * import { EthProtocol } from './src/net/protocol.js'
  *
  * const chain = await Chain.create()
  * const protocols = [new EthProtocol({ chain })]

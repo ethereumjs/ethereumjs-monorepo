@@ -4,7 +4,7 @@ import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { ethers } from 'ethers'
 
-import { AccountCache, CacheType, StorageCache } from './cache'
+import { AccountCache, CacheType, StorageCache } from './cache/index.js'
 
 import type { Proof } from '.'
 import type {

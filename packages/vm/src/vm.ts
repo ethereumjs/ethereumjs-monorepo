@@ -6,11 +6,11 @@ import { Account, Address, AsyncEventEmitter, TypeOutput, toType } from '@ethere
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import { promisify } from 'util'
 
-import { buildBlock } from './buildBlock'
-import { runBlock } from './runBlock'
-import { runTx } from './runTx'
+import { buildBlock } from './buildBlock.js'
+import { runBlock } from './runBlock.js'
+import { runTx } from './runTx.js'
 
-import type { BlockBuilder } from './buildBlock'
+import type { BlockBuilder } from './buildBlock.js'
 import type {
   BuildBlockOpts,
   RunBlockOpts,
@@ -19,7 +19,7 @@ import type {
   RunTxResult,
   VMEvents,
   VMOpts,
-} from './types'
+} from './types.js'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
 

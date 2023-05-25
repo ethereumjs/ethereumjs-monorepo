@@ -11,10 +11,10 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { BaseTransaction } from './baseTransaction'
-import { Capability } from './types'
+import { BaseTransaction } from './baseTransaction.js'
+import { Capability } from './types.js'
 
-import type { JsonTx, TxData, TxOptions, TxValuesArray } from './types'
+import type { JsonTx, TxData, TxOptions, TxValuesArray } from './types.js'
 import type { Common } from '@ethereumjs/common'
 
 const TRANSACTION_TYPE = 0

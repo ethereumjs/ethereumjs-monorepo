@@ -2,10 +2,10 @@ import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
 import Heap = require('qheap')
 
-import type { Config } from '../config'
-import type { Peer } from '../net/peer'
-import type { PeerPool } from '../net/peerpool'
-import type { FullEthereumService } from './fullethereumservice'
+import type { Config } from '../config.js'
+import type { Peer } from '../net/peer/index.js'
+import type { PeerPool } from '../net/peerpool.js'
+import type { FullEthereumService } from './fullethereumservice.js'
 import type { Block } from '@ethereumjs/block'
 import type {
   AccessListEIP2930Transaction,

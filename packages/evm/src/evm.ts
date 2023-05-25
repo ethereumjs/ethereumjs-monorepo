@@ -17,20 +17,20 @@ import {
 import { debug as createDebugLogger } from 'debug'
 import { promisify } from 'util'
 
-import { EOF, getEOFCode } from './eof'
-import { ERROR, EvmError } from './exceptions'
-import { Interpreter } from './interpreter'
-import { Message } from './message'
-import { getOpcodesForHF } from './opcodes'
-import { getActivePrecompiles } from './precompiles'
-import { TransientStorage } from './transientStorage'
-import { DefaultBlockchain } from './types'
+import { EOF, getEOFCode } from './eof.js'
+import { ERROR, EvmError } from './exceptions.js'
+import { Interpreter } from './interpreter.js'
+import { Message } from './message.js'
+import { getOpcodesForHF } from './opcodes/index.js'
+import { getActivePrecompiles } from './precompiles/index.js'
+import { TransientStorage } from './transientStorage.js'
+import { DefaultBlockchain } from './types.js'
 
-import type { InterpreterOpts, RunState } from './interpreter'
-import type { MessageWithTo } from './message'
-import type { OpHandler, OpcodeList } from './opcodes'
-import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
-import type { CustomPrecompile, PrecompileFunc } from './precompiles'
+import type { InterpreterOpts, RunState } from './interpreter.js'
+import type { MessageWithTo } from './message.js'
+import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
+import type { OpHandler, OpcodeList } from './opcodes/index.js'
+import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.js'
 import type {
   Block,
   Blockchain,
@@ -40,7 +40,7 @@ import type {
   EVMRunCallOpts,
   EVMRunCodeOpts,
   Log,
-} from './types'
+} from './types.js'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
 
 const debug = createDebugLogger('evm:evm')

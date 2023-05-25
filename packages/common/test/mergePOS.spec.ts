@@ -1,6 +1,7 @@
 import * as tape from 'tape'
 
-import { Chain, Common, Hardfork } from '../src'
+import { Common } from '../src/common.js'
+import { Chain, Hardfork } from '../src/enums.js'
 
 import * as testnetMerge from './data/merge/testnetMerge.json'
 import * as testnetPOS from './data/merge/testnetPOS.json'

@@ -1,10 +1,10 @@
 import { bigIntToHex, bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
 
-import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
-import { middleware, validators } from '../validation'
+import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code.js'
+import { middleware, validators } from '../validation.js'
 
 import type { EthereumClient } from '../..'
-import type { FullEthereumService } from '../../service'
+import type { FullEthereumService } from '../../service/index.js'
 
 export interface tracerOpts {
   disableStack?: boolean

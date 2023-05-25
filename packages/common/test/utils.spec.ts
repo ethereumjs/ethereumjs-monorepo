@@ -2,8 +2,8 @@ import { hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Common } from '../src/common'
-import { Hardfork } from '../src/enums'
-import { parseGethGenesis } from '../src/utils'
+import { Hardfork } from '../src/enums.js'
+import { parseGethGenesis } from '../src/utils.js'
 
 tape('[Utils/Parse]', (t) => {
   t.test('should parse geth params file', async (t) => {

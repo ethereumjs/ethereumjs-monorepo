@@ -2,7 +2,7 @@ import { hexStringToBytes } from '@ethereumjs/util'
 import { Multiaddr, multiaddr } from 'multiaddr'
 import { URL } from 'url'
 
-import type { MultiaddrLike } from '../types'
+import type { MultiaddrLike } from '../types.js'
 
 // From: https://community.fortra.com/forums/intermapper/miscellaneous-topics/5acc4fcf-fa83-e511-80cf-0050568460e4
 const ip6RegExp = new RegExp(

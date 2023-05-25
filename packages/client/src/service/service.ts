@@ -1,9 +1,9 @@
-import { PeerPool } from '../net/peerpool'
-import { Event } from '../types'
+import { PeerPool } from '../net/peerpool.js'
+import { Event } from '../types.js'
 
-import type { Config } from '../config'
-import type { Peer } from '../net/peer/peer'
-import type { Protocol } from '../net/protocol'
+import type { Config } from '../config.js'
+import type { Peer } from '../net/peer/peer.js'
+import type { Protocol } from '../net/protocol/index.js'
 
 export interface ServiceOptions {
   /* Config */

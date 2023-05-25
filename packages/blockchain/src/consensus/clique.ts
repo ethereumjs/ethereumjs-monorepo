@@ -5,7 +5,7 @@ import { debug as createDebugLogger } from 'debug'
 import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import type { Blockchain } from '..'
-import type { Consensus, ConsensusOptions } from './interface'
+import type { Consensus, ConsensusOptions } from './interface.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 

@@ -7,11 +7,11 @@ import {
   intToBytes,
 } from '@ethereumjs/util'
 
-import { Protocol } from './protocol'
+import { Protocol } from './protocol.js'
 
-import type { Chain } from '../../blockchain'
-import type { FlowControl } from './flowcontrol'
-import type { Message, ProtocolOptions } from './protocol'
+import type { Chain } from '../../blockchain/index.js'
+import type { FlowControl } from './flowcontrol.js'
+import type { Message, ProtocolOptions } from './protocol.js'
 import type { BlockHeaderBytes } from '@ethereumjs/block'
 
 export interface LesProtocolOptions extends ProtocolOptions {

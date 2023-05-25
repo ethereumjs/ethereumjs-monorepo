@@ -12,7 +12,7 @@ import {
 import { debug as createDebugLogger } from 'debug'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
-import { Bloom } from './bloom'
+import { Bloom } from './bloom/index.js'
 
 import type {
   AfterTxEvent,
@@ -23,8 +23,8 @@ import type {
   RunTxOpts,
   RunTxResult,
   TxReceipt,
-} from './types'
-import type { VM } from './vm'
+} from './types.js'
+import type { VM } from './vm.js'
 import type {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,

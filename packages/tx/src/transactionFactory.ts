@@ -3,8 +3,8 @@ import { bytesToBigInt, fetchFromProvider, getProvider, toBytes } from '@ethereu
 import { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 import { AccessListEIP2930Transaction } from './eip2930Transaction'
 import { BlobEIP4844Transaction } from './eip4844Transaction'
-import { normalizeTxParams } from './fromRpc'
-import { Transaction } from './legacyTransaction'
+import { normalizeTxParams } from './fromRpc.js'
+import { Transaction } from './legacyTransaction.js'
 
 import type {
   AccessListEIP2930TxData,
@@ -13,7 +13,7 @@ import type {
   TxData,
   TxOptions,
   TypedTransaction,
-} from './types'
+} from './types.js'
 import type { EthersProvider } from '@ethereumjs/util'
 
 export class TransactionFactory {

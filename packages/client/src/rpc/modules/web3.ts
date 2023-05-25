@@ -2,12 +2,12 @@ import { addHexPrefix, toBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 
-import { getClientVersion } from '../../util'
-import { middleware, validators } from '../validation'
+import { getClientVersion } from '../../util/index.js'
+import { middleware, validators } from '../validation.js'
 
-import type { EthereumClient } from '../..'
-import type { Chain } from '../../blockchain'
-import type { EthereumService } from '../../service'
+import type { Chain } from '../../blockchain/index.js'
+import type { EthereumClient } from '../../client.js'
+import type { EthereumService } from '../../service/index.js'
 
 /**
  * web3_* RPC module

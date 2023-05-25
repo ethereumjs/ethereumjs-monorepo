@@ -3,14 +3,14 @@ import { keys } from 'libp2p-crypto'
 import { multiaddr } from 'multiaddr'
 import * as PeerId from 'peer-id'
 
-import { Event } from '../../types'
-import { Libp2pPeer } from '../peer'
-import { Libp2pNode } from '../peer/libp2pnode'
+import { Event } from '../../types.js'
+import { Libp2pPeer } from '../peer/index.js'
+import { Libp2pNode } from '../peer/libp2pnode.js'
 
-import { Server } from './server'
+import { Server } from './server.js'
 
-import type { Libp2pConnection as Connection } from '../../types'
-import type { ServerOptions } from './server'
+import type { Libp2pConnection as Connection } from '../../types.js'
+import type { ServerOptions } from './server.js'
 import type { Multiaddr } from 'multiaddr'
 
 export interface Libp2pServerOptions extends ServerOptions {

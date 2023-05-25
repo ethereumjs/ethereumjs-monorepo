@@ -1,4 +1,4 @@
-import type { Peer } from '../../net/peer'
+import type { Peer } from '../../net/peer/index.js'
 
 export type Job<JobTask, JobResult, StorageItem> = {
   task: JobTask

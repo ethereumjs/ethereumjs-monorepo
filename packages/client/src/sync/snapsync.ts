@@ -1,13 +1,13 @@
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { bytesToHex } from '@ethereumjs/util'
 
-import { Event } from '../types'
+import { Event } from '../types.js'
 
-import { AccountFetcher } from './fetcher'
-import { Synchronizer } from './sync'
+import { AccountFetcher } from './fetcher/index.js'
+import { Synchronizer } from './sync.js'
 
-import type { Peer } from '../net/peer/peer'
-import type { SynchronizerOptions } from './sync'
+import type { Peer } from '../net/peer/peer.js'
+import type { SynchronizerOptions } from './sync.js'
 
 interface SnapSynchronizerOptions extends SynchronizerOptions {}
 

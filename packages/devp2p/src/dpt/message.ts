@@ -12,9 +12,9 @@ import {
   isV6Format,
   keccak256,
   unstrictDecode,
-} from '../util'
+} from '../util.js'
 
-import type { PeerInfo } from './dpt'
+import type { PeerInfo } from './dpt.js'
 
 const debug = createDebugLogger('devp2p:dpt:server')
 

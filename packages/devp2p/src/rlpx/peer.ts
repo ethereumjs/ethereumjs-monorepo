@@ -12,11 +12,11 @@ import { bytesToUtf8, hexToBytes } from 'ethereum-cryptography/utils'
 import { EventEmitter } from 'events'
 import * as snappy from 'snappyjs'
 
-import { devp2pDebug, formatLogData } from '../util'
+import { devp2pDebug, formatLogData } from '../util.js'
 
-import { ECIES } from './ecies'
+import { ECIES } from './ecies.js'
 
-import type { ETH, LES } from '..'
+import type { ETH, LES } from '../protocol/index.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type { Socket } from 'net'

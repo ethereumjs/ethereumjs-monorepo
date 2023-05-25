@@ -1,10 +1,10 @@
 import { bytesToHex, setLengthLeft, short } from '@ethereumjs/util'
 import { ripemd160 } from 'ethereum-cryptography/ripemd160'
 
-import { OOGResult } from '../evm'
+import { OOGResult } from '../evm.js'
 
-import type { ExecResult } from '../evm'
-import type { PrecompileInput } from './types'
+import type { ExecResult } from '../evm.js'
+import type { PrecompileInput } from './types.js'
 
 export function precompile03(opts: PrecompileInput): ExecResult {
   const data = opts.data

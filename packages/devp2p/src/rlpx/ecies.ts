@@ -16,9 +16,9 @@ import {
   unstrictDecode,
   xor,
   zfill,
-} from '../util'
+} from '../util.js'
 
-import { MAC } from './mac'
+import { MAC } from './mac.js'
 type Decipher = crypto.Decipher
 
 const debug = createDebugLogger('devp2p:rlpx:peer')

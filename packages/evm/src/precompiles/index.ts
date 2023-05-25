@@ -22,7 +22,7 @@ import { precompile11 } from './11-bls12-map-fp-to-g1'
 import { precompile12 } from './12-bls12-map-fp2-to-g2'
 import { precompile14 } from './14-kzg-point-evaluation'
 
-import type { PrecompileFunc, PrecompileInput } from './types'
+import type { PrecompileFunc, PrecompileInput } from './types.js'
 import type { Common } from '@ethereumjs/common'
 
 interface Precompiles {

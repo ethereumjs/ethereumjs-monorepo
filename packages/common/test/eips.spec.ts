@@ -1,6 +1,7 @@
 import * as tape from 'tape'
 
-import { Chain, Common, Hardfork } from '../src'
+import { Common } from '../src/common.js'
+import { Chain, Hardfork } from '../src/enums.js'
 
 tape('[Common/EIPs]: Initialization / Chain params', function (t: tape.Test) {
   t.test('Correct initialization', function (st: tape.Test) {

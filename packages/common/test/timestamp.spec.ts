@@ -1,7 +1,8 @@
 import { hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { Chain, Common, Hardfork } from '../src'
+import { Common } from '../src/common.js'
+import { Chain, Hardfork } from '../src/enums.js'
 
 import * as timestampJson from './data/shanghai-time.json'
 

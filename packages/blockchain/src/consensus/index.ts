@@ -1,6 +1,6 @@
-import { CasperConsensus } from './casper'
-import { CliqueConsensus } from './clique'
-import { EthashConsensus } from './ethash'
-import { Consensus } from './interface'
+import { CasperConsensus } from './casper.js'
+import { CliqueConsensus } from './clique.js'
+import { EthashConsensus } from './ethash.js'
+import { Consensus } from './interface.js'
 
 export { CasperConsensus, CliqueConsensus, Consensus, EthashConsensus }

@@ -6,14 +6,14 @@ import {
 } from '@ethereumjs/devp2p'
 import { hexStringToBytes, randomBytes } from '@ethereumjs/util'
 
-import { Event } from '../../types'
-import { RlpxSender } from '../protocol'
+import { Event } from '../../types.js'
+import { RlpxSender } from '../protocol/index.js'
 
-import { Peer } from './peer'
+import { Peer } from './peer.js'
 
-import type { Protocol } from '../protocol'
-import type { RlpxServer } from '../server'
-import type { PeerOptions } from './peer'
+import type { Protocol } from '../protocol/index.js'
+import type { RlpxServer } from '../server/index.js'
+import type { PeerOptions } from './peer.js'
 import type { Capabilities as Devp2pCapabilities, Peer as Devp2pRlpxPeer } from '@ethereumjs/devp2p'
 const devp2pCapabilities = {
   snap1: Devp2pSNAP.snap,
@@ -36,9 +36,9 @@ export interface RlpxPeerOptions extends Omit<PeerOptions, 'address' | 'transpor
  * @memberof module:net/peer
  * @example
  * ```typescript
- * import { RlpxPeer } from './src/net/peer'
- * import { Chain } from './src/blockchain'
- * import { EthProtocol } from './src/net/protocol'
+ * import { RlpxPeer } from './src/net/peer.js'
+ * import { Chain } from './src/blockchain.js'
+ * import { EthProtocol } from './src/net/protocol.js'
  *
  * const chain = await Chain.create()
  * const protocols = [ new EthProtocol({ chain })]

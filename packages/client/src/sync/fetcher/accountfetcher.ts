@@ -11,20 +11,20 @@ import {
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
-import { LevelDB } from '../../execution/level'
-import { Event } from '../../types'
-import { short } from '../../util'
+import { LevelDB } from '../../execution/level.js'
+import { Event } from '../../types.js'
+import { short } from '../../util/index.js'
 
-import { ByteCodeFetcher } from './bytecodefetcher'
-import { Fetcher } from './fetcher'
-import { StorageFetcher } from './storagefetcher'
+import { ByteCodeFetcher } from './bytecodefetcher.js'
+import { Fetcher } from './fetcher.js'
+import { StorageFetcher } from './storagefetcher.js'
 
-import type { Peer } from '../../net/peer'
-import type { AccountData } from '../../net/protocol/snapprotocol'
-import type { EventBusType } from '../../types'
-import type { FetcherOptions } from './fetcher'
-import type { StorageRequest } from './storagefetcher'
-import type { Job } from './types'
+import type { Peer } from '../../net/peer/index.js'
+import type { AccountData } from '../../net/protocol/snapprotocol.js'
+import type { EventBusType } from '../../types.js'
+import type { FetcherOptions } from './fetcher.js'
+import type { StorageRequest } from './storagefetcher.js'
+import type { Job } from './types.js'
 import type { Debugger } from 'debug'
 
 type AccountDataResponse = AccountData[] & { completed?: boolean }
