@@ -15,6 +15,7 @@ tape('[Optimism]', (t: tape.Test) => {
   t.test('Instantiation/Usage -> Optimism system tx', async (st: tape.Test) => {
     try {
       TransactionFactory.fromTxData(optimismSystemTx)
+      st.fail('should throw')
     } catch (e) {
       st.pass('should throw when trying to instantiate a Optimism system tx')
     }

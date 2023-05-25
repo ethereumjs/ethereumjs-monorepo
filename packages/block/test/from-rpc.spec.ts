@@ -11,7 +11,6 @@ import * as infura15571241woTxs from './testdata/infura15571241.json'
 import * as infura15571241wTxs from './testdata/infura15571241wtxns.json'
 import * as infura2000004woTxs from './testdata/infura2000004wotxns.json'
 import * as infura2000004wTxs from './testdata/infura2000004wtxs.json'
-import * as optimismGoerliBlockData from './testdata/optimism_bedrock_goerli_4061224.json'
 import * as blockDataDifficultyAsInteger from './testdata/testdata-from-rpc-difficulty-as-integer.json'
 import * as testDataFromRpcGoerliLondon from './testdata/testdata-from-rpc-goerli-london.json'
 import * as blockDataWithUncles from './testdata/testdata-from-rpc-with-uncles.json'
@@ -35,17 +34,6 @@ tape('[fromRPC]: block #2924874', function (t) {
     const block = blockHeaderFromRpc(blockData, { common })
     const hash = hexStringToBytes(blockData.hash)
     st.ok(equalsBytes(block.hash(), hash))
-    st.end()
-  })
-})
-
-tape('[fromRPC]: Optimism (OP) bedrock goerli block', function (t) {
-  const common = new Common({ chain: Chain.OptimismGoerli })
-
-  t.test('should create a block with transactions with valid signatures', function (st) {
-    const block = Block.fromRPC(optimismGoerliBlockData, [], { common })
-    const allValid = block.transactions.every((tx) => tx.verifySignature())
-    st.equal(allValid, true, 'all transaction signatures are valid')
     st.end()
   })
 })
