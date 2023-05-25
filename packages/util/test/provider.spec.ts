@@ -4,15 +4,18 @@ import { fetchFromProvider, getProvider } from '../src'
 
 const providerUrl = 'https://myfakeprovider.com'
 const fakeEthersProvider = {
-  connection: {
-    url: 'https://myfakeethersprovider.com/rpc',
+  _getConnection(): any {
+    const fakeConnection = {
+      url: 'localhost:8545',
+    }
+    return fakeConnection
   },
 }
 tape('getProvider', (t) => {
   t.equal(getProvider(providerUrl), providerUrl, 'returned correct provider url string')
   t.equal(
     getProvider(fakeEthersProvider),
-    fakeEthersProvider.connection.url,
+    fakeEthersProvider._getConnection().url,
     'returned correct provider url string'
   )
   t.throws(
