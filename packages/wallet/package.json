@@ -26,17 +26,18 @@
     "dist.browser"
   ],
   "scripts": {
-    "postinstall": "npm run build",
-    "build": "tsc -p tsconfig.prod.json",
-    "prepublishOnly": "npm run lint && npm run build && npm run test",
-    "docs:build": "typedoc --out docs --mode file --readme none --theme markdown --mdEngine github --excludeNotExported src",
+    "build": "../../config/cli/ts-build.sh",
+    "clean": "../../config/cli/clean-package.sh",
     "coverage": "npm run build && nyc --reporter=lcov npm run test:unit",
-    "tsc": "tsc -p tsconfig.prod.json --noEmit",
-    "lint": "eslint --format codeframe --config ./.eslintrc.js . --ext .js,.jsx,.ts,.tsx",
-    "lint:fix": "eslint --fix --format codeframe --config ./.eslintrc.js . --ext .js,.jsx,.ts,.tsx",
-    "test": "npm run test:unit && npm run test:browser",
-    "test:unit": "mocha --require ts-node/register ./test/**/*.spec.ts",
-    "test:browser": "karma start karma.conf.js"
+    "docs:build": "npx typedoc --options typedoc.js",
+    "lint": "../../config/cli/lint.sh",
+    "lint:diff": "../../config/cli/lint-diff.sh",
+    "lint:fix": "../../config/cli/lint-fix.sh",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
+    "test": "npm run test:node && npm run test:browser",
+    "test:browser": "karma start karma.conf.js",
+    "test:node": "mocha --require ts-node/register ./test/**/*.spec.ts",
+    "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
     "@ethereumjs/util": "^8.0.6",
