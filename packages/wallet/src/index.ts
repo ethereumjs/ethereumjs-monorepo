@@ -18,8 +18,8 @@ import { sha256 } from 'ethereum-cryptography/sha256'
 
 import { bufferToHex } from './util/bytes'
 
-export { default as hdkey } from './hdkey'
-export { default as thirdparty } from './thirdparty'
+export { EthereumHDKey as hdkey } from './hdkey'
+export { Thirdparty as thirdparty } from './thirdparty'
 const uuidv4 = require('uuid').v4
 
 const bs58check = base58check(sha256)
@@ -267,7 +267,7 @@ interface EthSaleKeystore {
 
 // wallet implementation
 
-export default class Wallet {
+export class Wallet {
   constructor(
     private readonly privateKey?: Buffer | undefined,
     private publicKey: Buffer | undefined = undefined

@@ -4,8 +4,8 @@ import { Wallet as ethersWallet } from 'ethers'
 
 const zip = require('lodash.zip')
 
-import Wallet from '../src'
-import Thirdparty from '../src/thirdparty'
+import { Wallet } from '../src'
+import { Thirdparty } from '../src/thirdparty'
 
 const n = 262144
 const r = 8

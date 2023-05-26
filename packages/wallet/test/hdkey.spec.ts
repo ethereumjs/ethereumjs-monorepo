@@ -1,6 +1,6 @@
 /* eslint-disable */
 import * as assert from 'assert'
-import EthereumHDKey from '../src/hdkey'
+import { EthereumHDKey } from '../src/hdkey'
 
 // from BIP39 mnemonic: awake book subject inch gentle blur grant damage process float month clown
 const fixtureseed = Buffer.from(

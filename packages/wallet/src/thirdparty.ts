@@ -5,7 +5,7 @@ import { pbkdf2Sync } from 'ethereum-cryptography/pbkdf2'
 import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils'
 import * as md5 from 'js-md5'
 
-import Wallet from './index'
+import { Wallet } from './index'
 
 // evp_kdf
 
@@ -184,10 +184,8 @@ export function fromQuorumWallet(passphrase: string, userid: string): Wallet {
   return new Wallet(Buffer.from(seed))
 }
 
-const Thirdparty = {
+export const Thirdparty = {
   fromEtherWallet,
   fromEtherCamp,
   fromQuorumWallet,
 }
-
-export default Thirdparty
