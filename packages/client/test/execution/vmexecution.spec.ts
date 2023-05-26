@@ -3,9 +3,9 @@ import { Chain as ChainEnum, Common, Hardfork } from '@ethereumjs/common'
 import { VM } from '@ethereumjs/vm'
 import * as tape from 'tape'
 
-import { Chain } from '../../lib/blockchain'
-import { Config } from '../../lib/config'
-import { VMExecution } from '../../lib/execution'
+import { Chain } from '../../src/blockchain'
+import { Config } from '../../src/config'
+import { VMExecution } from '../../src/execution'
 import blocksDataGoerli = require('../testdata/blocks/goerli.json')
 import blocksDataMainnet = require('../testdata/blocks/mainnet.json')
 import testnet = require('../testdata/common/testnet.json')

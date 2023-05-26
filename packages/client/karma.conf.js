@@ -2,7 +2,7 @@ module.exports = function (config) {
   config.set({
     frameworks: ['karma-typescript', 'tap'],
 
-    files: ['lib/**/*.ts', 'test/blockchain/chain.spec.ts'],
+    files: ['src/**/*.ts', 'test/blockchain/chain.spec.ts'],
 
     preprocessors: {
       '**/*.ts': ['karma-typescript'],
@@ -14,7 +14,7 @@ module.exports = function (config) {
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
         acornOptions: {
-          ecmaVersion: 12,
+          ecmaVersion: 13,
         },
         //  sourceMap: true,
         exclude: ['async_hooks', 'node:v8'],

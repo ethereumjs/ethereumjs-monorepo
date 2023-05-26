@@ -5,7 +5,7 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['bin/**.ts'],
+      files: ['bin/**.ts', 'test/sim/**.ts'],
       rules: {
         'no-console': 'off',
       },

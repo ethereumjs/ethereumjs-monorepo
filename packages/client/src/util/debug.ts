@@ -28,9 +28,9 @@ export async function debugCodeReplayBlock(execution: VMExecution, block: Block)
 import { Level } from 'level';
 import { Common } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
-import { VM }  from './lib'
+import { VM }  from './src'
 import { Trie } from '@ethereumjs/trie'
-import { DefaultStateManager } from './lib/state'
+import { DefaultStateManager } from './src/state'
 import { Blockchain } from '@ethereumjs/blockchain'
 
 const main = async () => {

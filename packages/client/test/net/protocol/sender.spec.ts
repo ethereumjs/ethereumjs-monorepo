@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 
-const { Sender } = require('../../../lib/net/protocol')
+const { Sender } = require('../../../src/net/protocol')
 
 tape('[Sender]', (t) => {
   t.test('should get/set status', (t) => {

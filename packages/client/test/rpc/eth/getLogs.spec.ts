@@ -2,7 +2,7 @@ import { Transaction } from '@ethereumjs/tx'
 import { Address, bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { baseRequest, dummy, params, runBlockWithTxs, setupChain } from '../helpers'
 import { checkError } from '../util'
 

@@ -1,24 +1,3 @@
-import {
-  BooleanType,
-  ByteListType,
-  ByteVectorType,
-  ContainerType,
-  ListCompositeType,
-  NoneType,
-  UintBigintType,
-  UnionType,
-} from '@chainsafe/ssz'
-
-import {
-  BYTES_PER_FIELD_ELEMENT,
-  FIELD_ELEMENTS_PER_BLOB,
-  LIMIT_BLOBS_PER_TX,
-  MAX_ACCESS_LIST_SIZE,
-  MAX_CALLDATA_SIZE,
-  MAX_TX_WRAP_KZG_COMMITMENTS,
-  MAX_VERSIONED_HASHES_LIST_SIZE,
-} from './constants'
-
 import type { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 import type { AccessListEIP2930Transaction } from './eip2930Transaction'
 import type { BlobEIP4844Transaction } from './eip4844Transaction'
@@ -31,13 +10,6 @@ export type {
   AccessListBytesItem,
   AccessListItem,
 } from '@ethereumjs/common'
-
-const Bytes20 = new ByteVectorType(20)
-const Bytes32 = new ByteVectorType(32)
-const Bytes48 = new ByteVectorType(48)
-
-const Uint64 = new UintBigintType(8)
-const Uint256 = new UintBigintType(32)
 
 /**
  * Can be used in conjunction with {@link Transaction.supports}
@@ -287,6 +259,33 @@ export type FeeMarketEIP1559ValuesArray = [
   Uint8Array?
 ]
 
+/**
+ * Bytes values array for a {@link BlobEIP4844Transaction}
+ */
+export type BlobEIP4844ValuesArray = [
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  AccessListBytes,
+  Uint8Array,
+  Uint8Array[],
+  Uint8Array?,
+  Uint8Array?,
+  Uint8Array?
+]
+
+export type BlobEIP4844NetworkValuesArray = [
+  BlobEIP4844ValuesArray,
+  Uint8Array[],
+  Uint8Array[],
+  Uint8Array[]
+]
+
 type JsonAccessListItem = { address: string; storageKeys: string[] }
 
 /**
@@ -342,55 +341,3 @@ export interface JsonRpcTx {
   maxFeePerDataGas?: string // QUANTITY - max data fee for blob transactions
   versionedHashes?: string[] // DATA - array of 32 byte versioned hashes for blob transactions
 }
-
-/** EIP4844 types */
-export const AddressType = Bytes20 // SSZ encoded address
-
-// SSZ encoded container for address and storage keys
-export const AccessTupleType = new ContainerType({
-  address: AddressType,
-  storageKeys: new ListCompositeType(Bytes32, MAX_VERSIONED_HASHES_LIST_SIZE),
-})
-
-// SSZ encoded blob transaction
-export const BlobTransactionType = new ContainerType({
-  chainId: Uint256,
-  nonce: Uint64,
-  maxPriorityFeePerGas: Uint256,
-  maxFeePerGas: Uint256,
-  gas: Uint64,
-  to: new UnionType([new NoneType(), AddressType]),
-  value: Uint256,
-  data: new ByteListType(MAX_CALLDATA_SIZE),
-  accessList: new ListCompositeType(AccessTupleType, MAX_ACCESS_LIST_SIZE),
-  maxFeePerDataGas: Uint256,
-  blobVersionedHashes: new ListCompositeType(Bytes32, MAX_VERSIONED_HASHES_LIST_SIZE),
-})
-
-// SSZ encoded ECDSA Signature
-export const ECDSASignatureType = new ContainerType({
-  yParity: new BooleanType(),
-  r: Uint256,
-  s: Uint256,
-})
-
-// SSZ encoded signed blob transaction
-export const SignedBlobTransactionType = new ContainerType({
-  message: BlobTransactionType,
-  signature: ECDSASignatureType,
-})
-
-// SSZ encoded KZG Commitment/Proof (48 bytes)
-export const KZGCommitmentType = Bytes48
-export const KZGProofType = KZGCommitmentType
-
-// SSZ encoded blob network transaction wrapper
-export const BlobNetworkTransactionWrapper = new ContainerType({
-  tx: SignedBlobTransactionType,
-  blobKzgs: new ListCompositeType(KZGCommitmentType, MAX_TX_WRAP_KZG_COMMITMENTS),
-  blobs: new ListCompositeType(
-    new ByteVectorType(FIELD_ELEMENTS_PER_BLOB * BYTES_PER_FIELD_ELEMENT),
-    LIMIT_BLOBS_PER_TX
-  ),
-  blobKzgProofs: new ListCompositeType(KZGProofType, MAX_TX_WRAP_KZG_COMMITMENTS),
-})

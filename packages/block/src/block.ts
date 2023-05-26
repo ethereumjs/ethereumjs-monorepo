@@ -14,14 +14,13 @@ import {
   hexStringToBytes,
   intToHex,
   isHexPrefixed,
-  ssz,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { executionPayloadFromBeaconPayload } from './from-beacon-payload'
 import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
-import { getDataGasPrice } from './helpers'
+import { calcExcessDataGas, getDataGasPrice } from './helpers'
 
 import type { BeaconPayloadJson } from './from-beacon-payload'
 import type {
@@ -64,14 +63,6 @@ export class Block {
       await trie.put(RLP.encode(i), RLP.encode(wt.raw()))
     }
     return trie.root()
-  }
-
-  /**
-   * Returns the ssz root for array of withdrawal transactions.
-   * @param wts array of Withdrawal to compute the root of
-   */
-  public static async generateWithdrawalsSSZRoot(withdrawals: Withdrawal[]) {
-    ssz.Withdrawals.hashTreeRoot(withdrawals.map((wt) => wt.toValue()))
   }
 
   /**
@@ -571,16 +562,26 @@ export class Block {
    * @param parentHeader header of parent block
    */
   validateBlobTransactions(parentHeader: BlockHeader) {
-    for (const tx of this.transactions) {
-      if (tx instanceof BlobEIP4844Transaction) {
-        const dataGasPrice = getDataGasPrice(parentHeader)
-        if (tx.maxFeePerDataGas < dataGasPrice) {
-          throw new Error(
-            `blob transaction maxFeePerDataGas ${
-              tx.maxFeePerDataGas
-            } < than block data gas price ${dataGasPrice} - ${this.errorStr()}`
-          )
+    if (this._common.isActivatedEIP(4844)) {
+      let numBlobs = 0
+      for (const tx of this.transactions) {
+        if (tx instanceof BlobEIP4844Transaction) {
+          const dataGasPrice = getDataGasPrice(parentHeader)
+          if (tx.maxFeePerDataGas < dataGasPrice) {
+            throw new Error(
+              `blob transaction maxFeePerDataGas ${
+                tx.maxFeePerDataGas
+              } < than block data gas price ${dataGasPrice} - ${this.errorStr()}`
+            )
+          }
+          numBlobs += tx.versionedHashes.length
         }
+      }
+      const expectedExcessDataGas = calcExcessDataGas(parentHeader, numBlobs)
+      if (this.header.excessDataGas !== expectedExcessDataGas) {
+        throw new Error(
+          `block excessDataGas mismatch: have ${this.header.excessDataGas}, want ${expectedExcessDataGas}`
+        )
       }
     }
   }

@@ -603,7 +603,7 @@ tape('runCall() => allows to detect for max code size deposit errors', async (t)
     'reported error is correct'
   )
 })
-tape('runCall() => use DATAHASH opcode from EIP 4844', async (t) => {
+tape('runCall() => use BLOBHASH opcode from EIP 4844', async (t) => {
   // setup the evm
   const genesisJSON = require('../../client/test/testdata/geth-genesis/eip4844.json')
   const common = Common.fromGethGenesis(genesisJSON, {
@@ -672,4 +672,56 @@ tape('step event: ensure EVM memory and not internal memory gets reported', asyn
   })
   await evm.runCall(runCallArgs)
   t.ok(verifyMemoryExpanded, 'memory did expand')
+})
+
+tape('ensure code deposit errors are logged correctly (>= Homestead)', async (t) => {
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+  const evm = await EVM.create({
+    common,
+    stateManager: new DefaultStateManager(),
+  })
+
+  // Create a contract which is too large
+  const runCallArgs = {
+    gasLimit: BigInt(10000000),
+    data: hexToBytes('61FFFF6000F3'),
+  }
+
+  const res = await evm.runCall(runCallArgs)
+  t.ok(res.execResult.exceptionError?.error === ERROR.CODESIZE_EXCEEDS_MAXIMUM)
+
+  // Create a contract which goes OOG when creating
+  const runCallArgs2 = {
+    gasLimit: BigInt(100000),
+    data: hexToBytes('62FFFFFF6000F3'),
+  }
+
+  const res2 = await evm.runCall(runCallArgs2)
+  t.ok(res2.execResult.exceptionError?.error === ERROR.OUT_OF_GAS)
+})
+
+tape('ensure code deposit errors are logged correctly (Frontier)', async (t) => {
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+  const evm = await EVM.create({
+    common,
+    stateManager: new DefaultStateManager(),
+  })
+
+  // Create a contract which cannot pay the code deposit fee
+  const runCallArgs = {
+    gasLimit: BigInt(10000000),
+    data: hexToBytes('61FFFF6000F3'),
+  }
+
+  const res = await evm.runCall(runCallArgs)
+  t.ok(res.execResult.exceptionError?.error === ERROR.CODESTORE_OUT_OF_GAS)
+
+  // Create a contract which goes OOG when creating
+  const runCallArgs2 = {
+    gasLimit: BigInt(100000),
+    data: hexToBytes('62FFFFFF6000F3'),
+  }
+
+  const res2 = await evm.runCall(runCallArgs2)
+  t.ok(res2.execResult.exceptionError?.error === ERROR.OUT_OF_GAS)
 })

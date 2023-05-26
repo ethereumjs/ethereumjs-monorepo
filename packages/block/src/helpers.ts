@@ -1,7 +1,9 @@
+import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { TypeOutput, isHexString, toType } from '@ethereumjs/util'
 
 import type { BlockHeader } from './header'
 import type { BlockHeaderBytes, HeaderData } from './types'
+import type { TypedTransaction } from '@ethereumjs/tx'
 
 /**
  * Returns a 0x-prefixed hex number string from a hex string or string integer.
@@ -105,6 +107,16 @@ export const calcExcessDataGas = (parent: BlockHeader, newBlobs: number) => {
   else {
     return parent.excessDataGas + consumedDataGas - targetDataGasPerBlock
   }
+}
+
+export const getNumBlobs = (transactions: TypedTransaction[]) => {
+  let numBlobs = 0
+  for (const tx of transactions) {
+    if (tx instanceof BlobEIP4844Transaction) {
+      numBlobs += tx.versionedHashes.length
+    }
+  }
+  return numBlobs
 }
 
 /**

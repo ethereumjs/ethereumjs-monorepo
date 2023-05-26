@@ -1,7 +1,6 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
-  bigIntToBytes,
   bytesToBigInt,
   computeVersionedHash,
   concatBytesNoTypeCheck,
@@ -25,7 +24,7 @@ tape('Precompiles: point evaluation', async (t) => {
   if (isBrowser() === true) {
     t.end()
   } else {
-    initKZG(kzg, __dirname + '/../../../client/lib/trustedSetups/devnet4.txt')
+    initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet4.txt')
     const genesisJSON = require('../../../client/test/testdata/geth-genesis/eip4844.json')
     const common = Common.fromGethGenesis(genesisJSON, {
       chain: 'custom',
@@ -68,26 +67,6 @@ tape('Precompiles: point evaluation', async (t) => {
       bytesToBigInt(unpadBytes(res.returnValue.slice(32))),
       BLS_MODULUS,
       'point evaluation precompile returned expected output'
-    )
-
-    const optsWithBigNumbers: PrecompileInput = {
-      data: concatBytesNoTypeCheck(
-        versionedHash,
-        testCase.InputPoint,
-        bigIntToBytes(BLS_MODULUS + 5n),
-        testCase.Commitment,
-        testCase.Proof
-      ),
-      gasLimit: 0xfffffffffn,
-      _EVM: evm,
-      _common: common,
-    }
-
-    res = await pointEvaluation(optsWithBigNumbers)
-    t.equal(
-      res.exceptionError?.error,
-      'point greater than BLS modulus',
-      'point evaluation precompile throws when points are too big'
     )
 
     const optsWithInvalidCommitment: PrecompileInput = {

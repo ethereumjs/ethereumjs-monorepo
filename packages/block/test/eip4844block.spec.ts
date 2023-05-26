@@ -12,12 +12,14 @@ import * as tape from 'tape'
 
 import { Block, calcExcessDataGas, getDataGasPrice } from '../src'
 import { BlockHeader } from '../src/header'
-import { calcDataFee, fakeExponential } from '../src/helpers'
+import { calcDataFee, fakeExponential, getNumBlobs } from '../src/helpers'
+
+import type { TypedTransaction } from '@ethereumjs/tx'
 
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
-if (isBrowser() === false) initKZG(kzg, __dirname + '/../../client/lib/trustedSetups/devnet4.txt')
+if (isBrowser() === false) initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet4.txt')
 const gethGenesis = require('./testdata/4844-hardfork.json')
 const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
@@ -187,25 +189,27 @@ tape('transaction validation tests', async (t) => {
       { number: 1n, excessDataGas: 4194304 },
       { common, skipConsensusFormatValidation: true }
     )
-    const blockHeader = BlockHeader.fromHeaderData(
-      { number: 2n, parentHash: parentHeader.hash() },
-      { common, skipConsensusFormatValidation: true }
-    )
 
-    const blockWithValidTx = Block.fromBlockData(
-      { header: blockHeader, transactions: [tx1] },
-      { common, skipConsensusFormatValidation: true }
-    )
+    // eslint-disable-next-line no-inner-declarations
+    function getBlock(transactions: TypedTransaction[]) {
+      const blobs = getNumBlobs(transactions)
+      const excessDataGas = calcExcessDataGas(parentHeader, blobs)
+      const blockHeader = BlockHeader.fromHeaderData(
+        { number: 2n, parentHash: parentHeader.hash(), excessDataGas },
+        { common, skipConsensusFormatValidation: true }
+      )
+      return Block.fromBlockData(
+        { header: blockHeader, transactions },
+        { common, skipConsensusFormatValidation: true }
+      )
+    }
 
-    const blockWithInvalidTx = Block.fromBlockData(
-      { header: blockHeader, transactions: [tx1, tx2] },
-      { common, skipConsensusFormatValidation: true }
-    )
+    const blockWithValidTx = getBlock([tx1])
 
-    const blockWithTooManyBlobs = Block.fromBlockData(
-      { header: blockHeader, transactions: [tx1, tx1, tx1, tx1, tx1] },
-      { common, skipConsensusFormatValidation: true }
-    )
+    const blockWithInvalidTx = getBlock([tx1, tx2])
+
+    const blockWithTooManyBlobs = getBlock([tx1, tx1, tx1, tx1, tx1])
+
     t.doesNotThrow(
       () => blockWithValidTx.validateBlobTransactions(parentHeader),
       'does not throw when all tx maxFeePerDataGas are >= to block data gas fee'

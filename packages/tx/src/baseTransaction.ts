@@ -20,6 +20,8 @@ import { checkMaxInitCodeSize } from './util'
 import type {
   AccessListEIP2930TxData,
   AccessListEIP2930ValuesArray,
+  BlobEIP4844TxData,
+  BlobEIP4844ValuesArray,
   FeeMarketEIP1559TxData,
   FeeMarketEIP1559ValuesArray,
   JsonTx,
@@ -91,7 +93,10 @@ export abstract class BaseTransaction<TransactionObject> {
    */
   protected DEFAULT_HARDFORK: string | Hardfork = Hardfork.Shanghai
 
-  constructor(txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData, opts: TxOptions) {
+  constructor(
+    txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData | BlobEIP4844TxData,
+    opts: TxOptions
+  ) {
     const { nonce, gasLimit, to, value, data, v, r, s, type } = txData
     this._type = Number(bytesToBigInt(toBytes(type)))
 
@@ -257,7 +262,11 @@ export abstract class BaseTransaction<TransactionObject> {
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
    * representation for external signing use {@link BaseTransaction.getMessageToSign}.
    */
-  abstract raw(): TxValuesArray | AccessListEIP2930ValuesArray | FeeMarketEIP1559ValuesArray
+  abstract raw():
+    | TxValuesArray
+    | AccessListEIP2930ValuesArray
+    | FeeMarketEIP1559ValuesArray
+    | BlobEIP4844ValuesArray
 
   /**
    * Returns the encoding of the transaction.
