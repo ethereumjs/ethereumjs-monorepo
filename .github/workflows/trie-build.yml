@@ -1,6 +1,10 @@
 name: Trie
 on:
   workflow_call:
+    inputs:
+      cache-key:
+        required: true
+        type: string
   workflow_dispatch:
 
 env:
@@ -32,7 +36,7 @@ jobs:
       - uses: actions/cache/restore@v3
         with:
           path: ${{github.workspace}}
-          key: ${{hashFiles('packages/**/src')}}
+          key: ${{ inputs.cache-key }}
 
       - run: npm run lint
       - run: npm run coverage
