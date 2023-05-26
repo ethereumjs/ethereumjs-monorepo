@@ -1,5 +1,6 @@
 /* eslint-disable ethereumjs/noBuffer */
 import {
+  bytesToHex,
   importPublic,
   isValidPrivate,
   isValidPublic,
@@ -297,7 +298,7 @@ export class Wallet {
       const max = BigInt('0x088f924eeceeda7fe92e1f5b0fffffffffffffff')
       for (;;) {
         const privateKey = randomBytes(32) as Buffer
-        const hex = privateToAddress(privateKey).toString()
+        const hex = bytesToHex(privateToAddress(privateKey))
         if (BigInt('0x' + hex) <= max) {
           return new Wallet(privateKey)
         }
@@ -318,8 +319,7 @@ export class Wallet {
     for (;;) {
       const privateKey = randomBytes(32) as Buffer
       const address = privateToAddress(privateKey)
-
-      if (pattern.test(address.toString())) {
+      if (pattern.test(bytesToHex(address))) {
         return new Wallet(privateKey)
       }
     }
