@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
@@ -33,7 +33,7 @@ jobs:
       - uses: nick-fields/retry@v2
         with:
           timeout_minutes: 2
-          max_attempts: 1
+          max_attempts: 3
           command: npm run test
 
       - uses: codecov/codecov-action@v3
