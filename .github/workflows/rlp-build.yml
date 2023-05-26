@@ -1,7 +1,7 @@
 name: RLP
 on:
   workflow_call:
-      inputs:
+    inputs:
       cache-key:
         required: true
         type: string
