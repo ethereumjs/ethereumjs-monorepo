@@ -1,3 +1,4 @@
+/* eslint-disable ethereumjs/noBuffer */
 import { decrypt } from 'ethereum-cryptography/aes'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { pbkdf2Sync } from 'ethereum-cryptography/pbkdf2'

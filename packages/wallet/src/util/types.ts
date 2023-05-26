@@ -1,3 +1,4 @@
+/* eslint-disable ethereumjs/noBuffer */
 import { bufferToBigInt, bufferToHex, toBuffer } from './bytes'
 import { isHexString } from './internal'
 

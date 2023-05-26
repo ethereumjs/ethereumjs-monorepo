@@ -1,4 +1,4 @@
-/* tslint:disable no-invalid-this */
+/* eslint-disable */
 import * as assert from 'assert'
 import { Wallet as ethersWallet } from 'ethers'
 

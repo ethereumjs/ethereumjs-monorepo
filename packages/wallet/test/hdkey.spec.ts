@@ -1,3 +1,4 @@
+/* eslint-disable */
 import * as assert from 'assert'
 import EthereumHDKey from '../src/hdkey'
 

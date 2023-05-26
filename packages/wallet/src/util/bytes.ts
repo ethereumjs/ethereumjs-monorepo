@@ -1,3 +1,4 @@
+/* eslint-disable ethereumjs/noBuffer */
 import { assertIsArray, assertIsBuffer, assertIsHexString } from './helpers'
 import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal'
 

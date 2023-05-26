@@ -1,3 +1,4 @@
+/* eslint-disable ethereumjs/noBuffer */
 import { isHexString } from './internal'
 
 /**
