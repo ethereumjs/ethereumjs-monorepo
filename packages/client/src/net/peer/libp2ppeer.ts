@@ -24,9 +24,9 @@ export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transp
  * @example
  * ```typescript
  * import { multiaddr } from 'multiaddr'
- * import { Libp2pPeer } from './lib/net/peer'
- * import { Chain } from './lib/blockchain'
- * import { EthProtocol } from './lib/net/protocol'
+ * import { Libp2pPeer } from './src/net/peer'
+ * import { Chain } from './src/blockchain'
+ * import { EthProtocol } from './src/net/protocol'
  *
  * const chain = await Chain.create()
  * const protocols = [new EthProtocol({ chain })]

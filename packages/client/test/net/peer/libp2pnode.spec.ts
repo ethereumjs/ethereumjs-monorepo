@@ -3,7 +3,7 @@ import * as td from 'testdouble'
 
 tape('[Libp2pNode]', async (t) => {
   td.replace('libp2p')
-  const { Libp2pNode } = await import('../../../lib/net/peer/libp2pnode')
+  const { Libp2pNode } = await import('../../../src/net/peer/libp2pnode')
 
   t.test('should be a libp2p bundle', (t) => {
     const peerId = td.object('PeerId') as any

@@ -6,7 +6,7 @@ import { platform } from 'os'
 
 import { version as packageVersion } from '../../package.json'
 
-export * from '../../lib/util/parse'
+export * from '../../src/util/parse'
 
 export function short(bytes: Uint8Array | string): string {
   if (bytes === null || bytes === undefined || bytes === '') return ''

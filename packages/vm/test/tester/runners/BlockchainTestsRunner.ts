@@ -23,7 +23,7 @@ import type { Common } from '@ethereumjs/common'
 import type * as tape from 'tape'
 import { VM } from '../../../src'
 
-initKZG(kzg, __dirname + '/../../../../client/lib/trustedSetups/devnet4.txt')
+initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet4.txt')
 
 function formatBlockHeader(data: any) {
   const formatted: any = {}

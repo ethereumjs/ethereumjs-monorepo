@@ -1,9 +1,9 @@
 import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 
-import { Chain } from '../../../lib/blockchain'
+import { Chain } from '../../../src/blockchain'
 
-import type { ChainOptions } from '../../../lib/blockchain'
+import type { ChainOptions } from '../../../src/blockchain'
 
 interface MockChainOptions extends ChainOptions {
   height?: number

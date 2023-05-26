@@ -4,7 +4,7 @@ import * as tape from 'tape'
 import * as td from 'testdouble'
 import timers from 'testdouble-timers'
 
-import { FlowControl } from '../../../lib/net/protocol'
+import { FlowControl } from '../../../src/net/protocol'
 
 timers.use(td)
 

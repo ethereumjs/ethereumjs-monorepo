@@ -2,23 +2,23 @@ import { multiaddr } from 'multiaddr'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Config } from '../../../lib/config'
-import { Event } from '../../../lib/types'
+import { Config } from '../../../src/config'
+import { Event } from '../../../src/types'
 
-import type { Libp2pPeer } from '../../../lib/net/peer'
-import type { Protocol } from '../../../lib/net/protocol'
+import type { Libp2pPeer } from '../../../src/net/peer'
+import type { Protocol } from '../../../src/net/protocol'
 
 tape('[Libp2pPeer]', async (t) => {
   td.replace('peer-id')
 
   const Libp2pNode = td.constructor(['start', 'stop', 'dial', 'dialProtocol'] as any)
-  td.replace('../../../lib/net/peer/libp2pnode', { Libp2pNode })
-  const Libp2pSender = td.replace<any>('../../../lib/net/protocol/libp2psender')
+  td.replace('../../../src/net/peer/libp2pnode', { Libp2pNode })
+  const Libp2pSender = td.replace<any>('../../../src/net/protocol/libp2psender')
 
   td.when(Libp2pNode.prototype.start()).thenResolve(null)
   td.when(Libp2pNode.prototype.dial(td.matchers.anything())).thenResolve(null)
 
-  const { Libp2pPeer } = await import('../../../lib/net/peer/libp2ppeer')
+  const { Libp2pPeer } = await import('../../../src/net/peer/libp2ppeer')
 
   t.test('should initialize correctly', async (t) => {
     const config = new Config()

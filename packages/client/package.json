@@ -20,9 +20,9 @@
   },
   "license": "MPL-2.0",
   "author": "Vinay Pulim (v@pulim.com)",
-  "main": "dist/lib/index.js",
+  "main": "dist/src/index.js",
   "browser": "dist/bundle.js",
-  "types": "dist/lib/index.d.ts",
+  "types": "dist/src/index.d.ts",
   "bin": {
     "ethereumjs": "dist/bin/cli.js"
   },
@@ -31,7 +31,7 @@
   ],
   "scripts": {
     "binWorkaround": "test -f dist/bin/cli.js || echo 'install fails if bin script does not exist (https://github.com/npm/cli/issues/2632), creating placeholder file at \"dist/bin/cli.js\"' && mkdir -p 'dist/bin' && touch dist/bin/cli.js",
-    "build": "npm run build:common && mkdir -p ./lib/trustedSetup/ && cp -Rf ./lib/trustedSetups ./dist/lib/",
+    "build": "npm run build:common && mkdir -p ./src/trustedSetup/ && cp -Rf ./src/trustedSetups ./dist/src/",
     "build:browser": "../../config/cli/ts-build.sh browser && npm run bundle && rm -rf dist.browser",
     "build:common": "../../config/cli/ts-build.sh",
     "bundle": "webpack",

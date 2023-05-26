@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 
-import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 import { checkError } from '../util'
 

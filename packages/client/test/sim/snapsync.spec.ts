@@ -6,9 +6,9 @@ import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 import { Client } from 'jayson/promise'
 import * as tape from 'tape'
 
-import { Config } from '../../lib/config'
-import { getLogger } from '../../lib/logging'
-import { Event } from '../../lib/types'
+import { Config } from '../../src/config'
+import { getLogger } from '../../src/logging'
+import { Event } from '../../src/types'
 
 import {
   createInlineClient,
@@ -19,8 +19,8 @@ import {
   waitForELStart,
 } from './simutils'
 
-import type { EthereumClient } from '../../lib/client'
-import type { RlpxServer } from '../../lib/net/server'
+import type { EthereumClient } from '../../src/client'
+import type { RlpxServer } from '../../src/net/server'
 
 const pkey = hexToBytes('ae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e')
 const sender = '0x' + bytesToHex(privateToAddress(pkey))

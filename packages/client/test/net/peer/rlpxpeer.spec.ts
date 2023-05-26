@@ -2,9 +2,9 @@ import { EventEmitter } from 'events'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Config } from '../../../lib/config'
-import { RlpxSender } from '../../../lib/net/protocol/rlpxsender'
-import { Event } from '../../../lib/types'
+import { Config } from '../../../src/config'
+import { RlpxSender } from '../../../src/net/protocol/rlpxsender'
+import { Event } from '../../../src/types'
 
 tape('[RlpxPeer]', async (t) => {
   const { DPT, ETH, LES, SNAP } = await import('@ethereumjs/devp2p')
@@ -13,7 +13,7 @@ tape('[RlpxPeer]', async (t) => {
   }
   RLPx.prototype.connect = td.func<any>()
   td.replace<any>('@ethereumjs/devp2p', { DPT, ETH, LES, SNAP, RLPx })
-  const { RlpxPeer } = await import('../../../lib/net/peer/rlpxpeer')
+  const { RlpxPeer } = await import('../../../src/net/peer/rlpxpeer')
 
   t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })

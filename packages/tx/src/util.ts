@@ -2,7 +2,6 @@ import { bytesToPrefixedHexString, hexStringToBytes, setLengthLeft } from '@ethe
 
 import { isAccessList } from './types'
 
-import type { BlobEIP4844Transaction } from './eip4844Transaction'
 import type { AccessList, AccessListBytes, AccessListItem } from './types'
 import type { Common } from '@ethereumjs/common'
 
@@ -114,35 +113,5 @@ export class AccessLists {
 
     const addresses = accessList.length
     return addresses * Number(accessListAddressCost) + slots * Number(accessListStorageKeyCost)
-  }
-}
-
-export const blobTxToNetworkWrapperDataFormat = (tx: BlobEIP4844Transaction) => {
-  const to = {
-    selector: tx.to !== undefined ? 1 : 0,
-    value: tx.to?.toBytes() ?? null,
-  }
-  return {
-    message: {
-      chainId: tx.common.chainId(),
-      nonce: tx.nonce,
-      maxPriorityFeePerGas: tx.maxPriorityFeePerGas,
-      maxFeePerGas: tx.maxFeePerGas,
-      gas: tx.gasLimit,
-      to,
-      value: tx.value,
-      data: tx.data,
-      accessList: tx.accessList.map((listItem) => {
-        return { address: listItem[0], storageKeys: listItem[1] }
-      }),
-      blobVersionedHashes: tx.versionedHashes,
-      maxFeePerDataGas: tx.maxFeePerDataGas,
-    },
-    // If transaction is unsigned, signature fields will be initialized to zeroes
-    signature: {
-      r: tx.r ?? BigInt(0),
-      s: tx.s ?? BigInt(0),
-      yParity: tx.v === BigInt(1) ? true : false,
-    },
   }
 }
