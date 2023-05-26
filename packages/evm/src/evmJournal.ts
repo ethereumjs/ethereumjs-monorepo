@@ -79,16 +79,6 @@ export class EvmJournal {
   }
   async commit() {
     this.journalHeight--
-    // TODO figure out if we cant just index the journal diff by the journalHeight index?
-    // not sure, might not be possible:
-    // Height: 1
-    // Checkpoint
-    // Height: 2 (A)
-    // Commit
-    // Height: 1
-    // Checkpoint
-    // Height: 2 (B)
-    // Revert (now diff items of (B) are in same arr as (A) so (A) items also get reverted while those should be committed)
     this.journalDiff.push([this.journalHeight, [new Set(), new Map(), new Set()]])
     await this.stateManager.commit()
   }

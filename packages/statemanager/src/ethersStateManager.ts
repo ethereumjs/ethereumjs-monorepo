@@ -5,6 +5,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { ethers } from 'ethers'
 
 import { AccountCache, CacheType, StorageCache } from './cache'
+import { OriginalStorageCache } from './cache/originalStorageCache'
 
 import type { Proof } from '.'
 import type {
@@ -27,6 +28,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
   private storageCache: StorageCache
   private blockTag: string
   _accountCache: AccountCache
+  originalStorageCache: OriginalStorageCache
   private _debug: Debugger
   private DEBUG: boolean
   constructor(opts: EthersStateManagerOpts) {
@@ -46,6 +48,8 @@ export class EthersStateManager implements EVMStateManagerInterface {
     this.contractCache = new Map()
     this.storageCache = new StorageCache({ size: 100000, type: CacheType.ORDERED_MAP })
     this._accountCache = new AccountCache({ size: 100000, type: CacheType.ORDERED_MAP })
+
+    this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
   }
 
   copy(): EthersStateManager {
@@ -374,28 +378,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
   accountIsEmptyOrNonExistent(_address: Address): Promise<boolean> {
     throw new Error('function not implemented')
   }
-  getOriginalContractStorage(_address: Address, _key: Uint8Array): Promise<Uint8Array> {
-    throw new Error('function not implemented')
-  }
-  clearWarmedAccounts(): void {}
-  cleanupTouchedAccounts(): Promise<void> {
-    return Promise.resolve()
-  }
-  clearOriginalStorageCache(): void {
-    // throw new Error('function not implemented')
-  }
-  addWarmedAddress(_address: Uint8Array): void {
-    //  throw new Error('function not implemented')
-  }
-  isWarmedAddress(_address: Uint8Array): boolean {
-    throw new Error('function not implemented')
-  }
-  addWarmedStorage(_address: Uint8Array, _slot: Uint8Array): void {
-    //   throw new Error('function not implemented')
-  }
-  isWarmedStorage(_address: Uint8Array, _slot: Uint8Array): boolean {
-    throw new Error('function not implemented')
-  }
+
   generateCanonicalGenesis(_initState: any): Promise<void> {
     return Promise.resolve()
   }

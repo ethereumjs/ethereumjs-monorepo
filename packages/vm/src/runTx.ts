@@ -174,6 +174,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     if (this._common.isActivatedEIP(2929) === true) {
       this.evm.evmJournal.cleanJournal()
     }
+    this.evm.stateManager.originalStorageCache.clearOriginalStorageCache()
   }
 }
 
@@ -536,7 +537,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   await this.evm.evmJournal.cleanup()
-  state.clearOriginalStorageCache()
+  state.originalStorageCache.clearOriginalStorageCache()
 
   // Generate the tx receipt
   const gasUsed = opts.blockGasUsed !== undefined ? opts.blockGasUsed : block.header.gasUsed

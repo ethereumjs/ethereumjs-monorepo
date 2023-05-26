@@ -62,18 +62,12 @@ export interface StateManagerInterface {
 export interface EVMStateManagerInterface extends StateManagerInterface {
   accountIsEmptyOrNonExistent(address: Address): Promise<boolean>
 
-  getOriginalContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
+  originalStorageCache: {
+    getOriginalContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
+    clearOriginalStorageCache(): void
+  }
 
   dumpStorage(address: Address): Promise<StorageDump> // only used in client
-  putContractStorage(
-    address: Address,
-    key: Uint8Array,
-    value: Uint8Array,
-    touch?: boolean
-  ): Promise<void>
-
-  clearOriginalStorageCache(): void
-
   generateCanonicalGenesis(initState: any): Promise<void> // TODO make input more typesafe
   generateAccessList(addressesRemoved: Address[], addressesOnlyStorage: Address[]): AccessList
   getProof(address: Address, storageSlots?: Uint8Array[]): Promise<Proof>

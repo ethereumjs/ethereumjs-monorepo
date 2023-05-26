@@ -507,7 +507,10 @@ export class Interpreter {
    */
   async storageLoad(key: Uint8Array, original = false): Promise<Uint8Array> {
     if (original) {
-      return this._stateManager.getOriginalContractStorage(this._env.address, key)
+      return this._stateManager.originalStorageCache.getOriginalContractStorage(
+        this._env.address,
+        key
+      )
     } else {
       return this._stateManager.getContractStorage(this._env.address, key)
     }

@@ -25,6 +25,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { AccountCache, CacheType, StorageCache } from './cache'
+import { OriginalStorageCache } from './cache/originalStorageCache'
 
 import type {
   AccessListItem,
@@ -146,6 +147,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   _accountCache?: AccountCache
   _storageCache?: StorageCache
 
+  originalStorageCache: OriginalStorageCache
+
   _trie: Trie
   _storageTries: { [key: string]: Trie }
   _codeCache: { [key: string]: Uint8Array }
@@ -167,8 +170,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   // Backup structure for address/storage tracker frames on reverts
   // to also include on access list generation
   protected _accessedStorageReverted: Map<string, Set<string>>[]
-
-  protected _originalStorageCache: Map<string, Map<string, Uint8Array>>
 
   protected readonly _prefixCodeHashes: boolean
   protected readonly _accountCacheSettings: CacheSettings
@@ -205,7 +206,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     this._storageTries = {}
     this._codeCache = {}
 
-    this._originalStorageCache = new Map()
+    this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
+
     this._accessedStorage = [new Map()]
     this._accessedStorageReverted = [new Map()]
 
@@ -453,47 +455,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   }
 
   /**
-   * Caches the storage value associated with the provided `address` and `key`
-   * on first invocation, and returns the cached (original) value from then
-   * onwards. This is used to get the original value of a storage slot for
-   * computing gas costs according to EIP-1283.
-   * @param address - Address of the account to get the storage for
-   * @param key - Key in the account's storage to get the value for. Must be 32 bytes long.
-   */
-  async getOriginalContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
-    if (key.length !== 32) {
-      throw new Error('Storage key must be 32 bytes long')
-    }
-
-    const addressHex = address.toString()
-    const keyHex = bytesToHex(key)
-
-    let map: Map<string, Uint8Array>
-    if (!this._originalStorageCache.has(addressHex)) {
-      map = new Map()
-      this._originalStorageCache.set(addressHex, map)
-    } else {
-      map = this._originalStorageCache.get(addressHex)!
-    }
-
-    if (map.has(keyHex)) {
-      return map.get(keyHex)!
-    } else {
-      const current = await this.getContractStorage(address, key)
-      map.set(keyHex, current)
-      return current
-    }
-  }
-
-  /**
-   * Clears the original storage cache. Refer to {@link StateManager.getOriginalContractStorage}
-   * for more explanation. Alias of the internal {@link StateManager._clearOriginalStorageCache}
-   */
-  clearOriginalStorageCache(): void {
-    this._originalStorageCache = new Map()
-  }
-
-  /**
    * Modifies the storage trie of an account.
    * @private
    * @param address -  Address of the account whose storage is to be modified
@@ -629,7 +590,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     if (this._checkpointCount === 0) {
       await this.flush()
-      this.clearOriginalStorageCache()
     }
 
     if (this.DEBUG) {
@@ -660,7 +620,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     if (this._checkpointCount === 0) {
       await this.flush()
-      this.clearOriginalStorageCache()
     }
   }
 
