@@ -9,9 +9,8 @@ import {
 import * as crypto from 'crypto'
 import * as tape from 'tape'
 
-import { Trie } from '../../src'
-
-import type { DB } from '@ethereumjs/util'
+import { DB, Trie, TrieDatabase } from '../../src'
+import { bytesToNibbles } from '../../src/util/nibbles'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof_test.go
 
@@ -22,7 +21,7 @@ const TRIE_SIZE = 512
  * @param addKey - whether to add 100 ordered keys
  * @returns Trie object and sorted entries
  */
-async function randomTrie(db: DB<string, string>, addKey: boolean = true) {
+async function randomTrie(db: TrieDatabase, addKey: boolean = true) {
   const entries: [Uint8Array, Uint8Array][] = []
   const trie = new Trie({ db })
 
@@ -90,11 +89,11 @@ async function verify(
   const targetRange = entries.slice(start, end + 1)
   return trie.verifyRangeProof(
     trie.root(),
-    startKey,
-    endKey,
-    keys ?? targetRange.map(([key]) => key),
-    vals ?? targetRange.map(([, val]) => val),
-    [...(await trie.createProof(startKey)), ...(await trie.createProof(endKey))]
+    bytesToNibbles(startKey),
+    bytesToNibbles(endKey),
+    targetRange.map(([key]) => bytesToNibbles(key)),
+    targetRange.map(([, val]) => val),
+    [...(await trie._createProof(startKey)), ...(await trie._createProof(endKey))]
   )
 }
 
@@ -102,7 +101,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   const it = tester.test
 
   it('create a range proof and verify it', async (t) => {
-    const { trie, entries } = await randomTrie(new MapDB())
+    const { trie, entries } = await randomTrie(await TrieDatabase.create())
 
     for (let i = 0; i < 10; i++) {
       const start = getRandomIntInclusive(0, entries.length - 2)
@@ -116,7 +115,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('create a non-existent range proof and verify it', async (t) => {
-    const { trie, entries } = await randomTrie(new MapDB())
+    const { trie, entries } = await randomTrie(await TrieDatabase.create())
 
     for (let i = 0; i < 10; i++) {
       const start = getRandomIntInclusive(0, entries.length - 1)
@@ -150,7 +149,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('create invalid non-existent range proof and verify it', async (t) => {
-    const { trie, entries } = await randomTrie(new MapDB())
+    const { trie, entries } = await randomTrie(await TrieDatabase.create())
 
     const start = 100
     const end = 200
@@ -177,7 +176,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('create a one element range proof and verify it', async (t) => {
-    const { trie, entries } = await randomTrie(new MapDB())
+    const { trie, entries } = await randomTrie(await TrieDatabase.create())
 
     const start = 255
     const startKey = entries[start][0]
@@ -210,16 +209,16 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('create all element range proof and verify it', async (t) => {
-    const { trie, entries } = await randomTrie(new MapDB())
+    const { trie, entries } = await randomTrie(await TrieDatabase.create())
 
     t.equal(
       await trie.verifyRangeProof(
         trie.root(),
-        null,
-        null,
-        entries.map(([key]) => key),
+        [],
+        [],
+        entries.map(([key]) => bytesToNibbles(key)),
         entries.map(([, val]) => val),
-        null
+        []
       ),
       false
     )
@@ -243,7 +242,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
 
   it('create a single side range proof and verify it', async (t) => {
     const startKey = hexStringToBytes('00'.repeat(32))
-    const { trie, entries } = await randomTrie(new MapDB(), false)
+    const { trie, entries } = await randomTrie(await TrieDatabase.create(), false)
 
     const cases = [0, 1, 200, entries.length - 1]
     for (const end of cases) {
@@ -253,7 +252,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
 
   it('create a revert single side range proof and verify it', async (t) => {
     const endKey = hexStringToBytes('ff'.repeat(32))
-    const { trie, entries } = await randomTrie(new MapDB(), false)
+    const { trie, entries } = await randomTrie(await TrieDatabase.create(), false)
 
     const cases = [0, 1, 200, entries.length - 1]
     for (const start of cases) {
@@ -265,7 +264,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
     const runTest = async (
       cb: (trie: Trie, entries: [Uint8Array, Uint8Array][]) => Promise<void>
     ) => {
-      const { trie, entries } = await randomTrie(new MapDB(), false)
+      const { trie, entries } = await randomTrie(await TrieDatabase.create(), false)
 
       let result = false
       try {
@@ -361,7 +360,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('create a same side range proof and verify it', async (t) => {
-    const { trie, entries } = await randomTrie(new MapDB())
+    const { trie, entries } = await randomTrie(await TrieDatabase.create())
 
     const start = 200
     const end = 200
@@ -393,7 +392,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('should hasRightElement succeed', async (t) => {
-    const { trie, entries } = await randomTrie(new MapDB(), false)
+    const { trie, entries } = await randomTrie(await TrieDatabase.create(), false)
 
     const cases: { start: number; end: number; expect: boolean }[] = [
       {
@@ -472,11 +471,11 @@ tape('simple merkle range proofs generation and verification', function (tester)
   })
 
   it('create a bloated range proof and verify it', async (t) => {
-    const { trie, entries } = await randomTrie(new MapDB(), false)
+    const { trie, entries } = await randomTrie(await TrieDatabase.create(), false)
 
     let bloatedProof: Uint8Array[] = []
     for (let i = 0; i < TRIE_SIZE; i++) {
-      bloatedProof = bloatedProof.concat(await trie.createProof(entries[i][0]))
+      bloatedProof = bloatedProof.concat(await trie._createProof(entries[i][0]))
     }
 
     t.equal(await verify(trie, entries, 0, entries.length - 1), false)

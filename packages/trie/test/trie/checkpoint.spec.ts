@@ -1,5 +1,6 @@
 import { MapDB, bytesToHex, bytesToUtf8, equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { createHash } from 'crypto'
+import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
@@ -24,16 +25,27 @@ tape('testing checkpoints', function (tester) {
   })
 
   it('should copy trie and get value added to original trie', async function (t) {
-    trieCopy = trie.copy()
-    t.equal(bytesToHex(trieCopy.root()), preRoot)
+    trieCopy = await trie.copy()
+    t.equal(
+      bytesToHex(trieCopy.root()),
+      preRoot,
+      'trie copy should have same root as original trie'
+    )
     const res = await trieCopy.get(utf8ToBytes('do'))
-    t.ok(equalsBytes(utf8ToBytes('verb'), res!))
+    t.deepEqual(res, utf8ToBytes('verb'), 'should get value from trie copy')
     t.end()
   })
 
   it('should deactivate cache on copy()', async function (t) {
     const trie = new Trie({ cacheSize: 100 })
     trieCopy = trie.copy()
+    t.equal((trieCopy as any)._opts.cacheSize, 0)
+    t.end()
+  })
+
+  it('should deactivate cache on copy()', async function (t) {
+    const trie = new Trie({})
+    trieCopy = await trie.copy()
     t.equal((trieCopy as any)._opts.cacheSize, 0)
     t.end()
   })
@@ -64,35 +76,31 @@ tape('testing checkpoints', function (tester) {
   })
 
   it('should copy trie and get upstream and cache values after checkpoint', async function (t) {
-    trieCopy = trie.copy()
+    trieCopy = await trie.copy()
     t.equal(bytesToHex(trieCopy.root()), postRoot)
-    // @ts-expect-error
-    t.equal(trieCopy._db.checkpoints.length, 1)
+    t.equal(trieCopy.checkpoints.length, 1)
     t.ok(trieCopy.hasCheckpoints())
     const res = await trieCopy.get(utf8ToBytes('do'))
-    t.ok(equalsBytes(utf8ToBytes('verb'), res!))
+    t.deepEqual(res, utf8ToBytes('verb'), 'trieCopy.get(do) should return "verb"')
     const res2 = await trieCopy.get(utf8ToBytes('love'))
-    t.ok(equalsBytes(utf8ToBytes('emotion'), res2!))
+    t.deepEqual(res2, utf8ToBytes('emotion'), 'trieCopy.get(love) should return "emotion"')
     t.end()
   })
 
   it('should copy trie and use the correct hash function', async function (t) {
-    const trie = new Trie({
-      db: new MapDB(),
+    trie = new Trie({
       useKeyHashing: true,
-      useKeyHashingFunction: (value) => createHash('sha256').update(value).digest(),
+      hashFunction: (value) => createHash('sha256').update(value).digest(),
     })
-
     await trie.put(utf8ToBytes('key1'), utf8ToBytes('value1'))
+    preRoot = bytesToHex(trie.root())
     trie.checkpoint()
     await trie.put(utf8ToBytes('key2'), utf8ToBytes('value2'))
-    const trieCopy = trie.copy()
+    const trieCopy = await trie.copy()
+
     const value = await trieCopy.get(utf8ToBytes('key1'))
     t.equal(bytesToUtf8(value!), 'value1')
-    t.end()
-  })
 
-  it('should revert to the original root', async function (t) {
     t.ok(trie.hasCheckpoints())
     await trie.revert()
     t.equal(bytesToHex(trie.root()), preRoot)
@@ -110,6 +118,7 @@ tape('testing checkpoints', function (tester) {
     trie.checkpoint()
     await trie.put(utf8ToBytes('test'), utf8ToBytes('something'))
     await trie.put(utf8ToBytes('love'), utf8ToBytes('emotion'))
+    postRoot = bytesToHex(trie.root())
     await trie.commit()
     t.equal(trie.hasCheckpoints(), false)
     t.equal(bytesToHex(trie.root()), postRoot)
@@ -131,7 +140,7 @@ tape('testing checkpoints', function (tester) {
     await trie.revert()
     await trie.commit()
     t.equal(trie.hasCheckpoints(), false)
-    t.equal(trie.root(), root)
+    t.deepEqual(trie.root(), root)
     t.end()
   })
 
@@ -161,6 +170,7 @@ tape('testing checkpoints', function (tester) {
     await trie.put(k1, v12)
     await trie.put(k1, v123)
     await trie.revert()
+
     t.deepEqual(await trie.get(k1), v1, 'after revert: v1')
     t.end()
   })
@@ -225,10 +235,11 @@ tape('testing checkpoints', function (tester) {
     const KEY_ROOT = keccak256(ROOT_DB_KEY)
 
     // Initialise State
-    const CommittedState = await Trie.create({
+    const CommittedState = new Trie({
       useKeyHashing: true,
       useNodePruning: true,
       useRootPersistence: true,
+      debug: debug('eth-state:committed-state'),
     })
 
     // Put some initial data
@@ -239,18 +250,17 @@ tape('testing checkpoints', function (tester) {
     CommittedState.checkpoint()
 
     // Copy CommittedState
-    const MemoryState = CommittedState.copy()
+    const MemoryState = await CommittedState.copy()
     MemoryState.checkpoint()
 
     // Test changes on MemoryState
     await MemoryState.put(KEY, utf8ToBytes('2'))
     await MemoryState.commit()
-
     // The CommittedState should not change (not the key/value pairs, not the root, and not the root in DB)
     t.equal(bytesToUtf8((await CommittedState.get(KEY))!), '1')
     t.equal(
       // @ts-expect-error
-      bytesToHex(await CommittedState._db.get(KEY_ROOT)),
+      bytesToHex(await CommittedState.database().get(KEY_ROOT)),
       '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c'
     )
     t.equal(
@@ -259,9 +269,9 @@ tape('testing checkpoints', function (tester) {
     )
 
     // From MemoryState, now take the final checkpoint
-    const finalCheckpoint = (<any>MemoryState)._db.checkpoints[0]
+    const finalCheckpoint = (<any>MemoryState).checkpoints[0]
     // Insert this into CommittedState
-    ;(<any>CommittedState)._db.checkpoints.push(finalCheckpoint)
+    ;(<any>CommittedState).checkpoints.push(finalCheckpoint)
 
     // Now all operations done on MemoryState (including pruning) can be
     // committed into CommittedState
@@ -269,15 +279,15 @@ tape('testing checkpoints', function (tester) {
     // Flush items to disk
     await CommittedState.commit()
     // Update the root (this information is not fed via the checkpoint, have to do this manually)
-    CommittedState.root(MemoryState.root())
+    await CommittedState.setRootNode(MemoryState.rootNode)
     // Setting the root does not automatically persist the root, so persist it
-    await CommittedState.persistRoot()
+    await CommittedState.persistRoot(CommittedState.keySecure(ROOT_DB_KEY))
 
     // Make sure CommittedState looks like we expect (2 keys, last_block_height=2 + __root__)
     // I.e. the trie is pruned.
+
     t.deepEqual(
-      // @ts-expect-error
-      [...CommittedState._db.db._database.values()].map((value) => value),
+      [...(await CommittedState.database().values())].map((value) => bytesToHex(value)),
       [
         'd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb',
         'e3a1202418cf7414b1e6c2c8d92b4673eecdb4aac88f7f58623e3be903aefb2fd4655c32',

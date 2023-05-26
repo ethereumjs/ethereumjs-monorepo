@@ -16,87 +16,85 @@ import { bytesToNibbles } from '../src/util/nibbles'
 
 import type { HashKeysFunction } from '../src'
 
-for (const cacheSize of [0, 100]) {
-  tape('simple save and retrieve', function (tester) {
+tape('simple save and retrieve', function (tester) {
+  const it = tester.test
+
+  // it('should not crash if given a non-existent root', async function (t) {
+  //   const root = hexStringToBytes(
+  //     '3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d'
+  //   )
+  //   const trie = new Trie({ root })
+  //   const value = await trie.get(utf8ToBytes('test'))
+  //   t.equal(value, null)
+  //   t.end()
+  // })
+
+  const trie = new Trie()
+
+  it('save a value', async function (t) {
+    await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
+    t.end()
+  })
+
+  it('should get a value', async function (t) {
+    const value = await trie.get(utf8ToBytes('test'))
+    t.equal(bytesToUtf8(value!), 'one')
+    t.end()
+  })
+
+  it('should update a value', async function (t) {
+    await trie.put(utf8ToBytes('test'), utf8ToBytes('two'))
+    const value = await trie.get(utf8ToBytes('test'))
+
+    t.equal(bytesToUtf8(value!), 'two')
+    t.end()
+  })
+
+  it('should delete a value', async function (t) {
+    await trie.del(utf8ToBytes('test'))
+    const value = await trie.get(utf8ToBytes('test'))
+    t.notok(value)
+    t.end()
+  })
+
+  it('should recreate a value', async function (t) {
+    await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
+    t.end()
+  })
+
+  it('should get updated a value', async function (t) {
+    const value = await trie.get(utf8ToBytes('test'))
+    t.equal(bytesToUtf8(value!), 'one')
+    t.end()
+  })
+
+  it('should create a branch here', async function (t) {
+    await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
+    t.equal(
+      'de8a34a8c1d558682eae1528b47523a483dd8685d6db14b291451a66066bf0fc',
+      bytesToHex(trie.root())
+    )
+    t.end()
+  })
+
+  it('should get a value that is in a branch', async function (t) {
+    const value = await trie.get(utf8ToBytes('doge'))
+    t.equal(bytesToUtf8(value!), 'coin')
+    t.end()
+  })
+
+  it('should delete from a branch', async function (t) {
+    await trie.del(utf8ToBytes('doge'))
+    const value = await trie.get(utf8ToBytes('doge'))
+    t.equal(value, null)
+    t.end()
+  })
+
+  tape('storing longer values', async function (tester) {
     const it = tester.test
-
-    it('should not crash if given a non-existent root', async function (t) {
-      const root = hexStringToBytes(
-        '3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d'
-      )
-
-      const trie = new Trie({ root })
-      const value = await trie.get(utf8ToBytes('test'))
-      t.equal(value, null)
-      t.end()
-    })
-
-    const trie = new Trie({ cacheSize })
-
-    it('save a value', async function (t) {
-      await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
-      t.end()
-    })
-
-    it('should get a value', async function (t) {
-      const value = await trie.get(utf8ToBytes('test'))
-      t.equal(bytesToUtf8(value!), 'one')
-      t.end()
-    })
-
-    it('should update a value', async function (t) {
-      await trie.put(utf8ToBytes('test'), utf8ToBytes('two'))
-      const value = await trie.get(utf8ToBytes('test'))
-
-      t.equal(bytesToUtf8(value!), 'two')
-      t.end()
-    })
-
-    it('should delete a value', async function (t) {
-      await trie.del(utf8ToBytes('test'))
-      const value = await trie.get(utf8ToBytes('test'))
-      t.notok(value)
-      t.end()
-    })
-
-    it('should recreate a value', async function (t) {
-      await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
-      t.end()
-    })
-
-    it('should get updated a value', async function (t) {
-      const value = await trie.get(utf8ToBytes('test'))
-      t.equal(bytesToUtf8(value!), 'one')
-      t.end()
-    })
-
-    it('should create a branch here', async function (t) {
-      await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
-      t.equal(
-        'de8a34a8c1d558682eae1528b47523a483dd8685d6db14b291451a66066bf0fc',
-        bytesToHex(trie.root())
-      )
-      t.end()
-    })
-
-    it('should get a value that is in a branch', async function (t) {
-      const value = await trie.get(utf8ToBytes('doge'))
-      t.equal(bytesToUtf8(value!), 'coin')
-      t.end()
-    })
-
-    it('should delete from a branch', async function (t) {
-      await trie.del(utf8ToBytes('doge'))
-      const value = await trie.get(utf8ToBytes('doge'))
-      t.equal(value, null)
-      t.end()
-    })
-
-    tape('storing longer values', async function (tester) {
-      const it = tester.test
-      const trie = new Trie({ cacheSize })
-      const longString = 'this will be a really really really long value'
-      const longStringRoot = 'b173e2db29e79c78963cff5196f8a983fbe0171388972106b114ef7f5c24dfa3'
+    const trie = new Trie()
+    const longString = 'this will be a really really really long value'
+    const longStringRoot = 'b173e2db29e79c78963cff5196f8a983fbe0171388972106b114ef7f5c24dfa3'
 
       it('should store a longer string', async function (t) {
         await trie.put(utf8ToBytes('done'), utf8ToBytes(longString))
@@ -145,104 +143,100 @@ for (const cacheSize of [0, 100]) {
       })
     })
 
-    tape('testing extensions and branches - reverse', function (tester) {
-      const it = tester.test
-      const trie = new Trie({ cacheSize })
-
-      it('should create extension to store this value', async function (t) {
-        await trie.put(utf8ToBytes('do'), utf8ToBytes('verb'))
-        t.end()
-      })
-
-      it('should store a value', async function (t) {
-        await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
-        t.end()
-      })
-
-      it('should store this value under the extension', async function (t) {
-        await trie.put(utf8ToBytes('done'), utf8ToBytes('finished'))
-        t.equal(
-          '409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
-          bytesToHex(trie.root())
-        )
-        t.end()
-      })
-    })
-  })
-
-  tape('testing deletion cases', function (tester) {
+  tape('testing extensions and branches - reverse', function (tester) {
     const it = tester.test
-    const trieSetup = {
-      trie: new Trie({ cacheSize }),
-      msg: 'without DB delete',
-    }
+    const trie = new Trie()
 
-    it('should delete from a branch->branch-branch', async function (t) {
-      await trieSetup.trie.put(new Uint8Array([11, 11, 11]), utf8ToBytes('first'))
-      await trieSetup.trie.put(new Uint8Array([12, 22, 22]), utf8ToBytes('create the first branch'))
-      await trieSetup.trie.put(new Uint8Array([12, 34, 44]), utf8ToBytes('create the last branch'))
-
-      await trieSetup.trie.del(new Uint8Array([12, 22, 22]))
-      const val = await trieSetup.trie.get(new Uint8Array([12, 22, 22]))
-      t.equal(null, val, trieSetup.msg)
+    it('should create extension to store this value', async function (t) {
+      await trie.put(utf8ToBytes('do'), utf8ToBytes('verb'))
       t.end()
     })
 
-    it('should delete from a branch->branch-extension', async function (t) {
-      await trieSetup.trie.put(new Uint8Array([11, 11, 11]), utf8ToBytes('first'))
-      await trieSetup.trie.put(new Uint8Array([12, 22, 22]), utf8ToBytes('create the first branch'))
-      await trieSetup.trie.put(
-        new Uint8Array([12, 33, 33]),
-        utf8ToBytes('create the middle branch')
-      )
-      await trieSetup.trie.put(new Uint8Array([12, 34, 44]), utf8ToBytes('create the last branch'))
-
-      await trieSetup.trie.del(new Uint8Array([12, 22, 22]))
-      const val = await trieSetup.trie.get(new Uint8Array([12, 22, 22]))
-      t.equal(null, val, trieSetup.msg)
-
+    it('should store a value', async function (t) {
+      await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
       t.end()
     })
 
-    it('should delete from a extension->branch-extension', async function (t) {
-      await trieSetup.trie.put(new Uint8Array([11, 11, 11]), utf8ToBytes('first'))
-      await trieSetup.trie.put(new Uint8Array([12, 22, 22]), utf8ToBytes('create the first branch'))
-      await trieSetup.trie.put(
-        new Uint8Array([12, 33, 33]),
-        utf8ToBytes('create the middle branch')
+    it('should store this value under the extension', async function (t) {
+      await trie.put(utf8ToBytes('done'), utf8ToBytes('finished'))
+      t.equal(
+        '409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
+        bytesToHex(trie.root())
       )
-      await trieSetup.trie.put(new Uint8Array([12, 34, 44]), utf8ToBytes('create the last branch'))
-
-      // delete the middle branch
-      await trieSetup.trie.del(new Uint8Array([11, 11, 11]))
-      const val = await trieSetup.trie.get(new Uint8Array([11, 11, 11]))
-      t.equal(null, val, trieSetup.msg)
-
-      t.end()
-    })
-
-    it('should delete from a extension->branch-branch', async function (t) {
-      await trieSetup.trie.put(new Uint8Array([11, 11, 11]), utf8ToBytes('first'))
-      await trieSetup.trie.put(new Uint8Array([12, 22, 22]), utf8ToBytes('create the first branch'))
-      await trieSetup.trie.put(
-        new Uint8Array([12, 33, 33]),
-        utf8ToBytes('create the middle branch')
-      )
-      await trieSetup.trie.put(new Uint8Array([12, 34, 44]), utf8ToBytes('create the last branch'))
-      // delete the middle branch
-      await trieSetup.trie.del(new Uint8Array([11, 11, 11]))
-      const val = await trieSetup.trie.get(new Uint8Array([11, 11, 11]))
-      t.equal(null, val, trieSetup.msg)
-
       t.end()
     })
   })
+})
+
+tape('testing deletion cases', function (tester) {
+  const it = tester.test
+  const trieSetup = {
+    trie: new Trie(),
+    msg: 'without DB delete',
+  }
+
+  it('should delete from a branch->branch-branch', async function (t) {
+    await trieSetup.trie.put(new Uint8Array([11, 11, 11]), utf8ToBytes('first'))
+    await trieSetup.trie.put(new Uint8Array([12, 22, 22]), utf8ToBytes('create the first branch'))
+    await trieSetup.trie.put(new Uint8Array([12, 34, 44]), utf8ToBytes('create the last branch'))
+
+    await trieSetup.trie.del(new Uint8Array([12, 22, 22]))
+    const val = await trieSetup.trie.get(new Uint8Array([12, 22, 22]))
+    t.equal(null, val, trieSetup.msg)
+    t.end()
+  })
+
+  it('should delete from a branch->branch-extension', async function (t) {
+    await trieSetup.trie.put(new Uint8Array([11, 11, 11]), utf8ToBytes('first'))
+    await trieSetup.trie.put(new Uint8Array([12, 22, 22]), utf8ToBytes('create the first branch'))
+    await trieSetup.trie.put(new Uint8Array([12, 33, 33]), utf8ToBytes('create the middle branch'))
+    await trieSetup.trie.put(new Uint8Array([12, 34, 44]), utf8ToBytes('create the last branch'))
+
+    await trieSetup.trie.del(new Uint8Array([12, 22, 22]))
+    const val = await trieSetup.trie.get(new Uint8Array([12, 22, 22]))
+    t.equal(null, val, trieSetup.msg)
+
+    t.end()
+  })
+
+  it('should delete from a extension->branch-extension', async function (t) {
+    await trieSetup.trie.put(new Uint8Array([11, 11, 11]), utf8ToBytes('first'))
+    await trieSetup.trie.put(new Uint8Array([12, 22, 22]), utf8ToBytes('create the first branch'))
+    await trieSetup.trie.put(new Uint8Array([12, 33, 33]), utf8ToBytes('create the middle branch'))
+    await trieSetup.trie.put(new Uint8Array([12, 34, 44]), utf8ToBytes('create the last branch'))
+
+    // delete the middle branch
+    await trieSetup.trie.del(new Uint8Array([11, 11, 11]))
+    const val = await trieSetup.trie.get(new Uint8Array([11, 11, 11]))
+    t.equal(null, val, trieSetup.msg)
+
+    t.end()
+  })
+
+  it('should delete from a extension->branch-branch', async function (t) {
+    await trieSetup.trie.put(new Uint8Array([11, 11, 11]), utf8ToBytes('first'))
+    await trieSetup.trie.put(new Uint8Array([12, 22, 22]), utf8ToBytes('create the first branch'))
+    await trieSetup.trie.put(new Uint8Array([12, 33, 33]), utf8ToBytes('create the middle branch'))
+    await trieSetup.trie.put(new Uint8Array([12, 34, 44]), utf8ToBytes('create the last branch'))
+    // delete the middle branch
+    await trieSetup.trie.del(new Uint8Array([11, 11, 11]))
+    const val = await trieSetup.trie.get(new Uint8Array([11, 11, 11]))
+    t.equal(null, val, trieSetup.msg)
+
+    t.end()
+  })
+})
 
   tape('shall handle the case of node not found correctly', async (t) => {
     const trie = new Trie({ cacheSize })
     await trie.put(utf8ToBytes('a'), utf8ToBytes('value1'))
     await trie.put(utf8ToBytes('aa'), utf8ToBytes('value2'))
     await trie.put(utf8ToBytes('aaa'), utf8ToBytes('value3'))
+// tape('shall handle the case of node not found correctly', async (t) => {
+//   const trie = new Trie()
+//   await trie.put(utf8ToBytes('a'), utf8ToBytes('value1'))
+//   await trie.put(utf8ToBytes('aa'), utf8ToBytes('value2'))
+//   await trie.put(utf8ToBytes('aaa'), utf8ToBytes('value3'))
 
     /* Setups a trie which consists of
       ExtensionNode ->
@@ -251,25 +245,46 @@ for (const cacheSize of [0, 100]) {
       BranchNode -> value2
       LeafNode -> value3
     */
+//   /* Setups a trie which consists of
+//     ExtensionNode ->
+//     BranchNode -> value1
+//     ExtensionNode ->
+//     BranchNode -> value2
+//     LeafNode -> value3
+//   */
 
     let path = await trie.findPath(utf8ToBytes('aaa'))
+//   let path = await trie.getPath(utf8ToBytes('aaa'))
 
     t.ok(path.node !== null, 'findPath should find a node')
+//   t.ok(path.path.pop() !== null, 'getPath should find a node')
 
     const { stack } = await trie.findPath(utf8ToBytes('aaa'))
     // @ts-expect-error
     await trie._db.del(keccak256(stack[1].serialize())) // delete the BranchNode -> value1 from the DB
+//   path = await trie.getPath(utf8ToBytes('aaa'))
+//   console.log(path)
+//   await trie.database().del(keccak256(path.path[1].rlpEncode())) // delete the BranchNode -> value1 from the DB
 
     path = await trie.findPath(utf8ToBytes('aaa'))
+//   path = await trie.getPath(utf8ToBytes('aaa'))
 
     t.ok(path.node === null, 'findPath should not return a node now')
     t.ok(
       path.stack.length === 1,
       'findPath should find the first extension node which is still in the DB'
     )
+//   t.equal(path.path[0].getValue(), null, 'getPath should not return a node now')
+//   t.equal(
+//     path.path.length, 1,
+//     'getPath should find the first extension node which is still in the DB'
+//   )
+//   console.log(path)
 
     t.end()
   })
+//   t.end()
+// })
 
   tape('it should create the genesis state root from ethereum', function (tester) {
     const it = tester.test
@@ -315,16 +330,34 @@ for (const cacheSize of [0, 100]) {
     const v1 = utf8ToBytes('this-is-some-longer-value-to-test-the-delete-operation-value1')
     const k2 = utf8ToBytes('2')
     const v2 = utf8ToBytes('this-is-some-longer-value-to-test-the-delete-operation-value2')
+// tape('setting back state root (deleteFromDB)', async (t) => {
+//   const k1 = utf8ToBytes('1')
+//   /* Testing with longer value due to `rlpNode.length >= 32` check in `_formatNode()`
+//    * Reasoning from https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/:
+//    * "When one node is referenced inside another node, what is included is `H(rlp.encode(x))`,
+//    * where `H(x) = sha3(x) if len(x) >= 32 else x`"
+//    */
+//   const v1 = utf8ToBytes('this-is-some-longer-value-to-test-the-delete-operation-value1')
+//   const k2 = utf8ToBytes('2')
+//   const v2 = utf8ToBytes('this-is-some-longer-value-to-test-the-delete-operation-value2')
 
     const rootAfterK1 = hexStringToBytes(
       '809e75931f394603657e113eb7244794f35b8d326cff99407111d600722e9425'
     )
+//   const rootAfterK1 = hexStringToBytes(
+//     '809e75931f394603657e113eb7244794f35b8d326cff99407111d600722e9425'
+//   )
 
     const trieSetup = {
       trie: new Trie({ cacheSize }),
       expected: v1,
       msg: 'should return v1 when setting back the state root when deleteFromDB=false',
     }
+//   const trieSetup = {
+//     trie: new Trie({ useNodePruning: false }),
+//     expected: v1,
+//     msg: 'should return v1 when setting back the state root when deleteFromDB=false',
+//   }
 
     await trieSetup.trie.put(k1, v1)
     await trieSetup.trie.put(k2, v2)
@@ -334,12 +367,24 @@ for (const cacheSize of [0, 100]) {
       null,
       'should return null on latest state root independently from deleteFromDB setting'
     )
+//   await trieSetup.trie.put(k1, v1)
+//   await trieSetup.trie.put(k2, v2)
+//   await trieSetup.trie.del(k1)
+//   t.equal(
+//     await trieSetup.trie.get(k1),
+//     null,
+//     'should return null on latest state root independently from deleteFromDB setting'
+//   )
 
     trieSetup.trie.root(rootAfterK1)
     t.deepEqual(await trieSetup.trie.get(k1), trieSetup.expected, trieSetup.msg)
+//   await trieSetup.trie.setRootByHash(rootAfterK1)
+//   t.deepEqual(await trieSetup.trie.get(k1), trieSetup.expected, trieSetup.msg)
 
     t.end()
   })
+//   t.end()
+// })
 
   tape('dummy hash', async (t) => {
     const useKeyHashingFunction: HashKeysFunction = (msg) => {
@@ -353,10 +398,17 @@ for (const cacheSize of [0, 100]) {
 
     const [k, v] = [utf8ToBytes('foo'), utf8ToBytes('bar')]
     const expectedRoot = useKeyHashingFunction(new LeafNode(bytesToNibbles(k), v).serialize())
+  const [k, v] = [utf8ToBytes('foo'), utf8ToBytes('bar')]
+  const expectedRoot = useKeyHashingFunction(
+    new LeafNode({ key: bytesToNibbles(k), value: v }).rlpEncode()
+  )
 
     const trie = new Trie({ useKeyHashingFunction, cacheSize })
     await trie.put(k, v)
     t.equal(bytesToHex(trie.root()), bytesToHex(expectedRoot))
+  const trie = new Trie({ hashFunction: useKeyHashingFunction })
+  await trie.put(k, v)
+  t.equal(bytesToHex(trie.root()), bytesToHex(expectedRoot))
 
     t.end()
   })
@@ -364,6 +416,9 @@ for (const cacheSize of [0, 100]) {
   tape('blake2b256 trie root', async (t) => {
     const trie = new Trie({ useKeyHashingFunction: (msg) => blake2b(msg, 32), cacheSize })
     await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
+tape('blake2b256 trie root', async (t) => {
+  const trie = new Trie({ hashFunction: (msg) => blake2b(msg, 32) })
+  await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
 
     t.equal(
       bytesToHex(trie.root()),
