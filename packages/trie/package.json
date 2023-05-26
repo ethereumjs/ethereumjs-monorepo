@@ -46,15 +46,17 @@
   },
   "dependencies": {
     "@ethereumjs/rlp": "^4.0.1",
-    "@ethereumjs/util": "^8.0.6",
-    "@types/readable-stream": "^2.3.13",
-    "lru-cache": "^7.18.3",
-    "ethereum-cryptography": "^2.0.0",
+    "@ethereumjs/util": "^8.0.5",
+    "async-mutex": "^0.4.0",
+    "debug": "^4.3.4",
+    "ethereum-cryptography": "^1.1.2",
+    "lru-cache": "^7.10.10",
     "readable-stream": "^3.6.0"
   },
   "devDependencies": {
     "0x": "^4.9.1",
     "@types/benchmark": "^1.0.33",
+    "@types/readable-stream": "^2.3.15",
     "abstract-level": "^1.0.3",
     "level": "^8.0.0",
     "level-legacy": "npm:level@^7.0.0",
