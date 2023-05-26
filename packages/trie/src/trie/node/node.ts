@@ -1,54 +1,182 @@
 import { RLP } from '@ethereumjs/rlp'
+import debug from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { addHexPrefix, removeHexPrefix } from '../../util/hex'
-import { nibblestoBytes } from '../../util/nibbles'
+import { bytesToNibbles } from '../../util/nibbles'
 
-import type { Nibbles } from '../../types'
+import { LeafNode } from './leaf'
 
-export class Node {
-  _nibbles: Nibbles
-  _value: Uint8Array
-  _terminator: boolean
+import type { HashFunction } from '../../types'
+import type { Debugger } from 'debug'
+import { NodeInterface, TNode, NodeType, TNodeOptions } from './types'
 
-  constructor(nibbles: Nibbles, value: Uint8Array, terminator: boolean) {
-    this._nibbles = nibbles
-    this._value = value
-    this._terminator = terminator
-  }
-
-  static decodeKey(key: Nibbles): Nibbles {
-    return removeHexPrefix(key)
-  }
-
-  key(k?: Nibbles): Nibbles {
-    if (k !== undefined) {
-      this._nibbles = k
+export abstract class BaseNode {
+  public type: NodeType
+  debug: Debugger | undefined
+  hashFunction: HashFunction
+  dirty: boolean
+  constructor(_args: any) {
+    this.type = 'NullNode'
+    this.debug = debug(this.constructor.name)
+    if (!this.debug.enabled) {
+      this.debug = undefined
     }
+    this.hashFunction = _args.hashFunction ?? keccak256
+    this.dirty = false
+  }
+  abstract get(rawKey?: Uint8Array): Promise<Uint8Array | null>
+  abstract rlpEncode(): Uint8Array
+  abstract update(value: Uint8Array): Promise<TNode>
+  abstract getChild(key?: number): TNode | undefined
+  abstract deleteChild(nibble: number): Promise<TNode>
+  abstract updateChild(newChild: TNode, nibble?: number): TNode
+  abstract updateValue(newValue: Uint8Array | null): Promise<TNode>
+  abstract updateKey(key: number[]): Promise<TNode>
+  abstract getChildren(): Map<number, TNode>
+  abstract getValue(): Uint8Array | null
+  abstract getPartialKey(): number[]
+  abstract getType(): NodeType
+  abstract delete(rawKey?: Uint8Array): Promise<TNode>
+  abstract copy(): TNode
+  markDirty(): void {
+    this.dirty = true
+  }
+  isDirty(): boolean {
+    return this.dirty
+  }
+}
 
-    return this._nibbles.slice(0)
+export class NullNode extends BaseNode {
+  type: 'NullNode' = 'NullNode'
+  constructor(options: TNodeOptions<'NullNode'>) {
+    super(options)
+  }
+  raw(): Uint8Array {
+    return Uint8Array.from([])
+  }
+  rlpEncode(): Uint8Array {
+    return RLP.encode(Uint8Array.from(0x80))
+  }
+  hash(): Uint8Array {
+    return this.hashFunction(this.rlpEncode())
+  }
+  async get(): Promise<Uint8Array | null> {
+    return null
+  }
+  getChildren(): Map<number, TNode> {
+    return new Map()
+  }
+  getChild(_key: number): TNode {
+    return new NullNode({ hashFunction: this.hashFunction })
+  }
+  getType(): NodeType {
+    return 'NullNode'
+  }
+  updateChild(_newChild: TNode, _nibble?: number): TNode {
+    throw new Error('Cannot update child of NullNode')
+  }
+  async deleteChild(_nibble: number) {
+    return this
+  }
+  async updateValue(_newValue: Uint8Array | null): Promise<TNode> {
+    return this
+  }
+  getPartialKey(): number[] {
+    return []
+  }
+  getValue(): Uint8Array | null {
+    return null
+  }
+  async updateKey(_newKey: number[]): Promise<TNode> {
+    throw new Error('Cannot update key of NullNode')
+  }
+  async update(value: Uint8Array): Promise<TNode> {
+    const newNode = new LeafNode({
+      key: bytesToNibbles(this.hashFunction(value)),
+      value,
+      hashFunction: this.hashFunction,
+    })
+    return newNode
+  }
+  async delete() {
+    return this
+  }
+  copy(): TNode {
+    return new NullNode({ hashFunction: this.hashFunction })
+  }
+}
+
+export class ProofNode extends BaseNode implements NodeInterface<'ProofNode'> {
+  type: 'ProofNode' = 'ProofNode'
+  _hash: Uint8Array
+  keyNibbles: number[]
+  load: () => Promise<TNode | undefined>
+  next: Uint8Array
+  _rlp?: Uint8Array
+  constructor(options: TNodeOptions<'ProofNode'>) {
+    super({})
+    this._hash = options.hash
+    this._rlp = options.rlp
+    this.load = options.load
+    this.keyNibbles = []
+    this.next = options.next ?? Uint8Array.from([])
   }
 
-  keyLength() {
-    return this._nibbles.length
+  copy(): TNode {
+    return new ProofNode({
+      hash: this._hash,
+      nibbles: this.keyNibbles,
+      next: this.next,
+      load: this.load,
+      hashFunction: this.hashFunction,
+    })
   }
-
-  value(v?: Uint8Array) {
-    if (v !== undefined) {
-      this._value = v
-    }
-
-    return this._value
+  hash(): Uint8Array {
+    return this._hash
   }
-
-  encodedKey(): Nibbles {
-    return addHexPrefix(this._nibbles.slice(0), this._terminator)
+  raw(): Uint8Array {
+    throw new Error('Method does not exist for proofnode')
   }
-
-  raw(): [Uint8Array, Uint8Array] {
-    return [nibblestoBytes(this.encodedKey()), this._value]
+  rlpEncode(): Uint8Array {
+    throw new Error('Method does not exist for proofnode')
   }
-
-  serialize(): Uint8Array {
-    return RLP.encode(this.raw())
+  encodeAsChild(): Uint8Array {
+    return this.hash()
+  }
+  async get(): Promise<Uint8Array | null> {
+    throw new Error('Method does not exist for proofnode')
+  }
+  getChildren(): Map<number, TNode> {
+    throw new Error('Method does not exist for proofnode')
+  }
+  getChild(_key: number): TNode {
+    throw new Error('Method does not exist for proofnode')
+  }
+  getType(): NodeType {
+    return 'ProofNode'
+  }
+  updateChild(_newChild: TNode, _nibble?: number): TNode {
+    throw new Error('Method does not exist for proofnode')
+  }
+  async deleteChild(_nibble: number): Promise<TNode> {
+    throw new Error('Method does not exist for proofnode')
+  }
+  async updateValue(_newValue: Uint8Array | null): Promise<TNode> {
+    throw new Error('Method does not exist for proofnode')
+  }
+  getPartialKey(): number[] {
+    return []
+  }
+  getValue(): Uint8Array | null {
+    return null
+  }
+  async updateKey(_newKey: number[]): Promise<TNode> {
+    throw new Error('Method does not exist for proofnode')
+  }
+  async update(_value: Uint8Array): Promise<Exclude<TNode, NullNode>> {
+    throw new Error('Method does not exist for proofnode')
+  }
+  async delete() {
+    return new NullNode({ hashFunction: this.hashFunction })
   }
 }

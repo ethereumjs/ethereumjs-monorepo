@@ -1,60 +1,151 @@
 import { RLP } from '@ethereumjs/rlp'
 
-import type { EmbeddedNode } from '../../types'
+import { ExtensionNode } from './extension'
+import { BaseNode, NullNode } from './node'
 
-export class BranchNode {
-  _branches: (EmbeddedNode | null)[]
-  _value: Uint8Array | null
+import type {
+  EncodedChild,
+  EncodedValue,
+  NodeInterface,
+  NodeType,
+  TNode,
+  TNodeOptions,
+} from './types'
 
-  constructor() {
-    this._branches = new Array(16).fill(null)
-    this._value = null
+export class BranchNode extends BaseNode implements NodeInterface<'BranchNode'> {
+  type = 'BranchNode' as const
+  keyNibbles: number[]
+  children: Array<TNode | undefined>
+  value: Uint8Array | null
+  branches: (Uint8Array | Uint8Array[])[]
+  constructor(options: TNodeOptions<'BranchNode'>) {
+    super(options)
+    this.keyNibbles = []
+    this.children = options?.children ?? []
+    this.branches = options?.branches ?? Array.from({ length: 16 }, () => Uint8Array.from([]))
+    this.value = options?.value ?? null
+    this.debug && this.debug(`BranchNode created`)
+  }
+  getType(): NodeType {
+    return 'BranchNode'
   }
 
-  static fromArray(arr: Uint8Array[]): BranchNode {
-    const node = new BranchNode()
-    node._branches = arr.slice(0, 16)
-    node._value = arr[16]
-    return node
-  }
-
-  value(v?: Uint8Array | null): Uint8Array | null {
-    if (v !== null && v !== undefined) {
-      this._value = v
+  encodeChild(child: TNode | undefined): EncodedChild {
+    if (child === undefined) return Uint8Array.from([])
+    switch (child.getType()) {
+      case 'BranchNode':
+        return child.rlpEncode().length >= 32 ? child.hash() : (child.raw() as Uint8Array[])
+      case 'LeafNode':
+        return child.rlpEncode().length >= 32 ? child.hash() : (child.raw() as Uint8Array[])
+      case 'ExtensionNode':
+        return child.rlpEncode().length >= 32 ? child.hash() : (child.raw() as Uint8Array[])
+      case 'ProofNode':
+        return child.hash()
+      case 'NullNode':
+      default:
+        return Uint8Array.from([])
     }
-
-    return this._value && this._value.length > 0 ? this._value : null
   }
-
-  setBranch(i: number, v: EmbeddedNode | null) {
-    this._branches[i] = v
-  }
-
-  raw(): (EmbeddedNode | null)[] {
-    return [...this._branches, this._value]
-  }
-
-  serialize(): Uint8Array {
-    return RLP.encode(this.raw() as Uint8Array[])
-  }
-
-  getBranch(i: number) {
-    const b = this._branches[i]
-    if (b !== null && b.length > 0) {
-      return b
-    } else {
-      return null
+  childrenRlp(): EncodedChild[] {
+    const children: (Uint8Array | Uint8Array[])[] = Array.from({ length: 16 }, (_, _i) => {
+      return Uint8Array.from([])
+    })
+    for (const [idx, child] of this.getChildren().entries()) {
+      children[idx] = this.encodeChild(child)
     }
+    return children
+  }
+  raw(): [...EncodedChild[], EncodedValue] {
+    const childrenRlp = this.childrenRlp()
+    const valueRlp = this.value ?? Uint8Array.from([])
+    return [...childrenRlp, valueRlp]
+  }
+  rlpEncode(): Uint8Array {
+    const encodedNode = RLP.encode(this.raw())
+    return encodedNode
   }
 
-  getChildren(): [number, EmbeddedNode][] {
-    const children: [number, EmbeddedNode][] = []
+  hash(): Uint8Array {
+    const hashed = this.hashFunction(this.rlpEncode())
+    return hashed
+  }
+  getChildren(): Map<number, TNode> {
+    const children: Map<number, TNode> = new Map()
     for (let i = 0; i < 16; i++) {
-      const b = this._branches[i]
-      if (b !== null && b.length > 0) {
-        children.push([i, b])
+      const child = this.children[i]
+      if (child !== undefined && child.getType() !== 'NullNode') {
+        children.set(i, child)
       }
     }
     return children
+  }
+  getChild(key: number): TNode | undefined {
+    return this.children[key]
+  }
+  childNodes(): Map<number, TNode> {
+    const children: Map<number, TNode> = new Map()
+    for (let i = 0; i < 16; i++) {
+      const child = this.children[i]
+      if (child !== undefined && child.getType() !== 'NullNode') {
+        children.set(i, child)
+      }
+    }
+    return children
+  }
+  updateChild(newChild: TNode, nibble: number): TNode {
+    this.markDirty()
+    this.children[nibble] = newChild.getType() === 'NullNode' ? undefined : newChild
+    this.branches[nibble] = this.encodeChild(this.children[nibble])
+    this.debug &&
+      this.debug.extend('updateChild')(
+        `updating child on branch:${nibble} to ${newChild.getType()}`
+      )
+    return this
+  }
+  async deleteChild(nibble: number): Promise<TNode> {
+    this.markDirty()
+    this.updateChild(new NullNode({ hashFunction: this.hashFunction }), nibble)
+    return this
+  }
+  async updateValue(value: Uint8Array | null) {
+    this.markDirty()
+    this.debug && this.debug.extend('updateValue')(`value=${value}`)
+    this.value = value
+    return this
+  }
+  setChild(slot: number, node: TNode): BranchNode {
+    this.children[slot] = node.getType() === 'NullNode' ? undefined : node
+    this.branches[slot] = this.encodeChild(this.children[slot])
+    return this
+  }
+  getValue(): Uint8Array | null {
+    return this.value
+  }
+  getPartialKey(): number[] {
+    return this.keyNibbles
+  }
+  async updateKey(newKeyNibbles: number[]): Promise<TNode> {
+    return new ExtensionNode({
+      keyNibbles: newKeyNibbles,
+      subNode: this,
+      hashFunction: this.hashFunction,
+    })
+  }
+  async get(_rawKey: Uint8Array): Promise<Uint8Array | null> {
+    throw new Error('Method to be removed.')
+  }
+  async update(value: Uint8Array): Promise<BranchNode> {
+    return this.updateValue(value)
+  }
+  async delete(_rawKey: Uint8Array): Promise<TNode> {
+    throw new Error('Method to be removed.')
+  }
+  copy(): TNode {
+    return new BranchNode({
+      children: this.children,
+      branches: this.branches,
+      value: this.value,
+      hashFunction: this.hashFunction,
+    })
   }
 }
