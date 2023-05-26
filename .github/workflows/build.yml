@@ -45,35 +45,34 @@ jobs:
     needs: build
     uses: ./.github/workflows/block-build.yml
     with:
-      inputs:
-        cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
+      cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
   
   call-devp2p:
     needs: build
     uses: ./.github/workflows/devp2p-build.yml
-      inputs:
-        cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
+    with:
+      cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
 
   call-common:
     needs: build
     uses: ./.github/workflows/common-build.yml
-      inputs:
-        cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
+    with:
+      cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
 
   call-ethash:
     needs: build
     uses: ./.github/workflows/ethash-build.yml
-      inputs:
-        cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
+    with:
+      cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
 
   call-rlp:
     needs: build
     uses: ./.github/workflows/rlp-build.yml
-      inputs:
-        cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
+    with:
+      cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
 
   call-trie:
     needs: build
     uses: ./.github/workflows/trie-build.yml
-      inputs:
-        cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
+    with:
+      cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
