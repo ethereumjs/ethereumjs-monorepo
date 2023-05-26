@@ -1,9 +1,10 @@
 import { equalsBytes } from 'ethereum-cryptography/utils'
 
-import { BranchNode, ExtensionNode, LeafNode, Trie } from '../trie'
+import { BranchNode, ExtensionNode, LeafNode, NullNode, Trie } from '../trie'
 import { nibblesCompare, nibblestoBytes } from '../util/nibbles'
 
-import type { HashKeysFunction, Nibbles, TrieNode } from '../types'
+import type { HashKeysFunction } from '../types'
+import { TNode } from '../trie/node/types'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof.go
 
@@ -20,12 +21,12 @@ import type { HashKeysFunction, Nibbles, TrieNode } from '../types'
  */
 async function unset(
   trie: Trie,
-  parent: TrieNode,
-  child: TrieNode | null,
-  key: Nibbles,
+  parent: TNode,
+  child: TNode | null,
+  key: number[],
   pos: number,
   removeLeft: boolean,
-  stack: TrieNode[]
+  stack: TNode[]
 ): Promise<number> {
   if (child instanceof BranchNode) {
     /**
@@ -34,11 +35,11 @@ async function unset(
      */
     if (removeLeft) {
       for (let i = 0; i < key[pos]; i++) {
-        child.setBranch(i, null)
+        child.updateChild(new NullNode({ hashFunction: trie.hashFunction }), i)
       }
     } else {
       for (let i = key[pos] + 1; i < 16; i++) {
-        child.setBranch(i, null)
+        child.updateChild(new NullNode({ hashFunction: trie.hashFunction }), i)
       }
     }
 
@@ -46,26 +47,32 @@ async function unset(
     stack.push(child)
 
     // continue to the next node
-    const next = child.getBranch(key[pos])
-    const _child = next && (await trie.lookupNode(next))
-    return unset(trie, child, _child, key, pos + 1, removeLeft, stack)
+    const next = child.getChild(key[pos]) ?? null
+    return unset(trie, child, next, key, pos + 1, removeLeft, stack)
   } else if (child instanceof ExtensionNode || child instanceof LeafNode) {
     /**
-     * This node is an extension node or lead node,
-     * if node._nibbles is less or greater than the target key,
+     * This node is an extension node or leaf node,
+     * if node.getPartialKey() is less or greater than the target key,
      * remove self from parent
      */
     if (
-      key.length - pos < child.keyLength() ||
-      nibblesCompare(child._nibbles, key.slice(pos, pos + child.keyLength())) !== 0
+      key.length - pos < child.getPartialKey().length ||
+      nibblesCompare(child.getPartialKey(), key.slice(pos, pos + child.getPartialKey().length)) !==
+        0
     ) {
       if (removeLeft) {
-        if (nibblesCompare(child._nibbles, key.slice(pos)) < 0) {
-          ;(parent as BranchNode).setBranch(key[pos - 1], null)
+        if (nibblesCompare(child.getPartialKey(), key.slice(pos)) < 0) {
+          ;(parent as BranchNode).updateChild(
+            new NullNode({ hashFunction: trie.hashFunction }),
+            key[pos - 1]
+          )
         }
       } else {
-        if (nibblesCompare(child._nibbles, key.slice(pos)) > 0) {
-          ;(parent as BranchNode).setBranch(key[pos - 1], null)
+        if (nibblesCompare(child.getPartialKey(), key.slice(pos)) > 0) {
+          ;(parent as BranchNode).updateChild(
+            new NullNode({ hashFunction: trie.hashFunction }),
+            key[pos - 1]
+          )
         }
       }
       return pos - 1
@@ -73,13 +80,19 @@ async function unset(
 
     if (child instanceof LeafNode) {
       // This node is a leaf node, directly remove it from parent
-      ;(parent as BranchNode).setBranch(key[pos - 1], null)
+      ;(parent as BranchNode).updateChild(
+        new NullNode({ hashFunction: trie.hashFunction }),
+        key[pos - 1]
+      )
       return pos - 1
     } else {
-      const _child = await trie.lookupNode(child.value())
+      const _child = child.child
       if (_child && _child instanceof LeafNode) {
         // The child of this node is leaf node, remove it from parent too
-        ;(parent as BranchNode).setBranch(key[pos - 1], null)
+        ;(parent as BranchNode).updateChild(
+          new NullNode({ hashFunction: trie.hashFunction }),
+          key[pos - 1]
+        )
         return pos - 1
       }
 
@@ -87,9 +100,9 @@ async function unset(
       stack.push(child)
 
       // continue to the next node
-      return unset(trie, child, _child, key, pos + child.keyLength(), removeLeft, stack)
+      return unset(trie, child, _child, key, pos + child.getPartialKey().length, removeLeft, stack)
     }
-  } else if (child === null) {
+  } else if (child === null || child instanceof NullNode) {
     return pos - 1
   } else {
     throw new Error('invalid node')
@@ -103,17 +116,17 @@ async function unset(
  * @param right - right nibbles.
  * @returns Is it an empty trie.
  */
-async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise<boolean> {
+async function unsetInternal(trie: Trie, left: number[], right: number[]): Promise<boolean> {
   // Key position
   let pos = 0
   // Parent node
-  let parent: TrieNode | null = null
+  let parent: TNode | null = null
   // Current node
-  let node: TrieNode | null = await trie.lookupNode(trie.root())
+  let node: TNode | null = (await trie.lookupNodeByHash(trie.root())) ?? null
   let shortForkLeft!: number
   let shortForkRight!: number
   // A stack of modified nodes.
-  const stack: TrieNode[] = []
+  const stack: TNode[] = []
 
   // 1. Find the fork point of `left` and `right`
 
@@ -123,19 +136,25 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
       // record this node on the stack
       stack.push(node)
 
-      if (left.length - pos < node.keyLength()) {
-        shortForkLeft = nibblesCompare(left.slice(pos), node._nibbles)
+      if (left.length - pos < node.getPartialKey().length) {
+        shortForkLeft = nibblesCompare(left.slice(pos), node.getPartialKey())
       } else {
-        shortForkLeft = nibblesCompare(left.slice(pos, pos + node.keyLength()), node._nibbles)
+        shortForkLeft = nibblesCompare(
+          left.slice(pos, pos + node.getPartialKey().length),
+          node.getPartialKey()
+        )
       }
 
-      if (right.length - pos < node.keyLength()) {
-        shortForkRight = nibblesCompare(right.slice(pos), node._nibbles)
+      if (right.length - pos < node.getPartialKey().length) {
+        shortForkRight = nibblesCompare(right.slice(pos), node.getPartialKey())
       } else {
-        shortForkRight = nibblesCompare(right.slice(pos, pos + node.keyLength()), node._nibbles)
+        shortForkRight = nibblesCompare(
+          right.slice(pos, pos + node.getPartialKey().length),
+          node.getPartialKey()
+        )
       }
 
-      // If one of `left` and `right` is not equal to node._nibbles, it means we found the fork point
+      // If one of `left` and `right` is not equal to node.getPartialKey(), it means we found the fork point
       if (shortForkLeft !== 0 || shortForkRight !== 0) {
         break
       }
@@ -147,14 +166,14 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
 
       // continue to the next node
       parent = node
-      pos += node.keyLength()
-      node = await trie.lookupNode(node.value())
+      pos += node.getPartialKey().length
+      node = node.child
     } else if (node instanceof BranchNode) {
       // record this node on the stack
       stack.push(node)
 
-      const leftNode = node.getBranch(left[pos])
-      const rightNode = node.getBranch(right[pos])
+      const leftNode = node.getChild(left[pos]) ?? null
+      const rightNode = node.getChild(right[pos]) ?? null
 
       // One of `left` and `right` is `null`, stop searching
       if (leftNode === null || rightNode === null) {
@@ -166,34 +185,19 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
         if (rightNode instanceof Uint8Array) {
           break
         }
-
-        if (leftNode.length !== rightNode.length) {
-          break
-        }
-
-        let abort = false
-        for (let i = 0; i < leftNode.length; i++) {
-          if (!equalsBytes(leftNode[i], rightNode[i])) {
-            abort = true
-            break
-          }
-        }
-        if (abort) {
-          break
-        }
       } else {
         if (!(rightNode instanceof Uint8Array)) {
           break
         }
 
-        if (!equalsBytes(leftNode, rightNode)) {
+        if (!equalsBytes(leftNode.rlpEncode(), rightNode.rlpEncode())) {
           break
         }
       }
 
       // continue to the next node
       parent = node
-      node = await trie.lookupNode(leftNode)
+      node = leftNode
       pos += 1
     } else {
       throw new Error('invalid node')
@@ -202,8 +206,10 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
 
   // 2. Starting from the fork point, delete all nodes between `left` and `right`
 
-  const saveStack = (key: Nibbles, stack: TrieNode[]) => {
-    return trie._saveStack(key, stack, [])
+  const saveStack = async (_key: number[], stack: TNode[]) => {
+    for (const node of stack) {
+      await trie.storeNode(node)
+    }
   }
 
   if (node instanceof ExtensionNode || node instanceof LeafNode) {
@@ -215,13 +221,16 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
      * - left proof points to the trie node, but right proof is greater => valid range, unset left node
      * - right proof points to the trie node, but left proof is less  => valid range, unset right node
      */
-    const removeSelfFromParentAndSaveStack = async (key: Nibbles) => {
+    const removeSelfFromParentAndSaveStack = async (key: number[]) => {
       if (parent === null) {
         return true
       }
 
       stack.pop()
-      ;(parent as BranchNode).setBranch(key[pos - 1], null)
+      ;(parent as BranchNode).updateChild(
+        new NullNode({ hashFunction: trie.hashFunction }),
+        key[pos - 1]
+      )
       await saveStack(key.slice(0, pos - 1), stack)
       return false
     }
@@ -245,12 +254,20 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
         return removeSelfFromParentAndSaveStack(left)
       }
 
-      const child = await trie.lookupNode(node._value)
-      if (child && child instanceof LeafNode) {
+      const child = node.child
+      if (child instanceof LeafNode) {
         return removeSelfFromParentAndSaveStack(left)
       }
 
-      const endPos = await unset(trie, node, child, left.slice(pos), node.keyLength(), false, stack)
+      const endPos = await unset(
+        trie,
+        node,
+        child,
+        left.slice(pos),
+        node.getPartialKey().length,
+        false,
+        stack
+      )
       await saveStack(left.slice(0, pos + endPos), stack)
 
       return false
@@ -262,12 +279,20 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
         return removeSelfFromParentAndSaveStack(right)
       }
 
-      const child = await trie.lookupNode(node._value)
-      if (child && child instanceof LeafNode) {
+      const child = node.child
+      if (child instanceof LeafNode) {
         return removeSelfFromParentAndSaveStack(right)
       }
 
-      const endPos = await unset(trie, node, child, right.slice(pos), node.keyLength(), true, stack)
+      const endPos = await unset(
+        trie,
+        node,
+        child,
+        right.slice(pos),
+        node.getPartialKey().length,
+        true,
+        stack
+      )
       await saveStack(right.slice(0, pos + endPos), stack)
 
       return false
@@ -277,7 +302,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
   } else if (node instanceof BranchNode) {
     // Unset all internal nodes in the forkpoint
     for (let i = left[pos] + 1; i < right[pos]; i++) {
-      node.setBranch(i, null)
+      node.updateChild(new NullNode({ hashFunction: trie.hashFunction }), i)
     }
 
     {
@@ -287,16 +312,16 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
        * we need to make a copy here.
        */
       const _stack = [...stack]
-      const next = node.getBranch(left[pos])
-      const child = next && (await trie.lookupNode(next))
+      const next = node.getChild(left[pos])
+      const child = next ?? null
       const endPos = await unset(trie, node, child, left.slice(pos), 1, false, _stack)
       await saveStack(left.slice(0, pos + endPos), _stack)
     }
 
     {
       const _stack = [...stack]
-      const next = node.getBranch(right[pos])
-      const child = next && (await trie.lookupNode(next))
+      const next = node.getChild(right[pos])
+      const child = next ?? null
       const endPos = await unset(trie, node, child, right.slice(pos), 1, true, _stack)
       await saveStack(right.slice(0, pos + endPos), _stack)
     }
@@ -319,19 +344,18 @@ async function verifyProof(
   rootHash: Uint8Array,
   key: Uint8Array,
   proof: Uint8Array[],
-  useKeyHashingFunction: HashKeysFunction
+  _useKeyHashingFunction: HashKeysFunction
 ): Promise<{ value: Uint8Array | null; trie: Trie }> {
-  const proofTrie = new Trie({ root: rootHash, useKeyHashingFunction })
   try {
-    await proofTrie.fromProof(proof)
-  } catch (e) {
-    throw new Error('Invalid proof nodes given')
-  }
-  try {
-    const value = await proofTrie.get(key, true)
-    return {
-      trie: proofTrie,
-      value,
+    const proofTrie = await Trie.fromProof(proof)
+    const value = await proofTrie.get(key)
+    if (equalsBytes(rootHash, proofTrie.root())) {
+      return {
+        trie: proofTrie,
+        value,
+      }
+    } else {
+      throw new Error('Invalid proof provided')
     }
   } catch (err: any) {
     if (err.message === 'Missing node in DB') {
@@ -348,30 +372,31 @@ async function verifyProof(
  * @param trie - trie object.
  * @param key - given path.
  */
-async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
+async function hasRightElement(trie: Trie, key: number[]): Promise<boolean> {
   let pos = 0
-  let node = await trie.lookupNode(trie.root())
-  while (node !== null) {
+  let node: TNode | undefined = trie.rootNode
+  while (node) {
     if (node instanceof BranchNode) {
       for (let i = key[pos] + 1; i < 16; i++) {
-        if (node.getBranch(i) !== null) {
+        if (node.getChild(i)) {
           return true
         }
       }
 
-      const next = node.getBranch(key[pos])
-      node = next && (await trie.lookupNode(next))
+      const next = node.getChild(key[pos])
+      node = next
       pos += 1
     } else if (node instanceof ExtensionNode) {
       if (
-        key.length - pos < node.keyLength() ||
-        nibblesCompare(node._nibbles, key.slice(pos, pos + node.keyLength())) !== 0
+        key.length - pos < node.getPartialKey().length ||
+        nibblesCompare(node.getPartialKey(), key.slice(pos, pos + node.getPartialKey().length)) !==
+          0
       ) {
-        return nibblesCompare(node._nibbles, key.slice(pos)) > 0
+        return nibblesCompare(node.getPartialKey(), key.slice(pos)) > 0
       }
 
-      pos += node.keyLength()
-      node = await trie.lookupNode(node._value)
+      pos += node.getPartialKey().length
+      node = node.child
     } else if (node instanceof LeafNode) {
       return false
     } else {
@@ -411,9 +436,9 @@ async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
  */
 export async function verifyRangeProof(
   rootHash: Uint8Array,
-  firstKey: Nibbles | null,
-  lastKey: Nibbles | null,
-  keys: Nibbles[],
+  firstKey: number[] | null,
+  lastKey: number[] | null,
+  keys: number[][],
   values: Uint8Array[],
   proof: Uint8Array[] | null,
   useKeyHashingFunction: HashKeysFunction
@@ -437,7 +462,7 @@ export async function verifyRangeProof(
 
   // All elements proof
   if (proof === null && firstKey === null && lastKey === null) {
-    const trie = new Trie({ useKeyHashingFunction })
+    const trie = new Trie({})
     for (let i = 0; i < keys.length; i++) {
       await trie.put(nibblestoBytes(keys[i]), values[i])
     }
@@ -498,13 +523,13 @@ export async function verifyRangeProof(
     )
   }
 
-  const trie = new Trie({ root: rootHash, useKeyHashingFunction })
-  await trie.fromProof(proof)
+  // const trie = new Trie({ root: rootHash, useKeyHashingFunction })
+  const trie = await Trie.fromProof(proof)
 
   // Remove all nodes between two edge proofs
   const empty = await unsetInternal(trie, firstKey, lastKey)
   if (empty) {
-    trie.root(trie.EMPTY_TRIE_ROOT)
+    await trie.setRootByHash(trie.EMPTY_TRIE_ROOT)
   }
 
   // Put all elements to the trie
