@@ -125,7 +125,11 @@ tape('[VMExecution]', async (t) => {
     await execution.run()
 
     const newHead = await blockchain.getIteratorHead()
-    t.equal(bytesToHex(block.hash()), bytesToHex(newHead.hash()), 'vm execution head should be on')
+    t.equal(
+      bytesToHex(block.hash()),
+      bytesToHex(newHead.hash()),
+      'vmHead should be on the latest block'
+    )
 
     closeRPC(server)
     t.end()
