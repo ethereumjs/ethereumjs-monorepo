@@ -1,21 +1,22 @@
 /* eslint-disable ethereumjs/noBuffer */
 import {
-  privateToAddress,
-  publicToAddress,
-  toChecksumAddress,
-  privateToPublic,
   importPublic,
   isValidPrivate,
   isValidPublic,
+  privateToAddress,
+  privateToPublic,
+  publicToAddress,
+  toChecksumAddress,
 } from '@ethereumjs/util'
-import { bufferToHex } from './util/bytes'
 import { base58check } from '@scure/base'
 import * as aes from 'ethereum-cryptography/aes'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { getRandomBytesSync } from 'ethereum-cryptography/random'
 import { pbkdf2 } from 'ethereum-cryptography/pbkdf2'
+import { getRandomBytesSync } from 'ethereum-cryptography/random'
 import { scrypt } from 'ethereum-cryptography/scrypt'
 import { sha256 } from 'ethereum-cryptography/sha256'
+
+import { bufferToHex } from './util/bytes'
 
 export { default as hdkey } from './hdkey'
 export { default as thirdparty } from './thirdparty'

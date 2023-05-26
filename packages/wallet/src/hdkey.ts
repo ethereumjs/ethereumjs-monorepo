@@ -1,5 +1,6 @@
 /* eslint-disable ethereumjs/noBuffer */
 import { HDKey } from 'ethereum-cryptography/hdkey'
+
 import Wallet from './index'
 
 export default class EthereumHDKey {

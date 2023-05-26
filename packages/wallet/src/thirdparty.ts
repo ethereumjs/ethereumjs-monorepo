@@ -4,6 +4,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { pbkdf2Sync } from 'ethereum-cryptography/pbkdf2'
 import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils'
 import * as md5 from 'js-md5'
+
 import Wallet from './index'
 
 // evp_kdf
