@@ -28,6 +28,7 @@ jobs:
         with:
           submodules: recursive
 
+      - run: echo ${{ cache-key}}
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
@@ -37,7 +38,7 @@ jobs:
       - uses: actions/cache/restore@v3
         with:
           path: ${{github.workspace}}
-          key: cache-key
+          key: ${{ cache-key }}
           
       - run: npm run coverage
 
