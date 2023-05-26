@@ -82,7 +82,7 @@ function validateHexString(paramName: string, str: string, length?: number) {
   if (str.toLowerCase().startsWith('0x')) {
     str = str.slice(2)
   }
-  if (!str && !length) {
+  if (!str && length === undefined) {
     return str
   }
   if ((length as number) % 2) {
@@ -652,7 +652,7 @@ export class Wallet {
      * Alternative manual way with padding and Date fields: http://stackoverflow.com/a/7244288/4964819
      *
      */
-    const ts = timestamp ? new Date(timestamp) : new Date()
+    const ts = timestamp !== undefined ? new Date(timestamp) : new Date()
     return ['UTC--', ts.toJSON().replace(/:/g, '-'), '--', this.getAddress().toString('hex')].join(
       ''
     )
