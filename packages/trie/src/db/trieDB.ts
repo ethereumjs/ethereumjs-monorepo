@@ -3,7 +3,7 @@ import { debug } from 'debug'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import { MemoryLevel } from 'memory-level'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import type { AbstractLevel } from 'abstract-level'
+import type { AbstractKeyIterator, AbstractLevel } from 'abstract-level'
 import type { Debugger } from 'debug'
 import { HashFunction } from '../types'
 
@@ -66,7 +66,7 @@ export class TrieDatabase implements DB {
   }
   private readonly db: AbstractLevel<string, string>
   private readonly debug: Debugger
-  keyIterator: typeof this.db.keys
+  keyIterator: () => AbstractKeyIterator<AbstractLevel<string, string, string>, string>
 
   constructor(options: { db?: AbstractLevel<string, string>; _debug?: Debugger } = {}) {
     this.db = options.db ?? (new MemoryLevel() as AbstractLevel<string, string>)
