@@ -37,13 +37,13 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: ${{github.workspace}}
-          key: ${{hashFiles('packages/**/src')}}
+          key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
 
   call-block:
     needs: build
     uses: ./.github/workflows/block-build.yml
     with:
-      cache-key: ${{hashFiles('packages/**/src')}}
+      cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
   
   call-devp2p:
     needs: build
