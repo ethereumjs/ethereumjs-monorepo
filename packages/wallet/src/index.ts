@@ -1,5 +1,4 @@
 import {
-  bufferToHex,
   privateToAddress,
   publicToAddress,
   toChecksumAddress,
@@ -8,6 +7,7 @@ import {
   isValidPrivate,
   isValidPublic,
 } from '@ethereumjs/util'
+import { bufferToHex } from './util/bytes'
 import { base58check } from '@scure/base'
 import * as aes from 'ethereum-cryptography/aes'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -295,7 +295,7 @@ export default class Wallet {
       const max = BigInt('0x088f924eeceeda7fe92e1f5b0fffffffffffffff')
       for (;;) {
         const privateKey = randomBytes(32) as Buffer
-        const hex = privateToAddress(privateKey).toString('hex')
+        const hex = privateToAddress(privateKey).toString()
         if (BigInt('0x' + hex) <= max) {
           return new Wallet(privateKey)
         }
@@ -317,7 +317,7 @@ export default class Wallet {
       const privateKey = randomBytes(32) as Buffer
       const address = privateToAddress(privateKey)
 
-      if (pattern.test(address.toString('hex'))) {
+      if (pattern.test(address.toString())) {
         return new Wallet(privateKey)
       }
     }
@@ -331,7 +331,7 @@ export default class Wallet {
    */
   public static fromPublicKey(publicKey: Buffer, nonStrict = false): Wallet {
     if (nonStrict) {
-      publicKey = importPublic(publicKey)
+      publicKey = Buffer.from(importPublic(publicKey))
     }
     return new Wallet(undefined, publicKey)
   }
@@ -503,7 +503,7 @@ export default class Wallet {
    */
   private get pubKey(): Buffer {
     if (!keyExists(this.publicKey)) {
-      this.publicKey = privateToPublic(this.privateKey as Buffer)
+      this.publicKey = Buffer.from(privateToPublic(this.privateKey as Buffer))
     }
     return this.publicKey
   }
@@ -552,7 +552,7 @@ export default class Wallet {
    * Returns the wallet's address.
    */
   public getAddress(): Buffer {
-    return publicToAddress(this.pubKey)
+    return Buffer.from(publicToAddress(this.pubKey))
   }
 
   /**
@@ -666,6 +666,6 @@ export default class Wallet {
    * @param publicKey the public key to verify against the private key of the wallet
    */
   public verifyPublicKey(publicKey: Buffer): boolean {
-    return privateToPublic(this.privateKey as Buffer).equals(publicKey)
+    return Buffer.from(privateToPublic(this.privateKey as Buffer)).equals(publicKey)
   }
 }
