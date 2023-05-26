@@ -7,9 +7,9 @@
     "wallets",
     "keys"
   ],
-  "homepage": "https://github.com/ethereumjs/ethereumjs-wallet",
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/packages/wallet",
   "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-wallet/issues"
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues"
   },
   "repository": {
     "type": "git",
