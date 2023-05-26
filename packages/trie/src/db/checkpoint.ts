@@ -2,10 +2,16 @@ import { KeyEncoding, ValueEncoding, bytesToHex, hexStringToBytes } from '@ether
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import type { Checkpoint, CheckpointDBOpts } from '../types'
+import type { BatchDBOp, DB } from './trieDB'
 import type { BatchDBOp, DB, DelBatch, PutBatch } from '@ethereumjs/util'
 import type LRUCache from 'lru-cache'
 
-const LRU = require('lru-cache')
+export type Checkpoint = {
+  // We cannot use a Uint8Array => Uint8Array map directly. If you create two Uint8Arrays with the same internal value,
+  // then when setting a value on the Map, it actually creates two indices.
+  keyValueMap: Map<string, Uint8Array | null>
+  root: Uint8Array
+}
 
 /**
  * DB is a thin wrapper around the underlying levelup db,
@@ -252,7 +258,7 @@ export class CheckpointDB implements DB {
   /**
    * @inheritDoc
    */
-  copy(): CheckpointDB {
+  async copy(): Promise<CheckpointDB> {
     return new CheckpointDB({ db: this.db, cacheSize: this.cacheSize })
   }
 
