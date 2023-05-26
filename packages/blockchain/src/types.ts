@@ -63,6 +63,14 @@ export interface BlockchainInterface {
   getIteratorHead?(name?: string): Promise<Block>
 
   /**
+   * Set header hash of a certain `tag`.
+   * When calling the iterator, the iterator will start running the first child block after the header hash currently stored.
+   * @param tag - The tag to save the headHash to
+   * @param headHash - The head hash to save
+   */
+  setIteratorHead(tag: string, headHash: Uint8Array): Promise<void>
+
+  /**
    * Gets total difficulty for a block specified by hash and number
    */
   getTotalDifficulty?(hash: Uint8Array, number?: bigint): Promise<bigint>
