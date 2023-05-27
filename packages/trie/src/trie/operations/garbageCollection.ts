@@ -32,11 +32,11 @@ export async function _garbageCollect(this: TrieWithDB): Promise<void> {
 
 export async function _verifyPrunedIntegrity(this: TrieWithDB): Promise<boolean> {
   const reachableHashes = await this.markReachableNodes(this.rootNode)
-  for await (const key of this.database().keyIterator()) {
-    if (equalsBytes(hexStringToBytes(key), this.keySecure(ROOT_DB_KEY))) {
+  for await (const key of await this.database().keys()) {
+    if (equalsBytes(key, this.keySecure(ROOT_DB_KEY))) {
       continue
     }
-    if (!reachableHashes.has(key)) {
+    if (!reachableHashes.has(bytesToPrefixedHexString(key))) {
       return false
     }
   }

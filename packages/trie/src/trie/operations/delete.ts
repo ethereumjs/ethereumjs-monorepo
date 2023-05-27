@@ -28,7 +28,7 @@ export async function _deleteAtNode(
         debug(`found leaf node to delete, replacing with null`)
         return new NullNode({ hashFunction: this.hashFunction })
       } else {
-        return new NullNode({ hashFunction: this.hashFunction })
+        return _node
       }
     },
     ExtensionNode: async () => {

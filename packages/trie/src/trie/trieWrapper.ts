@@ -187,13 +187,11 @@ export class TrieWrap extends TrieWithDB {
         `${this.rootNode.getType()}: ${bytesToPrefixedHexString(this.rootNode.hash())}`
       )
       if (this.useNodePruning) {
-        // this.cache.delete(oldNode.hash())
-        // await this.database().del(oldNode.hash())
-      }
-      if (this.persistent) {
-        await this.persistRoot(this.keySecure(ROOT_DB_KEY))
       }
     })
+    if (this.persistent) {
+      await this.persistRoot(this.keySecure(ROOT_DB_KEY))
+    }
     if (this.useNodePruning) {
       await this.garbageCollect()
     }

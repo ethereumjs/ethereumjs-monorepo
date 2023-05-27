@@ -98,7 +98,11 @@ tape('Pruned trie tests', function (tester) {
     const reported = await trie.get(key)
     st.ok(reported === null, 'value is null')
     const reported2 = await trie.get(key2)
-    st.ok(equalsBytes(reported2!, value2), 'value matches expected value')
+    if (reported2 === null) {
+      st.fail('value is null')
+    } else {
+      st.ok(equalsBytes(reported2!, value2), 'value matches expected value')
+    }
     st.end()
   })
 
@@ -190,7 +194,8 @@ tape('Pruned trie tests', function (tester) {
 
   it('should prune when keys are updated or deleted (with `useRootPersistence` enabled)', async (st) => {
     for (let testID = 0; testID < 1; testID++) {
-      const trie = new Trie({ useNodePruning: true, useRootPersistence: true })
+      const trie = new Trie({ useNodePruning: true, persistent: true })
+      st.true(trie.persistent, 'trie is persistent')
       const keys: Uint8Array[] = []
       for (let i = 0; i < 100; i++) {
         keys.push(randomBytes(32))
@@ -245,7 +250,7 @@ tape('Pruned trie tests', function (tester) {
       for (const _dbkey of await trie.database().keys()) {
         dbKeys++
       }
-      st.ok(dbKeys === 1, 'db is empty')
+      st.equal(dbKeys, 1, 'db is empty except for persisted root')
     }
     st.end()
   })
