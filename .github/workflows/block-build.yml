@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       cache-key:
-        required: true
+        required: false
         type: string
   workflow_dispatch:
     inputs:
