@@ -128,9 +128,9 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const castedTx = <AccessListEIP2930Transaction>opts.tx
 
     for (const accessListItem of castedTx.AccessListJSON) {
-      this.evm.evmJournal.addPreWarmedAddress(accessListItem.address)
+      this.evm.evmJournal.addPreWarmedAddress(accessListItem.address, true)
       for (const storageKey of accessListItem.storageKeys) {
-        this.evm.evmJournal.addPreWarmedSlot(accessListItem.address, storageKey)
+        this.evm.evmJournal.addPreWarmedSlot(accessListItem.address, storageKey, true)
       }
     }
   }
@@ -514,7 +514,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
   }
 
-  if (opts.reportAccessList === true) {
+  if (opts.reportAccessList === true && this._common.isActivatedEIP(2930)) {
     // Convert the Map to the desired type
     const accessList: AccessList = []
     for (const [address, set] of this.evm.evmJournal.accessList!) {
