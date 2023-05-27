@@ -1,7 +1,10 @@
 name: VM
 on:
-  pull_request:
-    types: [opened, reopened, synchronize]
+  workflow_call:
+    inputs:
+      cache-key:
+        required: true
+        type: string
   workflow_dispatch:
 
 env:
@@ -28,8 +31,10 @@ jobs:
           node-version: 16
           cache: 'npm'
 
-      - run: npm ci
-        working-directory: ${{github.workspace}}
+      - uses: actions/cache/restore@v3
+        with:
+          path: ${{github.workspace}}
+          key: ${{ inputs.cache-key }}
 
       - run: npm run lint
       - run: npm run coverage

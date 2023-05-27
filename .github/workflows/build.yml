@@ -41,38 +41,92 @@ jobs:
 
       - run: echo ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
       
-  call-block:
+  block:
     needs: build
     uses: ./.github/workflows/block-build.yml
     with:
       cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
   
-  call-devp2p:
+  blockchain:
     needs: build
-    uses: ./.github/workflows/devp2p-build.yml
+    uses: ./.github/workflows/blockchain-build.yml
     with:
       cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
 
-  call-common:
+  client:
+    needs: build
+    uses: ./.github/workflows/client-build.yml
+    with:
+      cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
+
+  common:
     needs: build
     uses: ./.github/workflows/common-build.yml
     with:
       cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
 
-  call-ethash:
+  devp2p:
+    needs: build
+    uses: ./.github/workflows/devp2p-build.yml
+    with:
+      cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
+
+  ethash:
     needs: build
     uses: ./.github/workflows/ethash-build.yml
     with:
       cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
 
-  call-rlp:
+  evm:
+    needs: build
+    uses: ./.github/workflows/evm-build.yml
+    with:
+      cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
+
+  examples:
+    needs: build
+    uses: ./.github/workflows/examples-build.yml
+    with:
+      cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
+
+  rlp:
     needs: build
     uses: ./.github/workflows/rlp-build.yml
     with:
       cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
 
-  call-trie:
+  statemanager:
+    needs: build
+    uses: ./.github/workflows/statemanager-build.yml
+    with:
+      cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
+
+  trie:
     needs: build
     uses: ./.github/workflows/trie-build.yml
+    with:
+      cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
+  
+  tx:
+    needs: build
+    uses: ./.github/workflows/tx-build.yml
+    with:
+      cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
+
+  util:
+    needs: build
+    uses: ./.github/workflows/block-build.yml
+    with:
+      cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
+
+  vm-build:
+    needs: build
+    uses: ./.github/workflows/vm-build.yml
+    with:
+      cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
+
+  vm-pr:
+    needs: build
+    uses: ./.github/workflows/vmpr-build.yml
     with:
       cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build

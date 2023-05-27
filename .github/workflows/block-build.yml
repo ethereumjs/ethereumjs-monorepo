@@ -38,7 +38,8 @@ jobs:
         with:
           path: ${{github.workspace}}
           key: ${{ inputs.cache-key }}
-          
+
+      - run: npm run lint      
       - run: npm run coverage
 
       - uses: codecov/codecov-action@v3
