@@ -27,15 +27,9 @@ import { hexToBytes } from 'ethereum-cryptography/utils'
 import { AccountCache, CacheType, StorageCache } from './cache'
 import { OriginalStorageCache } from './cache/originalStorageCache'
 
-import type {
-  AccessListItem,
-  AccountFields,
-  EVMStateManagerInterface,
-  StorageDump,
-} from '@ethereumjs/common'
+import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-import type { AccessList } from 'ethers'
 
 export type StorageProof = {
   key: PrefixedHexString
@@ -590,6 +584,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     if (this._checkpointCount === 0) {
       await this.flush()
+      this.originalStorageCache.clearOriginalStorageCache()
     }
 
     if (this.DEBUG) {
@@ -620,6 +615,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     if (this._checkpointCount === 0) {
       await this.flush()
+      this.originalStorageCache.clearOriginalStorageCache()
     }
   }
 
