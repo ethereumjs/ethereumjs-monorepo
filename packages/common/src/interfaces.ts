@@ -40,6 +40,7 @@ export type AccessList = AccessListItem[]
 
 export interface StateManagerInterface {
   accountExists(address: Address): Promise<boolean>
+  accountIsEmptyOrNonExistent(address: Address): Promise<boolean>
   getAccount(address: Address): Promise<Account | undefined>
   putAccount(address: Address, account?: Account): Promise<void>
   deleteAccount(address: Address): Promise<void>
@@ -60,8 +61,6 @@ export interface StateManagerInterface {
 }
 
 export interface EVMStateManagerInterface extends StateManagerInterface {
-  accountIsEmptyOrNonExistent(address: Address): Promise<boolean>
-
   originalStorageCache: {
     getOriginalContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
     clearOriginalStorageCache(): void
@@ -69,7 +68,6 @@ export interface EVMStateManagerInterface extends StateManagerInterface {
 
   dumpStorage(address: Address): Promise<StorageDump> // only used in client
   generateCanonicalGenesis(initState: any): Promise<void> // TODO make input more typesafe
-  generateAccessList(addressesRemoved: Address[], addressesOnlyStorage: Address[]): AccessList
   getProof(address: Address, storageSlots?: Uint8Array[]): Promise<Proof>
 
   copy(): EVMStateManagerInterface

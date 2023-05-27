@@ -18,6 +18,7 @@ import type {
   TxReceipt,
 } from './types'
 import type { VM } from './vm'
+import type { AccessList, AccessListItem } from '@ethereumjs/common'
 import type {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
@@ -81,21 +82,12 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     throw new Error(msg)
   }
 
-  const state = this.stateManager
-
-  if (opts.reportAccessList === true && !('generateAccessList' in state)) {
-    const msg = _errorMsg(
-      'reportAccessList needs a StateManager implementing the generateAccessList() method',
-      this,
-      opts.block,
-      opts.tx
-    )
-    // TODO: read the access list directly from the EVM journal (need to signal journal that we also track reverted slots)
-    throw new Error(msg)
-  }
-
   // Ensure we start with a clear warmed accounts Map
   await this.evm.evmJournal.cleanup()
+
+  if (opts.reportAccessList === true) {
+    this.evm.evmJournal.reportAccessList()
+  }
 
   await this.evm.evmJournal.checkpoint()
   if (this.DEBUG) {
@@ -148,20 +140,6 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     await this.evm.evmJournal.commit()
     if (this.DEBUG) {
       debug(`tx checkpoint committed`)
-    }
-    if (this._common.isActivatedEIP(2929) === true && opts.reportAccessList === true) {
-      const { tx } = opts
-      // Do not include sender address in access list
-      const removed = [tx.getSenderAddress()]
-      // Add the active precompiles as well
-      // Note: `precompiles` is always updated if the hardfork of `common` changes
-      const activePrecompiles = this.evm.precompiles
-      for (const [key] of activePrecompiles.entries()) {
-        removed.push(Address.fromString('0x' + key))
-      }
-      // Only include to address on present storage slot accesses
-      const onlyStorage = tx.to ? [tx.to] : []
-      result.accessList = state.generateAccessList!(removed, onlyStorage)
     }
     return result
   } catch (e: any) {
@@ -534,6 +512,25 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
         debug(`tx selfdestruct on address=${address}`)
       }
     }
+  }
+
+  if (opts.reportAccessList === true) {
+    // Convert the Map to the desired type
+    const accessList: AccessList = []
+    for (const [address, set] of this.evm.evmJournal.accessList!) {
+      const addressPrefixed = '0x' + address
+      const item: AccessListItem = {
+        address: addressPrefixed,
+        storageKeys: [],
+      }
+      for (const slot of set) {
+        const slotPrefixed = '0x' + slot
+        item.storageKeys.push(slotPrefixed)
+      }
+      accessList.push(item)
+    }
+
+    results.accessList = accessList
   }
 
   await this.evm.evmJournal.cleanup()

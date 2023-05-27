@@ -42,6 +42,8 @@ export class EvmJournal {
 
   private journalHeight: number
 
+  public accessList?: Map<AddressString, Set<SlotString>>
+
   constructor(stateManager: EVMStateManagerInterface, common: Common) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
@@ -53,6 +55,10 @@ export class EvmJournal {
 
     this.stateManager = stateManager
     this.common = common
+  }
+
+  reportAccessList() {
+    this.accessList = new Map()
   }
 
   async putAccount(address: Address, account: Account | undefined) {
@@ -169,12 +175,18 @@ export class EvmJournal {
       }
     }
     this.cleanJournal()
+    delete this.accessList
   }
 
   addPreWarmedAddress(addressStr: string) {
     const address = stripHexPrefix(addressStr)
     if (!this.preWarmJournal.has(address)) {
       this.preWarmJournal.set(address, new Set())
+    }
+    if (this.accessList !== undefined) {
+      if (!this.accessList.has(address)) {
+        this.accessList.set(address, new Set())
+      }
     }
   }
 
@@ -184,6 +196,9 @@ export class EvmJournal {
     const slotsSet = this.preWarmJournal.get(address)!
     const slot = stripHexPrefix(slotStr)
     slotsSet.add(slot)
+    if (this.accessList !== undefined) {
+      this.accessList.get(address)!.add(slot)
+    }
   }
 
   /**
@@ -206,6 +221,11 @@ export class EvmJournal {
       this.journal.set(address, new Set())
       const diffArr = this.journalDiff[this.journalDiff.length - 1][1]
       diffArr[0].add(address)
+    }
+    if (this.accessList !== undefined) {
+      if (!this.accessList.has(address)) {
+        this.accessList.set(address, new Set())
+      }
     }
   }
 
@@ -253,6 +273,11 @@ export class EvmJournal {
       }
       const slotsSet = addressSlotMap.get(addressHex)!
       slotsSet.add(slotStr)
+    }
+    if (this.accessList !== undefined) {
+      // Note: in `addWarmedAddress` the address is added to warm addresses
+      const addrSet = this.accessList.get(addressHex)!
+      addrSet.add(slotStr)
     }
   }
 }

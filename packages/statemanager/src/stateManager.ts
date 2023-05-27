@@ -827,64 +827,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   }
 
   /**
-   * Generates an EIP-2930 access list
-   *
-   * Note: this method is not yet part of the {@link StateManager} interface.
-   * If not implemented, {@link VM.runTx} is not allowed to be used with the
-   * `reportAccessList` option and will instead throw.
-   *
-   * Note: there is an edge case on accessList generation where an
-   * internal call might revert without an accessList but pass if the
-   * accessList is used for a tx run (so the subsequent behavior might change).
-   * This edge case is not covered by this implementation.
-   *
-   * @param addressesRemoved - List of addresses to be removed from the final list
-   * @param addressesOnlyStorage - List of addresses only to be added in case of present storage slots
-   *
-   * @returns - an [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/packages/tx) `AccessList`
-   */
-  generateAccessList(
-    addressesRemoved: Address[] = [],
-    addressesOnlyStorage: Address[] = []
-  ): AccessList {
-    // Merge with the reverted storage list
-    const mergedStorage = [...this._accessedStorage, ...this._accessedStorageReverted]
-
-    // Fold merged storage array into one Map
-    while (mergedStorage.length >= 2) {
-      const storageMap = mergedStorage.pop()
-      if (storageMap) {
-        this._accessedStorageMerge(mergedStorage, storageMap)
-      }
-    }
-    const folded = new Map([...mergedStorage[0].entries()].sort())
-
-    // Transfer folded map to final structure
-    const accessList: AccessList = []
-    for (const [addressStr, slots] of folded.entries()) {
-      const address = Address.fromString(`0x${addressStr}`)
-      const check1 = addressesRemoved.find((a) => a.equals(address))
-      const check2 =
-        addressesOnlyStorage.find((a) => a.equals(address)) !== undefined && slots.size === 0
-
-      if (!check1 && !check2) {
-        const storageSlots = Array.from(slots)
-          .map((s) => `0x${s}`)
-          .sort()
-        const accessListItem: AccessListItem = {
-          address: `0x${addressStr}`,
-          storageKeys: storageSlots,
-        }
-        accessList!.push(accessListItem)
-      }
-    }
-
-    return accessList
-  }
-
-  // End of EIP-2929 related logic
-
-  /**
    * Dumps the RLP-encoded storage values for an `account` specified by `address`.
    * @param address - The address of the `account` to return storage for
    * @returns {Promise<StorageDump>} - The state of the account as an `Object` map.
