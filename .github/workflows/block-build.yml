@@ -39,6 +39,10 @@ jobs:
           path: ${{github.workspace}}
           key: ${{ inputs.cache-key }}
 
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci
+
       - run: npm run lint      
       - run: npm run coverage
 
