@@ -13,11 +13,10 @@ export async function _cleanupNode(
 ): Promise<TNode> {
   debug = debug.extend('_cleanupNode')
   if (node instanceof BranchNode) {
-    await this._cleanupBranchNode(node, debug)
+    node = await this._cleanupBranchNode(node, debug)
   } else if (node instanceof ExtensionNode) {
-    await this._cleanupExtensionNode(node, debug)
+    node = await this._cleanupExtensionNode(node, debug)
   }
-
   // If the node is not a branch node, or it's a branch node with more than
   // one child, there's nothing to clean up and we return the node as is.
   return node
@@ -25,41 +24,55 @@ export async function _cleanupNode(
 
 export async function _cleanupBranchNode(
   this: MerklePatriciaTrie,
-  node: BranchNode,
+  node: TNode,
   debug: Debugger
 ): Promise<TNode> {
-  debug = debug.extend('BranchNode')
-  const childCount = node.childNodes().size
-  if (childCount > 1) {
-    debug(`BranchNode has more than 1 child.  No cleanup needed.`)
-    return node
+  if (!(node instanceof BranchNode)) {
+    throw new Error(`_cleanupBranchNode expects a BranchNode`)
   }
-  debug(`child count: ${childCount}`)
-  debug(node.value ? `value: ${node.value} bytes` : `value: null`)
-  if (childCount === 0 && node.value !== null) {
-    debug(`BranchNode with value was 0 children`)
-    debug(`Converting BranchNode to LeafNode`)
-    const newNode = new LeafNode({
-      key: node.keyNibbles,
-      value: node.value,
-      hashFunction: this.hashFunction,
-    })
-    await this.storeNode(newNode)
-    return newNode
-  } else {
-    if (childCount === 1 && node.value === null) {
-      const [nibble, child] = node.childNodes().entries().next().value as [number, TNode]
-      const childType = child.getType()
-      debug(`BranchNode with null value has 1 child: [${nibble}]: ${childType}`)
-      debug(`Replacing BranchNode with: [${nibble}]: ${childType}`)
-      debug(`updating key of child [${nibble}] + [${child.getPartialKey()}]`)
-      const updated = await child.updateKey([nibble, ...child.getPartialKey()])
-      const newNode = await this._cleanupNode(updated)
-      await this.storeNode(newNode)
-      return newNode
-    }
+  debug = debug.extend('_cleanupBranchNode')
+  const childCount = node.childCount()
+  debug(`child count: ${childCount} children`)
+  debug(`value: ${node.value ? `${node.value.length} bytes` : `null`}`)
+  switch (childCount) {
+    case 0:
+      if (!node.value) {
+        debug(`Converting BranchNode to NullNode`)
+        return new NullNode({})
+      } else {
+        debug(`Converting BranchNode to LeafNode with same value.`)
+        const newNode = new LeafNode({
+          key: [],
+          value: node.value,
+          hashFunction: this.hashFunction,
+        })
+        await this.storeNode(newNode)
+        return newNode
+      }
+    case 1:
+      if (node.value) {
+        return node
+      } else {
+        const [nibble, child] = node.childNodes().entries().next().value as [number, TNode]
+        const childType = child.getType()
+        debug(`BranchNode with null value has 1 child: [${nibble}]: ${childType}`)
+        debug(`Replacing BranchNode with ExtensionNode: [${nibble}]: child: ${childType}`)
+        node = new ExtensionNode({
+          keyNibbles: [nibble],
+          subNode: child,
+          hashFunction: this.hashFunction,
+          source: debug,
+        })
+        node = await this._cleanupNode(node)
+        await this.storeNode(node, debug)
+        return node
+      }
+    default:
+      debug(
+        `BranchNode has more than 1 child. ${[...node.childNodes().keys()]}  No cleanup needed.`
+      )
+      return node
   }
-  return node
 }
 
 export async function _cleanupExtensionNode(
@@ -71,7 +84,7 @@ export async function _cleanupExtensionNode(
   const childType = child.getType()
   let combinedNibbles: number[]
   let newNode: TNode
-  debug = debug.extend('ExtensionNode')
+  debug = debug.extend('_cleanupExtensionNode')
   debug(`keyNibbles: [${node.getPartialKey()}]`)
   debug(childCleanupMessage[childType](node.getPartialKey(), child.getPartialKey()))
   switch (childType) {
@@ -95,17 +108,29 @@ export async function _cleanupExtensionNode(
       await this.storeNode(newNode)
       return newNode
     case 'BranchNode':
-      return node
-    case 'NullNode':
-      return new NullNode({})
+      debug(
+        `ExtensionNode has BranchNode child with ${
+          (child as BranchNode).childNodes().size
+        } children`
+      )
+      if ((child as BranchNode).childNodes().size > 1) {
+        debug(`ExtensionNode child: BranchNode has more than 1 child.  No cleanup needed`)
+        await this.storeNode(node)
+        return node
+      }
+      const newChild = await this._cleanupNode(child)
+      newNode = node.updateChild(newChild)
+      await this.storeNode(newNode)
+      return newNode
     case 'ProofNode':
       const resolved = await this.resolveProofNode(node.child as ProofNode)
       newNode = node.updateChild(resolved)
       debug(`ProofNode resolved.  Resuming cleanup`)
       newNode = await this._cleanupNode(newNode)
       await this.storeNode(newNode)
+    case 'NullNode':
+      return new NullNode({})
   }
-  return node
 }
 
 export const childCleanupMessage: Record<NodeType, (...args: any) => Record<string, string>> = {
@@ -131,7 +156,7 @@ export const childCleanupMessage: Record<NodeType, (...args: any) => Record<stri
   },
   BranchNode: () => {
     return {
-      child: `BranchNode. no cleanup needed`,
+      child: `BranchNode. Checking child count`,
     }
   },
   NullNode: () => {

@@ -89,7 +89,7 @@ export class TrieWithDB extends MerklePatriciaTrie {
   }
   async storeNode(node: TNode, debug: Debugger = this.debug): Promise<void> {
     debug = debug
-    debug.extend('storeNode')(`${node.getType()}: ${bytesToPrefixedHexString(node.hash())}}`)
+    debug.extend('store').extend(node.getType())(`${bytesToPrefixedHexString(node.hash())}}`)
     const serializedNode = node.rlpEncode()
     const nodeHash = node.hash()
     this.cache.set(nodeHash, node)

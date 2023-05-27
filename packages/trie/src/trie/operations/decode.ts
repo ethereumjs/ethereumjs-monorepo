@@ -160,6 +160,7 @@ export async function decodeExtensionNode(
   const decoded = new ExtensionNode({
     keyNibbles: removeHexPrefix(bytesToNibbles(key)),
     subNode: child,
+    hashFunction: this.hashFunction,
   })
   return decoded
 }

@@ -1,3 +1,4 @@
+import { Debugger } from 'debug'
 import { HashFunction } from '../../types'
 
 export const nodeType = {
@@ -13,6 +14,7 @@ export type EncodedKey = Uint8Array
 export type EncodedChild = Uint8Array | Uint8Array[]
 export type NodeType = keyof typeof nodeType
 export interface NodeOptions {
+  source?: Debugger
   hashFunction?: HashFunction
   value?: Uint8Array | null
 }
@@ -40,6 +42,7 @@ export type TNodeOptions<T extends NodeType> = T extends 'LeafNode'
   : never
 
 export interface NodeInterface<T extends NodeType> {
+  debug?: Debugger
   type: T | undefined
   hashFunction: HashFunction
   keyNibbles: number[]
@@ -70,6 +73,8 @@ export interface LeafInterface extends NodeInterface<'LeafNode'> {
   value: Uint8Array | null
 }
 export interface BranchInterface extends NodeInterface<'BranchNode'> {
+  childNodes(): Map<number, TNode>
+  childCount(): number
   children: (TNode | undefined)[]
   value: Uint8Array | null
 }

@@ -92,7 +92,14 @@ export class BranchNode extends BaseNode implements NodeInterface<'BranchNode'> 
     }
     return children
   }
+  childCount(): number {
+    return this.childNodes().size
+  }
   updateChild(newChild: TNode, nibble: number): TNode {
+    if (newChild.getType() === 'NullNode' && this.childCount() === 1) {
+      this.debug && this.debug.extend('updateChild')(`deleting last child`)
+      return new NullNode({ hashFunction: this.hashFunction })
+    }
     this.markDirty()
     this.children[nibble] = newChild.getType() === 'NullNode' ? undefined : newChild
     this.branches[nibble] = this.encodeChild(this.children[nibble])

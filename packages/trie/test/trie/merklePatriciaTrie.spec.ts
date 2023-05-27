@@ -1,4 +1,9 @@
-import { bytesToPrefixedHexString, hexStringToBytes, utf8ToBytes } from '@ethereumjs/util'
+import {
+  bytesToPrefixedHexString,
+  bytesToUtf8,
+  hexStringToBytes,
+  utf8ToBytes,
+} from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import * as hexencoded from '../../../ethereum-tests/TrieTests/hex_encoded_securetrie_test.json'
@@ -12,12 +17,15 @@ tape('trietest.json', async (_tape) => {
   _tape.test('emptyValues', async (t) => {
     const test = trietest.emptyValues
     const test_in: [string, string | null][] = test.in as [string, string | null][]
-
-    t.pass(`${test_in}`)
-    const trie_v2 = new Trie({})
+    const trie_v2 = new Trie({
+      persistent: false,
+      useKeyHashing: false,
+      secure: false,
+      useNodePruning: false,
+    })
     const toTest: Map<string, string | null> = new Map()
     for await (const [k, v] of test_in) {
-      const key = utf8ToBytes(k!)
+      const key = utf8ToBytes(k)
       const value = typeof v === 'string' ? utf8ToBytes(v) : null
       await trie_v2.put(key, value)
       toTest.set(k, v)
@@ -27,17 +35,14 @@ tape('trietest.json', async (_tape) => {
         t.deepEqual(stored_v2, _value, `trie should retrieve key/value: ${_k} / ${_v}`)
       }
     }
-    const rootHashv2 = bytesToPrefixedHexString(trie_v2.root())
-    t.equal(rootHashv2, test.root, 'root hash should match test')
+    t.deepEqual(trie_v2.root(), hexStringToBytes(test.root), 'root hash should match test')
     t.end()
   })
   _tape.test('branchingTests', async (t) => {
     const test = trietest.branchingTests
     const test_in: [string, string | null][] = test.in as [string, string | null][]
-    t.pass(`${test_in}`)
-    const trie_v2 = new Trie({})
+    const trie_v2 = await Trie.create({})
     const toTest: Map<string, string | null> = new Map()
-
     for await (const [idx, [k, v]] of test_in.entries()) {
       const key = hexStringToBytes(k!)
       const value = typeof v === 'string' ? utf8ToBytes(v) : null
@@ -54,17 +59,18 @@ tape('trietest.json', async (_tape) => {
       }
     }
     const rootHashv2 = bytesToPrefixedHexString(trie_v2.root())
+    console.log({
+      empty: bytesToPrefixedHexString(trie_v2.hashFunction(trie_v2.EMPTY_TRIE_ROOT)),
+    })
     t.equal(rootHashv2, test.root, 'root hash should match test root')
     t.end()
   })
+
   _tape.test('jeff', async (t) => {
     const test = trietest.jeff
     const test_in: [string, string | null][] = test.in as [string, string | null][]
-
-    t.pass(`${test_in}`)
     const trie_v2 = new Trie({})
     const toTest: Map<string, string | null> = new Map()
-
     for await (const [idx, [k, v]] of test_in.entries()) {
       const key = hexStringToBytes(k!)
       const value = typeof v === 'string' ? hexStringToBytes(v) : null
@@ -85,7 +91,7 @@ tape('trietest.json', async (_tape) => {
     const test = trietest['insert-middle-leaf']
     const test_in: [string, string | null][] = test.in as [string, string | null][]
 
-    t.pass(`${test_in}`)
+    // t.pass(`${test_in}`)
     const trie_v2 = new Trie({})
     const toTest: Map<string | null, string | null> = new Map()
     for await (const [idx, [k, v]] of test_in.entries()) {
@@ -107,8 +113,6 @@ tape('trietest.json', async (_tape) => {
   _tape.test('branch-value-update', async (t) => {
     const test = trietest['branch-value-update']
     const test_in: [string, string | null][] = test.in as [string, string | null][]
-
-    t.pass(`${test_in}`)
     const trie_v2 = new Trie({})
     const toTest: Map<string | null, string | null> = new Map()
     for await (const [idx, [k, v]] of test_in.entries()) {
@@ -116,7 +120,6 @@ tape('trietest.json', async (_tape) => {
       const value = typeof v === 'string' ? utf8ToBytes(v) : null
       await trie_v2.put(key, value)
       toTest.set(k, v)
-
       for await (const [_k, _v] of toTest.entries()) {
         const _value = typeof _v === 'string' ? utf8ToBytes(_v) : null
         const stored_v2 = await trie_v2.get(utf8ToBytes(_k!))
@@ -129,12 +132,10 @@ tape('trietest.json', async (_tape) => {
   })
   _tape.end()
 })
-tape('hex_encoded_securetrie_test.json', async (_tape) => {
+tape('trietest_secureTrie.json', async (_tape) => {
   _tape.test('emptyValues', async (t) => {
     const test = securetest.emptyValues
     const test_in: [string, string | null][] = test.in as [string, string | null][]
-
-    t.pass(`${test_in}`)
     const trie_v2 = new Trie({ secure: true })
     const toTest: Map<string | null, string | null> = new Map()
     for await (const [k, v] of test_in) {
@@ -153,11 +154,9 @@ tape('hex_encoded_securetrie_test.json', async (_tape) => {
     t.end()
   })
   _tape.test('branchingTests', async (t) => {
-    const toTest: Map<string | null, string | null> = new Map()
+    const toTest: Map<string, string | null> = new Map()
     const test = securetest.branchingTests
     const test_in: [string, string | null][] = test.in as [string, string | null][]
-
-    t.pass(`${test_in}`)
     const trie_v2 = new Trie({ secure: true })
     for await (const [idx, [k, v]] of test_in.entries()) {
       const key = hexStringToBytes(k!)
@@ -165,8 +164,9 @@ tape('hex_encoded_securetrie_test.json', async (_tape) => {
       await trie_v2.put(key, value)
       toTest.set(k, v)
       for await (const [_k, _v] of toTest.entries()) {
+        const _key = hexStringToBytes(_k)
         const _value = typeof _v === 'string' ? utf8ToBytes(_v) : null
-        const stored_v2 = await trie_v2.get(hexStringToBytes(_k!))
+        const stored_v2 = await trie_v2.get(_key)
         t.deepEqual(stored_v2, _value, `v2 should retrieve key/value: ${_k} / ${_v}`)
       }
     }
@@ -174,12 +174,11 @@ tape('hex_encoded_securetrie_test.json', async (_tape) => {
     t.equal(rootHashv2, test.root, 'root hash v2 should match test root')
     t.end()
   })
+
   _tape.test('jeff', async (t) => {
     const toTest: Map<string | null, string | null> = new Map()
     const test = securetest.jeff
     const test_in: [string, string | null][] = test.in as [string, string | null][]
-
-    t.pass(`${test_in}`)
     const trie_v2 = new Trie({ secure: true })
     for await (const [idx, [k, v]] of test_in.entries()) {
       const key = hexStringToBytes(k!)
@@ -197,6 +196,7 @@ tape('hex_encoded_securetrie_test.json', async (_tape) => {
     t.equal(rootHashv2, test.root, 'root hash v2 should match test root')
     t.end()
   })
+
   _tape.end()
 })
 tape('securetrie', async (t) => {
@@ -204,7 +204,6 @@ tape('securetrie', async (t) => {
     const toTest: Map<string | null, string | null> = new Map()
     const test = hexencoded.test1
     const test_in: [string, string | null][] = Object.entries(test.in)
-    st.pass(`${test_in}`)
     const trie_v2 = new Trie({ secure: true })
     for await (const [idx, [k, v]] of test_in.entries()) {
       const key = hexStringToBytes(k!)
@@ -225,7 +224,6 @@ tape('securetrie', async (t) => {
     const toTest: Map<string | null, string | null> = new Map()
     const test = hexencoded.test2
     const test_in: [string, string | null][] = Object.entries(test.in)
-    st.pass(`${test_in}`)
     const trie_v2 = new Trie({ secure: true })
     for await (const [idx, [k, v]] of test_in.entries()) {
       const key = hexStringToBytes(k!)
@@ -246,7 +244,6 @@ tape('securetrie', async (t) => {
     const toTest: Map<string | null, string | null> = new Map()
     const test = hexencoded.test3
     const test_in: [string, string | null][] = Object.entries(test.in)
-    st.pass(`${test_in}`)
     const trie_v2 = new Trie({ secure: true })
     for await (const [idx, [k, v]] of test_in.entries()) {
       const key = hexStringToBytes(k!)

@@ -15,7 +15,7 @@ export abstract class BaseNode {
   debug: Debugger | undefined
   hashFunction: HashFunction
   dirty: boolean
-  constructor(_args: any) {
+  constructor(_args: TNodeOptions<NodeType>) {
     this.type = 'NullNode'
     this.debug = debug(this.constructor.name)
     if (!this.debug.enabled) {
@@ -23,6 +23,7 @@ export abstract class BaseNode {
     }
     this.hashFunction = _args.hashFunction ?? keccak256
     this.dirty = false
+    _args.source && _args.source.extend(this.constructor.name)('created')
   }
   abstract get(rawKey?: Uint8Array): Promise<Uint8Array | null>
   abstract rlpEncode(): Uint8Array
@@ -88,7 +89,7 @@ export class NullNode extends BaseNode {
     return null
   }
   async updateKey(_newKey: number[]): Promise<TNode> {
-    throw new Error('Cannot update key of NullNode')
+    return this
   }
   async update(value: Uint8Array): Promise<TNode> {
     const newNode = new LeafNode({

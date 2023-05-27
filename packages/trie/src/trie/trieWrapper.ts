@@ -134,28 +134,31 @@ export class TrieWrap extends TrieWithDB {
     _value: Uint8Array | null,
     debug: Debugger = this.debug
   ): Promise<void> {
+    if (_value === null) {
+      debug.extend('put')(`received null value`)
+      debug(`deleting key: ${bytesToPrefixedHexString(_key)}`)
+      return this.del(_key, debug)
+    }
     debug = debug.extend('put')
     if (equalsBytes(_key, ROOT_DB_KEY)) {
       throw new Error(`Attempted to set '__root__' key but it is not allowed.`)
     }
-    this.secure &&
-      debug(
-        `key: ${bytesToPrefixedHexString(_key)}} => ${bytesToPrefixedHexString(
-          this.keySecure(_key)
-        )}`
-      )
+    debug(
+      `key: ${bytesToPrefixedHexString(_key)}} => ${bytesToPrefixedHexString(this.keySecure(_key))}`
+    )
     _key = this.keySecure(_key)
     await this._withLock(async () => {
       const keyNibbles = bytesToNibbles(_key)
       debug(`inserting new key/value node`)
-      debug(`key: ${bytesToPrefixedHexString(_key)}`)
       debug.extend('from ROOT_NODE')(`${this.rootNode.getType()}: ${this.rootNode.getPartialKey()}`)
       debug.extend('Insert Key')(`[${keyNibbles}]`)
+      debug.extend('Value')(`${_value}`)
       const oldNode = await this.getNode(_key, debug)
       if (_value === null) {
-        const newNode = await this._deleteAtNode(this.rootNode, keyNibbles, debug)
-        await this.storeNode(newNode)
-        this.rootNode = newNode
+        throw new Error('WHYYYYYYY')
+        // const newNode = await this._deleteAtNode(this.rootNode, keyNibbles, debug)
+        // await this.storeNode(newNode)
+        // this.rootNode = newNode
       } else {
         const newNode = await this._insertAtNode(this.rootNode, keyNibbles, _value, debug)
         await this.storeNode(newNode)
@@ -177,22 +180,25 @@ export class TrieWrap extends TrieWithDB {
   public async del(key: Uint8Array, debug: Debugger = this.debug): Promise<void> {
     key = this.keySecure(key)
     await this._withLock(async () => {
-      const oldNode = await this.getNode(key, debug)
-      if (oldNode.getType() === 'NullNode') {
-        return
-      }
-      debug = debug.extend('delete')
+      // const oldNode = await this.getNode(key, debug)
+      // if (oldNode.getType() === 'NullNode') {
+      //   return
+      // }
+      debug = debug.extend('del')
       const keyNibbles = bytesToNibbles(key)
       debug(`deleting key: ${bytesToPrefixedHexString(key)}`)
-      debug.extend(`bytesToNibbles`)(`${keyNibbles}`)
+      debug.extend(`nibbles`)(`${keyNibbles}`)
       const newNode = await this._deleteAtNode(this.rootNode, keyNibbles, debug)
+      debug.extend('TRIE_UPDATE')(
+        `${newNode.getType()}: ${bytesToPrefixedHexString(newNode.hash())}`
+      )
       this.rootNode = newNode
       debug.extend('NEW_ROOT')(
         `${this.rootNode.getType()}: ${bytesToPrefixedHexString(this.rootNode.hash())}`
       )
       if (this.useNodePruning) {
-        this.cache.delete(oldNode.hash())
-        await this.database().del(oldNode.hash())
+        // this.cache.delete(oldNode.hash())
+        // await this.database().del(oldNode.hash())
       }
       if (this.persistent) {
         await this.persistRoot(this.keySecure(ROOT_DB_KEY))

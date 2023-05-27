@@ -36,14 +36,29 @@ export async function _getNodePath(
     let sharedNibbles: number[]
     switch (currentNode.type) {
       case 'BranchNode':
+        currentNode = currentNode as BranchNode
+        debug(
+          `children: ${[...currentNode.childNodes().entries()].map(
+            ([k, node]) => `[${k}] => ${node.getType()}`
+          )}`
+        )
         childIndex = keyNibbles[nibbleIndex]
-        debug(`looking in branch index [${keyNibbles[nibbleIndex]}]`)
         if (childIndex === undefined) {
-          debug(`Child index is undefined, returning`)
-          return { node: currentNode as BranchNode, path, remainingNibbles: [] }
+          debug(`Child at index ${nibbleIndex} is undefined, returning`)
+          return {
+            node: currentNode as BranchNode,
+            path,
+            remainingNibbles: keyNibbles.slice(nibbleIndex),
+          }
         }
+        debug(
+          `navigating to ${currentNode.getChild(nibbleIndex)?.getType()} at index [${
+            keyNibbles[nibbleIndex]
+          }]`
+        )
         childNode = (currentNode as BranchNode).getChild(childIndex)
-        debug.extend(`${childIndex}`)(`found ${childNode?.getType()}`)
+        debug = debug.extend(`[${childIndex}]`)
+        debug(`found ${childNode?.getType()}`)
         if (!childNode) {
           debug.extend(`${childIndex}`)(`Child not found, returning`)
           return { node: currentNode, path, remainingNibbles: keyNibbles.slice(nibbleIndex) }
@@ -53,10 +68,10 @@ export async function _getNodePath(
         }
         break
       case 'ExtensionNode':
+        debug = debug.extend(`[${currentNode.getPartialKey()}]`)
         currentNode = currentNode as ExtensionNode
         nodeNibbles = currentNode.getPartialKey()
         sharedNibbles = keyNibbles.slice(nibbleIndex, nibbleIndex + nodeNibbles.length)
-        debug(`node nibbles: ${nodeNibbles}`)
         debug(`sharedNibbles: ${sharedNibbles}`)
         if (doKeysMatch(nodeNibbles, sharedNibbles)) {
           debug(`Shared nibbles match entirely.`)
@@ -76,9 +91,10 @@ export async function _getNodePath(
         }
         break
       case 'LeafNode':
-        if (doKeysMatch(keyNibbles.slice(nibbleIndex), (currentNode as LeafNode).getPartialKey())) {
+        currentNode = currentNode as LeafNode
+        if (doKeysMatch(keyNibbles.slice(nibbleIndex), currentNode.getPartialKey())) {
           debug.extend(currentNode.getType())(`Nibbles Match`)
-          return { node: currentNode as LeafNode, path, remainingNibbles: [] }
+          return { node: currentNode, path, remainingNibbles: [] }
         } else {
           debug(`Nibbles Do Not Match`)
           return {

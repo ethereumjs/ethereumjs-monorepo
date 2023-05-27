@@ -30,13 +30,17 @@ export class ExtensionNode extends BaseNode implements NodeInterface<'ExtensionN
     super(options)
     this.keyNibbles = options.keyNibbles
     this.child = options.subNode
-    this.debug &&
-      this.debug(
-        `Created with keyNibbles(${this.keyNibbles.length})=${
-          this.keyNibbles
-        }, child={${this.child.getType()}: [${this.child.getPartialKey()}]} `
+    if (options.source) {
+      options.source.extend('ExtensionNode')(`key=[${this.keyNibbles}]`)
+      options.source.extend('ExtensionNode')(
+        `child={${this.child.getType()}: [${this.child.getPartialKey()}]}`
       )
-    this.debug && this.debug(bytesToPrefixedHexString(this.hash()))
+      options.source.extend('ExtensionNode')(`hash=${bytesToPrefixedHexString(this.hash())}`)
+    } else if (this.debug) {
+      this.debug(`key=[${this.keyNibbles}]`)
+      this.debug(`child={${this.child.getType()}: [${this.child.getPartialKey()}]}`)
+      this.debug(`hash=${bytesToPrefixedHexString(this.hash())}`)
+    }
   }
   prefixedNibbles(): number[] {
     const nibbles = this.keyNibbles
@@ -88,14 +92,14 @@ export class ExtensionNode extends BaseNode implements NodeInterface<'ExtensionN
   }
   updateChild(newNode: TNode): TNode {
     this.markDirty()
-    if (equalsBytes(newNode.hash(), this.child.hash())) {
-      return this
-    }
-    const newKeyNibbles = this.keyNibbles
-    if (newKeyNibbles.length === 0) {
-      return newNode
-    }
-    this.keyNibbles = newKeyNibbles
+    // if (equalsBytes(newNode.hash(), this.child.hash())) {
+    //   return this
+    // }
+    // const newKeyNibbles = this.keyNibbles
+    // if (newKeyNibbles.length === 0) {
+    //   return newNode
+    // }
+    // this.keyNibbles = newKeyNibbles
     this.child = newNode
     return this
   }

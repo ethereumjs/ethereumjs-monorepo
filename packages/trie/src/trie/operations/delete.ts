@@ -52,33 +52,46 @@ export async function _deleteAtNode(
           _keyNibbles.slice(sharedNibbles.length),
           debug
         )
-        extensionNode.updateChild(newChild)
-        return extensionNode
+        return extensionNode.updateChild(newChild)
       } else {
         return extensionNode
       }
     },
     BranchNode: async () => {
-      const branchNode = _node as BranchNode
-      const childIndex = _keyNibbles[0]!
+      let branchNode = _node as BranchNode
+      // if (_keyNibbles.length === 0) {
+      //   debug(`keyNibbles is empty, setting deleting branch`)
+      //   return new NullNode({ hashFunction: this.hashFunction })
+      // }
+      const childIndex = _keyNibbles[0]
+      // if (_keyNibbles.length === 1) {
+      //   return branchNode.updateChild(new NullNode({ hashFunction: this.hashFunction }), childIndex)
+      // }
       const childNode = branchNode.getChild(childIndex)
       if (childNode) {
-        debug(`navigating from BranchNode into childnode at index ${childIndex}`)
-        debug(
-          `index: (1) [${childIndex}] remaining: (${
-            _keyNibbles.slice(1).length
-          }) [${_keyNibbles.slice(1)}]`
-        )
+        const childType = childNode.getType()
+        const childNibbles = childNode.getPartialKey()
+        debug(`compare nibbles with child: ${childType} at index ${childIndex}`)
+        debug.extend(`[${childIndex}]`)(`[${childNode.getPartialKey()}]`)
+        debug(`[${_keyNibbles[0]}] [${_keyNibbles.slice(1)}]`)
+        if (childNode.getType() === 'LeafNode' && doKeysMatch(childNibbles, _keyNibbles.slice(1))) {
+          debug(`found LeafNode to delete, replacing with NullNode`)
+          _node = branchNode.updateChild(
+            new NullNode({ hashFunction: this.hashFunction }),
+            childIndex
+          )
+          return _node
+        }
         if (childNode.getType() === 'LeafNode') {
-          if (doKeysMatch(childNode.getPartialKey(), _keyNibbles)) {
-            debug(`found leaf node to delete, replacing with null`)
-            branchNode.updateChild(new NullNode({ hashFunction: this.hashFunction }), childIndex)
-            return branchNode
-          }
+          debug('WHAAAAAAT???')
+          debug.extend(`[${childIndex}]`)(`[${childNode.getPartialKey()}]`)
+          debug(`[${_keyNibbles[0]}] [${_keyNibbles.slice(1)}]`)
         }
         const updatedChildNode = await this._deleteAtNode(childNode, _keyNibbles.slice(1), debug)
-        branchNode.updateChild(updatedChildNode, childIndex)
-        return branchNode
+        debug(`update child at index ${childIndex}`)
+        debug(`before: ${childType}: [${childNibbles}]`)
+        debug(`update: ${updatedChildNode.getType()}: [${updatedChildNode.getPartialKey()}]`)
+        return branchNode.updateChild(updatedChildNode, childIndex)
       } else {
         return branchNode
       }
@@ -88,5 +101,8 @@ export async function _deleteAtNode(
     },
   }
   const deleted = await d[_node.getType()]()
-  return this._cleanupNode(deleted, debug)
+  debug(`old root: ${_node.getType()}`)
+  const newRoot = await this._cleanupNode(deleted, debug)
+  debug(`new root: ${newRoot.getType()}`)
+  return newRoot
 }

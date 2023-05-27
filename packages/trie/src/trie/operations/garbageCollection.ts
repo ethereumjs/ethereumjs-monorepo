@@ -15,13 +15,13 @@ export async function _garbageCollect(this: TrieWithDB): Promise<void> {
         this.cache.delete(hash)
       }
     }
-    for await (const hash of this.database().keyIterator()) {
-      if (equalsBytes(hexStringToBytes(hash), this.keySecure(ROOT_DB_KEY))) {
+    for await (const hash of await this.database().keys()) {
+      if (equalsBytes(hash, this.keySecure(ROOT_DB_KEY))) {
         continue
       }
-      if (!reachableHashes.has(hash)) {
+      if (!reachableHashes.has(bytesToPrefixedHexString(hash))) {
         collected[1]++
-        await this.database().del(hexStringToBytes(hash))
+        await this.database().del(hash)
       }
     }
   })
