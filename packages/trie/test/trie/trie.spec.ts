@@ -14,7 +14,7 @@ import type { TrieWrapOptions } from '../../src'
 
 const createTrie = async (defaults?: TrieWrapOptions) => Trie.create({ ...defaults })
 const createSecureTrie = async (defaults?: TrieWrapOptions) =>
-  Trie.create({ ...defaults, useKeyHashing: true })
+  Trie.create({ ...defaults, useKeyHashing: true, secure: true })
 for (const [secure, constructor] of [createTrie, createSecureTrie].entries()) {
   const title = secure ? 'SecureTrie' : 'Trie'
   const IS_SECURE_TRIE = title === 'SecureTrie'
@@ -43,12 +43,12 @@ for (const [secure, constructor] of [createTrie, createSecureTrie].entries()) {
     )
 
     t.test(
-      'creates an instance via the static constructor `create` function and respects the `useRootPersistence` option with a database',
+      'creates an instance via the static constructor `create` function and respects the `persistent` option with a database',
       async function (st) {
         st.false(
           (
             await constructor({
-              useRootPersistence: false,
+              persistent: false,
             })
           ).persistent
         )
@@ -58,13 +58,13 @@ for (const [secure, constructor] of [createTrie, createSecureTrie].entries()) {
     )
 
     t.test(
-      'creates an instance via the static constructor `create` function and respects the `useRootPersistence` option with a database',
+      'creates an instance via the static constructor `create` function and respects the `persistent` option with a database',
       async function (st) {
         st.false(
           (
             await constructor({
               db: await TrieDatabase.create(),
-              useRootPersistence: false,
+              persistent: false,
             })
           ).persistent
         )
@@ -82,10 +82,10 @@ for (const [secure, constructor] of [createTrie, createSecureTrie].entries()) {
       }
     )
 
-    t.test('persist the root if the `useRootPersistence` option is `true`', async function (st) {
+    t.test('persist the root if the `persistent` option is `true`', async function (st) {
       const trie = await constructor({
         db: await TrieDatabase.create(),
-        useRootPersistence: true,
+        persistent: true,
       })
       st.true(trie.persistent, 'trie should be persistent')
       st.equal(await trie.database().get(ROOT_DB_KEY), null, 'no root passed')
@@ -105,7 +105,7 @@ for (const [secure, constructor] of [createTrie, createSecureTrie].entries()) {
       const trie = await constructor({
         db: await TrieDatabase.create(),
         rootNodeRLP: KECCAK256_RLP,
-        useRootPersistence: true,
+        persistent: true,
       })
 
       st.deepEqual(
@@ -121,26 +121,23 @@ for (const [secure, constructor] of [createTrie, createSecureTrie].entries()) {
       st.end()
     })
 
-    t.test(
-      'does not persist the root if the `useRootPersistence` option is `false`',
-      async function (st) {
-        const trie = await constructor({
-          db: await TrieDatabase.create(),
-          useRootPersistence: false,
-        })
+    t.test('does not persist the root if the `persistent` option is `false`', async function (st) {
+      const trie = await constructor({
+        db: await TrieDatabase.create(),
+        persistent: false,
+      })
 
-        st.equal(await trie.database().get(ROOT_DB_KEY), null)
+      st.equal(await trie.database().get(ROOT_DB_KEY), null)
 
-        await trie.put(utf8ToBytes('do_not_persist_with_db'), utf8ToBytes('bar'))
+      await trie.put(utf8ToBytes('do_not_persist_with_db'), utf8ToBytes('bar'))
 
-        st.equal(await trie.database().get(ROOT_DB_KEY), null)
+      st.equal(await trie.database().get(ROOT_DB_KEY), null)
 
-        st.end()
-      }
-    )
+      st.end()
+    })
 
     t.test('persists the root if the `db` option is not provided', async function (st) {
-      const trie = await constructor({ useRootPersistence: true })
+      const trie = await constructor({ persistent: true })
 
       st.equal(await trie.database().get(ROOT_DB_KEY), null)
 
@@ -154,19 +151,19 @@ for (const [secure, constructor] of [createTrie, createSecureTrie].entries()) {
     t.test('persist and restore the root', async function (st) {
       const db = await TrieDatabase.create()
 
-      const trie = await constructor({ db, useRootPersistence: true })
+      const trie = await constructor({ db, persistent: true })
       st.equal(await trie.database().get(ROOT_DB_KEY), null)
       await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
       st.deepEqual(await trie.database().get(ROOT_DB_KEY), hexStringToBytes(EXPECTED_ROOTS))
 
       // Using the same database as `trie` so we should have restored the root
-      const copy = await constructor({ db, useRootPersistence: true })
+      const copy = await constructor({ db, persistent: true })
       st.deepEqual(await copy.database().get(ROOT_DB_KEY), hexStringToBytes(EXPECTED_ROOTS))
 
       // New trie with a new database so we shouldn't find a root to restore
       const empty = await constructor({
         db: await TrieDatabase.create(),
-        useRootPersistence: true,
+        persistent: true,
       })
       st.equal(await empty.database().get(ROOT_DB_KEY), null)
 
@@ -174,7 +171,7 @@ for (const [secure, constructor] of [createTrie, createSecureTrie].entries()) {
     })
 
     t.test('put fails if the key is the ROOT_DB_KEY', async function (st) {
-      const trie = await constructor({ db: await TrieDatabase.create(), useRootPersistence: true })
+      const trie = await constructor({ db: await TrieDatabase.create(), persistent: true })
 
       try {
         await trie.put(BASE_DB_KEY, utf8ToBytes('bar'))

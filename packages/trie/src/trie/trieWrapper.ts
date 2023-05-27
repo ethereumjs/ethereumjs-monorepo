@@ -3,7 +3,7 @@ import debug from 'debug'
 import { _verifyRangeProof } from '../proof/rangeProof'
 import { _walkTrieRecursively, walkTrie } from './operations/walkTrie'
 import { bytesToNibbles } from '../util/nibbles'
-import { bytesToPrefixedHexString } from '@ethereumjs/util'
+import { KECCAK256_RLP, bytesToPrefixedHexString } from '@ethereumjs/util'
 import { createProof, updateFromProof } from './operations/proof'
 import { equalsBytes } from 'ethereum-cryptography/utils'
 import { proofToPath } from '../proof/rangeHelpers'
@@ -18,9 +18,11 @@ export class TrieWrap extends TrieWithDB {
   static async create(options: TrieWrapOptions): Promise<TrieWrap> {
     const trie = new TrieWrap(options)
     if (trie.persistent && options.rootNodeRLP) {
-      await trie.database().put(trie.hashFunction(options.rootNodeRLP), options.rootNodeRLP)
-      await trie.database().put(trie.keySecure(ROOT_DB_KEY), options.rootNodeRLP)
-      await trie.setRootByHash(trie.keySecure(ROOT_DB_KEY))
+      if (!equalsBytes(options.rootNodeRLP, KECCAK256_RLP)) {
+        await trie.database().put(trie.hashFunction(options.rootNodeRLP), options.rootNodeRLP)
+        await trie.setRootByHash(trie.hashFunction(options.rootNodeRLP))
+      }
+      await trie.persistRoot(trie.keySecure(ROOT_DB_KEY))
     }
     trie.debug(`Created new Trie`)
     trie.debug(`root: ${bytesToPrefixedHexString(trie.root())}`)
