@@ -23,9 +23,6 @@ export async function verifyProof(
     )}`
   )
   let node: Uint8Array[] = RLP.decode(proof[0]) as Uint8Array[]
-  console.log({
-    node: node.length,
-  })
   const path = bytesToNibbles(key)
   d_bug.extend('path')(path)
   for await (const p of proof.slice(1)) {
@@ -75,10 +72,6 @@ export async function fromProof(
     const encoded = p
     const hash = trie.hashFunction(encoded)
     const node = await trie._decodeToNode(encoded, d_bug)
-    console.log({
-      hash: bytesToPrefixedHexString(hash),
-      node: bytesToPrefixedHexString(node.hash()),
-    })
     d_bug = d_bug.extend(node.getType())
     d_bug(`Storing with hash: ${bytesToPrefixedHexString(node.hash())}`)
     await trie.storeNode(node, d_bug)

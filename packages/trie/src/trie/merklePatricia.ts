@@ -64,15 +64,18 @@ export class MerklePatriciaTrie {
       this.rootNode = new NullNode({ hashFunction: this.hashFunction })
       return this.rootNode.hash()
     }
-    let newRoot = await this.lookupNodeByHash(rootHash)
+
+    const newRoot = await this.lookupNodeByHash(rootHash)
     if (!newRoot) {
-      newRoot = new ProofNode({
+      const proofRoot = new ProofNode({
         hash: rootHash,
         load: async () => this.lookupNodeByHash(rootHash),
         nibbles: [],
         next: Uint8Array.from([]),
         hashFunction: this.hashFunction,
       })
+      this.rootNode = proofRoot
+      return proofRoot.hash()
     }
     debug(`Setting root to ${newRoot.getType()}: ${newRoot.hash()}`)
     this.rootNode = newRoot

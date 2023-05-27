@@ -81,20 +81,21 @@ export class TrieWrap extends TrieWithDB {
     }
   }
   async copy(includeCheckpoints: boolean = true): Promise<TrieWrap> {
+    this.debug.extend('copy')('include checkpoints: ' + includeCheckpoints)
+    this.debug.extend('copy')('checkpoints: ' + this.checkpoints.length)
     const dbCopy = await this.database().copy()
-    const nodesCopy = new Map(this.nodes)
     const cacheCopy = new LRUCache<Uint8Array, TNode>({ max: this.cache.max })
     for await (const [key, value] of this.cache.entries()) {
       cacheCopy.set(key, value)
     }
+    this.debug.extend('copy')(this.checkpoints.map((c) => bytesToPrefixedHexString(c)))
     return new TrieWrap({
       root: this.rootNode.copy(),
       debug: debug(this.debug.namespace).extend('copy'),
       secure: this.secure,
       db: dbCopy,
       cache: cacheCopy,
-      nodes: nodesCopy,
-      checkpoints: includeCheckpoints ? this.checkpoints.slice() : undefined,
+      checkpoints: includeCheckpoints ? [...this.checkpoints.slice()] : undefined,
       useRootPersistence: this.persistent,
       hashFunction: this.hashFunction,
     })
@@ -154,16 +155,9 @@ export class TrieWrap extends TrieWithDB {
       debug.extend('Insert Key')(`[${keyNibbles}]`)
       debug.extend('Value')(`${_value}`)
       const oldNode = await this.getNode(_key, debug)
-      if (_value === null) {
-        throw new Error('WHYYYYYYY')
-        // const newNode = await this._deleteAtNode(this.rootNode, keyNibbles, debug)
-        // await this.storeNode(newNode)
-        // this.rootNode = newNode
-      } else {
-        const newNode = await this._insertAtNode(this.rootNode, keyNibbles, _value, debug)
-        await this.storeNode(newNode)
-        this.rootNode = newNode
-      }
+      const newNode = await this._insertAtNode(this.rootNode, keyNibbles, _value, debug)
+      await this.storeNode(newNode)
+      this.rootNode = newNode
       if (this.useNodePruning) {
         this.cache.delete(oldNode.hash())
         await this.database().del(oldNode.hash())
@@ -180,10 +174,6 @@ export class TrieWrap extends TrieWithDB {
   public async del(key: Uint8Array, debug: Debugger = this.debug): Promise<void> {
     key = this.keySecure(key)
     await this._withLock(async () => {
-      // const oldNode = await this.getNode(key, debug)
-      // if (oldNode.getType() === 'NullNode') {
-      //   return
-      // }
       debug = debug.extend('del')
       const keyNibbles = bytesToNibbles(key)
       debug(`deleting key: ${bytesToPrefixedHexString(key)}`)

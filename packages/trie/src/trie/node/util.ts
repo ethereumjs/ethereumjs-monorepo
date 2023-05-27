@@ -12,13 +12,6 @@ import { NodeType } from './types'
 
 export function getNodeType(encoded: Uint8Array): NodeType {
   const raw = RLP.decode(encoded as Uint8Array) as (Uint8Array | Uint8Array[])[]
-  console.log(`raw (${raw.length}): ${raw.map((r) => r)}`)
-  if (raw[1]) {
-    console.log(`raw (${raw[1].length})`)
-    for (const [idx, r] of raw[1].entries()) {
-      console.log(`raw[1][${idx}]: (${r})`)
-    }
-  }
   const type =
     raw.length === 32
       ? 'ProofNode'

@@ -1,4 +1,4 @@
-import { bytesToPrefixedHexString } from '@ethereumjs/util'
+import { bytesToPrefixedHexString, equalsBytes } from '@ethereumjs/util'
 import { MerklePatriciaTrie } from './merklePatricia'
 import { NullNode } from './node'
 import { ROOT_DB_KEY } from '../types'
@@ -71,7 +71,6 @@ export class TrieWithDB extends MerklePatriciaTrie {
   ): Promise<TNode | undefined> {
     debug = debug.extend('lookupNodeByHash')
     debug(`${bytesToPrefixedHexString(hash)}`)
-
     //  Check if node in cache
     let node = this.cache.get(hash)
     if (node === undefined) {
@@ -80,8 +79,19 @@ export class TrieWithDB extends MerklePatriciaTrie {
       if (!encoded) {
         return undefined
       }
+      debug.extend('lookupNodeByHash')(
+        `found in db: ${bytesToPrefixedHexString(this.hashFunction(encoded))}`
+      )
       node = await this._decodeToNode(encoded)
     }
+    if (!equalsBytes(node.hash(), hash)) {
+      throw new Error(
+        `Node hash mismatch.  Expected ${bytesToPrefixedHexString(
+          hash
+        )} but got ${bytesToPrefixedHexString(node.hash())}`
+      )
+    }
+    debug.extend('lookupNodeByHash')(`decoded hash: ${bytesToPrefixedHexString(node.hash())}`)
     debug(`node ${node ? `found: ${node.getType()}` : `not found`}`)
     node = await this.resolveProofNode(node)
     this.cache.set(hash, node)
@@ -107,30 +117,37 @@ export class TrieWithDB extends MerklePatriciaTrie {
       return
     }
     this.debug.extend('commit')(
-      `Committing changes from checkpoint: ${bytesToPrefixedHexString(checkpoint)}`
+      `Committing changes.  Deleting checkpoint: ${bytesToPrefixedHexString(checkpoint)}`
     )
-    await this.garbageCollect()
+    await this.persistRoot(this.hashFunction(ROOT_DB_KEY))
+    // await this.garbageCollect()
   }
   async revert(): Promise<void> {
     const fromRoot = this.rootNode
     await this._withLock(async () => {
       if (this.checkpoints.length > 0) {
         const checkpoint = this.checkpoints.pop()
-        const newRoot = await this.lookupNodeByHash(checkpoint!, this.debug.extend('revert'))
-        if (newRoot) {
-          this.rootNode = newRoot
-        } else {
-          this.rootNode = new NullNode({ hashFunction: this.hashFunction })
-        }
+        this.debug.extend('revert')(
+          `Reverting to last checkpoint: ${bytesToPrefixedHexString(checkpoint!)}`
+        )
+        await this.setRootByHash(checkpoint!)
+        // const newRoot = await this.lookupNodeByHash(checkpoint!, this.debug.extend('revert'))
+        // if (newRoot) {
+        //   this.rootNode = newRoot
+        // } else {
+        //   this.rootNode = new NullNode({ hashFunction: this.hashFunction })
+        // }
+      } else {
+        this.rootNode = new NullNode({ hashFunction: this.hashFunction })
       }
+      this.debug.extend('revert')(
+        `from: ${bytesToPrefixedHexString(fromRoot.hash())} to: ${bytesToPrefixedHexString(
+          this.rootNode.hash()
+        )}`
+      )
     })
-    await this._deleteAtNode(fromRoot, fromRoot.getPartialKey(), this.debug.extend('revert'))
-    this.debug.extend('revert')(
-      `from: ${bytesToPrefixedHexString(fromRoot.hash())} to: ${bytesToPrefixedHexString(
-        this.rootNode.hash()
-      )}`
-    )
-    await this.garbageCollect()
+    // await this._deleteAtNode(fromRoot, fromRoot.getPartialKey(), this.debug.extend('revert'))
+    // await this.garbageCollect()
   }
   async _pruneCheckpoints(): Promise<void> {
     while (this.checkpoints.length > this.maxCheckpoints) {

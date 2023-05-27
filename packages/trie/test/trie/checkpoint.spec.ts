@@ -1,4 +1,10 @@
-import { MapDB, bytesToHex, bytesToUtf8, equalsBytes, utf8ToBytes } from '@ethereumjs/util'
+import {
+  bytesToHex,
+  bytesToPrefixedHexString,
+  bytesToUtf8,
+  equalsBytes,
+  utf8ToBytes,
+} from '@ethereumjs/util'
 import { createHash } from 'crypto'
 import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -89,7 +95,7 @@ tape('testing checkpoints', function (tester) {
 
   it('should copy trie and use the correct hash function', async function (t) {
     trie = new Trie({
-      useKeyHashing: true,
+      secure: true,
       hashFunction: (value) => createHash('sha256').update(value).digest(),
     })
     await trie.put(utf8ToBytes('key1'), utf8ToBytes('value1'))
@@ -99,7 +105,7 @@ tape('testing checkpoints', function (tester) {
     const trieCopy = await trie.copy()
 
     const value = await trieCopy.get(utf8ToBytes('key1'))
-    t.equal(bytesToUtf8(value!), 'value1')
+    t.equal(bytesToUtf8(value!), 'value1', 'trieCopy.get(key1) should return "value1"')
 
     t.ok(trie.hasCheckpoints())
     await trie.revert()
@@ -141,6 +147,7 @@ tape('testing checkpoints', function (tester) {
     await trie.commit()
     t.equal(trie.hasCheckpoints(), false)
     t.deepEqual(trie.root(), root)
+    t.equal(bytesToPrefixedHexString(trie.root()), bytesToPrefixedHexString(root))
     t.end()
   })
 
@@ -236,9 +243,9 @@ tape('testing checkpoints', function (tester) {
 
     // Initialise State
     const CommittedState = new Trie({
-      useKeyHashing: true,
+      secure: true,
       useNodePruning: true,
-      useRootPersistence: true,
+      persistent: true,
       debug: debug('eth-state:committed-state'),
     })
 
@@ -258,11 +265,18 @@ tape('testing checkpoints', function (tester) {
     await MemoryState.commit()
     // The CommittedState should not change (not the key/value pairs, not the root, and not the root in DB)
     t.equal(bytesToUtf8((await CommittedState.get(KEY))!), '1')
-    t.equal(
-      // @ts-expect-error
-      bytesToHex(await CommittedState.database().get(KEY_ROOT)),
-      '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c'
-    )
+    const dbRoot = await CommittedState.database().get(KEY_ROOT)
+    if (dbRoot) {
+      t.equal(
+        bytesToHex(dbRoot),
+        '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c'
+      )
+    } else {
+      t.fail(`DB_ROOT_KEY ${bytesToPrefixedHexString(KEY_ROOT)} not found in DB`)
+      console.log(
+        [...(await CommittedState.database().keys())].map((k) => bytesToPrefixedHexString(k))
+      )
+    }
     t.equal(
       bytesToHex(CommittedState.root()),
       '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c'

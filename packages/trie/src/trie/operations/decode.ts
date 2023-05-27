@@ -21,13 +21,20 @@ export async function decodeNode(
   d_bug?: Debugger
 ): Promise<TNode> {
   const dbug = d_bug ? d_bug.extend('decodeNode') : this.debug.extend('decodeNode')
-  dbug(`encoded (${encoded.length})`)
+  const encodedLength = encoded.length
+  const decoded = RLP.decode(encoded) as Uint8Array[]
+  const decodedLength = decoded.length
+  dbug(`encoded length: (${encodedLength})`)
+  dbug(`decoded length: (${decodedLength})`)
+  switch (encodedLength) {
+  }
+
   if (encoded.length === 32) {
     const node = await decodeHashedChild.bind(this)(encoded, dbug)
     dbug(`encoding as ${node.getType()}`)
     return node
   }
-  if (encoded.length === 17) {
+  if (decodedLength === 17) {
     const node = await decodeBranchNode.bind(this)(encoded, dbug)
     dbug(`encoding as ${node.getType()}`)
     return node
@@ -35,19 +42,24 @@ export async function decodeNode(
     const raw = RLP.decode(encoded) as Uint8Array[]
     dbug(`raw (${raw.length}): ${raw.map((r) => r)}`)
     dbug(`raw (${raw.length}): ${raw.map((r) => r.length).join(', ')}`)
+    return new LeafNode({
+      key: removeHexPrefix(bytesToNibbles(raw[0])),
+      value: raw[1],
+      hashFunction: this.hashFunction,
+    })
   }
-  const decode: Record<NodeType, () => Promise<TNode>> = {
-    NullNode: async () => {
-      return new NullNode({})
-    },
-    LeafNode: async () => this._decodeLeafNode(encoded, d_bug),
-    ProofNode: async () => this._decodeHashedChild(encoded as Uint8Array, dbug),
-    ExtensionNode: async () => this._decodeExtensionNode(encoded as Uint8Array, dbug),
-    BranchNode: async () => this._decodeBranchNode(encoded as Uint8Array, dbug),
-  }
-  const type = getNodeType(encoded)
-  const node = await decode[type]()
-  return node
+  // const decode: Record<NodeType, () => Promise<TNode>> = {
+  //   NullNode: async () => {
+  //     return new NullNode({})
+  //   },
+  //   LeafNode: async () => this._decodeLeafNode(encoded, d_bug),
+  //   ProofNode: async () => this._decodeHashedChild(encoded as Uint8Array, dbug),
+  //   ExtensionNode: async () => this._decodeExtensionNode(encoded as Uint8Array, dbug),
+  //   BranchNode: async () => this._decodeBranchNode(encoded as Uint8Array, dbug),
+  // }
+  // const type = getNodeType(encoded)
+  // const node = await decode[type]()
+  // return node
 }
 export async function decodeHashedChild(
   this: MerklePatriciaTrie,
@@ -97,15 +109,19 @@ export async function decodeBranchNode(
   dbug?: Debugger
 ): Promise<BranchNode> {
   dbug = dbug ? dbug.extend('decodeBranchNode') : debug('decodeBranchNode')
-  const _encoded: (Uint8Array | Uint8Array[])[] = (encoded as any).map((e: any) => {
-    return e !== undefined
-      ? e.length > 1
+  const _encoded: (Uint8Array | Uint8Array[])[] = (RLP.decode(encoded) as Uint8Array[]).map(
+    (e: any) => {
+      return e === undefined
+        ? Uint8Array.from([])
+        : e.length === 0
+        ? Uint8Array.from([])
+        : e.length > 1
         ? Uint8Array.from([...e])
         : Uint8Array.from([e])
-      : Uint8Array.from([])
-  })
+    }
+  )
   for (const [i, e] of _encoded.entries()) {
-    dbug(`encoded${i}: ${e}`)
+    dbug(`encoded${i}: length=${e.length} [${e}]`)
   }
   // const raw = RLP.decode(encoded as Uint8Array) as EncodedChild[]
   const value = _encoded[16] as Uint8Array
@@ -116,6 +132,9 @@ export async function decodeBranchNode(
   })
   for await (const [i, branch] of _encoded.slice(0, 16).entries()) {
     dbug.extend(`child[${i}]`)(`(${branch.length})`)
+    if (!branch) {
+      throw new Error('no branch')
+    }
     let child: TNode
     if (branch.length === 0) {
       child = new NullNode({})
@@ -125,7 +144,10 @@ export async function decodeBranchNode(
         value: branch[1] as Uint8Array,
         hashFunction: this.hashFunction,
       })
+    } else if (branch.length === 32) {
+      child = await decodeHashedChild.bind(this)(branch as Uint8Array, dbug)
     } else {
+      dbug.extend(`child[${i}]`)(`(${branch.length})`)
       child = await decodeNode.bind(this)(branch as Uint8Array, dbug.extend(i.toString()))
     }
     decoded = decoded.setChild(i, child)
