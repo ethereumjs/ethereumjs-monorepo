@@ -8,12 +8,7 @@ import { AccountCache, CacheType, StorageCache } from './cache'
 import { OriginalStorageCache } from './cache/originalStorageCache'
 
 import type { Proof } from '.'
-import type {
-  AccessList,
-  AccountFields,
-  EVMStateManagerInterface,
-  StorageDump,
-} from '@ethereumjs/common'
+import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 

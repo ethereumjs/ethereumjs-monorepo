@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import {
