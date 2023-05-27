@@ -6,6 +6,11 @@ on:
         required: true
         type: string
   workflow_dispatch:
+    inputs:
+      cache-key:
+        required: false
+        type: string
+
 
 env:
   cwd: ${{github.workspace}}
