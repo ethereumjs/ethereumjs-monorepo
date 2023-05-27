@@ -1,4 +1,4 @@
-# ethereumjs-wallet
+# @ethereumjs/wallet
 
 [![NPM Package][npm-badge]][npm-link]
 [![Actions Status][actions-badge]][actions-link]
@@ -35,13 +35,13 @@ You can import the `Wallet` class like this
 Node.js / ES6:
 
 ```js
-const Wallet = require('ethereumjs-wallet').default
+const { Wallet } = require('@ethereumjs/wallet')
 ```
 
 ESM / TypeScript:
 
 ```js
-import Wallet from 'ethereumjs-wallet'
+import { Wallet } from '@ethereumjs/wallet'
 ```
 
 ## Thirdparty API
@@ -51,13 +51,13 @@ Importing various third party wallets is possible through the `thirdparty` submo
 Node.js / ES5:
 
 ```js
-const { thirdparty } = require('ethereumjs-wallet')
+const { thirdparty } = require('@ethereumjs/wallet')
 ```
 
 ESM / TypeScript:
 
 ```js
-import { thirdparty } from 'ethereumjs-wallet'
+import { thirdparty } from '@ethereumjs/wallet'
 ```
 
 Please go to [./docs/README.md](./docs/README.md) for more info.
@@ -69,13 +69,13 @@ To use BIP32 HD wallets, first include the `hdkey` submodule:
 Node.js / ES5:
 
 ```js
-const { hdkey } = require('ethereumjs-wallet')
+const { hdkey } = require('@ethereumjs/wallet')
 ```
 
 ESM / TypeScript:
 
 ```js
-import { hdkey } from 'ethereumjs-wallet'
+import { hdkey } from '@ethereumjs/wallet'
 ```
 
 Please go to [./docs/classes/ethereumhdkey.md](./docs/classes/ethereumhdkey.md) for more info.
@@ -135,11 +135,11 @@ MIT License
 
 Copyright (C) 2016 Alex Beregszaszi
 
-[actions-badge]: https://github.com/ethereumjs/ethereumjs-wallet/workflows/Build/badge.svg
-[actions-link]: https://github.com/ethereumjs/ethereumjs-wallet/actions
+[actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/Build/badge.svg
+[actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions
 [coverage-badge]: https://img.shields.io/coveralls/ethereumjs/ethereumjs-wallet.svg
 [coverage-link]: https://coveralls.io/r/ethereumjs/ethereumjs-wallet
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
 [npm-badge]: https://img.shields.io/npm/v/ethereumjs-wallet.svg
-[npm-link]: https://www.npmjs.org/package/ethereumjs-wallet
+[npm-link]: https://www.npmjs.org/package/@ethereumjs/wallet

@@ -1,79 +1,32 @@
-# ethereumjs-wallet
+@ethereumjs/wallet
 
-## Index
+# @ethereumjs/wallet
+
+## Table of contents
 
 ### Classes
 
-- [EthereumHDKey](classes/ethereumhdkey.md)
-- [Wallet](classes/wallet.md)
+- [Wallet](classes/Wallet.md)
+- [hdkey](classes/hdkey.md)
 
-### Interfaces
+### Variables
 
-- [EtherWalletOptions](interfaces/etherwalletoptions.md)
-- [EvpKdfOpts](interfaces/evpkdfopts.md)
+- [thirdparty](README.md#thirdparty)
 
-### Functions
+## Variables
 
-- [fromEtherCamp](#fromethercamp)
-- [fromEtherWallet](#frometherwallet)
-- [fromQuorumWallet](#fromquorumwallet)
+### thirdparty
 
----
+• `Const` **thirdparty**: `Object`
 
-## Functions
+#### Type declaration
 
-<a id="fromethercamp"></a>
+| Name | Type |
+| :------ | :------ |
+| `fromEtherCamp` | (`passphrase`: `string`) => [`Wallet`](classes/Wallet.md) |
+| `fromEtherWallet` | (`input`: `string` \| `EtherWalletOptions`, `password`: `string`) => `Promise`<[`Wallet`](classes/Wallet.md)\> |
+| `fromQuorumWallet` | (`passphrase`: `string`, `userid`: `string`) => [`Wallet`](classes/Wallet.md) |
 
-### fromEtherCamp
+#### Defined in
 
-▸ **fromEtherCamp**(passphrase: _`string`_): [Wallet](classes/wallet.md)
-
-_Defined in [thirdparty.ts:169](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/thirdparty.ts#L169)_
-
-**Parameters:**
-
-| Name       | Type     |
-| ---------- | -------- |
-| passphrase | `string` |
-
-**Returns:** [Wallet](classes/wallet.md)
-
----
-
-<a id="frometherwallet"></a>
-
-### fromEtherWallet
-
-▸ **fromEtherWallet**(input: _`string` \| [EtherWalletOptions](interfaces/etherwalletoptions.md)_, password: _`string`_): [Wallet](classes/wallet.md)
-
-_Defined in [thirdparty.ts:121](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/thirdparty.ts#L121)_
-
-**Parameters:**
-
-| Name     | Type                                                               |
-| -------- | ------------------------------------------------------------------ |
-| input    | `string` \| [EtherWalletOptions](interfaces/etherwalletoptions.md) |
-| password | `string`                                                           |
-
-**Returns:** [Wallet](classes/wallet.md)
-
----
-
-<a id="fromquorumwallet"></a>
-
-### fromQuorumWallet
-
-▸ **fromQuorumWallet**(passphrase: _`string`_, userid: _`string`_): [Wallet](classes/wallet.md)
-
-_Defined in [thirdparty.ts:265](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/thirdparty.ts#L265)_
-
-**Parameters:**
-
-| Name       | Type     |
-| ---------- | -------- |
-| passphrase | `string` |
-| userid     | `string` |
-
-**Returns:** [Wallet](classes/wallet.md)
-
----
+[thirdparty.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/thirdparty.ts#L187)
