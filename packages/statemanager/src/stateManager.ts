@@ -147,24 +147,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   _storageTries: { [key: string]: Trie }
   _codeCache: { [key: string]: Uint8Array }
 
-  // EIP-2929 address/storage trackers.
-  // This maps both the accessed accounts and the accessed storage slots.
-  // It is a Map(Address => StorageSlots)
-  // It is possible that the storage slots set is empty. This means that the address is warm.
-  // It is not possible to have an accessed storage slot on a cold address (which is why this structure works)
-  // Each call level tracks their access themselves.
-  // In case of a commit, copy everything if the value does not exist, to the level above
-  // In case of a revert, discard any warm slots.
-  //
-  // TODO: Switch to diff based version similar to _touchedStack
-  // (_accessStorage representing the actual state, separate _accessedStorageStack dictionary
-  // tracking the access diffs per commit)
-  protected _accessedStorage: Map<string, Set<string>>[]
-
-  // Backup structure for address/storage tracker frames on reverts
-  // to also include on access list generation
-  protected _accessedStorageReverted: Map<string, Set<string>>[]
-
   protected readonly _prefixCodeHashes: boolean
   protected readonly _accountCacheSettings: CacheSettings
   protected readonly _storageCacheSettings: CacheSettings
@@ -201,9 +183,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     this._codeCache = {}
 
     this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
-
-    this._accessedStorage = [new Map()]
-    this._accessedStorageReverted = [new Map()]
 
     this._prefixCodeHashes = opts.prefixCodeHashes ?? true
     this._accountCacheSettings = {
@@ -558,9 +537,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     this._trie.checkpoint()
     this._storageCache?.checkpoint()
     this._accountCache?.checkpoint()
-    if (this._common.gteHardfork(Hardfork.Berlin)) {
-      this._accessedStorage.push(new Map())
-    }
     this._checkpointCount++
   }
 
@@ -573,13 +549,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     await this._trie.commit()
     this._storageCache?.commit()
     this._accountCache?.commit()
-    if (this._common.gteHardfork(Hardfork.Berlin)) {
-      // Copy the contents of the map of the current level to a map higher.
-      const storageMap = this._accessedStorage.pop()
-      if (storageMap) {
-        this._accessedStorageMerge(this._accessedStorage, storageMap)
-      }
-    }
     this._checkpointCount--
 
     if (this._checkpointCount === 0) {
@@ -603,13 +572,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     this._accountCache?.revert()
     this._storageTries = {}
     this._codeCache = {}
-    if (this._common.gteHardfork(Hardfork.Berlin)) {
-      // setup cache checkpointing
-      const lastItem = this._accessedStorage.pop()
-      if (lastItem) {
-        this._accessedStorageReverted.push(lastItem)
-      }
-    }
 
     this._checkpointCount--
 

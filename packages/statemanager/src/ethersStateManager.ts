@@ -386,7 +386,4 @@ export class EthersStateManager implements EVMStateManagerInterface {
   generateCanonicalGenesis(_initState: any): Promise<void> {
     return Promise.resolve()
   }
-  generateAccessList(_addressesRemoved: Address[], _addressesOnlyStorage: Address[]): AccessList {
-    throw new Error('function not implemented')
-  }
 }
