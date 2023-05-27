@@ -21,7 +21,6 @@ import { setupPreConditions, verifyPostConditions } from '../../util'
 import type { EthashConsensus } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
 import type * as tape from 'tape'
-import { VM } from '../../../src'
 
 initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet4.txt')
 
@@ -99,10 +98,6 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     blockchain,
     common,
     hardforkByBlockNumber: true,
-  })
-
-  ;(<VM>vm).evm.events.on('step', (e) => {
-    console.log(e.address.toString(), e.opcode.name, e.gasLeft)
   })
 
   // set up pre-state
@@ -236,7 +231,6 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     } catch (error: any) {
       // caught an error, reduce block number
       currentBlock--
-      console.log(error)
       await handleError(error, expectException)
     }
   }
