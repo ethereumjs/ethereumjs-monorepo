@@ -31,9 +31,15 @@ tape('SecureTrie', function (t) {
 
   tape('SecureTrie proof', function (t) {
     t.test('create a merkle proof and verify it with a single short key', async function (st) {
-      const trie = new Trie()
+      const trie = new Trie({})
       await trie.put(utf8ToBytes('key1aa'), utf8ToBytes('01234'))
+      const retrieved = await trie.get(utf8ToBytes('key1aa'))
+      st.equal(bytesToUtf8(retrieved!), '01234', 'should put/get a value')
       const proof = await trie._createProof(utf8ToBytes('key1aa'))
+      st.ok(proof, 'proof should be created')
+      console.log(proof.map((p) => bytesToPrefixedHexString(p)))
+      console.log(bytesToPrefixedHexString(trie.root()))
+      console.log(bytesToPrefixedHexString(trie.hashFunction(proof[0])))
       const val = await trie.verifyProof(trie.root(), utf8ToBytes('key1aa'), proof)
       t.ok(val)
       if (val) {
@@ -44,7 +50,7 @@ tape('SecureTrie', function (t) {
   })
 
   tape('secure tests', function (it) {
-    let trie = new Trie({ useKeyHashing: true })
+    let trie = new Trie({ secure: true })
     const jsonTests = require('../fixtures/trietest_secureTrie.json').tests
 
     it.test('empty values', async function (t) {
@@ -60,7 +66,7 @@ tape('SecureTrie', function (t) {
     })
 
     it.test('branchingTests', async function (t) {
-      trie = new Trie({ useKeyHashing: true })
+      trie = new Trie({ secure: true })
       for (const row of jsonTests.branchingTests.in) {
         const val =
           row[1] !== undefined && row[1] !== null

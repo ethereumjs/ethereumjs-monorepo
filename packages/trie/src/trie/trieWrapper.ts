@@ -109,7 +109,7 @@ export class TrieWrap extends TrieWithDB {
     this.debug.extend(`verifyProof`)(`verify proof for key: ${bytesToPrefixedHexString(key)}`)
     this.debug.extend(`verifyProof`)(`in trie with root: ${bytesToPrefixedHexString(root)}`)
     const trie = new TrieWrap({
-      rootNodeRLP: proof[0],
+      // rootNodeRLP: proof[0],
       persistent: this.persistent,
       useNodePruning: this.useNodePruning,
       secure: this.secure,
@@ -120,7 +120,7 @@ export class TrieWrap extends TrieWithDB {
   }
   async setRootNode(root: TNode) {
     this.rootNode = root
-    await this.garbageCollect()
+    this.useNodePruning && (await this.garbageCollect())
     const addNode: FoundNodeFunction = async (node: TNode, _) => {
       await this.storeNode(node)
     }
