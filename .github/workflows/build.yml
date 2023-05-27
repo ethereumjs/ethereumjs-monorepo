@@ -85,7 +85,7 @@ jobs:
 
   examples:
     needs: build
-    uses: ./.github/workflows/examples-build.yml
+    uses: ./.github/workflows/examples.yml
     with:
       cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
 
@@ -127,6 +127,6 @@ jobs:
 
   vm-pr:
     needs: build
-    uses: ./.github/workflows/vmpr-build.yml
+    uses: ./.github/workflows/vm-pr.yml
     with:
       cache-key: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
