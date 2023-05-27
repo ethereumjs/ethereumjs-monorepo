@@ -178,25 +178,25 @@ export class EvmJournal {
     delete this.accessList
   }
 
-  addPreWarmedAddress(addressStr: string) {
+  addPreWarmedAddress(addressStr: string, addToAccessList: boolean = false) {
     const address = stripHexPrefix(addressStr)
     if (!this.preWarmJournal.has(address)) {
       this.preWarmJournal.set(address, new Set())
     }
-    if (this.accessList !== undefined) {
+    if (addToAccessList && this.accessList !== undefined) {
       if (!this.accessList.has(address)) {
         this.accessList.set(address, new Set())
       }
     }
   }
 
-  addPreWarmedSlot(addressStr: string, slotStr: string) {
+  addPreWarmedSlot(addressStr: string, slotStr: string, addToAccessList: boolean = false) {
     const address = stripHexPrefix(addressStr)
-    this.addPreWarmedAddress(address)
+    this.addPreWarmedAddress(address, addToAccessList)
     const slotsSet = this.preWarmJournal.get(address)!
     const slot = stripHexPrefix(slotStr)
     slotsSet.add(slot)
-    if (this.accessList !== undefined) {
+    if (addToAccessList && this.accessList !== undefined) {
       this.accessList.get(address)!.add(slot)
     }
   }
