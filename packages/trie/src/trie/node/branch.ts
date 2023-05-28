@@ -11,6 +11,7 @@ import type {
   TNode,
   TNodeOptions,
 } from './types'
+import { LeafNode } from './leaf'
 
 export class BranchNode extends BaseNode implements NodeInterface<'BranchNode'> {
   type = 'BranchNode' as const
@@ -98,7 +99,15 @@ export class BranchNode extends BaseNode implements NodeInterface<'BranchNode'> 
   updateChild(newChild: TNode, nibble: number): TNode {
     if (newChild.getType() === 'NullNode' && this.childCount() === 1) {
       this.debug && this.debug.extend('updateChild')(`deleting last child`)
-      return new NullNode({ hashFunction: this.hashFunction })
+      if (this.value === null) {
+        return new NullNode({ hashFunction: this.hashFunction })
+      } else {
+        return new LeafNode({
+          key: [],
+          value: this.value,
+          hashFunction: this.hashFunction,
+        })
+      }
     }
     this.markDirty()
     this.children[nibble] = newChild.getType() === 'NullNode' ? undefined : newChild
@@ -111,8 +120,7 @@ export class BranchNode extends BaseNode implements NodeInterface<'BranchNode'> 
   }
   async deleteChild(nibble: number): Promise<TNode> {
     this.markDirty()
-    this.updateChild(new NullNode({ hashFunction: this.hashFunction }), nibble)
-    return this
+    return this.updateChild(new NullNode({ hashFunction: this.hashFunction }), nibble)
   }
   async updateValue(value: Uint8Array | null) {
     this.markDirty()

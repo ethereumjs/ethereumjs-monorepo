@@ -1,4 +1,4 @@
-import { bytesToPrefixedHexString } from '@ethereumjs/util'
+import { bytesToPrefixedHexString, bytesToUtf8 } from '@ethereumjs/util'
 
 import { bytesToNibbles, doKeysMatch } from '../../util/nibbles'
 import { NullNode } from '../node'
@@ -24,6 +24,7 @@ export async function _getNodePath(
   const keyNibbles = bytesToNibbles(key)
   const path = []
   debug(`key: ${bytesToPrefixedHexString(key)}`)
+  debug(`key: ${bytesToUtf8(key)}`)
   debug(`(root): ${currentNode.getType()} [${currentNode.getPartialKey()}]`)
   debug(`to_get: [${keyNibbles}]`)
   while (currentNode.type !== 'NullNode') {
@@ -106,7 +107,7 @@ export async function _getNodePath(
       case 'ProofNode':
         currentNode = (await currentNode.load()) ?? currentNode
         if (currentNode.getType() === 'ProofNode') {
-          this.debug('Cannot resolve ProofNode')
+          this.debug(`Can't resolve ProofNode with nibbles${currentNode.getPartialKey()}`)
           return { node: currentNode, path, remainingNibbles: keyNibbles.slice(nibbleIndex) }
         }
     }

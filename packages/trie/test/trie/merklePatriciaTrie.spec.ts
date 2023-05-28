@@ -59,9 +59,6 @@ tape('trietest.json', async (_tape) => {
       }
     }
     const rootHashv2 = bytesToPrefixedHexString(trie_v2.root())
-    console.log({
-      empty: bytesToPrefixedHexString(trie_v2.hashFunction(trie_v2.EMPTY_TRIE_ROOT)),
-    })
     t.equal(rootHashv2, test.root, 'root hash should match test root')
     t.end()
   })

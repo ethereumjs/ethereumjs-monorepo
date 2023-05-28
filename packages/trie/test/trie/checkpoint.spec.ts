@@ -104,6 +104,12 @@ tape('testing checkpoints', function (tester) {
     await trie.put(utf8ToBytes('key2'), utf8ToBytes('value2'))
     const trieCopy = await trie.copy()
 
+    t.equal(
+      bytesToHex(trieCopy.root()),
+      bytesToHex(trie.root()),
+      'trieCopy.root() should equal root'
+    )
+
     const value = await trieCopy.get(utf8ToBytes('key1'))
     t.equal(bytesToUtf8(value!), 'value1', 'trieCopy.get(key1) should return "value1"')
 
@@ -273,9 +279,6 @@ tape('testing checkpoints', function (tester) {
       )
     } else {
       t.fail(`DB_ROOT_KEY ${bytesToPrefixedHexString(KEY_ROOT)} not found in DB`)
-      console.log(
-        [...(await CommittedState.database().keys())].map((k) => bytesToPrefixedHexString(k))
-      )
     }
     t.equal(
       bytesToHex(CommittedState.root()),

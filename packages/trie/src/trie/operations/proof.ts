@@ -10,77 +10,77 @@ import { TrieWrap } from '../trieWrapper'
 import type { Debugger } from 'debug'
 import { TNode } from '../node/types'
 
-export async function verifyProof(
-  root: Uint8Array,
-  key: Uint8Array,
-  proof: Uint8Array[],
-  d_bug: Debugger = debug('trie')
-): Promise<Uint8Array | null | false> {
-  d_bug = d_bug.extend('verifyProof')
-  d_bug(
-    `Verifying proof (length: ${proof.length}) against rootHash: ${bytesToPrefixedHexString(
-      keccak256(proof[0])
-    )}`
-  )
-  let node: Uint8Array[] = RLP.decode(proof[0]) as Uint8Array[]
-  const path = bytesToNibbles(key)
-  d_bug.extend('path')(path)
-  for await (const p of proof.slice(1)) {
-    d_bug(`path remaining: ${path}`)
-    d_bug(`searching child on index ${path[0]}`)
-    const child = node[path[0]]?.length > 0 ? node[path[0]] : new NullNode({}).hash()
-    if (child.length === 0) {
-      d_bug(`Child not found on index ${path[0]}`)
-      return false
-    }
-    node = RLP.decode(p) as Uint8Array[]
-    path.shift()
-  }
-  if (node.length === 2) {
-    d_bug.extend('LeafNode')(
-      `Proof verification successful for key: ${bytesToPrefixedHexString(key)}`
-    )
-    return node[1] as Uint8Array
-  } else if (node.length === 17) {
-    if (path.length === 0) {
-      d_bug.extend('BranchNode')(`path length = 0.  returning ${node[16]}`)
-      return node[16] as Uint8Array
-    } else if ((node[path[0]] as Uint8Array).length > 0) {
-      d_bug.extend('BranchNode')(`Proof verification successful for key: ${key}`)
-      return node[path[0]] as Uint8Array
-    } else {
-      d_bug.extend('BranchNode')(`Proof verification failed for key: ${key} on index ${path[0]}`)
-      return false
-    }
-  } else {
-    d_bug.extend('else')(`Proof verification failed for key: ${key}`)
-    return false
-  }
-}
-export async function fromProof(
-  proof: Uint8Array[],
-  d_bug: Debugger = debug('trie')
-): Promise<TrieWrap> {
-  d_bug = d_bug.extend('fromProof')
-  d_bug(`Building Trie from proof`)
-  if (!proof.length) {
-    throw new Error('Proof is empty')
-  }
-  const trie = new TrieWrap({ secure: true, debug: d_bug })
-  for (const [i, p] of proof.reverse().entries()) {
-    d_bug(`ProofNode ${i + 1}/${proof.length}`)
-    const encoded = p
-    const hash = trie.hashFunction(encoded)
-    const node = await trie._decodeToNode(encoded, d_bug)
-    d_bug = d_bug.extend(node.getType())
-    d_bug(`Storing with hash: ${bytesToPrefixedHexString(node.hash())}`)
-    await trie.storeNode(node, d_bug)
-    if (i === 0) {
-      trie.rootNode = node
-    }
-  }
-  return trie
-}
+// export async function verifyProof(
+//   root: Uint8Array,
+//   key: Uint8Array,
+//   proof: Uint8Array[],
+//   d_bug: Debugger = debug('trie')
+// ): Promise<Uint8Array | null | false> {
+//   d_bug = d_bug.extend('_verifyProof')
+//   d_bug(
+//     `Verifying proof (length: ${proof.length}) against rootHash: ${bytesToPrefixedHexString(
+//       keccak256(proof[0])
+//     )}`
+//   )
+//   let node: Uint8Array[] = RLP.decode(proof[0]) as Uint8Array[]
+//   const path = bytesToNibbles(key)
+//   d_bug.extend('path')(path)
+//   for await (const p of proof.slice(1)) {
+//     d_bug(`path remaining: ${path}`)
+//     d_bug(`searching child on index ${path[0]}`)
+//     const child = node[path[0]]?.length > 0 ? node[path[0]] : new NullNode({}).hash()
+//     if (child.length === 0) {
+//       d_bug(`Child not found on index ${path[0]}`)
+//       return false
+//     }
+//     node = RLP.decode(p) as Uint8Array[]
+//     path.shift()
+//   }
+//   if (node.length === 2) {
+//     d_bug.extend('LeafNode')(
+//       `Proof verification successful for key: ${bytesToPrefixedHexString(key)}`
+//     )
+//     return node[1] as Uint8Array
+//   } else if (node.length === 17) {
+//     if (path.length === 0) {
+//       d_bug.extend('BranchNode')(`path length = 0.  returning ${node[16]}`)
+//       return node[16] as Uint8Array
+//     } else if ((node[path[0]] as Uint8Array).length > 0) {
+//       d_bug.extend('BranchNode')(`Proof verification successful for key: ${key}`)
+//       return node[path[0]] as Uint8Array
+//     } else {
+//       d_bug.extend('BranchNode')(`Proof verification failed for key: ${key} on index ${path[0]}`)
+//       return false
+//     }
+//   } else {
+//     d_bug.extend('else')(`Proof verification failed for key: ${key}`)
+//     return false
+//   }
+// }
+// export async function fromProof(
+//   proof: Uint8Array[],
+//   d_bug: Debugger = debug('trie')
+// ): Promise<TrieWrap> {
+//   d_bug = d_bug.extend('fromProof')
+//   d_bug(`Building Trie from proof`)
+//   if (!proof.length) {
+//     throw new Error('Proof is empty')
+//   }
+//   const trie = new TrieWrap({ secure: true, debug: d_bug })
+//   for (const [i, p] of proof.reverse().entries()) {
+//     d_bug(`ProofNode ${i + 1}/${proof.length}`)
+//     const encoded = p
+//     const hash = trie.hashFunction(encoded)
+//     const node = await trie._decodeToNode(encoded, d_bug)
+//     d_bug = d_bug.extend(node.getType())
+//     d_bug(`Storing with hash: ${bytesToPrefixedHexString(node.hash())}`)
+//     await trie.storeNode(node, d_bug)
+//     if (i === 0) {
+//       trie.rootNode = node
+//     }
+//   }
+//   return trie
+// }
 export async function createProof(
   this: TrieWrap,
   key: Uint8Array,
@@ -94,48 +94,51 @@ export async function createProof(
   debug = debug.extend('root')
   let nibbleIndex = 0
   const proof = []
-  while (node && nibbleIndex < nibbles.length) {
+  while (node && nibbleIndex <= nibbles.length) {
     debug(`${node.getType()} => [${node.getPartialKey()}]`)
     proof.push(node.rlpEncode())
-    if (node instanceof ProofNode) {
-      const p = await this.database().get(node.hash())
-      if (!p) {
-        debug(`Could not find proof node with hash: ${node.hash()}`)
-        throw new Error(`Could not find proof node with hash: ${node.hash()}`)
-      }
-      const next: Uint8Array = this.hashFunction(node.next)
-      proof.push(p)
-      node = await this.lookupNodeByHash(next, debug)
-      if (!node) {
-        debug(`Could not find node with hash: ${next}`)
-        throw new Error(`Could not find node with hash: ${next}`)
-      }
-      debug(`Searching ahead ${node?.getPartialKey().length} nibbles`)
-      nibbleIndex += node?.getPartialKey().length
-    } else if (node instanceof LeafNode) {
-      this.debug.extend('_createProof')(
-        `Reached LeafNode.  Returning proof with ${proof.length} nodes`
-      )
-      for (const [idx, p] of proof.entries()) {
-        this.debug.extend('_createProof').extend(idx.toString())(bytesToPrefixedHexString(p))
-        this.debug.extend('_createProof').extend(idx.toString()).extend('hash')(
-          bytesToPrefixedHexString(this.hashFunction(p)).slice(0, 16)
+    switch (node.getType()) {
+      case 'ProofNode':
+        const p = await this.database().get(node.hash())
+        if (!p) {
+          debug(`Could not find proof node with hash: ${node.hash()}`)
+          throw new Error(`Could not find proof node with hash: ${node.hash()}`)
+        }
+        proof.push(p)
+        nibbleIndex += node?.getPartialKey().length
+        break
+      case 'LeafNode':
+        this.debug.extend('_createProof')(
+          `Reached LeafNode.  Returning proof with ${proof.length} nodes`
         )
-      }
-      return proof
-    } else if (node instanceof BranchNode) {
-      const child = node.getChild(nibbles[nibbleIndex])
-      if (!child) {
+        for (const [idx, p] of proof.entries()) {
+          this.debug.extend('_createProof').extend(idx.toString())(bytesToPrefixedHexString(p))
+          this.debug.extend('_createProof').extend(idx.toString()).extend('hash')(
+            bytesToPrefixedHexString(this.hashFunction(p)).slice(0, 16)
+          )
+        }
         return proof
-      }
-      nibbleIndex += node.getPartialKey().length
-      node = child
-    } else if (node instanceof ExtensionNode) {
-      nibbleIndex += node.getPartialKey().length
-      node = node.child
+      case 'BranchNode':
+        const child = node.getChild(nibbles[nibbleIndex])
+        if (!child) {
+          return proof
+        }
+        nibbleIndex++
+        node = child
+        break
+      case 'ExtensionNode':
+        node = node as ExtensionNode
+        nibbleIndex += node.getPartialKey().length
+        node = node.child
+    }
+
+    if (node.getType() === 'LeafNode') {
+      proof.push(node.rlpEncode())
+      return proof
     }
     debug = debug.extend(`[${node instanceof ExtensionNode ? 'Ch' : nibbles[nibbleIndex]}]`)
   }
+  proof.push(node.rlpEncode())
   return proof
 }
 export async function updateFromProof(
@@ -153,8 +156,8 @@ export async function updateFromProof(
     const proofRoot = proof[0]
     if (!equalsBytes(this.root(), this.hashFunction(this.EMPTY_TRIE_ROOT))) {
       if (!equalsBytes(this.root(), this.hashFunction(proofRoot))) {
-        debug(`Expected root: ${bytesToPrefixedHexString(this.root())}`)
-        debug(`Proof root: ${bytesToPrefixedHexString(this.hashFunction(proofRoot))}`)
+        debug(`Proof root: ${bytesToPrefixedHexString(this.root())}`)
+        debug(`trie root: ${bytesToPrefixedHexString(this.hashFunction(proofRoot))}`)
         throw new Error(
           `ProofRoot: ${bytesToPrefixedHexString(
             proofRoot

@@ -13,54 +13,123 @@ import { TrieWithDB } from './trieDB'
 import type { Debugger } from 'debug'
 import type { FoundNodeFunction, TrieWrapOptions } from '../types'
 import { TNode } from './node/types'
+import { ProofNode, Trie } from '.'
 
 export class TrieWrap extends TrieWithDB {
   static async create(options: TrieWrapOptions): Promise<TrieWrap> {
     const trie = new TrieWrap(options)
-    if (trie.persistent && options.rootNodeRLP) {
+    if (options.rootNodeRLP) {
       if (!equalsBytes(options.rootNodeRLP, KECCAK256_RLP)) {
+        const rootHash = trie.hashFunction(options.rootNodeRLP)
         await trie.database().put(trie.hashFunction(options.rootNodeRLP), options.rootNodeRLP)
-        await trie.setRootByHash(trie.hashFunction(options.rootNodeRLP))
+        await trie.setRootNode(
+          new ProofNode({
+            hash: rootHash,
+            rlp: options.rootNodeRLP,
+            hashFunction: trie.hashFunction,
+            load: async () => trie.lookupNodeByHash(rootHash),
+            nibbles: [],
+          })
+        )
+        // await trie.setRootByHash(trie.hashFunction(options.rootNodeRLP))
       }
-      await trie.persistRoot(trie.keySecure(ROOT_DB_KEY))
+      if (trie.persistent) {
+        await trie.persistRoot(trie.keySecure(ROOT_DB_KEY))
+      }
     }
-    trie.debug(`Created new Trie`)
-    trie.debug(`root: ${bytesToPrefixedHexString(trie.root())}`)
-    trie.debug(`secure: ${trie.secure}`)
-    trie.debug(`persistent: ${trie.persistent}`)
-    trie.debug(`hashFunction: ${trie.hashFunction.name}`)
-    trie.debug(`useNodePruning: ${trie.useNodePruning}`)
-    trie.debug(`maxCheckpoints: ${trie.maxCheckpoints}`)
+    options.debug?.extend(`create`)(`Created new Trie`)
+    options.debug?.extend(`create`)(`root: ${bytesToPrefixedHexString(trie.root())}`)
+    options.debug?.extend(`create`)(`secure: ${trie.secure}`)
+    options.debug?.extend(`create`)(`persistent: ${trie.persistent}`)
+    options.debug?.extend(`create`)(`hashFunction: ${trie.hashFunction.name}`)
+    options.debug?.extend(`create`)(`useNodePruning: ${trie.useNodePruning}`)
+    options.debug?.extend(`create`)(`maxCheckpoints: ${trie.maxCheckpoints}`)
     return trie
   }
   static async fromProof(
     proof: Uint8Array[],
-    dbug: Debugger = debug('Trie_fromProof')
+    dbug: Debugger = debug('Trie'),
+    options: TrieWrapOptions = {}
   ): Promise<TrieWrap> {
-    const trie = new TrieWrap({ rootNodeRLP: proof[0], persistent: true, useNodePruning: true })
+    dbug = dbug.extend('fromProof')
+    dbug(`Creating new Trie from proof (length: ${proof.length})`)
+    const trie = await TrieWrap.create({ ...options, rootNodeRLP: proof[0], debug: dbug })
+    dbug(`Created new Trie: ${bytesToPrefixedHexString(trie.root())}`)
     const root = trie.hashFunction(proof[0])
-    for await (const p of proof.reverse()) {
-      const node = await trie._decodeToNode(p)
-      dbug(`Storing ${node.getType()}`)
-      await trie.storeNode(node)
+    dbug(`Target Trie hash: ${bytesToPrefixedHexString(root)}`)
+    for await (const [idx, p] of proof.reverse().entries()) {
+      debug(`Storing ProofNode [${idx}]: ${p}`)
+      // const node = await trie._decodeToNode(p)
+      // await trie.storeNode(node)
+      await trie.database().put(trie.hashFunction(p), p)
     }
     await trie.setRootByHash(root)
-    await trie.persistRoot()
+    // await trie.persistRoot()
     return trie
   }
   static async verifyProof(
     root: Uint8Array,
     key: Uint8Array,
     proof: Uint8Array[],
-    dbug: Debugger = debug('Trie')
-  ): Promise<Uint8Array | null> {
+    dbug: Debugger = debug('')
+  ): Promise<Uint8Array | null | false> {
+    dbug = dbug.extend('verifyProof')
     try {
-      const trie = await TrieWrap.fromProof(proof, dbug)
-      await trie.setRootByHash(root)
+      const trie = await Trie.fromProof(proof, dbug)
+      if (!equalsBytes(trie.root(), root)) {
+        dbug.extend('ERROR:')('Proof Invalid: root mismatch')
+        throw new Error('Proof Invalid: root mismatch')
+      }
+      debug(`Resolving RootNode: ${bytesToPrefixedHexString(trie.root())}`)
+      const reachable = await trie.markReachableNodes(trie.rootNode)
+      dbug.extend(`ProofTrie`)(`Reachable nodes: ${reachable.size}`)
+      for (const [idx, p] of [...reachable.values()].entries()) {
+        dbug.extend(`ProofTrie`)(`Reachable node [${idx}]: ${p}`)
+      }
+      for (const [idx, p] of proof.reverse().entries()) {
+        dbug.extend(`ProofTrie`)(
+          `Proof node [${idx}]: ${bytesToPrefixedHexString(trie.hashFunction(p))}`
+        )
+      }
+      dbug.extend(`ProofTrie`)(`Reachable nodes: ${reachable.size}`)
+
+      for (const [idx, p] of proof.entries()) {
+        dbug.extend(`ProofNode [${idx}]`)(`${bytesToPrefixedHexString(trie.hashFunction(p))}`)
+        if (!reachable.has(bytesToPrefixedHexString(trie.hashFunction(p)))) {
+          dbug.extend('ERROR:')(
+            `Proof Invalid: [${idx}]: ${bytesToPrefixedHexString(
+              trie.hashFunction(p)
+            )} is unreachable`
+          )
+          // throw new Error('Proof Invalid: unreachable node')
+        } else {
+          dbug.extend(`Proof [${idx}]`)(
+            `: ${bytesToPrefixedHexString(trie.hashFunction(p))} is reachable`
+          )
+          // const proofNode = await trie._getNodePath(key, dbug)
+          // if (equalsBytes(proofNode.node.rlpEncode(), p)) {
+          //   const value = proofNode.node.getValue()
+          //   dbug(`Found in ProofTrie for key [${bytesToNibbles(key)}]: ${value ? bytesToPrefixedHexString(value) : null}`)
+          //   return value
+          // } else {
+          //   dbug(`node: ${proofNode.node.getType()}`)
+          //   dbug(`path: ${proofNode.path.length} nodes`)
+          //   dbug(`ProofNode Nibbles: [${bytesToNibbles(key)}]`)
+          //   dbug(`remaining Nibbles: [${proofNode.remainingNibbles}]`)
+          // }
+        }
+      }
+      dbug.extend(`ProofTrie`)(`All Proof nodes reachable`)
       const value = await trie.get(key)
+      dbug(
+        `Found in ProofTrie for key [${bytesToNibbles(key)}]: ${
+          value ? bytesToPrefixedHexString(value) : null
+        }`
+      )
       return value
-    } catch {
-      return null
+    } catch (err: any) {
+      debug(`Failed to verify proof: ${err.message}`)
+      return false
     }
   }
   constructor(options: TrieWrapOptions = {}) {
@@ -111,7 +180,7 @@ export class TrieWrap extends TrieWithDB {
     this.debug.extend(`verifyProof`)(`verify proof for key: ${bytesToPrefixedHexString(key)}`)
     this.debug.extend(`verifyProof`)(`in trie with root: ${bytesToPrefixedHexString(root)}`)
     const trie = new TrieWrap({
-      // rootNodeRLP: proof[0],
+      rootNodeRLP: proof[0],
       persistent: this.persistent,
       useNodePruning: this.useNodePruning,
       secure: this.secure,

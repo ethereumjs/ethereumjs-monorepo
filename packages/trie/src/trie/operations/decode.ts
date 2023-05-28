@@ -11,7 +11,7 @@ import {
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToNibbles } from '../../util/nibbles'
 import debug, { Debugger } from 'debug'
-import { bytesToPrefixedHexString } from '@ethereumjs/util'
+import { bytesToPrefixedHexString, bytesToUtf8, equalsBytes, hasTerminator } from '@ethereumjs/util'
 import { removeHexPrefix } from '../../util/hex'
 import { MerklePatriciaTrie } from '../merklePatricia'
 
@@ -24,42 +24,181 @@ export async function decodeNode(
   const encodedLength = encoded.length
   const decoded = RLP.decode(encoded) as Uint8Array[]
   const decodedLength = decoded.length
+  dbug(`nodeHash: ${bytesToPrefixedHexString(this.hashFunction(encoded))}`)
   dbug(`encoded length: (${encodedLength})`)
   dbug(`decoded length: (${decodedLength})`)
   switch (encodedLength) {
-  }
+    // case 0: {
+    //   dbug(`encoding as NullNode`)
+    //   return new NullNode({})
+    // }
+    // case 2: {
+    //   switch (decodedLength) {
+    //     case 2: {
+    //       dbug(`decoded[1] length: (${decoded[1].length})`)
+    //       switch (decoded[1].length) {
+    //         case 32: {
+    //           dbug(`subNode is a HashedNode -- decoding...`)
+    //           const subNode = await this._decodeHashedChild(decoded[1], dbug)
+    //           return new ExtensionNode({
+    //             keyNibbles: bytesToNibbles(decoded[0]),
+    //             subNode,
+    //           })
+    //         }
+    //         case 17: {
+    //           dbug(`subNode is a BranchNode -- decoding...`)
+    //           const subNode = await decodeBranchNode.bind(this)(encoded, dbug)
+    //           return new ExtensionNode({
+    //             keyNibbles: bytesToNibbles(decoded[0]),
+    //             subNode,
+    //           })
+    //         }
+    //         default:
+    //           dbug(`subNode is a LeafNode -- decoding...`)
+    //           const subNode = await this._decodeLeafNode(encoded, dbug)
+    //           return new ExtensionNode({
+    //             keyNibbles: bytesToNibbles(decoded[0]),
+    //             subNode,
+    //           })
+    //       }
+    //     }
+    //     case 0: {
+    //       dbug(`encoding as NullNode`)
+    //       return new NullNode({})
+    //     }
+    //     case 17: {
+    //       const node = await decodeBranchNode.bind(this)(encoded, dbug)
+    //       dbug(`encoding as BranchNode`)
+    //       return node
+    //     }
+    //     case 32: {
+    //       const node = await decodeHashedChild.bind(this)(encoded, dbug)
+    //       dbug(`encoding as ${node.getType()}`)
+    //       return node
+    //     }
+    //     default:
+    //       break
+    //   }
+    // }
+    // case 17: {
+    //   const node = await decodeBranchNode.bind(this)(encoded, dbug)
+    //   dbug(`encoding as BranchNode`)
+    //   return node
+    // }
+    // case 32: {
+    //   const node = await decodeHashedChild.bind(this)(encoded, dbug)
+    //   dbug(`encoding as ${node.getType()}`)
+    //   return node
+    // }
+    default:
+      debug(`decoded: ${decoded}`)
+      switch (decodedLength) {
+        case 0: {
+          dbug(`encoding as NullNode`)
+          return new NullNode({})
+        }
+        case 2: {
+          dbug(`decoded[0] length: (${decoded[0].length})`)
+          dbug(`decoded[1] length: (${decoded[1].length})`)
+          switch (decoded[1].length) {
+            case 32: {
+              const subNode = await this._decodeHashedChild(decoded[1], dbug)
+              dbug(`encoding as ExtensionNode`)
+              return new ExtensionNode({
+                keyNibbles: removeHexPrefix(bytesToNibbles(decoded[0])),
+                subNode,
+              })
+            }
+            case 17: {
+              dbug(`subNode is a BranchNode -- decoding...`)
+              const subNode = await this._decodeBranchNode(RLP.encode(decoded[1]), dbug)
+              return new ExtensionNode({
+                keyNibbles: removeHexPrefix(bytesToNibbles(decoded[0])),
+                subNode,
+              })
+            }
+            default:
+              dbug(`building new LeafNode`)
+              const node = new LeafNode({
+                key: removeHexPrefix(bytesToNibbles(decoded[0])),
+                value: decoded[1],
+                hashFunction: this.hashFunction,
+                source: dbug,
+              })
+              dbug(`equal? ${equalsBytes(node.hash(), this.hashFunction(encoded))}`)
+              if (equalsBytes(node.hash(), this.hashFunction(encoded))) {
+                dbug(`hash: ${bytesToPrefixedHexString(node.hash())}`)
+                dbug(`value: ${node.value}`)
+                return node
+              }
+          }
+        }
 
-  if (encoded.length === 32) {
-    const node = await decodeHashedChild.bind(this)(encoded, dbug)
-    dbug(`encoding as ${node.getType()}`)
-    return node
+        case 17: {
+          const node = await decodeBranchNode.bind(this)(encoded, dbug)
+          dbug(`encoding as BranchNode`)
+          return node
+        }
+        case 32: {
+          const node = await decodeHashedChild.bind(this)(encoded, dbug)
+          dbug(`encoding as ${node.getType()}`)
+          return node
+        }
+        default:
+          break
+      }
   }
-  if (decodedLength === 17) {
-    const node = await decodeBranchNode.bind(this)(encoded, dbug)
-    dbug(`encoding as ${node.getType()}`)
-    return node
-  } else {
-    const raw = RLP.decode(encoded) as Uint8Array[]
-    dbug(`raw (${raw.length}): ${raw.map((r) => r)}`)
-    dbug(`raw (${raw.length}): ${raw.map((r) => r.length).join(', ')}`)
-    return new LeafNode({
-      key: removeHexPrefix(bytesToNibbles(raw[0])),
-      value: raw[1],
-      hashFunction: this.hashFunction,
-    })
-  }
-  // const decode: Record<NodeType, () => Promise<TNode>> = {
-  //   NullNode: async () => {
-  //     return new NullNode({})
-  //   },
-  //   LeafNode: async () => this._decodeLeafNode(encoded, d_bug),
-  //   ProofNode: async () => this._decodeHashedChild(encoded as Uint8Array, dbug),
-  //   ExtensionNode: async () => this._decodeExtensionNode(encoded as Uint8Array, dbug),
-  //   BranchNode: async () => this._decodeBranchNode(encoded as Uint8Array, dbug),
+  // if (decodedLength === 17) {
+  //   const node = await decodeBranchNode.bind(this)(encoded, dbug)
+  //   dbug(`encoding as ${node.getType()}`)
+  //   return node
+  // } else if (encoded.length === 32) {
+  //   const node = await decodeHashedChild.bind(this)(encoded, dbug)
+  //   dbug(`encoding as ${node.getType()}`)
+  //   return node
+  // } else if (decodedLength === 2) {
+  //   dbug(`decoded: length=${decoded.length}`)
+  //   dbug(`decoded[0] length= ${decoded[0].length}`)
+  //   dbug(`decoded[1] length= ${decoded[1].length}`)
+  //   if (decoded[1].length === 32) {
+  //     const node = await decodeExtensionNode.bind(this)(encoded, dbug)
+  //     dbug(`encoding as ${node.getType()}`)
+  //     return node
+  //   } else if (decoded[1].length === 17) {
+  //     const subNodeRaw = decoded[1] as any as Uint8Array[]
+  //     for await (const [idx, r] of subNodeRaw.entries()) {
+  //       dbug(`subNodeRaw[${idx}]: ${r}`)
+  //       const subNodeBranch = await this._decodeToNode(r, dbug)
+  //       dbug(`subNodeBranch[${idx}]: ${subNodeBranch.getType()}`)
+  //     }
+  //     const subNode = new BranchNode({
+  //       hashFunction: this.hashFunction,
+  //       branches: subNodeRaw.slice(0, 16),
+  //       source: dbug,
+  //       value: subNodeRaw[17],
+  //     })
+  //     // for await (const [idx, d] of decoded[1].slice(0, 16).entries()) {
+  //     //   dbug(`decoded[1][${idx}]: ( ${(d as any).length} bytes ) ${d}`)
+  //     //   subNode.setChild(idx, await decodeToNode.bind(this)((d as any), dbug))
+  //     // }
+  //     const node = new ExtensionNode({
+  //       keyNibbles: removeHexPrefix(bytesToNibbles(decoded[0])),
+  //       subNode,
+  //     })
+  //     // const node = await decodeExtensionNode.bind(this)(encoded, dbug)
+  //     dbug(`encoding as ${node.getType()}`)
+  //     return node
+
+  //   } else {
+  //     return new LeafNode({
+  //       key: removeHexPrefix(bytesToNibbles(decoded[0])),
+  //       value: decoded[1],
+  //       hashFunction: this.hashFunction,
+  //       source: dbug
+  //     })
+  //   }
   // }
-  // const type = getNodeType(encoded)
-  // const node = await decode[type]()
-  // return node
+  throw new Error(`encoded length (${encodedLength}) -- decoded length (${decodedLength})`)
 }
 export async function decodeHashedChild(
   this: MerklePatriciaTrie,
@@ -78,6 +217,7 @@ export async function decodeHashedChild(
     hash: encoded as Uint8Array,
     load: async () => (await this.lookupNodeByHash(encoded as Uint8Array)) ?? node!.copy(),
     hashFunction: this.hashFunction,
+    source: dbug,
   })
   dbug(`decoded branch into ProofNode`)
   return node
@@ -98,6 +238,7 @@ export async function decodeLeafNode(
     key: bytesToNibbles(key),
     value,
     hashFunction: this.hashFunction,
+    source: d_bug,
   })
 
   return node
@@ -109,40 +250,39 @@ export async function decodeBranchNode(
   dbug?: Debugger
 ): Promise<BranchNode> {
   dbug = dbug ? dbug.extend('decodeBranchNode') : debug('decodeBranchNode')
-  const _encoded: (Uint8Array | Uint8Array[])[] = (RLP.decode(encoded) as Uint8Array[]).map(
-    (e: any) => {
-      return e === undefined
-        ? Uint8Array.from([])
-        : e.length === 0
-        ? Uint8Array.from([])
-        : e.length > 1
-        ? Uint8Array.from([...e])
-        : Uint8Array.from([e])
+  dbug(`encoded: ${encoded}`)
+  const _decoded = RLP.decode(encoded) as Uint8Array[]
+  for (const [i, e] of _decoded.entries()) {
+    if (e.length === 32) {
+      dbug(`encoded${i}: ${bytesToPrefixedHexString(e as Uint8Array)}`)
+    } else {
+      dbug(`encoded${i}: length=${e.length} [${e}]`)
     }
-  )
-  for (const [i, e] of _encoded.entries()) {
-    dbug(`encoded${i}: length=${e.length} [${e}]`)
   }
   // const raw = RLP.decode(encoded as Uint8Array) as EncodedChild[]
-  const value = _encoded[16] as Uint8Array
+  const value = _decoded[16] as Uint8Array
   // const branches: EncodedChild[] = Array.from({ length: 16 }, (_, i) => raw[i])
   let decoded = new BranchNode({
     value,
     hashFunction: this.hashFunction,
+    source: dbug,
   })
-  for await (const [i, branch] of _encoded.slice(0, 16).entries()) {
+  for await (const [i, branch] of _decoded.slice(0, 16).entries()) {
     dbug.extend(`child[${i}]`)(`(${branch.length})`)
     if (!branch) {
       throw new Error('no branch')
     }
     let child: TNode
     if (branch.length === 0) {
-      child = new NullNode({})
+      child = new NullNode({
+        source: dbug,
+      })
     } else if (branch.length === 2) {
       child = new LeafNode({
-        key: removeHexPrefix(bytesToNibbles(branch[0] as Uint8Array)),
-        value: branch[1] as Uint8Array,
+        key: removeHexPrefix(bytesToNibbles(branch[0] as any)),
+        value: branch[1] as any,
         hashFunction: this.hashFunction,
+        source: dbug,
       })
     } else if (branch.length === 32) {
       child = await decodeHashedChild.bind(this)(branch as Uint8Array, dbug)
@@ -175,6 +315,8 @@ export async function decodeExtensionNode(
         hash: subNode as Uint8Array,
         nibbles: [],
         load: async () => (await this.lookupNodeByHash(subNode)) ?? child.copy(),
+        hashFunction: this.hashFunction,
+        source: dbug,
       })
   } else {
     child = await decodeNode.bind(this)(subNode, dbug)
@@ -183,6 +325,7 @@ export async function decodeExtensionNode(
     keyNibbles: removeHexPrefix(bytesToNibbles(key)),
     subNode: child,
     hashFunction: this.hashFunction,
+    source: dbug,
   })
   return decoded
 }

@@ -117,16 +117,10 @@ tape('kv stream test', async function (t) {
     stream.on('data', (d: { key: number[]; value: Uint8Array }) => {
       const key = bytesToUtf8(nibblestoBytes(d.key))
       const value = bytesToUtf8(d.value)
-      console.log({
-        key,
-        value,
-      })
       st.equal(value, valObj[key])
       delete valObj[key]
     })
-    stream.on('close', () => {
-      console.log('closing time')
-    })
+    stream.on('close', () => {})
     stream.on('end', () => {
       const keys = Object.keys(valObj)
       st.equal(keys.length, 0)

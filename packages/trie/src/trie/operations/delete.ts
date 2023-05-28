@@ -76,10 +76,7 @@ export async function _deleteAtNode(
         debug(`[${_keyNibbles[0]}] [${_keyNibbles.slice(1)}]`)
         if (childNode.getType() === 'LeafNode' && doKeysMatch(childNibbles, _keyNibbles.slice(1))) {
           debug(`found LeafNode to delete, replacing with NullNode`)
-          _node = branchNode.updateChild(
-            new NullNode({ hashFunction: this.hashFunction }),
-            childIndex
-          )
+          _node = await branchNode.deleteChild(childIndex)
           return _node
         }
         if (childNode.getType() === 'LeafNode') {

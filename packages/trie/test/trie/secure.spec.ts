@@ -37,9 +37,6 @@ tape('SecureTrie', function (t) {
       st.equal(bytesToUtf8(retrieved!), '01234', 'should put/get a value')
       const proof = await trie._createProof(utf8ToBytes('key1aa'))
       st.ok(proof, 'proof should be created')
-      console.log(proof.map((p) => bytesToPrefixedHexString(p)))
-      console.log(bytesToPrefixedHexString(trie.root()))
-      console.log(bytesToPrefixedHexString(trie.hashFunction(proof[0])))
       const val = await trie.verifyProof(trie.root(), utf8ToBytes('key1aa'), proof)
       t.ok(val)
       if (val) {

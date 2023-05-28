@@ -79,6 +79,7 @@ export type TrieOptsWithDefaults = TrieOpts & {
 
 export interface MerklePatriciaTrieOptions {
   root?: TNode
+  rootHash?: Uint8Array
   rootNodeRLP?: Uint8Array
   nodes?: Map<Uint8Array, TNode>
   secure?: boolean

@@ -32,7 +32,16 @@ export class MerklePatriciaTrie {
   nodes?: Map<Uint8Array, TNode>
   constructor(options: MerklePatriciaTrieOptions = {}) {
     this.hashFunction = options.hashFunction ?? keccak256
-    this.rootNode = options.root ?? new NullNode({ hashFunction: this.hashFunction })
+    this.rootNode = options.root
+      ? options.root
+      : options.rootHash
+      ? new ProofNode({
+          hash: options.rootHash,
+          load: async () => this.lookupNodeByHash(options.rootHash!),
+          nibbles: [],
+          hashFunction: this.hashFunction,
+        })
+      : new NullNode({ hashFunction: this.hashFunction })
     this.nodes = new Map()
     this.debug = options.debug ? options.debug.extend(`Trie`) : debug('Trie')
     this._operationMutex = new Mutex()
@@ -67,6 +76,11 @@ export class MerklePatriciaTrie {
 
     const newRoot = await this.lookupNodeByHash(rootHash)
     if (!newRoot) {
+      debug(
+        `key: ${bytesToPrefixedHexString(
+          rootHash
+        )} returned null from DB -- setting ProofNode as root`
+      )
       const proofRoot = new ProofNode({
         hash: rootHash,
         load: async () => this.lookupNodeByHash(rootHash),

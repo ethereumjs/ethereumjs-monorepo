@@ -19,15 +19,15 @@ import type { HashKeysFunction } from '../src'
 tape('simple save and retrieve', function (tester) {
   const it = tester.test
 
-  // it('should not crash if given a non-existent root', async function (t) {
-  //   const root = hexStringToBytes(
-  //     '3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d'
-  //   )
-  //   const trie = new Trie({ root })
-  //   const value = await trie.get(utf8ToBytes('test'))
-  //   t.equal(value, null)
-  //   t.end()
-  // })
+  it('should not crash if given a non-existent root', async function (t) {
+    const rootHash = hexStringToBytes(
+      '3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d'
+    )
+    const trie = new Trie({ rootHash })
+    const value = await trie.get(utf8ToBytes('test'))
+    t.equal(value, null)
+    t.end()
+  })
 
   const trie = new Trie()
 
@@ -227,64 +227,40 @@ tape('testing deletion cases', function (tester) {
   })
 })
 
-  tape('shall handle the case of node not found correctly', async (t) => {
-    const trie = new Trie({ cacheSize })
-    await trie.put(utf8ToBytes('a'), utf8ToBytes('value1'))
-    await trie.put(utf8ToBytes('aa'), utf8ToBytes('value2'))
-    await trie.put(utf8ToBytes('aaa'), utf8ToBytes('value3'))
-// tape('shall handle the case of node not found correctly', async (t) => {
-//   const trie = new Trie()
-//   await trie.put(utf8ToBytes('a'), utf8ToBytes('value1'))
-//   await trie.put(utf8ToBytes('aa'), utf8ToBytes('value2'))
-//   await trie.put(utf8ToBytes('aaa'), utf8ToBytes('value3'))
+tape('shall handle the case of node not found correctly', async (t) => {
+  const trie = new Trie({})
+  await trie.put(utf8ToBytes('a'), utf8ToBytes('value1'))
+  await trie.put(utf8ToBytes('aa'), utf8ToBytes('value2'))
+  await trie.put(utf8ToBytes('aaa'), utf8ToBytes('value3'))
 
-    /* Setups a trie which consists of
-      ExtensionNode ->
-      BranchNode -> value1
-      ExtensionNode ->
-      BranchNode -> value2
-      LeafNode -> value3
-    */
-//   /* Setups a trie which consists of
-//     ExtensionNode ->
-//     BranchNode -> value1
-//     ExtensionNode ->
-//     BranchNode -> value2
-//     LeafNode -> value3
-//   */
+  /* Setups a trie which consists of
+    ExtensionNode ->
+    BranchNode -> value1
+    ExtensionNode ->
+    BranchNode -> value2
+    LeafNode -> value3
+  */
 
-    let path = await trie.findPath(utf8ToBytes('aaa'))
-//   let path = await trie.getPath(utf8ToBytes('aaa'))
+  let path = await trie.getPath(utf8ToBytes('aaa'))
+  t.ok(path.path.pop() !== null, 'getPath should find a node')
+  path = await trie.getPath(utf8ToBytes('aaa'))
+  for (const [idx, p] of path.path.entries()) {
+    console.log(idx, p.getType())
+  }
+  await trie.del(utf8ToBytes('aaa'))
+  path = await trie.getPath(utf8ToBytes('aaa'))
+  for (const [idx, p] of path.path.entries()) {
+    console.log(idx, p.getType())
+  }
+  t.equal(path.path[0].getValue(), null, 'getPath should not return a node now')
+  t.equal(
+    path.path[0].getType(),
+    'ExtensionNode',
+    'getPath should find the first extension node which is still in the DB'
+  )
 
-    t.ok(path.node !== null, 'findPath should find a node')
-//   t.ok(path.path.pop() !== null, 'getPath should find a node')
-
-    const { stack } = await trie.findPath(utf8ToBytes('aaa'))
-    // @ts-expect-error
-    await trie._db.del(keccak256(stack[1].serialize())) // delete the BranchNode -> value1 from the DB
-//   path = await trie.getPath(utf8ToBytes('aaa'))
-//   console.log(path)
-//   await trie.database().del(keccak256(path.path[1].rlpEncode())) // delete the BranchNode -> value1 from the DB
-
-    path = await trie.findPath(utf8ToBytes('aaa'))
-//   path = await trie.getPath(utf8ToBytes('aaa'))
-
-    t.ok(path.node === null, 'findPath should not return a node now')
-    t.ok(
-      path.stack.length === 1,
-      'findPath should find the first extension node which is still in the DB'
-    )
-//   t.equal(path.path[0].getValue(), null, 'getPath should not return a node now')
-//   t.equal(
-//     path.path.length, 1,
-//     'getPath should find the first extension node which is still in the DB'
-//   )
-//   console.log(path)
-
-    t.end()
-  })
-//   t.end()
-// })
+  t.end()
+})
 
   tape('it should create the genesis state root from ethereum', function (tester) {
     const it = tester.test

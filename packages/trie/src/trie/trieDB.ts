@@ -1,6 +1,6 @@
 import { bytesToPrefixedHexString, equalsBytes } from '@ethereumjs/util'
 import { MerklePatriciaTrie } from './merklePatricia'
-import { NullNode } from './node'
+import { NullNode, ProofNode } from './node'
 import { ROOT_DB_KEY } from '../types'
 import { TrieDatabase } from '../db'
 import * as LRUCache from 'lru-cache'
@@ -100,10 +100,17 @@ export class TrieWithDB extends MerklePatriciaTrie {
   async storeNode(node: TNode, debug: Debugger = this.debug): Promise<void> {
     debug = debug
     debug.extend('store').extend(node.getType())(`${bytesToPrefixedHexString(node.hash())}}`)
-    const serializedNode = node.rlpEncode()
-    const nodeHash = node.hash()
-    this.cache.set(nodeHash, node)
-    await this.db.put(nodeHash, serializedNode)
+    if (node instanceof ProofNode) {
+      node = await this.resolveProofNode(node)
+    }
+    if (node instanceof ProofNode) {
+      return
+    } else {
+      const serializedNode = node.rlpEncode()
+      const nodeHash = node.hash()
+      this.cache.set(nodeHash, node)
+      await this.db.put(nodeHash, serializedNode)
+    }
   }
   async persistRoot(rootDbKey: Uint8Array = ROOT_DB_KEY): Promise<void> {
     this.debug.extend('persistRoot')(bytesToPrefixedHexString(rootDbKey))
