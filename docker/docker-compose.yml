@@ -8,5 +8,5 @@ services:
     volumes:
       - ./datadir:/datadir
     command: >
-      --datadir=/datadir
+      --dataDir=/datadir
     network_mode: host
