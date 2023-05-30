@@ -280,6 +280,11 @@ export class VMExecution extends Execution {
     let parentState: Uint8Array | undefined
     let errorBlock: Block | undefined
 
+    // flag for vm to clear statemanager cache on runBlock
+    //  i) If on start of iterator the last run state is not same as the block's parent
+    //  ii) If reorg happens on the block iterator
+    let clearCache = false
+
     while (
       this.started &&
       !this.config.shutdown &&
@@ -305,10 +310,17 @@ export class VMExecution extends Execution {
               parentState = headBlock.header.stateRoot
 
               if (reorg) {
+                clearCache = true
                 this.config.logger.info(
-                  `Chain reorg happened, set new head to block number=${headBlock.header.number}, clearing state cache for VM execution.`
+                  `VM run: Chain reorged, setting new head to block number=${headBlock.header.number} clearCache=${clearCache}.`
                 )
+              } else {
+                const prevVMStateRoot = await this.vm.stateManager.getStateRoot()
+                clearCache = !equalsBytes(prevVMStateRoot, parentState)
               }
+            } else {
+              // Continuation of last vm run, no need to clearCache
+              clearCache = false
             }
 
             // run block, update head if valid
@@ -356,7 +368,7 @@ export class VMExecution extends Execution {
                 const result = await this.vm.runBlock({
                   block,
                   root: parentState,
-                  clearCache: reorg ? true : false,
+                  clearCache,
                   skipBlockValidation,
                   skipHeaderValidation: true,
                 })
