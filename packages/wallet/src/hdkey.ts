@@ -1,4 +1,3 @@
-/* eslint-disable ethereumjs/noBuffer */
 import { HDKey } from 'ethereum-cryptography/hdkey'
 
 import { Wallet } from './index'
@@ -10,7 +9,7 @@ export class EthereumHDKey {
    * For the seed we suggest to use [bip39](https://npmjs.org/package/bip39) to
    * create one from a BIP39 mnemonic.
    */
-  public static fromMasterSeed(seedBuffer: Buffer): EthereumHDKey {
+  public static fromMasterSeed(seedBuffer: Uint8Array): EthereumHDKey {
     return new EthereumHDKey(HDKey.fromMasterSeed(seedBuffer))
   }
 
@@ -59,9 +58,9 @@ export class EthereumHDKey {
    */
   public getWallet(): Wallet {
     if (this._hdkey.privateKey) {
-      return Wallet.fromPrivateKey(Buffer.from(this._hdkey.privateKey))
+      return Wallet.fromPrivateKey(this._hdkey.privateKey)
     }
     if (!this._hdkey.publicKey) throw new Error('No hdkey')
-    return Wallet.fromPublicKey(Buffer.from(this._hdkey.publicKey), true)
+    return Wallet.fromPublicKey(this._hdkey.publicKey, true)
   }
 }
