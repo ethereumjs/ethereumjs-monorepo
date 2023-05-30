@@ -19,5 +19,12 @@ jobs:
           filters: |
             src:
               - 'package-lock.json'
+        
+      - name: Use Node.js 18
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+          cache: 'npm'
+
       - if: steps.changes.outputs.src == 'true'
-        run: npx lockfile-lint --path="package-lock.json" --allowed-hosts=npm --allowed-schemes "file:" "https:" "npm:"
+        run: npm install lockfile-lint-api && node scripts/lockfile-lint.js

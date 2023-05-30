@@ -1,9 +1,9 @@
 import { bytesToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { Chain } from '../../../lib/blockchain'
-import { Config } from '../../../lib/config'
-import { FlowControl, LesProtocol } from '../../../lib/net/protocol'
+import { Chain } from '../../../src/blockchain'
+import { Config } from '../../../src/config'
+import { FlowControl, LesProtocol } from '../../../src/net/protocol'
 
 tape('[LesProtocol]', (t) => {
   t.test('should get properties', async (t) => {

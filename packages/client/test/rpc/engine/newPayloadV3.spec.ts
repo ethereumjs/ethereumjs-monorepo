@@ -4,7 +4,7 @@ import { Address, bytesToPrefixedHexString, hexStringToBytes, zeros } from '@eth
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import blocks = require('../../testdata/blocks/beacon.json')
 import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'

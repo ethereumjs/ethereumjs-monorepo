@@ -228,7 +228,7 @@ const retestethAlias = {
   EIP150: 'tangerineWhistle',
   EIP158: 'spuriousDragon',
   ConstantinopleFix: 'petersburg',
-  Merged: 'paris',
+  Merge: 'paris',
 }
 
 const testLegacy = {

@@ -9,10 +9,10 @@ import {
 import { Address, hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { Chain } from '../../lib/blockchain'
-import { Config } from '../../lib/config'
-import { FullEthereumService } from '../../lib/service'
-import { Event } from '../../lib/types'
+import { Chain } from '../../src/blockchain'
+import { Config } from '../../src/config'
+import { FullEthereumService } from '../../src/service'
+import { Event } from '../../src/types'
 
 import { MockServer } from './mocks/mockserver'
 import { destroy, setup } from './util'

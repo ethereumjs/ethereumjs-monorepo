@@ -36,9 +36,9 @@ export interface RlpxPeerOptions extends Omit<PeerOptions, 'address' | 'transpor
  * @memberof module:net/peer
  * @example
  * ```typescript
- * import { RlpxPeer } from './lib/net/peer'
- * import { Chain } from './lib/blockchain'
- * import { EthProtocol } from './lib/net/protocol'
+ * import { RlpxPeer } from './src/net/peer'
+ * import { Chain } from './src/blockchain'
+ * import { EthProtocol } from './src/net/protocol'
  *
  * const chain = await Chain.create()
  * const protocols = [ new EthProtocol({ chain })]

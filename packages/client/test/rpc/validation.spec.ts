@@ -1,8 +1,8 @@
 import { bytesToHex, bytesToPrefixedHexString, randomBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { INVALID_PARAMS } from '../../lib/rpc/error-code'
-import { middleware, validators } from '../../lib/rpc/validation'
+import { INVALID_PARAMS } from '../../src/rpc/error-code'
+import { middleware, validators } from '../../src/rpc/validation'
 
 import { baseRequest, startRPC } from './helpers'
 import { checkError } from './util'

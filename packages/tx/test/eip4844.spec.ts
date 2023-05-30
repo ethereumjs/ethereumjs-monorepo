@@ -21,7 +21,7 @@ import { BlobEIP4844Transaction, TransactionFactory } from '../src'
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
 const pk = randomBytes(32)
-if (isBrowser() === false) initKZG(kzg, __dirname + '/../../client/lib/trustedSetups/devnet4.txt')
+if (isBrowser() === false) initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet4.txt')
 
 const gethGenesis = require('../../block/test/testdata/4844-hardfork.json')
 const common = Common.fromGethGenesis(gethGenesis, {
@@ -73,7 +73,7 @@ tape('fromTxData using from a json', (t) => {
       maxFeePerGas: '0x12a05f200',
       gasLimit: '0x33450',
       value: '0xbc614e',
-      input: '0x',
+      data: '0x',
       v: '0x0',
       r: '0x8a83833ec07806485a4ded33f24f5cea4b8d4d24dc8f357e6d446bcdae5e58a7',
       s: '0x68a2ba422a50cf84c0b5fcbda32ee142196910c97198ffd99035d920c2b557f8',
@@ -82,12 +82,13 @@ tape('fromTxData using from a json', (t) => {
       accessList: null,
       maxFeePerDataGas: '0xb2d05e00',
       versionedHashes: ['0x01b0a4cdd5f55589f5c5b4d46c76704bb6ce95c0a8c09f77f197a57808dded28'],
-      kzgAggregatedProof:
-        '0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-      hash: '35cfcdb43774134e8a8b05e936222c35bc5c68b9aa672453eedf5897213b4a6b',
-      serialized:
-        '034500000000a7585eaecd6b446d7e358fdc244d8d4bea5c4ff233ed4d5a480678c03e83838af857b5c220d93590d9ff9871c910691942e12ea3bdfcb5c084cf502a42baa268b357870200000000000000000000000000000000000000000000000000000000000000000000000000f2052a0100000000000000000000000000000000000000000000000000000000f2052a010000000000000000000000000000000000000000000000000000005034030000000000c00000004e61bc0000000000000000000000000000000000000000000000000000000000d5000000d5000000005ed0b200000000000000000000000000000000000000000000000000000000d500000001ffb38a7a99e3e2335be83fc74b7faa19d553124301b0a4cdd5f55589f5c5b4d46c76704bb6ce95c0a8c09f77f197a57808dded28',
     }
+    const txMeta = {
+      hash: 'e5e02be0667b6d31895d1b5a8b916a6761cbc9865225c6144a3e2c50936d173e',
+      serialized:
+        '03f89b84028757b38085012a05f20085012a05f2008303345094ffb38a7a99e3e2335be83fc74b7faa19d553124383bc614e80c084b2d05e00e1a001b0a4cdd5f55589f5c5b4d46c76704bb6ce95c0a8c09f77f197a57808dded2880a08a83833ec07806485a4ded33f24f5cea4b8d4d24dc8f357e6d446bcdae5e58a7a068a2ba422a50cf84c0b5fcbda32ee142196910c97198ffd99035d920c2b557f8',
+    }
+
     const c = common.copy()
     c['_chainParams'] = Object.assign({}, common['_chainParams'], {
       chainId: Number(txData.chainId),
@@ -97,28 +98,33 @@ tape('fromTxData using from a json', (t) => {
       t.pass('Should be able to parse a json data and hash it')
 
       t.equal(typeof tx.maxFeePerDataGas, 'bigint', 'should be able to parse correctly')
-      t.equal(bytesToHex(tx.serialize()), txData.serialized, 'serialization should match')
+      t.equal(bytesToHex(tx.serialize()), txMeta.serialized, 'serialization should match')
       // TODO: fix the hash
-      t.equal(bytesToHex(tx.hash()), txData.hash, 'hash should match')
+      t.equal(bytesToHex(tx.hash()), txMeta.hash, 'hash should match')
+
+      const jsonData = tx.toJSON()
+      // override few fields with equivalent values to have a match
+      t.deepEqual(
+        { ...txData, accessList: [] },
+        { gasPrice: null, ...jsonData },
+        'toJSON should give correct json'
+      )
+
+      const fromSerializedTx = BlobEIP4844Transaction.fromSerializedTx(
+        hexToBytes(txMeta.serialized),
+        { common: c }
+      )
+      t.equal(
+        bytesToHex(fromSerializedTx.hash()),
+        txMeta.hash,
+        'fromSerializedTx hash should match'
+      )
     } catch (e) {
       t.fail('failed to parse json data')
     }
 
     t.end()
   }
-})
-
-tape('fromSerializedTx - from bytes', (t) => {
-  const serializedBlobTx = hexToBytes(
-    '034500000001a34a3d6d997350dfa6c9645624b0a02b1c79591fe90d574f2ee5599103fbcff03e2156483cc73cac5648fa0348b487c90cc2713a7d636df7335333ca1b18c650010000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000ff0000000000000000000000000000000000000000000000000000000000000040420f0000000000c00000000000000000000000000000000000000000000000000000000000000000000000d5000000d5000000e803000000000000000000000000000000000000000000000000000000000000d5000000013da33b9a0894b908ddbb00d96399e506515a1009016ebc7b0ffa71dc019db13caaf539032134295cc5e652fa5b82c8e67f0fd9e1'
-  )
-  try {
-    BlobEIP4844Transaction.fromSerializedTx(serializedBlobTx, { common })
-    t.pass('Should correctly deserialize blob tx from bytes')
-  } catch (e) {
-    t.fail(`Could not deserialize blob tx from bytes, Error: ${(e as Error).message}`)
-  }
-  t.end()
 })
 
 tape('EIP4844 constructor tests - invalid scenarios', (t) => {
@@ -344,8 +350,8 @@ tape('hash() and signature verification', async (t) => {
       { common }
     )
     t.equal(
-      bytesToHex(unsignedTx.unsignedHash()),
-      'a99daca5e246f242df985eca984d17ce1a510a780fdd5221d5635f96a5a1bebc',
+      bytesToHex(unsignedTx.getMessageToSign(true)),
+      '8ce8c3544ca173c0e8dd0e86319d4ebfe649e15a730137a6659ba3a721a9ff8b',
       'produced the correct transaction hash'
     )
     const signedTx = unsignedTx.sign(

@@ -9,7 +9,7 @@ module.exports = function (config) {
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
         acornOptions: {
-          ecmaVersion: 12,
+          ecmaVersion: 13,
         },
       },
       tsconfig: './tsconfig.json',

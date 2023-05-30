@@ -2,9 +2,9 @@ import { BlockHeader } from '@ethereumjs/block'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Chain } from '../../lib/blockchain'
-import { Config } from '../../lib/config'
-import { Event } from '../../lib/types'
+import { Chain } from '../../src/blockchain'
+import { Config } from '../../src/config'
+import { Event } from '../../src/types'
 
 tape('[LightSynchronizer]', async (t) => {
   class PeerPool {
@@ -19,9 +19,9 @@ tape('[LightSynchronizer]', async (t) => {
     destroy() {}
   }
   HeaderFetcher.prototype.fetch = td.func<any>()
-  td.replace<any>('../../lib/sync/fetcher', { HeaderFetcher })
+  td.replace<any>('../../src/sync/fetcher', { HeaderFetcher })
 
-  const { LightSynchronizer } = await import('../../lib/sync/lightsync')
+  const { LightSynchronizer } = await import('../../src/sync/lightsync')
 
   t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })

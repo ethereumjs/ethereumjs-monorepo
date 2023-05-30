@@ -4,9 +4,9 @@ import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
 import { bigIntToBytes, bytesToBigInt, hexStringToBytes, randomBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { Chain } from '../../../lib/blockchain/chain'
-import { Config } from '../../../lib/config'
-import { EthProtocol } from '../../../lib/net/protocol'
+import { Chain } from '../../../src/blockchain/chain'
+import { Config } from '../../../src/config'
+import { EthProtocol } from '../../../src/net/protocol'
 
 tape('[EthProtocol]', (t) => {
   t.test('should get properties', async (t) => {

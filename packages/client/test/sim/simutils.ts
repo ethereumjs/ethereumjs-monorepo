@@ -18,9 +18,9 @@ import { Level } from 'level'
 import { execSync, spawn } from 'node:child_process'
 import * as net from 'node:net'
 
-import { EthereumClient } from '../../lib/client'
-import { Config } from '../../lib/config'
-import { LevelDB } from '../../lib/execution/level'
+import { EthereumClient } from '../../src/client'
+import { Config } from '../../src/config'
+import { LevelDB } from '../../src/execution/level'
 
 import type { Common } from '@ethereumjs/common'
 import type { TxOptions } from '@ethereumjs/tx'
@@ -29,7 +29,7 @@ import type { Client } from 'jayson/promise'
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 // Initialize the kzg object with the kzg library
-initKZG(kzg, __dirname + '/../../lib/trustedSetups/devnet4.txt')
+initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet4.txt')
 
 export async function waitForELOnline(client: Client): Promise<string> {
   for (let i = 0; i < 15; i++) {

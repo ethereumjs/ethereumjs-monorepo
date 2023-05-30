@@ -3,10 +3,10 @@ import { MemoryLevel } from 'memory-level'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Chain } from '../../../lib/blockchain/chain'
-import { Config } from '../../../lib/config'
-import { Skeleton } from '../../../lib/sync'
-import { Event } from '../../../lib/types'
+import { Chain } from '../../../src/blockchain/chain'
+import { Config } from '../../../src/config'
+import { Skeleton } from '../../../src/sync'
+import { Event } from '../../../src/types'
 import { wait } from '../../integration/util'
 
 tape('[ReverseBlockFetcher]', async (t) => {
@@ -17,7 +17,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
   PeerPool.prototype.idle = td.func<any>()
   PeerPool.prototype.ban = td.func<any>()
 
-  const { ReverseBlockFetcher } = await import('../../../lib/sync/fetcher/reverseblockfetcher')
+  const { ReverseBlockFetcher } = await import('../../../src/sync/fetcher/reverseblockfetcher')
 
   t.test('should start/stop', async (t) => {
     const config = new Config({ maxPerRequest: 5, transports: [] })

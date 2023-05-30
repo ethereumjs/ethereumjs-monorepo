@@ -24,18 +24,18 @@ import * as readline from 'readline'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
-import { EthereumClient } from '../lib/client'
-import { Config, DataDirectory, SyncMode } from '../lib/config'
-import { LevelDB } from '../lib/execution/level'
-import { getLogger } from '../lib/logging'
-import { Event } from '../lib/types'
-import { parseMultiaddrs } from '../lib/util'
+import { EthereumClient } from '../src/client'
+import { Config, DataDirectory, SyncMode } from '../src/config'
+import { LevelDB } from '../src/execution/level'
+import { getLogger } from '../src/logging'
+import { Event } from '../src/types'
+import { parseMultiaddrs } from '../src/util'
 
 import { helprpc, startRPCServers } from './startRpc'
 
-import type { Logger } from '../lib/logging'
-import type { FullEthereumService } from '../lib/service'
-import type { ClientOpts } from '../lib/types'
+import type { Logger } from '../src/logging'
+import type { FullEthereumService } from '../src/service'
+import type { ClientOpts } from '../src/types'
 import type { RPCArgs } from './startRpc'
 import type { BlockBytes } from '@ethereumjs/block'
 import type { GenesisState } from '@ethereumjs/blockchain'
@@ -658,7 +658,7 @@ async function run() {
 
   // TODO sharding: Just initialize kzg library now, in future it can be optimized to be
   // loaded and initialized on the sharding hardfork activation
-  initKZG(kzg, __dirname + '/../lib/trustedSetups/devnet4.txt')
+  initKZG(kzg, __dirname + '/../src/trustedSetups/devnet4.txt')
   // Give network id precedence over network name
   const chain = args.networkId ?? args.network ?? Chain.Mainnet
 
