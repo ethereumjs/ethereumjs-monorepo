@@ -514,7 +514,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
   /**
    * Clears all storage entries for the account corresponding to `address`.
-   * @param address -  Address to clear the storage of
+   * @param address - Address to clear the storage of
    */
   async clearContractStorage(address: Address): Promise<void> {
     let account = await this.getAccount(address)
