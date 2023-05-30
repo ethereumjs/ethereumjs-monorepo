@@ -269,7 +269,7 @@ export class VMExecution extends Execution {
     this.running = true
 
     // run inside a lock so as to not be entangle with runWithoutSetHead or setHead
-    return await this.runWithLock<number>(async () => {
+    return this.runWithLock<number>(async () => {
       let numExecuted: number | null | undefined = undefined
 
       const { blockchain } = this.vm
