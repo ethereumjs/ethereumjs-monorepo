@@ -127,7 +127,7 @@ export class Block {
 
     const withdrawals = withdrawalsData?.map(Withdrawal.fromWithdrawalData)
 
-    return new Block(header, transactions, uncleHeaders, opts, withdrawals)
+    return new Block(header, transactions, uncleHeaders, withdrawals, opts)
   }
 
   /**
@@ -212,7 +212,7 @@ export class Block {
       }))
       ?.map(Withdrawal.fromWithdrawalData)
 
-    return new Block(header, transactions, uncleHeaders, opts, withdrawals)
+    return new Block(header, transactions, uncleHeaders, withdrawals, opts)
   }
 
   /**
@@ -370,8 +370,8 @@ export class Block {
     header?: BlockHeader,
     transactions: TypedTransaction[] = [],
     uncleHeaders: BlockHeader[] = [],
-    opts: BlockOptions = {},
-    withdrawals?: Withdrawal[]
+    withdrawals?: Withdrawal[],
+    opts: BlockOptions = {}
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
     this._common = this.header._common
