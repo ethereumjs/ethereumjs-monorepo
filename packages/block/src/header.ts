@@ -117,14 +117,18 @@ export class BlockHeader {
         throw new Error('invalid header. baseFeePerGas should be provided')
       }
     }
-    if (opts.common && number !== undefined) {
-      // For some reason we switch to Cancun at some block, but then import a Shanghai block,
-      // and then on this Shanghai block the provided common points to Cancun
-      // Shanghai has and should not have excessDataGas so it throws if we do not clone and set timestamp of the common
-      const clone = opts.common?.copy()
-      clone.setHardforkByBlockNumber(number, undefined, timestamp)
-      if (clone.isActivatedEIP(4844) && excessDataGas === undefined) {
-        throw new Error('invalid header. excessDataGas should be provided')
+    if (opts.common && number !== undefined && timestamp !== undefined) {
+      if (opts.common.isActivatedEIP(4844) && excessDataGas === undefined) {
+        // There are situations where the common points to the wrong HF. Clone the common and
+        // set the HF by timestamp to ensure we are at the right fork.
+        // Note, for instance in blockchain/db/manager in `getHeader` we use the common of the manager
+        // This could thus point to the wrong HF (for instance, at the Shanghai -> Cancun fork block)
+        // The HF will be set to Cancun, but the parent block should point to Shanghai, but instead points to Cancun.
+        const clone = opts.common?.copy()
+        clone.setHardforkByBlockNumber(number, undefined, timestamp)
+        if (clone.isActivatedEIP(4844)) {
+          throw new Error('invalid header. excessDataGas should be provided')
+        }
       }
     }
     return BlockHeader.fromHeaderData(headerData, opts)
