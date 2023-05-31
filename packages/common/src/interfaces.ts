@@ -60,8 +60,8 @@ export interface StateManagerInterface {
 
 export interface EVMStateManagerInterface extends StateManagerInterface {
   originalStorageCache: {
-    getOriginalContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
-    clearOriginalStorageCache(): void
+    get(address: Address, key: Uint8Array): Promise<Uint8Array>
+    clear(): void
   }
 
   dumpStorage(address: Address): Promise<StorageDump> // only used in client

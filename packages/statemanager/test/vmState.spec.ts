@@ -120,7 +120,7 @@ tape('Original storage cache', async (t) => {
     const res = await stateManager.getContractStorage(address, key)
     st.deepEqual(res, new Uint8Array(0))
 
-    const origRes = await stateManager.originalStorageCache.getOriginalContractStorage(address, key)
+    const origRes = await stateManager.originalStorageCache.get(address, key)
     st.deepEqual(origRes, new Uint8Array(0))
 
     await stateManager.commit()
@@ -137,7 +137,7 @@ tape('Original storage cache', async (t) => {
   })
 
   t.test('should get original storage value', async (st) => {
-    const res = await stateManager.originalStorageCache.getOriginalContractStorage(address, key)
+    const res = await stateManager.originalStorageCache.get(address, key)
     st.deepEqual(res, value)
     st.end()
   })
@@ -148,7 +148,7 @@ tape('Original storage cache', async (t) => {
     const res = await stateManager.getContractStorage(address, key)
     st.deepEqual(res, newValue)
 
-    const origRes = await stateManager.originalStorageCache.getOriginalContractStorage(address, key)
+    const origRes = await stateManager.originalStorageCache.get(address, key)
     st.deepEqual(origRes, value)
     st.end()
   })
@@ -161,20 +161,20 @@ tape('Original storage cache', async (t) => {
 
     let res = await stateManager.getContractStorage(address, key2)
     st.deepEqual(res, value2)
-    let origRes = await stateManager.originalStorageCache.getOriginalContractStorage(address, key2)
+    let origRes = await stateManager.originalStorageCache.get(address, key2)
     st.deepEqual(origRes, value2)
 
     await stateManager.putContractStorage(address, key2, value3)
 
     res = await stateManager.getContractStorage(address, key2)
     st.deepEqual(res, value3)
-    origRes = await stateManager.originalStorageCache.getOriginalContractStorage(address, key2)
+    origRes = await stateManager.originalStorageCache.get(address, key2)
     st.deepEqual(origRes, value2)
 
     // Check previous key
     res = await stateManager.getContractStorage(address, key)
     st.deepEqual(res, hexToBytes('1235'))
-    origRes = await stateManager.originalStorageCache.getOriginalContractStorage(address, key)
+    origRes = await stateManager.originalStorageCache.get(address, key)
     st.deepEqual(origRes, value)
 
     st.end()
@@ -182,10 +182,7 @@ tape('Original storage cache', async (t) => {
 
   t.test("getOriginalContractStorage should validate the key's length", async (st) => {
     try {
-      await stateManager.originalStorageCache.getOriginalContractStorage(
-        address,
-        new Uint8Array(12)
-      )
+      await stateManager.originalStorageCache.get(address, new Uint8Array(12))
     } catch (e: any) {
       st.equal(e.message, 'Storage key must be 32 bytes long')
       st.end()

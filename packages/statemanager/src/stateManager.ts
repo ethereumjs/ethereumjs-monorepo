@@ -538,7 +538,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     if (this._checkpointCount === 0) {
       await this.flush()
-      this.originalStorageCache.clearOriginalStorageCache()
+      this.originalStorageCache.clear()
     }
 
     if (this.DEBUG) {
@@ -562,7 +562,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     if (this._checkpointCount === 0) {
       await this.flush()
-      this.originalStorageCache.clearOriginalStorageCache()
+      this.originalStorageCache.clear()
     }
   }
 

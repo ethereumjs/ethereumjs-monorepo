@@ -153,7 +153,7 @@ tape('EIP-3529 tests', (t) => {
       st.equal(gasUsed, BigInt(testCase.usedGas), 'correct used gas')
 
       // clear the storage cache, otherwise next test will use current original value
-      vm.stateManager.originalStorageCache.clearOriginalStorageCache()
+      vm.stateManager.originalStorageCache.clear()
     }
 
     st.end()

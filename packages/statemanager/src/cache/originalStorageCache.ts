@@ -12,7 +12,7 @@ export class OriginalStorageCache {
     this.getContractStorage = getContractStorage
   }
 
-  async getOriginalContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
+  async get(address: Address, key: Uint8Array): Promise<Uint8Array> {
     const addressHex = bytesToHex(address.bytes)
     const map = this.map.get(addressHex)
     if (map !== undefined) {
@@ -23,11 +23,11 @@ export class OriginalStorageCache {
       }
     }
     const value = await this.getContractStorage(address, key)
-    this.putOriginalContractStorage(address, key, value)
+    this.put(address, key, value)
     return value
   }
 
-  putOriginalContractStorage(address: Address, key: Uint8Array, value: Uint8Array) {
+  put(address: Address, key: Uint8Array, value: Uint8Array) {
     const addressHex = bytesToHex(address.bytes)
     let map = this.map.get(addressHex)
     if (map === undefined) {
@@ -40,7 +40,7 @@ export class OriginalStorageCache {
     }
   }
 
-  clearOriginalStorageCache(): void {
+  clear(): void {
     this.map = new Map()
   }
 }
