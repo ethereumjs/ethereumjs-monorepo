@@ -79,7 +79,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   // Set state root if provided
   if (root) {
     if (this.DEBUG) {
-      debug(`Set provided state root ${bytesToHex(root)}`)
+      debug(`Set provided state root ${bytesToHex(root)} clearCache=${clearCache}`)
     }
     await state.setStateRoot(root, clearCache)
   }
