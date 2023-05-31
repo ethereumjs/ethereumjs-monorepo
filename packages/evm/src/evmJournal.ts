@@ -12,9 +12,9 @@ import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Account } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
-type WarmSlots = Set<string>
 type AddressString = string
 type SlotString = string
+type WarmSlots = Set<SlotString>
 
 type Journal = Map<AddressString, WarmSlots>
 
@@ -26,7 +26,7 @@ type Journal = Map<AddressString, WarmSlots>
  */
 
 type JournalDiffItem = [Set<AddressString>, Map<AddressString, Set<SlotString>>, Set<AddressString>]
-//AddressString | Map<AddressString, SlotString>
+
 type JournalHeight = number
 
 export class EvmJournal {
@@ -37,10 +37,10 @@ export class EvmJournal {
 
   private journal!: Journal
   private preWarmJournal!: Map<AddressString, Set<SlotString>>
-  private touched!: Set<string>
+  private touched!: Set<AddressString>
   private journalDiff!: [JournalHeight, JournalDiffItem][]
 
-  private journalHeight: number
+  private journalHeight: JournalHeight
 
   public accessList?: Map<AddressString, Set<SlotString>>
 
@@ -165,8 +165,8 @@ export class EvmJournal {
     if (this.common.gteHardfork(Hardfork.SpuriousDragon) === true) {
       for (const addressHex of this.touched) {
         const address = new Address(toBytes('0x' + addressHex))
-        const empty = await this.stateManager.accountIsEmptyOrNonExistent(address)
-        if (empty) {
+        const account = await this.stateManager.getAccount(address)
+        if (account === undefined || account.isEmpty()) {
           await this.deleteAccount(address)
           if (this.DEBUG) {
             this._debug(`Cleanup touched account address=${address} (>= SpuriousDragon)`)

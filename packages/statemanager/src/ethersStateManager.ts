@@ -370,14 +370,6 @@ export class EthersStateManager implements EVMStateManagerInterface {
     throw new Error('function not implemented')
   }
 
-  async accountIsEmptyOrNonExistent(address: Address): Promise<boolean> {
-    const account = await this.getAccount(address)
-    if (account === undefined || account.isEmpty()) {
-      return true
-    }
-    return false
-  }
-
   generateCanonicalGenesis(_initState: any): Promise<void> {
     return Promise.resolve()
   }

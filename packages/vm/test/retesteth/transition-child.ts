@@ -125,7 +125,7 @@ async function runTransition(argsIn: any) {
   const logsBloom = builder.logsBloom()
   const logsHash = keccak256(logsBloom)
 
-  await vm.evm.evmJournal.cleanupTouchedAccounts()
+  await vm.evm.evmJournal.cleanup()
 
   const output = {
     stateRoot: bytesToPrefixedHexString(await vm.stateManager.getStateRoot()),

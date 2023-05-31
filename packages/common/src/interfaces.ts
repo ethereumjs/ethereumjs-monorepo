@@ -39,8 +39,6 @@ export type AccessListBytes = AccessListBytesItem[]
 export type AccessList = AccessListItem[]
 
 export interface StateManagerInterface {
-  accountExists(address: Address): Promise<boolean>
-  accountIsEmptyOrNonExistent(address: Address): Promise<boolean>
   getAccount(address: Address): Promise<Account | undefined>
   putAccount(address: Address, account?: Account): Promise<void>
   deleteAccount(address: Address): Promise<void>

@@ -335,13 +335,17 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (common.gteHardfork(Hardfork.SpuriousDragon)) {
           // We are at or after Spurious Dragon
           // Call new account gas: account is DEAD and we transfer nonzero value
-          if (
-            (await runState.stateManager.accountIsEmptyOrNonExistent(toAddress)) &&
-            !(value === BigInt(0))
-          ) {
+
+          const account = await runState.stateManager.getAccount(toAddress)
+          let deadAccount = false
+          if (account === undefined || account.isEmpty()) {
+            deadAccount = true
+          }
+
+          if (deadAccount && !(value === BigInt(0))) {
             gas += common.param('gasPrices', 'callNewAccount')
           }
-        } else if (!(await runState.stateManager.accountExists(toAddress))) {
+        } else if ((await runState.stateManager.getAccount(toAddress)) === undefined) {
           // We are before Spurious Dragon and the account does not exist.
           // Call new account gas: account does not exist (it is not in the state trie, not even as an "empty" account)
           gas += common.param('gasPrices', 'callNewAccount')
@@ -599,16 +603,15 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           )
           if (balance > BigInt(0)) {
             // This technically checks if account is empty or non-existent
-            const empty = await runState.stateManager.accountIsEmptyOrNonExistent(
-              selfdestructToAddress
-            )
-            if (empty) {
+            const account = await runState.stateManager.getAccount(selfdestructToAddress)
+            if (account === undefined || account.isEmpty()) {
               deductGas = true
             }
           }
         } else if (common.gteHardfork(Hardfork.TangerineWhistle)) {
           // EIP-150 (Tangerine Whistle) gas semantics
-          const exists = await runState.stateManager.accountExists(selfdestructToAddress)
+          const exists =
+            (await runState.stateManager.getAccount(selfdestructToAddress)) !== undefined
           if (!exists) {
             deductGas = true
           }

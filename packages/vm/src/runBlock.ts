@@ -433,7 +433,7 @@ export function encodeReceipt(receipt: TxReceipt, txType: number) {
 async function _applyDAOHardfork(evm: EVM) {
   const state = evm.stateManager
   const DAORefundContractAddress = new Address(hexToBytes(DAORefundContract))
-  if ((await state.accountExists(DAORefundContractAddress)) === false) {
+  if ((await state.getAccount(DAORefundContractAddress)) === undefined) {
     await evm.evmJournal.putAccount(DAORefundContractAddress, new Account())
   }
   let DAORefundAccount = await state.getAccount(DAORefundContractAddress)

@@ -236,24 +236,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   }
 
   /**
-   * Checks if the `account` corresponding to `address`
-   * is empty or non-existent as defined in
-   * EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
-   * @param address - Address to check
-   */
-  async accountIsEmptyOrNonExistent(address: Address): Promise<boolean> {
-    const account = await this.getAccount(address)
-    if (account === undefined || account.isEmpty()) {
-      return true
-    }
-    return false
-  }
-
-  /**
    * Saves an account into state under the provided `address`.
    * @param address - Address under which to store `account`
    * @param account - The account to store or undefined if to be deleted
-   * @param touch - If the account should be touched or not (for state clearing, see TangerineWhistle / SpuriousDragon hardforks)
    */
   async putAccount(address: Address, account: Account | undefined): Promise<void> {
     if (this.DEBUG) {
@@ -860,44 +845,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    */
   async hasStateRoot(root: Uint8Array): Promise<boolean> {
     return this._trie.checkRoot(root)
-  }
-
-  /**
-   * Checks if the `account` corresponding to `address`
-   * exists
-   * @param address - Address of the `account` to check
-   */
-  async accountExists(address: Address): Promise<boolean> {
-    const account = await this.getAccount(address)
-    if (account) {
-      return true
-    } else {
-      return false
-    }
-  }
-
-  /**
-   * Merges a storage map into the last item of the accessed storage stack
-   */
-  private _accessedStorageMerge(
-    storageList: Map<string, Set<string> | undefined>[],
-    storageMap: Map<string, Set<string>>
-  ) {
-    const mapTarget = storageList[storageList.length - 1]
-
-    if (mapTarget !== undefined) {
-      // Note: storageMap is always defined here per definition (TypeScript cannot infer this)
-      for (const [addressString, slotSet] of storageMap) {
-        const addressExists = mapTarget.get(addressString)
-        if (!addressExists) {
-          mapTarget.set(addressString, new Set())
-        }
-        const storageSet = mapTarget.get(addressString)
-        for (const value of slotSet) {
-          storageSet!.add(value)
-        }
-      }
-    }
   }
 
   /**

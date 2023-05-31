@@ -467,10 +467,6 @@ export class Interpreter {
     this._runState.gasLeft += amount
   }
 
-  async putAccount() {}
-
-  async deleteAccount() {}
-
   /**
    * Returns balance of the given account.
    * @param address - Address of account
