@@ -7,25 +7,25 @@ import {
   privateToAddress,
   privateToPublic,
   publicToAddress,
+  randomBytes,
   toChecksumAddress,
 } from '@ethereumjs/util'
 import { base58check } from '@scure/base'
 import * as aes from 'ethereum-cryptography/aes'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { pbkdf2 } from 'ethereum-cryptography/pbkdf2'
-import { getRandomBytesSync } from 'ethereum-cryptography/random'
 import { scrypt } from 'ethereum-cryptography/scrypt'
 import { sha256 } from 'ethereum-cryptography/sha256'
 import { concatBytes, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 export { EthereumHDKey as hdkey } from './hdkey'
 export { Thirdparty as thirdparty } from './thirdparty'
 const uuidv4 = require('uuid').v4
 
 const bs58check = base58check(sha256)
-function randomBytes(num: number) {
-  return getRandomBytesSync(num)
-}
+
 interface KDFParamsV1 {
   N: number
   P: number
@@ -98,8 +98,8 @@ function validateHexString(paramName: string, str: string, length?: number) {
   return str
 }
 
-function validateBuffer(paramName: string, buff: Uint8Array, length?: number) {
-  if (!(buff instanceof Uint8Array)) {
+function validateBytes(paramName: string, bytes: Uint8Array, length?: number) {
+  if (!(bytes instanceof Uint8Array)) {
     const howManyHex =
       typeof length === 'number' ? `${length * 2}` : 'empty or a non-zero even number of'
     const howManyBytes = typeof length === 'number' ? ` (${length} bytes)` : ''
@@ -107,10 +107,10 @@ function validateBuffer(paramName: string, buff: Uint8Array, length?: number) {
       `Invalid ${paramName}, must be a string (${howManyHex} hex characters) or buffer${howManyBytes}`
     )
   }
-  if (typeof length === 'number' && buff.length !== length) {
+  if (typeof length === 'number' && bytes.length !== length) {
     throw new Error(`Invalid ${paramName}, buffer must be ${length} bytes`)
   }
-  return buff
+  return bytes
 }
 
 function mergeToV3ParamsWithDefaults(params?: Partial<V3Params>): V3ParamsStrict {
@@ -142,13 +142,13 @@ function mergeToV3ParamsWithDefaults(params?: Partial<V3Params>): V3ParamsStrict
   }
 
   if (params.salt) {
-    validateBuffer('salt', params.salt)
+    validateBytes('salt', params.salt)
   }
   if (params.iv) {
-    validateBuffer('iv', params.iv, 16)
+    validateBytes('iv', params.iv, 16)
   }
   if (params.uuid) {
-    validateBuffer('uuid', params.uuid, 16)
+    validateBytes('uuid', params.uuid, 16)
   }
 
   return {
@@ -506,7 +506,7 @@ export class Wallet {
     if (!keyExists(this.publicKey)) {
       this.publicKey = privateToPublic(this.privateKey!)
     }
-    return this.publicKey
+    return this.publicKey!
   }
 
   /**
@@ -529,7 +529,7 @@ export class Wallet {
     return this.privKey
   }
 
-  public getPrivateKeyString(): string {
+  public getPrivateKeyString(): PrefixedHexString {
     return bytesToPrefixedHexString(this.privKey)
   }
 
@@ -543,7 +543,7 @@ export class Wallet {
   /**
    * Returns the wallet's public key as a "0x" prefixed hex string
    */
-  public getPublicKeyString(): string {
+  public getPublicKeyString(): PrefixedHexString {
     return bytesToPrefixedHexString(this.getPublicKey())
   }
 
@@ -557,7 +557,7 @@ export class Wallet {
   /**
    * Returns the wallet's address as a "0x" prefixed hex string
    */
-  public getAddressString(): string {
+  public getAddressString(): PrefixedHexString {
     return bytesToPrefixedHexString(this.getAddress())
   }
 
@@ -565,7 +565,7 @@ export class Wallet {
    * Returns the wallet's private key as a "0x" prefixed hex string checksummed
    * according to [EIP 55](https://github.com/ethereum/EIPs/issues/55).
    */
-  public getChecksumAddressString(): string {
+  public getChecksumAddressString(): PrefixedHexString {
     return toChecksumAddress(this.getAddressString())
   }
 
