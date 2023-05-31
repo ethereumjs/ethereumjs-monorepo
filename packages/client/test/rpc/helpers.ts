@@ -255,7 +255,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   await chain.open()
   await execution?.open()
   await chain.update()
-  return { chain, common, execution: execution!, server, service }
+  return { chain, common, execution: execution!, server, service, blockchain }
 }
 
 /**
