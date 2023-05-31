@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1685543914420,
+  "lastUpdate": 1685562220224,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "129968170+mitic2023@users.noreply.github.com",
-            "name": "mitic2023",
-            "username": "mitic2023"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "11a5ab8d947923619eabbd0ab591478409f22762",
-          "message": "Update README.md (#2679)",
-          "timestamp": "2023-05-05T10:17:45-04:00",
-          "tree_id": "dc4836d5c2722dad2bf871ebad3c80373e649647",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/11a5ab8d947923619eabbd0ab591478409f22762"
-        },
-        "date": 1683296394152,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 14768,
-            "range": "±3.99%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 14916,
-            "range": "±2.33%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 14588,
-            "range": "±5.90%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 14682,
-            "range": "±2.37%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 14496,
-            "range": "±2.39%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.24%",
             "unit": "ops/sec",
             "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "238b1ebc33d16b55093a776dd93daf19cafa6285",
+          "message": "vm/tests: ensure tests with aliases run with eip configs (#2741)",
+          "timestamp": "2023-05-31T15:40:18-04:00",
+          "tree_id": "032e726033cf84096243068349623793f39a6b9e",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/238b1ebc33d16b55093a776dd93daf19cafa6285"
+        },
+        "date": 1685562218758,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31312,
+            "range": "±4.58%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31323,
+            "range": "±2.33%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31450,
+            "range": "±2.34%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 30763,
+            "range": "±2.38%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 26324,
+            "range": "±9.17%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
           }
         ]
       }
