@@ -139,7 +139,7 @@ tape('EIP-3529 tests', (t) => {
       )
 
       await vm.stateManager.getContractStorage(address, key)
-      vm.evm.evmJournal.addPreWarmedSlot(bytesToHex(address.bytes), bytesToHex(key))
+      vm.evm.journal.addPreWarmedSlot(bytesToHex(address.bytes), bytesToHex(key))
 
       await vm.evm.runCode!({
         code,

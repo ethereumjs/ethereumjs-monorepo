@@ -109,7 +109,7 @@ export class Interpreter {
   protected _stateManager: EVMStateManagerInterface
   protected _common: Common
   public _evm: EVM
-  public evmJournal: Journal
+  public journal: Journal
   _env: Env
 
   // Keep track of this Interpreter run result
@@ -128,7 +128,7 @@ export class Interpreter {
     blockchain: Blockchain,
     env: Env,
     gasLeft: bigint,
-    evmJournal: Journal
+    journal: Journal
   ) {
     this._evm = evm
     this._stateManager = stateManager
@@ -152,7 +152,7 @@ export class Interpreter {
       gasLeft,
       returnBytes: new Uint8Array(0),
     }
-    this.evmJournal = evmJournal
+    this.journal = journal
     this._env = env
     this._result = {
       logs: [],
@@ -918,7 +918,7 @@ export class Interpreter {
     }
 
     this._env.contract.nonce += BigInt(1)
-    await this.evmJournal.putAccount(this._env.address, this._env.contract)
+    await this.journal.putAccount(this._env.address, this._env.contract)
 
     if (this._common.isActivatedEIP(3860)) {
       if (
@@ -1016,7 +1016,7 @@ export class Interpreter {
       toAccount = new Account()
     }
     toAccount.balance += this._env.contract.balance
-    await this.evmJournal.putAccount(toAddress, toAccount)
+    await this.journal.putAccount(toAddress, toAccount)
 
     // Subtract from contract balance
     await this._stateManager.modifyAccountFields(this._env.address, {

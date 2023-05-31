@@ -92,13 +92,13 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     if (this.DEBUG) {
       debug(`Apply DAO hardfork`)
     }
-    await this.evm.evmJournal.checkpoint()
+    await this.evm.journal.checkpoint()
     await _applyDAOHardfork(this.evm)
-    await this.evm.evmJournal.commit()
+    await this.evm.journal.commit()
   }
 
   // Checkpoint state
-  await this.evm.evmJournal.checkpoint()
+  await this.evm.journal.checkpoint()
   if (this.DEBUG) {
     debug(`block checkpoint`)
   }
@@ -116,7 +116,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       )
     }
   } catch (err: any) {
-    await this.evm.evmJournal.revert()
+    await this.evm.journal.revert()
     if (this.DEBUG) {
       debug(`block checkpoint reverted`)
     }
@@ -124,7 +124,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   }
 
   // Persist state
-  await this.evm.evmJournal.commit()
+  await this.evm.journal.commit()
   if (this.DEBUG) {
     debug(`block checkpoint committed`)
   }
@@ -254,7 +254,7 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   const blockResults = await applyTransactions.bind(this)(block, opts)
   if (this._common.isActivatedEIP(4895)) {
     await assignWithdrawals.bind(this)(block)
-    await this.evm.evmJournal.cleanup()
+    await this.evm.journal.cleanup()
   }
   // Pay ommers and miners
   if (block._common.consensusType() === ConsensusType.ProofOfWork) {
@@ -402,7 +402,7 @@ export async function rewardAccount(evm: EVM, address: Address, reward: bigint):
     account = new Account()
   }
   account.balance += reward
-  await evm.evmJournal.putAccount(address, account)
+  await evm.journal.putAccount(address, account)
   return account
 }
 
@@ -434,7 +434,7 @@ async function _applyDAOHardfork(evm: EVM) {
   const state = evm.stateManager
   const DAORefundContractAddress = new Address(hexToBytes(DAORefundContract))
   if ((await state.getAccount(DAORefundContractAddress)) === undefined) {
-    await evm.evmJournal.putAccount(DAORefundContractAddress, new Account())
+    await evm.journal.putAccount(DAORefundContractAddress, new Account())
   }
   let DAORefundAccount = await state.getAccount(DAORefundContractAddress)
   if (DAORefundAccount === undefined) {
@@ -451,11 +451,11 @@ async function _applyDAOHardfork(evm: EVM) {
     DAORefundAccount.balance += account.balance
     // clear the accounts' balance
     account.balance = BigInt(0)
-    await evm.evmJournal.putAccount(address, account)
+    await evm.journal.putAccount(address, account)
   }
 
   // finally, put the Refund Account
-  await evm.evmJournal.putAccount(DAORefundContractAddress, DAORefundAccount)
+  await evm.journal.putAccount(DAORefundContractAddress, DAORefundAccount)
 }
 
 async function _genTxTrie(block: Block) {

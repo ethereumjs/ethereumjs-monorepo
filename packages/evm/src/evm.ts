@@ -186,7 +186,7 @@ export class EVM implements EVMInterface {
 
   public stateManager: EVMStateManagerInterface
   public blockchain: Blockchain
-  public evmJournal: Journal
+  public journal: Journal
 
   public readonly _transientStorage: TransientStorage
 
@@ -306,7 +306,7 @@ export class EVM implements EVMInterface {
     this._customOpcodes = opts.customOpcodes
     this._customPrecompiles = opts.customPrecompiles
 
-    this.evmJournal = new Journal(this.stateManager, this._common)
+    this.journal = new Journal(this.stateManager, this._common)
 
     this._common.on('hardforkChanged', () => {
       this.getActiveOpcodes()
@@ -498,7 +498,7 @@ export class EVM implements EVMInterface {
       }
     }
 
-    await this.evmJournal.putAccount(message.to, toAccount)
+    await this.journal.putAccount(message.to, toAccount)
     await this.stateManager.clearContractStorage(message.to)
 
     const newContractEvent = {
@@ -663,7 +663,7 @@ export class EVM implements EVMInterface {
         // It is thus an unnecessary default item, which we have to save to disk
         // It does change the state root, but it only wastes storage.
         const account = await this.stateManager.getAccount(message.to)
-        await this.evmJournal.putAccount(message.to, account ?? new Account())
+        await this.journal.putAccount(message.to, account ?? new Account())
       }
     }
 
@@ -709,7 +709,7 @@ export class EVM implements EVMInterface {
       this.blockchain,
       env,
       message.gasLimit,
-      this.evmJournal
+      this.journal
     )
     if (message.selfdestruct) {
       interpreter._result.selfdestruct = message.selfdestruct as { [key: string]: Uint8Array }
@@ -775,7 +775,7 @@ export class EVM implements EVMInterface {
         if (callerAccount.balance < value) {
           // if skipBalance and balance less than value, set caller balance to `value` to ensure sufficient funds
           callerAccount.balance = value
-          await this.evmJournal.putAccount(caller, callerAccount)
+          await this.journal.putAccount(caller, callerAccount)
         }
       }
 
@@ -804,7 +804,7 @@ export class EVM implements EVMInterface {
         callerAccount = new Account()
       }
       callerAccount.nonce++
-      await this.evmJournal.putAccount(message.caller, callerAccount)
+      await this.journal.putAccount(message.caller, callerAccount)
       if (this.DEBUG) {
         debug(`Update fromAccount (caller) nonce (-> ${callerAccount.nonce}))`)
       }
@@ -814,10 +814,10 @@ export class EVM implements EVMInterface {
 
     if (!message.to && this._common.isActivatedEIP(2929) === true) {
       message.code = message.data
-      this.evmJournal.addWarmedAddress((await this._generateAddress(message)).bytes)
+      this.journal.addWarmedAddress((await this._generateAddress(message)).bytes)
     }
 
-    await this.evmJournal.checkpoint()
+    await this.journal.checkpoint()
     if (this._common.isActivatedEIP(1153)) this._transientStorage.checkpoint()
     if (this.DEBUG) {
       debug('-'.repeat(100))
@@ -867,13 +867,13 @@ export class EVM implements EVMInterface {
       !(this._common.hardfork() === Hardfork.Chainstart && err.error === ERROR.CODESTORE_OUT_OF_GAS)
     ) {
       result.execResult.logs = []
-      await this.evmJournal.revert()
+      await this.journal.revert()
       if (this._common.isActivatedEIP(1153)) this._transientStorage.revert()
       if (this.DEBUG) {
         debug(`message checkpoint reverted`)
       }
     } else {
-      await this.evmJournal.commit()
+      await this.journal.commit()
       if (this._common.isActivatedEIP(1153)) this._transientStorage.commit()
       if (this.DEBUG) {
         debug(`message checkpoint committed`)
@@ -981,7 +981,7 @@ export class EVM implements EVMInterface {
     if (account.balance < BigInt(0)) {
       throw new EvmError(ERROR.INSUFFICIENT_BALANCE)
     }
-    const result = this.evmJournal.putAccount(message.authcallOrigin ?? message.caller, account)
+    const result = this.journal.putAccount(message.authcallOrigin ?? message.caller, account)
     if (this.DEBUG) {
       debug(`Reduced sender (${message.caller}) balance (-> ${account.balance})`)
     }
@@ -995,7 +995,7 @@ export class EVM implements EVMInterface {
     }
     toAccount.balance = newBalance
     // putAccount as the nonce may have changed for contract creation
-    const result = this.evmJournal.putAccount(message.to, toAccount)
+    const result = this.journal.putAccount(message.to, toAccount)
     if (this.DEBUG) {
       debug(`Added toAccount (${message.to}) balance (-> ${toAccount.balance})`)
     }
