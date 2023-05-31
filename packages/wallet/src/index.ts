@@ -344,7 +344,7 @@ export class Wallet {
     if (extendedPublicKey.slice(0, 4) !== 'xpub') {
       throw new Error('Not an extended public key')
     }
-    const publicKey: Uint8Array = bs58check.decode(extendedPublicKey).slice(45)
+    const publicKey: Uint8Array = bs58check.decode(extendedPublicKey).subarray(45)
     // Convert to an Ethereum public key
     return Wallet.fromPublicKey(publicKey, true)
   }
@@ -367,7 +367,7 @@ export class Wallet {
     if (tmp[45] !== 0) {
       throw new Error('Invalid extended private key')
     }
-    return Wallet.fromPrivateKey(tmp.slice(46))
+    return Wallet.fromPrivateKey(tmp.subarray(46))
   }
 
   /**
@@ -389,14 +389,14 @@ export class Wallet {
     const salt = hexToBytes(json.Crypto.Salt)
     const derivedKey = await scryptV1(utf8ToBytes(password), salt, kdfparams)
     const ciphertext = hexToBytes(json.Crypto.CipherText)
-    const mac = keccak256(concatBytes(derivedKey.slice(16, 32), ciphertext))
+    const mac = keccak256(concatBytes(derivedKey.subarray(16, 32), ciphertext))
     if (bytesToHex(mac) !== json.Crypto.MAC) {
       throw new Error('Key derivation failed - possibly wrong passphrase')
     }
 
     const seed = await aes.decrypt(
       ciphertext,
-      keccak256(derivedKey.slice(0, 16)).subarray(0, 16),
+      keccak256(derivedKey.subarray(0, 16)).subarray(0, 16),
       hexToBytes(json.Crypto.IV),
       'aes-128-cbc'
     )
@@ -477,15 +477,15 @@ export class Wallet {
 
     // key derivation
     const pass = utf8ToBytes(password)
-    const derivedKey = (await pbkdf2(pass, pass, 2000, 32, 'sha256')).slice(0, 16)
+    const derivedKey = (await pbkdf2(pass, pass, 2000, 32, 'sha256')).subarray(0, 16)
 
     // seed decoding (IV is first 16 bytes)
     // NOTE: crypto (derived from openssl) when used with aes-*-cbc will handle PKCS#7 padding internally
     //       see also http://stackoverflow.com/a/31614770/4964819
     const seed = await aes.decrypt(
-      encseed.slice(16),
+      encseed.subarray(16),
       derivedKey,
-      encseed.slice(0, 16),
+      encseed.subarray(0, 16),
       'aes-128-cbc',
       true
     )
@@ -606,7 +606,7 @@ export class Wallet {
 
     const ciphertext = await aes.encrypt(
       this.privKey,
-      derivedKey.slice(0, 16),
+      derivedKey.subarray(0, 16),
       v3Params.iv,
       v3Params.cipher,
       false
