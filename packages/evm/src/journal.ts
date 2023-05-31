@@ -36,7 +36,7 @@ export class Journal {
   private _debug: Debugger
 
   private journal!: JournalType
-  private preWarmJournal!: Map<AddressString, Set<SlotString>>
+  private alwaysWarmJournal!: Map<AddressString, Set<SlotString>>
   private touched!: Set<AddressString>
   private journalDiff!: [JournalHeight, JournalDiffItem][]
 
@@ -131,7 +131,6 @@ export class Journal {
 
       for (const address of touchedSet) {
         // Delete the address from the journal
-        // NOTE: only delete from warm addresses if it is not pre-warmed
         if (address !== RIPEMD160_ADDRESS_STRING) {
           // If RIPEMD160 is touched, keep it touched.
           // Default behavior for others.
@@ -151,7 +150,7 @@ export class Journal {
   public cleanJournal() {
     this.journalHeight = 0
     this.journal = new Map()
-    this.preWarmJournal = new Map()
+    this.alwaysWarmJournal = new Map()
     this.touched = new Set()
     this.journalDiff = [[0, [new Set(), new Map(), new Set()]]]
   }
@@ -178,10 +177,10 @@ export class Journal {
     delete this.accessList
   }
 
-  addPreWarmedAddress(addressStr: string, addToAccessList: boolean = false) {
+  addAlwaysWarmAddress(addressStr: string, addToAccessList: boolean = false) {
     const address = stripHexPrefix(addressStr)
-    if (!this.preWarmJournal.has(address)) {
-      this.preWarmJournal.set(address, new Set())
+    if (!this.alwaysWarmJournal.has(address)) {
+      this.alwaysWarmJournal.set(address, new Set())
     }
     if (addToAccessList && this.accessList !== undefined) {
       if (!this.accessList.has(address)) {
@@ -190,10 +189,10 @@ export class Journal {
     }
   }
 
-  addPreWarmedSlot(addressStr: string, slotStr: string, addToAccessList: boolean = false) {
+  addAlwaysWarmSlot(addressStr: string, slotStr: string, addToAccessList: boolean = false) {
     const address = stripHexPrefix(addressStr)
-    this.addPreWarmedAddress(address, addToAccessList)
-    const slotsSet = this.preWarmJournal.get(address)!
+    this.addAlwaysWarmAddress(address, addToAccessList)
+    const slotsSet = this.alwaysWarmJournal.get(address)!
     const slot = stripHexPrefix(slotStr)
     slotsSet.add(slot)
     if (addToAccessList && this.accessList !== undefined) {
@@ -207,7 +206,7 @@ export class Journal {
    */
   isWarmedAddress(address: Uint8Array): boolean {
     const addressHex = bytesToHex(address)
-    const warm = this.journal.has(addressHex) || this.preWarmJournal.has(addressHex)
+    const warm = this.journal.has(addressHex) || this.alwaysWarmJournal.has(addressHex)
     return warm
   }
 
@@ -238,15 +237,15 @@ export class Journal {
     const addressHex = bytesToHex(address)
     const slots = this.journal.get(addressHex)
     if (slots === undefined) {
-      if (this.preWarmJournal.has(addressHex)) {
-        return this.preWarmJournal.get(addressHex)!.has(bytesToHex(slot))
+      if (this.alwaysWarmJournal.has(addressHex)) {
+        return this.alwaysWarmJournal.get(addressHex)!.has(bytesToHex(slot))
       }
       return false
     }
     if (slots.has(bytesToHex(slot))) {
       return true
-    } else if (this.preWarmJournal.has(addressHex)) {
-      return this.preWarmJournal.get(addressHex)!.has(bytesToHex(slot))
+    } else if (this.alwaysWarmJournal.has(addressHex)) {
+      return this.alwaysWarmJournal.get(addressHex)!.has(bytesToHex(slot))
     }
     return false
   }

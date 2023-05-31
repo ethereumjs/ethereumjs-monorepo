@@ -128,9 +128,9 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const castedTx = <AccessListEIP2930Transaction>opts.tx
 
     for (const accessListItem of castedTx.AccessListJSON) {
-      this.evm.journal.addPreWarmedAddress(accessListItem.address, true)
+      this.evm.journal.addAlwaysWarmAddress(accessListItem.address, true)
       for (const storageKey of accessListItem.storageKeys) {
-        this.evm.journal.addPreWarmedSlot(accessListItem.address, storageKey, true)
+        this.evm.journal.addAlwaysWarmSlot(accessListItem.address, storageKey, true)
       }
     }
   }
@@ -187,15 +187,15 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // Add origin and precompiles to warm addresses
     const activePrecompiles = this.evm.precompiles
     for (const [addressStr] of activePrecompiles.entries()) {
-      this.evm.journal.addPreWarmedAddress(addressStr)
+      this.evm.journal.addAlwaysWarmAddress(addressStr)
     }
-    this.evm.journal.addPreWarmedAddress(caller.toString())
+    this.evm.journal.addAlwaysWarmAddress(caller.toString())
     if (tx.to) {
       // Note: in case we create a contract, we do this in EVMs `_executeCreate` (this is also correct in inner calls, per the EIP)
-      this.evm.journal.addPreWarmedAddress(bytesToHex(tx.to.bytes))
+      this.evm.journal.addAlwaysWarmAddress(bytesToHex(tx.to.bytes))
     }
     if (this._common.isActivatedEIP(3651) === true) {
-      this.evm.journal.addPreWarmedAddress(bytesToHex(block.header.coinbase.bytes))
+      this.evm.journal.addAlwaysWarmAddress(bytesToHex(block.header.coinbase.bytes))
     }
   }
 
