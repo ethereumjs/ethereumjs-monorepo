@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1685462766659,
+  "lastUpdate": 1685529506753,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "49c2d93b94e70887d4fafff123eec19ef6a35fec",
-          "message": "New Maintenance Release Round (#2648)\n\n* Draft various release notes\r\n\r\n* CHANGELOG updates\r\n\r\n* Version bump, updated upstream dependency versions, @ethereumjs/util v8.0.6\r\n\r\n* Version bump, updated upstream dependency versions, @ethereumjs/common v3.1.2\r\n\r\n* Version bump, updated upstream dependency versions, @ethereumjs/tx v4.1.2\r\n\r\n* Version bump, updated upstream dependency versions, @ethereumjs/trie v5.0.5\r\n\r\n* Add additional @chainsafe/ssz notes to CHANGELOG files of other libraries\r\n\r\n* Version bump, updated upstream dependency versions, updated (all) client @ethereumjs dependencies, @ethereumjs/devp2p v5.1.2\r\n\r\n* Version bump, updated upstream dependency versions, @ethereumjs/statemanager v1.0.5\r\n\r\n* Version bump, updated upstream dependency versions, @ethereumjs/block v4.2.2\r\n\r\n* Version bump, updated upstream dependency versions, @ethereumjs/ethash v2.0.5\r\n\r\n* Version bump, updated upstream dependency versions, @ethereumjs/blockchain v6.2.2\r\n\r\n* Version bump, updated upstream dependency versions, @ethereumjs/evm v1.3.2\r\n\r\n* Version bump, updated upstream dependency versions, @ethereumjs/vm v6.4.2\r\n\r\n* Version bump, @ethereumjs/client v0.7.1\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Rebuild relevant documentation\r\n\r\n* Updated @chainsafe/ssz related CHANGELOG entries",
-          "timestamp": "2023-04-24T09:35:03+02:00",
-          "tree_id": "686e597b52cade8fe1be5c8b69f54e519b61c5b5",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/49c2d93b94e70887d4fafff123eec19ef6a35fec"
-        },
-        "date": 1682321913141,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 8171,
-            "range": "±2.34%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 8619,
-            "range": "±3.75%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 8476,
-            "range": "±2.57%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 7979,
-            "range": "±6.18%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 8388,
-            "range": "±2.04%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.04%",
             "unit": "ops/sec",
             "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "konjou@gmail.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9c8f40799a2eb2d5631b7623a44434fd5dd1108f",
+          "message": "Add minimal wallet CI workflow (#2738)\n\n* Add minimal wallet CI workflow\n\n* rename wallet job\n\n* remove obsolete build file",
+          "timestamp": "2023-05-31T06:35:02-04:00",
+          "tree_id": "ae0bb54a48006b11ae89d1d9c431bc862e0736d2",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9c8f40799a2eb2d5631b7623a44434fd5dd1108f"
+        },
+        "date": 1685529505609,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31227,
+            "range": "±5.44%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31835,
+            "range": "±2.65%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 27837,
+            "range": "±9.37%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 30730,
+            "range": "±2.92%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30161,
+            "range": "±2.95%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
