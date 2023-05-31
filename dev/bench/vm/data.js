@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1685529506753,
+  "lastUpdate": 1685543914420,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "micah@zoltu.net",
-            "name": "Micah Zoltu",
-            "username": "MicahZoltu"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "c9b0a455032a204f9a1dfc724eedbc4ec9fc7780",
-          "message": " tx: Fix EIP-155 transaction encoding on chain ID 0\n\nWhen preparing Ethereum data for RLP encoding, you must convert all values to either byte arrays or lists.  Scalar values (positive integers) are converted to byte arrays by using the fewest bytes possible to represent the value in big endian format.  The canonical form of any scalar value prepped for RLP encoding is that any leading `0` bytes stripped.  In the case of `0`, this means that the only byte (`0x00`) is stripped and you are left with an empty array.\r\n\r\nMost of the values in this code are properly 0-stripped using `bigIntToUnpaddedBuffer`.  Unfortunately, it appears that the `chainId` was added without stripping leading zeros.  In most cases this doesn't matter, but if someone is running a chainId 0 blockchain and they want to EIP-155 encode their transaction, the previous code would result in an invalid transaction because only the canonical form is allowed.\r\n\r\nThis change fixes this bug and correctly prepares the chainId in EIP-155 transactions for RLP encoding.",
-          "timestamp": "2023-04-29T21:55:42+05:30",
-          "tree_id": "504941f4779c745c1b6bfc3d2797db5ce88b5d9c",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c9b0a455032a204f9a1dfc724eedbc4ec9fc7780"
-        },
-        "date": 1682785669299,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 16231,
-            "range": "±2.19%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 15484,
-            "range": "±4.00%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 16302,
-            "range": "±1.39%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 15689,
-            "range": "±1.70%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 14940,
-            "range": "±5.00%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.95%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ae55576c9345c27c3767e67724c2646c29e71031",
+          "message": "client: Fix double runs of the block execution (#2730)\n\n* client: Fix double runs of the block execution\r\n\r\n* fix comment\r\n\r\n* clear cache is the vmhead not at parent stateroot\r\n\r\n* run iterator inside the runwithlock to prevent entanglement with runWithoutSetHead or setHead\r\n\r\n* fix lint",
+          "timestamp": "2023-05-31T16:26:58+02:00",
+          "tree_id": "1fbc6315c412e38c42c455e5b7e2264466dd7a99",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ae55576c9345c27c3767e67724c2646c29e71031"
+        },
+        "date": 1685543913186,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 27004,
+            "range": "±6.28%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 26984,
+            "range": "±3.22%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 27044,
+            "range": "±3.11%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 23154,
+            "range": "±10.00%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 25972,
+            "range": "±3.24%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
