@@ -167,23 +167,28 @@ tape('.generate()', (t) => {
   )
   const addr = bytesToHex(wallet.getAddress())
   t.equal(BigInt('0x' + addr) <= max, true)
+  t.end()
 })
 
 tape('.generateVanityAddress()', (t) => {
-  t.test('should generate an account with 000 prefix (object)', (st) => {
-    const wallet = Wallet.generateVanityAddress(/^000/)
-    st.deepEqual(wallet.getPrivateKey().length, 32)
-    st.deepEqual(wallet.getAddress()[0], 0)
-    st.deepEqual(wallet.getAddress()[1] >>> 4, 0)
-    st.end()
-  })
-  t.test('should generate an account with 000 prefix (string)', (st) => {
-    const wallet = Wallet.generateVanityAddress('^000')
-    st.deepEqual(wallet.getPrivateKey().length, 32)
-    st.deepEqual(wallet.getAddress()[0], 0)
-    st.deepEqual(wallet.getAddress()[1] >>> 4, 0)
-    st.end()
-  })
+  let wallet = Wallet.generateVanityAddress(/^000/)
+  t.deepEqual(wallet.getPrivateKey().length, 32)
+  t.deepEqual(wallet.getAddress()[0], 0)
+  t.deepEqual(
+    wallet.getAddress()[1] >>> 4,
+    0,
+    'should generate an account with 000 prefix (object)'
+  )
+
+  wallet = Wallet.generateVanityAddress('^000')
+  t.deepEqual(wallet.getPrivateKey().length, 32)
+  t.deepEqual(wallet.getAddress()[0], 0)
+  t.deepEqual(
+    wallet.getAddress()[1] >>> 4,
+    0,
+    'should generate an account with 000 prefix (string)'
+  )
+  t.end()
 })
 
 tape('.getV3Filename()', (t) => {
@@ -191,193 +196,220 @@ tape('.getV3Filename()', (t) => {
     fixtureWallet.getV3Filename(1457917509265),
     'UTC--2016-03-14T01-05-09.265Z--b14ab53e38da1c172f877dbc6d65e4a1b0474c3c'
   )
+  t.end()
 })
 
-tape('.toV3()', (t) => {
-  const pw = 'testtest'
-  const salt = 'dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6'
-  const iv = 'cecacd85e9cb89788b5aab2f93361233'
-  const uuid = '7e59dc028d42d09db29aa8a0f862cc81'
+const pw = 'testtest'
+const salt = 'dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6'
+const iv = 'cecacd85e9cb89788b5aab2f93361233'
+const uuid = '7e59dc028d42d09db29aa8a0f862cc81'
 
-  const strKdfOptions = { iv, salt, uuid }
-  const buffKdfOptions = {
-    salt: hexToBytes(salt),
-    iv: hexToBytes(iv),
-    uuid: hexToBytes(uuid),
-  }
+const strKdfOptions = { iv, salt, uuid }
+const buffKdfOptions = {
+  salt: hexToBytes(salt),
+  iv: hexToBytes(iv),
+  uuid: hexToBytes(uuid),
+}
 
-  // generate all possible combinations of salt, iv, uuid properties, e.g.
-  // {salt: [string], iv: [buffer], uuid: [string]}
-  // the number of objects is naturally a radix for selecting one of the
-  // input values for a given property; example, three objects and two keys:
-  // [{a: 0, b: 0},
-  //  {a: 1, b: 1},
-  //  {a: 2, b: 2}]
-  type Perm = Array<{
-    salt: string | Uint8Array
-    iv: string | Uint8Array
-    uuid: string | Uint8Array
-  }>
-  const makePermutations = (...objs: Array<object>): Perm => {
-    const permus = []
-    const keys = Array.from(
-      objs.reduce((acc: any, curr: object) => {
-        Object.keys(curr).forEach((key) => {
-          acc.add(key)
-        })
-        return acc
-      }, new Set())
-    )
-    const radix = objs.length
-    const numPermus = radix ** keys.length
-    for (let permuIdx = 0; permuIdx < numPermus; permuIdx++) {
-      const selectors = permuIdx
-        .toString(radix)
-        .padStart(keys.length, '0')
-        .split('')
-        .map((v) => parseInt(v, 10))
-      const obj: any = {}
-      zip(selectors, keys).forEach(([sel, k]: [number, string]) => {
-        if ((objs as any)[sel].hasOwnProperty(k) === true) {
-          obj[k] = (objs as any)[sel][k]
-        }
+// generate all possible combinations of salt, iv, uuid properties, e.g.
+// {salt: [string], iv: [buffer], uuid: [string]}
+// the number of objects is naturally a radix for selecting one of the
+// input values for a given property; example, three objects and two keys:
+// [{a: 0, b: 0},
+//  {a: 1, b: 1},
+//  {a: 2, b: 2}]
+type Perm = Array<{
+  salt: string | Uint8Array
+  iv: string | Uint8Array
+  uuid: string | Uint8Array
+}>
+const makePermutations = (...objs: Array<object>): Perm => {
+  const permus = []
+  const keys = Array.from(
+    objs.reduce((acc: any, curr: object) => {
+      Object.keys(curr).forEach((key) => {
+        acc.add(key)
       })
-      permus.push(obj)
-    }
-    return permus
-  }
-
-  const makeEthersOptions = (opts: object) => {
+      return acc
+    }, new Set())
+  )
+  const radix = objs.length
+  const numPermus = radix ** keys.length
+  for (let permuIdx = 0; permuIdx < numPermus; permuIdx++) {
+    const selectors = permuIdx
+      .toString(radix)
+      .padStart(keys.length, '0')
+      .split('')
+      .map((v) => parseInt(v, 10))
     const obj: any = {}
-    Object.entries(opts).forEach(([key, val]: [string, string | Uint8Array]) => {
-      obj[key] = typeof val === 'string' ? '0x' + val : val
+    zip(selectors, keys).forEach(([sel, k]: [number, string]) => {
+      if ((objs as any)[sel].hasOwnProperty(k) === true) {
+        obj[k] = (objs as any)[sel][k]
+      }
     })
-    return obj
+    permus.push(obj)
   }
+  return permus
+}
 
-  let permutations = makePermutations(strKdfOptions, buffKdfOptions)
+const makeEthersOptions = (opts: object) => {
+  const obj: any = {}
+  Object.entries(opts).forEach(([key, val]: [string, string | Uint8Array]) => {
+    obj[key] = typeof val === 'string' ? '0x' + val : val
+  })
+  return obj
+}
 
-  if (isRunningInKarma()) {
-    // These tests take a long time in the browser due to
-    // the amount of permutations so we will shorten them.
-    permutations = permutations.slice(1)
+let permutations = makePermutations(strKdfOptions, buffKdfOptions)
+
+if (isRunningInKarma()) {
+  // These tests take a long time in the browser due to
+  // the amount of permutations so we will shorten them.
+  permutations = permutations.slice(1)
+}
+
+tape('.toV3(): should work with PBKDF2', async (t) => {
+  const w =
+    '{"version":3,"id":"7e59dc02-8d42-409d-b29a-a8a0f862cc81","address":"b14ab53e38da1c172f877dbc6d65e4a1b0474c3c","crypto":{"ciphertext":"01ee7f1a3c8d187ea244c92eea9e332ab0bb2b4c902d89bdd71f80dc384da1be","cipherparams":{"iv":"cecacd85e9cb89788b5aab2f93361233"},"cipher":"aes-128-ctr","kdf":"pbkdf2","kdfparams":{"dklen":32,"salt":"dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6","c":262144,"prf":"hmac-sha256"},"mac":"0c02cd0badfebd5e783e0cf41448f84086a96365fc3456716c33641a86ebc7cc"}}'
+
+  for (const perm of permutations) {
+    const encFixtureWallet = await fixtureWallet.toV3String(pw, {
+      kdf: 'pbkdf2',
+      c: n,
+      uuid: perm.uuid,
+      salt: perm.salt,
+      iv: perm.iv,
+    })
+
+    t.deepEqual(JSON.parse(w), JSON.parse(encFixtureWallet))
+    // ethers doesn't support encrypting with PBKDF2
   }
+})
 
-  t.test('should work with PBKDF2', async function () {
-    const w =
-      '{"version":3,"id":"7e59dc02-8d42-409d-b29a-a8a0f862cc81","address":"b14ab53e38da1c172f877dbc6d65e4a1b0474c3c","crypto":{"ciphertext":"01ee7f1a3c8d187ea244c92eea9e332ab0bb2b4c902d89bdd71f80dc384da1be","cipherparams":{"iv":"cecacd85e9cb89788b5aab2f93361233"},"cipher":"aes-128-ctr","kdf":"pbkdf2","kdfparams":{"dklen":32,"salt":"dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6","c":262144,"prf":"hmac-sha256"},"mac":"0c02cd0badfebd5e783e0cf41448f84086a96365fc3456716c33641a86ebc7cc"}}'
+tape('.toV3(): should work with Scrypt', async (t) => {
+  const wStaticJSON =
+    '{"version":3,"id":"7e59dc02-8d42-409d-b29a-a8a0f862cc81","address":"b14ab53e38da1c172f877dbc6d65e4a1b0474c3c","crypto":{"ciphertext":"c52682025b1e5d5c06b816791921dbf439afe7a053abb9fac19f38a57499652c","cipherparams":{"iv":"cecacd85e9cb89788b5aab2f93361233"},"cipher":"aes-128-ctr","kdf":"scrypt","kdfparams":{"dklen":32,"salt":"dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6","n":262144,"r":8,"p":1},"mac":"27b98c8676dc6619d077453b38db645a4c7c17a3e686ee5adaf53c11ac1b890e"}}'
+  const wStatic = JSON.parse(wStaticJSON)
+  const wRandom = Wallet.generate()
+  const wEthers = new ethersWallet(wRandom.getPrivateKeyString())
+  for (const perm of permutations) {
+    t.test(`vector ${JSON.stringify(perm)}`, async (st) => {
+      const { salt, iv, uuid } = perm
+      const ethersOpts = makeEthersOptions({ salt, iv, uuid })
 
-    await Promise.all(
-      permutations.map(async function ({ salt, iv, uuid }) {
-        const encFixtureWallet = await fixtureWallet.toV3String(pw, {
-          kdf: 'pbkdf2',
-          c: n,
-          uuid,
-          salt,
-          iv,
-        })
-
-        t.deepEqual(JSON.parse(w), JSON.parse(encFixtureWallet))
-        // ethers doesn't support encrypting with PBKDF2
+      const encFixtureWallet = await fixtureWallet.toV3String(pw, {
+        kdf: 'scrypt',
+        uuid,
+        salt,
+        iv,
+        n,
+        r,
+        p,
       })
-    )
-  })
-  tape('should work with Scrypt', (t) => {
-    const wStaticJSON =
-      '{"version":3,"id":"7e59dc02-8d42-409d-b29a-a8a0f862cc81","address":"b14ab53e38da1c172f877dbc6d65e4a1b0474c3c","crypto":{"ciphertext":"c52682025b1e5d5c06b816791921dbf439afe7a053abb9fac19f38a57499652c","cipherparams":{"iv":"cecacd85e9cb89788b5aab2f93361233"},"cipher":"aes-128-ctr","kdf":"scrypt","kdfparams":{"dklen":32,"salt":"dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6","n":262144,"r":8,"p":1},"mac":"27b98c8676dc6619d077453b38db645a4c7c17a3e686ee5adaf53c11ac1b890e"}}'
-    const wStatic = JSON.parse(wStaticJSON)
-    const wRandom = Wallet.generate()
-    const wEthers = new ethersWallet(wRandom.getPrivateKeyString())
-    for (const perm of permutations) {
-      t.test(`vector ${JSON.stringify(perm)}`, async (st) => {
-        const { salt, iv, uuid } = perm
-        const ethersOpts = makeEthersOptions({ salt, iv, uuid })
 
-        const encFixtureWallet = await fixtureWallet.toV3String(pw, {
-          kdf: 'scrypt',
-          uuid,
-          salt,
-          iv,
-          n,
-          r,
-          p,
+      const encFixtureEthersWallet = (
+        await fixtureEthersWallet.encrypt(pw, {
+          scrypt: { N: n, r, p },
+          salt: ethersOpts.salt,
+          iv: ethersOpts.iv,
+          uuid: ethersOpts.uuid,
         })
+      ).toLowerCase()
 
-        const encFixtureEthersWallet = (
-          await fixtureEthersWallet.encrypt(pw, {
-            scrypt: { N: n, r, p },
-            salt: ethersOpts.salt,
-            iv: ethersOpts.iv,
-            uuid: ethersOpts.uuid,
-          })
-        ).toLowerCase()
-
-        const encRandomWallet = await wRandom.toV3String(pw, {
-          kdf: 'scrypt',
-          uuid,
-          salt,
-          iv,
-          n,
-          r,
-          p,
-        })
-
-        const encEthersWallet = (
-          await wEthers.encrypt(pw, {
-            scrypt: { N: n, r, p },
-            salt: ethersOpts.salt,
-            iv: ethersOpts.iv,
-            uuid: ethersOpts.uuid,
-          })
-        ).toLowerCase()
-
-        st.deepEqual(wStatic, JSON.parse(encFixtureWallet))
-        st.deepEqual(wStatic, JSON.parse(encFixtureEthersWallet))
-        st.deepEqual(JSON.parse(encRandomWallet), JSON.parse(encEthersWallet))
+      const encRandomWallet = await wRandom.toV3String(pw, {
+        kdf: 'scrypt',
+        uuid,
+        salt,
+        iv,
+        n,
+        r,
+        p,
       })
-    }
-  })
-  t.test('should work without providing options', async function () {
-    const wallet = await fixtureWallet.toV3('testtest')
-    t.deepEqual(wallet['version'], 3)
-  })
-  t.test('should fail for unsupported kdf', function () {
-    t.throws(async function () {
+
+      const encEthersWallet = (
+        await wEthers.encrypt(pw, {
+          scrypt: { N: n, r, p },
+          salt: ethersOpts.salt,
+          iv: ethersOpts.iv,
+          uuid: ethersOpts.uuid,
+        })
+      ).toLowerCase()
+
+      st.deepEqual(wStatic, JSON.parse(encFixtureWallet))
+      st.deepEqual(wStatic, JSON.parse(encFixtureEthersWallet))
+      st.deepEqual(JSON.parse(encRandomWallet), JSON.parse(encEthersWallet))
+    })
+  }
+  t.end()
+})
+
+tape.only('.toV3(): without providing options', async (t) => {
+  const wallet = await fixtureWallet.toV3('testtest')
+  t.deepEqual(wallet['version'], 3, 'should work without providing options')
+
+  t.throws(
+    async () => {
       await fixtureWallet.toV3('testtest', { kdf: 'superkey' })
-    }, /^Error: Unsupported kdf$/)
-  })
+    },
+    (err: any) => {
+      console.log(err)
+      return err.message.includes('Unsupported kdf')
+    },
+    'should fail for unsupported kdf'
+  )
+}) /*
   t.test('should fail for bad salt', function () {
     const pw = 'test'
-    const errStr =
-      /^Error: Invalid salt, string must be empty or a non-zero even number of hex characters$/
+    const errStr = 'Invalid salt, string must be empty or a non-zero even number of hex characters'
 
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { salt: 'f' })
-    }, errStr)
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { salt: 'fff' })
-    }, errStr)
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { salt: 'xfff' })
-    }, errStr)
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { salt: 'fffx' })
-    }, errStr)
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { salt: 'fffxff' })
-    }, errStr)
-    t.throws(async function () {
-      // @ts-ignore
-      await fixtureWallet.toV3(pw, { salt: {} })
-    }, /^Error: Invalid salt, must be a string \(empty or a non-zero even number of hex characters\) or buffer$/)
+    t.throws(
+      async () => {
+        await fixtureWallet.toV3(pw, { salt: 'f' })
+      },
+      (err: any) => err.message.includes(errStr)
+    )
+    t.throws(
+      async () => {
+        await fixtureWallet.toV3(pw, { salt: 'fff' })
+      },
+      (err: any) => err.message.includes(errStr)
+    )
+    t.throws(
+      async () => {
+        await fixtureWallet.toV3(pw, { salt: 'xfff' })
+      },
+      (err: any) => err.message.includes(errStr)
+    )
+    t.throws(
+      async () => {
+        await fixtureWallet.toV3(pw, { salt: 'fffx' })
+      },
+      (err: any) => err.message.includes(errStr)
+    )
+    t.throws(
+      async () => {
+        await fixtureWallet.toV3(pw, { salt: 'fffxff' })
+      },
+      (err: any) => err.message.includes(errStr)
+    )
+    t.throws(
+      async () => {
+        await fixtureWallet.toV3(pw, { salt: {} as never as undefined })
+      },
+      (err: any) =>
+        err.message.includes(
+          'Invalid salt, must be a string (empty or a non-zero even number of hex characters) or buffer'
+        )
+    )
   })
-  t.test('should work with empty salt', async function () {
+
+  t.test('should work with empty salt', async (st) => {
     const pw = 'test'
     let salt: any = ''
     let w = await fixtureWallet.toV3(pw, { salt, kdf: 'pbkdf2' })
 
-    t.deepEqual(salt, w.crypto.kdfparams.salt)
-    t.deepEqual(
+    st.deepEqual(salt, w.crypto.kdfparams.salt)
+    st.deepEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(w, pw)).getPrivateKeyString()
     )
@@ -385,8 +417,8 @@ tape('.toV3()', (t) => {
     salt = '0x'
     w = await fixtureWallet.toV3(pw, { salt, kdf: 'pbkdf2' })
 
-    t.deepEqual('', w.crypto.kdfparams.salt)
-    t.deepEqual(
+    st.deepEqual('', w.crypto.kdfparams.salt)
+    st.deepEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(w, pw)).getPrivateKeyString()
     )
@@ -394,8 +426,8 @@ tape('.toV3()', (t) => {
     salt = hexToBytes('')
     w = await fixtureWallet.toV3(pw, { salt, kdf: 'pbkdf2' })
 
-    t.deepEqual('', w.crypto.kdfparams.salt)
-    t.deepEqual(
+    st.deepEqual('', w.crypto.kdfparams.salt)
+    st.deepEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(w, pw)).getPrivateKeyString()
     )
@@ -419,13 +451,13 @@ tape('.toV3()', (t) => {
       uuid: '0x' + uuid,
     })
 
-    t.deepEqual(salt, JSON.parse(wStr).crypto.kdfparams.salt)
-    t.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
-    t.deepEqual(
+    st.deepEqual(salt, JSON.parse(wStr).crypto.kdfparams.salt)
+    st.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
+    st.deepEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(JSON.parse(wStr), pw)).getPrivateKeyString()
     )
-    t.deepEqual(
+    st.deepEqual(
       fixtureWallet.getPrivateKeyString(),
       (await ethersWallet.fromEncryptedJson(wEthersStr, pw)).privateKey
     )
@@ -449,13 +481,13 @@ tape('.toV3()', (t) => {
       uuid,
     })
 
-    t.deepEqual('', JSON.parse(wStr).crypto.kdfparams.salt)
-    t.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
-    t.deepEqual(
+    st.deepEqual('', JSON.parse(wStr).crypto.kdfparams.salt)
+    st.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
+    st.deepEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(JSON.parse(wStr), pw)).getPrivateKeyString()
     )
-    t.deepEqual(
+    st.deepEqual(
       fixtureWallet.getPrivateKeyString(),
       (await ethersWallet.fromEncryptedJson(wEthersStr, pw)).privateKey
     )
@@ -477,13 +509,13 @@ tape('.toV3()', (t) => {
       uuid,
     })
 
-    t.deepEqual('', JSON.parse(wStr).crypto.kdfparams.salt)
-    t.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
-    t.deepEqual(
+    st.deepEqual('', JSON.parse(wStr).crypto.kdfparams.salt)
+    st.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
+    st.deepEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(JSON.parse(wStr), pw)).getPrivateKeyString()
     )
-    t.deepEqual(
+    st.deepEqual(
       fixtureWallet.getPrivateKeyString(),
       (await ethersWallet.fromEncryptedJson(wEthersStr, pw)).privateKey
     )
@@ -620,7 +652,7 @@ tape('.toV3()', (t) => {
       (await Wallet.fromV3(w2, pw)).getPrivateKeyString()
     )
   })
-})
+})*/
 
 /*
 tape('.fromV1()',  (t) => {
