@@ -1,6 +1,5 @@
 import * as assert from 'assert'
 import { hexToBytes } from 'ethereum-cryptography/utils'
-import { describe, it } from 'mocha'
 
 import { EthereumHDKey } from '../src/hdkey'
 

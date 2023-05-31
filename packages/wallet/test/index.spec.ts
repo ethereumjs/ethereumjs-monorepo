@@ -1,7 +1,6 @@
 import * as assert from 'assert'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 import { Wallet as ethersWallet } from 'ethers'
-import { describe, it } from 'mocha'
 
 import { Wallet } from '../src'
 import { Thirdparty } from '../src/thirdparty'
