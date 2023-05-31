@@ -83,7 +83,7 @@ function evp_kdf(data: Uint8Array, salt: Uint8Array, opts?: Partial<EvpKdfOpts>)
 // http://stackoverflow.com/questions/25288311/cryptojs-aes-pattern-always-ends-with
 function decodeCryptojsSalt(input: string): { ciphertext: Uint8Array; salt?: Uint8Array } {
   const ciphertext = base64.decode(input)
-  if (ciphertext.subarray(0, 8).toString() === 'Salted__') {
+  if (bytesToUtf8(ciphertext.subarray(0, 8)) === 'Salted__') {
     return {
       salt: ciphertext.subarray(8, 16),
       ciphertext: ciphertext.subarray(16),
@@ -165,7 +165,7 @@ export async function fromEtherWallet(
  * Third Party API: Import a brain wallet used by Ether.Camp
  */
 export function fromEtherCamp(passphrase: string): Wallet {
-  return new Wallet(keccak256(hexToBytes(passphrase)))
+  return new Wallet(keccak256(utf8ToBytes(passphrase)))
 }
 
 /**

@@ -1,4 +1,3 @@
-/* eslint-disable ethereumjs/noBuffer */
 /*
 The MIT License
 
@@ -22,6 +21,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE
  */
+
+import { bytesToPrefixedHexString, utf8ToBytes } from '@ethereumjs/util'
 
 /**
  * Returns a `Boolean` on whether or not the a `String` starts with '0x'
@@ -76,7 +77,7 @@ export function getBinarySize(str: string) {
     throw new Error(`[getBinarySize] method requires input type 'string', received ${typeof str}`)
   }
 
-  return Buffer.byteLength(str, 'utf8')
+  return utf8ToBytes(str).byteLength
 }
 
 /**
@@ -135,9 +136,9 @@ export function toAscii(hex: string): string {
  * @returns hex representation of input string
  */
 export function fromUtf8(stringValue: string) {
-  const str = Buffer.from(stringValue, 'utf8')
+  const str = utf8ToBytes(stringValue)
 
-  return `0x${padToEven(str.toString('hex')).replace(/^0+|0+$/g, '')}`
+  return bytesToPrefixedHexString(str)
 }
 
 /**

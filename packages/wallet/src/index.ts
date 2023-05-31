@@ -525,7 +525,6 @@ export class Wallet {
    * Returns the wallet's private key.
    *
    */
-  // tslint:disable-next-line
   public getPrivateKey(): Uint8Array {
     return this.privKey
   }
@@ -589,7 +588,7 @@ export class Wallet {
       case KDFFunctions.PBKDF:
         kdfParams = kdfParamsForPBKDF(v3Params)
         derivedKey = await pbkdf2(
-          hexToBytes(password),
+          utf8ToBytes(password),
           kdfParams.salt,
           kdfParams.c,
           kdfParams.dklen,
@@ -618,7 +617,7 @@ export class Wallet {
       version: 3,
       id: uuidv4({ random: v3Params.uuid }),
       // @ts-ignore - the official V3 keystore spec omits the address key
-      address: this.getAddress().toString('hex'),
+      address: bytesToHex(this.getAddress()),
       crypto: {
         ciphertext: bytesToHex(ciphertext),
         cipherparams: { iv: bytesToHex(v3Params.iv) },
