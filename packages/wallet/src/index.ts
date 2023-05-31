@@ -1,5 +1,6 @@
 import {
   bytesToHex,
+  bytesToPrefixedHexString,
   importPublic,
   isValidPrivate,
   isValidPublic,
@@ -530,7 +531,7 @@ export class Wallet {
   }
 
   public getPrivateKeyString(): string {
-    return bytesToHex(this.privKey)
+    return bytesToPrefixedHexString(this.privKey)
   }
 
   /**
@@ -544,7 +545,7 @@ export class Wallet {
    * Returns the wallet's public key as a "0x" prefixed hex string
    */
   public getPublicKeyString(): string {
-    return bytesToHex(this.getPublicKey())
+    return bytesToPrefixedHexString(this.getPublicKey())
   }
 
   /**
@@ -558,7 +559,7 @@ export class Wallet {
    * Returns the wallet's address as a "0x" prefixed hex string
    */
   public getAddressString(): string {
-    return bytesToHex(this.getAddress())
+    return bytesToPrefixedHexString(this.getAddress())
   }
 
   /**
