@@ -105,7 +105,7 @@ tape('StateManager -> General/Account', (t) => {
 
       const res = (await stateManager.getAccount(address)) === undefined
 
-      st.notOk(res)
+      st.ok(res)
 
       st.end()
     })
@@ -119,7 +119,7 @@ tape('StateManager -> General/Account', (t) => {
 
       const res = (await stateManager.getAccount(address)) === undefined
 
-      st.ok(res)
+      st.notOk(res)
 
       st.end()
     })
