@@ -18,9 +18,9 @@ import { debug as createDebugLogger } from 'debug'
 import { promisify } from 'util'
 
 import { EOF, getEOFCode } from './eof'
-import { EvmJournal } from './evmJournal'
 import { ERROR, EvmError } from './exceptions'
 import { Interpreter } from './interpreter'
+import { Journal } from './journal'
 import { Message } from './message'
 import { getOpcodesForHF } from './opcodes'
 import { getActivePrecompiles } from './precompiles'
@@ -186,7 +186,7 @@ export class EVM implements EVMInterface {
 
   public stateManager: EVMStateManagerInterface
   public blockchain: Blockchain
-  public evmJournal: EvmJournal
+  public evmJournal: Journal
 
   public readonly _transientStorage: TransientStorage
 
@@ -306,7 +306,7 @@ export class EVM implements EVMInterface {
     this._customOpcodes = opts.customOpcodes
     this._customPrecompiles = opts.customPrecompiles
 
-    this.evmJournal = new EvmJournal(this.stateManager, this._common)
+    this.evmJournal = new Journal(this.stateManager, this._common)
 
     this._common.on('hardforkChanged', () => {
       this.getActiveOpcodes()

@@ -10,7 +10,7 @@ import { trap } from './opcodes'
 import { Stack } from './stack'
 
 import type { EVM, EVMResult } from './evm'
-import type { EvmJournal } from './evmJournal'
+import type { Journal } from './journal'
 import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes'
 import type { Block, Blockchain, Log } from './types'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
@@ -109,7 +109,7 @@ export class Interpreter {
   protected _stateManager: EVMStateManagerInterface
   protected _common: Common
   public _evm: EVM
-  public evmJournal: EvmJournal
+  public evmJournal: Journal
   _env: Env
 
   // Keep track of this Interpreter run result
@@ -128,7 +128,7 @@ export class Interpreter {
     blockchain: Blockchain,
     env: Env,
     gasLeft: bigint,
-    evmJournal: EvmJournal
+    evmJournal: Journal
   ) {
     this._evm = evm
     this._stateManager = stateManager

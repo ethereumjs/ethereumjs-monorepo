@@ -16,7 +16,7 @@ type AddressString = string
 type SlotString = string
 type WarmSlots = Set<SlotString>
 
-type Journal = Map<AddressString, WarmSlots>
+type JournalType = Map<AddressString, WarmSlots>
 
 /**
  * Journal Diff Item:
@@ -29,13 +29,13 @@ type JournalDiffItem = [Set<AddressString>, Map<AddressString, Set<SlotString>>,
 
 type JournalHeight = number
 
-export class EvmJournal {
+export class Journal {
   private stateManager: EVMStateManagerInterface
   private common: Common
   private DEBUG: boolean
   private _debug: Debugger
 
-  private journal!: Journal
+  private journal!: JournalType
   private preWarmJournal!: Map<AddressString, Set<SlotString>>
   private touched!: Set<AddressString>
   private journalDiff!: [JournalHeight, JournalDiffItem][]
