@@ -1,7 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { Account, Address } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
@@ -139,7 +139,7 @@ tape('EIP-3529 tests', (t) => {
       )
 
       await vm.stateManager.getContractStorage(address, key)
-      vm.stateManager.addWarmedStorage(address.bytes, key)
+      vm.evm.journal.addAlwaysWarmSlot(bytesToHex(address.bytes), bytesToHex(key))
 
       await vm.evm.runCode!({
         code,
@@ -153,7 +153,7 @@ tape('EIP-3529 tests', (t) => {
       st.equal(gasUsed, BigInt(testCase.usedGas), 'correct used gas')
 
       // clear the storage cache, otherwise next test will use current original value
-      vm.stateManager.clearOriginalStorageCache()
+      vm.stateManager.originalStorageCache.clear()
     }
 
     st.end()

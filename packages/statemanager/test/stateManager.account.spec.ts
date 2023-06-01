@@ -99,27 +99,27 @@ tape('StateManager -> General/Account', (t) => {
       }
     )
 
-    t.test('should return false for a non-existent account', async (st) => {
+    t.test('should return undefined for a non-existent account', async (st) => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
-      const res = await stateManager.accountExists(address)
+      const res = (await stateManager.getAccount(address)) === undefined
 
-      st.notOk(res)
+      st.ok(res)
 
       st.end()
     })
 
-    t.test('should return true for an existent account', async (st) => {
+    t.test('should return undefined for an existent account', async (st) => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       const account = createAccount(BigInt(0x1), BigInt(0x1))
       const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
       await stateManager.putAccount(address, account)
 
-      const res = await stateManager.accountExists(address)
+      const res = (await stateManager.getAccount(address)) === undefined
 
-      st.ok(res)
+      st.notOk(res)
 
       st.end()
     })

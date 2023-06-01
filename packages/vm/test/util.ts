@@ -364,9 +364,6 @@ export async function setupPreConditions(state: EVMStateManagerInterface, testDa
     await state.putAccount(address, account)
   }
   await state.commit()
-  // Clear the touched stack, otherwise untouched accounts in the block which are empty (>= SpuriousDragon)
-  // will get deleted from the state, resulting in state trie errors
-  ;(<any>state).touchedJournal.clear()
 }
 
 /**
