@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1685562220224,
+  "lastUpdate": 1685644853669,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "pulasthi1989@gmail.com",
-            "name": "Pulasthi Bandara",
-            "username": "pulasthibandara"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "7a5b6978944c3feef5078a6d6c0a93b235dd9666",
-          "message": "Fix link for running EVM code in browser (#2682)",
-          "timestamp": "2023-05-10T09:18:07+02:00",
-          "tree_id": "bc48ba399bf23c6992061434283fe2b931c31265",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/7a5b6978944c3feef5078a6d6c0a93b235dd9666"
-        },
-        "date": 1683703221389,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 15122,
-            "range": "±2.60%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 15079,
-            "range": "±2.11%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 14395,
-            "range": "±6.41%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 14655,
-            "range": "±2.31%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 14275,
-            "range": "±2.44%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±9.17%",
             "unit": "ops/sec",
             "extra": "77 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bb434aee3bdcebdffe7e8bf1bd0b1b1161cd90e6",
+          "message": "Update package lock as per latest packages (#2745)",
+          "timestamp": "2023-06-01T14:36:57-04:00",
+          "tree_id": "a650518606d9e3c7713c14474a4d25ed0830d6b7",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/bb434aee3bdcebdffe7e8bf1bd0b1b1161cd90e6"
+        },
+        "date": 1685644852608,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 30876,
+            "range": "±5.63%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 30655,
+            "range": "±2.88%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 30682,
+            "range": "±2.89%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25457,
+            "range": "±10.52%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 29601,
+            "range": "±3.04%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
