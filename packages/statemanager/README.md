@@ -51,7 +51,7 @@ import { Account, Address } from '@ethereumjs/util'
 import { EthersStateManager } from '@ethereumjs/statemanager'
 import { ethers } from 'ethers'
 
-const provider = new ethers.providers.JsonRpcProvider('https://path.to.my.provider.com')
+const provider = new ethers.JsonRpcProvider('https://path.to.my.provider.com')
 const stateManager = new EthersStateManager({ provider, blockTag: 500000n })
 const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
 const account = await stateManager.getAccount(vitalikDotEth)
