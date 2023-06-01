@@ -674,8 +674,7 @@ export class EVM implements EVMInterface {
   }
 
   /**
-   * Starts the actual bytecode processing for a CALL or CREATE, providing
-   * it with the {@link EEI}.
+   * Starts the actual bytecode processing for a CALL or CREATE
    */
   protected async runInterpreter(
     message: Message,

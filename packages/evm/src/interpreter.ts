@@ -16,7 +16,7 @@ import type { Block, Blockchain, Log } from './types'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 
-const debugGas = createDebugLogger('evm:eei:gas')
+const debugGas = createDebugLogger('evm:gas')
 
 export interface InterpreterOpts {
   pc?: number
@@ -119,8 +119,6 @@ export class Interpreter {
   // Opcode debuggers (e.g. { 'push': [debug Object], 'sstore': [debug Object], ...})
   private opDebuggers: { [key: string]: (debug: string) => void } = {}
 
-  // TODO remove eei from constructor this can be directly read from EVM
-  // EEI gets created on EVM creation and will not be re-instantiated
   // TODO remove gasLeft as constructor argument
   constructor(
     evm: EVM,
@@ -394,10 +392,6 @@ export class Interpreter {
     }
     return jumps
   }
-
-  /**
-   * Logic extracted from EEI
-   */
 
   /**
    * Subtracts an amount from the gas counter.
@@ -1043,8 +1037,6 @@ export class Interpreter {
   }
 
   private _getReturnCode(results: EVMResult) {
-    // This preserves the previous logic, but seems to contradict the EEI spec
-    // https://github.com/ewasm/design/blob/38eeded28765f3e193e12881ea72a6ab807a3371/eth_interface.md
     if (results.execResult.exceptionError) {
       return BigInt(0)
     } else {

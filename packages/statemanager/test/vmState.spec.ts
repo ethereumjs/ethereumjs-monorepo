@@ -21,29 +21,6 @@ export function isRunningInKarma(): boolean {
 const StateManager = DefaultStateManager
 
 tape('stateManager', (t) => {
-  // TODO (@Jochem): reactivate along EEI/VMState moving to VM
-  /*t.test(
-    'should generate the genesis state root correctly for mainnet from ethereum/tests data',
-    async (st) => {
-      if (isRunningInKarma()) {
-        st.skip('skip slow test when running in karma')
-        return st.end()
-      }
-      const genesisData = getSingleFile('BasicTests/genesishashestest.json')
-
-      const stateManager = new VmState({ stateManager: new StateManager() })
-      const blockchain = await Blockchain.create()
-      await stateManager.generateCanonicalGenesis(blockchain.genesisState())
-      const stateRoot = await stateManager.getStateRoot()
-      st.equal(
-        bytesToHex(stateRoot),
-        genesisData.genesis_state_root,
-        'generateCanonicalGenesis should produce correct state root for mainnet from ethereum/tests data'
-      )
-      st.end()
-    }
-  )*/
-
   t.test('should generate the genesis state root correctly for mainnet from common', async (st) => {
     if (isRunningInKarma()) {
       st.skip('skip slow test when running in karma')
