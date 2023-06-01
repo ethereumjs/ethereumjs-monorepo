@@ -124,7 +124,24 @@ tape('[VMExecution]', async (t) => {
     await blockchain.putBlock(block)
     await execution.run()
 
-    const newHead = await blockchain.getIteratorHead()
+    let newHead = await blockchain.getIteratorHead()
+    t.equal(
+      bytesToHex(block.hash()),
+      bytesToHex(newHead.hash()),
+      'vmHead should be on the latest block'
+    )
+
+    // reset head and run again
+    await blockchain.setIteratorHead('vm', oldHead.hash())
+    newHead = await blockchain.getIteratorHead()
+    t.equal(
+      bytesToHex(oldHead.hash()),
+      bytesToHex(newHead.hash()),
+      'vmHead should be on the latest block'
+    )
+    await execution.run()
+
+    newHead = await blockchain.getIteratorHead()
     t.equal(
       bytesToHex(block.hash()),
       bytesToHex(newHead.hash()),
