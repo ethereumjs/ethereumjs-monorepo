@@ -561,10 +561,10 @@ tape('.toV3(): should fail for bad iv', async (t) => {
     )
   }
 })
-tape('.toV3(): should fail for bad uuid', async (t) => {
+tape.only('.toV3(): should fail for bad uuid', async (t) => {
   const pw = 'test'
   const errStrLength = 'Invalid uuid, string must be 32 hex characters'
-  const errBuffLength = 'Invalid uuid, buffer must be 16 bytes'
+  const errBuffLength = 'Invalid uuid, Uint8Array must be 16 bytes'
 
   try {
     await fixtureWallet.toV3(pw, { uuid: '' })
@@ -599,6 +599,7 @@ tape('.toV3(): should fail for bad uuid', async (t) => {
   try {
     await fixtureWallet.toV3(pw, { uuid: hexToBytes('') })
   } catch (err: any) {
+    console.log(err)
     t.ok(err.message.includes(errBuffLength))
   }
   try {

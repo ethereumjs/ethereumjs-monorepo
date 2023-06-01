@@ -103,7 +103,7 @@ function validateBytes(paramName: string, bytes: Uint8Array, length?: number) {
     )
   }
   if (typeof length === 'number' && bytes.length !== length) {
-    throw new Error(`Invalid ${paramName}, uint8Array must be ${length} bytes`)
+    throw new Error(`Invalid ${paramName}, Uint8Array must be ${length} bytes`)
   }
   return bytes
 }
