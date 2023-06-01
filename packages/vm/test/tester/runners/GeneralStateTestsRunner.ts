@@ -104,7 +104,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   // Even if no txs are ran, coinbase should always be created
   const coinbaseAddress = Address.fromString(testData.env.currentCoinbase)
   const account = await (<VM>vm).stateManager.getAccount(coinbaseAddress)
-  await (<VM>vm).stateManager.putAccount(coinbaseAddress, account ?? new Account(), true)
+  await (<VM>vm).evm.journal.putAccount(coinbaseAddress, account ?? new Account())
 
   const stepHandler = (e: InterpreterStep) => {
     let hexStack = []
@@ -152,7 +152,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   }
 
   // Cleanup touched accounts (this wipes coinbase if it is empty on HFs >= TangerineWhistle)
-  await (<VM>vm).stateManager.cleanupTouchedAccounts()
+  await (<VM>vm).evm.journal.cleanup()
   await (<VM>vm).stateManager.getStateRoot() // Ensure state root is updated (flush all changes to trie)
 
   const stateManagerStateRoot = vm.stateManager._trie.root()

@@ -1,9 +1,10 @@
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address } from '@ethereumjs/util'
 import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
+
+import { DefaultStateManager } from '../src'
 
 export function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {
   return new Account(nonce, balance)
@@ -20,29 +21,6 @@ export function isRunningInKarma(): boolean {
 const StateManager = DefaultStateManager
 
 tape('stateManager', (t) => {
-  // TODO (@Jochem): reactivate along EEI/VMState moving to VM
-  /*t.test(
-    'should generate the genesis state root correctly for mainnet from ethereum/tests data',
-    async (st) => {
-      if (isRunningInKarma()) {
-        st.skip('skip slow test when running in karma')
-        return st.end()
-      }
-      const genesisData = getSingleFile('BasicTests/genesishashestest.json')
-
-      const stateManager = new VmState({ stateManager: new StateManager() })
-      const blockchain = await Blockchain.create()
-      await stateManager.generateCanonicalGenesis(blockchain.genesisState())
-      const stateRoot = await stateManager.getStateRoot()
-      st.equal(
-        bytesToHex(stateRoot),
-        genesisData.genesis_state_root,
-        'generateCanonicalGenesis should produce correct state root for mainnet from ethereum/tests data'
-      )
-      st.end()
-    }
-  )*/
-
   t.test('should generate the genesis state root correctly for mainnet from common', async (st) => {
     if (isRunningInKarma()) {
       st.skip('skip slow test when running in karma')
@@ -119,7 +97,7 @@ tape('Original storage cache', async (t) => {
     const res = await stateManager.getContractStorage(address, key)
     st.deepEqual(res, new Uint8Array(0))
 
-    const origRes = await (<any>stateManager).getOriginalContractStorage(address, key)
+    const origRes = await stateManager.originalStorageCache.get(address, key)
     st.deepEqual(origRes, new Uint8Array(0))
 
     await stateManager.commit()
@@ -136,7 +114,7 @@ tape('Original storage cache', async (t) => {
   })
 
   t.test('should get original storage value', async (st) => {
-    const res = await (<any>stateManager).getOriginalContractStorage(address, key)
+    const res = await stateManager.originalStorageCache.get(address, key)
     st.deepEqual(res, value)
     st.end()
   })
@@ -147,7 +125,7 @@ tape('Original storage cache', async (t) => {
     const res = await stateManager.getContractStorage(address, key)
     st.deepEqual(res, newValue)
 
-    const origRes = await (<any>stateManager).getOriginalContractStorage(address, key)
+    const origRes = await stateManager.originalStorageCache.get(address, key)
     st.deepEqual(origRes, value)
     st.end()
   })
@@ -160,20 +138,20 @@ tape('Original storage cache', async (t) => {
 
     let res = await stateManager.getContractStorage(address, key2)
     st.deepEqual(res, value2)
-    let origRes = await (<any>stateManager).getOriginalContractStorage(address, key2)
+    let origRes = await stateManager.originalStorageCache.get(address, key2)
     st.deepEqual(origRes, value2)
 
     await stateManager.putContractStorage(address, key2, value3)
 
     res = await stateManager.getContractStorage(address, key2)
     st.deepEqual(res, value3)
-    origRes = await (<any>stateManager).getOriginalContractStorage(address, key2)
+    origRes = await stateManager.originalStorageCache.get(address, key2)
     st.deepEqual(origRes, value2)
 
     // Check previous key
     res = await stateManager.getContractStorage(address, key)
     st.deepEqual(res, hexToBytes('1235'))
-    origRes = await (<any>stateManager).getOriginalContractStorage(address, key)
+    origRes = await stateManager.originalStorageCache.get(address, key)
     st.deepEqual(origRes, value)
 
     st.end()
@@ -181,7 +159,7 @@ tape('Original storage cache', async (t) => {
 
   t.test("getOriginalContractStorage should validate the key's length", async (st) => {
     try {
-      await (<any>stateManager).getOriginalContractStorage(address, new Uint8Array(12))
+      await stateManager.originalStorageCache.get(address, new Uint8Array(12))
     } catch (e: any) {
       st.equal(e.message, 'Storage key must be 32 bytes long')
       st.end()
@@ -190,323 +168,5 @@ tape('Original storage cache', async (t) => {
 
     st.fail('Should have failed')
     st.end()
-  })
-})
-
-tape('StateManager - generateAccessList', (tester) => {
-  const it = tester.test
-
-  // Only use 0..9
-  function a(n: number) {
-    return hexToBytes(`ff${'00'.repeat(18)}0${n}`)
-  }
-
-  // Only use 0..9
-  function s(n: number) {
-    return hexToBytes(`${'00'.repeat(31)}0${n}`)
-  }
-
-  function getStateManagerAliases() {
-    const stateManager = new DefaultStateManager()
-    const addA = stateManager.addWarmedAddress.bind(stateManager)
-    const addS = stateManager.addWarmedStorage.bind(stateManager)
-    const gen = stateManager.generateAccessList.bind(stateManager)
-    const sm = stateManager
-    return { addA, addS, gen, sm }
-  }
-
-  it('one frame, simple', async (t) => {
-    const { addA, addS, gen } = getStateManagerAliases()
-    addA(a(1))
-    addS(a(1), s(1))
-    const json = [
-      {
-        address: '0xff00000000000000000000000000000000000001',
-        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
-      },
-    ]
-    t.deepEqual(gen(), json)
-    t.end()
-  })
-
-  it('one frame, unsorted slots', async (t) => {
-    const { addA, addS, gen } = getStateManagerAliases()
-    addA(a(1))
-    addS(a(1), s(2))
-    addS(a(1), s(1))
-    const json = [
-      {
-        address: '0xff00000000000000000000000000000000000001',
-        storageKeys: [
-          '0x0000000000000000000000000000000000000000000000000000000000000001',
-          '0x0000000000000000000000000000000000000000000000000000000000000002',
-        ],
-      },
-    ]
-    t.deepEqual(gen(), json)
-    t.end()
-  })
-
-  it('one frame, unsorted addresses', async (t) => {
-    const { addA, addS, gen } = getStateManagerAliases()
-    addA(a(2))
-    addS(a(2), s(1))
-    addA(a(1))
-    addS(a(1), s(1))
-    const json = [
-      {
-        address: '0xff00000000000000000000000000000000000001',
-        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
-      },
-      {
-        address: '0xff00000000000000000000000000000000000002',
-        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
-      },
-    ]
-    t.deepEqual(gen(), json)
-    t.end()
-  })
-
-  it('one frame, more complex', async (t) => {
-    const { addA, addS, gen } = getStateManagerAliases()
-    addA(a(1))
-    addS(a(1), s(1))
-    addA(a(2))
-    addA(a(3))
-    addS(a(3), s(1))
-    addS(a(3), s(2))
-    let json = [
-      {
-        address: '0xff00000000000000000000000000000000000001',
-        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
-      },
-      {
-        address: '0xff00000000000000000000000000000000000002',
-        storageKeys: [],
-      },
-      {
-        address: '0xff00000000000000000000000000000000000003',
-        storageKeys: [
-          '0x0000000000000000000000000000000000000000000000000000000000000001',
-          '0x0000000000000000000000000000000000000000000000000000000000000002',
-        ],
-      },
-    ]
-    t.deepEqual(gen(), json)
-
-    json = [
-      {
-        address: '0xff00000000000000000000000000000000000002',
-        storageKeys: [],
-      },
-      {
-        address: '0xff00000000000000000000000000000000000003',
-        storageKeys: [
-          '0x0000000000000000000000000000000000000000000000000000000000000001',
-          '0x0000000000000000000000000000000000000000000000000000000000000002',
-        ],
-      },
-    ]
-    const aRemoved = new Address(a(1))
-    t.deepEqual(gen([aRemoved]), json, 'address removed')
-
-    json = [
-      {
-        address: '0xff00000000000000000000000000000000000001',
-        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
-      },
-      {
-        address: '0xff00000000000000000000000000000000000002',
-        storageKeys: [],
-      },
-      {
-        address: '0xff00000000000000000000000000000000000003',
-        storageKeys: [
-          '0x0000000000000000000000000000000000000000000000000000000000000001',
-          '0x0000000000000000000000000000000000000000000000000000000000000002',
-        ],
-      },
-    ]
-    const aOnlyStorageKept = new Address(a(3))
-    t.deepEqual(gen([], [aOnlyStorageKept]), json, 'addressesOnlyStorage, kept')
-
-    json = [
-      {
-        address: '0xff00000000000000000000000000000000000001',
-        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
-      },
-      {
-        address: '0xff00000000000000000000000000000000000003',
-        storageKeys: [
-          '0x0000000000000000000000000000000000000000000000000000000000000001',
-          '0x0000000000000000000000000000000000000000000000000000000000000002',
-        ],
-      },
-    ]
-    const aOnlyStorageRemoved = new Address(a(2))
-    t.deepEqual(gen([], [aOnlyStorageRemoved]), json, 'addressesOnlyStorage, removed')
-    t.end()
-  })
-
-  it('two frames, simple', async (t) => {
-    const { addA, addS, gen, sm } = getStateManagerAliases()
-    addA(a(1))
-    addS(a(1), s(1))
-    await sm.checkpoint()
-    addA(a(2))
-    addA(a(3))
-    addS(a(3), s(1))
-    addS(a(3), s(2))
-    const json = [
-      {
-        address: '0xff00000000000000000000000000000000000001',
-        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
-      },
-      {
-        address: '0xff00000000000000000000000000000000000002',
-        storageKeys: [],
-      },
-      {
-        address: '0xff00000000000000000000000000000000000003',
-        storageKeys: [
-          '0x0000000000000000000000000000000000000000000000000000000000000001',
-          '0x0000000000000000000000000000000000000000000000000000000000000002',
-        ],
-      },
-    ]
-    t.deepEqual(gen(), json)
-    t.end()
-  })
-
-  it('two frames, same address with different storage slots', async (t) => {
-    const { addA, addS, gen, sm } = getStateManagerAliases()
-    addA(a(1))
-    addS(a(1), s(1))
-    await sm.checkpoint()
-    addA(a(1))
-    addS(a(1), s(2))
-    const json = [
-      {
-        address: '0xff00000000000000000000000000000000000001',
-        storageKeys: [
-          '0x0000000000000000000000000000000000000000000000000000000000000001',
-          '0x0000000000000000000000000000000000000000000000000000000000000002',
-        ],
-      },
-    ]
-    t.deepEqual(gen(), json)
-    t.end()
-  })
-
-  it('two frames, same address with same storage slots', async (t) => {
-    const { addA, addS, gen, sm } = getStateManagerAliases()
-    addA(a(1))
-    addS(a(1), s(1))
-    await sm.checkpoint()
-    addA(a(1))
-    addS(a(1), s(1))
-    const json = [
-      {
-        address: '0xff00000000000000000000000000000000000001',
-        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
-      },
-    ]
-    t.deepEqual(gen(), json)
-    t.end()
-  })
-
-  it('three frames, no accesses on level two', async (t) => {
-    const { addA, addS, gen, sm } = getStateManagerAliases()
-    addA(a(1))
-    addS(a(1), s(1))
-    await sm.checkpoint()
-    await sm.checkpoint()
-    addA(a(2))
-    addS(a(2), s(2))
-    const json = [
-      {
-        address: '0xff00000000000000000000000000000000000001',
-        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
-      },
-      {
-        address: '0xff00000000000000000000000000000000000002',
-        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000002'],
-      },
-    ]
-    t.deepEqual(gen(), json)
-    t.end()
-  })
-
-  it('one frame, one revert frame', async (t) => {
-    const { addA, addS, gen, sm } = getStateManagerAliases()
-    await sm.checkpoint()
-    addA(a(1))
-    addS(a(1), s(1))
-    await sm.revert()
-    addA(a(2))
-    addS(a(2), s(2))
-    const json = [
-      {
-        address: '0xff00000000000000000000000000000000000001',
-        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
-      },
-      {
-        address: '0xff00000000000000000000000000000000000002',
-        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000002'],
-      },
-    ]
-    t.deepEqual(gen(), json)
-    t.end()
-  })
-
-  it('one frame, one revert frame, same address, different slots', async (t) => {
-    const { addA, addS, gen, sm } = getStateManagerAliases()
-    await sm.checkpoint()
-    addA(a(1))
-    addS(a(1), s(1))
-    await sm.revert()
-    addA(a(1))
-    addS(a(1), s(2))
-    const json = [
-      {
-        address: '0xff00000000000000000000000000000000000001',
-        storageKeys: [
-          '0x0000000000000000000000000000000000000000000000000000000000000001',
-          '0x0000000000000000000000000000000000000000000000000000000000000002',
-        ],
-      },
-    ]
-    t.deepEqual(gen(), json)
-    t.end()
-  })
-
-  it('one frame, two revert frames', async (t) => {
-    const { addA, addS, gen, sm } = getStateManagerAliases()
-    await sm.checkpoint()
-    await sm.checkpoint()
-    addA(a(1))
-    addS(a(1), s(1))
-    await sm.revert()
-    addA(a(2))
-    addS(a(2), s(1))
-    await sm.revert()
-    addA(a(3))
-    addS(a(3), s(1))
-    const json = [
-      {
-        address: '0xff00000000000000000000000000000000000001',
-        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
-      },
-      {
-        address: '0xff00000000000000000000000000000000000002',
-        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
-      },
-      {
-        address: '0xff00000000000000000000000000000000000003',
-        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
-      },
-    ]
-    t.deepEqual(gen(), json)
-    t.end()
   })
 })

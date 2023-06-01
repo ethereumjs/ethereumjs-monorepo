@@ -68,12 +68,12 @@ tape('Ethers State Manager API tests', async (t) => {
     )
 
     t.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
-    const doesThisAccountExist = await state.accountExists(
-      Address.fromString('0xccAfdD642118E5536024675e776d32413728DD07')
-    )
-    t.ok(!doesThisAccountExist, 'accountExists returns false for non-existent account')
+    const doesThisAccountExist =
+      (await state.getAccount(Address.fromString('0xccAfdD642118E5536024675e776d32413728DD07'))) ===
+      undefined
+    t.ok(!doesThisAccountExist, 'getAccount returns undefined for non-existent account')
 
-    t.ok(state.accountExists(vitalikDotEth), 'vitalik.eth does exist')
+    t.ok(state.getAccount(vitalikDotEth) !== undefined, 'vitalik.eth does exist')
 
     const UNIerc20ContractAddress = Address.fromString('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984')
     const UNIContractCode = await state.getContractCode(UNIerc20ContractAddress)
@@ -149,7 +149,10 @@ tape('Ethers State Manager API tests', async (t) => {
     t.equal(deletedSlot.length, 0, 'deleted slot from storage cache')
 
     await state.deleteAccount(vitalikDotEth)
-    t.ok(await state.accountExists(vitalikDotEth), 'account should not exist after being deleted')
+    t.ok(
+      (await state.getAccount(vitalikDotEth)) === undefined,
+      'account should not exist after being deleted'
+    )
 
     try {
       await Block.fromJsonRpcProvider(provider, 'fakeBlockTag', {} as any)

@@ -474,7 +474,7 @@ tape('runTx() -> runtime behavior', async (t) => {
       await vm.runTx({ tx }) // this tx will fail, but we have to ensure that the cache is cleared
 
       t.equal(
-        (<any>vm.stateManager)._originalStorageCache.size,
+        (<any>vm.stateManager).originalStorageCache.map.size,
         0,
         `should clear storage cache after every ${txType.name}`
       )

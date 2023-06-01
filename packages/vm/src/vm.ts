@@ -159,7 +159,7 @@ export class VM {
     }
 
     if (this._opts.activatePrecompiles === true && typeof this._opts.stateManager === 'undefined') {
-      await this.stateManager.checkpoint()
+      await this.evm.journal.checkpoint()
       // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
       for (const [addressStr] of getActivePrecompiles(this._common)) {
         const address = new Address(hexToBytes(addressStr))
@@ -175,7 +175,7 @@ export class VM {
           await this.stateManager.putAccount(address, newAccount)
         }
       }
-      await this.stateManager.commit()
+      await this.evm.journal.commit()
     }
     this._isInitialized = true
   }
