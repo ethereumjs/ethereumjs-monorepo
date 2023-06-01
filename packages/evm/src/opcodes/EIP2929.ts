@@ -21,12 +21,11 @@ export function accessAddressEIP2929(
 ): bigint {
   if (common.isActivatedEIP(2929) === false) return BigInt(0)
 
-  const stateManager = runState.stateManager
   const addressStr = address.bytes
 
   // Cold
-  if (!stateManager.isWarmedAddress(addressStr)) {
-    stateManager.addWarmedAddress(addressStr)
+  if (!runState.interpreter.journal.isWarmedAddress(addressStr)) {
+    runState.interpreter.journal.addWarmedAddress(addressStr)
 
     // CREATE, CREATE2 opcodes have the address warmed for free.
     // selfdestruct beneficiary address reads are charged an *additional* cold access
@@ -56,13 +55,12 @@ export function accessStorageEIP2929(
 ): bigint {
   if (common.isActivatedEIP(2929) === false) return BigInt(0)
 
-  const stateManager = runState.stateManager
   const address = runState.interpreter.getAddress().bytes
-  const slotIsCold = !stateManager.isWarmedStorage(address, key)
+  const slotIsCold = !runState.interpreter.journal.isWarmedStorage(address, key)
 
   // Cold (SLOAD and SSTORE)
   if (slotIsCold) {
-    stateManager.addWarmedStorage(address, key)
+    runState.interpreter.journal.addWarmedStorage(address, key)
     return common.param('gasPrices', 'coldsload')
   } else if (!isSstore) {
     return common.param('gasPrices', 'warmstorageread')
@@ -89,12 +87,11 @@ export function adjustSstoreGasEIP2929(
 ): bigint {
   if (common.isActivatedEIP(2929) === false) return defaultCost
 
-  const stateManager = runState.stateManager
   const address = runState.interpreter.getAddress().bytes
   const warmRead = common.param('gasPrices', 'warmstorageread')
   const coldSload = common.param('gasPrices', 'coldsload')
 
-  if (stateManager.isWarmedStorage(address, key)) {
+  if (runState.interpreter.journal.isWarmedStorage(address, key)) {
     switch (costName) {
       case 'noop':
         return warmRead

@@ -10,12 +10,13 @@ import { trap } from './opcodes'
 import { Stack } from './stack'
 
 import type { EVM, EVMResult } from './evm'
+import type { Journal } from './journal'
 import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes'
 import type { Block, Blockchain, Log } from './types'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 
-const debugGas = createDebugLogger('evm:eei:gas')
+const debugGas = createDebugLogger('evm:gas')
 
 export interface InterpreterOpts {
   pc?: number
@@ -108,6 +109,7 @@ export class Interpreter {
   protected _stateManager: EVMStateManagerInterface
   protected _common: Common
   public _evm: EVM
+  public journal: Journal
   _env: Env
 
   // Keep track of this Interpreter run result
@@ -117,15 +119,14 @@ export class Interpreter {
   // Opcode debuggers (e.g. { 'push': [debug Object], 'sstore': [debug Object], ...})
   private opDebuggers: { [key: string]: (debug: string) => void } = {}
 
-  // TODO remove eei from constructor this can be directly read from EVM
-  // EEI gets created on EVM creation and will not be re-instantiated
   // TODO remove gasLeft as constructor argument
   constructor(
     evm: EVM,
     stateManager: EVMStateManagerInterface,
     blockchain: Blockchain,
     env: Env,
-    gasLeft: bigint
+    gasLeft: bigint,
+    journal: Journal
   ) {
     this._evm = evm
     this._stateManager = stateManager
@@ -149,6 +150,7 @@ export class Interpreter {
       gasLeft,
       returnBytes: new Uint8Array(0),
     }
+    this.journal = journal
     this._env = env
     this._result = {
       logs: [],
@@ -392,10 +394,6 @@ export class Interpreter {
   }
 
   /**
-   * Logic extracted from EEI
-   */
-
-  /**
    * Subtracts an amount from the gas counter.
    * @param amount - Amount of gas to consume
    * @param context - Usage context for debugging
@@ -484,7 +482,7 @@ export class Interpreter {
    * Store 256-bit a value in memory to persistent storage.
    */
   async storageStore(key: Uint8Array, value: Uint8Array): Promise<void> {
-    await this._stateManager.putContractStorage(this._env.address, key, value, true)
+    await this._stateManager.putContractStorage(this._env.address, key, value)
     const account = await this._stateManager.getAccount(this._env.address)
     if (!account) {
       throw new Error('could not read account while persisting memory')
@@ -499,7 +497,7 @@ export class Interpreter {
    */
   async storageLoad(key: Uint8Array, original = false): Promise<Uint8Array> {
     if (original) {
-      return this._stateManager.getOriginalContractStorage(this._env.address, key)
+      return this._stateManager.originalStorageCache.get(this._env.address, key)
     } else {
       return this._stateManager.getContractStorage(this._env.address, key)
     }
@@ -914,7 +912,7 @@ export class Interpreter {
     }
 
     this._env.contract.nonce += BigInt(1)
-    await this._stateManager.putAccount(this._env.address, this._env.contract, true)
+    await this.journal.putAccount(this._env.address, this._env.contract)
 
     if (this._common.isActivatedEIP(3860)) {
       if (
@@ -1012,7 +1010,7 @@ export class Interpreter {
       toAccount = new Account()
     }
     toAccount.balance += this._env.contract.balance
-    await this._stateManager.putAccount(toAddress, toAccount, true)
+    await this.journal.putAccount(toAddress, toAccount)
 
     // Subtract from contract balance
     await this._stateManager.modifyAccountFields(this._env.address, {
@@ -1039,8 +1037,6 @@ export class Interpreter {
   }
 
   private _getReturnCode(results: EVMResult) {
-    // This preserves the previous logic, but seems to contradict the EEI spec
-    // https://github.com/ewasm/design/blob/38eeded28765f3e193e12881ea72a6ab807a3371/eth_interface.md
     if (results.execResult.exceptionError) {
       return BigInt(0)
     } else {

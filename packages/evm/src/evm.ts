@@ -20,6 +20,7 @@ import { promisify } from 'util'
 import { EOF, getEOFCode } from './eof'
 import { ERROR, EvmError } from './exceptions'
 import { Interpreter } from './interpreter'
+import { Journal } from './journal'
 import { Message } from './message'
 import { getOpcodesForHF } from './opcodes'
 import { getActivePrecompiles } from './precompiles'
@@ -185,6 +186,7 @@ export class EVM implements EVMInterface {
 
   public stateManager: EVMStateManagerInterface
   public blockchain: Blockchain
+  public journal: Journal
 
   public readonly _transientStorage: TransientStorage
 
@@ -303,6 +305,8 @@ export class EVM implements EVMInterface {
     this._allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
     this._customOpcodes = opts.customOpcodes
     this._customPrecompiles = opts.customPrecompiles
+
+    this.journal = new Journal(this.stateManager, this._common)
 
     this._common.on('hardforkChanged', () => {
       this.getActiveOpcodes()
@@ -494,8 +498,8 @@ export class EVM implements EVMInterface {
       }
     }
 
-    await this.stateManager.putAccount(message.to, toAccount, true)
-    await this.stateManager.clearContractStorage(message.to, true)
+    await this.journal.putAccount(message.to, toAccount)
+    await this.stateManager.clearContractStorage(message.to)
 
     const newContractEvent = {
       address: message.to,
@@ -659,7 +663,7 @@ export class EVM implements EVMInterface {
         // It is thus an unnecessary default item, which we have to save to disk
         // It does change the state root, but it only wastes storage.
         const account = await this.stateManager.getAccount(message.to)
-        await this.stateManager.putAccount(message.to, account ?? new Account(), true)
+        await this.journal.putAccount(message.to, account ?? new Account())
       }
     }
 
@@ -670,8 +674,7 @@ export class EVM implements EVMInterface {
   }
 
   /**
-   * Starts the actual bytecode processing for a CALL or CREATE, providing
-   * it with the {@link EEI}.
+   * Starts the actual bytecode processing for a CALL or CREATE
    */
   protected async runInterpreter(
     message: Message,
@@ -704,7 +707,8 @@ export class EVM implements EVMInterface {
       this.stateManager,
       this.blockchain,
       env,
-      message.gasLimit
+      message.gasLimit,
+      this.journal
     )
     if (message.selfdestruct) {
       interpreter._result.selfdestruct = message.selfdestruct as { [key: string]: Uint8Array }
@@ -770,7 +774,7 @@ export class EVM implements EVMInterface {
         if (callerAccount.balance < value) {
           // if skipBalance and balance less than value, set caller balance to `value` to ensure sufficient funds
           callerAccount.balance = value
-          await this.stateManager.putAccount(caller, callerAccount, true)
+          await this.journal.putAccount(caller, callerAccount)
         }
       }
 
@@ -799,7 +803,7 @@ export class EVM implements EVMInterface {
         callerAccount = new Account()
       }
       callerAccount.nonce++
-      await this.stateManager.putAccount(message.caller, callerAccount, true)
+      await this.journal.putAccount(message.caller, callerAccount)
       if (this.DEBUG) {
         debug(`Update fromAccount (caller) nonce (-> ${callerAccount.nonce}))`)
       }
@@ -809,10 +813,10 @@ export class EVM implements EVMInterface {
 
     if (!message.to && this._common.isActivatedEIP(2929) === true) {
       message.code = message.data
-      this.stateManager.addWarmedAddress((await this._generateAddress(message)).bytes)
+      this.journal.addWarmedAddress((await this._generateAddress(message)).bytes)
     }
 
-    await this.stateManager.checkpoint()
+    await this.journal.checkpoint()
     if (this._common.isActivatedEIP(1153)) this._transientStorage.checkpoint()
     if (this.DEBUG) {
       debug('-'.repeat(100))
@@ -862,13 +866,13 @@ export class EVM implements EVMInterface {
       !(this._common.hardfork() === Hardfork.Chainstart && err.error === ERROR.CODESTORE_OUT_OF_GAS)
     ) {
       result.execResult.logs = []
-      await this.stateManager.revert()
+      await this.journal.revert()
       if (this._common.isActivatedEIP(1153)) this._transientStorage.revert()
       if (this.DEBUG) {
         debug(`message checkpoint reverted`)
       }
     } else {
-      await this.stateManager.commit()
+      await this.journal.commit()
       if (this._common.isActivatedEIP(1153)) this._transientStorage.commit()
       if (this.DEBUG) {
         debug(`message checkpoint committed`)
@@ -976,11 +980,7 @@ export class EVM implements EVMInterface {
     if (account.balance < BigInt(0)) {
       throw new EvmError(ERROR.INSUFFICIENT_BALANCE)
     }
-    const result = this.stateManager.putAccount(
-      message.authcallOrigin ?? message.caller,
-      account,
-      true
-    )
+    const result = this.journal.putAccount(message.authcallOrigin ?? message.caller, account)
     if (this.DEBUG) {
       debug(`Reduced sender (${message.caller}) balance (-> ${account.balance})`)
     }
@@ -994,7 +994,7 @@ export class EVM implements EVMInterface {
     }
     toAccount.balance = newBalance
     // putAccount as the nonce may have changed for contract creation
-    const result = this.stateManager.putAccount(message.to, toAccount, true)
+    const result = this.journal.putAccount(message.to, toAccount)
     if (this.DEBUG) {
       debug(`Added toAccount (${message.to}) balance (-> ${toAccount.balance})`)
     }
