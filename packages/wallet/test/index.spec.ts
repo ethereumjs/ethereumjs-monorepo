@@ -28,9 +28,7 @@ const isRunningInKarma = (): boolean => {
 }
 
 tape('.getPrivateKey()', (t) => {
-  t.test('should work', function () {
-    t.deepEqual(bytesToHex(fixtureWallet.getPrivateKey()), fixturePrivateKey)
-  })
+  t.equal(bytesToHex(fixtureWallet.getPrivateKey()), fixturePrivateKey)
 
   t.throws(
     () => {
@@ -343,316 +341,332 @@ tape('.toV3(): should work with Scrypt', async (t) => {
   t.end()
 })
 
-tape.only('.toV3(): without providing options', async (t) => {
+tape('.toV3(): without providing options', async (t) => {
   const wallet = await fixtureWallet.toV3('testtest')
   t.deepEqual(wallet['version'], 3, 'should work without providing options')
 
-  t.throws(
-    async () => {
-      await fixtureWallet.toV3('testtest', { kdf: 'superkey' })
-    },
-    (err: any) => {
-      console.log(err)
-      return err.message.includes('Unsupported kdf')
-    },
-    'should fail for unsupported kdf'
+  try {
+    await fixtureWallet.toV3('testtest', { kdf: 'superkey' })
+  } catch (err: any) {
+    t.ok(err.message.includes('Unsupported kdf'), 'should fail for unsupported kdf')
+  }
+})
+tape('should fail for bad salt', async (t) => {
+  const pw = 'test'
+  const errStr = 'Invalid salt, string must be empty or a non-zero even number of hex characters'
+
+  try {
+    await fixtureWallet.toV3(pw, { salt: 'f' })
+  } catch (err: any) {
+    t.ok(err.message.includes(errStr))
+  }
+
+  try {
+    await fixtureWallet.toV3(pw, { salt: 'fff' })
+  } catch (err: any) {
+    t.ok(err.message.includes(errStr))
+  }
+  try {
+    await fixtureWallet.toV3(pw, { salt: 'xfff' })
+  } catch (err: any) {
+    t.ok(err.message.includes(errStr))
+  }
+  try {
+    await fixtureWallet.toV3(pw, { salt: 'fffx' })
+  } catch (err: any) {
+    t.ok(err.message.includes(errStr))
+  }
+  try {
+    await fixtureWallet.toV3(pw, { salt: 'fffxff' })
+  } catch (err: any) {
+    t.ok(err.message.includes(errStr))
+  }
+
+  try {
+    await fixtureWallet.toV3(pw, { salt: {} as never as undefined })
+  } catch (err: any) {
+    t.ok(
+      err.message.includes(
+        'Invalid salt, must be a string (empty or a non-zero even number of hex characters) or buffer'
+      )
+    )
+  }
+})
+
+tape('.toV3() : should work with empty salt', async (t) => {
+  const pw = 'test'
+  let salt: any = ''
+  let w = await fixtureWallet.toV3(pw, { salt, kdf: 'pbkdf2' })
+
+  t.equal(salt, w.crypto.kdfparams.salt)
+  t.equal(fixtureWallet.getPrivateKeyString(), (await Wallet.fromV3(w, pw)).getPrivateKeyString())
+
+  salt = '0x'
+  w = await fixtureWallet.toV3(pw, { salt, kdf: 'pbkdf2' })
+
+  t.equal('', w.crypto.kdfparams.salt)
+  t.equal(fixtureWallet.getPrivateKeyString(), (await Wallet.fromV3(w, pw)).getPrivateKeyString())
+
+  salt = hexToBytes('')
+  w = await fixtureWallet.toV3(pw, { salt, kdf: 'pbkdf2' })
+
+  t.equal('', w.crypto.kdfparams.salt)
+  t.equal(fixtureWallet.getPrivateKeyString(), (await Wallet.fromV3(w, pw)).getPrivateKeyString())
+
+  salt = ''
+  let iv = 'ffffffffffffffffffffffffffffffff'
+  let uuid = 'ffffffffffffffffffffffffffffffff'
+  let wStr = await fixtureWallet.toV3String(pw, {
+    salt,
+    iv,
+    uuid,
+    kdf: 'scrypt',
+    n,
+    r,
+    p,
+  })
+  let wEthersStr = await new ethersWallet(fixtureWallet.getPrivateKeyString()).encrypt(pw, {
+    scrypt: { N: n, r, p },
+    salt: '0x' + (salt as string),
+    iv: '0x' + iv,
+    uuid: '0x' + uuid,
+  })
+
+  t.deepEqual(salt, JSON.parse(wStr).crypto.kdfparams.salt)
+  t.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
+  t.equal(
+    fixtureWallet.getPrivateKeyString(),
+    (await Wallet.fromV3(JSON.parse(wStr), pw)).getPrivateKeyString()
   )
-}) /*
-  t.test('should fail for bad salt', function () {
-    const pw = 'test'
-    const errStr = 'Invalid salt, string must be empty or a non-zero even number of hex characters'
+  t.equal(
+    fixtureWallet.getPrivateKeyString(),
+    (await ethersWallet.fromEncryptedJson(wEthersStr, pw)).privateKey
+  )
 
-    t.throws(
-      async () => {
-        await fixtureWallet.toV3(pw, { salt: 'f' })
-      },
-      (err: any) => err.message.includes(errStr)
-    )
-    t.throws(
-      async () => {
-        await fixtureWallet.toV3(pw, { salt: 'fff' })
-      },
-      (err: any) => err.message.includes(errStr)
-    )
-    t.throws(
-      async () => {
-        await fixtureWallet.toV3(pw, { salt: 'xfff' })
-      },
-      (err: any) => err.message.includes(errStr)
-    )
-    t.throws(
-      async () => {
-        await fixtureWallet.toV3(pw, { salt: 'fffx' })
-      },
-      (err: any) => err.message.includes(errStr)
-    )
-    t.throws(
-      async () => {
-        await fixtureWallet.toV3(pw, { salt: 'fffxff' })
-      },
-      (err: any) => err.message.includes(errStr)
-    )
-    t.throws(
-      async () => {
-        await fixtureWallet.toV3(pw, { salt: {} as never as undefined })
-      },
-      (err: any) =>
-        err.message.includes(
-          'Invalid salt, must be a string (empty or a non-zero even number of hex characters) or buffer'
-        )
-    )
+  salt = '0x'
+  iv = '0x' + iv
+  uuid = '0x' + uuid
+  wStr = await fixtureWallet.toV3String(pw, {
+    salt,
+    iv,
+    uuid,
+    kdf: 'scrypt',
+    n,
+    r,
+    p,
+  })
+  wEthersStr = await new ethersWallet(fixtureWallet.getPrivateKeyString()).encrypt(pw, {
+    scrypt: { N: n, r, p },
+    salt,
+    iv,
+    uuid,
   })
 
-  t.test('should work with empty salt', async (st) => {
-    const pw = 'test'
-    let salt: any = ''
-    let w = await fixtureWallet.toV3(pw, { salt, kdf: 'pbkdf2' })
+  t.equal('', JSON.parse(wStr).crypto.kdfparams.salt)
+  t.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
+  t.equal(
+    fixtureWallet.getPrivateKeyString(),
+    (await Wallet.fromV3(JSON.parse(wStr), pw)).getPrivateKeyString()
+  )
+  t.equal(
+    fixtureWallet.getPrivateKeyString(),
+    (await ethersWallet.fromEncryptedJson(wEthersStr, pw)).privateKey
+  )
 
-    st.deepEqual(salt, w.crypto.kdfparams.salt)
-    st.deepEqual(
-      fixtureWallet.getPrivateKeyString(),
-      (await Wallet.fromV3(w, pw)).getPrivateKeyString()
-    )
-
-    salt = '0x'
-    w = await fixtureWallet.toV3(pw, { salt, kdf: 'pbkdf2' })
-
-    st.deepEqual('', w.crypto.kdfparams.salt)
-    st.deepEqual(
-      fixtureWallet.getPrivateKeyString(),
-      (await Wallet.fromV3(w, pw)).getPrivateKeyString()
-    )
-
-    salt = hexToBytes('')
-    w = await fixtureWallet.toV3(pw, { salt, kdf: 'pbkdf2' })
-
-    st.deepEqual('', w.crypto.kdfparams.salt)
-    st.deepEqual(
-      fixtureWallet.getPrivateKeyString(),
-      (await Wallet.fromV3(w, pw)).getPrivateKeyString()
-    )
-
-    salt = ''
-    let iv = 'ffffffffffffffffffffffffffffffff'
-    let uuid = 'ffffffffffffffffffffffffffffffff'
-    let wStr = await fixtureWallet.toV3String(pw, {
-      salt,
-      iv,
-      uuid,
-      kdf: 'scrypt',
-      n,
-      r,
-      p,
-    })
-    let wEthersStr = await new ethersWallet(fixtureWallet.getPrivateKeyString()).encrypt(pw, {
-      scrypt: { N: n, r, p },
-      salt: '0x' + (salt as string),
-      iv: '0x' + iv,
-      uuid: '0x' + uuid,
-    })
-
-    st.deepEqual(salt, JSON.parse(wStr).crypto.kdfparams.salt)
-    st.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
-    st.deepEqual(
-      fixtureWallet.getPrivateKeyString(),
-      (await Wallet.fromV3(JSON.parse(wStr), pw)).getPrivateKeyString()
-    )
-    st.deepEqual(
-      fixtureWallet.getPrivateKeyString(),
-      (await ethersWallet.fromEncryptedJson(wEthersStr, pw)).privateKey
-    )
-
-    salt = '0x'
-    iv = '0x' + iv
-    uuid = '0x' + uuid
-    wStr = await fixtureWallet.toV3String(pw, {
-      salt,
-      iv,
-      uuid,
-      kdf: 'scrypt',
-      n,
-      r,
-      p,
-    })
-    wEthersStr = await new ethersWallet(fixtureWallet.getPrivateKeyString()).encrypt(pw, {
-      scrypt: { N: n, r, p },
-      salt,
-      iv,
-      uuid,
-    })
-
-    st.deepEqual('', JSON.parse(wStr).crypto.kdfparams.salt)
-    st.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
-    st.deepEqual(
-      fixtureWallet.getPrivateKeyString(),
-      (await Wallet.fromV3(JSON.parse(wStr), pw)).getPrivateKeyString()
-    )
-    st.deepEqual(
-      fixtureWallet.getPrivateKeyString(),
-      (await ethersWallet.fromEncryptedJson(wEthersStr, pw)).privateKey
-    )
-
-    salt = hexToBytes('')
-    wStr = await fixtureWallet.toV3String(pw, {
-      salt,
-      iv,
-      uuid,
-      kdf: 'scrypt',
-      n,
-      r,
-      p,
-    })
-    wEthersStr = await new ethersWallet(fixtureWallet.getPrivateKeyString()).encrypt(pw, {
-      scrypt: { N: n, r, p },
-      salt,
-      iv,
-      uuid,
-    })
-
-    st.deepEqual('', JSON.parse(wStr).crypto.kdfparams.salt)
-    st.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
-    st.deepEqual(
-      fixtureWallet.getPrivateKeyString(),
-      (await Wallet.fromV3(JSON.parse(wStr), pw)).getPrivateKeyString()
-    )
-    st.deepEqual(
-      fixtureWallet.getPrivateKeyString(),
-      (await ethersWallet.fromEncryptedJson(wEthersStr, pw)).privateKey
-    )
+  salt = hexToBytes('')
+  wStr = await fixtureWallet.toV3String(pw, {
+    salt,
+    iv,
+    uuid,
+    kdf: 'scrypt',
+    n,
+    r,
+    p,
   })
-  t.test('should fail for bad iv', function () {
-    const pw = 'test'
-    const errStrLength = /^Error: Invalid iv, string must be 32 hex characters$/
-    const errBuffLength = /^Error: Invalid iv, buffer must be 16 bytes$/
-
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { iv: '' })
-    }, errStrLength)
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { iv: 'ff' })
-    }, errStrLength)
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { iv: 'ffffffffffffffffffffffffffffffffff' })
-    }, errStrLength)
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { iv: 'xfffffffffffffffffffffffffffffff' })
-    }, errStrLength)
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { iv: 'fffffffffffffffffffffffffffffffx' })
-    }, errStrLength)
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { iv: 'fffffffffffffffxffffffffffffffff' })
-    }, errStrLength)
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { iv: hexToBytes('') })
-    }, errBuffLength)
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { iv: hexToBytes('ff') })
-    }, errBuffLength)
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { iv: hexToBytes('ffffffffffffffffffffffffffffffffff') })
-    }, errBuffLength)
-    t.throws(async function () {
-      // @ts-ignore
-      await fixtureWallet.toV3(pw, { iv: {} })
-    }, /^Error: Invalid iv, must be a string \(32 hex characters\) or buffer \(16 bytes\)$/)
+  wEthersStr = await new ethersWallet(fixtureWallet.getPrivateKeyString()).encrypt(pw, {
+    scrypt: { N: n, r, p },
+    salt,
+    iv,
+    uuid,
   })
-  t.test('should fail for bad uuid', function () {
-    const pw = 'test'
-    const errStrLength = /^Error: Invalid uuid, string must be 32 hex characters$/
-    const errBuffLength = /^Error: Invalid uuid, buffer must be 16 bytes$/
 
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { uuid: '' })
-    }, errStrLength)
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { uuid: 'ff' })
-    }, errStrLength)
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { uuid: 'ffffffffffffffffffffffffffffffffff' })
-    }, errStrLength)
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { uuid: 'xfffffffffffffffffffffffffffffff' })
-    }, errStrLength)
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { uuid: 'fffffffffffffffffffffffffffffffx' })
-    }, errStrLength)
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { uuid: 'fffffffffffffffxffffffffffffffff' })
-    }, errStrLength)
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { uuid: hexToBytes('') })
-    }, errBuffLength)
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, { uuid: hexToBytes('ff') })
-    }, errBuffLength)
-    t.throws(async function () {
-      await fixtureWallet.toV3(pw, {
-        uuid: hexToBytes('ffffffffffffffffffffffffffffffffff'),
-      })
-    }, errBuffLength)
-    t.throws(async function () {
-      // @ts-ignore
-      await fixtureWallet.toV3(pw, { uuid: {} })
-    }, /^Error: Invalid uuid, must be a string \(32 hex characters\) or buffer \(16 bytes\)$/)
+  t.equal('', JSON.parse(wStr).crypto.kdfparams.salt)
+  t.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
+  t.equal(
+    fixtureWallet.getPrivateKeyString(),
+    (await Wallet.fromV3(JSON.parse(wStr), pw)).getPrivateKeyString()
+  )
+  t.equal(
+    fixtureWallet.getPrivateKeyString(),
+    (await ethersWallet.fromEncryptedJson(wEthersStr, pw)).privateKey
+  )
+})
+
+tape('.toV3(): should fail for bad iv', async (t) => {
+  const pw = 'test'
+  const errStrLength = 'Invalid iv, string must be 32 hex characters'
+  const errBuffLength = 'Invalid iv, buffer must be 16 bytes'
+
+  try {
+    await fixtureWallet.toV3(pw, { iv: '' })
+  } catch (err: any) {
+    t.ok(err.message.includes(errStrLength))
+  }
+
+  try {
+    await fixtureWallet.toV3(pw, { iv: 'ff' })
+  } catch (err: any) {
+    t.ok(err.message.includes(errStrLength))
+  }
+  try {
+    await fixtureWallet.toV3(pw, { iv: 'ffffffffffffffffffffffffffffffffff' })
+  } catch (err: any) {
+    t.ok(err.message.includes(errStrLength))
+  }
+  try {
+    await fixtureWallet.toV3(pw, { iv: 'xfffffffffffffffffffffffffffffff' })
+  } catch (err: any) {
+    t.ok(err.message.includes(errStrLength))
+  }
+  try {
+    await fixtureWallet.toV3(pw, { iv: 'fffffffffffffffffffffffffffffffx' })
+  } catch (err: any) {
+    t.ok(err.message.includes(errStrLength))
+  }
+  try {
+    await fixtureWallet.toV3(pw, { iv: 'fffffffffffffffxffffffffffffffff' })
+  } catch (err: any) {
+    t.ok(err.message.includes(errStrLength))
+  }
+  try {
+    await fixtureWallet.toV3(pw, { iv: hexToBytes('') })
+  } catch (err: any) {
+    t.ok(err.message.includes(errBuffLength))
+  }
+  try {
+    await fixtureWallet.toV3(pw, { iv: hexToBytes('ff') })
+  } catch (err: any) {
+    t.ok(err.message.includes(errBuffLength))
+  }
+  try {
+    await fixtureWallet.toV3(pw, { iv: hexToBytes('ffffffffffffffffffffffffffffffffff') })
+  } catch (err: any) {
+    t.ok(err.message.includes(errBuffLength))
+  }
+  try {
+    await fixtureWallet.toV3(pw, { iv: {} as never as any })
+  } catch (err: any) {
+    t.ok(
+      err.message.includes('Invalid iv, must be a string (32 hex characters) or buffer (16 bytes)')
+    )
+  }
+})
+tape('.toV3(): should fail for bad uuid', async (t) => {
+  const pw = 'test'
+  const errStrLength = 'Invalid uuid, string must be 32 hex characters'
+  const errBuffLength = 'Invalid uuid, buffer must be 16 bytes'
+
+  try {
+    await fixtureWallet.toV3(pw, { uuid: '' })
+  } catch (err: any) {
+    t.ok(err.message.includes(errStrLength))
+  }
+  try {
+    await fixtureWallet.toV3(pw, { uuid: 'ff' })
+  } catch (err: any) {
+    t.ok(err.message.includes(errStrLength))
+  }
+  try {
+    await fixtureWallet.toV3(pw, { uuid: 'ffffffffffffffffffffffffffffffffff' })
+  } catch (err: any) {
+    t.ok(err.message.includes(errStrLength))
+  }
+  try {
+    await fixtureWallet.toV3(pw, { uuid: 'xfffffffffffffffffffffffffffffff' })
+  } catch (err: any) {
+    t.ok(err.message.includes(errStrLength))
+  }
+  try {
+    await fixtureWallet.toV3(pw, { uuid: 'fffffffffffffffffffffffffffffffx' })
+  } catch (err: any) {
+    t.ok(err.message.includes(errStrLength))
+  }
+  try {
+    await fixtureWallet.toV3(pw, { uuid: 'fffffffffffffffxffffffffffffffff' })
+  } catch (err: any) {
+    t.ok(err.message.includes(errStrLength))
+  }
+  try {
+    await fixtureWallet.toV3(pw, { uuid: hexToBytes('') })
+  } catch (err: any) {
+    t.ok(err.message.includes(errBuffLength))
+  }
+  try {
+    await fixtureWallet.toV3(pw, { uuid: hexToBytes('ff') })
+  } catch (err: any) {
+    t.ok(err.message.includes(errBuffLength))
+  }
+  try {
+    await fixtureWallet.toV3(pw, {
+      uuid: hexToBytes('ffffffffffffffffffffffffffffffffff'),
+    })
+  } catch (err: any) {
+    t.ok(err.message.includes(errBuffLength))
+  }
+  try {
+    await fixtureWallet.toV3(pw, { uuid: {} as never as any })
+  } catch (err: any) {
+    t.ok(
+      err.message.includes(
+        'Invalid uuid, must be a string (32 hex characters) or buffer (16 bytes)'
+      )
+    )
+  }
+})
+tape('should strip leading "0x" from salt, iv, uuid', async (t) => {
+  const pw = 'test'
+  const salt =
+    'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+  const iv = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+  const uuid = 'cccccccccccccccccccccccccccccccc'
+  let w = await fixtureWallet.toV3(pw, {
+    salt: '0x' + salt,
+    iv: '0X' + iv,
+    uuid: '0x' + uuid,
+    kdf: 'pbkdf2',
   })
-  t.test('should strip leading "0x" from salt, iv, uuid', async function () {
-    const pw = 'test'
-    const salt =
-      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-    const iv = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
-    const uuid = 'cccccccccccccccccccccccccccccccc'
-    let w = await fixtureWallet.toV3(pw, {
-      salt: '0x' + salt,
-      iv: '0X' + iv,
-      uuid: '0x' + uuid,
-      kdf: 'pbkdf2',
-    })
-    let w2 = await fixtureWallet.toV3(pw, {
-      salt: '0x' + salt,
-      iv: '0X' + iv,
-      uuid,
-      kdf: 'pbkdf2',
-    })
-
-    t.deepEqual(salt, w.crypto.kdfparams.salt)
-    t.deepEqual(iv, w.crypto.cipherparams.iv)
-    t.deepEqual(w.id, w2.id)
-    t.deepEqual(
-      fixtureWallet.getPrivateKeyString(),
-      (await Wallet.fromV3(w, pw)).getPrivateKeyString()
-    )
-    t.deepEqual(
-      fixtureWallet.getPrivateKeyString(),
-      (await Wallet.fromV3(w2, pw)).getPrivateKeyString()
-    )
-
-    w = await fixtureWallet.toV3(pw, {
-      salt: '0x' + salt,
-      iv: '0X' + iv,
-      uuid: '0x' + uuid,
-      kdf: 'scrypt',
-    })
-    w2 = await fixtureWallet.toV3(pw, {
-      salt: '0x' + salt,
-      iv: '0X' + iv,
-      uuid,
-      kdf: 'scrypt',
-    })
-
-    t.deepEqual(salt, w.crypto.kdfparams.salt)
-    t.deepEqual(iv, w.crypto.cipherparams.iv)
-    t.deepEqual(w.id, w2.id)
-    t.deepEqual(
-      fixtureWallet.getPrivateKeyString(),
-      (await Wallet.fromV3(w, pw)).getPrivateKeyString()
-    )
-    t.deepEqual(
-      fixtureWallet.getPrivateKeyString(),
-      (await Wallet.fromV3(w2, pw)).getPrivateKeyString()
-    )
+  let w2 = await fixtureWallet.toV3(pw, {
+    salt: '0x' + salt,
+    iv: '0X' + iv,
+    uuid,
+    kdf: 'pbkdf2',
   })
-})*/
+
+  t.equal(salt, w.crypto.kdfparams.salt)
+  t.equal(iv, w.crypto.cipherparams.iv)
+  t.equal(w.id, w2.id)
+  t.equal(fixtureWallet.getPrivateKeyString(), (await Wallet.fromV3(w, pw)).getPrivateKeyString())
+  t.equal(fixtureWallet.getPrivateKeyString(), (await Wallet.fromV3(w2, pw)).getPrivateKeyString())
+
+  w = await fixtureWallet.toV3(pw, {
+    salt: '0x' + salt,
+    iv: '0X' + iv,
+    uuid: '0x' + uuid,
+    kdf: 'scrypt',
+  })
+  w2 = await fixtureWallet.toV3(pw, {
+    salt: '0x' + salt,
+    iv: '0X' + iv,
+    uuid,
+    kdf: 'scrypt',
+  })
+
+  t.equal(salt, w.crypto.kdfparams.salt)
+  t.equal(iv, w.crypto.cipherparams.iv)
+  t.equal(w.id, w2.id)
+  t.equal(fixtureWallet.getPrivateKeyString(), (await Wallet.fromV3(w, pw)).getPrivateKeyString())
+  t.equal(fixtureWallet.getPrivateKeyString(), (await Wallet.fromV3(w2, pw)).getPrivateKeyString())
+})
 
 /*
 tape('.fromV1()',  (t) => {
@@ -716,10 +730,11 @@ tape('.fromV3()', (t) => {
   t.test('should fail with invalid password', async (st) => {
     const w =
       '{"crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"6087dab2f9fdbbfaddc31a909735c1e6"},"ciphertext":"5318b4d5bcd28de64ee5559e671353e16f075ecae9f99c7a79a38af5f869aa46","kdf":"pbkdf2","kdfparams":{"c":262144,"dklen":32,"prf":"hmac-sha256","salt":"ae3cd4e7013836a3df6bd7241b12db061dbe2c6785853cce422d148a624ce0bd"},"mac":"517ead924a9d0dc3124507e3393d175ce3ff7c1e96529c6c555ce9e51205e9b2"},"id":"3198bc9c-6672-5ab3-d995-4942343ae5b6","version":3}'
-    st.throws(
-      async () => Wallet.fromV3(w, 'wrongtestpassword'),
-      (err: any) => err.message.test(/^Error: Key derivation failed - possibly wrong passphrase$/)
-    )
+    try {
+      await Wallet.fromV3(w, 'wrongtestpassword')
+    } catch (err: any) {
+      st.ok(err.message.includes('Key derivation failed - possibly wrong passphrase'))
+    }
   })
   t.test('should work with (broken) mixed-case input files', async (st) => {
     const w =
@@ -732,27 +747,35 @@ tape('.fromV3()', (t) => {
     const w =
       '{"Crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"6087dab2f9fdbbfaddc31a909735c1e6"},"ciphertext":"5318b4d5bcd28de64ee5559e671353e16f075ecae9f99c7a79a38af5f869aa46","kdf":"pbkdf2","kdfparams":{"c":262144,"dklen":32,"prf":"hmac-sha256","salt":"ae3cd4e7013836a3df6bd7241b12db061dbe2c6785853cce422d148a624ce0bd"},"mac":"517ead924a9d0dc3124507e3393d175ce3ff7c1e96529c6c555ce9e51205e9b2"},"id":"3198bc9c-6672-5ab3-d995-4942343ae5b6","version":3}'
 
-    st.throws(async () => {
+    try {
       await Wallet.fromV3(w, 'testpassword')
-    }) // FIXME: check for assert message(s)
+    } catch (err: any) {
+      st.ok(err.message.includes('Cannot read properties'), 'threw error for missing properties')
+    }
   })
-  t.test('should fail for wrong version', function () {
+  t.test('should fail for wrong version', async (st) => {
     const w = '{"version":2}'
-    t.throws(async function () {
+    try {
       await Wallet.fromV3(w, 'testpassword')
-    }, /^Error: Not a V3 wallet$/)
+    } catch (err: any) {
+      st.ok(err.message.includes('Not a V3 wallet'))
+    }
   })
-  t.test('should fail for wrong kdf', function () {
+  t.test('should fail for wrong kdf', async (st) => {
     const w = '{"crypto":{"kdf":"superkey"},"version":3}'
-    t.throws(async function () {
+    try {
       await Wallet.fromV3(w, 'testpassword')
-    }, /^Error: Unsupported key derivation scheme$/)
+    } catch (err: any) {
+      st.ok(err.message.includes('Unsupported key derivation scheme'))
+    }
   })
-  t.test('should fail for wrong prf in pbkdf2', function () {
+  t.test('should fail for wrong prf in pbkdf2', async (st) => {
     const w = '{"crypto":{"kdf":"pbkdf2","kdfparams":{"prf":"invalid"}},"version":3}'
-    t.throws(async function () {
+    try {
       await Wallet.fromV3(w, 'testpassword')
-    }, /^Error: Unsupported parameters to PBKDF2$/)
+    } catch (err: any) {
+      st.ok(err.message.includes('Unsupported parameters to PBKDF2'))
+    }
   })
 })
 
@@ -794,17 +817,19 @@ tape('.fromEtherWallet()', (t) => {
 })
 
 tape('.fromEtherCamp()', (t) => {
-  t.test('should work with seed text', function () {
-    const wallet = Thirdparty.fromEtherCamp('ethercamp123')
-    t.deepEqual(wallet.getAddressString(), '0x182b6ca390224c455f11b6337d74119305014ed4')
-  })
+  const wallet = Thirdparty.fromEtherCamp('ethercamp123')
+  t.equal(
+    wallet.getAddressString(),
+    '0x182b6ca390224c455f11b6337d74119305014ed4',
+    'should work with seed text'
+  )
+  t.end()
 })
 
 tape('.fromQuorumWallet()', (t) => {
-  t.test('should work', function () {
-    const wallet = Thirdparty.fromQuorumWallet('testtesttest', 'ethereumjs-wallet')
-    t.deepEqual(wallet.getAddressString(), '0x1b86ccc22e8f137f204a41a23033541242a48815')
-  })
+  const wallet = Thirdparty.fromQuorumWallet('testtesttest', 'ethereumjs-wallet')
+  t.equal(wallet.getAddressString(), '0x1b86ccc22e8f137f204a41a23033541242a48815')
+  t.end()
 })
 
 tape('raw new Wallet() init', (t) => {
@@ -813,7 +838,8 @@ tape('raw new Wallet() init', (t) => {
       new Wallet(fixturePrivateKeyBuffer, fixturePublicKeyBuffer)
     },
     (err: any) =>
-      err.message.test(/^Error: Cannot supply both a private and a public key to the constructor$/),
+      err.message.includes('Cannot supply both a private and a public key to the constructor'),
     'should fail when both priv and pub key provided'
   )
+  t.end()
 })
