@@ -73,11 +73,6 @@ interface V3ParamsStrict {
   p: number
 }
 
-// helpers
-function keyExists(k: Uint8Array | undefined | null): k is Uint8Array {
-  return k !== undefined && k !== null
-}
-
 function validateHexString(paramName: string, str: string, length?: number) {
   if (str.toLowerCase().startsWith('0x')) {
     str = str.slice(2)
@@ -108,7 +103,7 @@ function validateBytes(paramName: string, bytes: Uint8Array, length?: number) {
     )
   }
   if (typeof length === 'number' && bytes.length !== length) {
-    throw new Error(`Invalid ${paramName}, buffer must be ${length} bytes`)
+    throw new Error(`Invalid ${paramName}, uint8Array must be ${length} bytes`)
   }
   return bytes
 }
@@ -503,17 +498,17 @@ export class Wallet {
    * Returns the wallet's public key.
    */
   private get pubKey(): Uint8Array {
-    if (!keyExists(this.publicKey)) {
+    if (this.publicKey === undefined || this.publicKey === null) {
       this.publicKey = privateToPublic(this.privateKey!)
     }
-    return this.publicKey!
+    return this.publicKey
   }
 
   /**
    * Returns the wallet's private key.
    */
   private get privKey(): Uint8Array {
-    if (!keyExists(this.privateKey)) {
+    if (this.privateKey === undefined || this.privateKey === null) {
       throw new Error('This is a public key only wallet')
     }
     return this.privateKey
@@ -576,7 +571,7 @@ export class Wallet {
    * @param opts The options for the keystore. See [its spec](https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition) for more info.
    */
   public async toV3(password: string, opts?: Partial<V3Params>): Promise<V3Keystore> {
-    if (!keyExists(this.privateKey)) {
+    if (this.privateKey === undefined || this.privateKey === null) {
       throw new Error('This is a public key only wallet')
     }
 
