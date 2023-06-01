@@ -1,5 +1,5 @@
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
-import { Wallet as ethersWallet } from 'ethers'
+import { encryptKeystoreJsonSync, Wallet as ethersWallet } from 'ethers'
 import * as tape from 'tape'
 
 import { Wallet } from '../src'
@@ -306,7 +306,7 @@ tape('.toV3(): should work with Scrypt', async (t) => {
       })
 
       const encFixtureEthersWallet = (
-        await fixtureEthersWallet.encrypt(pw, {
+        await encryptKeystoreJsonSync(fixtureEthersWallet, pw, {
           scrypt: { N: n, r, p },
           salt: ethersOpts.salt,
           iv: ethersOpts.iv,
@@ -325,7 +325,7 @@ tape('.toV3(): should work with Scrypt', async (t) => {
       })
 
       const encEthersWallet = (
-        await wEthers.encrypt(pw, {
+        await encryptKeystoreJsonSync(wEthers, pw, {
           scrypt: { N: n, r, p },
           salt: ethersOpts.salt,
           iv: ethersOpts.iv,
@@ -425,12 +425,7 @@ tape('.toV3() : should work with empty salt', async (t) => {
     r,
     p,
   })
-  let wEthersStr = await new ethersWallet(fixtureWallet.getPrivateKeyString()).encrypt(pw, {
-    scrypt: { N: n, r, p },
-    salt: '0x' + (salt as string),
-    iv: '0x' + iv,
-    uuid: '0x' + uuid,
-  })
+  let wEthersStr = await new ethersWallet(fixtureWallet.getPrivateKeyString()).encrypt(pw)
 
   t.deepEqual(salt, JSON.parse(wStr).crypto.kdfparams.salt)
   t.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
@@ -455,12 +450,7 @@ tape('.toV3() : should work with empty salt', async (t) => {
     r,
     p,
   })
-  wEthersStr = await new ethersWallet(fixtureWallet.getPrivateKeyString()).encrypt(pw, {
-    scrypt: { N: n, r, p },
-    salt,
-    iv,
-    uuid,
-  })
+  wEthersStr = await new ethersWallet(fixtureWallet.getPrivateKeyString()).encrypt(pw)
 
   t.equal('', JSON.parse(wStr).crypto.kdfparams.salt)
   t.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
@@ -483,12 +473,7 @@ tape('.toV3() : should work with empty salt', async (t) => {
     r,
     p,
   })
-  wEthersStr = await new ethersWallet(fixtureWallet.getPrivateKeyString()).encrypt(pw, {
-    scrypt: { N: n, r, p },
-    salt,
-    iv,
-    uuid,
-  })
+  wEthersStr = await new ethersWallet(fixtureWallet.getPrivateKeyString()).encrypt(pw)
 
   t.equal('', JSON.parse(wStr).crypto.kdfparams.salt)
   t.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
