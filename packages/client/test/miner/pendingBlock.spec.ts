@@ -67,7 +67,6 @@ const setup = () => {
     execution: {
       vm: {
         stateManager,
-        eei: { getAccount: () => stateManager.getAccount() },
         copy: () => service.execution.vm,
         setStateRoot: () => {},
         blockchain: mockBlockchain({}),

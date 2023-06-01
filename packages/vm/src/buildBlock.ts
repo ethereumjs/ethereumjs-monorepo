@@ -133,7 +133,7 @@ export class BlockBuilder {
       this.headerData.coinbase !== undefined
         ? new Address(toBytes(this.headerData.coinbase))
         : Address.zero()
-    await rewardAccount(this.vm.stateManager, coinbase, reward)
+    await rewardAccount(this.vm.evm, coinbase, reward)
   }
 
   /**
@@ -149,7 +149,7 @@ export class BlockBuilder {
       if (amount === 0n) continue
       // Withdrawal amount is represented in Gwei so needs to be
       // converted to wei
-      await rewardAccount(this.vm.stateManager, address, amount * GWEI_TO_WEI)
+      await rewardAccount(this.vm.evm, address, amount * GWEI_TO_WEI)
     }
   }
 
@@ -166,7 +166,7 @@ export class BlockBuilder {
     this.checkStatus()
 
     if (!this.checkpointed) {
-      await this.vm.stateManager.checkpoint()
+      await this.vm.evm.journal.checkpoint()
       this.checkpointed = true
     }
 
@@ -232,7 +232,7 @@ export class BlockBuilder {
    */
   async revert() {
     if (this.checkpointed) {
-      await this.vm.stateManager.revert()
+      await this.vm.evm.journal.revert()
       this.checkpointed = false
     }
     this.blockStatus = { status: BuildStatus.Reverted }
@@ -318,7 +318,7 @@ export class BlockBuilder {
 
     this.blockStatus = { status: BuildStatus.Build, block }
     if (this.checkpointed) {
-      await this.vm.stateManager.commit()
+      await this.vm.evm.journal.commit()
       this.checkpointed = false
     }
 
