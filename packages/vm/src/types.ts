@@ -178,6 +178,11 @@ export interface BuildBlockOpts {
   parentBlock: Block
 
   /**
+   * excessDataGas rolling over from parent
+   */
+  excessDataGas?: bigint
+
+  /**
    * The block header data to use.
    * Defaults used for any values not provided.
    */

@@ -3,7 +3,15 @@ import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
-import { Address, GWEI_TO_WEI, TypeOutput, Withdrawal, toBytes, toType } from '@ethereumjs/util'
+import {
+  Address,
+  GWEI_TO_WEI,
+  TypeOutput,
+  Withdrawal,
+  equalsBytes,
+  toBytes,
+  toType,
+} from '@ethereumjs/util'
 
 import { Bloom } from './bloom'
 import { calculateMinerReward, encodeReceipt, rewardAccount } from './runBlock'
@@ -38,6 +46,7 @@ export class BlockBuilder {
    */
   private _minerValue = BigInt(0)
 
+  private readonly excessDataGas?: bigint
   private readonly vm: VM
   private blockOpts: BuilderOpts
   private headerData: HeaderData
@@ -66,6 +75,7 @@ export class BlockBuilder {
       gasLimit: opts.headerData?.gasLimit ?? opts.parentBlock.header.gasLimit,
     }
     this.withdrawals = opts.withdrawals?.map(Withdrawal.fromWithdrawalData)
+    this.excessDataGas = opts.excessDataGas
 
     if (
       this.vm._common.isActivatedEIP(1559) === true &&
@@ -181,6 +191,7 @@ export class BlockBuilder {
     if (tx.gasLimit > blockGasRemaining) {
       throw new Error('tx has a higher gas limit than the remaining gas in the block')
     }
+    let dataGasUsed = undefined
     let excessDataGas = undefined
     if (tx instanceof BlobEIP4844Transaction) {
       if (this.blockOpts.common?.isActivatedEIP(4844) !== true) {
@@ -192,17 +203,13 @@ export class BlockBuilder {
         throw new Error('block data gas limit reached')
       }
 
-      const parentHeader = await this.vm.blockchain.getBlock(
-        this.headerData.parentHash! as Uint8Array
-      )
-      excessDataGas = calcExcessDataGas(
-        parentHeader!.header,
-        (tx as BlobEIP4844Transaction).blobs?.length ?? 0
-      )
+      dataGasUsed = this.dataGasUsed
+      excessDataGas = this.excessDataGas ?? BigInt(0)
     }
     const header = {
       ...this.headerData,
       gasUsed: this.gasUsed,
+      dataGasUsed,
       excessDataGas,
     }
 
@@ -268,26 +275,8 @@ export class BlockBuilder {
     const logsBloom = this.logsBloom()
     const gasUsed = this.gasUsed
     const timestamp = this.headerData.timestamp ?? Math.round(Date.now() / 1000)
-    let excessDataGas = undefined
+    const excessDataGas = undefined
 
-    if (this.vm._common.isActivatedEIP(4844)) {
-      let parentHeader = null
-      if (this.headerData.parentHash !== undefined) {
-        parentHeader = await this.vm.blockchain.getBlock(toBytes(this.headerData.parentHash))
-      }
-      if (parentHeader !== null && parentHeader.header._common.isActivatedEIP(4844) === true) {
-        // Compute total number of blobs in block
-        const blobTxns = this.transactions.filter((tx) => tx instanceof BlobEIP4844Transaction)
-        let newBlobs = 0
-        for (const txn of blobTxns) {
-          newBlobs += (txn as BlobEIP4844Transaction).numBlobs()
-        }
-        // Compute excess data gas for block
-        excessDataGas = calcExcessDataGas(parentHeader.header, newBlobs)
-      } else {
-        excessDataGas = BigInt(0)
-      }
-    }
     const headerData = {
       ...this.headerData,
       stateRoot,
@@ -327,5 +316,23 @@ export class BlockBuilder {
 }
 
 export async function buildBlock(this: VM, opts: BuildBlockOpts): Promise<BlockBuilder> {
-  return new BlockBuilder(this, opts)
+  let excessDataGas = BigInt(0)
+  if (this._common.isActivatedEIP(4844)) {
+    let parentHeader = null
+    if (
+      opts.headerData?.parentHash !== undefined &&
+      !equalsBytes(toBytes(opts.headerData.parentHash), opts.parentBlock.hash())
+    ) {
+      parentHeader = (await this.blockchain.getBlock(toBytes(opts.headerData.parentHash)))?.header
+    } else {
+      parentHeader = opts.parentBlock.header
+    }
+    if (parentHeader !== null) {
+      // Compute excess data gas for block
+      excessDataGas = calcExcessDataGas(parentHeader)
+    }
+  }
+
+  // let opts override excessDataGas if there is some value passed there
+  return new BlockBuilder(this, { excessDataGas, ...opts })
 }
