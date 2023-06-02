@@ -125,11 +125,16 @@ tape('public key only wallet', (t) => {
     '.getPrivateKey() should fail'
   )
 
-  // t.test('.toV3() should fail', function () {
-  //   assert.throws(function () {
-  //     Wallet.fromPublicKey(pubKey).toV3()
-  //   }, /^Error: This is a public key only wallet$/)
-  // })
+  t.test('.toV3() should fail', async (t) => {
+    try {
+      await Wallet.fromPublicKey(pubKey).toV3('')
+    } catch (err: any) {
+      t.ok(
+        err.message.includes('This is a public key only wallet'),
+        'fails to generate V3 when no private key present'
+      )
+    }
+  })
 
   t.end()
 })
@@ -158,13 +163,13 @@ tape('.generate()', (t) => {
   t.equal(Wallet.generate().getPrivateKey().length, 32, 'should generate an account')
   const max = BigInt('0x088f924eeceeda7fe92e1f5b0fffffffffffffff')
   const wallet = Wallet.generate(true)
+  t.equal(wallet.getPrivateKey().length, 32)
+  const addr = bytesToHex(wallet.getAddress())
   t.equal(
-    wallet.getPrivateKey().length,
-    32,
+    BigInt('0x' + addr) <= max,
+    true,
     'should generate an account compatible with ICAP Direct'
   )
-  const addr = bytesToHex(wallet.getAddress())
-  t.equal(BigInt('0x' + addr) <= max, true)
   t.end()
 })
 
@@ -203,7 +208,7 @@ const iv = 'cecacd85e9cb89788b5aab2f93361233'
 const uuid = '7e59dc028d42d09db29aa8a0f862cc81'
 
 const strKdfOptions = { iv, salt, uuid }
-const buffKdfOptions = {
+const bytesKdfOptions = {
   salt: hexToBytes(salt),
   iv: hexToBytes(iv),
   uuid: hexToBytes(uuid),
@@ -258,7 +263,7 @@ const makeEthersOptions = (opts: object) => {
   return obj
 }
 
-let permutations = makePermutations(strKdfOptions, buffKdfOptions)
+let permutations = makePermutations(strKdfOptions, bytesKdfOptions)
 
 if (isRunningInKarma()) {
   // These tests take a long time in the browser due to
@@ -266,22 +271,24 @@ if (isRunningInKarma()) {
   permutations = permutations.slice(1)
 }
 
-tape('.toV3(): should work with PBKDF2', async (t) => {
+tape.only('.toV3(): should work with PBKDF2', async (t) => {
   const w =
     '{"version":3,"id":"7e59dc02-8d42-409d-b29a-a8a0f862cc81","address":"b14ab53e38da1c172f877dbc6d65e4a1b0474c3c","crypto":{"ciphertext":"01ee7f1a3c8d187ea244c92eea9e332ab0bb2b4c902d89bdd71f80dc384da1be","cipherparams":{"iv":"cecacd85e9cb89788b5aab2f93361233"},"cipher":"aes-128-ctr","kdf":"pbkdf2","kdfparams":{"dklen":32,"salt":"dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6","c":262144,"prf":"hmac-sha256"},"mac":"0c02cd0badfebd5e783e0cf41448f84086a96365fc3456716c33641a86ebc7cc"}}'
 
-  for (const perm of permutations) {
-    const encFixtureWallet = await fixtureWallet.toV3String(pw, {
-      kdf: 'pbkdf2',
-      c: n,
-      uuid: perm.uuid,
-      salt: perm.salt,
-      iv: perm.iv,
-    })
+  await Promise.all(
+    permutations.map(async (perm) => {
+      const encFixtureWallet = await fixtureWallet.toV3String(pw, {
+        kdf: 'pbkdf2',
+        c: n,
+        uuid: perm.uuid,
+        salt: perm.salt,
+        iv: perm.iv,
+      })
 
-    t.deepEqual(JSON.parse(w), JSON.parse(encFixtureWallet))
-    // ethers doesn't support encrypting with PBKDF2
-  }
+      t.deepEqual(JSON.parse(w), JSON.parse(encFixtureWallet), 'wallet string matches fixture')
+      // ethers doesn't support encrypting with PBKDF2
+    })
+  )
 })
 
 tape('.toV3(): should work with Scrypt', async (t) => {
@@ -387,7 +394,7 @@ tape('should fail for bad salt', async (t) => {
   } catch (err: any) {
     t.ok(
       err.message.includes(
-        'Invalid salt, must be a string (empty or a non-zero even number of hex characters) or buffer'
+        'Invalid salt, must be a string (empty or a non-zero even number of hex characters) or Uint8array'
       )
     )
   }
@@ -667,16 +674,6 @@ tape('should strip leading "0x" from salt, iv, uuid', async (t) => {
   t.equal(fixtureWallet.getPrivateKeyString(), (await Wallet.fromV3(w, pw)).getPrivateKeyString())
   t.equal(fixtureWallet.getPrivateKeyString(), (await Wallet.fromV3(w2, pw)).getPrivateKeyString())
 })
-
-/*
-tape('.fromV1()',  (t) => {
-  t.test('should work', function () {
-    const sample = '{"Address":"d4584b5f6229b7be90727b0fc8c6b91bb427821f","Crypto":{"CipherText":"07533e172414bfa50e99dba4a0ce603f654ebfa1ff46277c3e0c577fdc87f6bb4e4fe16c5a94ce6ce14cfa069821ef9b","IV":"16d67ba0ce5a339ff2f07951253e6ba8","KeyHeader":{"Kdf":"scrypt","KdfParams":{"DkLen":32,"N":262144,"P":1,"R":8,"SaltLen":32},"Version":"1"},"MAC":"8ccded24da2e99a11d48cda146f9cc8213eb423e2ea0d8427f41c3be414424dd","Salt":"06870e5e6a24e183a5c807bd1c43afd86d573f7db303ff4853d135cd0fd3fe91"},"Id":"0498f19a-59db-4d54-ac95-33901b4f1870","Version":"1"}'
-    const wallet = Wallet.fromV1(sample, 'foo')
-    t.deepEqual(wallet.getAddressString(), '0xd4584b5f6229b7be90727b0fc8c6b91bb427821f')
-  })
-})
-*/
 
 tape('.fromV3()', async (t) => {
   t.test('should work with PBKDF2', async (st) => {
