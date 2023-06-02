@@ -68,7 +68,7 @@
     "@types/minimist": "^1.2.2",
     "@types/node-dir": "^0.0.34",
     "benchmark": "^2.1.4",
-    "c-kzg": "^2.0.4",
+    "c-kzg": "^2.1.0",
     "level": "^8.0.0",
     "memory-level": "^1.0.0",
     "minimist": "^1.2.5",
