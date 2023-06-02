@@ -174,7 +174,7 @@ export class DNS {
       subdomain !== context.domain ? `${subdomain}.${context.domain}` : context.domain
 
     const response = await dns.promises.resolve(location, 'TXT')
-
+    console.log(response)
     if (response.length === 0)
       throw new Error('Received empty result array while fetching TXT record')
     if (response[0].length === 0) throw new Error('Received empty TXT record')
