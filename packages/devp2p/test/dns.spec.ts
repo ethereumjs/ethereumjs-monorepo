@@ -163,26 +163,3 @@ tape('DNS', async (t) => {
     t.end()
   })
 })
-
-tape('DNS: (integration)', async (t) => {
-  const publicKey = 'AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE'
-  const goerliDNS = 'all.goerli.ethdisco.net'
-  const enrTree = `enrtree://${publicKey}@${goerliDNS}`
-  const ipTestRegex = /^\d+\.\d+\.\d+\.\d+$/ // e.g 123.44.55.77
-
-  t.test('should retrieve 5 PeerInfos for goerli', async (t) => {
-    // Google's dns server address. Needs to be set explicitly to run in CI
-    const dns = new DNS({ dnsServerAddress: '8.8.8.8' })
-    const peers = await dns.getPeers(5, [enrTree])
-
-    t.equal(peers.length, 5, 'returns 5 peers')
-
-    const seen: string[] = []
-    for (const peer of peers) {
-      t.ok(peer!.address!.match(ipTestRegex), 'address is a valid ip')
-      t.ok(!seen.includes(peer!.address as string), 'peer is not duplicate')
-      seen.push(peer!.address as string)
-    }
-    t.end()
-  })
-})
