@@ -41,10 +41,11 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
     nonce,
     baseFeePerGas,
     withdrawalsRoot,
+    dataGasUsed,
     excessDataGas,
   ] = values
 
-  if (values.length > 18) {
+  if (values.length > 19) {
     throw new Error('invalid header. More values than expected were received')
   }
   if (values.length < 15) {
@@ -69,6 +70,7 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
     nonce,
     baseFeePerGas,
     withdrawalsRoot,
+    dataGasUsed,
     excessDataGas,
   }
 }
@@ -84,28 +86,20 @@ export function getDifficulty(headerData: HeaderData): bigint | null {
 /**
  * Calculates the excess data gas for a post EIP 4844 block given the parent block header.
  * @param parent header for the parent block
- * @param newBlobs number of blobs contained in block
  * @returns the excess data gas for the prospective next block
  *
  * Note: This function expects that it is only being called on a valid block as it does not have
  * access to the "current" block's common instance to verify if 4844 is active or not.
  */
-export const calcExcessDataGas = (parent: BlockHeader, newBlobs: number) => {
-  if (!parent._common.isActivatedEIP(4844)) {
-    // If 4844 isn't active on header, assume this is the first post-fork block so excess data gas is 0
-    return BigInt(0)
-  }
-  if (parent.excessDataGas === undefined) {
-    // Given 4844 is active on parent block, we expect it to have an excessDataGas field
-    throw new Error('parent header does not contain excessDataGas field')
-  }
-
-  const consumedDataGas = BigInt(newBlobs) * parent._common.param('gasConfig', 'dataGasPerBlob')
+export const calcExcessDataGas = (parent: BlockHeader) => {
+  // The validation of the fields and 4844 activation is already taken care in BlockHeader constructor
+  const targetGasConsumed = (parent.excessDataGas ?? BigInt(0)) + (parent.dataGasUsed ?? BigInt(0))
   const targetDataGasPerBlock = parent._common.param('gasConfig', 'targetDataGasPerBlock')
 
-  if (parent.excessDataGas + consumedDataGas < targetDataGasPerBlock) return BigInt(0)
-  else {
-    return parent.excessDataGas + consumedDataGas - targetDataGasPerBlock
+  if (targetGasConsumed <= targetDataGasPerBlock) {
+    return BigInt(0)
+  } else {
+    return targetGasConsumed - targetDataGasPerBlock
   }
 }
 
@@ -152,16 +146,15 @@ export const getDataGasPrice = (header: BlockHeader) => {
 }
 
 /**
- * Returns the total fee for data gas spent on `numBlobs` in the current/pending block
- * @param numBlobs
- * @param parent parent header of the current/pending block
+ * Returns the total fee for data gas spent in the current/pending block
+ * @param header of the current/pending block
  * @returns the total data gas fee for a transaction assuming it contains `numBlobs`
  */
-export const calcDataFee = (numBlobs: number, parent: BlockHeader) => {
-  if (parent.excessDataGas === undefined) {
-    throw new Error('parent header must have excessDataGas field populated')
+export const calcDataFee = (header: BlockHeader) => {
+  const { dataGasUsed } = header
+  if (dataGasUsed === undefined) {
+    throw new Error('parent header must have dataGasUsed field populated')
   }
-  const totalDataGas = parent._common.param('gasConfig', 'dataGasPerBlob') * BigInt(numBlobs)
-  const dataGasPrice = getDataGasPrice(parent)
-  return totalDataGas * dataGasPrice
+  const dataGasPrice = getDataGasPrice(header)
+  return dataGasUsed * dataGasPrice
 }

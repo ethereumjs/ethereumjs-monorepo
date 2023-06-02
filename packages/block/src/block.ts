@@ -480,7 +480,7 @@ export class Block {
   validateTransactions(stringError: true): string[]
   validateTransactions(stringError = false) {
     const errors: string[] = []
-    let blockDataGas = BigInt(0)
+    let dataGasUsed = BigInt(0)
     const dataGasLimit = this._common.param('gasConfig', 'maxDataGasPerBlock')
     const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
 
@@ -502,16 +502,22 @@ export class Block {
       }
       if (this._common.isActivatedEIP(4844) === true) {
         if (tx instanceof BlobEIP4844Transaction) {
-          blockDataGas += BigInt(tx.numBlobs()) * dataGasPerBlob
-          if (blockDataGas > dataGasLimit) {
+          dataGasUsed += BigInt(tx.numBlobs()) * dataGasPerBlob
+          if (dataGasUsed > dataGasLimit) {
             errs.push(
-              `tx causes total data gas of ${blockDataGas} to exceed maximum data gas per block of ${dataGasLimit}`
+              `tx causes total data gas of ${dataGasUsed} to exceed maximum data gas per block of ${dataGasLimit}`
             )
           }
         }
       }
       if (errs.length > 0) {
         errors.push(`errors at tx ${i}: ${errs.join(', ')}`)
+      }
+    }
+
+    if (this._common.isActivatedEIP(4844) === true) {
+      if (dataGasUsed !== (this.header.dataGasUsed ?? BigInt(0))) {
+        errors.push(`invalid dataGasUsed expected=${this.header.dataGasUsed} actual=${dataGasUsed}`)
       }
     }
 
@@ -563,10 +569,13 @@ export class Block {
    */
   validateBlobTransactions(parentHeader: BlockHeader) {
     if (this._common.isActivatedEIP(4844)) {
-      let numBlobs = 0
+      const dataGasLimit = this._common.param('gasConfig', 'maxDataGasPerBlock')
+      const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
+      let dataGasUsed = BigInt(0)
+
       for (const tx of this.transactions) {
         if (tx instanceof BlobEIP4844Transaction) {
-          const dataGasPrice = getDataGasPrice(parentHeader)
+          const dataGasPrice = getDataGasPrice(this.header)
           if (tx.maxFeePerDataGas < dataGasPrice) {
             throw new Error(
               `blob transaction maxFeePerDataGas ${
@@ -574,10 +583,24 @@ export class Block {
               } < than block data gas price ${dataGasPrice} - ${this.errorStr()}`
             )
           }
-          numBlobs += tx.versionedHashes.length
+
+          dataGasUsed += BigInt(tx.versionedHashes.length) * dataGasPerBlob
+
+          if (dataGasUsed > dataGasLimit) {
+            throw new Error(
+              `tx causes total data gas of ${dataGasUsed} to exceed maximum data gas per block of ${dataGasLimit}`
+            )
+          }
         }
       }
-      const expectedExcessDataGas = calcExcessDataGas(parentHeader, numBlobs)
+
+      if (this.header.dataGasUsed !== dataGasUsed) {
+        throw new Error(
+          `block dataGasUsed mismatch: have ${this.header.dataGasUsed}, want ${dataGasUsed}`
+        )
+      }
+
+      const expectedExcessDataGas = calcExcessDataGas(parentHeader)
       if (this.header.excessDataGas !== expectedExcessDataGas) {
         throw new Error(
           `block excessDataGas mismatch: have ${this.header.excessDataGas}, want ${expectedExcessDataGas}`

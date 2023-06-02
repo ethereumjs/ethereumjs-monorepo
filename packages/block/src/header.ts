@@ -55,6 +55,7 @@ export class BlockHeader {
   public readonly nonce: Uint8Array
   public readonly baseFeePerGas?: bigint
   public readonly withdrawalsRoot?: Uint8Array
+  public readonly dataGasUsed?: bigint
   public readonly excessDataGas?: bigint
 
   public readonly _common: Common
@@ -194,6 +195,7 @@ export class BlockHeader {
           : BigInt(7)
         : undefined,
       withdrawalsRoot: this._common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
+      dataGasUsed: this._common.isActivatedEIP(4844) ? BigInt(0) : undefined,
       excessDataGas: this._common.isActivatedEIP(4844) ? BigInt(0) : undefined,
     }
 
@@ -201,6 +203,8 @@ export class BlockHeader {
       toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? hardforkDefaults.baseFeePerGas
     const withdrawalsRoot =
       toType(headerData.withdrawalsRoot, TypeOutput.Uint8Array) ?? hardforkDefaults.withdrawalsRoot
+    const dataGasUsed =
+      toType(headerData.dataGasUsed, TypeOutput.BigInt) ?? hardforkDefaults.dataGasUsed
     const excessDataGas =
       toType(headerData.excessDataGas, TypeOutput.BigInt) ?? hardforkDefaults.excessDataGas
 
@@ -214,8 +218,14 @@ export class BlockHeader {
       )
     }
 
-    if (!this._common.isActivatedEIP(4844) && headerData.excessDataGas !== undefined) {
-      throw new Error('excess data gas can only be provided with EIP4844 activated')
+    if (!this._common.isActivatedEIP(4844)) {
+      if (headerData.dataGasUsed !== undefined) {
+        throw new Error('data gas used can only be provided with EIP4844 activated')
+      }
+
+      if (headerData.excessDataGas !== undefined) {
+        throw new Error('excess data gas can only be provided with EIP4844 activated')
+      }
     }
 
     this.parentHash = parentHash
@@ -235,6 +245,7 @@ export class BlockHeader {
     this.nonce = nonce
     this.baseFeePerGas = baseFeePerGas
     this.withdrawalsRoot = withdrawalsRoot
+    this.dataGasUsed = dataGasUsed
     this.excessDataGas = excessDataGas
     this._genericFormatValidation()
     this._validateDAOExtraData()
@@ -553,6 +564,7 @@ export class BlockHeader {
       rawItems.push(this.withdrawalsRoot!)
     }
     if (this._common.isActivatedEIP(4844) === true) {
+      rawItems.push(bigIntToUnpaddedBytes(this.dataGasUsed!))
       rawItems.push(bigIntToUnpaddedBytes(this.excessDataGas!))
     }
 
@@ -822,6 +834,7 @@ export class BlockHeader {
       jsonDict.baseFeePerGas = bigIntToHex(this.baseFeePerGas!)
     }
     if (this._common.isActivatedEIP(4844) === true) {
+      jsonDict.dataGasUsed = bigIntToHex(this.dataGasUsed!)
       jsonDict.excessDataGas = bigIntToHex(this.excessDataGas!)
     }
     return jsonDict
