@@ -1,11 +1,11 @@
-/* eslint-disable */
 import * as assert from 'assert'
+import { hexToBytes } from 'ethereum-cryptography/utils'
+
 import { EthereumHDKey } from '../src/hdkey'
 
 // from BIP39 mnemonic: awake book subject inch gentle blur grant damage process float month clown
-const fixtureseed = Buffer.from(
-  '747f302d9c916698912d5f70be53a6cf53bc495803a5523d3a7c3afa2afba94ec3803f838b3e1929ab5481f9da35441372283690fdcf27372c38f40ba134fe03',
-  'hex'
+const fixtureseed = hexToBytes(
+  '747f302d9c916698912d5f70be53a6cf53bc495803a5523d3a7c3afa2afba94ec3803f838b3e1929ab5481f9da35441372283690fdcf27372c38f40ba134fe03'
 )
 const fixturehd = EthereumHDKey.fromMasterSeed(fixtureseed)
 

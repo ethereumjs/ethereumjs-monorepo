@@ -1,8 +1,8 @@
-/* eslint-disable ethereumjs/noBuffer */
+import { base64 } from '@scure/base'
 import { decrypt } from 'ethereum-cryptography/aes'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { pbkdf2Sync } from 'ethereum-cryptography/pbkdf2'
-import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { bytesToUtf8, concatBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import * as md5 from 'js-md5'
 
 import { Wallet } from './index'
@@ -46,33 +46,33 @@ function mergeEvpKdfOptsWithDefaults(opts?: Partial<EvpKdfOpts>): EvpKdfOpts {
  *
  * FIXME: not optimised at all
  */
-function evp_kdf(data: Buffer, salt: Buffer, opts?: Partial<EvpKdfOpts>) {
+function evp_kdf(data: Uint8Array, salt: Uint8Array, opts?: Partial<EvpKdfOpts>) {
   const params = mergeEvpKdfOptsWithDefaults(opts)
 
   // A single EVP iteration, returns `D_i`, where block equlas to `D_(i-1)`
-  function iter(block: Buffer) {
+  function iter(block: Uint8Array) {
     if (params.digest !== 'md5') throw new Error('Only md5 is supported in evp_kdf')
     let hash = md5.create()
     hash.update(block)
     hash.update(data)
     hash.update(salt)
-    block = Buffer.from(hash.arrayBuffer())
+    block = Uint8Array.from(hash.array())
 
     for (let i = 1, len = params.count; i < len; i++) {
       hash = md5.create()
       hash.update(block)
-      block = Buffer.from(hash.arrayBuffer())
+      block = new Uint8Array(hash.arrayBuffer())
     }
     return block
   }
 
-  const ret: Buffer[] = []
+  const ret: Uint8Array[] = []
   let i = 0
-  while (Buffer.concat(ret).length < params.keysize + params.ivsize) {
-    ret[i] = iter(i === 0 ? Buffer.alloc(0) : ret[i - 1])
+  while (concatBytes(...ret).length < params.keysize + params.ivsize) {
+    ret[i] = iter(i === 0 ? new Uint8Array() : ret[i - 1])
     i++
   }
-  const tmp = Buffer.concat(ret)
+  const tmp = concatBytes(...ret)
 
   return {
     key: tmp.subarray(0, params.keysize),
@@ -81,9 +81,9 @@ function evp_kdf(data: Buffer, salt: Buffer, opts?: Partial<EvpKdfOpts>) {
 }
 
 // http://stackoverflow.com/questions/25288311/cryptojs-aes-pattern-always-ends-with
-function decodeCryptojsSalt(input: string): { ciphertext: Buffer; salt?: Buffer } {
-  const ciphertext = Buffer.from(input, 'base64')
-  if (ciphertext.subarray(0, 8).toString() === 'Salted__') {
+function decodeCryptojsSalt(input: string): { ciphertext: Uint8Array; salt?: Uint8Array } {
+  const ciphertext = base64.decode(input)
+  if (bytesToUtf8(ciphertext.subarray(0, 8)) === 'Salted__') {
     return {
       salt: ciphertext.subarray(8, 16),
       ciphertext: ciphertext.subarray(16),
@@ -121,12 +121,12 @@ export async function fromEtherWallet(
 ): Promise<Wallet> {
   const json: EtherWalletOptions = typeof input === 'object' ? input : JSON.parse(input)
 
-  let privateKey: Buffer
+  let privateKey: Uint8Array
   if (!json.locked) {
     if (json.private.length !== 64) {
       throw new Error('Invalid private key length')
     }
-    privateKey = Buffer.from(json.private, 'hex')
+    privateKey = hexToBytes(json.private)
   } else {
     if (typeof password !== 'string') {
       throw new Error('Password required')
@@ -147,12 +147,12 @@ export async function fromEtherWallet(
     }
 
     // derive key/iv using OpenSSL EVP as implemented in CryptoJS
-    const evp = evp_kdf(Buffer.from(password), cipher.salt, { keysize: 32, ivsize: 16 })
+    const evp = evp_kdf(utf8ToBytes(password), cipher.salt, { keysize: 32, ivsize: 16 })
 
     const pr = await decrypt(cipher.ciphertext, evp.key, evp.iv, 'aes-256-cbc')
 
     // NOTE: yes, they've run it through UTF8
-    privateKey = Buffer.from(bytesToUtf8(pr), 'hex')
+    privateKey = hexToBytes(bytesToUtf8(pr))
   }
   const wallet = new Wallet(privateKey)
   if (wallet.getAddressString() !== json.address) {
@@ -165,7 +165,7 @@ export async function fromEtherWallet(
  * Third Party API: Import a brain wallet used by Ether.Camp
  */
 export function fromEtherCamp(passphrase: string): Wallet {
-  return new Wallet(Buffer.from(keccak256(Buffer.from(passphrase))))
+  return new Wallet(keccak256(utf8ToBytes(passphrase)))
 }
 
 /**
@@ -181,7 +181,7 @@ export function fromQuorumWallet(passphrase: string, userid: string): Wallet {
 
   const merged = utf8ToBytes(passphrase + userid)
   const seed = pbkdf2Sync(merged, merged, 2000, 32, 'sha256')
-  return new Wallet(Buffer.from(seed))
+  return new Wallet(seed)
 }
 
 export const Thirdparty = {
