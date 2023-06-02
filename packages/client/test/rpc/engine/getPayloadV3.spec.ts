@@ -112,7 +112,7 @@ tape(`${method}: call with known payload`, async (t) => {
     const { executionPayload, blobsBundle } = res.body.result
     t.equal(
       executionPayload.blockHash,
-      '0xc95747af99348f5fd5f0e694973fbac29f3206155babc2232bfff202fdad8e2c',
+      '0xc51a3346df60c3b63c3e564b0f4b21eed69db6a64445b6a2e5a902185d05e796',
       'built expected block'
     )
     const { commitments, proofs, blobs } = blobsBundle
