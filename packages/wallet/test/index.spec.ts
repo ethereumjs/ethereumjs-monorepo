@@ -1,11 +1,11 @@
-/* eslint-disable */
 import * as assert from 'assert'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 import { Wallet as ethersWallet } from 'ethers'
-
-const zip = require('lodash.zip')
 
 import { Wallet } from '../src'
 import { Thirdparty } from '../src/thirdparty'
+
+const zip = require('lodash.zip')
 
 const n = 262144
 const r = 8
@@ -13,27 +13,27 @@ const p = 1
 
 const fixturePrivateKey = 'efca4cdd31923b50f4214af5d2ae10e7ac45a5019e9431cc195482d707485378'
 const fixturePrivateKeyStr = '0x' + fixturePrivateKey
-const fixturePrivateKeyBuffer = Buffer.from(fixturePrivateKey, 'hex')
+const fixturePrivateKeyBuffer = hexToBytes(fixturePrivateKey)
 
 const fixturePublicKey =
   '5d4392f450262b276652c1fc037606abac500f3160830ce9df53aa70d95ce7cfb8b06010b2f3691c78c65c21eb4cf3dfdbfc0745d89b664ee10435bb3a0f906c'
 const fixturePublicKeyStr = '0x' + fixturePublicKey
-const fixturePublicKeyBuffer = Buffer.from(fixturePublicKey, 'hex')
+const fixturePublicKeyBuffer = hexToBytes(fixturePublicKey)
 
 const fixtureWallet = Wallet.fromPrivateKey(fixturePrivateKeyBuffer)
 const fixtureEthersWallet = new ethersWallet(fixtureWallet.getPrivateKeyString())
 
-const isRunningInKarma = () => {
+const isRunningInKarma = (): boolean => {
   return typeof (global as any).window !== 'undefined' && (global as any).window.__karma__
 }
 
 describe('.getPrivateKey()', function () {
   it('should work', function () {
-    assert.strictEqual(fixtureWallet.getPrivateKey().toString('hex'), fixturePrivateKey)
+    assert.strictEqual(bytesToHex(fixtureWallet.getPrivateKey()), fixturePrivateKey)
   })
   it('should fail', function () {
     assert.throws(function () {
-      Wallet.fromPrivateKey(Buffer.from('001122', 'hex'))
+      Wallet.fromPrivateKey(hexToBytes('001122'))
     }, /^Error: Private key does not satisfy the curve requirements \(ie\. it is invalid\)$/)
   })
 })
@@ -46,7 +46,7 @@ describe('.getPrivateKeyString()', function () {
 
 describe('.getPublicKey()', function () {
   it('should work', function () {
-    assert.strictEqual(fixtureWallet.getPublicKey().toString('hex'), fixturePublicKey)
+    assert.strictEqual(bytesToHex(fixtureWallet.getPublicKey()), fixturePublicKey)
   })
 })
 
@@ -59,7 +59,7 @@ describe('.getPublicKeyString()', function () {
 describe('.getAddress()', function () {
   it('should work', function () {
     assert.strictEqual(
-      fixtureWallet.getAddress().toString('hex'),
+      bytesToHex(fixtureWallet.getAddress()),
       'b14ab53e38da1c172f877dbc6d65e4a1b0474c3c'
     )
   })
@@ -88,38 +88,32 @@ describe('.verifyPublicKey()', function () {
     assert.strictEqual(fixtureWallet.verifyPublicKey(fixturePublicKeyBuffer), true)
   })
   it('should return false if publicKey, privateKey pair is invalid', function () {
-    assert.strictEqual(fixtureWallet.verifyPublicKey(Buffer.alloc(64, 0)), false)
+    assert.strictEqual(fixtureWallet.verifyPublicKey(new Uint8Array(64)), false)
   })
 })
 
 describe('public key only wallet', function () {
-  const pubKey = Buffer.from(fixturePublicKey, 'hex')
+  const pubKey = hexToBytes(fixturePublicKey)
   it('.fromPublicKey() should work', function () {
-    assert.strictEqual(
-      Wallet.fromPublicKey(pubKey).getPublicKey().toString('hex'),
-      fixturePublicKey
-    )
+    assert.strictEqual(bytesToHex(Wallet.fromPublicKey(pubKey).getPublicKey()), fixturePublicKey)
   })
   it('.fromPublicKey() should not accept compressed keys in strict mode', function () {
     assert.throws(function () {
       Wallet.fromPublicKey(
-        Buffer.from('030639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973d', 'hex')
+        hexToBytes('030639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973d')
       )
     }, /^Error: Invalid public key$/)
   })
   it('.fromPublicKey() should accept compressed keys in non-strict mode', function () {
-    const tmp = Buffer.from(
-      '030639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973d',
-      'hex'
-    )
+    const tmp = hexToBytes('030639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973d')
     assert.strictEqual(
-      Wallet.fromPublicKey(tmp, true).getPublicKey().toString('hex'),
+      bytesToHex(Wallet.fromPublicKey(tmp, true).getPublicKey()),
       '0639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973defa5cb69df462bcc6d73c31e1c663c225650e80ef14a507b203f2a12aea55bc1'
     )
   })
   it('.getAddress() should work', function () {
     assert.strictEqual(
-      Wallet.fromPublicKey(pubKey).getAddress().toString('hex'),
+      bytesToHex(Wallet.fromPublicKey(pubKey).getAddress()),
       'b14ab53e38da1c172f877dbc6d65e4a1b0474c3c'
     )
   })
@@ -165,7 +159,7 @@ describe('.generate()', function () {
     const max = BigInt('0x088f924eeceeda7fe92e1f5b0fffffffffffffff')
     const wallet = Wallet.generate(true)
     assert.strictEqual(wallet.getPrivateKey().length, 32)
-    const addr = wallet.getAddress().toString('hex')
+    const addr = bytesToHex(wallet.getAddress())
     assert.strictEqual(BigInt('0x' + addr) <= max, true)
   })
 })
@@ -204,9 +198,9 @@ describe('.toV3()', function () {
 
   const strKdfOptions = { iv, salt, uuid }
   const buffKdfOptions = {
-    salt: Buffer.from(salt, 'hex'),
-    iv: Buffer.from(iv, 'hex'),
-    uuid: Buffer.from(uuid, 'hex'),
+    salt: hexToBytes(salt),
+    iv: hexToBytes(iv),
+    uuid: hexToBytes(uuid),
   }
 
   // generate all possible combinations of salt, iv, uuid properties, e.g.
@@ -217,9 +211,9 @@ describe('.toV3()', function () {
   //  {a: 1, b: 1},
   //  {a: 2, b: 2}]
   type Perm = Array<{
-    salt: string | Buffer
-    iv: string | Buffer
-    uuid: string | Buffer
+    salt: string | Uint8Array
+    iv: string | Uint8Array
+    uuid: string | Uint8Array
   }>
   const makePermutations = (...objs: Array<object>): Perm => {
     const permus = []
@@ -241,7 +235,7 @@ describe('.toV3()', function () {
         .map((v) => parseInt(v, 10))
       const obj: any = {}
       zip(selectors, keys).forEach(([sel, k]: [number, string]) => {
-        if ((objs as any)[sel].hasOwnProperty(k)) {
+        if ((objs as any)[sel].hasOwnProperty(k) === true) {
           obj[k] = (objs as any)[sel][k]
         }
       })
@@ -252,7 +246,7 @@ describe('.toV3()', function () {
 
   const makeEthersOptions = (opts: object) => {
     const obj: any = {}
-    Object.entries(opts).forEach(([key, val]: [string, string | Buffer]) => {
+    Object.entries(opts).forEach(([key, val]: [string, string | Uint8Array]) => {
       obj[key] = typeof val === 'string' ? '0x' + val : val
     })
     return obj
@@ -276,9 +270,9 @@ describe('.toV3()', function () {
         const encFixtureWallet = await fixtureWallet.toV3String(pw, {
           kdf: 'pbkdf2',
           c: n,
-          uuid: uuid,
-          salt: salt,
-          iv: iv,
+          uuid,
+          salt,
+          iv,
         })
 
         assert.deepStrictEqual(JSON.parse(w), JSON.parse(encFixtureWallet))
@@ -300,17 +294,17 @@ describe('.toV3()', function () {
 
         const encFixtureWallet = await fixtureWallet.toV3String(pw, {
           kdf: 'scrypt',
-          uuid: uuid,
-          salt: salt,
-          iv: iv,
-          n: n,
-          r: r,
-          p: p,
+          uuid,
+          salt,
+          iv,
+          n,
+          r,
+          p,
         })
 
         const encFixtureEthersWallet = (
           await fixtureEthersWallet.encrypt(pw, {
-            scrypt: { N: n, r: r, p: p },
+            scrypt: { N: n, r, p },
             salt: ethersOpts.salt,
             iv: ethersOpts.iv,
             uuid: ethersOpts.uuid,
@@ -319,17 +313,17 @@ describe('.toV3()', function () {
 
         const encRandomWallet = await wRandom.toV3String(pw, {
           kdf: 'scrypt',
-          uuid: uuid,
-          salt: salt,
-          iv: iv,
-          n: n,
-          r: r,
-          p: p,
+          uuid,
+          salt,
+          iv,
+          n,
+          r,
+          p,
         })
 
         const encEthersWallet = (
           await wEthers.encrypt(pw, {
-            scrypt: { N: n, r: r, p: p },
+            scrypt: { N: n, r, p },
             salt: ethersOpts.salt,
             iv: ethersOpts.iv,
             uuid: ethersOpts.uuid,
@@ -382,7 +376,7 @@ describe('.toV3()', function () {
     this.timeout(0) // never
     const pw = 'test'
     let salt: any = ''
-    let w = await fixtureWallet.toV3(pw, { salt: salt, kdf: 'pbkdf2' })
+    let w = await fixtureWallet.toV3(pw, { salt, kdf: 'pbkdf2' })
 
     assert.strictEqual(salt, w.crypto.kdfparams.salt)
     assert.strictEqual(
@@ -391,7 +385,7 @@ describe('.toV3()', function () {
     )
 
     salt = '0x'
-    w = await fixtureWallet.toV3(pw, { salt: salt, kdf: 'pbkdf2' })
+    w = await fixtureWallet.toV3(pw, { salt, kdf: 'pbkdf2' })
 
     assert.strictEqual('', w.crypto.kdfparams.salt)
     assert.strictEqual(
@@ -399,8 +393,8 @@ describe('.toV3()', function () {
       (await Wallet.fromV3(w, pw)).getPrivateKeyString()
     )
 
-    salt = Buffer.from('', 'hex')
-    w = await fixtureWallet.toV3(pw, { salt: salt, kdf: 'pbkdf2' })
+    salt = hexToBytes('')
+    w = await fixtureWallet.toV3(pw, { salt, kdf: 'pbkdf2' })
 
     assert.strictEqual('', w.crypto.kdfparams.salt)
     assert.strictEqual(
@@ -412,16 +406,16 @@ describe('.toV3()', function () {
     let iv = 'ffffffffffffffffffffffffffffffff'
     let uuid = 'ffffffffffffffffffffffffffffffff'
     let wStr = await fixtureWallet.toV3String(pw, {
-      salt: salt,
-      iv: iv,
-      uuid: uuid,
+      salt,
+      iv,
+      uuid,
       kdf: 'scrypt',
-      n: n,
-      r: r,
-      p: p,
+      n,
+      r,
+      p,
     })
     let wEthersStr = await new ethersWallet(fixtureWallet.getPrivateKeyString()).encrypt(pw, {
-      scrypt: { N: n, r: r, p: p },
+      scrypt: { N: n, r, p },
       salt: '0x' + (salt as string),
       iv: '0x' + iv,
       uuid: '0x' + uuid,
@@ -442,19 +436,19 @@ describe('.toV3()', function () {
     iv = '0x' + iv
     uuid = '0x' + uuid
     wStr = await fixtureWallet.toV3String(pw, {
-      salt: salt,
-      iv: iv,
-      uuid: uuid,
+      salt,
+      iv,
+      uuid,
       kdf: 'scrypt',
-      n: n,
-      r: r,
-      p: p,
+      n,
+      r,
+      p,
     })
     wEthersStr = await new ethersWallet(fixtureWallet.getPrivateKeyString()).encrypt(pw, {
-      scrypt: { N: n, r: r, p: p },
-      salt: salt,
-      iv: iv,
-      uuid: uuid,
+      scrypt: { N: n, r, p },
+      salt,
+      iv,
+      uuid,
     })
 
     assert.strictEqual('', JSON.parse(wStr).crypto.kdfparams.salt)
@@ -468,21 +462,21 @@ describe('.toV3()', function () {
       (await ethersWallet.fromEncryptedJson(wEthersStr, pw)).privateKey
     )
 
-    salt = Buffer.from('', 'hex')
+    salt = hexToBytes('')
     wStr = await fixtureWallet.toV3String(pw, {
-      salt: salt,
-      iv: iv,
-      uuid: uuid,
+      salt,
+      iv,
+      uuid,
       kdf: 'scrypt',
-      n: n,
-      r: r,
-      p: p,
+      n,
+      r,
+      p,
     })
     wEthersStr = await new ethersWallet(fixtureWallet.getPrivateKeyString()).encrypt(pw, {
-      scrypt: { N: n, r: r, p: p },
-      salt: salt,
-      iv: iv,
-      uuid: uuid,
+      scrypt: { N: n, r, p },
+      salt,
+      iv,
+      uuid,
     })
 
     assert.strictEqual('', JSON.parse(wStr).crypto.kdfparams.salt)
@@ -520,13 +514,13 @@ describe('.toV3()', function () {
       await fixtureWallet.toV3(pw, { iv: 'fffffffffffffffxffffffffffffffff' })
     }, errStrLength)
     assert.rejects(async function () {
-      await fixtureWallet.toV3(pw, { iv: Buffer.from('', 'hex') })
+      await fixtureWallet.toV3(pw, { iv: hexToBytes('') })
     }, errBuffLength)
     assert.rejects(async function () {
-      await fixtureWallet.toV3(pw, { iv: Buffer.from('ff', 'hex') })
+      await fixtureWallet.toV3(pw, { iv: hexToBytes('ff') })
     }, errBuffLength)
     assert.rejects(async function () {
-      await fixtureWallet.toV3(pw, { iv: Buffer.from('ffffffffffffffffffffffffffffffffff', 'hex') })
+      await fixtureWallet.toV3(pw, { iv: hexToBytes('ffffffffffffffffffffffffffffffffff') })
     }, errBuffLength)
     assert.rejects(async function () {
       // @ts-ignore
@@ -557,14 +551,14 @@ describe('.toV3()', function () {
       await fixtureWallet.toV3(pw, { uuid: 'fffffffffffffffxffffffffffffffff' })
     }, errStrLength)
     assert.rejects(async function () {
-      await fixtureWallet.toV3(pw, { uuid: Buffer.from('', 'hex') })
+      await fixtureWallet.toV3(pw, { uuid: hexToBytes('') })
     }, errBuffLength)
     assert.rejects(async function () {
-      await fixtureWallet.toV3(pw, { uuid: Buffer.from('ff', 'hex') })
+      await fixtureWallet.toV3(pw, { uuid: hexToBytes('ff') })
     }, errBuffLength)
     assert.rejects(async function () {
       await fixtureWallet.toV3(pw, {
-        uuid: Buffer.from('ffffffffffffffffffffffffffffffffff', 'hex'),
+        uuid: hexToBytes('ffffffffffffffffffffffffffffffffff'),
       })
     }, errBuffLength)
     assert.rejects(async function () {
@@ -588,7 +582,7 @@ describe('.toV3()', function () {
     let w2 = await fixtureWallet.toV3(pw, {
       salt: '0x' + salt,
       iv: '0X' + iv,
-      uuid: uuid,
+      uuid,
       kdf: 'pbkdf2',
     })
 
@@ -613,7 +607,7 @@ describe('.toV3()', function () {
     w2 = await fixtureWallet.toV3(pw, {
       salt: '0x' + salt,
       iv: '0X' + iv,
-      uuid: uuid,
+      uuid,
       kdf: 'scrypt',
     })
 
