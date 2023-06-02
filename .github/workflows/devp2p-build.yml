@@ -38,9 +38,9 @@ jobs:
 
       - uses: nick-fields/retry@v2
         with:
-          timeout_minutes: 2
+          timeout_minutes: 10
           max_attempts: 3
-          command: npm run coverage
+          command: cd ${{github.workspace}}/packages/devp2p && npm run coverage
 
       - uses: codecov/codecov-action@v3
         with:
