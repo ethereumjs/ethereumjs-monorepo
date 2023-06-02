@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1685696786529,
+  "lastUpdate": 1685699409123,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "2143619e786ad1e31d0d5dc3f96aef42a9c23ff0",
-          "message": "evm: Fix the availability of versioned hashes in contract calls (#2694)\n\n* evm: Fix the availability of versioned hashes in contract calls\r\n\r\n* add spec tests\r\n\r\n* compress comments\r\n\r\n* compress comments\r\n\r\n* increase coverage\r\n\r\n* evm: ensure DATAHASH also works in CREATE/CREATE2 frames\r\n\r\n* vm: load c-kzg in tests\r\n\r\n* Fix dataGasPrice logic\r\n\r\n* Add precompile error handling\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: acolytec3 <konjou@gmail.com>",
-          "timestamp": "2023-05-15T14:50:03-04:00",
-          "tree_id": "63bc9af2f1e753fac9f136c7bbd8b5f0805f8202",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2143619e786ad1e31d0d5dc3f96aef42a9c23ff0"
-        },
-        "date": 1684176775398,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 17579,
-            "range": "±5.29%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17596,
-            "range": "±3.20%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18094,
-            "range": "±3.39%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 16387,
-            "range": "±8.64%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 17436,
-            "range": "±3.20%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.60%",
             "unit": "ops/sec",
             "extra": "81 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c8885dd95fb78d4f176b62a2880573700769c931",
+          "message": "tx: Update c-kzg to big endian implementation (#2746)\n\n* tx: Update c-kzg to big endian implementation\r\n\r\n* update spec tests\r\n\r\n* update the serialized tx\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-06-02T11:45:36+02:00",
+          "tree_id": "943a5593919c0d362e9a6ef4121af20262723121",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c8885dd95fb78d4f176b62a2880573700769c931"
+        },
+        "date": 1685699408038,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31888,
+            "range": "±4.53%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31830,
+            "range": "±2.72%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31762,
+            "range": "±2.65%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 31278,
+            "range": "±2.81%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 25024,
+            "range": "±11.16%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
           }
         ]
       }
