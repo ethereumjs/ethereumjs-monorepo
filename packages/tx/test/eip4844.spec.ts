@@ -436,7 +436,7 @@ tape('Network wrapper deserialization test', async (t) => {
       'txMeta should match'
     )
 
-    // oveeride common chain id
+    // override common chain id and test nethermind generated tx
     common.chainId = () => BigInt(42)
     const deserializedTxNethermind = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(
       hexToBytes(networkSerializedNethermind),
