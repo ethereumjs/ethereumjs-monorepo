@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 
-import { DPT, ETH, RLPx, genPrivateKey } from '../../src'
+import { DPT, ETH, Peer, RLPx, genPrivateKey } from '../../src'
 import * as testdata from '../testdata.json'
 
 import type { Capabilities } from '../../src'
@@ -165,6 +165,14 @@ export function twoPeerMsgExchange(
 
 export function destroyRLPXs(rlpxs: any) {
   for (const rlpx of rlpxs) {
+    // FIXME: Call destroy() on dpt instance from the rlpx.destroy() method
+    for (const peer of (rlpx as RLPx)._peers) {
+      if (peer instanceof Peer && peer._pingIntervalId !== null) {
+        // Ensure all ping intervals are cleared
+        clearInterval(peer._pingIntervalId)
+      }
+    }
+    rlpx._dpt.destroy()
     rlpx.destroy()
   }
 }

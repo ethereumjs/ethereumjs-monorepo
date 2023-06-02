@@ -138,7 +138,6 @@ export class RLPx extends EventEmitter {
     this._server = null
 
     for (const peerKey of this._peers.keys()) this.disconnect(hexToBytes(peerKey))
-    this._dpt?.destroy()
   }
 
   async connect(peer: PeerInfo) {
