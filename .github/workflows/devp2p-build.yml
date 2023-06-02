@@ -36,13 +36,11 @@ jobs:
       - run: npm ci
         working-directory: ${{github.workspace}}
 
-      - run: npm i wtfnode
-
       - uses: nick-fields/retry@v2
         with:
           timeout_minutes: 2
-          max_attempts: 1
-          command: cd ${{github.workspace}}/packages/devp2p && npx wtfnode ../../node_modules/tape/bin/tape -r ts-node/register './test/**/*.spec.ts'
+          max_attempts: 3
+          command: npm run coverage
 
       - uses: codecov/codecov-action@v3
         with:
