@@ -97,7 +97,7 @@
     "@types/secp256k1": "^4.0.1"
   },
   "peerDependencies": {
-    "c-kzg": "^2.0.4"
+    "c-kzg": "^2.1.0"
   },
   "peerDependenciesMeta": {
     "c-kzg": {
