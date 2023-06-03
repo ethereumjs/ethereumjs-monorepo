@@ -82,7 +82,7 @@ tape(`${method}: call with known payload`, async (t) => {
   let payloadId
   let expectRes = (res: any) => {
     payloadId = res.body.result.payloadId
-    t.ok(payloadId!==undefined && payloadId!==null,'valid payloadId should be received')
+    t.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
@@ -116,8 +116,8 @@ tape(`${method}: call with known payload`, async (t) => {
       '0x38ba1af4c568abce2dd6b4d4082606c3fc790fa0a14787aa9ca5c61fa7511439',
       'built expected block'
     )
-    t.equal(executionPayload.excessDataGas,'0x0','correct execess data gas')
-    t.equal(executionPayload.dataGasUsed,'0x20000','correct data gas used')
+    t.equal(executionPayload.excessDataGas, '0x0', 'correct execess data gas')
+    t.equal(executionPayload.dataGasUsed, '0x20000', 'correct data gas used')
     const { commitments, proofs, blobs } = blobsBundle
     t.ok(
       commitments.length === proofs.length && commitments.length === blobs.length,
