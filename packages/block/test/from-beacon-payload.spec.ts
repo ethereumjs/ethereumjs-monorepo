@@ -20,7 +20,12 @@ tape('[fromExecutionPayloadJson]: 4844 devnet 5', async function (t) {
     for (const payload of [payload87335, payload87475]) {
       try {
         const block = await Block.fromBeaconPayloadJson(payload, { common })
-        block.validateBlobTransactions({ excessDataGas: BigInt(0), _common: common } as any)
+        // mock the parent header to have dataGasUsed which gives the correct current block excessDataGas
+        block.validateBlobTransactions({
+          excessDataGas: BigInt(0),
+          dataGasUsed: block.header.excessDataGas! + BigInt(262144),
+          _common: common,
+        } as any)
         st.pass(`successfully constructed block=${block.header.number}`)
       } catch (e) {
         st.fail(`failed to construct block, error: ${e}`)
@@ -49,8 +54,7 @@ tape('[fromExecutionPayloadJson]: 4844 devnet 5', async function (t) {
       const block = await Block.fromBeaconPayloadJson(
         {
           ...payload87475,
-          excess_data_gas: payload87335.excess_data_gas,
-          block_hash: '0x506ff15910ef7c5a713b21f225b3ffb4bfb4aeea4ea4891e3a71c0ad7bf6a8e0',
+          block_hash: '0x5be157c3b687537d20a252ad072e8d6a458108eb1b95944368f5a8f8f3325b07',
         },
         { common }
       )
