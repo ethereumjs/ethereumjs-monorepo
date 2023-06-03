@@ -138,6 +138,7 @@ export class RLPx extends EventEmitter {
     this._server = null
 
     for (const peerKey of this._peers.keys()) this.disconnect(hexToBytes(peerKey))
+    this._dpt?.destroy()
   }
 
   async connect(peer: PeerInfo) {
@@ -174,7 +175,11 @@ export class RLPx extends EventEmitter {
 
   disconnect(id: Uint8Array) {
     const peer = this._peers.get(bytesToHex(id))
-    if (peer instanceof Peer) peer.disconnect(DISCONNECT_REASONS.CLIENT_QUITTING)
+    if (peer instanceof Peer) {
+      peer.disconnect(DISCONNECT_REASONS.CLIENT_QUITTING)
+      peer._onSocketClose()
+    }
+    if (peer instanceof net.Socket) peer.end()
   }
 
   _isAlive() {

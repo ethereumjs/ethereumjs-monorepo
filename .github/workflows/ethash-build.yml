@@ -1,10 +1,10 @@
 name: Ethash
 on:
-  push:
-    branches: [master, develop]
-    tags: ['*']
-  pull_request:
-    types: [opened, reopened, synchronize]
+  workflow_call:
+    inputs:
+      cache-key:
+        required: true
+        type: string
   workflow_dispatch:
 
 env:
@@ -15,7 +15,7 @@ defaults:
     working-directory: packages/ethash
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-ethash
   cancel-in-progress: true
 
 jobs:
@@ -28,13 +28,15 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - run: npm ci
-        working-directory: ${{github.workspace}}
+      - uses: actions/cache/restore@v3
+        with:
+          path: ${{github.workspace}}
+          key: ${{ inputs.cache-key }}
 
       - run: npm run lint
       - run: npm run coverage

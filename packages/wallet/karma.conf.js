@@ -1,4 +1,4 @@
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
     frameworks: ['mocha', 'karma-typescript'],
     files: ['src/**/*.ts', 'test/**/*.spec.ts'],
@@ -11,8 +11,8 @@ module.exports = function(config) {
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
         acornOptions: {
-          ecmaVersion: 11
-        }
+          ecmaVersion: 11,
+        },
       },
     },
     colors: true,
