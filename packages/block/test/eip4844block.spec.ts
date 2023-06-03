@@ -25,6 +25,7 @@ const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
   hardfork: Hardfork.Cancun,
 })
+const dataGasPerBlob = common.param('gasConfig', 'dataGasPerBlob')
 
 tape('EIP4844 header tests', function (t) {
   if (isBrowser() === true) {
@@ -87,7 +88,7 @@ tape('data gas tests', async (t) => {
   } else {
     const preShardingHeader = BlockHeader.fromHeaderData({})
 
-    let excessDataGas = calcExcessDataGas(preShardingHeader, 2)
+    let excessDataGas = calcExcessDataGas(preShardingHeader)
     t.equals(
       excessDataGas,
       0n,
@@ -101,55 +102,31 @@ tape('data gas tests', async (t) => {
     )
 
     t.throws(
-      () =>
-        calcDataFee(
-          BlobEIP4844Transaction.fromTxData({}, { common }).numBlobs(),
-          preShardingHeader
-        ),
-      (err: any) => err.message.includes('parent header must have excessDataGas field'),
+      () => calcDataFee(preShardingHeader),
+      (err: any) => err.message.includes('parent header must have dataGasUsed field'),
       'calcDataFee throws when header has no excessDataGas field'
     )
 
     const lowGasHeader = BlockHeader.fromHeaderData(
-      { number: 1, excessDataGas: 5000 },
+      { number: 1, excessDataGas: 5000, dataGasUsed: BigInt(1) * dataGasPerBlob },
       { common, skipConsensusFormatValidation: true }
     )
 
-    excessDataGas = calcExcessDataGas(lowGasHeader, 1)
+    excessDataGas = calcExcessDataGas(lowGasHeader)
     let dataGasPrice = getDataGasPrice(lowGasHeader)
     t.equal(excessDataGas, 0n, 'excess data gas should be 0 for small parent header data gas')
     t.equal(dataGasPrice, 1n, 'data gas price should be 1n when low or no excess data gas')
     const highGasHeader = BlockHeader.fromHeaderData(
-      { number: 1, excessDataGas: 4194304 },
+      { number: 1, excessDataGas: 4194304, dataGasUsed: BigInt(4) * dataGasPerBlob },
       { common, skipConsensusFormatValidation: true }
     )
-    excessDataGas = calcExcessDataGas(highGasHeader, 4)
+    excessDataGas = calcExcessDataGas(highGasHeader)
     dataGasPrice = getDataGasPrice(highGasHeader)
     t.equal(excessDataGas, 4456448n)
     t.equal(dataGasPrice, 6n, 'computed correct data gas price')
 
-    const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(blobs)
-    const versionedHashes = commitmentsToVersionedHashes(commitments)
-
-    const unsignedTx = BlobEIP4844Transaction.fromTxData(
-      {
-        versionedHashes,
-        blobs,
-        kzgCommitments: commitments,
-        maxFeePerDataGas: 100000000n,
-        gasLimit: 0xffffffn,
-        to: randomBytes(20),
-      },
-      { common }
-    )
-
-    t.equal(calcDataFee(unsignedTx.numBlobs(), lowGasHeader), 131072n, 'compute data fee correctly')
-    t.equal(
-      calcDataFee(unsignedTx.numBlobs(), highGasHeader),
-      786432n,
-      'compute data fee correctly'
-    )
+    t.equal(calcDataFee(lowGasHeader), 131072n, 'compute data fee correctly')
+    t.equal(calcDataFee(highGasHeader), 3145728n, 'compute data fee correctly')
     t.end()
   }
 })
@@ -185,37 +162,43 @@ tape('transaction validation tests', async (t) => {
       { common }
     ).sign(randomBytes(32))
 
-    const parentHeader = BlockHeader.fromHeaderData(
-      { number: 1n, excessDataGas: 4194304 },
-      { common, skipConsensusFormatValidation: true }
-    )
-
     // eslint-disable-next-line no-inner-declarations
-    function getBlock(transactions: TypedTransaction[]) {
+    function getBlock(transactions: TypedTransaction[]): [Block, BlockHeader] {
       const blobs = getNumBlobs(transactions)
-      const excessDataGas = calcExcessDataGas(parentHeader, blobs)
-      const blockHeader = BlockHeader.fromHeaderData(
-        { number: 2n, parentHash: parentHeader.hash(), excessDataGas },
+
+      const parentHeader = BlockHeader.fromHeaderData(
+        { number: 1n, excessDataGas: 4194304, dataGasUsed: 0 },
         { common, skipConsensusFormatValidation: true }
       )
-      return Block.fromBlockData(
+      const excessDataGas = calcExcessDataGas(parentHeader)
+      const blockHeader = BlockHeader.fromHeaderData(
+        {
+          number: 2n,
+          parentHash: parentHeader.hash(),
+          excessDataGas,
+          dataGasUsed: BigInt(blobs) * dataGasPerBlob,
+        },
+        { common, skipConsensusFormatValidation: true }
+      )
+      const block = Block.fromBlockData(
         { header: blockHeader, transactions },
         { common, skipConsensusFormatValidation: true }
       )
+      return [block, parentHeader]
     }
 
-    const blockWithValidTx = getBlock([tx1])
+    const [blockWithValidTx, validTxParentHeader] = getBlock([tx1])
 
-    const blockWithInvalidTx = getBlock([tx1, tx2])
+    const [blockWithInvalidTx, invalidTxParentHeader] = getBlock([tx1, tx2])
 
-    const blockWithTooManyBlobs = getBlock([tx1, tx1, tx1, tx1, tx1])
+    const [blockWithTooManyBlobs] = getBlock([tx1, tx1, tx1, tx1, tx1])
 
     t.doesNotThrow(
-      () => blockWithValidTx.validateBlobTransactions(parentHeader),
+      () => blockWithValidTx.validateBlobTransactions(validTxParentHeader),
       'does not throw when all tx maxFeePerDataGas are >= to block data gas fee'
     )
     t.throws(
-      () => blockWithInvalidTx.validateBlobTransactions(parentHeader),
+      () => blockWithInvalidTx.validateBlobTransactions(invalidTxParentHeader),
       (err: any) => err.message.includes('than block data gas price'),
       'throws with correct error message when tx maxFeePerDataGas less than block data gas fee'
     )
