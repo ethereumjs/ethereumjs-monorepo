@@ -46,7 +46,7 @@ export class BlockBuilder {
    */
   private _minerValue = BigInt(0)
 
-  private readonly excessDataGas?: bigint
+  private readonly excessDataGas: bigint
   private readonly vm: VM
   private blockOpts: BuilderOpts
   private headerData: HeaderData
@@ -64,7 +64,7 @@ export class BlockBuilder {
     return this._minerValue
   }
 
-  constructor(vm: VM, opts: BuildBlockOpts) {
+  constructor(vm: VM, opts: BuildBlockOpts & { excessDataGas: bigint }) {
     this.vm = vm
     this.blockOpts = { putBlockIntoBlockchain: true, ...opts.blockOpts, common: this.vm._common }
 
@@ -204,7 +204,7 @@ export class BlockBuilder {
       }
 
       dataGasUsed = this.dataGasUsed
-      excessDataGas = this.excessDataGas ?? BigInt(0)
+      excessDataGas = this.excessDataGas
     }
     const header = {
       ...this.headerData,
@@ -275,7 +275,13 @@ export class BlockBuilder {
     const logsBloom = this.logsBloom()
     const gasUsed = this.gasUsed
     const timestamp = this.headerData.timestamp ?? Math.round(Date.now() / 1000)
-    const excessDataGas = undefined
+
+    let dataGasUsed = undefined
+    let excessDataGas = undefined
+    if (this.vm._common.isActivatedEIP(4844) === true) {
+      dataGasUsed = this.dataGasUsed
+      excessDataGas = this.excessDataGas
+    }
 
     const headerData = {
       ...this.headerData,
@@ -286,6 +292,7 @@ export class BlockBuilder {
       logsBloom,
       gasUsed,
       timestamp,
+      dataGasUsed,
       excessDataGas,
     }
 
