@@ -1,7 +1,7 @@
 import { Account, Address, hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { baseRequest, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 
@@ -25,7 +25,6 @@ tape(`${method}: call with valid arguments`, async (t) => {
   await execution.vm.stateManager.putAccount(address, new Account())
   await execution.vm.stateManager.checkpoint()
   await execution.vm.stateManager.commit()
-  await execution.vm.stateManager.flush()
 
   req = params(method, [address.toString(), '0x0', 'latest'])
   expectRes = (res: any) => {
@@ -44,7 +43,6 @@ tape(`${method}: call with valid arguments`, async (t) => {
   )
   await execution.vm.stateManager.checkpoint()
   await execution.vm.stateManager.commit()
-  await execution.vm.stateManager.flush()
 
   req = params(method, [address.toString(), key, 'latest'])
   expectRes = (res: any) => {

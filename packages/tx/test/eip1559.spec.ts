@@ -183,6 +183,7 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
 
     const json = signed.toJSON()
     const expectedJSON = {
+      type: '0x2',
       chainId: '0x4',
       nonce: '0x333',
       maxPriorityFeePerGas: '0x1284d',

@@ -21,7 +21,7 @@ const input = process.argv[3] // text to generate blob from
 const genesisJson = require(process.argv[4]) // Genesis parameters
 const pkey = hexStringToBytes(process.argv[5]) // private key of tx sender as unprefixed hex string
 
-initKZG(kzg, __dirname + '/../../../lib/trustedSetups/devnet4.txt')
+initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet4.txt')
 
 const sender = Address.fromPrivateKey(pkey)
 const common = Common.fromGethGenesis(genesisJson, {

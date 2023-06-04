@@ -4,7 +4,7 @@ import { Address, bytesToPrefixedHexString, hexStringToBytes, zeros } from '@eth
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import blocks = require('../../testdata/blocks/beacon.json')
 import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'
@@ -143,7 +143,7 @@ tape(`${method}: invalid terminal block`, async (t) => {
   }
 
   BlockHeader.prototype._consensusFormatValidation = td.func<any>()
-  td.replace('@ethereumjs/block', { BlockHeader })
+  td.replace<any>('@ethereumjs/block', { BlockHeader })
 
   const { server } = await setupChain(genesisWithHigherTtd, 'post-merge', {
     engine: true,
@@ -178,9 +178,10 @@ tape(`${method}: call with valid data but invalid transactions`, async (t) => {
   const expectRes = (res: any) => {
     t.equal(res.body.result.status, 'INVALID')
     t.equal(res.body.result.latestValidHash, blockData.parentHash)
-    t.equal(
-      res.body.result.validationError,
-      `Invalid tx at index 0: Error: Invalid serialized tx input: must be array`
+    const expectedError = 'Invalid tx at index 0: Error: Invalid serialized tx input: must be array'
+    t.ok(
+      res.body.result.validationError.includes(expectedError),
+      `should error with - ${expectedError}`
     )
   }
 

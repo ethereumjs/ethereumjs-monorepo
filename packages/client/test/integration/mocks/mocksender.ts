@@ -1,4 +1,4 @@
-import { Sender } from '../../../lib/net/protocol'
+import { Sender } from '../../../src/net/protocol'
 
 import type { Pushable } from './mockpeer'
 import type EventEmitter from 'events'

@@ -3,7 +3,7 @@ import { bytesToInt, concatBytes, intToBytes } from '@ethereumjs/util'
 import * as crypto from 'crypto'
 import { debug as createDebugLogger } from 'debug'
 import { getRandomBytesSync } from 'ethereum-cryptography/random'
-import { getPublicKey } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import { ecdh, ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
@@ -84,7 +84,7 @@ export class ECIES {
 
     this._nonce = getRandomBytesSync(32)
     this._ephemeralPrivateKey = genPrivateKey()
-    this._ephemeralPublicKey = getPublicKey(this._ephemeralPrivateKey, false)
+    this._ephemeralPublicKey = secp256k1.getPublicKey(this._ephemeralPrivateKey, false)
   }
 
   _encryptMessage(
@@ -112,7 +112,7 @@ export class ECIES {
       crypto.createHmac('sha256', mkey).update(concatBytes(dataIV, sharedMacData)).digest()
     )
 
-    const publicKey = getPublicKey(privateKey, false)
+    const publicKey = secp256k1.getPublicKey(privateKey, false)
     return concatBytes(publicKey, dataIV, tag)
   }
 

@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/ethash",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "An ethash implementation in JavaScript",
   "keywords": [
     "ethash",
@@ -17,8 +17,14 @@
   },
   "license": "MPL-2.0",
   "author": "mjbecze <mjbecze@gmail.com>",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "files": [
     "dist",
     "src"
@@ -37,18 +43,16 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "^4.2.1",
+    "@ethereumjs/block": "^4.2.2",
     "@ethereumjs/rlp": "^4.0.1",
-    "@ethereumjs/util": "^8.0.5",
-    "abstract-level": "^1.0.3",
-    "bigint-crypto-utils": "^3.0.23",
-    "ethereum-cryptography": "^1.1.2"
+    "@ethereumjs/util": "^8.0.6",
+    "bigint-crypto-utils": "^3.2.2",
+    "ethereum-cryptography": "^2.0.0"
   },
   "devDependencies": {
-    "@ethereumjs/common": "^3.1.1",
-    "memory-level": "^1.0.0"
+    "@ethereumjs/common": "^3.1.2"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   }
 }

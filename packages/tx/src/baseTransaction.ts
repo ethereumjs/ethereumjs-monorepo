@@ -4,8 +4,10 @@ import {
   MAX_INTEGER,
   MAX_UINT64,
   SECP256K1_ORDER_DIV_2,
+  bigIntToHex,
   bytesToBigInt,
   bytesToHex,
+  bytesToPrefixedHexString,
   ecsign,
   publicToAddress,
   toBytes,
@@ -18,6 +20,8 @@ import { checkMaxInitCodeSize } from './util'
 import type {
   AccessListEIP2930TxData,
   AccessListEIP2930ValuesArray,
+  BlobEIP4844TxData,
+  BlobEIP4844ValuesArray,
   FeeMarketEIP1559TxData,
   FeeMarketEIP1559ValuesArray,
   JsonTx,
@@ -89,7 +93,10 @@ export abstract class BaseTransaction<TransactionObject> {
    */
   protected DEFAULT_HARDFORK: string | Hardfork = Hardfork.Shanghai
 
-  constructor(txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData, opts: TxOptions) {
+  constructor(
+    txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData | BlobEIP4844TxData,
+    opts: TxOptions
+  ) {
     const { nonce, gasLimit, to, value, data, v, r, s, type } = txData
     this._type = Number(bytesToBigInt(toBytes(type)))
 
@@ -255,7 +262,11 @@ export abstract class BaseTransaction<TransactionObject> {
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
    * representation for external signing use {@link BaseTransaction.getMessageToSign}.
    */
-  abstract raw(): TxValuesArray | AccessListEIP2930ValuesArray | FeeMarketEIP1559ValuesArray
+  abstract raw():
+    | TxValuesArray
+    | AccessListEIP2930ValuesArray
+    | FeeMarketEIP1559ValuesArray
+    | BlobEIP4844ValuesArray
 
   /**
    * Returns the encoding of the transaction.
@@ -354,7 +365,19 @@ export abstract class BaseTransaction<TransactionObject> {
   /**
    * Returns an object with the JSON representation of the transaction
    */
-  abstract toJSON(): JsonTx
+  toJSON(): JsonTx {
+    return {
+      type: bigIntToHex(BigInt(this.type)),
+      nonce: bigIntToHex(this.nonce),
+      gasLimit: bigIntToHex(this.gasLimit),
+      to: this.to !== undefined ? this.to.toString() : undefined,
+      value: bigIntToHex(this.value),
+      data: bytesToPrefixedHexString(this.data),
+      v: this.v !== undefined ? bigIntToHex(this.v) : undefined,
+      r: this.r !== undefined ? bigIntToHex(this.r) : undefined,
+      s: this.s !== undefined ? bigIntToHex(this.s) : undefined,
+    }
+  }
 
   // Accept the v,r,s values from the `sign` method, and convert this into a TransactionObject
   protected abstract _processSignature(v: bigint, r: Uint8Array, s: Uint8Array): TransactionObject

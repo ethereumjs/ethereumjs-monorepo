@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { ERROR } from '@ethereumjs/evm/dist/exceptions'
+import { EVMErrorMessage } from '@ethereumjs/evm'
 import { bytesToBigInt } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
@@ -8,7 +8,7 @@ import { VM } from '../../../src/vm'
 
 const testCases = [
   { chain: Chain.Mainnet, hardfork: Hardfork.Istanbul, chainId: BigInt(1) },
-  { chain: Chain.Mainnet, hardfork: Hardfork.Constantinople, err: ERROR.INVALID_OPCODE },
+  { chain: Chain.Mainnet, hardfork: Hardfork.Constantinople, err: EVMErrorMessage.INVALID_OPCODE },
   { chain: Chain.Ropsten, hardfork: Hardfork.Istanbul, chainId: BigInt(3) },
 ]
 

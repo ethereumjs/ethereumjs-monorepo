@@ -11,7 +11,7 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
-import { BaseProvider, JsonRpcProvider, StaticJsonRpcProvider } from '@ethersproject/providers'
+import { ethers } from 'ethers'
 import * as tape from 'tape'
 
 import { EthersStateManager } from '../src/ethersStateManager'
@@ -39,7 +39,7 @@ tape('Ethers State Manager initialization tests', (t) => {
   state = new EthersStateManager({ provider: 'https://google.com', blockTag: 1n })
   t.ok(state instanceof EthersStateManager, 'was able to instantiate state manager with valid url')
 
-  const invalidProvider = new BaseProvider('mainnet')
+  const invalidProvider = new ethers.SocketProvider('mainnet')
   t.throws(
     () => new EthersStateManager({ provider: invalidProvider as any, blockTag: 1n }),
     'cannot instantiate state manager with invalid provider'
@@ -54,7 +54,7 @@ tape('Ethers State Manager API tests', async (t) => {
   } else {
     const provider =
       process.env.PROVIDER !== undefined
-        ? new StaticJsonRpcProvider(process.env.PROVIDER, 1)
+        ? new ethers.JsonRpcProvider(process.env.PROVIDER, 1)
         : new MockProvider()
     const state = new EthersStateManager({ provider, blockTag: 1n })
     const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
@@ -68,12 +68,12 @@ tape('Ethers State Manager API tests', async (t) => {
     )
 
     t.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
-    const doesThisAccountExist = await state.accountExists(
-      Address.fromString('0xccAfdD642118E5536024675e776d32413728DD07')
-    )
-    t.ok(!doesThisAccountExist, 'accountExists returns false for non-existent account')
+    const doesThisAccountExist =
+      (await state.getAccount(Address.fromString('0xccAfdD642118E5536024675e776d32413728DD07'))) ===
+      undefined
+    t.ok(!doesThisAccountExist, 'getAccount returns undefined for non-existent account')
 
-    t.ok(state.accountExists(vitalikDotEth), 'vitalik.eth does exist')
+    t.ok(state.getAccount(vitalikDotEth) !== undefined, 'vitalik.eth does exist')
 
     const UNIerc20ContractAddress = Address.fromString('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984')
     const UNIContractCode = await state.getContractCode(UNIerc20ContractAddress)
@@ -119,6 +119,13 @@ tape('Ethers State Manager API tests', async (t) => {
       new Uint8Array(0)
     )
 
+    await state.modifyAccountFields(vitalikDotEth, { nonce: 39n })
+    t.equal(
+      (await state.getAccount(vitalikDotEth))?.nonce,
+      39n,
+      'modified account fields successfully'
+    )
+
     // Verify that provider is not called
     ;(state as any).getAccountFromProvider = function () {
       throw new Error('should not have called this!')
@@ -142,7 +149,10 @@ tape('Ethers State Manager API tests', async (t) => {
     t.equal(deletedSlot.length, 0, 'deleted slot from storage cache')
 
     await state.deleteAccount(vitalikDotEth)
-    t.ok(await state.accountExists(vitalikDotEth), 'account should not exist after being deleted')
+    t.ok(
+      (await state.getAccount(vitalikDotEth)) === undefined,
+      'account should not exist after being deleted'
+    )
 
     try {
       await Block.fromJsonRpcProvider(provider, 'fakeBlockTag', {} as any)
@@ -185,10 +195,10 @@ tape('runTx custom transaction test', async (t) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const provider =
       process.env.PROVIDER !== undefined
-        ? new StaticJsonRpcProvider(process.env.PROVIDER, 1)
+        ? new ethers.JsonRpcProvider(process.env.PROVIDER, 1)
         : new MockProvider()
     const state = new EthersStateManager({ provider, blockTag: 1n })
-    const vm = await VM.create({ common, stateManager: state })
+    const vm = await VM.create({ common, stateManager: <any>state }) // TODO fix the type DefaultStateManager back to StateManagerInterface in VM
 
     const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
     const privateKey = hexStringToBytes(
@@ -219,19 +229,19 @@ tape('runTx test: replay mainnet transactions', async (t) => {
 
     const provider =
       process.env.PROVIDER !== undefined
-        ? new JsonRpcProvider(process.env.PROVIDER)
+        ? new ethers.JsonRpcProvider(process.env.PROVIDER)
         : new MockProvider()
 
     const blockTag = 15496077n
     common.setHardforkByBlockNumber(blockTag)
     const txData = require('./testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.json')
-    const tx = await TransactionFactory.fromRPCTx(txData, { common })
+    const tx = await TransactionFactory.fromRPC(txData, { common })
     const state = new EthersStateManager({
       provider,
       // Set the state manager to look at the state of the chain before the block has been executed
       blockTag: blockTag - 1n,
     })
-    const vm = await VM.create({ common, stateManager: state })
+    const vm = await VM.create({ common, stateManager: <any>state })
     const res = await vm.runTx({ tx })
     t.equal(res.totalGasSpent, 21000n, 'calculated correct total gas spent for simple transfer')
     t.end()
@@ -246,7 +256,7 @@ tape('runBlock test', async (t) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const provider =
       process.env.PROVIDER !== undefined
-        ? new JsonRpcProvider(process.env.PROVIDER)
+        ? new ethers.JsonRpcProvider(process.env.PROVIDER)
         : new MockProvider()
     const blockTag = 500000n
     const state = new EthersStateManager({

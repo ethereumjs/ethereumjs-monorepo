@@ -1,17 +1,25 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address, bytesToPrefixedHexString } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
-import { isRunningInKarma } from '../../../vm/test/util'
 import { getActivePrecompiles } from '../../src'
 import { EVM } from '../../src/evm'
-import { getEEI } from '../utils'
 
 const precompileAddressStart = 0x0a
 const precompileAddressEnd = 0x12
 
 const precompiles: string[] = []
+
+/**
+ * Checks if in a karma test runner.
+ * @returns boolean whether running in karma
+ */
+export function isRunningInKarma(): boolean {
+  // eslint-disable-next-line no-undef
+  return typeof (<any>globalThis).window !== 'undefined' && (<any>globalThis).window.__karma__
+}
 
 for (let address = precompileAddressStart; address <= precompileAddressEnd; address++) {
   precompiles.push(address.toString(16).padStart(40, '0'))
@@ -24,8 +32,10 @@ tape('EIP-2537 BLS tests', (t) => {
       return st.end()
     }
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
-    const eei = await getEEI()
-    const evm = await EVM.create({ common, eei })
+    const evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+    })
 
     for (const address of precompiles) {
       const to = new Address(hexToBytes(address))
@@ -56,8 +66,10 @@ tape('EIP-2537 BLS tests', (t) => {
       return st.end()
     }
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium, eips: [2537] })
-    const eei = await getEEI()
-    const evm = await EVM.create({ common, eei })
+    const evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+    })
 
     for (const address of precompiles) {
       const to = new Address(hexToBytes(address))
@@ -95,8 +107,10 @@ tape('EIP-2537 BLS tests', (t) => {
       return st.end()
     }
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2537] })
-    const eei = await getEEI()
-    const evm = await EVM.create({ common, eei })
+    const evm = await EVM.create({
+      common,
+      stateManager: new DefaultStateManager(),
+    })
     const BLS12G2MultiExp = getActivePrecompiles(common).get(
       '000000000000000000000000000000000000000f'
     )!

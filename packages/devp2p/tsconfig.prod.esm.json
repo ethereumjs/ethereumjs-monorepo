@@ -1,0 +1,15 @@
+{
+  "extends": "../../config/tsconfig.prod.esm.json",
+  "exclude": ["test", "examples", "scripts", "node_modules", "dist"],
+  "compilerOptions": {
+    "outDir": "dist/esm",
+    "rootDir": "src",
+    "typeRoots": ["node_modules/@types", "src/@types"],
+    "composite": true
+  },
+  "references": [
+    { "path": "../common/tsconfig.prod.esm.json" },
+    { "path": "../rlp/tsconfig.prod.esm.json" },
+    { "path": "../util/tsconfig.prod.esm.json" }
+  ]
+}

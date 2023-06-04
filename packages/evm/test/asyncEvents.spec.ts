@@ -1,18 +1,18 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { EVM } from '../src'
-
-import { getEEI } from './utils'
-
 tape('async events', async (t) => {
   t.plan(2)
   const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee'))
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
-  const eei = await getEEI()
-  const evm = await EVM.create({ common, eei })
+  const evm = await EVM.create({
+    common,
+    stateManager: new DefaultStateManager(),
+  })
   evm.events.on('step', async (event, next) => {
     const startTime = Date.now()
     setTimeout(() => {

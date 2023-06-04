@@ -7,20 +7,31 @@ import {
   Withdrawal,
   bigIntToHex,
   bytesToHex,
+  bytesToPrefixedHexString,
   equalsBytes,
   fetchFromProvider,
   getProvider,
+  hexStringToBytes,
   intToHex,
   isHexPrefixed,
-  ssz,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
+import { executionPayloadFromBeaconPayload } from './from-beacon-payload'
 import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
-import { getDataGasPrice } from './helpers'
+import { calcExcessDataGas, getDataGasPrice } from './helpers'
 
-import type { BlockBytes, BlockData, BlockOptions, JsonBlock, JsonRpcBlock } from './types'
+import type { BeaconPayloadJson } from './from-beacon-payload'
+import type {
+  BlockBytes,
+  BlockData,
+  BlockOptions,
+  ExecutionPayload,
+  HeaderData,
+  JsonBlock,
+  JsonRpcBlock,
+} from './types'
 import type { Common } from '@ethereumjs/common'
 import type {
   FeeMarketEIP1559Transaction,
@@ -52,14 +63,6 @@ export class Block {
       await trie.put(RLP.encode(i), RLP.encode(wt.raw()))
     }
     return trie.root()
-  }
-
-  /**
-   * Returns the ssz root for array of withdrawal transactions.
-   * @param wts array of Withdrawal to compute the root of
-   */
-  public static async generateWithdrawalsSSZRoot(withdrawals: Withdrawal[]) {
-    ssz.Withdrawals.hashTreeRoot(withdrawals.map((wt) => wt.toValue()))
   }
 
   /**
@@ -124,7 +127,7 @@ export class Block {
 
     const withdrawals = withdrawalsData?.map(Withdrawal.fromWithdrawalData)
 
-    return new Block(header, transactions, uncleHeaders, opts, withdrawals)
+    return new Block(header, transactions, uncleHeaders, withdrawals, opts)
   }
 
   /**
@@ -209,7 +212,7 @@ export class Block {
       }))
       ?.map(Withdrawal.fromWithdrawalData)
 
-    return new Block(header, transactions, uncleHeaders, opts, withdrawals)
+    return new Block(header, transactions, uncleHeaders, withdrawals, opts)
   }
 
   /**
@@ -285,6 +288,81 @@ export class Block {
   }
 
   /**
+   *  Method to retrieve a block from an execution payload
+   * @param execution payload constructed from beacon payload
+   * @param opts {@link BlockOptions}
+   * @returns the block constructed block
+   */
+  public static async fromExecutionPayload(
+    payload: ExecutionPayload,
+    options?: BlockOptions
+  ): Promise<Block> {
+    const {
+      blockNumber: number,
+      receiptsRoot: receiptTrie,
+      prevRandao: mixHash,
+      feeRecipient: coinbase,
+      transactions,
+      withdrawals: withdrawalsData,
+    } = payload
+
+    const txs = []
+    for (const [index, serializedTx] of transactions.entries()) {
+      try {
+        const tx = TransactionFactory.fromSerializedData(hexStringToBytes(serializedTx), {
+          common: options?.common,
+        })
+        txs.push(tx)
+      } catch (error) {
+        const validationError = `Invalid tx at index ${index}: ${error}`
+        throw validationError
+      }
+    }
+
+    const transactionsTrie = await Block.genTransactionsTrieRoot(txs)
+    const withdrawals = withdrawalsData?.map((wData) => Withdrawal.fromWithdrawalData(wData))
+    const withdrawalsRoot = withdrawals
+      ? await Block.genWithdrawalsTrieRoot(withdrawals)
+      : undefined
+    const header: HeaderData = {
+      ...payload,
+      number,
+      receiptTrie,
+      transactionsTrie,
+      withdrawalsRoot,
+      mixHash,
+      coinbase,
+    }
+
+    // we are not setting hardforkByBlockNumber or hardforkByTTD as common is already
+    // correctly set to the correct hf
+    const block = Block.fromBlockData({ header, transactions: txs, withdrawals }, options)
+    // Verify blockHash matches payload
+    if (!equalsBytes(block.hash(), hexStringToBytes(payload.blockHash))) {
+      const validationError = `Invalid blockHash, expected: ${
+        payload.blockHash
+      }, received: ${bytesToPrefixedHexString(block.hash())}`
+      throw Error(validationError)
+    }
+
+    return block
+  }
+
+  /**
+   *  Method to retrieve a block from a beacon payload json
+   * @param payload json of a beacon beacon fetched from beacon apis
+   * @param opts {@link BlockOptions}
+   * @returns the block constructed block
+   */
+  public static async fromBeaconPayloadJson(
+    payload: BeaconPayloadJson,
+    options?: BlockOptions
+  ): Promise<Block> {
+    const executionPayload = executionPayloadFromBeaconPayload(payload)
+    return Block.fromExecutionPayload(executionPayload, options)
+  }
+
+  /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
    * Use the static factory methods to assist in creating a Block object from varying data types and options.
    */
@@ -292,8 +370,8 @@ export class Block {
     header?: BlockHeader,
     transactions: TypedTransaction[] = [],
     uncleHeaders: BlockHeader[] = [],
-    opts: BlockOptions = {},
-    withdrawals?: Withdrawal[]
+    withdrawals?: Withdrawal[],
+    opts: BlockOptions = {}
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
     this._common = this.header._common
@@ -484,16 +562,26 @@ export class Block {
    * @param parentHeader header of parent block
    */
   validateBlobTransactions(parentHeader: BlockHeader) {
-    for (const tx of this.transactions) {
-      if (tx instanceof BlobEIP4844Transaction) {
-        const dataGasPrice = getDataGasPrice(parentHeader)
-        if (tx.maxFeePerDataGas < dataGasPrice) {
-          throw new Error(
-            `blob transaction maxFeePerDataGas ${
-              tx.maxFeePerDataGas
-            } < than block data gas price ${dataGasPrice} - ${this.errorStr()}`
-          )
+    if (this._common.isActivatedEIP(4844)) {
+      let numBlobs = 0
+      for (const tx of this.transactions) {
+        if (tx instanceof BlobEIP4844Transaction) {
+          const dataGasPrice = getDataGasPrice(parentHeader)
+          if (tx.maxFeePerDataGas < dataGasPrice) {
+            throw new Error(
+              `blob transaction maxFeePerDataGas ${
+                tx.maxFeePerDataGas
+              } < than block data gas price ${dataGasPrice} - ${this.errorStr()}`
+            )
+          }
+          numBlobs += tx.versionedHashes.length
         }
+      }
+      const expectedExcessDataGas = calcExcessDataGas(parentHeader, numBlobs)
+      if (this.header.excessDataGas !== expectedExcessDataGas) {
+        throw new Error(
+          `block excessDataGas mismatch: have ${this.header.excessDataGas}, want ${expectedExcessDataGas}`
+        )
       }
     }
   }

@@ -1,9 +1,8 @@
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { EVM } from '../src/evm'
-
-import { getEEI } from './utils'
 
 import type { InterpreterStep, RunState } from '../src/interpreter'
 import type { AddOpcode } from '../src/types'
@@ -29,7 +28,7 @@ tape('VM: custom opcodes', (t) => {
   t.test('should add custom opcodes to the EVM', async (st) => {
     const evm = await EVM.create({
       customOpcodes: [testOpcode],
-      eei: await getEEI(),
+      stateManager: new DefaultStateManager(),
     })
     const gas = 123456
     let correctOpcodeName = false
@@ -50,7 +49,7 @@ tape('VM: custom opcodes', (t) => {
   t.test('should delete opcodes from the EVM', async (st) => {
     const evm = await EVM.create({
       customOpcodes: [{ opcode: 0x20 }], // deletes KECCAK opcode
-      eei: await getEEI(),
+      stateManager: new DefaultStateManager(),
     })
     const gas = BigInt(123456)
     const res = await evm.runCode({
@@ -65,7 +64,7 @@ tape('VM: custom opcodes', (t) => {
     // Thus, each time you recreate a EVM, it is in a clean state
     const evm = await EVM.create({
       customOpcodes: [{ opcode: 0x01 }], // deletes ADD opcode
-      eei: await getEEI(),
+      stateManager: new DefaultStateManager(),
     })
     const gas = BigInt(123456)
     const res = await evm.runCode({
@@ -74,8 +73,9 @@ tape('VM: custom opcodes', (t) => {
     })
     st.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
 
-    const eei = await getEEI()
-    const evmDefault = await EVM.create({ eei })
+    const evmDefault = await EVM.create({
+      stateManager: new DefaultStateManager(),
+    })
 
     // PUSH 04
     // PUSH 01
@@ -96,7 +96,7 @@ tape('VM: custom opcodes', (t) => {
     testOpcode.opcode = 0x20 // Overrides KECCAK
     const evm = await EVM.create({
       customOpcodes: [testOpcode],
-      eei: await getEEI(),
+      stateManager: new DefaultStateManager(),
     })
     const gas = 123456
     const res = await evm.runCode({
@@ -122,7 +122,7 @@ tape('VM: custom opcodes', (t) => {
 
     const evm = await EVM.create({
       customOpcodes: [testOpcode],
-      eei: await getEEI(),
+      stateManager: new DefaultStateManager(),
     })
     const evmCopy = evm.copy()
 

@@ -1,7 +1,7 @@
 import { Transaction } from '@ethereumjs/tx'
 import * as tape from 'tape'
 
-import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { baseRequest, baseSetup, dummy, params, runBlockWithTxs, setupChain } from '../helpers'
 import { checkError } from '../util'
 
@@ -62,7 +62,7 @@ tape(`${method}: call with unknown block hash`, async (t) => {
   const mockTxIndex = '0x1'
 
   const req = params(method, [mockBlockHash, mockTxIndex])
-  const expectRes = checkError(t, INVALID_PARAMS, 'NotFound')
+  const expectRes = checkError(t, INVALID_PARAMS, 'not found in DB')
   await baseRequest(t, server, req, 200, expectRes)
 })
 

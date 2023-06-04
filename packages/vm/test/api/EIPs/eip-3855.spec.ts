@@ -1,11 +1,11 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { ERROR } from '@ethereumjs/evm/dist/exceptions'
+import { EVMErrorMessage } from '@ethereumjs/evm'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
 
-import type { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
+import type { InterpreterStep } from '@ethereumjs/evm'
 
 tape('EIP 3541 tests', (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart, eips: [3855] })
@@ -70,7 +70,7 @@ tape('EIP 3541 tests', (t) => {
       gasLimit: BigInt(10000),
     })
 
-    st.equal(result.exceptionError?.error, ERROR.STACK_OVERFLOW)
+    st.equal(result.exceptionError?.error, EVMErrorMessage.STACK_OVERFLOW)
     st.end()
   })
 
@@ -82,6 +82,6 @@ tape('EIP 3541 tests', (t) => {
       gasLimit: BigInt(10000),
     })
 
-    st.equal(result.exceptionError!.error, ERROR.INVALID_OPCODE)
+    st.equal(result.exceptionError!.error, EVMErrorMessage.INVALID_OPCODE)
   })
 })

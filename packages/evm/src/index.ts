@@ -1,20 +1,21 @@
+import { EOF } from './eof'
 import { EVM, EVMResult, ExecResult } from './evm'
-import { EvmError, ERROR as EvmErrorMessage } from './exceptions'
+import { ERROR as EVMErrorMessage, EvmError } from './exceptions'
 import { InterpreterStep } from './interpreter'
 import { Message } from './message'
-import { getActivePrecompiles } from './precompiles'
-import { EEIInterface, EVMInterface, EVMStateAccess, Log } from './types'
+import { PrecompileInput, getActivePrecompiles } from './precompiles'
+import { EVMInterface, Log } from './types'
 export {
-  EEIInterface,
+  EOF,
   EVM,
   EvmError,
-  EvmErrorMessage,
+  EVMErrorMessage,
   EVMInterface,
   EVMResult,
-  EVMStateAccess,
   ExecResult,
   getActivePrecompiles,
   InterpreterStep,
   Log,
   Message,
+  PrecompileInput,
 }

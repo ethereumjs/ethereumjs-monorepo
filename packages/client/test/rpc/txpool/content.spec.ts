@@ -7,7 +7,7 @@ import * as tape from 'tape'
 
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 
-import type { FullEthereumService } from '../../../lib/service'
+import type { FullEthereumService } from '../../../src/service'
 
 const method = 'txpool_content'
 
@@ -25,7 +25,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
   t.notEqual(execution, undefined, 'should have valid execution')
   const { vm } = execution
-  await vm.eei.generateCanonicalGenesis(blockchain.genesisState())
+  await vm.stateManager.generateCanonicalGenesis(blockchain.genesisState())
   const gasLimit = 2000000
   const parent = await blockchain.getCanonicalHeadHeader()
   const block = Block.fromBlockData(

@@ -71,7 +71,7 @@ tape(
     await vm.stateManager.putAccount(emptyAddress, new Account())
     const emptyAccount = await vm.stateManager.getAccount(emptyAddress)
     //@ts-ignore
-    vm.stateManager._trie.put(toBytes(emptyAddress), emptyAccount.serialize())
+    await vm.stateManager._trie.put(toBytes(emptyAddress), emptyAccount.serialize())
     await vm.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
     await vm.stateManager.putContractStorage(
       contractAddress,

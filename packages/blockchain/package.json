@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/blockchain",
-  "version": "6.2.1",
+  "version": "6.2.2",
   "description": "A module to store and interact with blocks",
   "keywords": [
     "ethereum",
@@ -16,8 +16,14 @@
   },
   "license": "MPL-2.0",
   "author": "mjbecze <mjbecze@gmail.com>",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "files": [
     "dist",
     "src"
@@ -38,26 +44,23 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "^4.2.1",
-    "@ethereumjs/common": "^3.1.1",
-    "@ethereumjs/ethash": "^2.0.4",
+    "@ethereumjs/block": "^4.2.2",
+    "@ethereumjs/common": "^3.1.2",
+    "@ethereumjs/ethash": "^2.0.5",
     "@ethereumjs/rlp": "^4.0.1",
-    "@ethereumjs/trie": "^5.0.4",
-    "@ethereumjs/tx": "^4.1.1",
-    "@ethereumjs/util": "^8.0.5",
-    "abstract-level": "^1.0.3",
+    "@ethereumjs/trie": "^5.0.5",
+    "@ethereumjs/tx": "^4.1.2",
+    "@ethereumjs/util": "^8.0.6",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^1.1.2",
+    "ethereum-cryptography": "^2.0.0",
     "level": "^8.0.0",
-    "lru-cache": "^5.1.1",
-    "memory-level": "^1.0.0"
+    "lru-cache": "^7.18.3"
   },
   "devDependencies": {
     "@types/async": "^2.4.1",
-    "@types/level-errors": "^3.0.0",
-    "@types/lru-cache": "^5.1.0"
+    "@types/level-errors": "^3.0.0"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   }
 }

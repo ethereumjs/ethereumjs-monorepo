@@ -79,7 +79,7 @@ const opcodes: OpcodeEntry = {
   0x1a: { name: 'BYTE', isAsync: false, dynamicGas: false },
 
   // 0x20 range - crypto
-  0x20: { name: 'SHA3', isAsync: false, dynamicGas: true },
+  0x20: { name: 'KECCAK256', isAsync: false, dynamicGas: true },
 
   // 0x30 range - closure state
   0x30: { name: 'ADDRESS', isAsync: true, dynamicGas: false },
@@ -212,7 +212,7 @@ const hardforkOpcodes: { hardfork: Hardfork; opcodes: OpcodeEntry }[] = [
   {
     hardfork: Hardfork.Homestead,
     opcodes: {
-      0xf4: { name: 'DELEGATECALL', isAsync: true, dynamicGas: true }, // EIP 7
+      0xf4: { name: 'DELEGATECALL', isAsync: true, dynamicGas: true }, // EIP-7
     },
   },
   {
@@ -223,7 +223,7 @@ const hardforkOpcodes: { hardfork: Hardfork; opcodes: OpcodeEntry }[] = [
       0xf2: { name: 'CALLCODE', isAsync: true, dynamicGas: true },
       0x3b: { name: 'EXTCODESIZE', isAsync: true, dynamicGas: true },
       0x3c: { name: 'EXTCODECOPY', isAsync: true, dynamicGas: true },
-      0xf4: { name: 'DELEGATECALL', isAsync: true, dynamicGas: true }, // EIP 7
+      0xf4: { name: 'DELEGATECALL', isAsync: true, dynamicGas: true }, // EIP-7
       0xff: { name: 'SELFDESTRUCT', isAsync: true, dynamicGas: true },
       0x31: { name: 'BALANCE', isAsync: true, dynamicGas: true },
     },
@@ -231,27 +231,33 @@ const hardforkOpcodes: { hardfork: Hardfork; opcodes: OpcodeEntry }[] = [
   {
     hardfork: Hardfork.Byzantium,
     opcodes: {
-      0xfd: { name: 'REVERT', isAsync: false, dynamicGas: true }, // EIP 140
-      0xfa: { name: 'STATICCALL', isAsync: true, dynamicGas: true }, // EIP 214
-      0x3d: { name: 'RETURNDATASIZE', isAsync: true, dynamicGas: false }, // EIP 211
-      0x3e: { name: 'RETURNDATACOPY', isAsync: true, dynamicGas: true }, // EIP 211
+      0xfd: { name: 'REVERT', isAsync: false, dynamicGas: true }, // EIP-140
+      0xfa: { name: 'STATICCALL', isAsync: true, dynamicGas: true }, // EIP-214
+      0x3d: { name: 'RETURNDATASIZE', isAsync: true, dynamicGas: false }, // EIP-211
+      0x3e: { name: 'RETURNDATACOPY', isAsync: true, dynamicGas: true }, // EIP-211
     },
   },
   {
     hardfork: Hardfork.Constantinople,
     opcodes: {
-      0x1b: { name: 'SHL', isAsync: false, dynamicGas: false }, // EIP 145
-      0x1c: { name: 'SHR', isAsync: false, dynamicGas: false }, // EIP 145
-      0x1d: { name: 'SAR', isAsync: false, dynamicGas: false }, // EIP 145
-      0x3f: { name: 'EXTCODEHASH', isAsync: true, dynamicGas: true }, // EIP 1052
-      0xf5: { name: 'CREATE2', isAsync: true, dynamicGas: true }, // EIP 1014
+      0x1b: { name: 'SHL', isAsync: false, dynamicGas: false }, // EIP-145
+      0x1c: { name: 'SHR', isAsync: false, dynamicGas: false }, // EIP-145
+      0x1d: { name: 'SAR', isAsync: false, dynamicGas: false }, // EIP-145
+      0x3f: { name: 'EXTCODEHASH', isAsync: true, dynamicGas: true }, // EIP-1052
+      0xf5: { name: 'CREATE2', isAsync: true, dynamicGas: true }, // EIP-1014
     },
   },
   {
     hardfork: Hardfork.Istanbul,
     opcodes: {
-      0x46: { name: 'CHAINID', isAsync: false, dynamicGas: false }, // EIP 1344
-      0x47: { name: 'SELFBALANCE', isAsync: false, dynamicGas: false }, // EIP 1884
+      0x46: { name: 'CHAINID', isAsync: false, dynamicGas: false }, // EIP-1344
+      0x47: { name: 'SELFBALANCE', isAsync: false, dynamicGas: false }, // EIP-1884
+    },
+  },
+  {
+    hardfork: Hardfork.Paris,
+    opcodes: {
+      0x44: { name: 'PREVRANDAO', isAsync: true, dynamicGas: false }, // EIP-4399
     },
   },
 ]
@@ -294,7 +300,7 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
   {
     eip: 4844,
     opcodes: {
-      0x49: { name: 'DATAHASH', isAsync: false, dynamicGas: false },
+      0x49: { name: 'BLOBHASH', isAsync: false, dynamicGas: false },
     },
   },
 ]

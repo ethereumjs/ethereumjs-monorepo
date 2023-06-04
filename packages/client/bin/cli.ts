@@ -24,20 +24,21 @@ import * as readline from 'readline'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
-import { EthereumClient } from '../lib/client'
-import { Config, DataDirectory, SyncMode } from '../lib/config'
-import { getLogger } from '../lib/logging'
-import { Event } from '../lib/types'
-import { parseMultiaddrs } from '../lib/util'
+import { EthereumClient } from '../src/client'
+import { Config, DataDirectory, SyncMode } from '../src/config'
+import { LevelDB } from '../src/execution/level'
+import { getLogger } from '../src/logging'
+import { Event } from '../src/types'
+import { parseMultiaddrs } from '../src/util'
 
 import { helprpc, startRPCServers } from './startRpc'
 
-import type { Logger } from '../lib/logging'
-import type { FullEthereumService } from '../lib/service'
-import type { ClientOpts } from '../lib/types'
+import type { Logger } from '../src/logging'
+import type { FullEthereumService } from '../src/service'
+import type { ClientOpts } from '../src/types'
 import type { RPCArgs } from './startRpc'
 import type { BlockBytes } from '@ethereumjs/block'
-import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
+import type { GenesisState } from '@ethereumjs/blockchain'
 import type { AbstractLevel } from 'abstract-level'
 
 type Account = [address: Address, privateKey: Uint8Array]
@@ -181,12 +182,14 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     default: 'info',
   })
   .option('logFile', {
-    describe: 'File to save log file (pass true for `ethereumjs.log`)',
+    describe:
+      'File to save log file (default logs to `$dataDir/ethereumjs.log`, pass false to disable)',
+    default: true,
   })
   .option('logLevelFile', {
     describe: 'Log level for logFile',
     choices: ['error', 'warn', 'info', 'debug'],
-    default: 'info',
+    default: 'debug',
   })
   .option('logRotate', {
     describe: 'Rotate log file daily',
@@ -235,6 +238,11 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   .option('dnsNetworks', {
     describe: 'EIP-1459 ENR tree urls to query for peer discovery targets',
     array: true,
+  })
+  .option('execution', {
+    describe: 'Start continuous VM execution (pre-Merge setting)',
+    boolean: true,
+    default: Config.EXECUTION,
   })
   .option('numBlocksPerIteration', {
     describe: 'Number of blocks to execute in batch mode and logged to console',
@@ -427,7 +435,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
   if (customGenesisState !== undefined) {
     const validateConsensus = config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique
     blockchain = await Blockchain.create({
-      db: dbs.chainDB,
+      db: new LevelDB(dbs.chainDB),
       genesisState: customGenesisState,
       common: config.chainCommon,
       hardforkByHeadBlockNumber: true,
@@ -650,7 +658,7 @@ async function run() {
 
   // TODO sharding: Just initialize kzg library now, in future it can be optimized to be
   // loaded and initialized on the sharding hardfork activation
-  initKZG(kzg, __dirname + '/../lib/trustedSetups/devnet4.txt')
+  initKZG(kzg, __dirname + '/../src/trustedSetups/devnet4.txt')
   // Give network id precedence over network name
   const chain = args.networkId ?? args.network ?? Chain.Mainnet
 
@@ -721,9 +729,16 @@ async function run() {
   }
 
   const datadir = args.dataDir ?? Config.DATADIR_DEFAULT
-  const configDirectory = `${datadir}/${common.chainName()}/config`
+  const networkDir = `${datadir}/${common.chainName()}`
+  const configDirectory = `${networkDir}/config`
   ensureDirSync(configDirectory)
   const key = await Config.getClientKey(datadir, common)
+
+  // logFile is either filename or boolean true or false to enable (with default) or disable
+  if (typeof args.logFile === 'boolean') {
+    args.logFile = args.logFile ? `${networkDir}/ethereumjs.log` : undefined
+  }
+
   logger = getLogger(args)
   const bootnodes = args.bootnodes !== undefined ? parseMultiaddrs(args.bootnodes) : undefined
   const multiaddrs = args.multiaddrs !== undefined ? parseMultiaddrs(args.multiaddrs) : undefined
@@ -738,6 +753,7 @@ async function run() {
     discDns: args.discDns,
     discV4: args.discV4,
     dnsAddr: args.dnsAddr,
+    execution: args.execution,
     numBlocksPerIteration: args.numBlocksPerIteration,
     accountCache: args.accountCache,
     storageCache: args.storageCache,
@@ -779,22 +795,42 @@ async function run() {
     config.logger.info(`Reading custom genesis state accounts=${numAccounts}`)
   }
 
-  const client = await startClient(config, customGenesisState)
-  const servers =
-    args.rpc === true || args.rpcEngine === true ? startRPCServers(client, args as RPCArgs) : []
-  if (
-    client.config.chainCommon.gteHardfork(Hardfork.Paris) === true &&
-    (args.rpcEngine === false || args.rpcEngine === undefined)
-  ) {
-    config.logger.warn(`Engine RPC endpoint not activated on a post-Merge HF setup.`)
-  }
+  // Do not wait for client to be fully started so that we can hookup SIGINT handling
+  // else a SIGINT before may kill the process in unclean manner
+  const clientStartPromise = startClient(config, customGenesisState)
+    .then((client) => {
+      const servers =
+        args.rpc === true || args.rpcEngine === true ? startRPCServers(client, args as RPCArgs) : []
+      if (
+        client.config.chainCommon.gteHardfork(Hardfork.Paris) === true &&
+        (args.rpcEngine === false || args.rpcEngine === undefined)
+      ) {
+        config.logger.warn(`Engine RPC endpoint not activated on a post-Merge HF setup.`)
+      }
+      config.logger.info('Client started successfully')
+      return { client, servers }
+    })
+    .catch((e) => {
+      config.logger.error('Error starting client', e)
+      return null
+    })
+
   process.on('SIGINT', async () => {
-    config.logger.info('Caught interrupt signal. Shutting down...')
-    for (const s of servers) {
-      s.http().close()
+    config.logger.info('Caught interrupt signal. Obtaining client handle for clean shutdown...')
+    config.logger.info('(This might take a little longer if client not yet fully started)')
+    const clientHandle = await clientStartPromise
+    if (clientHandle !== null) {
+      config.logger.info('Shutting down the client and the servers...')
+      const { client, servers } = clientHandle
+      for (const s of servers) {
+        s.http().close()
+      }
+      await client.stop()
+      config.logger.info('Exiting.')
+    } else {
+      config.logger.info('Client did not start properly, exiting ...')
     }
-    await client.stop()
-    config.logger.info('Exiting.')
+
     process.exit()
   })
 }

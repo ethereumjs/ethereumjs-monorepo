@@ -2,7 +2,7 @@ module.exports = function (config) {
   config.set({
     frameworks: ['karma-typescript', 'tap'],
 
-    files: ['lib/**/*.ts', 'test/blockchain/chain.spec.ts'],
+    files: ['src/**/*.ts', 'test/blockchain/chain.spec.ts'],
 
     preprocessors: {
       '**/*.ts': ['karma-typescript'],
@@ -14,10 +14,10 @@ module.exports = function (config) {
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
         acornOptions: {
-          ecmaVersion: 12,
+          ecmaVersion: 13,
         },
         //  sourceMap: true,
-        exclude: ['async_hooks'],
+        exclude: ['async_hooks', 'node:v8'],
         resolve: {
           alias: {
             // Hotfix for `multiformats` client browser build error in Node 16, #1346, 2021-07-12
@@ -26,10 +26,6 @@ module.exports = function (config) {
               '../../node_modules/multiformats/cjs/src/hashes/identity.js',
             'multiformats/hashes/sha2':
               '../../node_modules/multiformats/cjs/src/hashes/sha2-browser.js',
-            '@chainsafe/persistent-merkle-tree/hasher':
-              '../../node_modules/@chainsafe/persistent-merkle-tree/lib/hasher/noble.js',
-            '@chainsafe/as-sha256/hashObject':
-              '../../node_modules/@chainsafe/as-sha256/lib/hashObject.js',
           },
         },
 

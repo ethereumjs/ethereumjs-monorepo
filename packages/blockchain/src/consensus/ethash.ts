@@ -4,7 +4,6 @@ import { Ethash } from '@ethereumjs/ethash'
 import type { Blockchain } from '..'
 import type { Consensus, ConsensusOptions } from './interface'
 import type { Block, BlockHeader } from '@ethereumjs/block'
-import type { EthashCacheDB } from '@ethereumjs/ethash'
 
 /**
  * This class encapsulates Ethash-related consensus functionality when used with the Blockchain class.
@@ -45,7 +44,7 @@ export class EthashConsensus implements Consensus {
   public async genesisInit(): Promise<void> {}
   public async setup({ blockchain }: ConsensusOptions): Promise<void> {
     this.blockchain = blockchain
-    this._ethash = new Ethash(this.blockchain.db as unknown as EthashCacheDB)
+    this._ethash = new Ethash(this.blockchain.db as any)
   }
   public async newBlock(): Promise<void> {}
 }

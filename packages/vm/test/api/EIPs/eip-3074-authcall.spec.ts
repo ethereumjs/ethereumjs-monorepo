@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { ERROR } from '@ethereumjs/evm/dist/exceptions'
+import { EVMErrorMessage } from '@ethereumjs/evm'
 import { Transaction } from '@ethereumjs/tx'
 import {
   Account,
@@ -20,7 +20,7 @@ import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
 
-import type { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
+import type { InterpreterStep } from '@ethereumjs/evm'
 import type { ECDSASignature } from '@ethereumjs/util'
 
 const common = new Common({
@@ -305,7 +305,11 @@ tape('EIP-3074 AUTH', (t) => {
     await vm.stateManager.putAccount(callerAddress, account!)
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
-    st.equal(result.execResult.exceptionError?.error, ERROR.AUTH_INVALID_S, 'threw correct error')
+    st.equal(
+      result.execResult.exceptionError?.error,
+      EVMErrorMessage.AUTH_INVALID_S,
+      'threw correct error'
+    )
   })
 
   t.test('Should be able to call AUTH multiple times', async (st) => {
@@ -660,7 +664,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     st.equal(
       result.execResult.exceptionError?.error,
-      ERROR.AUTHCALL_UNSET,
+      EVMErrorMessage.AUTHCALL_UNSET,
       'threw with right error'
     )
     st.equal(result.amountSpent, tx.gasPrice * tx.gasLimit, 'spent all gas')
@@ -696,7 +700,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     st.equal(
       result.execResult.exceptionError?.error,
-      ERROR.AUTHCALL_UNSET,
+      EVMErrorMessage.AUTHCALL_UNSET,
       'threw with right error'
     )
     st.equal(result.amountSpent, tx.gasPrice * tx.gasLimit, 'spent all gas')
@@ -723,7 +727,11 @@ tape('EIP-3074 AUTHCALL', (t) => {
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     st.equal(result.amountSpent, tx.gasLimit * tx.gasPrice, 'spent all gas')
-    st.equal(result.execResult.exceptionError?.error, ERROR.OUT_OF_GAS, 'correct error type')
+    st.equal(
+      result.execResult.exceptionError?.error,
+      EVMErrorMessage.OUT_OF_GAS,
+      'correct error type'
+    )
   })
 
   t.test('Should throw if valueExt is nonzero', async (st) => {
@@ -749,7 +757,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     st.equal(result.amountSpent, tx.gasLimit * tx.gasPrice, 'spent all gas')
     st.equal(
       result.execResult.exceptionError?.error,
-      ERROR.AUTHCALL_NONZERO_VALUEEXT,
+      EVMErrorMessage.AUTHCALL_NONZERO_VALUEEXT,
       'correct error type'
     )
   })

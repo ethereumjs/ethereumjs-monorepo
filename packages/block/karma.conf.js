@@ -11,14 +11,11 @@ module.exports = function (config) {
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
         acornOptions: {
-          ecmaVersion: 12,
+          ecmaVersion: 13,
         },
         resolve: {
           alias: {
-            '@chainsafe/persistent-merkle-tree/hasher':
-              '../../node_modules/@chainsafe/persistent-merkle-tree/lib/hasher/noble.js',
-            '@chainsafe/as-sha256/hashObject':
-              '../../node_modules/@chainsafe/as-sha256/lib/hashObject.js',
+            '@ethereumjs/util/provider': '../util/dist/cjs/provider.js',
           },
         },
         ignore: ['c-kzg'],

@@ -15,7 +15,7 @@ import {
 import * as kzg from 'c-kzg'
 import * as tape from 'tape'
 
-import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import genesisJSON = require('../../testdata/geth-genesis/eip4844.json')
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'
 import { checkError } from '../util'
@@ -35,7 +35,7 @@ const validPayloadAttributes = {
 
 const validPayload = [validForkChoiceState, { ...validPayloadAttributes, withdrawals: [] }]
 
-initKZG(kzg, __dirname + '/../../../lib/trustedSetups/devnet4.txt')
+initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet4.txt')
 const method = 'engine_getPayloadV3'
 
 tape(`${method}: call with invalid payloadId`, async (t) => {
@@ -112,7 +112,7 @@ tape(`${method}: call with known payload`, async (t) => {
     const { executionPayload, blobsBundle } = res.body.result
     t.equal(
       executionPayload.blockHash,
-      '0x3c599ece59439d2dc938e7a2b5e1c675cf8173b6be654f0a689b96936eba96e2',
+      '0xc51a3346df60c3b63c3e564b0f4b21eed69db6a64445b6a2e5a902185d05e796',
       'built expected block'
     )
     const { commitments, proofs, blobs } = blobsBundle

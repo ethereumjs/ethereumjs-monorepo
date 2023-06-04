@@ -118,4 +118,4 @@ parsed params
 
 #### Defined in
 
-[packages/common/src/utils.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/utils.ts#L207)
+[packages/common/src/utils.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/utils.ts#L196)
