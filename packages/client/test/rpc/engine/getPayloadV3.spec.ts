@@ -35,7 +35,10 @@ const validPayloadAttributes = {
 
 const validPayload = [validForkChoiceState, { ...validPayloadAttributes, withdrawals: [] }]
 
-initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet4.txt')
+try {
+  initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet4.txt')
+  // eslint-disable-next-line
+    } catch {}
 const method = 'engine_getPayloadV3'
 
 tape(`${method}: call with invalid payloadId`, async (t) => {

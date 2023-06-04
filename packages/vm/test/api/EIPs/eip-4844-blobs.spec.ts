@@ -25,8 +25,13 @@ const isBrowser = new Function('try {return this===window;}catch(e){ return fals
 
 const pk = hexToBytes('20'.repeat(32))
 const sender = bytesToPrefixedHexString(privateToAddress(pk))
-if (isBrowser() === false)
-  initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet4.txt')
+if (isBrowser() === false) {
+  try {
+    initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet4.txt')
+    // eslint-disable-next-line
+    } catch {}
+
+}
 
 tape('EIP4844 tests', (t) => {
   t.test('should build a block correctly with blobs', async (st) => {

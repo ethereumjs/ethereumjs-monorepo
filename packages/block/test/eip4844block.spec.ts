@@ -19,7 +19,12 @@ import type { TypedTransaction } from '@ethereumjs/tx'
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
-if (isBrowser() === false) initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet4.txt')
+if (isBrowser() === false) {
+  try {
+    initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet4.txt')
+    // eslint-disable-next-line
+    } catch {}
+}
 const gethGenesis = require('./testdata/4844-hardfork.json')
 const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
@@ -184,9 +189,9 @@ tape('transaction validation tests', async (t) => {
     ).sign(randomBytes(32))
 
     const parentHeader = BlockHeader.fromHeaderData(
-        { number: 1n, excessDataGas: 4194304, dataGasUsed: 0 },
-        { common, skipConsensusFormatValidation: true }
-      )
+      { number: 1n, excessDataGas: 4194304, dataGasUsed: 0 },
+      { common, skipConsensusFormatValidation: true }
+    )
     const excessDataGas = calcExcessDataGas(parentHeader)
 
     // eslint-disable-next-line no-inner-declarations
@@ -206,7 +211,7 @@ tape('transaction validation tests', async (t) => {
         { header: blockHeader, transactions },
         { common, skipConsensusFormatValidation: true }
       )
-      return block;
+      return block
     }
 
     const blockWithValidTx = getBlock([tx1])
@@ -220,14 +225,14 @@ tape('transaction validation tests', async (t) => {
       'does not throw when all tx maxFeePerDataGas are >= to block data gas fee'
     )
     const blockJson = blockWithValidTx.toJSON()
-    blockJson.header!.dataGasUsed="0x0"
-    const blockWithInvalidHeader = Block.fromBlockData(blockJson,{common})
+    blockJson.header!.dataGasUsed = '0x0'
+    const blockWithInvalidHeader = Block.fromBlockData(blockJson, { common })
     t.throws(
       () => blockWithInvalidHeader.validateBlobTransactions(parentHeader),
       (err: any) => err.message.includes('block dataGasUsed mismatch'),
       'throws with correct error message when tx maxFeePerDataGas less than block data gas fee'
     )
-    
+
     t.throws(
       () => blockWithInvalidTx.validateBlobTransactions(parentHeader),
       (err: any) => err.message.includes('than block data gas price'),

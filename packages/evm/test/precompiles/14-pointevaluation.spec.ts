@@ -24,7 +24,11 @@ tape('Precompiles: point evaluation', async (t) => {
   if (isBrowser() === true) {
     t.end()
   } else {
-    initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet4.txt')
+    try {
+      initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet4.txt')
+      // eslint-disable-next-line
+    } catch {}
+
     const genesisJSON = require('../../../client/test/testdata/geth-genesis/eip4844.json')
     const common = Common.fromGethGenesis(genesisJSON, {
       chain: 'custom',
