@@ -32,6 +32,7 @@ tape('EIP4844 header tests', function (t) {
     t.end()
   } else {
     const earlyCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+
     t.throws(
       () => {
         BlockHeader.fromHeaderData(
@@ -50,6 +51,26 @@ tape('EIP4844 header tests', function (t) {
       },
       'should throw when setting excessDataGas with EIP4844 not being activated'
     )
+
+    t.throws(
+      () => {
+        BlockHeader.fromHeaderData(
+          {
+            dataGasUsed: 1n,
+          },
+          {
+            common: earlyCommon,
+          }
+        )
+      },
+      (err: any) => {
+        return (
+          err.message.toString() === 'data gas used can only be provided with EIP4844 activated'
+        )
+      },
+      'should throw when setting excessDataGas with EIP4844 not being activated'
+    )
+
     const excessDataGas = BlockHeader.fromHeaderData(
       {},
       { common, skipConsensusFormatValidation: true }
@@ -162,15 +183,16 @@ tape('transaction validation tests', async (t) => {
       { common }
     ).sign(randomBytes(32))
 
-    // eslint-disable-next-line no-inner-declarations
-    function getBlock(transactions: TypedTransaction[]): [Block, BlockHeader] {
-      const blobs = getNumBlobs(transactions)
-
-      const parentHeader = BlockHeader.fromHeaderData(
+    const parentHeader = BlockHeader.fromHeaderData(
         { number: 1n, excessDataGas: 4194304, dataGasUsed: 0 },
         { common, skipConsensusFormatValidation: true }
       )
-      const excessDataGas = calcExcessDataGas(parentHeader)
+    const excessDataGas = calcExcessDataGas(parentHeader)
+
+    // eslint-disable-next-line no-inner-declarations
+    function getBlock(transactions: TypedTransaction[]) {
+      const blobs = getNumBlobs(transactions)
+
       const blockHeader = BlockHeader.fromHeaderData(
         {
           number: 2n,
@@ -184,22 +206,41 @@ tape('transaction validation tests', async (t) => {
         { header: blockHeader, transactions },
         { common, skipConsensusFormatValidation: true }
       )
-      return [block, parentHeader]
+      return block;
     }
 
-    const [blockWithValidTx, validTxParentHeader] = getBlock([tx1])
+    const blockWithValidTx = getBlock([tx1])
 
-    const [blockWithInvalidTx, invalidTxParentHeader] = getBlock([tx1, tx2])
+    const blockWithInvalidTx = getBlock([tx1, tx2])
 
-    const [blockWithTooManyBlobs] = getBlock([tx1, tx1, tx1, tx1, tx1])
+    const blockWithTooManyBlobs = getBlock([tx1, tx1, tx1, tx1, tx1])
 
     t.doesNotThrow(
-      () => blockWithValidTx.validateBlobTransactions(validTxParentHeader),
+      () => blockWithValidTx.validateBlobTransactions(parentHeader),
       'does not throw when all tx maxFeePerDataGas are >= to block data gas fee'
     )
+    const blockJson = blockWithValidTx.toJSON()
+    blockJson.header!.dataGasUsed="0x0"
+    const blockWithInvalidHeader = Block.fromBlockData(blockJson,{common})
     t.throws(
-      () => blockWithInvalidTx.validateBlobTransactions(invalidTxParentHeader),
+      () => blockWithInvalidHeader.validateBlobTransactions(parentHeader),
+      (err: any) => err.message.includes('block dataGasUsed mismatch'),
+      'throws with correct error message when tx maxFeePerDataGas less than block data gas fee'
+    )
+    
+    t.throws(
+      () => blockWithInvalidTx.validateBlobTransactions(parentHeader),
       (err: any) => err.message.includes('than block data gas price'),
+      'throws with correct error message when tx maxFeePerDataGas less than block data gas fee'
+    )
+    t.throws(
+      () => blockWithInvalidTx.validateBlobTransactions(parentHeader),
+      (err: any) => err.message.includes('than block data gas price'),
+      'throws with correct error message when tx maxFeePerDataGas less than block data gas fee'
+    )
+    t.throws(
+      () => blockWithTooManyBlobs.validateBlobTransactions(parentHeader),
+      (err: any) => err.message.includes('exceed maximum data gas per block'),
       'throws with correct error message when tx maxFeePerDataGas less than block data gas fee'
     )
 
