@@ -87,7 +87,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   expectRes = (res: any) => {
     const msg =
       'should not have new slot value for block that is addressed by "earliest" tag and is older than latest'
-    t.notEqual(res.body.result, expectedSlotValue, msg)
+    t.equal(res.body.result, emptySlotStr, msg)
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
