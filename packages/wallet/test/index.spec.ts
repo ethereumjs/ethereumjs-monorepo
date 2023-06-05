@@ -1,5 +1,5 @@
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
-import { Wallet as ethersWallet } from 'ethers'
+import { encryptKeystoreJsonSync, Wallet as ethersWallet } from 'ethers'
 import * as tape from 'tape'
 
 import { Wallet } from '../src'
@@ -215,7 +215,7 @@ const bytesKdfOptions = {
 }
 
 // generate all possible combinations of salt, iv, uuid properties, e.g.
-// {salt: [string], iv: [buffer], uuid: [string]}
+// {salt: [string], iv: [Uint8Array], uuid: [string]}
 // the number of objects is naturally a radix for selecting one of the
 // input values for a given property; example, three objects and two keys:
 // [{a: 0, b: 0},
@@ -271,24 +271,22 @@ if (isRunningInKarma()) {
   permutations = permutations.slice(1)
 }
 
-tape.only('.toV3(): should work with PBKDF2', async (t) => {
+tape('.toV3(): should work with PBKDF2', async (t) => {
   const w =
     '{"version":3,"id":"7e59dc02-8d42-409d-b29a-a8a0f862cc81","address":"b14ab53e38da1c172f877dbc6d65e4a1b0474c3c","crypto":{"ciphertext":"01ee7f1a3c8d187ea244c92eea9e332ab0bb2b4c902d89bdd71f80dc384da1be","cipherparams":{"iv":"cecacd85e9cb89788b5aab2f93361233"},"cipher":"aes-128-ctr","kdf":"pbkdf2","kdfparams":{"dklen":32,"salt":"dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6","c":262144,"prf":"hmac-sha256"},"mac":"0c02cd0badfebd5e783e0cf41448f84086a96365fc3456716c33641a86ebc7cc"}}'
 
-  await Promise.all(
-    permutations.map(async (perm) => {
-      const encFixtureWallet = await fixtureWallet.toV3String(pw, {
-        kdf: 'pbkdf2',
-        c: n,
-        uuid: perm.uuid,
-        salt: perm.salt,
-        iv: perm.iv,
-      })
-
-      t.deepEqual(JSON.parse(w), JSON.parse(encFixtureWallet), 'wallet string matches fixture')
-      // ethers doesn't support encrypting with PBKDF2
+  for (const perm of permutations) {
+    const encFixtureWallet = await fixtureWallet.toV3String(pw, {
+      kdf: 'pbkdf2',
+      c: n,
+      uuid: perm.uuid,
+      salt: perm.salt,
+      iv: perm.iv,
     })
-  )
+
+    t.deepEqual(JSON.parse(w), JSON.parse(encFixtureWallet))
+    // ethers doesn't support encrypting with PBKDF2
+  }
 })
 
 tape('.toV3(): should work with Scrypt', async (t) => {
@@ -312,14 +310,12 @@ tape('.toV3(): should work with Scrypt', async (t) => {
         p,
       })
 
-      const encFixtureEthersWallet = (
-        await fixtureEthersWallet.encrypt(pw, {
-          scrypt: { N: n, r, p },
-          salt: ethersOpts.salt,
-          iv: ethersOpts.iv,
-          uuid: ethersOpts.uuid,
-        })
-      ).toLowerCase()
+      const encFixtureEthersWallet = encryptKeystoreJsonSync(fixtureEthersWallet, pw, {
+        scrypt: { N: n, r, p },
+        salt: ethersOpts.salt,
+        iv: ethersOpts.iv,
+        uuid: ethersOpts.uuid,
+      }).toLowerCase()
 
       const encRandomWallet = await wRandom.toV3String(pw, {
         kdf: 'scrypt',
@@ -331,14 +327,12 @@ tape('.toV3(): should work with Scrypt', async (t) => {
         p,
       })
 
-      const encEthersWallet = (
-        await wEthers.encrypt(pw, {
-          scrypt: { N: n, r, p },
-          salt: ethersOpts.salt,
-          iv: ethersOpts.iv,
-          uuid: ethersOpts.uuid,
-        })
-      ).toLowerCase()
+      const encEthersWallet = encryptKeystoreJsonSync(wEthers, pw, {
+        scrypt: { N: n, r, p },
+        salt: ethersOpts.salt,
+        iv: ethersOpts.iv,
+        uuid: ethersOpts.uuid,
+      }).toLowerCase()
 
       st.deepEqual(wStatic, JSON.parse(encFixtureWallet))
       st.deepEqual(wStatic, JSON.parse(encFixtureEthersWallet))
@@ -394,7 +388,7 @@ tape('should fail for bad salt', async (t) => {
   } catch (err: any) {
     t.ok(
       err.message.includes(
-        'Invalid salt, must be a string (empty or a non-zero even number of hex characters) or Uint8array'
+        'Invalid salt, must be a string (empty or a non-zero even number of hex characters) or Uint8Array'
       )
     )
   }
@@ -432,12 +426,16 @@ tape('.toV3() : should work with empty salt', async (t) => {
     r,
     p,
   })
-  let wEthersStr = await new ethersWallet(fixtureWallet.getPrivateKeyString()).encrypt(pw, {
-    scrypt: { N: n, r, p },
-    salt: '0x' + (salt as string),
-    iv: '0x' + iv,
-    uuid: '0x' + uuid,
-  })
+  let wEthersStr = encryptKeystoreJsonSync(
+    new ethersWallet(fixtureWallet.getPrivateKeyString()),
+    pw,
+    {
+      scrypt: { N: n, r, p },
+      salt: '0x' + salt,
+      iv: '0x' + iv,
+      uuid: '0x' + uuid,
+    }
+  )
 
   t.deepEqual(salt, JSON.parse(wStr).crypto.kdfparams.salt)
   t.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
@@ -462,7 +460,7 @@ tape('.toV3() : should work with empty salt', async (t) => {
     r,
     p,
   })
-  wEthersStr = await new ethersWallet(fixtureWallet.getPrivateKeyString()).encrypt(pw, {
+  wEthersStr = encryptKeystoreJsonSync(new ethersWallet(fixtureWallet.getPrivateKeyString()), pw, {
     scrypt: { N: n, r, p },
     salt,
     iv,
@@ -490,7 +488,7 @@ tape('.toV3() : should work with empty salt', async (t) => {
     r,
     p,
   })
-  wEthersStr = await new ethersWallet(fixtureWallet.getPrivateKeyString()).encrypt(pw, {
+  wEthersStr = encryptKeystoreJsonSync(new ethersWallet(fixtureWallet.getPrivateKeyString()), pw, {
     scrypt: { N: n, r, p },
     salt,
     iv,
@@ -564,7 +562,9 @@ tape('.toV3(): should fail for bad iv', async (t) => {
     await fixtureWallet.toV3(pw, { iv: {} as never as any })
   } catch (err: any) {
     t.ok(
-      err.message.includes('Invalid iv, must be a string (32 hex characters) or buffer (16 bytes)')
+      err.message.includes(
+        'Invalid iv, must be a string (32 hex characters) or Uint8Array (16 bytes)'
+      )
     )
   }
 })
@@ -625,7 +625,7 @@ tape('.toV3(): should fail for bad uuid', async (t) => {
   } catch (err: any) {
     t.ok(
       err.message.includes(
-        'Invalid uuid, must be a string (32 hex characters) or buffer (16 bytes)'
+        'Invalid uuid, must be a string (32 hex characters) or Uint8Array (16 bytes)'
       )
     )
   }
