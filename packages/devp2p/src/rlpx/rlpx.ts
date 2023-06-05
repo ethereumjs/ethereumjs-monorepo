@@ -177,8 +177,7 @@ export class RLPx extends EventEmitter {
     if (peer instanceof Peer) {
       peer.disconnect(DISCONNECT_REASONS.CLIENT_QUITTING)
       peer._onSocketClose()
-    }
-    if (peer instanceof net.Socket) peer.end()
+    } else if (peer instanceof net.Socket) peer.end()
   }
 
   _isAlive() {

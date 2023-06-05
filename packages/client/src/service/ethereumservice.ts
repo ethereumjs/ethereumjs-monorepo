@@ -52,7 +52,7 @@ export class EthereumService extends Service {
    * Shutdown the client when memory threshold is reached (in percent)
    *
    */
-  private MEMORY_SHUTDOWN_THRESHOLD = 95
+  private MEMORY_SHUTDOWN_THRESHOLD = 92
 
   private _statsInterval: NodeJS.Timeout | undefined /* global NodeJS */
 

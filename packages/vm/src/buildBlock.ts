@@ -1,4 +1,4 @@
-import { Block, calcExcessDataGas } from '@ethereumjs/block'
+import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
@@ -61,7 +61,7 @@ export class BlockBuilder {
 
     this.headerData = {
       ...opts.headerData,
-      parentHash: opts.headerData?.parentHash ?? opts.parentBlock.hash(),
+      parentHash: opts.parentBlock.hash(),
       number: opts.headerData?.number ?? opts.parentBlock.header.number + BigInt(1),
       gasLimit: opts.headerData?.gasLimit ?? opts.parentBlock.header.gasLimit,
     }
@@ -72,6 +72,13 @@ export class BlockBuilder {
       typeof this.headerData.baseFeePerGas === 'undefined'
     ) {
       this.headerData.baseFeePerGas = opts.parentBlock.header.calcNextBaseFee()
+    }
+
+    if (
+      this.vm._common.isActivatedEIP(4844) === true &&
+      typeof this.headerData.excessDataGas === 'undefined'
+    ) {
+      this.headerData.excessDataGas = opts.parentBlock.header.calcNextExcessDataGas()
     }
   }
 
@@ -181,7 +188,7 @@ export class BlockBuilder {
     if (tx.gasLimit > blockGasRemaining) {
       throw new Error('tx has a higher gas limit than the remaining gas in the block')
     }
-    let excessDataGas = undefined
+    let dataGasUsed = undefined
     if (tx instanceof BlobEIP4844Transaction) {
       if (this.blockOpts.common?.isActivatedEIP(4844) !== true) {
         throw Error('eip4844 not activated yet for adding a blob transaction')
@@ -192,18 +199,13 @@ export class BlockBuilder {
         throw new Error('block data gas limit reached')
       }
 
-      const parentHeader = await this.vm.blockchain.getBlock(
-        this.headerData.parentHash! as Uint8Array
-      )
-      excessDataGas = calcExcessDataGas(
-        parentHeader!.header,
-        (tx as BlobEIP4844Transaction).blobs?.length ?? 0
-      )
+      dataGasUsed = this.dataGasUsed
     }
     const header = {
       ...this.headerData,
       gasUsed: this.gasUsed,
-      excessDataGas,
+      // correct excessDataGas should already part of headerData used above
+      dataGasUsed,
     }
 
     const blockData = { header, transactions: this.transactions }
@@ -268,26 +270,12 @@ export class BlockBuilder {
     const logsBloom = this.logsBloom()
     const gasUsed = this.gasUsed
     const timestamp = this.headerData.timestamp ?? Math.round(Date.now() / 1000)
-    let excessDataGas = undefined
 
-    if (this.vm._common.isActivatedEIP(4844)) {
-      let parentHeader = null
-      if (this.headerData.parentHash !== undefined) {
-        parentHeader = await this.vm.blockchain.getBlock(toBytes(this.headerData.parentHash))
-      }
-      if (parentHeader !== null && parentHeader.header._common.isActivatedEIP(4844) === true) {
-        // Compute total number of blobs in block
-        const blobTxns = this.transactions.filter((tx) => tx instanceof BlobEIP4844Transaction)
-        let newBlobs = 0
-        for (const txn of blobTxns) {
-          newBlobs += (txn as BlobEIP4844Transaction).numBlobs()
-        }
-        // Compute excess data gas for block
-        excessDataGas = calcExcessDataGas(parentHeader.header, newBlobs)
-      } else {
-        excessDataGas = BigInt(0)
-      }
+    let dataGasUsed = undefined
+    if (this.vm._common.isActivatedEIP(4844) === true) {
+      dataGasUsed = this.dataGasUsed
     }
+
     const headerData = {
       ...this.headerData,
       stateRoot,
@@ -297,7 +285,8 @@ export class BlockBuilder {
       logsBloom,
       gasUsed,
       timestamp,
-      excessDataGas,
+      // correct excessDataGas should already be part of headerData used above
+      dataGasUsed,
     }
 
     if (consensusType === ConsensusType.ProofOfWork) {
@@ -327,5 +316,6 @@ export class BlockBuilder {
 }
 
 export async function buildBlock(this: VM, opts: BuildBlockOpts): Promise<BlockBuilder> {
+  // let opts override excessDataGas if there is some value passed there
   return new BlockBuilder(this, opts)
 }

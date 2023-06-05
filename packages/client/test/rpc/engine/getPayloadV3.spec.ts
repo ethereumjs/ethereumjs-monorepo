@@ -23,9 +23,9 @@ import { checkError } from '../util'
 // Since the genesis is copy of withdrawals with just sharding hardfork also started
 // at 0, we can re-use the same payload args
 const validForkChoiceState = {
-  headBlockHash: '0x860e60008cf149dcdb3dbd42f54bd23a5a5024a94b0cc85df1adbe0f528389f6',
-  safeBlockHash: '0x860e60008cf149dcdb3dbd42f54bd23a5a5024a94b0cc85df1adbe0f528389f6',
-  finalizedBlockHash: '0x860e60008cf149dcdb3dbd42f54bd23a5a5024a94b0cc85df1adbe0f528389f6',
+  headBlockHash: '0x771d2330f20db47cef611364dc643ab75e1e99159fe37dc86942ab03c6a6344b',
+  safeBlockHash: '0x771d2330f20db47cef611364dc643ab75e1e99159fe37dc86942ab03c6a6344b',
+  finalizedBlockHash: '0x771d2330f20db47cef611364dc643ab75e1e99159fe37dc86942ab03c6a6344b',
 }
 const validPayloadAttributes = {
   timestamp: '0x2f',
@@ -35,7 +35,10 @@ const validPayloadAttributes = {
 
 const validPayload = [validForkChoiceState, { ...validPayloadAttributes, withdrawals: [] }]
 
-initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet4.txt')
+try {
+  initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet4.txt')
+  // eslint-disable-next-line
+} catch {}
 const method = 'engine_getPayloadV3'
 
 tape(`${method}: call with invalid payloadId`, async (t) => {
@@ -82,6 +85,7 @@ tape(`${method}: call with known payload`, async (t) => {
   let payloadId
   let expectRes = (res: any) => {
     payloadId = res.body.result.payloadId
+    t.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
@@ -112,9 +116,11 @@ tape(`${method}: call with known payload`, async (t) => {
     const { executionPayload, blobsBundle } = res.body.result
     t.equal(
       executionPayload.blockHash,
-      '0xc51a3346df60c3b63c3e564b0f4b21eed69db6a64445b6a2e5a902185d05e796',
+      '0x38ba1af4c568abce2dd6b4d4082606c3fc790fa0a14787aa9ca5c61fa7511439',
       'built expected block'
     )
+    t.equal(executionPayload.excessDataGas, '0x0', 'correct execess data gas')
+    t.equal(executionPayload.dataGasUsed, '0x20000', 'correct data gas used')
     const { commitments, proofs, blobs } = blobsBundle
     t.ok(
       commitments.length === proofs.length && commitments.length === blobs.length,

@@ -1,5 +1,5 @@
-import * as assert from 'assert'
 import { hexToBytes } from 'ethereum-cryptography/utils'
+import * as tape from 'tape'
 
 import { EthereumHDKey } from '../src/hdkey'
 
@@ -9,108 +9,104 @@ const fixtureseed = hexToBytes(
 )
 const fixturehd = EthereumHDKey.fromMasterSeed(fixtureseed)
 
-describe('.fromMasterSeed()', function () {
-  it('should work', function () {
-    assert.doesNotThrow(function () {
-      EthereumHDKey.fromMasterSeed(fixtureseed)
-    })
+tape('.fromMasterSeed()', (t) => {
+  t.doesNotThrow(function () {
+    EthereumHDKey.fromMasterSeed(fixtureseed)
   })
+  t.end()
 })
 
-describe('.privateExtendedKey()', function () {
-  it('should work', function () {
-    assert.strictEqual(
-      fixturehd.privateExtendedKey(),
-      'xprv9s21ZrQH143K4KqQx9Zrf1eN8EaPQVFxM2Ast8mdHn7GKiDWzNEyNdduJhWXToy8MpkGcKjxeFWd8oBSvsz4PCYamxR7TX49pSpp3bmHVAY'
-    )
-  })
+tape('.privateExtendedKey()', (t) => {
+  t.deepEqual(
+    fixturehd.privateExtendedKey(),
+    'xprv9s21ZrQH143K4KqQx9Zrf1eN8EaPQVFxM2Ast8mdHn7GKiDWzNEyNdduJhWXToy8MpkGcKjxeFWd8oBSvsz4PCYamxR7TX49pSpp3bmHVAY'
+  )
+  t.end()
 })
 
-describe('.publicExtendedKey()', function () {
-  it('should work', function () {
-    assert.strictEqual(
-      fixturehd.publicExtendedKey(),
-      'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ'
-    )
-  })
+tape('.publicExtendedKey()', (t) => {
+  t.deepEqual(
+    fixturehd.publicExtendedKey(),
+    'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ'
+  )
+  t.end()
 })
 
-describe('.fromExtendedKey()', function () {
-  it('should work with public', function () {
-    const hdnode = EthereumHDKey.fromExtendedKey(
-      'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ'
-    )
-    assert.strictEqual(
-      hdnode.publicExtendedKey(),
-      'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ'
-    )
-    assert.throws(function () {
-      hdnode.privateExtendedKey()
-    }, /^Error: No private key$/)
-  })
-  it('should work with private', function () {
-    const hdnode = EthereumHDKey.fromExtendedKey(
-      'xprv9s21ZrQH143K4KqQx9Zrf1eN8EaPQVFxM2Ast8mdHn7GKiDWzNEyNdduJhWXToy8MpkGcKjxeFWd8oBSvsz4PCYamxR7TX49pSpp3bmHVAY'
-    )
-    assert.strictEqual(
-      hdnode.publicExtendedKey(),
-      'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ'
-    )
-    assert.strictEqual(
-      hdnode.privateExtendedKey(),
-      'xprv9s21ZrQH143K4KqQx9Zrf1eN8EaPQVFxM2Ast8mdHn7GKiDWzNEyNdduJhWXToy8MpkGcKjxeFWd8oBSvsz4PCYamxR7TX49pSpp3bmHVAY'
-    )
-  })
+tape('.fromExtendedKey()', (t) => {
+  const onlyPublicExtendedKey = EthereumHDKey.fromExtendedKey(
+    'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ'
+  )
+  t.deepEqual(
+    onlyPublicExtendedKey.publicExtendedKey(),
+    'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ'
+  )
+  t.throws(
+    function () {
+      onlyPublicExtendedKey.privateExtendedKey()
+    },
+    /^Error: No private key$/,
+    'throws when trying to access private extended key with no private key provided'
+  )
+  const fullExtendedKey = EthereumHDKey.fromExtendedKey(
+    'xprv9s21ZrQH143K4KqQx9Zrf1eN8EaPQVFxM2Ast8mdHn7GKiDWzNEyNdduJhWXToy8MpkGcKjxeFWd8oBSvsz4PCYamxR7TX49pSpp3bmHVAY'
+  )
+  t.deepEqual(
+    fullExtendedKey.publicExtendedKey(),
+    'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ',
+    'successfully generated key from extended private key'
+  )
+  t.deepEqual(
+    fullExtendedKey.privateExtendedKey(),
+    'xprv9s21ZrQH143K4KqQx9Zrf1eN8EaPQVFxM2Ast8mdHn7GKiDWzNEyNdduJhWXToy8MpkGcKjxeFWd8oBSvsz4PCYamxR7TX49pSpp3bmHVAY',
+    'successfully generated key from extended private key'
+  )
+  t.end()
 })
 
-describe('.deriveChild()', function () {
-  it('should work', function () {
-    const hdnode = fixturehd.deriveChild(1)
-    assert.strictEqual(
-      hdnode.privateExtendedKey(),
-      'xprv9vYSvrg3eR5FaKbQE4Ao2vHdyvfFL27aWMyH6X818mKWMsqqQZAN6HmRqYDGDPLArzaqbLExRsxFwtx2B2X2QKkC9uoKsiBNi22tLPKZHNS'
-    )
-  })
+tape('.deriveChild()', (t) => {
+  const hdnode = fixturehd.deriveChild(1)
+  t.deepEqual(
+    hdnode.privateExtendedKey(),
+    'xprv9vYSvrg3eR5FaKbQE4Ao2vHdyvfFL27aWMyH6X818mKWMsqqQZAN6HmRqYDGDPLArzaqbLExRsxFwtx2B2X2QKkC9uoKsiBNi22tLPKZHNS'
+  )
+  t.end()
 })
 
-describe('.derivePath()', function () {
-  it('should work with m', function () {
-    const hdnode = fixturehd.derivePath('m')
-    assert.strictEqual(
-      hdnode.privateExtendedKey(),
-      'xprv9s21ZrQH143K4KqQx9Zrf1eN8EaPQVFxM2Ast8mdHn7GKiDWzNEyNdduJhWXToy8MpkGcKjxeFWd8oBSvsz4PCYamxR7TX49pSpp3bmHVAY'
-    )
-  })
-  it("should work with m/44'/0'/0/1", function () {
-    const hdnode = fixturehd.derivePath("m/44'/0'/0/1")
-    assert.strictEqual(
-      hdnode.privateExtendedKey(),
-      'xprvA1ErCzsuXhpB8iDTsbmgpkA2P8ggu97hMZbAXTZCdGYeaUrDhyR8fEw47BNEgLExsWCVzFYuGyeDZJLiFJ9kwBzGojQ6NB718tjVJrVBSrG'
-    )
-  })
+tape('.derivePath()', (t) => {
+  const hdnode1 = fixturehd.derivePath('m')
+  t.deepEqual(
+    hdnode1.privateExtendedKey(),
+    'xprv9s21ZrQH143K4KqQx9Zrf1eN8EaPQVFxM2Ast8mdHn7GKiDWzNEyNdduJhWXToy8MpkGcKjxeFWd8oBSvsz4PCYamxR7TX49pSpp3bmHVAY',
+    'should work with m'
+  )
+  const hdnode2 = fixturehd.derivePath("m/44'/0'/0/1")
+  t.deepEqual(
+    hdnode2.privateExtendedKey(),
+    'xprvA1ErCzsuXhpB8iDTsbmgpkA2P8ggu97hMZbAXTZCdGYeaUrDhyR8fEw47BNEgLExsWCVzFYuGyeDZJLiFJ9kwBzGojQ6NB718tjVJrVBSrG',
+    "should work with m/44'/0'/0/1"
+  )
+  t.end()
 })
 
-describe('.getWallet()', function () {
-  it('should work', function () {
-    assert.strictEqual(
-      fixturehd.getWallet().getPrivateKeyString(),
-      '0x26cc9417b89cd77c4acdbe2e3cd286070a015d8e380f9cd1244ae103b7d89d81'
-    )
-    assert.strictEqual(
-      fixturehd.getWallet().getPublicKeyString(),
-      '0x0639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973defa5cb69df462bcc6d73c31e1c663c225650e80ef14a507b203f2a12aea55bc1'
-    )
-  })
-  it('should work with public nodes', function () {
-    const hdnode = EthereumHDKey.fromExtendedKey(
-      'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ'
-    )
-    assert.throws(function () {
-      hdnode.getWallet().getPrivateKeyString()
-    }, /^Error: This is a public key only wallet$/)
-    assert.strictEqual(
-      hdnode.getWallet().getPublicKeyString(),
-      '0x0639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973defa5cb69df462bcc6d73c31e1c663c225650e80ef14a507b203f2a12aea55bc1'
-    )
-  })
+tape('.getWallet()', (t) => {
+  t.deepEqual(
+    fixturehd.getWallet().getPrivateKeyString(),
+    '0x26cc9417b89cd77c4acdbe2e3cd286070a015d8e380f9cd1244ae103b7d89d81'
+  )
+  t.deepEqual(
+    fixturehd.getWallet().getPublicKeyString(),
+    '0x0639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973defa5cb69df462bcc6d73c31e1c663c225650e80ef14a507b203f2a12aea55bc1'
+  )
+  const hdnode = EthereumHDKey.fromExtendedKey(
+    'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ'
+  )
+  t.throws(function () {
+    hdnode.getWallet().getPrivateKeyString()
+  }, /^Error: This is a public key only wallet$/)
+  t.deepEqual(
+    hdnode.getWallet().getPublicKeyString(),
+    '0x0639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973defa5cb69df462bcc6d73c31e1c663c225650e80ef14a507b203f2a12aea55bc1',
+    'should work with public nodes'
+  )
+  t.end()
 })

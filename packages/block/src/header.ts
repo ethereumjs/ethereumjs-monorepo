@@ -23,7 +23,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique'
-import { valuesArrayToHeaderData } from './helpers'
+import { fakeExponential, valuesArrayToHeaderData } from './helpers'
 
 import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from './types'
 import type { CliqueConfig } from '@ethereumjs/common'
@@ -55,6 +55,7 @@ export class BlockHeader {
   public readonly nonce: Uint8Array
   public readonly baseFeePerGas?: bigint
   public readonly withdrawalsRoot?: Uint8Array
+  public readonly dataGasUsed?: bigint
   public readonly excessDataGas?: bigint
 
   public readonly _common: Common
@@ -194,6 +195,7 @@ export class BlockHeader {
           : BigInt(7)
         : undefined,
       withdrawalsRoot: this._common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
+      dataGasUsed: this._common.isActivatedEIP(4844) ? BigInt(0) : undefined,
       excessDataGas: this._common.isActivatedEIP(4844) ? BigInt(0) : undefined,
     }
 
@@ -201,6 +203,8 @@ export class BlockHeader {
       toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? hardforkDefaults.baseFeePerGas
     const withdrawalsRoot =
       toType(headerData.withdrawalsRoot, TypeOutput.Uint8Array) ?? hardforkDefaults.withdrawalsRoot
+    const dataGasUsed =
+      toType(headerData.dataGasUsed, TypeOutput.BigInt) ?? hardforkDefaults.dataGasUsed
     const excessDataGas =
       toType(headerData.excessDataGas, TypeOutput.BigInt) ?? hardforkDefaults.excessDataGas
 
@@ -214,8 +218,14 @@ export class BlockHeader {
       )
     }
 
-    if (!this._common.isActivatedEIP(4844) && headerData.excessDataGas !== undefined) {
-      throw new Error('excess data gas can only be provided with EIP4844 activated')
+    if (!this._common.isActivatedEIP(4844)) {
+      if (headerData.dataGasUsed !== undefined) {
+        throw new Error('data gas used can only be provided with EIP4844 activated')
+      }
+
+      if (headerData.excessDataGas !== undefined) {
+        throw new Error('excess data gas can only be provided with EIP4844 activated')
+      }
     }
 
     this.parentHash = parentHash
@@ -235,6 +245,7 @@ export class BlockHeader {
     this.nonce = nonce
     this.baseFeePerGas = baseFeePerGas
     this.withdrawalsRoot = withdrawalsRoot
+    this.dataGasUsed = dataGasUsed
     this.excessDataGas = excessDataGas
     this._genericFormatValidation()
     this._validateDAOExtraData()
@@ -524,6 +535,50 @@ export class BlockHeader {
   }
 
   /**
+   * Returns the price per unit of data gas for a blob transaction in the current/pending block
+   * @returns the price in gwei per unit of data gas spent
+   */
+  getDataGasPrice(): bigint {
+    if (this.excessDataGas === undefined) {
+      throw new Error('header must have excessDataGas field populated')
+    }
+    return fakeExponential(
+      this._common.param('gasPrices', 'minDataGasPrice'),
+      this.excessDataGas,
+      this._common.param('gasConfig', 'dataGasPriceUpdateFraction')
+    )
+  }
+
+  /**
+   * Returns the total fee for data gas spent for including blobs in block.
+   *
+   * @param numBlobs number of blobs in the transaction/block
+   * @returns the total data gas fee for numBlobs blobs
+   */
+  calcDataFee(numBlobs: number): bigint {
+    const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
+    const dataGasUsed = dataGasPerBlob * BigInt(numBlobs)
+
+    const dataGasPrice = this.getDataGasPrice()
+    return dataGasUsed * dataGasPrice
+  }
+
+  /**
+   * Calculates the excess data gas for next (hopefully) post EIP 4844 block.
+   */
+  public calcNextExcessDataGas(): bigint {
+    // The validation of the fields and 4844 activation is already taken care in BlockHeader constructor
+    const targetGasConsumed = (this.excessDataGas ?? BigInt(0)) + (this.dataGasUsed ?? BigInt(0))
+    const targetDataGasPerBlock = this._common.param('gasConfig', 'targetDataGasPerBlock')
+
+    if (targetGasConsumed <= targetDataGasPerBlock) {
+      return BigInt(0)
+    } else {
+      return targetGasConsumed - targetDataGasPerBlock
+    }
+  }
+
+  /**
    * Returns a Uint8Array Array of the raw Bytes in this header, in order.
    */
   raw(): BlockHeaderBytes {
@@ -553,6 +608,7 @@ export class BlockHeader {
       rawItems.push(this.withdrawalsRoot!)
     }
     if (this._common.isActivatedEIP(4844) === true) {
+      rawItems.push(bigIntToUnpaddedBytes(this.dataGasUsed!))
       rawItems.push(bigIntToUnpaddedBytes(this.excessDataGas!))
     }
 
@@ -822,6 +878,7 @@ export class BlockHeader {
       jsonDict.baseFeePerGas = bigIntToHex(this.baseFeePerGas!)
     }
     if (this._common.isActivatedEIP(4844) === true) {
+      jsonDict.dataGasUsed = bigIntToHex(this.dataGasUsed!)
       jsonDict.excessDataGas = bigIntToHex(this.excessDataGas!)
     }
     return jsonDict

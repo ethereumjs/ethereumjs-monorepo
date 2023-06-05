@@ -94,6 +94,8 @@ export class Peer extends events.EventEmitter {
     this._idle = value
   }
 
+  async connect(): Promise<void> {}
+
   /**
    * Adds a protocol to this peer given a sender instance. Protocol methods
    * will be accessible via a field with the same name as protocol. New methods
