@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1685705427040,
+  "lastUpdate": 1685965855532,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "bef8f3f64b0a114e299c9ff402df031d148dca73",
-          "message": "Merge pull request #2685 from ethereumjs/switch-to-esm-cjs-build\n\nMonorepo: Switch to hybrid ESM/CJS Build (WIP)",
-          "timestamp": "2023-05-17T09:09:39+02:00",
-          "tree_id": "419f29f2413fba7f19f83be1bfbf4e550895cc0e",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/bef8f3f64b0a114e299c9ff402df031d148dca73"
-        },
-        "date": 1684307608998,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 22632,
-            "range": "±14.33%",
-            "unit": "ops/sec",
-            "extra": "56 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 29133,
-            "range": "±7.14%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 28584,
-            "range": "±8.14%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25881,
-            "range": "±11.01%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 17270,
-            "range": "±12.52%",
-            "unit": "ops/sec",
-            "extra": "68 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.06%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "konjou@gmail.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "af33768088b9a697a6a410d8842f9565592f04eb",
+          "message": "Migrate `wallet` tests to `tape (#2742)\n\n* migrate to uint8arrays\r\n\r\n* add 0x prefix\r\n\r\n* Remaining fixes and cleanup\r\n\r\n* Remove duplicate helpers\r\n\r\n* slice to subarray\r\n\r\n* wallet: fix browser tests\r\n\r\n* Address feedback\r\n\r\n* Address feedback\r\n\r\n* partial migration to tape\r\n\r\n* WIP changes\r\n\r\n* Finish migrating tests\r\n\r\n* revert error message checking in test\r\n\r\n* update tests again\r\n\r\n* fix test\r\n\r\n* test fixes\r\n\r\n* Address feedback\r\n\r\n* Update lint rules\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2023-06-05T17:17:20+05:30",
+          "tree_id": "20f7bfaa8fb60edb561997930eea467c6d2476b0",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/af33768088b9a697a6a410d8842f9565592f04eb"
+        },
+        "date": 1685965854484,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31285,
+            "range": "±6.01%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31178,
+            "range": "±2.85%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 27872,
+            "range": "±8.48%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 31060,
+            "range": "±3.18%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30056,
+            "range": "±3.05%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
