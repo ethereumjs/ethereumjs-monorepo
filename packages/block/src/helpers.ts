@@ -131,12 +131,12 @@ export const fakeExponential = (factor: bigint, numerator: bigint, denominator: 
 
 /**
  * Returns the price per unit of data gas for a blob transaction in the current/pending block
- * @param header the parent header for the current block (or current head of the chain)
+ * @param header - the header for the current block (or current head of the chain)
  * @returns the price in gwei per unit of data gas spent
  */
 export const getDataGasPrice = (header: BlockHeader) => {
   if (header.excessDataGas === undefined) {
-    throw new Error('parent header must have excessDataGas field populated')
+    throw new Error('header must have excessDataGas field populated')
   }
   return fakeExponential(
     header._common.param('gasPrices', 'minDataGasPrice'),
@@ -148,13 +148,13 @@ export const getDataGasPrice = (header: BlockHeader) => {
 /**
  * Returns the total fee for data gas spent in the current/pending block
  * @param header of the current/pending block
- * @returns the total data gas fee for a transaction assuming it contains `numBlobs`
+ * @numBlobs number of blobs in the transaction
+ * @returns the total data gas fee for all
  */
-export const calcDataFee = (header: BlockHeader) => {
-  const { dataGasUsed } = header
-  if (dataGasUsed === undefined) {
-    throw new Error('parent header must have dataGasUsed field populated')
-  }
+export const calcDataFee = (header: BlockHeader, numBlobs: number) => {
+  const dataGasPerBlob = header._common.param('gasConfig', 'dataGasPerBlob')
+  const dataGasUsed = dataGasPerBlob * BigInt(numBlobs)
+
   const dataGasPrice = getDataGasPrice(header)
   return dataGasUsed * dataGasPrice
 }

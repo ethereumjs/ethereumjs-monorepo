@@ -115,26 +115,16 @@ tape('data gas tests', async (t) => {
     const preShardingHeader = BlockHeader.fromHeaderData({})
 
     let excessDataGas = calcExcessDataGas(preShardingHeader)
-    t.equals(
-      excessDataGas,
-      0n,
-      'excess data gas where 4844 is not active on parent header should be 0'
-    )
+    t.equals(excessDataGas, 0n, 'excess data gas where 4844 is not active on header should be 0')
 
     t.throws(
-      () => getDataGasPrice(preShardingHeader),
-      (err: any) => err.message.includes('parent header must have excessDataGas field'),
-      'getDataGasPrice throws when header has no excessDataGas field'
-    )
-
-    t.throws(
-      () => calcDataFee(preShardingHeader),
-      (err: any) => err.message.includes('parent header must have dataGasUsed field'),
+      () => calcDataFee(preShardingHeader, 1),
+      (err: any) => err.message.includes('header must have excessDataGas field'),
       'calcDataFee throws when header has no excessDataGas field'
     )
 
     const lowGasHeader = BlockHeader.fromHeaderData(
-      { number: 1, excessDataGas: 5000, dataGasUsed: BigInt(1) * dataGasPerBlob },
+      { number: 1, excessDataGas: 5000 },
       { common, skipConsensusFormatValidation: true }
     )
 
@@ -151,8 +141,8 @@ tape('data gas tests', async (t) => {
     t.equal(excessDataGas, 4456448n)
     t.equal(dataGasPrice, 6n, 'computed correct data gas price')
 
-    t.equal(calcDataFee(lowGasHeader), 131072n, 'compute data fee correctly')
-    t.equal(calcDataFee(highGasHeader), 3145728n, 'compute data fee correctly')
+    t.equal(calcDataFee(lowGasHeader, 1), 131072n, 'compute data fee correctly')
+    t.equal(calcDataFee(highGasHeader, 4), 3145728n, 'compute data fee correctly')
     t.end()
   }
 })
