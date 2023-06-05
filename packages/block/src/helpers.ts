@@ -148,7 +148,7 @@ export const getDataGasPrice = (header: BlockHeader) => {
 /**
  * Returns the total fee for data gas spent in the current/pending block
  * @param header of the current/pending block
- * @numBlobs number of blobs in the transaction
+ * @param numBlobs number of blobs in the transaction
  * @returns the total data gas fee for all
  */
 export const calcDataFee = (header: BlockHeader, numBlobs: number) => {
