@@ -55,6 +55,12 @@ export class BoundProtocol {
           this.handle(message)
         } else {
           this.messageQueue.push(message)
+          // Expected message queue growth is in the single digits
+          // so this adds a guard here if something goes wrong
+          if (this.messageQueue.length >= 50) {
+            const error = new Error('unexpected message queue growth for peer')
+            this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+          }
         }
       } catch (error: any) {
         this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
