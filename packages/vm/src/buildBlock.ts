@@ -64,8 +64,6 @@ export class BlockBuilder {
       parentHash: opts.parentBlock.hash(),
       number: opts.headerData?.number ?? opts.parentBlock.header.number + BigInt(1),
       gasLimit: opts.headerData?.gasLimit ?? opts.parentBlock.header.gasLimit,
-      excessDataGas:
-        opts.headerData?.excessDataGas ?? opts.parentBlock.header.calcNextExcessDataGas(),
     }
     this.withdrawals = opts.withdrawals?.map(Withdrawal.fromWithdrawalData)
 
@@ -74,6 +72,13 @@ export class BlockBuilder {
       typeof this.headerData.baseFeePerGas === 'undefined'
     ) {
       this.headerData.baseFeePerGas = opts.parentBlock.header.calcNextBaseFee()
+    }
+
+    if (
+      this.vm._common.isActivatedEIP(4844) === true &&
+      typeof this.headerData.excessDataGas === 'undefined'
+    ) {
+      this.headerData.excessDataGas = opts.parentBlock.header.calcNextExcessDataGas()
     }
   }
 
