@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1685965855532,
+  "lastUpdate": 1685968096921,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a8200955fb540961915dbb5239ca581449cae6a8",
-          "message": "Merge pull request #2704 from ethereumjs/eslint/add-package.json\n\neslint: add eslint package.json",
-          "timestamp": "2023-05-17T11:34:59+02:00",
-          "tree_id": "07b64acc1c29b0032fa205dced7986b7e4b25f45",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a8200955fb540961915dbb5239ca581449cae6a8"
-        },
-        "date": 1684316441096,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 32292,
-            "range": "±3.76%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 32004,
-            "range": "±2.72%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 27480,
-            "range": "±9.37%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 31107,
-            "range": "±2.72%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30145,
-            "range": "±3.05%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.05%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "469188fe0ae0b3e537ee194b9f073e68ddef456b",
+          "message": "block: Add data gas used and refactor cal excess data gas cal (#2750)\n\n* block: Add data gas used and refactor cal excess data gas cal\r\n\r\n* update buildblock\r\n\r\n* update client\r\n\r\n* fix buildblock\r\n\r\n* fix test spec\r\n\r\n* update client spec\r\n\r\n* update block tests and helper\r\n\r\n* fix header spec\r\n\r\n* update getpayload spec\r\n\r\n* update getpayload spec\r\n\r\n* enhance coverage and add new vm build blob block test\r\n\r\n* lint and ignore kzg reloading errors\r\n\r\n* apply feedback\r\n\r\n* improve condition\r\n\r\n* correct jsdoc\r\n\r\n* move calcExcessDataGas to header's calcNextExcessDataGas\r\n\r\n* refactor blockbuilder as per feedback\r\n\r\n* apply feedback\r\n\r\n* fix spec",
+          "timestamp": "2023-06-05T17:54:53+05:30",
+          "tree_id": "ece2eabc38e0c12e8503864ff4f018c70814f59f",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/469188fe0ae0b3e537ee194b9f073e68ddef456b"
+        },
+        "date": 1685968096234,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 30811,
+            "range": "±6.03%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31569,
+            "range": "±2.92%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31337,
+            "range": "±2.99%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 30726,
+            "range": "±3.35%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 24272,
+            "range": "±10.77%",
+            "unit": "ops/sec",
+            "extra": "65 samples"
           }
         ]
       }
