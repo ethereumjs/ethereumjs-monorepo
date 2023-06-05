@@ -516,7 +516,7 @@ export class Block {
     }
 
     if (this._common.isActivatedEIP(4844) === true) {
-      if (dataGasUsed !== (this.header.dataGasUsed ?? BigInt(0))) {
+      if (dataGasUsed !== this.header.dataGasUsed) {
         errors.push(`invalid dataGasUsed expected=${this.header.dataGasUsed} actual=${dataGasUsed}`)
       }
     }
