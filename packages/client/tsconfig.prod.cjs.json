@@ -1,6 +1,6 @@
 {
   "extends": "../../config/tsconfig.prod.cjs.json",
-  "include": ["bin", "lib"],
+  "include": ["bin", "src"],
   "compilerOptions": {
     "outDir": "dist",
     "typeRoots": ["node_modules/@types", "src/@types"]
