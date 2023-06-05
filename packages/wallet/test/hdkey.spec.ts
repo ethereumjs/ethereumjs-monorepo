@@ -33,26 +33,32 @@ tape('.publicExtendedKey()', (t) => {
 })
 
 tape('.fromExtendedKey()', (t) => {
-  const hdnode1 = EthereumHDKey.fromExtendedKey(
+  const onlyPublicExtendedKey = EthereumHDKey.fromExtendedKey(
     'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ'
   )
   t.deepEqual(
-    hdnode1.publicExtendedKey(),
+    onlyPublicExtendedKey.publicExtendedKey(),
     'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ'
   )
-  t.throws(function () {
-    hdnode1.privateExtendedKey()
-  }, /^Error: No private key$/)
-  const hdnode2 = EthereumHDKey.fromExtendedKey(
+  t.throws(
+    function () {
+      onlyPublicExtendedKey.privateExtendedKey()
+    },
+    /^Error: No private key$/,
+    'throws when trying to access private extended key with no private key provided'
+  )
+  const fullExtendedKey = EthereumHDKey.fromExtendedKey(
     'xprv9s21ZrQH143K4KqQx9Zrf1eN8EaPQVFxM2Ast8mdHn7GKiDWzNEyNdduJhWXToy8MpkGcKjxeFWd8oBSvsz4PCYamxR7TX49pSpp3bmHVAY'
   )
   t.deepEqual(
-    hdnode2.publicExtendedKey(),
-    'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ'
+    fullExtendedKey.publicExtendedKey(),
+    'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ',
+    'successfully generated key from extended private key'
   )
   t.deepEqual(
-    hdnode2.privateExtendedKey(),
-    'xprv9s21ZrQH143K4KqQx9Zrf1eN8EaPQVFxM2Ast8mdHn7GKiDWzNEyNdduJhWXToy8MpkGcKjxeFWd8oBSvsz4PCYamxR7TX49pSpp3bmHVAY'
+    fullExtendedKey.privateExtendedKey(),
+    'xprv9s21ZrQH143K4KqQx9Zrf1eN8EaPQVFxM2Ast8mdHn7GKiDWzNEyNdduJhWXToy8MpkGcKjxeFWd8oBSvsz4PCYamxR7TX49pSpp3bmHVAY',
+    'successfully generated key from extended private key'
   )
   t.end()
 })

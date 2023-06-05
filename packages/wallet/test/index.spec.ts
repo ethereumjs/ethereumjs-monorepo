@@ -125,11 +125,16 @@ tape('public key only wallet', (t) => {
     '.getPrivateKey() should fail'
   )
 
-  // t.test('.toV3() should fail', function () {
-  //   assert.throws(function () {
-  //     Wallet.fromPublicKey(pubKey).toV3()
-  //   }, /^Error: This is a public key only wallet$/)
-  // })
+  t.test('.toV3() should fail', async (t) => {
+    try {
+      await Wallet.fromPublicKey(pubKey).toV3('')
+    } catch (err: any) {
+      t.ok(
+        err.message.includes('This is a public key only wallet'),
+        'fails to generate V3 when no private key present'
+      )
+    }
+  })
 
   t.end()
 })
@@ -158,13 +163,13 @@ tape('.generate()', (t) => {
   t.equal(Wallet.generate().getPrivateKey().length, 32, 'should generate an account')
   const max = BigInt('0x088f924eeceeda7fe92e1f5b0fffffffffffffff')
   const wallet = Wallet.generate(true)
+  t.equal(wallet.getPrivateKey().length, 32)
+  const addr = bytesToHex(wallet.getAddress())
   t.equal(
-    wallet.getPrivateKey().length,
-    32,
+    BigInt('0x' + addr) <= max,
+    true,
     'should generate an account compatible with ICAP Direct'
   )
-  const addr = bytesToHex(wallet.getAddress())
-  t.equal(BigInt('0x' + addr) <= max, true)
   t.end()
 })
 
@@ -203,14 +208,14 @@ const iv = 'cecacd85e9cb89788b5aab2f93361233'
 const uuid = '7e59dc028d42d09db29aa8a0f862cc81'
 
 const strKdfOptions = { iv, salt, uuid }
-const buffKdfOptions = {
+const bytesKdfOptions = {
   salt: hexToBytes(salt),
   iv: hexToBytes(iv),
   uuid: hexToBytes(uuid),
 }
 
 // generate all possible combinations of salt, iv, uuid properties, e.g.
-// {salt: [string], iv: [buffer], uuid: [string]}
+// {salt: [string], iv: [Uint8Array], uuid: [string]}
 // the number of objects is naturally a radix for selecting one of the
 // input values for a given property; example, three objects and two keys:
 // [{a: 0, b: 0},
@@ -258,7 +263,7 @@ const makeEthersOptions = (opts: object) => {
   return obj
 }
 
-let permutations = makePermutations(strKdfOptions, buffKdfOptions)
+let permutations = makePermutations(strKdfOptions, bytesKdfOptions)
 
 if (isRunningInKarma()) {
   // These tests take a long time in the browser due to
@@ -387,7 +392,7 @@ tape('should fail for bad salt', async (t) => {
   } catch (err: any) {
     t.ok(
       err.message.includes(
-        'Invalid salt, must be a string (empty or a non-zero even number of hex characters) or buffer'
+        'Invalid salt, must be a string (empty or a non-zero even number of hex characters) or Uint8Array'
       )
     )
   }
@@ -569,7 +574,9 @@ tape('.toV3(): should fail for bad iv', async (t) => {
     await fixtureWallet.toV3(pw, { iv: {} as never as any })
   } catch (err: any) {
     t.ok(
-      err.message.includes('Invalid iv, must be a string (32 hex characters) or buffer (16 bytes)')
+      err.message.includes(
+        'Invalid iv, must be a string (32 hex characters) or Uint8Array (16 bytes)'
+      )
     )
   }
 })
@@ -630,7 +637,7 @@ tape('.toV3(): should fail for bad uuid', async (t) => {
   } catch (err: any) {
     t.ok(
       err.message.includes(
-        'Invalid uuid, must be a string (32 hex characters) or buffer (16 bytes)'
+        'Invalid uuid, must be a string (32 hex characters) or Uint8Array (16 bytes)'
       )
     )
   }
