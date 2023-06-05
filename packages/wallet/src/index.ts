@@ -99,11 +99,11 @@ function validateBytes(paramName: string, bytes: Uint8Array, length?: number) {
       typeof length === 'number' ? `${length * 2}` : 'empty or a non-zero even number of'
     const howManyBytes = typeof length === 'number' ? ` (${length} bytes)` : ''
     throw new Error(
-      `Invalid ${paramName}, must be a string (${howManyHex} hex characters) or buffer${howManyBytes}`
+      `Invalid ${paramName}, must be a string (${howManyHex} hex characters) or Uint8Array${howManyBytes}`
     )
   }
   if (typeof length === 'number' && bytes.length !== length) {
-    throw new Error(`Invalid ${paramName}, uint8Array must be ${length} bytes`)
+    throw new Error(`Invalid ${paramName}, Uint8Array must be ${length} bytes`)
   }
   return bytes
 }

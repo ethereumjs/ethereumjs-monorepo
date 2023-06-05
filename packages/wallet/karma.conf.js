@@ -1,18 +1,18 @@
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
-    frameworks: ['mocha', 'karma-typescript'],
-    files: ['src/**/*.ts', 'test/**/*.spec.ts'],
+    frameworks: ['tap', 'karma-typescript'],
+    files: ['src/**/*.ts', 'test/**/*.ts'],
     preprocessors: {
       '**/*.ts': ['karma-typescript'],
     },
-    plugins: ['karma-mocha', 'karma-typescript', 'karma-chrome-launcher', 'karma-firefox-launcher'],
+    files: ['src/**/*.ts', 'test/**/*.spec.ts'],
     karmaTypescriptConfig: {
       tsconfig: './tsconfig.json',
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
         acornOptions: {
-          ecmaVersion: 11
-        }
+          ecmaVersion: 13,
+        },
       },
     },
     colors: true,
