@@ -11,6 +11,7 @@ import { EventEmitter } from 'events'
 
 import * as goerli from './chains/goerli.json'
 import * as mainnet from './chains/mainnet.json'
+import * as optimismGoerli from './chains/optimismGoerli.json'
 import * as rinkeby from './chains/rinkeby.json'
 import * as ropsten from './chains/ropsten.json'
 import * as sepolia from './chains/sepolia.json'
@@ -148,24 +149,24 @@ export class Common extends EventEmitter {
         )
       }
 
-      if (chainParamsOrName === CustomChain.OptimisticKovan) {
+      if (chainParamsOrName === CustomChain.OptimismEthereum) {
         return Common.custom(
           {
-            name: CustomChain.OptimisticKovan,
-            chainId: 69,
-            networkId: 69,
+            name: CustomChain.OptimismEthereum,
+            chainId: 10,
+            networkId: 10,
           },
           // Optimism has not implemented the London hardfork yet (targeting Q1.22)
           { hardfork: Hardfork.Berlin, ...opts }
         )
       }
 
-      if (chainParamsOrName === CustomChain.OptimisticEthereum) {
+      if (chainParamsOrName === CustomChain.OptimismGoerli) {
         return Common.custom(
           {
-            name: CustomChain.OptimisticEthereum,
-            chainId: 10,
-            networkId: 10,
+            name: CustomChain.OptimismGoerli,
+            chainId: 420,
+            networkId: 420,
           },
           // Optimism has not implemented the London hardfork yet (targeting Q1.22)
           { hardfork: Hardfork.Berlin, ...opts }
@@ -1008,9 +1009,9 @@ export class Common extends EventEmitter {
   static _getInitializedChains(customChains?: ChainConfig[]): ChainsConfig {
     const names: ChainName = {}
     for (const [name, id] of Object.entries(Chain)) {
-      names[id] = name.toLowerCase()
+      names[id] = name[0].toLowerCase() + name.slice(1)
     }
-    const chains = { mainnet, ropsten, rinkeby, goerli, sepolia } as ChainsConfig
+    const chains = { mainnet, optimismGoerli, ropsten, rinkeby, goerli, sepolia } as ChainsConfig
     if (customChains) {
       for (const chain of customChains) {
         const { name } = chain

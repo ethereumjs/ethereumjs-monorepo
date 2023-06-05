@@ -17,4 +17,6 @@ export const hardforks = {
   mergeForkIdTransition: require('./mergeForkIdTransition.json'),
   paris: require('./paris.json'),
   cancun: require('./cancun.json'),
+  bedrock: require('./bedrock.json'),
+  regolith: require('./regolith.json'),
 }

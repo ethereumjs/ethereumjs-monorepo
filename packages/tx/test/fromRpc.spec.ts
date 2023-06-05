@@ -5,7 +5,6 @@ import * as tape from 'tape'
 import { TransactionFactory } from '../src'
 import { normalizeTxParams } from '../src/fromRpc'
 
-const optimismTx = require('./json/optimismTx.json')
 const v0Tx = require('./json/v0tx.json')
 
 const txTypes = [0, 1, 2]
@@ -74,20 +73,6 @@ tape('[normalizeTxParams]', (t) => {
   )
   t.end()
 })
-
-tape(
-  'fromRPC: ensure v/r/s values of 0x0 are interpreted as undefined for Optimism system txs',
-  async function (st) {
-    for (const txType of txTypes) {
-      optimismTx.type = txType
-      const tx = await TransactionFactory.fromRPC(optimismTx)
-      st.ok(tx.v === undefined)
-      st.ok(tx.s === undefined)
-      st.ok(tx.r === undefined)
-    }
-    st.end()
-  }
-)
 
 // This test ensures that "normal" txs of non-legacy type are correctly decoded if the
 // `v` value is 0. This is the case in ~50% of the EIP2930 and EIP1559 txs

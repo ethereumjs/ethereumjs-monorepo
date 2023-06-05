@@ -21,6 +21,14 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
     st.end()
   })
 
+  t.test('Should initialize Optimism L2 chain', function (st: tape.Test) {
+    const c = new Common({ chain: Chain.OptimismGoerli })
+    st.equal(c.chainId(), BigInt(420), 'should return correct chain Id')
+    st.equal(c.hardfork(), Hardfork.Regolith, 'should return Optimism-specific regolith HF')
+
+    st.end()
+  })
+
   t.test('Should initialize with chain provided by Chain enum', function (st: tape.Test) {
     const c = new Common({ chain: Chain.Mainnet })
     st.equal(c.chainName(), 'mainnet', 'should initialize with chain name')

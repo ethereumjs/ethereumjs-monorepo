@@ -104,9 +104,9 @@ const blockWithMatchingBaseFee = Block.fromBlockData(
 
 EIP-1559 blocks have an extra `baseFeePerGas` field (default: `BigInt(7)`) and can encompass `FeeMarketEIP1559Transaction` txs (type `2`) (supported by `@ethereumjs/tx` `v3.2.0` or higher) as well as `Transaction` legacy txs (internal type `0`) and `AccessListEIP2930Transaction` txs (type `1`).
 
-### EIP-4895 Beacon Chain Withdrawals Blocks (experimental)
+### EIP-4895 Beacon Chain Withdrawals Blocks
 
-Starting with the `v4.1.0` release there is (experimental) support for [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals. Withdrawals support can be activated by initializing a respective `Common` object and then use the `withdrawals` data option to pass in system-level withdrawal operations together with a matching `withdrawalsRoot` (mandatory when `EIP-4895` is activated) along Block creation, see the following example:
+Starting with the `v4.1.0` release there is support for [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals. Withdrawals support can be activated by initializing a respective `Common` object and then use the `withdrawals` data option to pass in system-level withdrawal operations together with a matching `withdrawalsRoot` (mandatory when `EIP-4895` is activated) along Block creation, see the following example:
 
 ```typescript
 import { Block } from '@ethereumjs/block'
@@ -156,6 +156,34 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, e
 ```
 
 **Note:** Working with blob transactions needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
+
+### L2 Blocks [UNRELEASED]
+
+We are slowly expanding the realm of this library to allow for some controlled instantiation of blocks from selected L2 solutions and networks. In this context we have added a new library option `skipTxTypes` which can be used to skip certain types of txs which are included in L2 blocks but are not supported by the underlying tx library. Note that this limits the functionality of the library and validation- or serialization methods will throw when used with this option.
+
+### Optimism Bedrock
+
+This library has been tested with blocks from the Optimism [OP Stack](https://stack.optimism.io) with an activated Bedrock (+ Regolith) hardfork.
+
+Note that each Optimism block include a system tx (type 126) which is not supported by the @ethereumjs/tx library, so the respective tx type must be skipped for a Bedrock block to instantiate.
+
+The following is an example to retrieve a Bedrock block via the official Optimism Bedrock Görli RPC endpoint:
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import { Chain, Common } from '@ethereumjs/common'
+
+const providerURL = 'https://goerli.optimism.io'
+
+const common = new Common({ chain: Chain.OptimismGoerli })
+const block = await Block.fromJsonRpcProvider(providerURL, 6826186n, {
+  common,
+  skipTxTypes: [126],
+})
+
+console.log(block)
+block.validateTransactions() // This will throw now
+```
 
 ### Consensus Types
 

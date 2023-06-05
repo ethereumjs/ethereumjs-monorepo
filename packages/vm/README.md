@@ -79,6 +79,39 @@ await blockBuilder.addTransaction(tx)
 const block = await blockBuilder.build()
 ```
 
+### Running an Optimism L2 Block (RPC) (experimental) [UNRELEASED]
+
+Our library stack has now all building blocks in place for ad-hoc block execution via RPC on top of the correct state, using the [EthersStateManager](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanager#ethersstatemanager).
+
+The following example shows how to run a block from the Optimism network, where enhanced support has been introduced along the VM v7 breaking release series (Summer 2023) for executing blocks from the [Bedrock/Regolith](https://stack.optimism.io/docs/releases/bedrock/) hardfork onwards:
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import { Chain, Common } from '@ethereumjs/common'
+import { EthersStateManager } from '@ethereumjs/statemanager'
+import { VM } from '@ethereumjs/vm'
+import { ethers } from 'ethers'
+
+const providerURL = 'https://goerli.optimism.io'
+const blockNumber = 6826186n
+
+const common = new Common({ chain: Chain.OptimismGoerli })
+const block = await Block.fromJsonRpcProvider(providerURL, 6826186n, {
+  common,
+  skipTxTypes: [126], // Skip Optimism system tx type
+})
+
+const provider = new ethers.JsonRpcProvider(providerURL)
+const stateManager = new EthersStateManager({ provider, blockTag: blockNumber - 1n }) // Set state to block before execution block
+
+const vm = await VM.create({ common, stateManager })
+
+const res = await vm.runBlock({ block, skipBlockValidation: true })
+console.log(res)
+```
+
+Note that there will be a receipt trie error at the end of the run since the block does not contain the full list of txs and receipt root is therefore not matching.
+
 ## Example
 
 This projects contain the following examples:

@@ -1,5 +1,5 @@
 import { TransactionFactory } from '@ethereumjs/tx'
-import { TypeOutput, setLengthLeft, toBytes, toType } from '@ethereumjs/util'
+import { TypeOutput, bytesToInt, setLengthLeft, toBytes, toType } from '@ethereumjs/util'
 
 import { blockHeaderFromRpc } from './header-from-rpc'
 
@@ -48,8 +48,17 @@ export function blockFromRpc(
   const opts = { common: header._common }
   for (const _txParams of blockParams.transactions ?? []) {
     const txParams = normalizeTxParams(_txParams)
-    const tx = TransactionFactory.fromTxData(txParams as TxData, opts)
-    transactions.push(tx)
+    let skip = false
+    if (options?.skipTxTypes !== undefined && txParams.type !== undefined) {
+      const txType = Number(bytesToInt(toBytes(txParams.type)))
+      if (options.skipTxTypes.includes(txType)) {
+        skip = true
+      }
+    }
+    if (!skip) {
+      const tx = TransactionFactory.fromTxData(txParams as TxData, opts)
+      transactions.push(tx)
+    }
   }
 
   const uncleHeaders = uncles.map((uh) => blockHeaderFromRpc(uh, options))

@@ -61,6 +61,20 @@ export interface BlockOptions {
    */
   calcDifficultyFromHeader?: BlockHeader
   /**
+   * Allows to skip certain tx types along block instantiation.
+   *
+   * This can be useful to work with blocks which contain a tx type which is currently
+   * not supported by the @ethereumjs/tx library.
+   *
+   * Known use cases:
+   *
+   * - Skip Optimism system txs (type: 126)
+   *
+   * Note that functionality of this library is limited when this option is used
+   * and validation- and serilization-related methods throw when called.
+   */
+  skipTxTypes?: number[]
+  /**
    * A block object by default gets frozen along initialization. This gives you
    * strong additional security guarantees on the consistency of the block parameters.
    * It also enables block hash caching when the `hash()` method is called multiple times.

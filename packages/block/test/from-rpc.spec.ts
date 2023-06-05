@@ -3,7 +3,6 @@ import { bytesToPrefixedHexString, hexStringToBytes, randomBytes } from '@ethere
 import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
-import { blockFromRpc } from '../src/from-rpc'
 import { blockHeaderFromRpc } from '../src/header-from-rpc'
 import { Block } from '../src/index'
 
@@ -25,7 +24,7 @@ tape('[fromRPC]: block #2924874', function (t) {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 
   t.test('should create a block with transactions with valid signatures', function (st) {
-    const block = blockFromRpc(blockData, [], { common })
+    const block = Block.fromRPC(blockData, [], { common })
     const allValid = block.transactions.every((tx) => tx.verifySignature())
     st.equal(allValid, true, 'all transaction signatures are valid')
     st.end()
@@ -47,7 +46,7 @@ tape('[fromRPC]:', function (t) {
       const valueAsIntegerString = '1'
       const blockDataTransactionValueAsInteger = blockData
       blockDataTransactionValueAsInteger.transactions[0].value = valueAsIntegerString
-      const blockFromTransactionValueAsInteger = blockFromRpc(
+      const blockFromTransactionValueAsInteger = Block.fromRPC(
         blockDataTransactionValueAsInteger,
         undefined,
         { common }
@@ -68,7 +67,7 @@ tape('[fromRPC]:', function (t) {
       const gasPriceAsIntegerString = '1'
       const blockDataTransactionGasPriceAsInteger = blockData
       blockDataTransactionGasPriceAsInteger.transactions[0].gasPrice = gasPriceAsIntegerString
-      const blockFromTransactionGasPriceAsInteger = blockFromRpc(
+      const blockFromTransactionGasPriceAsInteger = Block.fromRPC(
         blockDataTransactionGasPriceAsInteger,
         undefined,
         { common }
@@ -86,7 +85,7 @@ tape('[fromRPC]:', function (t) {
     'should create a block given json data that includes a difficulty parameter of type integer string',
     function (st) {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-      const blockDifficultyAsInteger = blockFromRpc(blockDataDifficultyAsInteger, undefined, {
+      const blockDifficultyAsInteger = Block.fromRPC(blockDataDifficultyAsInteger, undefined, {
         common,
       })
       st.equal(
@@ -99,7 +98,7 @@ tape('[fromRPC]:', function (t) {
 
   t.test('should create a block from london hardfork', function (st) {
     const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.London })
-    const block = blockFromRpc(testDataFromRpcGoerliLondon, [], { common })
+    const block = Block.fromRPC(testDataFromRpcGoerliLondon, [], { common })
     st.equal(
       `0x${block.header.baseFeePerGas?.toString(16)}`,
       testDataFromRpcGoerliLondon.baseFeePerGas
@@ -110,14 +109,14 @@ tape('[fromRPC]:', function (t) {
 
   t.test('should create a block with uncles', function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const block = blockFromRpc(blockDataWithUncles, [uncleBlockData], { common })
+    const block = Block.fromRPC(blockDataWithUncles, [uncleBlockData], { common })
     st.ok(block.validateUnclesHash())
     st.end()
   })
 
   t.test('should create a block with EIP-4896 withdrawals', function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
-    const block = blockFromRpc(blockDataWithWithdrawals, [], { common })
+    const block = Block.fromRPC(blockDataWithWithdrawals, [], { common })
     st.ok(block.validateWithdrawalsTrie())
     st.end()
   })
@@ -137,7 +136,7 @@ tape('[fromRPC]:', function (t) {
 tape('[fromRPC] - Alchemy/Infura API block responses', (t) => {
   t.test('should create pre merge block from Alchemy API response to eth_getBlockByHash', (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const block = blockFromRpc(alchemy14151203, [], { common })
+    const block = Block.fromRPC(alchemy14151203, [], { common })
     st.equal(bytesToPrefixedHexString(block.hash()), alchemy14151203.hash)
     st.end()
   })
@@ -146,19 +145,19 @@ tape('[fromRPC] - Alchemy/Infura API block responses', (t) => {
     'should create pre and post merge blocks from Infura API responses to eth_getBlockByHash and eth_getBlockByNumber',
     (st) => {
       const common = new Common({ chain: Chain.Mainnet })
-      let block = blockFromRpc(infura2000004woTxs, [], { common, hardforkByBlockNumber: true })
+      let block = Block.fromRPC(infura2000004woTxs, [], { common, hardforkByBlockNumber: true })
       st.equal(
         bytesToPrefixedHexString(block.hash()),
         infura2000004woTxs.hash,
         'created premerge block w/o txns'
       )
-      block = blockFromRpc(infura2000004wTxs, [], { common, hardforkByBlockNumber: true })
+      block = Block.fromRPC(infura2000004wTxs, [], { common, hardforkByBlockNumber: true })
       st.equal(
         bytesToPrefixedHexString(block.hash()),
         infura2000004wTxs.hash,
         'created premerge block with txns'
       )
-      block = blockFromRpc(infura15571241woTxs, [], {
+      block = Block.fromRPC(infura15571241woTxs, [], {
         common,
         hardforkByTTD: 58750000000000000000000n,
       })
@@ -168,7 +167,7 @@ tape('[fromRPC] - Alchemy/Infura API block responses', (t) => {
         'created post merge block without txns'
       )
 
-      block = blockFromRpc(infura15571241wTxs, [], {
+      block = Block.fromRPC(infura15571241wTxs, [], {
         common,
         hardforkByTTD: 58750000000000000000000n,
       })

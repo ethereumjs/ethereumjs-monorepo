@@ -175,6 +175,9 @@ export class EVM implements EVMInterface {
     Hardfork.Paris,
     Hardfork.Shanghai,
     Hardfork.Cancun,
+    // Optimism (Bedrock) hardforks
+    Hardfork.Bedrock,
+    Hardfork.Regolith,
   ]
   protected _tx?: {
     gasPrice: bigint

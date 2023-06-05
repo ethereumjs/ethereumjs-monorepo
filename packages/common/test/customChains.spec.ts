@@ -87,7 +87,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
       'uses default hardfork when no options are present'
     )
 
-    common = Common.custom(CustomChain.OptimisticEthereum, { hardfork: Hardfork.Byzantium })
+    common = Common.custom(CustomChain.OptimismEthereum, { hardfork: Hardfork.Byzantium })
     st.equal(
       common.hardfork(),
       Hardfork.Byzantium,

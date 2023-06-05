@@ -7,6 +7,7 @@ import {
   Withdrawal,
   bigIntToHex,
   bytesToHex,
+  bytesToInt,
   bytesToPrefixedHexString,
   equalsBytes,
   fetchFromProvider,
@@ -14,6 +15,7 @@ import {
   hexStringToBytes,
   intToHex,
   isHexPrefixed,
+  toBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
@@ -50,6 +52,7 @@ export class Block {
   public readonly withdrawals?: Withdrawal[]
   public readonly txTrie = new Trie()
   public readonly _common: Common
+  public readonly _skipTxTypes: number[]
 
   /**
    * Returns the withdrawals trie root for array of Withdrawal.
@@ -95,12 +98,21 @@ export class Block {
     // parse transactions
     const transactions = []
     for (const txData of txsData ?? []) {
-      const tx = TransactionFactory.fromTxData(txData, {
-        ...opts,
-        // Use header common in case of hardforkByBlockNumber being activated
-        common: header._common,
-      } as TxOptions)
-      transactions.push(tx)
+      let skip = false
+      if (opts?.skipTxTypes !== undefined && txData.type !== undefined) {
+        const txType = Number(bytesToInt(toBytes(txData.type)))
+        if (opts.skipTxTypes.includes(txType)) {
+          skip = true
+        }
+      }
+      if (!skip) {
+        const tx = TransactionFactory.fromTxData(txData, {
+          ...opts,
+          // Use header common in case of hardforkByBlockNumber being activated
+          common: header._common,
+        } as TxOptions)
+        transactions.push(tx)
+      }
     }
 
     // parse uncle headers
@@ -152,6 +164,9 @@ export class Block {
    * @param opts
    */
   public static fromValuesArray(values: BlockBytes, opts?: BlockOptions) {
+    if (opts?.skipTxTypes !== undefined) {
+      throw new Error('constructor usage not possible in combination with skipTxTypes option')
+    }
     if (values.length > 4) {
       throw new Error('invalid block. More values than expected were received')
     }
@@ -398,6 +413,7 @@ export class Block {
       throw new Error('Cannot have a withdrawals field if EIP 4895 is not active')
     }
 
+    this._skipTxTypes = opts?.skipTxTypes ?? []
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -408,6 +424,10 @@ export class Block {
    * Returns a Array of the raw Bytes Arays of this block, in order.
    */
   raw(): BlockBytes {
+    if (this._skipTxTypes.length > 0) {
+      throw new Error('raw() method call not allowed when skipTxTypes option is used')
+    }
+
     const bytesArray = <BlockBytes>[
       this.header.raw(),
       this.transactions.map((tx) =>
@@ -456,6 +476,9 @@ export class Block {
    * and do a check on the root hash.
    */
   async validateTransactionsTrie(): Promise<boolean> {
+    if (this._skipTxTypes.length > 0) {
+      throw new Error('tx trie validation not possible when skipTxTypes option is used')
+    }
     let result
     if (this.transactions.length === 0) {
       result = equalsBytes(this.header.transactionsTrie, KECCAK256_RLP)
@@ -478,6 +501,9 @@ export class Block {
   validateTransactions(stringError: false): boolean
   validateTransactions(stringError: true): string[]
   validateTransactions(stringError = false) {
+    if (this._skipTxTypes.length > 0) {
+      throw new Error('tx validation not possible when skipTxTypes option is used')
+    }
     const errors: string[] = []
     let dataGasUsed = BigInt(0)
     const dataGasLimit = this._common.param('gasConfig', 'maxDataGasPerBlock')
