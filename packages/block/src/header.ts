@@ -535,6 +535,24 @@ export class BlockHeader {
   }
 
   /**
+   * Calculates the excess data gas for next (hopefully) post EIP 4844 block.
+   *
+   * Note: This function expects that it is only being called on a valid 4844 parent as it does not have
+   * access to the "current" block's common instance to verify if 4844 is active or not.
+   */
+  public calcNextExcessDataGas(): bigint {
+    // The validation of the fields and 4844 activation is already taken care in BlockHeader constructor
+    const targetGasConsumed = (this.excessDataGas ?? BigInt(0)) + (this.dataGasUsed ?? BigInt(0))
+    const targetDataGasPerBlock = this._common.param('gasConfig', 'targetDataGasPerBlock')
+
+    if (targetGasConsumed <= targetDataGasPerBlock) {
+      return BigInt(0)
+    } else {
+      return targetGasConsumed - targetDataGasPerBlock
+    }
+  }
+
+  /**
    * Returns a Uint8Array Array of the raw Bytes in this header, in order.
    */
   raw(): BlockHeaderBytes {

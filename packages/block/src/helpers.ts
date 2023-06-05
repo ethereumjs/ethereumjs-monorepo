@@ -83,26 +83,6 @@ export function getDifficulty(headerData: HeaderData): bigint | null {
   return null
 }
 
-/**
- * Calculates the excess data gas for a post EIP 4844 block given the parent block header.
- * @param parent header for the parent block
- * @returns the excess data gas for the prospective next block
- *
- * Note: This function expects that it is only being called on a valid block as it does not have
- * access to the "current" block's common instance to verify if 4844 is active or not.
- */
-export const calcExcessDataGas = (parent: BlockHeader) => {
-  // The validation of the fields and 4844 activation is already taken care in BlockHeader constructor
-  const targetGasConsumed = (parent.excessDataGas ?? BigInt(0)) + (parent.dataGasUsed ?? BigInt(0))
-  const targetDataGasPerBlock = parent._common.param('gasConfig', 'targetDataGasPerBlock')
-
-  if (targetGasConsumed <= targetDataGasPerBlock) {
-    return BigInt(0)
-  } else {
-    return targetGasConsumed - targetDataGasPerBlock
-  }
-}
-
 export const getNumBlobs = (transactions: TypedTransaction[]) => {
   let numBlobs = 0
   for (const tx of transactions) {

@@ -1,4 +1,4 @@
-import { Block, calcExcessDataGas } from '@ethereumjs/block'
+import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
@@ -336,7 +336,7 @@ export async function buildBlock(this: VM, opts: BuildBlockOpts): Promise<BlockB
     }
     if (parentHeader !== null) {
       // Compute excess data gas for block
-      excessDataGas = calcExcessDataGas(parentHeader)
+      excessDataGas = parentHeader.calcNextExcessDataGas()
     }
   }
 

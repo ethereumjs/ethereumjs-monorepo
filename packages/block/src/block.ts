@@ -20,7 +20,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { executionPayloadFromBeaconPayload } from './from-beacon-payload'
 import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
-import { calcExcessDataGas, getDataGasPrice } from './helpers'
+import { getDataGasPrice } from './helpers'
 
 import type { BeaconPayloadJson } from './from-beacon-payload'
 import type {
@@ -600,7 +600,7 @@ export class Block {
         )
       }
 
-      const expectedExcessDataGas = calcExcessDataGas(parentHeader)
+      const expectedExcessDataGas = parentHeader.calcNextExcessDataGas()
       if (this.header.excessDataGas !== expectedExcessDataGas) {
         throw new Error(
           `block excessDataGas mismatch: have ${this.header.excessDataGas}, want ${expectedExcessDataGas}`

@@ -10,7 +10,7 @@ import {
 import * as kzg from 'c-kzg'
 import * as tape from 'tape'
 
-import { Block, calcExcessDataGas, getDataGasPrice } from '../src'
+import { Block, getDataGasPrice } from '../src'
 import { BlockHeader } from '../src/header'
 import { calcDataFee, fakeExponential, getNumBlobs } from '../src/helpers'
 
@@ -114,7 +114,7 @@ tape('data gas tests', async (t) => {
   } else {
     const preShardingHeader = BlockHeader.fromHeaderData({})
 
-    let excessDataGas = calcExcessDataGas(preShardingHeader)
+    let excessDataGas = preShardingHeader.calcNextExcessDataGas()
     t.equals(excessDataGas, 0n, 'excess data gas where 4844 is not active on header should be 0')
 
     t.throws(
@@ -128,7 +128,7 @@ tape('data gas tests', async (t) => {
       { common, skipConsensusFormatValidation: true }
     )
 
-    excessDataGas = calcExcessDataGas(lowGasHeader)
+    excessDataGas = lowGasHeader.calcNextExcessDataGas()
     let dataGasPrice = getDataGasPrice(lowGasHeader)
     t.equal(excessDataGas, 0n, 'excess data gas should be 0 for small parent header data gas')
     t.equal(dataGasPrice, 1n, 'data gas price should be 1n when low or no excess data gas')
@@ -136,7 +136,7 @@ tape('data gas tests', async (t) => {
       { number: 1, excessDataGas: 4194304, dataGasUsed: BigInt(4) * dataGasPerBlob },
       { common, skipConsensusFormatValidation: true }
     )
-    excessDataGas = calcExcessDataGas(highGasHeader)
+    excessDataGas = highGasHeader.calcNextExcessDataGas()
     dataGasPrice = getDataGasPrice(highGasHeader)
     t.equal(excessDataGas, 4456448n)
     t.equal(dataGasPrice, 6n, 'computed correct data gas price')
@@ -182,7 +182,7 @@ tape('transaction validation tests', async (t) => {
       { number: 1n, excessDataGas: 4194304, dataGasUsed: 0 },
       { common, skipConsensusFormatValidation: true }
     )
-    const excessDataGas = calcExcessDataGas(parentHeader)
+    const excessDataGas = parentHeader.calcNextExcessDataGas()
 
     // eslint-disable-next-line no-inner-declarations
     function getBlock(transactions: TypedTransaction[]) {
