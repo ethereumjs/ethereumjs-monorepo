@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1685968096921,
+  "lastUpdate": 1685982166013,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "5b393bf9feae0053521e04e6747214b2cc1b1af6",
-          "message": "Monorepo: Deprecation Cleanup Work (#2706)\n\n* Common: remove deprecated nextHardforkBlock() and isNextHardforkBlock() methods\r\n\r\n* Common: remove deprecated isHardforkBlock() method\r\n\r\n* Blockchain: remove deprecated getHead() method\r\n\r\n* EVM: Rename SHA3 opcode -> KECCAK256\r\n\r\n* EVM: rename DIFFICULTY opcode to PREVRANDAO post Merge\r\n\r\n* Common: add prevrandaio gas price to EIP-4399 definition file",
-          "timestamp": "2023-05-17T14:28:37+02:00",
-          "tree_id": "77bd0ac0193c90408ffca929b0ccf42bcb6c6f47",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5b393bf9feae0053521e04e6747214b2cc1b1af6"
-        },
-        "date": 1684326701382,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 32894,
-            "range": "±3.78%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 30767,
-            "range": "±5.16%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 32503,
-            "range": "±2.33%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 31608,
-            "range": "±2.36%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30157,
-            "range": "±2.73%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±10.77%",
             "unit": "ops/sec",
             "extra": "65 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "konjou@gmail.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5b410c037ca78242655138f34a1533862f463cd3",
+          "message": "Upgrade `ethers` to v6 in `wallet` (#2747)\n\n* migrate to uint8arrays\r\n\r\n* add 0x prefix\r\n\r\n* Remaining fixes and cleanup\r\n\r\n* Remove duplicate helpers\r\n\r\n* slice to subarray\r\n\r\n* wallet: fix browser tests\r\n\r\n* Address feedback\r\n\r\n* Address feedback\r\n\r\n* partial migration to tape\r\n\r\n* WIP changes\r\n\r\n* Finish migrating tests\r\n\r\n* revert error message checking in test\r\n\r\n* update tests again\r\n\r\n* fix test\r\n\r\n* test fixes\r\n\r\n* upgrade ethers to v6\r\n\r\n* Fix tests\r\n\r\n* Remove obsolete test\r\n\r\n* lint\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2023-06-05T21:48:31+05:30",
+          "tree_id": "bc28ecb49fea5ed5ab26a95061e297f2f60a90b5",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5b410c037ca78242655138f34a1533862f463cd3"
+        },
+        "date": 1685982164720,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 25021,
+            "range": "±6.76%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 26463,
+            "range": "±3.53%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 25209,
+            "range": "±3.30%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 26229,
+            "range": "±3.57%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 24350,
+            "range": "±3.69%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
           }
         ]
       }
