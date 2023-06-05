@@ -3,15 +3,7 @@ import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
-import {
-  Address,
-  GWEI_TO_WEI,
-  TypeOutput,
-  Withdrawal,
-  equalsBytes,
-  toBytes,
-  toType,
-} from '@ethereumjs/util'
+import { Address, GWEI_TO_WEI, TypeOutput, Withdrawal, toBytes, toType } from '@ethereumjs/util'
 
 import { Bloom } from './bloom'
 import { calculateMinerReward, encodeReceipt, rewardAccount } from './runBlock'
@@ -46,7 +38,6 @@ export class BlockBuilder {
    */
   private _minerValue = BigInt(0)
 
-  private readonly excessDataGas: bigint
   private readonly vm: VM
   private blockOpts: BuilderOpts
   private headerData: HeaderData
@@ -64,18 +55,19 @@ export class BlockBuilder {
     return this._minerValue
   }
 
-  constructor(vm: VM, opts: BuildBlockOpts & { excessDataGas: bigint }) {
+  constructor(vm: VM, opts: BuildBlockOpts) {
     this.vm = vm
     this.blockOpts = { putBlockIntoBlockchain: true, ...opts.blockOpts, common: this.vm._common }
 
     this.headerData = {
       ...opts.headerData,
-      parentHash: opts.headerData?.parentHash ?? opts.parentBlock.hash(),
+      parentHash: opts.parentBlock.hash(),
       number: opts.headerData?.number ?? opts.parentBlock.header.number + BigInt(1),
       gasLimit: opts.headerData?.gasLimit ?? opts.parentBlock.header.gasLimit,
+      excessDataGas:
+        opts.headerData?.excessDataGas ?? opts.parentBlock.header.calcNextExcessDataGas(),
     }
     this.withdrawals = opts.withdrawals?.map(Withdrawal.fromWithdrawalData)
-    this.excessDataGas = opts.excessDataGas
 
     if (
       this.vm._common.isActivatedEIP(1559) === true &&
@@ -192,7 +184,6 @@ export class BlockBuilder {
       throw new Error('tx has a higher gas limit than the remaining gas in the block')
     }
     let dataGasUsed = undefined
-    let excessDataGas = undefined
     if (tx instanceof BlobEIP4844Transaction) {
       if (this.blockOpts.common?.isActivatedEIP(4844) !== true) {
         throw Error('eip4844 not activated yet for adding a blob transaction')
@@ -204,13 +195,12 @@ export class BlockBuilder {
       }
 
       dataGasUsed = this.dataGasUsed
-      excessDataGas = this.excessDataGas
     }
     const header = {
       ...this.headerData,
       gasUsed: this.gasUsed,
+      // correct excessDataGas should already part of headerData used above
       dataGasUsed,
-      excessDataGas,
     }
 
     const blockData = { header, transactions: this.transactions }
@@ -277,10 +267,8 @@ export class BlockBuilder {
     const timestamp = this.headerData.timestamp ?? Math.round(Date.now() / 1000)
 
     let dataGasUsed = undefined
-    let excessDataGas = undefined
     if (this.vm._common.isActivatedEIP(4844) === true) {
       dataGasUsed = this.dataGasUsed
-      excessDataGas = this.excessDataGas
     }
 
     const headerData = {
@@ -292,8 +280,8 @@ export class BlockBuilder {
       logsBloom,
       gasUsed,
       timestamp,
+      // correct excessDataGas should already be part of headerData used above
       dataGasUsed,
-      excessDataGas,
     }
 
     if (consensusType === ConsensusType.ProofOfWork) {
@@ -323,23 +311,6 @@ export class BlockBuilder {
 }
 
 export async function buildBlock(this: VM, opts: BuildBlockOpts): Promise<BlockBuilder> {
-  let excessDataGas = BigInt(0)
-  if (this._common.isActivatedEIP(4844)) {
-    let parentHeader = null
-    if (
-      opts.headerData?.parentHash !== undefined &&
-      !equalsBytes(toBytes(opts.headerData.parentHash), opts.parentBlock.hash())
-    ) {
-      parentHeader = (await this.blockchain.getBlock(toBytes(opts.headerData.parentHash)))?.header
-    } else {
-      parentHeader = opts.parentBlock.header
-    }
-    if (parentHeader !== null) {
-      // Compute excess data gas for block
-      excessDataGas = parentHeader.calcNextExcessDataGas()
-    }
-  }
-
   // let opts override excessDataGas if there is some value passed there
-  return new BlockBuilder(this, { excessDataGas, ...opts })
+  return new BlockBuilder(this, opts)
 }
