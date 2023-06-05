@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1685982166013,
+  "lastUpdate": 1685986346983,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "ffec3ed1992b7e40606f8aac2613fa24d8677f1c",
-          "message": "block: Add helper to construct block from beacon payload (#2684)\n\n* block: Add helper to construct block from beacon payload\r\n\r\n* add comment\r\n\r\n* fix tests\r\n\r\n* fix spec\r\n\r\n* fix spec\r\n\r\n* apply feedback\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-05-17T09:56:15-04:00",
-          "tree_id": "e3b827b4a8c988497e458874392c96e9a8330c74",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ffec3ed1992b7e40606f8aac2613fa24d8677f1c"
-        },
-        "date": 1684331960319,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31441,
-            "range": "±4.51%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 29000,
-            "range": "±7.53%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 30809,
-            "range": "±3.25%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 30413,
-            "range": "±3.21%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29708,
-            "range": "±3.26%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.69%",
             "unit": "ops/sec",
             "extra": "77 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d1ba362f034f8ca1d76a18f7a872f80648e60f4b",
+          "message": "Client: Fix PeerPool Memory Leak (#2752)\n\n* Client: set memory shutdown threshold from 95 to 92 (did not trigger in all occasions)\r\n\r\n* Client: tsconfig path fix\r\n\r\n* Client: send disconnect to peer banned from peer pool (fixes unbounded messageQueue growths), fix reconnect after ban\r\n\r\n* Client: add additional messageQueue safe guard for BoundProtocol\r\n\r\n* Fix tests",
+          "timestamp": "2023-06-05T22:59:08+05:30",
+          "tree_id": "03ec34b5493281f53b6273c7bd61642634641328",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d1ba362f034f8ca1d76a18f7a872f80648e60f4b"
+        },
+        "date": 1685986346196,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 30991,
+            "range": "±5.57%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31055,
+            "range": "±2.79%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 30879,
+            "range": "±2.84%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 30262,
+            "range": "±3.01%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 23948,
+            "range": "±11.29%",
+            "unit": "ops/sec",
+            "extra": "68 samples"
           }
         ]
       }
