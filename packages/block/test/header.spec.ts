@@ -153,7 +153,7 @@ tape('[Block]: Header functions', function (t) {
   })
 
   t.test('Initialization -> fromValuesArray() -> error cases', function (st) {
-    const headerArray = Array(19).fill(new Uint8Array(0))
+    const headerArray = Array(20).fill(new Uint8Array(0))
 
     // mock header data (if set to zeros(0) header throws)
     headerArray[0] = zeros(32) //parentHash
