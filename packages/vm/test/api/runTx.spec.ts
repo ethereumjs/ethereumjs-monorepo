@@ -895,7 +895,11 @@ tape('EIP 4844 transaction tests', async (t) => {
   if (isBrowser() === true) {
     t.end()
   } else {
-    initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet4.txt')
+    try {
+      initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet4.txt')
+      // eslint-disable-next-line
+    } catch {}
+
     const genesisJson = require('../../../block/test/testdata/4844-hardfork.json')
     const common = Common.fromGethGenesis(genesisJson, {
       chain: 'customChain',

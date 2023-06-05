@@ -221,8 +221,9 @@ tape('[RlpxServer]', async (t) => {
     t.notOk(server.ban('123'), 'not started')
     server.started = true
     server.dpt = td.object()
-    server.ban('peer0', 1234)
-    td.verify(server.dpt!.banPeer('peer0', 1234))
+    server.rlpx = td.object()
+    server.ban('112233', 1234)
+    td.verify(server.dpt!.banPeer('112233', 1234))
     t.end()
   })
 

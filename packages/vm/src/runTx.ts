@@ -1,4 +1,4 @@
-import { Block, getDataGasPrice } from '@ethereumjs/block'
+import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
 import { Account, Address, KECCAK256_NULL, bytesToPrefixedHexString, short } from '@ethereumjs/util'
@@ -300,7 +300,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       throw new Error(msg)
     }
     const parentBlock = await this.blockchain.getBlock(opts.block?.header.parentHash)
-    dataGasPrice = getDataGasPrice(parentBlock.header)
+    dataGasPrice = parentBlock.header.getDataGasPrice()
     if (castTx.maxFeePerDataGas < dataGasPrice) {
       const msg = _errorMsg(
         `Transaction's maxFeePerDataGas ${castTx.maxFeePerDataGas}) is less than block dataGasPrice (${dataGasPrice}).`,

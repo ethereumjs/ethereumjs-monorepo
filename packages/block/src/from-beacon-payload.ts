@@ -27,6 +27,7 @@ export type BeaconPayloadJson = {
   block_hash: string
   transactions: string[]
   withdrawals?: BeaconWithdrawal[]
+  data_gas_used?: string
   excess_data_gas?: string
 }
 
@@ -61,6 +62,9 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): E
     }))
   }
 
+  if (payload.data_gas_used !== undefined && payload.data_gas_used !== null) {
+    executionPayload.dataGasUsed = bigIntToHex(BigInt(payload.data_gas_used))
+  }
   if (payload.excess_data_gas !== undefined && payload.excess_data_gas !== null) {
     executionPayload.excessDataGas = bigIntToHex(BigInt(payload.excess_data_gas))
   }

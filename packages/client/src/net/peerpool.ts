@@ -191,7 +191,7 @@ export class PeerPool {
     // Reconnect to peer after ban period if pool is empty
     this._reconnectTimeout = setTimeout(async () => {
       if (this.running && this.size === 0) {
-        await peer.server?.connect(peer.id)
+        await peer.connect()
         this.connected(peer)
       }
     }, maxAge + 1000)
