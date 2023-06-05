@@ -23,7 +23,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique'
-import { valuesArrayToHeaderData } from './helpers'
+import { fakeExponential, valuesArrayToHeaderData } from './helpers'
 
 import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from './types'
 import type { CliqueConfig } from '@ethereumjs/common'
@@ -535,10 +535,36 @@ export class BlockHeader {
   }
 
   /**
-   * Calculates the excess data gas for next (hopefully) post EIP 4844 block.
+   * Returns the price per unit of data gas for a blob transaction in the current/pending block
+   * @returns the price in gwei per unit of data gas spent
+   */
+  getDataGasPrice(): bigint {
+    if (this.excessDataGas === undefined) {
+      throw new Error('header must have excessDataGas field populated')
+    }
+    return fakeExponential(
+      this._common.param('gasPrices', 'minDataGasPrice'),
+      this.excessDataGas,
+      this._common.param('gasConfig', 'dataGasPriceUpdateFraction')
+    )
+  }
+
+  /**
+   * Returns the total fee for data gas spent for including blobs in block.
    *
-   * Note: This function expects that it is only being called on a valid 4844 parent as it does not have
-   * access to the "current" block's common instance to verify if 4844 is active or not.
+   * @param numBlobs number of blobs in the transaction/block
+   * @returns the total data gas fee for numBlobs blobs
+   */
+  calcDataFee(numBlobs: number): bigint {
+    const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
+    const dataGasUsed = dataGasPerBlob * BigInt(numBlobs)
+
+    const dataGasPrice = this.getDataGasPrice()
+    return dataGasUsed * dataGasPrice
+  }
+
+  /**
+   * Calculates the excess data gas for next (hopefully) post EIP 4844 block.
    */
   public calcNextExcessDataGas(): bigint {
     // The validation of the fields and 4844 activation is already taken care in BlockHeader constructor

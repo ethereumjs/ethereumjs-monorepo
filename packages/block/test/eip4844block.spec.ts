@@ -10,9 +10,9 @@ import {
 import * as kzg from 'c-kzg'
 import * as tape from 'tape'
 
-import { Block, getDataGasPrice } from '../src'
+import { Block } from '../src'
 import { BlockHeader } from '../src/header'
-import { calcDataFee, fakeExponential, getNumBlobs } from '../src/helpers'
+import { fakeExponential, getNumBlobs } from '../src/helpers'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
 
@@ -73,7 +73,7 @@ tape('EIP4844 header tests', function (t) {
           err.message.toString() === 'data gas used can only be provided with EIP4844 activated'
         )
       },
-      'should throw when setting excessDataGas with EIP4844 not being activated'
+      'should throw when setting dataGasUsed with EIP4844 not being activated'
     )
 
     const excessDataGas = BlockHeader.fromHeaderData(
@@ -118,7 +118,7 @@ tape('data gas tests', async (t) => {
     t.equals(excessDataGas, 0n, 'excess data gas where 4844 is not active on header should be 0')
 
     t.throws(
-      () => calcDataFee(preShardingHeader, 1),
+      () => preShardingHeader.calcDataFee(1),
       (err: any) => err.message.includes('header must have excessDataGas field'),
       'calcDataFee throws when header has no excessDataGas field'
     )
@@ -129,7 +129,7 @@ tape('data gas tests', async (t) => {
     )
 
     excessDataGas = lowGasHeader.calcNextExcessDataGas()
-    let dataGasPrice = getDataGasPrice(lowGasHeader)
+    let dataGasPrice = lowGasHeader.getDataGasPrice()
     t.equal(excessDataGas, 0n, 'excess data gas should be 0 for small parent header data gas')
     t.equal(dataGasPrice, 1n, 'data gas price should be 1n when low or no excess data gas')
     const highGasHeader = BlockHeader.fromHeaderData(
@@ -137,12 +137,12 @@ tape('data gas tests', async (t) => {
       { common, skipConsensusFormatValidation: true }
     )
     excessDataGas = highGasHeader.calcNextExcessDataGas()
-    dataGasPrice = getDataGasPrice(highGasHeader)
+    dataGasPrice = highGasHeader.getDataGasPrice()
     t.equal(excessDataGas, 4456448n)
     t.equal(dataGasPrice, 6n, 'computed correct data gas price')
 
-    t.equal(calcDataFee(lowGasHeader, 1), 131072n, 'compute data fee correctly')
-    t.equal(calcDataFee(highGasHeader, 4), 3145728n, 'compute data fee correctly')
+    t.equal(lowGasHeader.calcDataFee(1), 131072n, 'compute data fee correctly')
+    t.equal(highGasHeader.calcDataFee(4), 3145728n, 'compute data fee correctly')
     t.end()
   }
 })

@@ -20,7 +20,6 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { executionPayloadFromBeaconPayload } from './from-beacon-payload'
 import { blockFromRpc } from './from-rpc'
 import { BlockHeader } from './header'
-import { getDataGasPrice } from './helpers'
 
 import type { BeaconPayloadJson } from './from-beacon-payload'
 import type {
@@ -575,7 +574,7 @@ export class Block {
 
       for (const tx of this.transactions) {
         if (tx instanceof BlobEIP4844Transaction) {
-          const dataGasPrice = getDataGasPrice(this.header)
+          const dataGasPrice = this.header.getDataGasPrice()
           if (tx.maxFeePerDataGas < dataGasPrice) {
             throw new Error(
               `blob transaction maxFeePerDataGas ${

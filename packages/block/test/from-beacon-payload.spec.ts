@@ -1,7 +1,7 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import * as tape from 'tape'
 
-import { Block } from '../src/index'
+import { Block, BlockHeader } from '../src/index'
 
 import * as payload87335 from './testdata/payload-slot-87335.json'
 import * as payload87475 from './testdata/payload-slot-87475.json'
@@ -20,12 +20,11 @@ tape('[fromExecutionPayloadJson]: 4844 devnet 5', async function (t) {
     for (const payload of [payload87335, payload87475]) {
       try {
         const block = await Block.fromBeaconPayloadJson(payload, { common })
-        // mock the parent header to have dataGasUsed which gives the correct current block excessDataGas
-        block.validateBlobTransactions({
-          excessDataGas: BigInt(0),
-          dataGasUsed: block.header.excessDataGas! + BigInt(262144),
-          _common: common,
-        } as any)
+        const parentHeader = BlockHeader.fromHeaderData(
+          { excessDataGas: BigInt(0), dataGasUsed: block.header.excessDataGas! + BigInt(262144) },
+          { common }
+        )
+        block.validateBlobTransactions(parentHeader)
         st.pass(`successfully constructed block=${block.header.number}`)
       } catch (e) {
         st.fail(`failed to construct block, error: ${e}`)
@@ -58,7 +57,8 @@ tape('[fromExecutionPayloadJson]: 4844 devnet 5', async function (t) {
         },
         { common }
       )
-      block.validateBlobTransactions({ excessDataGas: BigInt(0), _common: common } as any)
+      const parentHeader = BlockHeader.fromHeaderData({ excessDataGas: BigInt(0) }, { common })
+      block.validateBlobTransactions(parentHeader)
       st.fail(`should have failed constructing the block`)
     } catch (e) {
       st.pass(`correctly failed constructing block, error: ${e}`)
