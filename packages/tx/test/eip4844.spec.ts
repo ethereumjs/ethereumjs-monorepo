@@ -21,7 +21,12 @@ import { BlobEIP4844Transaction, TransactionFactory } from '../src'
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
 const pk = randomBytes(32)
-if (isBrowser() === false) initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet4.txt')
+if (isBrowser() === false) {
+  try {
+    initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet4.txt')
+    // eslint-disable-next-line
+    } catch {}
+}
 
 const gethGenesis = require('../../block/test/testdata/4844-hardfork.json')
 const common = Common.fromGethGenesis(gethGenesis, {
