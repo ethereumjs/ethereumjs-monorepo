@@ -29,8 +29,7 @@ if (isBrowser() === false) {
   try {
     initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet4.txt')
     // eslint-disable-next-line
-    } catch {}
-
+  } catch {}
 }
 
 tape('EIP4844 tests', (t) => {
