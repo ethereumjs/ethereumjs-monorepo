@@ -25,7 +25,7 @@ if (isBrowser() === false) {
   try {
     initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet4.txt')
     // eslint-disable-next-line
-    } catch {}
+  } catch {}
 }
 
 const gethGenesis = require('../../block/test/testdata/4844-hardfork.json')
@@ -178,7 +178,7 @@ tape('EIP4844 constructor tests - invalid scenarios', (t) => {
   }
 })
 
-tape('Network wrapper tests', async (t) => {
+tape.only('Network wrapper tests', async (t) => {
   if (isBrowser() === true) {
     t.end()
   } else {
@@ -224,6 +224,60 @@ tape('Network wrapper tests', async (t) => {
       'has the same hash as the network wrapper version'
     )
 
+    const simpleBlobTx = BlobEIP4844Transaction.fromTxData(
+      {
+        blobsData: ['hello world'],
+        maxFeePerDataGas: 100000000n,
+        gasLimit: 0xffffffn,
+        to: randomBytes(20),
+      },
+      { common }
+    )
+
+    t.equal(
+      bytesToHex(unsignedTx.versionedHashes[0]),
+      bytesToHex(simpleBlobTx.versionedHashes[0]),
+      'tx versioned hash for simplified blob txData constructor matches fully specified versioned hashes'
+    )
+
+    t.throws(() =>
+      BlobEIP4844Transaction.fromTxData(
+        {
+          blobsData: ['hello world'],
+          blobs: ['hello world'],
+          maxFeePerDataGas: 100000000n,
+          gasLimit: 0xffffffn,
+          to: randomBytes(20),
+        },
+        { common }
+      )
+    )
+
+    t.throws(() =>
+      BlobEIP4844Transaction.fromTxData(
+        {
+          blobsData: ['hello world'],
+          kzgCommitments: ['0xabcd'],
+          maxFeePerDataGas: 100000000n,
+          gasLimit: 0xffffffn,
+          to: randomBytes(20),
+        },
+        { common }
+      )
+    )
+
+    t.throws(() =>
+      BlobEIP4844Transaction.fromTxData(
+        {
+          blobsData: ['hello world'],
+          versionedHashes: ['0x01cd'],
+          maxFeePerDataGas: 100000000n,
+          gasLimit: 0xffffffn,
+          to: randomBytes(20),
+        },
+        { common }
+      )
+    )
     const txWithEmptyBlob = BlobEIP4844Transaction.fromTxData(
       {
         versionedHashes: [],
