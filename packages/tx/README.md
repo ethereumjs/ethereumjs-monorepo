@@ -137,12 +137,15 @@ const txData = {
   versionedHashes: ['0xabc...'], // Test with empty array on a first run
   kzgCommitments: ['0xdef...'], // Test with empty array on a first run
   blobs: ['0xghi...'], // Test with empty array on a first run
+  proofs: ['0xabcd...'], //
 }
 
 const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
 ```
 
-Note that `versionedHashes` and `kzgCommitments` have a real length of 32 bytes and `blobs` have a real length of `4096` bytes and values are trimmed here for brevity.
+Note that `versionedHashes` and `kzgCommitments` have a real length of 32 bytes, `blobs` have a real length of `4096` bytes and values are trimmed here for brevity.
+
+Alternatively, you can pass a `blobsData` property with an array of strings corresponding to a set of blobs and the `fromTxData` constructor will derive the corresponding `blobs`, `versionedHashes`, `kzgCommitments`, and `kzgProofs` for you.
 
 See the [Blob Transaction Tests](./test/eip4844.spec.ts) for examples of usage in instantiating, serializing, and deserializing these transactions.
 

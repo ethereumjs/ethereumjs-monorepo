@@ -7,14 +7,9 @@ module.exports = {
     {
       files: ['test/index.spec.ts'],
       rules: {
-        '@typescript-eslint/no-invalid-this': 'off',
-        'github/array-foreach': 'off',
-        '@typescript-eslint/no-floating-promises': 'off',
-        'no-prototype-builtins': 'off',
+        'github/array-foreach': 'warn',
+        'no-prototype-builtins': 'warn',
       },
     },
   ],
-  env: {
-    mocha: true,
-  },
 }
