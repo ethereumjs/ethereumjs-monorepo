@@ -3,6 +3,7 @@ import {
   bytesToNibbles,
   compactBytesToNibbles,
   getPathTo,
+  hexToKeybytes,
   nibblesToCompactBytes,
   padToEven,
 } from '@ethereumjs/util'
@@ -83,18 +84,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     this.debug = createDebugLogger('client:TrieNodeFetcher')
 
     // will always start with root node as first set of node requests
-    // for (let i = 0; i < 16; i++)
-    //   this.pathToNodeHash.setElement(getPathTo(i, this.root).join('/'), {
-    //     nodeHash: bytesToHex(this.root),
-    //     nodeParentHash: '', // root node does not have a parent
-    //   } as RequestedNodeData)
-
-    console.log('dbg20')
-    console.log(new Uint8Array(0).toString())
-    console.log(getPathTo(0, this.root))
-
-    this.pathToNodeRequestData.setElement(getPathTo(0, this.root)[0], {
-      // TODO don't keep paths compact encoded until request is sent in request phase
+    this.pathToNodeRequestData.setElement('', {
       nodeHash: bytesToHex(this.root),
       nodeParentHash: '', // root node does not have a parent
     } as NodeRequestData)
@@ -155,7 +145,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         const receivedNode = rangeResult.nodes[i]
         const receivedHash = bytesToHex(keccak256(receivedNode) as Uint8Array)
         if (requestedNodes.has(receivedHash)) {
-          // TODO need to remove filled nodes from both pathToNodeHash and nodeHashToPath
           receivedNodes.push(rangeResult.nodes[i])
         }
       }
@@ -212,6 +201,26 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     return buf
   }
 
+  // ResolvePath resolves the provided composite node path by separating the
+  // path in account trie if it's existent.
+  // func ResolvePath(path []byte) (common.Hash, []byte) {
+  //   var owner common.Hash
+  //   if len(path) >= 2*common.HashLength {
+  //     owner = common.BytesToHash(hexToKeybytes(path[:2*common.HashLength]))
+  //     path = path[2*common.HashLength:]
+  //   }
+  //   return owner, path
+  // }
+
+  // resolvePath(path: string) {
+  //   const [accountPath, storagePath] = path!.split('/')
+  //   if (accountPath.length === 2 * 32) {
+  //     accountPath = hexToKeybytes(accountPath)
+  //   }
+
+  //   return [accountPath, storagePath]
+  // }
+
   /**
    * Store fetch result. Resolves once store operation is complete.
    * @param result fetch result
@@ -247,7 +256,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               childNodes.unshift({
                 node: embeddedNode,
                 nodeHash: embeddedNode, // TODO not sure if I'm calculating the node hash of an embedded node correctly since <32 bytes is embedded and not hashed
-                path: nodePath.concat(new Uint8Array(i).toString()), // paths are kept in keybytes encoding kept as hex strings
+                path: nodePath.concat(i.toString(16)), // paths are kept in keybytes encoding kept as hex strings
               })
             }
           }
@@ -262,6 +271,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           })
         } else {
           // TODO implement leaf callback for batching and putting all nodes when dependencies have been fetched
+          // TODO perform leaf callback on all paths that are full and complete, with partial paths handled bellow
+          // TODO should probably do leaf callback after putting nodes in completed set, that is happening right bellow
         }
 
         // record new node for batched storing after all subtrie nodes have been received
@@ -317,8 +328,11 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   }
 
   // TODO do merging here too and rename as getSortedAndMergedPaths
+  // TODO take a parameter to indicate how many paths to return and refactor tasks function to use it
   getSortedPathStrings() {
     const pathStrings = []
+    // TODO have to keep track of which requests are in progress, efficiently, or remove them from pathToNodeRequestData
+    // so that getSortedPathStrings doesn't return duplicates
     for (const [pathString, _] of this.pathToNodeRequestData) {
       pathStrings.push(pathString) // keep this as a string in task
     }
@@ -326,27 +340,16 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   }
 
   mergeAndFormatPaths(pathStrings: string[]) {
-    // console.log('dbg15')
-    // console.log(`path strings ${pathStrings}`)
-    // const val = pathStrings.map((s) => {
-    //   console.log(`s ${s}`)
-    //   console.log(`padToEven ${padToEven(s)}`)
-    //   console.log(`hexToBytes ${hexToBytes(padToEven(s))}`)
-    //   console.log(`bytesToNibbles ${bytesToNibbles(hexToBytes(padToEven(s)))}`)
-    //   console.log(
-    //     `nibblesToCompactBytes ${nibblesToCompactBytes(bytesToNibbles(hexToBytes(padToEven(s))))}`
-    //   )
-    //   console.log(
-    //     `bytesToHex ${bytesToHex(nibblesToCompactBytes(bytesToNibbles(hexToBytes(padToEven(s)))))}`
-    //   )
+    console.log('dbg15')
+    console.log(pathStrings)
+    // for (let i = 0; i < pathStrings.length; i++) {
+    //   return
+    // }
 
-    //   // return [nibblesToCompactBytes(bytesToNibbles(hexToBytes(padToEven(s))))]
-    //   return []
-    // })
-    // console.log(val)
-    // return val
-
-    return pathStrings.map((s) => [hexToBytes(s)])
+    // TODO this is where the conversion from hex to keybytes should happen, with anything that
+    //      isn't hex, being kept the same since it should be compact encoded
+    // TODO resolve should happen here, with keys being either keybyte or compact encoded
+    return pathStrings.map((s) => [nibblesToCompactBytes(hexToBytes(padToEven(s)))])
   }
 
   /**
