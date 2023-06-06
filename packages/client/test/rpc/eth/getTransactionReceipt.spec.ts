@@ -95,7 +95,7 @@ tape(`${method}: get dataGasUsed/dataGasPrice in blob tx receipt`, async (t) => 
   } else {
     try {
       // Verified KZG is loaded correctly -- NOOP if throws
-      initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet4.txt')
+      initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
       //eslint-disable-next-line
     } catch {}
     const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
