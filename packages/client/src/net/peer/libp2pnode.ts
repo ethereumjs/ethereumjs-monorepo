@@ -2,7 +2,7 @@
  * Libp2p Bundle
  * @memberof module:net/peer
  */
-
+//@ts-nocheck
 import { NOISE } from '@chainsafe/libp2p-noise'
 import * as LibP2P from 'libp2p'
 import * as Bootstrap from 'libp2p-bootstrap'

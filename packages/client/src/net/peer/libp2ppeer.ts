@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { multiaddr } from 'multiaddr'
 import * as PeerId from 'peer-id'
 

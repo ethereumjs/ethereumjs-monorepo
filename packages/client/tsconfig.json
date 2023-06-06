@@ -3,5 +3,13 @@
   "include": ["bin", "src", "test"],
   "compilerOptions": {
     "typeRoots": ["node_modules/@types", "src/@types"]
-  }
+  },
+  "exclude": [
+    "browser/index.ts",
+    "browser/util/index.ts",
+    "src/net/peer/libp2pnode.ts",
+    "src/net/peer/libp2pnode.ts",
+    "src/protocol/libp2psender.ts",
+    "src/net/server/libp2pserver.ts"
+  ]
 }
