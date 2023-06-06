@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/trie",
-  "version": "5.0.5",
+  "version": "5.1.0",
   "description": "This is an implementation of the modified merkle patricia tree as specified in Ethereum's yellow paper.",
   "keywords": [
     "merkle",
@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@ethereumjs/rlp": "^4.0.1",
-    "@ethereumjs/util": "^8.0.6",
+    "@ethereumjs/util": "^8.1.0",
     "@types/readable-stream": "^2.3.13",
     "ethereum-cryptography": "^2.0.0",
     "readable-stream": "^3.6.0"
