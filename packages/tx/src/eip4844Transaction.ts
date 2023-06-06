@@ -184,7 +184,10 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
         throw new Error('cannot have both raw blobs data and KZG commitments in constructor')
       }
       if (txData.versionedHashes !== undefined) {
-        throw new Error('cannot have both raw blobs data and encoded blobs in constructor')
+        throw new Error('cannot have both raw blobs data and versioned hashes in constructor')
+      }
+      if (txData.kzgProofs !== undefined) {
+        throw new Error('cannot have both raw blobs data and KZG proofs in constructor')
       }
       txData.blobs = getBlobs(txData.blobsData.reduce((acc, cur) => acc + cur))
       txData.kzgCommitments = blobsToCommitments(txData.blobs as Uint8Array[])

@@ -178,7 +178,7 @@ tape('EIP4844 constructor tests - invalid scenarios', (t) => {
   }
 })
 
-tape.only('Network wrapper tests', async (t) => {
+tape('Network wrapper tests', async (t) => {
   if (isBrowser() === true) {
     t.end()
   } else {
@@ -240,44 +240,78 @@ tape.only('Network wrapper tests', async (t) => {
       'tx versioned hash for simplified blob txData constructor matches fully specified versioned hashes'
     )
 
-    t.throws(() =>
-      BlobEIP4844Transaction.fromTxData(
-        {
-          blobsData: ['hello world'],
-          blobs: ['hello world'],
-          maxFeePerDataGas: 100000000n,
-          gasLimit: 0xffffffn,
-          to: randomBytes(20),
-        },
-        { common }
-      )
+    t.throws(
+      () =>
+        BlobEIP4844Transaction.fromTxData(
+          {
+            blobsData: ['hello world'],
+            blobs: ['hello world'],
+            maxFeePerDataGas: 100000000n,
+            gasLimit: 0xffffffn,
+            to: randomBytes(20),
+          },
+          { common }
+        ),
+      (err: any) => {
+        return err.message.includes('encoded blobs')
+      },
+      'throws on blobsData and blobs in txData'
     )
 
-    t.throws(() =>
-      BlobEIP4844Transaction.fromTxData(
-        {
-          blobsData: ['hello world'],
-          kzgCommitments: ['0xabcd'],
-          maxFeePerDataGas: 100000000n,
-          gasLimit: 0xffffffn,
-          to: randomBytes(20),
-        },
-        { common }
-      )
+    t.throws(
+      () =>
+        BlobEIP4844Transaction.fromTxData(
+          {
+            blobsData: ['hello world'],
+            kzgCommitments: ['0xabcd'],
+            maxFeePerDataGas: 100000000n,
+            gasLimit: 0xffffffn,
+            to: randomBytes(20),
+          },
+          { common }
+        ),
+      (err: any) => {
+        return err.message.includes('KZG commitments')
+      },
+      'throws on blobsData and KZG commitments in txData'
     )
 
-    t.throws(() =>
-      BlobEIP4844Transaction.fromTxData(
-        {
-          blobsData: ['hello world'],
-          versionedHashes: ['0x01cd'],
-          maxFeePerDataGas: 100000000n,
-          gasLimit: 0xffffffn,
-          to: randomBytes(20),
-        },
-        { common }
-      )
+    t.throws(
+      () =>
+        BlobEIP4844Transaction.fromTxData(
+          {
+            blobsData: ['hello world'],
+            versionedHashes: ['0x01cd'],
+            maxFeePerDataGas: 100000000n,
+            gasLimit: 0xffffffn,
+            to: randomBytes(20),
+          },
+          { common }
+        ),
+      (err: any) => {
+        return err.message.includes('versioned hashes')
+      },
+      'throws on blobsData and versioned hashes in txData'
     )
+
+    t.throws(
+      () =>
+        BlobEIP4844Transaction.fromTxData(
+          {
+            blobsData: ['hello world'],
+            kzgProofs: ['0x01cd'],
+            maxFeePerDataGas: 100000000n,
+            gasLimit: 0xffffffn,
+            to: randomBytes(20),
+          },
+          { common }
+        ),
+      (err: any) => {
+        return err.message.includes('KZG proofs')
+      },
+      'throws on blobsData and KZG proofs in txData'
+    )
+
     const txWithEmptyBlob = BlobEIP4844Transaction.fromTxData(
       {
         versionedHashes: [],
