@@ -61,6 +61,25 @@ tape('[VMExecution]', async (t) => {
     t.end()
   })
 
+  t.test('Test block execution using executeBlocks function', async (t) => {
+    let blockchain = await Blockchain.create({
+      validateBlocks: true,
+      validateConsensus: false,
+    })
+    let exec = await testSetup(blockchain)
+
+    blockchain = await Blockchain.fromBlocksData(blocksDataMainnet, {
+      validateBlocks: true,
+      validateConsensus: false,
+    })
+    exec = await testSetup(blockchain)
+    await exec.run()
+
+    t.doesNotThrow(async () => exec.executeBlocks(1, 5, []), 'blocks should execute without error')
+
+    t.end()
+  })
+
   t.test('Should fail opening if vmPromise already assigned', async (t) => {
     const blockchain = await Blockchain.create({
       validateBlocks: true,
