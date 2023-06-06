@@ -14,6 +14,10 @@ It mainly removes all non-final EIP-4844, KZG and SSZ code from the libraries (m
 
 If you are interested in continuously following EIP-4844 work have a look at and follow our upcoming breaking releases where major changes will be integrated with 4844 nearing a final state.
 
+Other Changes:
+
+- Fix EIP-155 transaction encoding on chain ID 0 for legacy txs, PR [#2671](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2671)
+
 ## 4.1.2 - 2023-04-20
 
 ### Features
