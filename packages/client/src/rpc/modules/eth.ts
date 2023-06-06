@@ -629,8 +629,8 @@ export class Eth {
 
     const vm = await this._vm.copy()
     // TODO: this needs more thought, keep on latest for now
-    // const block = await getBlockByOption(blockOpt, this._chain)
-    // await vm.stateManager.setStateRoot(block.header.stateRoot)
+    const block = await getBlockByOption(blockOpt, this._chain)
+    await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = Address.fromString(addressHex)
     const account = await vm.stateManager.getAccount(address)
