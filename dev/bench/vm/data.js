@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1686054963521,
+  "lastUpdate": 1686076852868,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "e75ebc23ad2573046d0f218a73f53ad29db7c0fa",
-          "message": "evm/common: rename DATAHASH to BLOBHASH (#2711)",
-          "timestamp": "2023-05-17T21:31:32+02:00",
-          "tree_id": "2034d876cf94d123f3db9d8572571a72fd2fa72a",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e75ebc23ad2573046d0f218a73f53ad29db7c0fa"
-        },
-        "date": 1684352110411,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31942,
-            "range": "±3.68%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31627,
-            "range": "±2.81%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 27785,
-            "range": "±8.41%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 31041,
-            "range": "±2.86%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30095,
-            "range": "±3.14%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±12.11%",
             "unit": "ops/sec",
             "extra": "66 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "399247b2ad03759dcf7558df3f010b34cb4396d8",
+          "message": "Client: Fix eth_getStorage RPC method (#2646)\n\n* Client: fix eth_getStorage RPC method, replace and expand tests (WIP)\r\n\r\n* eth: define EMPTY_SLOT variable\r\n\r\n* ETH: use this._vm instead of copy for getStorageAt\r\n\r\n* ETH: throw error for 'pending' block request\r\n\r\n* getStorageAt:  expect 32 byte value as return\r\n\r\n* VM: create copy.spec.ts to teset vm.copy()\r\n\r\n* revert back to using vm.copy()\r\n\r\n* add checkpointing calls to test\r\n\r\n* vm: update copy.spec.ts\r\n\r\n* Add tests for testing getStorageAt on blocks other than \"latest\" and \"pending\"\r\n\r\n* Check for empty slot response instead of using notEqual\r\n\r\n* Remove references to functions accountExists and flush that no longer exist on StateManager\r\n\r\n* Use blockOpt parameter to lookup block for storage lookup and update tests\r\n\r\n---------\r\n\r\nCo-authored-by: ScottyPoi <scott.simpson@ethereum.org>\r\nCo-authored-by: Amir <indigophi@protonmail.com>",
+          "timestamp": "2023-06-06T11:37:34-07:00",
+          "tree_id": "7416008556eca581666ffd961ad2bcd441ce9b92",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/399247b2ad03759dcf7558df3f010b34cb4396d8"
+        },
+        "date": 1686076851877,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 32247,
+            "range": "±5.16%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 32499,
+            "range": "±2.41%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 32459,
+            "range": "±2.39%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 31093,
+            "range": "±3.00%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 24054,
+            "range": "±12.20%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
           }
         ]
       }
