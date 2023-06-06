@@ -25,7 +25,7 @@ See: [1559](https://eips.ethereum.org/EIPS/eip-1559) Fee Market EIP
 
 #### Defined in
 
-[types.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L51)
+[types.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L22)
 
 ___
 
@@ -38,7 +38,7 @@ See: [155](https://eips.ethereum.org/EIPS/eip-155) Replay Attack Protection EIP
 
 #### Defined in
 
-[types.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L45)
+[types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L16)
 
 ___
 
@@ -51,7 +51,7 @@ See: [2718](https://eips.ethereum.org/EIPS/eip-2718) Transaction Type EIP
 
 #### Defined in
 
-[types.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L57)
+[types.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L28)
 
 ___
 
@@ -64,4 +64,4 @@ See: [2930](https://eips.ethereum.org/EIPS/eip-2930) Access Lists EIP
 
 #### Defined in
 
-[types.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L63)
+[types.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L34)

@@ -29,7 +29,7 @@ ___
 
 ### transactions
 
-• `Optional` **transactions**: (`AccessListEIP2930TxData` \| `FeeMarketEIP1559TxData` \| `TxData`)[]
+• `Optional` **transactions**: (`AccessListEIP2930TxData` \| `TxData` \| `FeeMarketEIP1559TxData`)[]
 
 #### Defined in
 

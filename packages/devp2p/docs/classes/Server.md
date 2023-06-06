@@ -19,7 +19,6 @@
 - [\_debug](Server.md#_debug)
 - [\_dpt](Server.md#_dpt)
 - [\_endpoint](Server.md#_endpoint)
-- [\_parityRequestMap](Server.md#_parityrequestmap)
 - [\_privateKey](Server.md#_privatekey)
 - [\_requests](Server.md#_requests)
 - [\_requestsCache](Server.md#_requestscache)
@@ -80,7 +79,7 @@ EventEmitter.constructor
 
 #### Defined in
 
-[packages/devp2p/src/dpt/server.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L54)
+[packages/devp2p/src/dpt/server.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L53)
 
 ## Properties
 
@@ -90,7 +89,7 @@ EventEmitter.constructor
 
 #### Defined in
 
-[packages/devp2p/src/dpt/server.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L52)
+[packages/devp2p/src/dpt/server.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L51)
 
 ___
 
@@ -111,16 +110,6 @@ ___
 #### Defined in
 
 [packages/devp2p/src/dpt/server.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L47)
-
-___
-
-### \_parityRequestMap
-
-• **\_parityRequestMap**: `Map`<`string`, `string`\>
-
-#### Defined in
-
-[packages/devp2p/src/dpt/server.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L49)
 
 ___
 
@@ -150,7 +139,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/server.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L50)
+[packages/devp2p/src/dpt/server.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L49)
 
 ___
 
@@ -160,7 +149,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/server.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L51)
+[packages/devp2p/src/dpt/server.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L50)
 
 ___
 
@@ -257,7 +246,7 @@ node_modules/@types/node/events.d.ts:290
 
 #### Defined in
 
-[packages/devp2p/src/dpt/server.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L171)
+[packages/devp2p/src/dpt/server.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L156)
 
 ___
 
@@ -271,7 +260,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/server.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L141)
+[packages/devp2p/src/dpt/server.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L139)
 
 ___
 
@@ -293,7 +282,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/server.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L145)
+[packages/devp2p/src/dpt/server.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L143)
 
 ___
 
@@ -344,7 +333,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/server.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L83)
+[packages/devp2p/src/dpt/server.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L81)
 
 ___
 
@@ -364,7 +353,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/server.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L90)
+[packages/devp2p/src/dpt/server.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L88)
 
 ___
 
@@ -490,7 +479,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/server.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L136)
+[packages/devp2p/src/dpt/server.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L134)
 
 ___
 
@@ -742,7 +731,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/server.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L100)
+[packages/devp2p/src/dpt/server.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L98)
 
 ___
 

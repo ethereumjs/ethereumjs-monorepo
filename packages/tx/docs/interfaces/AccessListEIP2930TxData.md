@@ -39,7 +39,7 @@ The access list which contains the addresses/storage slots which the transaction
 
 #### Defined in
 
-[types.ts:214](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L214)
+[types.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L184)
 
 ___
 
@@ -51,7 +51,7 @@ The transaction's chain ID
 
 #### Defined in
 
-[types.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L209)
+[types.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L179)
 
 ___
 
@@ -67,7 +67,7 @@ TxData.data
 
 #### Defined in
 
-[types.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L178)
+[types.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L148)
 
 ___
 
@@ -83,7 +83,7 @@ TxData.gasLimit
 
 #### Defined in
 
-[types.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L163)
+[types.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L133)
 
 ___
 
@@ -99,7 +99,7 @@ TxData.gasPrice
 
 #### Defined in
 
-[types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L158)
+[types.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L128)
 
 ___
 
@@ -115,7 +115,7 @@ TxData.nonce
 
 #### Defined in
 
-[types.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L153)
+[types.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L123)
 
 ___
 
@@ -131,7 +131,7 @@ TxData.r
 
 #### Defined in
 
-[types.ts:188](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L188)
+[types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L158)
 
 ___
 
@@ -147,7 +147,7 @@ TxData.s
 
 #### Defined in
 
-[types.ts:193](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L193)
+[types.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L163)
 
 ___
 
@@ -163,7 +163,7 @@ TxData.to
 
 #### Defined in
 
-[types.ts:168](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L168)
+[types.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L138)
 
 ___
 
@@ -179,7 +179,7 @@ TxData.type
 
 #### Defined in
 
-[types.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L199)
+[types.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L169)
 
 ___
 
@@ -195,7 +195,7 @@ TxData.v
 
 #### Defined in
 
-[types.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L183)
+[types.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L153)
 
 ___
 
@@ -211,4 +211,4 @@ TxData.value
 
 #### Defined in
 
-[types.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L173)
+[types.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L143)
