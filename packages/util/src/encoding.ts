@@ -36,6 +36,20 @@ export const nibblesToBytes = (nibbles: Uint8Array, bytes: Uint8Array) => {
   }
 }
 
+export const hexToKeybytes = (hex: Uint8Array) => {
+  if (hasTerminator(hex)) {
+    hex = hex.subarray(0, hex.length - 1)
+  }
+  if (hex.length % 2 === 1) {
+    throw Error("Can't convert hex key of odd length")
+  }
+  const key = new Uint8Array()
+  nibblesToBytes(hex, key)
+
+  return key
+}
+
+// hex to compact
 export const nibblesToCompactBytes = (nibbles: Uint8Array) => {
   let terminator = 0
   if (hasTerminator(nibbles)) {
