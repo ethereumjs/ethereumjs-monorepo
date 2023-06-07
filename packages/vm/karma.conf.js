@@ -26,11 +26,6 @@ module.exports = function (config) {
         acornOptions: {
           ecmaVersion: 13,
         },
-        resolve: {
-          alias: {
-            'bigint-crypto-utils': '../../node_modules/bigint-crypto-utils/dist/bundle.umd.js',
-          },
-        },
         ignore: ['c-kzg', 'safer-buffer'],
       },
     },

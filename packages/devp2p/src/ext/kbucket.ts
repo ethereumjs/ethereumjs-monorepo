@@ -1,4 +1,8 @@
 /*
+Repository : https://github.com/tristanls/k-bucket
+Source     : index.js
+Date       : 2023-05-20
+
 index.js - Kademlia DHT K-bucket implementation as a binary tree.
 
 The MIT License (MIT)

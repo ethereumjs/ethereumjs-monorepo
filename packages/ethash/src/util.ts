@@ -1,5 +1,6 @@
-import { isProbablyPrime } from 'bigint-crypto-utils'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+
+import { isProbablyPrime } from './ext/index'
 
 export const params = {
   DATASET_BYTES_INIT: 1073741824, // 2^30
@@ -20,7 +21,7 @@ export async function getCacheSize(epoc: number) {
   const { CACHE_BYTES_INIT, CACHE_BYTES_GROWTH, HASH_BYTES } = params
   let sz = CACHE_BYTES_INIT + CACHE_BYTES_GROWTH * epoc
   sz -= HASH_BYTES
-  while (!(await isProbablyPrime(sz / HASH_BYTES, undefined, true))) {
+  while (!isProbablyPrime(BigInt(sz / HASH_BYTES), 16)) {
     sz -= 2 * HASH_BYTES
   }
   return sz
@@ -30,7 +31,7 @@ export async function getFullSize(epoc: number) {
   const { DATASET_BYTES_INIT, DATASET_BYTES_GROWTH, MIX_BYTES } = params
   let sz = DATASET_BYTES_INIT + DATASET_BYTES_GROWTH * epoc
   sz -= MIX_BYTES
-  while (!(await isProbablyPrime(sz / MIX_BYTES, undefined, true))) {
+  while (!isProbablyPrime(BigInt(sz / MIX_BYTES), 16)) {
     sz -= 2 * MIX_BYTES
   }
   return sz
