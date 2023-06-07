@@ -1,9 +1,9 @@
-import * as tape from 'tape'
+import tape from 'tape'
 
-import { RLP, utils } from '../src'
+import { RLP, utils } from '../src/index.js'
 
-import * as official from './fixture/rlptest.json'
-import { numberToBytes } from './utils'
+import official from './fixture/rlptest.json'
+import { numberToBytes } from './utils.js'
 
 const { bytesToHex, hexToBytes } = utils
 

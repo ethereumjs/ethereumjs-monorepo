@@ -61,6 +61,7 @@
       "url": "https://github.com/asinyagin"
     }
   ],
+  "type": "module",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "exports": {

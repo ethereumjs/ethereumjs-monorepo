@@ -1,5 +1,5 @@
 import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import tape from 'tape'
 
 import {
   Address,
@@ -27,7 +27,7 @@ import {
   validateNoLeadingZeroes,
   zeroAddress,
   zeros,
-} from '../src'
+} from '../src/index.js'
 
 tape('zeros function', function (t) {
   t.test('should produce lots of 0s', function (st) {

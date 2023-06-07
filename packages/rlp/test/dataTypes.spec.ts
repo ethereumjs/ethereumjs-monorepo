@@ -1,8 +1,8 @@
-import * as tape from 'tape'
+import tape from 'tape'
 
-import { RLP, utils } from '../src'
+import { RLP, utils } from '../src/index.js'
 
-import { bytesToUtf8 } from './utils'
+import { bytesToUtf8 } from './utils.js'
 
 const { bytesToHex, concatBytes, hexToBytes, utf8ToBytes } = utils
 

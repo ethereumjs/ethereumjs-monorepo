@@ -9,7 +9,7 @@ module.exports = function (config) {
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
       },
-      tsconfig: './tsconfig.json',
+      tsconfig: './tsconfig.karma.json',
     },
     colors: true,
     reporters: ['progress', 'karma-typescript'],

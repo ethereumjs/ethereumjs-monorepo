@@ -4,5 +4,8 @@
     "module": "CommonJS",
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true
+  },
+  "ts-node": {
+    "esm": false
   }
 }
