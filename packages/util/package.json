@@ -82,7 +82,7 @@
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
-    "tape": "tape -r ts-node/register",
+    "tape": "NODE_OPTIONS='--loader ts-node/esm --experimental-json-modules' tape",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
     "test:node": "npm run tape -- test/*.spec.ts",

@@ -1,7 +1,7 @@
 /**
  * Constants
  */
-export * from './constants'
+export * from './constants.js'
 
 /**
  * Units helpers
