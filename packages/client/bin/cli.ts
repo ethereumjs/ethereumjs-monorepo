@@ -88,6 +88,10 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe: 'Import a geth genesis file for running a custom network',
     coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
   })
+  .option('trustedSetup', {
+    describe: 'A custom trusted setup txt file for initializing the kzg library',
+    coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+  })
   .option('mergeForkIdPostMerge', {
     describe:
       'Place mergeForkIdTransition hardfork before (false) or after (true) Merge hardfork in the custom gethGenesis',
@@ -658,7 +662,7 @@ async function run() {
 
   // TODO sharding: Just initialize kzg library now, in future it can be optimized to be
   // loaded and initialized on the sharding hardfork activation
-  initKZG(kzg, __dirname + '/../src/trustedSetups/devnet4.txt')
+  initKZG(kzg, args.trustedSetup ?? __dirname + '/../src/trustedSetups/devnet6.txt')
   // Give network id precedence over network name
   const chain = args.networkId ?? args.network ?? Chain.Mainnet
 

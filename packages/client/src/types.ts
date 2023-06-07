@@ -111,6 +111,7 @@ export interface ClientOpts {
   customChain?: string
   customGenesisState?: string
   gethGenesis?: string
+  trustedSetup?: string
   mergeForkIdPostMerge?: boolean
   transports?: string[]
   bootnodes?: string | string[]

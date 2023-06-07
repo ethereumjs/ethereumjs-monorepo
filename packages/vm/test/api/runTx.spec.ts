@@ -896,7 +896,7 @@ tape('EIP 4844 transaction tests', async (t) => {
     t.end()
   } else {
     try {
-      initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet4.txt')
+      initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet6.txt')
       // eslint-disable-next-line
     } catch {}
 

@@ -22,7 +22,7 @@ import type { EthashConsensus } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
 import type * as tape from 'tape'
 
-initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet4.txt')
+initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet6.txt')
 
 function formatBlockHeader(data: any) {
   const formatted: any = {}

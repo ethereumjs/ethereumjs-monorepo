@@ -53,9 +53,13 @@ const validateBlobTransactionNetworkWrapper = (
     throw new Error('Invalid transaction with empty blobs')
   }
 
+  let isValid
   try {
-    kzg.verifyBlobKzgProofBatch(blobs, commitments, kzgProofs)
-  } catch (e) {
+    isValid = kzg.verifyBlobKzgProofBatch(blobs, commitments, kzgProofs)
+  } catch (error) {
+    throw new Error(`KZG verification of blobs fail with error=${error}`)
+  }
+  if (!isValid) {
     throw new Error('KZG proof cannot be verified from blobs/commitments')
   }
 
