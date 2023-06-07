@@ -693,23 +693,33 @@ export class Engine {
         }
       }
     } else if (
-      parseInt(params[0].timestamp) >= shanghaiTimestamp &&
-      (eip4844Timestamp === null || parseInt(params[0].timestamp) < eip4844Timestamp)
+      eip4844Timestamp === null ||
+      (parseInt(params[0].timestamp) >= shanghaiTimestamp &&
+        parseInt(params[0].timestamp) < eip4844Timestamp)
     ) {
-      if (!('extraDataGas' in params[0])) {
+      if (
+        'extraDataGas' in params[0] ||
+        'dataGasUsed' in params[0] ||
+        !('withdrawals' in params[0])
+      ) {
         throw {
           code: INVALID_PARAMS,
           message: 'ExecutionPayloadV2 MUST be used if Shanghai is activated and Cancun is not',
         }
       }
-    } else if (eip4844Timestamp === null || parseInt(params[0].timestamp) >= eip4844Timestamp) {
-      if (!('extraData' in params[0])) {
+    } else if (parseInt(params[0].timestamp) >= eip4844Timestamp) {
+      if (
+        !('extraData' in params[0]) ||
+        !('dataGasUsed' in params[0]) ||
+        !('withdrawals' in params[0])
+      ) {
         throw {
           code: INVALID_PARAMS,
           message: 'ExecutionPayloadV3 MUST be used after Cancun is activated',
         }
       }
     }
+
     const newPayload = await this.newPayload(params)
     if (newPayload.status === Status.INVALID_BLOCK_HASH) {
       newPayload.status = Status.INVALID
