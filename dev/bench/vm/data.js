@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1686091219805,
+  "lastUpdate": 1686141027687,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "dd8afc503e942bcd56c9aa565f8b13d3ac90dcd4",
-          "message": "tx: De-sszify 4844 blob transaction (#2708)\n\n* tx: De-sszify 4844 blob transaction\r\n\r\n* add the network serialization\r\n\r\n* fix tests spec\r\n\r\n* fix wrong update\r\n\r\n* fix beacon payload data\r\n\r\n* fix client spec\r\n\r\n* increase spec coverage",
-          "timestamp": "2023-05-22T11:02:29+02:00",
-          "tree_id": "b6c7e77913d983a71ff91ead9858edc8093600e3",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/dd8afc503e942bcd56c9aa565f8b13d3ac90dcd4"
-        },
-        "date": 1684746340066,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31496,
-            "range": "±4.98%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31454,
-            "range": "±2.76%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 26774,
-            "range": "±9.65%",
-            "unit": "ops/sec",
-            "extra": "69 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 30757,
-            "range": "±3.01%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29879,
-            "range": "±3.29%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.44%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5c513d153bfaf916bdc962856f5fd1cbe85f5775",
+          "message": "tx: Update the kzg validation and replace trusted setup with latest (#2756)\n\n* tx: Update the kzg valiation and replace trusted setup with latest\n\n* fix specs",
+          "timestamp": "2023-06-07T08:26:09-04:00",
+          "tree_id": "fedd0e7fe35f8ab020c11002e9a8cfd376b58993",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5c513d153bfaf916bdc962856f5fd1cbe85f5775"
+        },
+        "date": 1686141026266,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 27622,
+            "range": "±6.58%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 27484,
+            "range": "±3.05%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 27168,
+            "range": "±3.26%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25943,
+            "range": "±8.12%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 20600,
+            "range": "±12.15%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
           }
         ]
       }
