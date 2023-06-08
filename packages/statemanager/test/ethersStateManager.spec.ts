@@ -155,7 +155,7 @@ tape('Ethers State Manager API tests', async (t) => {
       )
     }
 
-    const newState = state.copy()
+    const newState = await state.copy()
 
     t.equal(
       undefined,

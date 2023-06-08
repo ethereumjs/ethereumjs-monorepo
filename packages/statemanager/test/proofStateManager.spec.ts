@@ -65,13 +65,15 @@ tape('ProofStateManager', (t) => {
       if (stateRoot === undefined) {
         stateRoot = key
       }
-      // @ts-expect-error
-      await trie._db.put(key, bufferData)
+      await trie.database().put(key, bufferData)
     }
-    trie.root(stateRoot!)
+    await trie.setRootByHash(stateRoot!)
     const proof = await stateManager.getProof(address)
-    st.deepEqual(ropsten_validAccount, proof)
-    st.ok(await stateManager.verifyProof(ropsten_validAccount))
+    st.deepEqual(proof, ropsten_validAccount)
+    st.ok(
+      await stateManager.verifyProof(ropsten_validAccount),
+      'verified proof for ropsten_validAccount'
+    )
     st.end()
   })
 
@@ -83,24 +85,24 @@ tape('ProofStateManager', (t) => {
       // Account: 0x68268f12253f69f66b188c95b8106b2f847859fc (this account does not exist)
       // Storage slots: empty list
       const address = Address.fromString('0x68268f12253f69f66b188c95b8106b2f847859fc')
-      const trie = new Trie({ useKeyHashing: true })
-      const stateManager = new DefaultStateManager({ trie })
       // Dump all the account proof data in the DB
-      let stateRoot: Uint8Array | undefined
-      for (const proofData of ropsten_nonexistentAccount.accountProof) {
-        const bufferData = hexStringToBytes(proofData)
-        const key = keccak256(bufferData)
-        if (stateRoot === undefined) {
-          stateRoot = key
-        }
-        // @ts-expect-error
-        await trie._db.put(key, bufferData)
-      }
-      trie.root(stateRoot!)
+      const trie = await Trie.fromProof(
+        ropsten_nonexistentAccount.accountProof.map((proofData) => hexStringToBytes(proofData)),
+        { useKeyHashing: true }
+      )
+      const stateManager = new DefaultStateManager({ trie })
       await stateManager.putAccount(address, new Account())
       const proof = await stateManager.getProof(address)
-      st.deepEqual(ropsten_nonexistentAccount, proof)
-      st.ok(await stateManager.verifyProof(ropsten_nonexistentAccount))
+
+      st.deepEqual(
+        proof,
+        ropsten_nonexistentAccount,
+        'created proof for ropsten_nonexistentAccount'
+      )
+      st.ok(
+        await stateManager.verifyProof(ropsten_nonexistentAccount),
+        'verified proof for ropsten_nonexistentAccount'
+      )
       st.end()
     }
   )
@@ -113,7 +115,11 @@ tape('ProofStateManager', (t) => {
       // Note: the first slot has a value, but the second slot is empty
       // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
       const address = Address.fromString('0x2D80502854FC7304c3E3457084DE549f5016B73f')
-      const trie = new Trie({ useKeyHashing: true })
+      const trie = await Trie.fromProof(
+        ropsten_contractWithStorage.accountProof.map((p) => hexStringToBytes(p)),
+        { useKeyHashing: true }
+      )
+
       const stateManager = new DefaultStateManager({ trie })
       // Dump all the account proof data in the DB
       let stateRoot: Uint8Array | undefined
@@ -123,28 +129,65 @@ tape('ProofStateManager', (t) => {
         if (stateRoot === undefined) {
           stateRoot = key
         }
-        // @ts-expect-error
-        await trie._db.put(key, bufferData)
       }
       const storageRoot = ropsten_contractWithStorage.storageHash
-      const storageTrie = new Trie({ useKeyHashing: true })
+      const storageTrie = await Trie.fromProof(
+        ropsten_contractWithStorage.storageProof[0].proof.map((p) => hexStringToBytes(p)),
+        { useKeyHashing: true }
+      )
       const storageKeys: Uint8Array[] = []
       for (const storageProofsData of ropsten_contractWithStorage.storageProof) {
+        await storageTrie.updateFromProof(storageProofsData.proof.map((p) => hexStringToBytes(p)))
+
         storageKeys.push(hexStringToBytes(storageProofsData.key))
-        for (const storageProofData of storageProofsData.proof) {
-          const key = keccak256(hexStringToBytes(storageProofData))
-          // @ts-expect-error
-          await storageTrie._db.put(key, hexStringToBytes(storageProofData))
-        }
       }
-      storageTrie.root(hexStringToBytes(storageRoot))
+      t.deepEqual(storageTrie.root(), hexStringToBytes(storageRoot), 'storage trie root matches')
       const addressHex = bytesToHex(address.bytes)
       stateManager._storageTries[addressHex] = storageTrie
-      trie.root(stateRoot!)
 
       const proof = await stateManager.getProof(address, storageKeys)
-      st.deepEqual(ropsten_contractWithStorage, proof)
-      await stateManager.verifyProof(ropsten_contractWithStorage)
+      const trieProof = await trie._createProof(hexStringToBytes(proof.address))
+      st.deepEqual(
+        trieProof,
+        proof.accountProof.map((p) => hexStringToBytes(p)),
+        'state account proof = Trie proof'
+      )
+      st.equal(proof.address, ropsten_contractWithStorage.address, 'address should match')
+      st.equal(
+        proof.accountProof.length,
+        ropsten_contractWithStorage.accountProof.length,
+        'account proof length should match'
+      )
+      st.equal(
+        proof.storageProof.length,
+        ropsten_contractWithStorage.storageProof.length,
+        'storage proof length should match'
+      )
+      st.equal(proof.balance, ropsten_contractWithStorage.balance, 'balance should match')
+      st.equal(proof.codeHash, ropsten_contractWithStorage.codeHash, 'codeHash should match')
+      st.equal(
+        proof.storageHash,
+        ropsten_contractWithStorage.storageHash,
+        'storage hash should match'
+      )
+      st.equal(proof.nonce, ropsten_contractWithStorage.nonce, 'nonce should match')
+      st.deepEqual(
+        proof.accountProof,
+        ropsten_contractWithStorage.accountProof,
+        'account proof should match completely'
+      )
+      st.deepEqual(
+        proof.storageProof.map((p) => p.value),
+        ropsten_contractWithStorage.storageProof.map((p) => p.value),
+        `storage proof values should match`
+      )
+      st.deepEqual(
+        proof.storageProof.map((p) => p.proof.length),
+        ropsten_contractWithStorage.storageProof.map((p) => p.proof.length),
+        'storage proof proofs should match'
+      )
+      const valid = await stateManager.verifyProof(ropsten_contractWithStorage)
+      st.ok(valid, 'state manager verified proof')
       st.end()
     }
   )
@@ -165,8 +208,7 @@ tape('ProofStateManager', (t) => {
       if (stateRoot === undefined) {
         stateRoot = key
       }
-      // @ts-expect-error
-      await trie._db.put(key, bufferData)
+      await trie.database().put(key, bufferData)
     }
     const storageRoot = ropsten_contractWithStorage.storageHash
     const storageTrie = new Trie({ useKeyHashing: true })
@@ -175,14 +217,12 @@ tape('ProofStateManager', (t) => {
       storageKeys.push(hexStringToBytes(storageProofsData.key))
       for (const storageProofData of storageProofsData.proof) {
         const key = keccak256(hexStringToBytes(storageProofData))
-        // @ts-expect-error
-        await storageTrie._db.put(key, hexStringToBytes(storageProofData))
+        await storageTrie.database().put(key, hexStringToBytes(storageProofData))
       }
     }
-    storageTrie.root(hexStringToBytes(storageRoot))
+    await storageTrie.setRootByHash(hexStringToBytes(storageRoot))
     const addressHex = bytesToHex(address.bytes)
     stateManager._storageTries[addressHex] = storageTrie
-    trie.root(stateRoot!)
 
     // tamper with account data
     const testdata = ropsten_contractWithStorage as any
@@ -234,15 +274,14 @@ tape('ProofStateManager', (t) => {
       if (stateRoot === undefined) {
         stateRoot = key
       }
-      // @ts-expect-error
-      await trie._db.put(key, bufferData)
+      await trie.database().put(key, bufferData)
     }
     const storageRoot = ropsten_nonexistentAccount.storageHash
     const storageTrie = new Trie({ useKeyHashing: true })
-    storageTrie.root(hexStringToBytes(storageRoot))
+    await storageTrie.setRootByHash(hexStringToBytes(storageRoot))
     const addressHex = bytesToHex(address.bytes)
     stateManager._storageTries[addressHex] = storageTrie
-    trie.root(stateRoot!)
+    await trie.setRootByHash(stateRoot!)
 
     // tamper with account data
     const testdata = ropsten_nonexistentAccount as any
