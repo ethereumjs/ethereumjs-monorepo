@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1686206720507,
+  "lastUpdate": 1686222683808,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "d3db69b4210d642eb3f0e708449a3cfd2a7cdacd",
-          "message": "util: Remove ssz from monorepo (#2717)",
-          "timestamp": "2023-05-22T13:59:41+02:00",
-          "tree_id": "c1222a272282ac747f5b9e1990ca3f72fccc8b04",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d3db69b4210d642eb3f0e708449a3cfd2a7cdacd"
-        },
-        "date": 1684756961719,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 32718,
-            "range": "±3.47%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 32315,
-            "range": "±2.37%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 28964,
-            "range": "±8.62%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 31392,
-            "range": "±2.72%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30572,
-            "range": "±2.73%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.04%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "50fe02156ccc485eed2edaea61ca9d8160731d99",
+          "message": "client: Fixes for block and blob building uncovered in devnet6 (#2763)",
+          "timestamp": "2023-06-08T13:01:17+02:00",
+          "tree_id": "fed9db77f4559e42032bd59a1020d09715193a27",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/50fe02156ccc485eed2edaea61ca9d8160731d99"
+        },
+        "date": 1686222683121,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31448,
+            "range": "±5.49%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31751,
+            "range": "±2.63%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31826,
+            "range": "±2.61%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 30903,
+            "range": "±2.92%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 24832,
+            "range": "±11.03%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
           }
         ]
       }
