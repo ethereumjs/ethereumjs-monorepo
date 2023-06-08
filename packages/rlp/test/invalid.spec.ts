@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { RLP, utils } from '../src'
+import { RLP, utils } from '../src/index.js'
 
 import * as invalid from './fixture/invalid.json'
 

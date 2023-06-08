@@ -1,9 +1,9 @@
 import { assert, describe, it } from 'vitest'
 
-import { RLP, utils } from '../src'
+import { RLP, utils } from '../src/index.js'
 
 import * as official from './fixture/rlptest.json'
-import { numberToBytes } from './utils'
+import { numberToBytes } from './utils.js'
 
 const { bytesToHex, hexToBytes } = utils
 

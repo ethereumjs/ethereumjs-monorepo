@@ -3,10 +3,10 @@ import { promisify } from 'util'
 import { assert, describe, it } from 'vitest'
 import * as vm from 'vm'
 
-import { RLP } from '../src'
+import { RLP } from '../src/index.js'
 
 import * as official from './fixture/rlptest.json'
-import { bytesToUtf8 } from './utils'
+import { bytesToUtf8 } from './utils.js'
 
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
