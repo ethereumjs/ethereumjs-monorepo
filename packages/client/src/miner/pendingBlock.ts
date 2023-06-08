@@ -172,35 +172,10 @@ export class PendingBlock {
     this.config.logger.info(
       `Pending: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`
     )
-    let index = 0
-    let blockFull = false
-    let skippedByAddErrors = 0
-    const blobTxs = []
-    while (index < txs.length && !blockFull) {
-      const tx = txs[index]
-      const addTxResult = await this.addTransaction(builder, tx)
 
-      switch (addTxResult) {
-        case AddTxResult.Success:
-          // Push the tx in blobTxs only after successful addTransaction
-          if (tx instanceof BlobEIP4844Transaction) blobTxs.push(tx)
-          break
-
-        case AddTxResult.BlockFull:
-          blockFull = true
-        // Falls through
-        default:
-          skippedByAddErrors++
-      }
-
-      // TODO: if addTxResult is not successfull also remove any other txs from this account
-      index++
-    }
-
+    const { addedTxs, skippedByAddErrors, blobTxs } = await this.addTransactions(builder, txs)
     this.config.logger.info(
-      `Pending: Added txs=${
-        txs.length - skippedByAddErrors
-      } skippedByAddErrors=${skippedByAddErrors}} total=${txs.length} candidates`
+      `Pending: Added txs=${addedTxs} skippedByAddErrors=${skippedByAddErrors} from total=${txs.length} tx candidates`
     )
 
     // Construct initial blobs bundle when payload is constructed
@@ -267,6 +242,28 @@ export class PendingBlock {
         ) === false
     )
 
+    const { skippedByAddErrors, blobTxs } = await this.addTransactions(builder, txs)
+    const block = await builder.build()
+    // Construct blobs bundle
+    const blobs = block._common.isActivatedEIP(4844)
+      ? this.constructBlobsBundle(payloadId, blobTxs)
+      : undefined
+
+    const withdrawalsStr =
+      block.withdrawals !== undefined ? ` withdrawals=${block.withdrawals.length}` : ''
+    const blobsStr = blobs ? ` blobs=${blobs.blobs.length}` : ''
+    this.config.logger.info(
+      `Pending: Built block number=${block.header.number} txs=${
+        block.transactions.length
+      }${withdrawalsStr}${blobsStr} skippedByAddErrors=${skippedByAddErrors}  hash=${bytesToHex(
+        block.hash()
+      )}`
+    )
+
+    return [block, builder.transactionReceipts, builder.minerValue, blobs]
+  }
+
+  private async addTransactions(builder: BlockBuilder, txs: TypedTransaction[]) {
     this.config.logger.info(`Pending: Adding ${txs.length} additional eligible txs`)
     let index = 0
     let blockFull = false
@@ -292,24 +289,12 @@ export class PendingBlock {
       index++
     }
 
-    const block = await builder.build()
-    // Construct blobs bundle
-    const blobs = block._common.isActivatedEIP(4844)
-      ? this.constructBlobsBundle(payloadId, blobTxs)
-      : undefined
-
-    const withdrawalsStr =
-      block.withdrawals !== undefined ? ` withdrawals=${block.withdrawals.length}` : ''
-    const blobsStr = blobs ? ` blobs=${blobs.blobs.length}` : ''
-    this.config.logger.info(
-      `Pending: Built block number=${block.header.number} txs=${
-        block.transactions.length
-      }${withdrawalsStr}${blobsStr} skippedByAddErrors=${skippedByAddErrors}  hash=${bytesToHex(
-        block.hash()
-      )}`
-    )
-
-    return [block, builder.transactionReceipts, builder.minerValue, blobs]
+    return {
+      addedTxs: index - skippedByAddErrors,
+      skippedByAddErrors,
+      totalTxs: txs.length,
+      blobTxs,
+    }
   }
 
   private async addTransaction(builder: BlockBuilder, tx: TypedTransaction) {
