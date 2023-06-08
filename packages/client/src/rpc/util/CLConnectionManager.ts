@@ -158,7 +158,7 @@ export class CLConnectionManager {
       msg += ` withdrawals=${(payload.payload as ExecutionPayloadV2).withdrawals.length}`
     }
     if ('excessDataGas' in payload.payload && payload.payload.excessDataGas !== null) {
-      msg += `dataGasUsed=${(payload.payload as ExecutionPayloadV3).dataGasUsed} excessDataGas=${
+      msg += ` dataGasUsed=${(payload.payload as ExecutionPayloadV3).dataGasUsed} excessDataGas=${
         (payload.payload as ExecutionPayloadV3).excessDataGas
       }`
     }
