@@ -8,10 +8,10 @@ import { Libp2pSender } from '../protocol/libp2psender'
 import { Libp2pNode } from './libp2pnode'
 import { Peer } from './peer'
 
-import type { Libp2pMuxedStream as MuxedStream } from '../../types'
 import type { Protocol } from '../protocol'
 import type { Libp2pServer } from '../server'
 import type { PeerOptions } from './peer'
+import type { MuxedStream } from 'libp2p-interfaces/dist/src/stream-muxer/types'
 import type { Multiaddr } from 'multiaddr'
 
 export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transport'> {

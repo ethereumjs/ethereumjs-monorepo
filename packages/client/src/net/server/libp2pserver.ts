@@ -10,8 +10,8 @@ import { Libp2pNode } from '../peer/libp2pnode'
 
 import { Server } from './server'
 
-import type { Libp2pConnection as Connection } from '../../types'
 import type { ServerOptions } from './server'
+import type Connection from 'libp2p-interfaces/dist/src/connection/connection'
 import type { Multiaddr } from 'multiaddr'
 
 export interface Libp2pServerOptions extends ServerOptions {

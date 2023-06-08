@@ -5,8 +5,8 @@ import * as pushable from 'it-pushable'
 
 import { Sender } from './sender'
 
-import type { Libp2pMuxedStream as MuxedStream } from '../../types'
 import type { NestedUint8Array } from '@ethereumjs/util'
+import type { MuxedStream } from 'libp2p-interfaces/dist/src/stream-muxer/types'
 
 // TypeScript doesn't have support yet for ReturnType
 // with generic types, so this wrapper is used as a helper.
