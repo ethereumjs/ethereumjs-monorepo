@@ -43,7 +43,7 @@
   "scripts": {
     "build": "../../config/cli/ts-build.sh node",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "npx vitest run --coverage",
+    "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
