@@ -195,6 +195,11 @@ export class BlockBuilder {
       }
       const blobTx = tx as BlobEIP4844Transaction
 
+      // Guard against the case if a tx came into the pool without blobs i.e. network wrapper payload
+      if (blobTx.blobs === undefined) {
+        throw new Error('blobs missing for 4844 transaction')
+      }
+
       if (this.dataGasUsed + BigInt(blobTx.numBlobs()) * dataGasPerBlob > dataGasLimit) {
         throw new Error('block data gas limit reached')
       }
