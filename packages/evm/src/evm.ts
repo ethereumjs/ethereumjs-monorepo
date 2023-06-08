@@ -998,14 +998,14 @@ export class EVM implements EVMInterface {
     if (this._common.isActivatedEIP(1153)) this._transientStorage.clear()
   }
 
-  public copy(): EVMInterface {
+  public async copy(): Promise<EVMInterface> {
     const common = this._common.copy()
     common.setHardfork(this._common.hardfork())
 
     const opts = {
       ...this._optsCached,
       common,
-      stateManager: this.stateManager.copy(),
+      eei: await this.eei.copy(),
     }
     ;(opts.stateManager as any)._common = common
     return new EVM(opts)
