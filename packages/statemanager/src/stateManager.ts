@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
+import { NullNode, Trie, nibblestoBytes } from '@ethereumjs/trie'
 import {
   Account,
   Address,
@@ -258,7 +258,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     }
 
     const rlp = await this._trie.get(address.bytes)
-    const account = rlp !== null ? Account.fromRlpSerializedAccount(rlp) : undefined
+
+    const account =
+      rlp !== null && rlp.length > 0 ? Account.fromRlpSerializedAccount(rlp) : undefined
     if (this.DEBUG) {
       this._debug(`Get account ${address} from DB (${account ? 'exists' : 'non-existent'})`)
     }
@@ -454,9 +456,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     const addressHex = bytesToHex(address.bytes)
     const storageTrie = this._storageTries[addressHex]
     if (storageTrie === undefined) {
-      const storageTrie = this._trie.copy(false)
-      storageTrie.root(account.storageRoot)
-      storageTrie.flushCheckpoints()
+      const storageTrie = await this._trie.copy(false)
+      await storageTrie.setRootByHash(account.storageRoot)
+      await storageTrie.flushCheckpoints()
       this._storageTries[addressHex] = storageTrie
       return storageTrie
     }
@@ -643,8 +645,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       account = new Account()
     }
     this._storageCache?.clearContractStorage(address)
-    await this._modifyContractStorage(address, account, (storageTrie, done) => {
-      storageTrie.root(storageTrie.EMPTY_TRIE_ROOT)
+    await this._modifyContractStorage(address, account, async (storageTrie, done) => {
+      await storageTrie.setRootNode(new NullNode({}))
       done()
     })
     if (touch) {
@@ -731,7 +733,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   async flush(): Promise<void> {
     if (!this._storageCacheSettings.deactivate) {
       const items = this._storageCache!.flush()
-      for (const item of items) {
+      for await (const item of items) {
         const address = Address.fromString(`0x${item[0]}`)
         const keyHex = item[1]
         const keyBytes = hexToBytes(keyHex)
@@ -746,16 +748,14 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     }
     if (!this._accountCacheSettings.deactivate) {
       const items = this._accountCache!.flush()
-      for (const item of items) {
+      for await (const item of items) {
         const addressHex = item[0]
         const addressBytes = hexToBytes(addressHex)
         const elem = item[1]
         if (elem.accountRLP === undefined) {
-          const trie = this._trie
-          await trie.del(addressBytes)
+          await this._trie.del(addressBytes)
         } else {
-          const trie = this._trie
-          await trie.put(addressBytes, elem.accountRLP)
+          await this._trie.put(addressBytes, elem.accountRLP)
         }
       }
     }
@@ -776,21 +776,21 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         codeHash: '0x' + KECCAK256_NULL_S,
         nonce: '0x',
         storageHash: '0x' + KECCAK256_RLP_S,
-        accountProof: (await this._trie.createProof(address.bytes)).map((p) =>
+        accountProof: (await this._trie._createProof(address.bytes)).map((p) =>
           bytesToPrefixedHexString(p)
         ),
         storageProof: [],
       }
       return returnValue
     }
-    const accountProof: PrefixedHexString[] = (await this._trie.createProof(address.bytes)).map(
+    const accountProof: PrefixedHexString[] = (await this._trie._createProof(address.bytes)).map(
       (p) => bytesToPrefixedHexString(p)
     )
     const storageProof: StorageProof[] = []
     const storageTrie = await this._getStorageTrie(address, account)
 
     for (const storageKey of storageSlots) {
-      const proof = (await storageTrie.createProof(storageKey)).map((p) =>
+      const proof = (await storageTrie._createProof(storageKey)).map((p) =>
         bytesToPrefixedHexString(p)
       )
       const value = bytesToPrefixedHexString(await this.getContractStorage(address, storageKey))
@@ -827,9 +827,11 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     // This returns the account if the proof is valid.
     // Verify that it matches the reported account.
-    const value = await new Trie({ useKeyHashing: true }).verifyProof(rootHash, key, accountProof)
-
-    if (value === null) {
+    const value = await Trie.verifyProof(rootHash, key, accountProof, true)
+    if (value === false) {
+      throw new Error('Invalid proof provided: account proof is invalid')
+    }
+    if (value === null || value.length === 0) {
       // Verify that the account is empty in the proof.
       const emptyBytes = new Uint8Array(0)
       const notEmptyErrorMsg = 'Invalid proof provided: account is not empty'
@@ -873,17 +875,16 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       const storageProof = stProof.proof.map((value: PrefixedHexString) => hexStringToBytes(value))
       const storageValue = setLengthLeft(hexStringToBytes(stProof.value), 32)
       const storageKey = hexStringToBytes(stProof.key)
-      const proofValue = await new Trie({ useKeyHashing: true }).verifyProof(
-        storageRoot,
-        storageKey,
-        storageProof
-      )
-      const reportedValue = setLengthLeft(
-        RLP.decode(proofValue ?? new Uint8Array(0)) as Uint8Array,
-        32
-      )
-      if (!equalsBytes(reportedValue, storageValue)) {
-        throw new Error('Reported trie value does not match storage')
+      const trieValue = await Trie.verifyProof(storageRoot, storageKey, storageProof, true)
+      if (trieValue instanceof Uint8Array) {
+        const reportedValue = setLengthLeft(trieValue.slice(1), 32)
+        if (!equalsBytes(reportedValue, storageValue)) {
+          throw new Error('Reported trie value does not match storage')
+        }
+      } else {
+        if (bytesToHex(storageValue) !== bytesToHex(setLengthLeft(Uint8Array.from([]), 32))) {
+          throw new Error('Reported trie proof could not be verified')
+        }
       }
     }
     return true
@@ -917,7 +918,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       }
     }
 
-    this._trie.root(stateRoot)
+    await this._trie.setRootByHash(stateRoot)
     if (this._accountCache !== undefined && clearCache) {
       this._accountCache.clear()
     }
@@ -1075,12 +1076,12 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     return new Promise((resolve, reject) => {
       this._getStorageTrie(address, account)
-        .then((trie) => {
+        .then(async (trie) => {
           const storage: StorageDump = {}
-          const stream = trie.createReadStream()
+          const stream = await trie.createReadStream()
 
           stream.on('data', (val: any) => {
-            storage[bytesToHex(val.key)] = bytesToHex(val.value)
+            storage[bytesToHex(nibblestoBytes(val.key))] = bytesToHex(val.value)
           })
           stream.on('end', () => {
             resolve(storage)
@@ -1191,8 +1192,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * a large overhead here.
    * 2. Cache values are generally not copied along
    */
-  copy(): DefaultStateManager {
-    const trie = this._trie.copy(false)
+  async copy(): Promise<DefaultStateManager> {
+    const trie = await this._trie.copy(false)
     const prefixCodeHashes = this._prefixCodeHashes
     let accountCacheOpts = { ...this._accountCacheSettings }
     if (!this._accountCacheSettings.deactivate) {
@@ -1204,7 +1205,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     }
 
     return new DefaultStateManager({
-      trie,
+      trie: await this._trie.copy(false),
       prefixCodeHashes,
       accountCacheOpts,
       storageCacheOpts,

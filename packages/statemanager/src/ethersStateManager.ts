@@ -45,7 +45,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
     this._accountCache = new AccountCache({ size: 100000, type: CacheType.LRU })
   }
 
-  copy(): EthersStateManager {
+  async copy(): Promise<EthersStateManager> {
     const newState = new EthersStateManager({
       provider: this.provider,
       blockTag: BigInt(this.blockTag),
@@ -186,9 +186,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
     const proof = await this.provider.send('eth_getProof', [address.toString(), [], this.blockTag])
 
     const proofBuf = proof.accountProof.map((proofNode: string) => toBytes(proofNode))
-
-    const trie = new Trie({ useKeyHashing: true })
-    const verified = await trie.verifyProof(keccak256(proofBuf[0]), address.bytes, proofBuf)
+    const verified = await Trie.verifyProof(keccak256(proofBuf[0]), address.bytes, proofBuf)
     // if not verified (i.e. verifyProof returns null), account does not exist
     return verified === null ? false : true
   }
