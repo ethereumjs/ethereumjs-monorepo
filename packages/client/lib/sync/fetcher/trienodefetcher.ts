@@ -114,7 +114,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     const { task, peer } = job
     const { pathStrings, paths } = task
 
-    this.debug(`requested paths: ${JSON.stringify(paths)}`)
+    this.debug(`requested paths:`)
+    this.debug(paths)
 
     const rangeResult = await peer!.snap!.getTrieNodes({
       root: this.root,
@@ -221,7 +222,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
    * @param result fetch result
    */
   async store(result: Uint8Array[]): Promise<void> {
-    console.log('dbg2')
+    this.debug('At start of store phase')
 
     try {
       // process received node data and request unknown child nodes
@@ -253,6 +254,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             }
           }
         } else if (node instanceof ExtensionNode) {
+          this.debug('extension node found')
           // TODO functionality unverified for extension node
           // TODO remove optional terminator from key if it exists before postpending
           childNodes.unshift({
@@ -260,6 +262,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             path: nodePath.concat(bytesToHex(bytesToNibbles(this.nibblesToBytes(node.key())))), // TODO verify this is correct way of encoding to hex encoded hex string from keybytes Nibbles typed value
           })
         } else {
+          this.debug('leaf node found')
+
           // TODO implement leaf callback for batching and putting all nodes when dependencies have been fetched
           // TODO perform leaf callback on all paths that are full and complete, with partial paths handled bellow
           // TODO should probably do leaf callback after putting nodes in completed set, that is happening right bellow
@@ -301,16 +305,19 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         this.requestedNodeToPath.delete(nodeHash)
         this.pathToNodeRequestData.eraseElementByKey(nodePath)
 
-        console.log('dbg3')
-        console.log(unknownChildNodeCount)
-        console.log(childNodes)
-        console.log(this.fetchedAccountNodes)
-        // this.pathToNodeRequestData.forEach((elem, i, _) => {
-        //   console.log(
-        //     `${i} - path ${elem[0]}\nnode hash ${elem[1].nodeHash}\nnodeParentHash ${elem[1].nodeParentHash}\n\n`
-        //   )
-        // })
+        this.debug('At end of store phase')
+        this.debug(`unkownChildCount: ${unknownChildNodeCount}`)
+        this.debug(`childeNodes:`)
+        this.debug(childNodes)
       }
+      this.debug(`fetchedAccountNodes:`)
+      this.debug(this.fetchedAccountNodes)
+      this.debug(`pathToNodeRequestData.length: ${this.pathToNodeRequestData.length}`)
+      // this.pathToNodeRequestData.forEach((elem, i, _) => {
+      //   this.debug(
+      //     `${i} - path ${elem[0]}\nnode hash ${elem[1].nodeHash}\nnodeParentHash ${elem[1].nodeParentHash}\n\n`
+      //   )
+      // })
     } catch (e) {
       this.debug(e)
     }
@@ -331,7 +338,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   }
 
   mergeAndFormatPaths(pathStrings: string[]) {
-    console.log('dbg15')
+    this.debug('At start of mergeAndFormatPaths')
 
     // for (let i = 0; i < pathStrings.length; i++) {
     //   return
@@ -362,13 +369,9 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             if (nodeHash === undefined) throw Error('Path should exist')
             this.requestedNodeToPath.set(nodeHash as unknown as string, pathString)
           }
-          console.log('dbg10')
-          console.log(requestedPathStrings)
-          const formatted = this.mergeAndFormatPaths(requestedPathStrings)
-          console.log(formatted)
           tasks.push({
             pathStrings: requestedPathStrings,
-            paths: formatted,
+            paths: this.mergeAndFormatPaths(requestedPathStrings),
           })
           this.debug(`Created new tasks num=${tasks.length}`)
         }
