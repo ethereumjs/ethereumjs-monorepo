@@ -140,7 +140,7 @@ tape('EVM -> custom precompiles', (t) => {
       ],
       stateManager: new DefaultStateManager(),
     })
-    const evmCopy = evm.copy()
+    const evmCopy = await evm.copy()
     st.deepEqual(
       (evm as any)._customPrecompiles,
       (evmCopy as any)._customPrecompiles,
