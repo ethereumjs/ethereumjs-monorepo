@@ -10,7 +10,7 @@ import {
   padToEven,
   stripHexPrefix,
   toAscii,
-} from '../src/internal'
+} from '../src/index.js'
 
 const buf = utf8ToBytes('hello')
 

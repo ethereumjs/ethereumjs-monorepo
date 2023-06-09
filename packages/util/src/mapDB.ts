@@ -1,6 +1,6 @@
 import { bytesToHex } from 'ethereum-cryptography/utils'
 
-import type { BatchDBOp, DB, DBObject } from './db'
+import type { BatchDBOp, DB, DBObject } from './db.js'
 
 export class MapDB<
   TKey extends Uint8Array | string | number,

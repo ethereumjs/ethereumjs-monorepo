@@ -1,7 +1,7 @@
 import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { Address, hexStringToBytes, toBytes } from '../src'
+import { Address, hexStringToBytes, toBytes } from '../src/index.js'
 
 import eip1014Testdata from './testdata/eip1014Examples.json'
 
