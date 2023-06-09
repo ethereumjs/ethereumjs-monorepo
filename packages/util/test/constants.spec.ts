@@ -10,7 +10,7 @@ import {
   KECCAK256_RLP_S,
   MAX_INTEGER,
   TWO_POW256,
-} from '../src'
+} from '../src/index.js'
 
 describe('constants', () => {
   it('should match constants', () => {

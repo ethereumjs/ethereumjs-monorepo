@@ -1,7 +1,7 @@
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { bytesToNibbles, compactBytesToNibbles, nibblesToCompactBytes } from '../src'
+import { bytesToNibbles, compactBytesToNibbles, nibblesToCompactBytes } from '../src/index.js'
 
 describe('encoding', () => {
   it('nibblesToCompactBytes and compactBytesToNibbles should encode hex data correctly', () => {

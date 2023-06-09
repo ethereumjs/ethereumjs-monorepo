@@ -27,7 +27,7 @@ import {
   validateNoLeadingZeroes,
   zeroAddress,
   zeros,
-} from '../src'
+} from '../src/index.js'
 
 describe('zeros function', () => {
   it('should produce lots of 0s', () => {

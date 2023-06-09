@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { AsyncEventEmitter } from '../src/asyncEventEmitter'
+import { AsyncEventEmitter } from '../src/index.js'
 
 describe('async event emit/on test', async () => {
   it('should receive event', () => {

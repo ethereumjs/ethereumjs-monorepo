@@ -10,7 +10,7 @@ import {
   intToHex,
   toBytes,
   toType,
-} from '../src'
+} from '../src/index.js'
 
 describe('toType', () => {
   it('from null and undefined', () => {

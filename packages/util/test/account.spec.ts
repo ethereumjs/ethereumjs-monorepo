@@ -22,7 +22,7 @@ import {
   publicToAddress,
   toBytes,
   toChecksumAddress,
-} from '../src'
+} from '../src/index.js'
 
 import eip1014Testdata from './testdata/eip1014Examples.json'
 

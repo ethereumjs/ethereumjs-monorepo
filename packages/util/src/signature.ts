@@ -8,9 +8,9 @@ import {
   bytesToPrefixedHexString,
   setLengthLeft,
   toBytes,
-} from './bytes'
-import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants'
-import { assertIsBytes } from './helpers'
+} from './bytes.js'
+import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants.js'
+import { assertIsBytes } from './helpers.js'
 
 export interface ECDSASignature {
   v: bigint
