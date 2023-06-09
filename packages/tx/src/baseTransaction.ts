@@ -25,6 +25,8 @@ import type {
   FeeMarketEIP1559TxData,
   FeeMarketEIP1559ValuesArray,
   JsonTx,
+  TransactionInterface,
+  TransactionType,
   TxData,
   TxOptions,
   TxValuesArray,
@@ -46,7 +48,9 @@ interface TransactionCache {
  *
  * It is therefore not recommended to use directly.
  */
-export abstract class BaseTransaction<TransactionObject> {
+export abstract class BaseTransaction<TTransactionType extends TransactionType>
+  implements TransactionInterface<TTransactionType>
+{
   private readonly _type: number
 
   public readonly nonce: bigint
@@ -327,7 +331,7 @@ export abstract class BaseTransaction<TransactionObject> {
    * const signedTx = tx.sign(privateKey)
    * ```
    */
-  sign(privateKey: Uint8Array): TransactionObject {
+  sign(privateKey: Uint8Array): TTransactionType {
     if (privateKey.length !== 32) {
       const msg = this._errorMsg('Private key must be 32 bytes in length.')
       throw new Error(msg)
@@ -379,8 +383,8 @@ export abstract class BaseTransaction<TransactionObject> {
     }
   }
 
-  // Accept the v,r,s values from the `sign` method, and convert this into a TransactionObject
-  protected abstract _processSignature(v: bigint, r: Uint8Array, s: Uint8Array): TransactionObject
+  // Accept the v,r,s values from the `sign` method, and convert this into a TTransactionType
+  protected abstract _processSignature(v: bigint, r: Uint8Array, s: Uint8Array): TTransactionType
 
   /**
    * Does chain ID checks on common and returns a common
