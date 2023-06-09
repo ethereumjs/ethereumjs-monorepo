@@ -3,7 +3,7 @@ import type { AccessListEIP2930Transaction } from './eip2930Transaction'
 import type { BlobEIP4844Transaction } from './eip4844Transaction'
 import type { Transaction } from './legacyTransaction'
 import type { AccessList, AccessListBytes, Common } from '@ethereumjs/common'
-import type { AddressLike, BigIntLike, BytesLike } from '@ethereumjs/util'
+import type { Address, AddressLike, BigIntLike, BytesLike } from '@ethereumjs/util'
 export type {
   AccessList,
   AccessListBytes,
@@ -97,11 +97,41 @@ export function isAccessList(input: AccessListBytes | AccessList): input is Acce
  * Note that this also includes legacy txs which are
  * referenced as {@link Transaction} for compatibility reasons.
  */
-export type TypedTransaction =
+export type TransactionType =
   | Transaction
   | AccessListEIP2930Transaction
   | FeeMarketEIP1559Transaction
   | BlobEIP4844Transaction
+
+export interface TransactionInterface<TTransactionType extends TransactionType> {
+  supports(capability: Capability): boolean
+  type: number
+  validate(): boolean
+  validate(stringError: false): boolean
+  validate(stringError: true): string[]
+  validate(stringError: boolean): boolean | string[]
+  getBaseFee(): bigint
+  getDataFee(): bigint
+  getUpfrontCost(): bigint
+  toCreationAddress(): boolean
+  raw():
+    | TxValuesArray
+    | AccessListEIP2930ValuesArray
+    | FeeMarketEIP1559ValuesArray
+    | BlobEIP4844ValuesArray
+  serialize(): Uint8Array
+  getMessageToSign(hashMessage: false): Uint8Array | Uint8Array[]
+  getMessageToSign(hashMessage?: true): Uint8Array
+  hash(): Uint8Array
+  getMessageToVerifySignature(): Uint8Array
+  isSigned(): boolean
+  verifySignature(): boolean
+  getSenderAddress(): Address
+  getSenderPublicKey(): Uint8Array
+  sign(privateKey: Uint8Array): TTransactionType
+  toJSON(): JsonTx
+  errorStr(): string
+}
 
 /**
  * Legacy {@link Transaction} Data
