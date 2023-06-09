@@ -1,4 +1,4 @@
-import { equalsBytes } from 'ethereum-cryptography/utils'
+import { equalsBytes } from 'ethereum-cryptography/utils.js'
 
 import {
   generateAddress,

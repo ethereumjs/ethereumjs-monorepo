@@ -1,13 +1,13 @@
 import { RLP } from '@ethereumjs/rlp'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import {
   bytesToHex,
   concatBytes,
   equalsBytes,
   hexToBytes,
   utf8ToBytes,
-} from 'ethereum-cryptography/utils'
+} from 'ethereum-cryptography/utils.js'
 
 import {
   bigIntToUnpaddedBytes,
