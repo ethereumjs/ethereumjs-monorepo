@@ -24,6 +24,7 @@
     "Holger Drewes <Holger.Drewes@gmail.com>",
     "Paul Miller <pkg@paulmillr.com>"
   ],
+  "type": "module",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "exports": {
