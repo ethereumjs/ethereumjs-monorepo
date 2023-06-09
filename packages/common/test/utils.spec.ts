@@ -1,66 +1,58 @@
 import { hexStringToBytes } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { Common } from '../src/common'
 import { Hardfork } from '../src/enums'
 import { parseGethGenesis } from '../src/utils'
 
-tape('[Utils/Parse]', (t) => {
-  t.test('should parse geth params file', async (t) => {
+describe('[Utils/Parse]', () => {
+  it('should parse geth params file', async () => {
     const json = require(`../../client/test/testdata/geth-genesis/testnet.json`)
     const params = parseGethGenesis(json, 'rinkeby')
-    t.equals(params.genesis.nonce, '0x0000000000000042', 'nonce should be correctly formatted')
+    assert.equal(params.genesis.nonce, '0x0000000000000042', 'nonce should be correctly formatted')
   })
 
-  t.test('should throw with invalid Spurious Dragon blocks', async (t) => {
-    t.plan(1)
+  it('should throw with invalid Spurious Dragon blocks', async () => {
     const json = require(`../../client/test/testdata/geth-genesis/invalid-spurious-dragon.json`)
-    try {
+    const f = () => {
       parseGethGenesis(json, 'bad_params')
-      t.fail('should have thrown')
-    } catch {
-      t.pass('should throw')
     }
+    assert.throws(f, undefined, undefined, 'should throw')
   })
 
-  t.test('should import poa network params correctly', async (t) => {
-    t.plan(4)
+  it('should import poa network params correctly', async () => {
     const json = require(`../../client/test/testdata/geth-genesis/poa.json`)
     let params = parseGethGenesis(json, 'poa')
-    t.equals(params.genesis.nonce, '0x0000000000000000', 'nonce is formatted correctly')
-    t.deepEquals(
+    assert.equal(params.genesis.nonce, '0x0000000000000000', 'nonce is formatted correctly')
+    assert.deepEqual(
       params.consensus,
       { type: 'poa', algorithm: 'clique', clique: { period: 15, epoch: 30000 } },
       'consensus config matches'
     )
     json.nonce = '00'
     params = parseGethGenesis(json, 'poa')
-    t.equals(
+    assert.equal(
       params.genesis.nonce,
       '0x0000000000000000',
       'non-hex prefixed nonce is formatted correctly'
     )
-    t.equal(params.hardfork, Hardfork.London, 'should correctly infer current hardfork')
+    assert.equal(params.hardfork, Hardfork.London, 'should correctly infer current hardfork')
   })
 
-  t.test(
-    'should generate expected hash with london block zero and base fee per gas defined',
-    async (t) => {
-      const json = require(`../../client/test/testdata/geth-genesis/post-merge.json`)
-      const params = parseGethGenesis(json, 'post-merge')
-      t.equals(params.genesis.baseFeePerGas, json.baseFeePerGas)
-    }
-  )
+  it('should generate expected hash with london block zero and base fee per gas defined', async () => {
+    const json = require(`../../client/test/testdata/geth-genesis/post-merge.json`)
+    const params = parseGethGenesis(json, 'post-merge')
+    assert.equal(params.genesis.baseFeePerGas, json.baseFeePerGas)
+  })
 
-  t.test('should successfully parse genesis file with no extraData', async (st) => {
-    st.plan(2)
+  it('should successfully parse genesis file with no extraData', async () => {
     const json = require(`../../client/test/testdata/geth-genesis/no-extra-data.json`)
     const params = parseGethGenesis(json, 'noExtraData')
-    st.equal(params.genesis.extraData, '0x', 'extraData set to 0x')
-    st.equal(params.genesis.timestamp, '0x10', 'timestamp parsed correctly')
+    assert.equal(params.genesis.extraData, '0x', 'extraData set to 0x')
+    assert.equal(params.genesis.timestamp, '0x10', 'timestamp parsed correctly')
   })
 
-  t.test('should successfully parse kiln genesis and set forkhash', async (st) => {
+  it('should successfully parse kiln genesis and set forkhash', async () => {
     const json = require(`../../blockchain/test/testdata/geth-genesis-kiln.json`)
     const common = Common.fromGethGenesis(json, {
       chain: 'customChain',
@@ -69,7 +61,7 @@ tape('[Utils/Parse]', (t) => {
       ),
       mergeForkIdPostMerge: false,
     })
-    st.deepEqual(
+    assert.deepEqual(
       common.hardforks().map((hf) => hf.name),
       [
         'chainstart',
@@ -89,10 +81,10 @@ tape('[Utils/Parse]', (t) => {
     )
     for (const hf of common.hardforks()) {
       /* eslint-disable @typescript-eslint/no-use-before-define */
-      st.equal(hf.forkHash, kilnForkHashes[hf.name], `${hf.name} forkHash should match`)
+      assert.equal(hf.forkHash, kilnForkHashes[hf.name], `${hf.name} forkHash should match`)
     }
 
-    st.equal(common.hardfork(), Hardfork.Paris, 'should correctly infer current hardfork')
+    assert.equal(common.hardfork(), Hardfork.Paris, 'should correctly infer current hardfork')
 
     // Ok lets schedule shanghai at block 0, this should force merge to be scheduled at just after
     // genesis if even mergeForkIdTransition is not confirmed to be post merge
@@ -103,7 +95,7 @@ tape('[Utils/Parse]', (t) => {
     })
     // merge hardfork is now scheduled just after shanghai even if mergeForkIdTransition is not confirmed
     // to be post merge
-    st.deepEqual(
+    assert.deepEqual(
       common1.hardforks().map((hf) => hf.name),
       [
         'chainstart',
@@ -123,15 +115,15 @@ tape('[Utils/Parse]', (t) => {
       'hardfork parse order should be correct'
     )
 
-    st.equal(common1.hardfork(), Hardfork.Shanghai, 'should correctly infer current hardfork')
+    assert.equal(common1.hardfork(), Hardfork.Shanghai, 'should correctly infer current hardfork')
   })
 
-  t.test('should successfully parse genesis with hardfork scheduled post merge', async (st) => {
+  it('should successfully parse genesis with hardfork scheduled post merge', async () => {
     const json = require(`./data/post-merge-hardfork.json`)
     const common = Common.fromGethGenesis(json, {
       chain: 'customChain',
     })
-    st.deepEqual(
+    assert.deepEqual(
       common.hardforks().map((hf) => hf.name),
       [
         'chainstart',
@@ -151,37 +143,36 @@ tape('[Utils/Parse]', (t) => {
       'hardfork parse order should be correct'
     )
 
-    st.equal(common.getHardforkByBlockNumber(0), Hardfork.London, 'london at genesis')
-    st.equal(common.getHardforkByBlockNumber(1, BigInt(2)), Hardfork.Paris, 'merge at block 1')
+    assert.equal(common.getHardforkByBlockNumber(0), Hardfork.London, 'london at genesis')
+    assert.equal(common.getHardforkByBlockNumber(1, BigInt(2)), Hardfork.Paris, 'merge at block 1')
     // shanghai is at timestamp 8
-    st.equal(common.getHardforkByBlockNumber(8), Hardfork.London, 'without timestamp still london')
-    st.equal(
+    assert.equal(
+      common.getHardforkByBlockNumber(8),
+      Hardfork.London,
+      'without timestamp still london'
+    )
+    assert.equal(
       common.getHardforkByBlockNumber(8, BigInt(2)),
       Hardfork.Paris,
       'without timestamp at merge'
     )
-    st.equal(
+    assert.equal(
       common.getHardforkByBlockNumber(8, undefined, 8),
       Hardfork.Shanghai,
       'with timestamp at shanghai'
     )
     // should be post merge at shanghai
-    st.equal(
+    assert.equal(
       common.getHardforkByBlockNumber(8, BigInt(2), 8),
       Hardfork.Shanghai,
       'post merge shanghai'
     )
     // if not post merge, then should error
-    try {
+    const f = () => {
       common.getHardforkByBlockNumber(8, BigInt(1), 8)
-      st.fail('should have failed since merge not completed before shanghai')
-    } catch (e) {
-      st.pass('correctly fails if merge not completed before shanghai')
     }
-
-    st.equal(common.hardfork(), Hardfork.Shanghai, 'should correctly infer common hardfork')
-
-    st.end()
+    assert.throws(f, undefined, undefined, 'correctly fails if merge not completed before shanghai')
+    assert.equal(common.hardfork(), Hardfork.Shanghai, 'should correctly infer common hardfork')
   })
 })
 
