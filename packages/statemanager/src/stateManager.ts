@@ -205,7 +205,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     this._checkpointCount = 0
 
-    this._trie = opts.trie ?? new Trie({ useKeyHashing: true })
+    this._trie = opts.trie ?? new Trie({ useKeyHashing: true, persistent: true })
     this._storageTries = {}
     this._codeCache = {}
 
@@ -299,11 +299,11 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       )
     }
     if (this._accountCacheSettings.deactivate) {
-      const trie = this._trie
+      // const trie = this._trie
       if (account !== undefined) {
-        await trie.put(address.bytes, account.serialize())
+        await this._trie.put(address.bytes, account.serialize())
       } else {
-        await trie.del(address.bytes)
+        await this._trie.del(address.bytes)
       }
     } else {
       if (account !== undefined) {
@@ -660,7 +660,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * `commit` or `reverted` by calling rollback.
    */
   async checkpoint(): Promise<void> {
-    this._trie.checkpoint()
+    await this._trie.checkpoint()
     this._storageCache?.checkpoint()
     this._accountCache?.checkpoint()
     if (this._common.gteHardfork(Hardfork.Berlin)) {
