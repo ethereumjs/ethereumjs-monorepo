@@ -3,8 +3,10 @@ import debug from 'debug'
 import { equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
-import { BranchNode, FoundNodeFunction, LeafNode, Trie, nibblestoBytes } from '../src'
-import { TNode } from '../src/trie/node/types'
+import { BranchNode, LeafNode, Trie, nibblestoBytes } from '../src'
+
+import type { FoundNodeFunction } from '../src'
+import type { TNode } from '../src/trie/node/types'
 
 const runTests = async (testSizes: number[] = [100, 200]) => {
   const testCases: [number, { keys: Uint8Array[]; values: Uint8Array[] }][] = testSizes.map(

@@ -1,9 +1,10 @@
 import { bytesToPrefixedHexString } from '@ethereumjs/util'
-import { FoundNodeFunction, WalkFilterFunction } from '../../types'
-import { TNode } from '../node/types'
-import { BranchNode } from '../node'
-import { TrieWrap } from '../trieWrapper'
-import { MerklePatriciaTrie } from '../merklePatricia'
+
+import type { FoundNodeFunction, WalkFilterFunction } from '../../types'
+import type { MerklePatriciaTrie } from '../merklePatricia'
+import type { BranchNode } from '../node'
+import type { TNode } from '../node/types'
+import type { TrieWrap } from '../trieWrapper'
 
 // Experimental Walk Iterators
 

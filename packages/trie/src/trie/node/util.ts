@@ -6,9 +6,8 @@ import { bytesToNibbles } from '../../util/nibbles'
 
 import { BranchNode, ExtensionNode, LeafNode, NullNode } from '.'
 
-import type { TNode } from './types'
+import type { NodeType, TNode } from './types'
 import type { Debugger } from 'debug'
-import { NodeType } from './types'
 
 export function getNodeType(encoded: Uint8Array): NodeType {
   const raw = RLP.decode(encoded as Uint8Array) as (Uint8Array | Uint8Array[])[]

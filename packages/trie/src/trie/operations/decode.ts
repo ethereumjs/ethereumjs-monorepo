@@ -1,19 +1,23 @@
-import { NodeType, TNode } from '../node/types'
-import {
-  BranchNode,
-  ExtensionNode,
-  LeafNode,
-  NullNode,
-  ProofNode,
-  decodeToNode,
-  getNodeType,
-} from '../node'
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToNibbles } from '../../util/nibbles'
-import debug, { Debugger } from 'debug'
-import { bytesToPrefixedHexString, bytesToUtf8, equalsBytes, hasTerminator } from '@ethereumjs/util'
+import { bytesToPrefixedHexString, equalsBytes } from '@ethereumjs/util'
+import debug from 'debug'
+
 import { removeHexPrefix } from '../../util/hex'
-import { MerklePatriciaTrie } from '../merklePatricia'
+import { bytesToNibbles } from '../../util/nibbles'
+import { BranchNode, ExtensionNode, LeafNode, NullNode, ProofNode, decodeToNode } from '../node'
+
+import type { MerklePatriciaTrie } from '../merklePatricia'
+import type { TNode } from '../node/types'
+import type { Debugger } from 'debug'
+
+const isValidRLPInput = (input: Uint8Array): boolean => {
+  try {
+    RLP.decode(input)
+    return true
+  } catch (e) {
+    return false
+  }
+}
 
 export async function decodeNode(
   this: MerklePatriciaTrie,
@@ -21,12 +25,14 @@ export async function decodeNode(
   d_bug?: Debugger
 ): Promise<TNode> {
   const dbug = d_bug ? d_bug.extend('decodeNode') : this.debug.extend('decodeNode')
+  dbug(`nodeHash: ${bytesToPrefixedHexString(this.hashFunction(encoded))}`)
   const encodedLength = encoded.length
+  dbug(`encoded length: (${encodedLength})`)
   const decoded = RLP.decode(encoded) as Uint8Array[]
   const decodedLength = decoded.length
-  dbug(`nodeHash: ${bytesToPrefixedHexString(this.hashFunction(encoded))}`)
-  dbug(`encoded length: (${encodedLength})`)
   dbug(`decoded length: (${decodedLength})`)
+  let node: TNode
+  let subNode: TNode
   switch (encodedLength) {
     // case 0: {
     //   dbug(`encoding as NullNode`)
@@ -97,50 +103,51 @@ export async function decodeNode(
           dbug(`encoding as NullNode`)
           return new NullNode({})
         }
-        case 2: {
-          dbug(`decoded[0] length: (${decoded[0].length})`)
-          dbug(`decoded[1] length: (${decoded[1].length})`)
-          switch (decoded[1].length) {
-            case 32: {
-              const subNode = await this._decodeHashedChild(decoded[1], dbug)
-              dbug(`encoding as ExtensionNode`)
-              return new ExtensionNode({
-                keyNibbles: removeHexPrefix(bytesToNibbles(decoded[0])),
-                subNode,
-              })
-            }
-            case 17: {
-              dbug(`subNode is a BranchNode -- decoding...`)
-              const subNode = await this._decodeBranchNode(RLP.encode(decoded[1]), dbug)
-              return new ExtensionNode({
-                keyNibbles: removeHexPrefix(bytesToNibbles(decoded[0])),
-                subNode,
-              })
-            }
-            default:
-              dbug(`building new LeafNode`)
-              const node = new LeafNode({
-                key: removeHexPrefix(bytesToNibbles(decoded[0])),
-                value: decoded[1],
-                hashFunction: this.hashFunction,
-                source: dbug,
-              })
-              dbug(`equal? ${equalsBytes(node.hash(), this.hashFunction(encoded))}`)
-              if (equalsBytes(node.hash(), this.hashFunction(encoded))) {
-                dbug(`hash: ${bytesToPrefixedHexString(node.hash())}`)
-                dbug(`value: ${node.value}`)
-                return node
+        case 2:
+          {
+            dbug(`decoded[0] length: (${decoded[0].length})`)
+            dbug(`decoded[1] length: (${decoded[1].length})`)
+            switch (decoded[1].length) {
+              case 32: {
+                const subNode = await this._decodeHashedChild(decoded[1], dbug)
+                dbug(`encoding as ExtensionNode`)
+                return new ExtensionNode({
+                  keyNibbles: removeHexPrefix(bytesToNibbles(decoded[0])),
+                  subNode,
+                })
               }
+              case 17: {
+                dbug(`subNode is a BranchNode -- decoding...`)
+                subNode = await this._decodeBranchNode(RLP.encode(decoded[1]), dbug)
+                return new ExtensionNode({
+                  keyNibbles: removeHexPrefix(bytesToNibbles(decoded[0])),
+                  subNode,
+                })
+              }
+              default:
+                dbug(`building new LeafNode`)
+                node = new LeafNode({
+                  key: removeHexPrefix(bytesToNibbles(decoded[0])),
+                  value: decoded[1],
+                  hashFunction: this.hashFunction,
+                  source: dbug,
+                })
+                dbug(`equal? ${equalsBytes(node.hash(), this.hashFunction(encoded))}`)
+                if (equalsBytes(node.hash(), this.hashFunction(encoded))) {
+                  dbug(`hash: ${bytesToPrefixedHexString(node.hash())}`)
+                  dbug(`value: ${node.value}`)
+                  return node
+                }
+            }
           }
-        }
-
+          break
         case 17: {
-          const node = await decodeBranchNode.bind(this)(encoded, dbug)
+          node = await this._decodeBranchNode(encoded, dbug)
           dbug(`encoding as BranchNode`)
           return node
         }
         case 32: {
-          const node = await decodeHashedChild.bind(this)(encoded, dbug)
+          const node = await this._decodeHashedChild(encoded, dbug)
           dbug(`encoding as ${node.getType()}`)
           return node
         }
@@ -269,9 +276,6 @@ export async function decodeBranchNode(
   })
   for await (const [i, branch] of _decoded.slice(0, 16).entries()) {
     dbug.extend(`child[${i}]`)(`(${branch.length})`)
-    if (!branch) {
-      throw new Error('no branch')
-    }
     let child: TNode
     if (branch.length === 0) {
       child = new NullNode({

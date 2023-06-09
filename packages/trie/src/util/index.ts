@@ -1,5 +1,6 @@
 // export * from './readStream'
 // export * from './tasks'
 // export * from './walkController'
-export * from './nibbles'
+export * from './bulkInsert'
 export * from './hex'
+export * from './nibbles'

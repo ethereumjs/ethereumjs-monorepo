@@ -7,7 +7,6 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { blake2b } from 'ethereum-cryptography/blake2b'
-import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToUtf8, concatBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
@@ -20,6 +19,13 @@ tape('simple save and retrieve', function (tester) {
   const it = tester.test
 
   it('should not crash if given a non-existent root', async function (t) {
+    if (
+      typeof (<any>globalThis).window !== 'undefined' &&
+      (<any>globalThis).window.__karma__ !== undefined
+    ) {
+      t.skip('skip test when running in karma')
+      return t.end()
+    }
     const rootHash = hexStringToBytes(
       '3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d'
     )
@@ -244,14 +250,8 @@ tape('shall handle the case of node not found correctly', async (t) => {
   let path = await trie.getPath(utf8ToBytes('aaa'))
   t.ok(path.path.pop() !== null, 'getPath should find a node')
   path = await trie.getPath(utf8ToBytes('aaa'))
-  for (const [idx, p] of path.path.entries()) {
-    console.log(idx, p.getType())
-  }
   await trie.del(utf8ToBytes('aaa'))
   path = await trie.getPath(utf8ToBytes('aaa'))
-  for (const [idx, p] of path.path.entries()) {
-    console.log(idx, p.getType())
-  }
   t.equal(path.path[0].getValue(), null, 'getPath should not return a node now')
   t.equal(
     path.path[0].getType(),

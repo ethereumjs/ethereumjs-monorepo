@@ -3,9 +3,9 @@ import { NullNode } from '../node'
 
 import { _cleanupNode } from './cleanup'
 
-import type { NodeType, TNode } from '../node/types'
 import type { MerklePatriciaTrie } from '../merklePatricia'
 import type { BranchNode, ExtensionNode, LeafNode } from '../node'
+import type { NodeType, TNode } from '../node/types'
 import type { Debugger } from 'debug'
 
 export async function _deleteAtNode(
@@ -58,7 +58,7 @@ export async function _deleteAtNode(
       }
     },
     BranchNode: async () => {
-      let branchNode = _node as BranchNode
+      const branchNode = _node as BranchNode
       // if (_keyNibbles.length === 0) {
       //   debug(`keyNibbles is empty, setting deleting branch`)
       //   return new NullNode({ hashFunction: this.hashFunction })
@@ -94,7 +94,7 @@ export async function _deleteAtNode(
       }
     },
     ProofNode: async () => {
-      throw new Error('method not implemented')
+      return _node
     },
   }
   const deleted = await d[_node.getType()]()

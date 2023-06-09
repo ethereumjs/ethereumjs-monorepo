@@ -1,17 +1,20 @@
 import { bytesToPrefixedHexString, equalsBytes } from '@ethereumjs/util'
+import * as LRUCache from 'lru-cache'
+
+import { TrieDatabase } from '../db'
+import { ROOT_DB_KEY } from '../types'
+
 import { MerklePatriciaTrie } from './merklePatricia'
 import { NullNode, ProofNode } from './node'
-import { ROOT_DB_KEY } from '../types'
-import { TrieDatabase } from '../db'
-import * as LRUCache from 'lru-cache'
-import type { Debugger } from 'debug'
-import type { TrieDBOptions } from '../types'
 import {
   _garbageCollect,
   _markReachableNodes,
   _verifyPrunedIntegrity,
 } from './operations/garbageCollection'
-import { TNode } from './node/types'
+
+import type { TrieDBOptions } from '../types'
+import type { TNode } from './node/types'
+import type { Debugger } from 'debug'
 
 export class TrieWithDB extends MerklePatriciaTrie {
   static async create(options: TrieDBOptions): Promise<TrieWithDB> {
@@ -42,12 +45,15 @@ export class TrieWithDB extends MerklePatriciaTrie {
   constructor(options: TrieDBOptions = {}) {
     super(options)
     this.cache = options.cache ?? new LRUCache({ max: 1000 })
+    if (options.db) {
+      this.debug(`Building Trie from DB: ${options.db}`)
+    }
     this.db = options.db ?? new TrieDatabase({ _debug: this.debug })
     this.checkpoints = options.checkpoints ?? []
     this.maxCheckpoints = options.maxCheckpoints ?? 1000
     this.useNodePruning = options.useNodePruning ?? false
     this.persistent = options.persistent ?? false
-    this.secure = options.secure ?? false
+    this.secure = options.secure ?? options.useKeyHashing ?? false
     this.keySecure = this.secure ? this.hashFunction : (key: Uint8Array) => key
     this.EMPTY_TRIE_ROOT = this.keySecure(this.EMPTY_TRIE_ROOT)
   }
@@ -55,11 +61,16 @@ export class TrieWithDB extends MerklePatriciaTrie {
   database(): TrieDatabase {
     return this.db
   }
-  setDataBase(db: TrieDatabase): void {
-    this.db = db
+  async setDataBase(db: TrieDatabase): Promise<void> {
+    const newDB = new TrieDatabase({ _debug: this.debug })
+    for await (const key of await db.keys()) {
+      const value = await db.get(key)
+      value && (await newDB.put(key, value))
+    }
   }
-  checkpoint(): void {
+  async checkpoint(): Promise<void> {
     this.debug.extend('checkpoint')(`${bytesToPrefixedHexString(this.rootNode.hash())}`)
+    // await this.database().put(this.rootNode.hash(), this.rootNode.rlpEncode())
     this.checkpoints.push(this.rootNode.hash())
   }
   hasCheckpoints(): boolean {
@@ -92,13 +103,13 @@ export class TrieWithDB extends MerklePatriciaTrie {
       )
     }
     debug.extend('lookupNodeByHash')(`decoded hash: ${bytesToPrefixedHexString(node.hash())}`)
-    debug(`node ${node ? `found: ${node.getType()}` : `not found`}`)
+    debug(`node ${node.getType() ? `found: ${node.getType()}` : `not found`}`)
     node = await this.resolveProofNode(node)
     this.cache.set(hash, node)
     return node
   }
   async storeNode(node: TNode, debug: Debugger = this.debug): Promise<void> {
-    debug = debug
+    debug = debug.extend('storeNode')
     debug.extend('store').extend(node.getType())(`${bytesToPrefixedHexString(node.hash())}}`)
     if (node instanceof ProofNode) {
       node = await this.resolveProofNode(node)

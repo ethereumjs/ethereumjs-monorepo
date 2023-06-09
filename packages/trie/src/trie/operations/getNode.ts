@@ -1,11 +1,9 @@
-import { bytesToPrefixedHexString, bytesToUtf8 } from '@ethereumjs/util'
-
-import { bytesToNibbles, doKeysMatch } from '../../util/nibbles'
+import { doKeysMatch } from '../../util/nibbles'
 import { NullNode } from '../node'
 
-import type { TNode } from '../node/types'
 import type { MerklePatriciaTrie } from '../merklePatricia'
 import type { BranchNode, ExtensionNode, LeafNode } from '../node'
+import type { TNode } from '../node/types'
 import type { Debugger } from 'debug'
 
 export type WalkResult = {
@@ -15,16 +13,15 @@ export type WalkResult = {
 }
 export async function _getNodePath(
   this: MerklePatriciaTrie,
-  key: Uint8Array,
+  keyNibbles: number[],
   debug: Debugger
 ): Promise<WalkResult> {
   debug = debug.extend('_getNodePath')
   let nibbleIndex = 0
   let currentNode: TNode = this.rootNode
-  const keyNibbles = bytesToNibbles(key)
+  // const keyNibbles = bytesToNibbles(key)
   const path = []
-  debug(`key: ${bytesToPrefixedHexString(key)}`)
-  debug(`key: ${bytesToUtf8(key)}`)
+  debug(`key: ${keyNibbles}`)
   debug(`(root): ${currentNode.getType()} [${currentNode.getPartialKey()}]`)
   debug(`to_get: [${keyNibbles}]`)
   while (currentNode.type !== 'NullNode') {

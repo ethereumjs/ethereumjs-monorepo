@@ -5,8 +5,8 @@ import { BranchNode, ExtensionNode, LeafNode } from '../node'
 
 import { _cleanupNode } from './cleanup'
 
-import type { NodeType, TNode } from '../node/types'
 import type { MerklePatriciaTrie } from '../merklePatricia'
+import type { NodeType, TNode } from '../node/types'
 import type { Debugger } from 'debug'
 
 export async function _insertAtNode(

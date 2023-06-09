@@ -7,8 +7,8 @@ import { bytesToNibbles } from '../../util/nibbles'
 import { LeafNode } from './leaf'
 
 import type { HashFunction } from '../../types'
+import type { NodeInterface, NodeType, TNode, TNodeOptions } from './types'
 import type { Debugger } from 'debug'
-import { NodeInterface, TNode, NodeType, TNodeOptions } from './types'
 
 export abstract class BaseNode {
   public type: NodeType

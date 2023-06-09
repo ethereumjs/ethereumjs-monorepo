@@ -1,5 +1,5 @@
-import { Debugger } from 'debug'
-import { HashFunction } from '../../types'
+import type { HashFunction } from '../../types'
+import type { Debugger } from 'debug'
 
 export const nodeType = {
   NullNode: 'NullNode',

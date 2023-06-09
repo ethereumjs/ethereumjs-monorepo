@@ -1,14 +1,11 @@
-import { RLP } from '@ethereumjs/rlp'
 import { bytesToPrefixedHexString, equalsBytes } from '@ethereumjs/util'
-import debug from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { bytesToNibbles } from '../../util/nibbles'
-import { BranchNode, ExtensionNode, LeafNode, NullNode, ProofNode } from '../node'
-import { TrieWrap } from '../trieWrapper'
 
+import type { ExtensionNode } from '../node'
+import type { TNode } from '../node/types'
+import type { TrieWrap } from '../trieWrapper'
 import type { Debugger } from 'debug'
-import { TNode } from '../node/types'
 
 // export async function verifyProof(
 //   root: Uint8Array,
@@ -88,26 +85,34 @@ export async function createProof(
 ): Promise<Uint8Array[]> {
   debug = debug.extend('_createProof')
   let node: TNode | undefined = this.rootNode
+  let childNode: TNode | undefined
   key = this.keySecure(key)
   const nibbles = bytesToNibbles(key)
   debug(`Creating proof for key: ${bytesToPrefixedHexString(key)}`)
+  debug(`nibbles: [${nibbles}]`)
   debug = debug.extend('root')
+  debug(`nibbles: [${node.getPartialKey()}]`)
   let nibbleIndex = 0
   const proof = []
-  while (node && nibbleIndex <= nibbles.length) {
+  let proofNode: Uint8Array | null
+  while (nibbleIndex <= nibbles.length) {
     debug(`${node.getType()} => [${node.getPartialKey()}]`)
-    proof.push(node.rlpEncode())
     switch (node.getType()) {
       case 'ProofNode':
-        const p = await this.database().get(node.hash())
-        if (!p) {
-          debug(`Could not find proof node with hash: ${node.hash()}`)
-          throw new Error(`Could not find proof node with hash: ${node.hash()}`)
+        proofNode = await this.database().get(node.hash())
+        debug = debug.extend(`[${nibbles[nibbleIndex]}]`)
+        if (!proofNode) {
+          debug(`Path led to proof node with hash: ${node.hash()}`)
+          debug(`Returning Proof with ${proof.length} nodes`)
+          proof.push(node.hash())
+          return proof
         }
-        proof.push(p)
+        proof.push(proofNode)
         nibbleIndex += node?.getPartialKey().length
         break
       case 'LeafNode':
+        proof.push(node.rlpEncode())
+        debug = debug.extend(`[${nibbles[nibbleIndex]}]`)
         this.debug.extend('_createProof')(
           `Reached LeafNode.  Returning proof with ${proof.length} nodes`
         )
@@ -119,24 +124,28 @@ export async function createProof(
         }
         return proof
       case 'BranchNode':
-        const child = node.getChild(nibbles[nibbleIndex])
-        if (!child) {
+        proof.push(node.rlpEncode())
+        childNode = node.getChild(nibbles[nibbleIndex])
+        if (!childNode) {
           return proof
         }
+        debug = debug.extend(`[${nibbles[nibbleIndex]}]`)
         nibbleIndex++
-        node = child
+        node = childNode
         break
       case 'ExtensionNode':
+        proof.push(node.rlpEncode())
         node = node as ExtensionNode
+        debug = debug.extend(`[-]`)
         nibbleIndex += node.getPartialKey().length
         node = node.child
     }
 
     if (node.getType() === 'LeafNode') {
+      debug = debug.extend(`[${nibbles[nibbleIndex]}]`).extend('LeafNode')
       proof.push(node.rlpEncode())
       return proof
     }
-    debug = debug.extend(`[${node instanceof ExtensionNode ? 'Ch' : nibbles[nibbleIndex]}]`)
   }
   proof.push(node.rlpEncode())
   return proof

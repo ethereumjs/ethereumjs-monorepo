@@ -1,11 +1,12 @@
 import { bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
 import { debug } from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import { MemoryLevel } from 'memory-level'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+
+import type { HashFunction } from '../types'
 import type { AbstractKeyIterator, AbstractLevel } from 'abstract-level'
 import type { Debugger } from 'debug'
-import { HashFunction } from '../types'
 
 export type BatchDBOp = PutBatch | DelBatch
 
@@ -56,7 +57,7 @@ export interface DB {
 export class TrieDatabase implements DB {
   static async create(
     options: {
-      db?: AbstractLevel<string, string>
+      db?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
       debug?: Debugger
     } = {}
   ): Promise<TrieDatabase> {
@@ -64,12 +65,26 @@ export class TrieDatabase implements DB {
     await db.db.open()
     return db
   }
-  private readonly db: AbstractLevel<string, string>
+  private readonly db: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
   private readonly debug: Debugger
-  keyIterator: () => AbstractKeyIterator<AbstractLevel<string, string, string>, string>
+  keyIterator: () => AbstractKeyIterator<
+    AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>,
+    string | Uint8Array
+  >
 
-  constructor(options: { db?: AbstractLevel<string, string>; _debug?: Debugger } = {}) {
-    this.db = options.db ?? (new MemoryLevel() as AbstractLevel<string, string>)
+  constructor(
+    options: {
+      db?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+      _debug?: Debugger
+    } = {}
+  ) {
+    this.db =
+      options.db ??
+      (new MemoryLevel() as AbstractLevel<
+        string | Uint8Array,
+        string | Uint8Array,
+        string | Uint8Array
+      >)
     this.keyIterator = this.db.keys
     this.debug = options._debug ? options._debug.extend('db') : debug('trie:db')
   }
@@ -79,29 +94,30 @@ export class TrieDatabase implements DB {
     try {
       const value = await this.db.get(bytesToHex(key))
       debug(`value: ${value}`)
-      return hexStringToBytes(value)
+      return value instanceof Uint8Array ? value : hexStringToBytes(value)
     } catch (error: any) {
       debug(`value: ${error.message}`)
       return null
     }
   }
   async put(key: Uint8Array, value: Uint8Array, debug: Debugger = this.debug): Promise<void> {
-    debug = debug.extend('db_put')
+    debug = debug.extend('put')
     debug(`key: ${bytesToPrefixedHexString(key)}`)
-    debug(`value: ${bytesToPrefixedHexString(value)}`)
     await this.db.put(bytesToHex(key), bytesToPrefixedHexString(value))
   }
   async del(key: Uint8Array, debug: Debugger = this.debug): Promise<void> {
-    debug.extend('db_del')(bytesToHex(key))
+    debug.extend('del')(bytesToHex(key))
     await this.db.del(bytesToHex(key))
   }
   async batch(
     operations: { type: 'put' | 'del'; key: Uint8Array; value?: Uint8Array }[],
     debug: Debugger = this.debug
   ): Promise<void> {
-    debug.extend('db_batch')(Object.fromEntries(operations.map((op) => op.type).entries()))
+    debug = debug.extend('batch')
+    debug(`operations: ${operations.length}`)
     const batch = this.db.batch()
-    for (const op of operations) {
+    for (const [opIdx, op] of operations.entries()) {
+      debug(`${opIdx + 1} / ${operations.length}: --`)
       if (op.type === 'put' && op.value) {
         batch.put(bytesToHex(op.key), bytesToHex(op.value))
       } else {
@@ -111,7 +127,11 @@ export class TrieDatabase implements DB {
     await batch.write()
   }
   async copy(): Promise<TrieDatabase> {
-    const dbCopy = new MemoryLevel() as AbstractLevel<string, string>
+    const dbCopy = new MemoryLevel() as AbstractLevel<
+      string | Uint8Array,
+      string | Uint8Array,
+      string | Uint8Array
+    >
     for await (const [key, value] of this.db.iterator()) {
       await dbCopy.put(key, value)
     }
@@ -124,14 +144,14 @@ export class TrieDatabase implements DB {
   async keys(): Promise<Uint8Array[]> {
     const keys = []
     for await (const key of this.db.keys()) {
-      keys.push(hexStringToBytes(key))
+      keys.push(key instanceof Uint8Array ? key : hexStringToBytes(key))
     }
     return keys
   }
   async values(): Promise<Uint8Array[]> {
     const values = []
     for await (const value of this.db.values()) {
-      values.push(hexStringToBytes(value))
+      values.push(value instanceof Uint8Array ? value : hexStringToBytes(value))
     }
     return values
   }
@@ -139,7 +159,7 @@ export class TrieDatabase implements DB {
     const edits = []
     for await (const key of this.db.keys()) {
       if (callback) {
-        edits.push(callback(key))
+        edits.push(callback(key instanceof Uint8Array ? bytesToPrefixedHexString(key) : key))
       }
     }
     return Promise.allSettled(edits)
@@ -155,7 +175,7 @@ export class ProofDatabase extends TrieDatabase {
   hash: HashFunction
   constructor(options: {
     proof: Uint8Array[]
-    db?: AbstractLevel<string, string>
+    db?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
     debug?: Debugger
     hashFunction?: HashFunction
   }) {

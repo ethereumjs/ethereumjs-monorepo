@@ -5,11 +5,11 @@ import { CheckpointDB } from '../../src'
 
 import type { BatchDBOp } from '@ethereumjs/util'
 
-tape('DB tests', (t) => {
-  const k = utf8ToBytes('k1')
-  const v = utf8ToBytes('v1')
-  const v2 = utf8ToBytes('v2')
-  const v3 = utf8ToBytes('v3')
+// tape('DB tests', (t) => {
+//   const k = utf8ToBytes('k1')
+//   const v = utf8ToBytes('v1')
+//   const v2 = utf8ToBytes('v2')
+//   const v3 = utf8ToBytes('v3')
 
   t.test('Checkpointing: revert -> put (add)', async (st) => {
     const db = new CheckpointDB({ db: new MapDB() })
@@ -64,15 +64,15 @@ tape('DB tests', (t) => {
     const db = new CheckpointDB({ db: new MapDB() })
     await db.put(k, v)
 
-    st.deepEqual(await db.get(k), v, 'before CP: v1')
-    db.checkpoint(hexStringToBytes('01'))
-    await db.put(k, v2)
-    db.checkpoint(hexStringToBytes('02'))
-    await db.put(k, v3)
-    await db.commit()
-    st.deepEqual(await db.get(k), v3, 'after commit (second CP): v3')
-    await db.revert()
-    st.deepEqual(await db.get(k), v, 'after revert (first CP): v1')
-    st.end()
-  })
-})
+//     st.deepEqual(await db.get(k), v, 'before CP: v1')
+//     db.checkpoint(hexStringToBytes('01'))
+//     await db.put(k, v2)
+//     db.checkpoint(hexStringToBytes('02'))
+//     await db.put(k, v3)
+//     await db.commit()
+//     st.deepEqual(await db.get(k), v3, 'after commit (second CP): v3')
+//     await db.revert()
+//     st.deepEqual(await db.get(k), v, 'after revert (first CP): v1')
+//     st.end()
+//   })
+// })

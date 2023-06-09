@@ -1,10 +1,15 @@
-import debug from 'debug'
-import { _cleanupNode, _cleanupBranchNode, _cleanupExtensionNode } from './operations/cleanup'
-import { _deleteAtNode } from './operations/delete'
-import { _getNodePath } from './operations/getNode'
-import { _insertAtNode } from './operations/insert'
-import { _walk } from './operations/walkTrie'
 import { bytesToPrefixedHexString, equalsBytes } from '@ethereumjs/util'
+import { Mutex } from 'async-mutex'
+import debug from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+
+// import { getChildOf, unsetInternal } from '../proof/rangeHelpers'
+
+import { unset, unsetInternal } from '../proof/rangeHelpers'
+import { bytesToNibbles } from '../util'
+
+import { NullNode, ProofNode } from './node'
+import { _cleanupBranchNode, _cleanupExtensionNode, _cleanupNode } from './operations/cleanup'
 import {
   decodeBranchNode,
   decodeExtensionNode,
@@ -12,13 +17,14 @@ import {
   decodeLeafNode,
   decodeNode,
 } from './operations/decode'
-import { getChildOf, unsetInternal } from '../proof/rangeHelpers'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { Mutex } from 'async-mutex'
-import { NullNode, ProofNode } from './node'
-import type { Debugger } from 'debug'
+import { _deleteAtNode } from './operations/delete'
+import { _getNodePath } from './operations/getNode'
+import { _insertAtNode } from './operations/insert'
+import { _walk } from './operations/walkTrie'
+
 import type { MerklePatriciaTrieOptions, PathToNode } from '../types'
-import { TNode } from './node/types'
+import type { TNode } from './node/types'
+import type { Debugger } from 'debug'
 
 export class MerklePatriciaTrie {
   static async create(options: MerklePatriciaTrieOptions): Promise<MerklePatriciaTrie> {
@@ -112,11 +118,11 @@ export class MerklePatriciaTrie {
     this.nodes!.set(node.hash(), node)
   }
   async getPath(key: Uint8Array): Promise<PathToNode> {
-    const { path, remainingNibbles } = await this._getNodePath(key, this.debug)
+    const { path, remainingNibbles } = await this._getNodePath(bytesToNibbles(key), this.debug)
     return { path, remainingNibbles }
   }
-  async getNode(hash: Uint8Array, debug: Debugger = this.debug): Promise<TNode> {
-    const { node } = await this._getNodePath(hash, debug)
+  async getNode(key: Uint8Array, debug: Debugger = this.debug): Promise<TNode> {
+    const { node } = await this._getNodePath(bytesToNibbles(key), debug)
     return node
   }
 
@@ -128,7 +134,7 @@ export class MerklePatriciaTrie {
   _decodeBranchNode = decodeBranchNode.bind(this)
 
   /** {@link getChildOf} */
-  _getChildOf = getChildOf.bind(this)
+  // _getChildOf = getChildOf.bind(this)
   /** {@link _getNodePath} */
   _getNodePath = _getNodePath.bind(this)
   /** {@link _insertAtNode }*/
@@ -141,8 +147,10 @@ export class MerklePatriciaTrie {
   _cleanupBranchNode = _cleanupBranchNode.bind(this)
   /** {@link _cleanupExtensionNode }*/
   _cleanupExtensionNode = _cleanupExtensionNode.bind(this)
+  /** {@link unset } */
+  unset = unset.bind(this)
   /** {@link unsetInternal } */
-  _unset = unsetInternal.bind(this)
+  unsetInternal = unsetInternal
   /** {@link _walk } */
   _walk = _walk.bind(this)
 }

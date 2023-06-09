@@ -1,9 +1,9 @@
 import type { TrieDatabase } from '../db'
 import type { FoundNodeFunction, WalkFilterFunction } from '../types'
+import type { TNode } from './node/types'
 import type { Mutex } from 'async-mutex'
 import type { Debugger } from 'debug'
 import type * as LRUCache from 'lru-cache'
-import { TNode } from './node/types'
 
 export interface TrieInterface {
   /** The root node of the trie */

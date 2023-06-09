@@ -1,10 +1,13 @@
+import { bytesToNibbles, bytesToPrefixedHexString } from '@ethereumjs/util'
+import debug from 'debug'
 import { equalsBytes } from 'ethereum-cryptography/utils'
 
-import { BranchNode, ExtensionNode, LeafNode, NullNode, Trie } from '../trie'
-import { nibblesCompare, nibblestoBytes } from '../util/nibbles'
+import { BranchNode, ExtensionNode, LeafNode, NullNode, ProofNode, Trie } from '../trie'
+import { nibblesCompare, nibblesEqual, nibblestoBytes } from '../util/nibbles'
 
+import type { TNode } from '../trie/node/types'
 import type { HashKeysFunction } from '../types'
-import { TNode } from '../trie/node/types'
+import type { Debugger } from 'debug'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof.go
 
@@ -19,7 +22,7 @@ import { TNode } from '../trie/node/types'
  * @param stack - a stack of modified nodes.
  * @returns The end position of key.
  */
-async function unset(
+export async function unset(
   trie: Trie,
   parent: TNode,
   child: TNode | null,
@@ -87,7 +90,7 @@ async function unset(
       return pos - 1
     } else {
       const _child = child.child
-      if (_child && _child instanceof LeafNode) {
+      if (_child instanceof LeafNode) {
         // The child of this node is leaf node, remove it from parent too
         ;(parent as BranchNode).updateChild(
           new NullNode({ hashFunction: trie.hashFunction }),
@@ -116,7 +119,7 @@ async function unset(
  * @param right - right nibbles.
  * @returns Is it an empty trie.
  */
-async function unsetInternal(trie: Trie, left: number[], right: number[]): Promise<boolean> {
+export async function unsetInternal(trie: Trie, left: number[], right: number[]): Promise<boolean> {
   // Key position
   let pos = 0
   // Parent node
@@ -127,9 +130,7 @@ async function unsetInternal(trie: Trie, left: number[], right: number[]): Promi
   let shortForkRight!: number
   // A stack of modified nodes.
   const stack: TNode[] = []
-
   // 1. Find the fork point of `left` and `right`
-
   // eslint-disable-next-line no-constant-condition
   while (true) {
     if (node instanceof ExtensionNode || node instanceof LeafNode) {
@@ -153,17 +154,15 @@ async function unsetInternal(trie: Trie, left: number[], right: number[]): Promi
           node.getPartialKey()
         )
       }
-
       // If one of `left` and `right` is not equal to node.getPartialKey(), it means we found the fork point
       if (shortForkLeft !== 0 || shortForkRight !== 0) {
         break
       }
-
       if (node instanceof LeafNode) {
         // it shouldn't happen
-        throw new Error('invalid node')
+        return false
+        // throw new Error('invalid node')
       }
-
       // continue to the next node
       parent = node
       pos += node.getPartialKey().length
@@ -200,7 +199,14 @@ async function unsetInternal(trie: Trie, left: number[], right: number[]): Promi
       node = leftNode
       pos += 1
     } else {
-      throw new Error('invalid node')
+      if (node instanceof ProofNode) {
+        node = (await node.load()) ?? null
+        if (node instanceof ProofNode) {
+          return false
+        }
+      } else {
+        throw new Error(`invalid node ${node?.getType()}`)
+      }
     }
   }
 
@@ -305,7 +311,7 @@ async function unsetInternal(trie: Trie, left: number[], right: number[]): Promi
       node.updateChild(new NullNode({ hashFunction: trie.hashFunction }), i)
     }
 
-    {
+    try {
       /**
        * `stack` records the path from root to fork point.
        * Since we need to unset both left and right nodes once,
@@ -316,14 +322,20 @@ async function unsetInternal(trie: Trie, left: number[], right: number[]): Promi
       const child = next ?? null
       const endPos = await unset(trie, node, child, left.slice(pos), 1, false, _stack)
       await saveStack(left.slice(0, pos + endPos), _stack)
+    } catch (err: any) {
+      debug(err)
+      return false
     }
 
-    {
+    try {
       const _stack = [...stack]
       const next = node.getChild(right[pos])
       const child = next ?? null
       const endPos = await unset(trie, node, child, right.slice(pos), 1, true, _stack)
       await saveStack(right.slice(0, pos + endPos), _stack)
+    } catch (err: any) {
+      debug(err)
+      return false
     }
 
     return false
@@ -344,25 +356,66 @@ async function verifyProof(
   rootHash: Uint8Array,
   key: Uint8Array,
   proof: Uint8Array[],
-  _useKeyHashingFunction: HashKeysFunction
-): Promise<{ value: Uint8Array | null; trie: Trie }> {
+  _useKeyHashingFunction: HashKeysFunction,
+  dbug: Debugger = debug('__verifyProof__')
+): Promise<{ trie: Trie; value: Uint8Array | null }> {
+  dbug = dbug.extend('verifyProof')
   try {
-    const proofTrie = await Trie.fromProof(proof)
-    const value = await proofTrie.get(key)
-    if (equalsBytes(rootHash, proofTrie.root())) {
-      return {
-        trie: proofTrie,
-        value,
+    const trie = await Trie.fromProof(proof)
+    if (!equalsBytes(trie.root(), rootHash)) {
+      dbug.extend('ERROR:')('Proof Invalid: root mismatch')
+      throw new Error('Proof Invalid: root mismatch')
+    }
+    debug(`Resolving RootNode: ${bytesToPrefixedHexString(trie.root())}`)
+    const reachable = await trie.markReachableNodes(trie.rootNode)
+    dbug.extend(`ProofTrie`)(`Reachable nodes: ${reachable.size}`)
+    for (const [idx, p] of [...reachable.values()].entries()) {
+      dbug.extend(`ProofTrie`)(`Reachable node [${idx}]: ${p}`)
+    }
+    for (const [idx, p] of proof.reverse().entries()) {
+      dbug.extend(`ProofTrie`)(
+        `Proof node [${idx}]: ${bytesToPrefixedHexString(trie.hashFunction(p))}`
+      )
+    }
+    dbug.extend(`ProofTrie`)(`Reachable nodes: ${reachable.size}`)
+
+    for (const [idx, p] of proof.entries()) {
+      dbug.extend(`ProofNode [${idx}]`)(`${bytesToPrefixedHexString(trie.hashFunction(p))}`)
+      if (!reachable.has(bytesToPrefixedHexString(trie.hashFunction(p)))) {
+        dbug.extend('ERROR:')(
+          `Proof Invalid: [${idx}]: ${bytesToPrefixedHexString(
+            trie.hashFunction(p)
+          )} is unreachable`
+        )
+        throw new Error('Proof Invalid: unreachable node')
+      } else {
+        dbug.extend(`Proof [${idx}]`)(
+          `: ${bytesToPrefixedHexString(trie.hashFunction(p))} is reachable`
+        )
+        // const proofNode = await trie._getNodePath(key, dbug)
+        // if (equalsBytes(proofNode.node.rlpEncode(), p)) {
+        //   const value = proofNode.node.getValue()
+        //   dbug(`Found in ProofTrie for key [${bytesToNibbles(key)}]: ${value ? bytesToPrefixedHexString(value) : null}`)
+        //   return value
+        // } else {
+        //   dbug(`node: ${proofNode.node.getType()}`)
+        //   dbug(`path: ${proofNode.path.length} nodes`)
+        //   dbug(`ProofNode Nibbles: [${bytesToNibbles(key)}]`)
+        //   dbug(`remaining Nibbles: [${proofNode.remainingNibbles}]`)
+        // }
       }
-    } else {
-      throw new Error('Invalid proof provided')
     }
+    dbug.extend(`ProofTrie`)(`All Proof nodes reachable`)
+    const value = await trie.get(key)
+    dbug(
+      `Found in ProofTrie for key [${bytesToNibbles(key)}]: ${
+        value ? bytesToPrefixedHexString(value) : null
+      }`
+    )
+    return { trie, value }
   } catch (err: any) {
-    if (err.message === 'Missing node in DB') {
-      throw new Error('Invalid proof provided')
-    } else {
-      throw err
-    }
+    debug(`Failed to verify proof: ${err.message}`)
+    throw new Error('failed')
   }
 }
 
@@ -372,7 +425,7 @@ async function verifyProof(
  * @param trie - trie object.
  * @param key - given path.
  */
-async function hasRightElement(trie: Trie, key: number[]): Promise<boolean> {
+export async function hasRightElement(trie: Trie, key: number[]): Promise<boolean> {
   let pos = 0
   let node: TNode | undefined = trie.rootNode
   while (node) {
@@ -404,6 +457,22 @@ async function hasRightElement(trie: Trie, key: number[]): Promise<boolean> {
     }
   }
   return false
+}
+
+function allNull(args: {
+  firstKey: number[] | null
+  lastKey: number[] | null
+  proof: Uint8Array[] | null
+}) {
+  return args.firstKey === null && args.lastKey === null && args.proof === null
+}
+
+function anyNull(args: {
+  firstKey: number[] | null
+  lastKey: number[] | null
+  proof: Uint8Array[] | null
+}) {
+  return args.firstKey === null || args.lastKey === null || args.proof === null
 }
 
 /**
@@ -441,12 +510,13 @@ export async function verifyRangeProof(
   keys: number[][],
   values: Uint8Array[],
   proof: Uint8Array[] | null,
-  useKeyHashingFunction: HashKeysFunction
+  useKeyHashingFunction: HashKeysFunction,
+  d_bug?: Debugger
 ): Promise<boolean> {
+  d_bug = d_bug ? d_bug.extend('verifyRangeProof') : debug('verifyRangeProof')
   if (keys.length !== values.length) {
-    throw new Error('invalid keys length or values length')
+    return false
   }
-
   // Make sure the keys are in order
   for (let i = 0; i < keys.length - 1; i++) {
     if (nibblesCompare(keys[i], keys[i + 1]) >= 0) {
@@ -459,88 +529,117 @@ export async function verifyRangeProof(
       throw new Error('invalid values')
     }
   }
-
-  // All elements proof
-  if (proof === null && firstKey === null && lastKey === null) {
-    const trie = new Trie({})
-    for (let i = 0; i < keys.length; i++) {
-      await trie.put(nibblestoBytes(keys[i]), values[i])
+  if (anyNull({ firstKey, lastKey, proof })) {
+    if (allNull({ firstKey, lastKey, proof })) {
+      const trie = await Trie.create({ hashFunction: useKeyHashingFunction })
+      for (let i = 0; i < keys.length; i++) {
+        await trie.put(nibblestoBytes(keys[i]), values[i])
+      }
+      if (!equalsBytes(rootHash, trie.root())) {
+        return false
+      }
     }
-    if (!equalsBytes(rootHash, trie.root())) {
-      throw new Error('invalid all elements proof: root mismatch')
-    }
-    return false
   }
-
-  if (proof === null || firstKey === null || lastKey === null) {
-    throw new Error(
-      'invalid all elements proof: proof, firstKey, lastKey must be null at the same time'
-    )
-  }
-
+  firstKey = firstKey as number[]
+  lastKey = lastKey as number[]
+  proof = proof as Uint8Array[]
   // Zero element proof
   if (keys.length === 0) {
     const { trie, value } = await verifyProof(
       rootHash,
       nibblestoBytes(firstKey),
       proof,
-      useKeyHashingFunction
+      useKeyHashingFunction,
+      d_bug
     )
 
     if (value !== null || (await hasRightElement(trie, firstKey))) {
-      throw new Error('invalid zero element proof: value mismatch')
+      return false
     }
-
-    return false
+    // return true
   }
 
   // One element proof
   if (keys.length === 1 && nibblesCompare(firstKey, lastKey) === 0) {
-    const { trie, value } = await verifyProof(
-      rootHash,
-      nibblestoBytes(firstKey),
-      proof,
-      useKeyHashingFunction
-    )
+    try {
+      const { trie, value } = await verifyProof(
+        rootHash,
+        nibblestoBytes(firstKey),
+        proof,
+        useKeyHashingFunction
+      )
 
-    if (nibblesCompare(firstKey, keys[0]) !== 0) {
-      throw new Error('invalid one element proof: firstKey should be equal to keys[0]')
+      if (!nibblesEqual(firstKey, keys[0])) {
+        d_bug(`invalid one element proof: firstKey should be equal to keys[0]`)
+        return false
+        // throw new Error('invalid one element proof: firstKey should be equal to keys[0]')
+      }
+      if (value === null || !equalsBytes(value, values[0])) {
+        d_bug('invalid one element proof: value mismatch')
+        return false
+        // throw new Error('invalid one element proof: value mismatch')
+      }
+      d_bug('point unknown -- unreachable? hasRightElement??')
+      return await hasRightElement(trie, firstKey)
+    } catch {
+      return false
     }
-    if (value === null || !equalsBytes(value, values[0])) {
-      throw new Error('invalid one element proof: value mismatch')
-    }
-
-    return hasRightElement(trie, firstKey)
   }
 
   // Two edge elements proof
   if (nibblesCompare(firstKey, lastKey) >= 0) {
-    throw new Error('invalid two edge elements proof: firstKey should be less than lastKey')
+    d_bug('invalid two edge elements proof: firstKey should be less than lastKey')
+    return false
+    // throw new Error('invalid two edge elements proof: firstKey should be less than lastKey')
   }
   if (firstKey.length !== lastKey.length) {
-    throw new Error(
+    d_bug(
       'invalid two edge elements proof: the length of firstKey should be equal to the length of lastKey'
     )
+    return false
+    // throw new Error(
+    //   'invalid two edge elements proof: the length of firstKey should be equal to the length of lastKey'
+    // )
   }
 
   // const trie = new Trie({ root: rootHash, useKeyHashingFunction })
+  const verified = await Trie.verifyProof(rootHash, nibblestoBytes(firstKey), proof)
+  if (verified === false) {
+    d_bug('invalid two edge elements proof: proof verification failed')
+    return false
+  }
   const trie = await Trie.fromProof(proof)
+  // await trie.setRootByHash(rootHash)
 
+  d_bug(`trie.root(): ${bytesToPrefixedHexString(trie.root())}`)
   // Remove all nodes between two edge proofs
   const empty = await unsetInternal(trie, firstKey, lastKey)
+  d_bug(`unsetInternal: ${empty}`)
   if (empty) {
-    await trie.setRootByHash(trie.EMPTY_TRIE_ROOT)
+    await trie.setRootNode(new NullNode({}))
   }
 
   // Put all elements to the trie
   for (let i = 0; i < keys.length; i++) {
     await trie.put(nibblestoBytes(keys[i]), values[i])
   }
+  // await trie.setRootByHash(rootHash)
 
   // Compare rootHash
   if (!equalsBytes(trie.root(), rootHash)) {
-    throw new Error('invalid two edge elements proof: root mismatch')
+    d_bug(
+      `invalid two edge elements proof: ${bytesToPrefixedHexString(
+        trie.root()
+      )} !== ${bytesToPrefixedHexString(rootHash)}`
+    )
+    return false
+    // throw new Error('invalid two edge elements proof: root mismatch')
   }
+  d_bug(
+    `roots match: ${bytesToPrefixedHexString(trie.root())} === ${bytesToPrefixedHexString(
+      rootHash
+    )}`
+  )
 
   return hasRightElement(trie, keys[keys.length - 1])
 }

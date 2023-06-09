@@ -1,20 +1,14 @@
-import {
-  KECCAK256_RLP,
-  bytesToHex,
-  equalsBytes,
-  hexStringToBytes,
-  utf8ToBytes,
-} from '@ethereumjs/util'
+import { KECCAK256_RLP, equalsBytes, hexStringToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
-import { ROOT_DB_KEY as BASE_DB_KEY, MapDB, Trie, TrieDatabase } from '../../src'
+import { ROOT_DB_KEY as BASE_DB_KEY, Trie, TrieDatabase } from '../../src'
 
 import type { TrieWrapOptions } from '../../src'
 
 const createTrie = async (defaults?: TrieWrapOptions) => Trie.create({ ...defaults })
 const createSecureTrie = async (defaults?: TrieWrapOptions) =>
-  Trie.create({ ...defaults, useKeyHashing: true, secure: true })
+  Trie.create({ ...defaults, secure: true })
 for (const [secure, constructor] of [createTrie, createSecureTrie].entries()) {
   const title = secure ? 'SecureTrie' : 'Trie'
   const IS_SECURE_TRIE = title === 'SecureTrie'

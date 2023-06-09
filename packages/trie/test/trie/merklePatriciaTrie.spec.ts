@@ -1,9 +1,4 @@
-import {
-  bytesToPrefixedHexString,
-  bytesToUtf8,
-  hexStringToBytes,
-  utf8ToBytes,
-} from '@ethereumjs/util'
+import { bytesToPrefixedHexString, hexStringToBytes, utf8ToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import * as hexencoded from '../../../ethereum-tests/TrieTests/hex_encoded_securetrie_test.json'
@@ -43,7 +38,7 @@ tape('trietest.json', async (_tape) => {
     const test_in: [string, string | null][] = test.in as [string, string | null][]
     const trie_v2 = await Trie.create({})
     const toTest: Map<string, string | null> = new Map()
-    for await (const [idx, [k, v]] of test_in.entries()) {
+    for await (const [_idx, [k, v]] of test_in.entries()) {
       const key = hexStringToBytes(k!)
       const value = typeof v === 'string' ? utf8ToBytes(v) : null
       await trie_v2.put(key, value)
@@ -68,7 +63,7 @@ tape('trietest.json', async (_tape) => {
     const test_in: [string, string | null][] = test.in as [string, string | null][]
     const trie_v2 = new Trie({})
     const toTest: Map<string, string | null> = new Map()
-    for await (const [idx, [k, v]] of test_in.entries()) {
+    for await (const [_idx, [k, v]] of test_in.entries()) {
       const key = hexStringToBytes(k!)
       const value = typeof v === 'string' ? hexStringToBytes(v) : null
       await trie_v2.put(key, value)
@@ -91,11 +86,11 @@ tape('trietest.json', async (_tape) => {
     // t.pass(`${test_in}`)
     const trie_v2 = new Trie({})
     const toTest: Map<string | null, string | null> = new Map()
-    for await (const [idx, [k, v]] of test_in.entries()) {
+    for await (const [_idx, [k, v]] of test_in.entries()) {
       const key = utf8ToBytes(k!)
       const value = typeof v === 'string' ? utf8ToBytes(v) : null
       await trie_v2.put(key, value)
-      const toTest: Map<string | null, string | null> = new Map()
+      // const toTest: Map<string | null, string | null> = new Map()
 
       for await (const [_k, _v] of toTest.entries()) {
         const _value = typeof _v === 'string' ? utf8ToBytes(_v) : null
@@ -112,7 +107,7 @@ tape('trietest.json', async (_tape) => {
     const test_in: [string, string | null][] = test.in as [string, string | null][]
     const trie_v2 = new Trie({})
     const toTest: Map<string | null, string | null> = new Map()
-    for await (const [idx, [k, v]] of test_in.entries()) {
+    for await (const [_idx, [k, v]] of test_in.entries()) {
       const key = utf8ToBytes(k!)
       const value = typeof v === 'string' ? utf8ToBytes(v) : null
       await trie_v2.put(key, value)
@@ -155,7 +150,7 @@ tape('trietest_secureTrie.json', async (_tape) => {
     const test = securetest.branchingTests
     const test_in: [string, string | null][] = test.in as [string, string | null][]
     const trie_v2 = new Trie({ secure: true })
-    for await (const [idx, [k, v]] of test_in.entries()) {
+    for await (const [_idx, [k, v]] of test_in.entries()) {
       const key = hexStringToBytes(k!)
       const value = typeof v === 'string' ? utf8ToBytes(v) : null
       await trie_v2.put(key, value)
@@ -177,7 +172,7 @@ tape('trietest_secureTrie.json', async (_tape) => {
     const test = securetest.jeff
     const test_in: [string, string | null][] = test.in as [string, string | null][]
     const trie_v2 = new Trie({ secure: true })
-    for await (const [idx, [k, v]] of test_in.entries()) {
+    for await (const [_idx, [k, v]] of test_in.entries()) {
       const key = hexStringToBytes(k!)
       const value = typeof v === 'string' ? hexStringToBytes(v) : null
       await trie_v2.put(key, value)
@@ -202,7 +197,7 @@ tape('securetrie', async (t) => {
     const test = hexencoded.test1
     const test_in: [string, string | null][] = Object.entries(test.in)
     const trie_v2 = new Trie({ secure: true })
-    for await (const [idx, [k, v]] of test_in.entries()) {
+    for await (const [_idx, [k, v]] of test_in.entries()) {
       const key = hexStringToBytes(k!)
       const value = typeof v === 'string' ? hexStringToBytes(v) : null
       await trie_v2.put(key, value)
@@ -222,7 +217,7 @@ tape('securetrie', async (t) => {
     const test = hexencoded.test2
     const test_in: [string, string | null][] = Object.entries(test.in)
     const trie_v2 = new Trie({ secure: true })
-    for await (const [idx, [k, v]] of test_in.entries()) {
+    for await (const [_idx, [k, v]] of test_in.entries()) {
       const key = hexStringToBytes(k!)
       const value = typeof v === 'string' ? hexStringToBytes(v) : null
       await trie_v2.put(key, value)
@@ -242,7 +237,7 @@ tape('securetrie', async (t) => {
     const test = hexencoded.test3
     const test_in: [string, string | null][] = Object.entries(test.in)
     const trie_v2 = new Trie({ secure: true })
-    for await (const [idx, [k, v]] of test_in.entries()) {
+    for await (const [_idx, [k, v]] of test_in.entries()) {
       const key = hexStringToBytes(k!)
       const value = typeof v === 'string' ? hexStringToBytes(v) : null
       await trie_v2.put(key, value)

@@ -1,12 +1,12 @@
+import { bytesToPrefixedHexString } from '@ethereumjs/util'
 import { Readable } from 'readable-stream'
 
-import { nibblestoBytes } from '../../util/nibbles'
+import { nibblesEqual, nibblestoBytes } from '../../util/nibbles'
 import { BranchNode, LeafNode } from '../node'
 
 import type { FoundNodeFunction, WalkFilterFunction } from '../../types'
 import type { TNode } from '../node/types'
 import type { TrieWrap } from '../trieWrapper'
-import { bytesToPrefixedHexString } from '@ethereumjs/util'
 
 export class TrieReadStream extends Readable {
   private trie: TrieWrap
@@ -38,24 +38,43 @@ export class TrieReadStream extends Readable {
       value = result.value
       this.trie.debug.extend(`readStream`)(
         `${
-          done ? 'done' : `value: currentKey: ${value.currentKey}, node: ${value.node.getType()}}`
+          done === true
+            ? 'done'
+            : `value: currentKey: ${value.currentKey}, node: ${value.node.getType()}}`
         }`
       )
       this._nextValuePromise = this.nodeStream.next()
-      if (done) {
+      if (done === true) {
         this.push(null)
       } else if (value.node.getValue() !== null) {
         this.trie.debug.extend(`readStream`).extend(`${value.node.getType()}`)(
-          `key: ${value.currentKey}, value: ${value.node.getValue()}`
+          `key: ${value.currentKey}}`
+        )
+        this.trie.debug.extend(`readStream`).extend(`${value.node.getType()}`)(
+          `key that we're about to add: *`
         )
 
+        this.trie.debug.extend(`readStream`).extend(`${value.node.getType()}`)(
+          `value: ${value.node.getValue()}`
+        )
+        const key = [...value.currentKey]
+        if (!nibblesEqual(key, value.node.getPartialKey())) {
+          key.push(...value.node.getPartialKey())
+        }
         const keyValue = {
-          key: [...value.currentKey, ...value.node.getPartialKey()],
+          key,
           value: value.node.getValue(),
         }
+        this.trie.debug.extend(`readStream`).extend(`${value.node.getType()}`)(
+          `key: ${bytesToPrefixedHexString(nibblestoBytes(keyValue.key))}`
+        )
+        this.trie.debug.extend(`readStream`).extend(`${value.node.getType()}`)(
+          `val: ${keyValue.value && bytesToPrefixedHexString(keyValue.value)}`
+        )
         this.push(keyValue)
       }
-    } while (result.value && result.value.node.getValue() === null)
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    } while (!done)
   }
 
   /**

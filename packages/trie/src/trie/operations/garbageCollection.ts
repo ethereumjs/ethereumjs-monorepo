@@ -1,20 +1,24 @@
-import { bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
+import { bytesToPrefixedHexString } from '@ethereumjs/util'
 import { equalsBytes } from 'ethereum-cryptography/utils'
+
 import { ROOT_DB_KEY } from '../../types'
-import { TNode } from '../node/types'
-import { TrieWithDB } from '../trieDB'
+
+import type { TNode } from '../node/types'
+import type { TrieWithDB } from '../trieDB'
 
 export async function _garbageCollect(this: TrieWithDB): Promise<void> {
   this.debug.extend('garbageCollect')(`Collecting`)
   const collected = [0, 0, 0]
   await this._withLock(async () => {
     const reachableHashes = await this.markReachableNodes(this.rootNode)
+    this.debug.extend('garbageCollect')(`Collecting cache`)
     for (const hash of this.cache.keys()) {
       if (!reachableHashes.has(bytesToPrefixedHexString(hash))) {
         collected[0]++
         this.cache.delete(hash)
       }
     }
+    this.debug.extend('garbageCollect')(`Collecting db`)
     for await (const hash of await this.database().keys()) {
       if (equalsBytes(hash, this.keySecure(ROOT_DB_KEY))) {
         continue

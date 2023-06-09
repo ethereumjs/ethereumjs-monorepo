@@ -4,10 +4,10 @@ import {
   hexStringToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
 
 import { Trie, bytesToNibbles } from '../src'
-import { keccak256 } from 'ethereum-cryptography/keccak'
 
 tape('simple merkle proofs generation and verification', function (tester) {
   const it = tester.test

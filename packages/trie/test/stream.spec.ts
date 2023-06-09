@@ -4,13 +4,12 @@ import { EventEmitter } from 'events'
 import * as tape from 'tape'
 
 import { Trie } from '../src'
-import { addHexPrefix, removeHexPrefix } from '../src/util/hex'
-import { bytesToNibbles, nibblestoBytes } from '../src/util/nibbles'
+import { nibblestoBytes } from '../src/util/nibbles'
 
 import type { BatchDBOp } from '../src'
 
 tape('kv stream test', async function (t) {
-  const trie = new Trie()
+  const trie = new Trie({})
   const ops = [
     {
       type: 'del',
@@ -110,14 +109,16 @@ tape('kv stream test', async function (t) {
     const done = new EventEmitter()
     const stream = await trie.createReadStream()
     stream.on('error', (err: any) => {
-      st.fail('you got an error in the stream')
+      st.fail(`stream error: ${err}`)
       done.emit('done')
     })
 
     stream.on('data', (d: { key: number[]; value: Uint8Array }) => {
+      console.log(valObj)
       const key = bytesToUtf8(nibblestoBytes(d.key))
       const value = bytesToUtf8(d.value)
-      st.equal(value, valObj[key])
+      st.equal(value, valObj[key], `value for key ${key} should match`)
+
       delete valObj[key]
     })
     stream.on('close', () => {})

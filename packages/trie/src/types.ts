@@ -5,11 +5,11 @@ import { TrieWithDB } from './trie/trieDB'
 import { TrieWrap } from './trie/trieWrapper'
 
 import type { DB, TrieDatabase } from './db'
-import type { BranchNode, ExtensionNode, LeafNode } from './trie'
 import type { TNode } from './trie/node/types'
-import type { WalkController } from './util/walkController'
 import type { Debugger } from 'debug'
 import type LRUCache from 'lru-cache'
+
+export type HashFunction = (data: Uint8Array) => Uint8Array
 
 export type PathToNode = {
   path: TNode[]

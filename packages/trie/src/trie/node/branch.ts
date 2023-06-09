@@ -1,6 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 
 import { ExtensionNode } from './extension'
+import { LeafNode } from './leaf'
 import { BaseNode, NullNode } from './node'
 
 import type {
@@ -11,7 +12,6 @@ import type {
   TNode,
   TNodeOptions,
 } from './types'
-import { LeafNode } from './leaf'
 
 export class BranchNode extends BaseNode implements NodeInterface<'BranchNode'> {
   type = 'BranchNode' as const
