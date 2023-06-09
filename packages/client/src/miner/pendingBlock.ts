@@ -314,19 +314,6 @@ export class PendingBlock {
         } else {
           addTxResult = AddTxResult.SkippedByGasLimit
         }
-      } else if ((error as Error).message.includes('tx has a different hardfork than the vm')) {
-        // We can here decide to keep a tx in pool if it belongs to future hf
-        // but for simplicity just remove the tx as the sender can always retransmit
-        // the tx
-        this.txPool.removeByHash(bytesToHex(tx.hash()))
-        this.config.logger.error(
-          `Pending: Removed from txPool tx ${bytesToPrefixedHexString(
-            tx.hash()
-          )} having different hf=${tx.common.hardfork()} than block vm hf=${builder[
-            'vm'
-          ]._common.hardfork()}`
-        )
-        addTxResult = AddTxResult.RemovedByErrors
       } else if ((error as Error).message.includes('blobs missing')) {
         // Remove the blob tx which doesn't has blobs bundled
         this.txPool.removeByHash(bytesToHex(tx.hash()))
