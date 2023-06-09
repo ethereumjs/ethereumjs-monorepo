@@ -1,1 +1,1 @@
-module.exports = require('../../config/eslint.js')
+module.exports = require('../../config/eslint.cjs')
