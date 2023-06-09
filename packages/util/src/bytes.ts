@@ -1,5 +1,5 @@
-import { getRandomBytesSync } from 'ethereum-cryptography/random'
-import { bytesToHex, bytesToUtf8, hexToBytes } from 'ethereum-cryptography/utils'
+import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
+import { bytesToHex, bytesToUtf8, hexToBytes } from 'ethereum-cryptography/utils.js'
 
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.js'
 import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal.js'
@@ -414,4 +414,4 @@ export {
   concatBytes,
   equalsBytes,
   utf8ToBytes,
-} from 'ethereum-cryptography/utils'
+} from 'ethereum-cryptography/utils.js'
