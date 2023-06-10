@@ -110,11 +110,7 @@ export interface Transaction {
   [TransactionType.BlobEIP4844]: BlobEIP4844Transaction
 }
 
-export type TypedTransaction =
-  | Transaction[TransactionType.Legacy]
-  | Transaction[TransactionType.AccessListEIP2930]
-  | Transaction[TransactionType.FeeMarketEIP1559]
-  | Transaction[TransactionType.BlobEIP4844]
+export type TypedTransaction = Transaction[TransactionType]
 
 export function isLegacyTx(tx: TypedTransaction): tx is LegacyTransaction {
   return tx.type === TransactionType.Legacy
@@ -165,30 +161,24 @@ export interface TxData {
   [TransactionType.BlobEIP4844]: BlobEIP4844TxData
 }
 
-export type UnknownTxData =
-  | TxData[TransactionType.Legacy]
-  | TxData[TransactionType.AccessListEIP2930]
-  | TxData[TransactionType.FeeMarketEIP1559]
-  | TxData[TransactionType.BlobEIP4844]
+export type TypedTxData = TxData[TransactionType]
 
-export function isLegacyTxData(txData: UnknownTxData): txData is LegacyTxData {
+export function isLegacyTxData(txData: TypedTxData): txData is LegacyTxData {
   const txType = Number(bytesToBigInt(toBytes(txData.type)))
   return txType === TransactionType.Legacy
 }
 
-export function isAccessListEIP2930TxData(
-  txData: UnknownTxData
-): txData is AccessListEIP2930TxData {
+export function isAccessListEIP2930TxData(txData: TypedTxData): txData is AccessListEIP2930TxData {
   const txType = Number(bytesToBigInt(toBytes(txData.type)))
   return txType === TransactionType.AccessListEIP2930
 }
 
-export function isFeeMarketEIP1559TxData(txData: UnknownTxData): txData is FeeMarketEIP1559TxData {
+export function isFeeMarketEIP1559TxData(txData: TypedTxData): txData is FeeMarketEIP1559TxData {
   const txType = Number(bytesToBigInt(toBytes(txData.type)))
   return txType === TransactionType.FeeMarketEIP1559
 }
 
-export function isBlobEIP4844TxData(txData: UnknownTxData): txData is BlobEIP4844TxData {
+export function isBlobEIP4844TxData(txData: TypedTxData): txData is BlobEIP4844TxData {
   const txType = Number(bytesToBigInt(toBytes(txData.type)))
   return txType === TransactionType.BlobEIP4844
 }

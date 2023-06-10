@@ -13,7 +13,7 @@ import {
   isLegacyTxData,
 } from './types'
 
-import type { Transaction, TxData, TxOptions, UnknownTxData } from './types'
+import type { Transaction, TxData, TxOptions, TypedTxData } from './types'
 import type { EthersProvider } from '@ethereumjs/util'
 
 export class TransactionFactory {
@@ -27,7 +27,7 @@ export class TransactionFactory {
    * @param txOptions - Options to pass on to the constructor of the transaction
    */
   public static fromTxData<T extends TransactionType>(
-    txData: UnknownTxData,
+    txData: TypedTxData,
     txOptions: TxOptions = {}
   ): Transaction[T] {
     if (!('type' in txData) || txData.type === undefined) {
@@ -43,9 +43,7 @@ export class TransactionFactory {
       } else if (isBlobEIP4844TxData(txData)) {
         return BlobEIP4844Transaction.fromTxData(txData, txOptions) as Transaction[T]
       } else {
-        throw new Error(
-          `Tx instantiation with type ${(txData as UnknownTxData)?.type} not supported`
-        )
+        throw new Error(`Tx instantiation with type ${(txData as TypedTxData)?.type} not supported`)
       }
     }
   }
