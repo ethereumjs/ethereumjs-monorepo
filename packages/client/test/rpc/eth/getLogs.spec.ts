@@ -1,4 +1,4 @@
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
@@ -33,7 +33,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   // deploy contracts at two different addresses
   const txData = { gasLimit: 2000000, gasPrice: 100 }
-  const tx1 = Transaction.fromTxData(
+  const tx1 = LegacyTransaction.fromTxData(
     {
       ...txData,
       data: logExampleBytecode,
@@ -41,7 +41,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
     },
     { common }
   ).sign(dummy.privKey)
-  const tx2 = Transaction.fromTxData(
+  const tx2 = LegacyTransaction.fromTxData(
     {
       ...txData,
       data: logExampleBytecode,
@@ -57,7 +57,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const data = hexStringToBytes(
     'aefb4f0a000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000004'
   )
-  const tx3 = Transaction.fromTxData(
+  const tx3 = LegacyTransaction.fromTxData(
     {
       ...txData,
       data,
@@ -66,7 +66,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
     },
     { common }
   ).sign(dummy.privKey)
-  const tx4 = Transaction.fromTxData(
+  const tx4 = LegacyTransaction.fromTxData(
     {
       ...txData,
       data,

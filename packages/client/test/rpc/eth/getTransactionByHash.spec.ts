@@ -1,4 +1,4 @@
-import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
+import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { bytesToPrefixedHexString } from '@ethereumjs/util'
 import * as tape from 'tape'
 
@@ -19,7 +19,7 @@ tape(`${method}: call with legacy tx`, async (t) => {
   const { chain, common, execution, server } = await setupChain(pow, 'pow', { txLookupLimit: 1 })
 
   // construct tx
-  const tx = Transaction.fromTxData(
+  const tx = LegacyTransaction.fromTxData(
     { gasLimit: 2000000, gasPrice: 100, to: '0x0000000000000000000000000000000000000000' },
     { common }
   ).sign(dummy.privKey)

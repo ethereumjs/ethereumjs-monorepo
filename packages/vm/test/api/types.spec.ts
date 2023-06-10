@@ -1,10 +1,10 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { AccessListEIP2930Transaction, Transaction } from '@ethereumjs/tx'
+import { AccessListEIP2930Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import * as tape from 'tape'
 
 import type { BlockData } from '@ethereumjs/block'
-import type { AccessListEIP2930TxData, TxData } from '@ethereumjs/tx'
+import type { AccessListEIP2930TxData, TransactionType, TxData } from '@ethereumjs/tx'
 
 tape('[Types]', function (t) {
   t.test('should ensure that the actual objects can be safely used as their data types', (st) => {
@@ -28,10 +28,8 @@ tape('[Types]', function (t) {
     type OptionalTxFields = 'to' | 'r' | 's' | 'v'
 
     // Legacy tx
-    const legacyTx: RequiredExceptOptionals<TxData, OptionalTxFields> = Transaction.fromTxData(
-      {},
-      { common }
-    )
+    const legacyTx: RequiredExceptOptionals<TxData[TransactionType.Legacy], OptionalTxFields> =
+      LegacyTransaction.fromTxData({}, { common })
     st.ok(legacyTx, 'legacy tx')
 
     // Access List tx

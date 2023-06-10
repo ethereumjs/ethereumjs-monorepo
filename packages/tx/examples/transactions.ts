@@ -9,7 +9,7 @@ import { hexToBytes } from 'ethereum-cryptography/utils'
 // We create an unsigned transaction.
 // Notice we don't set the `to` field because we are creating a new contract.
 // This transaction's chain is set to mainnet.
-const tx = Transaction.fromTxData({
+const tx = LegacyTransaction.fromTxData({
   nonce: 0,
   gasPrice: 100,
   gasLimit: 1000000000,

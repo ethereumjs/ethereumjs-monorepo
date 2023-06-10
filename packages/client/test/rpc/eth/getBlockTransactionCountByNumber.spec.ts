@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
@@ -35,7 +35,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
   // construct block with tx
-  const tx = Transaction.fromTxData({ gasLimit: 53000 }, { common, freeze: false })
+  const tx = LegacyTransaction.fromTxData({ gasLimit: 53000 }, { common, freeze: false })
   tx.getSenderAddress = () => {
     return address
   }
@@ -86,15 +86,15 @@ tape(`${method}: call with valid arguments (multiple transactions)`, async (t) =
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
   // construct block with tx
-  const tx = Transaction.fromTxData({ gasLimit: 53000 }, { common, freeze: false })
+  const tx = LegacyTransaction.fromTxData({ gasLimit: 53000 }, { common, freeze: false })
   tx.getSenderAddress = () => {
     return address
   }
-  const tx2 = Transaction.fromTxData({ gasLimit: 53000, nonce: 1 }, { common, freeze: false })
+  const tx2 = LegacyTransaction.fromTxData({ gasLimit: 53000, nonce: 1 }, { common, freeze: false })
   tx2.getSenderAddress = () => {
     return address
   }
-  const tx3 = Transaction.fromTxData({ gasLimit: 53000, nonce: 2 }, { common, freeze: false })
+  const tx3 = LegacyTransaction.fromTxData({ gasLimit: 53000, nonce: 2 }, { common, freeze: false })
   tx3.getSenderAddress = () => {
     return address
   }

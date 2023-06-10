@@ -4,7 +4,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   BlobEIP4844Transaction,
   FeeMarketEIP1559Transaction,
-  Transaction,
+  LegacyTransaction,
   TransactionFactory,
 } from '@ethereumjs/tx'
 import { Account, Address, KECCAK256_NULL, MAX_INTEGER, initKZG } from '@ethereumjs/util'
@@ -605,7 +605,7 @@ tape('runTx() -> API return values', async (t) => {
       } else {
         t.equal(
           res.amountSpent,
-          res.totalGasSpent * (<Transaction>tx).gasPrice,
+          res.totalGasSpent * (<LegacyTransaction>tx).gasPrice,
           `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`
         )
       }
@@ -668,7 +668,7 @@ tape('runTx() -> consensus bugs', async (t) => {
     acc!.nonce = BigInt(2)
     await vm.stateManager.putAccount(addr, acc!)
 
-    const tx = Transaction.fromTxData(txData, { common })
+    const tx = LegacyTransaction.fromTxData(txData, { common })
     await vm.runTx({ tx })
 
     const newBalance = (await vm.stateManager.getAccount(addr))!.balance
@@ -760,7 +760,7 @@ tape('runTx() -> skipBalance behavior', async (t) => {
     if (balance !== undefined) {
       await vm.stateManager.modifyAccountFields(sender, { nonce: BigInt(0), balance })
     }
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       gasLimit: BigInt(21000),
       value: BigInt(1),
       to: Address.zero(),
@@ -792,7 +792,7 @@ tape(
     const codeAddr = Address.fromString('0x' + '20'.repeat(20))
     await vm.stateManager.putContractCode(codeAddr, code)
 
-    const tx: Transaction = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       gasLimit: 100000,
       gasPrice: 1,
       to: codeAddr,
@@ -830,7 +830,7 @@ tape(
     const codeAddr = Address.fromString('0x' + '20'.repeat(20))
     await vm.stateManager.putContractCode(codeAddr, code)
 
-    const tx: Transaction = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       gasLimit: 100000,
       gasPrice: 1,
       value: 1,
@@ -866,7 +866,7 @@ tape(
     const codeAddr = Address.fromString('0x' + '20'.repeat(20))
     await vm.stateManager.putContractCode(codeAddr, code)
 
-    const tx: Transaction = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       gasLimit: 100000,
       gasPrice: 1,
       value: 1,

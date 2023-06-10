@@ -19,7 +19,7 @@ import * as uncleBlockData from './testdata/testdata-from-rpc-with-uncles_uncle-
 import * as blockDataWithWithdrawals from './testdata/testdata-from-rpc-with-withdrawals.json'
 import * as blockData from './testdata/testdata-from-rpc.json'
 
-import type { Transaction } from '@ethereumjs/tx'
+import type { LegacyTransaction } from '@ethereumjs/tx'
 
 tape('[fromRPC]: block #2924874', function (t) {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
@@ -74,7 +74,9 @@ tape('[fromRPC]:', function (t) {
         { common }
       )
       st.equal(
-        (blockFromTransactionGasPriceAsInteger.transactions[0] as Transaction).gasPrice.toString(),
+        (
+          blockFromTransactionGasPriceAsInteger.transactions[0] as LegacyTransaction
+        ).gasPrice.toString(),
         gasPriceAsIntegerString
       )
 

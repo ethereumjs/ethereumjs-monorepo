@@ -22,7 +22,7 @@ const customCommon = Common.custom(
 
 // We pass our custom Common object whenever we create a transaction
 const opts = { common: customCommon }
-const tx = Transaction.fromTxData(
+const tx = LegacyTransaction.fromTxData(
   {
     nonce: 0,
     gasPrice: 100,

@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
 
@@ -43,7 +43,7 @@ tape(`${method}: ensure balance deducts after a tx`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes, false)
 
   // construct block with tx
-  const tx = Transaction.fromTxData({ gasLimit: 53000 }, { common, freeze: false })
+  const tx = LegacyTransaction.fromTxData({ gasLimit: 53000 }, { common, freeze: false })
   tx.getSenderAddress = () => {
     return address
   }

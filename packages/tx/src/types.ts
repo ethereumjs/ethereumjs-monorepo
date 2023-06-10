@@ -151,27 +151,27 @@ export interface TxData {
   [TransactionType.BlobEIP4844]: BlobEIP4844TxData
 }
 
-export function isLegacyTxData(
-  txData: LegacyTxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData | BlobEIP4844TxData
-): txData is LegacyTxData {
+export type UnknownTxData =
+  | TxData[TransactionType.Legacy]
+  | TxData[TransactionType.AccessListEIP2930]
+  | TxData[TransactionType.FeeMarketEIP1559]
+  | TxData[TransactionType.BlobEIP4844]
+
+export function isLegacyTxData(txData: UnknownTxData): txData is LegacyTxData {
   const txType = Number(bytesToBigInt(toBytes(txData.type)))
   return txType === 0
 }
 export function isAccessListEIP2930TxData(
-  txData: LegacyTxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData | BlobEIP4844TxData
+  txData: UnknownTxData
 ): txData is AccessListEIP2930TxData {
   const txType = Number(bytesToBigInt(toBytes(txData.type)))
   return txType === 1
 }
-export function isFeeMarketEIP1559TxData(
-  txData: LegacyTxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData | BlobEIP4844TxData
-): txData is FeeMarketEIP1559TxData {
+export function isFeeMarketEIP1559TxData(txData: UnknownTxData): txData is FeeMarketEIP1559TxData {
   const txType = Number(bytesToBigInt(toBytes(txData.type)))
   return txType === 2
 }
-export function isBlobEIP4844TxData(
-  txData: LegacyTxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData | BlobEIP4844TxData
-): txData is BlobEIP4844TxData {
+export function isBlobEIP4844TxData(txData: UnknownTxData): txData is BlobEIP4844TxData {
   const txType = Number(bytesToBigInt(toBytes(txData.type)))
   return txType === 3
 }

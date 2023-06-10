@@ -1,7 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
+import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { Address, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
 import { AbstractLevel } from 'abstract-level'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -110,7 +110,7 @@ tape('[Miner]', async (t) => {
       to: to.address,
       value,
     }
-    const tx = Transaction.fromTxData(txData, { common })
+    const tx = LegacyTransaction.fromTxData(txData, { common })
     const signedTx = tx.sign(from.privateKey)
     return signedTx
   }
@@ -420,11 +420,11 @@ tape('[Miner]', async (t) => {
 
     // add txs
     const data = '0xfe' // INVALID opcode, consumes all gas
-    const tx1FillsBlockGasLimit = Transaction.fromTxData(
+    const tx1FillsBlockGasLimit = LegacyTransaction.fromTxData(
       { gasLimit: gasLimit - 1, data, gasPrice: BigInt('1000000000') },
       { common }
     ).sign(A.privateKey)
-    const tx2ExceedsBlockGasLimit = Transaction.fromTxData(
+    const tx2ExceedsBlockGasLimit = LegacyTransaction.fromTxData(
       { gasLimit: 21000, to: B.address, nonce: 1, gasPrice: BigInt('1000000000') },
       { common }
     ).sign(A.privateKey)

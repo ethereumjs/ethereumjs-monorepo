@@ -3,7 +3,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
-  Transaction,
+  LegacyTransaction,
 } from '@ethereumjs/tx'
 import { Account, Address, bigIntToBytes, privateToAddress, setLengthLeft } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
@@ -11,7 +11,7 @@ import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
 
-import type { TypedTransaction } from '@ethereumjs/tx'
+import type { UnknownTransaction } from '@ethereumjs/tx'
 
 const GWEI = BigInt('1000000000')
 
@@ -43,7 +43,7 @@ const sender = new Address(privateToAddress(pkey))
  * @param transaction - the transaction in the block
  * @param txType - the txtype to use
  */
-function makeBlock(baseFee: bigint, transaction: TypedTransaction, txType: number) {
+function makeBlock(baseFee: bigint, transaction: UnknownTransaction, txType: number) {
   const signed = transaction.sign(pkey)
   const json = <any>signed.toJSON()
   json.type = txType
@@ -132,7 +132,7 @@ tape('EIP1559 tests', (t) => {
     st.equal(account!.balance, expectedAccountBalance, 'account balance correct')
     st.equal(results2.amountSpent, expectedCost, 'reported cost correct')
 
-    const tx3 = new Transaction(
+    const tx3 = new LegacyTransaction(
       {
         gasLimit: 21000,
         gasPrice: GWEI * BigInt(5),

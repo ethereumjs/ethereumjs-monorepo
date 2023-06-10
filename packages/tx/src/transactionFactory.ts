@@ -12,16 +12,7 @@ import {
   isLegacyTxData,
 } from './types'
 
-import type {
-  AccessListEIP2930TxData,
-  BlobEIP4844TxData,
-  FeeMarketEIP1559TxData,
-  LegacyTxData,
-  Transaction,
-  TransactionType,
-  TxData,
-  TxOptions,
-} from './types'
+import type { Transaction, TransactionType, TxData, TxOptions, UnknownTxData } from './types'
 import type { EthersProvider } from '@ethereumjs/util'
 
 export class TransactionFactory {
@@ -35,7 +26,7 @@ export class TransactionFactory {
    * @param txOptions - Options to pass on to the constructor of the transaction
    */
   public static fromTxData<TTransactionType extends TransactionType>(
-    txData: LegacyTxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData | BlobEIP4844TxData,
+    txData: UnknownTxData,
     txOptions: TxOptions = {}
   ): Transaction[TTransactionType] {
     if (!('type' in txData) || txData.type === undefined) {

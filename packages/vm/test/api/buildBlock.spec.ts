@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
+import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { Account, Address, concatBytesNoTypeCheck } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
@@ -29,7 +29,7 @@ tape('BlockBuilder', async (t) => {
     })
 
     // Set up tx
-    const tx = Transaction.fromTxData(
+    const tx = LegacyTransaction.fromTxData(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false }
     )
@@ -64,7 +64,7 @@ tape('BlockBuilder', async (t) => {
 
     const blockBuilder = await vm.buildBlock({ parentBlock: genesis })
     const gasLimit = genesis.header.gasLimit + BigInt(1)
-    const tx = Transaction.fromTxData({ gasLimit }, { common })
+    const tx = LegacyTransaction.fromTxData({ gasLimit }, { common })
     try {
       await blockBuilder.addTransaction(tx)
       st.fail('should throw error')
@@ -102,7 +102,7 @@ tape('BlockBuilder', async (t) => {
     })
 
     // Set up tx
-    const tx = Transaction.fromTxData(
+    const tx = LegacyTransaction.fromTxData(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false }
     )
@@ -158,7 +158,7 @@ tape('BlockBuilder', async (t) => {
     })
 
     // Set up tx
-    const tx = Transaction.fromTxData(
+    const tx = LegacyTransaction.fromTxData(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false }
     ).sign(signer.privateKey)
@@ -190,7 +190,7 @@ tape('BlockBuilder', async (t) => {
       blockOpts: { calcDifficultyFromHeader: genesisBlock.header },
     })
 
-    const tx = Transaction.fromTxData(
+    const tx = LegacyTransaction.fromTxData(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false }
     )
@@ -210,7 +210,7 @@ tape('BlockBuilder', async (t) => {
 
     blockBuilder = await vm.buildBlock({ parentBlock: genesisBlock })
 
-    const tx2 = Transaction.fromTxData(
+    const tx2 = LegacyTransaction.fromTxData(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1, nonce: 1 },
       { common, freeze: false }
     )
@@ -275,7 +275,7 @@ tape('BlockBuilder', async (t) => {
     })
 
     // Set up underpriced txs to test error response
-    const tx1 = Transaction.fromTxData(
+    const tx1 = LegacyTransaction.fromTxData(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false }
     )
@@ -303,7 +303,7 @@ tape('BlockBuilder', async (t) => {
     }
 
     // Set up correctly priced txs
-    const tx3 = Transaction.fromTxData(
+    const tx3 = LegacyTransaction.fromTxData(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 101 },
       { common, freeze: false }
     )

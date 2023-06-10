@@ -1,5 +1,9 @@
 import { Common, Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
+import {
+  BlobEIP4844Transaction,
+  FeeMarketEIP1559Transaction,
+  LegacyTransaction,
+} from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   bytesToPrefixedHexString,
@@ -28,7 +32,7 @@ tape(`${method}: call with legacy tx`, async (t) => {
   const { chain, common, execution, server } = await setupChain(pow, 'pow')
 
   // construct tx
-  const tx = Transaction.fromTxData(
+  const tx = LegacyTransaction.fromTxData(
     {
       gasLimit: 2000000,
       gasPrice: 100,

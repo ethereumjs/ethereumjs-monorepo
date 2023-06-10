@@ -5,15 +5,11 @@ import * as tape from 'tape'
 import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
-  Transaction,
+  LegacyTransaction,
   TransactionFactory,
 } from '../src'
 
-import type {
-  AccessListEIP2930ValuesArray,
-  FeeMarketEIP1559ValuesArray,
-  TxValuesArray,
-} from '../src'
+import type { TransactionType, TxValuesArray } from '../src'
 import type { AddressLike, BigIntLike, BytesLike } from '@ethereumjs/util'
 
 // @returns: Array with subtypes of the AddressLike type for a given address
@@ -120,7 +116,7 @@ tape('[Transaction Input Values]', function (t) {
     })
     const randomSample = getRandomSubarray(legacyTxData, 100)
     for (const txData of randomSample) {
-      const tx = Transaction.fromTxData(txData, { common })
+      const tx = LegacyTransaction.fromTxData(txData, { common })
       t.throws(() => tx.hash(), 'tx.hash() throws if tx is unsigned')
     }
     st.end()
@@ -140,7 +136,7 @@ tape('[Transaction Input Values]', function (t) {
     const randomSample = getRandomSubarray(eip1559TxData, 100)
 
     for (const txData of randomSample) {
-      const tx = Transaction.fromTxData(txData, { common })
+      const tx = LegacyTransaction.fromTxData(txData, { common })
       t.throws(() => tx.hash(), 'tx.hash() should throw if unsigned')
     }
     st.end()
@@ -160,18 +156,22 @@ tape('[Invalid Array Input values]', (t) => {
         rawValues[x] = <any>[1, 2, 3]
         switch (txType) {
           case 0:
-            t.throws(() => Transaction.fromValuesArray(rawValues as TxValuesArray))
+            t.throws(() =>
+              LegacyTransaction.fromValuesArray(rawValues as TxValuesArray[TransactionType.Legacy])
+            )
             break
           case 1:
             t.throws(() =>
               AccessListEIP2930Transaction.fromValuesArray(
-                rawValues as AccessListEIP2930ValuesArray
+                rawValues as TxValuesArray[TransactionType.AccessListEIP2930]
               )
             )
             break
           case 2:
             t.throws(() =>
-              FeeMarketEIP1559Transaction.fromValuesArray(rawValues as FeeMarketEIP1559ValuesArray)
+              FeeMarketEIP1559Transaction.fromValuesArray(
+                rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559]
+              )
             )
             break
         }
@@ -237,13 +237,15 @@ tape('[Invalid Access Lists]', (t) => {
           case 1:
             t.throws(() =>
               AccessListEIP2930Transaction.fromValuesArray(
-                rawValues as AccessListEIP2930ValuesArray
+                rawValues as TxValuesArray[TransactionType.AccessListEIP2930]
               )
             )
             break
           case 2:
             t.throws(() =>
-              FeeMarketEIP1559Transaction.fromValuesArray(rawValues as FeeMarketEIP1559ValuesArray)
+              FeeMarketEIP1559Transaction.fromValuesArray(
+                rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559]
+              )
             )
             break
         }

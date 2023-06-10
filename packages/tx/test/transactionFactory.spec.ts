@@ -5,7 +5,7 @@ import * as tape from 'tape'
 import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
-  Transaction,
+  LegacyTransaction,
   TransactionFactory,
 } from '../src'
 
@@ -16,8 +16,8 @@ const common = new Common({
 
 const pKey = hexStringToBytes('4646464646464646464646464646464646464646464646464646464646464646')
 
-const unsignedTx = Transaction.fromTxData({})
-const signedTx = unsignedTx.sign(pKey)
+const unsignedLegacyTx = LegacyTransaction.fromTxData({})
+const signedLegacyTx = unsignedLegacyTx.sign(pKey)
 
 const unsignedEIP2930Tx = AccessListEIP2930Transaction.fromTxData(
   { chainId: BigInt(1) },
@@ -29,10 +29,10 @@ const signedEIP1559Tx = unsignedEIP1559Tx.sign(pKey)
 
 const txTypes = [
   {
-    class: Transaction,
-    name: 'Transaction',
-    unsigned: unsignedTx,
-    signed: signedTx,
+    class: LegacyTransaction,
+    name: 'LegacyTransaction',
+    unsigned: unsignedLegacyTx,
+    signed: signedLegacyTx,
     eip2718: false,
     type: 0,
   },

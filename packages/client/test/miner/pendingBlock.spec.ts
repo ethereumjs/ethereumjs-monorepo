@@ -1,7 +1,11 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
+import {
+  BlobEIP4844Transaction,
+  FeeMarketEIP1559Transaction,
+  LegacyTransaction,
+} from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -27,7 +31,7 @@ import { PendingBlock } from '../../src/miner'
 import { TxPool } from '../../src/service/txpool'
 import { mockBlockchain } from '../rpc/mockBlockchain'
 
-import type { TypedTransaction } from '@ethereumjs/tx'
+import type { UnknownTransaction } from '@ethereumjs/tx'
 
 const A = {
   address: new Address(hexStringToBytes('0b90087d864e82a284dca15923f3776de6bb016f')),
@@ -100,7 +104,7 @@ tape('[PendingBlock]', async (t) => {
       to: to.address,
       value,
     }
-    const tx = Transaction.fromTxData(txData, { common })
+    const tx = LegacyTransaction.fromTxData(txData, { common })
     const signedTx = tx.sign(from.privateKey)
     return signedTx
   }
@@ -152,7 +156,7 @@ tape('[PendingBlock]', async (t) => {
     const payload = pendingBlock.pendingPayloads.get(bytesToPrefixedHexString(payloadId))
     t.equal(
       (payload as any).transactions.filter(
-        (tx: TypedTransaction) => bytesToHex(tx.hash()) === bytesToHex(txA011.hash())
+        (tx: UnknownTransaction) => bytesToHex(tx.hash()) === bytesToHex(txA011.hash())
       ).length,
       1,
       'txA011 should be in block'
@@ -168,7 +172,7 @@ tape('[PendingBlock]', async (t) => {
     t.equal(block?.transactions.length, 2, 'should include txs from pool')
     t.equal(
       (payload as any).transactions.filter(
-        (tx: TypedTransaction) => bytesToHex(tx.hash()) === bytesToHex(txB011.hash())
+        (tx: UnknownTransaction) => bytesToHex(tx.hash()) === bytesToHex(txB011.hash())
       ).length,
       1,
       'txB011 should be in block'
@@ -247,7 +251,7 @@ tape('[PendingBlock]', async (t) => {
     await setBalance(vm, A.address, BigInt(5000000000000000))
     await txPool.add(txA01)
     await txPool.add(txA02)
-    const txA03 = Transaction.fromTxData(
+    const txA03 = LegacyTransaction.fromTxData(
       {
         data: '0xFE', // INVALID opcode, uses all gas
         gasLimit: 10000000,
