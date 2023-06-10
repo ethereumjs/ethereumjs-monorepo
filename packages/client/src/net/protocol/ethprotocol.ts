@@ -223,7 +223,7 @@ export class EthProtocol extends Protocol {
             case 0:
               serializedTxs.push(tx.raw())
               break
-            case 5:
+            case 3:
               serializedTxs.push((tx as BlobEIP4844Transaction).serializeNetworkWrapper())
               break
             default:
@@ -247,7 +247,7 @@ export class EthProtocol extends Protocol {
           bytesToBigInt(reqId),
           txs.map((txData) => {
             // Blob transactions are deserialized with network wrapper
-            if (txData[0] === 5) {
+            if (txData[0] === 3) {
               return BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txData, { common })
             } else {
               return TransactionFactory.fromBlockBodyData(txData, { common })

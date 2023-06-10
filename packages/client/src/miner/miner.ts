@@ -2,7 +2,7 @@ import { BlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import { bytesToPrefixedHexString } from '@ethereumjs/util'
-import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
+import { equalsBytes } from 'ethereum-cryptography/utils'
 import { MemoryLevel } from 'memory-level'
 
 import { LevelDB } from '../execution/level'
@@ -325,18 +325,6 @@ export class Miner {
               `Miner: Assembled block full (gasLeft: ${gasLimit - blockBuilder.gasUsed})`
             )
           }
-        } else if ((error as Error).message.includes('tx has a different hardfork than the vm')) {
-          // We can here decide to keep a tx in pool if it belongs to future hf
-          // but for simplicity just remove the tx as the sender can always retransmit
-          // the tx
-          this.service.txPool.removeByHash(bytesToHex(txs[index].hash()))
-          this.config.logger.error(
-            `Pending: Removed from txPool tx ${bytesToPrefixedHexString(
-              txs[index].hash()
-            )} having different hf=${txs[index].common.hardfork()} than block vm hf=${blockBuilder[
-              'vm'
-            ]._common.hardfork()}`
-          )
         } else {
           // If there is an error adding a tx, it will be skipped
           const hash = bytesToPrefixedHexString(txs[index].hash())
