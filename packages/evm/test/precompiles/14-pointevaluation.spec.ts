@@ -24,7 +24,11 @@ tape('Precompiles: point evaluation', async (t) => {
   if (isBrowser() === true) {
     t.end()
   } else {
-    initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet4.txt')
+    try {
+      initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet6.txt')
+      // eslint-disable-next-line
+    } catch {}
+
     const genesisJSON = require('../../../client/test/testdata/geth-genesis/eip4844.json')
     const common = Common.fromGethGenesis(genesisJSON, {
       chain: 'custom',
@@ -44,8 +48,8 @@ tape('Precompiles: point evaluation', async (t) => {
       Commitment: hexToBytes(
         'abb6bcbe313530ce7779abdf633d5a3594a41fbad9a79f4a9b46b89c0cfe78f6a15948dec92c4404aedac8b5e7dd6059'
       ),
-      InputPoint: hexToBytes('0120000000000000000000000000000000000000000000000000000000000000'),
-      ClaimedValue: hexToBytes('48cdd065593bd932707001e88674108ade9dd71d2e849e9a55fa71b70f06690f'),
+      InputPoint: hexToBytes('0000000000000000000000000000000000000000000000000000000000002001'),
+      ClaimedValue: hexToBytes('0f69060fb771fa559a9e842e1dd79dde8a107486e801707032d93b5965d0cd48'),
     }
     const versionedHash = computeVersionedHash(testCase.Commitment, 1)
 

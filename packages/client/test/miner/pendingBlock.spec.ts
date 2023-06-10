@@ -67,7 +67,6 @@ const setup = () => {
     execution: {
       vm: {
         stateManager,
-        eei: { getAccount: () => stateManager.getAccount() },
         copy: () => service.execution.vm,
         setStateRoot: () => {},
         blockchain: mockBlockchain({}),
@@ -265,7 +264,7 @@ tape('[PendingBlock]', async (t) => {
 
   t.test('construct blob bundles', async (st) => {
     try {
-      initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet4.txt')
+      initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
       // eslint-disable-next-line
     } catch {}
     const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')

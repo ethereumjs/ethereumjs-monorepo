@@ -474,7 +474,7 @@ tape('runTx() -> runtime behavior', async (t) => {
       await vm.runTx({ tx }) // this tx will fail, but we have to ensure that the cache is cleared
 
       t.equal(
-        (<any>vm.stateManager)._originalStorageCache.size,
+        (<any>vm.stateManager).originalStorageCache.map.size,
         0,
         `should clear storage cache after every ${txType.name}`
       )
@@ -895,7 +895,11 @@ tape('EIP 4844 transaction tests', async (t) => {
   if (isBrowser() === true) {
     t.end()
   } else {
-    initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet4.txt')
+    try {
+      initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet6.txt')
+      // eslint-disable-next-line
+    } catch {}
+
     const genesisJson = require('../../../block/test/testdata/4844-hardfork.json')
     const common = Common.fromGethGenesis(genesisJson, {
       chain: 'customChain',

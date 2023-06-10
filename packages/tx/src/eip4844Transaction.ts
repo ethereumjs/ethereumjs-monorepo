@@ -3,13 +3,17 @@ import {
   MAX_INTEGER,
   bigIntToHex,
   bigIntToUnpaddedBytes,
+  blobsToCommitments,
+  blobsToProofs,
   bytesToBigInt,
   bytesToHex,
   bytesToPrefixedHexString,
+  commitmentsToVersionedHashes,
   computeVersionedHash,
   concatBytes,
   ecrecover,
   equalsBytes,
+  getBlobs,
   hexStringToBytes,
   kzg,
   toBytes,
@@ -49,9 +53,13 @@ const validateBlobTransactionNetworkWrapper = (
     throw new Error('Invalid transaction with empty blobs')
   }
 
+  let isValid
   try {
-    kzg.verifyBlobKzgProofBatch(blobs, commitments, kzgProofs)
-  } catch (e) {
+    isValid = kzg.verifyBlobKzgProofBatch(blobs, commitments, kzgProofs)
+  } catch (error) {
+    throw new Error(`KZG verification of blobs fail with error=${error}`)
+  }
+  if (!isValid) {
     throw new Error('KZG proof cannot be verified from blobs/commitments')
   }
 
@@ -172,6 +180,28 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
   }
 
   public static fromTxData(txData: BlobEIP4844TxData, opts?: TxOptions) {
+    if (txData.blobsData !== undefined) {
+      if (txData.blobs !== undefined) {
+        throw new Error('cannot have both raw blobs data and encoded blobs in constructor')
+      }
+      if (txData.kzgCommitments !== undefined) {
+        throw new Error('cannot have both raw blobs data and KZG commitments in constructor')
+      }
+      if (txData.versionedHashes !== undefined) {
+        throw new Error('cannot have both raw blobs data and versioned hashes in constructor')
+      }
+      if (txData.kzgProofs !== undefined) {
+        throw new Error('cannot have both raw blobs data and KZG proofs in constructor')
+      }
+      txData.blobs = getBlobs(txData.blobsData.reduce((acc, cur) => acc + cur))
+      txData.kzgCommitments = blobsToCommitments(txData.blobs as Uint8Array[])
+      txData.versionedHashes = commitmentsToVersionedHashes(txData.kzgCommitments as Uint8Array[])
+      txData.kzgProofs = blobsToProofs(
+        txData.blobs as Uint8Array[],
+        txData.kzgCommitments as Uint8Array[]
+      )
+    }
+
     return new BlobEIP4844Transaction(txData, opts)
   }
 

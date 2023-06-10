@@ -48,7 +48,7 @@ type Uint256 = string
 type WithdrawalV1 = Exclude<ExecutionPayload['withdrawals'], undefined>[number]
 export type ExecutionPayloadV1 = Omit<ExecutionPayload, 'withdrawals' | 'excessDataGas'>
 export type ExecutionPayloadV2 = ExecutionPayload & { withdrawals: WithdrawalV1[] }
-export type ExecutionPayloadV3 = ExecutionPayload & { excessDataGas: Uint256 }
+export type ExecutionPayloadV3 = ExecutionPayload & { excessDataGas: Uint64; dataGasUsed: Uint64 }
 
 export type ForkchoiceStateV1 = {
   headBlockHash: Bytes32
@@ -122,7 +122,8 @@ const executionPayloadV2FieldValidators = {
 }
 const executionPayloadV3FieldValidators = {
   ...executionPayloadV2FieldValidators,
-  excessDataGas: validators.uint256,
+  dataGasUsed: validators.uint64,
+  excessDataGas: validators.uint64,
 }
 
 const forkchoiceFieldValidators = {
@@ -169,6 +170,7 @@ export const blockToExecutionPayload = (block: Block, value: bigint, bundle?: Bl
     timestamp: header.timestamp!,
     extraData: header.extraData!,
     baseFeePerGas: header.baseFeePerGas!,
+    dataGasUsed: header.dataGasUsed,
     excessDataGas: header.excessDataGas,
     blockHash: bytesToPrefixedHexString(block.hash()),
     prevRandao: header.mixHash!,
@@ -691,23 +693,33 @@ export class Engine {
         }
       }
     } else if (
-      parseInt(params[0].timestamp) >= shanghaiTimestamp &&
-      (eip4844Timestamp === null || parseInt(params[0].timestamp) < eip4844Timestamp)
+      eip4844Timestamp === null ||
+      (parseInt(params[0].timestamp) >= shanghaiTimestamp &&
+        parseInt(params[0].timestamp) < eip4844Timestamp)
     ) {
-      if (!('extraDataGas' in params[0])) {
+      if (
+        'extraDataGas' in params[0] ||
+        'dataGasUsed' in params[0] ||
+        !('withdrawals' in params[0])
+      ) {
         throw {
           code: INVALID_PARAMS,
           message: 'ExecutionPayloadV2 MUST be used if Shanghai is activated and Cancun is not',
         }
       }
-    } else if (eip4844Timestamp === null || parseInt(params[0].timestamp) >= eip4844Timestamp) {
-      if (!('extraData' in params[0])) {
+    } else if (parseInt(params[0].timestamp) >= eip4844Timestamp) {
+      if (
+        !('extraData' in params[0]) ||
+        !('dataGasUsed' in params[0]) ||
+        !('withdrawals' in params[0])
+      ) {
         throw {
           code: INVALID_PARAMS,
           message: 'ExecutionPayloadV3 MUST be used after Cancun is activated',
         }
       }
     }
+
     const newPayload = await this.newPayload(params)
     if (newPayload.status === Status.INVALID_BLOCK_HASH) {
       newPayload.status = Status.INVALID

@@ -34,6 +34,8 @@ import type {
   VM,
 } from '@ethereumjs/vm'
 
+const EMPTY_SLOT = `0x${'00'.repeat(32)}`
+
 type GetLogsParams = {
   fromBlock?: string // QUANTITY, block number or "earliest" or "latest" (default: "latest")
   toBlock?: string // QUANTITY, block number or "latest" (default: "latest")
@@ -124,6 +126,7 @@ const jsonRpcBlock = async (
     uncles: block.uncleHeaders.map((uh) => bytesToPrefixedHexString(uh.hash())),
     baseFeePerGas: header.baseFeePerGas,
     ...withdrawalsAttr,
+    dataGasUsed: header.dataGasUsed,
     excessDataGas: header.excessDataGas,
   }
 }
@@ -613,25 +616,35 @@ export class Eth {
    *   3. integer block number, or the string "latest", "earliest" or "pending"
    */
   async getStorageAt(params: [string, string, string]) {
-    const [addressHex, positionHex, blockOpt] = params
-    const block = await getBlockByOption(blockOpt, this._chain)
+    const [addressHex, keyHex, blockOpt] = params
 
+    if (blockOpt === 'pending') {
+      throw {
+        code: INVALID_PARAMS,
+        message: '"pending" is not yet supported',
+      }
+    }
     if (this._vm === undefined) {
       throw new Error('missing vm')
     }
 
     const vm = await this._vm.copy()
+    // TODO: this needs more thought, keep on latest for now
+    const block = await getBlockByOption(blockOpt, this._chain)
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = Address.fromString(addressHex)
-    const storageTrie = await (vm.stateManager as any)._getStorageTrie(address)
-    const position = setLengthLeft(hexStringToBytes(positionHex), 32)
-    const storage = await storageTrie.get(position)
+    const account = await vm.stateManager.getAccount(address)
+    if (account === undefined) {
+      return EMPTY_SLOT
+    }
+    const key = setLengthLeft(hexStringToBytes(keyHex), 32)
+    const storage = await vm.stateManager.getContractStorage(address, key)
     return storage !== null && storage !== undefined
       ? bytesToPrefixedHexString(
           setLengthLeft(RLP.decode(Uint8Array.from(storage)) as Uint8Array, 32)
         )
-      : '0x'
+      : EMPTY_SLOT
   }
 
   /**

@@ -217,6 +217,10 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
    * The KZG proofs associated with the transaction
    */
   kzgProofs?: BytesLike[]
+  /**
+   * An array of arbitrary strings that blobs are to be constructed from
+   */
+  blobsData?: string[]
 }
 
 /**

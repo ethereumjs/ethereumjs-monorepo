@@ -39,9 +39,8 @@ export type AccessListBytes = AccessListBytesItem[]
 export type AccessList = AccessListItem[]
 
 export interface StateManagerInterface {
-  accountExists(address: Address): Promise<boolean>
   getAccount(address: Address): Promise<Account | undefined>
-  putAccount(address: Address, account: Account): Promise<void>
+  putAccount(address: Address, account?: Account): Promise<void>
   deleteAccount(address: Address): Promise<void>
   modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void>
   putContractCode(address: Address, value: Uint8Array): Promise<void>
@@ -60,34 +59,13 @@ export interface StateManagerInterface {
 }
 
 export interface EVMStateManagerInterface extends StateManagerInterface {
-  // TODO check if all these `touch?` interfaces can be moved into StateManagerInterface
-  putAccount(address: Address, account: Account, touch?: boolean): Promise<void>
-  deleteAccount(address: Address, touch?: boolean): Promise<void>
-  accountIsEmptyOrNonExistent(address: Address): Promise<boolean>
-
-  getOriginalContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
+  originalStorageCache: {
+    get(address: Address, key: Uint8Array): Promise<Uint8Array>
+    clear(): void
+  }
 
   dumpStorage(address: Address): Promise<StorageDump> // only used in client
-  putContractStorage(
-    address: Address,
-    key: Uint8Array,
-    value: Uint8Array,
-    touch?: boolean
-  ): Promise<void>
-
-  clearContractStorage(address: Address, touch?: boolean): Promise<void>
-
-  clearWarmedAccounts(): void
-  cleanupTouchedAccounts(): Promise<void>
-  clearOriginalStorageCache(): void
-
-  addWarmedAddress(address: Uint8Array): void
-  isWarmedAddress(address: Uint8Array): boolean
-  addWarmedStorage(address: Uint8Array, slot: Uint8Array): void
-  isWarmedStorage(address: Uint8Array, slot: Uint8Array): boolean
-
   generateCanonicalGenesis(initState: any): Promise<void> // TODO make input more typesafe
-  generateAccessList(addressesRemoved: Address[], addressesOnlyStorage: Address[]): AccessList
   getProof(address: Address, storageSlots?: Uint8Array[]): Promise<Proof>
 
   copy(): EVMStateManagerInterface
