@@ -6,13 +6,14 @@ import { BlobEIP4844Transaction } from './eip4844Transaction'
 import { normalizeTxParams } from './fromRpc'
 import { LegacyTransaction } from './legacyTransaction'
 import {
+  TransactionType,
   isAccessListEIP2930TxData,
   isBlobEIP4844TxData,
   isFeeMarketEIP1559TxData,
   isLegacyTxData,
 } from './types'
 
-import type { Transaction, TransactionType, TxData, TxOptions, UnknownTxData } from './types'
+import type { Transaction, TxData, TxOptions, UnknownTxData } from './types'
 import type { EthersProvider } from '@ethereumjs/util'
 
 export class TransactionFactory {
@@ -68,17 +69,17 @@ export class TransactionFactory {
     if (data[0] <= 0x7f) {
       // Determine the type.
       switch (data[0]) {
-        case 1:
+        case TransactionType.AccessListEIP2930:
           return AccessListEIP2930Transaction.fromSerializedTx(
             data,
             txOptions
           ) as Transaction[TTransactionType]
-        case 2:
+        case TransactionType.FeeMarketEIP1559:
           return FeeMarketEIP1559Transaction.fromSerializedTx(
             data,
             txOptions
           ) as Transaction[TTransactionType]
-        case 3:
+        case TransactionType.BlobEIP4844:
           return BlobEIP4844Transaction.fromSerializedTx(
             data,
             txOptions

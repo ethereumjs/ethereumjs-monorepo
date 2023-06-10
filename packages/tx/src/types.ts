@@ -97,10 +97,10 @@ export function isAccessList(input: AccessListBytes | AccessList): input is Acce
  * Encompassing type for all transaction types.
  */
 export enum TransactionType {
-  Legacy,
-  AccessListEIP2930,
-  FeeMarketEIP1559,
-  BlobEIP4844,
+  Legacy = 0,
+  AccessListEIP2930 = 1,
+  FeeMarketEIP1559 = 2,
+  BlobEIP4844 = 3,
 }
 
 export interface Transaction {
@@ -115,6 +115,22 @@ export type UnknownTransaction =
   | Transaction[TransactionType.AccessListEIP2930]
   | Transaction[TransactionType.FeeMarketEIP1559]
   | Transaction[TransactionType.BlobEIP4844]
+
+export function isLegacyTx(tx: UnknownTransaction): tx is LegacyTransaction {
+  return tx.type === TransactionType.Legacy
+}
+
+export function isAccessListEIP2930Tx(tx: UnknownTransaction): tx is AccessListEIP2930Transaction {
+  return tx.type === TransactionType.AccessListEIP2930
+}
+
+export function isFeeMarketEIP1559Tx(tx: UnknownTransaction): tx is FeeMarketEIP1559Transaction {
+  return tx.type === TransactionType.FeeMarketEIP1559
+}
+
+export function isBlobEIP4844Tx(tx: UnknownTransaction): tx is BlobEIP4844Transaction {
+  return tx.type === TransactionType.BlobEIP4844
+}
 
 export type TransactionsArray = Array<UnknownTransaction>
 
@@ -159,21 +175,24 @@ export type UnknownTxData =
 
 export function isLegacyTxData(txData: UnknownTxData): txData is LegacyTxData {
   const txType = Number(bytesToBigInt(toBytes(txData.type)))
-  return txType === 0
+  return txType === TransactionType.Legacy
 }
+
 export function isAccessListEIP2930TxData(
   txData: UnknownTxData
 ): txData is AccessListEIP2930TxData {
   const txType = Number(bytesToBigInt(toBytes(txData.type)))
-  return txType === 1
+  return txType === TransactionType.AccessListEIP2930
 }
+
 export function isFeeMarketEIP1559TxData(txData: UnknownTxData): txData is FeeMarketEIP1559TxData {
   const txType = Number(bytesToBigInt(toBytes(txData.type)))
-  return txType === 2
+  return txType === TransactionType.FeeMarketEIP1559
 }
+
 export function isBlobEIP4844TxData(txData: UnknownTxData): txData is BlobEIP4844TxData {
   const txType = Number(bytesToBigInt(toBytes(txData.type)))
-  return txType === 3
+  return txType === TransactionType.BlobEIP4844
 }
 
 /**

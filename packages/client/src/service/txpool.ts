@@ -1,4 +1,11 @@
-import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
+import {
+  BlobEIP4844Transaction,
+  Capability,
+  isAccessListEIP2930Tx,
+  isBlobEIP4844Tx,
+  isFeeMarketEIP1559Tx,
+  isLegacyTx,
+} from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
 import Heap = require('qheap')
 
@@ -8,7 +15,6 @@ import type { PeerPool } from '../net/peerpool'
 import type { FullEthereumService } from './fullethereumservice'
 import type { Block } from '@ethereumjs/block'
 import type {
-  AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
   TransactionsArray,
@@ -650,25 +656,27 @@ export class TxPool {
    * @returns Gas price (both tip and max fee)
    */
   private txGasPrice(tx: UnknownTransaction): GasPrice {
-    switch (tx.type) {
-      case 0:
-        return {
-          maxFee: (tx as LegacyTransaction).gasPrice,
-          tip: (tx as LegacyTransaction).gasPrice,
-        }
-      case 1:
-        return {
-          maxFee: (tx as AccessListEIP2930Transaction).gasPrice,
-          tip: (tx as AccessListEIP2930Transaction).gasPrice,
-        }
-      case 2:
-      case 3:
-        return {
-          maxFee: (tx as FeeMarketEIP1559Transaction).maxFeePerGas,
-          tip: (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas,
-        }
-      default:
-        throw new Error(`tx of type ${tx.type} unknown`)
+    if (isLegacyTx(tx)) {
+      return {
+        maxFee: tx.gasPrice,
+        tip: tx.gasPrice,
+      }
+    }
+
+    if (isAccessListEIP2930Tx(tx)) {
+      return {
+        maxFee: tx.gasPrice,
+        tip: tx.gasPrice,
+      }
+    }
+
+    if (isFeeMarketEIP1559Tx(tx) || isBlobEIP4844Tx(tx)) {
+      return {
+        maxFee: tx.maxFeePerGas,
+        tip: tx.maxPriorityFeePerGas,
+      }
+    } else {
+      throw new Error(`tx of type ${(tx as UnknownTransaction).type} unknown`)
     }
   }
 
