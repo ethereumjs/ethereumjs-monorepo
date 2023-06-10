@@ -22,8 +22,8 @@ import type { AccessList, AccessListItem } from '@ethereumjs/common'
 import type {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
-  Transaction,
-  TypedTransaction,
+  LegacyTransaction,
+  UnknownTransaction,
 } from '@ethereumjs/tx'
 
 const debug = createDebugLogger('vm:tx')
@@ -190,7 +190,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       this.evm.journal.addAlwaysWarmAddress(addressStr)
     }
     this.evm.journal.addAlwaysWarmAddress(caller.toString())
-    if (tx.to) {
+    if (tx.to !== undefined) {
       // Note: in case we create a contract, we do this in EVMs `_executeCreate` (this is also correct in inner calls, per the EIP)
       this.evm.journal.addAlwaysWarmAddress(bytesToHex(tx.to.bytes))
     }
@@ -354,10 +354,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     gasPrice = inclusionFeePerGas + baseFee
   } else {
     // Have to cast as legacy tx since EIP1559 tx does not have gas price
-    gasPrice = (<Transaction>tx).gasPrice
+    gasPrice = (<LegacyTransaction>tx).gasPrice
     if (this._common.isActivatedEIP(1559) === true) {
       const baseFee = block.header.baseFeePerGas!
-      inclusionFeePerGas = (<Transaction>tx).gasPrice - baseFee
+      inclusionFeePerGas = (<LegacyTransaction>tx).gasPrice - baseFee
     }
   }
 
@@ -599,7 +599,7 @@ function txLogsBloom(logs?: any[]): Bloom {
  */
 export async function generateTxReceipt(
   this: VM,
-  tx: TypedTransaction,
+  tx: UnknownTransaction,
   txResult: RunTxResult,
   cumulativeGasUsed: bigint,
   dataGasUsed?: bigint,
@@ -663,7 +663,7 @@ export async function generateTxReceipt(
  * @param msg Base error message
  * @hidden
  */
-function _errorMsg(msg: string, vm: VM, block: Block, tx: TypedTransaction) {
+function _errorMsg(msg: string, vm: VM, block: Block, tx: UnknownTransaction) {
   const blockErrorStr = 'errorStr' in block ? block.errorStr() : 'block'
   const txErrorStr = 'errorStr' in tx ? tx.errorStr() : 'tx'
 

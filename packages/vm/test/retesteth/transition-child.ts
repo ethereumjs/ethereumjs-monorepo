@@ -1,7 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { RLP } from '@ethereumjs/rlp'
-import { Transaction, TransactionFactory } from '@ethereumjs/tx'
+import { LegacyTransaction, TransactionFactory } from '@ethereumjs/tx'
 import { Account, bytesToPrefixedHexString } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { hexToBytes } from 'ethereum-cryptography/utils'
@@ -14,7 +14,7 @@ import { getCommon } from '../tester/config'
 import { makeBlockFromEnv, setupPreConditions } from '../util'
 
 import type { PostByzantiumTxReceipt } from '../../src'
-import type { TypedTransaction } from '@ethereumjs/tx'
+import type { UnknownTransaction } from '@ethereumjs/tx'
 import type { NestedUint8Array } from '@ethereumjs/util'
 
 const yargs = require('yargs/yargs')
@@ -106,11 +106,11 @@ async function runTransition(argsIn: any) {
   let index = 0
   for (const txData of <NestedUint8Array>txsData) {
     try {
-      let tx: TypedTransaction
+      let tx: UnknownTransaction
       if (txData instanceof Uint8Array) {
         tx = TransactionFactory.fromSerializedData(txData as Uint8Array, { common })
       } else {
-        tx = Transaction.fromValuesArray(txData as Uint8Array[], { common })
+        tx = LegacyTransaction.fromValuesArray(txData as Uint8Array[], { common })
       }
       await builder.addTransaction(tx)
     } catch (e: any) {

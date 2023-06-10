@@ -3,7 +3,7 @@ import type { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { EVM, EVMResult, Log } from '@ethereumjs/evm'
-import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
+import type { AccessList, UnknownTransaction } from '@ethereumjs/tx'
 import type { BigIntLike, WithdrawalData } from '@ethereumjs/util'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt | EIP4844BlobTxReceipt
 
@@ -67,7 +67,7 @@ export interface EIP4844BlobTxReceipt extends PostByzantiumTxReceipt {
 export type VMEvents = {
   beforeBlock: (data: Block, resolve?: (result?: any) => void) => void
   afterBlock: (data: AfterBlockEvent, resolve?: (result?: any) => void) => void
-  beforeTx: (data: TypedTransaction, resolve?: (result?: any) => void) => void
+  beforeTx: (data: UnknownTransaction, resolve?: (result?: any) => void) => void
   afterTx: (data: AfterTxEvent, resolve?: (result?: any) => void) => void
 }
 
@@ -314,7 +314,7 @@ export interface RunTxOpts {
   /**
    * An `@ethereumjs/tx` to run
    */
-  tx: TypedTransaction
+  tx: UnknownTransaction
   /**
    * If true, skips the nonce check
    */
@@ -405,5 +405,5 @@ export interface AfterTxEvent extends RunTxResult {
   /**
    * The transaction which just got finished
    */
-  transaction: TypedTransaction
+  transaction: UnknownTransaction
 }

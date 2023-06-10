@@ -11,7 +11,7 @@ import { calculateMinerReward, encodeReceipt, rewardAccount } from './runBlock'
 import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types'
 import type { VM } from './vm'
 import type { HeaderData } from '@ethereumjs/block'
-import type { TypedTransaction } from '@ethereumjs/tx'
+import type { Transaction, TransactionType, TransactionsArray } from '@ethereumjs/tx'
 
 export enum BuildStatus {
   Reverted = 'reverted',
@@ -41,7 +41,7 @@ export class BlockBuilder {
   private readonly vm: VM
   private blockOpts: BuilderOpts
   private headerData: HeaderData
-  private transactions: TypedTransaction[] = []
+  private transactions: TransactionsArray = []
   private transactionResults: RunTxResult[] = []
   private withdrawals?: Withdrawal[]
   private checkpointed = false
@@ -167,7 +167,11 @@ export class BlockBuilder {
    * the remaining gas in the block.
    */
   async addTransaction(
-    tx: TypedTransaction,
+    tx:
+      | Transaction[TransactionType.Legacy]
+      | Transaction[TransactionType.AccessListEIP2930]
+      | Transaction[TransactionType.FeeMarketEIP1559]
+      | Transaction[TransactionType.BlobEIP4844],
     { skipHardForkValidation }: { skipHardForkValidation?: boolean } = {}
   ) {
     this.checkStatus()
