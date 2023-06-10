@@ -238,6 +238,32 @@ tape('[FullSynchronizer]', async (t) => {
     td.verify(chain.putBlocks([newBlock]))
   })
 
+  t.test('should process blocks', async (t) => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const pool = new PeerPool() as any
+    const chain = await Chain.create({ config })
+    const sync = new FullSynchronizer({
+      config,
+      interval: 1,
+      pool,
+      chain,
+      txPool,
+      execution,
+    })
+
+    const chainTip = Block.fromBlockData({
+      header: {},
+    })
+    const newBlock = Block.fromBlockData({
+      header: {
+        parentHash: chainTip.hash(),
+      },
+    })
+
+    sync.running = true
+    t.ok(await sync.processBlocks([newBlock]), 'should successfully process blocks')
+  })
+
   t.test('should reset td', (t) => {
     td.reset()
     t.end()

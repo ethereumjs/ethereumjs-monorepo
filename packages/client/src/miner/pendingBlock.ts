@@ -120,10 +120,9 @@ export class PendingBlock {
     const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
     vm._common.setHardforkByBlockNumber(number, td, timestamp)
 
-    const baseFeePerGas =
-      vm._common.isActivatedEIP(1559) === true ? parentBlock.header.calcNextBaseFee() : undefined
-    // Set to default of 0 since fee can't be calculated until all blob transactions are added
-    const excessDataGas = vm._common.isActivatedEIP(4844) ? BigInt(0) : undefined
+    const baseFeePerGas = vm._common.isActivatedEIP(1559)
+      ? parentBlock.header.calcNextBaseFee()
+      : undefined
 
     // Set the state root to ensure the resulting state
     // is based on the parent block's state
@@ -131,12 +130,13 @@ export class PendingBlock {
 
     const builder = await vm.buildBlock({
       parentBlock,
+      // excessDataGas will be correctly calculated and set in buildBlock constructor,
+      // unless already explicity provided in headerData
       headerData: {
         ...headerData,
         number,
         gasLimit,
         baseFeePerGas,
-        excessDataGas,
       },
       withdrawals,
       blockOpts: {
@@ -173,6 +173,8 @@ export class PendingBlock {
         await builder.addTransaction(tx, {
           skipHardForkValidation: this.skipHardForkValidation,
         })
+
+        // Push the tx in blobTxs only after successful addTransaction
         if (tx instanceof BlobEIP4844Transaction) blobTxs.push(tx)
       } catch (error) {
         if (
@@ -269,12 +271,14 @@ export class PendingBlock {
     while (index < txs.length && !blockFull) {
       try {
         const tx = txs[index]
-        if (tx instanceof BlobEIP4844Transaction) {
-          blobTxs.push(tx)
-        }
         await builder.addTransaction(tx, {
           skipHardForkValidation: this.skipHardForkValidation,
         })
+
+        // Push tx in blobTxs only after successful inclusion in the builder addTransaction
+        if (tx instanceof BlobEIP4844Transaction) {
+          blobTxs.push(tx)
+        }
       } catch (error: any) {
         if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
           if (builder.gasUsed > (builder as any).headerData.gasLimit - BigInt(21000)) {
@@ -309,10 +313,9 @@ export class PendingBlock {
 
     const block = await builder.build()
     // Construct blobs bundle
-    const blobs =
-      block._common.isActivatedEIP(4844) !== undefined
-        ? this.constructBlobsBundle(payloadId, blobTxs)
-        : undefined
+    const blobs = block._common.isActivatedEIP(4844)
+      ? this.constructBlobsBundle(payloadId, blobTxs)
+      : undefined
 
     const withdrawalsStr =
       block.withdrawals !== undefined ? ` withdrawals=${block.withdrawals.length}` : ''

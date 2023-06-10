@@ -21,7 +21,7 @@ const isBrowser = new Function('try {return this===window;}catch(e){ return fals
 
 if (isBrowser() === false) {
   try {
-    initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet4.txt')
+    initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
     // eslint-disable-next-line
   } catch {}
 }

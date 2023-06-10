@@ -36,7 +36,7 @@ const validPayloadAttributes = {
 const validPayload = [validForkChoiceState, { ...validPayloadAttributes, withdrawals: [] }]
 
 try {
-  initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet4.txt')
+  initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
   // eslint-disable-next-line
 } catch {}
 const method = 'engine_getPayloadV3'
@@ -116,7 +116,7 @@ tape(`${method}: call with known payload`, async (t) => {
     const { executionPayload, blobsBundle } = res.body.result
     t.equal(
       executionPayload.blockHash,
-      '0x38ba1af4c568abce2dd6b4d4082606c3fc790fa0a14787aa9ca5c61fa7511439',
+      '0x9db3128f029d4043d32786a8896fbaadac4c07ec475213a43534ec06079f08b1',
       'built expected block'
     )
     t.equal(executionPayload.excessDataGas, '0x0', 'correct execess data gas')

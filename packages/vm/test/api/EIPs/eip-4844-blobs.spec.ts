@@ -27,7 +27,7 @@ const pk = hexToBytes('20'.repeat(32))
 const sender = bytesToPrefixedHexString(privateToAddress(pk))
 if (isBrowser() === false) {
   try {
-    initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet4.txt')
+    initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet6.txt')
     // eslint-disable-next-line
   } catch {}
 }
