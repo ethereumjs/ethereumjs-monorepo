@@ -3,7 +3,7 @@ import { bytesToInt, bytesToUtf8, intToBytes, utf8ToBytes } from '@ethereumjs/ut
 import * as pipe from 'it-pipe'
 import * as pushable from 'it-pushable'
 
-import { Sender } from './sender'
+import { Sender } from '../../src/net/protocol/sender'
 
 import type { NestedUint8Array } from '@ethereumjs/util'
 import type { MuxedStream } from 'libp2p-interfaces/dist/src/stream-muxer/types'

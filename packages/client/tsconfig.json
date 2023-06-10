@@ -1,15 +1,25 @@
 {
   "extends": "../../config/tsconfig.json",
-  "include": ["bin", "src", "test"],
+  "include": [
+    "bin",
+    "src",
+    "test",
+    "browser/net/peer/libp2pnode.ts",
+    "browser/net/peer/libp2ppeer.ts",
+    "browser/net/libp2psender.ts",
+    "browser/net/server/libp2pserver.ts",
+    "browser/net/test/libp2pserver.spec.ts",
+    "browser/net/test/libp2psender.spec.ts"
+  ],
   "compilerOptions": {
     "typeRoots": ["node_modules/@types", "src/@types"]
   },
   "exclude": [
     "browser/index.ts",
     "browser/util/index.ts",
-    "src/net/peer/libp2pnode.ts",
-    "src/net/peer/libp2pnode.ts",
+    "browser/net/peer/libp2pnode.ts",
+    "browser/net/peer/libp2pnode.ts",
     "src/protocol/libp2psender.ts",
-    "src/net/server/libp2pserver.ts"
+    "browser/net/server/libp2pserver.ts"
   ]
 }

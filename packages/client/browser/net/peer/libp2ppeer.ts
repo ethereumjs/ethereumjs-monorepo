@@ -2,15 +2,15 @@
 import { multiaddr } from 'multiaddr'
 import * as PeerId from 'peer-id'
 
-import { Event } from '../../types'
-import { Libp2pSender } from '../protocol/libp2psender'
+import { Peer } from '../../../src/net/peer/peer'
+import { Libp2pSender } from '../libp2psender'
+import { Event } from '../../../src/types'
 
 import { Libp2pNode } from './libp2pnode'
-import { Peer } from './peer'
 
-import type { Protocol } from '../protocol'
-import type { Libp2pServer } from '../server'
-import type { PeerOptions } from './peer'
+import type { PeerOptions } from '../../../src/net/peer/peer'
+import type { Protocol } from '../../../src/net/protocol'
+import type { Libp2pServer } from '../../../src/net/server'
 import type { MuxedStream } from 'libp2p-interfaces/dist/src/stream-muxer/types'
 import type { Multiaddr } from 'multiaddr'
 
