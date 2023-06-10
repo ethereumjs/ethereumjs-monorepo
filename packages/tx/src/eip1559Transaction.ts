@@ -21,9 +21,11 @@ import type {
   AccessList,
   AccessListBytes,
   FeeMarketEIP1559TxData,
-  FeeMarketEIP1559ValuesArray,
   JsonTx,
+  TransactionType,
+  TxData,
   TxOptions,
+  TxValuesArray,
 } from './types'
 import type { Common } from '@ethereumjs/common'
 
@@ -36,7 +38,7 @@ const TRANSACTION_TYPE_BYTES = hexStringToBytes(TRANSACTION_TYPE.toString(16).pa
  * - TransactionType: 2
  * - EIP: [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)
  */
-export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP1559Transaction> {
+export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType.FeeMarketEIP1559> {
   public readonly chainId: bigint
   public readonly accessList: AccessListBytes
   public readonly AccessListJSON: AccessList
@@ -97,7 +99,10 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
    * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
    * accessList, signatureYParity, signatureR, signatureS]`
    */
-  public static fromValuesArray(values: FeeMarketEIP1559ValuesArray, opts: TxOptions = {}) {
+  public static fromValuesArray(
+    values: TxValuesArray[TransactionType.FeeMarketEIP1559],
+    opts: TxOptions = {}
+  ) {
     if (values.length !== 9 && values.length !== 12) {
       throw new Error(
         'Invalid EIP-1559 transaction. Only expecting 9 values (for unsigned tx) or 12 values (for signed tx).'
@@ -148,7 +153,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
    * the static factory methods to assist in creating a Transaction object from
    * varying data types.
    */
-  public constructor(txData: FeeMarketEIP1559TxData, opts: TxOptions = {}) {
+  public constructor(txData: TxData[TransactionType.FeeMarketEIP1559], opts: TxOptions = {}) {
     super({ ...txData, type: TRANSACTION_TYPE }, opts)
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
@@ -246,7 +251,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
    * representation for external signing use {@link FeeMarketEIP1559Transaction.getMessageToSign}.
    */
-  raw(): FeeMarketEIP1559ValuesArray {
+  raw(): TxValuesArray[TransactionType.FeeMarketEIP1559] {
     return [
       bigIntToUnpaddedBytes(this.chainId),
       bigIntToUnpaddedBytes(this.nonce),

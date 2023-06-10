@@ -18,13 +18,8 @@ import { Capability } from './types'
 import { checkMaxInitCodeSize } from './util'
 
 import type {
-  AccessListEIP2930TxData,
-  AccessListEIP2930ValuesArray,
-  BlobEIP4844TxData,
-  BlobEIP4844ValuesArray,
-  FeeMarketEIP1559TxData,
-  FeeMarketEIP1559ValuesArray,
   JsonTx,
+  Transaction,
   TransactionInterface,
   TransactionType,
   TxData,
@@ -97,10 +92,7 @@ export abstract class BaseTransaction<TTransactionType extends TransactionType>
    */
   protected DEFAULT_HARDFORK: string | Hardfork = Hardfork.Shanghai
 
-  constructor(
-    txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData | BlobEIP4844TxData,
-    opts: TxOptions
-  ) {
+  constructor(txData: TxData[TTransactionType], opts: TxOptions) {
     const { nonce, gasLimit, to, value, data, v, r, s, type } = txData
     this._type = Number(bytesToBigInt(toBytes(type)))
 
@@ -266,11 +258,7 @@ export abstract class BaseTransaction<TTransactionType extends TransactionType>
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
    * representation for external signing use {@link BaseTransaction.getMessageToSign}.
    */
-  abstract raw():
-    | TxValuesArray
-    | AccessListEIP2930ValuesArray
-    | FeeMarketEIP1559ValuesArray
-    | BlobEIP4844ValuesArray
+  abstract raw(): TxValuesArray[TTransactionType]
 
   /**
    * Returns the encoding of the transaction.
@@ -331,7 +319,7 @@ export abstract class BaseTransaction<TTransactionType extends TransactionType>
    * const signedTx = tx.sign(privateKey)
    * ```
    */
-  sign(privateKey: Uint8Array): TTransactionType {
+  sign(privateKey: Uint8Array): Transaction[TTransactionType] {
     if (privateKey.length !== 32) {
       const msg = this._errorMsg('Private key must be 32 bytes in length.')
       throw new Error(msg)
@@ -384,7 +372,11 @@ export abstract class BaseTransaction<TTransactionType extends TransactionType>
   }
 
   // Accept the v,r,s values from the `sign` method, and convert this into a TTransactionType
-  protected abstract _processSignature(v: bigint, r: Uint8Array, s: Uint8Array): TTransactionType
+  protected abstract _processSignature(
+    v: bigint,
+    r: Uint8Array,
+    s: Uint8Array
+  ): Transaction[TTransactionType]
 
   /**
    * Does chain ID checks on common and returns a common

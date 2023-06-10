@@ -14,7 +14,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { BaseTransaction } from './baseTransaction'
 import { Capability } from './types'
 
-import type { JsonTx, TxData, TxOptions, TxValuesArray } from './types'
+import type { JsonTx, TransactionType, TxData, TxOptions, TxValuesArray } from './types'
 import type { Common } from '@ethereumjs/common'
 
 const TRANSACTION_TYPE = 0
@@ -28,7 +28,7 @@ function meetsEIP155(_v: bigint, chainId: bigint) {
 /**
  * An Ethereum non-typed (legacy) transaction
  */
-export class Transaction extends BaseTransaction<Transaction> {
+export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
   public readonly gasPrice: bigint
 
   public readonly common: Common
@@ -41,8 +41,8 @@ export class Transaction extends BaseTransaction<Transaction> {
    * Notes:
    * - All parameters are optional and have some basic default values
    */
-  public static fromTxData(txData: TxData, opts: TxOptions = {}) {
-    return new Transaction(txData, opts)
+  public static fromTxData(txData: TxData[TransactionType.Legacy], opts: TxOptions = {}) {
+    return new LegacyTransaction(txData, opts)
   }
 
   /**
@@ -57,7 +57,7 @@ export class Transaction extends BaseTransaction<Transaction> {
       throw new Error('Invalid serialized tx input. Must be array')
     }
 
-    return this.fromValuesArray(values as TxValuesArray, opts)
+    return this.fromValuesArray(values as TxValuesArray[TransactionType.Legacy], opts)
   }
 
   /**
@@ -65,7 +65,10 @@ export class Transaction extends BaseTransaction<Transaction> {
    *
    * Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
    */
-  public static fromValuesArray(values: TxValuesArray, opts: TxOptions = {}) {
+  public static fromValuesArray(
+    values: TxValuesArray[TransactionType.Legacy],
+    opts: TxOptions = {}
+  ) {
     // If length is not 6, it has length 9. If v/r/s are empty Uint8Arrays, it is still an unsigned transaction
     // This happens if you get the RLP data from `raw()`
     if (values.length !== 6 && values.length !== 9) {
@@ -78,7 +81,7 @@ export class Transaction extends BaseTransaction<Transaction> {
 
     validateNoLeadingZeroes({ nonce, gasPrice, gasLimit, value, v, r, s })
 
-    return new Transaction(
+    return new LegacyTransaction(
       {
         nonce,
         gasPrice,
@@ -101,7 +104,7 @@ export class Transaction extends BaseTransaction<Transaction> {
    * the static factory methods to assist in creating a Transaction object from
    * varying data types.
    */
-  public constructor(txData: TxData, opts: TxOptions = {}) {
+  public constructor(txData: TxData[TransactionType.Legacy], opts: TxOptions = {}) {
     super({ ...txData, type: TRANSACTION_TYPE }, opts)
 
     this.common = this._validateTxV(this.v, opts.common)
@@ -150,7 +153,7 @@ export class Transaction extends BaseTransaction<Transaction> {
    * for the signature parameters `v`, `r` and `s`. For an EIP-155 compliant
    * representation have a look at {@link Transaction.getMessageToSign}.
    */
-  raw(): TxValuesArray {
+  raw(): TxValuesArray[TransactionType.Legacy] {
     return [
       bigIntToUnpaddedBytes(this.nonce),
       bigIntToUnpaddedBytes(this.gasPrice),
@@ -315,7 +318,7 @@ export class Transaction extends BaseTransaction<Transaction> {
 
     const opts = { ...this.txOptions, common: this.common }
 
-    return Transaction.fromTxData(
+    return LegacyTransaction.fromTxData(
       {
         nonce: this.nonce,
         gasPrice: this.gasPrice,

@@ -1,6 +1,6 @@
 export { FeeMarketEIP1559Transaction } from './eip1559Transaction'
 export { AccessListEIP2930Transaction } from './eip2930Transaction'
 export { BlobEIP4844Transaction } from './eip4844Transaction'
-export { Transaction } from './legacyTransaction'
+export { LegacyTransaction } from './legacyTransaction'
 export { TransactionFactory } from './transactionFactory'
 export * from './types'
