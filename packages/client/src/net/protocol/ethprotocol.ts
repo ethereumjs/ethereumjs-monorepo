@@ -17,7 +17,7 @@ import type { TxReceiptWithType } from '../../execution/receipt'
 import type { Message, ProtocolOptions } from './protocol'
 import type { BlockBodyBytes, BlockBytes, BlockHeaderBytes } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
-import type { TypedTransaction } from '@ethereumjs/tx'
+import type { TransactionsArray } from '@ethereumjs/tx'
 import type { BigIntLike, NestedUint8Array } from '@ethereumjs/util'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
 
@@ -67,7 +67,7 @@ type GetReceiptsOpts = {
 export interface EthProtocolMethods {
   getBlockHeaders: (opts: GetBlockHeadersOpts) => Promise<[bigint, BlockHeader[]]>
   getBlockBodies: (opts: GetBlockBodiesOpts) => Promise<[bigint, BlockBodyBytes[]]>
-  getPooledTransactions: (opts: GetPooledTransactionsOpts) => Promise<[bigint, TypedTransaction[]]>
+  getPooledTransactions: (opts: GetPooledTransactionsOpts) => Promise<[bigint, TransactionsArray]>
   getReceipts: (opts: GetReceiptsOpts) => Promise<[bigint, TxReceipt[]]>
 }
 
@@ -91,7 +91,7 @@ export class EthProtocol extends Protocol {
     {
       name: 'Transactions',
       code: 0x02,
-      encode: (txs: TypedTransaction[]) => {
+      encode: (txs: TransactionsArray) => {
         const serializedTxs = []
         for (const tx of txs) {
           // Don't automatically broadcast blob transactions - they should only be announced using NewPooledTransactionHashes
@@ -216,7 +216,7 @@ export class EthProtocol extends Protocol {
     {
       name: 'PooledTransactions',
       code: 0x0a,
-      encode: ({ reqId, txs }: { reqId: bigint; txs: TypedTransaction[] }) => {
+      encode: ({ reqId, txs }: { reqId: bigint; txs: TransactionsArray }) => {
         const serializedTxs = []
         for (const tx of txs) {
           switch (tx.type) {

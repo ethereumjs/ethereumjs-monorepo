@@ -13,7 +13,7 @@ import { DBKey, MetaDBManager } from '../util/metaDBManager'
 
 import type { Block } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
-import type { TypedTransaction } from '@ethereumjs/tx'
+import type { UnknownTransaction } from '@ethereumjs/tx'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
 
 /**
@@ -42,7 +42,7 @@ type GetReceiptByTxHashReturn = [
 type GetLogsReturn = {
   log: Log
   block: Block
-  tx: TypedTransaction
+  tx: UnknownTransaction
   txIndex: number
   logIndex: number
 }[]

@@ -16,7 +16,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import type { Config } from '../config'
 import type { TxPool } from '../service/txpool'
 import type { Block, HeaderData } from '@ethereumjs/block'
-import type { TypedTransaction } from '@ethereumjs/tx'
+import type { UnknownTransaction } from '@ethereumjs/tx'
 import type { WithdrawalData } from '@ethereumjs/util'
 import type { BlockBuilder, TxReceipt, VM } from '@ethereumjs/vm'
 
@@ -237,7 +237,7 @@ export class PendingBlock {
       })
     ).filter(
       (tx) =>
-        (builder as any).transactions.some((t: TypedTransaction) =>
+        (builder as any).transactions.some((t: UnknownTransaction) =>
           equalsBytes(t.hash(), tx.hash())
         ) === false
     )

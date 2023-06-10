@@ -10,8 +10,9 @@ import type { Block } from '@ethereumjs/block'
 import type {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
-  Transaction,
-  TypedTransaction,
+  LegacyTransaction,
+  TransactionsArray,
+  UnknownTransaction,
 } from '@ethereumjs/tx'
 import type { VM } from '@ethereumjs/vm'
 
@@ -31,7 +32,7 @@ export interface TxPoolOptions {
 }
 
 type TxPoolObject = {
-  tx: TypedTransaction
+  tx: UnknownTransaction
   hash: UnprefixedHash
   added: number
   error?: Error
@@ -215,7 +216,7 @@ export class TxPool {
     }
   }
 
-  private validateTxGasBump(existingTx: TypedTransaction, addedTx: TypedTransaction) {
+  private validateTxGasBump(existingTx: UnknownTransaction, addedTx: UnknownTransaction) {
     const existingTxGasPrice = this.txGasPrice(existingTx)
     const newGasPrice = this.txGasPrice(addedTx)
     const minTipCap =
@@ -244,7 +245,7 @@ export class TxPool {
    * Validates a transaction against the pool and other constraints
    * @param tx The tx to validate
    */
-  private async validate(tx: TypedTransaction, isLocalTransaction: boolean = false) {
+  private async validate(tx: UnknownTransaction, isLocalTransaction: boolean = false) {
     if (!tx.isSigned()) {
       throw new Error('Attempting to add tx to txpool which is not signed')
     }
@@ -329,7 +330,7 @@ export class TxPool {
    * @param tx Transaction
    * @param isLocalTransaction if this is a local transaction (loosens some constraints) (default: false)
    */
-  async add(tx: TypedTransaction, isLocalTransaction: boolean = false) {
+  async add(tx: UnknownTransaction, isLocalTransaction: boolean = false) {
     const hash: UnprefixedHash = bytesToHex(tx.hash())
     const added = Date.now()
     const address: UnprefixedAddress = tx.getSenderAddress().toString().slice(2)
@@ -356,7 +357,7 @@ export class TxPool {
    * @param txHashes
    * @returns Array with tx objects
    */
-  getByHash(txHashes: Uint8Array[]): TypedTransaction[] {
+  getByHash(txHashes: Uint8Array[]): TransactionsArray {
     const found = []
     for (const txHash of txHashes) {
       const txHashStr = bytesToHex(txHash)
@@ -460,7 +461,7 @@ export class TxPool {
    * @param txs Array with transactions to send
    * @param peers
    */
-  sendTransactions(txs: TypedTransaction[], peers: Peer[]) {
+  sendTransactions(txs: TransactionsArray, peers: Peer[]) {
     if (txs.length > 0) {
       const hashes = txs.map((tx) => tx.hash())
       for (const peer of peers) {
@@ -494,7 +495,7 @@ export class TxPool {
    * @param peer Announcing peer
    * @param peerPool Reference to the {@link PeerPool}
    */
-  async handleAnnouncedTxs(txs: TypedTransaction[], peer: Peer, peerPool: PeerPool) {
+  async handleAnnouncedTxs(txs: TransactionsArray, peer: Peer, peerPool: PeerPool) {
     if (!this.running || txs.length === 0) return
     this.config.logger.debug(`TxPool: received new transactions number=${txs.length}`)
     this.addToKnownByPeer(
@@ -627,19 +628,19 @@ export class TxPool {
    * @param baseFee Provide a baseFee to subtract from the legacy
    * gasPrice to determine the leftover priority tip.
    */
-  private normalizedGasPrice(tx: TypedTransaction, baseFee?: bigint) {
+  private normalizedGasPrice(tx: UnknownTransaction, baseFee?: bigint) {
     const supports1559 = tx.supports(Capability.EIP1559FeeMarket)
     if (typeof baseFee === 'bigint' && baseFee !== BigInt(0)) {
       if (supports1559) {
         return (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
       } else {
-        return (tx as Transaction).gasPrice - baseFee
+        return (tx as LegacyTransaction).gasPrice - baseFee
       }
     } else {
       if (supports1559) {
         return (tx as FeeMarketEIP1559Transaction).maxFeePerGas
       } else {
-        return (tx as Transaction).gasPrice
+        return (tx as LegacyTransaction).gasPrice
       }
     }
   }
@@ -648,12 +649,12 @@ export class TxPool {
    * @param tx Tx to use
    * @returns Gas price (both tip and max fee)
    */
-  private txGasPrice(tx: TypedTransaction): GasPrice {
+  private txGasPrice(tx: UnknownTransaction): GasPrice {
     switch (tx.type) {
       case 0:
         return {
-          maxFee: (tx as Transaction).gasPrice,
-          tip: (tx as Transaction).gasPrice,
+          maxFee: (tx as LegacyTransaction).gasPrice,
+          tip: (tx as LegacyTransaction).gasPrice,
         }
       case 1:
         return {
@@ -691,9 +692,9 @@ export class TxPool {
     vm: VM,
     { baseFee, allowedBlobs }: { baseFee?: bigint; allowedBlobs?: number } = {}
   ) {
-    const txs: TypedTransaction[] = []
+    const txs: TransactionsArray = []
     // Separate the transactions by account and sort by nonce
-    const byNonce = new Map<string, TypedTransaction[]>()
+    const byNonce = new Map<string, TransactionsArray>()
     const skippedStats = { byNonce: 0, byPrice: 0, byBlobsLimit: 0 }
     for (const [address, poolObjects] of this.pool) {
       let txsSortedByNonce = poolObjects
@@ -723,8 +724,8 @@ export class TxPool {
       byNonce.set(address, txsSortedByNonce)
     }
     // Initialize a price based heap with the head transactions
-    const byPrice = new Heap<TypedTransaction>({
-      comparBefore: (a: TypedTransaction, b: TypedTransaction) =>
+    const byPrice = new Heap<UnknownTransaction>({
+      comparBefore: (a: UnknownTransaction, b: UnknownTransaction) =>
         this.normalizedGasPrice(b, baseFee) - this.normalizedGasPrice(a, baseFee) < BigInt(0),
     })
     for (const [address, txs] of byNonce) {

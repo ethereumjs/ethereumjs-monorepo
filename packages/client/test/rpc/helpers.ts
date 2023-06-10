@@ -19,7 +19,7 @@ import { mockBlockchain } from './mockBlockchain'
 
 import type { EthereumClient } from '../../src/client'
 import type { FullEthereumService } from '../../src/service'
-import type { TypedTransaction } from '@ethereumjs/tx'
+import type { TransactionsArray } from '@ethereumjs/tx'
 import type { IncomingMessage } from 'connect'
 import type { HttpServer } from 'jayson/promise'
 import type * as tape from 'tape'
@@ -264,7 +264,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
 export async function runBlockWithTxs(
   chain: Chain,
   execution: VMExecution,
-  txs: TypedTransaction[],
+  txs: TransactionsArray,
   fromEngine = false
 ) {
   const { vm } = execution

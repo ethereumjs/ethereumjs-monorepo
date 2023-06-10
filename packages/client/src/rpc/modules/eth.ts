@@ -25,7 +25,11 @@ import type { RpcTx } from '../types'
 import type { Block, JsonRpcBlock } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'
-import type { FeeMarketEIP1559Transaction, Transaction, TypedTransaction } from '@ethereumjs/tx'
+import type {
+  FeeMarketEIP1559Transaction,
+  LegacyTransaction,
+  UnknownTransaction,
+} from '@ethereumjs/tx'
 import type {
   EIP4844BlobTxReceipt,
   PostByzantiumTxReceipt,
@@ -137,14 +141,14 @@ const jsonRpcBlock = async (
 const jsonRpcLog = async (
   log: Log,
   block?: Block,
-  tx?: TypedTransaction,
+  tx?: UnknownTransaction,
   txIndex?: number,
   logIndex?: number
 ): Promise<JsonRpcLog> => ({
   removed: false, // TODO implement
   logIndex: logIndex !== undefined ? intToHex(logIndex) : null,
   transactionIndex: txIndex !== undefined ? intToHex(txIndex) : null,
-  transactionHash: tx ? bytesToPrefixedHexString(tx.hash()) : null,
+  transactionHash: tx !== undefined ? bytesToPrefixedHexString(tx.hash()) : null,
   blockHash: block ? bytesToPrefixedHexString(block.hash()) : null,
   blockNumber: block ? bigIntToHex(block.header.number) : null,
   address: bytesToPrefixedHexString(log[0]),
@@ -160,7 +164,7 @@ const jsonRpcReceipt = async (
   gasUsed: bigint,
   effectiveGasPrice: bigint,
   block: Block,
-  tx: TypedTransaction,
+  tx: UnknownTransaction,
   txIndex: number,
   logIndex: number,
   contractAddress?: Address,
@@ -778,7 +782,7 @@ export class Eth {
           : (tx as FeeMarketEIP1559Transaction).maxFeePerGas -
             block.header.baseFeePerGas! +
             block.header.baseFeePerGas!
-        : (tx as Transaction).gasPrice
+        : (tx as LegacyTransaction).gasPrice
 
       const vmCopy = await this._vm!.copy()
       vmCopy._common.setHardfork(tx.common.hardfork())
@@ -1116,7 +1120,7 @@ export class Eth {
         }
 
         for (const tx of block.transactions) {
-          const txGasPrice = (tx as Transaction).gasPrice
+          const txGasPrice = (tx as LegacyTransaction).gasPrice
           gasPrice += txGasPrice
           txCount++
         }
