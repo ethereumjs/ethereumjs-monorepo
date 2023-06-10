@@ -14,7 +14,7 @@ import { Block } from '../src'
 import { BlockHeader } from '../src/header'
 import { fakeExponential, getNumBlobs } from '../src/helpers'
 
-import type { TypedTransaction } from '@ethereumjs/tx'
+import type { TransactionsArray } from '@ethereumjs/tx'
 
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
@@ -185,7 +185,7 @@ tape('transaction validation tests', async (t) => {
     const excessDataGas = parentHeader.calcNextExcessDataGas()
 
     // eslint-disable-next-line no-inner-declarations
-    function getBlock(transactions: TypedTransaction[]) {
+    function getBlock(transactions: TransactionsArray) {
       const blobs = getNumBlobs(transactions)
 
       const blockHeader = BlockHeader.fromHeaderData(

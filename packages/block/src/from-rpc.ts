@@ -6,7 +6,7 @@ import { blockHeaderFromRpc } from './header-from-rpc'
 import { Block } from './index'
 
 import type { BlockOptions, JsonRpcBlock } from './index'
-import type { TxData, TypedTransaction } from '@ethereumjs/tx'
+import type { TransactionsArray } from '@ethereumjs/tx'
 
 function normalizeTxParams(_txParams: any) {
   const txParams = Object.assign({}, _txParams)
@@ -44,11 +44,11 @@ export function blockFromRpc(
 ) {
   const header = blockHeaderFromRpc(blockParams, options)
 
-  const transactions: TypedTransaction[] = []
+  const transactions: TransactionsArray = []
   const opts = { common: header._common }
   for (const _txParams of blockParams.transactions ?? []) {
     const txParams = normalizeTxParams(_txParams)
-    const tx = TransactionFactory.fromTxData(txParams as TxData, opts)
+    const tx = TransactionFactory.fromTxData(txParams, opts)
     transactions.push(tx)
   }
 

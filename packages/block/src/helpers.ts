@@ -2,7 +2,7 @@ import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { TypeOutput, isHexString, toType } from '@ethereumjs/util'
 
 import type { BlockHeaderBytes, HeaderData } from './types'
-import type { TypedTransaction } from '@ethereumjs/tx'
+import type { TransactionsArray } from '@ethereumjs/tx'
 
 /**
  * Returns a 0x-prefixed hex number string from a hex string or string integer.
@@ -82,7 +82,7 @@ export function getDifficulty(headerData: HeaderData): bigint | null {
   return null
 }
 
-export const getNumBlobs = (transactions: TypedTransaction[]) => {
+export const getNumBlobs = (transactions: TransactionsArray) => {
   let numBlobs = 0
   for (const tx of transactions) {
     if (tx instanceof BlobEIP4844Transaction) {
