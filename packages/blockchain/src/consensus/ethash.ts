@@ -44,7 +44,7 @@ export class EthashConsensus implements Consensus {
   public async genesisInit(): Promise<void> {}
   public async setup({ blockchain }: ConsensusOptions): Promise<void> {
     this.blockchain = blockchain
-    this._ethash = new Ethash(this.blockchain.db as any)
+    this._ethash = new Ethash(this.blockchain.db)
   }
   public async newBlock(): Promise<void> {}
 }
