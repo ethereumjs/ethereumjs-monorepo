@@ -5,32 +5,38 @@ import { Common } from '../src/common'
 import { Hardfork } from '../src/enums'
 import { parseGethGenesis } from '../src/utils'
 
+import * as gethGenesisKilnJSON from './data/geth-genesis/geth-genesis-kiln.json'
+import * as invalidSpuriousDragonJSON from './data/geth-genesis/invalid-spurious-dragon.json'
+import * as noExtraDataJSON from './data/geth-genesis/no-extra-data.json'
+import * as poaJSON from './data/geth-genesis/poa.json'
+import * as postMergeJSON from './data/geth-genesis/post-merge.json'
+import * as testnetJSON from './data/geth-genesis/testnet.json'
+import * as postMergeHardforkJSON from './data/post-merge-hardfork.json'
+
 describe('[Utils/Parse]', () => {
   it('should parse geth params file', async () => {
-    const json = require(`../../client/test/testdata/geth-genesis/testnet.json`)
-    const params = parseGethGenesis(json, 'rinkeby')
+    const params = parseGethGenesis(testnetJSON, 'rinkeby')
     assert.equal(params.genesis.nonce, '0x0000000000000042', 'nonce should be correctly formatted')
   })
 
   it('should throw with invalid Spurious Dragon blocks', async () => {
-    const json = require(`../../client/test/testdata/geth-genesis/invalid-spurious-dragon.json`)
     const f = () => {
-      parseGethGenesis(json, 'bad_params')
+      parseGethGenesis(invalidSpuriousDragonJSON, 'bad_params')
     }
     assert.throws(f, undefined, undefined, 'should throw')
   })
 
   it('should import poa network params correctly', async () => {
-    const json = require(`../../client/test/testdata/geth-genesis/poa.json`)
-    let params = parseGethGenesis(json, 'poa')
+    let params = parseGethGenesis(poaJSON, 'poa')
     assert.equal(params.genesis.nonce, '0x0000000000000000', 'nonce is formatted correctly')
     assert.deepEqual(
       params.consensus,
       { type: 'poa', algorithm: 'clique', clique: { period: 15, epoch: 30000 } },
       'consensus config matches'
     )
-    json.nonce = '00'
-    params = parseGethGenesis(json, 'poa')
+    const poaJSONCopy = Object.assign({}, poaJSON)
+    poaJSONCopy.nonce = '00'
+    params = parseGethGenesis(poaJSONCopy, 'poa')
     assert.equal(
       params.genesis.nonce,
       '0x0000000000000000',
@@ -40,21 +46,18 @@ describe('[Utils/Parse]', () => {
   })
 
   it('should generate expected hash with london block zero and base fee per gas defined', async () => {
-    const json = require(`../../client/test/testdata/geth-genesis/post-merge.json`)
-    const params = parseGethGenesis(json, 'post-merge')
-    assert.equal(params.genesis.baseFeePerGas, json.baseFeePerGas)
+    const params = parseGethGenesis(postMergeJSON, 'post-merge')
+    assert.equal(params.genesis.baseFeePerGas, postMergeJSON.baseFeePerGas)
   })
 
   it('should successfully parse genesis file with no extraData', async () => {
-    const json = require(`../../client/test/testdata/geth-genesis/no-extra-data.json`)
-    const params = parseGethGenesis(json, 'noExtraData')
+    const params = parseGethGenesis(noExtraDataJSON, 'noExtraData')
     assert.equal(params.genesis.extraData, '0x', 'extraData set to 0x')
     assert.equal(params.genesis.timestamp, '0x10', 'timestamp parsed correctly')
   })
 
   it('should successfully parse kiln genesis and set forkhash', async () => {
-    const json = require(`../../blockchain/test/testdata/geth-genesis-kiln.json`)
-    const common = Common.fromGethGenesis(json, {
+    const common = Common.fromGethGenesis(gethGenesisKilnJSON, {
       chain: 'customChain',
       genesisHash: hexStringToBytes(
         '51c7fe41be669f69c45c33a56982cbde405313342d9e2b00d7c91a7b284dd4f8'
@@ -89,8 +92,8 @@ describe('[Utils/Parse]', () => {
     // Ok lets schedule shanghai at block 0, this should force merge to be scheduled at just after
     // genesis if even mergeForkIdTransition is not confirmed to be post merge
     // This will also check if the forks are being correctly sorted based on block
-    Object.assign(json.config, { shanghaiTime: Math.floor(Date.now() / 1000) })
-    const common1 = Common.fromGethGenesis(json, {
+    Object.assign(gethGenesisKilnJSON.config, { shanghaiTime: Math.floor(Date.now() / 1000) })
+    const common1 = Common.fromGethGenesis(gethGenesisKilnJSON, {
       chain: 'customChain',
     })
     // merge hardfork is now scheduled just after shanghai even if mergeForkIdTransition is not confirmed
@@ -119,8 +122,7 @@ describe('[Utils/Parse]', () => {
   })
 
   it('should successfully parse genesis with hardfork scheduled post merge', async () => {
-    const json = require(`./data/post-merge-hardfork.json`)
-    const common = Common.fromGethGenesis(json, {
+    const common = Common.fromGethGenesis(postMergeHardforkJSON, {
       chain: 'customChain',
     })
     assert.deepEqual(
