@@ -1,6 +1,7 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common, parseGethGenesis } from '@ethereumjs/common'
+import type from '@ethereumjs/tx'
 import { Address, KECCAK256_RLP, hexStringToBytes } from '@ethereumjs/util'
 import { Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
@@ -19,7 +20,7 @@ import { mockBlockchain } from './mockBlockchain'
 
 import type { EthereumClient } from '../../src/client'
 import type { FullEthereumService } from '../../src/service'
-import type { TransactionsArray } from '@ethereumjs/tx'
+import type { TypedTransaction } from '@ethereumjs/tx'
 import type { IncomingMessage } from 'connect'
 import type { HttpServer } from 'jayson/promise'
 import type * as tape from 'tape'
@@ -264,7 +265,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
 export async function runBlockWithTxs(
   chain: Chain,
   execution: VMExecution,
-  txs: TransactionsArray,
+  txs: TypedTransaction[],
   fromEngine = false
 ) {
   const { vm } = execution

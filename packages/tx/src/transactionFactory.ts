@@ -70,7 +70,7 @@ export class TransactionFactory {
         case TransactionType.BlobEIP4844:
           return BlobEIP4844Transaction.fromSerializedTx(data, txOptions) as Transaction[T]
         default:
-          throw new Error(`UnknownTransaction with ID ${data[0]} unknown`)
+          throw new Error(`TypedTransaction with ID ${data[0]} unknown`)
       }
     } else {
       return LegacyTransaction.fromSerializedTx(data, txOptions) as Transaction[T]
@@ -79,7 +79,7 @@ export class TransactionFactory {
 
   /**
    * When decoding a BlockBody, in the transactions field, a field is either:
-   * A Uint8Array (a UnknownTransaction - encoded as TransactionType || rlp(TransactionPayload))
+   * A Uint8Array (a TypedTransaction - encoded as TransactionType || rlp(TransactionPayload))
    * A Uint8Array[] (Legacy Transaction)
    * This method returns the right transaction.
    *

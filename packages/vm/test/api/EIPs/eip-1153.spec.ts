@@ -6,12 +6,12 @@ import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
 
-import type { TransactionsArray } from '@ethereumjs/tx'
+import type { TypedTransaction } from '@ethereumjs/tx'
 
 interface Test {
   steps: { expectedOpcode: string; expectedGasUsed: number; expectedStack: bigint[] }[]
   contracts: { code: string; address: Address }[]
-  transactions: TransactionsArray
+  transactions: TypedTransaction[]
 }
 
 const senderKey = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')

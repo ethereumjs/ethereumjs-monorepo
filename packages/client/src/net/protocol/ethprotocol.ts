@@ -1,7 +1,12 @@
 import { Block, BlockHeader, getDifficulty, valuesArrayToHeaderData } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { BlobEIP4844Transaction, TransactionFactory } from '@ethereumjs/tx'
+import {
+  BlobEIP4844Transaction,
+  TransactionFactory,
+  isBlobEIP4844Tx,
+  isLegacyTx,
+} from '@ethereumjs/tx'
 import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
@@ -17,7 +22,7 @@ import type { TxReceiptWithType } from '../../execution/receipt'
 import type { Message, ProtocolOptions } from './protocol'
 import type { BlockBodyBytes, BlockBytes, BlockHeaderBytes } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
-import type { TransactionsArray } from '@ethereumjs/tx'
+import type { TypedTransaction } from '@ethereumjs/tx'
 import type { BigIntLike, NestedUint8Array } from '@ethereumjs/util'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
 
@@ -67,7 +72,7 @@ type GetReceiptsOpts = {
 export interface EthProtocolMethods {
   getBlockHeaders: (opts: GetBlockHeadersOpts) => Promise<[bigint, BlockHeader[]]>
   getBlockBodies: (opts: GetBlockBodiesOpts) => Promise<[bigint, BlockBodyBytes[]]>
-  getPooledTransactions: (opts: GetPooledTransactionsOpts) => Promise<[bigint, TransactionsArray]>
+  getPooledTransactions: (opts: GetPooledTransactionsOpts) => Promise<[bigint, TypedTransaction[]]>
   getReceipts: (opts: GetReceiptsOpts) => Promise<[bigint, TxReceipt[]]>
 }
 
@@ -91,7 +96,7 @@ export class EthProtocol extends Protocol {
     {
       name: 'Transactions',
       code: 0x02,
-      encode: (txs: TransactionsArray) => {
+      encode: (txs: TypedTransaction[]) => {
         const serializedTxs = []
         for (const tx of txs) {
           // Don't automatically broadcast blob transactions - they should only be announced using NewPooledTransactionHashes
@@ -216,21 +221,23 @@ export class EthProtocol extends Protocol {
     {
       name: 'PooledTransactions',
       code: 0x0a,
-      encode: ({ reqId, txs }: { reqId: bigint; txs: TransactionsArray }) => {
+      encode: ({ reqId, txs }: { reqId: bigint; txs: TypedTransaction[] }) => {
         const serializedTxs = []
         for (const tx of txs) {
-          switch (tx.type) {
-            case 0:
-              serializedTxs.push(tx.raw())
-              break
-            case 3:
-              serializedTxs.push((tx as BlobEIP4844Transaction).serializeNetworkWrapper())
-              break
-            default:
-              serializedTxs.push(tx.serialize())
-              break
+          if (isLegacyTx(tx)) {
+            serializedTxs.push(tx.raw())
+            break
           }
+
+          if (isBlobEIP4844Tx(tx)) {
+            serializedTxs.push(tx.serializeNetworkWrapper())
+            break
+          }
+
+          serializedTxs.push(tx.serialize())
+          break
         }
+
         return [bigIntToUnpaddedBytes(reqId), serializedTxs]
       },
       decode: ([reqId, txs]: [Uint8Array, any[]]) => {

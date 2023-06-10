@@ -8,7 +8,7 @@ import * as tape from 'tape'
 import { VM } from '../../../src/vm'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
-import type { UnknownTransaction } from '@ethereumjs/tx'
+import type { TransactionType, TypedTransaction } from '@ethereumjs/tx'
 
 const GWEI = BigInt('1000000000')
 const ETHER = GWEI * GWEI
@@ -41,10 +41,10 @@ const sender = new Address(privateToAddress(pkey))
  * @param transaction - the transaction in the block
  * @param txType - the txtype to use
  */
-function makeBlock(baseFee: bigint, transaction: UnknownTransaction, txType: number) {
+function makeBlock(baseFee: bigint, transaction: TypedTransaction, txType: TransactionType) {
   const signed = transaction.sign(pkey)
-  const json = <any>signed.toJSON()
-  json.type = txType
+  const json = signed.toJSON()
+  json.type = txType.toString()
   const block = Block.fromBlockData(
     {
       header: {

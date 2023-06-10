@@ -35,8 +35,8 @@ import type { Common } from '@ethereumjs/common'
 import type {
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
-  TransactionsArray,
   TxOptions,
+  TypedTransaction,
 } from '@ethereumjs/tx'
 import type { EthersProvider, WithdrawalBytes } from '@ethereumjs/util'
 
@@ -45,7 +45,7 @@ import type { EthersProvider, WithdrawalBytes } from '@ethereumjs/util'
  */
 export class Block {
   public readonly header: BlockHeader
-  public readonly transactions: TransactionsArray = []
+  public readonly transactions: TypedTransaction[] = []
   public readonly uncleHeaders: BlockHeader[] = []
   public readonly withdrawals?: Withdrawal[]
   public readonly txTrie = new Trie()
@@ -65,11 +65,11 @@ export class Block {
   }
 
   /**
-   * Returns the txs trie root for array of UnknownTransaction
-   * @param txs array of UnknownTransaction to compute the root of
+   * Returns the txs trie root for array of TypedTransaction
+   * @param txs array of TypedTransaction to compute the root of
    * @param optional emptyTrie to use to generate the root
    */
-  public static async genTransactionsTrieRoot(txs: TransactionsArray, emptyTrie?: Trie) {
+  public static async genTransactionsTrieRoot(txs: TypedTransaction[], emptyTrie?: Trie) {
     const trie = emptyTrie ?? new Trie()
     for (const [i, tx] of txs.entries()) {
       await trie.put(RLP.encode(i), tx.serialize())
@@ -367,7 +367,7 @@ export class Block {
    */
   constructor(
     header?: BlockHeader,
-    transactions: TransactionsArray = [],
+    transactions: TypedTransaction[] = [],
     uncleHeaders: BlockHeader[] = [],
     withdrawals?: Withdrawal[],
     opts: BlockOptions = {}

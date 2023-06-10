@@ -110,29 +110,27 @@ export interface Transaction {
   [TransactionType.BlobEIP4844]: BlobEIP4844Transaction
 }
 
-export type UnknownTransaction =
+export type TypedTransaction =
   | Transaction[TransactionType.Legacy]
   | Transaction[TransactionType.AccessListEIP2930]
   | Transaction[TransactionType.FeeMarketEIP1559]
   | Transaction[TransactionType.BlobEIP4844]
 
-export function isLegacyTx(tx: UnknownTransaction): tx is LegacyTransaction {
+export function isLegacyTx(tx: TypedTransaction): tx is LegacyTransaction {
   return tx.type === TransactionType.Legacy
 }
 
-export function isAccessListEIP2930Tx(tx: UnknownTransaction): tx is AccessListEIP2930Transaction {
+export function isAccessListEIP2930Tx(tx: TypedTransaction): tx is AccessListEIP2930Transaction {
   return tx.type === TransactionType.AccessListEIP2930
 }
 
-export function isFeeMarketEIP1559Tx(tx: UnknownTransaction): tx is FeeMarketEIP1559Transaction {
+export function isFeeMarketEIP1559Tx(tx: TypedTransaction): tx is FeeMarketEIP1559Transaction {
   return tx.type === TransactionType.FeeMarketEIP1559
 }
 
-export function isBlobEIP4844Tx(tx: UnknownTransaction): tx is BlobEIP4844Transaction {
+export function isBlobEIP4844Tx(tx: TypedTransaction): tx is BlobEIP4844Transaction {
   return tx.type === TransactionType.BlobEIP4844
 }
-
-export type TransactionsArray = Array<UnknownTransaction>
 
 export interface TransactionInterface<T extends TransactionType> {
   supports(capability: Capability): boolean

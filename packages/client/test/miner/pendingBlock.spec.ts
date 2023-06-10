@@ -31,7 +31,7 @@ import { PendingBlock } from '../../src/miner'
 import { TxPool } from '../../src/service/txpool'
 import { mockBlockchain } from '../rpc/mockBlockchain'
 
-import type { UnknownTransaction } from '@ethereumjs/tx'
+import type { TypedTransaction } from '@ethereumjs/tx'
 
 const A = {
   address: new Address(hexStringToBytes('0b90087d864e82a284dca15923f3776de6bb016f')),
@@ -156,7 +156,7 @@ tape('[PendingBlock]', async (t) => {
     const payload = pendingBlock.pendingPayloads.get(bytesToPrefixedHexString(payloadId))
     t.equal(
       (payload as any).transactions.filter(
-        (tx: UnknownTransaction) => bytesToHex(tx.hash()) === bytesToHex(txA011.hash())
+        (tx: TypedTransaction) => bytesToHex(tx.hash()) === bytesToHex(txA011.hash())
       ).length,
       1,
       'txA011 should be in block'
@@ -172,7 +172,7 @@ tape('[PendingBlock]', async (t) => {
     t.equal(block?.transactions.length, 2, 'should include txs from pool')
     t.equal(
       (payload as any).transactions.filter(
-        (tx: UnknownTransaction) => bytesToHex(tx.hash()) === bytesToHex(txB011.hash())
+        (tx: TypedTransaction) => bytesToHex(tx.hash()) === bytesToHex(txB011.hash())
       ).length,
       1,
       'txB011 should be in block'

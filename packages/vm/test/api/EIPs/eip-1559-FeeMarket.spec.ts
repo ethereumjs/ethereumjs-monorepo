@@ -11,7 +11,7 @@ import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
 
-import type { UnknownTransaction } from '@ethereumjs/tx'
+import type { TransactionType, TypedTransaction } from '@ethereumjs/tx'
 
 const GWEI = BigInt('1000000000')
 
@@ -41,9 +41,9 @@ const sender = new Address(privateToAddress(pkey))
  * Creates an EIP1559 block
  * @param baseFee - base fee of the block
  * @param transaction - the transaction in the block
- * @param txType - the txtype to use
+ * @param txType - the txType to use
  */
-function makeBlock(baseFee: bigint, transaction: UnknownTransaction, txType: number) {
+function makeBlock(baseFee: bigint, transaction: TypedTransaction, txType: TransactionType) {
   const signed = transaction.sign(pkey)
   const json = <any>signed.toJSON()
   json.type = txType

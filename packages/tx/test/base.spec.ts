@@ -17,9 +17,9 @@ import {
   Capability,
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
+  TransactionType,
 } from '../src'
 
-import type { TransactionType } from '../src'
 import type { BaseTransaction } from '../src/baseTransaction'
 import type { TxsJsonEntry } from './types'
 
@@ -49,8 +49,8 @@ tape('[BaseTransaction]', function (t) {
   const txTypes = [
     {
       class: LegacyTransaction,
-      name: 'Transaction',
-      type: 0,
+      name: 'LegacyTransaction',
+      type: TransactionType.Legacy,
       values: Array(6).fill(zero),
       txs: legacyTxs,
       fixtures: legacyFixtures,
@@ -65,7 +65,7 @@ tape('[BaseTransaction]', function (t) {
     {
       class: AccessListEIP2930Transaction,
       name: 'AccessListEIP2930Transaction',
-      type: 1,
+      type: TransactionType.AccessListEIP2930,
       values: [new Uint8Array([1])].concat(Array(7).fill(zero)),
       txs: eip2930Txs,
       fixtures: eip2930Fixtures,
@@ -75,7 +75,7 @@ tape('[BaseTransaction]', function (t) {
     {
       class: FeeMarketEIP1559Transaction,
       name: 'FeeMarketEIP1559Transaction',
-      type: 2,
+      type: TransactionType.FeeMarketEIP1559,
       values: [new Uint8Array([1])].concat(Array(8).fill(zero)),
       txs: eip1559Txs,
       fixtures: eip1559Fixtures,

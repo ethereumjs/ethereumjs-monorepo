@@ -11,7 +11,7 @@ import { calculateMinerReward, encodeReceipt, rewardAccount } from './runBlock'
 import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types'
 import type { VM } from './vm'
 import type { HeaderData } from '@ethereumjs/block'
-import type { Transaction, TransactionType, TransactionsArray } from '@ethereumjs/tx'
+import type { Transaction, TransactionType, TypedTransaction } from '@ethereumjs/tx'
 
 export enum BuildStatus {
   Reverted = 'reverted',
@@ -41,7 +41,7 @@ export class BlockBuilder {
   private readonly vm: VM
   private blockOpts: BuilderOpts
   private headerData: HeaderData
-  private transactions: TransactionsArray = []
+  private transactions: TypedTransaction[] = []
   private transactionResults: RunTxResult[] = []
   private withdrawals?: Withdrawal[]
   private checkpointed = false

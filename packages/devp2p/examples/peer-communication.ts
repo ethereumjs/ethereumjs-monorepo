@@ -2,7 +2,7 @@ import { bytesToInt, intToBytes, randomBytes } from '@ethereumjs/util'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { TransactionFactory, UnknownTransaction } from '@ethereumjs/tx'
+import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
 import chalk from 'chalk'
 import type LRUCache from 'lru-cache'
 
@@ -331,7 +331,7 @@ dpt.addPeer({ address: '127.0.0.1', udpPort: 30303, tcpPort: 30303 })
 */
 
 const txCache: LRUCache<string, boolean> = new LRU({ max: 1000 })
-function onNewTx(tx: UnknownTransaction, peer: Peer) {
+function onNewTx(tx: TypedTransaction, peer: Peer) {
   const txHashHex = bytesToHex(tx.hash())
   if (txCache.has(txHashHex)) return
 
@@ -352,7 +352,7 @@ function onNewBlock(block: Block, peer: Peer) {
   for (const tx of block.transactions) onNewTx(tx, peer)
 }
 
-function isValidTx(tx: UnknownTransaction) {
+function isValidTx(tx: TypedTransaction) {
   return tx.validate()
 }
 

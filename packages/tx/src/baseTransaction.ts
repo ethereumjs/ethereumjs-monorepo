@@ -14,14 +14,13 @@ import {
   unpadBytes,
 } from '@ethereumjs/util'
 
-import { Capability } from './types'
+import { Capability, TransactionType } from './types'
 import { checkMaxInitCodeSize } from './util'
 
 import type {
   JsonTx,
   Transaction,
   TransactionInterface,
-  TransactionType,
   TxData,
   TxOptions,
   TxValuesArray,
@@ -46,7 +45,7 @@ interface TransactionCache {
 export abstract class BaseTransaction<T extends TransactionType>
   implements TransactionInterface<T>
 {
-  private readonly _type: number
+  private readonly _type: TransactionType
 
   public readonly nonce: bigint
   public readonly gasLimit: bigint
@@ -331,7 +330,7 @@ export abstract class BaseTransaction<T extends TransactionType>
     // 2021-06-23
     let hackApplied = false
     if (
-      this.type === 0 &&
+      this.type === TransactionType.Legacy &&
       this.common.gteHardfork('spuriousDragon') &&
       !this.supports(Capability.EIP155ReplayProtection)
     ) {

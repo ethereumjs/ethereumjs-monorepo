@@ -1,12 +1,12 @@
 import { bigIntToHex, bytesToPrefixedHexString, intToHex } from '@ethereumjs/util'
 
 import type { Block } from '@ethereumjs/block'
-import type { JsonRpcTx, UnknownTransaction } from '@ethereumjs/tx'
+import type { JsonRpcTx, TypedTransaction } from '@ethereumjs/tx'
 
 /**
  * Returns tx formatted to the standard JSON-RPC fields
  */
-export const jsonRpcTx = (tx: UnknownTransaction, block?: Block, txIndex?: number): JsonRpcTx => {
+export const jsonRpcTx = (tx: TypedTransaction, block?: Block, txIndex?: number): JsonRpcTx => {
   const txJSON = tx.toJSON()
   return {
     blockHash: block ? bytesToPrefixedHexString(block.hash()) : null,

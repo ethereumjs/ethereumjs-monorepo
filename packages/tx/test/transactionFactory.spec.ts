@@ -7,6 +7,7 @@ import {
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
   TransactionFactory,
+  TransactionType,
 } from '../src'
 
 const common = new Common({
@@ -34,7 +35,7 @@ const txTypes = [
     unsigned: unsignedLegacyTx,
     signed: signedLegacyTx,
     eip2718: false,
-    type: 0,
+    type: TransactionType.Legacy,
   },
   {
     class: AccessListEIP2930Transaction,
@@ -42,7 +43,7 @@ const txTypes = [
     unsigned: unsignedEIP2930Tx,
     signed: signedEIP2930Tx,
     eip2718: true,
-    type: 1,
+    type: TransactionType.AccessListEIP2930,
   },
   {
     class: FeeMarketEIP1559Transaction,
@@ -50,7 +51,7 @@ const txTypes = [
     unsigned: unsignedEIP1559Tx,
     signed: signedEIP1559Tx,
     eip2718: true,
-    type: 2,
+    type: TransactionType.FeeMarketEIP1559,
   },
 ]
 

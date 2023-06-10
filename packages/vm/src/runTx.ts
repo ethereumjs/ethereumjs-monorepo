@@ -1,6 +1,11 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
+import {
+  BlobEIP4844Transaction,
+  Capability,
+  TransactionType,
+  isBlobEIP4844Tx,
+} from '@ethereumjs/tx'
 import { Account, Address, KECCAK256_NULL, bytesToPrefixedHexString, short } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
@@ -23,7 +28,7 @@ import type {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
-  UnknownTransaction,
+  TypedTransaction,
 } from '@ethereumjs/tx'
 
 const debug = createDebugLogger('vm:tx')
@@ -436,7 +441,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Add data gas used to result
-  if (tx.type === 3) {
+  if (isBlobEIP4844Tx(tx)) {
     results.dataGasUsed = totalDataGas
   }
 
@@ -599,7 +604,7 @@ function txLogsBloom(logs?: any[]): Bloom {
  */
 export async function generateTxReceipt(
   this: VM,
-  tx: UnknownTransaction,
+  tx: TypedTransaction,
   txResult: RunTxResult,
   cumulativeGasUsed: bigint,
   dataGasUsed?: bigint,
@@ -640,7 +645,7 @@ export async function generateTxReceipt(
     }
   } else {
     // Typed EIP-2718 Transaction
-    if (tx.type === 3) {
+    if (isBlobEIP4844Tx(tx)) {
       receipt = {
         dataGasUsed,
         dataGasPrice,
@@ -663,7 +668,7 @@ export async function generateTxReceipt(
  * @param msg Base error message
  * @hidden
  */
-function _errorMsg(msg: string, vm: VM, block: Block, tx: UnknownTransaction) {
+function _errorMsg(msg: string, vm: VM, block: Block, tx: TypedTransaction) {
   const blockErrorStr = 'errorStr' in block ? block.errorStr() : 'block'
   const txErrorStr = 'errorStr' in tx ? tx.errorStr() : 'tx'
 

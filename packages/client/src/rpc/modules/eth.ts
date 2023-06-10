@@ -28,7 +28,7 @@ import type { Proof } from '@ethereumjs/statemanager'
 import type {
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
-  UnknownTransaction,
+  TypedTransaction,
 } from '@ethereumjs/tx'
 import type {
   EIP4844BlobTxReceipt,
@@ -141,7 +141,7 @@ const jsonRpcBlock = async (
 const jsonRpcLog = async (
   log: Log,
   block?: Block,
-  tx?: UnknownTransaction,
+  tx?: TypedTransaction,
   txIndex?: number,
   logIndex?: number
 ): Promise<JsonRpcLog> => ({
@@ -164,7 +164,7 @@ const jsonRpcReceipt = async (
   gasUsed: bigint,
   effectiveGasPrice: bigint,
   block: Block,
-  tx: UnknownTransaction,
+  tx: TypedTransaction,
   txIndex: number,
   logIndex: number,
   contractAddress?: Address,

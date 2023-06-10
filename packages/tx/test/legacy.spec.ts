@@ -14,14 +14,14 @@ import * as tape from 'tape'
 
 import { LegacyTransaction } from '../src'
 
-import type { TransactionType, TransactionsArray, TxData } from '../src'
+import type { TransactionType, TxData, TypedTransaction } from '../src'
 import type { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
 
 const txFixturesEip155: VitaliksTestsDataEntry[] = require('./json/ttTransactionTestEip155VitaliksTests.json')
 const txFixtures: TxsJsonEntry[] = require('./json/txs.json')
 
 tape('[Transaction]', function (t) {
-  const transactions: TransactionsArray = []
+  const transactions: TypedTransaction[] = []
 
   t.test('cannot input decimal or negative values', (st) => {
     const values = ['gasPrice', 'gasLimit', 'nonce', 'value', 'v', 'r', 's']

@@ -6,6 +6,7 @@ import {
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
   TransactionFactory,
+  TransactionType,
 } from '@ethereumjs/tx'
 import { Account, Address, KECCAK256_NULL, MAX_INTEGER, initKZG } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
@@ -20,15 +21,15 @@ import type { FeeMarketEIP1559TxData } from '@ethereumjs/tx'
 
 const TRANSACTION_TYPES = [
   {
-    type: 0,
+    type: TransactionType.Legacy,
     name: 'legacy tx',
   },
   {
-    type: 1,
+    type: TransactionType.AccessListEIP2930,
     name: 'EIP2930 tx',
   },
   {
-    type: 2,
+    type: TransactionType.FeeMarketEIP1559,
     name: 'EIP1559 tx',
   },
 ]
@@ -462,7 +463,7 @@ tape('runTx() -> runtime behavior', async (t) => {
         gasLimit: 100000,
         to: address,
       }
-      if (txType.type === 1) {
+      if (txType.type === TransactionType.AccessListEIP2930) {
         txParams['chainId'] = common.chainId()
         txParams['accessList'] = []
         txParams['type'] = txType.type

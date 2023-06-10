@@ -23,7 +23,7 @@ import type {
   PreByzantiumTxReceipt,
   RunBlockOpts,
 } from '../../src/types'
-import type { TransactionsArray } from '@ethereumjs/tx'
+import type { TypedTransaction } from '@ethereumjs/tx'
 
 const testData = require('./testdata/blockchain.json')
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
@@ -457,7 +457,7 @@ tape('runBlock() -> API return values', async (t) => {
 })
 
 tape('runBlock() -> tx types', async (t) => {
-  async function simpleRun(vm: VM, transactions: TransactionsArray, st: tape.Test) {
+  async function simpleRun(vm: VM, transactions: TypedTransaction[], st: tape.Test) {
     const common = vm._common
 
     const blockRlp = toBytes(testData.blocks[0].rlp)
