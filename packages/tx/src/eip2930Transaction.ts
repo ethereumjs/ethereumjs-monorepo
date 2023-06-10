@@ -174,6 +174,19 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
   }
 
   /**
+   * Returns the minimum of calculated priority fee (from maxFeePerGas and baseFee) and maxPriorityFeePerGas
+   *
+   * * @param baseFee Base fee retrieved from block
+   */
+  getEffectivePriorityFee(baseFee: bigint | undefined): bigint {
+    if (baseFee === undefined || baseFee >= this.gasPrice) {
+      return 0n
+    }
+
+    return this.gasPrice - baseFee
+  }
+
+  /**
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): bigint {

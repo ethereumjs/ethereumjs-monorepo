@@ -1,9 +1,13 @@
+import { Hardfork } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
   Address,
   BIGINT_0,
   BIGINT_1,
   TypeOutput,
+  // eslint-disable-next-line import/named
+  bigIntMax,
   bigIntToHex,
   bytesToHex,
   equalsBytes,
@@ -201,6 +205,97 @@ const jsonRpcReceipt = async (
 })
 
 /**
+ * Get block by option
+ */
+const getBlockByOption = async (blockOpt: string, chain: Chain) => {
+  if (blockOpt === 'pending') {
+    throw {
+      code: INVALID_PARAMS,
+      message: `"pending" is not yet supported`,
+    }
+  }
+
+  let block: Block
+  const latest = chain.blocks.latest ?? (await chain.getCanonicalHeadBlock())
+
+  switch (blockOpt) {
+    case 'earliest':
+      block = await chain.getBlock(BigInt(0))
+      break
+    case 'latest':
+      block = latest
+      break
+    case 'safe':
+      block = chain.blocks.safe ?? (await chain.getCanonicalSafeBlock())
+      break
+    case 'finalized':
+      block = chain.blocks.finalized ?? (await chain.getCanonicalFinalizedBlock())
+      break
+    default: {
+      const blockNumber = BigInt(blockOpt)
+      if (blockNumber === latest.header.number) {
+        block = latest
+      } else if (blockNumber > latest.header.number) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'specified block greater than current height',
+        }
+      } else {
+        block = await chain.getBlock(blockNumber)
+      }
+    }
+  }
+  return block
+}
+
+const calculateRewards = async (
+  block: Block,
+  receiptsManager: ReceiptsManager,
+  priorityFeePercentiles: bigint[]
+) => {
+  const blockRewards: bigint[] = []
+  const txGasUsed: bigint[] = []
+  const baseFee = block.header.baseFeePerGas
+  const receipts = await receiptsManager.getReceipts(block.hash())
+
+  if (receipts.length > 0) {
+    txGasUsed.push(receipts[0].cumulativeBlockGasUsed)
+    receipts.shift()
+  }
+
+  for (const receipt of receipts) {
+    txGasUsed.push(receipt.cumulativeBlockGasUsed - txGasUsed[txGasUsed.length - 1])
+  }
+
+  const txs = block.transactions
+  const txsWithGasUsed = txs.map((tx, i) => ({
+    ...tx,
+    gasUsed: txGasUsed[i],
+    effectivePriorityFee: tx.getEffectivePriorityFee(baseFee),
+  }))
+
+  const txsWithGasUsedSorted = txsWithGasUsed.sort((currTx, nextTx) =>
+    currTx.effectivePriorityFee > nextTx.effectivePriorityFee ? 1 : -1
+  )
+
+  let totalGasUsed = 0n
+  let rewardPercentileIndex = 0
+  for (const tx of txsWithGasUsedSorted) {
+    totalGasUsed += tx.gasUsed
+
+    while (
+      rewardPercentileIndex < priorityFeePercentiles.length &&
+      (totalGasUsed / block.header.gasUsed) * 100n >= priorityFeePercentiles[rewardPercentileIndex]
+    ) {
+      blockRewards.push(tx.effectivePriorityFee)
+      rewardPercentileIndex++
+    }
+  }
+
+  return blockRewards
+}
+
+/**
  * eth_* RPC module
  * @memberof module:rpc/modules
  */
@@ -366,6 +461,16 @@ export class Eth {
     )
 
     this.gasPrice = middleware(callWithStackTrace(this.gasPrice.bind(this), this._rpcDebug), 0, [])
+
+    this.feeHistory = middleware(
+      callWithStackTrace(this.feeHistory.bind(this), this._rpcDebug),
+      2,
+      [
+        [validators.either(validators.hex, validators.integer)],
+        [validators.either(validators.hex, validators.blockOption)],
+        [validators.array(validators.integer)],
+      ]
+    )
   }
 
   /**
@@ -1109,5 +1214,73 @@ export class Eth {
     }
 
     return bigIntToHex(gasPrice)
+  }
+
+  async feeHistory(params: [string | number | bigint, string, [bigint]?]) {
+    let [blockCount] = params
+    const [, lastBlockRequested, priorityFeePercentiles] = params
+
+    blockCount = BigInt(blockCount)
+
+    if (blockCount < 1 || blockCount > 1024) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'invalid block count',
+      }
+    }
+
+    const { number: lastRequestedBlockNumber } = (
+      await getBlockByOption(lastBlockRequested, this._chain)
+    ).header
+
+    const oldestBlockNumber = bigIntMax(lastRequestedBlockNumber - blockCount - 1n, BigInt(0))
+
+    const requestedBlockNumbers = Array.from(
+      { length: Number(blockCount) },
+      (_, i) => oldestBlockNumber + BigInt(i)
+    )
+
+    const requestedBlocks = await Promise.all(
+      requestedBlockNumbers.map((n) => getBlockByOption(n.toString(), this._chain))
+    )
+
+    const [baseFees, gasUsedRatios] = requestedBlocks.reduce(
+      (v, b) => {
+        const [prevBaseFees, prevGasUsedRatios] = v
+        const { baseFeePerGas, gasUsed, gasLimit } = b.header
+
+        prevBaseFees.push(baseFeePerGas ?? BigInt(0))
+        prevGasUsedRatios.push(Number(gasUsed) / Number(gasLimit))
+
+        return [prevBaseFees, prevGasUsedRatios]
+      },
+      [[], []] as [(bigint | undefined)[], number[]]
+    )
+
+    const londonHardforkBlockNumber = this._chain.blockchain._common.hardforkBlock(Hardfork.London)!
+    const nextBaseFee =
+      lastRequestedBlockNumber - londonHardforkBlockNumber >= -1n
+        ? requestedBlocks[requestedBlocks.length - 1].header.calcNextBaseFee()
+        : BigInt(0)
+    baseFees.push(nextBaseFee)
+
+    let rewards: bigint[][] = []
+
+    if (this.receiptsManager && priorityFeePercentiles) {
+      rewards = await Promise.all(
+        requestedBlocks.map((b) =>
+          calculateRewards(b, this.receiptsManager!, priorityFeePercentiles)
+        )
+      )
+    }
+
+    return {
+      baseFeePerGas: baseFees.map((f) =>
+        f !== undefined ? bigIntToHex(f) : bigIntToHex(BigInt(0))
+      ),
+      gasUsedRatio: gasUsedRatios,
+      oldestBlock: bigIntToHex(oldestBlockNumber),
+      reward: rewards.map((r) => r.map((n) => bigIntToHex(n))),
+    }
   }
 }

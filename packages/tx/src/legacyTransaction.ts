@@ -147,6 +147,14 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     }
   }
 
+  getEffectivePriorityFee(baseFee: bigint | undefined): bigint {
+    if (baseFee === undefined || baseFee >= this.gasPrice) {
+      return 0n
+    }
+
+    return this.gasPrice - baseFee
+  }
+
   /**
    * Returns a Uint8Array Array of the raw Bytes of the legacy transaction, in order.
    *
