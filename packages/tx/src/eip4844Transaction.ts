@@ -245,7 +245,10 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       throw new Error('Invalid serialized tx input: must be array')
     }
 
-    return BlobEIP4844Transaction.fromValuesArray(values as BlobEIP4844ValuesArray, opts)
+    return BlobEIP4844Transaction.fromValuesArray(
+      values as TxValuesArray[TransactionType.BlobEIP4844],
+      opts
+    )
   }
 
   /**
