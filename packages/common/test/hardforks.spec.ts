@@ -3,6 +3,8 @@ import { assert, describe, it } from 'vitest'
 
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src'
 
+import * as gethGenesisKilnJSON from './data/geth-genesis/geth-genesis-kiln.json'
+
 describe('[Common]: Hardfork logic', () => {
   it('Hardfork access', () => {
     const supportedHardforks = [
@@ -369,8 +371,7 @@ describe('[Common]: Hardfork logic', () => {
     )
 
     // For kiln MergeForkIdTransition happens BEFORE Merge
-    const json = require(`../../blockchain/test/testdata/geth-genesis-kiln.json`)
-    c = Common.fromGethGenesis(json, {
+    c = Common.fromGethGenesis(gethGenesisKilnJSON, {
       chain: 'kiln',
       mergeForkIdPostMerge: false,
     })
