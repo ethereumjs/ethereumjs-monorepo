@@ -1,6 +1,6 @@
 import { intToHex, isHexPrefixed, stripHexPrefix } from '@ethereumjs/util'
 
-import { Hardfork } from './enums'
+import { Hardfork } from './enums.js'
 
 type ConfigHardfork =
   | { name: string; block: null; timestamp: number }

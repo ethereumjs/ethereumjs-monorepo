@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { Chain, Common, ConsensusType, CustomChain, Hardfork } from '../src'
+import { Chain, Common, ConsensusType, CustomChain, Hardfork } from '../src/index.js'
 
 import * as testnet from './data/testnet.json'
 import * as testnet2 from './data/testnet2.json'

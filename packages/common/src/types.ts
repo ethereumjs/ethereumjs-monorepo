@@ -1,4 +1,4 @@
-import type { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from './enums'
+import type { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.js'
 
 export interface ChainName {
   [chainId: string]: string

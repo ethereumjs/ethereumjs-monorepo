@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { Chain, Common, Hardfork } from '../src'
+import { Chain, Common, Hardfork } from '../src/index.js'
 
 describe('[Common/EIPs]: Initialization / Chain params', () => {
   it('Correct initialization', () => {

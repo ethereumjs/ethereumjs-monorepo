@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { Chain, Common, Hardfork } from '../src'
+import { Chain, Common, Hardfork } from '../src/index.js'
 
 import * as postMergeJSON from './data/geth-genesis/post-merge.json'
 import * as testnetMerge from './data/merge/testnetMerge.json'

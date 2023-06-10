@@ -14,12 +14,12 @@ import * as mainnet from './chains/mainnet.json'
 import * as rinkeby from './chains/rinkeby.json'
 import * as ropsten from './chains/ropsten.json'
 import * as sepolia from './chains/sepolia.json'
-import { EIPs } from './eips'
-import { Chain, CustomChain, Hardfork } from './enums'
-import { hardforks as HARDFORK_SPECS } from './hardforks'
-import { parseGethGenesis } from './utils'
+import { EIPs } from './eips/index.js'
+import { Chain, CustomChain, Hardfork } from './enums.js'
+import { hardforks as HARDFORK_SPECS } from './hardforks/index.js'
+import { parseGethGenesis } from './utils.js'
 
-import type { ConsensusAlgorithm, ConsensusType } from './enums'
+import type { ConsensusAlgorithm, ConsensusType } from './enums.js'
 import type {
   BootstrapNodeConfig,
   CasperConfig,
@@ -33,7 +33,7 @@ import type {
   GenesisBlockConfig,
   GethConfigOpts,
   HardforkConfig,
-} from './types'
+} from './types.js'
 import type { BigIntLike } from '@ethereumjs/util'
 
 type HardforkSpecKeys = keyof typeof HARDFORK_SPECS
