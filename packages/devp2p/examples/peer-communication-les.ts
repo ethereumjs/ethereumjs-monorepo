@@ -1,7 +1,7 @@
 import { bytesToInt, intToBytes, randomBytes } from '@ethereumjs/util'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { TypedTransaction } from '@ethereumjs/tx'
+import { UnknownTransaction } from '@ethereumjs/tx'
 import chalk from 'chalk'
 import ms = require('ms')
 
@@ -211,7 +211,7 @@ function onNewBlock(block: Block, peer: Peer) {
   )
 }
 
-function isValidTx(tx: TypedTransaction) {
+function isValidTx(tx: UnknownTransaction) {
   return tx.validate()
 }
 
