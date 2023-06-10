@@ -44,7 +44,9 @@ export class TransactionFactory {
       } else if (txType === 3) {
         return BlobEIP4844Transaction.fromTxData(<BlobEIP4844TxData>txData, txOptions)
       } else {
-        throw new Error(`Tx instantiation with type ${txType} not supported`)
+        throw new Error(
+          `Tx instantiation with type ${(txData as UnknownTxData)?.type} not supported`
+        )
       }
     }
   }
