@@ -26,28 +26,22 @@ export class TransactionFactory {
    * @param txData - The transaction data. The `type` field will determine which transaction type is returned (if undefined, creates a legacy transaction)
    * @param txOptions - Options to pass on to the constructor of the transaction
    */
-  public static fromTxData<TTransactionType extends TransactionType>(
+  public static fromTxData<T extends TransactionType>(
     txData: UnknownTxData,
     txOptions: TxOptions = {}
-  ): Transaction[TTransactionType] {
+  ): Transaction[T] {
     if (!('type' in txData) || txData.type === undefined) {
       // Assume legacy transaction
-      return LegacyTransaction.fromTxData(txData, txOptions) as Transaction[TTransactionType]
+      return LegacyTransaction.fromTxData(txData, txOptions) as Transaction[T]
     } else {
       if (isLegacyTxData(txData)) {
-        return LegacyTransaction.fromTxData(txData, txOptions) as Transaction[TTransactionType]
+        return LegacyTransaction.fromTxData(txData, txOptions) as Transaction[T]
       } else if (isAccessListEIP2930TxData(txData)) {
-        return AccessListEIP2930Transaction.fromTxData(
-          txData,
-          txOptions
-        ) as Transaction[TTransactionType]
+        return AccessListEIP2930Transaction.fromTxData(txData, txOptions) as Transaction[T]
       } else if (isFeeMarketEIP1559TxData(txData)) {
-        return FeeMarketEIP1559Transaction.fromTxData(
-          txData,
-          txOptions
-        ) as Transaction[TTransactionType]
+        return FeeMarketEIP1559Transaction.fromTxData(txData, txOptions) as Transaction[T]
       } else if (isBlobEIP4844TxData(txData)) {
-        return BlobEIP4844Transaction.fromTxData(txData, txOptions) as Transaction[TTransactionType]
+        return BlobEIP4844Transaction.fromTxData(txData, txOptions) as Transaction[T]
       } else {
         throw new Error(
           `Tx instantiation with type ${(txData as UnknownTxData)?.type} not supported`
@@ -62,33 +56,24 @@ export class TransactionFactory {
    * @param data - The data Uint8Array
    * @param txOptions - The transaction options
    */
-  public static fromSerializedData<TTransactionType extends TransactionType>(
+  public static fromSerializedData<T extends TransactionType>(
     data: Uint8Array,
     txOptions: TxOptions = {}
-  ): Transaction[TTransactionType] {
+  ): Transaction[T] {
     if (data[0] <= 0x7f) {
       // Determine the type.
       switch (data[0]) {
         case TransactionType.AccessListEIP2930:
-          return AccessListEIP2930Transaction.fromSerializedTx(
-            data,
-            txOptions
-          ) as Transaction[TTransactionType]
+          return AccessListEIP2930Transaction.fromSerializedTx(data, txOptions) as Transaction[T]
         case TransactionType.FeeMarketEIP1559:
-          return FeeMarketEIP1559Transaction.fromSerializedTx(
-            data,
-            txOptions
-          ) as Transaction[TTransactionType]
+          return FeeMarketEIP1559Transaction.fromSerializedTx(data, txOptions) as Transaction[T]
         case TransactionType.BlobEIP4844:
-          return BlobEIP4844Transaction.fromSerializedTx(
-            data,
-            txOptions
-          ) as Transaction[TTransactionType]
+          return BlobEIP4844Transaction.fromSerializedTx(data, txOptions) as Transaction[T]
         default:
           throw new Error(`UnknownTransaction with ID ${data[0]} unknown`)
       }
     } else {
-      return LegacyTransaction.fromSerializedTx(data, txOptions) as Transaction[TTransactionType]
+      return LegacyTransaction.fromSerializedTx(data, txOptions) as Transaction[T]
     }
   }
 
@@ -142,10 +127,10 @@ export class TransactionFactory {
    * @param txOptions The transaction options
    * @returns
    */
-  public static async fromRPC<TTransactionType extends TransactionType>(
-    txData: TxData[TTransactionType],
+  public static async fromRPC<T extends TransactionType>(
+    txData: TxData[T],
     txOptions: TxOptions = {}
-  ): Promise<Transaction[TTransactionType]> {
+  ): Promise<Transaction[T]> {
     return TransactionFactory.fromTxData(normalizeTxParams(txData), txOptions)
   }
 }

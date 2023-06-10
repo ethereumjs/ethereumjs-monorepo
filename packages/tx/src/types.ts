@@ -134,7 +134,7 @@ export function isBlobEIP4844Tx(tx: UnknownTransaction): tx is BlobEIP4844Transa
 
 export type TransactionsArray = Array<UnknownTransaction>
 
-export interface TransactionInterface<TTransactionType extends TransactionType> {
+export interface TransactionInterface<T extends TransactionType> {
   supports(capability: Capability): boolean
   type: number
   validate(): boolean
@@ -145,7 +145,7 @@ export interface TransactionInterface<TTransactionType extends TransactionType> 
   getDataFee(): bigint
   getUpfrontCost(): bigint
   toCreationAddress(): boolean
-  raw(): TxValuesArray[TTransactionType]
+  raw(): TxValuesArray[T]
   serialize(): Uint8Array
   getMessageToSign(hashMessage: false): Uint8Array | Uint8Array[]
   getMessageToSign(hashMessage?: true): Uint8Array
@@ -155,7 +155,7 @@ export interface TransactionInterface<TTransactionType extends TransactionType> 
   verifySignature(): boolean
   getSenderAddress(): Address
   getSenderPublicKey(): Uint8Array
-  sign(privateKey: Uint8Array): Transaction[TTransactionType]
+  sign(privateKey: Uint8Array): Transaction[T]
   toJSON(): JsonTx
   errorStr(): string
 }

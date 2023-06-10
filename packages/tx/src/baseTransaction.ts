@@ -43,8 +43,8 @@ interface TransactionCache {
  *
  * It is therefore not recommended to use directly.
  */
-export abstract class BaseTransaction<TTransactionType extends TransactionType>
-  implements TransactionInterface<TTransactionType>
+export abstract class BaseTransaction<T extends TransactionType>
+  implements TransactionInterface<T>
 {
   private readonly _type: number
 
@@ -92,7 +92,7 @@ export abstract class BaseTransaction<TTransactionType extends TransactionType>
    */
   protected DEFAULT_HARDFORK: string | Hardfork = Hardfork.Shanghai
 
-  constructor(txData: TxData[TTransactionType], opts: TxOptions) {
+  constructor(txData: TxData[T], opts: TxOptions) {
     const { nonce, gasLimit, to, value, data, v, r, s, type } = txData
     this._type = Number(bytesToBigInt(toBytes(type)))
 
@@ -258,7 +258,7 @@ export abstract class BaseTransaction<TTransactionType extends TransactionType>
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
    * representation for external signing use {@link BaseTransaction.getMessageToSign}.
    */
-  abstract raw(): TxValuesArray[TTransactionType]
+  abstract raw(): TxValuesArray[T]
 
   /**
    * Returns the encoding of the transaction.
@@ -319,7 +319,7 @@ export abstract class BaseTransaction<TTransactionType extends TransactionType>
    * const signedTx = tx.sign(privateKey)
    * ```
    */
-  sign(privateKey: Uint8Array): Transaction[TTransactionType] {
+  sign(privateKey: Uint8Array): Transaction[T] {
     if (privateKey.length !== 32) {
       const msg = this._errorMsg('Private key must be 32 bytes in length.')
       throw new Error(msg)
@@ -371,12 +371,8 @@ export abstract class BaseTransaction<TTransactionType extends TransactionType>
     }
   }
 
-  // Accept the v,r,s values from the `sign` method, and convert this into a TTransactionType
-  protected abstract _processSignature(
-    v: bigint,
-    r: Uint8Array,
-    s: Uint8Array
-  ): Transaction[TTransactionType]
+  // Accept the v,r,s values from the `sign` method, and convert this into a T
+  protected abstract _processSignature(v: bigint, r: Uint8Array, s: Uint8Array): Transaction[T]
 
   /**
    * Does chain ID checks on common and returns a common
