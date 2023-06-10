@@ -62,7 +62,7 @@ All types of transaction objects are frozen with `Object.freeze()` which gives y
 
 ### Chain and Hardfork Support
 
-The `Transaction` constructor receives a parameter of an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common) object that lets you specify the chain and hardfork to be used. If there is no `Common` provided the chain ID provided as a parameter on typed tx or the chain ID derived from the `v` value on signed EIP-155 conforming legacy txs will be taken (introduced in `v3.2.1`). In other cases the chain defaults to `mainnet`.
+The `LegacyTransaction` constructor receives a parameter of an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common) object that lets you specify the chain and hardfork to be used. If there is no `Common` provided the chain ID provided as a parameter on typed tx or the chain ID derived from the `v` value on signed EIP-155 conforming legacy txs will be taken (introduced in `v3.2.1`). In other cases the chain defaults to `mainnet`.
 
 Base default HF (determined by `Common`): `merge`
 
@@ -227,7 +227,7 @@ on the `Vm.runTx()` method of the `@ethereumjs/vm` `TypeScript` VM implementatio
 
 ### Legacy Transactions
 
-- Class: `Transaction`
+- Class: `LegacyTransaction`
 - Activation: `chainstart` (with modifications along the road, see HF section below)
 - Type: `0` (internal)
 
@@ -236,7 +236,7 @@ See this [example script](./examples/transactions.ts) or the following code exam
 
 ```typescript
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 
 const txParams = {
   nonce: '0x00',
@@ -248,7 +248,7 @@ const txParams = {
 }
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-const tx = Transaction.fromTxData(txParams, { common })
+const tx = LegacyTransaction.fromTxData(txParams, { common })
 
 const privateKey = Buffer.from(
   'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
@@ -294,7 +294,7 @@ The correct tx type class for instantiation will then be chosen on runtime based
 This library has been tested to work with various L2 networks (`v3.3.0`+). All predefined supported custom chains introduced with `Common` `v2.4.0` or higher are supported, the following is a simple example to send a tx to the xDai chain:
 
 ```typescript
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import { Common } from '@ethereumjs/common'
 
 const from = 'PUBLIC_KEY'
@@ -312,7 +312,7 @@ const txData = {
   value: 1,
 }
 
-const tx = Transaction.fromTxData(txData, { common })
+const tx = LegacyTransaction.fromTxData(txData, { common })
 const signedTx = tx.sign(Buffer.from(PRIV_KEY, 'hex'))
 ```
 
@@ -347,7 +347,7 @@ A legacy transaction will return a Buffer list of the values, and a Typed Transa
 Here is an example of signing txs with `@ledgerhq/hw-app-eth` as of `v6.5.0`:
 
 ```typescript
-import { Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Chain, Common } from '@ethereumjs/common'
 import { bufArrToArr } from '@ethereumjs/util'
 import { RLP } from '@ethereumjs/rlp'
@@ -364,12 +364,12 @@ const bip32Path = "44'/60'/0'/0/0"
 
 const run = async () => {
   // Signing a legacy tx
-  tx = Transaction.fromTxData(txData, { common })
+  tx = LegacyTransaction.fromTxData(txData, { common })
   unsignedTx = tx.getMessageToSign(false)
   unsignedTx = Buffer.from(RLP.encode(bufArrToArr(unsignedTx))) // ledger signTransaction API expects it to be serialized
   let { v, r, s } = await eth.signTransaction(bip32Path, unsignedTx)
   txData = { ...txData, v, r, s }
-  signedTx = Transaction.fromTxData(txData, { common })
+  signedTx = LegacyTransaction.fromTxData(txData, { common })
   let from = signedTx.getSenderAddress().toString()
   console.log(`signedTx: 0x${signedTx.serialize().toString('hex')}\nfrom: ${from}`)
 
@@ -400,7 +400,7 @@ _getFakeTransaction(txParams: TxParams): Transaction {
   delete txParams.from
 
   const opts = { common: this._common, freeze: false }
-  const tx = Transaction.fromTxData(txParams, opts)
+  const tx = LegacyTransaction.fromTxData(txParams, opts)
 
   // override getSenderAddress
   tx.getSenderAddress = () => { return from }
