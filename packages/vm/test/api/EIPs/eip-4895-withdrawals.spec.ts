@@ -1,9 +1,17 @@
 import { Block } from '@ethereumjs/block'
-import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
+import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { decode } from '@ethereumjs/rlp'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Account, Address, GWEI_TO_WEI, KECCAK256_RLP, Withdrawal, zeros } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  GWEI_TO_WEI,
+  KECCAK256_RLP,
+  Withdrawal,
+  parseGethGenesisState,
+  zeros,
+} from '@ethereumjs/util'
 import { bytesToHex, hexToBytes, toHex } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 

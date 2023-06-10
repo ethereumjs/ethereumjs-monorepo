@@ -12,7 +12,7 @@ import { VM } from '../../src/vm'
 import * as testChain from './testdata/testnet.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
 
-import type { AccountState } from '@ethereumjs/blockchain'
+import type { AccountState } from '@ethereumjs/util'
 
 const storage: Array<[string, string]> = [
   [

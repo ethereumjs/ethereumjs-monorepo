@@ -3,8 +3,9 @@ import { bytesToHex } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
 import { Blockchain } from '../src/blockchain.js'
-import { genesisStateRoot } from '../src/genesisStates/index.js'
-import { parseGethGenesisState } from '../src/utils.js'
+import { genesisStateRoot } from '@ethereumjs/trie'
+import { parseGethGenesisState } from '@ethereumjs/util'
+import { bytesToHex } from 'ethereum-cryptography/utils'
 
 async function getBlockchain(gethGenesis: any): Promise<Blockchain> {
   const common = Common.fromGethGenesis(gethGenesis, { chain: 'kiln' })

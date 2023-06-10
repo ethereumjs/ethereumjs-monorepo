@@ -1,24 +1,23 @@
 {
-  "name": "@ethereumjs/blockchain",
-  "version": "6.2.2",
-  "description": "A module to store and interact with blocks",
+  "name": "@ethereumjs/genesis",
+  "version": "0.0.1",
+  "description": "A module to provide genesis states of well known networks",
   "keywords": [
     "ethereum",
-    "blockchain"
+    "genesis"
   ],
-  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/blockchain#readme",
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/genesis#readme",
   "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+blockchain%22"
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+genesis%22"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
   },
   "license": "MPL-2.0",
-  "author": "mjbecze <mjbecze@gmail.com>",
+  "author": "g11tech <gajinder@g11.in>",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
-  "type": "module",
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
@@ -32,30 +31,21 @@
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
+    "coverage": "../../config/cli/coverage.sh",
     "docs:build": "typedoc --options typedoc.js",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
+    "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "npx vitest run --browser.name=chrome --browser.headless",
-    "test:node": "npx vitest run",
+    "test:browser": "karma start karma.conf.js",
+    "test:node": "npm run tape -- ./test/*.spec.ts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "^4.2.2",
     "@ethereumjs/common": "^3.1.2",
-    "@ethereumjs/ethash": "^2.0.5",
-    "@ethereumjs/genesis": "^0.0.1",
-    "@ethereumjs/rlp": "^4.0.1",
-    "@ethereumjs/trie": "^5.0.5",
-    "@ethereumjs/tx": "^4.1.2",
-    "@ethereumjs/util": "^8.0.6",
-    "debug": "^4.3.3",
-    "ethereum-cryptography": "^2.0.0",
-    "level": "^8.0.0",
-    "lru-cache": "^7.18.3"
+    "@ethereumjs/util": "^8.0.6"
   },
   "devDependencies": {
     "@types/async": "^2.4.1",

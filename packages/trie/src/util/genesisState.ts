@@ -1,10 +1,11 @@
 import { RLP } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
 import { Account, isHexPrefixed, toBytes, unpadBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
-import type { AccountState, GenesisState } from '../types.js'
+import { Trie } from '../trie/index.js'
+
+import type { AccountState, GenesisState } from '@ethereumjs/util'
 
 /**
  * Derives the stateRoot of the genesis block based on genesis allocations
