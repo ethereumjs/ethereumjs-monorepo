@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src'
+import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src/index.js'
 
 describe('[Common/Chains]: Initialization / Chain params', () => {
   it('Should initialize with chain provided', () => {

@@ -1,7 +1,7 @@
 import { hexStringToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src'
+import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src/index.js'
 
 import * as gethGenesisKilnJSON from './data/geth-genesis/geth-genesis-kiln.json'
 
