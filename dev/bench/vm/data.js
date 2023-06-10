@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1686222683808,
+  "lastUpdate": 1686403909553,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "d2a045150781d55d5b197bfeedf7540dde215c4a",
-          "message": "Monorepo: update README.md branch status (#2719)",
-          "timestamp": "2023-05-22T14:41:21+02:00",
-          "tree_id": "3c1177cef030691d360debc2b3ac2436b7867132",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d2a045150781d55d5b197bfeedf7540dde215c4a"
-        },
-        "date": 1684760043756,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 32823,
-            "range": "±3.16%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 32362,
-            "range": "±2.30%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 29667,
-            "range": "±7.79%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 31439,
-            "range": "±2.57%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30344,
-            "range": "±2.62%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±11.03%",
             "unit": "ops/sec",
             "extra": "71 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4fe13f420b62a3c0b66cf1c181c517bec98bafd5",
+          "message": "block: add missing tx type (#2769)",
+          "timestamp": "2023-06-10T09:28:37-04:00",
+          "tree_id": "4da8312671ac357f24c1ca118b719ba5914e4760",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4fe13f420b62a3c0b66cf1c181c517bec98bafd5"
+        },
+        "date": 1686403908436,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31870,
+            "range": "±4.90%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 32168,
+            "range": "±2.17%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31794,
+            "range": "±2.33%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 30948,
+            "range": "±2.47%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 25545,
+            "range": "±9.83%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
           }
         ]
       }
