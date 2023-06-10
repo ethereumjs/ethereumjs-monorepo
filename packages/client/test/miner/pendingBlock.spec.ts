@@ -194,6 +194,55 @@ tape('[PendingBlock]', async (t) => {
 
   t.test('should stop adding txs when block is full', async (t) => {
     const { txPool } = setup()
+
+    // set gas limit low so that can accomodate 2 txs
+    const prevGasLimit = common['_chainParams'].genesis.gasLimit
+    common['_chainParams'].genesis.gasLimit = BigInt(50000)
+
+    const vm = await VM.create({ common })
+    await setBalance(vm, A.address, BigInt(5000000000000000))
+
+    // create alternate transactions with custom gas limits to
+    const txA012 = createTx(A, B, 0, 1, 1000000000, 25000)
+    const txA022 = createTx(A, B, 1, 1, 2000000000, 25000) // A -> B, nonce: 1, value: 1, 2x gasPrice
+
+    await txPool.add(txA012)
+    await txPool.add(txA022)
+
+    // This tx will not be added since its too big to fit
+    const txA03 = Transaction.fromTxData(
+      {
+        data: '0xFE', // INVALID opcode, uses all gas
+        gasLimit: 10000000,
+        gasPrice: 1000000000,
+        nonce: 2,
+      },
+      { common }
+    ).sign(A.privateKey)
+    await txPool.add(txA03)
+    const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
+    await setBalance(vm, A.address, BigInt(5000000000000000))
+    const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
+    const payloadId = await pendingBlock.start(vm, parentBlock)
+    t.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
+
+    // Add a tx to
+    const built = await pendingBlock.build(payloadId)
+    if (!built) return t.fail('pendingBlock did not return')
+    const [block, receipts] = built
+    t.equal(block?.header.number, BigInt(1), 'should have built block number 1')
+    t.equal(block?.transactions.length, 2, 'should include txs from pool that fit in the block')
+    t.equal(receipts.length, 2, 'receipts should match number of transactions')
+    pendingBlock.pruneSetToMax(0)
+    t.equal(pendingBlock.pendingPayloads.size, 0, 'should reset the pending payload after build')
+
+    // reset gas Limit
+    common['_chainParams'].genesis.gasLimit = prevGasLimit
+    t.end()
+  })
+
+  t.test('should skip adding txs when tx too big to fit', async (t) => {
+    const { txPool } = setup()
     const vm = await VM.create({ common })
     await setBalance(vm, A.address, BigInt(5000000000000000))
     await txPool.add(txA01)
@@ -311,6 +360,7 @@ tape('[PendingBlock]', async (t) => {
       { common }
     ).sign(A.privateKey)
     await txPool.add(txNorm)
+
     st.equal(txPool.txsInPool, 4, '4 txs should still be in the pool')
 
     const pendingBlock = new PendingBlock({ config, txPool })
@@ -336,6 +386,59 @@ tape('[PendingBlock]', async (t) => {
     st.ok(blobProof !== undefined && equalsBytes(blobProof, proofs[0]))
     st.end()
   })
+
+  t.test('should exclude missingBlobTx', async (st) => {
+    try {
+      initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
+      // eslint-disable-next-line
+    } catch {}
+    const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
+    const common = Common.fromGethGenesis(gethGenesis, {
+      chain: 'customChain',
+      hardfork: Hardfork.Cancun,
+    })
+    const { txPool } = setup()
+
+    const blobs = getBlobs('hello world')
+    const commitments = blobsToCommitments(blobs)
+    const versionedHashes = commitmentsToVersionedHashes(commitments)
+    const proofs = blobsToProofs(blobs, commitments)
+
+    // create a tx with missing blob data which should be excluded from the build
+    const missingBlobTx = BlobEIP4844Transaction.fromTxData(
+      {
+        versionedHashes,
+        kzgCommitments: commitments,
+        kzgProofs: proofs,
+        maxFeePerDataGas: 100000000n,
+        gasLimit: 0xffffffn,
+        maxFeePerGas: 1000000000n,
+        maxPriorityFeePerGas: 100000000n,
+        to: randomBytes(20),
+        nonce: BigInt(0),
+      },
+      { common }
+    ).sign(A.privateKey)
+    await txPool.add(missingBlobTx)
+
+    st.equal(txPool.txsInPool, 1, '1 txs should still be in the pool')
+
+    const pendingBlock = new PendingBlock({ config, txPool })
+    const vm = await VM.create({ common })
+    await setBalance(vm, A.address, BigInt(500000000000000000))
+    const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
+    // stub the vm's common set hf to do nothing but stay in cancun
+    vm._common.setHardforkByBlockNumber = (_a: bigint, _b?: bigint, _c?: bigint) => {
+      return vm._common.hardfork()
+    }
+    const payloadId = await pendingBlock.start(vm, parentBlock)
+    const [block, _receipts, _value, blobsBundles] = (await pendingBlock.build(payloadId)) ?? []
+
+    st.ok(block !== undefined && blobsBundles !== undefined)
+    st.equal(block!.transactions.length, 0, 'Missing blob tx should not be included')
+    st.end()
+  })
+
   t.test('should reset td', (st) => {
     td.reset()
     // according to https://github.com/testdouble/testdouble.js/issues/379#issuecomment-415868424
