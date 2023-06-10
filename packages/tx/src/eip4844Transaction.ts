@@ -176,6 +176,21 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
   }
 
   /**
+   * Returns the minimum of calculated priority fee (from maxFeePerGas and baseFee) and maxPriorityFeePerGas
+   *
+   * * @param baseFee Base fee retrieved from block
+   */
+  getEffectivePriorityFee(baseFee: bigint | undefined): bigint {
+    if (baseFee === undefined || baseFee >= this.maxFeePerGas) {
+      return 0n
+    }
+
+    const priorityFee = this.maxFeePerGas - baseFee
+
+    return this.maxPriorityFeePerGas < priorityFee ? this.maxPriorityFeePerGas : priorityFee
+  }
+
+  /**
    * Creates the minimal representation of a blob transaction from the network wrapper version.
    * The minimal representation is used when adding transactions to an execution payload/block
    * @param txData a {@link BlobEIP4844Transaction} containing optional blobs/kzg commitments

@@ -240,6 +240,8 @@ export abstract class BaseTransaction<TransactionObject> {
     return cost
   }
 
+  abstract getEffectivePriorityFee(baseFee: bigint | undefined): bigint
+
   /**
    * The up front amount that an account must have for this transaction to be valid
    */
