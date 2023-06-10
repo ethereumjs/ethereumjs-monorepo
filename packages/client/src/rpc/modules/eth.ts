@@ -372,6 +372,12 @@ export class Eth {
     )
 
     this.gasPrice = middleware(this.gasPrice.bind(this), 0, [])
+
+    this.feeHistory = middleware(this.feeHistory.bind(this), 2, [
+      [validators.either(validators.hex, validators.uint256)],
+      [validators.blockOption],
+      [validators.array(validators.hex)],
+    ])
   }
 
   /**
@@ -1118,5 +1124,86 @@ export class Eth {
     }
 
     return bigIntToHex(gasPrice)
+  }
+
+  async feeHistory(params: [string | number | bigint, string, Array<number>?]) {
+    let [blockCount] = params
+    const [, newestBlock, priorityFeePercentiles] = params
+
+    blockCount = BigInt(blockCount)
+
+    if (blockCount < 1 || blockCount > 1024) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'invalid block count',
+      }
+    }
+
+    const { header: newestBlockHeader } = await getBlockByOption(newestBlock, this._chain)
+
+    const blocksLength = Number(newestBlockHeader.number - blockCount)
+    const oldestBlockNumber = blocksLength > 0 ? BigInt(blocksLength) : BigInt(0)
+
+    const blockRange = Array.from({ length: blocksLength }, (_, i) => oldestBlockNumber + BigInt(i))
+    const blocks = await Promise.all(
+      blockRange.map((n) => getBlockByOption(n.toString(), this._chain))
+    )
+
+    const [baseFees, gasUsedRatios] = blocks.map((b) => {
+      const { baseFeePerGas, gasUsed, gasLimit } = b.header
+      return [baseFeePerGas, gasUsed / gasLimit]
+    })
+
+    const rewards: bigint[] = []
+
+    if (this.receiptsManager && priorityFeePercentiles) {
+      for (const block of blocks) {
+        const txGasUsed: bigint[] = []
+        const baseFee = block.header.baseFeePerGas
+        const receipts = await this.receiptsManager.getReceipts(block.hash())
+
+        for (const receipt of receipts) {
+          if (txGasUsed.length === 0) {
+            txGasUsed.push(receipt.cumulativeBlockGasUsed)
+            continue
+          }
+
+          txGasUsed.push(receipt.cumulativeBlockGasUsed - txGasUsed[txGasUsed.length - 1])
+        }
+
+        const txs = block.transactions
+        const txsWithGasUsed = txs.map((tx, i) => ({
+          ...tx,
+          gasUsed: txGasUsed[i],
+          effectivePriorityFee: tx.getEffectivePriorityFee(baseFee),
+        }))
+
+        const txsWithGasUsedSorted = txsWithGasUsed.sort((txCurr, txNext) =>
+          txCurr.effectivePriorityFee > txNext.effectivePriorityFee ? 1 : -1
+        )
+
+        let totalGasUsed = 0n
+        let rewardPercentileIndex = 0
+        for (const tx of txsWithGasUsedSorted) {
+          totalGasUsed += tx.gasUsed
+
+          while (
+            rewardPercentileIndex < priorityFeePercentiles.length &&
+            (totalGasUsed / block.header.gasUsed) * 100n >=
+              priorityFeePercentiles[rewardPercentileIndex]
+          ) {
+            rewards.push(tx.effectivePriorityFee)
+            rewardPercentileIndex++
+          }
+        }
+      }
+    }
+
+    return {
+      baseFeePerGas: baseFees,
+      gasUsedRatio: gasUsedRatios,
+      oldestBlock: oldestBlockNumber,
+      reward: rewards,
+    }
   }
 }
