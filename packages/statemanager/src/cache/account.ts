@@ -1,12 +1,14 @@
-import { bytesToHex } from '@ethereumjs/util'
+import { RLP } from '@ethereumjs/rlp'
+import { Account, bytesToHex, bytesToPrefixedHexString } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import { OrderedMap } from 'js-sdsl'
 
 import { Cache } from './cache'
 import { CacheType } from './types'
 
 import type { CacheOpts } from './types'
-import type { Account, Address } from '@ethereumjs/util'
+import type { Address } from '@ethereumjs/util'
 import type LRUCache from 'lru-cache'
 
 const LRU = require('lru-cache')
@@ -100,6 +102,15 @@ export class AccountCache extends Cache {
       elem = this._lruCache!.get(addressHex)
     } else {
       elem = this._orderedMapCache!.getElementByKey(addressHex)
+      this._debug(`orderedMapCache cache hit: ${elem?.accountRLP}`)
+      if (elem?.accountRLP) {
+        const a = Account.fromRlpSerializedAccount(elem?.accountRLP!)
+        this._debug(a)
+        this._debug(`CodeHash: ${bytesToPrefixedHexString(a.codeHash)}`)
+        this._debug(`CodeHash: ${bytesToPrefixedHexString(RLP.encode(a.codeHash))}`)
+      } else {
+        this._debug('whaaat??')
+      }
     }
     this._stats.reads += 1
     if (elem) {

@@ -97,7 +97,8 @@ tape('StateManager -> Storage', (t) => {
       const expect0 = unpadBytes(value0)
       await stateManager.putContractStorage(address, key0, value0)
       const slot0 = await stateManager.getContractStorage(address, key0)
-      st.ok(equalsBytes(slot0, expect0), 'value of 31 bytes padded correctly')
+      st.ok(equalsBytes(slot0, expect0), `value of 31 bytes (${value0}) padded correctly`)
+      st.deepEquals(slot0, expect0, `value of 31 bytes (${value0}) padded correctly`)
 
       const key1 = concatBytes(zeros(31), hexStringToBytes('01'))
       const value1 = hexStringToBytes('0000' + 'aa'.repeat(1)) // put a value of 1-byte length with two leading zero bytes
