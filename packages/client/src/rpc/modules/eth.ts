@@ -3,6 +3,8 @@ import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereu
 import {
   Address,
   TypeOutput,
+  // eslint-disable-next-line import/named
+  bigIntMax,
   bigIntToHex,
   bytesToPrefixedHexString,
   hexStringToBytes,
@@ -232,6 +234,81 @@ const getBlockByOption = async (blockOpt: string, chain: Chain) => {
     }
   }
   return block
+}
+
+const calculateRewards = async (
+  block: Block,
+  receiptsManager: ReceiptsManager,
+  priorityFeePercentiles: number[]
+) => {
+  const blockRewards: bigint[] = []
+  const txGasUsed: bigint[] = []
+  const baseFee = block.header.baseFeePerGas
+  const receipts = await receiptsManager.getReceipts(block.hash())
+
+  if (receipts.length > 0) {
+    txGasUsed.push(receipts[0].cumulativeBlockGasUsed)
+    receipts.shift()
+  }
+
+  for (const receipt of receipts) {
+    txGasUsed.push(receipt.cumulativeBlockGasUsed - txGasUsed[txGasUsed.length - 1])
+  }
+
+  const txs = block.transactions
+  const txsWithGasUsed = txs.map((tx, i) => ({
+    ...tx,
+    gasUsed: txGasUsed[i],
+    effectivePriorityFee: tx.getEffectivePriorityFee(baseFee),
+  }))
+
+  const txsWithGasUsedSorted = txsWithGasUsed.sort((currTx, nextTx) =>
+    currTx.effectivePriorityFee > nextTx.effectivePriorityFee ? 1 : -1
+  )
+
+  let totalGasUsed = 0n
+  let rewardPercentileIndex = 0
+  for (const tx of txsWithGasUsedSorted) {
+    totalGasUsed += tx.gasUsed
+
+    while (
+      rewardPercentileIndex < priorityFeePercentiles.length &&
+      (totalGasUsed / block.header.gasUsed) * 100n >= priorityFeePercentiles[rewardPercentileIndex]
+    ) {
+      blockRewards.push(tx.effectivePriorityFee)
+      rewardPercentileIndex++
+    }
+  }
+
+  return blockRewards
+}
+
+const calculateNextBaseFee = (parentBlock: Block) => {
+  const { header: parentBlockHeader } = parentBlock
+  const {
+    gasUsed: parentBlockGasUsed,
+    gasLimit: parentBlockGasLimit,
+    baseFeePerGas: parentBlockBaseFee,
+  } = parentBlockHeader
+
+  const baseFeeMin = 7n
+  const targetGasUsed = parentBlockGasLimit / 2n
+
+  if (targetGasUsed === parentBlockGasUsed) {
+    return parentBlockBaseFee!
+  } else if (parentBlockGasUsed > targetGasUsed) {
+    const gasDelta = parentBlockGasUsed - targetGasUsed
+    return bigIntMax(
+      parentBlockBaseFee! + (gasDelta * parentBlockBaseFee!) / (targetGasUsed * 8n),
+      1n
+    )
+  } else {
+    const gasDelta = parentBlockGasUsed - targetGasUsed
+    return bigIntMax(
+      parentBlockBaseFee! - (gasDelta * parentBlockBaseFee!) / (targetGasUsed * 8n),
+      baseFeeMin
+    )
+  }
 }
 
 /**
@@ -1128,7 +1205,7 @@ export class Eth {
 
   async feeHistory(params: [string | number | bigint, string, Array<number>?]) {
     let [blockCount] = params
-    const [, newestBlock, priorityFeePercentiles] = params
+    const [, lastBlockRequested, priorityFeePercentiles] = params
 
     blockCount = BigInt(blockCount)
 
@@ -1139,71 +1216,54 @@ export class Eth {
       }
     }
 
-    const { header: newestBlockHeader } = await getBlockByOption(newestBlock, this._chain)
+    const { number: lastRequestedBlockNumber } = (
+      await getBlockByOption(lastBlockRequested, this._chain)
+    ).header
 
-    const blocksLength = Number(newestBlockHeader.number - blockCount)
-    const oldestBlockNumber = blocksLength > 0 ? BigInt(blocksLength) : BigInt(0)
+    const oldestBlockNumber = bigIntMax(lastRequestedBlockNumber - blockCount, BigInt(0))
 
-    const blockRange = Array.from({ length: blocksLength }, (_, i) => oldestBlockNumber + BigInt(i))
-    const blocks = await Promise.all(
-      blockRange.map((n) => getBlockByOption(n.toString(), this._chain))
+    const requestedBlockNumbers = Array.from(
+      { length: Number(blockCount) },
+      (_, i) => oldestBlockNumber + BigInt(i)
     )
 
-    const [baseFees, gasUsedRatios] = blocks.map((b) => {
-      const { baseFeePerGas, gasUsed, gasLimit } = b.header
-      return [baseFeePerGas, gasUsed / gasLimit]
-    })
+    const requestedBlocks = await Promise.all(
+      requestedBlockNumbers.map((n) => getBlockByOption(n.toString(), this._chain))
+    )
 
-    const rewards: bigint[] = []
+    const [baseFees, gasUsedRatios] = requestedBlocks.reduce(
+      (v, b) => {
+        const [prevBaseFees, prevGasUsedRatios] = v
+        const { baseFeePerGas, gasUsed, gasLimit } = b.header
+
+        prevBaseFees.push(baseFeePerGas)
+        prevGasUsedRatios.push(Number(gasUsed) / Number(gasLimit))
+
+        return [prevBaseFees, prevGasUsedRatios]
+      },
+      [[], []] as [(bigint | undefined)[], number[]]
+    )
+
+    const nextBaseFee = calculateNextBaseFee(requestedBlocks[requestedBlocks.length - 1])
+    baseFees.push(nextBaseFee)
+
+    let rewards: bigint[][] = []
 
     if (this.receiptsManager && priorityFeePercentiles) {
-      for (const block of blocks) {
-        const txGasUsed: bigint[] = []
-        const baseFee = block.header.baseFeePerGas
-        const receipts = await this.receiptsManager.getReceipts(block.hash())
-
-        for (const receipt of receipts) {
-          if (txGasUsed.length === 0) {
-            txGasUsed.push(receipt.cumulativeBlockGasUsed)
-            continue
-          }
-
-          txGasUsed.push(receipt.cumulativeBlockGasUsed - txGasUsed[txGasUsed.length - 1])
-        }
-
-        const txs = block.transactions
-        const txsWithGasUsed = txs.map((tx, i) => ({
-          ...tx,
-          gasUsed: txGasUsed[i],
-          effectivePriorityFee: tx.getEffectivePriorityFee(baseFee),
-        }))
-
-        const txsWithGasUsedSorted = txsWithGasUsed.sort((txCurr, txNext) =>
-          txCurr.effectivePriorityFee > txNext.effectivePriorityFee ? 1 : -1
+      rewards = await Promise.all(
+        requestedBlocks.map((b) =>
+          calculateRewards(b, this.receiptsManager!, priorityFeePercentiles)
         )
-
-        let totalGasUsed = 0n
-        let rewardPercentileIndex = 0
-        for (const tx of txsWithGasUsedSorted) {
-          totalGasUsed += tx.gasUsed
-
-          while (
-            rewardPercentileIndex < priorityFeePercentiles.length &&
-            (totalGasUsed / block.header.gasUsed) * 100n >=
-              priorityFeePercentiles[rewardPercentileIndex]
-          ) {
-            rewards.push(tx.effectivePriorityFee)
-            rewardPercentileIndex++
-          }
-        }
-      }
+      )
     }
 
     return {
-      baseFeePerGas: baseFees,
+      baseFeePerGas: baseFees.map((f) =>
+        f !== undefined ? bigIntToHex(f) : bigIntToHex(BigInt(0))
+      ),
       gasUsedRatio: gasUsedRatios,
-      oldestBlock: oldestBlockNumber,
-      reward: rewards,
+      oldestBlock: bigIntToHex(oldestBlockNumber),
+      reward: rewards.map((r) => r.map((n) => bigIntToHex(n))),
     }
   }
 }
