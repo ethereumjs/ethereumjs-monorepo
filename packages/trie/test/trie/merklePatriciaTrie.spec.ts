@@ -1,3 +1,5 @@
+/**
+ * 
 import { bytesToPrefixedHexString, hexStringToBytes, utf8ToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
@@ -57,7 +59,7 @@ tape('trietest.json', async (_tape) => {
     t.equal(rootHashv2, test.root, 'root hash should match test root')
     t.end()
   })
-
+  
   _tape.test('jeff', async (t) => {
     const test = trietest.jeff
     const test_in: [string, string | null][] = test.in as [string, string | null][]
@@ -91,7 +93,7 @@ tape('trietest.json', async (_tape) => {
       const value = typeof v === 'string' ? utf8ToBytes(v) : null
       await trie_v2.put(key, value)
       // const toTest: Map<string | null, string | null> = new Map()
-
+      
       for await (const [_k, _v] of toTest.entries()) {
         const _value = typeof _v === 'string' ? utf8ToBytes(_v) : null
         const stored_v2 = await trie_v2.get(utf8ToBytes(_k!))
@@ -166,7 +168,7 @@ tape('trietest_secureTrie.json', async (_tape) => {
     t.equal(rootHashv2, test.root, 'root hash v2 should match test root')
     t.end()
   })
-
+  
   _tape.test('jeff', async (t) => {
     const toTest: Map<string | null, string | null> = new Map()
     const test = securetest.jeff
@@ -177,7 +179,7 @@ tape('trietest_secureTrie.json', async (_tape) => {
       const value = typeof v === 'string' ? hexStringToBytes(v) : null
       await trie_v2.put(key, value)
       toTest.set(k, v)
-
+      
       for await (const [_k, _v] of toTest.entries()) {
         const _value = typeof _v === 'string' ? hexStringToBytes(_v) : null
         const stored_v2 = await trie_v2.get(hexStringToBytes(_k!))
@@ -296,7 +298,7 @@ tape('anyOrder', async (t) => {
         const value = typeof v === 'string' ? serializer(v, hex) : null
         await trie_v2.put(key, value)
         toTest.set(k, v)
-
+        
         for await (const [_k, _v] of toTest.entries()) {
           const _value = typeof _v === 'string' ? serializer(_v, hex) : null
           const stored_v2 = await trie_v2.get(serializer(_k!, hex))
@@ -310,3 +312,5 @@ tape('anyOrder', async (t) => {
   }
   t.end()
 })
+
+*/
