@@ -8,7 +8,7 @@ import * as tape from 'tape'
 import { VM } from '../../../src/vm'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
-import type { TransactionType, TypedTransaction } from '@ethereumjs/tx'
+import type { TypedTransaction } from '@ethereumjs/tx'
 
 const GWEI = BigInt('1000000000')
 const ETHER = GWEI * GWEI
@@ -21,10 +21,10 @@ const common = new Common({
 
 // Small hack to hack in the activation block number
 // (Otherwise there would be need for a custom chain only for testing purposes)
-common.hardforkBlock = function (hardfork: string | undefined) {
-  if (hardfork === 'london') {
+common.hardforkBlock = function (hardfork: Hardfork | undefined) {
+  if (hardfork === Hardfork.London) {
     return BigInt(1)
-  } else if (hardfork === 'dao') {
+  } else if (hardfork === Hardfork.Dao) {
     // Avoid DAO HF side-effects
     return BigInt(99)
   }
@@ -39,12 +39,11 @@ const sender = new Address(privateToAddress(pkey))
  * Creates an EIP1559 block
  * @param baseFee - base fee of the block
  * @param transaction - the transaction in the block
- * @param txType - the txtype to use
  */
-function makeBlock(baseFee: bigint, transaction: TypedTransaction, txType: TransactionType) {
+function makeBlock(baseFee: bigint, transaction: TypedTransaction) {
   const signed = transaction.sign(pkey)
   const json = signed.toJSON()
-  json.type = txType.toString()
+
   const block = Block.fromBlockData(
     {
       header: {
@@ -76,7 +75,7 @@ tape('EIP3198 tests', (t) => {
         common,
       }
     )
-    const block = makeBlock(fee, tx, 2)
+    const block = makeBlock(fee, tx)
     const vm = await VM.create({ common })
     await vm.stateManager.modifyAccountFields(sender, { balance: ETHER })
 
