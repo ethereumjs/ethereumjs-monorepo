@@ -8,10 +8,10 @@ import {
   MAX_INTEGER,
   bigIntToBytes,
   bytesToHex,
+  bytesToPrefixedHexString,
   equalsBytes,
   generateAddress,
   generateAddress2,
-  short,
   zeros,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
@@ -831,11 +831,12 @@ export class EVM implements EVMInterface {
     }
     if (this.DEBUG) {
       const { executionGasUsed, exceptionError, returnValue } = result.execResult
-      debug(
-        `Received message execResult: [ gasUsed=${executionGasUsed} exceptionError=${
-          exceptionError ? `'${exceptionError.error}'` : 'none'
-        } returnValue=0x${short(returnValue)} gasRefund=${result.execResult.gasRefund ?? 0} ]`
+      debug.extend('execResult')(`gasUsed=${executionGasUsed}`)
+      debug.extend('execResult')(
+        `exceptionError=${exceptionError ? `'${exceptionError.error}'` : 'none'}`
       )
+      debug.extend('execResult')(`returnValue=${bytesToPrefixedHexString(returnValue)}`)
+      debug.extend('execResult')(`gasRefund=${result.execResult.gasRefund}`)
     }
     const err = result.execResult.exceptionError
     // This clause captures any error which happened during execution
@@ -1001,14 +1002,16 @@ export class EVM implements EVMInterface {
   public async copy(): Promise<EVMInterface> {
     const common = this._common.copy()
     common.setHardfork(this._common.hardfork())
-
-    const opts = {
-      ...this._optsCached,
+    const evmCopy = await EVM.create({
       common,
       eei: await this.eei.copy(),
-    }
-    ;(opts.stateManager as any)._common = common
-    return new EVM(opts)
+      allowUnlimitedContractSize: this._allowUnlimitedContractSize,
+      allowUnlimitedInitCodeSize: this._allowUnlimitedInitCodeSize,
+      customOpcodes: this._customOpcodes,
+      customPrecompiles: this._customPrecompiles,
+    })
+    ;(this._optsCached.stateManager as any)._common = common
+    return evmCopy
   }
 }
 
