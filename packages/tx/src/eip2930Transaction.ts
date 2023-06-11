@@ -15,21 +15,25 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BaseTransaction } from './baseTransaction'
+import { TransactionType } from './types'
 import { AccessLists } from './util'
 
 import type {
   AccessList,
   AccessListBytes,
+  TxData as AllTypesTxData,
+  TxValuesArray as AllTypesTxValuesArray,
   JsonTx,
-  TransactionType,
-  TxData,
   TxOptions,
-  TxValuesArray,
 } from './types'
 import type { Common } from '@ethereumjs/common'
 
-const TRANSACTION_TYPE = 1
-const TRANSACTION_TYPE_BYTES = hexStringToBytes(TRANSACTION_TYPE.toString(16).padStart(2, '0'))
+type TxData = AllTypesTxData[TransactionType.AccessListEIP2930]
+type TxValuesArray = AllTypesTxValuesArray[TransactionType.AccessListEIP2930]
+
+const TRANSACTION_TYPE_BYTES = hexStringToBytes(
+  TransactionType.AccessListEIP2930.toString(16).padStart(2, '0')
+)
 
 /**
  * Typed transaction with optional access lists
@@ -63,10 +67,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * - `chainId` will be set automatically if not provided
    * - All parameters are optional and have some basic default values
    */
-  public static fromTxData(
-    txData: TxData[TransactionType.AccessListEIP2930],
-    opts: TxOptions = {}
-  ) {
+  public static fromTxData(txData: TxData, opts: TxOptions = {}) {
     return new AccessListEIP2930Transaction(txData, opts)
   }
 
@@ -79,9 +80,9 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
   public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
     if (equalsBytes(serialized.subarray(0, 1), TRANSACTION_TYPE_BYTES) === false) {
       throw new Error(
-        `Invalid serialized tx input: not an EIP-2930 transaction (wrong tx type, expected: ${TRANSACTION_TYPE}, received: ${bytesToHex(
-          serialized.subarray(0, 1)
-        )}`
+        `Invalid serialized tx input: not an EIP-2930 transaction (wrong tx type, expected: ${
+          TransactionType.AccessListEIP2930
+        }, received: ${bytesToHex(serialized.subarray(0, 1))}`
       )
     }
 
@@ -91,10 +92,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
       throw new Error('Invalid serialized tx input: must be array')
     }
 
-    return AccessListEIP2930Transaction.fromValuesArray(
-      values as TxValuesArray[TransactionType.AccessListEIP2930],
-      opts
-    )
+    return AccessListEIP2930Transaction.fromValuesArray(values as TxValuesArray, opts)
   }
 
   /**
@@ -103,10 +101,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
    * signatureYParity (v), signatureR (r), signatureS (s)]`
    */
-  public static fromValuesArray(
-    values: TxValuesArray[TransactionType.AccessListEIP2930],
-    opts: TxOptions = {}
-  ) {
+  public static fromValuesArray(values: TxValuesArray, opts: TxOptions = {}) {
     if (values.length !== 8 && values.length !== 11) {
       throw new Error(
         'Invalid EIP-2930 transaction. Only expecting 8 values (for unsigned tx) or 11 values (for signed tx).'
@@ -145,8 +140,8 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * the static factory methods to assist in creating a Transaction object from
    * varying data types.
    */
-  public constructor(txData: TxData[TransactionType.AccessListEIP2930], opts: TxOptions = {}) {
-    super({ ...txData, type: TRANSACTION_TYPE }, opts)
+  public constructor(txData: TxData, opts: TxOptions = {}) {
+    super({ ...txData, type: TransactionType.AccessListEIP2930 }, opts)
     const { chainId, accessList, gasPrice } = txData
 
     this.common = this._getCommon(opts.common, chainId)
@@ -228,7 +223,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
    * representation for external signing use {@link AccessListEIP2930Transaction.getMessageToSign}.
    */
-  raw(): TxValuesArray[TransactionType.AccessListEIP2930] {
+  raw(): TxValuesArray {
     return [
       bigIntToUnpaddedBytes(this.chainId),
       bigIntToUnpaddedBytes(this.nonce),

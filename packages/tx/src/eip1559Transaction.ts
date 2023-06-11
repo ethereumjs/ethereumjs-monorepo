@@ -1,3 +1,4 @@
+import { Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   MAX_INTEGER,
@@ -15,22 +16,25 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BaseTransaction } from './baseTransaction'
+import { TransactionType } from './types'
 import { AccessLists } from './util'
 
 import type {
   AccessList,
   AccessListBytes,
-  FeeMarketEIP1559TxData,
+  TxData as AllTypesTxData,
+  TxValuesArray as AllTypesTxValuesArray,
   JsonTx,
-  TransactionType,
-  TxData,
   TxOptions,
-  TxValuesArray,
 } from './types'
 import type { Common } from '@ethereumjs/common'
 
-const TRANSACTION_TYPE = 2
-const TRANSACTION_TYPE_BYTES = hexStringToBytes(TRANSACTION_TYPE.toString(16).padStart(2, '0'))
+type TxData = AllTypesTxData[TransactionType.FeeMarketEIP1559]
+type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP1559]
+
+const TRANSACTION_TYPE_BYTES = hexStringToBytes(
+  TransactionType.FeeMarketEIP1559.toString(16).padStart(2, '0')
+)
 
 /**
  * Typed transaction with a new gas fee market mechanism
@@ -53,7 +57,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    *
    * @hidden
    */
-  protected DEFAULT_HARDFORK = 'london'
+  protected DEFAULT_HARDFORK = Hardfork.London
 
   /**
    * Instantiate a transaction from a data dictionary.
@@ -65,7 +69,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * - `chainId` will be set automatically if not provided
    * - All parameters are optional and have some basic default values
    */
-  public static fromTxData(txData: FeeMarketEIP1559TxData, opts: TxOptions = {}) {
+  public static fromTxData(txData: TxData, opts: TxOptions = {}) {
     return new FeeMarketEIP1559Transaction(txData, opts)
   }
 
@@ -78,9 +82,9 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
   public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
     if (equalsBytes(serialized.subarray(0, 1), TRANSACTION_TYPE_BYTES) === false) {
       throw new Error(
-        `Invalid serialized tx input: not an EIP-1559 transaction (wrong tx type, expected: ${TRANSACTION_TYPE}, received: ${bytesToHex(
-          serialized.subarray(0, 1)
-        )}`
+        `Invalid serialized tx input: not an EIP-1559 transaction (wrong tx type, expected: ${
+          TransactionType.FeeMarketEIP1559
+        }, received: ${bytesToHex(serialized.subarray(0, 1))}`
       )
     }
 
@@ -99,10 +103,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
    * accessList, signatureYParity, signatureR, signatureS]`
    */
-  public static fromValuesArray(
-    values: TxValuesArray[TransactionType.FeeMarketEIP1559],
-    opts: TxOptions = {}
-  ) {
+  public static fromValuesArray(values: TxValuesArray, opts: TxOptions = {}) {
     if (values.length !== 9 && values.length !== 12) {
       throw new Error(
         'Invalid EIP-1559 transaction. Only expecting 9 values (for unsigned tx) or 12 values (for signed tx).'
@@ -153,8 +154,8 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * the static factory methods to assist in creating a Transaction object from
    * varying data types.
    */
-  public constructor(txData: TxData[TransactionType.FeeMarketEIP1559], opts: TxOptions = {}) {
-    super({ ...txData, type: TRANSACTION_TYPE }, opts)
+  public constructor(txData: TxData, opts: TxOptions = {}) {
+    super({ ...txData, type: TransactionType.FeeMarketEIP1559 }, opts)
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
     this.common = this._getCommon(opts.common, chainId)
@@ -251,7 +252,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
    * representation for external signing use {@link FeeMarketEIP1559Transaction.getMessageToSign}.
    */
-  raw(): TxValuesArray[TransactionType.FeeMarketEIP1559] {
+  raw(): TxValuesArray {
     return [
       bigIntToUnpaddedBytes(this.chainId),
       bigIntToUnpaddedBytes(this.nonce),
