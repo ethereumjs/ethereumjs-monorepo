@@ -78,8 +78,8 @@ export interface EthProtocolMethods {
   getReceipts: (opts: GetReceiptsOpts) => Promise<[bigint, TxReceipt[]]>
 }
 
-function exhaustiveTypeGuard(_value: never): never {
-  throw new Error(`ERROR! Reached forbidden guard function with unexpected value`)
+function exhaustiveTypeGuard(_value: never, errorMsg: string): never {
+  throw new Error(errorMsg)
 }
 
 /**
@@ -238,8 +238,10 @@ export class EthProtocol extends Protocol {
           } else if (isLegacyTx(tx)) {
             serializedTxs.push(tx.raw())
           } else {
-            // type gurard to force typescript to throw build errors if any type is missed above
-            exhaustiveTypeGuard(tx)
+            // Dual use for this typeguard:
+            // 1. to enable typescript to throw build errors if any tx is missing above
+            // 2. to throw error in runtime if some corruption happens
+            exhaustiveTypeGuard(tx, `Invalid transaction type=${(tx as TypedTransaction).type}`)
           }
         }
 
