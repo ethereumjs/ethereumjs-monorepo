@@ -2,7 +2,14 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
 import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Account, Address, AsyncEventEmitter, TypeOutput, toType } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  AsyncEventEmitter,
+  TypeOutput,
+  bytesToPrefixedHexString,
+  toType,
+} from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import { promisify } from 'util'
 
@@ -170,7 +177,6 @@ export class VM {
           account = new Account()
           const newAccount = Account.fromAccountData({
             balance: 1,
-            storageRoot: account.storageRoot,
           })
           await this.stateManager.putAccount(address, newAccount)
         }
@@ -247,7 +253,13 @@ export class VM {
       evm: evmCopy,
       hardforkByBlockNumber: this._hardforkByBlockNumber ? true : undefined,
       hardforkByTTD: this._hardforkByTTD,
+      activateGenesisState: true,
+      activatePrecompiles: true,
+      blockchain: this.blockchain.copy(),
+      common: this._common.copy(),
+      stateManager: await this.stateManager.copy(),
     })
+    return vmCopy
   }
 
   /**

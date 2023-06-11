@@ -8,6 +8,7 @@ import {
   GWEI_TO_WEI,
   bigIntToBytes,
   bytesToHex,
+  bytesToPrefixedHexString,
   concatBytesNoTypeCheck,
   equalsBytes,
   intToBytes,
@@ -464,7 +465,7 @@ async function _applyDAOHardfork(state: EVMStateManagerInterface) {
 }
 
 async function _genTxTrie(block: Block) {
-  const trie = new Trie()
+  const trie = new Trie({ secure: true, useKeyHashing: true })
   for (const [i, tx] of block.transactions.entries()) {
     await trie.put(RLP.encode(i), tx.serialize())
   }
