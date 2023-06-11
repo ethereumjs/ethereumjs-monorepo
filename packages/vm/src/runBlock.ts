@@ -8,7 +8,6 @@ import {
   GWEI_TO_WEI,
   bigIntToBytes,
   bytesToHex,
-  bytesToPrefixedHexString,
   concatBytesNoTypeCheck,
   equalsBytes,
   intToBytes,

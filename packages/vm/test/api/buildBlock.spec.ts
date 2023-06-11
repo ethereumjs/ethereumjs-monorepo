@@ -2,13 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
-import {
-  Account,
-  Address,
-  bytesToPrefixedHexString,
-  concatBytesNoTypeCheck,
-  hexStringToBytes,
-} from '@ethereumjs/util'
+import { Account, Address, concatBytesNoTypeCheck } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 

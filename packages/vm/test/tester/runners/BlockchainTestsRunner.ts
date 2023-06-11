@@ -3,15 +3,9 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Trie, TrieDatabase } from '@ethereumjs/trie'
+import { Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
-import {
-  bytesToBigInt,
-  hexStringToBytes,
-  isHexPrefixed,
-  stripHexPrefix,
-  toBytes,
-} from '@ethereumjs/util'
+import { MapDB, bytesToBigInt, isHexPrefixed, stripHexPrefix, toBytes } from '@ethereumjs/util'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { setupPreConditions, verifyPostConditions } from '../../util'
@@ -41,7 +35,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   let common = options.common.copy() as Common
   common.setHardforkByBlockNumber(0)
 
-  // let cacheDB = new MapDB()
+  let cacheDB = new MapDB()
   let state = new Trie({ useKeyHashing: true })
   let stateManager = new DefaultStateManager({
     trie: state,

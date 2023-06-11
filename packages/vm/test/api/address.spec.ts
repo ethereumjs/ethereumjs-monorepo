@@ -1,4 +1,4 @@
-import { Account, Address, hexStringToBytes } from '@ethereumjs/util'
+import { Address, hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 const adds = {
