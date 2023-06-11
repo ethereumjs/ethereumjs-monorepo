@@ -4,7 +4,7 @@ import { MerklePatriciaTrie } from './trie/merklePatricia'
 import { TrieWithDB } from './trie/trieDB'
 import { TrieWrap } from './trie/trieWrapper'
 
-import type { DB, TrieDatabase } from './db'
+import type { TrieDatabase } from './db'
 import type { TNode } from './trie/node/types'
 import type { Debugger } from 'debug'
 import type LRUCache from 'lru-cache'
@@ -25,7 +25,7 @@ export interface TrieOpts {
   /**
    * A database instance.
    */
-  db?: DB<string, string>
+  db?: DB
 
   /**
    * A `Uint8Array` for the root of a previously stored trie
@@ -90,6 +90,7 @@ export interface MerklePatriciaTrieOptions {
 export interface TrieDBOptions extends Exclude<MerklePatriciaTrieOptions, 'nodes'> {
   db?: TrieDatabase
   cache?: LRUCache<Uint8Array, TNode>
+  cacheSize?: number
   checkpoints?: Uint8Array[]
   maxCheckpoints?: number
   persistent?: boolean
@@ -115,5 +116,59 @@ export type TrieOptions<T extends TrieType> = T extends 'MERKLE_PATRICIA_TRIE'
   : T extends 'TRIE_WRAP'
   ? TrieWrapOptions
   : never
+
+export type BatchDBOp = PutBatch | DelBatch
+
+export interface PutBatch {
+  type: 'put'
+  key: Uint8Array
+  value: Uint8Array
+}
+
+export interface DelBatch {
+  type: 'del'
+  key: Uint8Array
+}
+
+export interface DB {
+  /**
+   * Retrieves a raw value from leveldb.
+   * @param key
+   * @returns A Promise that resolves to `Uint8Array` if a value is found or `null` if no value is found.
+   */
+  get(key: Uint8Array): Promise<Uint8Array | null>
+
+  /**
+   * Writes a value directly to leveldb.
+   * @param key The key as a `Uint8Array`
+   * @param value The value to be stored
+   */
+  put(key: Uint8Array, val: Uint8Array): Promise<void>
+
+  /**
+   * Removes a raw value in the underlying leveldb.
+   * @param keys
+   */
+  del(key: Uint8Array): Promise<void>
+
+  /**
+   * Performs a batch operation on db.
+   * @param opStack A stack of levelup operations
+   */
+  batch(opStack: BatchDBOp[]): Promise<void>
+
+  /**
+   * Returns a copy of the DB instance, with a reference
+   * to the **same** underlying leveldb instance.
+   */
+  copy(): Promise<DB>
+}
+
+export type Checkpoint = {
+  // We cannot use a Uint8Array => Uint8Array map directly. If you create two Uint8Arrays with the same internal value,
+  // then when setting a value on the Map, it actually creates two indices.
+  keyValueMap: Map<string, Uint8Array | null>
+  root: Uint8Array
+}
 
 export const ROOT_DB_KEY = utf8ToBytes('__root__')

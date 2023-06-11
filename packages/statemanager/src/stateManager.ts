@@ -24,8 +24,6 @@ import {
 import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { hexToBytes } from 'ethereum-cryptography/utils'
-import { OrderedMap } from 'js-sdsl'
-import LRUCache from 'lru-cache'
 
 import { AccountCache, CacheType, StorageCache } from './cache'
 import { Journaling } from './cache/journaling'
@@ -316,9 +314,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     } else {
       await this._trie.database().del(this._trie.keySecure(address.bytes))
     }
-  }
-  if(touch) {
-    this.touchAccount(address)
+    if (touch) {
+      this.touchAccount(address)
+    }
   }
 
   /**
@@ -1202,7 +1200,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * 2. Cache values are generally not copied along
    */
   async copy(): Promise<DefaultStateManager> {
-    const trie = await this._trie.copy(false)
     const prefixCodeHashes = this._prefixCodeHashes
     let accountCacheOpts = { ...this._accountCacheSettings }
     if (!this._accountCacheSettings.deactivate) {
@@ -1219,44 +1216,49 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       accountCacheOpts,
       storageCacheOpts,
     })
+
+    /**
+     * 
     for (const [address, trie] of Object.entries(this._storageTries)) {
       copy._storageTries[address] = await trie.copy()
     }
-    // for (const [address, code] of Object.entries(this._codeCache)) {
-    //   copy._codeCache[address] = code
-    // }
-    // const accountCacheCopy = new AccountCache(this._accountCacheSettings)
-    // if (this._accountCache) {
-    //   accountCacheCopy._checkpoints = this._accountCache._checkpoints
-    //   accountCacheCopy._diffCache = [...this._accountCache._diffCache]
-    //   accountCacheCopy._orderedMapCache = new OrderedMap(this._accountCache._orderedMapCache)
-    //   accountCacheCopy._stats = { ...this._accountCache._stats }
-    //   if (this._accountCache._lruCache) {
-    //     accountCacheCopy._lruCache = new LRUCache({ max: this._accountCache._lruCache.max })
-    //     for (const [address, account] of this._accountCache._lruCache!.entries()) {
-    //       accountCacheCopy._lruCache.set(address, account)
-    //     }
-    //   }
-    //   copy._accountCache = accountCacheCopy
-    // }
-    // if (this._storageCache) {
-    //   const storageCacheCopy = new StorageCache({
-    //     size: this._storageCacheSettings.size,
-    //     type: this._storageCacheSettings.type,
-    //   })
-    //   storageCacheCopy._checkpoints = this._storageCache._checkpoints
-    //   storageCacheCopy._diffCache = [...this._storageCache._diffCache]
-    //   storageCacheCopy._orderedMapCache = new OrderedMap(this._storageCache._orderedMapCache)
-    //   storageCacheCopy._stats = { ...this._storageCache._stats }
-    //   if (this._storageCache._lruCache) {
-    //     storageCacheCopy._lruCache = new LRUCache({ max: this._storageCache._lruCache.max })
-    //     for (const [address, storage] of this._storageCache._lruCache!.entries()) {
-    //       storageCacheCopy._lruCache.set(address, storage)
-    //     }
-    //   }
-    //   copy._storageCache = storageCacheCopy
-    // }
+    for (const [address, code] of Object.entries(this._codeCache)) {
+      copy._codeCache[address] = code
+    }
+    const accountCacheCopy = new AccountCache(this._accountCacheSettings)
+    if (this._accountCache) {
+      accountCacheCopy._checkpoints = this._accountCache._checkpoints
+      accountCacheCopy._diffCache = [...this._accountCache._diffCache]
+      accountCacheCopy._orderedMapCache = new OrderedMap(this._accountCache._orderedMapCache)
+      accountCacheCopy._stats = { ...this._accountCache._stats }
+      if (this._accountCache._lruCache) {
+        accountCacheCopy._lruCache = new LRUCache({ max: this._accountCache._lruCache.max })
+        for (const [address, account] of this._accountCache._lruCache!.entries()) {
+          accountCacheCopy._lruCache.set(address, account)
+        }
+      }
+      copy._accountCache = accountCacheCopy
+    }
+    if (this._storageCache) {
+      const storageCacheCopy = new StorageCache({
+        size: this._storageCacheSettings.size,
+        type: this._storageCacheSettings.type,
+      })
+      storageCacheCopy._checkpoints = this._storageCache._checkpoints
+      storageCacheCopy._diffCache = [...this._storageCache._diffCache]
+      storageCacheCopy._orderedMapCache = new OrderedMap(this._storageCache._orderedMapCache)
+      storageCacheCopy._stats = { ...this._storageCache._stats }
+      if (this._storageCache._lruCache) {
+        storageCacheCopy._lruCache = new LRUCache({ max: this._storageCache._lruCache.max })
+        for (const [address, storage] of this._storageCache._lruCache!.entries()) {
+          storageCacheCopy._lruCache.set(address, storage)
+        }
+      }
+      copy._storageCache = storageCacheCopy
+    }
     return copy
+    
+    */
   }
 
   /**

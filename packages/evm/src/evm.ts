@@ -1004,7 +1004,7 @@ export class EVM implements EVMInterface {
     common.setHardfork(this._common.hardfork())
     const evmCopy = await EVM.create({
       common,
-      eei: await this.eei.copy(),
+      stateManager: await this.stateManager.copy(),
       allowUnlimitedContractSize: this._allowUnlimitedContractSize,
       allowUnlimitedInitCodeSize: this._allowUnlimitedInitCodeSize,
       customOpcodes: this._customOpcodes,

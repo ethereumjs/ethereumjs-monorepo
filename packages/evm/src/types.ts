@@ -17,7 +17,7 @@ export interface EVMInterface {
   getActiveOpcodes?(): OpcodeList
   precompiles: Map<string, any> // Note: the `any` type is used because EVM only needs to have the addresses of the precompiles (not their functions)
   copy(): Promise<EVMInterface>
-  eei: EEIInterface
+  stateManager: EVMStateManagerInterface
   events?: AsyncEventEmitter<EVMEvents>
 }
 

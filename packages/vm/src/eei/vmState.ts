@@ -1,5 +1,4 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { ripemdPrecompileAddress } from '@ethereumjs/evm/dist/precompiles'
 import { RLP } from '@ethereumjs/rlp'
 import { LeafNode, Trie, bytesToNibbles, insertBatch, parseBulk } from '@ethereumjs/trie'
 import {
@@ -11,24 +10,22 @@ import {
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex } from 'ethereum-cryptography/utils'
 
-import { Journaling } from './journaling'
-
-import type { EVMStateAccess } from '@ethereumjs/evm/dist/types'
-import type { AccountFields, StateManager } from '@ethereumjs/statemanager'
+import type { AccountFields } from '@ethereumjs/common'
+import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { BulkNodeInput } from '@ethereumjs/trie'
 import type { AccessList, AccessListItem } from '@ethereumjs/tx'
 import type { Debugger } from 'debug'
 
 type AddressHex = string
 
-export class VmState implements EVMStateAccess {
+export class VmState {
   protected _common: Common
   protected _debug: Debugger
 
   protected _checkpointCount: number
-  protected _stateManager: StateManager
+  protected _stateManager: DefaultStateManager
 
   // EIP-2929 address/storage trackers.
   // This maps both the accessed accounts and the accessed storage slots.
@@ -50,11 +47,11 @@ export class VmState implements EVMStateAccess {
 
   protected _originalStorageCache: Map<AddressHex, Map<AddressHex, Uint8Array>>
 
-  protected readonly touchedJournal: Journaling<AddressHex>
+  // protected readonly touchedJournal: Journaling<AddressHex>
 
   protected readonly DEBUG: boolean = false
 
-  constructor({ common, stateManager }: { common?: Common; stateManager: StateManager }) {
+  constructor({ common, stateManager }: { common?: Common; stateManager: DefaultStateManager }) {
     this._checkpointCount = 0
     this._stateManager = stateManager
     this._common = common ?? new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
@@ -62,7 +59,7 @@ export class VmState implements EVMStateAccess {
     this._accessedStorage = [new Map()]
     this._accessedStorageReverted = [new Map()]
 
-    this.touchedJournal = new Journaling<AddressHex>()
+    // this.touchedJournal = new Journaling<AddressHex>()
 
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
@@ -83,7 +80,7 @@ export class VmState implements EVMStateAccess {
     }
     await this._stateManager.checkpoint()
     this._checkpointCount++
-    this.touchedJournal.checkpoint()
+    // this.touchedJournal.checkpoint()
 
     if (this.DEBUG) {
       this._debug('-'.repeat(100))
@@ -100,7 +97,7 @@ export class VmState implements EVMStateAccess {
       }
     }
     await this._stateManager.commit()
-    this.touchedJournal.commit()
+    // this.touchedJournal.commit()
     this._checkpointCount--
 
     if (this._checkpointCount === 0) {
@@ -128,7 +125,7 @@ export class VmState implements EVMStateAccess {
       }
     }
     await this._stateManager.revert()
-    this.touchedJournal.revert(ripemdPrecompileAddress)
+    // this.touchedJournal.revert(ripemdPrecompileAddress)
 
     this._checkpointCount--
 
@@ -212,8 +209,8 @@ export class VmState implements EVMStateAccess {
    * event. Touched accounts that are empty will be cleared
    * at the end of the tx.
    */
-  touchAccount(address: Address): void {
-    this.touchedJournal.addJournalItem(address.toString().slice(2))
+  touchAccount(_address: Address): void {
+    // this.touchedJournal.addJournalItem(address.toString().slice(2))
   }
 
   /**
@@ -341,29 +338,29 @@ export class VmState implements EVMStateAccess {
     // await this._stateManager.flush()
     // If any empty accounts are put, these should not be marked as touched
     // (when first tx is ran, this account is deleted when it cleans up the accounts)
-    this.touchedJournal.clear()
+    // this.touchedJournal.clear()
   }
 
   /**
    * Removes accounts form the state trie that have been touched,
    * as defined in EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
    */
-  async cleanupTouchedAccounts(): Promise<void> {
-    if (this._common.gteHardfork(Hardfork.SpuriousDragon) === true) {
-      const touchedArray = Array.from(this.touchedJournal.journal)
-      for (const addressHex of touchedArray) {
-        const address = new Address(hexToBytes(addressHex))
-        const empty = await this.accountIsEmptyOrNonExistent(address)
-        if (empty) {
-          await this._stateManager.deleteAccount(address)
-          if (this.DEBUG) {
-            this._debug(`Cleanup touched account address=${address} (>= SpuriousDragon)`)
-          }
-        }
-      }
-    }
-    this.touchedJournal.clear()
-  }
+  // async cleanupTouchedAccounts(): Promise<void> {
+  //   if (this._common.gteHardfork(Hardfork.SpuriousDragon) === true) {
+  //     // const touchedArray: string[] = Array.from(this.touchedJournal.journal)
+  //     for (const addressHex of touchedArray) {
+  //       const address = new Address(hexToBytes(addressHex))
+  //       const empty = await this.accountIsEmptyOrNonExistent(address)
+  //       if (empty) {
+  //         await this._stateManager.deleteAccount(address)
+  //         if (this.DEBUG) {
+  //           this._debug(`Cleanup touched account address=${address} (>= SpuriousDragon)`)
+  //         }
+  //       }
+  //     }
+  //   }
+  //   this.touchedJournal.clear()
+  // }
 
   /**
    * Caches the storage value associated with the provided `address` and `key`

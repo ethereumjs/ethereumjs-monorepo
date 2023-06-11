@@ -2,14 +2,7 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
 import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import {
-  Account,
-  Address,
-  AsyncEventEmitter,
-  TypeOutput,
-  bytesToPrefixedHexString,
-  toType,
-} from '@ethereumjs/util'
+import { Account, Address, AsyncEventEmitter, TypeOutput, toType } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import { promisify } from 'util'
 
@@ -238,7 +231,7 @@ export class VM {
     const common = this._common.copy()
     common.setHardfork(this._common.hardfork())
     const blockchain = this.blockchain.copy()
-    const stateManager = this.stateManager.copy()
+    const stateManager = await this.stateManager.copy()
     const evmOpts = {
       ...(this.evm as any)._optsCached,
       common,
@@ -248,18 +241,14 @@ export class VM {
     const evmCopy = new EVM(evmOpts)
     return VM.create({
       stateManager,
-      blockchain: this.blockchain,
+      blockchain,
       common,
       evm: evmCopy,
       hardforkByBlockNumber: this._hardforkByBlockNumber ? true : undefined,
       hardforkByTTD: this._hardforkByTTD,
       activateGenesisState: true,
       activatePrecompiles: true,
-      blockchain: this.blockchain.copy(),
-      common: this._common.copy(),
-      stateManager: await this.stateManager.copy(),
     })
-    return vmCopy
   }
 
   /**

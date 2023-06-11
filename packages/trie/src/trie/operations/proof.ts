@@ -94,7 +94,7 @@ export async function createProof(
   debug(`nibbles: [${node.getPartialKey()}]`)
   let nibbleIndex = 0
   const proof = []
-  let proofNode: Uint8Array | null
+  let proofNode: Uint8Array | undefined
   while (nibbleIndex <= nibbles.length) {
     debug(`${node.getType()} => [${node.getPartialKey()}]`)
     switch (node.getType()) {
