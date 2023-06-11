@@ -1,3 +1,4 @@
+import { Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
@@ -283,7 +284,7 @@ const calculateRewards = async (
   return blockRewards
 }
 
-const calculateNextBaseFee = (parentBlock: Block) => {
+const calculateNextBaseFee = (parentBlock: Block, londonHardforkNumber: bigint | null) => {
   const { header: parentBlockHeader } = parentBlock
   const {
     gasUsed: parentBlockGasUsed,
@@ -291,7 +292,11 @@ const calculateNextBaseFee = (parentBlock: Block) => {
     baseFeePerGas: parentBlockBaseFee,
   } = parentBlockHeader
 
-  const baseFeeMin = 7n
+  const nextBlockNumber = parentBlockHeader.number + 1n
+  if (nextBlockNumber === londonHardforkNumber) {
+    return BigInt(1000000000)
+  }
+
   const targetGasUsed = parentBlockGasLimit / 2n
 
   if (targetGasUsed === parentBlockGasUsed) {
@@ -303,11 +308,8 @@ const calculateNextBaseFee = (parentBlock: Block) => {
       1n
     )
   } else {
-    const gasDelta = parentBlockGasUsed - targetGasUsed
-    return bigIntMax(
-      parentBlockBaseFee! - (gasDelta * parentBlockBaseFee!) / (targetGasUsed * 8n),
-      baseFeeMin
-    )
+    const gasDelta = targetGasUsed - parentBlockGasUsed
+    return parentBlockBaseFee! - (gasDelta * parentBlockBaseFee!) / (targetGasUsed * 8n)
   }
 }
 
@@ -451,8 +453,8 @@ export class Eth {
     this.gasPrice = middleware(this.gasPrice.bind(this), 0, [])
 
     this.feeHistory = middleware(this.feeHistory.bind(this), 2, [
-      [validators.either(validators.hex, validators.uint256)],
-      [validators.blockOption],
+      [validators.either(validators.hex, validators.integer)],
+      [validators.either(validators.hex, validators.blockOption)],
       [validators.array(validators.integer)],
     ])
   }
@@ -1220,7 +1222,7 @@ export class Eth {
       await getBlockByOption(lastBlockRequested, this._chain)
     ).header
 
-    const oldestBlockNumber = bigIntMax(lastRequestedBlockNumber - blockCount, BigInt(0))
+    const oldestBlockNumber = bigIntMax(lastRequestedBlockNumber - blockCount - 1n, BigInt(0))
 
     const requestedBlockNumbers = Array.from(
       { length: Number(blockCount) },
@@ -1236,7 +1238,7 @@ export class Eth {
         const [prevBaseFees, prevGasUsedRatios] = v
         const { baseFeePerGas, gasUsed, gasLimit } = b.header
 
-        prevBaseFees.push(baseFeePerGas)
+        prevBaseFees.push(baseFeePerGas ?? BigInt(0))
         prevGasUsedRatios.push(Number(gasUsed) / Number(gasLimit))
 
         return [prevBaseFees, prevGasUsedRatios]
@@ -1244,7 +1246,14 @@ export class Eth {
       [[], []] as [(bigint | undefined)[], number[]]
     )
 
-    const nextBaseFee = calculateNextBaseFee(requestedBlocks[requestedBlocks.length - 1])
+    const londonHardforkBlockNumber = this._chain.blockchain._common.hardforkBlock(Hardfork.London)!
+    const nextBaseFee =
+      lastRequestedBlockNumber - londonHardforkBlockNumber >= -1n
+        ? calculateNextBaseFee(
+            requestedBlocks[requestedBlocks.length - 1],
+            londonHardforkBlockNumber
+          )
+        : BigInt(0)
     baseFees.push(nextBaseFee)
 
     let rewards: bigint[][] = []
