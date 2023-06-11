@@ -69,7 +69,7 @@ tape('partitionByCommonPrefix', (t) => {
 
   t.end()
 })
-tape('bulk', async (t) => {
+tape('bulkInsert and insertBatch', async (t) => {
   const sample = _bulkJSON
   /**
    * This makes the test take much longer, but can be enabled to ensure that bulkInsert and batchInsert are working 
@@ -88,6 +88,7 @@ tape('bulk', async (t) => {
   const test = new Trie({})
   await test.bulkInsert(bulkInsertInput)
   const bulk_end = Date.now()
+  t.pass(`bulkInsert completed in ${(bulk_end - bulk_start) / 1000} seconds`)
   const batch_start = Date.now()
   const batchInsert = parseBulk(
     sample.map(([key, value]) => [bytesToNibbles(hexStringToBytes(key)), value])
@@ -103,13 +104,12 @@ tape('bulk', async (t) => {
   })
   const batchTrie = await insertBatch(batchLeaves, false, debug('BULKTEST'))
   const batch_end = Date.now()
-
+  t.pass(`batchInsert completed in ${(batch_end - batch_start) / 1000} seconds`)
   for (const key of Object.keys(bulkMap)) {
     const retrieved = await batchTrie.get(hexStringToBytes(key))
     if (!retrieved) {
       t.fail(`batchTrie should have a value for ${key}`)
-      // t.end()
-      return
+      continue
     }
     t.equal(
       bytesToPrefixedHexString(retrieved),

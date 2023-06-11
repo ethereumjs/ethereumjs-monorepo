@@ -151,6 +151,10 @@ export class TrieWrap extends TrieWithDB {
   }
   constructor(options: TrieWrapOptions = {}) {
     super(options)
+    this._opts = {
+      cacheSize: options.cacheSize ?? 0,
+      ...options,
+    }
   }
   bulkInsert = bulkInsert.bind(this)
   getChildOf = getChildOf.bind(this)
@@ -206,7 +210,7 @@ export class TrieWrap extends TrieWithDB {
       secure: this.secure,
       useKeyHashing: this.secure,
       db: dbCopy,
-      cache: cacheCopy,
+      // cache: cacheCopy,
       checkpoints: includeCheckpoints ? [...this.checkpoints.slice()] : undefined,
       useRootPersistence: this.persistent,
       hashFunction: this.hashFunction,

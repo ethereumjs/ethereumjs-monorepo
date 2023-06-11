@@ -44,7 +44,7 @@ tape('testing checkpoints', function (tester) {
 
   it('should deactivate cache on copy()', async function (t) {
     const trie = new Trie({ cacheSize: 100 })
-    trieCopy = trie.copy()
+    trieCopy = await trie.copy()
     t.equal((trieCopy as any)._opts.cacheSize, 0)
     t.end()
   })

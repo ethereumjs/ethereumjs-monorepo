@@ -34,6 +34,7 @@ export class TrieWithDB extends MerklePatriciaTrie {
     return trie
   }
   private db: TrieDatabase
+  _opts: TrieDBOptions
   cache: LRUCache<Uint8Array, TNode>
   checkpoints: Uint8Array[]
   maxCheckpoints: number
@@ -42,12 +43,13 @@ export class TrieWithDB extends MerklePatriciaTrie {
   useNodePruning: boolean
   keySecure: (key: Uint8Array) => Uint8Array
 
-  constructor(options: TrieDBOptions = {}) {
+  constructor(options: TrieDBOptions = { cacheSize: 1000 }) {
     super(options)
     this.cache = options.cache ?? new LRUCache({ max: 1000 })
     if (options.db) {
       this.debug(`Building Trie from DB: ${options.db}`)
     }
+    this._opts = options
     this.db = options.db ?? new TrieDatabase({ _debug: this.debug })
     this.checkpoints = options.checkpoints ?? []
     this.maxCheckpoints = options.maxCheckpoints ?? 1000

@@ -82,7 +82,7 @@ for (const [secure, constructor] of [createTrie, createSecureTrie].entries()) {
         persistent: true,
       })
       st.true(trie.persistent, 'trie should be persistent')
-      st.equal(await trie.database().get(ROOT_DB_KEY), null, 'no root passed')
+      st.equal(await trie.database().get(ROOT_DB_KEY), undefined, 'no root passed')
 
       await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
 
@@ -121,11 +121,11 @@ for (const [secure, constructor] of [createTrie, createSecureTrie].entries()) {
         persistent: false,
       })
 
-      st.equal(await trie.database().get(ROOT_DB_KEY), null)
+      st.equal(await trie.database().get(ROOT_DB_KEY), undefined)
 
       await trie.put(utf8ToBytes('do_not_persist_with_db'), utf8ToBytes('bar'))
 
-      st.equal(await trie.database().get(ROOT_DB_KEY), null)
+      st.equal(await trie.database().get(ROOT_DB_KEY), undefined)
 
       st.end()
     })
@@ -133,11 +133,11 @@ for (const [secure, constructor] of [createTrie, createSecureTrie].entries()) {
     t.test('persists the root if the `db` option is not provided', async function (st) {
       const trie = await constructor({ persistent: true })
 
-      st.equal(await trie.database().get(ROOT_DB_KEY), null)
+      st.equal(await trie.database().get(ROOT_DB_KEY), undefined)
 
       await trie.put(utf8ToBytes('do_not_persist_without_db'), utf8ToBytes('bar'))
 
-      st.notEqual(await trie.database().get(ROOT_DB_KEY), null)
+      st.notEqual(await trie.database().get(ROOT_DB_KEY), undefined)
 
       st.end()
     })
@@ -146,7 +146,7 @@ for (const [secure, constructor] of [createTrie, createSecureTrie].entries()) {
       const db = await TrieDatabase.create()
 
       const trie = await constructor({ db, persistent: true })
-      st.equal(await trie.database().get(ROOT_DB_KEY), null)
+      st.equal(await trie.database().get(ROOT_DB_KEY), undefined)
       await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
       st.deepEqual(await trie.database().get(ROOT_DB_KEY), hexStringToBytes(EXPECTED_ROOTS))
 
@@ -159,7 +159,7 @@ for (const [secure, constructor] of [createTrie, createSecureTrie].entries()) {
         db: await TrieDatabase.create(),
         persistent: true,
       })
-      st.equal(await empty.database().get(ROOT_DB_KEY), null)
+      st.equal(await empty.database().get(ROOT_DB_KEY), undefined)
 
       st.end()
     })
