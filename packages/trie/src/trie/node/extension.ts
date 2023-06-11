@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToPrefixedHexString, equalsBytes } from '@ethereumjs/util'
+import { bytesToPrefixedHexString } from '@ethereumjs/util'
 
 import { addHexPrefix } from '../../util/hex'
 import {

@@ -10,15 +10,6 @@ import type { MerklePatriciaTrie } from '../merklePatricia'
 import type { TNode } from '../node/types'
 import type { Debugger } from 'debug'
 
-const isValidRLPInput = (input: Uint8Array): boolean => {
-  try {
-    RLP.decode(input)
-    return true
-  } catch (e) {
-    return false
-  }
-}
-
 export async function decodeNode(
   this: MerklePatriciaTrie,
   encoded: Uint8Array,
@@ -33,127 +24,62 @@ export async function decodeNode(
   dbug(`decoded length: (${decodedLength})`)
   let node: TNode
   let subNode: TNode
-  switch (encodedLength) {
-    // case 0: {
-    //   dbug(`encoding as NullNode`)
-    //   return new NullNode({})
-    // }
-    // case 2: {
-    //   switch (decodedLength) {
-    //     case 2: {
-    //       dbug(`decoded[1] length: (${decoded[1].length})`)
-    //       switch (decoded[1].length) {
-    //         case 32: {
-    //           dbug(`subNode is a HashedNode -- decoding...`)
-    //           const subNode = await this._decodeHashedChild(decoded[1], dbug)
-    //           return new ExtensionNode({
-    //             keyNibbles: bytesToNibbles(decoded[0]),
-    //             subNode,
-    //           })
-    //         }
-    //         case 17: {
-    //           dbug(`subNode is a BranchNode -- decoding...`)
-    //           const subNode = await decodeBranchNode.bind(this)(encoded, dbug)
-    //           return new ExtensionNode({
-    //             keyNibbles: bytesToNibbles(decoded[0]),
-    //             subNode,
-    //           })
-    //         }
-    //         default:
-    //           dbug(`subNode is a LeafNode -- decoding...`)
-    //           const subNode = await this._decodeLeafNode(encoded, dbug)
-    //           return new ExtensionNode({
-    //             keyNibbles: bytesToNibbles(decoded[0]),
-    //             subNode,
-    //           })
-    //       }
-    //     }
-    //     case 0: {
-    //       dbug(`encoding as NullNode`)
-    //       return new NullNode({})
-    //     }
-    //     case 17: {
-    //       const node = await decodeBranchNode.bind(this)(encoded, dbug)
-    //       dbug(`encoding as BranchNode`)
-    //       return node
-    //     }
-    //     case 32: {
-    //       const node = await decodeHashedChild.bind(this)(encoded, dbug)
-    //       dbug(`encoding as ${node.getType()}`)
-    //       return node
-    //     }
-    //     default:
-    //       break
-    //   }
-    // }
-    // case 17: {
-    //   const node = await decodeBranchNode.bind(this)(encoded, dbug)
-    //   dbug(`encoding as BranchNode`)
-    //   return node
-    // }
-    // case 32: {
-    //   const node = await decodeHashedChild.bind(this)(encoded, dbug)
-    //   dbug(`encoding as ${node.getType()}`)
-    //   return node
-    // }
-    default:
-      debug(`decoded: ${decoded}`)
-      switch (decodedLength) {
-        case 0: {
-          dbug(`encoding as NullNode`)
-          return new NullNode({})
-        }
-        case 2:
-          {
-            dbug(`decoded[0] length: (${decoded[0].length})`)
-            dbug(`decoded[1] length: (${decoded[1].length})`)
-            switch (decoded[1].length) {
-              case 32: {
-                const subNode = await this._decodeHashedChild(decoded[1], dbug)
-                dbug(`encoding as ExtensionNode`)
-                return new ExtensionNode({
-                  keyNibbles: removeHexPrefix(bytesToNibbles(decoded[0])),
-                  subNode,
-                })
-              }
-              case 17: {
-                dbug(`subNode is a BranchNode -- decoding...`)
-                subNode = await this._decodeBranchNode(RLP.encode(decoded[1]), dbug)
-                return new ExtensionNode({
-                  keyNibbles: removeHexPrefix(bytesToNibbles(decoded[0])),
-                  subNode,
-                })
-              }
-              default:
-                dbug(`building new LeafNode`)
-                node = new LeafNode({
-                  key: removeHexPrefix(bytesToNibbles(decoded[0])),
-                  value: decoded[1],
-                  hashFunction: this.hashFunction,
-                  source: dbug,
-                })
-                dbug(`equal? ${equalsBytes(node.hash(), this.hashFunction(encoded))}`)
-                if (equalsBytes(node.hash(), this.hashFunction(encoded))) {
-                  dbug(`hash: ${bytesToPrefixedHexString(node.hash())}`)
-                  dbug(`value: ${node.value}`)
-                  return node
-                }
-            }
+  debug(`decoded: ${decoded}`)
+  switch (decodedLength) {
+    case 0: {
+      dbug(`encoding as NullNode`)
+      return new NullNode({})
+    }
+    case 2:
+      {
+        dbug(`decoded[0] length: (${decoded[0].length})`)
+        dbug(`decoded[1] length: (${decoded[1].length})`)
+        switch (decoded[1].length) {
+          case 32: {
+            const subNode = await this._decodeHashedChild(decoded[1], dbug)
+            dbug(`encoding as ExtensionNode`)
+            return new ExtensionNode({
+              keyNibbles: removeHexPrefix(bytesToNibbles(decoded[0])),
+              subNode,
+            })
           }
-          break
-        case 17: {
-          node = await this._decodeBranchNode(encoded, dbug)
-          dbug(`encoding as BranchNode`)
-          return node
+          case 17: {
+            dbug(`subNode is a BranchNode -- decoding...`)
+            subNode = await this._decodeBranchNode(RLP.encode(decoded[1]), dbug)
+            return new ExtensionNode({
+              keyNibbles: removeHexPrefix(bytesToNibbles(decoded[0])),
+              subNode,
+            })
+          }
+          default:
+            dbug(`building new LeafNode`)
+            node = new LeafNode({
+              key: removeHexPrefix(bytesToNibbles(decoded[0])),
+              value: decoded[1],
+              hashFunction: this.hashFunction,
+              source: dbug,
+            })
+            dbug(`equal? ${equalsBytes(node.hash(), this.hashFunction(encoded))}`)
+            if (equalsBytes(node.hash(), this.hashFunction(encoded))) {
+              dbug(`hash: ${bytesToPrefixedHexString(node.hash())}`)
+              dbug(`value: ${node.value}`)
+              return node
+            }
         }
-        case 32: {
-          const node = await this._decodeHashedChild(encoded, dbug)
-          dbug(`encoding as ${node.getType()}`)
-          return node
-        }
-        default:
-          break
       }
+      break
+    case 17: {
+      node = await this._decodeBranchNode(encoded, dbug)
+      dbug(`encoding as BranchNode`)
+      return node
+    }
+    case 32: {
+      const node = await this._decodeHashedChild(encoded, dbug)
+      dbug(`encoding as ${node.getType()}`)
+      return node
+    }
+    default:
+      break
   }
   // if (decodedLength === 17) {
   //   const node = await decodeBranchNode.bind(this)(encoded, dbug)

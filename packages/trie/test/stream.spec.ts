@@ -1,4 +1,3 @@
-import { bytesToPrefixedHexString } from '@ethereumjs/util'
 import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils'
 import { EventEmitter } from 'events'
 import * as tape from 'tape'
@@ -114,7 +113,6 @@ tape('kv stream test', async function (t) {
     })
 
     stream.on('data', (d: { key: number[]; value: Uint8Array }) => {
-      console.log(valObj)
       const key = bytesToUtf8(nibblestoBytes(d.key))
       const value = bytesToUtf8(d.value)
       st.equal(value, valObj[key], `value for key ${key} should match`)
@@ -176,7 +174,7 @@ tape('db stream test', function (tester) {
   ] as BatchDBOp[]
 
   it('should populate trie', async function (t) {
-    trie.checkpoint()
+    await trie.checkpoint()
     await trie.batch(ops)
     t.end()
   })

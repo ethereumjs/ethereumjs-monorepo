@@ -1,13 +1,7 @@
-import {
-  bytesToPrefixedHexString,
-  bytesToUtf8,
-  hexStringToBytes,
-  utf8ToBytes,
-} from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { Trie, bytesToNibbles } from '../src'
+import { Trie } from '../src'
 
 tape('simple merkle proofs generation and verification', function (tester) {
   const it = tester.test
@@ -21,7 +15,7 @@ tape('simple merkle proofs generation and verification', function (tester) {
 
     let proof = await trie._createProof(utf8ToBytes('key2bb'))
     let val = await Trie.verifyProof(trie.root(), utf8ToBytes('key2bb'), proof)
-    if (val) {
+    if (val instanceof Uint8Array) {
       t.equal(bytesToUtf8(val), 'aval2')
     } else {
       t.fail(`verifyProof returned ${val} for key2bb`)
@@ -29,7 +23,7 @@ tape('simple merkle proofs generation and verification', function (tester) {
     proof = await trie._createProof(utf8ToBytes('key1aa'))
     val = await Trie.verifyProof(trie.root(), utf8ToBytes('key1aa'), proof)
     t.ok(val, 'val returned a value')
-    if (val) {
+    if (val instanceof Uint8Array) {
       t.equal(bytesToUtf8(val!), '0123456789012345678901234567890123456789xx')
     }
     proof = await trie._createProof(utf8ToBytes('key2bb'))
@@ -142,7 +136,7 @@ tape('simple merkle proofs generation and verification', function (tester) {
     let proof = await trie._createProof(utf8ToBytes('a'))
     let val = await Trie.verifyProof(trie.root(), utf8ToBytes('a'), proof)
     t.deepEqual(val, utf8ToBytes('a'))
-    if (val) {
+    if (val instanceof Uint8Array) {
       proof = await trie._createProof(utf8ToBytes('b'))
       val = await Trie.verifyProof(trie.root(), utf8ToBytes('b'), proof)
       t.deepEqual(val, utf8ToBytes('b'))

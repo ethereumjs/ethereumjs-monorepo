@@ -128,9 +128,9 @@ tape('bulkInsert and insertBatch', async (t) => {
     bytesToPrefixedHexString(test.root()),
     'do they have the same root hash'
   )
-  console.log({
-    // control: (control_end - control_start) / 1000,
-    bulkInsert: (bulk_end - bulk_start) / 1000,
-    batchInsert: (batch_end - batch_start) / 1000,
-  })
+  t.pass(`{
+    control: {(control_end - control_start) / 1000},
+    bulkInsert: ${(bulk_end - bulk_start) / 1000},
+    batchInsert: ${(batch_end - batch_start) / 1000},
+  }`)
 })

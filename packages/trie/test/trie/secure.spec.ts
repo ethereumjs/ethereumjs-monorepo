@@ -1,5 +1,4 @@
 import {
-  MapDB,
   bytesToPrefixedHexString,
   bytesToUtf8,
   equalsBytes,
@@ -139,8 +138,8 @@ tape('secure tests should not crash', async function (t) {
   await trie.put(ak, a)
   await trie.put(bk, b)
   await trie.put(ck, c)
-  trie.checkpoint()
-  trie.checkpoint()
+  await trie.checkpoint()
+  await trie.checkpoint()
   await trie.commit()
   await trie.put(dk, d)
   await trie.put(ek, e)
@@ -156,7 +155,7 @@ tape('Securetrie.copy', function (it) {
 
     await trie.put(utf8ToBytes('key1'), utf8ToBytes('value1'))
     await trie.put(utf8ToBytes('key2'), utf8ToBytes('value2'))
-    trie.checkpoint()
+    await trie.checkpoint()
     const trieCopy = await trie.copy()
     const value = await trieCopy.get(utf8ToBytes('key2'))
     t.ok(value, `trieCopy.get(key2): ${value ? bytesToUtf8(value) : 'null'}`)
@@ -166,7 +165,7 @@ tape('Securetrie.copy', function (it) {
   it.test('created copy includes values added before checkpoint', async function (t) {
     const trie = new Trie({})
     await trie.put(utf8ToBytes('address1'), utf8ToBytes('value1'))
-    trie.checkpoint()
+    await trie.checkpoint()
     await trie.commit()
     await trie.flushCheckpoints()
     await trie.put(utf8ToBytes('address2'), utf8ToBytes('value2'))
