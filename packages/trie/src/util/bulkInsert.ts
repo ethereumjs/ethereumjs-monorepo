@@ -155,7 +155,7 @@ export const parseBulk = (entries: [number[], string][]): [[number[], number[]],
   })
   const partitioned = partitionByCommonPrefix(sortedEntries)
   return partitioned.flat().map((key, _i) => {
-    key[0].push(key[1].shift()!)
+    key[1].length > 0 && key[0].push(key[1].shift()!)
     const value = entryMap.get(JSON.stringify(key.flat()))!
     return [key, value]
   })
@@ -399,6 +399,11 @@ export async function insertBatch(
 ): Promise<TrieWrap> {
   dbug = dbug.extend('insertBatch')
   const trie = new Trie({ secure, persistent: true })
+  if (nodeInputs.length === 1) {
+    const { newNode, pathNibbles } = nodeInputs[0]
+    await trie.setRootNode(await newNode.updateKey([...pathNibbles, ...newNode.getPartialKey()]))
+    return trie
+  }
   // Sort the nodeInputs array by pathNibbles to ensure we're inserting nodes in order of their position in the Trie.
   // This way, we can maximize the reuse of previously created or updated BranchNodes.
   // nodeInputs.sort((a, b) => {

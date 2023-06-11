@@ -56,8 +56,22 @@ tape('testing checkpoints', function (tester) {
     t.end()
   })
 
-  it('should create a checkpoint', function (t) {
-    trie.checkpoint()
+  it('should deactivate cache on copy()', async function (t) {
+    const trie = new Trie({ cacheSize: 100 })
+    trieCopy = await trie.copy()
+    t.equal((trieCopy as any)._opts.cacheSize, 0)
+    t.end()
+  })
+
+  it('should deactivate cache on copy()', async function (t) {
+    const trie = new Trie({})
+    trieCopy = await trie.copy()
+    t.equal((trieCopy as any)._opts.cacheSize, 0)
+    t.end()
+  })
+
+  it('should create a checkpoint', async function (t) {
+    await trie.checkpoint()
     t.ok(trie.hasCheckpoints())
     t.end()
   })
@@ -100,7 +114,7 @@ tape('testing checkpoints', function (tester) {
     })
     await trie.put(utf8ToBytes('key1'), utf8ToBytes('value1'))
     preRoot = bytesToHex(trie.root())
-    trie.checkpoint()
+    await trie.checkpoint()
     await trie.put(utf8ToBytes('key2'), utf8ToBytes('value2'))
     const trieCopy = await trie.copy()
 
@@ -127,7 +141,7 @@ tape('testing checkpoints', function (tester) {
   })
 
   it('should commit a checkpoint', async function (t) {
-    trie.checkpoint()
+    await trie.checkpoint()
     await trie.put(utf8ToBytes('test'), utf8ToBytes('something'))
     await trie.put(utf8ToBytes('love'), utf8ToBytes('emotion'))
     postRoot = bytesToHex(trie.root())
@@ -144,10 +158,10 @@ tape('testing checkpoints', function (tester) {
   })
 
   it('should commit a nested checkpoint', async function (t) {
-    trie.checkpoint()
+    await trie.checkpoint()
     await trie.put(utf8ToBytes('test'), utf8ToBytes('something else'))
     const root = trie.root()
-    trie.checkpoint()
+    await trie.checkpoint()
     await trie.put(utf8ToBytes('the feels'), utf8ToBytes('emotion'))
     await trie.revert()
     await trie.commit()
@@ -165,7 +179,7 @@ tape('testing checkpoints', function (tester) {
   it('revert -> put', async function (t) {
     trie = new Trie()
 
-    trie.checkpoint()
+    await trie.checkpoint()
     await trie.put(k1, v1)
     t.deepEqual(await trie.get(k1), v1, 'before revert: v1 in trie')
     await trie.revert()
@@ -179,7 +193,7 @@ tape('testing checkpoints', function (tester) {
 
     await trie.put(k1, v1)
     t.deepEqual(await trie.get(k1), v1, 'before CP: v1')
-    trie.checkpoint()
+    await trie.checkpoint()
     await trie.put(k1, v12)
     await trie.put(k1, v123)
     await trie.revert()
@@ -192,7 +206,7 @@ tape('testing checkpoints', function (tester) {
     const trie = new Trie()
     await trie.put(k1, v1)
     t.deepEqual(await trie.get(k1), v1, 'before CP: v1')
-    trie.checkpoint()
+    await trie.checkpoint()
     const ops = [
       { type: 'put', key: k1, value: v12 },
       { type: 'put', key: k1, value: v123 },
@@ -207,7 +221,7 @@ tape('testing checkpoints', function (tester) {
     const trie = new Trie()
     await trie.put(k1, v1)
     t.deepEqual(await trie.get(k1), v1, 'before CP: v1')
-    trie.checkpoint()
+    await trie.checkpoint()
     await trie.del(k1)
     t.deepEqual(await trie.get(k1), null, 'before revert: null')
     await trie.revert()
@@ -219,9 +233,9 @@ tape('testing checkpoints', function (tester) {
     const trie = new Trie()
     await trie.put(k1, v1)
     t.deepEqual(await trie.get(k1), v1, 'before CP: v1')
-    trie.checkpoint()
+    await trie.checkpoint()
     await trie.put(k1, v12)
-    trie.checkpoint()
+    await trie.checkpoint()
     await trie.put(k1, v123)
     await trie.commit()
     t.deepEqual(await trie.get(k1), v123, 'after commit (second CP): v123')
@@ -260,11 +274,11 @@ tape('testing checkpoints', function (tester) {
 
     // Take a checkpoint to enable nested checkpoints
     // From this point, CommittedState will not write on disk
-    CommittedState.checkpoint()
+    await CommittedState.checkpoint()
 
     // Copy CommittedState
     const MemoryState = await CommittedState.copy()
-    MemoryState.checkpoint()
+    await MemoryState.checkpoint()
 
     // Test changes on MemoryState
     await MemoryState.put(KEY, utf8ToBytes('2'))

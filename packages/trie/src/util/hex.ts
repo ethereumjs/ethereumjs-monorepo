@@ -1,3 +1,8 @@
+import { bytesToPrefixedHexString } from '@ethereumjs/util'
+import debug from 'debug'
+
+import { nibblestoBytes } from './nibbles'
+
 /**
  * Prepends hex prefix to an array of nibbles.
  * @param key - Array of nibbles
@@ -27,12 +32,20 @@ export function addHexPrefix(_key: number[], terminator: boolean): number[] {
  * @private
  */
 export function removeHexPrefix(_val: number[]): number[] {
+  debug('removeHexPrefix').extend(`PRE: [${_val.length}]`)(_val)
+  debug('removeHexPrefix').extend(`PRE: [${_val.length}]`)(
+    bytesToPrefixedHexString(nibblestoBytes(_val))
+  )
   let val = [..._val]
   if (val[0] % 2) {
     val = val.slice(1)
   } else {
     val = val.slice(2)
   }
+  debug('removeHexPrefix').extend(`POST: [${val.length}]`)(val)
+  debug('removeHexPrefix').extend(`POST: [${val.length}]`)(
+    bytesToPrefixedHexString(nibblestoBytes(val))
+  )
 
   return val
 }

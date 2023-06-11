@@ -204,6 +204,7 @@ export class TrieWrap extends TrieWithDB {
       root: this.rootNode,
       debug: debug(this.debug.namespace).extend('copy'),
       secure: this.secure,
+      useKeyHashing: this.secure,
       db: dbCopy,
       cache: cacheCopy,
       checkpoints: includeCheckpoints ? [...this.checkpoints.slice()] : undefined,

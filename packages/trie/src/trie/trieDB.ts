@@ -124,7 +124,7 @@ export class TrieWithDB extends MerklePatriciaTrie {
     }
   }
   async persistRoot(rootDbKey: Uint8Array = ROOT_DB_KEY): Promise<void> {
-    this.debug.extend('persistRoot')(bytesToPrefixedHexString(rootDbKey))
+    this.debug.extend('persistRoot')(bytesToPrefixedHexString(this.rootNode.hash()))
     await this._withLock(async () => {
       await this.db.put(rootDbKey, this.rootNode.hash())
     })
