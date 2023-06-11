@@ -71,8 +71,26 @@ export interface BlockOptions {
   skipConsensusFormatValidation?: boolean
 }
 
-export interface VerkleState {
-  [key: PrefixedHexString]: PrefixedHexString
+export interface VerkleProof {
+  commitmentsByPath: PrefixedHexString[]
+  d: PrefixedHexString
+  depthExtensionPresent: PrefixedHexString
+  ipaProof: {
+    cl: PrefixedHexString[]
+    cr: PrefixedHexString[]
+    finalEvaluation: PrefixedHexString
+  }
+  otherStems: PrefixedHexString[]
+}
+
+export interface VerkleStateDiff {
+  stem: PrefixedHexString
+  suffixDiffs: { currentValue: PrefixedHexString | null; suffix: number }
+}
+
+export interface VerkleExecutionWitness {
+  stateDiff: VerkleStateDiff[]
+  verkleProof: VerkleProof
 }
 
 /**
@@ -102,8 +120,7 @@ export interface HeaderData {
    * Verkle Proof Data (experimental)
    * Fake-EIP 999001 (see Common library)
    */
-  verkleProof?: BytesLike
-  verklePreState?: VerkleState
+  verkleExecutionWitness?: VerkleExecutionWitness
 }
 
 /**
