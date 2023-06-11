@@ -57,9 +57,14 @@ tape('EIP 3860 tests', (t) => {
       eips: [],
     })
     const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-    const eei = await getEEI()
-    const evm = await EVM.create({ common: commonWith3860, eei })
-    const evmWithout3860 = await EVM.create({ common: commonWithout3860, eei: await eei.copy() })
+    const evm = await EVM.create({
+      common: commonWith3860,
+      stateManager: new DefaultStateManager(),
+    })
+    const evmWithout3860 = await EVM.create({
+      common: commonWithout3860,
+      stateManager: new DefaultStateManager(),
+    })
     const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     const contractAccount = await evm.stateManager.getAccount(contractFactory)
     await evm.stateManager.putAccount(contractFactory, contractAccount!)
@@ -99,9 +104,14 @@ tape('EIP 3860 tests', (t) => {
       eips: [],
     })
     const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-    const eei = await getEEI()
-    const evm = await EVM.create({ common: commonWith3860, eei })
-    const evmWithout3860 = await EVM.create({ common: commonWithout3860, eei: await eei.copy() })
+    const evm = await EVM.create({
+      common: commonWith3860,
+      stateManager: new DefaultStateManager(),
+    })
+    const evmWithout3860 = await EVM.create({
+      common: commonWithout3860,
+      stateManager: new DefaultStateManager(),
+    })
     const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     const contractAccount = await evm.stateManager.getAccount(contractFactory)
     await evm.stateManager.putAccount(contractFactory, contractAccount!)
@@ -178,7 +188,8 @@ tape('EIP 3860 tests', (t) => {
       })
       const evmDisabled = await EVM.create({
         common: commonWith3860,
-        eei: await eei.copy(),
+        stateManager: new DefaultStateManager(),
+
         allowUnlimitedInitCodeSize: false,
       })
       const contractFactory = Address.fromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
