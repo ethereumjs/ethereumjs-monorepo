@@ -214,7 +214,7 @@ tape('[PendingBlock]', async (t) => {
     await txPool.add(txA022)
 
     // This tx will not be added since its too big to fit
-    const txA03 = Transaction.fromTxData(
+    const txA03 = LegacyTransaction.fromTxData(
       {
         data: '0xFE', // INVALID opcode, uses all gas
         gasLimit: 10000000,
