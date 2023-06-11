@@ -39,7 +39,7 @@ tape(`${method}: call with valid parameters`, async (t) => {
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   const originalStateManagerCopy = DefaultStateManager.prototype.copy
   DefaultStateManager.prototype.setStateRoot = function (): any {}
-  DefaultStateManager.prototype.copy = function () {
+  DefaultStateManager.prototype.copy = async function () {
     return this
   }
   const { chain, service, server, common } = await setupChain(genesisJSON, 'post-merge', {
@@ -125,7 +125,7 @@ tape(`${method}: call with valid parameters on pre-Shanghai block`, async (t) =>
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   const originalStateManagerCopy = DefaultStateManager.prototype.copy
   DefaultStateManager.prototype.setStateRoot = function (): any {}
-  DefaultStateManager.prototype.copy = function () {
+  DefaultStateManager.prototype.copy = async function () {
     return this
   }
   const { chain, service, server, common } = await setupChain(
