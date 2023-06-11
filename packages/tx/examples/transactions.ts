@@ -2,7 +2,7 @@
 // You can run them with ts-node, as this project is developed in TypeScript.
 // Install the dependencies and run `npx ts-node examples/transactions.ts`
 
-import { Transaction } from '../src'
+import { LegacyTransaction } from '../src'
 import { bytesToPrefixedHexString, toBytes } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
@@ -51,7 +51,7 @@ const rawTx = [
   '0x5bd428537f05f9830e93792f90ea6a3e2d1ee84952dd96edbae9f658f831ab13',
 ]
 
-const tx2 = Transaction.fromValuesArray(rawTx.map(toBytes)) // This is also a mainnet transaction
+const tx2 = LegacyTransaction.fromValuesArray(rawTx.map(toBytes)) // This is also a mainnet transaction
 
 // So assuming that you were able to parse the transaction, we will now get the sender's address.
 
