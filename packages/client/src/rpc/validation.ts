@@ -272,6 +272,22 @@ export const validators = {
   },
 
   /**
+   * number validator to check if type is integer
+   * @param params parameters of method
+   * @param index index of parameter
+   */
+  get integer() {
+    return (params: any[], index: number) => {
+      if (typeof params[index] !== 'number') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument is not a number`,
+        }
+      }
+    }
+  },
+
+  /**
    * validator to ensure required transaction fields are present, and checks for valid address and hex values.
    * @param requiredFields array of required fields
    * @returns validator function with params:

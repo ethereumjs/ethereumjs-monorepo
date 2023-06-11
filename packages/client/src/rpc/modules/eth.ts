@@ -453,7 +453,7 @@ export class Eth {
     this.feeHistory = middleware(this.feeHistory.bind(this), 2, [
       [validators.either(validators.hex, validators.uint256)],
       [validators.blockOption],
-      [validators.array(validators.hex)],
+      [validators.array(validators.integer)],
     ])
   }
 
