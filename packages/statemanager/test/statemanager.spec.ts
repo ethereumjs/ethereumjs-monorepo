@@ -20,7 +20,7 @@ tape('StateManager -> General', (t) => {
 
     let smCopy = sm.copy()
     st.equal(
-      (smCopy as any)._prefixCodeHashes,
+      ((await smCopy) as any)._prefixCodeHashes,
       (sm as any)._prefixCodeHashes,
       'should retain non-default values'
     )
@@ -36,12 +36,12 @@ tape('StateManager -> General', (t) => {
 
     smCopy = sm.copy()
     st.equal(
-      (smCopy as any)._accountCacheSettings.type,
+      ((await smCopy) as any)._accountCacheSettings.type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP account cache on copy()'
     )
     st.equal(
-      (smCopy as any)._storageCacheSettings.type,
+      ((await smCopy) as any)._storageCacheSettings.type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP storage cache on copy()'
     )

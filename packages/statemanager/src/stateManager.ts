@@ -17,7 +17,7 @@ import {
   hexStringToBytes,
   setLengthLeft,
   short,
-  toBytes,
+  // toBytes,
   unpadBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
@@ -27,6 +27,7 @@ import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { AccountCache, CacheType, StorageCache } from './cache'
 import { Journaling } from './cache/journaling'
+import { generateCanonicalGenesis } from './util'
 
 import type {
   AccessListItem,
@@ -1105,41 +1106,42 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * Will error if there are uncommitted checkpoints on the instance.
    * @param initState address -> balance | [balance, code, storage]
    */
-  async generateCanonicalGenesis(initState: any): Promise<void> {
-    if (this._checkpointCount !== 0) {
-      throw new Error('Cannot create genesis state with uncommitted checkpoints')
-    }
-    if (this.DEBUG) {
-      this._debug(`Save genesis state into the state trie`)
-    }
-    const addresses = Object.keys(initState)
-    for (const address of addresses) {
-      const addr = Address.fromString(address)
-      const state = initState[address]
-      if (!Array.isArray(state)) {
-        // Prior format: address -> balance
-        const account = Account.fromAccountData({ balance: state })
-        await this.putAccount(addr, account)
-      } else {
-        // New format: address -> [balance, code, storage]
-        const [balance, code, storage, nonce] = state
-        const account = Account.fromAccountData({ balance, nonce })
-        await this.putAccount(addr, account)
-        if (code !== undefined) {
-          await this.putContractCode(addr, toBytes(code))
-        }
-        if (storage !== undefined) {
-          for (const [key, value] of storage) {
-            await this.putContractStorage(addr, toBytes(key), toBytes(value))
-          }
-        }
-      }
-    }
-    await this.flush()
-    // If any empty accounts are put, these should not be marked as touched
-    // (when first tx is ran, this account is deleted when it cleans up the accounts)
-    this.touchedJournal.clear()
-  }
+  // async generateCanonicalGenesis(initState: any): Promise<void> {
+  //   if (this._checkpointCount !== 0) {
+  //     throw new Error('Cannot create genesis state with uncommitted checkpoints')
+  //   }
+  //   if (this.DEBUG) {
+  //     this._debug(`Save genesis state into the state trie`)
+  //   }
+  //   const addresses = Object.keys(initState)
+  //   for (const address of addresses) {
+  //     const addr = Address.fromString(address)
+  //     const state = initState[address]
+  //     if (!Array.isArray(state)) {
+  //       // Prior format: address -> balance
+  //       const account = Account.fromAccountData({ balance: state })
+  //       await this.putAccount(addr, account)
+  //     } else {
+  //       // New format: address -> [balance, code, storage]
+  //       const [balance, code, storage, nonce] = state
+  //       const account = Account.fromAccountData({ balance, nonce })
+  //       await this.putAccount(addr, account)
+  //       if (code !== undefined) {
+  //         await this.putContractCode(addr, toBytes(code))
+  //       }
+  //       if (storage !== undefined) {
+  //         for (const [key, value] of storage) {
+  //           await this.putContractStorage(addr, toBytes(key), toBytes(value))
+  //         }
+  //       }
+  //     }
+  //   }
+  //   await this.flush()
+  //   // If any empty accounts are put, these should not be marked as touched
+  //   // (when first tx is ran, this account is deleted when it cleans up the accounts)
+  //   this.touchedJournal.clear()
+  // }
+  generateCanonicalGenesis = generateCanonicalGenesis.bind(this)
 
   /**
    * Checks whether there is a state corresponding to a stateRoot

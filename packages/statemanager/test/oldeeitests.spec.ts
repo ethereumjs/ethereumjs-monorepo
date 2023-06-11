@@ -11,7 +11,7 @@ tape('EEI.copy()', async (t) => {
   await state.putAccount(ZeroAddress, nonEmptyAccount)
   await state.checkpoint()
   await state.commit()
-  const copy = state.copy()
+  const copy = await state.copy()
   t.equal(
     (state as any)._common.hardfork(),
     (copy as any)._common.hardfork(),
