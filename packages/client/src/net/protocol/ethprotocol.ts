@@ -4,7 +4,9 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   BlobEIP4844Transaction,
   TransactionFactory,
+  isAccessListEIP2930Tx,
   isBlobEIP4844Tx,
+  isFeeMarketEIP1559Tx,
   isLegacyTx,
 } from '@ethereumjs/tx'
 import {
@@ -74,6 +76,12 @@ export interface EthProtocolMethods {
   getBlockBodies: (opts: GetBlockBodiesOpts) => Promise<[bigint, BlockBodyBytes[]]>
   getPooledTransactions: (opts: GetPooledTransactionsOpts) => Promise<[bigint, TypedTransaction[]]>
   getReceipts: (opts: GetReceiptsOpts) => Promise<[bigint, TxReceipt[]]>
+}
+
+function exhaustiveTypeGuard(_value: never): never {
+  throw new Error(
+    `ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(_value)}`
+  )
 }
 
 /**
@@ -224,18 +232,17 @@ export class EthProtocol extends Protocol {
       encode: ({ reqId, txs }: { reqId: bigint; txs: TypedTransaction[] }) => {
         const serializedTxs = []
         for (const tx of txs) {
-          if (isLegacyTx(tx)) {
-            serializedTxs.push(tx.raw())
-            break
-          }
-
+          // serialize txs as per type
           if (isBlobEIP4844Tx(tx)) {
             serializedTxs.push(tx.serializeNetworkWrapper())
-            break
+          } else if (isFeeMarketEIP1559Tx(tx) || isAccessListEIP2930Tx(tx)) {
+            serializedTxs.push(tx.serialize())
+          } else if (isLegacyTx(tx)) {
+            serializedTxs.push(tx.raw())
+          } else {
+            // type gurard to force typescript to throw build errors if any type is missed above
+            exhaustiveTypeGuard(tx)
           }
-
-          serializedTxs.push(tx.serialize())
-          break
         }
 
         return [bigIntToUnpaddedBytes(reqId), serializedTxs]

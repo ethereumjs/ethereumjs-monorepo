@@ -110,11 +110,7 @@ export interface BlockData {
    * Header data for the block
    */
   header?: HeaderData
-  transactions?: Array<
-    | TxData[TransactionType.Legacy]
-    | TxData[TransactionType.AccessListEIP2930]
-    | TxData[TransactionType.FeeMarketEIP1559]
-  >
+  transactions?: Array<TxData[TransactionType]>
   uncleHeaders?: Array<HeaderData>
   withdrawals?: Array<WithdrawalData>
 }
