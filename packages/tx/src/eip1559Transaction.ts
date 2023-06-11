@@ -88,7 +88,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
       throw new Error('Invalid serialized tx input: must be array')
     }
 
-    return FeeMarketEIP1559Transaction.fromValuesArray(values as any, opts)
+    return FeeMarketEIP1559Transaction.fromValuesArray(values as FeeMarketEIP1559ValuesArray, opts)
   }
 
   /**

@@ -52,12 +52,12 @@ export class EthersStateManager implements EVMStateManagerInterface {
       provider: this.provider,
       blockTag: BigInt(this.blockTag),
     })
-    ;(newState as any).contractCache = new Map(this.contractCache)
-    ;(newState as any).storageCache = new StorageCache({
+    newState.contractCache = new Map(this.contractCache)
+    newState.storageCache = new StorageCache({
       size: 100000,
       type: CacheType.ORDERED_MAP,
     })
-    ;(newState as any)._accountCache = new AccountCache({
+    newState._accountCache = new AccountCache({
       size: 100000,
       type: CacheType.ORDERED_MAP,
     })

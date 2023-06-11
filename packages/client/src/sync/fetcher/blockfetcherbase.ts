@@ -241,7 +241,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     }
     str += `first=${first} count=${count}${partialResult}`
     if ('reverse' in this) {
-      str += ` reverse=${(this as any).reverse}`
+      str += ` reverse=${this.reverse}`
     }
     return str
   }

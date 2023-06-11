@@ -70,7 +70,7 @@ export async function setup(
   } else {
     service = new FullEthereumService({
       ...serviceOpts,
-      metaDB: new MemoryLevel() as any,
+      metaDB: new MemoryLevel(),
       lightserv: true,
     })
   }

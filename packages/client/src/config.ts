@@ -8,7 +8,7 @@ import { Event, EventBus } from './types'
 import { parseTransports, short } from './util'
 
 import type { Logger } from './logging'
-import type { EventBusType } from './types'
+import type { EventBusType, MultiaddrLike } from './types'
 import type { BlockHeader } from '@ethereumjs/block'
 import type { Address } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
@@ -462,7 +462,8 @@ export class Config {
       // Otherwise parse transports from transports option
       this.servers = parseTransports(this.transports).map((t) => {
         if (t.name === 'rlpx') {
-          const bootnodes = this.bootnodes ?? (this.chainCommon.bootstrapNodes() as any)
+          const bootnodes: MultiaddrLike =
+            this.bootnodes ?? (this.chainCommon.bootstrapNodes() as any)
           const dnsNetworks = options.dnsNetworks ?? this.chainCommon.dnsNetworks()
           return new RlpxServer({ config: this, bootnodes, dnsNetworks })
         } else if (t.name === 'libp2p') {
