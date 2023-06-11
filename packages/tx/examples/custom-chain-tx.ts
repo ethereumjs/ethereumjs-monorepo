@@ -1,6 +1,6 @@
 import { Address } from '@ethereumjs/util'
 import { Common } from '@ethereumjs/common'
-import { Transaction } from '../src'
+import { LegacyTransaction } from '../src'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
 // In this example we create a transaction for a custom network.
