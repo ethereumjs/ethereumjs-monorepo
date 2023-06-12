@@ -5,7 +5,7 @@ import {
   AccessListEIP2930Transaction,
   Capability,
   FeeMarketEIP1559Transaction,
-  Transaction,
+  LegacyTransaction,
 } from '@ethereumjs/tx'
 import { Account, Address, KECCAK256_RLP, toBytes } from '@ethereumjs/util'
 import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
@@ -157,7 +157,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
             number: BigInt(10000000),
           },
           transactions: [
-            Transaction.fromTxData(
+            LegacyTransaction.fromTxData(
               {
                 data: '0x600154', // PUSH 01 SLOAD
                 gasLimit: BigInt(100000),
@@ -270,7 +270,7 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
 
     const gasLimit = BigInt('0x3fefba')
     const opts = { common: block._common }
-    block.transactions[0] = new Transaction(
+    block.transactions[0] = new LegacyTransaction(
       { nonce, gasPrice, gasLimit, to, value, data, v, r, s },
       opts
     )
@@ -358,7 +358,7 @@ tape('runBlock() -> runtime behavior', async (t) => {
 
     // add balance to otherUser to send two txs to zero address
     await vm.stateManager.putAccount(otherUser.address, new Account(BigInt(0), BigInt(42000)))
-    const tx = Transaction.fromTxData(
+    const tx = LegacyTransaction.fromTxData(
       { to: Address.zero(), gasLimit: 21000, gasPrice: 1 },
       { common }
     ).sign(otherUser.privateKey)
@@ -496,7 +496,10 @@ tape('runBlock() -> tx types', async (t) => {
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
 
-    const tx = Transaction.fromTxData({ gasLimit: 53000, value: 1 }, { common, freeze: false })
+    const tx = LegacyTransaction.fromTxData(
+      { gasLimit: 53000, value: 1 },
+      { common, freeze: false }
+    )
 
     tx.getSenderAddress = () => {
       return address

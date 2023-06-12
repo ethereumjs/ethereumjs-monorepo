@@ -1,7 +1,11 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
+import {
+  BlobEIP4844Transaction,
+  FeeMarketEIP1559Transaction,
+  LegacyTransaction,
+} from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -100,7 +104,7 @@ tape('[PendingBlock]', async (t) => {
       to: to.address,
       value,
     }
-    const tx = Transaction.fromTxData(txData, { common })
+    const tx = LegacyTransaction.fromTxData(txData, { common })
     const signedTx = tx.sign(from.privateKey)
     return signedTx
   }
@@ -210,7 +214,7 @@ tape('[PendingBlock]', async (t) => {
     await txPool.add(txA022)
 
     // This tx will not be added since its too big to fit
-    const txA03 = Transaction.fromTxData(
+    const txA03 = LegacyTransaction.fromTxData(
       {
         data: '0xFE', // INVALID opcode, uses all gas
         gasLimit: 10000000,
@@ -247,7 +251,7 @@ tape('[PendingBlock]', async (t) => {
     await setBalance(vm, A.address, BigInt(5000000000000000))
     await txPool.add(txA01)
     await txPool.add(txA02)
-    const txA03 = Transaction.fromTxData(
+    const txA03 = LegacyTransaction.fromTxData(
       {
         data: '0xFE', // INVALID opcode, uses all gas
         gasLimit: 10000000,

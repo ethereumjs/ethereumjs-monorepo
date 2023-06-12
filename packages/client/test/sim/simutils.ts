@@ -23,7 +23,7 @@ import { Config } from '../../src/config'
 import { LevelDB } from '../../src/execution/level'
 
 import type { Common } from '@ethereumjs/common'
-import type { TxOptions } from '@ethereumjs/tx'
+import type { TransactionType, TxData, TxOptions } from '@ethereumjs/tx'
 import type { ChildProcessWithoutNullStreams } from 'child_process'
 import type { Client } from 'jayson/promise'
 
@@ -308,8 +308,7 @@ export const runBlobTx = async (
   const hashes = commitmentsToVersionedHashes(commitments)
 
   const sender = Address.fromPrivateKey(pkey)
-  const txData = {
-    from: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
+  const txData: TxData[TransactionType.BlobEIP4844] = {
     to,
     data: '0x',
     chainId: '0x1',
@@ -317,7 +316,6 @@ export const runBlobTx = async (
     kzgCommitments: commitments,
     kzgProofs: proofs,
     versionedHashes: hashes,
-    gas: undefined,
     maxFeePerDataGas: undefined,
     maxPriorityFeePerGas: undefined,
     maxFeePerGas: undefined,
@@ -326,12 +324,12 @@ export const runBlobTx = async (
     value,
   }
 
-  txData['maxFeePerGas'] = '0xff' as any
-  txData['maxPriorityFeePerGas'] = BigInt(1) as any
-  txData['maxFeePerDataGas'] = BigInt(1000) as any
-  txData['gasLimit'] = BigInt(1000000) as any
+  txData.maxFeePerGas = '0xff'
+  txData.maxPriorityFeePerGas = BigInt(1)
+  txData.maxFeePerDataGas = BigInt(1000)
+  txData.gasLimit = BigInt(1000000)
   const nonce = await client.request('eth_getTransactionCount', [sender.toString(), 'latest'], 2.0)
-  txData['nonce'] = BigInt(nonce.result) as any
+  txData.nonce = BigInt(nonce.result)
   const blobTx = BlobEIP4844Transaction.fromTxData(txData, opts).sign(pkey)
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()

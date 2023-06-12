@@ -5,15 +5,12 @@ import * as tape from 'tape'
 import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
-  Transaction,
+  LegacyTransaction,
   TransactionFactory,
+  TransactionType,
 } from '../src'
 
-import type {
-  AccessListEIP2930ValuesArray,
-  FeeMarketEIP1559ValuesArray,
-  TxValuesArray,
-} from '../src'
+import type { TxValuesArray } from '../src'
 import type { AddressLike, BigIntLike, BytesLike } from '@ethereumjs/util'
 
 // @returns: Array with subtypes of the AddressLike type for a given address
@@ -120,7 +117,7 @@ tape('[Transaction Input Values]', function (t) {
     })
     const randomSample = getRandomSubarray(legacyTxData, 100)
     for (const txData of randomSample) {
-      const tx = Transaction.fromTxData(txData, { common })
+      const tx = LegacyTransaction.fromTxData(txData, { common })
       t.throws(() => tx.hash(), 'tx.hash() throws if tx is unsigned')
     }
     st.end()
@@ -140,7 +137,7 @@ tape('[Transaction Input Values]', function (t) {
     const randomSample = getRandomSubarray(eip1559TxData, 100)
 
     for (const txData of randomSample) {
-      const tx = Transaction.fromTxData(txData, { common })
+      const tx = LegacyTransaction.fromTxData(txData, { common })
       t.throws(() => tx.hash(), 'tx.hash() should throw if unsigned')
     }
     st.end()
@@ -148,7 +145,11 @@ tape('[Transaction Input Values]', function (t) {
 })
 
 tape('[Invalid Array Input values]', (t) => {
-  const txTypes = [0x0, 0x1, 0x2]
+  const txTypes = [
+    TransactionType.Legacy,
+    TransactionType.AccessListEIP2930,
+    TransactionType.FeeMarketEIP1559,
+  ]
   for (const signed of [false, true]) {
     for (const txType of txTypes) {
       let tx = TransactionFactory.fromTxData({ type: txType })
@@ -159,19 +160,23 @@ tape('[Invalid Array Input values]', (t) => {
       for (let x = 0; x < rawValues.length; x++) {
         rawValues[x] = <any>[1, 2, 3]
         switch (txType) {
-          case 0:
-            t.throws(() => Transaction.fromValuesArray(rawValues as TxValuesArray))
+          case TransactionType.Legacy:
+            t.throws(() =>
+              LegacyTransaction.fromValuesArray(rawValues as TxValuesArray[TransactionType.Legacy])
+            )
             break
-          case 1:
+          case TransactionType.AccessListEIP2930:
             t.throws(() =>
               AccessListEIP2930Transaction.fromValuesArray(
-                rawValues as AccessListEIP2930ValuesArray
+                rawValues as TxValuesArray[TransactionType.AccessListEIP2930]
               )
             )
             break
-          case 2:
+          case TransactionType.FeeMarketEIP1559:
             t.throws(() =>
-              FeeMarketEIP1559Transaction.fromValuesArray(rawValues as FeeMarketEIP1559ValuesArray)
+              FeeMarketEIP1559Transaction.fromValuesArray(
+                rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559]
+              )
             )
             break
         }
@@ -182,7 +187,7 @@ tape('[Invalid Array Input values]', (t) => {
 })
 
 tape('[Invalid Access Lists]', (t) => {
-  const txTypes = [0x1, 0x2]
+  const txTypes = [TransactionType.AccessListEIP2930, TransactionType.FeeMarketEIP1559]
   const invalidAccessLists = [
     [[]], // does not have an address and does not have slots
     [[[], []]], // the address is an array
@@ -227,23 +232,25 @@ tape('[Invalid Access Lists]', (t) => {
         }
         const rawValues = tx!.raw()
 
-        if (txType === 1 && rawValues[7].length === 0) {
+        if (txType === TransactionType.AccessListEIP2930 && rawValues[7].length === 0) {
           rawValues[7] = invalidAccessListItem
-        } else if (txType === 2 && rawValues[8].length === 0) {
+        } else if (txType === TransactionType.FeeMarketEIP1559 && rawValues[8].length === 0) {
           rawValues[8] = invalidAccessListItem
         }
 
         switch (txType) {
-          case 1:
+          case TransactionType.AccessListEIP2930:
             t.throws(() =>
               AccessListEIP2930Transaction.fromValuesArray(
-                rawValues as AccessListEIP2930ValuesArray
+                rawValues as TxValuesArray[TransactionType.AccessListEIP2930]
               )
             )
             break
-          case 2:
+          case TransactionType.FeeMarketEIP1559:
             t.throws(() =>
-              FeeMarketEIP1559Transaction.fromValuesArray(rawValues as FeeMarketEIP1559ValuesArray)
+              FeeMarketEIP1559Transaction.fromValuesArray(
+                rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559]
+              )
             )
             break
         }

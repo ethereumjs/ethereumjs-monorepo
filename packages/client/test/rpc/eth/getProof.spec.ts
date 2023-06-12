@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
 
@@ -72,7 +72,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   // construct block with tx
   const gasLimit = 2000000
-  const tx = Transaction.fromTxData({ gasLimit, data }, { common, freeze: false })
+  const tx = LegacyTransaction.fromTxData({ gasLimit, data }, { common, freeze: false })
   tx.getSenderAddress = () => {
     return address
   }
@@ -105,7 +105,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
     gasLimit: bigIntToHex(BigInt(530000)),
     nonce: 1,
   }
-  const storeTx = Transaction.fromTxData(storeTxData, { common, freeze: false })
+  const storeTx = LegacyTransaction.fromTxData(storeTxData, { common, freeze: false })
   storeTx.getSenderAddress = () => {
     return address
   }

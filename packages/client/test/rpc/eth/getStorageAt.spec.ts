@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
@@ -31,7 +31,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   // construct block with tx
   const gasLimit = 2000000
-  const tx = Transaction.fromTxData({ gasLimit, data }, { common, freeze: false })
+  const tx = LegacyTransaction.fromTxData({ gasLimit, data }, { common, freeze: false })
   const signedTx = tx.sign(tx.getMessageToSign())
 
   const parent = await chain.blockchain.getCanonicalHeadHeader()

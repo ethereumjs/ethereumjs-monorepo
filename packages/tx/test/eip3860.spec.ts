@@ -2,7 +2,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { TransactionFactory } from '../src'
+import { TransactionFactory, TransactionType } from '../src'
 
 const common = new Common({
   chain: Chain.Mainnet,
@@ -11,7 +11,12 @@ const common = new Common({
 })
 
 const maxInitCodeSize = common.param('vm', 'maxInitCodeSize')
-const txTypes = [0, 1, 2, 3]
+const txTypes = [
+  TransactionType.Legacy,
+  TransactionType.AccessListEIP2930,
+  TransactionType.FeeMarketEIP1559,
+  TransactionType.BlobEIP4844,
+]
 const addressZero = Address.zero()
 
 tape('[EIP3860 tests]', function (t) {

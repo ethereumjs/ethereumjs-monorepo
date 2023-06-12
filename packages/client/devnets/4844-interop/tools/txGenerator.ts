@@ -1,6 +1,6 @@
 // Adapted from - https://github.com/Inphi/eip4844-interop/blob/master/blob_tx_generator/blob.js
 import { Common, Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, TransactionType, TxData } from '@ethereumjs/tx'
 import {
   Address,
   initKZG,
@@ -41,15 +41,13 @@ async function run(data: any) {
   const hashes = commitmentsToVersionedHashes(commitments)
 
   const account = Address.fromPrivateKey(randomBytes(32))
-  const txData = {
-    from: sender.toString(),
+  const txData: TxData[TransactionType.BlobEIP4844] = {
     to: account.toString(),
     data: '0x',
     chainId: common.chainId(),
     blobs,
     kzgCommitments: commitments,
     versionedHashes: hashes,
-    gas: undefined,
     maxFeePerDataGas: undefined,
     maxPriorityFeePerGas: undefined,
     maxFeePerGas: undefined,
@@ -57,12 +55,12 @@ async function run(data: any) {
     gasLimit: undefined,
   }
 
-  txData['maxFeePerGas'] = BigInt(1000000000) as any
-  txData['maxPriorityFeePerGas'] = BigInt(100000000) as any
-  txData['maxFeePerDataGas'] = BigInt(1000) as any
-  txData['gasLimit'] = BigInt(28000000) as any
+  txData.maxFeePerGas = BigInt(1000000000)
+  txData.maxPriorityFeePerGas = BigInt(100000000)
+  txData.maxFeePerDataGas = BigInt(1000)
+  txData.gasLimit = BigInt(28000000)
   const nonce = await getNonce(client, sender.toString())
-  txData['nonce'] = BigInt(nonce) as any
+  txData.nonce = BigInt(nonce)
   const blobTx = BlobEIP4844Transaction.fromTxData(txData, { common }).sign(pkey)
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()

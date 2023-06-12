@@ -14,17 +14,13 @@ import {
   unpadBytes,
 } from '@ethereumjs/util'
 
-import { Capability } from './types'
+import { Capability, TransactionType } from './types'
 import { checkMaxInitCodeSize } from './util'
 
 import type {
-  AccessListEIP2930TxData,
-  AccessListEIP2930ValuesArray,
-  BlobEIP4844TxData,
-  BlobEIP4844ValuesArray,
-  FeeMarketEIP1559TxData,
-  FeeMarketEIP1559ValuesArray,
   JsonTx,
+  Transaction,
+  TransactionInterface,
   TxData,
   TxOptions,
   TxValuesArray,
@@ -46,8 +42,10 @@ interface TransactionCache {
  *
  * It is therefore not recommended to use directly.
  */
-export abstract class BaseTransaction<TransactionObject> {
-  private readonly _type: number
+export abstract class BaseTransaction<T extends TransactionType>
+  implements TransactionInterface<T>
+{
+  private readonly _type: TransactionType
 
   public readonly nonce: bigint
   public readonly gasLimit: bigint
@@ -93,10 +91,7 @@ export abstract class BaseTransaction<TransactionObject> {
    */
   protected DEFAULT_HARDFORK: string | Hardfork = Hardfork.Shanghai
 
-  constructor(
-    txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData | BlobEIP4844TxData,
-    opts: TxOptions
-  ) {
+  constructor(txData: TxData[T], opts: TxOptions) {
     const { nonce, gasLimit, to, value, data, v, r, s, type } = txData
     this._type = Number(bytesToBigInt(toBytes(type)))
 
@@ -262,11 +257,7 @@ export abstract class BaseTransaction<TransactionObject> {
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
    * representation for external signing use {@link BaseTransaction.getMessageToSign}.
    */
-  abstract raw():
-    | TxValuesArray
-    | AccessListEIP2930ValuesArray
-    | FeeMarketEIP1559ValuesArray
-    | BlobEIP4844ValuesArray
+  abstract raw(): TxValuesArray[T]
 
   /**
    * Returns the encoding of the transaction.
@@ -327,7 +318,7 @@ export abstract class BaseTransaction<TransactionObject> {
    * const signedTx = tx.sign(privateKey)
    * ```
    */
-  sign(privateKey: Uint8Array): TransactionObject {
+  sign(privateKey: Uint8Array): Transaction[T] {
     if (privateKey.length !== 32) {
       const msg = this._errorMsg('Private key must be 32 bytes in length.')
       throw new Error(msg)
@@ -339,7 +330,7 @@ export abstract class BaseTransaction<TransactionObject> {
     // 2021-06-23
     let hackApplied = false
     if (
-      this.type === 0 &&
+      this.type === TransactionType.Legacy &&
       this.common.gteHardfork('spuriousDragon') &&
       !this.supports(Capability.EIP155ReplayProtection)
     ) {
@@ -379,8 +370,8 @@ export abstract class BaseTransaction<TransactionObject> {
     }
   }
 
-  // Accept the v,r,s values from the `sign` method, and convert this into a TransactionObject
-  protected abstract _processSignature(v: bigint, r: Uint8Array, s: Uint8Array): TransactionObject
+  // Accept the v,r,s values from the `sign` method, and convert this into a T
+  protected abstract _processSignature(v: bigint, r: Uint8Array, s: Uint8Array): Transaction[T]
 
   /**
    * Does chain ID checks on common and returns a common

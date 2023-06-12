@@ -23,21 +23,26 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BaseTransaction } from './baseTransaction'
 import { LIMIT_BLOBS_PER_TX } from './constants'
+import { TransactionType } from './types'
 import { AccessLists } from './util'
 
 import type {
   AccessList,
   AccessListBytes,
+  TxData as AllTypesTxData,
+  TxValuesArray as AllTypesTxValuesArray,
   BlobEIP4844NetworkValuesArray,
-  BlobEIP4844TxData,
-  BlobEIP4844ValuesArray,
   JsonTx,
   TxOptions,
 } from './types'
 import type { Common } from '@ethereumjs/common'
 
-const TRANSACTION_TYPE = 0x03
-const TRANSACTION_TYPE_BYTES = hexStringToBytes(TRANSACTION_TYPE.toString(16).padStart(2, '0'))
+type TxData = AllTypesTxData[TransactionType.BlobEIP4844]
+type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
+
+const TRANSACTION_TYPE_BYTES = hexStringToBytes(
+  TransactionType.BlobEIP4844.toString(16).padStart(2, '0')
+)
 
 const validateBlobTransactionNetworkWrapper = (
   versionedHashes: Uint8Array[],
@@ -77,7 +82,7 @@ const validateBlobTransactionNetworkWrapper = (
  * - TransactionType: 5
  * - EIP: [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
  */
-export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transaction> {
+export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.BlobEIP4844> {
   public readonly chainId: bigint
   public readonly accessList: AccessListBytes
   public readonly AccessListJSON: AccessList
@@ -98,8 +103,8 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
    * the static constructors or factory methods to assist in creating a Transaction object from
    * varying data types.
    */
-  constructor(txData: BlobEIP4844TxData, opts: TxOptions = {}) {
-    super({ ...txData, type: TRANSACTION_TYPE }, opts)
+  constructor(txData: TxData, opts: TxOptions = {}) {
+    super({ ...txData, type: TransactionType.BlobEIP4844 }, opts)
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas, maxFeePerDataGas } = txData
 
     this.common = this._getCommon(opts.common, chainId)
@@ -179,7 +184,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
     }
   }
 
-  public static fromTxData(txData: BlobEIP4844TxData, opts?: TxOptions) {
+  public static fromTxData(txData: TxData, opts?: TxOptions) {
     if (txData.blobsData !== undefined) {
       if (txData.blobs !== undefined) {
         throw new Error('cannot have both raw blobs data and encoded blobs in constructor')
@@ -232,9 +237,9 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
   public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
     if (equalsBytes(serialized.subarray(0, 1), TRANSACTION_TYPE_BYTES) === false) {
       throw new Error(
-        `Invalid serialized tx input: not an EIP-4844 transaction (wrong tx type, expected: ${TRANSACTION_TYPE}, received: ${bytesToHex(
-          serialized.subarray(0, 1)
-        )}`
+        `Invalid serialized tx input: not an EIP-4844 transaction (wrong tx type, expected: ${
+          TransactionType.BlobEIP4844
+        }, received: ${bytesToHex(serialized.subarray(0, 1))}`
       )
     }
 
@@ -244,7 +249,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
       throw new Error('Invalid serialized tx input: must be array')
     }
 
-    return BlobEIP4844Transaction.fromValuesArray(values as BlobEIP4844ValuesArray, opts)
+    return BlobEIP4844Transaction.fromValuesArray(values as TxValuesArray, opts)
   }
 
   /**
@@ -253,7 +258,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
    * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
    * accessList, signatureYParity, signatureR, signatureS]`
    */
-  public static fromValuesArray(values: BlobEIP4844ValuesArray, opts: TxOptions = {}) {
+  public static fromValuesArray(values: TxValuesArray, opts: TxOptions = {}) {
     if (values.length !== 11 && values.length !== 14) {
       throw new Error(
         'Invalid EIP-4844 transaction. Only expecting 11 values (for unsigned tx) or 14 values (for signed tx).'
@@ -328,9 +333,9 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
 
     if (equalsBytes(serialized.subarray(0, 1), TRANSACTION_TYPE_BYTES) === false) {
       throw new Error(
-        `Invalid serialized tx input: not an EIP-4844 transaction (wrong tx type, expected: ${TRANSACTION_TYPE}, received: ${bytesToHex(
-          serialized.subarray(0, 1)
-        )}`
+        `Invalid serialized tx input: not an EIP-4844 transaction (wrong tx type, expected: ${
+          TransactionType.BlobEIP4844
+        }, received: ${bytesToHex(serialized.subarray(0, 1))}`
       )
     }
 
@@ -396,7 +401,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<BlobEIP4844Transacti
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
    * representation for external signing use {@link BlobEIP4844Transaction.getMessageToSign}.
    */
-  raw(): BlobEIP4844ValuesArray {
+  raw(): TxValuesArray {
     return [
       bigIntToUnpaddedBytes(this.chainId),
       bigIntToUnpaddedBytes(this.nonce),

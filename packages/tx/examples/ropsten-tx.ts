@@ -1,4 +1,4 @@
-import { Transaction } from '../src'
+import { LegacyTransaction, Transaction } from '../src'
 import { toBytes } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 
@@ -7,7 +7,7 @@ const txData = toBytes(
 )
 
 const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Petersburg })
-const tx = Transaction.fromSerializedTx(txData, { common })
+const tx = LegacyTransaction.fromSerializedTx(txData, { common })
 
 if (
   tx.validate() &&

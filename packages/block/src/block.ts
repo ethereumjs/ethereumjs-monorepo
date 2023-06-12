@@ -34,7 +34,7 @@ import type {
 import type { Common } from '@ethereumjs/common'
 import type {
   FeeMarketEIP1559Transaction,
-  Transaction,
+  LegacyTransaction,
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
@@ -493,7 +493,7 @@ export class Block {
             errs.push('tx unable to pay base fee (EIP-1559 tx)')
           }
         } else {
-          tx = tx as Transaction
+          tx = tx as LegacyTransaction
           if (tx.gasPrice < this.header.baseFeePerGas!) {
             errs.push('tx unable to pay base fee (non EIP-1559 tx)')
           }

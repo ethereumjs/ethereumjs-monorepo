@@ -13,7 +13,7 @@ import { DBKey, MetaDBManager } from '../util/metaDBManager'
 
 import type { Block } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
-import type { TypedTransaction } from '@ethereumjs/tx'
+import type { TransactionType, TypedTransaction } from '@ethereumjs/tx'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
 
 /**
@@ -23,11 +23,11 @@ import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@
 export type TxReceiptWithType = PreByzantiumTxReceiptWithType | PostByzantiumTxReceiptWithType
 interface PreByzantiumTxReceiptWithType extends PreByzantiumTxReceipt {
   /* EIP-2718 Typed Transaction Envelope type */
-  txType: number
+  txType: TransactionType
 }
 interface PostByzantiumTxReceiptWithType extends PostByzantiumTxReceipt {
   /* EIP-2718 Typed Transaction Envelope type */
-  txType: number
+  txType: TransactionType
 }
 
 /**

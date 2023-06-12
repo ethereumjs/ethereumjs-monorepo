@@ -1,7 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Common } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
 
@@ -39,7 +39,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   /*
     // SPDX-License-Identifier: MIT
     pragma solidity ^0.7.4;
-    
+
     contract HelloWorld {
         function myAddress() public view returns (address addr) {
             return msg.sender;
@@ -51,7 +51,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   // construct block with tx
   const gasLimit = 2000000
-  const tx = Transaction.fromTxData({ gasLimit, data }, { common, freeze: false })
+  const tx = LegacyTransaction.fromTxData({ gasLimit, data }, { common, freeze: false })
   tx.getSenderAddress = () => {
     return address
   }
@@ -83,7 +83,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
     data: `0x${funcHash}`,
     gasLimit: bigIntToHex(BigInt(53000)),
   }
-  const estimateTx = Transaction.fromTxData(estimateTxData, { freeze: false })
+  const estimateTx = LegacyTransaction.fromTxData(estimateTxData, { freeze: false })
   estimateTx.getSenderAddress = () => {
     return address
   }
