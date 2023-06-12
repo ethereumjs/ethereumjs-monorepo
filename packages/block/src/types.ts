@@ -120,7 +120,7 @@ export interface HeaderData {
    * Verkle Proof Data (experimental)
    * Fake-EIP 999001 (see Common library)
    */
-  verkleExecutionWitness?: VerkleExecutionWitness
+  executionWitness?: VerkleExecutionWitness
 }
 
 /**
