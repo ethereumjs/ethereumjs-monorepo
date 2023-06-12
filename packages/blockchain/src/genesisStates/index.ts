@@ -1,9 +1,15 @@
 import { RLP } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
-import { Account, isHexPrefixed, toBytes, unpadBytes } from '@ethereumjs/util'
+import { LeafNode, Trie, bytesToNibbles, insertBatch, parseBulk } from '@ethereumjs/trie'
+import {
+  Account,
+  Address,
+  bytesToPrefixedHexString,
+  hexStringToBytes,
+  toBytes,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { hexToBytes } from 'ethereum-cryptography/utils'
 
+import type { BulkNodeInput } from '@ethereumjs/trie'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 export type StoragePair = [key: PrefixedHexString, value: PrefixedHexString]
@@ -22,38 +28,83 @@ export interface GenesisState {
 /**
  * Derives the stateRoot of the genesis block based on genesis allocations
  */
-export async function genesisStateRoot(genesisState: GenesisState) {
-  const trie = new Trie({ useKeyHashing: true })
-  for (const [key, value] of Object.entries(genesisState)) {
-    const address = isHexPrefixed(key) ? toBytes(key) : hexToBytes(key)
-    const account = new Account()
-    if (typeof value === 'string') {
-      account.balance = BigInt(value)
+export async function genesisStateRoot(initState: GenesisState): Promise<Uint8Array> {
+  const addresses = Object.keys(initState)
+  const accounts: [number[], string][] = []
+  const byteCode: { hash: Uint8Array; code: Uint8Array }[] = []
+  const storageTries: { address: Address; hash: Uint8Array; trie: Trie }[] = []
+  for (const [_idx, address] of addresses.entries()) {
+    const addr = Address.fromString(address)
+    const state = initState[address]
+    if (!Array.isArray(state)) {
+      // Prior format: address -> balance
+      const account = Account.fromAccountData({ balance: state })
+      accounts.push([
+        bytesToNibbles(keccak256(addr.bytes)),
+        bytesToPrefixedHexString(account.serialize()),
+      ])
     } else {
-      const [balance, code, storage, nonce] = value as Partial<AccountState>
-      if (balance !== undefined) {
-        account.balance = BigInt(balance)
-      }
-      if (code !== undefined) {
-        const codeBytes = isHexPrefixed(code) ? toBytes(code) : hexToBytes(code)
-        account.codeHash = keccak256(codeBytes)
-      }
-      if (storage !== undefined) {
-        const storageTrie = new Trie({ useKeyHashing: true })
-        for (const [k, val] of storage) {
-          const storageKey = isHexPrefixed(k) ? toBytes(k) : hexToBytes(k)
-          const storageVal = RLP.encode(
-            unpadBytes(isHexPrefixed(val) ? toBytes(val) : hexToBytes(val))
-          )
-          await storageTrie.put(storageKey, storageVal)
+      // New format: address -> [balance, code, storage]
+      const [balance, code, storage, nonce] = state
+      if (balance === undefined) {
+        continue
+      } else {
+        const storageTrie = new Trie({ secure: true, useKeyHashing: true })
+        if (storage !== undefined) {
+          for (const [key, value] of storage) {
+            await storageTrie.put(toBytes(key), RLP.encode(toBytes(value)))
+          }
+          storageTries.push({
+            address: addr,
+            hash: storageTrie.root(),
+            trie: storageTrie,
+          })
+          if (code !== undefined) {
+            byteCode.push({
+              hash: keccak256(hexStringToBytes(code)),
+              code: hexStringToBytes(code),
+            })
+          }
+          const account = Account.fromAccountData({
+            balance,
+            nonce,
+            codeHash: code !== undefined ? keccak256(hexStringToBytes(code)) : undefined,
+            storageRoot: storage !== undefined ? storageTrie.root() : undefined,
+          })
+          accounts.push([
+            bytesToNibbles(keccak256(addr.bytes)),
+            bytesToPrefixedHexString(account.serialize()),
+          ])
+        } else {
+          const account = Account.fromAccountData({
+            balance,
+            nonce,
+            codeHash: code !== undefined ? keccak256(hexStringToBytes(code)) : undefined,
+          })
+          accounts.push([
+            bytesToNibbles(keccak256(addr.bytes)),
+            bytesToPrefixedHexString(account.serialize()),
+          ])
         }
-        account.storageRoot = storageTrie.root()
-      }
-      if (nonce !== undefined) {
-        account.nonce = BigInt(nonce)
       }
     }
-    await trie.put(address, account.serialize())
   }
-  return trie.root()
+  let newTrie = new Trie({ secure: true, useKeyHashing: true })
+  if (accounts.length > 0) {
+    const batchInsert: [[number[], number[]], string][] = parseBulk(accounts)
+    const batchLeaves: BulkNodeInput = batchInsert.map(([nibbleArrays, value]) => {
+      const key = nibbleArrays.pop()!
+      const newNode = new LeafNode({ key, value: hexStringToBytes(value) })
+      const pathNibbles = nibbleArrays.flat()
+      return {
+        newNode,
+        pathNibbles,
+      }
+    })
+    newTrie = await insertBatch(batchLeaves, true)
+  }
+  for (const { hash, code } of byteCode) {
+    await newTrie.database().put(hash, code)
+  }
+  return newTrie.root()
 }
