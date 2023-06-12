@@ -12,15 +12,15 @@
       "d": "The base fee for data gas per blob"
     },
     "targetDataGasPerBlock": {
-      "v": 262144,
+      "v": 393216,
       "d": "The target data gas consumed per block"
     },
     "maxDataGasPerBlock": {
-      "v": 524288,
+      "v": 786432,
       "d": "The max data gas allowable per block"
     },
     "dataGasPriceUpdateFraction": {
-      "v": 2225652,
+      "v": 3338477,
       "d": "The denominator used in the exponential when calculating a data gas price"
     }
   },
