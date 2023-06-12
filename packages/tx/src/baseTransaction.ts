@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common } from '@ethereumjs/common'
 import {
   Address,
   MAX_INTEGER,
@@ -25,6 +25,7 @@ import type {
   TxOptions,
   TxValuesArray,
 } from './types'
+import type { Hardfork } from '@ethereumjs/common'
 import type { BigIntLike } from '@ethereumjs/util'
 
 interface TransactionCache {
@@ -82,14 +83,6 @@ export abstract class BaseTransaction<T extends TransactionType>
    * @hidden
    */
   protected DEFAULT_CHAIN = Chain.Mainnet
-
-  /**
-   * The default HF if the tx type is active on that HF
-   * or the first greater HF where the tx is active.
-   *
-   * @hidden
-   */
-  protected DEFAULT_HARDFORK: string | Hardfork = Hardfork.Shanghai
 
   constructor(txData: TxData[T], opts: TxOptions) {
     const { nonce, gasLimit, to, value, data, v, r, s, type } = txData
@@ -397,7 +390,7 @@ export abstract class BaseTransaction<T extends TransactionType>
         if (Common.isSupportedChainId(chainIdBigInt)) {
           // No Common, chain ID supported by Common
           // -> Instantiate Common with chain ID
-          return new Common({ chain: chainIdBigInt, hardfork: this.DEFAULT_HARDFORK })
+          return new Common({ chain: chainIdBigInt })
         } else {
           // No Common, chain ID not supported by Common
           // -> Instantiate custom Common derived from DEFAULT_CHAIN
@@ -407,16 +400,14 @@ export abstract class BaseTransaction<T extends TransactionType>
               networkId: chainIdBigInt,
               chainId: chainIdBigInt,
             },
-            { baseChain: this.DEFAULT_CHAIN, hardfork: this.DEFAULT_HARDFORK }
+            { baseChain: this.DEFAULT_CHAIN }
           )
         }
       }
     } else {
       // No chain ID provided
       // -> return Common provided or create new default Common
-      return (
-        common?.copy() ?? new Common({ chain: this.DEFAULT_CHAIN, hardfork: this.DEFAULT_HARDFORK })
-      )
+      return common?.copy() ?? new Common({ chain: this.DEFAULT_CHAIN })
     }
   }
 
