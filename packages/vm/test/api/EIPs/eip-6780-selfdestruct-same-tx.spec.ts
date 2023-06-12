@@ -47,7 +47,7 @@ tape('EIP 6780 tests', (t) => {
     st.equals(contract.balance, BigInt(0), 'value sent')
     st.equals(contract.nonce, BigInt(0), 'contract nonce 0')
 
-    const exists = await vm.evm.stateManager.accountExists(createdAddress)
+    const exists = (await vm.evm.stateManager.getAccount(createdAddress)) !== undefined
 
     // Account does not exist...
     st.ok(!exists, 'account does not exist, so storage is cleared')
