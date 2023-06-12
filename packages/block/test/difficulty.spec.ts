@@ -1,17 +1,11 @@
 import { Chain, Common } from '@ethereumjs/common'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { Block } from '../src'
 
-function runDifficultyTests(
-  st: tape.Test,
-  test: any,
-  parentBlock: Block,
-  block: Block,
-  msg: string
-) {
+function runDifficultyTests(test: any, parentBlock: Block, block: Block, msg: string) {
   const dif = block.ethashCanonicalDifficulty(parentBlock)
-  st.equal(dif, BigInt(test.currentDifficulty), `test ethashCanonicalDifficulty: ${msg}`)
+  assert.equal(dif, BigInt(test.currentDifficulty), `test ethashCanonicalDifficulty: ${msg}`)
 }
 
 type TestData = { [key: string]: any }
@@ -47,8 +41,8 @@ const chainTestData: TestData = {
   ropsten: require('../../ethereum-tests/BasicTests/difficultyRopsten.json'),
 }
 
-tape('[Header]: difficulty tests', (t) => {
-  t.test('by hardfork', (st) => {
+describe('[Header]: difficulty tests', () => {
+  it('by hardfork', () => {
     /* eslint-disable no-restricted-syntax */
     for (const hardfork in hardforkTestData) {
       const testData = hardforkTestData[hardfork]
@@ -86,19 +80,12 @@ tape('[Header]: difficulty tests', (t) => {
           blockOpts
         )
 
-        runDifficultyTests(
-          st,
-          test,
-          parentBlock,
-          block,
-          `fork determination by hardfork (${hardfork})`
-        )
+        runDifficultyTests(test, parentBlock, block, `fork determination by hardfork (${hardfork})`)
       }
     }
-    st.end()
   })
 
-  t.test('by chain', (st) => {
+  it('by chain', () => {
     for (const chain in chainTestData) {
       const testData = chainTestData[chain]
       for (const testName in testData) {
@@ -130,7 +117,6 @@ tape('[Header]: difficulty tests', (t) => {
         )
 
         runDifficultyTests(
-          st,
           test,
           parentBlock,
           block,
@@ -138,6 +124,5 @@ tape('[Header]: difficulty tests', (t) => {
         )
       }
     }
-    st.end()
   })
 })
