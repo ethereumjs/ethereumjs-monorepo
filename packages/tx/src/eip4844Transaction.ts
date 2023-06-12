@@ -79,7 +79,7 @@ const validateBlobTransactionNetworkWrapper = (
 /**
  * Typed transaction with a new gas fee market mechanism for transactions that include "blobs" of data
  *
- * - TransactionType: 5
+ * - TransactionType: 3
  * - EIP: [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
  */
 export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.BlobEIP4844> {
