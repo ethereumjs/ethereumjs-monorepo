@@ -336,10 +336,10 @@ tape('[PendingBlock]', async (t) => {
     for (let x = 0; x <= 2; x++) {
       const txA01 = BlobEIP4844Transaction.fromTxData(
         {
-          versionedHashes,
-          blobs: [...blobs, ...blobs],
-          kzgCommitments: [...commitments, ...commitments],
-          kzgProofs: [...proofs, ...proofs],
+          versionedHashes: [...versionedHashes, ...versionedHashes, ...versionedHashes],
+          blobs: [...blobs, ...blobs, ...blobs],
+          kzgCommitments: [...commitments, ...commitments, ...commitments],
+          kzgProofs: [...proofs, ...proofs, ...proofs],
           maxFeePerDataGas: 100000000n,
           gasLimit: 0xffffffn,
           maxFeePerGas: 1000000000n,
@@ -380,9 +380,9 @@ tape('[PendingBlock]', async (t) => {
 
     st.ok(block !== undefined && blobsBundles !== undefined)
     st.equal(block!.transactions.length, 2, 'Only two blob txs should be included')
-    st.equal(blobsBundles!.blobs.length, 4, 'maximum 4 blobs should be included')
-    st.equal(blobsBundles!.commitments.length, 4, 'maximum 4 commitments should be included')
-    st.equal(blobsBundles!.proofs.length, 4, 'maximum 4 proofs should be included')
+    st.equal(blobsBundles!.blobs.length, 6, 'maximum 6 blobs should be included')
+    st.equal(blobsBundles!.commitments.length, 6, 'maximum 6 commitments should be included')
+    st.equal(blobsBundles!.proofs.length, 6, 'maximum 6 proofs should be included')
 
     const pendingBlob = blobsBundles!.blobs[0]
     st.ok(pendingBlob !== undefined && equalsBytes(pendingBlob, blobs[0]))
