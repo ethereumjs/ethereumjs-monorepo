@@ -11,6 +11,8 @@ import {
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { Client } from 'jayson/promise'
+
+import type { TransactionType, TxData } from '@ethereumjs/tx'
 const clientPort = process.argv[2]
 const input = process.argv[3]
 
@@ -98,15 +100,13 @@ async function run(data: any) {
   const hashes = commitmentsToVersionedHashes(commitments)
 
   const account = Address.fromPrivateKey(randomBytes(32))
-  const txData = {
-    from: sender.toString(),
+  const txData: TxData[TransactionType.BlobEIP4844] = {
     to: account.toString(),
     data: '0x',
     chainId: '0x1',
     blobs,
     kzgCommitments: commitments,
     versionedHashes: hashes,
-    gas: undefined,
     maxFeePerDataGas: undefined,
     maxPriorityFeePerGas: undefined,
     maxFeePerGas: undefined,
@@ -114,12 +114,12 @@ async function run(data: any) {
     gasLimit: undefined,
   }
 
-  txData['maxFeePerGas'] = BigInt(1000000000) as any
-  txData['maxPriorityFeePerGas'] = BigInt(100000000) as any
-  txData['maxFeePerDataGas'] = BigInt(1000) as any
-  txData['gasLimit'] = BigInt(28000000) as any
+  txData.maxFeePerGas = BigInt(1000000000)
+  txData.maxPriorityFeePerGas = BigInt(100000000)
+  txData.maxFeePerDataGas = BigInt(1000)
+  txData.gasLimit = BigInt(28000000)
   const nonce = await getNonce(client, sender.toString())
-  txData['nonce'] = BigInt(nonce) as any
+  txData.nonce = BigInt(nonce)
   const blobTx = BlobEIP4844Transaction.fromTxData(txData).sign(pkey)
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()

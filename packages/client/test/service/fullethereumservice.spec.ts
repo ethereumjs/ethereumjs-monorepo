@@ -1,5 +1,5 @@
 import { Common, Hardfork } from '@ethereumjs/common'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { TransactionFactory, TransactionType } from '@ethereumjs/tx'
 import { hexStringToBytes, randomBytes } from '@ethereumjs/util'
 import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
@@ -241,7 +241,7 @@ tape('[FullEthereumService]', async (t) => {
             new Uint8Array(10),
           ],
         ] as Log[],
-        txType: 2,
+        txType: TransactionType.FeeMarketEIP1559,
       },
       {
         status: 0 as 0 | 1,
@@ -254,7 +254,7 @@ tape('[FullEthereumService]', async (t) => {
             new Uint8Array(10),
           ],
         ] as Log[],
-        txType: 0,
+        txType: TransactionType.Legacy,
       },
     ]
     td.when(service.execution.receiptsManager!.getReceipts(blockHash, true, true)).thenResolve(

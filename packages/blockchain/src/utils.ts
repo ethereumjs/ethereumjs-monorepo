@@ -15,7 +15,7 @@ export function parseGethGenesisState(json: any) {
     code = code !== undefined ? addHexPrefix(code) : undefined
     storage = storage !== undefined ? Object.entries(storage) : undefined
     nonce = nonce !== undefined ? addHexPrefix(nonce) : undefined
-    state[address] = [balance, code, storage, nonce] as any
+    state[address] = [balance, code, storage, nonce]
   }
   return state
 }

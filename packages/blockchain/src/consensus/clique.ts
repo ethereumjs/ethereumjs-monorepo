@@ -566,7 +566,7 @@ export class CliqueConsensus implements Consensus {
     const signers = RLP.decode(blockSigners as Uint8Array) as [Uint8Array, Uint8Array][]
     return signers.map((s) => {
       const blockNum = bytesToBigInt(s[0] as Uint8Array)
-      const signer = new Address(s[1] as any)
+      const signer = new Address(s[1])
       return [blockNum, signer]
     }) as CliqueLatestBlockSigners
   }

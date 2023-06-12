@@ -1,7 +1,14 @@
 import { Block, BlockHeader, getDifficulty, valuesArrayToHeaderData } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { BlobEIP4844Transaction, TransactionFactory } from '@ethereumjs/tx'
+import {
+  BlobEIP4844Transaction,
+  TransactionFactory,
+  isAccessListEIP2930Tx,
+  isBlobEIP4844Tx,
+  isFeeMarketEIP1559Tx,
+  isLegacyTx,
+} from '@ethereumjs/tx'
 import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
@@ -69,6 +76,10 @@ export interface EthProtocolMethods {
   getBlockBodies: (opts: GetBlockBodiesOpts) => Promise<[bigint, BlockBodyBytes[]]>
   getPooledTransactions: (opts: GetPooledTransactionsOpts) => Promise<[bigint, TypedTransaction[]]>
   getReceipts: (opts: GetReceiptsOpts) => Promise<[bigint, TxReceipt[]]>
+}
+
+function exhaustiveTypeGuard(_value: never, errorMsg: string): never {
+  throw new Error(errorMsg)
 }
 
 /**
@@ -219,18 +230,21 @@ export class EthProtocol extends Protocol {
       encode: ({ reqId, txs }: { reqId: bigint; txs: TypedTransaction[] }) => {
         const serializedTxs = []
         for (const tx of txs) {
-          switch (tx.type) {
-            case 0:
-              serializedTxs.push(tx.raw())
-              break
-            case 5:
-              serializedTxs.push((tx as BlobEIP4844Transaction).serializeNetworkWrapper())
-              break
-            default:
-              serializedTxs.push(tx.serialize())
-              break
+          // serialize txs as per type
+          if (isBlobEIP4844Tx(tx)) {
+            serializedTxs.push(tx.serializeNetworkWrapper())
+          } else if (isFeeMarketEIP1559Tx(tx) || isAccessListEIP2930Tx(tx)) {
+            serializedTxs.push(tx.serialize())
+          } else if (isLegacyTx(tx)) {
+            serializedTxs.push(tx.raw())
+          } else {
+            // Dual use for this typeguard:
+            // 1. to enable typescript to throw build errors if any tx is missing above
+            // 2. to throw error in runtime if some corruption happens
+            exhaustiveTypeGuard(tx, `Invalid transaction type=${(tx as TypedTransaction).type}`)
           }
         }
+
         return [bigIntToUnpaddedBytes(reqId), serializedTxs]
       },
       decode: ([reqId, txs]: [Uint8Array, any[]]) => {
@@ -247,7 +261,7 @@ export class EthProtocol extends Protocol {
           bytesToBigInt(reqId),
           txs.map((txData) => {
             // Blob transactions are deserialized with network wrapper
-            if (txData[0] === 5) {
+            if (txData[0] === 3) {
               return BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txData, { common })
             } else {
               return TransactionFactory.fromBlockBodyData(txData, { common })

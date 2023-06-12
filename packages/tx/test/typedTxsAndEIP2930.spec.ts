@@ -13,7 +13,7 @@ import {
 } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '../src'
+import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction, TransactionType } from '../src'
 
 import type { AccessList, AccessListBytesItem } from '../src'
 
@@ -29,18 +29,18 @@ const txTypes = [
   {
     class: AccessListEIP2930Transaction,
     name: 'AccessListEIP2930Transaction',
-    type: 1,
+    type: TransactionType.AccessListEIP2930,
   },
   {
     class: FeeMarketEIP1559Transaction,
     name: 'FeeMarketEIP1559Transaction',
-    type: 2,
+    type: TransactionType.FeeMarketEIP1559,
   },
 ]
 
 const validAddress = hexStringToBytes('01'.repeat(20))
 const validSlot = hexStringToBytes('01'.repeat(32))
-const chainId = BigInt(1)
+const chainId = BigInt(Chain.Mainnet)
 
 tape(
   '[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-2930 Compatibility',
@@ -51,7 +51,7 @@ tape(
         t.ok(tx, `should initialize correctly (${txType.name})`)
 
         tx = txType.class.fromTxData({
-          chainId: 5,
+          chainId: Chain.Goerli,
         })
         t.ok(
           tx.common.chainId() === BigInt(5),
@@ -179,7 +179,7 @@ tape(
         const txn = txType.class.fromTxData(
           {
             accessList: access,
-            chainId: 1,
+            chainId: Chain.Mainnet,
           },
           { common }
         )
@@ -199,7 +199,7 @@ tape(
         const txnRaw = txType.class.fromTxData(
           {
             accessList: bytes,
-            chainId: 1,
+            chainId: Chain.Mainnet,
           },
           { common }
         )

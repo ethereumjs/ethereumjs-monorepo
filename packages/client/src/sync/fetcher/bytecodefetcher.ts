@@ -216,9 +216,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         for (const task of tasks) {
           this.enqueueTask(task, true)
         }
-        this.debug(
-          `Fetcher pending with ${(fullJob as any)!.task.hashes.length} code hashes requested`
-        )
+        this.debug(`Fetcher pending with ${fullJob!.task.hashes.length} code hashes requested`)
       }
     } catch (err) {
       this.debug(err)

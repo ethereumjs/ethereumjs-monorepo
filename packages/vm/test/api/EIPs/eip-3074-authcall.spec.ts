@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVMErrorMessage } from '@ethereumjs/evm'
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -221,7 +221,7 @@ tape('EIP-3074 AUTH', (t) => {
     const code = concatBytesNoTypeCheck(getAuthCode(message, signature, authAddress), RETURNTOP)
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -245,7 +245,7 @@ tape('EIP-3074 AUTH', (t) => {
     const code = concatBytesNoTypeCheck(getAuthCode(message, signature, authAddress), RETURNTOP)
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -270,7 +270,7 @@ tape('EIP-3074 AUTH', (t) => {
     const code = concatBytesNoTypeCheck(getAuthCode(message, signature, contractAddress), RETURNTOP)
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -293,7 +293,7 @@ tape('EIP-3074 AUTH', (t) => {
     const code = concatBytesNoTypeCheck(getAuthCode(message, signature, authAddress), RETURNTOP)
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -324,7 +324,7 @@ tape('EIP-3074 AUTH', (t) => {
     )
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -350,7 +350,7 @@ tape('EIP-3074 AUTH', (t) => {
     )
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -373,7 +373,7 @@ tape('EIP-3074 AUTH', (t) => {
     const code = concatBytesNoTypeCheck(getAuthCode(message, signature, authAddress), RETURNMEMSIZE)
 
     await vm.stateManager.putContractCode(contractAddress, code)
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -399,7 +399,7 @@ tape('EIP-3074 AUTH', (t) => {
     )
 
     await vm.stateManager.putContractCode(contractAddress, code2)
-    const tx2 = Transaction.fromTxData({
+    const tx2 = LegacyTransaction.fromTxData({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -445,7 +445,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     )
     const vm = await setupVM(code)
 
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -479,7 +479,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       }
     })
 
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -522,7 +522,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       }
     })
 
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -566,7 +566,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
         }
       })
 
-      const tx = Transaction.fromTxData({
+      const tx = LegacyTransaction.fromTxData({
         to: contractAddress,
         gasLimit: 900000,
         gasPrice: 10,
@@ -611,7 +611,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       const value = 3n
       const gasPrice = 10n
 
-      const tx = Transaction.fromTxData({
+      const tx = LegacyTransaction.fromTxData({
         to: contractAddress,
         gasLimit: PREBALANCE / gasPrice - value * gasPrice,
         gasPrice,
@@ -655,7 +655,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     )
     const vm = await setupVM(code)
 
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -691,7 +691,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     )
     const vm = await setupVM(code)
 
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -719,7 +719,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     )
     const vm = await setupVM(code)
 
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -747,7 +747,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     )
     const vm = await setupVM(code)
 
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -775,7 +775,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     )
     const vm = await setupVM(code)
 
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -808,7 +808,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
     )
     const vm = await setupVM(code)
 
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       to: contractAddress,
       gasLimit: 1000000,
       gasPrice: 10,

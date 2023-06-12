@@ -16,7 +16,8 @@ import {
   AccessListEIP2930Transaction,
   Capability,
   FeeMarketEIP1559Transaction,
-  Transaction,
+  LegacyTransaction,
+  TransactionType,
 } from '../src'
 
 import type { BaseTransaction } from '../src/baseTransaction'
@@ -27,19 +28,19 @@ tape('[BaseTransaction]', function (t) {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
   const legacyFixtures: TxsJsonEntry[] = require('./json/txs.json')
-  const legacyTxs: BaseTransaction<Transaction>[] = []
+  const legacyTxs: BaseTransaction<TransactionType.Legacy>[] = []
   for (const tx of legacyFixtures.slice(0, 4)) {
-    legacyTxs.push(Transaction.fromTxData(tx.data, { common }))
+    legacyTxs.push(LegacyTransaction.fromTxData(tx.data, { common }))
   }
 
   const eip2930Fixtures = require('./json/eip2930txs.json')
-  const eip2930Txs: BaseTransaction<AccessListEIP2930Transaction>[] = []
+  const eip2930Txs: BaseTransaction<TransactionType.AccessListEIP2930>[] = []
   for (const tx of eip2930Fixtures) {
     eip2930Txs.push(AccessListEIP2930Transaction.fromTxData(tx.data, { common }))
   }
 
   const eip1559Fixtures = require('./json/eip1559txs.json')
-  const eip1559Txs: BaseTransaction<FeeMarketEIP1559Transaction>[] = []
+  const eip1559Txs: BaseTransaction<TransactionType.FeeMarketEIP1559>[] = []
   for (const tx of eip1559Fixtures) {
     eip1559Txs.push(FeeMarketEIP1559Transaction.fromTxData(tx.data, { common }))
   }
@@ -47,9 +48,9 @@ tape('[BaseTransaction]', function (t) {
   const zero = new Uint8Array(0)
   const txTypes = [
     {
-      class: Transaction,
-      name: 'Transaction',
-      type: 0,
+      class: LegacyTransaction,
+      name: 'LegacyTransaction',
+      type: TransactionType.Legacy,
       values: Array(6).fill(zero),
       txs: legacyTxs,
       fixtures: legacyFixtures,
@@ -64,7 +65,7 @@ tape('[BaseTransaction]', function (t) {
     {
       class: AccessListEIP2930Transaction,
       name: 'AccessListEIP2930Transaction',
-      type: 1,
+      type: TransactionType.AccessListEIP2930,
       values: [new Uint8Array([1])].concat(Array(7).fill(zero)),
       txs: eip2930Txs,
       fixtures: eip2930Fixtures,
@@ -74,7 +75,7 @@ tape('[BaseTransaction]', function (t) {
     {
       class: FeeMarketEIP1559Transaction,
       name: 'FeeMarketEIP1559Transaction',
-      type: 2,
+      type: TransactionType.FeeMarketEIP1559,
       values: [new Uint8Array([1])].concat(Array(8).fill(zero)),
       txs: eip1559Txs,
       fixtures: eip1559Fixtures,
@@ -157,7 +158,7 @@ tape('[BaseTransaction]', function (t) {
     let rlpData: any = legacyTxs[0].raw()
     rlpData[0] = toBytes('0x0')
     try {
-      Transaction.fromValuesArray(rlpData)
+      LegacyTransaction.fromValuesArray(rlpData)
       st.fail('should have thrown when nonce has leading zeroes')
     } catch (err: any) {
       st.ok(
@@ -168,7 +169,7 @@ tape('[BaseTransaction]', function (t) {
     rlpData[0] = toBytes('0x')
     rlpData[6] = toBytes('0x0')
     try {
-      Transaction.fromValuesArray(rlpData)
+      LegacyTransaction.fromValuesArray(rlpData)
       st.fail('should have thrown when v has leading zeroes')
     } catch (err: any) {
       st.ok(
@@ -389,7 +390,7 @@ tape('[BaseTransaction]', function (t) {
 
   t.test('initialization with defaults', function (st) {
     const bufferZero = toBytes('0x')
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       nonce: '',
       gasLimit: '',
       gasPrice: '',

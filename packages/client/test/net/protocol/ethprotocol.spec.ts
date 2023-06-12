@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Common, Hardfork } from '@ethereumjs/common'
-import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
+import { FeeMarketEIP1559Transaction, TransactionFactory, TransactionType } from '@ethereumjs/tx'
 import { bigIntToBytes, bytesToBigInt, hexStringToBytes, randomBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
@@ -165,7 +165,7 @@ tape('[EthProtocol]', (t) => {
             new Uint8Array(10),
           ],
         ],
-        txType: 2,
+        txType: TransactionType.FeeMarketEIP1559,
       },
       {
         status: 0 as 0 | 1,
@@ -178,7 +178,7 @@ tape('[EthProtocol]', (t) => {
             new Uint8Array(10),
           ],
         ],
-        txType: 0,
+        txType: TransactionType.Legacy,
       },
     ]
 
