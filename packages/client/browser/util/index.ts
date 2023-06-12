@@ -63,3 +63,5 @@ export function timeDiff(timestamp: number) {
 export async function getV8Engine(): Promise<null> {
   return null
 }
+
+export const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')

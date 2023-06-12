@@ -5,7 +5,7 @@ import { Level } from 'level'
 import { getLogger } from './logging'
 import { RlpxServer } from './net/server'
 import { Event, EventBus } from './types'
-import { parseTransports, short } from './util'
+import { isBrowser, parseTransports, short } from './util'
 
 import type { Logger } from './logging'
 import type { EventBusType } from './types'
@@ -458,7 +458,7 @@ export class Config {
       }
       // Servers option takes precedence
       this.servers = options.servers
-    } else {
+    } else if (isBrowser() !== true) {
       // Otherwise parse transports from transports option
       this.servers = parseTransports(this.transports).map((t) => {
         if (t.name === 'rlpx') {
