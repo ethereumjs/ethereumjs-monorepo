@@ -4,6 +4,7 @@ import {
   compactBytesToNibbles,
   getPathTo,
   hexToKeybytes,
+  nibblesToBytes,
   nibblesToCompactBytes,
   padToEven,
 } from '@ethereumjs/util'
@@ -46,6 +47,7 @@ type FetchedNodeData = {
   parentHash: string
   deps: number
   nodeData: Uint8Array
+  path: string
 }
 
 type NodeRequestData = {
@@ -257,10 +259,24 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           this.debug('extension node found')
           // TODO functionality unverified for extension node
           // TODO remove optional terminator from key if it exists before postpending
-          childNodes.unshift({
+          console.log(node.key())
+          // console.log(this.nibblesToBytes(node.key()))
+          console.log(Uint8Array.from(node.key()))
+          let nibbles = bytesToNibbles(Uint8Array.from(node.key()))
+          nibbles = nibbles.subarray(0, nibbles.length - 1)
+          console.log(nibbles)
+          // console.log(bytesToNibbles(Uint8Array.from(node.key())))
+          console.log(bytesToHex(nibbles))
+          console.log(nodePath.concat(bytesToHex(nibbles)))
+          // console.log(bytesToHex(bytesToNibbles(this.nibblesToBytes(node.key()))))
+          // console.log(nodePath.concat(bytesToHex(bytesToNibbles(this.nibblesToBytes(node.key())))))
+
+          const val = {
             nodeHash: this.nibblesToBytes(node.key()),
-            path: nodePath.concat(bytesToHex(bytesToNibbles(this.nibblesToBytes(node.key())))), // TODO verify this is correct way of encoding to hex encoded hex string from keybytes Nibbles typed value
-          })
+            // path: nodePath.concat(bytesToHex(bytesToNibbles(this.nibblesToBytes(node.key())))), // TODO verify this is correct way of encoding to hex encoded hex string from keybytes Nibbles typed value
+            path: nodePath.concat(bytesToHex(nibbles)),
+          }
+          childNodes.unshift(val)
         } else {
           this.debug('leaf node found')
 
@@ -299,6 +315,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           parentHash: nodeParentHash,
           deps: unknownChildNodeCount,
           nodeData,
+          path: nodePath,
         } as unknown as FetchedNodeData)
 
         // remove filled requests
@@ -340,9 +357,13 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   mergeAndFormatPaths(pathStrings: string[]) {
     this.debug('At start of mergeAndFormatPaths')
 
-    // for (let i = 0; i < pathStrings.length; i++) {
-    //   return
-    // }
+    for (let i = 0; i < pathStrings.length; i++) {
+      const pathString = pathStrings[i]
+      if (pathString === '06040000') {
+        console.log('Found extension node path')
+        console.log(pathStrings)
+      }
+    }
 
     // TODO this is where the conversion from hex to keybytes should happen, with anything that
     //      isn't hex, being kept the same since it should be compact encoded
