@@ -4,7 +4,7 @@ import debug from 'debug'
 import { Level } from 'level'
 
 import { EthereumClient } from '../src/client'
-import { Config } from '../src/config'
+import { Config, SyncMode } from '../src/config'
 import { LevelDB } from '../src/execution/level'
 import { parseMultiaddrs } from '../src/util'
 
@@ -57,8 +57,8 @@ export async function createClient(args: any) {
   const config = new Config({
     common,
     key,
-    transports: ['libp2p'],
-    syncmode: args.syncmode,
+    transports: ['rlpx'],
+    syncmode: SyncMode.None,
     bootnodes,
     multiaddrs: [],
     logger,
