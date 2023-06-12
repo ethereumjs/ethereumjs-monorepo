@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1686563446932,
+  "lastUpdate": 1686603350254,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "konjou@gmail.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "fb6b221370ed688057d738d64576e2cca4c36d85",
-          "message": "Make `ethersStateManager` more awesome (#2720)\n\n* Update ethers to latest version\r\n\r\n* Update mockprovider to match v6 API\r\n\r\n* Add more logging\r\n\r\n* fix test\r\n\r\n* various cleanup\r\n\r\n* Tell Karma to parse more modern syntax\r\n\r\n* Fix test helper\r\n\r\n* update lockfile-lint\r\n\r\n* fix node version\r\n\r\n* fix lockfile path\r\n\r\n* more fixes\r\n\r\n* Remove error condition\r\n\r\n* Add error messaging\r\n\r\n* StateManager: switch to ORDERED_MAP caches for EthersStateManager, remove console.log() from tests\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2023-05-24T09:44:57+02:00",
-          "tree_id": "33729991e8054e63741880494f8100235cb3b6b5",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/fb6b221370ed688057d738d64576e2cca4c36d85"
-        },
-        "date": 1684914537763,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18105,
-            "range": "±5.98%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18242,
-            "range": "±2.94%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18400,
-            "range": "±2.76%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18034,
-            "range": "±2.92%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 17527,
-            "range": "±3.12%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.10%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6f17183248a3cc95b5f93116dfbd1f76ec42ee93",
+          "message": "tx: remove default hardfork from tx classes (#2776)\n\n* tx: remove default hardfork\r\n\r\n* tx: update txtype of 4844 tx\r\n\r\n* tx: remove default hardfork from baseTransaction class",
+          "timestamp": "2023-06-12T16:45:31-04:00",
+          "tree_id": "58dc5a32619faa052b216b68d3e050e4d25c5bc0",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6f17183248a3cc95b5f93116dfbd1f76ec42ee93"
+        },
+        "date": 1686603348829,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 25480,
+            "range": "±6.17%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 26905,
+            "range": "±3.22%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 24551,
+            "range": "±5.88%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 21722,
+            "range": "±12.16%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 25447,
+            "range": "±3.41%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
           }
         ]
       }
