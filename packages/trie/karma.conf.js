@@ -5,7 +5,7 @@ module.exports = function (config) {
     preprocessors: {
       '**/*.ts': ['karma-typescript'],
     },
-    plugins: ['karma-typescript'],
+    plugins: ['karma-typescript', 'karma-tap', 'karma-chrome-launcher', 'karma-firefox-launcher'],
     karmaTypescriptConfig: {
       tsconfig: './tsconfig.json',
       bundlerOptions: {

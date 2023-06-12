@@ -17,13 +17,21 @@ import * as bulkInput from './bulkInput.json'
 
 import type { BulkNodeInput } from '../../src'
 
+/**
+ * Checks if in a karma test runner.
+ * @returns boolean whether running in karma
+ */
+export function isRunningInKarma(): boolean {
+  // eslint-disable-next-line no-undef
+  return typeof (<any>globalThis).window !== 'undefined' && (<any>globalThis).window.__karma__
+}
+
 const _bulkInput: [number[], string][] = bulkInput as [number[], string][]
 const _bulkJSON: [string, string][] = bulkJSON as [string, string][]
 const _bulkEntries: [number[], Uint8Array][] = _bulkJSON.map(([key, value]) => [
   bytesToNibbles(hexStringToBytes(key)),
   hexStringToBytes(value),
 ])
-
 const bulkMap = Object.fromEntries(_bulkJSON)
 const jsonKeys = _bulkJSON.map(([k, _]) => JSON.stringify(bytesToNibbles(hexStringToBytes(k))))
 tape('partitionByCommonPrefix', (t) => {
@@ -69,10 +77,15 @@ tape('partitionByCommonPrefix', (t) => {
 
   t.end()
 })
+
 tape('bulkInsert and insertBatch', async (t) => {
+  if (isRunningInKarma()) {
+    t.skip('Skipping bulkInsert and insertBatch tests in karma')
+    return
+  }
   const sample = _bulkJSON
   /**
-   * This makes the test take much longer, but can be enabled to ensure that bulkInsert and batchInsert are working 
+   * This makes the test take much longer, but can be enabled to ensure that bulkInsert and batchInsert are working
   const control_start = Date.now()
   const control = new Trie({})
   for (const [i, [key, value]] of sample.entries()) {
