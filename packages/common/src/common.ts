@@ -524,11 +524,11 @@ export class Common extends EventEmitter {
         }
         // Parameter-inlining HF file (e.g. istanbul.json)
       } else {
-        if (hfChanges[1][topic] === undefined) {
+        if ((hfChanges[1] as any)[topic] === undefined) {
           throw new Error(`Topic ${topic} not defined`)
         }
-        if (hfChanges[1][topic][name] !== undefined) {
-          value = hfChanges[1][topic][name].v
+        if ((hfChanges[1] as any)[topic][name] !== undefined) {
+          value = (hfChanges[1] as any)[topic][name].v
         }
       }
       if (hfChanges[0] === hardfork) break
@@ -692,7 +692,7 @@ export class Common extends EventEmitter {
       const hf = hfChanges[1]
       if ('eips' in hf) {
         // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-        if (hf['eips'].includes(eip)) {
+        if ((hf['eips'] as any).includes(eip)) {
           return this.hardforkBlock(hfChanges[0])
         }
       }
@@ -987,7 +987,7 @@ export class Common extends EventEmitter {
     for (const hfChanges of this.HARDFORK_CHANGES) {
       if ('consensus' in hfChanges[1]) {
         // The config parameter is named after the respective consensus algorithm
-        value = hfChanges[1]['consensus'][hfChanges[1]['consensus']['algorithm']]
+        value = (hfChanges[1] as any)['consensus'][hfChanges[1]['consensus']['algorithm']]
       }
       if (hfChanges[0] === hardfork) break
     }
