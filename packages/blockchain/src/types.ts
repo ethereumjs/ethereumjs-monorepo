@@ -1,8 +1,7 @@
 import type { Consensus } from './consensus'
-import type { GenesisState } from './genesisStates'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type { AbstractLevel } from 'abstract-level'
+import type { DB, DBObject, PrefixedHexString } from '@ethereumjs/util'
 
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
@@ -64,6 +63,14 @@ export interface BlockchainInterface {
   getIteratorHead?(name?: string): Promise<Block>
 
   /**
+   * Set header hash of a certain `tag`.
+   * When calling the iterator, the iterator will start running the first child block after the header hash currently stored.
+   * @param tag - The tag to save the headHash to
+   * @param headHash - The head hash to save
+   */
+  setIteratorHead(tag: string, headHash: Uint8Array): Promise<void>
+
+  /**
    * Gets total difficulty for a block specified by hash and number
    */
   getTotalDifficulty?(hash: Uint8Array, number?: bigint): Promise<bigint>
@@ -78,6 +85,19 @@ export interface BlockchainInterface {
    * Returns the latest full block in the canonical chain.
    */
   getCanonicalHeadBlock?(): Promise<Block>
+}
+
+export type StoragePair = [key: PrefixedHexString, value: PrefixedHexString]
+
+export type AccountState = [
+  balance: PrefixedHexString,
+  code: PrefixedHexString,
+  storage: Array<StoragePair>,
+  nonce: PrefixedHexString
+]
+
+export interface GenesisState {
+  [key: PrefixedHexString]: PrefixedHexString | AccountState
 }
 
 /**
@@ -105,14 +125,9 @@ export interface BlockchainOptions {
 
   /**
    * Database to store blocks and metadata.
-   * Should be an `abstract-leveldown` compliant store
-   * wrapped with `encoding-down`.
-   * For example:
-   *   `levelup(encode(leveldown('./db1')))`
-   * or use the `level` convenience package:
-   *   `new MemoryLevel('./db1')`
+   * Can be any database implementation that adheres to the `DB` interface
    */
-  db?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+  db?: DB<Uint8Array | string | number, Uint8Array | string | DBObject>
 
   /**
    * This flags indicates if a block should be validated along the consensus algorithm

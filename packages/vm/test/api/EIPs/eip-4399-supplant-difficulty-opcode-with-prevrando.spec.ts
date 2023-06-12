@@ -6,7 +6,7 @@ import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
 
-import type { InterpreterStep } from '@ethereumjs/evm/dist/interpreter'
+import type { InterpreterStep } from '@ethereumjs/evm'
 
 tape('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', (t) => {
   t.test('should return the right values', async (st) => {

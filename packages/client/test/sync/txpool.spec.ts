@@ -11,12 +11,10 @@ import {
 } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { Config } from '../../lib/config'
-import { getLogger } from '../../lib/logging'
-import { PeerPool } from '../../lib/net/peerpool'
-import { TxPool } from '../../lib/service/txpool'
-
-import type { StateManager } from '@ethereumjs/statemanager'
+import { Config } from '../../src/config'
+import { getLogger } from '../../src/logging'
+import { PeerPool } from '../../src/net/peerpool'
+import { TxPool } from '../../src/service/txpool'
 
 const setup = () => {
   const config = new Config({
@@ -50,7 +48,7 @@ const config = new Config({ transports: [], accountCache: 10000, storageCache: 1
 const handleTxs = async (
   txs: any[],
   failMessage: string,
-  stateManager?: StateManager,
+  stateManager?: DefaultStateManager,
   pool?: TxPool
 ) => {
   if (pool === undefined) {

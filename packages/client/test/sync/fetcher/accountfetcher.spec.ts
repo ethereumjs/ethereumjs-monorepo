@@ -3,10 +3,10 @@ import { bytesToBigInt, hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Chain } from '../../../lib/blockchain'
-import { Config } from '../../../lib/config'
-import { SnapProtocol } from '../../../lib/net/protocol'
-import { Event } from '../../../lib/types'
+import { Chain } from '../../../src/blockchain'
+import { Config } from '../../../src/config'
+import { SnapProtocol } from '../../../src/net/protocol'
+import { Event } from '../../../src/types'
 import { wait } from '../../integration/util'
 
 export const _accountRangeRLP =
@@ -21,7 +21,7 @@ tape('[AccountFetcher]', async (t) => {
   PeerPool.prototype.ban = td.func<any>()
 
   const { AccountFetcher, snapFetchersCompleted } = await import(
-    '../../../lib/sync/fetcher/accountfetcher'
+    '../../../src/sync/fetcher/accountfetcher'
   )
 
   t.test('should start/stop', async (t) => {

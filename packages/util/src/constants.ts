@@ -1,4 +1,4 @@
-import { CURVE } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
 /**
@@ -22,8 +22,8 @@ export const MAX_INTEGER_BIGINT = BigInt(
   '115792089237316195423570985008687907853269984665640564039457584007913129639935'
 )
 
-export const SECP256K1_ORDER = CURVE.n
-export const SECP256K1_ORDER_DIV_2 = CURVE.n / BigInt(2)
+export const SECP256K1_ORDER = secp256k1.CURVE.n
+export const SECP256K1_ORDER_DIV_2 = secp256k1.CURVE.n / BigInt(2)
 
 /**
  * 2^256
@@ -69,3 +69,5 @@ export const KECCAK256_RLP = hexToBytes(KECCAK256_RLP_S)
 export const RLP_EMPTY_STRING = Uint8Array.from([0x80])
 
 export const MAX_WITHDRAWALS_PER_PAYLOAD = 16
+
+export const RIPEMD160_ADDRESS_STRING = '0000000000000000000000000000000000000003'

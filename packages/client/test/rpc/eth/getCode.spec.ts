@@ -5,11 +5,11 @@ import { Transaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 import { checkError } from '../util'
 
-import type { FullEthereumService } from '../../../lib/service'
+import type { FullEthereumService } from '../../../src/service'
 
 const method = 'eth_getCode'
 
@@ -25,7 +25,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
   t.notEqual(execution, undefined, 'should have valid execution')
   const { vm } = execution
-  await vm.eei.generateCanonicalGenesis(blockchain.genesisState())
+  await vm.stateManager.generateCanonicalGenesis(blockchain.genesisState())
 
   // genesis address
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')

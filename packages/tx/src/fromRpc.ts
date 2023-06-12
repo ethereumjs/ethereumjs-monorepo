@@ -28,7 +28,7 @@ export const normalizeTxParams = (_txParams: any): TxData => {
   txParams.r = txParams.r === '0x0' ? '0x' : txParams.r
   txParams.s = txParams.s === '0x0' ? '0x' : txParams.s
 
-  if (txParams.v !== '0x') {
+  if (txParams.v !== '0x' || txParams.r !== '0x' || txParams.s !== '0x') {
     txParams.v = toType(txParams.v, TypeOutput.BigInt)
   }
 

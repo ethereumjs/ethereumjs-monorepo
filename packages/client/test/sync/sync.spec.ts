@@ -1,10 +1,10 @@
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Chain } from '../../lib/blockchain'
-import { Config } from '../../lib/config'
-import { Synchronizer } from '../../lib/sync/sync'
-import { Event } from '../../lib/types'
+import { Chain } from '../../src/blockchain'
+import { Config } from '../../src/config'
+import { Synchronizer } from '../../src/sync/sync'
+import { Event } from '../../src/types'
 
 class SynchronizerTest extends Synchronizer {
   async syncWithPeer() {

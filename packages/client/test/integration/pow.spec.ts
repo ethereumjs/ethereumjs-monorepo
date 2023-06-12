@@ -5,10 +5,10 @@ import { hexToBytes } from 'ethereum-cryptography/utils'
 import { removeSync } from 'fs-extra'
 import * as tape from 'tape'
 
-import { Config } from '../../lib'
+import { Config } from '../../src'
 import { createInlineClient } from '../sim/simutils'
 
-import type { EthereumClient } from '../../lib'
+import type { EthereumClient } from '../../src'
 
 const pk = hexToBytes('95a602ff1ae30a2243f400dcf002561b9743b2ae9827b1008e3714a5cc1c0cfe')
 const minerAddress = Address.fromPrivateKey(pk)

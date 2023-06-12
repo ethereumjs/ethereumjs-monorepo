@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/util",
-  "version": "8.0.5",
+  "version": "8.0.6",
   "description": "A collection of utility functions for Ethereum",
   "keywords": [
     "ethereum",
@@ -61,8 +61,14 @@
       "url": "https://github.com/asinyagin"
     }
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "files": [
     "dist",
     "src"
@@ -83,16 +89,15 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@chainsafe/ssz": "^0.11.0",
     "@ethereumjs/rlp": "^4.0.1",
-    "ethereum-cryptography": "^1.1.2"
+    "ethereum-cryptography": "^2.0.0"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.0",
     "@types/secp256k1": "^4.0.1"
   },
   "peerDependencies": {
-    "c-kzg": "^2.0.4"
+    "c-kzg": "^2.1.0"
   },
   "peerDependenciesMeta": {
     "c-kzg": {
@@ -100,6 +105,6 @@
     }
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   }
 }

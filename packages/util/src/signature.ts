@@ -1,5 +1,5 @@
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { recoverPublicKey, signSync } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import { concatBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 
 import {
@@ -29,15 +29,15 @@ export function ecsign(
   privateKey: Uint8Array,
   chainId?: bigint
 ): ECDSASignature {
-  const [signature, recovery] = signSync(msgHash, privateKey, { recovered: true, der: false })
-
-  const r = signature.subarray(0, 32)
-  const s = signature.subarray(32, 64)
+  const sig = secp256k1.sign(msgHash, privateKey)
+  const buf = sig.toCompactRawBytes()
+  const r = buf.slice(0, 32)
+  const s = buf.slice(32, 64)
 
   const v =
     chainId === undefined
-      ? BigInt(recovery + 27)
-      : BigInt(recovery + 35) + BigInt(chainId) * BigInt(2)
+      ? BigInt(sig.recovery! + 27)
+      : BigInt(sig.recovery! + 35) + BigInt(chainId) * BigInt(2)
 
   return { r, s, v }
 }
@@ -73,8 +73,9 @@ export const ecrecover = function (
     throw new Error('Invalid signature v value')
   }
 
-  const senderPubKey = recoverPublicKey(msgHash, signature, Number(recovery))
-  return senderPubKey.subarray(1)
+  const sig = secp256k1.Signature.fromCompact(signature).addRecoveryBit(Number(recovery))
+  const senderPubKey = sig.recoverPublicKey(msgHash)
+  return senderPubKey.toRawBytes(false).slice(1)
 }
 
 /**

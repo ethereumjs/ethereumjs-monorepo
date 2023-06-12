@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/block",
-  "version": "4.2.1",
+  "version": "4.2.2",
   "description": "Provides Block serialization and help functions",
   "keywords": [
     "ethereum",
@@ -16,8 +16,14 @@
   },
   "license": "MPL-2.0",
   "author": "mjbecze (mb@ethdev.com)",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "files": [
     "dist",
     "src"
@@ -38,19 +44,17 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^3.1.1",
+    "@ethereumjs/common": "^3.1.2",
     "@ethereumjs/rlp": "^4.0.1",
-    "@ethereumjs/trie": "^5.0.4",
-    "@ethereumjs/tx": "^4.1.1",
-    "@ethereumjs/util": "^8.0.5",
-    "ethereum-cryptography": "^1.1.2",
-    "ethers": "^5.7.1"
+    "@ethereumjs/trie": "^5.0.5",
+    "@ethereumjs/tx": "^4.1.2",
+    "@ethereumjs/util": "^8.0.6",
+    "ethereum-cryptography": "^2.0.0"
   },
   "devDependencies": {
-    "@types/lru-cache": "^5.1.0",
-    "c-kzg": "^2.0.4"
+    "c-kzg": "^2.1.0"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   }
 }

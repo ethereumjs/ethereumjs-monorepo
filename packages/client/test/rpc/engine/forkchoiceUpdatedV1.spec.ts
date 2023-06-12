@@ -4,8 +4,8 @@ import { bytesToHex, bytesToPrefixedHexString, zeros } from '@ethereumjs/util'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { blockToExecutionPayload } from '../../../lib/rpc/modules'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code'
+import { blockToExecutionPayload } from '../../../src/rpc/modules'
 import blocks = require('../../testdata/blocks/beacon.json')
 import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'

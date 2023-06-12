@@ -1,8 +1,8 @@
 import { Account, Address, equalsBytes, toBytes } from '@ethereumjs/util'
 import { Common } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
-import { StateManager, DefaultStateManager } from '@ethereumjs/statemanager'
-import { RunBlockResult } from '../dist/types'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { RunBlockResult } from '../dist/cjs/types'
 import { Mockchain } from './mockchain'
 
 export interface BenchmarkType {
@@ -25,7 +25,7 @@ export async function getPreState(
     [k: string]: StateTestPreAccount
   },
   common: Common
-): Promise<StateManager> {
+): Promise<DefaultStateManager> {
   const state = new DefaultStateManager()
   await state.checkpoint()
   for (const k in pre) {

@@ -5,11 +5,11 @@ import { MemoryLevel } from 'memory-level'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Chain } from '../../lib/blockchain'
-import { Config } from '../../lib/config'
-import { getLogger } from '../../lib/logging'
-import { Skeleton, errReorgDenied, errSyncMerged } from '../../lib/sync/skeleton'
-import { short } from '../../lib/util'
+import { Chain } from '../../src/blockchain'
+import { Config } from '../../src/config'
+import { getLogger } from '../../src/logging'
+import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync/skeleton'
+import { short } from '../../src/util'
 import { wait } from '../integration/util'
 import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
 type Subchain = {
@@ -845,7 +845,7 @@ tape('[Skeleton] / setHead', async (t) => {
 
       const originalValidate = BlockHeader.prototype._consensusFormatValidation
       BlockHeader.prototype._consensusFormatValidation = td.func<any>()
-      td.replace('@ethereumjs/block', { BlockHeader })
+      td.replace<any>('@ethereumjs/block', { BlockHeader })
       await chain.open()
       const genesisBlock = await chain.getBlock(BigInt(0))
 

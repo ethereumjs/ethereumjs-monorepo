@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/tx",
-  "version": "4.1.1",
+  "version": "4.1.2",
   "description": "A simple module for creating, manipulating and signing Ethereum transactions",
   "keywords": [
     "ethereum",
@@ -27,8 +27,14 @@
       "hireable": true
     }
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "files": [
     "dist",
     "src"
@@ -51,15 +57,13 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@chainsafe/ssz": "^0.11.0",
-    "@ethereumjs/common": "^3.1.1",
+    "@ethereumjs/common": "^3.1.2",
     "@ethereumjs/rlp": "^4.0.1",
-    "@ethereumjs/util": "^8.0.5",
-    "ethereum-cryptography": "^1.1.2",
-    "@ethersproject/providers": "^5.7.2"
+    "@ethereumjs/util": "^8.0.6",
+    "ethereum-cryptography": "^2.0.0"
   },
   "peerDependencies": {
-    "c-kzg": "^2.0.4"
+    "c-kzg": "^2.1.0"
   },
   "peerDependenciesMeta": {
     "c-kzg": {
@@ -73,6 +77,6 @@
     "node-dir": "^0.1.16"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   }
 }

@@ -1,3 +1,4 @@
+import { Chain, Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import {
@@ -15,6 +16,7 @@ import {
   hexStringToBytes,
   setLengthLeft,
   short,
+  toBytes,
   unpadBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
@@ -23,8 +25,9 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { AccountCache, CacheType, StorageCache } from './cache'
+import { OriginalStorageCache } from './cache/originalStorageCache'
 
-import type { AccountFields, StateManager, StorageDump } from './interface'
+import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
@@ -116,6 +119,11 @@ export interface DefaultStateManagerOpts {
   accountCacheOpts?: CacheOptions
 
   storageCacheOpts?: CacheOptions
+
+  /**
+   * The common to use
+   */
+  common?: Common
 }
 
 /**
@@ -128,10 +136,12 @@ export interface DefaultStateManagerOpts {
  * The default state manager implementation uses a
  * `@ethereumjs/trie` trie as a data backend.
  */
-export class DefaultStateManager implements StateManager {
+export class DefaultStateManager implements EVMStateManagerInterface {
   _debug: Debugger
   _accountCache?: AccountCache
   _storageCache?: StorageCache
+
+  originalStorageCache: OriginalStorageCache
 
   _trie: Trie
   _storageTries: { [key: string]: Trie }
@@ -140,6 +150,10 @@ export class DefaultStateManager implements StateManager {
   protected readonly _prefixCodeHashes: boolean
   protected readonly _accountCacheSettings: CacheSettings
   protected readonly _storageCacheSettings: CacheSettings
+
+  protected readonly _common: Common
+
+  protected _checkpointCount: number
 
   /**
    * StateManager is run in DEBUG mode (default: false)
@@ -160,9 +174,15 @@ export class DefaultStateManager implements StateManager {
 
     this._debug = createDebugLogger('statemanager:statemanager')
 
+    this._common = opts.common ?? new Common({ chain: Chain.Mainnet })
+
+    this._checkpointCount = 0
+
     this._trie = opts.trie ?? new Trie({ useKeyHashing: true })
     this._storageTries = {}
     this._codeCache = {}
+
+    this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
 
     this._prefixCodeHashes = opts.prefixCodeHashes ?? true
     this._accountCacheSettings = {
@@ -344,7 +364,7 @@ export class DefaultStateManager implements StateManager {
    * cache or does a lookup.
    * @private
    */
-  async _getStorageTrie(address: Address, account: Account): Promise<Trie> {
+  private async _getStorageTrie(address: Address, account: Account): Promise<Trie> {
     // from storage cache
     const addressHex = bytesToHex(address.bytes)
     const storageTrie = this._storageTries[addressHex]
@@ -398,7 +418,7 @@ export class DefaultStateManager implements StateManager {
    * @param address -  Address of the account whose storage is to be modified
    * @param modifyTrie - Function to modify the storage trie of the account
    */
-  async _modifyContractStorage(
+  private async _modifyContractStorage(
     address: Address,
     account: Account,
     modifyTrie: (storageTrie: Trie, done: Function) => void
@@ -420,7 +440,7 @@ export class DefaultStateManager implements StateManager {
     })
   }
 
-  async _writeContractStorage(
+  private async _writeContractStorage(
     address: Address,
     account: Account,
     key: Uint8Array,
@@ -479,7 +499,7 @@ export class DefaultStateManager implements StateManager {
 
   /**
    * Clears all storage entries for the account corresponding to `address`.
-   * @param address -  Address to clear the storage of
+   * @param address - Address to clear the storage of
    */
   async clearContractStorage(address: Address): Promise<void> {
     let account = await this.getAccount(address)
@@ -502,6 +522,7 @@ export class DefaultStateManager implements StateManager {
     this._trie.checkpoint()
     this._storageCache?.checkpoint()
     this._accountCache?.checkpoint()
+    this._checkpointCount++
   }
 
   /**
@@ -513,6 +534,16 @@ export class DefaultStateManager implements StateManager {
     await this._trie.commit()
     this._storageCache?.commit()
     this._accountCache?.commit()
+    this._checkpointCount--
+
+    if (this._checkpointCount === 0) {
+      await this.flush()
+      this.originalStorageCache.clear()
+    }
+
+    if (this.DEBUG) {
+      this._debug(`state checkpoint committed`)
+    }
   }
 
   /**
@@ -526,6 +557,13 @@ export class DefaultStateManager implements StateManager {
     this._accountCache?.revert()
     this._storageTries = {}
     this._codeCache = {}
+
+    this._checkpointCount--
+
+    if (this._checkpointCount === 0) {
+      await this.flush()
+      this.originalStorageCache.clear()
+    }
   }
 
   /**
@@ -765,6 +803,44 @@ export class DefaultStateManager implements StateManager {
   }
 
   /**
+   * Initializes the provided genesis state into the state trie.
+   * Will error if there are uncommitted checkpoints on the instance.
+   * @param initState address -> balance | [balance, code, storage]
+   */
+  async generateCanonicalGenesis(initState: any): Promise<void> {
+    if (this._checkpointCount !== 0) {
+      throw new Error('Cannot create genesis state with uncommitted checkpoints')
+    }
+    if (this.DEBUG) {
+      this._debug(`Save genesis state into the state trie`)
+    }
+    const addresses = Object.keys(initState)
+    for (const address of addresses) {
+      const addr = Address.fromString(address)
+      const state = initState[address]
+      if (!Array.isArray(state)) {
+        // Prior format: address -> balance
+        const account = Account.fromAccountData({ balance: state })
+        await this.putAccount(addr, account)
+      } else {
+        // New format: address -> [balance, code, storage]
+        const [balance, code, storage, nonce] = state
+        const account = Account.fromAccountData({ balance, nonce })
+        await this.putAccount(addr, account)
+        if (code !== undefined) {
+          await this.putContractCode(addr, toBytes(code))
+        }
+        if (storage !== undefined) {
+          for (const [key, value] of storage) {
+            await this.putContractStorage(addr, toBytes(key), toBytes(value))
+          }
+        }
+      }
+    }
+    await this.flush()
+  }
+
+  /**
    * Checks whether there is a state corresponding to a stateRoot
    */
   async hasStateRoot(root: Uint8Array): Promise<boolean> {
@@ -772,30 +848,35 @@ export class DefaultStateManager implements StateManager {
   }
 
   /**
-   * Checks if the `account` corresponding to `address`
-   * exists
-   * @param address - Address of the `account` to check
-   */
-  async accountExists(address: Address): Promise<boolean> {
-    const account = await this.getAccount(address)
-    if (account) {
-      return true
-    } else {
-      return false
-    }
-  }
-
-  /**
    * Copies the current instance of the `StateManager`
    * at the last fully committed point, i.e. as if all current
    * checkpoints were reverted.
+   *
+   * Note on caches:
+   * 1. For caches instantiated as an LRU cache type
+   * the copy() method will instantiate with an ORDERED_MAP cache
+   * instead, since copied instantances are mostly used in
+   * short-term usage contexts and LRU cache instantation would create
+   * a large overhead here.
+   * 2. Cache values are generally not copied along
    */
-  copy(): StateManager {
+  copy(): DefaultStateManager {
+    const trie = this._trie.copy(false)
+    const prefixCodeHashes = this._prefixCodeHashes
+    let accountCacheOpts = { ...this._accountCacheSettings }
+    if (!this._accountCacheSettings.deactivate) {
+      accountCacheOpts = { ...accountCacheOpts, type: CacheType.ORDERED_MAP }
+    }
+    let storageCacheOpts = { ...this._storageCacheSettings }
+    if (!this._storageCacheSettings.deactivate) {
+      storageCacheOpts = { ...storageCacheOpts, type: CacheType.ORDERED_MAP }
+    }
+
     return new DefaultStateManager({
-      trie: this._trie.copy(false),
-      prefixCodeHashes: this._prefixCodeHashes,
-      accountCacheOpts: this._accountCacheSettings,
-      storageCacheOpts: this._storageCacheSettings,
+      trie,
+      prefixCodeHashes,
+      accountCacheOpts,
+      storageCacheOpts,
     })
   }
 

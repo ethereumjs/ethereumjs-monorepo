@@ -1,4 +1,5 @@
 export { Bloom } from './bloom/index'
-export * from './eei/eei'
+export { BlockBuilder, BuildStatus } from './buildBlock'
+export { encodeReceipt } from './runBlock'
 export * from './types'
 export { VM } from './vm'

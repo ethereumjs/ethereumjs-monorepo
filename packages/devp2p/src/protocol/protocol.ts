@@ -1,6 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
 import { EventEmitter } from 'events'
-import ms = require('ms')
 
 import { DISCONNECT_REASONS } from '../rlpx/peer'
 import { devp2pDebug } from '../util'
@@ -53,7 +52,7 @@ export class Protocol extends EventEmitter {
       protocol !== EthProtocol.SNAP
         ? setTimeout(() => {
             this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
-          }, ms('5s'))
+          }, 5000) // 5 sec * 1000
         : undefined
 
     this._debug = devp2pDebug.extend(protocol)

@@ -3,7 +3,7 @@ import { Common } from '@ethereumjs/common'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Event } from '../../lib/types'
+import { Event } from '../../src/types'
 import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
 
 import { destroy, setup, wait } from './util'
@@ -16,7 +16,7 @@ tape('[Integration:BeaconSync]', async (t) => {
 
   t.test('should sync blocks', async (t) => {
     BlockHeader.prototype._consensusFormatValidation = td.func<any>()
-    td.replace('@ethereumjs/block', { BlockHeader })
+    td.replace<any>('@ethereumjs/block', { BlockHeader })
 
     const [remoteServer, remoteService] = await setup({ location: '127.0.0.2', height: 20, common })
     const [localServer, localService] = await setup({ location: '127.0.0.1', height: 0, common })

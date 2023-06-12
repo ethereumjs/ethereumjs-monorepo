@@ -7,6 +7,8 @@ import { MemoryLevel } from 'memory-level'
 
 import { VM } from '../../src/vm'
 
+import { LevelDB } from './level'
+
 import type { VMOpts } from '../../src/types'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
@@ -18,13 +20,13 @@ export function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {
 
 export async function setBalance(vm: VM, address: Address, balance = BigInt(100000000)) {
   const account = createAccount(BigInt(0), balance)
-  await vm.eei.checkpoint()
-  await vm.eei.putAccount(address, account)
-  await vm.eei.commit()
+  await vm.stateManager.checkpoint()
+  await vm.stateManager.putAccount(address, account)
+  await vm.stateManager.commit()
 }
 
 export async function setupVM(opts: VMOpts & { genesisBlock?: Block } = {}) {
-  const db: any = new MemoryLevel()
+  const db: any = new LevelDB(new MemoryLevel())
   const { common, genesisBlock } = opts
   if (opts.blockchain === undefined) {
     opts.blockchain = await Blockchain.create({
@@ -39,10 +41,6 @@ export async function setupVM(opts: VMOpts & { genesisBlock?: Block } = {}) {
     ...opts,
   })
   return vm
-}
-
-export async function getEEI() {
-  return (await setupVM()).eei
 }
 
 export function getTransaction(

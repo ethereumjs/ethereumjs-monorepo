@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
+import { bytesToPrefixedHexString, hexStringToBytes, randomBytes } from '@ethereumjs/util'
 import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
@@ -7,7 +7,6 @@ import { blockFromRpc } from '../src/from-rpc'
 import { blockHeaderFromRpc } from '../src/header-from-rpc'
 import { Block } from '../src/index'
 
-import { MockProvider } from './mockProvider'
 import * as alchemy14151203 from './testdata/alchemy14151203.json'
 import * as infura15571241woTxs from './testdata/infura15571241.json'
 import * as infura15571241wTxs from './testdata/infura15571241wtxns.json'
@@ -185,15 +184,50 @@ tape('[fromRPC] - Alchemy/Infura API block responses', (t) => {
   t.end()
 })
 
-tape('[fromEthersProvider]', async (t) => {
+tape('[fromJsonRpcProvider]', async (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-  const provider = new MockProvider()
+  const provider = 'https://my.json.rpc.provider.com:8545'
+
+  const realFetch = global.fetch
+  //@ts-expect-error -- Typescript doesn't like us to replace global values
+  global.fetch = async (_url: string, req: any) => {
+    const json = JSON.parse(req.body)
+    if (json.params[0] === '0x1850b014065b23d804ecf71a8a4691d076ca87c2e6fb8fe81ee20a4d8e884c24') {
+      const txData = await import(`./testdata/infura15571241wtxns.json`)
+      return {
+        json: () => {
+          return {
+            result: txData,
+          }
+        },
+      }
+    } else {
+      return {
+        json: () => {
+          return {
+            result: null, // This is the value Infura returns if no transaction is found matching the provided hash
+          }
+        },
+      }
+    }
+  }
+
   const blockHash = '0x1850b014065b23d804ecf71a8a4691d076ca87c2e6fb8fe81ee20a4d8e884c24'
-  const block = await Block.fromEthersProvider(provider, blockHash, { common })
+  const block = await Block.fromJsonRpcProvider(provider, blockHash, { common })
   t.equal(
     bytesToPrefixedHexString(block.hash()),
     blockHash,
     'assembled a block from blockdata from a provider'
   )
+  try {
+    await Block.fromJsonRpcProvider(provider, bytesToPrefixedHexString(randomBytes(32)), {})
+    t.fail('should throw')
+  } catch (err: any) {
+    t.ok(
+      err.message.includes('No block data returned from provider'),
+      'returned correct error message'
+    )
+  }
+  global.fetch = realFetch
   t.end()
 })

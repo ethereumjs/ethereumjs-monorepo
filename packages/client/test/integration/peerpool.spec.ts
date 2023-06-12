@@ -1,10 +1,10 @@
 import { Blockchain } from '@ethereumjs/blockchain'
 import * as tape from 'tape'
 
-import { Config } from '../../lib/config'
-import { PeerPool } from '../../lib/net/peerpool'
-import { EthProtocol } from '../../lib/net/protocol'
-import { Event } from '../../lib/types'
+import { Config } from '../../src/config'
+import { PeerPool } from '../../src/net/peerpool'
+import { EthProtocol } from '../../src/net/protocol'
+import { Event } from '../../src/types'
 
 import { MockChain } from './mocks/mockchain'
 import { MockServer } from './mocks/mockserver'

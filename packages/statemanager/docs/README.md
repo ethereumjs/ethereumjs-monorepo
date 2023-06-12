@@ -21,6 +21,10 @@
 - [AccountFields](README.md#accountfields)
 - [Proof](README.md#proof)
 
+### Variables
+
+- [CODEHASH\_PREFIX](README.md#codehash_prefix)
+
 ## Type Aliases
 
 ### AccountFields
@@ -52,3 +56,20 @@ ___
 #### Defined in
 
 [stateManager.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L29)
+
+## Variables
+
+### CODEHASH\_PREFIX
+
+• `Const` **CODEHASH\_PREFIX**: `Buffer`
+
+Prefix to distinguish between a contract deployed with code `0x80`
+and `RLP([])` (also having the value `0x80`).
+
+Otherwise the creation of the code hash for the `0x80` contract
+will be the same as the hash of the empty trie which leads to
+misbehaviour in the underlying trie library.
+
+#### Defined in
+
+[stateManager.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L47)

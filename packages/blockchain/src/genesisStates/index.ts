@@ -4,20 +4,7 @@ import { Account, isHexPrefixed, toBytes, unpadBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
-import type { PrefixedHexString } from '@ethereumjs/util'
-
-export type StoragePair = [key: PrefixedHexString, value: PrefixedHexString]
-
-export type AccountState = [
-  balance: PrefixedHexString,
-  code: PrefixedHexString,
-  storage: Array<StoragePair>,
-  nonce: PrefixedHexString
-]
-
-export interface GenesisState {
-  [key: PrefixedHexString]: PrefixedHexString | AccountState
-}
+import type { AccountState, GenesisState } from '../types'
 
 /**
  * Derives the stateRoot of the genesis block based on genesis allocations

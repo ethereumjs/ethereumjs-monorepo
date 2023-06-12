@@ -19,6 +19,11 @@ export * from './account'
 export * from './address'
 
 /**
+ * DB type
+ */
+export * from './db'
+
+/**
  * Withdrawal type
  */
 export * from './withdrawal'
@@ -32,11 +37,6 @@ export * from './signature'
  * Utilities for manipulating bytes, Uint8Arrays, etc.
  */
 export * from './bytes'
-
-/**
- * SSZ containers
- */
-export * as ssz from './ssz'
 
 /**
  * Helpful TypeScript types
@@ -67,3 +67,5 @@ export {
 } from './internal'
 export * from './kzg'
 export * from './lock'
+export * from './mapDB'
+export * from './provider'

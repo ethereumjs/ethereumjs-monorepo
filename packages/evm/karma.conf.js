@@ -24,17 +24,14 @@ module.exports = function (config) {
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
         acornOptions: {
-          ecmaVersion: 12,
+          ecmaVersion: 13,
         },
         resolve: {
           alias: {
-            'bigint-crypto-utils': '../../node_modules/bigint-crypto-utils/dist/bundles/umd.js',
-            '@chainsafe/persistent-merkle-tree/hasher':
-              '../../node_modules/@chainsafe/persistent-merkle-tree/lib/hasher/noble.js',
-            '@chainsafe/as-sha256/hashObject':
-              '../../node_modules/@chainsafe/as-sha256/lib/hashObject.js',
+            'bigint-crypto-utils': '../../node_modules/bigint-crypto-utils/dist/bundle.umd.js',
           },
         },
+        ignore: ['c-kzg'],
       },
     },
 

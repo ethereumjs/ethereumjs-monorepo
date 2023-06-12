@@ -1,6 +1,6 @@
 import { MemoryLevel } from 'memory-level'
 
-import type { BatchDBOp, DB } from '@ethereumjs/trie'
+import type { BatchDBOp, DB } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
 const ENCODING_OPTS = { keyEncoding: 'view', valueEncoding: 'view' }
@@ -22,8 +22,8 @@ export class LevelDB implements DB {
     this._leveldb = leveldb ?? new MemoryLevel(ENCODING_OPTS)
   }
 
-  async get(key: Uint8Array): Promise<Uint8Array | null> {
-    let value: Uint8Array | null = null
+  async get(key: Uint8Array): Promise<Uint8Array | undefined> {
+    let value
     try {
       value = await this._leveldb.get(key, ENCODING_OPTS)
     } catch (error: any) {

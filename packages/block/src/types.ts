@@ -104,6 +104,7 @@ export interface HeaderData {
   nonce?: BytesLike
   baseFeePerGas?: BigIntLike
   withdrawalsRoot?: BytesLike
+  dataGasUsed?: BigIntLike
   excessDataGas?: BigIntLike
 }
 
@@ -167,6 +168,7 @@ export interface JsonHeader {
   nonce?: string
   baseFeePerGas?: string
   withdrawalsRoot?: string
+  dataGasUsed?: string
   excessDataGas?: string
 }
 
@@ -197,5 +199,33 @@ export interface JsonRpcBlock {
   baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
   withdrawals?: Array<JsonRpcWithdrawal> // If EIP-4895 is enabled for this block, array of withdrawals
   withdrawalsRoot?: string // If EIP-4895 is enabled for this block, the root of the withdrawal trie of the block.
+  dataGasUsed?: string // If EIP-4844 is enabled for this block, returns the data gas used for the block
   excessDataGas?: string // If EIP-4844 is enabled for this block, returns the excess data gas for the block
+}
+
+export type WithdrawalV1 = {
+  index: string // Quantity, 8 Bytes
+  validatorIndex: string // Quantity, 8 bytes
+  address: string // DATA, 20 bytes
+  amount: string // Quantity, 32 bytes
+}
+
+export type ExecutionPayload = {
+  parentHash: string // DATA, 32 Bytes
+  feeRecipient: string // DATA, 20 Bytes
+  stateRoot: string // DATA, 32 Bytes
+  receiptsRoot: string // DATA, 32 bytes
+  logsBloom: string // DATA, 256 Bytes
+  prevRandao: string // DATA, 32 Bytes
+  blockNumber: string // QUANTITY, 64 Bits
+  gasLimit: string // QUANTITY, 64 Bits
+  gasUsed: string // QUANTITY, 64 Bits
+  timestamp: string // QUANTITY, 64 Bits
+  extraData: string // DATA, 0 to 32 Bytes
+  baseFeePerGas: string // QUANTITY, 256 Bits
+  blockHash: string // DATA, 32 Bytes
+  transactions: string[] // Array of DATA - Array of transaction rlp strings,
+  withdrawals?: WithdrawalV1[] // Array of withdrawal objects
+  dataGasUsed?: string // QUANTITY, 64 Bits
+  excessDataGas?: string // QUANTITY, 64 Bits
 }

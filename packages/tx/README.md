@@ -32,7 +32,7 @@ For blob transactions and other KZG related proof functionality (e.g. for EVM pr
 The following two manual installation steps for a KZG library and the trusted setup are needed.
 
 1. Install an additional dependency that supports the `kzg` interface defined in [the kzg interface](./src/kzg/kzg.ts). You can install the default option [c-kzg](https://github.com/ethereum/c-kzg-4844) by simply running `npm install c-kzg`.
-2. Download the trusted setup required for the KZG module. It can be found [here](../client/lib/trustedSetups/trusted_setup.txt) within the client package.
+2. Download the trusted setup required for the KZG module. It can be found [here](../client/src/trustedSetups/trusted_setup.txt) within the client package.
 
 #### Global Initialization
 
@@ -92,7 +92,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eip
 
 This library supports the following transaction types ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)):
 
-- `BlobEIP4844Transaction` ([EIP-4844](https://eips.ethereumorg/EIPS/eip-4844), proto-danksharding)
+- `BlobEIP4844Transaction` ([EIP-4844](https://eips.ethereum.org/EIPS/eip-4844), proto-danksharding)
 - `FeeMarketEIP1559Transaction` ([EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), gas fee market)
 - `AccessListEIP2930Transaction` ([EIP-2930](https://eips.ethereum.org/EIPS/eip-2930), optional access lists)
 - `Transaction`, the Ethereum standard tx up to `berlin`, now referred to as legacy txs with the introduction of tx types
@@ -137,12 +137,15 @@ const txData = {
   versionedHashes: ['0xabc...'], // Test with empty array on a first run
   kzgCommitments: ['0xdef...'], // Test with empty array on a first run
   blobs: ['0xghi...'], // Test with empty array on a first run
+  proofs: ['0xabcd...'], //
 }
 
 const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
 ```
 
-Note that `versionedHashes` and `kzgCommitments` have a real length of 32 bytes and `blobs` have a real length of `4096` bytes and values are trimmed here for brevity.
+Note that `versionedHashes` and `kzgCommitments` have a real length of 32 bytes, `blobs` have a real length of `4096` bytes and values are trimmed here for brevity.
+
+Alternatively, you can pass a `blobsData` property with an array of strings corresponding to a set of blobs and the `fromTxData` constructor will derive the corresponding `blobs`, `versionedHashes`, `kzgCommitments`, and `kzgProofs` for you.
 
 See the [Blob Transaction Tests](./test/eip4844.spec.ts) for examples of usage in instantiating, serializing, and deserializing these transactions.
 
@@ -282,7 +285,7 @@ The correct tx type class for instantiation will then be chosen on runtime based
 - `public static fromTxData(txData: TxData | AccessListEIP2930TxData, txOptions: TxOptions = {}): TypedTransaction`
 - `public static fromSerializedData(data: Buffer, txOptions: TxOptions = {}): TypedTransaction`
 - `public static fromBlockBodyData(data: Buffer | Buffer[], txOptions: TxOptions = {})`
-- `public static async fromEthersProvider(provider: string | ethers.providers.JsonRpcProvider, txHash: string, txOptions?: TxOptions)`
+- `public static async fromJsonRpcProvider(provider: string | EthersProvider, txHash: string, txOptions?: TxOptions)`
 
 ### Sending a Transaction
 

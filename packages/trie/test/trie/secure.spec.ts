@@ -1,4 +1,5 @@
 import {
+  MapDB,
   bytesToPrefixedHexString,
   bytesToUtf8,
   equalsBytes,
@@ -8,7 +9,7 @@ import {
 import { createHash } from 'crypto'
 import * as tape from 'tape'
 
-import { MapDB, ROOT_DB_KEY, Trie } from '../../src'
+import { ROOT_DB_KEY, Trie } from '../../src'
 
 tape('SecureTrie', function (t) {
   const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
@@ -89,7 +90,7 @@ tape('SecureTrie', function (t) {
         await trie.put(ROOT_DB_KEY, utf8ToBytes('bar'))
 
         st.fail("Attempting to set '__root__' should fail but it did not.")
-      } catch ({ message }) {
+      } catch ({ message }: any) {
         st.equal(message, "Attempted to set '__root__' key but it is not allowed.")
       }
     })
