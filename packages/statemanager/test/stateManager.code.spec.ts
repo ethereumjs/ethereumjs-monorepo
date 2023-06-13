@@ -4,9 +4,9 @@ import { assert, describe, it } from 'vitest'
 // explicitly import `inherits` to fix karma-typescript issue
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
-import { DefaultStateManager } from '../src'
+import { DefaultStateManager } from '../src/index.js'
 
-import { createAccount } from './util'
+import { createAccount } from './util.js'
 
 describe('StateManager -> Code', () => {
   for (const accountCacheOpts of [{ deactivate: false }, { deactivate: true }]) {

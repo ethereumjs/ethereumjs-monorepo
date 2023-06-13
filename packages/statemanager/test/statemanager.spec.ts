@@ -1,7 +1,7 @@
 import { KECCAK256_RLP } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { CacheType, DefaultStateManager } from '../src'
+import { CacheType, DefaultStateManager } from '../src/index.js'
 
 describe('StateManager -> General', () => {
   it(`should instantiate`, async () => {

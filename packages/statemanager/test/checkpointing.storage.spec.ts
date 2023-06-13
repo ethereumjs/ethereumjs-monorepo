@@ -1,7 +1,7 @@
 import { Account, Address, hexStringToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { DefaultStateManager } from '../src'
+import { DefaultStateManager } from '../src/index.js'
 
 const storageEval = async (
   sm: DefaultStateManager,

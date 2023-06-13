@@ -1,8 +1,8 @@
 import { Account, Address, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { AccountCache, CacheType } from '../../src/cache'
-import { createAccount } from '../util'
+import { AccountCache, CacheType } from '../../src/cache/index.js'
+import { createAccount } from '../util.js'
 
 describe('Account Cache: initialization', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
