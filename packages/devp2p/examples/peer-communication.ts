@@ -108,8 +108,8 @@ rlpx.on('peer:added', (peer) => {
   })
 
   eth.on('message', async (code: ETH.MESSAGE_CODES, payload: any) => {
-    if (code in ETH.MESSAGE_CODES) {
-      requests.msgTypes[code] = code + 1
+    if (code in requests.msgTypes) {
+      requests.msgTypes[code]++
     } else {
       requests.msgTypes[code] = 1
     }
