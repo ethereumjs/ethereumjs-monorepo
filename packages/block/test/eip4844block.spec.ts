@@ -133,16 +133,17 @@ tape('data gas tests', async (t) => {
     t.equal(excessDataGas, 0n, 'excess data gas should be 0 for small parent header data gas')
     t.equal(dataGasPrice, 1n, 'data gas price should be 1n when low or no excess data gas')
     const highGasHeader = BlockHeader.fromHeaderData(
-      { number: 1, excessDataGas: 4194304, dataGasUsed: BigInt(4) * dataGasPerBlob },
+      { number: 1, excessDataGas: 6291456, dataGasUsed: BigInt(6) * dataGasPerBlob },
       { common, skipConsensusFormatValidation: true }
     )
     excessDataGas = highGasHeader.calcNextExcessDataGas()
     dataGasPrice = highGasHeader.getDataGasPrice()
-    t.equal(excessDataGas, 4456448n)
+    t.equal(excessDataGas, 6684672n)
     t.equal(dataGasPrice, 6n, 'computed correct data gas price')
 
     t.equal(lowGasHeader.calcDataFee(1), 131072n, 'compute data fee correctly')
     t.equal(highGasHeader.calcDataFee(4), 3145728n, 'compute data fee correctly')
+    t.equal(highGasHeader.calcDataFee(6), 4718592n, 'compute data fee correctly')
     t.end()
   }
 })
@@ -208,7 +209,7 @@ tape('transaction validation tests', async (t) => {
 
     const blockWithInvalidTx = getBlock([tx1, tx2])
 
-    const blockWithTooManyBlobs = getBlock([tx1, tx1, tx1, tx1, tx1])
+    const blockWithTooManyBlobs = getBlock([tx1, tx1, tx1, tx1, tx1, tx1, tx1])
 
     t.doesNotThrow(
       () => blockWithValidTx.validateBlobTransactions(parentHeader),
@@ -241,7 +242,8 @@ tape('transaction validation tests', async (t) => {
 
     t.ok(
       blockWithTooManyBlobs
-        .validateTransactions(true)[4]
+        .validateTransactions(true)
+        .join(' ')
         .includes('exceed maximum data gas per block'),
       'tx erros includes correct error message when too many blobs in a block'
     )
