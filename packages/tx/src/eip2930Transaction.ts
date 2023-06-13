@@ -50,14 +50,6 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
   public readonly common: Common
 
   /**
-   * The default HF if the tx type is active on that HF
-   * or the first greater HF where the tx is active.
-   *
-   * @hidden
-   */
-  protected DEFAULT_HARDFORK = 'berlin'
-
-  /**
    * Instantiate a transaction from a data dictionary.
    *
    * Format: { chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,

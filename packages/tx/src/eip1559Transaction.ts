@@ -1,4 +1,3 @@
-import { Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   MAX_INTEGER,
@@ -50,14 +49,6 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
   public readonly maxFeePerGas: bigint
 
   public readonly common: Common
-
-  /**
-   * The default HF if the tx type is active on that HF
-   * or the first greater HF where the tx is active.
-   *
-   * @hidden
-   */
-  protected DEFAULT_HARDFORK = Hardfork.London
 
   /**
    * Instantiate a transaction from a data dictionary.
