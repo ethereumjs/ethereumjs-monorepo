@@ -299,8 +299,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       )
       throw new Error(msg)
     }
-    const parentBlock = await this.blockchain.getBlock(opts.block?.header.parentHash)
-    dataGasPrice = parentBlock.header.getDataGasPrice()
+    dataGasPrice = opts.block.header.getDataGasPrice()
     if (castTx.maxFeePerDataGas < dataGasPrice) {
       const msg = _errorMsg(
         `Transaction's maxFeePerDataGas ${castTx.maxFeePerDataGas}) is less than block dataGasPrice (${dataGasPrice}).`,
