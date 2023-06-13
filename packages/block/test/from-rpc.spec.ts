@@ -3,9 +3,9 @@ import { bytesToPrefixedHexString, hexStringToBytes, randomBytes } from '@ethere
 import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { blockFromRpc } from '../src/from-rpc'
-import { blockHeaderFromRpc } from '../src/header-from-rpc'
-import { Block } from '../src/index'
+import { blockFromRpc } from '../src/from-rpc.js'
+import { blockHeaderFromRpc } from '../src/header-from-rpc.js'
+import { Block } from '../src/index.js'
 
 import * as alchemy14151203 from './testdata/alchemy14151203.json'
 import * as infura15571241woTxs from './testdata/infura15571241.json'

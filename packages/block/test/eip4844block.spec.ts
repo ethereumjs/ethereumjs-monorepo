@@ -10,9 +10,9 @@ import {
 import * as kzg from 'c-kzg'
 import { assert, describe, it } from 'vitest'
 
-import { Block } from '../src'
-import { BlockHeader } from '../src/header'
-import { fakeExponential, getNumBlobs } from '../src/helpers'
+import { BlockHeader } from '../src/header.js'
+import { fakeExponential, getNumBlobs } from '../src/helpers.js'
+import { Block } from '../src/index.js'
 
 import * as gethGenesis from './testdata/4844-hardfork.json'
 

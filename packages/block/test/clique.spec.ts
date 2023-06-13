@@ -2,7 +2,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, hexStringToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { BlockHeader } from '../src/header'
+import { BlockHeader } from '../src/header.js'
 
 describe('[Header]: Clique PoA Functionality', () => {
   const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })

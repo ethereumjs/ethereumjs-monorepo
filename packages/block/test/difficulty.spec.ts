@@ -12,7 +12,7 @@ import * as difficultyEIP2384_random_to20M from '../../ethereum-tests/Difficulty
 import * as difficultyFrontier from '../../ethereum-tests/DifficultyTests/dfFrontier/difficultyFrontier.json'
 import * as difficultyGrayGlacier from '../../ethereum-tests/DifficultyTests/dfGrayGlacier/difficultyGrayGlacier.json'
 import * as difficultyHomestead from '../../ethereum-tests/DifficultyTests/dfHomestead/difficultyHomestead.json'
-import { Block } from '../src'
+import { Block } from '../src/index.js'
 
 function runDifficultyTests(test: any, parentBlock: Block, block: Block, msg: string) {
   const dif = block.ethashCanonicalDifficulty(parentBlock)

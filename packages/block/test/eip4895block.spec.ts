@@ -3,8 +3,8 @@ import { RLP } from '@ethereumjs/rlp'
 import { Address, KECCAK256_RLP, Withdrawal, hexStringToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Block } from '../src/block'
-import { BlockHeader } from '../src/header'
+import { Block } from '../src/block.js'
+import { BlockHeader } from '../src/header.js'
 
 import type { WithdrawalBytes, WithdrawalData } from '@ethereumjs/util'
 
