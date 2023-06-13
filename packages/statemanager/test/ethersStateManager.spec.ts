@@ -14,10 +14,10 @@ import { VM } from '@ethereumjs/vm'
 import { ethers } from 'ethers'
 import { assert, describe, it } from 'vitest'
 
-import { EthersStateManager } from '../src/ethersStateManager'
+import { EthersStateManager } from '../src/ethersStateManager.js'
 
 import * as blockData from './testdata/providerData/blocks/block0x7a120.json'
-import { MockProvider } from './testdata/providerData/mockProvider'
+import { MockProvider } from './testdata/providerData/mockProvider.js'
 import * as txData from './testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.json'
 
 // Hack to detect if running in browser or not

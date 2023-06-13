@@ -1,13 +1,13 @@
 import { Trie } from '@ethereumjs/trie'
 import { Account, bigIntToHex, bytesToBigInt, bytesToHex, toBytes } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { ethers } from 'ethers'
 
-import { AccountCache, CacheType, StorageCache } from './cache'
-import { OriginalStorageCache } from './cache/originalStorageCache'
+import { AccountCache, CacheType, StorageCache } from './cache/index.js'
+import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
-import type { Proof } from '.'
+import type { Proof } from './index.js'
 import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'

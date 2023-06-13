@@ -7,10 +7,10 @@ import {
   randomBytes,
   zeros,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { DefaultStateManager } from '../src'
+import { DefaultStateManager } from '../src/index.js'
 
 import * as ropsten_contractWithStorage from './testdata/ropsten_contractWithStorage.json'
 import * as ropsten_nonexistentAccount from './testdata/ropsten_nonexistentAccount.json'
