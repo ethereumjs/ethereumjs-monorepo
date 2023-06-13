@@ -4,16 +4,19 @@ import { assert, describe, it } from 'vitest'
 import { DefaultStateManager } from '../src'
 
 const storageEval = async (
-  st: tape.Test,
   sm: DefaultStateManager,
   address: Address,
   key: Uint8Array,
   value: Uint8Array,
   root: Uint8Array
 ) => {
-  st.deepEqual(await sm.getContractStorage(address, key), value, 'storage value should be equal')
+  assert.deepEqual(
+    await sm.getContractStorage(address, key),
+    value,
+    'storage value should be equal'
+  )
   const accountCMP = await sm.getAccount(address)
-  st.deepEqual(accountCMP!.storageRoot, root, 'account storage root should be equal')
+  assert.deepEqual(accountCMP!.storageRoot, root, 'account storage root should be equal')
 }
 
 describe('StateManager -> Storage Checkpointing', () => {
@@ -101,11 +104,11 @@ describe('StateManager -> Storage Checkpointing', () => {
 
       await sm.putContractStorage(address, key, s.s1.value)
       await sm.flush()
-      await storageEval(st, sm, address, key, s.s1.value, s.s1.root)
+      await storageEval(sm, address, key, s.s1.value, s.s1.root)
 
       sm.clearCaches()
-      st.deepEqual(await sm.getContractStorage(address, key), s.s1.value)
-      await storageEval(st, sm, address, key, s.s1.value, s.s1.root)
+      assert.deepEqual(await sm.getContractStorage(address, key), s.s1.value)
+      await storageEval(sm, address, key, s.s1.value, s.s1.root)
     })
 
     it(`CP -> S1.1 -> Commit -> Flush() (-> S1.1)`, async () => {
@@ -116,10 +119,10 @@ describe('StateManager -> Storage Checkpointing', () => {
       await sm.putContractStorage(address, key, s.s1.value)
       await sm.commit()
       await sm.flush()
-      await storageEval(st, sm, address, key, s.s1.value, s.s1.root)
+      await storageEval(sm, address, key, s.s1.value, s.s1.root)
 
       sm.clearCaches()
-      await storageEval(st, sm, address, key, s.s1.value, s.s1.root)
+      await storageEval(sm, address, key, s.s1.value, s.s1.root)
     })
 
     it(`CP -> S1.1 -> Revert -> Flush() (-> Undefined)`, async () => {
@@ -131,11 +134,11 @@ describe('StateManager -> Storage Checkpointing', () => {
 
       await sm.revert()
       await sm.flush()
-      await storageEval(st, sm, address, key, valueEmpty, rootEmpty)
+      await storageEval(sm, address, key, valueEmpty, rootEmpty)
 
       sm.clearCaches()
 
-      await storageEval(st, sm, address, key, valueEmpty, rootEmpty)
+      await storageEval(sm, address, key, valueEmpty, rootEmpty)
     })
 
     it(`S1.1 -> CP -> Commit -> Flush() (-> S1.1)`, async () => {
@@ -146,10 +149,10 @@ describe('StateManager -> Storage Checkpointing', () => {
       await sm.checkpoint()
       await sm.commit()
       await sm.flush()
-      await storageEval(st, sm, address, key, s.s1.value, s.s1.root)
+      await storageEval(sm, address, key, s.s1.value, s.s1.root)
 
       sm.clearCaches()
-      await storageEval(st, sm, address, key, s.s1.value, s.s1.root)
+      await storageEval(sm, address, key, s.s1.value, s.s1.root)
     })
 
     it(`S1.1 -> CP -> Revert -> Flush() (-> S1.1)`, async () => {
@@ -160,10 +163,10 @@ describe('StateManager -> Storage Checkpointing', () => {
       await sm.checkpoint()
       await sm.revert()
       await sm.flush()
-      await storageEval(st, sm, address, key, s.s1.value, s.s1.root)
+      await storageEval(sm, address, key, s.s1.value, s.s1.root)
 
       sm.clearCaches()
-      await storageEval(st, sm, address, key, s.s1.value, s.s1.root)
+      await storageEval(sm, address, key, s.s1.value, s.s1.root)
     })
 
     it(`S1.1 -> CP -> S1.2 -> Commit -> Flush() (-> S1.2)`, async () => {
@@ -175,10 +178,10 @@ describe('StateManager -> Storage Checkpointing', () => {
       await sm.putContractStorage(address, key, s.s2.value)
       await sm.commit()
       await sm.flush()
-      await storageEval(st, sm, address, key, s.s2.value, s.s2.root)
+      await storageEval(sm, address, key, s.s2.value, s.s2.root)
 
       sm.clearCaches()
-      await storageEval(st, sm, address, key, s.s2.value, s.s2.root)
+      await storageEval(sm, address, key, s.s2.value, s.s2.root)
     })
 
     it(`S1.1 -> CP -> S1.2 -> Commit -> S1.3 -> Flush() (-> S1.3)`, async () => {
@@ -191,10 +194,10 @@ describe('StateManager -> Storage Checkpointing', () => {
       await sm.commit()
       await sm.putContractStorage(address, key, s.s3.value)
       await sm.flush()
-      await storageEval(st, sm, address, key, s.s3.value, s.s3.root)
+      await storageEval(sm, address, key, s.s3.value, s.s3.root)
 
       sm.clearCaches()
-      await storageEval(st, sm, address, key, s.s3.value, s.s3.root)
+      await storageEval(sm, address, key, s.s3.value, s.s3.root)
     })
 
     it(`S1.1 -> CP -> S1.2 -> S1.3 -> Commit -> Flush() (-> S1.3)`, async () => {
@@ -207,10 +210,10 @@ describe('StateManager -> Storage Checkpointing', () => {
       await sm.putContractStorage(address, key, s.s3.value)
       await sm.commit()
       await sm.flush()
-      await storageEval(st, sm, address, key, s.s3.value, s.s3.root)
+      await storageEval(sm, address, key, s.s3.value, s.s3.root)
 
       sm.clearCaches()
-      await storageEval(st, sm, address, key, s.s3.value, s.s3.root)
+      await storageEval(sm, address, key, s.s3.value, s.s3.root)
     })
 
     it(`CP -> S1.1 -> S1.2 -> Commit -> Flush() (-> S1.2)`, async () => {
@@ -222,10 +225,10 @@ describe('StateManager -> Storage Checkpointing', () => {
       await sm.putContractStorage(address, key, s.s2.value)
       await sm.commit()
       await sm.flush()
-      await storageEval(st, sm, address, key, s.s2.value, s.s2.root)
+      await storageEval(sm, address, key, s.s2.value, s.s2.root)
 
       sm.clearCaches()
-      await storageEval(st, sm, address, key, s.s2.value, s.s2.root)
+      await storageEval(sm, address, key, s.s2.value, s.s2.root)
     })
 
     it(`CP -> S1.1 -> S1.2 -> Revert -> Flush() (-> Undefined)`, async () => {
@@ -238,10 +241,10 @@ describe('StateManager -> Storage Checkpointing', () => {
       await sm.putContractStorage(address, key, s.s2.value)
       await sm.revert()
       await sm.flush()
-      await storageEval(st, sm, address, key, valueEmpty, rootEmpty)
+      await storageEval(sm, address, key, valueEmpty, rootEmpty)
 
       sm.clearCaches()
-      await storageEval(st, sm, address, key, valueEmpty, rootEmpty)
+      await storageEval(sm, address, key, valueEmpty, rootEmpty)
     })
 
     it(`S1.1 -> CP -> S1.2 -> Revert -> Flush() (-> S1.1)`, async () => {
@@ -253,10 +256,10 @@ describe('StateManager -> Storage Checkpointing', () => {
       await sm.putContractStorage(address, key, s.s2.value)
       await sm.revert()
       await sm.flush()
-      await storageEval(st, sm, address, key, s.s1.value, s.s1.root)
+      await storageEval(sm, address, key, s.s1.value, s.s1.root)
 
       sm.clearCaches()
-      await storageEval(st, sm, address, key, s.s1.value, s.s1.root)
+      await storageEval(sm, address, key, s.s1.value, s.s1.root)
     })
 
     it('S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Commit -> Commit -> Flush() (-> S1.3)', async () => {
@@ -271,10 +274,10 @@ describe('StateManager -> Storage Checkpointing', () => {
       await sm.commit()
       await sm.commit()
       await sm.flush()
-      await storageEval(st, sm, address, key, s.s3.value, s.s3.root)
+      await storageEval(sm, address, key, s.s3.value, s.s3.root)
 
       sm.clearCaches()
-      await storageEval(st, sm, address, key, s.s3.value, s.s3.root)
+      await storageEval(sm, address, key, s.s3.value, s.s3.root)
     })
 
     it('S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Commit -> Revert -> Flush() (-> S1.1)', async () => {
@@ -289,10 +292,10 @@ describe('StateManager -> Storage Checkpointing', () => {
       await sm.commit()
       await sm.revert()
       await sm.flush()
-      await storageEval(st, sm, address, key, s.s1.value, s.s1.root)
+      await storageEval(sm, address, key, s.s1.value, s.s1.root)
 
       sm.clearCaches()
-      await storageEval(st, sm, address, key, s.s1.value, s.s1.root)
+      await storageEval(sm, address, key, s.s1.value, s.s1.root)
     })
 
     it('S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Revert -> Commit -> Flush() (-> S1.2)', async () => {
@@ -307,10 +310,10 @@ describe('StateManager -> Storage Checkpointing', () => {
       await sm.revert()
       await sm.commit()
       await sm.flush()
-      await storageEval(st, sm, address, key, s.s2.value, s.s2.root)
+      await storageEval(sm, address, key, s.s2.value, s.s2.root)
 
       sm.clearCaches()
-      await storageEval(st, sm, address, key, s.s2.value, s.s2.root)
+      await storageEval(sm, address, key, s.s2.value, s.s2.root)
     })
 
     it('S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Revert -> S1.4 -> Commit -> Flush() (-> S1.4)', async () => {
@@ -326,10 +329,10 @@ describe('StateManager -> Storage Checkpointing', () => {
       await sm.putContractStorage(address, key, s.s4.value)
       await sm.commit()
       await sm.flush()
-      await storageEval(st, sm, address, key, s.s4.value, s.s4.root)
+      await storageEval(sm, address, key, s.s4.value, s.s4.root)
 
       sm.clearCaches()
-      await storageEval(st, sm, address, key, s.s4.value, s.s4.root)
+      await storageEval(sm, address, key, s.s4.value, s.s4.root)
     })
 
     it('S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Revert -> S1.4 -> CP -> S1.5 -> Commit -> Commit -> Flush() (-> S1.5)', async () => {
@@ -348,10 +351,10 @@ describe('StateManager -> Storage Checkpointing', () => {
       await sm.commit()
       await sm.commit()
       await sm.flush()
-      await storageEval(st, sm, address, key, s.s5.value, s.s5.root)
+      await storageEval(sm, address, key, s.s5.value, s.s5.root)
 
       sm.clearCaches()
-      await storageEval(st, sm, address, key, s.s5.value, s.s5.root)
+      await storageEval(sm, address, key, s.s5.value, s.s5.root)
     })
   }
 })

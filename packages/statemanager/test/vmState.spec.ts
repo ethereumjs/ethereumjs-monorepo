@@ -9,11 +9,8 @@ import { DefaultStateManager } from '../src'
 export function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {
   return new Account(nonce, balance)
 }
-/**
- * Checks if in a karma test runner.
- * @returns boolean whether running in karma
- */
-export function isRunningInKarma(): boolean {
+
+export function isBrowser(): boolean {
   // eslint-disable-next-line no-undef
   return typeof (<any>globalThis).window !== 'undefined' && (<any>globalThis).window.__karma__
 }
@@ -22,8 +19,7 @@ const StateManager = DefaultStateManager
 
 describe('stateManager', () => {
   it(`should generate the genesis state root correctly for mainnet from common`, async () => {
-    if (isRunningInKarma()) {
-      st.skip('skip slow test when running in karma')
+    if (isBrowser()) {
       return
     }
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
@@ -36,7 +32,7 @@ describe('stateManager', () => {
     await stateManager.generateCanonicalGenesis(blockchain.genesisState())
     const stateRoot = await stateManager.getStateRoot()
 
-    st.deepEqual(
+    assert.deepEqual(
       stateRoot,
       expectedStateRoot,
       `generateCanonicalGenesis should produce correct state root for mainnet from common`
@@ -71,7 +67,7 @@ describe('stateManager', () => {
       await stateManager.generateCanonicalGenesis(blockchain.genesisState())
       const stateRoot = await stateManager.getStateRoot()
 
-      st.deepEqual(
+      assert.deepEqual(
         stateRoot,
         expectedStateRoot,
         `generateCanonicalGenesis should produce correct state root for ${Chain[chain]}`
@@ -93,10 +89,10 @@ describe('Original storage cache', async () => {
   it(`should initially have empty storage value`, async () => {
     await stateManager.checkpoint()
     const res = await stateManager.getContractStorage(address, key)
-    st.deepEqual(res, new Uint8Array(0))
+    assert.deepEqual(res, new Uint8Array(0))
 
     const origRes = await stateManager.originalStorageCache.get(address, key)
-    st.deepEqual(origRes, new Uint8Array(0))
+    assert.deepEqual(origRes, new Uint8Array(0))
 
     await stateManager.commit()
   })
@@ -104,22 +100,22 @@ describe('Original storage cache', async () => {
   it(`should set original storage value`, async () => {
     await stateManager.putContractStorage(address, key, value)
     const res = await stateManager.getContractStorage(address, key)
-    st.deepEqual(res, value)
+    assert.deepEqual(res, value)
   })
 
   it(`should get original storage value`, async () => {
     const res = await stateManager.originalStorageCache.get(address, key)
-    st.deepEqual(res, value)
+    assert.deepEqual(res, value)
   })
 
   it(`should return correct original value after modification`, async () => {
     const newValue = hexToBytes('1235')
     await stateManager.putContractStorage(address, key, newValue)
     const res = await stateManager.getContractStorage(address, key)
-    st.deepEqual(res, newValue)
+    assert.deepEqual(res, newValue)
 
     const origRes = await stateManager.originalStorageCache.get(address, key)
-    st.deepEqual(origRes, value)
+    assert.deepEqual(origRes, value)
   })
 
   it(`should cache keys separately`, async () => {
@@ -129,32 +125,32 @@ describe('Original storage cache', async () => {
     await stateManager.putContractStorage(address, key2, value2)
 
     let res = await stateManager.getContractStorage(address, key2)
-    st.deepEqual(res, value2)
+    assert.deepEqual(res, value2)
     let origRes = await stateManager.originalStorageCache.get(address, key2)
-    st.deepEqual(origRes, value2)
+    assert.deepEqual(origRes, value2)
 
     await stateManager.putContractStorage(address, key2, value3)
 
     res = await stateManager.getContractStorage(address, key2)
-    st.deepEqual(res, value3)
+    assert.deepEqual(res, value3)
     origRes = await stateManager.originalStorageCache.get(address, key2)
-    st.deepEqual(origRes, value2)
+    assert.deepEqual(origRes, value2)
 
     // Check previous key
     res = await stateManager.getContractStorage(address, key)
-    st.deepEqual(res, hexToBytes('1235'))
+    assert.deepEqual(res, hexToBytes('1235'))
     origRes = await stateManager.originalStorageCache.get(address, key)
-    st.deepEqual(origRes, value)
+    assert.deepEqual(origRes, value)
   })
 
   it("getOriginalContractStorage should validate the key's length", async () => {
     try {
       await stateManager.originalStorageCache.get(address, new Uint8Array(12))
     } catch (e: any) {
-      st.equal(e.message, 'Storage key must be 32 bytes long')
+      assert.equal(e.message, 'Storage key must be 32 bytes long')
       return
     }
 
-    st.fail('Should have failed')
+    assert.fail('Should have failed')
   })
 })

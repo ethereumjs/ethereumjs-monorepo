@@ -12,7 +12,7 @@ describe('StateManager -> General/Account', () => {
   for (const accountCacheOpts of [{ deactivate: false }, { deactivate: true }]) {
     it(`should set the state root to empty`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
-      st.ok(equalsBytes(stateManager._trie.root(), KECCAK256_RLP), 'it has default root')
+      assert.ok(equalsBytes(stateManager._trie.root(), KECCAK256_RLP), 'it has default root')
 
       // commit some data to the trie
       const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
@@ -21,13 +21,13 @@ describe('StateManager -> General/Account', () => {
       await stateManager.putAccount(address, account)
       await stateManager.commit()
       await stateManager.flush()
-      st.ok(!equalsBytes(stateManager._trie.root(), KECCAK256_RLP), 'it has a new root')
+      assert.ok(!equalsBytes(stateManager._trie.root(), KECCAK256_RLP), 'it has a new root')
 
       // set state root to empty trie root
       await stateManager.setStateRoot(KECCAK256_RLP)
 
       const res = await stateManager.getStateRoot()
-      st.ok(equalsBytes(res, KECCAK256_RLP), 'it has default root')
+      assert.ok(equalsBytes(res, KECCAK256_RLP), 'it has default root')
     })
 
     it(`should clear the cache when the state root is set`, async () => {
@@ -41,15 +41,15 @@ describe('StateManager -> General/Account', () => {
       await stateManager.putAccount(address, account)
 
       const account0 = await stateManager.getAccount(address)
-      st.equal(account0!.balance, account.balance, 'account value is set in the cache')
+      assert.equal(account0!.balance, account.balance, 'account value is set in the cache')
 
       await stateManager.commit()
       const account1 = await stateManager.getAccount(address)
-      st.equal(account1!.balance, account.balance, 'account value is set in the state trie')
+      assert.equal(account1!.balance, account.balance, 'account value is set in the state trie')
 
       await stateManager.setStateRoot(initialStateRoot)
       const account2 = await stateManager.getAccount(address)
-      st.equal(account2, undefined, 'account is not present any more in original state root')
+      assert.equal(account2, undefined, 'account is not present any more in original state root')
 
       // test contract storage cache
       await stateManager.checkpoint()
@@ -61,7 +61,10 @@ describe('StateManager -> General/Account', () => {
       await stateManager.putContractStorage(address, key, value)
 
       const contract0 = await stateManager.getContractStorage(address, key)
-      st.ok(equalsBytes(contract0, value), "contract key's value is set in the _storageTries cache")
+      assert.ok(
+        equalsBytes(contract0, value),
+        "contract key's value is set in the _storageTries cache"
+      )
 
       await stateManager.commit()
       await stateManager.setStateRoot(initialStateRoot)
@@ -81,14 +84,14 @@ describe('StateManager -> General/Account', () => {
 
       const res1 = await stateManager.getAccount(address)
 
-      st.equal(res1!.balance, BigInt(0xfff384))
+      assert.equal(res1!.balance, BigInt(0xfff384))
 
       await stateManager.flush()
       stateManager._accountCache?.clear()
 
       const res2 = await stateManager.getAccount(address)
 
-      st.ok(equalsBytes(res1!.serialize(), res2!.serialize()))
+      assert.ok(equalsBytes(res1!.serialize(), res2!.serialize()))
     })
 
     it(`should return undefined for a non-existent account`, async () => {
@@ -97,7 +100,7 @@ describe('StateManager -> General/Account', () => {
 
       const res = (await stateManager.getAccount(address)) === undefined
 
-      st.ok(res)
+      assert.ok(res)
     })
 
     it(`should return undefined for an existent account`, async () => {
@@ -109,7 +112,7 @@ describe('StateManager -> General/Account', () => {
 
       const res = (await stateManager.getAccount(address)) === undefined
 
-      st.notOk(res)
+      assert.notOk(res)
     })
 
     it(`should modify account fields correctly`, async () => {
@@ -122,13 +125,13 @@ describe('StateManager -> General/Account', () => {
 
       const res1 = await stateManager.getAccount(address)
 
-      st.equal(res1!.balance, BigInt(0x4d2))
+      assert.equal(res1!.balance, BigInt(0x4d2))
 
       await stateManager.modifyAccountFields(address, { nonce: BigInt(1) })
 
       const res2 = await stateManager.getAccount(address)
 
-      st.equal(res2!.nonce, BigInt(1))
+      assert.equal(res2!.nonce, BigInt(1))
 
       await stateManager.modifyAccountFields(address, {
         codeHash: hexStringToBytes(
@@ -141,11 +144,11 @@ describe('StateManager -> General/Account', () => {
 
       const res3 = await stateManager.getAccount(address)
 
-      st.equal(
+      assert.equal(
         bytesToHex(res3!.codeHash),
         'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b'
       )
-      st.equal(
+      assert.equal(
         bytesToHex(res3!.storageRoot),
         'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7'
       )

@@ -28,24 +28,30 @@ describe('Ethers State Manager initialization tests', () => {
   it('should work', () => {
     const provider = new MockProvider()
     let state = new EthersStateManager({ provider, blockTag: 1n })
-    t.ok(
+    assert.ok(
       state instanceof EthersStateManager,
       'was able to instantiate state manager with JsonRpcProvider subclass'
     )
-    t.equal((state as any).blockTag, '0x1', 'State manager starts with default block tag of 1')
+    assert.equal((state as any).blockTag, '0x1', 'State manager starts with default block tag of 1')
 
     state = new EthersStateManager({ provider, blockTag: 1n })
-    t.equal((state as any).blockTag, '0x1', 'State Manager instantiated with predefined blocktag')
+    assert.equal(
+      (state as any).blockTag,
+      '0x1',
+      'State Manager instantiated with predefined blocktag'
+    )
 
     state = new EthersStateManager({ provider: 'https://google.com', blockTag: 1n })
-    t.ok(
+    assert.ok(
       state instanceof EthersStateManager,
       'was able to instantiate state manager with valid url'
     )
 
     const invalidProvider = new ethers.SocketProvider('mainnet')
-    t.throws(
+    assert.throws(
       () => new EthersStateManager({ provider: invalidProvider as any, blockTag: 1n }),
+      undefined,
+      undefined,
       'cannot instantiate state manager with invalid provider'
     )
   })
@@ -63,7 +69,7 @@ describe('Ethers State Manager API tests', () => {
       const state = new EthersStateManager({ provider, blockTag: 1n })
       const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
       const account = await state.getAccount(vitalikDotEth)
-      t.ok(account!.nonce > 0n, 'Vitalik.eth returned a valid nonce')
+      assert.ok(account!.nonce > 0n, 'Vitalik.eth returned a valid nonce')
 
       await state.putAccount(vitalikDotEth, account!)
 
@@ -71,23 +77,23 @@ describe('Ethers State Manager API tests', () => {
         (state as any)._accountCache.get(vitalikDotEth)!.accountRLP
       )
 
-      t.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
+      assert.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
       const doesThisAccountExist =
         (await state.getAccount(
           Address.fromString('0xccAfdD642118E5536024675e776d32413728DD07')
         )) === undefined
-      t.ok(!doesThisAccountExist, 'getAccount returns undefined for non-existent account')
+      assert.ok(!doesThisAccountExist, 'getAccount returns undefined for non-existent account')
 
-      t.ok(state.getAccount(vitalikDotEth) !== undefined, 'vitalik.eth does exist')
+      assert.ok(state.getAccount(vitalikDotEth) !== undefined, 'vitalik.eth does exist')
 
       const UNIerc20ContractAddress = Address.fromString(
         '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984'
       )
       const UNIContractCode = await state.getContractCode(UNIerc20ContractAddress)
-      t.ok(UNIContractCode.length > 0, 'was able to retrieve UNI contract code')
+      assert.ok(UNIContractCode.length > 0, 'was able to retrieve UNI contract code')
 
       await state.putContractCode(UNIerc20ContractAddress, UNIContractCode)
-      t.ok(
+      assert.ok(
         typeof (state as any).contractCache.get(UNIerc20ContractAddress.toString()) !== 'undefined',
         'UNI ERC20 contract code was found in cache'
       )
@@ -96,7 +102,7 @@ describe('Ethers State Manager API tests', () => {
         UNIerc20ContractAddress,
         setLengthLeft(bigIntToBytes(1n), 32)
       )
-      t.ok(storageSlot.length > 0, 'was able to retrieve storage slot 1 for the UNI contract')
+      assert.ok(storageSlot.length > 0, 'was able to retrieve storage slot 1 for the UNI contract')
 
       await state.putContractStorage(
         UNIerc20ContractAddress,
@@ -107,14 +113,14 @@ describe('Ethers State Manager API tests', () => {
         UNIerc20ContractAddress,
         setLengthLeft(bigIntToBytes(2n), 32)
       )
-      t.ok(equalsBytes(slotValue, utf8ToBytes('abcd')), 'should retrieve slot 2 value')
+      assert.ok(equalsBytes(slotValue, utf8ToBytes('abcd')), 'should retrieve slot 2 value')
 
       // Verify that provider is not called for cached data
       ;(provider as any).getStorageAt = function () {
         throw new Error('should not be called!')
       }
 
-      t.doesNotThrow(
+      assert.doesNotThrow(
         async () =>
           state.getContractStorage(UNIerc20ContractAddress, setLengthLeft(bigIntToBytes(2n), 32)),
         'should not call provider.getStorageAt'
@@ -127,7 +133,7 @@ describe('Ethers State Manager API tests', () => {
       )
 
       await state.modifyAccountFields(vitalikDotEth, { nonce: 39n })
-      t.equal(
+      assert.equal(
         (await state.getAccount(vitalikDotEth))?.nonce,
         39n,
         'modified account fields successfully'
@@ -137,7 +143,7 @@ describe('Ethers State Manager API tests', () => {
       ;(state as any).getAccountFromProvider = function () {
         throw new Error('should not have called this!')
       }
-      t.doesNotThrow(
+      assert.doesNotThrow(
         async () => state.getAccount(vitalikDotEth),
         'does not call getAccountFromProvider'
       )
@@ -153,19 +159,19 @@ describe('Ethers State Manager API tests', () => {
         setLengthLeft(bigIntToBytes(2n), 32)
       )
 
-      t.equal(deletedSlot.length, 0, 'deleted slot from storage cache')
+      assert.equal(deletedSlot.length, 0, 'deleted slot from storage cache')
 
       await state.deleteAccount(vitalikDotEth)
-      t.ok(
+      assert.ok(
         (await state.getAccount(vitalikDotEth)) === undefined,
         'account should not exist after being deleted'
       )
 
       try {
         await Block.fromJsonRpcProvider(provider, 'fakeBlockTag', {} as any)
-        t.fail('should have thrown')
+        assert.fail('should have thrown')
       } catch (err: any) {
-        t.ok(
+        assert.ok(
           err.message.includes('expected blockTag to be block hash, bigint, hex prefixed string'),
           'threw with correct error when invalid blockTag provided'
         )
@@ -173,23 +179,23 @@ describe('Ethers State Manager API tests', () => {
 
       const newState = state.copy()
 
-      t.equal(
+      assert.equal(
         undefined,
         (state as any).contractCache.get(UNIerc20ContractAddress),
         'should not have any code for contract after cache is cleared'
       )
 
-      t.notEqual(
+      assert.notEqual(
         undefined,
         (newState as any).contractCache.get(UNIerc20ContractAddress.toString()),
         'state manager copy should have code for contract after cache is cleared on original state manager'
       )
 
-      t.equal((state as any).blockTag, '0x1', 'blockTag defaults to 1')
+      assert.equal((state as any).blockTag, '0x1', 'blockTag defaults to 1')
       state.setBlockTag(5n)
-      t.equal((state as any).blockTag, '0x5', 'blockTag set to 0x5')
+      assert.equal((state as any).blockTag, '0x5', 'blockTag set to 0x5')
       state.setBlockTag('earliest')
-      t.equal((state as any).blockTag, 'earliest', 'blockTag set to earliest')
+      assert.equal((state as any).blockTag, 'earliest', 'blockTag set to earliest')
     }
   })
 })
@@ -222,7 +228,7 @@ describe('runTx custom transaction test', () => {
         tx,
       })
 
-      t.equal(result.totalGasSpent, 21000n, 'sent some ETH to vitalik.eth')
+      assert.equal(result.totalGasSpent, 21000n, 'sent some ETH to vitalik.eth')
     }
   })
 })
@@ -250,7 +256,11 @@ describe('runTx test: replay mainnet transactions', () => {
       })
       const vm = await VM.create({ common, stateManager: <any>state })
       const res = await vm.runTx({ tx })
-      t.equal(res.totalGasSpent, 21000n, 'calculated correct total gas spent for simple transfer')
+      assert.equal(
+        res.totalGasSpent,
+        21000n,
+        'calculated correct total gas spent for simple transfer'
+      )
     }
   })
 })
@@ -285,13 +295,13 @@ describe('runBlock test', () => {
           generate: true,
           skipHeaderValidation: true,
         })
-        t.equal(
+        assert.equal(
           res.gasUsed,
           block.header.gasUsed,
           'should compute correct cumulative gas for block'
         )
       } catch (err: any) {
-        t.fail(`should have successfully ran block; got error ${err.message}`)
+        assert.fail(`should have successfully ran block; got error ${err.message}`)
       }
     }
   })

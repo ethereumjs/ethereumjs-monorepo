@@ -41,20 +41,20 @@ describe('StateManager -> Code', () => {
       let codeSlot1 = await codeStateManager.getContractStorage(address1, key1)
       let codeSlot2 = await codeStateManager.getContractStorage(address1, key2)
 
-      st.ok(codeSlot1.length === 0, 'slot 0 is empty')
-      st.ok(codeSlot2.length === 0, 'slot 1 is empty')
+      assert.ok(codeSlot1.length === 0, 'slot 0 is empty')
+      assert.ok(codeSlot2.length === 0, 'slot 1 is empty')
 
       const code = await codeStateManager.getContractCode(address1)
-      st.ok(code.length > 0, 'code deposited correctly')
+      assert.ok(code.length > 0, 'code deposited correctly')
 
       const slot1 = await stateManager.getContractStorage(address1, key1)
       const slot2 = await stateManager.getContractStorage(address1, key2)
 
-      st.ok(slot1.length > 0, 'storage key0 deposited correctly')
-      st.ok(slot2.length > 0, 'storage key1 deposited correctly')
+      assert.ok(slot1.length > 0, 'storage key0 deposited correctly')
+      assert.ok(slot2.length > 0, 'storage key1 deposited correctly')
 
       let slotCode = await stateManager.getContractCode(address1)
-      st.ok(slotCode.length === 0, 'code cannot be loaded')
+      assert.ok(slotCode.length === 0, 'code cannot be loaded')
 
       // Checks by either setting state root to codeHash, or codeHash to stateRoot
       // The knowledge of the tries should not change
@@ -64,7 +64,7 @@ describe('StateManager -> Code', () => {
       await stateManager.putAccount(address1, account1!)
 
       slotCode = await stateManager.getContractCode(address1)
-      st.ok(slotCode.length === 0, 'code cannot be loaded') // This test fails if no code prefix is used
+      assert.ok(slotCode.length === 0, 'code cannot be loaded') // This test fails if no code prefix is used
 
       account1 = await codeStateManager.getAccount(address1)
       account1!.storageRoot = root
@@ -74,8 +74,8 @@ describe('StateManager -> Code', () => {
       codeSlot1 = await codeStateManager.getContractStorage(address1, key1)
       codeSlot2 = await codeStateManager.getContractStorage(address1, key2)
 
-      st.ok(codeSlot1.length === 0, 'slot 0 is empty')
-      st.ok(codeSlot2.length === 0, 'slot 1 is empty')
+      assert.ok(codeSlot1.length === 0, 'slot 0 is empty')
+      assert.ok(codeSlot2.length === 0, 'slot 1 is empty')
     })
 
     it(`should set and get code`, async () => {
@@ -94,7 +94,7 @@ describe('StateManager -> Code', () => {
       await stateManager.putAccount(address, account)
       await stateManager.putContractCode(address, code)
       const codeRetrieved = await stateManager.getContractCode(address)
-      st.ok(equalsBytes(code, codeRetrieved))
+      assert.ok(equalsBytes(code, codeRetrieved))
     })
 
     it(`should not get code if is not contract`, async () => {
@@ -107,7 +107,7 @@ describe('StateManager -> Code', () => {
       const account = Account.fromAccountData(raw)
       await stateManager.putAccount(address, account)
       const code = await stateManager.getContractCode(address)
-      st.ok(equalsBytes(code, new Uint8Array(0)))
+      assert.ok(equalsBytes(code, new Uint8Array(0)))
     })
 
     it(`should set empty code`, async () => {
@@ -122,7 +122,7 @@ describe('StateManager -> Code', () => {
       await stateManager.putAccount(address, account)
       await stateManager.putContractCode(address, code)
       const codeRetrieved = await stateManager.getContractCode(address)
-      st.ok(equalsBytes(codeRetrieved, new Uint8Array(0)))
+      assert.ok(equalsBytes(codeRetrieved, new Uint8Array(0)))
     })
 
     it(`should prefix codehashes by default`, async () => {
@@ -131,7 +131,7 @@ describe('StateManager -> Code', () => {
       const code = hexStringToBytes('80')
       await stateManager.putContractCode(address, code)
       const codeRetrieved = await stateManager.getContractCode(address)
-      st.ok(equalsBytes(codeRetrieved, code))
+      assert.ok(equalsBytes(codeRetrieved, code))
     })
 
     it(`should not prefix codehashes if prefixCodeHashes = false`, async () => {
@@ -142,7 +142,7 @@ describe('StateManager -> Code', () => {
       const code = hexStringToBytes('80')
       try {
         await stateManager.putContractCode(address, code)
-        st.fail('should throw')
+        assert.fail('should throw')
       } catch (e) {
         assert.ok(true, 'successfully threw')
       }
