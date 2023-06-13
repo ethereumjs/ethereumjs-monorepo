@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1686673209417,
+  "lastUpdate": 1686677338126,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "konjou@gmail.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a225a000ea623f9e6ffdde3c058a73e2ed812725",
-          "message": "Clean up `wallet` docs and readme (#2732)\n\n* Readme cleanup\r\n\r\n* Fix docs",
-          "timestamp": "2023-05-27T12:31:46+02:00",
-          "tree_id": "66a1ace77726b2f8dd90b5aa7c33eb445d62c8db",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a225a000ea623f9e6ffdde3c058a73e2ed812725"
-        },
-        "date": 1685183785879,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 16825,
-            "range": "±6.78%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17450,
-            "range": "±2.95%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 17208,
-            "range": "±2.99%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 17103,
-            "range": "±3.24%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 14177,
-            "range": "±10.87%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±12.27%",
             "unit": "ops/sec",
             "extra": "61 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "konjou@gmail.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c06214afeff69de15df8150fd5da2f79b6ba939b",
+          "message": "Remove `libp2p` transport layer (#2758)\n\n* Make libp2p deps optional\n\n* experiments\n\n* run npm install when building browser\n\n* Remove convenience types\n\n* Remove more libp2p stuff\n\n* Move libp2p stuff to legacy folder\n\n* Update browser config stuff to exclude ethers\n\n* Turn off sync and add v8Engine stub\n\n* skip transports on browser build\n\n* eslint ignore libp2p archive\n\n* clean up comments",
+          "timestamp": "2023-06-13T13:25:34-04:00",
+          "tree_id": "f8b7fbe0512671c25732aaa3df86d74f36fbf47c",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c06214afeff69de15df8150fd5da2f79b6ba939b"
+        },
+        "date": 1686677337421,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31959,
+            "range": "±3.97%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 32055,
+            "range": "±2.57%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31911,
+            "range": "±2.53%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 27569,
+            "range": "±8.71%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 29907,
+            "range": "±2.64%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
