@@ -39,9 +39,9 @@ describe('ProofStateManager', () => {
     await stateManager.flush()
 
     const proof = await stateManager.getProof(address, [key])
-    st.ok(await stateManager.verifyProof(proof))
+    assert.ok(await stateManager.verifyProof(proof))
     const nonExistenceProof = await stateManager.getProof(Address.fromPrivateKey(randomBytes(32)))
-    st.equal(
+    assert.equal(
       await stateManager.verifyProof(nonExistenceProof),
       true,
       'verified proof of non-existence of account'
@@ -69,8 +69,8 @@ describe('ProofStateManager', () => {
     }
     trie.root(stateRoot!)
     const proof = await stateManager.getProof(address)
-    st.deepEqual(ropsten_validAccount, proof)
-    st.ok(await stateManager.verifyProof(ropsten_validAccount))
+    assert.deepEqual((ropsten_validAccount as any).default, proof)
+    assert.ok(await stateManager.verifyProof((ropsten_validAccount as any).default))
   })
 
   it('should report data equal to geth output for EIP 1178 proofs - nonexistent account', async () => {
@@ -95,8 +95,8 @@ describe('ProofStateManager', () => {
     trie.root(stateRoot!)
     await stateManager.putAccount(address, new Account())
     const proof = await stateManager.getProof(address)
-    st.deepEqual(ropsten_nonexistentAccount, proof)
-    st.ok(await stateManager.verifyProof(ropsten_nonexistentAccount))
+    assert.deepEqual((ropsten_nonexistentAccount as any).default, proof)
+    assert.ok(await stateManager.verifyProof(ropsten_nonexistentAccount))
   })
 
   it('should report data equal to geth output for EIP 1178 proofs - account with storage', async () => {
@@ -135,7 +135,7 @@ describe('ProofStateManager', () => {
     trie.root(stateRoot!)
 
     const proof = await stateManager.getProof(address, storageKeys)
-    st.deepEqual(ropsten_contractWithStorage, proof)
+    assert.deepEqual((ropsten_contractWithStorage as any).default, proof)
     await stateManager.verifyProof(ropsten_contractWithStorage)
   })
 
@@ -175,7 +175,7 @@ describe('ProofStateManager', () => {
     trie.root(stateRoot!)
 
     // tamper with account data
-    const testdata = ropsten_contractWithStorage as any
+    const testdata = { ...(ropsten_contractWithStorage as any) }
     for (const tamper of ['nonce', 'balance', 'codeHash', 'storageHash']) {
       const original = testdata[tamper]
       try {
@@ -184,7 +184,7 @@ describe('ProofStateManager', () => {
         await stateManager.verifyProof(testdata)
         // note: this implicitly means that newField !== original,
         // if newField === original then the proof would be valid and test would fail
-        t.fail('should throw')
+        assert.fail('should throw')
       } catch (e) {
         assert.ok(true, 'threw on invalid proof')
       } finally {
@@ -198,7 +198,7 @@ describe('ProofStateManager', () => {
       slot.value = `0x9${original.slice(3)}`
       try {
         await stateManager.verifyProof(testdata)
-        st.fail('should throw')
+        assert.fail('should throw')
       } catch {
         assert.ok(true, 'threw on invalid proof')
       } finally {
@@ -234,7 +234,7 @@ describe('ProofStateManager', () => {
     trie.root(stateRoot!)
 
     // tamper with account data
-    const testdata = ropsten_nonexistentAccount as any
+    const testdata = { ...(ropsten_nonexistentAccount as any) }
     for (const tamper of ['nonce', 'balance', 'codeHash', 'storageHash']) {
       const original = testdata[tamper]
       try {
@@ -243,7 +243,7 @@ describe('ProofStateManager', () => {
         await stateManager.verifyProof(testdata)
         // note: this implicitly means that newField !== original,
         // if newField === original then the proof would be valid and test would fail
-        st.fail('should throw')
+        assert.fail('should throw')
       } catch (e) {
         assert.ok(true, 'threw on invalid proof')
       } finally {
