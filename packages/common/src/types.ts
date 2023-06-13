@@ -89,7 +89,7 @@ export interface CommonOpts extends BaseOpts {
    * either from a chain directly supported or a custom chain
    * passed in via {@link CommonOpts.customChains}.
    */
-  chain: string | number | Chain | bigint | object
+  chain?: string | number | Chain | bigint | object
   /**
    * Initialize (in addition to the supported chains) with the selected
    * custom chains. Custom genesis state should be passed to the Blockchain class if used.

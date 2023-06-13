@@ -231,10 +231,10 @@ export class Common extends EventEmitter {
     throw new Error(`Chain with name ${chain} not supported`)
   }
 
-  constructor(opts: CommonOpts) {
+  constructor(opts: CommonOpts = {}) {
     super()
     this._customChains = opts.customChains ?? []
-    this._chainParams = this.setChain(opts.chain)
+    this._chainParams = this.setChain(opts.chain ?? Chain.Mainnet)
     this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Shanghai
     // Assign hardfork changes in the sequence of the applied hardforks
     this.HARDFORK_CHANGES = this.hardforks().map((hf) => [
