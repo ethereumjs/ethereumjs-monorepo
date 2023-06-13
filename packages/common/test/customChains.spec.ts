@@ -39,7 +39,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
   )
 
   t.test('custom() -> base functionality', function (st: tape.Test) {
-    const mainnetCommon = new Common({ chain: Chain.Mainnet })
+    const mainnetCommon = new Common()
 
     const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
     const customChainCommon = Common.custom(customChainParams, { hardfork: Hardfork.Byzantium })

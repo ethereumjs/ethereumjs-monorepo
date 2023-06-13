@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { AccessListEIP2930Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import * as tape from 'tape'
 
@@ -18,7 +18,7 @@ tape('[Types]', function (t) {
     > &
       Pick<TypeT, OptionalFieldsT>
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+    const common = new Common({ hardfork: Hardfork.Berlin })
 
     // Block
     const block: Omit<Required<BlockData>, 'withdrawals'> = Block.fromBlockData({}, { common })

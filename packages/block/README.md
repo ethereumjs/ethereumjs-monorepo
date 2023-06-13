@@ -69,8 +69,8 @@ This library supports the creation of [EIP-1559](https://eips.ethereum.org/EIPS/
 
 ```typescript
 import { Block } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+import { Common, Hardfork } from '@ethereumjs/common'
+const common = new Common({ hardfork: Hardfork.London })
 
 const block = Block.fromBlockData(
   {
@@ -114,7 +114,7 @@ import { Common, Chain } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
 import type { WithdrawalData } from '@ethereumjs/util'
 
-const common = new Common({ chain: Chain.Mainnet, eips: [4895] })
+const common = new Common({ eips: [4895] })
 
 const withdrawal = <WithdrawalData>{
   index: BigInt(0),
@@ -152,7 +152,7 @@ To create blocks which include blob transactions you have to active EIP-4844 in 
 ```typescript
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+const common = new Common({ hardfork: Hardfork.Shanghai, eips: [4844] })
 ```
 
 **Note:** Working with blob transactions needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
@@ -172,7 +172,7 @@ An Ethash/PoW block can be instantiated as follows:
 ```typescript
 import { Block } from '@ethereumjs/block'
 import { Chain, Common } from '@ethereumjs/common'
-const common = new Common({ chain: Chain.Mainnet })
+const common = new Common()
 console.log(common.consensusType()) // 'pow'
 console.log(common.consensusAlgorithm()) // 'ethash'
 const block = Block.fromBlockData({}, { common })
@@ -221,7 +221,7 @@ You can instantiate a Merge/PoS block like this:
 ```typescript
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+const common = new Common({ hardfork: Hardfork.Merge })
 const block = Block.fromBlockData(
   {
     // Provide your block data here or use default values

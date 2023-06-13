@@ -1,6 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { randomBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
@@ -12,7 +12,7 @@ import type { FullEthereumService } from '../../../src/service'
 const method = 'txpool_content'
 
 tape(`${method}: call with valid arguments`, async (t) => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+  const common = new Common({ hardfork: Hardfork.Istanbul })
   const blockchain = await Blockchain.create({
     common,
     validateBlocks: false,

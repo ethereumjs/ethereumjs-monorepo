@@ -77,7 +77,7 @@ tape('[Block]: Header functions', function (t) {
   })
 
   t.test('Initialization -> fromRLPSerializedHeader()', function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ hardfork: Hardfork.London })
     let header = BlockHeader.fromHeaderData({}, { common, freeze: false })
 
     const rlpHeader = header.serialize()
@@ -128,7 +128,7 @@ tape('[Block]: Header functions', function (t) {
   })
 
   t.test('Initialization -> fromValuesArray()', function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ hardfork: Hardfork.London })
     const zero = new Uint8Array(0)
     const headerArray = []
     for (let item = 0; item < 15; item++) {
@@ -190,7 +190,7 @@ tape('[Block]: Header functions', function (t) {
 
   t.test('should validate extraData', async function (st) {
     // PoW
-    let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    let common = new Common({ hardfork: Hardfork.Chainstart })
     let genesis = Block.fromBlockData({}, { common })
 
     const number = 1
@@ -448,7 +448,7 @@ tape('[Block]: Header functions', function (t) {
   })
 */
   t.test('should test validateGasLimit()', function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ hardfork: Hardfork.London })
     const testData = require('./testdata/bcBlockGasLimitTest.json').tests
     const bcBlockGasLimitTestData = testData.BlockGasLimit2p63m1
 
@@ -473,7 +473,7 @@ tape('[Block]: Header functions', function (t) {
   })
 
   t.test('should test hash() function', function (st) {
-    let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    let common = new Common({ hardfork: Hardfork.Chainstart })
     let header = BlockHeader.fromHeaderData(blocksMainnet[0]['header'], { common })
     st.equal(
       bytesToHex(header.hash()),
@@ -494,7 +494,7 @@ tape('[Block]: Header functions', function (t) {
   t.test(
     'should be able to initialize shanghai header with correct hardfork defaults',
     function (st) {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+      const common = new Common({ hardfork: Hardfork.Shanghai })
       const header = BlockHeader.fromHeaderData({}, { common })
       st.equal(header._common.hardfork(), Hardfork.Shanghai, 'hardfork should be set to shanghai')
       st.equal(header.baseFeePerGas, BigInt(7), 'baseFeePerGas should be set to minimum default')

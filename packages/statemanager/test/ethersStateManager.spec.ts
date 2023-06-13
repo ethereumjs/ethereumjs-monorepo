@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
 import {
   Account,
@@ -192,7 +192,7 @@ tape('runTx custom transaction test', async (t) => {
     // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
     t.end()
   } else {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ hardfork: Hardfork.London })
     const provider =
       process.env.PROVIDER !== undefined
         ? new ethers.JsonRpcProvider(process.env.PROVIDER, 1)
@@ -225,7 +225,7 @@ tape('runTx test: replay mainnet transactions', async (t) => {
     // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
     t.end()
   } else {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ hardfork: Hardfork.London })
 
     const provider =
       process.env.PROVIDER !== undefined
@@ -253,7 +253,7 @@ tape('runBlock test', async (t) => {
     // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
     t.end()
   } else {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ hardfork: Hardfork.Chainstart })
     const provider =
       process.env.PROVIDER !== undefined
         ? new ethers.JsonRpcProvider(process.env.PROVIDER)

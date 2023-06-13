@@ -25,7 +25,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     let c
 
     for (const hardfork of supportedHardforks) {
-      c = new Common({ chain: Chain.Mainnet, hardfork })
+      c = new Common({ hardfork })
       st.equal(c.hardfork(), hardfork, hardfork)
     }
 
@@ -33,7 +33,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
   })
 
   t.test('getHardforkByBlockNumber() / setHardforkByBlockNumber()', function (st: tape.Test) {
-    let c = new Common({ chain: Chain.Mainnet })
+    let c = new Common()
     let msg = 'should get HF correctly'
 
     st.equal(c.getHardforkByBlockNumber(0), Hardfork.Chainstart, msg)
@@ -97,7 +97,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
   })
 
   t.test('setHardfork(): hardforkChanged event', function (st) {
-    const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const c = new Common({ hardfork: Hardfork.Istanbul })
     c.on('hardforkChanged', (hardfork: string) => {
       st.equal(hardfork, Hardfork.Byzantium, 'should send correct hardforkChanged event')
       st.end()
@@ -176,7 +176,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
   })
 
   t.test('hardforkBlock()', function (st: tape.Test) {
-    const c = new Common({ chain: Chain.Mainnet })
+    const c = new Common()
 
     let msg = 'should return correct value'
     st.equal(c.hardforkBlock(Hardfork.Berlin)!, BigInt(12244000), msg)
@@ -254,7 +254,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
       ],
     ]
 
-    let c = new Common({ chain: Chain.Mainnet })
+    let c = new Common()
     const mainnetGenesisHash = chains[0][1]
     let msg = 'should calc correctly for chainstart (only genesis)'
     st.equal(c._calcForkHash(Hardfork.Chainstart, mainnetGenesisHash), '0xfc64ec04', msg)
@@ -278,7 +278,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
   })
 
   t.test('forkHash()', function (st: tape.Test) {
-    let c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+    let c = new Common({ hardfork: Hardfork.Byzantium })
     let msg = 'should provide correct forkHash for HF set'
     st.equal(c.forkHash(), '0xa00bc324', msg)
 
@@ -289,7 +289,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     )
     st.equal(c.forkHash(Hardfork.SpuriousDragon, genesisHash), '0x3edd5b10', msg)
 
-    c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+    c = new Common({ hardfork: Hardfork.Shanghai })
     // unschedule shanghai on it to test
     c.hardforks()
       .filter((hf) => hf.name === Hardfork.Shanghai)
@@ -313,7 +313,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
   })
 
   t.test('hardforkForForkHash()', function (st: tape.Test) {
-    const c = new Common({ chain: Chain.Mainnet })
+    const c = new Common()
 
     let msg = 'should return the correct HF array for a matching forkHash'
     const res = c.hardforkForForkHash('0x3edd5b10')!

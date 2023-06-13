@@ -32,7 +32,7 @@ common.hardforkBlock = function (hardfork: string | undefined) {
 
 tape('EIP1559 tests', function (t) {
   t.test('Header -> Initialization', function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ hardfork: Hardfork.Istanbul })
     st.throws(() => {
       BlockHeader.fromHeaderData(
         {

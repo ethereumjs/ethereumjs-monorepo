@@ -15,7 +15,7 @@ tape('reorg tests', (t) => {
   t.test(
     'should correctly reorg the chain if the total difficulty is higher on a lower block number than the current head block',
     async (st) => {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
+      const common = new Common({ hardfork: Hardfork.MuirGlacier })
       const genesis = Block.fromBlockData(
         {
           header: {

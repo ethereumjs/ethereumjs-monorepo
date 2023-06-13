@@ -1,5 +1,5 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { MapDB, toBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -13,7 +13,7 @@ export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[])
   const blocks = existingBlocks ? existingBlocks : []
 
   const gasLimit = 8000000
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+  const common = new Common({ hardfork: Hardfork.Chainstart })
   const opts = { common }
 
   if (blocks.length === 0) {
@@ -76,7 +76,7 @@ export const generateConsecutiveBlock = (
   if (difficultyChangeFactor > 1) {
     difficultyChangeFactor = 1
   }
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
+  const common = new Common({ hardfork: Hardfork.MuirGlacier })
   const tmpHeader = BlockHeader.fromHeaderData(
     {
       number: parentBlock.header.number + BigInt(1),
@@ -117,7 +117,7 @@ export const isConsecutive = (blocks: Block[]) => {
 export const createTestDB = async (): Promise<
   [DB<string | Uint8Array, string | Uint8Array>, Block]
 > => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+  const common = new Common({ hardfork: Hardfork.Chainstart })
   const genesis = Block.fromBlockData({ header: { number: 0 } }, { common })
   const db = new MapDB<any, any>()
 
@@ -185,7 +185,7 @@ function createBlock(
   common?: Common
 ): Block {
   uncles = uncles ?? []
-  common = common ?? new Common({ chain: Chain.Mainnet })
+  common = common ?? new Common()
 
   if (extraData.length > 32) {
     throw new Error('extra data graffiti must be 32 bytes or less')

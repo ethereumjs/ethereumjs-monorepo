@@ -5,7 +5,7 @@ import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 
 const main = async () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+  const common = new Common({ hardfork: Hardfork.London })
   const stateManager = new DefaultStateManager()
   const blockchain = await Blockchain.create()
 

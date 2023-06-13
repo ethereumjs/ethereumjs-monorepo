@@ -59,7 +59,7 @@ tape('VM -> basic instantiation / boolean switches', (t) => {
 
 tape('VM -> supportedHardforks', (t) => {
   t.test('should throw when common is set to an unsupported hardfork', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+    const common = new Common({ hardfork: Hardfork.Shanghai })
     const prevSupported = EVM['supportedHardforks']
     EVM['supportedHardforks'] = [
       Hardfork.Chainstart,
@@ -91,7 +91,7 @@ tape('VM -> supportedHardforks', (t) => {
   })
 
   t.test('should succeed when common is set to a supported hardfork', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+    const common = new Common({ hardfork: Hardfork.Byzantium })
     const vm = await VM.create({ common })
     st.equal(vm._common.hardfork(), Hardfork.Byzantium)
     st.end()
@@ -100,7 +100,7 @@ tape('VM -> supportedHardforks', (t) => {
 
 tape('VM -> common (chain, HFs, EIPs)', (t) => {
   t.test('should accept a common object as option', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ hardfork: Hardfork.Istanbul })
 
     const vm = await VM.create({ common })
     st.equal(vm._common, common)
@@ -129,7 +129,7 @@ tape('VM -> common (chain, HFs, EIPs)', (t) => {
       st.skip('BLS does not work in karma')
       return st.end()
     }
-    const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
+    const common = new Common({ eips: [2537] })
     try {
       await VM.create({ common })
       st.pass('did not throw')
@@ -258,7 +258,7 @@ tape('VM -> hardforkByBlockNumber, hardforkByTTD, state (deprecated), blockchain
     const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee')) // caller address
     const contractAddress = new Address(hexToBytes('00000000000000000000000000000000000000ff')) // contract address
     // setup the vm
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ hardfork: Hardfork.Istanbul })
     const vmNotActivated = await VM.create({ common })
     const vmActivated = await VM.create({ common, activatePrecompiles: true })
     const code = '6000808080347300000000000000000000000000000000000000045AF100'

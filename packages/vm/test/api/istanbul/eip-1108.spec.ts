@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { getActivePrecompiles } from '@ethereumjs/evm'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
@@ -7,7 +7,7 @@ import { VM } from '../../../src/vm'
 
 tape('Istanbul: EIP-1108 tests', (t) => {
   t.test('ECADD', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ hardfork: Hardfork.Istanbul })
     const vm = await VM.create({ common })
     const address = '0000000000000000000000000000000000000006'
     const ECADD = getActivePrecompiles(common).get(address)!
@@ -24,7 +24,7 @@ tape('Istanbul: EIP-1108 tests', (t) => {
   })
 
   t.test('ECMUL', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ hardfork: Hardfork.Istanbul })
     const vm = await VM.create({ common })
     const address = '0000000000000000000000000000000000000007'
     const ECMUL = getActivePrecompiles(common).get(address)!
@@ -41,7 +41,7 @@ tape('Istanbul: EIP-1108 tests', (t) => {
   })
 
   t.test('ECPAIRING', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ hardfork: Hardfork.Istanbul })
     const vm = await VM.create({ common })
     const address = '0000000000000000000000000000000000000008'
     const ECPAIRING = getActivePrecompiles(common).get(address)!

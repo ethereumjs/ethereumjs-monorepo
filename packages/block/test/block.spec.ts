@@ -20,7 +20,7 @@ import type { NestedUint8Array } from '@ethereumjs/util'
 
 tape('[Block]: block functions', function (t) {
   t.test('should test block initialization', function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ hardfork: Hardfork.Chainstart })
     const genesis = Block.fromBlockData({}, { common })
     st.ok(bytesToHex(genesis.hash()), 'block should initialize')
 
@@ -162,7 +162,7 @@ tape('[Block]: block functions', function (t) {
   )
 
   t.test('should test block validation on pow chain', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ hardfork: Hardfork.Istanbul })
     const blockRlp = toBytes(testDataPreLondon.blocks[0].rlp)
     try {
       Block.fromRLPSerializedBlock(blockRlp, { common })
@@ -190,7 +190,7 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should test transaction validation', async function (st) {
     const blockRlp = toBytes(testDataPreLondon.blocks[0].rlp)
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ hardfork: Hardfork.London })
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     await testTransactionValidation(st, block)
     ;(block.header as any).transactionsTrie = new Uint8Array(32)
@@ -221,7 +221,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test uncles hash validation', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ hardfork: Hardfork.Istanbul })
     const blockRlp = toBytes(testDataPreLondon2.blocks[2].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     st.equal(block.validateUnclesHash(), true)
@@ -271,7 +271,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should return the same block data from raw()', function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ hardfork: Hardfork.Istanbul })
     const block = Block.fromRLPSerializedBlock(toBytes(testDataPreLondon2.blocks[2].rlp), {
       common,
     })
@@ -281,7 +281,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test toJSON', function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ hardfork: Hardfork.Istanbul })
     const block = Block.fromRLPSerializedBlock(toBytes(testDataPreLondon2.blocks[2].rlp), {
       common,
     })
@@ -294,7 +294,7 @@ tape('[Block]: block functions', function (t) {
     // Set block number from test block to mainnet DAO fork block 1920000
     blockData[0][8] = hexStringToBytes('1D4C00')
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Dao })
+    const common = new Common({ hardfork: Hardfork.Dao })
     st.throws(
       function () {
         Block.fromValuesArray(blockData as BlockBytes, { common })
@@ -315,7 +315,7 @@ tape('[Block]: block functions', function (t) {
   t.test(
     'should set canonical difficulty if I provide a calcDifficultyFromHeader header',
     function (st) {
-      let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+      let common = new Common({ hardfork: Hardfork.Chainstart })
       const genesis = Block.fromBlockData({}, { common })
 
       const nextBlockHeaderData = {
@@ -323,7 +323,7 @@ tape('[Block]: block functions', function (t) {
         timestamp: genesis.header.timestamp + BigInt(10),
       }
 
-      common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+      common = new Common({ hardfork: Hardfork.London })
       const blockWithoutDifficultyCalculation = Block.fromBlockData(
         {
           header: nextBlockHeaderData,
@@ -386,7 +386,7 @@ tape('[Block]: block functions', function (t) {
   t.test(
     'should be able to initialize shanghai blocks with correct hardfork defaults',
     function (st) {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+      const common = new Common({ hardfork: Hardfork.Shanghai })
       const block = Block.fromBlockData({}, { common })
       st.equal(block._common.hardfork(), Hardfork.Shanghai, 'hardfork should be set to shanghai')
       st.deepEqual(block.withdrawals, [], 'withdrawals should be set to default empty array')

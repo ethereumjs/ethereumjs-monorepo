@@ -1,5 +1,5 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   AccessListEIP2930Transaction,
@@ -380,7 +380,7 @@ export function isRunningInKarma(): boolean {
  */
 export function getDAOCommon(activationBlock: number) {
   // here: get the default fork list of mainnet and only edit the DAO fork block (thus copy the rest of the "default" hardfork settings)
-  const defaultDAOCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Dao })
+  const defaultDAOCommon = new Common({ hardfork: Hardfork.Dao })
   // retrieve the hard forks list from defaultCommon...
   const forks = defaultDAOCommon.hardforks()
   const editedForks = []

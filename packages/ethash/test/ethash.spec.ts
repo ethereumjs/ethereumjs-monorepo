@@ -1,5 +1,5 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
@@ -11,7 +11,7 @@ const powTests = require('./ethash_tests.json')
 
 const ethash = new Ethash()
 const tests = Object.keys(powTests)
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+const common = new Common({ hardfork: Hardfork.Istanbul })
 
 tape('POW tests', async function (t) {
   for (const key of tests) {

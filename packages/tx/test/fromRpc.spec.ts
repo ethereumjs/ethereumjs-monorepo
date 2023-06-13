@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex, bytesToPrefixedHexString, randomBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
@@ -15,7 +15,7 @@ const txTypes = [
 ]
 
 tape('[fromJsonRpcProvider]', async (t) => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+  const common = new Common({ hardfork: Hardfork.London })
   const provider = 'https://my.json.rpc.provider.com:8545'
 
   const realFetch = global.fetch

@@ -90,7 +90,7 @@ tape('Istanbul: EIP-152', (t) => {
       return st.end()
     }
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ hardfork: Hardfork.Istanbul })
     const vm = await VM.create({ common })
 
     for (const testCase of failingTestCases) {

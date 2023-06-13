@@ -15,7 +15,7 @@ import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils
 
 const PRIVATE_KEY = randomBytes(32)
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+const common = new Common({ hardfork: Hardfork.Berlin })
 const bootstrapNodes = common.bootstrapNodes()
 const BOOTNODES = bootstrapNodes.map((node: any) => {
   return {

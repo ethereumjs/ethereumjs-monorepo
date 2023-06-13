@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
@@ -6,8 +6,8 @@ import * as tape from 'tape'
 import { VM } from '../../../src/vm'
 
 tape('EIP-3607 tests', (t) => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [3607] })
-  const commonNoEIP3607 = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [] })
+  const common = new Common({ hardfork: Hardfork.Berlin, eips: [3607] })
+  const commonNoEIP3607 = new Common({ hardfork: Hardfork.Berlin, eips: [] })
   const precompileAddr = Address.fromString('0x0000000000000000000000000000000000000001')
 
   t.test('should reject txs from senders with deployed code when EIP is enabled', async (st) => {

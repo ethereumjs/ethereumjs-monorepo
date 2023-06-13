@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import {
@@ -42,7 +42,7 @@ const setup = () => {
   return { pool }
 }
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+const common = new Common({ hardfork: Hardfork.London })
 const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
 
 const handleTxs = async (
@@ -476,7 +476,7 @@ tape('[TxPool]', async (t) => {
   })
 
   t.test('announcedTxHashes() -> reject txs with too much data', async (t) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
+    const common = new Common({ hardfork: Hardfork.Paris })
 
     const txs = []
     txs.push(

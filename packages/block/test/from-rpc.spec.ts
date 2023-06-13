@@ -22,7 +22,7 @@ import * as blockData from './testdata/testdata-from-rpc.json'
 import type { LegacyTransaction } from '@ethereumjs/tx'
 
 tape('[fromRPC]: block #2924874', function (t) {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+  const common = new Common({ hardfork: Hardfork.Istanbul })
 
   t.test('should create a block with transactions with valid signatures', function (st) {
     const block = blockFromRpc(blockData, [], { common })
@@ -43,7 +43,7 @@ tape('[fromRPC]:', function (t) {
   t.test(
     'Should create a block with json data that includes a transaction with value parameter as integer string',
     function (st) {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+      const common = new Common({ hardfork: Hardfork.London })
       const valueAsIntegerString = '1'
       const blockDataTransactionValueAsInteger = blockData
       blockDataTransactionValueAsInteger.transactions[0].value = valueAsIntegerString
@@ -64,7 +64,7 @@ tape('[fromRPC]:', function (t) {
   t.test(
     'Should create a block with json data that includes a transaction with defaults with gasPrice parameter as integer string',
     function (st) {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+      const common = new Common({ hardfork: Hardfork.London })
       const gasPriceAsIntegerString = '1'
       const blockDataTransactionGasPriceAsInteger = blockData
       blockDataTransactionGasPriceAsInteger.transactions[0].gasPrice = gasPriceAsIntegerString
@@ -87,7 +87,7 @@ tape('[fromRPC]:', function (t) {
   t.test(
     'should create a block given json data that includes a difficulty parameter of type integer string',
     function (st) {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+      const common = new Common({ hardfork: Hardfork.London })
       const blockDifficultyAsInteger = blockFromRpc(blockDataDifficultyAsInteger, undefined, {
         common,
       })
@@ -111,14 +111,14 @@ tape('[fromRPC]:', function (t) {
   })
 
   t.test('should create a block with uncles', function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ hardfork: Hardfork.Istanbul })
     const block = blockFromRpc(blockDataWithUncles, [uncleBlockData], { common })
     st.ok(block.validateUnclesHash())
     st.end()
   })
 
   t.test('should create a block with EIP-4896 withdrawals', function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+    const common = new Common({ hardfork: Hardfork.Shanghai })
     const block = blockFromRpc(blockDataWithWithdrawals, [], { common })
     st.ok(block.validateWithdrawalsTrie())
     st.end()
@@ -127,7 +127,7 @@ tape('[fromRPC]:', function (t) {
   t.test(
     'should create a block header with the correct hash when EIP-4896 withdrawals are present',
     function (st) {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+      const common = new Common({ hardfork: Hardfork.Shanghai })
       const block = blockHeaderFromRpc(blockDataWithWithdrawals, { common })
       const hash = blockDataWithWithdrawals.hash.slice(2)
       st.equal(bytesToHex(block.hash()), hash)
@@ -138,7 +138,7 @@ tape('[fromRPC]:', function (t) {
 
 tape('[fromRPC] - Alchemy/Infura API block responses', (t) => {
   t.test('should create pre merge block from Alchemy API response to eth_getBlockByHash', (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ hardfork: Hardfork.London })
     const block = blockFromRpc(alchemy14151203, [], { common })
     st.equal(bytesToPrefixedHexString(block.hash()), alchemy14151203.hash)
     st.end()
@@ -147,7 +147,7 @@ tape('[fromRPC] - Alchemy/Infura API block responses', (t) => {
   t.test(
     'should create pre and post merge blocks from Infura API responses to eth_getBlockByHash and eth_getBlockByNumber',
     (st) => {
-      const common = new Common({ chain: Chain.Mainnet })
+      const common = new Common()
       let block = blockFromRpc(infura2000004woTxs, [], { common, hardforkByBlockNumber: true })
       st.equal(
         bytesToPrefixedHexString(block.hash()),
@@ -187,7 +187,7 @@ tape('[fromRPC] - Alchemy/Infura API block responses', (t) => {
 })
 
 tape('[fromJsonRpcProvider]', async (t) => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+  const common = new Common({ hardfork: Hardfork.London })
   const provider = 'https://my.json.rpc.provider.com:8545'
 
   const realFetch = global.fetch

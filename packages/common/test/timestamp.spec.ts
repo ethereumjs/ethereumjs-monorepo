@@ -78,7 +78,7 @@ tape('[Common]: Timestamp Hardfork logic', function (t: tape.Test) {
   })
 
   t.test('forkHash', function (st) {
-    const mainnet = new Common({ chain: Chain.Mainnet })
+    const mainnet = new Common()
     const hfs = mainnet.hardforks()
     const mergeIndex = hfs.findIndex((hf) => hf.name === Hardfork.Paris)
     const hardforks = hfs.slice(0, mergeIndex + 1).concat([
@@ -123,7 +123,7 @@ tape('[Common]: Timestamp Hardfork logic', function (t: tape.Test) {
   })
 
   t.test('setForkHashes', function (st) {
-    const mainnet = new Common({ chain: Chain.Mainnet })
+    const mainnet = new Common()
     const hfs = mainnet.hardforks()
     const mergeIndex = hfs.findIndex((hf) => hf.name === Hardfork.Paris)
     const hardforks = hfs.slice(0, mergeIndex + 1).concat([

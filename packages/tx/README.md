@@ -83,7 +83,7 @@ Hardforks adding features and/or tx types:
 The following "standalone" EIPs are supported by the library can be manually activated using a respectively initialized `Common` instance, e.g.:
 
 ```typescript
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [3860] })
+const common = new Common({ hardfork: Hardfork.London, eips: [3860] })
 ```
 
 - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3855): Limit and meter initcode (`experimental`)
@@ -117,7 +117,7 @@ import { BlobEIP4844Transaction, initKZG } from '@ethereumjs/tx'
 import * as kzg from 'c-kzg'
 
 initKZG(kzg, 'path/to/my/trusted_setup.txt')
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+const common = new Common({ hardfork: Hardfork.Shanghai, eips: [4844] })
 
 const txData = {
   data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
@@ -161,7 +161,7 @@ This is the recommended tx type starting with the activation of the `london` HF,
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+const common = new Common({ hardfork: Hardfork.London })
 
 const txData = {
   data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
@@ -194,7 +194,7 @@ This transaction type has been introduced along the `berlin` HF. See the followi
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+const common = new Common({ hardfork: Hardfork.Berlin })
 
 const txData = {
   data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
@@ -247,7 +247,7 @@ const txParams = {
   data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
 }
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+const common = new Common({ hardfork: Hardfork.Istanbul })
 const tx = LegacyTransaction.fromTxData(txParams, { common })
 
 const privateKey = Buffer.from(
@@ -268,7 +268,7 @@ If you only know on runtime which tx type will be used within your code or if yo
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+const common = new Common({ hardfork: Hardfork.Berlin })
 
 const txData = {} // Use data from the different tx type examples
 const tx = TransactionFactory.fromTxData(txData, { common })

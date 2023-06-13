@@ -46,7 +46,7 @@ tape('EIP4895 tests', function (t) {
   })
 
   t.test('Header tests', function (st) {
-    const earlyCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const earlyCommon = new Common({ hardfork: Hardfork.Istanbul })
     st.throws(() => {
       BlockHeader.fromHeaderData(
         {
@@ -78,7 +78,7 @@ tape('EIP4895 tests', function (t) {
     st.end()
   })
   t.test('Block tests', async function (st) {
-    const earlyCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const earlyCommon = new Common({ hardfork: Hardfork.Istanbul })
     st.throws(() => {
       Block.fromBlockData(
         {

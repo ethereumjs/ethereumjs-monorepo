@@ -44,7 +44,7 @@ tape('blockchain test', (t) => {
   })
 
   t.test('should initialize correctly with Blockchain.fromBlocksData()', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.fromBlocksData(blocksData, {
       validateBlocks: true,
       validateConsensus: false,
@@ -56,7 +56,7 @@ tape('blockchain test', (t) => {
   })
 
   t.test('should only initialize with supported consensus validation options', async (st) => {
-    let common = new Common({ chain: Chain.Mainnet })
+    let common = new Common()
     try {
       await Blockchain.create({ common, validateConsensus: true })
       await Blockchain.create({ common, validateBlocks: true })
@@ -70,7 +70,7 @@ tape('blockchain test', (t) => {
   })
 
   t.test('should add a genesis block without errors', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ hardfork: Hardfork.Chainstart })
     const genesisBlock = Block.fromBlockData({ header: { number: 0 } }, { common })
     const blockchain = await Blockchain.create({
       common,
@@ -196,7 +196,7 @@ tape('blockchain test', (t) => {
   })
 
   t.test('getBlock(): should get block by hash / not existing', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ hardfork: Hardfork.Chainstart })
     const gasLimit = 8000000
     const genesisBlock = Block.fromBlockData({ header: { gasLimit } }, { common })
 
@@ -431,7 +431,7 @@ tape('blockchain test', (t) => {
 
     await blockchain.putBlocks(blocks.slice(1))
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ hardfork: Hardfork.Chainstart })
     const headerData = {
       number: 15,
       parentHash: blocks[14].hash(),
@@ -456,7 +456,7 @@ tape('blockchain test', (t) => {
     const { blockchain, blocks, error } = await generateBlockchain(15)
     st.error(error, 'no error')
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ hardfork: Hardfork.Chainstart })
     const headerData = {
       number: 15,
       parentHash: blocks[14].hash(),
@@ -549,7 +549,7 @@ tape('blockchain test', (t) => {
   })
 
   t.test('should put multiple blocks at once', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ hardfork: Hardfork.Chainstart })
     const blocks: Block[] = []
     const genesisBlock = Block.fromBlockData({ header: { gasLimit: 8000000 } }, { common })
     blocks.push(...generateBlocks(15, [genesisBlock]))
@@ -581,7 +581,7 @@ tape('blockchain test', (t) => {
   })
 
   t.test('should add block with body', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ hardfork: Hardfork.Istanbul })
     const genesisRlp = hexToBytes(testDataPreLondon.genesisRLP.slice(2))
     const genesisBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
     const blockchain = await Blockchain.create({
@@ -619,7 +619,7 @@ tape('blockchain test', (t) => {
     const db = new MapDB()
     const gasLimit = 8000000
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ hardfork: Hardfork.Istanbul })
     const genesisBlock = Block.fromBlockData({ header: { gasLimit } }, { common })
     let blockchain = await Blockchain.create({
       db,
@@ -657,7 +657,7 @@ tape('blockchain test', (t) => {
 
   t.test('should get latest', async (st) => {
     const gasLimit = 8000000
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ hardfork: Hardfork.Chainstart })
     const opts: BlockOptions = { common }
 
     const genesisBlock = Block.fromBlockData({ header: { gasLimit } }, opts)
@@ -717,7 +717,7 @@ tape('blockchain test', (t) => {
   })
 
   t.test('mismatched chains', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ hardfork: Hardfork.Chainstart })
     const gasLimit = 8000000
 
     const genesisBlock = Block.fromBlockData({ header: { gasLimit } }, { common })
@@ -797,7 +797,7 @@ tape('initialization tests', (t) => {
   })
 
   t.test('should allow to put a custom genesis block', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ hardfork: Hardfork.Chainstart })
     const genesisBlock = Block.fromBlockData(
       {
         header: {
@@ -826,7 +826,7 @@ tape('initialization tests', (t) => {
   })
 
   t.test('should not allow to change the genesis block in the database', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ hardfork: Hardfork.Chainstart })
     const genesisBlock = Block.fromBlockData(
       {
         header: {

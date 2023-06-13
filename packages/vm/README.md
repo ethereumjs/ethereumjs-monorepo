@@ -35,7 +35,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { VM } from '@ethereumjs/vm'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+const common = new Common({ hardfork: Hardfork.Berlin })
 const vm = await VM.create({ common })
 
 const tx = LegacyTransaction.fromTxData({
@@ -62,7 +62,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { VM } from '@ethereumjs/vm'
 
-const common = new Common({ chain: Chain.Mainnet })
+const common = new Common()
 const vm = await VM.create({ common })
 
 const blockBuilder = await vm.buildBlock({
@@ -160,7 +160,7 @@ An explicit HF in the `VM` - which is then passed on to the inner `EVM` - can be
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { VM } from '@ethereumjs/vm'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+const common = new Common({ hardfork: Hardfork.Berlin })
 const vm = new VM({ common })
 ```
 
@@ -198,7 +198,7 @@ with the respective EIPs, e.g.:
 import { Chain, Common } from '@ethereumjs/common'
 import { VM } from '@ethereumjs/vm'
 
-const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
+const common = new Common({ eips: [2537] })
 const vm = new VM({ common })
 ```
 
@@ -215,7 +215,7 @@ To run VM/EVM related EIP-4844 functionality you have to active the EIP in the a
 ```typescript
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+const common = new Common({ hardfork: Hardfork.Shanghai, eips: [4844] })
 ```
 
 EIP-4844 comes with a new opcode `DATAHASH` and adds a new point evaluation precompile at address `0x14` in the underlying `@ethereumjs/evm` package.

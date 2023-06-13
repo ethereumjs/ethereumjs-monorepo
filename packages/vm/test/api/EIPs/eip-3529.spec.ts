@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Account, Address } from '@ethereumjs/util'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
@@ -111,7 +111,7 @@ const testCases = [
 ]
 
 tape('EIP-3529 tests', (t) => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [3529] })
+  const common = new Common({ hardfork: Hardfork.Berlin, eips: [3529] })
 
   t.test('should verify EIP test cases', async (st) => {
     const vm = await VM.create({ common })

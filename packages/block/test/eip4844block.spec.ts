@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
@@ -36,7 +36,7 @@ tape('EIP4844 header tests', function (t) {
   if (isBrowser() === true) {
     t.end()
   } else {
-    const earlyCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const earlyCommon = new Common({ hardfork: Hardfork.Istanbul })
 
     t.throws(
       () => {

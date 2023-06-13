@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
@@ -10,7 +10,7 @@ const testData = require('../testdata/eip-2565.json')
 
 tape('EIP-2565 ModExp gas cost tests', (t) => {
   t.test('Test return data, gas cost and execution status against testdata', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium, eips: [2565] })
+    const common = new Common({ hardfork: Hardfork.Byzantium, eips: [2565] })
     const vm = await VM.create({ common })
 
     for (const test of testData) {

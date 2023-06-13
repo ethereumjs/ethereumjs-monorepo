@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { utf8ToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -20,7 +20,7 @@ function createBlock(
   common?: Common
 ): Block {
   uncles = uncles ?? []
-  common = common ?? new Common({ chain: Chain.Mainnet })
+  common = common ?? new Common()
 
   if (extraData.length > 32) {
     throw new Error('extra data graffiti must be 32 bytes or less')

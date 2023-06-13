@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
@@ -82,7 +82,7 @@ tape('Proof of Stake - inserting blocks into blockchain', async (t) => {
     const td = await blockchain.getTotalDifficulty(latestHeader.hash())
     t.equal(td, BigInt(1313601), 'should have calculated the correct post-Merge total difficulty')
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ hardfork: Hardfork.London })
     const powBlock = Block.fromBlockData(
       {
         header: {

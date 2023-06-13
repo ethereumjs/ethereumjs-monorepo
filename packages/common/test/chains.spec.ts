@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 
-import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src'
+import { Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src'
 
 tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
   t.test('Should initialize with chain provided', function (st: tape.Test) {
@@ -22,7 +22,7 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
   })
 
   t.test('Should initialize with chain provided by Chain enum', function (st: tape.Test) {
-    const c = new Common({ chain: Chain.Mainnet })
+    const c = new Common()
     st.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
     st.equal(c.chainId(), BigInt(1), 'should return correct chain Id')
     st.equal(c.networkId(), BigInt(1), 'should return correct network Id')
@@ -46,7 +46,7 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
   t.test(
     'Should initialize with chain and hardfork provided by Chain and Hardfork enums',
     function (st: tape.Test) {
-      const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+      const c = new Common({ hardfork: Hardfork.Byzantium })
       st.equal(c.hardfork(), 'byzantium', 'should return correct hardfork name')
 
       st.end()

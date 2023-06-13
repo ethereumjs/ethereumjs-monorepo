@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import * as tape from 'tape'
 
@@ -10,7 +10,7 @@ tape('EVM -> getActiveOpcodes()', (t) => {
   const BEGINSUB = 0x5c // EIP-2315 opcode
 
   t.test('should not expose opcodes from a follow-up HF (istanbul -> petersburg)', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
+    const common = new Common({ hardfork: Hardfork.Petersburg })
     const evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
@@ -24,7 +24,7 @@ tape('EVM -> getActiveOpcodes()', (t) => {
   })
 
   t.test('should expose opcodes when HF is active (>= istanbul)', async (st) => {
-    let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    let common = new Common({ hardfork: Hardfork.Istanbul })
     let evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
@@ -35,7 +35,7 @@ tape('EVM -> getActiveOpcodes()', (t) => {
       'istanbul opcode exposed (HF: istanbul)'
     )
 
-    common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
+    common = new Common({ hardfork: Hardfork.MuirGlacier })
     evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
@@ -50,7 +50,7 @@ tape('EVM -> getActiveOpcodes()', (t) => {
   })
 
   t.test('should switch DIFFICULTY opcode name to PREVRANDAO when >= Merge HF', async (st) => {
-    let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    let common = new Common({ hardfork: Hardfork.Istanbul })
     let evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
@@ -61,7 +61,7 @@ tape('EVM -> getActiveOpcodes()', (t) => {
       'Opcode x44 named DIFFICULTY pre-Merge'
     )
 
-    common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
+    common = new Common({ hardfork: Hardfork.Paris })
     evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
@@ -76,7 +76,7 @@ tape('EVM -> getActiveOpcodes()', (t) => {
   })
 
   t.test('should expose opcodes when EIP is active', async (st) => {
-    let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul, eips: [2315] })
+    let common = new Common({ hardfork: Hardfork.Istanbul, eips: [2315] })
     let evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
@@ -87,7 +87,7 @@ tape('EVM -> getActiveOpcodes()', (t) => {
       'EIP-2315 opcode BEGINSUB exposed (EIP-2315 activated)'
     )
 
-    common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    common = new Common({ hardfork: Hardfork.Istanbul })
     evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
@@ -102,7 +102,7 @@ tape('EVM -> getActiveOpcodes()', (t) => {
   })
 
   t.test('should update opcodes on a hardfork change', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ hardfork: Hardfork.Istanbul })
     const evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),

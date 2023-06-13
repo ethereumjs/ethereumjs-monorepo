@@ -41,7 +41,7 @@ All parameters can be accessed through the `Common` class, instantiated with an 
 
 ```typescript
 // With enums:
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+const common = new Common({ hardfork: Hardfork.London })
 
 // (also possible with directly passing in strings:)
 const common = new Common({ chain: 'mainnet', hardfork: 'london' })
@@ -66,7 +66,7 @@ c.param('pow', 'minerReward') // 3000000000000000000
 c.bootstrapNodes() // Array with current nodes
 
 // Instantiate with an EIP activated
-c = new Common({ chain: Chain.Mainnet, eips: [2537] })
+c = new Common({ eips: [2537] })
 ```
 
 # API
@@ -269,7 +269,7 @@ Starting with the `v2.0.0` release of the library, EIPs are now native citizens 
 and can be activated like this:
 
 ```typescript
-const c = new Common({ chain: Chain.Mainnet, eips: [2537] })
+const c = new Common({ eips: [2537] })
 ```
 
 The following EIPs are currently supported:

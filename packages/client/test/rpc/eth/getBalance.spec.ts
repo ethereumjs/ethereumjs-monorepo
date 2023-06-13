@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
@@ -14,7 +14,7 @@ import type { FullEthereumService } from '../../../src/service'
 const method = 'eth_getBalance'
 
 tape(`${method}: ensure balance deducts after a tx`, async (t) => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+  const common = new Common({ hardfork: Hardfork.Istanbul })
   const blockchain = await Blockchain.create({ common })
 
   const client = createClient({ blockchain, commonChain: common, includeVM: true })

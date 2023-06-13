@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
@@ -11,8 +11,8 @@ import type { Address } from '@ethereumjs/util'
 const pkey = hexToBytes('20'.repeat(32))
 
 tape('EIP 3541 tests', (t) => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [3541] })
-  const commonNoEIP3541 = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [] })
+  const common = new Common({ hardfork: Hardfork.Berlin, eips: [3541] })
+  const commonNoEIP3541 = new Common({ hardfork: Hardfork.Berlin, eips: [] })
 
   t.test('deposit 0xEF code if 3541 is active', async (st) => {
     // put 0xEF contract

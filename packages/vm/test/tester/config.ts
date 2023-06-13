@@ -293,7 +293,7 @@ function setupCommonWithNetworks(network: string, ttd?: number) {
   const hfName = normalHardforks.reduce((previousValue, currentValue) =>
     currentValue.toLowerCase() === networkLowercase ? currentValue : previousValue
   )
-  const mainnetCommon = new Common({ chain: Chain.Mainnet, hardfork: hfName })
+  const mainnetCommon = new Common({ hardfork: hfName })
   const hardforks = mainnetCommon.hardforks()
   const testHardforks = []
   for (const hf of hardforks) {

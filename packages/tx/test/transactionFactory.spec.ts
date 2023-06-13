@@ -72,7 +72,7 @@ tape('[TransactionFactory]: Basic functions', function (t) {
   t.test('fromSerializedData() -> error cases', function (st) {
     for (const txType of txTypes) {
       if (txType.eip2718) {
-        const unsupportedCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+        const unsupportedCommon = new Common({ hardfork: Hardfork.Istanbul })
         st.throws(() => {
           TransactionFactory.fromSerializedData(txType.unsigned.serialize(), {
             common: unsupportedCommon,
@@ -133,7 +133,7 @@ tape('[TransactionFactory]: Basic functions', function (t) {
   })
 
   t.test('fromTxData() -> error cases', function (st) {
-    const unsupportedCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const unsupportedCommon = new Common({ hardfork: Hardfork.Istanbul })
     st.throws(() => {
       TransactionFactory.fromTxData({ type: 1 }, { common: unsupportedCommon })
     })

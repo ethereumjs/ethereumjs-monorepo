@@ -1,5 +1,5 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex, bytesToPrefixedHexString, zeros } from '@ethereumjs/util'
 import * as tape from 'tape'
 import * as td from 'testdouble'
@@ -31,7 +31,7 @@ const validPayloadAttributes = {
   suggestedFeeRecipient: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
 }
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
+const common = new Common({ hardfork: Hardfork.Paris })
 
 function createBlock(parentBlock: Block) {
   const prevRandao = crypto.randomBytes(32)

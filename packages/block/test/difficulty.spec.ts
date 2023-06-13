@@ -1,4 +1,4 @@
-import { Chain, Common } from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import * as tape from 'tape'
 
 import { Block } from '../src'
@@ -54,7 +54,7 @@ tape('[Header]: difficulty tests', (t) => {
       const testData = hardforkTestData[hardfork]
       for (const testName in testData) {
         const test = testData[testName]
-        const common = new Common({ chain: Chain.Mainnet, hardfork })
+        const common = new Common({ hardfork })
         // Unschedule any timestamp since tests are not configured for timestamps
         common
           .hardforks()

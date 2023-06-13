@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { MapDB, toBytes } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
@@ -16,7 +16,7 @@ const { validBlockRlp, invalidBlockRlp } = require('./ethash_block_rlp_tests.jso
 tape('Verify POW for valid and invalid blocks', async function (t) {
   const e = new Ethash(cacheDB as any)
 
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+  const common = new Common({ hardfork: Hardfork.Istanbul })
 
   const genesis = Block.fromBlockData({}, { common })
   const genesisResult = await e.verifyPOW(genesis)

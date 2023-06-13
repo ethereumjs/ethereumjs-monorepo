@@ -27,7 +27,7 @@ export async function mainnetBlocks(suite?: Benchmark.Suite, numSamples?: number
   console.log(`Number of blocks to sample: ${numSamples}`)
   data = data.slice(0, numSamples)
 
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
+  const common = new Common({ hardfork: Hardfork.MuirGlacier })
 
   for (const blockData of data) {
     const block = Block.fromRPC(blockData.block, [], { common })

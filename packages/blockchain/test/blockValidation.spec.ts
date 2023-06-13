@@ -11,7 +11,7 @@ import { createBlock } from './util'
 
 tape('[Blockchain]: Block validation tests', (t) => {
   t.test('should throw if an uncle is included before', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.create({ common, validateConsensus: false })
 
     const genesis = blockchain.genesisBlock
@@ -37,7 +37,7 @@ tape('[Blockchain]: Block validation tests', (t) => {
   t.test(
     'should throw if the uncle parent block is not part of the canonical chain',
     async function (st) {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+      const common = new Common({ hardfork: Hardfork.Chainstart })
       const blockchain = await Blockchain.create({ common, validateConsensus: false })
 
       const genesis = blockchain.genesisBlock
@@ -61,7 +61,7 @@ tape('[Blockchain]: Block validation tests', (t) => {
   )
 
   t.test('should throw if the uncle is too old', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.create({ common, validateConsensus: false })
 
     const genesis = blockchain.genesisBlock
@@ -93,7 +93,7 @@ tape('[Blockchain]: Block validation tests', (t) => {
   })
 
   t.test('should throw if uncle is too young', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.create({ common, validateConsensus: false })
 
     const genesis = blockchain.genesisBlock
@@ -114,7 +114,7 @@ tape('[Blockchain]: Block validation tests', (t) => {
   })
 
   t.test('should throw if the uncle header is invalid', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.create({ common, validateConsensus: false })
 
     const genesis = blockchain.genesisBlock
@@ -147,7 +147,7 @@ tape('[Blockchain]: Block validation tests', (t) => {
   })
 
   t.test('throws if uncle is a canonical block', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.create({ common, validateConsensus: false })
 
     const genesis = blockchain.genesisBlock
@@ -169,7 +169,7 @@ tape('[Blockchain]: Block validation tests', (t) => {
   })
 
   t.test('successfully validates uncles', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const common = new Common({ hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.create({ common, validateConsensus: false })
 
     const genesis = blockchain.genesisBlock
@@ -278,7 +278,7 @@ tape('[Blockchain]: Block validation tests', (t) => {
        * It is tested that common does not change
        */
 
-      const common = new Common({ chain: Chain.Mainnet })
+      const common = new Common()
       common.hardforkBlock = function (hardfork: string | undefined) {
         if (hardfork === 'london') {
           return BigInt(4)
@@ -331,7 +331,7 @@ tape('[Blockchain]: Block validation tests', (t) => {
 
       uncleHeaderData.extraData = '0xffff'
       const uncleHeader = BlockHeader.fromHeaderData(uncleHeaderData, {
-        common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin }),
+        common: new Common({ hardfork: Hardfork.Berlin }),
       })
 
       forkBlockHeaderData.uncleHash = bytesToPrefixedHexString(

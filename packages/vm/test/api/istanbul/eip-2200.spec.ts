@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { Address, setLengthLeft, toBytes } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
@@ -49,7 +49,7 @@ tape('Istanbul: EIP-2200', async (t) => {
     const key = setLengthLeft(toBytes('0x' + BigInt(0).toString(16)), 32)
 
     for (const testCase of testCases) {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+      const common = new Common({ hardfork: Hardfork.Istanbul })
       const vm = await VM.create({ common })
 
       const account = createAccount(BigInt(0), BigInt(0))

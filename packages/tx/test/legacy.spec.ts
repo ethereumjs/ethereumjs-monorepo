@@ -57,7 +57,7 @@ tape('[Transaction]', function (t) {
   })
 
   t.test('Initialization', function (st) {
-    const nonEIP2930Common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const nonEIP2930Common = new Common({ hardfork: Hardfork.Istanbul })
     st.ok(
       LegacyTransaction.fromTxData({}, { common: nonEIP2930Common }),
       'should initialize on a pre-Berlin Harfork (EIP-2930 not activated)'
@@ -131,7 +131,7 @@ tape('[Transaction]', function (t) {
       const privKey = hexStringToBytes(txFixtures[0].privateKey)
       tx = tx.sign(privKey)
       const serialized = tx.serialize()
-      common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
+      common = new Common({ hardfork: Hardfork.Petersburg })
       st.throws(() => LegacyTransaction.fromSerializedTx(serialized, { common }))
       st.end()
     }
@@ -175,7 +175,7 @@ tape('[Transaction]', function (t) {
   })
 
   t.test('getDataFee() -> should return correct data fee for istanbul', function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ hardfork: Hardfork.Istanbul })
     let tx = LegacyTransaction.fromTxData({}, { common })
     st.equal(tx.getDataFee(), BigInt(0))
 
@@ -188,7 +188,7 @@ tape('[Transaction]', function (t) {
   })
 
   t.test('getDataFee() -> should invalidate cached value on hardfork change', function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+    const common = new Common({ hardfork: Hardfork.Byzantium })
     const tx = LegacyTransaction.fromValuesArray(txFixtures[0].raw.map(toBytes), {
       common,
     })

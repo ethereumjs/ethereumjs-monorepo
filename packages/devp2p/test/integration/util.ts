@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 
 import { DPT, ETH, RLPx, genPrivateKey } from '../../src'
 import * as testdata from '../testdata.json'
@@ -77,7 +77,7 @@ export function getTestRLPXs(
     capabilities = [ETH.eth66, ETH.eth65, ETH.eth64, ETH.eth63, ETH.eth62]
   }
   if (!common) {
-    common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    common = new Common({ hardfork: Hardfork.London })
   }
   const dpts = getTestDPTs(numRLPXs)
 

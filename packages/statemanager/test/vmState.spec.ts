@@ -26,7 +26,7 @@ tape('stateManager', (t) => {
       st.skip('skip slow test when running in karma')
       return st.end()
     }
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
+    const common = new Common({ hardfork: Hardfork.Petersburg })
     const expectedStateRoot = hexToBytes(
       'd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'
     )

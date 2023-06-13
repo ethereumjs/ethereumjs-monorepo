@@ -5,18 +5,18 @@ import { Chain, Common, Hardfork } from '../src'
 tape('[Common/EIPs]: Initialization / Chain params', function (t: tape.Test) {
   t.test('Correct initialization', function (st: tape.Test) {
     let eips = [2537, 2929]
-    const c = new Common({ chain: Chain.Mainnet, eips })
+    const c = new Common({ eips })
     st.equal(c.eips(), eips, 'should initialize with supported EIP')
 
     eips = [2718, 2929, 2930]
-    new Common({ chain: Chain.Mainnet, eips, hardfork: Hardfork.Istanbul })
+    new Common({ eips, hardfork: Hardfork.Istanbul })
     st.pass('Should not throw when initializing with a consistent EIP list')
 
     eips = [2930]
     const msg =
       'should throw when initializing with an EIP with required EIPs not being activated along'
     const f = () => {
-      new Common({ chain: Chain.Mainnet, eips, hardfork: Hardfork.Istanbul })
+      new Common({ eips, hardfork: Hardfork.Istanbul })
     }
     st.throws(f, msg)
 
@@ -28,7 +28,7 @@ tape('[Common/EIPs]: Initialization / Chain params', function (t: tape.Test) {
     const eips = [UNSUPPORTED_EIP]
     const msg = 'should throw on an unsupported EIP'
     const f = () => {
-      new Common({ chain: Chain.Mainnet, eips })
+      new Common({ eips })
     }
     st.throws(f, /not supported$/, msg)
 
@@ -39,7 +39,7 @@ tape('[Common/EIPs]: Initialization / Chain params', function (t: tape.Test) {
     eips = [ 2537, ]
     msg = 'should throw on not meeting minimum hardfork requirements'
     f = () => {
-      new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium, eips })
+      new Common({ hardfork: Hardfork.Byzantium, eips })
     }
     st.throws(f, /minimumHardfork/, msg)
     */
@@ -61,7 +61,7 @@ tape('[Common/EIPs]: Initialization / Chain params', function (t: tape.Test) {
   })
 
   t.test('eipBlock', function (st: tape.Test) {
-    const c = new Common({ chain: Chain.Mainnet })
+    const c = new Common()
 
     let msg = 'should return correct value'
     st.ok(c.eipBlock(1559)! === 12965000n, msg)

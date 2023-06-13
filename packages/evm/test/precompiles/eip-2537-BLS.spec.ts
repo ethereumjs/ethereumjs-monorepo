@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address, bytesToPrefixedHexString } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
@@ -31,7 +31,7 @@ tape('EIP-2537 BLS tests', (t) => {
       st.skip('BLS does not work in karma')
       return st.end()
     }
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
+    const common = new Common({ hardfork: Hardfork.MuirGlacier })
     const evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
@@ -65,7 +65,7 @@ tape('EIP-2537 BLS tests', (t) => {
       st.skip('BLS does not work in karma')
       return st.end()
     }
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium, eips: [2537] })
+    const common = new Common({ hardfork: Hardfork.Byzantium, eips: [2537] })
     const evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),
@@ -94,7 +94,7 @@ tape('EIP-2537 BLS tests', (t) => {
     st.end()
   })
 
-  /* 
+  /*
     The following tests validate that the various precompiles associated with EIP2537 produce expected results against test vectors
     pulled from this collection of test data provided by Matter Labs here -
     https://github.com/matter-labs/eip1962/tree/master/src/test/test_vectors/eip2537
@@ -106,7 +106,7 @@ tape('EIP-2537 BLS tests', (t) => {
       st.skip('BLS does not work in karma')
       return st.end()
     }
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2537] })
+    const common = new Common({ hardfork: Hardfork.Berlin, eips: [2537] })
     const evm = await EVM.create({
       common,
       stateManager: new DefaultStateManager(),

@@ -8,7 +8,7 @@ import { VM } from '../../../src/vm'
 import type { InterpreterStep } from '@ethereumjs/evm'
 
 tape('EIP 3541 tests', (t) => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart, eips: [3855] })
+  const common = new Common({ hardfork: Hardfork.Chainstart, eips: [3855] })
   const commonNoEIP3855 = new Common({
     chain: Chain.Mainnet,
     hardfork: Hardfork.Chainstart,

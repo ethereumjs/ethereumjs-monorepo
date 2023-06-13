@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { Address, bigIntToBytes, setLengthLeft } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
@@ -36,7 +36,7 @@ tape('Constantinople: EIP-1283', async (t) => {
     const addr = new Address(hexToBytes('00000000000000000000000000000000000000ff'))
     const key = setLengthLeft(bigIntToBytes(BigInt(0)), 32)
     for (const testCase of testCases) {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
+      const common = new Common({ hardfork: Hardfork.Constantinople })
       const vm = await VM.create({ common })
 
       const account = createAccount(BigInt(0), BigInt(0))

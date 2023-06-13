@@ -1,10 +1,10 @@
 import * as tape from 'tape'
 
-import { Chain, Common, Hardfork } from '../src'
+import { Common, Hardfork } from '../src'
 
 tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: tape.Test) {
   t.test('Basic usage', function (st: tape.Test) {
-    const c = new Common({ chain: Chain.Mainnet, eips: [2537] })
+    const c = new Common({ eips: [2537] })
     let msg = 'Should return correct value when HF directly provided'
     st.equal(c.paramByHardfork('gasPrices', 'ecAdd', 'byzantium'), BigInt(500), msg)
 
@@ -33,7 +33,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
   })
 
   t.test('Error cases for param(), paramByHardfork()', function (st: tape.Test) {
-    const c = new Common({ chain: Chain.Mainnet })
+    const c = new Common()
 
     const f = function () {
       c.paramByHardfork('gasPrizes', 'ecAdd', 'byzantium')
@@ -52,7 +52,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
   })
 
   t.test('Parameter updates', function (st: tape.Test) {
-    const c = new Common({ chain: Chain.Mainnet })
+    const c = new Common()
 
     let msg = 'Should return correct value for chain start'
     st.equal(
@@ -74,7 +74,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
   })
 
   t.test('Access by block number, paramByBlock()', function (st: tape.Test) {
-    const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+    const c = new Common({ hardfork: Hardfork.Byzantium })
     let msg = 'Should correctly translate block numbers into HF states (updated value)'
     st.equal(c.paramByBlock('pow', 'minerReward', 4370000), BigInt(3000000000000000000), msg)
 
@@ -90,7 +90,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
   })
 
   t.test('EIP param access, paramByEIP()', function (st: tape.Test) {
-    const c = new Common({ chain: Chain.Mainnet })
+    const c = new Common()
 
     let msg = 'Should return undefined for non-existing value'
     st.equals(c.paramByEIP('gasPrices', 'notexistingvalue', 2537), undefined, msg)
@@ -115,7 +115,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
 
   t.test('returns the right block delay for EIP3554', function (st) {
     for (const fork of [Hardfork.MuirGlacier, Hardfork.Berlin]) {
-      const c = new Common({ chain: Chain.Mainnet, hardfork: fork })
+      const c = new Common({ hardfork: fork })
       let delay = c.param('pow', 'difficultyBombDelay')
       st.equal(delay, BigInt(9000000))
       c.setEIPs([3554])

@@ -1,5 +1,5 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
   BlobEIP4844Transaction,
@@ -35,7 +35,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   DefaultStateManager.prototype.copy = function () {
     return this
   }
-  const common = new Common({ chain: Chain.Mainnet })
+  const common = new Common()
   common
     .hardforks()
     .filter((hf) => hf.timestamp !== undefined)
@@ -76,7 +76,7 @@ tape(`${method}: send local tx with gasprice lower than minimum`, async (t) => {
   // Disable stateroot validation in TxPool since valid state root isn't available
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   DefaultStateManager.prototype.setStateRoot = (): any => {}
-  const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
+  const syncTargetHeight = new Common().hardforkBlock(Hardfork.London)
   const { server } = baseSetup({ syncTargetHeight, includeVM: true })
 
   const transaction = LegacyTransaction.fromTxData({
@@ -105,7 +105,7 @@ tape(`${method}: call with invalid arguments: not enough balance`, async (t) => 
   // Disable stateroot validation in TxPool since valid state root isn't available
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   DefaultStateManager.prototype.setStateRoot = (): any => {}
-  const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
+  const syncTargetHeight = new Common().hardforkBlock(Hardfork.London)
   const { server } = baseSetup({ syncTargetHeight, includeVM: true })
 
   // Mainnet EIP-1559 tx
@@ -138,7 +138,7 @@ tape(`${method}: call with sync target height not set yet`, async (t) => {
 })
 
 tape(`${method}: call with invalid tx (wrong chain ID)`, async (t) => {
-  const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
+  const syncTargetHeight = new Common().hardforkBlock(Hardfork.London)
   const { server } = baseSetup({ syncTargetHeight, includeVM: true })
 
   // Baikal EIP-1559 tx
@@ -151,13 +151,13 @@ tape(`${method}: call with invalid tx (wrong chain ID)`, async (t) => {
 })
 
 tape(`${method}: call with unsigned tx`, async (t) => {
-  const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
+  const syncTargetHeight = new Common().hardforkBlock(Hardfork.London)
   const { server } = baseSetup({ syncTargetHeight })
 
   // Mainnet EIP-1559 tx
   const txData =
     '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+  const common = new Common({ hardfork: Hardfork.London })
   const tx = FeeMarketEIP1559Transaction.fromSerializedTx(hexStringToBytes(txData), {
     common,
     freeze: false,
@@ -180,7 +180,7 @@ tape(`${method}: call with no peers`, async (t) => {
   DefaultStateManager.prototype.copy = function () {
     return this
   }
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+  const common = new Common({ hardfork: Hardfork.London })
 
   const syncTargetHeight = common.hardforkBlock(Hardfork.London)
   const { server, client } = baseSetup({

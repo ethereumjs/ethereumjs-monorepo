@@ -12,7 +12,7 @@ import { setBalance } from './utils'
 
 tape('BlockBuilder', async (t) => {
   t.test('should build a valid block', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ hardfork: Hardfork.Istanbul })
     const genesisBlock = Block.fromBlockData({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
@@ -58,7 +58,7 @@ tape('BlockBuilder', async (t) => {
   })
 
   t.test('should throw if adding a transaction exceeds the block gas limit', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ hardfork: Hardfork.Istanbul })
     const vm = await VM.create({ common })
     const genesis = Block.fromBlockData({}, { common })
 
@@ -88,7 +88,7 @@ tape('BlockBuilder', async (t) => {
   })
 
   t.test('should correctly seal a PoW block', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ hardfork: Hardfork.Istanbul })
     const genesisBlock = Block.fromBlockData({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
@@ -177,7 +177,7 @@ tape('BlockBuilder', async (t) => {
   })
 
   t.test('should throw if block already built or reverted', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ hardfork: Hardfork.Istanbul })
     const genesisBlock = Block.fromBlockData({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
@@ -232,7 +232,7 @@ tape('BlockBuilder', async (t) => {
   })
 
   t.test('should build a block without any txs', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ hardfork: Hardfork.Istanbul })
     const genesisBlock = Block.fromBlockData({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
@@ -255,7 +255,7 @@ tape('BlockBuilder', async (t) => {
   })
 
   t.test('should build a 1559 block with legacy and 1559 txs', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [1559] })
+    const common = new Common({ hardfork: Hardfork.London, eips: [1559] })
     const genesisBlock = Block.fromBlockData(
       { header: { gasLimit: 50000, baseFeePerGas: 100 } },
       { common }

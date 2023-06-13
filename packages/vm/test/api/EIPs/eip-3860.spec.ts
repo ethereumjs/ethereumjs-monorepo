@@ -27,7 +27,7 @@ tape('EIP 3860 tests', (t) => {
     const bytes = new Uint8Array(1000000).fill(0x60)
     // We create a tx with a common which has eip not yet activated else tx creation will
     // throw error
-    const txCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const txCommon = new Common({ hardfork: Hardfork.London })
     const tx = FeeMarketEIP1559Transaction.fromTxData(
       {
         data:

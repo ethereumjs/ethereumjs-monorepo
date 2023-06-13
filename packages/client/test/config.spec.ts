@@ -35,7 +35,7 @@ tape('[Config]', (t) => {
   })
 
   t.test('peer discovery default mainnet setting', (t) => {
-    const common = new Common({ chain: Chain.Mainnet })
+    const common = new Common()
     const config = new Config({ common, accountCache: 10000, storageCache: 1000 })
     t.equal(config.discDns, false, 'disables DNS peer discovery for mainnet')
     t.equal(config.discV4, true, 'enables DNS peer discovery for mainnet')

@@ -25,7 +25,7 @@ import type { TxsJsonEntry } from './types'
 
 tape('[BaseTransaction]', function (t) {
   // EIP-2930 is not enabled in Common by default (2021-03-06)
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+  const common = new Common({ hardfork: Hardfork.London })
 
   const legacyFixtures: TxsJsonEntry[] = require('./json/txs.json')
   const legacyTxs: BaseTransaction<TransactionType.Legacy>[] = []

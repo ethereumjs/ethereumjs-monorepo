@@ -35,7 +35,7 @@ import { DefaultStateManager } from '@ethereumjs/statemanager'
 // Note: in a future release there will be an EEI default implementation
 // which will ease standalone initialization
 const main = async () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+  const common = new Common({ hardfork: Hardfork.London })
   const stateManager = new DefaultStateManager()
   const blockchain = await Blockchain.create()
   const eei = new EEI(stateManager, common, blockchain)
@@ -150,7 +150,7 @@ It is possible to individually activate EIP support in the EVM by instantiate th
 import { Chain, Common } from '@ethereumjs/common'
 import { VM } from '@ethereumjs/vm'
 
-const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
+const common = new Common({ eips: [2537] })
 const vm = new VM({ common })
 ```
 
@@ -187,7 +187,7 @@ To run EVM related EIP-4844 functionality you have to active the EIP in the asso
 ```typescript
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+const common = new Common({ hardfork: Hardfork.Shanghai, eips: [4844] })
 ```
 
 EIP-4844 comes with a new opcode `DATAHASH` and adds a new point evaluation precompile at address `0x14`.

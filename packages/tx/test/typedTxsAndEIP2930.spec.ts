@@ -66,7 +66,7 @@ tape(
           'should initialize Common with chain ID provided (unsupported chain ID)'
         )
 
-        const nonEIP2930Common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+        const nonEIP2930Common = new Common({ hardfork: Hardfork.Istanbul })
         t.throws(() => {
           txType.class.fromTxData({}, { common: nonEIP2930Common })
         }, `should throw on a pre-Berlin Hardfork (EIP-2930 not activated) (${txType.name})`)
@@ -321,7 +321,7 @@ tape(
         tx = txType.class.fromTxData({}, { common, freeze: false })
         st.equal(tx.getDataFee(), BigInt(0), 'Should return data fee when not frozen')
 
-        const mutableCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+        const mutableCommon = new Common({ hardfork: Hardfork.London })
         tx = txType.class.fromTxData({}, { common: mutableCommon })
         tx.common.setHardfork(Hardfork.Istanbul)
         st.equal(tx.getDataFee(), BigInt(0), 'Should invalidate cached value on hardfork change')
@@ -590,7 +590,7 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
 
   t.test('common propagates from the common of tx, not the common in TxOptions', function (st) {
     const txn = AccessListEIP2930Transaction.fromTxData({}, { common, freeze: false })
-    const newCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [2537] })
+    const newCommon = new Common({ hardfork: Hardfork.London, eips: [2537] })
     st.notDeepEqual(newCommon, common, 'new common is different than original common')
     Object.defineProperty(txn, 'common', {
       get() {

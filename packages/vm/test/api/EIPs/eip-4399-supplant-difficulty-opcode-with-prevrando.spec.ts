@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { bytesToBigInt } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
@@ -10,7 +10,7 @@ import type { InterpreterStep } from '@ethereumjs/evm'
 
 tape('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', (t) => {
   t.test('should return the right values', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ hardfork: Hardfork.London })
     const vm = await VM.create({ common })
 
     const genesis = await vm.blockchain.getCanonicalHeadBlock!()

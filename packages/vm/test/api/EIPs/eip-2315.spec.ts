@@ -1,11 +1,11 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
 
 tape('Berlin: EIP 2315 tests', (t) => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2315] })
+  const common = new Common({ hardfork: Hardfork.Berlin, eips: [2315] })
 
   const runTest = async function (test: any, st: tape.Test) {
     let i = 0

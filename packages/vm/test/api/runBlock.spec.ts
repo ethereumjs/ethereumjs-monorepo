@@ -26,11 +26,11 @@ import type {
 import type { TypedTransaction } from '@ethereumjs/tx'
 
 const testData = require('./testdata/blockchain.json')
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+const common = new Common({ hardfork: Hardfork.Berlin })
 
 tape('runBlock() -> successful API parameter usage', async (t) => {
   async function simpleRun(vm: VM, st: tape.Test) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ hardfork: Hardfork.London })
     const genesisRlp = toBytes(testData.genesisRLP)
     const genesis = Block.fromRLPSerializedBlock(genesisRlp, { common })
 
@@ -68,7 +68,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     //@ts-ignore
     await setupPreConditions(vm.stateManager, testData)
 
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ hardfork: Hardfork.London })
     const block1Rlp = toBytes(testData.blocks[0].rlp)
     const block1 = Block.fromRLPSerializedBlock(block1Rlp, { common })
     await vm.runBlock({
@@ -200,7 +200,7 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
   const vm = await VM.create({ common })
 
   t.test('should fail when runTx fails', async (t) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ hardfork: Hardfork.London })
     const blockRlp = toBytes(testData.blocks[0].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
@@ -420,7 +420,7 @@ tape('should correctly reflect generated fields', async (t) => {
 })
 
 async function runWithHf(hardfork: string) {
-  const common = new Common({ chain: Chain.Mainnet, hardfork })
+  const common = new Common({ hardfork })
   const vm = await setupVM({ common })
 
   const blockRlp = toBytes(testData.blocks[0].rlp)
@@ -490,7 +490,7 @@ tape('runBlock() -> tx types', async (t) => {
   }
 
   t.test('legacy tx', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+    const common = new Common({ hardfork: Hardfork.Berlin })
     const vm = await setupVM({ common })
 
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
@@ -509,7 +509,7 @@ tape('runBlock() -> tx types', async (t) => {
   })
 
   t.test('access list tx', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+    const common = new Common({ hardfork: Hardfork.Berlin })
     const vm = await setupVM({ common })
 
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
@@ -528,7 +528,7 @@ tape('runBlock() -> tx types', async (t) => {
   })
 
   t.test('fee market tx', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const common = new Common({ hardfork: Hardfork.London })
     const vm = await setupVM({ common })
 
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
