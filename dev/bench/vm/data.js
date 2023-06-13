@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1686603350254,
+  "lastUpdate": 1686641346875,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "e9e3381e83ee116a29b0905dc5e19a02435e9982",
-          "message": "Fix retesteth HF alias typo (#2727)",
-          "timestamp": "2023-05-25T14:17:58+02:00",
-          "tree_id": "741cd3e13f9c1ea87af4bd665f2d84a7feb5cad8",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e9e3381e83ee116a29b0905dc5e19a02435e9982"
-        },
-        "date": 1685017292107,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 25013,
-            "range": "±6.63%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 25388,
-            "range": "±3.25%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 22841,
-            "range": "±9.03%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 21686,
-            "range": "±11.46%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 25078,
-            "range": "±3.22%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.41%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a86fe252742108441258402b914fed4ef4f66916",
+          "message": "common: update the blob target and limit to 3/6 respectively (#2775)\n\n* common: update the blob target and limit to 3/6 respectively\r\n\r\n* fix block spec\r\n\r\n* spec\r\n\r\n* fix spec\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <konjou@gmail.com>",
+          "timestamp": "2023-06-13T12:55:40+05:30",
+          "tree_id": "d43e2181982f5fbb36e1344f9c0bf0d40ce86041",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a86fe252742108441258402b914fed4ef4f66916"
+        },
+        "date": 1686641345790,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 30810,
+            "range": "±5.82%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31689,
+            "range": "±2.78%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31531,
+            "range": "±2.96%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 30837,
+            "range": "±3.10%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 24785,
+            "range": "±11.39%",
+            "unit": "ops/sec",
+            "extra": "69 samples"
           }
         ]
       }
