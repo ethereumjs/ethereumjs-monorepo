@@ -1,16 +1,16 @@
 import { Address, KECCAK256_RLP, bytesToHex, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { inherits } from 'util'
+import { assert, describe, it } from 'vitest'
 // explicitly import `inherits` to fix karma-typescript issue
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { inherits } from 'util'
 
 import { DefaultStateManager } from '../src'
 
 import { createAccount } from './util'
 
-tape('StateManager -> General/Account', (t) => {
+describe('StateManager -> General/Account', () => {
   for (const accountCacheOpts of [{ deactivate: false }, { deactivate: true }]) {
-    t.test('should set the state root to empty', async (st) => {
+    it(`should set the state root to empty`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       st.ok(equalsBytes(stateManager._trie.root(), KECCAK256_RLP), 'it has default root')
 
@@ -28,10 +28,9 @@ tape('StateManager -> General/Account', (t) => {
 
       const res = await stateManager.getStateRoot()
       st.ok(equalsBytes(res, KECCAK256_RLP), 'it has default root')
-      st.end()
     })
 
-    t.test('should clear the cache when the state root is set', async (st) => {
+    it(`should clear the cache when the state root is set`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const account = createAccount()
@@ -69,48 +68,39 @@ tape('StateManager -> General/Account', (t) => {
       try {
         await stateManager.getContractStorage(address, key)
       } catch (e) {
-        st.pass('should throw if getContractStorage() is called on non existing address')
+        assert.ok(true, 'should throw if getContractStorage() is called on non existing address')
       }
-
-      st.end()
     })
 
-    t.test(
-      'should put and get account, and add to the underlying cache if the account is not found',
-      async (st) => {
-        const stateManager = new DefaultStateManager({ accountCacheOpts })
-        const account = createAccount()
-        const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
+    it('should put and get account, and add to the underlying cache if the account is not found', async () => {
+      const stateManager = new DefaultStateManager({ accountCacheOpts })
+      const account = createAccount()
+      const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
-        await stateManager.putAccount(address, account)
+      await stateManager.putAccount(address, account)
 
-        const res1 = await stateManager.getAccount(address)
+      const res1 = await stateManager.getAccount(address)
 
-        st.equal(res1!.balance, BigInt(0xfff384))
+      st.equal(res1!.balance, BigInt(0xfff384))
 
-        await stateManager.flush()
-        stateManager._accountCache?.clear()
+      await stateManager.flush()
+      stateManager._accountCache?.clear()
 
-        const res2 = await stateManager.getAccount(address)
+      const res2 = await stateManager.getAccount(address)
 
-        st.ok(equalsBytes(res1!.serialize(), res2!.serialize()))
+      st.ok(equalsBytes(res1!.serialize(), res2!.serialize()))
+    })
 
-        st.end()
-      }
-    )
-
-    t.test('should return undefined for a non-existent account', async (st) => {
+    it(`should return undefined for a non-existent account`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
       const res = (await stateManager.getAccount(address)) === undefined
 
       st.ok(res)
-
-      st.end()
     })
 
-    t.test('should return undefined for an existent account', async (st) => {
+    it(`should return undefined for an existent account`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       const account = createAccount(BigInt(0x1), BigInt(0x1))
       const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
@@ -120,11 +110,9 @@ tape('StateManager -> General/Account', (t) => {
       const res = (await stateManager.getAccount(address)) === undefined
 
       st.notOk(res)
-
-      st.end()
     })
 
-    t.test('should modify account fields correctly', async (st) => {
+    it(`should modify account fields correctly`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       const account = createAccount()
       const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
@@ -161,8 +149,6 @@ tape('StateManager -> General/Account', (t) => {
         bytesToHex(res3!.storageRoot),
         'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7'
       )
-
-      st.end()
     })
   }
 })
