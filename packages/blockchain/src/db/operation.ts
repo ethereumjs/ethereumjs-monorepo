@@ -9,9 +9,9 @@ import {
   headerKey,
   numberToHashKey,
   tdKey,
-} from './constants'
+} from './constants.js'
 
-import type { CacheMap } from './manager'
+import type { CacheMap } from './manager.js'
 
 export enum DBTarget {
   Heads,

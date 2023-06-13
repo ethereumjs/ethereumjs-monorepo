@@ -1,9 +1,9 @@
 import { Common } from '@ethereumjs/common'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { bytesToHex } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
 import { Blockchain } from '../src/blockchain.js'
-import { genesisStateRoot } from '../src/genesisStates.js'
+import { genesisStateRoot } from '../src/genesisStates/index.js'
 import { parseGethGenesisState } from '../src/utils.js'
 
 async function getBlockchain(gethGenesis: any): Promise<Blockchain> {

@@ -1,9 +1,9 @@
-import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
 import { Blockchain } from '../src/index.js'
 
-import { createTestDB, generateBlockchain, generateConsecutiveBlock } from './util'
+import { createTestDB, generateBlockchain, generateConsecutiveBlock } from './util.js'
 
 import type { Block } from '@ethereumjs/block'
 

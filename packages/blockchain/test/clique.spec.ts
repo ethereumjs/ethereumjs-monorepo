@@ -1,11 +1,11 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
-import { concatBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import { concatBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
-import { Blockchain } from '../src/index.js'
 import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from '../src/consensus/clique.js'
+import { Blockchain } from '../src/index.js'
 
 import type { CliqueConsensus } from '../src/consensus/clique.js'
 import type { CliqueConfig } from '@ethereumjs/common'
