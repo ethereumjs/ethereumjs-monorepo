@@ -16,7 +16,9 @@ import { assert, describe, it } from 'vitest'
 
 import { EthersStateManager } from '../src/ethersStateManager'
 
+import * as blockData from './testdata/providerData/blocks/block0x7a120.json'
 import { MockProvider } from './testdata/providerData/mockProvider'
+import * as txData from './testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.json'
 
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
@@ -247,7 +249,6 @@ describe('runTx test: replay mainnet transactions', () => {
 
       const blockTag = 15496077n
       common.setHardforkByBlockNumber(blockTag)
-      const txData = require('./testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.json')
       const tx = await TransactionFactory.fromRPC(txData, { common })
       const state = new EthersStateManager({
         provider,
@@ -287,7 +288,6 @@ describe('runBlock test', () => {
       common.setHardforkByBlockNumber(blockTag - 1n)
 
       const vm = await VM.create({ common, stateManager: state })
-      const blockData = require('./testdata/providerData/blocks/block0x7a120.json')
       const block = Block.fromRPC(blockData, [], { common })
       try {
         const res = await vm.runBlock({
