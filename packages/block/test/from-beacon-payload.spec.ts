@@ -1,6 +1,7 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
+import * as shardingJson from '../../client/test/sim/configs/sharding.json'
 import { Block, BlockHeader } from '../src/index'
 
 import * as payload87335 from './testdata/payload-slot-87335.json'
@@ -8,7 +9,6 @@ import * as payload87475 from './testdata/payload-slot-87475.json'
 
 describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
   const network = 'sharding'
-  const shardingJson = require(`../../client/test/sim/configs/sharding.json`)
 
   // safely change chainId without modifying undelying json
   const commonJson = { ...shardingJson }

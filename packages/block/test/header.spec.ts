@@ -16,10 +16,11 @@ import { assert, describe, it } from 'vitest'
 import { Block } from '../src'
 import { BlockHeader } from '../src/header'
 
-import type { CliqueConfig } from '@ethereumjs/common'
+import * as testData from './testdata/bcBlockGasLimitTest.json'
+import * as blocksGoerli from './testdata/blocks_goerli.json'
+import * as blocksMainnet from './testdata/blocks_mainnet.json'
 
-const blocksGoerli = require('./testdata/blocks_goerli.json')
-const blocksMainnet = require('./testdata/blocks_mainnet.json')
+import type { CliqueConfig } from '@ethereumjs/common'
 
 describe('[Block]: Header functions', () => {
   it('should create with default constructor', () => {
@@ -453,8 +454,7 @@ describe('[Block]: Header functions', () => {
 */
   it('should test validateGasLimit()', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const testData = require('./testdata/bcBlockGasLimitTest.json').tests
-    const bcBlockGasLimitTestData = testData.BlockGasLimit2p63m1
+    const bcBlockGasLimitTestData = testData.tests.BlockGasLimit2p63m1
 
     for (const key of Object.keys(bcBlockGasLimitTestData)) {
       const genesisRlp = toBytes(bcBlockGasLimitTestData[key].genesisRLP)
