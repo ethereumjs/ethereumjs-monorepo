@@ -1,6 +1,6 @@
 import { addHexPrefix, bigIntToHex, isHexPrefixed } from '@ethereumjs/util'
 
-import type { GenesisState } from './types'
+import type { GenesisState } from './types.js'
 
 /**
  * Parses the geth genesis state into Blockchain {@link GenesisState}

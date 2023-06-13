@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Common, Hardfork } from '@ethereumjs/common'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { bytesToHex } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
 import { Blockchain, EthashConsensus } from '../src/index.js'

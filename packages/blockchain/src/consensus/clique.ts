@@ -2,10 +2,10 @@ import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Address, TypeOutput, bigIntToBytes, bytesToBigInt, toType } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
-import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
 
-import type { Blockchain } from '..'
-import type { Consensus, ConsensusOptions } from './interface'
+import type { Blockchain } from '../index.js'
+import type { Consensus, ConsensusOptions } from './interface.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 
