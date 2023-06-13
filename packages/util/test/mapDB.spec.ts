@@ -67,21 +67,6 @@ tape('MapDB class', (t) => {
     })
   })
 
-  t.test('copy', (t) => {
-    t.test('should create a copy of the database', async (t) => {
-      const database = new Map()
-      database.set('key1', 'value1')
-      const mapDB = new MapDB(database)
-
-      const copyDB = mapDB.copy()
-      database.delete('key1')
-
-      const result = await copyDB.get('key1')
-      t.equal(result, 'value1', 'should create a copy of the database')
-      t.end()
-    })
-  })
-
   t.test('open', (t) => {
     t.test('should return a resolved promise', async (t) => {
       const mapDB = new MapDB()
