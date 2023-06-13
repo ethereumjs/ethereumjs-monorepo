@@ -1,7 +1,7 @@
 import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { Blockchain } from '../src'
+import { Blockchain } from '../src/index.js'
 
 import { createTestDB, generateBlockchain, generateConsecutiveBlock } from './util'
 

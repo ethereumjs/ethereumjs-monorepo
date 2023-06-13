@@ -4,12 +4,12 @@ import { Address } from '@ethereumjs/util'
 import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { Blockchain } from '../src'
-import { CLIQUE_NONCE_AUTH } from '../src/consensus/clique'
+import { Blockchain } from '../src/index.js'
+import { CLIQUE_NONCE_AUTH } from '../src/consensus/clique.js'
 
 import { generateConsecutiveBlock } from './util'
 
-import type { CliqueConsensus } from '../src/consensus/clique'
+import type { CliqueConsensus } from '../src/consensus/clique.js'
 
 describe('reorg tests', () => {
   it('should correctly reorg the chain if the total difficulty is higher on a lower block number than the current head block', async () => {

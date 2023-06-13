@@ -3,9 +3,9 @@ import { Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { Blockchain, EthashConsensus } from '../src'
+import { Blockchain, EthashConsensus } from '../src/index.js'
 
-import type { Consensus } from '../src'
+import type { Consensus } from '../src/index.js'
 import type { BlockHeader } from '@ethereumjs/block'
 
 class fibonacciConsensus implements Consensus {

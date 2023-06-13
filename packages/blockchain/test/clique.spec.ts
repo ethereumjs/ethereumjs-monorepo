@@ -4,10 +4,10 @@ import { Address } from '@ethereumjs/util'
 import { concatBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { Blockchain } from '../src'
-import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from '../src/consensus/clique'
+import { Blockchain } from '../src/index.js'
+import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from '../src/consensus/clique.js'
 
-import type { CliqueConsensus } from '../src/consensus/clique'
+import type { CliqueConsensus } from '../src/consensus/clique.js'
 import type { CliqueConfig } from '@ethereumjs/common'
 
 const COMMON = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })

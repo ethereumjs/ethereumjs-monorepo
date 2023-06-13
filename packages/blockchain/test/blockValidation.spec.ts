@@ -5,7 +5,7 @@ import { bytesToPrefixedHexString } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { assert, describe, it } from 'vitest'
 
-import { Blockchain } from '../src'
+import { Blockchain } from '../src/index.js'
 
 import { createBlock } from './util'
 
