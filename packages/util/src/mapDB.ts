@@ -41,7 +41,7 @@ export class MapDB<
   }
 
   copy(): DB<TKey, TValue> {
-    return new MapDB<TKey, TValue>(new Map<TKey, TValue>(this._database))
+    return new MapDB<TKey, TValue>(this._database)
   }
 
   open() {
