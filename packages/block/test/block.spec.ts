@@ -5,8 +5,8 @@ import { assert, describe, it } from 'vitest'
 // explicitly import util, needed for karma-typescript bundling
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, simple-import-sort/imports
 
-import { Block } from '../src'
-import { blockFromRpc } from '../src/from-rpc'
+import { blockFromRpc } from '../src/from-rpc.js'
+import { Block } from '../src/index.js'
 
 import * as testDataGenesis from './testdata/genesishashestest.json'
 import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
@@ -14,7 +14,7 @@ import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
 
-import type { BlockBytes } from '../src'
+import type { BlockBytes } from '../src/index.js'
 import type { NestedUint8Array } from '@ethereumjs/util'
 
 describe('[Block]: block functions', () => {

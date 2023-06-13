@@ -2,7 +2,7 @@ import { Common, Hardfork } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
 import * as shardingJson from '../../client/test/sim/configs/sharding.json'
-import { Block, BlockHeader } from '../src/index'
+import { Block, BlockHeader } from '../src/index.js'
 
 import * as payload87335 from './testdata/payload-slot-87335.json'
 import * as payload87475 from './testdata/payload-slot-87475.json'

@@ -15,13 +15,13 @@ import {
   intToHex,
   isHexPrefixed,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { executionPayloadFromBeaconPayload } from './from-beacon-payload'
-import { blockFromRpc } from './from-rpc'
-import { BlockHeader } from './header'
+import { executionPayloadFromBeaconPayload } from './from-beacon-payload.js'
+import { blockFromRpc } from './from-rpc.js'
+import { BlockHeader } from './header.js'
 
-import type { BeaconPayloadJson } from './from-beacon-payload'
+import type { BeaconPayloadJson } from './from-beacon-payload.js'
 import type {
   BlockBytes,
   BlockData,
@@ -30,7 +30,7 @@ import type {
   HeaderData,
   JsonBlock,
   JsonRpcBlock,
-} from './types'
+} from './types.js'
 import type { Common } from '@ethereumjs/common'
 import type {
   FeeMarketEIP1559Transaction,

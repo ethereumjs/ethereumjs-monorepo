@@ -9,8 +9,8 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Block } from '../src/block'
-import { BlockHeader } from '../src/header'
+import { Block } from '../src/block.js'
+import { BlockHeader } from '../src/header.js'
 
 const common = new Common({
   chain: Chain.Mainnet,
