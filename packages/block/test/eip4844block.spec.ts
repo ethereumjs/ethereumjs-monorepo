@@ -14,6 +14,8 @@ import { Block } from '../src'
 import { BlockHeader } from '../src/header'
 import { fakeExponential, getNumBlobs } from '../src/helpers'
 
+import * as gethGenesis from './testdata/4844-hardfork.json'
+
 import type { TypedTransaction } from '@ethereumjs/tx'
 
 // Hack to detect if running in browser or not
@@ -25,7 +27,6 @@ if (isBrowser() === false) {
     // eslint-disable-next-line
   } catch {}
 }
-const gethGenesis = require('./testdata/4844-hardfork.json')
 const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
   hardfork: Hardfork.Cancun,

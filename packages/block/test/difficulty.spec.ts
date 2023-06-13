@@ -1,6 +1,17 @@
 import { Chain, Common } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
+import * as difficultyMainNetwork from '../../ethereum-tests/BasicTests/difficultyMainNetwork.json'
+import * as difficultyRopsten from '../../ethereum-tests/BasicTests/difficultyRopsten.json'
+import * as difficultyArrowGlacier from '../../ethereum-tests/DifficultyTests/dfArrowGlacier/difficultyArrowGlacier.json'
+import * as difficultyByzantium from '../../ethereum-tests/DifficultyTests/dfByzantium/difficultyByzantium.json'
+import * as difficultyConstantinople from '../../ethereum-tests/DifficultyTests/dfConstantinople/difficultyConstantinople.json'
+import * as difficultyEIP2384 from '../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384.json'
+import * as difficultyEIP2384_random from '../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384_random.json'
+import * as difficultyEIP2384_random_to20M from '../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384_random_to20M.json'
+import * as difficultyFrontier from '../../ethereum-tests/DifficultyTests/dfFrontier/difficultyFrontier.json'
+import * as difficultyGrayGlacier from '../../ethereum-tests/DifficultyTests/dfGrayGlacier/difficultyGrayGlacier.json'
+import * as difficultyHomestead from '../../ethereum-tests/DifficultyTests/dfHomestead/difficultyHomestead.json'
 import { Block } from '../src'
 
 function runDifficultyTests(test: any, parentBlock: Block, block: Block, msg: string) {
@@ -11,34 +22,22 @@ function runDifficultyTests(test: any, parentBlock: Block, block: Block, msg: st
 type TestData = { [key: string]: any }
 
 const hardforkTestData: TestData = {
-  chainstart: require('../../ethereum-tests/DifficultyTests/dfFrontier/difficultyFrontier.json')
-    .difficultyFrontier.Frontier,
-  homestead: require('../../ethereum-tests/DifficultyTests/dfHomestead/difficultyHomestead.json')
-    .difficultyHomestead.Homestead,
-  byzantium: require('../../ethereum-tests/DifficultyTests/dfByzantium/difficultyByzantium.json')
-    .difficultyByzantium.Byzantium,
-  constantinople:
-    require('../../ethereum-tests/DifficultyTests/dfConstantinople/difficultyConstantinople.json')
-      .difficultyConstantinople.Constantinople,
+  chainstart: difficultyFrontier.difficultyFrontier.Frontier,
+  homestead: difficultyHomestead.difficultyHomestead.Homestead,
+  byzantium: difficultyByzantium.difficultyByzantium.Byzantium,
+  constantinople: difficultyConstantinople.difficultyConstantinople.Constantinople,
   muirGlacier: Object.assign(
-    require('../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384.json')
-      .difficultyEIP2384.Berlin,
-    require('../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384_random.json')
-      .difficultyEIP2384_random.Berlin,
-    require('../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384_random_to20M.json')
-      .difficultyEIP2384_random_to20M.Berlin
+    difficultyEIP2384.difficultyEIP2384.Berlin,
+    difficultyEIP2384_random.difficultyEIP2384_random.Berlin,
+    difficultyEIP2384_random_to20M.difficultyEIP2384_random_to20M.Berlin
   ),
-  arrowGlacier:
-    require('../../ethereum-tests/DifficultyTests/dfArrowGlacier/difficultyArrowGlacier.json')
-      .difficultyArrowGlacier.ArrowGlacier,
-  grayGlacier:
-    require('../../ethereum-tests/DifficultyTests/dfGrayGlacier/difficultyGrayGlacier.json')
-      .difficultyGrayGlacier.GrayGlacier,
+  arrowGlacier: difficultyArrowGlacier.difficultyArrowGlacier.ArrowGlacier,
+  grayGlacier: difficultyGrayGlacier.difficultyGrayGlacier.GrayGlacier,
 }
 
 const chainTestData: TestData = {
-  mainnet: require('../../ethereum-tests/BasicTests/difficultyMainNetwork.json'),
-  ropsten: require('../../ethereum-tests/BasicTests/difficultyRopsten.json'),
+  mainnet: difficultyMainNetwork,
+  ropsten: difficultyRopsten,
 }
 
 describe('[Header]: difficulty tests', () => {
