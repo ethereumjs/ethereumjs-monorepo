@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1686641346875,
+  "lastUpdate": 1686673209417,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "515a7ba3e2e8f74d79f770f9b751ac90be185a3c",
-          "message": "Merge pull request #2729 from ethereumjs/monorepo-add-wallet\n\nMonorepo Wallet Library Integration",
-          "timestamp": "2023-05-26T21:19:03+02:00",
-          "tree_id": "2d2fab2d76327547130a91fea78ff181d6b0c5db",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/515a7ba3e2e8f74d79f770f9b751ac90be185a3c"
-        },
-        "date": 1685128952009,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31940,
-            "range": "±5.24%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 32000,
-            "range": "±2.37%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 32078,
-            "range": "±2.35%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 31157,
-            "range": "±2.39%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 25954,
-            "range": "±9.35%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±11.39%",
             "unit": "ops/sec",
             "extra": "69 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bc9a613a8be56915196eea99f8e846a2dead9351",
+          "message": "vm: fix the dataGasPrice calculation in running the tx (#2779)",
+          "timestamp": "2023-06-13T12:04:14-04:00",
+          "tree_id": "16ad939486e5940f3caf7c63edfe58b2b698f23f",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/bc9a613a8be56915196eea99f8e846a2dead9351"
+        },
+        "date": 1686673208044,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31111,
+            "range": "±5.65%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31657,
+            "range": "±2.80%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 30577,
+            "range": "±3.09%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 30065,
+            "range": "±3.18%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 22834,
+            "range": "±12.27%",
+            "unit": "ops/sec",
+            "extra": "61 samples"
           }
         ]
       }
