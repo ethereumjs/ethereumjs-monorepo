@@ -14,10 +14,9 @@ import { BlockHeader } from '../src/header.js'
 import { fakeExponential, getNumBlobs } from '../src/helpers.js'
 import { Block } from '../src/index.js'
 
-import * as gethGenesis from './testdata/4844-hardfork.json'
+import gethGenesis from './testdata/4844-hardfork.json'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
-
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 

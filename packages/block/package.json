@@ -18,6 +18,7 @@
   "author": "mjbecze (mb@ethdev.com)",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
+  "type": "module",
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
@@ -38,7 +39,7 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "npx vitest run --browser.name=chrome --browser.headless",
+    "test:browser": "npx vitest run --browser.name=chrome --browser.headless --config=./vitest.browser.config.ts",
     "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
