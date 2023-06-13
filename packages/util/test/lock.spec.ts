@@ -1,4 +1,5 @@
 import * as tape from 'tape'
+
 import { Lock } from '../src'
 
 tape('Lock class', (t) => {
@@ -9,9 +10,9 @@ tape('Lock class', (t) => {
       t.equal(result, true, 'should return true')
     })
 
-    t.test('should return a promise when no permits are available', (t) => {
+    t.test('should return a promise when no permits are available', async (t) => {
       const lock = new Lock()
-      lock.acquire()
+      await lock.acquire()
 
       const result = lock.acquire()
       t.ok(result instanceof Promise, 'should return a promise')
@@ -29,7 +30,7 @@ tape('Lock class', (t) => {
 
     t.test('should resolve the waiting promise when permits are released', async (t) => {
       const lock = new Lock()
-      lock.acquire() // Start waiting
+      await lock.acquire() // Start waiting
 
       setTimeout(() => {
         lock.release() // Release the permits after a delay

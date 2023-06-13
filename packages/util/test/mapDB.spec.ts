@@ -1,5 +1,6 @@
 import * as tape from 'tape'
-import { BatchDBOp, MapDB } from '../src'
+
+import { MapDB } from '../src'
 
 tape('MapDB class', (t) => {
   t.test('get', async (t) => {
