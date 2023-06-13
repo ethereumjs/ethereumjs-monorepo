@@ -10,7 +10,7 @@ import { Blockchain } from '../src'
 import { createBlock } from './util'
 
 describe('[Blockchain]: Block validation tests', () => {
-  it('should throw if an uncle is included before', async function () {
+  it('should throw if an uncle is included before', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.create({ common, validateConsensus: false })
 
@@ -37,7 +37,7 @@ describe('[Blockchain]: Block validation tests', () => {
     }
   })
 
-  it('should throw if the uncle parent block is not part of the canonical chain', async function () {
+  it('should throw if the uncle parent block is not part of the canonical chain', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.create({ common, validateConsensus: false })
 
@@ -64,7 +64,7 @@ describe('[Blockchain]: Block validation tests', () => {
     }
   })
 
-  it('should throw if the uncle is too old', async function () {
+  it('should throw if the uncle is too old', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.create({ common, validateConsensus: false })
 
@@ -97,7 +97,7 @@ describe('[Blockchain]: Block validation tests', () => {
     }
   })
 
-  it('should throw if uncle is too young', async function () {
+  it('should throw if uncle is too young', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.create({ common, validateConsensus: false })
 
@@ -119,7 +119,7 @@ describe('[Blockchain]: Block validation tests', () => {
     }
   })
 
-  it('should throw if the uncle header is invalid', async function () {
+  it('should throw if the uncle header is invalid', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.create({ common, validateConsensus: false })
 
@@ -153,7 +153,7 @@ describe('[Blockchain]: Block validation tests', () => {
     }
   })
 
-  it('throws if uncle is a canonical block', async function () {
+  it('throws if uncle is a canonical block', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.create({ common, validateConsensus: false })
 
@@ -176,7 +176,7 @@ describe('[Blockchain]: Block validation tests', () => {
     }
   })
 
-  it('successfully validates uncles', async function () {
+  it('successfully validates uncles', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.create({ common, validateConsensus: false })
 
@@ -261,7 +261,7 @@ describe('[Blockchain]: Block validation tests', () => {
     }
   })
 
-  it('should select the right hardfork for uncles at a hardfork transition', async function () {
+  it('should select the right hardfork for uncles at a hardfork transition', async () => {
     /**
      * This test creates a chain around mainnet fork blocks:
      *      berlin         london
