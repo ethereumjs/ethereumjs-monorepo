@@ -4,7 +4,7 @@ import { MapDB } from '@ethereumjs/util'
 import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { Blockchain } from '../src'
+import { Blockchain } from '../src/index.js'
 
 import blocksData from './testdata/blocks_mainnet.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'

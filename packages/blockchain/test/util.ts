@@ -5,7 +5,7 @@ import { MapDB, toBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 
-import { Blockchain } from '../src'
+import { Blockchain } from '../src/index.js'
 
 import type { DB } from '@ethereumjs/util'
 

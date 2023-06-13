@@ -3,7 +3,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { Blockchain } from '../src'
+import { Blockchain } from '../src/index.js'
 
 import * as testnet from './testdata/testnet.json'
 
