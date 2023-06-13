@@ -87,7 +87,7 @@ describe('[Header]: difficulty tests', () => {
   it('by chain', () => {
     for (const chain in chainTestData) {
       const testData = chainTestData[chain]
-      for (const testName in testData) {
+      for (const testName in testData.default) {
         const test = testData[testName]
         const common = new Common({ chain })
         const blockOpts = { common, hardforkByBlockNumber: true }
