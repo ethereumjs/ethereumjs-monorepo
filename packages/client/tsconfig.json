@@ -3,5 +3,6 @@
   "include": ["bin", "src", "test"],
   "compilerOptions": {
     "typeRoots": ["node_modules/@types", "src/@types"]
-  }
+  },
+  "exclude": ["browser/index.ts", "browser/util/index.ts"]
 }

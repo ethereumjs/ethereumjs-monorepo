@@ -50,6 +50,7 @@ module.exports = {
   resolve: {
     alias: {
       util: path.resolve(__dirname, 'node_modules/util/util.js'),
+      ethers: false,
     },
     fallback: {
       async_hooks: false, // used by: raw-body via body-parser

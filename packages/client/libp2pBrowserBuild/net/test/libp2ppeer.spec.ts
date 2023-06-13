@@ -18,7 +18,7 @@ tape('[Libp2pPeer]', async (t) => {
   td.when(Libp2pNode.prototype.start()).thenResolve(null)
   td.when(Libp2pNode.prototype.dial(td.matchers.anything())).thenResolve(null)
 
-  const { Libp2pPeer } = await import('../../../src/net/peer/libp2ppeer')
+  const { Libp2pPeer } = await import('../peer/libp2ppeer')
 
   t.test('should initialize correctly', async (t) => {
     const config = new Config()
