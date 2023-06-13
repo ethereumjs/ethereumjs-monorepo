@@ -1,16 +1,16 @@
 import { Account, Address, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { inherits } from 'util'
+import { assert, describe, it } from 'vitest'
 // explicitly import `inherits` to fix karma-typescript issue
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { inherits } from 'util'
 
 import { DefaultStateManager } from '../src'
 
 import { createAccount } from './util'
 
-tape('StateManager -> Code', (t) => {
+describe('StateManager -> Code', () => {
   for (const accountCacheOpts of [{ deactivate: false }, { deactivate: true }]) {
-    t.test('should store codehashes using a prefix', async (st) => {
+    it(`should store codehashes using a prefix`, async () => {
       /*
         This test is mostly an example of why a code prefix is necessary
         I an address, we put two storage values. The preimage of the (storage trie) root hash is known
@@ -76,11 +76,9 @@ tape('StateManager -> Code', (t) => {
 
       st.ok(codeSlot1.length === 0, 'slot 0 is empty')
       st.ok(codeSlot2.length === 0, 'slot 1 is empty')
-
-      st.end()
     })
 
-    t.test('should set and get code', async (st) => {
+    it(`should set and get code`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const code = hexStringToBytes(
@@ -97,10 +95,9 @@ tape('StateManager -> Code', (t) => {
       await stateManager.putContractCode(address, code)
       const codeRetrieved = await stateManager.getContractCode(address)
       st.ok(equalsBytes(code, codeRetrieved))
-      st.end()
     })
 
-    t.test('should not get code if is not contract', async (st) => {
+    it(`should not get code if is not contract`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const raw = {
@@ -111,10 +108,9 @@ tape('StateManager -> Code', (t) => {
       await stateManager.putAccount(address, account)
       const code = await stateManager.getContractCode(address)
       st.ok(equalsBytes(code, new Uint8Array(0)))
-      st.end()
     })
 
-    t.test('should set empty code', async (st) => {
+    it(`should set empty code`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const raw = {
@@ -127,20 +123,18 @@ tape('StateManager -> Code', (t) => {
       await stateManager.putContractCode(address, code)
       const codeRetrieved = await stateManager.getContractCode(address)
       st.ok(equalsBytes(codeRetrieved, new Uint8Array(0)))
-      st.end()
     })
 
-    t.test('should prefix codehashes by default', async (st) => {
+    it(`should prefix codehashes by default`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       const address = new Address(hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const code = hexStringToBytes('80')
       await stateManager.putContractCode(address, code)
       const codeRetrieved = await stateManager.getContractCode(address)
       st.ok(equalsBytes(codeRetrieved, code))
-      st.end()
     })
 
-    t.test('should not prefix codehashes if prefixCodeHashes = false', async (st) => {
+    it(`should not prefix codehashes if prefixCodeHashes = false`, async () => {
       const stateManager = new DefaultStateManager({
         prefixCodeHashes: false,
       })
@@ -150,7 +144,7 @@ tape('StateManager -> Code', (t) => {
         await stateManager.putContractCode(address, code)
         st.fail('should throw')
       } catch (e) {
-        st.pass('successfully threw')
+        assert.ok(true, 'successfully threw')
       }
     })
   }

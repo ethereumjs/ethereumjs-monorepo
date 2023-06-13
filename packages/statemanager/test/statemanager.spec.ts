@@ -1,19 +1,18 @@
 import { KECCAK256_RLP } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { CacheType, DefaultStateManager } from '../src'
 
-tape('StateManager -> General', (t) => {
-  t.test('should instantiate', async (st) => {
+describe('StateManager -> General', () => {
+  it(`should instantiate`, async () => {
     const sm = new DefaultStateManager()
 
     st.deepEqual(sm._trie.root(), KECCAK256_RLP, 'it has default root')
     const res = await sm.getStateRoot()
     st.deepEqual(res, KECCAK256_RLP, 'it has default root')
-    st.end()
   })
 
-  t.test('copy()', async (st) => {
+  it(`copy()`, async () => {
     let sm = new DefaultStateManager({
       prefixCodeHashes: false,
     })
@@ -45,6 +44,5 @@ tape('StateManager -> General', (t) => {
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP storage cache on copy()'
     )
-    st.end()
   })
 })
