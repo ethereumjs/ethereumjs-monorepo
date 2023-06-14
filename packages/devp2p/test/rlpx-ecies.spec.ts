@@ -1,28 +1,24 @@
-import { getRandomBytesSync } from 'ethereum-cryptography/random'
-import { publicKeyCreate } from 'ethereum-cryptography/secp256k1-compat'
-import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
-import * as test from 'tape'
+import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
+import { publicKeyCreate } from 'ethereum-cryptography/secp256k1-compat.js'
+import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
+import { assert, it } from 'vitest'
 
-import { ECIES } from '../src/rlpx/ecies'
-import * as util from '../src/util'
+import { ECIES } from '../src/rlpx/ecies.js'
+import * as util from '../src/util.js'
 
 import * as testdata from './testdata.json'
 
-type Test = test.Test
-
-declare module 'tape' {
-  export interface Test {
-    context: {
-      a: ECIES
-      b: ECIES
-      h0?: { auth: Uint8Array; ack: Uint8Array }
-      h1?: { auth: Uint8Array; ack: Uint8Array }
-    }
+export interface EciesTestContext {
+  context: {
+    a: ECIES
+    b: ECIES
+    h0?: { auth: Uint8Array; ack: Uint8Array }
+    h1?: { auth: Uint8Array; ack: Uint8Array }
   }
 }
 
 function randomBefore(fn: Function) {
-  return (t: Test) => {
+  return (t: EciesTestContext) => {
     const privateKey1 = util.genPrivateKey()
     const privateKey2 = util.genPrivateKey()
     const publicKey1 = publicKeyCreate(privateKey1, false)
@@ -37,7 +33,7 @@ function randomBefore(fn: Function) {
 }
 
 function testdataBefore(fn: Function) {
-  return (t: Test) => {
+  return (t: EciesTestContext) => {
     const v = testdata.eip8Values
     const keyA = hexToBytes(v.keyA)
     const keyB = hexToBytes(v.keyB)
@@ -61,27 +57,26 @@ function testdataBefore(fn: Function) {
   }
 }
 
-test(
+it(
   'Random: message encryption',
-  randomBefore((t: Test) => {
+  randomBefore((t: EciesTestContext) => {
     const message = utf8ToBytes('The Magic Words are Squeamish Ossifrage')
     const encrypted = t.context.a._encryptMessage(message)
     const decrypted = t.context.b._decryptMessage(encrypted as Uint8Array)
-    t.same(message, decrypted, 'encryptMessage -> decryptMessage should lead to same')
-    t.end()
+    assert.deepEqual(message, decrypted, 'encryptMessage -> decryptMessage should lead to same')
   })
 )
 
-test(
+it(
   'Random: auth -> ack -> header -> body (old format/no EIP8)',
-  randomBefore((t: Test) => {
-    t.doesNotThrow(() => {
+  randomBefore((t: EciesTestContext) => {
+    assert.doesNotThrow(() => {
       const auth = t.context.a.createAuthNonEIP8()
       t.context.b._gotEIP8Auth = false
       t.context.b.parseAuthPlain(auth as Uint8Array)
     }, 'should not throw on auth creation/parsing')
 
-    t.doesNotThrow(() => {
+    assert.doesNotThrow(() => {
       t.context.b._gotEIP8Ack = false
       const ack = t.context.b.createAckOld()
       t.context.a.parseAckPlain(ack as Uint8Array)
@@ -90,65 +85,57 @@ test(
     const body = getRandomBytesSync(600)
 
     const header = t.context.b.parseHeader(t.context.a.createHeader(body.length) as Uint8Array)
-    t.same(header, body.length, 'createHeader -> parseHeader should lead to same')
+    assert.equal(header, body.length, 'createHeader -> parseHeader should lead to same')
 
     const parsedBody = t.context.b.parseBody(t.context.a.createBody(body) as Uint8Array)
-    t.same(parsedBody, body, 'createBody -> parseBody should lead to same')
-
-    t.end()
+    assert.deepEqual(parsedBody, body, 'createBody -> parseBody should lead to same')
   })
 )
 
-test(
+it(
   'Random: auth -> ack (EIP8)',
-  randomBefore((t: Test) => {
-    t.doesNotThrow(() => {
+  randomBefore((t: EciesTestContext) => {
+    assert.doesNotThrow(() => {
       const auth = t.context.a.createAuthEIP8()
       t.context.b._gotEIP8Auth = true
       t.context.b.parseAuthEIP8(auth as Uint8Array)
     }, 'should not throw on auth creation/parsing')
 
-    t.doesNotThrow(() => {
+    assert.doesNotThrow(() => {
       const ack = t.context.b.createAckEIP8()
       t.context.a._gotEIP8Ack = true
       t.context.a.parseAckEIP8(ack as Uint8Array)
     }, 'should not throw on ack creation/parsing')
-
-    t.end()
   })
 )
 
-test(
+it(
   'Testdata: auth -> ack (old format/no EIP8)',
-  testdataBefore((t: Test) => {
-    t.doesNotThrow(() => {
+  testdataBefore((t: EciesTestContext) => {
+    assert.doesNotThrow(() => {
       t.context.b._gotEIP8Auth = false
       t.context.b.parseAuthPlain(t.context.h0?.auth as Uint8Array)
       t.context.a._initMsg = t.context.h0?.auth
     }, 'should not throw on auth parsing')
 
-    t.doesNotThrow(() => {
+    assert.doesNotThrow(() => {
       t.context.a._gotEIP8Ack = false
       t.context.a.parseAckPlain(t.context.h0?.ack as Uint8Array)
     }, 'should not throw on ack parsing')
-
-    t.end()
   })
 )
 
-test(
+it(
   'Testdata: auth -> ack (EIP8)',
-  testdataBefore((t: Test) => {
-    t.doesNotThrow(() => {
+  testdataBefore((t: EciesTestContext) => {
+    assert.doesNotThrow(() => {
       t.context.b._gotEIP8Auth = true
       t.context.b.parseAuthEIP8(t.context.h1?.auth as Uint8Array)
       t.context.a._initMsg = t.context.h1?.auth
     }, 'should not throw on auth parsing')
-    t.doesNotThrow(() => {
+    assert.doesNotThrow(() => {
       t.context.a._gotEIP8Ack = true
       t.context.a.parseAckEIP8(t.context.h1?.ack as Uint8Array)
     }, 'should not throw on ack parsing')
-
-    t.end()
   })
 )

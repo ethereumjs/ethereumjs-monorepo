@@ -1,6 +1,6 @@
 import { debug as createDebugLogger } from 'debug'
 import * as dgram from 'dgram'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { bytesToHex } from 'ethereum-cryptography/utils.js'
 import { EventEmitter } from 'events'
 
 import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util'

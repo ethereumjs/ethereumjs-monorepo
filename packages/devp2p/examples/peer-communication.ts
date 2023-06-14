@@ -9,9 +9,9 @@ import type LRUCache from 'lru-cache'
 const LRU = require('lru-cache')
 import ms = require('ms')
 
-import * as devp2p from '../src/index'
-import { ETH, Peer } from '../src/index'
-import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import * as devp2p from '../src/index.js'
+import { ETH, Peer } from '../src/index.js'
+import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
 
 const PRIVATE_KEY = randomBytes(32)
 
