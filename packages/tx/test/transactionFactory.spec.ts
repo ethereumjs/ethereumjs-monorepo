@@ -8,7 +8,7 @@ import {
   LegacyTransaction,
   TransactionFactory,
   TransactionType,
-} from '../src'
+} from '../src/index.js'
 
 const common = new Common({
   chain: Chain.Mainnet,

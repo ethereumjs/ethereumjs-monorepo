@@ -13,9 +13,13 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction, TransactionType } from '../src'
+import {
+  AccessListEIP2930Transaction,
+  FeeMarketEIP1559Transaction,
+  TransactionType,
+} from '../src/index.js'
 
-import type { AccessList, AccessListBytesItem } from '../src'
+import type { AccessList, AccessListBytesItem } from '../src/index.js'
 
 const pKey = hexStringToBytes('4646464646464646464646464646464646464646464646464646464646464646')
 const address = privateToAddress(pKey)

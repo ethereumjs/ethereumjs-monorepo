@@ -2,8 +2,8 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex, bytesToPrefixedHexString, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { TransactionFactory, TransactionType } from '../src'
-import { normalizeTxParams } from '../src/fromRpc'
+import { TransactionFactory, TransactionType } from '../src/index.js'
+import { normalizeTxParams } from '../src/fromRpc.js'
 
 import optimismTx from './json/optimismTx.json'
 import rpcTx from './json/rpcTx.json'

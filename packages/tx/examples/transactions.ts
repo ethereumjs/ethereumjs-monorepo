@@ -2,9 +2,9 @@
 // You can run them with ts-node, as this project is developed in TypeScript.
 // Install the dependencies and run `npx ts-node examples/transactions.ts`
 
-import { LegacyTransaction } from '../src'
+import { LegacyTransaction } from '../src/index.js'
 import { bytesToPrefixedHexString, toBytes } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
 // We create an unsigned transaction.
 // Notice we don't set the `to` field because we are creating a new contract.

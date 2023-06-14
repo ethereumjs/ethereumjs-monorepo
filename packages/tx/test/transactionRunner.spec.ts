@@ -3,11 +3,11 @@ import { bytesToHex, toBytes } from '@ethereumjs/util'
 import minimist from 'minimist'
 import { assert, describe, it } from 'vitest'
 
-import { TransactionFactory } from '../src'
+import { TransactionFactory } from '../src/index.js'
 
-import { getTests } from './testLoader'
+import { getTests } from './testLoader.js'
 
-import type { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types'
+import type { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types.js'
 
 const argv = minimist(process.argv.slice(2))
 const file: string | undefined = argv.file

@@ -3,7 +3,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { TWO_POW256, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { FeeMarketEIP1559Transaction } from '../src'
+import { FeeMarketEIP1559Transaction } from '../src/index.js'
 
 import testdata from './json/eip1559.json' // Source: Besu
 
