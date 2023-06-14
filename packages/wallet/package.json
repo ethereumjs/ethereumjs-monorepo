@@ -19,6 +19,7 @@
   "author": "Alex Beregszaszi <alex@rtfs.hu>",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
+  "type": "module",
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
@@ -40,8 +41,8 @@
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "karma start karma.conf.js",
-    "test:node": "tape --require ts-node/register ./test/**/*.spec.ts",
+    "test:browser": "vitest run --browser.name=chrome --browser.headless",
+    "test:node": "vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
