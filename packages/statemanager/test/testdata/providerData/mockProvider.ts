@@ -90,7 +90,7 @@ export class MockProvider extends JsonRpcProvider {
   }
   private getProofValues = async (params: [address: string, _: [], blockTag: bigint | string]) => {
     const [address, _slot, blockTag] = params
-    const account = await import(`./accounts/${address}.json`)
+    const account = (await import(`./accounts/${address}.json`)).default
     return account[blockTag.toString() ?? 'latest']
   }
 
@@ -109,6 +109,7 @@ export class MockProvider extends JsonRpcProvider {
   private getTransactionData = async (params: [txHash: string]) => {
     const [txHash] = params
     const txData = await import(`./transactions/${txHash}.json`)
+    console.log(txData)
     return txData
   }
 }

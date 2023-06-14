@@ -1,9 +1,9 @@
-import { BranchNode, ExtensionNode, LeafNode } from '../trie/node'
+import { BranchNode, ExtensionNode, LeafNode } from '../trie/node/index.js'
 
-import { PrioritizedTaskExecutor } from './tasks'
+import { PrioritizedTaskExecutor } from './tasks.js'
 
-import type { Trie } from '../trie'
-import type { FoundNodeFunction, Nibbles, TrieNode } from '../types'
+import type { Trie } from '../trie/index.js'
+import type { FoundNodeFunction, Nibbles, TrieNode } from '../types.js'
 
 /**
  * WalkController is an interface to control how the trie is being traversed.

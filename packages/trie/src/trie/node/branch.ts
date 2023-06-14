@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 
-import type { EmbeddedNode } from '../../types'
+import type { EmbeddedNode } from '../../types.js'
 
 export class BranchNode {
   _branches: (EmbeddedNode | null)[]
