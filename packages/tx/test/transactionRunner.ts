@@ -1,7 +1,7 @@
 import { Common } from '@ethereumjs/common'
 import { bytesToHex, toBytes } from '@ethereumjs/util'
 import * as minimist from 'minimist'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { TransactionFactory } from '../src'
 
@@ -44,61 +44,61 @@ const EIPs: Record<string, number[] | undefined> = {
   'London+3860': [3860],
 }
 
-tape('TransactionTests', async (t) => {
-  const fileFilterRegex = file !== undefined ? new RegExp(file + '[^\\w]') : undefined
-  await getTests(
-    (
-      _filename: string,
-      subDir: string,
-      testName: string,
-      testData: OfficialTransactionTestData
-    ) => {
-      t.test(testName, (st) => {
-        for (const forkName of forkNames) {
-          if (testData.result[forkName] === undefined) {
-            continue
-          }
-          const forkTestData = testData.result[forkName]
-          const shouldBeInvalid = forkTestData.exception !== undefined
+describe('TransactionTests', () => {
+  it('should work', async () => {
+    const fileFilterRegex = file !== undefined ? new RegExp(file + '[^\\w]') : undefined
+    await getTests(
+      (
+        _filename: string,
+        subDir: string,
+        testName: string,
+        testData: OfficialTransactionTestData
+      ) => {
+        it(testName, () => {
+          for (const forkName of forkNames) {
+            if (testData.result[forkName] === undefined) {
+              continue
+            }
+            const forkTestData = testData.result[forkName]
+            const shouldBeInvalid = forkTestData.exception !== undefined
 
-          try {
-            const rawTx = toBytes(testData.txbytes)
-            const hardfork = forkNameMap[forkName]
-            const common = new Common({ chain: 1, hardfork })
-            const activateEIPs = EIPs[forkName]
-            if (activateEIPs !== undefined) {
-              common.setEIPs(activateEIPs)
-            }
-            const tx = TransactionFactory.fromSerializedData(rawTx, { common })
-            const sender = tx.getSenderAddress().toString()
-            const hash = bytesToHex(tx.hash())
-            const txIsValid = tx.validate()
-            const senderIsCorrect = forkTestData.sender === sender
-            const hashIsCorrect = forkTestData.hash?.slice(2) === hash
+            try {
+              const rawTx = toBytes(testData.txbytes)
+              const hardfork = forkNameMap[forkName]
+              const common = new Common({ chain: 1, hardfork })
+              const activateEIPs = EIPs[forkName]
+              if (activateEIPs !== undefined) {
+                common.setEIPs(activateEIPs)
+              }
+              const tx = TransactionFactory.fromSerializedData(rawTx, { common })
+              const sender = tx.getSenderAddress().toString()
+              const hash = bytesToHex(tx.hash())
+              const txIsValid = tx.validate()
+              const senderIsCorrect = forkTestData.sender === sender
+              const hashIsCorrect = forkTestData.hash?.slice(2) === hash
 
-            const hashAndSenderAreCorrect = senderIsCorrect && hashIsCorrect
-            if (shouldBeInvalid) {
-              st.assert(!txIsValid, `Transaction should be invalid on ${forkName}`)
-            } else {
-              st.assert(
-                hashAndSenderAreCorrect && txIsValid,
-                `Transaction should be valid on ${forkName}`
-              )
-            }
-          } catch (e: any) {
-            if (shouldBeInvalid) {
-              st.assert(shouldBeInvalid, `Transaction should be invalid on ${forkName}`)
-            } else {
-              st.fail(`Transaction should be valid on ${forkName}`)
-              st.comment(e)
+              const hashAndSenderAreCorrect = senderIsCorrect && hashIsCorrect
+              if (shouldBeInvalid) {
+                assert.ok(!txIsValid, `Transaction should be invalid on ${forkName}`)
+              } else {
+                assert.ok(
+                  hashAndSenderAreCorrect && txIsValid,
+                  `Transaction should be valid on ${forkName}`
+                )
+              }
+            } catch (e: any) {
+              if (shouldBeInvalid) {
+                assert.ok(shouldBeInvalid, `Transaction should be invalid on ${forkName}`)
+              } else {
+                assert.fail(`Transaction should be valid on ${forkName}`)
+              }
             }
           }
-        }
-        st.end()
-      })
-    },
-    fileFilterRegex,
-    undefined,
-    'TransactionTests'
-  )
+        })
+      },
+      fileFilterRegex,
+      undefined,
+      'TransactionTests'
+    )
+  })
 })
