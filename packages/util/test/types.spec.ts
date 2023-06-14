@@ -7,7 +7,7 @@ import {
   bigIntToHex,
   bytesToBigInt,
   intToBytes,
-  intToHex,
+  intToPrefixedHexString,
   toBytes,
   toType,
 } from '../src/index.js'
@@ -92,11 +92,11 @@ describe('toType', () => {
       assert.strictEqual(result, bytesToHex(num))
     })
   })
-  it('from HexPrefixedString', () => {
-    const num = intToHex(1000)
+  it('from PrefixedHexString', () => {
+    const num = intToPrefixedHexString(1000)
     it('should convert to Number', () => {
       const result = toType(num, TypeOutput.Number)
-      assert.strictEqual(intToHex(result), num)
+      assert.strictEqual(intToPrefixedHexString(result), num)
     })
     it('should convert to BigInt', () => {
       const result = toType(num, TypeOutput.BigInt)

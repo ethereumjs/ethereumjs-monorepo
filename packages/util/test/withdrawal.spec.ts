@@ -2,7 +2,12 @@ import { decode, encode } from '@ethereumjs/rlp'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { Withdrawal, bigIntToHex, bytesToPrefixedHexString, intToHex } from '../src/index.js'
+import {
+  Withdrawal,
+  bigIntToHex,
+  bytesToPrefixedHexString,
+  intToPrefixedHexString,
+} from '../src/index.js'
 
 import type { WithdrawalBytes } from '../src/index.js'
 
@@ -57,8 +62,8 @@ const withdrawalsVector = [
   },
 ]
 const withdrawalsGethVector = withdrawalsVector.map((testVec) => ({
-  index: intToHex(testVec.Index),
-  validatorIndex: intToHex(testVec.Validator),
+  index: intToPrefixedHexString(testVec.Index),
+  validatorIndex: intToPrefixedHexString(testVec.Validator),
   address: testVec.Recipient,
   amount: bigIntToHex(BigInt(testVec.Amount)),
 }))
