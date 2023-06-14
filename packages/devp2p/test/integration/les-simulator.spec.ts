@@ -31,7 +31,7 @@ describe('LES simulator tests', () => {
       assert.ok(true, 'should receive echoing status message and welcome connection')
       util.destroyRLPXs(rlpxs)
     }
-    util.twoPeerMsgExchange(it, opts, capabilities)
+    util.twoPeerMsgExchange(it, opts, capabilities, undefined, 31650)
   })
 
   it('LES: send status message (modified announceType)', () => {

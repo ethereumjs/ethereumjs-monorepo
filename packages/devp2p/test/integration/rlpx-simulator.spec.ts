@@ -7,12 +7,13 @@ import * as util from './util.js'
 
 describe('RLPx simulator tests', () => {
   it('RLPX: add working node', () => {
-    const rlpxs = util.initTwoPeerRLPXSetup(undefined, undefined, undefined, 40404)
+    const basePort = 40404
+    const rlpxs = util.initTwoPeerRLPXSetup(undefined, undefined, undefined, basePort)
 
     rlpxs[0].on('peer:added', async (peer: any) => {
       assert.equal(
         peer._port,
-        30306,
+        basePort + 1,
         'should have added peer on peer:added after successful handshake'
       )
       assert.equal(rlpxs[0].getPeers().length, 1, 'peer list length should be 1')

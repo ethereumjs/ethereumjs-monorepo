@@ -23,7 +23,7 @@ describe('Snap sync simulator tests', () => {
         util.destroyRLPXs(rlpxs)
       }
     }
-    util.twoPeerMsgExchange3(it, opts, capabilities, 50901)
+    util.twoPeerMsgExchange3(it, opts, capabilities, undefined, 50901)
   })
 
   it('SNAP: send unknown message code', () => {

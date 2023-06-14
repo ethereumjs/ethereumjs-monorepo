@@ -31,7 +31,7 @@ describe('ETH simulator tests', () => {
       assert.ok(true, 'should receive echoing status message and welcome connection')
       util.destroyRLPXs(rlpxs)
     }
-    util.twoPeerMsgExchange(it, opts, capabilities, 21762)
+    util.twoPeerMsgExchange(it, opts, capabilities, undefined, 21762)
   })
 
   it('ETH: send status message (NetworkId mismatch)', () => {
@@ -61,7 +61,7 @@ describe('ETH simulator tests', () => {
       assert.equal(err.message, msg, `should emit error: ${msg}`)
       util.destroyRLPXs(rlpxs)
     }
-    util.twoPeerMsgExchange(it, opts, capabilities, 25182)
+    util.twoPeerMsgExchange(it, opts, capabilities, undefined, 25182)
   })
 
   function sendWithProtocolVersion(t: typeof it, version: number, cap?: Object) {
@@ -79,7 +79,7 @@ describe('ETH simulator tests', () => {
         util.destroyRLPXs(rlpxs)
       }
     }
-    util.twoPeerMsgExchange(it, opts, cap, 49182)
+    util.twoPeerMsgExchange(it, opts, cap, undefined, 49182)
   }
 
   function sendNotAllowed(
@@ -100,7 +100,7 @@ describe('ETH simulator tests', () => {
         util.destroyRLPXs(rlpxs)
       }
     }
-    util.twoPeerMsgExchange(it, opts, cap, 16281)
+    util.twoPeerMsgExchange(it, opts, cap, undefined, 16281)
   }
 
   it('ETH: should use latest protocol version on default', () => {
@@ -183,7 +183,7 @@ describe('ETH simulator tests', () => {
         util.destroyRLPXs(rlpxs)
       }
     }
-    util.twoPeerMsgExchange(it, opts, capabilities, 12473)
+    util.twoPeerMsgExchange(it, opts, capabilities, undefined, 12473)
   })
 
   it('ETH: invalid status send', () => {
@@ -199,12 +199,12 @@ describe('ETH simulator tests', () => {
         util.destroyRLPXs(rlpxs)
       }
     }
-    util.twoPeerMsgExchange(it, opts, capabilities, 12437)
+    util.twoPeerMsgExchange(it, opts, capabilities, undefined, 12437)
   })
 
   it('RLPX: verify that snappy compression is not used with an RLPX peer that only supports devp2p 4', () => {
     const opts: any = {}
     opts.status0 = Object.assign({}, status)
-    util.twoPeerMsgExchange2(it, opts, capabilities, 19631)
+    util.twoPeerMsgExchange2(it, opts, capabilities, undefined, 19631)
   })
 })
