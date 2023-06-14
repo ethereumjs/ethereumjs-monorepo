@@ -15,6 +15,7 @@ import { randomBytes } from 'crypto'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
+import gethGenesis from '../../block/test/testdata/4844-hardfork.json'
 import { BlobEIP4844Transaction, TransactionFactory } from '../src'
 
 // Hack to detect if running in browser or not
@@ -27,8 +28,6 @@ if (isBrowser() === false) {
     // eslint-disable-next-line
   } catch {}
 }
-
-const gethGenesis = require('../../block/test/testdata/4844-hardfork.json')
 const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
   hardfork: Hardfork.Cancun,

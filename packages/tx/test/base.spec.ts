@@ -20,26 +20,26 @@ import {
   TransactionType,
 } from '../src'
 
+import eip1559Fixtures from './json/eip1559txs.json'
+import eip2930Fixtures from './json/eip2930txs.json'
+import legacyFixtures from './json/txs.json'
+
 import type { BaseTransaction } from '../src/baseTransaction'
-import type { TxsJsonEntry } from './types'
 
 describe('[BaseTransaction]', () => {
   // EIP-2930 is not enabled in Common by default (2021-03-06)
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
-  const legacyFixtures: TxsJsonEntry[] = require('./json/txs.json')
   const legacyTxs: BaseTransaction<TransactionType.Legacy>[] = []
   for (const tx of legacyFixtures.slice(0, 4)) {
     legacyTxs.push(LegacyTransaction.fromTxData(tx.data, { common }))
   }
 
-  const eip2930Fixtures = require('./json/eip2930txs.json')
   const eip2930Txs: BaseTransaction<TransactionType.AccessListEIP2930>[] = []
   for (const tx of eip2930Fixtures) {
     eip2930Txs.push(AccessListEIP2930Transaction.fromTxData(tx.data, { common }))
   }
 
-  const eip1559Fixtures = require('./json/eip1559txs.json')
   const eip1559Txs: BaseTransaction<TransactionType.FeeMarketEIP1559>[] = []
   for (const tx of eip1559Fixtures) {
     eip1559Txs.push(FeeMarketEIP1559Transaction.fromTxData(tx.data, { common }))
@@ -258,7 +258,7 @@ describe('[BaseTransaction]', () => {
       for (const txFixture of txType.fixtures.slice(0, 4)) {
         // set `s` to a single zero
         txFixture.data.s = '0x' + '0'
-        const tx = txType.class.fromTxData(txFixture.data, { common })
+        const tx = txType.class.fromTxData((txFixture as any).data, { common })
         assert.equal(tx.verifySignature(), false, `${txType.name}: signature should not be valid`)
         assert.ok(
           (<string[]>tx.validate(true)).includes('Invalid Signature'),

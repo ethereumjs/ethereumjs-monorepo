@@ -5,8 +5,9 @@ import { assert, describe, it } from 'vitest'
 import { TransactionFactory, TransactionType } from '../src'
 import { normalizeTxParams } from '../src/fromRpc'
 
-const optimismTx = require('./json/optimismTx.json')
-const v0Tx = require('./json/v0tx.json')
+import optimismTx from './json/optimismTx.json'
+import rpcTx from './json/rpcTx.json'
+import v0Tx from './json/v0tx.json'
 
 const txTypes = [
   TransactionType.Legacy,
@@ -69,7 +70,6 @@ describe('[fromJsonRpcProvider]', () => {
 
 describe('[normalizeTxParams]', () => {
   it('should work', () => {
-    const rpcTx = require('./json/rpcTx.json')
     const normedTx = normalizeTxParams(rpcTx)
     const tx = TransactionFactory.fromTxData(normedTx)
     assert.equal(normedTx.gasLimit, 21000n, 'correctly converted "gas" to "gasLimit"')
@@ -84,7 +84,7 @@ describe('[normalizeTxParams]', () => {
 describe('fromRPC: interpret v/r/s vals of 0x0 as undefined for Optimism system txs', () => {
   it('should work', async () => {
     for (const txType of txTypes) {
-      optimismTx.type = txType
+      ;(optimismTx as any).type = txType
       const tx = await TransactionFactory.fromRPC(optimismTx)
       assert.ok(tx.v === undefined)
       assert.ok(tx.s === undefined)
@@ -103,7 +103,7 @@ describe('fromRPC: ensure `v="0x0"` is correctly decoded for signed txs', () => 
         // legacy tx cannot have v=0
         continue
       }
-      v0Tx.type = txType
+      ;(v0Tx as any).type = txType
       const tx = await TransactionFactory.fromRPC(v0Tx)
       assert.ok(tx.isSigned())
     }

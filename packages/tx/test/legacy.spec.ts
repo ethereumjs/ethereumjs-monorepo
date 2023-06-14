@@ -14,11 +14,10 @@ import { assert, describe, it } from 'vitest'
 
 import { LegacyTransaction } from '../src'
 
-import type { TransactionType, TxData, TypedTransaction } from '../src'
-import type { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
+import txFixturesEip155 from './json/ttTransactionTestEip155VitaliksTests.json'
+import txFixtures from './json/txs.json'
 
-const txFixturesEip155: VitaliksTestsDataEntry[] = require('./json/ttTransactionTestEip155VitaliksTests.json')
-const txFixtures: TxsJsonEntry[] = require('./json/txs.json')
+import type { TransactionType, TxData, TypedTransaction } from '../src'
 
 describe('[Transaction]', () => {
   const transactions: TypedTransaction[] = []
