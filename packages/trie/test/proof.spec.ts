@@ -1,7 +1,7 @@
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../src'
+import { Trie } from '../src/index.js'
 
 describe('simple merkle proofs generation and verification', () => {
   it('create a merkle proof and verify it', async () => {

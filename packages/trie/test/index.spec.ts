@@ -6,15 +6,15 @@ import {
   hexStringToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { blake2b } from 'ethereum-cryptography/blake2b'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToUtf8, concatBytes } from 'ethereum-cryptography/utils'
+import { blake2b } from 'ethereum-cryptography/blake2b.js'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { bytesToUtf8, concatBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
-import { LeafNode, Trie } from '../src'
-import { bytesToNibbles } from '../src/util/nibbles'
+import { LeafNode, Trie } from '../src/index.js'
+import { bytesToNibbles } from '../src/util/nibbles.js'
 
-import type { HashKeysFunction } from '../src'
+import type { HashKeysFunction } from '../src/index.js'
 
 for (const cacheSize of [0, 100]) {
   describe('simple save and retrieve', () => {

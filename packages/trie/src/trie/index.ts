@@ -1,2 +1,2 @@
-export * from './node'
-export * from './trie'
+export * from './node/index.js'
+export * from './trie.js'

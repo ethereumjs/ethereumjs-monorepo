@@ -9,7 +9,7 @@ import {
 import { createHash } from 'crypto'
 import { assert, describe, it } from 'vitest'
 
-import { ROOT_DB_KEY, Trie } from '../../src'
+import { ROOT_DB_KEY, Trie } from '../../src/index.js'
 import secureTrieTests from '../fixtures/trietest_secureTrie.json'
 
 describe('SecureTrie', () => {

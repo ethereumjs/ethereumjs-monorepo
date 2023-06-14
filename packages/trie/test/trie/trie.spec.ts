@@ -1,8 +1,8 @@
 import { KECCAK256_RLP, MapDB, bytesToHex, equalsBytes, utf8ToBytes } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { ROOT_DB_KEY as BASE_DB_KEY, Trie } from '../../src'
+import { ROOT_DB_KEY as BASE_DB_KEY, Trie } from '../../src/index.js'
 
 for (const { constructor, defaults, title } of [
   {

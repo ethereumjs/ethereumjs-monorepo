@@ -1,7 +1,7 @@
 import { bytesToPrefixedHexString, hexStringToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../src'
+import { Trie } from '../src/index.js'
 
 import trieAnyOrderTests from './fixtures/trieanyorder.json'
 import trieTests from './fixtures/trietest.json'

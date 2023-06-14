@@ -1,7 +1,7 @@
-import { utf8ToBytes } from 'ethereum-cryptography/utils'
+import { utf8ToBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../src'
+import { Trie } from '../src/index.js'
 
 import type { BatchDBOp } from '@ethereumjs/util'
 

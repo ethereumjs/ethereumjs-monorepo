@@ -1,9 +1,9 @@
 import { MapDB, bytesToHex, bytesToUtf8, equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { createHash } from 'crypto'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { ROOT_DB_KEY, Trie } from '../../src'
+import { ROOT_DB_KEY, Trie } from '../../src/index.js'
 
 import type { BatchDBOp } from '@ethereumjs/util'
 

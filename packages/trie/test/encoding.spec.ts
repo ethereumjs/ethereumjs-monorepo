@@ -1,7 +1,7 @@
 import { bytesToHex, hexStringToBytes, toBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../src'
+import { Trie } from '../src/index.js'
 
 const trie = new Trie()
 const trie2 = new Trie()

@@ -7,7 +7,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../../src'
+import { Trie } from '../../src/index.js'
 
 describe('Pruned trie tests', () => {
   it('should default to not prune the trie', async () => {

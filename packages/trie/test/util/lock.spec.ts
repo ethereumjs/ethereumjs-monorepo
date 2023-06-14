@@ -1,7 +1,7 @@
 // Based on https://github.com/jsoendermann/semaphore-async-await/blob/master/__tests__/Semaphore.spec.ts
 import { assert, describe, it } from 'vitest'
 
-import { Lock } from '../../src/util/lock'
+import { Lock } from '../../src/util/lock.js'
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
 

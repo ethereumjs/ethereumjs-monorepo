@@ -9,7 +9,7 @@ import {
 import * as crypto from 'crypto'
 import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../../src'
+import { Trie } from '../../src/index.js'
 
 import type { DB } from '@ethereumjs/util'
 
