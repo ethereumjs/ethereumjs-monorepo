@@ -21,6 +21,7 @@
   "contributors": [
     "Alex Beregszaszi <alex@rtfs.hu>"
   ],
+  "type": "module",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "exports": {
@@ -36,7 +37,7 @@
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "c8 --all --reporter=lcov --reporter=text npm run coverage:test",
+    "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "coverage:test": "npm run test && cd ../vm && npm run tester -- --state",
     "docs:build": "typedoc --options typedoc.js",
     "examples": "ts-node ../../scripts/examples-runner.ts -- evm",
@@ -46,9 +47,8 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "profiling": "0x ./benchmarks/run.js profiling",
-    "tape": "tape -r ts-node/register --stack-size=1500",
-    "test": "npm run tape -- './test/**/*.spec.ts'",
-    "test:browser": "karma start karma.conf.js",
+    "test:browser": "npx vitest run --browser.name=chrome --browser.headless",
+    "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
