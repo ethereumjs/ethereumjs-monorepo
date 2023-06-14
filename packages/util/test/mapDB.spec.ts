@@ -73,7 +73,7 @@ tape('MapDB class', (t) => {
 
       const promise = await mapDB.open()
 
-      t.equal(promise, undefined, 'should return a resolved promise')
+      t.equal(promise, undefined, 'should return undefined since this is a stub function')
     })
   })
 
