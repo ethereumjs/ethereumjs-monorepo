@@ -27,6 +27,7 @@
       "hireable": true
     }
   ],
+  "type": "module",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "exports": {
@@ -42,7 +43,7 @@
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "../../config/cli/coverage.sh",
+    "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "docs:build": "typedoc --options typedoc.js",
     "examples": "ts-node ../../scripts/examples-runner.ts -- tx",
     "lint": "../../config/cli/lint.sh",
@@ -51,9 +52,9 @@
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser && npm run test:txTests",
-    "test:browser": "karma start karma.conf.js",
-    "test:node": "tape -r ts-node/register -- 'test/**/*.spec.ts'",
-    "test:txTests": "tape -r ts-node/register ./test/transactionRunner.ts",
+    "test:browser": "npx vitest run --browser.name=chrome --browser.headless",
+    "test:node": "npx vitest run",
+    "test:txTests": "npx vitest run ./test/transactionRunner.ts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
