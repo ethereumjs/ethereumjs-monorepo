@@ -35,8 +35,7 @@ const common = Common.fromGethGenesis(gethGenesis, {
 
 describe('EIP4844 constructor tests - valid scenarios', () => {
   it('should work', () => {
-    if (isBrowser() === true) {
-    } else {
+    if (isBrowser() === false) {
       const txData = {
         type: 0x03,
         versionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
@@ -66,8 +65,7 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
 
 describe('fromTxData using from a json', () => {
   it('should work', () => {
-    if (isBrowser() === true) {
-    } else {
+    if (isBrowser() === false) {
       const txData = {
         type: '0x3',
         nonce: '0x0',
@@ -131,8 +129,7 @@ describe('fromTxData using from a json', () => {
 
 describe('EIP4844 constructor tests - invalid scenarios', () => {
   it('should work', () => {
-    if (isBrowser() === true) {
-    } else {
+    if (isBrowser() === false) {
       const baseTxData = {
         type: 0x03,
         maxFeePerDataGas: 1n,
@@ -180,8 +177,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
 
 describe('Network wrapper tests', () => {
   it('should work', async () => {
-    if (isBrowser() === true) {
-    } else {
+    if (isBrowser() === false) {
       const blobs = getBlobs('hello world')
       const commitments = blobsToCommitments(blobs)
       const versionedHashes = commitmentsToVersionedHashes(commitments)
@@ -426,8 +422,7 @@ describe('Network wrapper tests', () => {
 
 describe('hash() and signature verification', () => {
   it('should work', async () => {
-    if (isBrowser() === true) {
-    } else {
+    if (isBrowser() === false) {
       const unsignedTx = BlobEIP4844Transaction.fromTxData(
         {
           chainId: 1,
@@ -469,8 +464,7 @@ describe('hash() and signature verification', () => {
 
 describe('Network wrapper deserialization test', () => {
   it('should work', async () => {
-    if (isBrowser() === true) {
-    } else {
+    if (isBrowser() === false) {
       const txData = {
         type: '0x3',
         nonce: '0x0',
