@@ -12,11 +12,11 @@ import {
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
 import gethGenesis from '../../block/test/testdata/4844-hardfork.json'
-import { BlobEIP4844Transaction, TransactionFactory } from '../src'
+import { BlobEIP4844Transaction, TransactionFactory } from '../src/index.js'
 
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')

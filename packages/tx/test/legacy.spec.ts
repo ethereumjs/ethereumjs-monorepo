@@ -12,12 +12,12 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { LegacyTransaction } from '../src'
+import { LegacyTransaction } from '../src/index.js'
 
 import txFixturesEip155 from './json/ttTransactionTestEip155VitaliksTests.json'
 import txFixtures from './json/txs.json'
 
-import type { TransactionType, TxData, TypedTransaction } from '../src'
+import type { TransactionType, TxData, TypedTransaction } from '../src/index.js'
 
 describe('[Transaction]', () => {
   const transactions: TypedTransaction[] = []

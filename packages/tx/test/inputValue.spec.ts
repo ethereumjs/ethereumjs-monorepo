@@ -8,9 +8,9 @@ import {
   LegacyTransaction,
   TransactionFactory,
   TransactionType,
-} from '../src'
+} from '../src/index.js'
 
-import type { TxValuesArray } from '../src'
+import type { TxValuesArray } from '../src/index.js'
 import type { AddressLike, BigIntLike, BytesLike } from '@ethereumjs/util'
 
 // @returns: Array with subtypes of the AddressLike type for a given address

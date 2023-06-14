@@ -12,11 +12,11 @@ import {
   toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { BaseTransaction } from './baseTransaction'
-import { TransactionType } from './types'
-import { AccessLists } from './util'
+import { BaseTransaction } from './baseTransaction.js'
+import { TransactionType } from './types.js'
+import { AccessLists } from './util.js'
 
 import type {
   AccessList,
@@ -25,7 +25,7 @@ import type {
   TxValuesArray as AllTypesTxValuesArray,
   JsonTx,
   TxOptions,
-} from './types'
+} from './types.js'
 import type { Common } from '@ethereumjs/common'
 
 type TxData = AllTypesTxData[TransactionType.FeeMarketEIP1559]

@@ -18,13 +18,13 @@ import {
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
   TransactionType,
-} from '../src'
+} from '../src/index.js'
 
 import eip1559Fixtures from './json/eip1559txs.json'
 import eip2930Fixtures from './json/eip2930txs.json'
 import legacyFixtures from './json/txs.json'
 
-import type { BaseTransaction } from '../src/baseTransaction'
+import type { BaseTransaction } from '../src/baseTransaction.js'
 
 describe('[BaseTransaction]', () => {
   // EIP-2930 is not enabled in Common by default (2021-03-06)

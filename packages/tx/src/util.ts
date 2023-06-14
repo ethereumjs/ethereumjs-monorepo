@@ -1,8 +1,8 @@
 import { bytesToPrefixedHexString, hexStringToBytes, setLengthLeft } from '@ethereumjs/util'
 
-import { isAccessList } from './types'
+import { isAccessList } from './types.js'
 
-import type { AccessList, AccessListBytes, AccessListItem } from './types'
+import type { AccessList, AccessListBytes, AccessListItem } from './types.js'
 import type { Common } from '@ethereumjs/common'
 
 export function checkMaxInitCodeSize(common: Common, length: number) {
