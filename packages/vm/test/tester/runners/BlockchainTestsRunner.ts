@@ -240,10 +240,6 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     'correct last header block'
   )
 
-  if (bytesToHex((blockchain as any)._headHeaderHash) !== testData.lastblockhash) {
-    process.exit()
-  }
-
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`
   t.comment(`Time: ${timeSpent}`)

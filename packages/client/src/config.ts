@@ -3,9 +3,9 @@ import { genPrivateKey } from '@ethereumjs/devp2p'
 import { Level } from 'level'
 
 import { getLogger } from './logging'
-import { Libp2pServer, RlpxServer } from './net/server'
+import { RlpxServer } from './net/server'
 import { Event, EventBus } from './types'
-import { parseTransports, short } from './util'
+import { isBrowser, parseTransports, short } from './util'
 
 import type { Logger } from './logging'
 import type { EventBusType, MultiaddrLike } from './types'
@@ -87,9 +87,9 @@ export interface ConfigOptions {
   key?: Uint8Array
 
   /**
-   * Network transports ('rlpx' and/or 'libp2p')
+   * Network transports ('rlpx')
    *
-   * Default: `['rlpx', 'libp2p']`
+   * Default: `['rlpx']`
    */
   transports?: string[]
 
@@ -118,12 +118,12 @@ export interface ConfigOptions {
   multiaddrs?: Multiaddr[]
 
   /**
-   * Transport servers (RLPx or Libp2p)
+   * Transport servers (RLPx)
    * Use `transports` option, only used for testing purposes
    *
    * Default: servers created from `transports` option
    */
-  servers?: (RlpxServer | Libp2pServer)[]
+  servers?: RlpxServer[]
 
   /**
    * Save tx receipts and logs in the meta db (default: false)
@@ -388,7 +388,7 @@ export class Config {
   public readonly chainCommon: Common
   public readonly execCommon: Common
 
-  public readonly servers: (RlpxServer | Libp2pServer)[] = []
+  public readonly servers: RlpxServer[] = []
 
   constructor(options: ConfigOptions = {}) {
     this.events = new EventBus() as EventBusType
@@ -458,7 +458,7 @@ export class Config {
       }
       // Servers option takes precedence
       this.servers = options.servers
-    } else {
+    } else if (isBrowser() !== true) {
       // Otherwise parse transports from transports option
       this.servers = parseTransports(this.transports).map((t) => {
         if (t.name === 'rlpx') {
@@ -466,10 +466,6 @@ export class Config {
             this.bootnodes ?? (this.chainCommon.bootstrapNodes() as any)
           const dnsNetworks = options.dnsNetworks ?? this.chainCommon.dnsNetworks()
           return new RlpxServer({ config: this, bootnodes, dnsNetworks })
-        } else if (t.name === 'libp2p') {
-          const multiaddrs = this.multiaddrs
-          const bootnodes = this.bootnodes
-          return new Libp2pServer({ config: this, multiaddrs, bootnodes })
         } else {
           throw new Error(`unknown transport: ${t.name}`)
         }

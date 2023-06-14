@@ -7,7 +7,7 @@ import * as td from 'testdouble'
 import { Config } from '../../../src/config'
 import { getLogger } from '../../../src/logging'
 import { Event } from '../../../src/types'
-import { wait } from '../../integration/util'
+import { wait } from '../../../test/integration/util'
 
 tape('[Libp2pServer]', async (t) => {
   const Libp2pPeer = td.replace<any>('../../../src/net/peer/libp2ppeer')
@@ -39,7 +39,7 @@ tape('[Libp2pServer]', async (t) => {
   td.when(Libp2pNode.prototype.start()).thenResolve()
   td.when(Libp2pNode.prototype.stop()).thenResolve()
 
-  const { Libp2pServer } = await import('../../../src/net/server/libp2pserver')
+  const { Libp2pServer } = await import('../server/libp2pserver')
 
   t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
