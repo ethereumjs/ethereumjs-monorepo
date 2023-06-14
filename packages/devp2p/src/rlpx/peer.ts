@@ -278,7 +278,7 @@ export class Peer extends EventEmitter {
     this._disconnectReason = reason
     this._disconnectWe = true
     this._closed = true
-    setTimeout(() => this._socke, 2000) // 2 sec * 1000
+    setTimeout(() => this._socket.end(), 2000) // 2 sec * 1000
   }
 
   /**
@@ -459,7 +459,7 @@ export class Peer extends EventEmitter {
     const debugMsg = `DISCONNECT reason: ${reason} ${this._socket.remoteAddress}:${this._socket.remotePort}`
     this.debug('DISCONNECT', debugMsg, reason)
     this._disconnectWe = false
-    this._socke
+    this._socket.end()
   }
 
   /**
