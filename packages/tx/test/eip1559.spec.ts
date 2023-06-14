@@ -5,7 +5,7 @@ import { assert, describe, it } from 'vitest'
 
 import { FeeMarketEIP1559Transaction } from '../src'
 
-const testdata = require('./json/eip1559.json') // Source: Besu
+import testdata from './json/eip1559.json' // Source: Besu
 
 const common = new Common({
   chain: Chain.Rinkeby,
