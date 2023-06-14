@@ -4,6 +4,7 @@
   "exclude": ["src/index.js", "src/util/index.js"],
   "compilerOptions": {
     "outDir": "dist.browser",
-    "typeRoots": ["node_modules/@types", "src/@types"]
+    "typeRoots": ["node_modules/@types", "src/@types"],
+    "skipLibCheck": true
   }
 }
