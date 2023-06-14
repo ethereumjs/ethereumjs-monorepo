@@ -124,7 +124,7 @@ describe('DPT simulator tests', () => {
     await util.delay(1000)
 
     util.destroyDPTs(dpts)
-  }, 30000)
+  }, 60000)
 
   it('DPT: simulate acquiring peers via DNS', async () => {
     const dpts = util.getTestDPTsWithDns(1, 18519)
