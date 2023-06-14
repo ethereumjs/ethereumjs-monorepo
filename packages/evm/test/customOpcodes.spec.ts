@@ -1,11 +1,11 @@
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src/evm'
+import { EVM } from '../src/evm.js'
 
-import type { InterpreterStep, RunState } from '../src/interpreter'
-import type { AddOpcode } from '../src/types'
+import type { InterpreterStep, RunState } from '../src/interpreter.js'
+import type { AddOpcode } from '../src/types.js'
 
 describe('VM: custom opcodes', () => {
   const fee = 333

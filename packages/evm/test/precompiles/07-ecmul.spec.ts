@@ -2,7 +2,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { assert, describe, it } from 'vitest'
 
-import { EVM, getActivePrecompiles } from '../../src'
+import { EVM, getActivePrecompiles } from '../../src/index.js'
 
 describe('Precompiles: ECMUL', () => {
   it('ECMUL', async () => {

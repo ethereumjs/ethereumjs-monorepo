@@ -1,11 +1,11 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address, bytesToPrefixedHexString } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
-import { getActivePrecompiles } from '../../src'
-import { EVM } from '../../src/evm'
+import { EVM } from '../../src/evm.js'
+import { getActivePrecompiles } from '../../src/index.js'
 
 const precompileAddressStart = 0x0a
 const precompileAddressEnd = 0x12

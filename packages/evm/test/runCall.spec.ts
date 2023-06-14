@@ -8,14 +8,14 @@ import {
   padToEven,
   unpadBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src'
-import { ERROR } from '../src/exceptions'
+import { ERROR } from '../src/exceptions.js'
+import { EVM } from '../src/index.js'
 
-import type { EVMRunCallOpts } from '../src/types'
+import type { EVMRunCallOpts } from '../src/types.js'
 
 // Non-protected Create2Address generator. Does not check if Uint8Arrays have the right padding.
 function create2address(sourceAddress: Address, codeHash: Uint8Array, salt: Uint8Array): Address {

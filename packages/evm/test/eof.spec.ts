@@ -1,7 +1,7 @@
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
-import { getEOFCode } from '../src/eof'
+import { getEOFCode } from '../src/eof.js'
 
 function generateEOFCode(code: string) {
   const len = (code.length / 2).toString(16).padStart(4, '0')

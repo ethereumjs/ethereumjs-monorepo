@@ -1,10 +1,10 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
-import { EVM, getActivePrecompiles } from '../../src'
+import { EVM, getActivePrecompiles } from '../../src/index.js'
 
 describe('Precompiles: hardfork availability', () => {
   it('Test ECPAIRING availability', async () => {

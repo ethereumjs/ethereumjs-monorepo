@@ -1,7 +1,7 @@
 import { Address } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { TransientStorage } from '../src/transientStorage'
+import { TransientStorage } from '../src/transientStorage.js'
 
 describe('Transient Storage', () => {
   it('should set and get storage', () => {

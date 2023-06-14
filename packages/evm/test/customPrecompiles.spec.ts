@@ -1,12 +1,12 @@
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address } from '@ethereumjs/util'
-import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src/evm'
+import { EVM } from '../src/evm.js'
 
-import type { PrecompileInput } from '../src'
-import type { ExecResult } from '../src/evm'
+import type { ExecResult } from '../src/evm.js'
+import type { PrecompileInput } from '../src/index.js'
 
 const sender = new Address(hexToBytes('44'.repeat(20)))
 const newPrecompile = new Address(hexToBytes('ff'.repeat(20)))

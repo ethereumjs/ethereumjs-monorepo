@@ -1,12 +1,12 @@
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address, bigIntToBytes, setLengthLeft } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src'
-import { Stack } from '../src/stack'
+import { EVM } from '../src/index.js'
+import { Stack } from '../src/stack.js'
 
-import { createAccount } from './utils'
+import { createAccount } from './utils.js'
 
 describe('Stack', () => {
   it('should be empty initially', () => {

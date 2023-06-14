@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { Memory } from '../src/memory'
+import { Memory } from '../src/memory.js'
 
 describe('Memory', () => {
   const m = new Memory()

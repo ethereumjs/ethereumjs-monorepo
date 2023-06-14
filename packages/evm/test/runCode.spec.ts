@@ -1,9 +1,9 @@
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src'
+import { EVM } from '../src/index.js'
 
 const STOP = '00'
 const JUMP = '56'

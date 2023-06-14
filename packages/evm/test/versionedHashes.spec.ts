@@ -1,12 +1,12 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address, unpadBytes } from '@ethereumjs/util'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src'
+import { EVM } from '../src/index.js'
 
-import type { EVMRunCallOpts } from '../src/types'
+import type { EVMRunCallOpts } from '../src/types.js'
 
 describe('BLOBHASH / access versionedHashes in calldata', () => {
   it('should work', async () => {

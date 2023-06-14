@@ -1,10 +1,10 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src'
+import { EVM } from '../src/index.js'
 describe('async events', () => {
   it('should work', async () => {
     const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee'))

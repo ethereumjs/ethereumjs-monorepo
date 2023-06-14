@@ -1,9 +1,9 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
-import { EVM, getActivePrecompiles } from '../../src'
+import { EVM, getActivePrecompiles } from '../../src/index.js'
 
 describe('Precompiles: ECPAIRING', () => {
   it('ECPAIRING', async () => {

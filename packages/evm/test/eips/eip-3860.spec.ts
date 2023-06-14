@@ -1,10 +1,10 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address, concatBytesNoTypeCheck, privateToAddress } from '@ethereumjs/util'
-import { concatBytes, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import { concatBytes, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../../src'
+import { EVM } from '../../src/index.js'
 
 const pkey = hexToBytes('20'.repeat(32))
 const sender = new Address(privateToAddress(pkey))

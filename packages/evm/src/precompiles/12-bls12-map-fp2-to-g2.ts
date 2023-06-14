@@ -1,13 +1,13 @@
 import { short } from '@ethereumjs/util'
-import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils.js'
 
-import { EvmErrorResult, OOGResult } from '../evm'
-import { ERROR, EvmError } from '../exceptions'
+import { EvmErrorResult, OOGResult } from '../evm.js'
+import { ERROR, EvmError } from '../exceptions.js'
 
-import { BLS12_381_FromG2Point, BLS12_381_ToFp2Point } from './util/bls12_381'
+import { BLS12_381_FromG2Point, BLS12_381_ToFp2Point } from './util/bls12_381.js'
 
-import type { ExecResult } from '../evm'
-import type { PrecompileInput } from './types'
+import type { ExecResult } from '../evm.js'
+import type { PrecompileInput } from './types.js'
 
 export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
   const mcl = (<any>opts._EVM)._mcl!
