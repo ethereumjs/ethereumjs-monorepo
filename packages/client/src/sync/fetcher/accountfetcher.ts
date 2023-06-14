@@ -274,7 +274,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       if (rangeResult.proof.length > 0) {
         this.debug(`Data for last range has been received`)
         // response contains empty object so that task can be terminated in store phase and not reenqueued
-        return Object.assign([], [Object.create(null) as any], { completed: true })
+        return Object.assign([], [Object.create(null)], { completed: true })
       }
     }
 

@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import { Account, Address } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
@@ -48,7 +48,7 @@ tape('EIP 2929: gas cost tests', (t) => {
 
     await vm.stateManager.putContractCode(address, hexToBytes(test.code))
 
-    const unsignedTx = Transaction.fromTxData({
+    const unsignedTx = LegacyTransaction.fromTxData({
       gasLimit: initialGas, // ensure we pass a lot of gas, so we do not run out of gas
       to: address, // call to the contract address,
     })
@@ -75,7 +75,7 @@ tape('EIP 2929: gas cost tests', (t) => {
     await vm.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
 
     // setup the call arguments
-    const unsignedTx = Transaction.fromTxData({
+    const unsignedTx = LegacyTransaction.fromTxData({
       gasLimit: BigInt(21000 + 9000), // ensure we pass a lot of gas, so we do not run out of gas
       to: contractAddress, // call to the contract address,
       value: BigInt(1),

@@ -1,4 +1,4 @@
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
@@ -13,7 +13,7 @@ const method = 'eth_getTransactionByBlockHashAndIndex'
 async function setUp() {
   const { common, execution, server, chain } = await setupChain(pow, 'pow')
   const txs = [
-    Transaction.fromTxData(
+    LegacyTransaction.fromTxData(
       {
         gasLimit: 21000,
         gasPrice: 100,
@@ -22,7 +22,7 @@ async function setUp() {
       },
       { common }
     ).sign(dummy.privKey),
-    Transaction.fromTxData(
+    LegacyTransaction.fromTxData(
       { gasLimit: 21000, gasPrice: 50, nonce: 1, to: '0x0000000000000000000000000000000000000000' },
       { common }
     ).sign(dummy.privKey),

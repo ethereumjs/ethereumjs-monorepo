@@ -1,15 +1,17 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import { Account, Address, bytesToInt, privateToAddress } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
 
 import { VM } from '../../../src/vm'
 
+import type { TypedTransaction } from '@ethereumjs/tx'
+
 interface Test {
   steps: { expectedOpcode: string; expectedGasUsed: number; expectedStack: bigint[] }[]
   contracts: { code: string; address: Address }[]
-  transactions: Transaction[]
+  transactions: TypedTransaction[]
 }
 
 const senderKey = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
@@ -72,7 +74,7 @@ tape('EIP 1153: transient storage', (t) => {
     returndata[31] = 0x02
 
     const address = new Address(hexToBytes('000000000000000000000000636F6E7472616374'))
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       gasLimit: BigInt(21000 + 9000),
       to: address,
       value: BigInt(1),
@@ -115,12 +117,12 @@ tape('EIP 1153: transient storage', (t) => {
     const test = {
       contracts: [{ address, code }],
       transactions: [
-        Transaction.fromTxData({
+        LegacyTransaction.fromTxData({
           gasLimit: BigInt(15000000),
           to: address,
           data: new Uint8Array(32),
         }).sign(senderKey),
-        Transaction.fromTxData({
+        LegacyTransaction.fromTxData({
           nonce: 1,
           gasLimit: BigInt(15000000),
           to: address,
@@ -185,7 +187,7 @@ tape('EIP 1153: transient storage', (t) => {
     const callingCode =
       '6362fdb9be600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff163afc874d2600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff16343ac1c39600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff1366000803760206000f3'
 
-    const unsignedTx = Transaction.fromTxData({
+    const unsignedTx = LegacyTransaction.fromTxData({
       gasLimit: BigInt(15000000),
       to: callingAddress,
     })

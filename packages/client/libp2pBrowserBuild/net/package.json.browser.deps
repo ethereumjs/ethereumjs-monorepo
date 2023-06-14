@@ -1,0 +1,161 @@
+{
+  "name": "@ethereumjs/client",
+  "version": "0.7.1",
+  "description": "EthereumJS client implementation",
+  "keywords": [
+    "ethereum",
+    "ethereumjs",
+    "client",
+    "blockchain",
+    "light sync",
+    "full sync"
+  ],
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+client%22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "license": "MPL-2.0",
+  "author": "Vinay Pulim (v@pulim.com)",
+  "main": "dist/src/index.js",
+  "browser": "dist/bundle.js",
+  "types": "dist/src/index.d.ts",
+  "bin": {
+    "ethereumjs": "dist/bin/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "binWorkaround": "test -f dist/bin/cli.js || echo 'install fails if bin script does not exist (https://github.com/npm/cli/issues/2632), creating placeholder file at \"dist/bin/cli.js\"' && mkdir -p 'dist/bin' && touch dist/bin/cli.js",
+    "build": "npm run build:common && mkdir -p ./src/trustedSetup/ && cp -Rf ./src/trustedSetups ./dist/src/",
+    "build:browser": "npm install && ../../config/cli/ts-build.sh browser && npm run bundle && rm -rf dist.browser",
+    "build:common": "../../config/cli/ts-build.sh",
+    "bundle": "webpack",
+    "clean": "../../config/cli/clean-package.sh",
+    "client:start:ts": "ts-node bin/cli.ts",
+    "client:start:js": "npm run build && node dist/bin/cli.js",
+    "client:start": "npm run client:start:js --",
+    "client:start:dev1": "npm run client:start -- --discDns=false --discV4=false --bootnodes",
+    "client:start:dev2": "npm run client:start -- --discDns=false --discV4=false --port=30304 --dataDir=datadir-dev2",
+    "coverage": "c8 --all --reporter=lcov --reporter=text npm run test:unit",
+    "docs:build": "typedoc --options typedoc.js --tsconfig tsconfig.prod.cjs.json",
+    "lint": "../../config/cli/lint.sh",
+    "lint:diff": "../../config/cli/lint-diff.sh",
+    "lint:fix": "../../config/cli/lint-fix.sh",
+    "preinstall": "npm run binWorkaround",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
+    "tape": "tape -r ts-node/register",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:browser": "karma start karma.conf.js",
+    "test:cli": "npm run tape -- 'test/cli/*.spec.ts'",
+    "test:integration": "npm run tape -- 'test/integration/**/*.spec.ts'",
+    "test:unit": "npm run tape -- 'test/!(integration|cli|sim)/**/*.spec.ts' 'test/*.spec.ts'",
+    "tsc": "../../config/cli/ts-compile.sh"
+  },
+  "dependencies": {
+    "@ethereumjs/block": "4.2.2",
+    "@ethereumjs/blockchain": "6.2.2",
+    "@ethereumjs/common": "3.1.2",
+    "@ethereumjs/devp2p": "5.1.2",
+    "@ethereumjs/ethash": "2.0.5",
+    "@ethereumjs/evm": "1.3.2",
+    "@ethereumjs/rlp": "4.0.1",
+    "@ethereumjs/statemanager": "1.0.5",
+    "@ethereumjs/trie": "5.0.5",
+    "@ethereumjs/tx": "4.1.2",
+    "@ethereumjs/util": "8.0.6",
+    "@ethereumjs/vm": "6.4.2",
+    "abstract-level": "^1.0.3",
+    "body-parser": "^1.19.2",
+    "c-kzg": "^2.1.0",
+    "chalk": "^4.1.2",
+    "connect": "^3.7.0",
+    "cors": "^2.8.5",
+    "debug": "^4.3.3",
+    "ethereum-cryptography": "^2.0.0",
+    "fs-extra": "^10.1.0",
+    "it-pipe": "^1.1.0",
+    "jayson": "^4.0.0",
+    "jwt-simple": "^0.5.6",
+    "level": "^8.0.0",
+    "memory-level": "^1.0.0",
+    "peer-id": "^0.14.3",
+    "qheap": "^1.4.0",
+    "winston": "^3.3.3",
+    "winston-daily-rotate-file": "^4.5.5",
+    "yargs": "^17.7.1"
+  },
+  "peerDependencies": {
+    "libp2p": "^0.30.7",
+    "libp2p-bootstrap": "^0.14.0",
+    "libp2p-interfaces": "^1.2.0",
+    "libp2p-kad-dht": "^0.20.6",
+    "libp2p-mplex": "^0.10.2",
+    "libp2p-tcp": "^0.15.3",
+    "libp2p-websockets": "^0.15.1",
+    "multiaddr": "^10.0.1",
+    "@chainsafe/libp2p-noise": "^4.1.1"
+  },
+  "peerDependenciesMeta": {
+    "libp2p": {
+      "optional": true
+    },
+    "libp2p-bootstrap": {
+      "optional": true
+    },
+    "libp2p-interfaces": {
+      "optional": true
+    },
+    "libp2p-kad-dht": {
+      "optional": true
+    },
+    "libp2p-mplex": {
+      "optional": true
+    },
+    "libp2p-tcp": {
+      "optional": true
+    },
+    "libp2p-websockets": {
+      "optional": true
+    },
+    "multiaddr": {
+      "optional": true
+    },
+    "@chainsafe/libp2p-noise": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/body-parser": "^1.19.2",
+    "@types/connect": "^3.4.35",
+    "@types/fs-extra": "^9.0.13",
+    "@types/jwt-simple": "^0.5.33",
+    "@types/yargs": "^17.0.24",
+    "constants-browserify": "^1.0.0",
+    "crypto-browserify": "^3.12.0",
+    "file-replace-loader": "^1.2.0",
+    "it-pair": "^1.0.0",
+    "it-pushable": "^1.4.2",
+    "os-browserify": "^0.3.0",
+    "pino": "^5.8.0",
+    "process": "^0.11.10",
+    "stream-browserify": "^3.0.0",
+    "supertest": "^6.1.3",
+    "superwstest": "^2.0.1",
+    "testdouble": "^3.16.6",
+    "testdouble-timers": "^0.1.1",
+    "util": "^0.12.4",
+    "webpack": "^5.55.1",
+    "webpack-cli": "^4.8.0"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "devDependenciesComments": {
+    "node-fetch": "Hotfix for client browser build error in older Node versions (12/14), #1305, 2021-06-18"
+  }
+}

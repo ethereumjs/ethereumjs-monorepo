@@ -169,7 +169,7 @@ export const createTestDB = async (): Promise<
       value: { head0: bytesToHex(Uint8Array.from([171, 205])) },
     },
   ])
-  return [db as any, genesis]
+  return [db, genesis]
 }
 
 /**

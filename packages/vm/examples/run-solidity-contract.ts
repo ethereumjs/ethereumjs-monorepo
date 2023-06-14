@@ -102,7 +102,9 @@ async function deployContract(
     nonce: await getAccountNonce(vm, senderPrivateKey),
   }
 
-  const tx = Transaction.fromTxData(buildTransaction(txData), { common }).sign(senderPrivateKey)
+  const tx = LegacyTransaction.fromTxData(buildTransaction(txData), { common }).sign(
+    senderPrivateKey
+  )
 
   const deploymentResult = await vm.runTx({ tx, block })
 
@@ -130,7 +132,9 @@ async function setGreeting(
     nonce: await getAccountNonce(vm, senderPrivateKey),
   }
 
-  const tx = Transaction.fromTxData(buildTransaction(txData), { common }).sign(senderPrivateKey)
+  const tx = LegacyTransaction.fromTxData(buildTransaction(txData), { common }).sign(
+    senderPrivateKey
+  )
 
   const setGreetingResult = await vm.runTx({ tx, block })
 

@@ -1,7 +1,11 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
+import {
+  BlobEIP4844Transaction,
+  FeeMarketEIP1559Transaction,
+  LegacyTransaction,
+} from '@ethereumjs/tx'
 import {
   Account,
   blobsToCommitments,
@@ -75,7 +79,7 @@ tape(`${method}: send local tx with gasprice lower than minimum`, async (t) => {
   const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
   const { server } = baseSetup({ syncTargetHeight, includeVM: true })
 
-  const transaction = Transaction.fromTxData({
+  const transaction = LegacyTransaction.fromTxData({
     gasLimit: 21000,
     gasPrice: 0,
     nonce: 0,

@@ -2,6 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
+import { TransactionType } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -409,7 +410,7 @@ export async function rewardAccount(evm: EVM, address: Address, reward: bigint):
 /**
  * Returns the encoded tx receipt.
  */
-export function encodeReceipt(receipt: TxReceipt, txType: number) {
+export function encodeReceipt(receipt: TxReceipt, txType: TransactionType) {
   const encoded = RLP.encode([
     (receipt as PreByzantiumTxReceipt).stateRoot ??
       ((receipt as PostByzantiumTxReceipt).status === 0 ? Uint8Array.from([]) : hexToBytes('01')),
@@ -418,7 +419,7 @@ export function encodeReceipt(receipt: TxReceipt, txType: number) {
     receipt.logs,
   ])
 
-  if (txType === 0) {
+  if (txType === TransactionType.Legacy) {
     return encoded
   }
 

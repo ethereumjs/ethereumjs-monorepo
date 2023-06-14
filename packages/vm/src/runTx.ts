@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction, Capability } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, Capability, isBlobEIP4844Tx } from '@ethereumjs/tx'
 import { Account, Address, KECCAK256_NULL, bytesToPrefixedHexString, short } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
@@ -22,7 +22,7 @@ import type { AccessList, AccessListItem } from '@ethereumjs/common'
 import type {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
-  Transaction,
+  LegacyTransaction,
   TypedTransaction,
 } from '@ethereumjs/tx'
 
@@ -190,7 +190,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       this.evm.journal.addAlwaysWarmAddress(addressStr)
     }
     this.evm.journal.addAlwaysWarmAddress(caller.toString())
-    if (tx.to) {
+    if (tx.to !== undefined) {
       // Note: in case we create a contract, we do this in EVMs `_executeCreate` (this is also correct in inner calls, per the EIP)
       this.evm.journal.addAlwaysWarmAddress(bytesToHex(tx.to.bytes))
     }
@@ -299,8 +299,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       )
       throw new Error(msg)
     }
-    const parentBlock = await this.blockchain.getBlock(opts.block?.header.parentHash)
-    dataGasPrice = parentBlock.header.getDataGasPrice()
+    dataGasPrice = opts.block.header.getDataGasPrice()
     if (castTx.maxFeePerDataGas < dataGasPrice) {
       const msg = _errorMsg(
         `Transaction's maxFeePerDataGas ${castTx.maxFeePerDataGas}) is less than block dataGasPrice (${dataGasPrice}).`,
@@ -354,10 +353,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     gasPrice = inclusionFeePerGas + baseFee
   } else {
     // Have to cast as legacy tx since EIP1559 tx does not have gas price
-    gasPrice = (<Transaction>tx).gasPrice
+    gasPrice = (<LegacyTransaction>tx).gasPrice
     if (this._common.isActivatedEIP(1559) === true) {
       const baseFee = block.header.baseFeePerGas!
-      inclusionFeePerGas = (<Transaction>tx).gasPrice - baseFee
+      inclusionFeePerGas = (<LegacyTransaction>tx).gasPrice - baseFee
     }
   }
 
@@ -436,7 +435,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Add data gas used to result
-  if (tx.type === 3) {
+  if (isBlobEIP4844Tx(tx)) {
     results.dataGasUsed = totalDataGas
   }
 
@@ -640,7 +639,7 @@ export async function generateTxReceipt(
     }
   } else {
     // Typed EIP-2718 Transaction
-    if (tx.type === 3) {
+    if (isBlobEIP4844Tx(tx)) {
       receipt = {
         dataGasUsed,
         dataGasPrice,
