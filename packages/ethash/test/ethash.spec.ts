@@ -1,11 +1,11 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
-import { Ethash } from '../src'
-import { getCacheSize, getEpoc, getFullSize } from '../src/util'
+import { Ethash } from '../src/index.js'
+import { getCacheSize, getEpoc, getFullSize } from '../src/util.js'
 
 const powTests = require('./ethash_tests.json')
 

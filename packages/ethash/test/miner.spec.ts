@@ -3,7 +3,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { MapDB } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Ethash } from '../src'
+import { Ethash } from '../src/index.js'
 
 import type { BlockHeader } from '@ethereumjs/block'
 import type { DBObject } from '@ethereumjs/util'
