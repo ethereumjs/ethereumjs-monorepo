@@ -11,6 +11,7 @@ import type { RlpxServer } from '../../lib/net/server'
 tape('[PeerPool]', async (t) => {
   const Peer = td.replace<any>('../../lib/net/peer/peer', function (this: any, id: string) {
     this.id = id // eslint-disable-line no-invalid-this
+    return this
   })
   const { PeerPool } = await import('../../lib/net/peerpool')
 
@@ -71,7 +72,7 @@ tape('[PeerPool]', async (t) => {
   })
 
   t.test('should check contains', (t) => {
-    const peer = new Peer('abc')
+    const peer = Peer('abc')
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool({ config })
     pool.add(peer)
@@ -80,7 +81,7 @@ tape('[PeerPool]', async (t) => {
   })
 
   t.test('should get idle peers', (t) => {
-    const peers = [new Peer(1), new Peer(2), new Peer(3)]
+    const peers = [Peer('1'), Peer('2'), Peer('3')]
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool({ config })
     peers[1].idle = true

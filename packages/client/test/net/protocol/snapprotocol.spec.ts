@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { Trie, decodeNode } from '@ethereumjs/trie'
+import { Trie, decodeToNode } from '@ethereumjs/trie'
 import {
   KECCAK256_NULL,
   KECCAK256_RLP,
@@ -16,7 +16,6 @@ import * as tape from 'tape'
 
 import { Chain } from '../../../lib/blockchain'
 import { Config } from '../../../lib/config'
-import { LevelDB } from '../../../lib/execution/level'
 import { SnapProtocol } from '../../../lib/net/protocol'
 ;(BigInt.prototype as any).toJSON = function () {
   return this.toString()
@@ -200,7 +199,7 @@ tape('[SnapProtocol]', (t) => {
       resData
     )
 
-    const trie = new Trie({ db: new LevelDB() })
+    const trie = new Trie({})
     try {
       const keys = accounts.map((acc: any) => acc.hash)
       const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
@@ -340,7 +339,7 @@ tape('[SnapProtocol]', (t) => {
     // lastAccount
     const lastAccountSlots = slots[0]
     const lastAccountStorageRoot = (lastAccount.body as any)[2]
-    const trie = new Trie({ db: new LevelDB() })
+    const trie = new Trie({})
     try {
       const keys = lastAccountSlots.map((acc: any) => acc.hash)
       const values = lastAccountSlots.map((acc: any) => acc.body)
@@ -508,7 +507,7 @@ tape('[SnapProtocol]', (t) => {
     for (let i = 0; i < nodes.length; i++) {
       const node: Uint8Array = nodes[i]
       if (node !== null) {
-        t.ok(decodeNode(node), 'raw node data should decode without error')
+        t.ok(decodeToNode(node), 'raw node data should decode without error')
       }
     }
 

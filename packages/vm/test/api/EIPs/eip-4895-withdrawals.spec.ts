@@ -225,7 +225,7 @@ tape('EIP4895 tests', (t) => {
     )
 
     // block should successfully execute with VM.runBlock and have same outputs
-    const result = await vmCopy.runBlock({ block })
+    const result = await vmCopy.runBlock({ block, root: genesisBlock.header.stateRoot })
     st.equal(result.gasUsed, block.header.gasUsed)
     st.deepEquals(result.receiptsRoot, block.header.receiptTrie)
     st.deepEquals(result.stateRoot, block.header.stateRoot)

@@ -22,7 +22,7 @@ tape('[Integration:FullEthereumService]', async (t) => {
   const ogSetStateRoot = DefaultStateManager.prototype.setStateRoot
   DefaultStateManager.prototype.setStateRoot = (): any => {}
   const originalStateManagerCopy = DefaultStateManager.prototype.copy
-  DefaultStateManager.prototype.copy = function () {
+  DefaultStateManager.prototype.copy = async function () {
     return this
   }
   async function setup(): Promise<[MockServer, FullEthereumService]> {

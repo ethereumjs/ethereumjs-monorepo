@@ -170,7 +170,6 @@ export class VM {
           account = new Account()
           const newAccount = Account.fromAccountData({
             balance: 1,
-            storageRoot: account.storageRoot,
           })
           await this.stateManager.putAccount(address, newAccount)
         }
@@ -232,7 +231,7 @@ export class VM {
     const common = this._common.copy()
     common.setHardfork(this._common.hardfork())
     const blockchain = this.blockchain.copy()
-    const stateManager = this.stateManager.copy()
+    const stateManager = await this.stateManager.copy()
     const evmOpts = {
       ...(this.evm as any)._optsCached,
       common,
@@ -242,11 +241,13 @@ export class VM {
     const evmCopy = new EVM(evmOpts)
     return VM.create({
       stateManager,
-      blockchain: this.blockchain,
+      blockchain,
       common,
       evm: evmCopy,
       hardforkByBlockNumber: this._hardforkByBlockNumber ? true : undefined,
       hardforkByTTD: this._hardforkByTTD,
+      activateGenesisState: true,
+      activatePrecompiles: true,
     })
   }
 

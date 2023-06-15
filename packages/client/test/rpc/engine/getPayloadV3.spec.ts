@@ -63,7 +63,7 @@ tape(`${method}: call with known payload`, async (t) => {
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   const originalStateManagerCopy = DefaultStateManager.prototype.copy
   DefaultStateManager.prototype.setStateRoot = function (): any {}
-  DefaultStateManager.prototype.copy = function () {
+  DefaultStateManager.prototype.copy = async function () {
     return this
   }
   const { service, server, common } = await setupChain(genesisJSON, 'post-merge', {

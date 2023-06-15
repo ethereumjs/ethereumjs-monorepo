@@ -28,7 +28,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   const originalStateManagerCopy = DefaultStateManager.prototype.copy
   DefaultStateManager.prototype.setStateRoot = function (): any {}
-  DefaultStateManager.prototype.copy = function () {
+  DefaultStateManager.prototype.copy = async function () {
     return this
   }
   const common = new Common({ chain: Chain.Mainnet })
@@ -173,7 +173,7 @@ tape(`${method}: call with no peers`, async (t) => {
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   DefaultStateManager.prototype.setStateRoot = (): any => {}
   const originalStateManagerCopy = DefaultStateManager.prototype.copy
-  DefaultStateManager.prototype.copy = function () {
+  DefaultStateManager.prototype.copy = async function () {
     return this
   }
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
@@ -214,7 +214,7 @@ tape('blob EIP 4844 transaction', async (t) => {
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   DefaultStateManager.prototype.setStateRoot = (): any => {}
   const originalStateManagerCopy = DefaultStateManager.prototype.copy
-  DefaultStateManager.prototype.copy = function () {
+  DefaultStateManager.prototype.copy = async function () {
     return this
   }
   // Disable block header consensus format validation

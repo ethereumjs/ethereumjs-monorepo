@@ -61,7 +61,7 @@ tape('[Libp2pPeer]', async (t) => {
     peer.bindProtocol = td.func<typeof peer['bindProtocol']>()
     protocol.open = td.func<Protocol['open']>()
     badProto.open = td.func<Protocol['open']>()
-    td.when(peer.bindProtocol(protocol, td.matchers.isA(Libp2pSender))).thenResolve(null)
+    td.when(peer.bindProtocol(protocol, td.matchers.isA(<any>Libp2pSender))).thenResolve(null)
     td.when(protocol.open()).thenResolve()
     td.when(node.dialProtocol(td.matchers.anything(), '/proto/1')).thenResolve(null)
     td.when(node.dialProtocol(td.matchers.anything(), '/bad/1')).thenReject(new Error('bad'))

@@ -40,7 +40,7 @@ export class MapDB<
     }
   }
 
-  copy(): DB<TKey, TValue> {
+  async copy(): Promise<DB<TKey, TValue>> {
     return new MapDB<TKey, TValue>(this._database)
   }
 

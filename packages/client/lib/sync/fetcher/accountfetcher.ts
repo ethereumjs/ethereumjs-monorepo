@@ -1,4 +1,4 @@
-import { Trie } from '@ethereumjs/trie'
+import { Trie, bytesToNibbles } from '@ethereumjs/trie'
 import {
   KECCAK256_NULL,
   KECCAK256_RLP,
@@ -11,7 +11,6 @@ import {
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
-import { LevelDB } from '../../execution/level'
 import { Event } from '../../types'
 import { short } from '../../util'
 
@@ -202,11 +201,22 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       }
     }
 
-    const trie = new Trie({ db: new LevelDB() })
+    const trie = new Trie({})
     const keys = accounts.map((acc: any) => acc.hash)
     const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
     // convert the request to the right values
-    return trie.verifyRangeProof(stateRoot, origin, keys[keys.length - 1], keys, values, <any>proof)
+    const valid = await trie.verifyRangeProof(
+      stateRoot,
+      bytesToNibbles(origin),
+      keys[keys.length - 1],
+      keys,
+      values,
+      <any>proof
+    )
+    if (valid === false) {
+      return false
+    }
+    return true
   }
 
   private getOrigin(job: Job<JobTask, AccountData[], AccountData>): Uint8Array {

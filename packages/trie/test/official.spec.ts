@@ -8,18 +8,21 @@ tape('official tests', async function (t) {
   const testNames = Object.keys(jsonTests)
   let trie = new Trie()
 
-  for (const testName of testNames) {
+  for await (const [idx, testName] of testNames.entries()) {
+    t.pass(`Starting ${idx + 1}/${testNames.length}: ${testName}`)
     const inputs = jsonTests[testName].in
     const expect = jsonTests[testName].root
-    for (const input of inputs) {
+    for await (const [_i_input, input] of inputs.entries()) {
+      console.log(_i_input, input[0], input[1])
       for (let i = 0; i < 2; i++) {
         if (typeof input[i] === 'string' && input[i].slice(0, 2) === '0x') {
           input[i] = hexStringToBytes(input[i])
         } else if (typeof input[i] === 'string') {
           input[i] = utf8ToBytes(input[i])
         }
-        await trie.put(input[0], input[1])
       }
+      await trie.put(input[0], input[1])
+      console.log(_i_input, bytesToPrefixedHexString(trie.root()))
     }
     t.equal(bytesToPrefixedHexString(trie.root()), expect)
     trie = new Trie()

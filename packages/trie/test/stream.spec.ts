@@ -1,13 +1,14 @@
-import { utf8ToBytes } from 'ethereum-cryptography/utils'
+import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { EventEmitter } from 'events'
 import * as tape from 'tape'
 
 import { Trie } from '../src'
+import { nibblestoBytes } from '../src/util/nibbles'
 
-import type { BatchDBOp } from '@ethereumjs/util'
+import type { BatchDBOp } from '../src'
 
-tape('kv stream test', function (tester) {
-  const it = tester.test
-  const trie = new Trie()
+tape('kv stream test', async function (t) {
+  const trie = new Trie({})
   const ops = [
     {
       type: 'del',
@@ -95,32 +96,44 @@ tape('kv stream test', function (tester) {
     },
   ] as BatchDBOp[]
 
-  const valObj = {} as any
+  const valObj: Record<string, string> = {}
   for (const op of ops) {
     if (op.type === 'put') {
-      valObj[op.key.toString()] = op.value.toString()
+      valObj[bytesToUtf8(op.key)] = bytesToUtf8(op.value)
     }
   }
 
-  it('should populate trie', async function (t) {
+  t.test('should fetch all of the nodes', async function (st) {
     await trie.batch(ops)
-    t.end()
-  })
+    const done = new EventEmitter()
+    const stream = await trie.createReadStream()
+    stream.on('error', (err: any) => {
+      st.fail(`stream error: ${err}`)
+      done.emit('done')
+    })
 
-  it('should fetch all of the nodes', function (t) {
-    const stream = trie.createReadStream()
-    stream.on('data', (d: any) => {
-      const key = d.key.toString()
-      const value = d.value.toString()
-      t.equal(valObj[key], value)
+    stream.on('data', (d: { key: number[]; value: Uint8Array }) => {
+      const key = bytesToUtf8(nibblestoBytes(d.key))
+      const value = bytesToUtf8(d.value)
+      st.equal(value, valObj[key], `value for key ${key} should match`)
       delete valObj[key]
     })
+    stream.on('close', () => {})
     stream.on('end', () => {
       const keys = Object.keys(valObj)
-      t.equal(keys.length, 0)
-      t.end()
+      st.equal(keys.length, 0)
+      done.emit('done')
     })
+    const pass = await new Promise((res, rej) => {
+      done.once('done', () => {
+        res(true)
+        rej(false)
+      })
+    })
+    st.ok(pass, 'test passed')
+    st.end()
   })
+  t.end()
 })
 
 tape('db stream test', function (tester) {

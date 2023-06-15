@@ -22,7 +22,8 @@ tape('Pruned trie tests', function (tester) {
     await trie.put(key, utf8ToBytes('5'))
     await trie.put(key, utf8ToBytes('6'))
 
-    st.equals((<any>trie)._db.db._database.size, 6, 'DB size correct')
+    st.equals((await trie.database().keys()).length, 6, 'DB size correct')
+    st.end()
   })
 
   it('should prune simple trie', async function (st) {
@@ -35,20 +36,22 @@ tape('Pruned trie tests', function (tester) {
     await trie.put(key, utf8ToBytes('5'))
     await trie.put(key, utf8ToBytes('6'))
 
-    st.equals((<any>trie)._db.db._database.size, 1, 'DB size correct')
+    st.equals((await trie.database().keys()).length, 1, 'DB size correct')
+    st.end()
   })
 
   it('should prune simple trie', async function (st) {
     const trie = new Trie({ useNodePruning: true })
     const key = utf8ToBytes('test')
     await trie.put(key, utf8ToBytes('1'))
-    st.equals((<any>trie)._db.db._database.size, 1, 'DB size correct')
+    st.equals((await trie.database().keys()).length, 1, 'DB size correct')
 
     await trie.del(key)
-    st.equals((<any>trie)._db.db._database.size, 0, 'DB size correct')
+    st.equals((await trie.database().keys()).length, 0, 'DB size correct')
 
     await trie.put(key, utf8ToBytes('1'))
-    st.equals((<any>trie)._db.db._database.size, 1, 'DB size correct')
+    st.equals((await trie.database().keys()).length, 1, 'DB size correct')
+    st.end()
   })
 
   it('should prune trie with depth = 2', async function (st) {
@@ -60,7 +63,6 @@ tape('Pruned trie tests', function (tester) {
     for (let i = 0; i < keys.length; i++) {
       await trie.put(hexStringToBytes(keys[i]), hexStringToBytes(values[i]))
     }
-
     st.end()
   })
 
@@ -73,6 +75,7 @@ tape('Pruned trie tests', function (tester) {
     await trie.put(key, value)
     const reported = await trie.get(key)
     st.ok(equalsBytes(reported!, value), 'value matches expected value')
+    st.end()
   })
 
   it('should not throw if a key is either non-existent or deleted twice', async function (st) {
@@ -95,7 +98,12 @@ tape('Pruned trie tests', function (tester) {
     const reported = await trie.get(key)
     st.ok(reported === null, 'value is null')
     const reported2 = await trie.get(key2)
-    st.ok(equalsBytes(reported2!, value2), 'value matches expected value')
+    if (reported2 === null) {
+      st.fail('value is null')
+    } else {
+      st.ok(equalsBytes(reported2!, value2), 'value matches expected value')
+    }
+    st.end()
   })
 
   it('should prune when keys are updated or deleted', async (st) => {
@@ -118,7 +126,6 @@ tape('Pruned trie tests', function (tester) {
       for (let i = 0; i < keys.length; i++) {
         const idx = Math.floor(Math.random() * keys.length)
         const key = keys[idx]
-
         await trie.put(key, utf8ToBytes(values[i]))
       }
 
@@ -154,11 +161,12 @@ tape('Pruned trie tests', function (tester) {
       st.ok(equalsBytes(trie.root(), KECCAK256_RLP), 'trie is empty')
 
       let dbKeys = 0
-      for (const _dbkey of (<any>trie)._db.db._database.keys()) {
+      for (const _dbkey of await trie.database().keys()) {
         dbKeys++
       }
       st.ok(dbKeys === 0, 'db is empty')
     }
+    st.end()
   })
 
   it('verifyPrunedIntegrity() => should correctly report unpruned Tries', async (st) => {
@@ -173,19 +181,21 @@ tape('Pruned trie tests', function (tester) {
     // Create new empty Trie (is pruned)
     trie = new Trie()
     // Create a new value raw in DB (is not pruned)
-    await (<any>trie)._db.db.put(utf8ToBytes('aa'))
+    await trie.database().put(utf8ToBytes('aa'), Uint8Array.from([]))
     st.ok(!(await trie.verifyPrunedIntegrity()), 'trie is not pruned')
-    await (<any>trie)._db.db.del(utf8ToBytes('aa'))
+    await trie.database().del(utf8ToBytes('aa'))
     st.ok(await trie.verifyPrunedIntegrity(), 'trie is pruned')
     await trie.put(utf8ToBytes('aa'), utf8ToBytes('bb'))
     st.ok(await trie.verifyPrunedIntegrity(), 'trie is pruned')
-    await (<any>trie)._db.db.put(utf8ToBytes('aa'))
+    await trie.database().put(utf8ToBytes('aa'), Uint8Array.from([]))
     st.ok(!(await trie.verifyPrunedIntegrity()), 'trie is not pruned')
+    st.end()
   })
 
   it('should prune when keys are updated or deleted (with `useRootPersistence` enabled)', async (st) => {
     for (let testID = 0; testID < 1; testID++) {
-      const trie = await Trie.create({ useNodePruning: true, useRootPersistence: true })
+      const trie = new Trie({ useNodePruning: true, persistent: true })
+      st.true(trie.persistent, 'trie is persistent')
       const keys: Uint8Array[] = []
       for (let i = 0; i < 100; i++) {
         keys.push(randomBytes(32))
@@ -237,10 +247,12 @@ tape('Pruned trie tests', function (tester) {
       st.ok(equalsBytes(trie.root(), KECCAK256_RLP), 'trie is empty')
 
       let dbKeys = 0
-      for (const _dbkey of (<any>trie)._db.db._database.keys()) {
+      for (const _dbkey of await trie.database().keys()) {
         dbKeys++
       }
-      st.ok(dbKeys === 1, 'db is empty')
+      st.equal(dbKeys, 1, 'db is empty except for persisted root')
     }
+    st.end()
   })
+  tester.end()
 })

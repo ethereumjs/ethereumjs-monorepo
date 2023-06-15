@@ -7,7 +7,7 @@ import {
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { CacheType } from '@ethereumjs/statemanager/dist/cache'
-import { Trie } from '@ethereumjs/trie'
+import { Trie, TrieDatabase } from '@ethereumjs/trie'
 import { Lock, bytesToHex, bytesToPrefixedHexString, equalsBytes } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
@@ -16,7 +16,6 @@ import { short } from '../util'
 import { debugCodeReplayBlock } from '../util/debug'
 
 import { Execution } from './execution'
-import { LevelDB } from './level'
 import { ReceiptsManager } from './receipt'
 
 import type { ExecutionOptions } from './execution'
@@ -50,7 +49,7 @@ export class VMExecution extends Execution {
 
     if (this.config.vm === undefined) {
       const trie = new Trie({
-        db: new LevelDB(this.stateDB),
+        db: new TrieDatabase({ db: this.stateDB }),
         useKeyHashing: true,
         cacheSize: this.config.trieCache,
       })
@@ -136,7 +135,8 @@ export class VMExecution extends Execution {
         if (typeof this.vm.blockchain.genesisState !== 'function') {
           throw new Error('cannot get iterator head: blockchain has no genesisState function')
         }
-        await this.vm.stateManager.generateCanonicalGenesis(this.vm.blockchain.genesisState())
+        Object.entries(this.vm.blockchain.genesisState()).length > 0 &&
+          (await this.vm.stateManager.generateCanonicalGenesis(this.vm.blockchain.genesisState()))
       }
       await super.open()
       // TODO: Should a run be started to execute any left over blocks?
