@@ -153,7 +153,11 @@ export function twoPeerMsgExchange(
         // in production use
         case 0x00: // (-> 1)
           assert.ok(true, 'should receive initial status message')
-          protocol.sendStatus(opts.status1) // (2 ->)
+          try {
+            protocol.sendStatus(opts.status1) // (2 ->)
+          } catch {
+            // Silently handle error conditions that are tested via events
+          }
           break
       }
       if (opts.onOnMsg1 !== undefined) opts.onOnMsg1(rlpxs, protocol, code, payload)
@@ -176,7 +180,7 @@ export function destroyRLPXs(rlpxs: any) {
   }
 }
 
-export function twoPeerMsgExchange2(
+export async function twoPeerMsgExchange2(
   t: typeof it,
   opts: any,
   capabilities?: any,
@@ -218,6 +222,7 @@ export function twoPeerMsgExchange2(
       )
 
       destroyRLPXs(rlpxs)
+      opts.promise(undefined)
     })
   })
 }
@@ -238,7 +243,6 @@ export function twoPeerMsgExchange3(
   common?: Object | Common,
   basePort = 30306
 ) {
-  console.log(basePort)
   const rlpxs = initTwoPeerRLPXSetup(null, capabilities, common, basePort)
   rlpxs[0].on('peer:added', function (peer: any) {
     const protocol = peer.getProtocols()[0]
