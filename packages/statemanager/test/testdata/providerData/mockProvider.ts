@@ -109,7 +109,6 @@ export class MockProvider extends JsonRpcProvider {
   private getTransactionData = async (params: [txHash: string]) => {
     const [txHash] = params
     const txData = await import(`./transactions/${txHash}.json`)
-    console.log(txData)
     return txData
   }
 }

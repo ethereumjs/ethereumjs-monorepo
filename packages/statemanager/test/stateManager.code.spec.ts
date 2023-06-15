@@ -1,5 +1,4 @@
 import { Account, Address, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
-import { inherits } from 'util'
 import { assert, describe, it } from 'vitest'
 // explicitly import `inherits` to fix karma-typescript issue
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

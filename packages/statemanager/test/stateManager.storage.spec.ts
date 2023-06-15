@@ -1,7 +1,6 @@
 import { Address, hexStringToBytes, unpadBytes, zeros } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { bytesToHex, concatBytes, equalsBytes } from 'ethereum-cryptography/utils.js'
-import { inherits } from 'util'
 import { assert, describe, it } from 'vitest'
 // explicitly import `inherits` to fix karma-typescript issue
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
