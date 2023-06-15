@@ -39,8 +39,6 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
     mixHash,
     nonce,
     baseFeePerGas,
-    verkleProof,
-    verklePreStateRaw,
     withdrawalsRoot,
     dataGasUsed,
     excessDataGas,
@@ -54,18 +52,19 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
   }
 
   // TODO: Consider moving this in the header constructor helpers?
-  const verklePreState = (verklePreStateRaw as unknown as Buffer[][]).reduce<any>(
-    (previousValue: { [key: string]: string }, currentValue: Buffer[]) => {
-      const [key, value] = currentValue
-      previousValue[toType(key, TypeOutput.PrefixedHexString)] = toType(
-        value,
-        TypeOutput.PrefixedHexString
-      )
-      return previousValue
-    },
-    {}
-  )
+  // const verklePreState = (verklePreStateRaw as unknown as Buffer[][]).reduce<any>(
+  //   (previousValue: { [key: string]: string }, currentValue: Buffer[]) => {
+  //     const [key, value] = currentValue
+  //     previousValue[toType(key, TypeOutput.PrefixedHexString)] = toType(
+  //       value,
+  //       TypeOutput.PrefixedHexString
+  //     )
+  //     return previousValue
+  //   },
+  //   {}
+  // )
 
+  // TODO: verkleWitnesses
   return {
     parentHash,
     uncleHash,
@@ -83,8 +82,6 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
     mixHash,
     nonce,
     baseFeePerGas,
-    verkleProof,
-    verklePreState,
     withdrawalsRoot,
     dataGasUsed,
     excessDataGas,

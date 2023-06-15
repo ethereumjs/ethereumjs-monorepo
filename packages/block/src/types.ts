@@ -85,7 +85,7 @@ export interface VerkleProof {
 
 export interface VerkleStateDiff {
   stem: PrefixedHexString
-  suffixDiffs: { currentValue: PrefixedHexString | null; suffix: number }
+  suffixDiffs: { currentValue: PrefixedHexString; suffix: number }[]
 }
 
 export interface VerkleExecutionWitness {
