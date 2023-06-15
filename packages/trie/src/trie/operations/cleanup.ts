@@ -33,6 +33,8 @@ export async function _cleanupBranchNode(
   }
   debug = debug.extend('_cleanupBranchNode')
   const childCount = node.childCount()
+  const branches = [...(await node.childNodes()).keys()]
+  let child: TNode
   switch (childCount) {
     case 0:
       if (!node.value) {
@@ -49,25 +51,25 @@ export async function _cleanupBranchNode(
         return newNode
       }
     case 1:
-      if (node.value) {
+      if (node.value !== null && node.value.length > 0) {
         return node
       } else {
-        const [nibble, _child] = (await node.childNodes()).entries().next().value as [number, TNode]
-        let child = _child
+        child = await node.getChild(branches[0])
         const childType = child.getType()
         if (childType === 'ProofNode') {
           child = (await this.lookupNodeByHash(child.hash())) ?? child
         }
         debug.extend(`ONE_CHILD`)(
-          `BranchNode is now ExtensionNode: [${nibble}]: child: ${childType}`
+          `BranchNode is now ExtensionNode: [${branches[0]}]: child: ${childType}`
         )
+        child = await this._cleanupNode(child, debug)
         node = new ExtensionNode({
-          keyNibbles: [nibble],
+          keyNibbles: [branches[0]],
           subNode: child,
           hashFunction: this.hashFunction,
           source: debug,
         })
-        // node = await this._cleanupNode(node)
+        node = await this._cleanupNode(node)
         await this.storeNode(node, debug)
         return node
       }
@@ -152,7 +154,7 @@ export async function _cleanupExtensionNode(
         await this.storeNode(node)
         return node
       }
-      debug(`ExtensionNode child: BranchNode has 1 child.`)
+      debug(`ExtensionNode child: BranchNode has 1 child: ${child.getType()}`)
       if (
         (child as BranchNode).getValue() instanceof Uint8Array &&
         (child as BranchNode).getValue()!.length > 0
@@ -161,7 +163,7 @@ export async function _cleanupExtensionNode(
         await this.storeNode(node)
         return node
       }
-      // debug.extend(`ExtensionNode`)(`ExtensionNode child: BranchNode has 1 child.`)
+      debug.extend(`ExtensionNode`)(`cleanup child: BranchNode`)
       newChild = await this._cleanupNode(child)
       newNode = node.updateChild(newChild)
       await this.storeNode(newChild)
