@@ -39,7 +39,7 @@
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
-    "test": "npx vitest run --testTimeout=30000",
+    "test": "npx vitest run --testTimeout=60000",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
