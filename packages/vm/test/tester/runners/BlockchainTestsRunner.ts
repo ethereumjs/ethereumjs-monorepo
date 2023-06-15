@@ -15,12 +15,13 @@ import {
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
-import { assert, describe, it } from 'vitest'
 
+import { VM } from '../../../src'
 import { setupPreConditions, verifyPostConditions } from '../../util'
 
 import type { EthashConsensus } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
+import type * as tape from 'tape'
 
 initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet6.txt')
 
@@ -35,7 +36,7 @@ function formatBlockHeader(data: any) {
 export async function runBlockchainTest(options: any, testData: any, t: tape.Test) {
   // ensure that the test data is the right fork data
   if (testData.network !== options.forkConfigTestSuite) {
-    assert.ok(true, `skipping test: no data available for ${options.forkConfigTestSuite}`)
+    t.comment(`skipping test: no data available for ${options.forkConfigTestSuite}`)
     return
   }
 
@@ -70,7 +71,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   if (typeof testData.genesisRLP === 'string') {
     const rlp = toBytes(testData.genesisRLP)
-    assert.deepEqual(genesisBlock.serialize(), rlp, 'correct genesis RLP')
+    t.deepEquals(genesisBlock.serialize(), rlp, 'correct genesis RLP')
   }
 
   let blockchain = await Blockchain.create({
@@ -82,13 +83,6 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   if (validatePow) {
     ;(blockchain.consensus as EthashConsensus)._ethash!.cacheDB = cacheDB as any
-  }
-
-  let VM
-  if (options.dist === true) {
-    ;({ VM } = require('../../../dist'))
-  } else {
-    ;({ VM } = require('../../../src'))
   }
 
   const begin = Date.now()
@@ -103,17 +97,17 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   // set up pre-state
   await setupPreConditions(vm.stateManager, testData)
 
-  assert.deepEqual(
-    vm.stateManager._trie.root(),
+  t.deepEquals(
+    (vm.stateManager as any)._trie.root(),
     genesisBlock.header.stateRoot,
     'correct pre stateRoot'
   )
 
   async function handleError(error: string | undefined, expectException: string | boolean) {
     if (expectException !== false) {
-      assert.ok(true, `Expected exception ${expectException}`)
+      t.pass(`Expected exception ${expectException}`)
     } else {
-      assert.fail(error)
+      t.fail(error)
     }
   }
 
@@ -174,13 +168,13 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
             const tx = TransactionFactory.fromSerializedData(txRLP, { common })
             await blockBuilder.addTransaction(tx)
             if (shouldFail) {
-              assert.fail('tx should fail, but did not fail')
+              t.fail('tx should fail, but did not fail')
             }
           } catch (e: any) {
             if (!shouldFail) {
-              assert.fail(`tx should not fail, but failed: ${e.message}`)
+              t.fail(`tx should not fail, but failed: ${e.message}`)
             } else {
-              assert.ok(true, 'tx successfully failed')
+              t.pass('tx successfully failed')
             }
           }
         }
@@ -194,7 +188,8 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       // state. Generating the genesis state is not needed because
       // blockchain tests come with their own `pre` world state.
       // TODO: Add option to `runBlockchain` not to generate genesis state.
-      vm._common.genesis().stateRoot = vm.stateManager._trie.root()
+      //
+      //vm._common.genesis().stateRoot = vm.stateManager._trie.root()
       try {
         await blockchain.iterator('vm', async (block: Block) => {
           const parentBlock = await blockchain!.getBlock(block.header.parentHash)
@@ -218,7 +213,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         if (options.debug !== true) {
           // make sure the state is set before checking post conditions
           const headBlock = await vm.blockchain.getIteratorHead()
-          vm.stateManager._trie.root(headBlock.header.stateRoot)
+          ;(vm.stateManager as any)._trie.root(headBlock.header.stateRoot)
         } else {
           await verifyPostConditions(state, testData.postState, t)
         }
@@ -229,7 +224,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       //  await cacheDB._leveldb.close()
 
       if (expectException !== false) {
-        assert.fail(`expected exception but test did not throw an exception: ${expectException}`)
+        t.fail(`expected exception but test did not throw an exception: ${expectException}`)
         return
       }
     } catch (error: any) {
@@ -238,7 +233,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       await handleError(error, expectException)
     }
   }
-  assert.equal(
+  t.equal(
     bytesToHex((blockchain as any)._headHeaderHash),
     testData.lastblockhash,
     'correct last header block'
@@ -246,7 +241,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`
-  assert.ok(true, `Time: ${timeSpent}`)
+  t.comment(`Time: ${timeSpent}`)
   // await cacheDB._leveldb.close()
 
   // @ts-ignore Explicitly delete objects for memory optimization (early GC)

@@ -3,13 +3,12 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { Account, Address, bytesToHex, equalsBytes, toBytes } from '@ethereumjs/util'
-import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../../../../evm/src'
+import { VM } from '../../../src'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
 
-import type { VM } from '../../../src'
 import type { InterpreterStep } from '@ethereumjs/evm'
+import type * as tape from 'tape'
 
 function parseTestCases(
   forkConfigTestSuite: string,
@@ -66,12 +65,6 @@ function parseTestCases(
 }
 
 async function runTestCase(options: any, testData: any, t: tape.Test) {
-  let VM
-  if (options.dist === true) {
-    ;({ VM } = require('../../../dist'))
-  } else {
-    ;({ VM } = require('../../../src'))
-  }
   const begin = Date.now()
   // Copy the common object to not create long-lasting
   // references in memory which might prevent GC
@@ -87,8 +80,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     common,
   })
 
-  const evm = new EVM({ common, stateManager, blockchain })
-  const vm = await VM.create({ state, stateManager, common, blockchain, evm })
+  const vm = await VM.create({ stateManager, common, blockchain })
 
   await setupPreConditions(vm.stateManager, testData)
 
@@ -122,14 +114,14 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
       opName: e.opcode.name,
     }
 
-    assert.ok(true, JSON.stringify(opTrace))
+    t.comment(JSON.stringify(opTrace))
   }
 
   const afterTxHandler = async () => {
     const stateRoot = {
-      stateRoot: bytesToHex(vm.stateManager._trie.root),
+      stateRoot: bytesToHex((vm.stateManager as any)._trie.root),
     }
-    assert.ok(true, JSON.stringify(stateRoot))
+    t.comment(JSON.stringify(stateRoot))
   }
 
   if (tx) {
@@ -155,14 +147,14 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   await (<VM>vm).evm.journal.cleanup()
   await (<VM>vm).stateManager.getStateRoot() // Ensure state root is updated (flush all changes to trie)
 
-  const stateManagerStateRoot = vm.stateManager._trie.root()
+  const stateManagerStateRoot = (vm.stateManager as any)._trie.root()
   const testDataPostStateRoot = toBytes(testData.postStateRoot)
   const stateRootsAreEqual = equalsBytes(stateManagerStateRoot, testDataPostStateRoot)
 
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`
 
-  assert.ok(stateRootsAreEqual, `[ ${timeSpent} ] the state roots should match (${execInfo})`)
+  t.ok(stateRootsAreEqual, `[ ${timeSpent} ] the state roots should match (${execInfo})`)
 
   vm.evm.events.removeListener('step', stepHandler)
   vm.events.removeListener('afterTx', afterTxHandler)
@@ -184,7 +176,7 @@ export async function runStateTest(options: any, testData: any, t: tape.Test) {
       options.value
     )
     if (testCases.length === 0) {
-      assert.ok(true, `No ${options.forkConfigTestSuite} post state defined, skip test`)
+      t.comment(`No ${options.forkConfigTestSuite} post state defined, skip test`)
       return
     }
     for (const testCase of testCases) {
@@ -193,13 +185,13 @@ export async function runStateTest(options: any, testData: any, t: tape.Test) {
         for (let x = 0; x < options.reps; x++) {
           totalTimeSpent += await runTestCase(options, testCase, t)
         }
-        assert.ok(true, `Average test run: ${(totalTimeSpent / options.reps).toLocaleString()} s`)
+        t.comment(`Average test run: ${(totalTimeSpent / options.reps).toLocaleString()} s`)
       } else {
         await runTestCase(options, testCase, t)
       }
     }
   } catch (e: any) {
     console.log(e)
-    assert.fail(`error running test case for fork: ${options.forkConfigTestSuite}`)
+    t.fail(`error running test case for fork: ${options.forkConfigTestSuite}`)
   }
 }

@@ -19,11 +19,11 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
-import { assert, describe, it } from 'vitest'
 
 import type { BlockOptions } from '@ethereumjs/block'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
 import type { TxOptions } from '@ethereumjs/tx'
+import type * as tape from 'tape'
 
 export function dumpState(state: any, cb: Function) {
   function readAccounts(state: any) {
@@ -159,14 +159,14 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
         const promise = verifyAccountPostConditions(state, address, account, testData, t)
         queue.push(promise)
       } else {
-        assert.ok(true, 'invalid account in the trie: ' + <string>key)
+        t.comment('invalid account in the trie: ' + <string>key)
       }
     })
 
     stream.on('end', async function () {
       await Promise.all(queue)
       for (const [_key, address] of Object.entries(keyMap)) {
-        assert.ok(true, `Missing account!: ${address}`)
+        t.comment(`Missing account!: ${address}`)
       }
       resolve()
     })
@@ -188,18 +188,16 @@ export function verifyAccountPostConditions(
   t: tape.Test
 ) {
   return new Promise<void>((resolve) => {
-    assert.ok(true, 'Account: ' + address)
+    t.comment('Account: ' + address)
     if (!equalsBytes(format(account.balance, true), format(acctData.balance, true))) {
-      assert.ok(
-        true,
+      t.comment(
         `Expected balance of ${bytesToBigInt(format(acctData.balance, true))}, but got ${
           account.balance
         }`
       )
     }
     if (!equalsBytes(format(account.nonce, true), format(acctData.nonce, true))) {
-      assert.ok(
-        true,
+      t.comment(
         `Expected nonce of ${bytesToBigInt(format(acctData.nonce, true))}, but got ${account.nonce}`
       )
     }
@@ -226,8 +224,7 @@ export function verifyAccountPostConditions(
       }
 
       if (val !== hashedStorage[key]) {
-        assert.ok(
-          true,
+        t.comment(
           `Expected storage key 0x${bytesToHex(data.key)} at address ${address} to have value ${
             hashedStorage[key] ?? '0x'
           }, but got ${val}}`
@@ -239,7 +236,7 @@ export function verifyAccountPostConditions(
     rs.on('end', function () {
       for (const key in hashedStorage) {
         if (hashedStorage[key] !== '0x00') {
-          assert.ok(true, `key: ${key} not found in storage at address ${address}`)
+          t.comment(`key: ${key} not found in storage at address ${address}`)
         }
       }
 
@@ -266,9 +263,9 @@ export function verifyGas(results: any, testData: any, t: tape.Test) {
   const balance = postBal - preBal
   if (balance !== BigInt(0)) {
     const amountSpent = results.gasUsed * testData.transaction.gasPrice
-    assert.equal(amountSpent, balance, 'correct gas')
+    t.equal(amountSpent, balance, 'correct gas')
   } else {
-    assert.equal(results, undefined)
+    t.equal(results, undefined)
   }
 }
 

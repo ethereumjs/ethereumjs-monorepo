@@ -1,7 +1,7 @@
 import * as minimist from 'minimist'
 import * as path from 'path'
 import * as process from 'process'
-import { assert, describe, it } from 'vitest'
+import * as tape from 'tape'
 
 import {
   DEFAULT_FORK_CONFIG,
@@ -186,17 +186,18 @@ async function runTests() {
 
   if (argv.customStateTest !== undefined) {
     const fileName: string = argv.customStateTest
-    describe(name, () => {
+    tape(name, (t) => {
       getTestFromSource(fileName, async (err: string | null, test: any) => {
         if (err !== null) {
-          return assert.fail(err)
+          return t.fail(err)
         }
-        assert.ok(true, `file: ${fileName} test: ${test.testName}`)
+        t.comment(`file: ${fileName} test: ${test.testName}`)
         await runStateTest(runnerArgs, test, t)
+        t.end()
       })
     })
   } else {
-    describe(name, async () => {
+    tape(name, async (t) => {
       let testIdentifier: string
       const failingTests: Record<string, string[] | undefined> = {}
 
@@ -233,7 +234,7 @@ async function runTests() {
               const inRunSkipped = runSkipped.includes(fileName)
               if (runSkipped.length === 0 || inRunSkipped === true) {
                 testIdentifier = `file: ${subDir} test: ${testName}`
-                assert.ok(true, testIdentifier)
+                t.comment(testIdentifier)
                 await runner(runnerArgs, test, t)
               }
             },
@@ -243,7 +244,7 @@ async function runTests() {
               resolve()
             })
             .catch((error: string) => {
-              assert.fail(error)
+              t.fail(error)
               reject()
             })
         })
@@ -259,11 +260,10 @@ async function runTests() {
 
       if (expectedTests !== undefined) {
         const { assertCount } = t as any
-        assert.ok(
-          assertCount >= expectedTests,
-          `expected ${expectedTests} checks, got ${assertCount}`
-        )
+        t.ok(assertCount >= expectedTests, `expected ${expectedTests} checks, got ${assertCount}`)
       }
+
+      t.end()
     })
   }
 }
