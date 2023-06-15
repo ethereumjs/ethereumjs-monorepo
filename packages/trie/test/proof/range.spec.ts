@@ -9,7 +9,7 @@ import {
 import * as crypto from 'crypto'
 import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../../src/index.js'
+import { Trie, bytesToNibbles } from '../../src/index.js'
 
 import type { DB } from '@ethereumjs/util'
 
@@ -24,7 +24,7 @@ const TRIE_SIZE = 512
  */
 async function randomTrie(db: DB<string, string>, addKey: boolean = true) {
   const entries: [Uint8Array, Uint8Array][] = []
-  const trie = new Trie({ db })
+  const trie = new Trie({})
 
   if (addKey) {
     for (let i = 0; i < 100; i++) {
@@ -90,9 +90,9 @@ async function verify(
   const targetRange = entries.slice(start, end + 1)
   return trie.verifyRangeProof(
     trie.root(),
-    startKey,
-    endKey,
-    keys ?? targetRange.map(([key]) => key),
+    bytesToNibbles(startKey),
+    bytesToNibbles(endKey),
+    keys ? keys.map((key) => bytesToNibbles(key)) : targetRange.map(([key]) => bytesToNibbles(key)),
     vals ?? targetRange.map(([, val]) => val),
     [...(await trie.createProof(startKey)), ...(await trie.createProof(endKey))]
   )
@@ -217,9 +217,9 @@ describe('simple merkle range proofs generation and verification', () => {
         trie.root(),
         null,
         null,
-        entries.map(([key]) => key),
+        entries.map(([key]) => bytesToNibbles(key)),
         entries.map(([, val]) => val),
-        null
+        undefined
       ),
       false
     )
