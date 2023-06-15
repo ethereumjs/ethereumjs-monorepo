@@ -20,7 +20,6 @@
     "Alex Beregszaszi <alex@rtfs.hu>"
   ],
   "main": "dist/cjs/index.js",
-  "type": "module",
   "module": "dist/esm/index.js",
   "exports": {
     ".": {
