@@ -16,7 +16,7 @@ export interface EVMInterface {
   runCode?(opts: EVMRunCodeOpts): Promise<ExecResult>
   getActiveOpcodes?(): OpcodeList
   precompiles: Map<string, any> // Note: the `any` type is used because EVM only needs to have the addresses of the precompiles (not their functions)
-  copy(): Promise<EVMInterface>
+  copy(): EVMInterface
   stateManager: EVMStateManagerInterface
   events?: AsyncEventEmitter<EVMEvents>
 }
