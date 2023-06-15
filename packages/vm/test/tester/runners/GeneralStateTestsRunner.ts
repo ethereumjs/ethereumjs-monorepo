@@ -3,13 +3,13 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { Account, Address, bytesToHex, equalsBytes, toBytes } from '@ethereumjs/util'
+import { assert, describe, it } from 'vitest'
 
 import { EVM } from '../../../../evm/src'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
 
 import type { VM } from '../../../src'
 import type { InterpreterStep } from '@ethereumjs/evm'
-import type * as tape from 'tape'
 
 function parseTestCases(
   forkConfigTestSuite: string,
@@ -122,14 +122,14 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
       opName: e.opcode.name,
     }
 
-    t.comment(JSON.stringify(opTrace))
+    assert.ok(true, JSON.stringify(opTrace))
   }
 
   const afterTxHandler = async () => {
     const stateRoot = {
       stateRoot: bytesToHex(vm.stateManager._trie.root),
     }
-    t.comment(JSON.stringify(stateRoot))
+    assert.ok(true, JSON.stringify(stateRoot))
   }
 
   if (tx) {
@@ -162,7 +162,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`
 
-  t.ok(stateRootsAreEqual, `[ ${timeSpent} ] the state roots should match (${execInfo})`)
+  assert.ok(stateRootsAreEqual, `[ ${timeSpent} ] the state roots should match (${execInfo})`)
 
   vm.evm.events.removeListener('step', stepHandler)
   vm.events.removeListener('afterTx', afterTxHandler)
@@ -184,7 +184,7 @@ export async function runStateTest(options: any, testData: any, t: tape.Test) {
       options.value
     )
     if (testCases.length === 0) {
-      t.comment(`No ${options.forkConfigTestSuite} post state defined, skip test`)
+      assert.ok(true, `No ${options.forkConfigTestSuite} post state defined, skip test`)
       return
     }
     for (const testCase of testCases) {
@@ -193,13 +193,13 @@ export async function runStateTest(options: any, testData: any, t: tape.Test) {
         for (let x = 0; x < options.reps; x++) {
           totalTimeSpent += await runTestCase(options, testCase, t)
         }
-        t.comment(`Average test run: ${(totalTimeSpent / options.reps).toLocaleString()} s`)
+        assert.ok(true, `Average test run: ${(totalTimeSpent / options.reps).toLocaleString()} s`)
       } else {
         await runTestCase(options, testCase, t)
       }
     }
   } catch (e: any) {
     console.log(e)
-    t.fail(`error running test case for fork: ${options.forkConfigTestSuite}`)
+    assert.fail(`error running test case for fork: ${options.forkConfigTestSuite}`)
   }
 }

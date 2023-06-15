@@ -15,12 +15,12 @@ import {
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
+import { assert, describe, it } from 'vitest'
 
 import { setupPreConditions, verifyPostConditions } from '../../util'
 
 import type { EthashConsensus } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
-import type * as tape from 'tape'
 
 initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet6.txt')
 
@@ -35,7 +35,7 @@ function formatBlockHeader(data: any) {
 export async function runBlockchainTest(options: any, testData: any, t: tape.Test) {
   // ensure that the test data is the right fork data
   if (testData.network !== options.forkConfigTestSuite) {
-    t.comment(`skipping test: no data available for ${options.forkConfigTestSuite}`)
+    assert.ok(true, `skipping test: no data available for ${options.forkConfigTestSuite}`)
     return
   }
 
@@ -70,7 +70,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   if (typeof testData.genesisRLP === 'string') {
     const rlp = toBytes(testData.genesisRLP)
-    t.deepEquals(genesisBlock.serialize(), rlp, 'correct genesis RLP')
+    assert.deepEqual(genesisBlock.serialize(), rlp, 'correct genesis RLP')
   }
 
   let blockchain = await Blockchain.create({
@@ -103,13 +103,17 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   // set up pre-state
   await setupPreConditions(vm.stateManager, testData)
 
-  t.deepEquals(vm.stateManager._trie.root(), genesisBlock.header.stateRoot, 'correct pre stateRoot')
+  assert.deepEqual(
+    vm.stateManager._trie.root(),
+    genesisBlock.header.stateRoot,
+    'correct pre stateRoot'
+  )
 
   async function handleError(error: string | undefined, expectException: string | boolean) {
     if (expectException !== false) {
-      t.pass(`Expected exception ${expectException}`)
+      assert.ok(true, `Expected exception ${expectException}`)
     } else {
-      t.fail(error)
+      assert.fail(error)
     }
   }
 
@@ -170,13 +174,13 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
             const tx = TransactionFactory.fromSerializedData(txRLP, { common })
             await blockBuilder.addTransaction(tx)
             if (shouldFail) {
-              t.fail('tx should fail, but did not fail')
+              assert.fail('tx should fail, but did not fail')
             }
           } catch (e: any) {
             if (!shouldFail) {
-              t.fail(`tx should not fail, but failed: ${e.message}`)
+              assert.fail(`tx should not fail, but failed: ${e.message}`)
             } else {
-              t.pass('tx successfully failed')
+              assert.ok(true, 'tx successfully failed')
             }
           }
         }
@@ -225,7 +229,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       //  await cacheDB._leveldb.close()
 
       if (expectException !== false) {
-        t.fail(`expected exception but test did not throw an exception: ${expectException}`)
+        assert.fail(`expected exception but test did not throw an exception: ${expectException}`)
         return
       }
     } catch (error: any) {
@@ -234,7 +238,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       await handleError(error, expectException)
     }
   }
-  t.equal(
+  assert.equal(
     bytesToHex((blockchain as any)._headHeaderHash),
     testData.lastblockhash,
     'correct last header block'
@@ -242,7 +246,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`
-  t.comment(`Time: ${timeSpent}`)
+  assert.ok(true, `Time: ${timeSpent}`)
   // await cacheDB._leveldb.close()
 
   // @ts-ignore Explicitly delete objects for memory optimization (early GC)

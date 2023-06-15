@@ -1,7 +1,7 @@
 import * as minimist from 'minimist'
 import * as path from 'path'
 import * as process from 'process'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import {
   DEFAULT_FORK_CONFIG,
@@ -186,18 +186,17 @@ async function runTests() {
 
   if (argv.customStateTest !== undefined) {
     const fileName: string = argv.customStateTest
-    tape(name, (t) => {
+    describe(name, () => {
       getTestFromSource(fileName, async (err: string | null, test: any) => {
         if (err !== null) {
-          return t.fail(err)
+          return assert.fail(err)
         }
-        t.comment(`file: ${fileName} test: ${test.testName}`)
+        assert.ok(true, `file: ${fileName} test: ${test.testName}`)
         await runStateTest(runnerArgs, test, t)
-        t.end()
       })
     })
   } else {
-    tape(name, async (t) => {
+    describe(name, async () => {
       let testIdentifier: string
       const failingTests: Record<string, string[] | undefined> = {}
 
@@ -234,7 +233,7 @@ async function runTests() {
               const inRunSkipped = runSkipped.includes(fileName)
               if (runSkipped.length === 0 || inRunSkipped === true) {
                 testIdentifier = `file: ${subDir} test: ${testName}`
-                t.comment(testIdentifier)
+                assert.ok(true, testIdentifier)
                 await runner(runnerArgs, test, t)
               }
             },
@@ -244,7 +243,7 @@ async function runTests() {
               resolve()
             })
             .catch((error: string) => {
-              t.fail(error)
+              assert.fail(error)
               reject()
             })
         })
@@ -260,10 +259,11 @@ async function runTests() {
 
       if (expectedTests !== undefined) {
         const { assertCount } = t as any
-        t.ok(assertCount >= expectedTests, `expected ${expectedTests} checks, got ${assertCount}`)
+        assert.ok(
+          assertCount >= expectedTests,
+          `expected ${expectedTests} checks, got ${assertCount}`
+        )
       }
-
-      t.end()
     })
   }
 }

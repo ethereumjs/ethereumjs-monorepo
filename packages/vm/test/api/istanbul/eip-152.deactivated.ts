@@ -6,7 +6,7 @@
 import { EVMErrorMessage } from '@ethereumjs/evm'
 import { F, precompile09 } from '@ethereumjs/evm/dist/precompiles/09-blake2f'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 
@@ -83,40 +83,38 @@ const testCases = [
   },
 ]
 
-tape('Istanbul: EIP-152', (t) => {
-  t.test('Blake2f', async (st) => {
+describe('Istanbul: EIP-152', () => {
+  it('Blake2f', async () => {
     if (globalThis.navigator !== undefined && globalThis.navigator.userAgent.includes('Firefox')) {
       // TODO: investigate why this test hangs in karma with firefox
-      return st.end()
-    }
+      return     }
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const vm = await VM.create({ common })
 
     for (const testCase of failingTestCases) {
-      st.comment(testCase.name)
+      assert.ok(true, testCase.name)
       const res = precompile09({
         data: hexToBytes(testCase.input),
         gasLimit: BigInt(20),
         _common: common,
         _EVM: vm.evm,
       })
-      st.equal(res.exceptionError?.error, testCase.err)
+      assert.equal(res.exceptionError?.error, testCase.err)
     }
 
     for (const testCase of testCases) {
-      st.comment(testCase.name)
+      assert.ok(true, testCase.name)
       const res = precompile09({
         data: hexToBytes(testCase.input),
         gasLimit: BigInt(10000000),
         _common: common,
         _EVM: vm.evm,
       })
-      st.equal(bytesToHex(res.returnValue), testCase.expected)
+      assert.equal(bytesToHex(res.returnValue), testCase.expected)
     }
 
-    st.end()
-  })
+      })
 })
 
 // Test case from:
@@ -133,14 +131,13 @@ const fTestCases = [
   },
 ]
 
-tape('Blake2', (t) => {
-  t.test('F', (st) => {
+describe('Blake2', () => {
+  it('F', () => {
     for (const testCase of fTestCases) {
       F(testCase.hIn, testCase.m, testCase.t, testCase.f, testCase.rounds)
-      st.deepEqual(testCase.hIn, testCase.hOut)
+      assert.deepEqual(testCase.hIn, testCase.hOut)
     }
 
-    st.end()
-  })
+      })
 })
 */

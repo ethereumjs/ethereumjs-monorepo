@@ -4,14 +4,14 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { Account, Address, concatBytesNoTypeCheck } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../src/vm'
 
 import { setBalance } from './utils'
 
-tape('BlockBuilder', async (t) => {
-  t.test('should build a valid block', async (st) => {
+describe('BlockBuilder', () => {
+  it('should build a valid block', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const genesisBlock = Block.fromBlockData({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
@@ -39,7 +39,7 @@ tape('BlockBuilder', async (t) => {
 
     await blockBuilder.addTransaction(tx)
     const block = await blockBuilder.build()
-    st.equal(
+    assert.equal(
       blockBuilder.transactionReceipts.length,
       1,
       'should have the correct number of tx receipts'
@@ -50,14 +50,13 @@ tape('BlockBuilder', async (t) => {
       return address
     }
     const result = await vmCopy.runBlock({ block })
-    st.equal(result.gasUsed, block.header.gasUsed)
-    st.deepEquals(result.receiptsRoot, block.header.receiptTrie)
-    st.deepEquals(result.stateRoot, block.header.stateRoot)
-    st.deepEquals(result.logsBloom, block.header.logsBloom)
-    st.end()
+    assert.equal(result.gasUsed, block.header.gasUsed)
+    assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
+    assert.deepEqual(result.stateRoot, block.header.stateRoot)
+    assert.deepEqual(result.logsBloom, block.header.logsBloom)
   })
 
-  t.test('should throw if adding a transaction exceeds the block gas limit', async (st) => {
+  it('should throw if adding a transaction exceeds the block gas limit', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const vm = await VM.create({ common })
     const genesis = Block.fromBlockData({}, { common })
@@ -67,27 +66,26 @@ tape('BlockBuilder', async (t) => {
     const tx = LegacyTransaction.fromTxData({ gasLimit }, { common })
     try {
       await blockBuilder.addTransaction(tx)
-      st.fail('should throw error')
+      assert.fail('should throw error')
     } catch (error: any) {
       if (
         (error.message as string).includes(
           'tx has a higher gas limit than the remaining gas in the block'
         )
       ) {
-        st.pass('correct error thrown')
+        assert.ok(true, 'correct error thrown')
       } else {
-        st.fail('wrong error thrown')
+        assert.fail('wrong error thrown')
       }
     }
-    st.equal(
+    assert.equal(
       blockBuilder.transactionReceipts.length,
       0,
       'should have the correct number of tx receipts'
     )
-    st.end()
   })
 
-  t.test('should correctly seal a PoW block', async (st) => {
+  it('should correctly seal a PoW block', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const genesisBlock = Block.fromBlockData({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
@@ -118,13 +116,12 @@ tape('BlockBuilder', async (t) => {
     }
     const block = await blockBuilder.build(sealOpts)
 
-    st.deepEquals(block.header.mixHash, sealOpts.mixHash)
-    st.deepEquals(block.header.nonce, sealOpts.nonce)
-    st.doesNotThrow(async () => vm.blockchain.consensus.validateDifficulty(block.header))
-    st.end()
+    assert.deepEqual(block.header.mixHash, sealOpts.mixHash)
+    assert.deepEqual(block.header.nonce, sealOpts.nonce)
+    assert.doesNotThrow(async () => vm.blockchain.consensus.validateDifficulty(block.header))
   })
 
-  t.test('should correctly seal a PoA block', async (st) => {
+  it('should correctly seal a PoA block', async () => {
     const signer = {
       address: new Address(hexToBytes('0b90087d864e82a284dca15923f3776de6bb016f')),
       privateKey: hexToBytes('64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
@@ -167,16 +164,15 @@ tape('BlockBuilder', async (t) => {
 
     const block = await blockBuilder.build()
 
-    st.ok(block.header.cliqueVerifySignature([signer.address]), 'should verify signature')
-    st.deepEquals(
+    assert.ok(block.header.cliqueVerifySignature([signer.address]), 'should verify signature')
+    assert.deepEqual(
       block.header.cliqueSigner(),
       signer.address,
       'should recover the correct signer address'
     )
-    st.end()
   })
 
-  t.test('should throw if block already built or reverted', async (st) => {
+  it('should throw if block already built or reverted', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const genesisBlock = Block.fromBlockData({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
@@ -203,9 +199,13 @@ tape('BlockBuilder', async (t) => {
 
     try {
       await blockBuilder.revert()
-      st.equal(blockBuilder.getStatus().status, 'reverted', 'block should be in reverted status')
+      assert.equal(
+        blockBuilder.getStatus().status,
+        'reverted',
+        'block should be in reverted status'
+      )
     } catch (error: any) {
-      st.fail('shoud not throw')
+      assert.fail('shoud not throw')
     }
 
     blockBuilder = await vm.buildBlock({ parentBlock: genesisBlock })
@@ -223,15 +223,17 @@ tape('BlockBuilder', async (t) => {
 
     try {
       await blockBuilder.revert()
-      st.equal(blockBuilder.getStatus().status, 'reverted', 'block should be in reverted status')
+      assert.equal(
+        blockBuilder.getStatus().status,
+        'reverted',
+        'block should be in reverted status'
+      )
     } catch (error: any) {
-      st.fail('shoud not throw')
+      assert.fail('shoud not throw')
     }
-
-    st.end()
   })
 
-  t.test('should build a block without any txs', async (st) => {
+  it('should build a block without any txs', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const genesisBlock = Block.fromBlockData({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
@@ -247,14 +249,13 @@ tape('BlockBuilder', async (t) => {
 
     // block should successfully execute with VM.runBlock and have same outputs
     const result = await vmCopy.runBlock({ block })
-    st.equal(result.gasUsed, block.header.gasUsed)
-    st.deepEquals(result.receiptsRoot, block.header.receiptTrie)
-    st.deepEquals(result.stateRoot, block.header.stateRoot)
-    st.deepEquals(result.logsBloom, block.header.logsBloom)
-    st.end()
+    assert.equal(result.gasUsed, block.header.gasUsed)
+    assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
+    assert.deepEqual(result.stateRoot, block.header.stateRoot)
+    assert.deepEqual(result.logsBloom, block.header.logsBloom)
   })
 
-  t.test('should build a 1559 block with legacy and 1559 txs', async (st) => {
+  it('should build a 1559 block with legacy and 1559 txs', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [1559] })
     const genesisBlock = Block.fromBlockData(
       { header: { gasLimit: 50000, baseFeePerGas: 100 } },
@@ -293,9 +294,9 @@ tape('BlockBuilder', async (t) => {
     for (const tx of [tx1, tx2]) {
       try {
         await blockBuilder.addTransaction(tx)
-        st.fail('should throw error')
+        assert.fail('should throw error')
       } catch (error: any) {
-        st.ok(
+        assert.ok(
           (error.message as string).includes("is less than the block's baseFeePerGas"),
           'should fail with appropriate error'
         )
@@ -320,17 +321,17 @@ tape('BlockBuilder', async (t) => {
 
     for (const tx of [tx3, tx4]) {
       await blockBuilder.addTransaction(tx)
-      st.ok('should pass')
+      assert.ok('should pass')
     }
 
     const block = await blockBuilder.build()
-    st.equal(
+    assert.equal(
       blockBuilder.transactionReceipts.length,
       2,
       'should have the correct number of tx receipts'
     )
 
-    st.ok(
+    assert.ok(
       block.header.baseFeePerGas! === genesisBlock.header.calcNextBaseFee(),
       "baseFeePerGas should equal parentHeader's calcNextBaseFee"
     )
@@ -343,10 +344,9 @@ tape('BlockBuilder', async (t) => {
       return address
     }
     const result = await vmCopy.runBlock({ block })
-    st.equal(result.gasUsed, block.header.gasUsed)
-    st.deepEquals(result.receiptsRoot, block.header.receiptTrie)
-    st.deepEquals(result.stateRoot, block.header.stateRoot)
-    st.deepEquals(result.logsBloom, block.header.logsBloom)
-    st.end()
+    assert.equal(result.gasUsed, block.header.gasUsed)
+    assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
+    assert.deepEqual(result.stateRoot, block.header.stateRoot)
+    assert.deepEqual(result.logsBloom, block.header.logsBloom)
   })
 })

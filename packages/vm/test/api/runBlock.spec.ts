@@ -9,7 +9,7 @@ import {
 } from '@ethereumjs/tx'
 import { Account, Address, KECCAK256_RLP, toBytes } from '@ethereumjs/util'
 import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../src/vm'
 import { getDAOCommon, setupPreConditions } from '../util'
@@ -28,8 +28,8 @@ import type { TypedTransaction } from '@ethereumjs/tx'
 const testData = require('./testdata/blockchain.json')
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 
-tape('runBlock() -> successful API parameter usage', async (t) => {
-  async function simpleRun(vm: VM, st: tape.Test) {
+describe('runBlock() -> successful API parameter usage', async () => {
+  async function simpleRun(vm: VM) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const genesisRlp = toBytes(testData.genesisRLP)
     const genesis = Block.fromRLPSerializedBlock(genesisRlp, { common })
@@ -40,7 +40,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     //@ts-ignore
     await setupPreConditions(vm.stateManager, testData)
 
-    st.deepEquals(
+    assert.deepEqual(
       //@ts-ignore
       vm.stateManager._trie.root(),
       genesis.header.stateRoot,
@@ -55,14 +55,14 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       skipHardForkValidation: true,
     })
 
-    st.equal(
+    assert.equal(
       res.results[0].totalGasSpent.toString(16),
       '5208',
       'actual gas used should equal blockHeader gasUsed'
     )
   }
 
-  async function uncleRun(vm: VM, st: tape.Test) {
+  async function uncleRun(vm: VM) {
     const testData = require('./testdata/uncleData.json')
 
     //@ts-ignore
@@ -103,38 +103,38 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       Address.fromString('0xb94f5374fce5ed0000000097c15331677e6ebf0b')
     ))!.balance.toString(16)
 
-    st.equal(
+    assert.equal(
       `0x${uncleReward}`,
       testData.postState['0xb94f5374fce5ed0000000097c15331677e6ebf0b'].balance,
       'calculated balance should equal postState balance'
     )
   }
 
-  t.test('PoW block, unmodified options', async (st) => {
+  it('PoW block, unmodified options', async () => {
     const vm = await setupVM({ common })
-    await simpleRun(vm, st)
+    await simpleRun(vm)
   })
 
-  t.test('Uncle blocks, compute uncle rewards', async (st) => {
+  it('Uncle blocks, compute uncle rewards', async () => {
     const vm = await setupVM({ common })
-    await uncleRun(vm, st)
+    await uncleRun(vm)
   })
 
-  t.test('PoW block, Common custom chain (Common.custom() static constructor)', async (st) => {
+  it('PoW block, Common custom chain (Common.custom() static constructor)', async () => {
     const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
     const common = Common.custom(customChainParams, { baseChain: 'mainnet', hardfork: 'berlin' })
     const vm = await setupVM({ common })
-    await simpleRun(vm, st)
+    await simpleRun(vm)
   })
 
-  t.test('PoW block, Common custom chain (Common customChains constructor option)', async (st) => {
+  it('PoW block, Common custom chain (Common customChains constructor option)', async () => {
     const customChains = [testnet]
     const common = new Common({ chain: 'testnet', hardfork: Hardfork.Berlin, customChains })
     const vm = await setupVM({ common })
-    await simpleRun(vm, st)
+    await simpleRun(vm)
   })
 
-  t.test('hardforkByBlockNumber option', async (st) => {
+  it('hardforkByBlockNumber option', async () => {
     const common1 = new Common({
       chain: Chain.Mainnet,
       hardfork: Hardfork.MuirGlacier,
@@ -183,12 +183,12 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       skipBlockValidation: true,
       generate: true,
     })
-    st.equal(
+    assert.equal(
       txResultChainstart.results[0].totalGasSpent,
       BigInt(21000) + BigInt(68) * BigInt(3) + BigInt(3) + BigInt(50),
       'tx charged right gas on chainstart hard fork'
     )
-    st.equal(
+    assert.equal(
       txResultMuirGlacier.results[0].totalGasSpent,
       BigInt(21000) + BigInt(32000) + BigInt(16) * BigInt(3) + BigInt(3) + BigInt(800),
       'tx charged right gas on muir glacier hard fork'
@@ -196,10 +196,10 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
   })
 })
 
-tape('runBlock() -> API parameter usage/data errors', async (t) => {
+describe('runBlock() -> API parameter usage/data errors', async () => {
   const vm = await VM.create({ common })
 
-  t.test('should fail when runTx fails', async (t) => {
+  it('should fail when runTx fails', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const blockRlp = toBytes(testData.blocks[0].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
@@ -208,11 +208,11 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
     // which always returns an error.
     await vm
       .runBlock({ block, skipBlockValidation: true, skipHardForkValidation: true })
-      .then(() => t.fail('should have returned error'))
-      .catch((e) => t.ok(e.message.includes("sender doesn't have enough funds to send tx")))
+      .then(() => assert.fail('should have returned error'))
+      .catch((e) => assert.ok(e.message.includes("sender doesn't have enough funds to send tx")))
   })
 
-  t.test('should fail when block gas limit higher than 2^63-1', async (t) => {
+  it('should fail when block gas limit higher than 2^63-1', async () => {
     const vm = await VM.create({ common })
 
     const block = Block.fromBlockData({
@@ -223,11 +223,11 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
     })
     await vm
       .runBlock({ block })
-      .then(() => t.fail('should have returned error'))
-      .catch((e) => t.ok(e.message.includes('Invalid block')))
+      .then(() => assert.fail('should have returned error'))
+      .catch((e) => assert.ok(e.message.includes('Invalid block')))
   })
 
-  t.test('should fail when block validation fails', async (t) => {
+  it('should fail when block validation fails', async () => {
     const vm = await VM.create({ common })
 
     const blockRlp = toBytes(testData.blocks[0].rlp)
@@ -235,16 +235,16 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
 
     await vm
       .runBlock({ block })
-      .then(() => t.fail('should have returned error'))
+      .then(() => assert.fail('should have returned error'))
       .catch((e) => {
-        t.ok(
+        assert.ok(
           e.message.includes('not found in DB'),
           'block failed validation due to no parent header'
         )
       })
   })
 
-  t.test('should fail when no `validateHeader` method exists on blockchain class', async (t) => {
+  it('should fail when no `validateHeader` method exists on blockchain class', async () => {
     const vm = await VM.create({ common })
     const blockRlp = toBytes(testData.blocks[0].rlp)
     const block = Object.create(Block.fromRLPSerializedBlock(blockRlp, { common }))
@@ -252,7 +252,7 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
     try {
       await vm.runBlock({ block })
     } catch (err: any) {
-      t.equal(
+      assert.equal(
         err.message,
         'cannot validate header: blockchain has no `validateHeader` method',
         'should error'
@@ -260,7 +260,7 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
     }
   })
 
-  t.test('should fail when tx gas limit higher than block gas limit', async (t) => {
+  it('should fail when tx gas limit higher than block gas limit', async () => {
     const vm = await VM.create({ common })
 
     const blockRlp = toBytes(testData.blocks[0].rlp)
@@ -277,14 +277,14 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
 
     await vm
       .runBlock({ block, skipBlockValidation: true })
-      .then(() => t.fail('should have returned error'))
-      .catch((e) => t.ok(e.message.includes('higher gas limit')))
+      .then(() => assert.fail('should have returned error'))
+      .catch((e) => assert.ok(e.message.includes('higher gas limit')))
   })
 })
 
-tape('runBlock() -> runtime behavior', async (t) => {
+describe('runBlock() -> runtime behavior', async () => {
   // this test actually checks if the DAO fork works. This is not checked in ethereum/tests
-  t.test('DAO fork behavior', async (t) => {
+  it('DAO fork behavior', async () => {
     const common = getDAOCommon(1)
 
     const vm = await setupVM({ common })
@@ -324,19 +324,19 @@ tape('runBlock() -> runtime behavior', async (t) => {
 
     const DAOFundedContractAccount1 =
       (await vm.stateManager.getAccount(DAOFundedContractAddress1)) ?? new Account()
-    t.equals(DAOFundedContractAccount1!.balance, BigInt(0)) // verify our funded account now has 0 balance
+    assert.equal(DAOFundedContractAccount1!.balance, BigInt(0)) // verify our funded account now has 0 balance
     const DAOFundedContractAccount2 =
       (await vm.stateManager.getAccount(DAOFundedContractAddress2)) ?? new Account()
-    t.equals(DAOFundedContractAccount2!.balance, BigInt(0)) // verify our funded account now has 0 balance
+    assert.equal(DAOFundedContractAccount2!.balance, BigInt(0)) // verify our funded account now has 0 balance
 
     const DAORefundAccount = await vm.stateManager.getAccount(DAORefundAddress)
     // verify that the refund account gets the summed balance of the original refund account + two child DAO accounts
     const msg =
       'should transfer balance from DAO children to the Refund DAO account in the DAO fork'
-    t.equal(DAORefundAccount!.balance, BigInt(0x7777), msg)
+    assert.equal(DAORefundAccount!.balance, BigInt(0x7777), msg)
   })
 
-  t.test('should allocate to correct clique beneficiary', async (t) => {
+  it('should allocate to correct clique beneficiary', async () => {
     const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Istanbul })
     const vm = await setupVM({ common })
 
@@ -371,7 +371,11 @@ tape('runBlock() -> runtime behavior', async (t) => {
 
     await vm.runBlock({ block, skipNonce: true, skipBlockValidation: true, generate: true })
     const account = await vm.stateManager.getAccount(signer.address)
-    t.equal(account!.balance, BigInt(42000), 'beneficiary balance should equal the cost of the txs')
+    assert.equal(
+      account!.balance,
+      BigInt(42000),
+      'beneficiary balance should equal the cost of the txs'
+    )
   })
 })
 
@@ -396,7 +400,7 @@ async function runBlockAndGetAfterBlockEvent(
   return results!
 }
 
-tape('should correctly reflect generated fields', async (t) => {
+describe('should correctly reflect generated fields', async () => {
   const vm = await VM.create()
 
   // We create a block with a receiptTrie and transactionsTrie
@@ -414,9 +418,9 @@ tape('should correctly reflect generated fields', async (t) => {
     skipBlockValidation: true,
   })
 
-  t.deepEquals(results.block.header.receiptTrie, KECCAK256_RLP)
-  t.deepEquals(results.block.header.transactionsTrie, KECCAK256_RLP)
-  t.equal(results.block.header.gasUsed, BigInt(0))
+  assert.deepEqual(results.block.header.receiptTrie, KECCAK256_RLP)
+  assert.deepEqual(results.block.header.transactionsTrie, KECCAK256_RLP)
+  assert.equal(results.block.header.gasUsed, BigInt(0))
 })
 
 async function runWithHf(hardfork: string) {
@@ -438,17 +442,17 @@ async function runWithHf(hardfork: string) {
 }
 
 // TODO: complete on result values and add more usage scenario test cases
-tape('runBlock() -> API return values', async (t) => {
-  t.test('should return correct HF receipts', async (t) => {
+describe('runBlock() -> API return values', () => {
+  it('should return correct HF receipts', async () => {
     let res = await runWithHf('byzantium')
-    t.equal(
+    assert.equal(
       (res.receipts[0] as PostByzantiumTxReceipt).status,
       1,
       'should return correct post-Byzantium receipt format'
     )
 
     res = await runWithHf('spuriousDragon')
-    t.deepEqual(
+    assert.deepEqual(
       (res.receipts[0] as PreByzantiumTxReceipt).stateRoot,
       hexToBytes('4477e2cfaf9fd2eed4f74426798b55d140f6a9612da33413c4745f57d7a97fcc'),
       'should return correct pre-Byzantium receipt format'
@@ -456,8 +460,8 @@ tape('runBlock() -> API return values', async (t) => {
   })
 })
 
-tape('runBlock() -> tx types', async (t) => {
-  async function simpleRun(vm: VM, transactions: TypedTransaction[], st: tape.Test) {
+describe('runBlock() -> tx types', async () => {
+  async function simpleRun(vm: VM, transactions: TypedTransaction[]) {
     const common = vm._common
 
     const blockRlp = toBytes(testData.blocks[0].rlp)
@@ -480,7 +484,7 @@ tape('runBlock() -> tx types', async (t) => {
       generate: true,
     })
 
-    st.equal(
+    assert.equal(
       res.gasUsed,
       res.receipts
         .map((r) => r.cumulativeBlockGasUsed)
@@ -489,7 +493,7 @@ tape('runBlock() -> tx types', async (t) => {
     )
   }
 
-  t.test('legacy tx', async (st) => {
+  it('legacy tx', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
     const vm = await setupVM({ common })
 
@@ -505,10 +509,10 @@ tape('runBlock() -> tx types', async (t) => {
       return address
     }
 
-    await simpleRun(vm, [tx], st)
+    await simpleRun(vm, [tx])
   })
 
-  t.test('access list tx', async (st) => {
+  it('access list tx', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
     const vm = await setupVM({ common })
 
@@ -524,10 +528,10 @@ tape('runBlock() -> tx types', async (t) => {
       return address
     }
 
-    await simpleRun(vm, [tx], st)
+    await simpleRun(vm, [tx])
   })
 
-  t.test('fee market tx', async (st) => {
+  it('fee market tx', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const vm = await setupVM({ common })
 
@@ -543,6 +547,6 @@ tape('runBlock() -> tx types', async (t) => {
       return address
     }
 
-    await simpleRun(vm, [tx], st)
+    await simpleRun(vm, [tx])
   })
 })

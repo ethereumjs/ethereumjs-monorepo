@@ -16,7 +16,7 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 
@@ -213,8 +213,8 @@ function flipSignature(signature: any) {
   return signature
 }
 
-tape('EIP-3074 AUTH', (t) => {
-  t.test('Should execute AUTH correctly', async (st) => {
+describe('EIP-3074 AUTH', () => {
+  it('Should execute AUTH correctly', async () => {
     const vm = await VM.create({ common })
     const message = hexToBytes('01')
     const signature = signMessage(message, contractAddress, privateKey)
@@ -234,10 +234,10 @@ tape('EIP-3074 AUTH', (t) => {
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue.slice(31)
-    st.deepEquals(buf, hexToBytes('01'), 'auth should return 1')
+    assert.deepEqual(buf, hexToBytes('01'), 'auth should return 1')
   })
 
-  t.test('Should not set AUTH if signature is invalid', async (st) => {
+  it('Should not set AUTH if signature is invalid', async () => {
     const vm = await VM.create({ common })
     const message = hexToBytes('01')
     const signature = signMessage(message, contractAddress, privateKey)
@@ -258,10 +258,10 @@ tape('EIP-3074 AUTH', (t) => {
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue
-    st.deepEquals(buf, zeros(32), 'auth puts 0 on stack on invalid signature')
+    assert.deepEqual(buf, zeros(32), 'auth puts 0 on stack on invalid signature')
   })
 
-  t.test('Should not set AUTH if reported address is invalid', async (st) => {
+  it('Should not set AUTH if reported address is invalid', async () => {
     const vm = await VM.create({ common })
     const message = hexToBytes('01')
     const signature = signMessage(message, contractAddress, privateKey)
@@ -283,10 +283,10 @@ tape('EIP-3074 AUTH', (t) => {
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue
-    st.deepEquals(buf, zeros(32), 'auth puts 0')
+    assert.deepEqual(buf, zeros(32), 'auth puts 0')
   })
 
-  t.test('Should throw if signature s > N_DIV_2', async (st) => {
+  it('Should throw if signature s > N_DIV_2', async () => {
     const vm = await VM.create({ common })
     const message = hexToBytes('01')
     const signature = flipSignature(signMessage(message, contractAddress, privateKey))
@@ -305,14 +305,14 @@ tape('EIP-3074 AUTH', (t) => {
     await vm.stateManager.putAccount(callerAddress, account!)
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
-    st.equal(
+    assert.equal(
       result.execResult.exceptionError?.error,
       EVMErrorMessage.AUTH_INVALID_S,
       'threw correct error'
     )
   })
 
-  t.test('Should be able to call AUTH multiple times', async (st) => {
+  it('Should be able to call AUTH multiple times', async () => {
     const vm = await VM.create({ common })
     const message = hexToBytes('01')
     const signature = signMessage(message, contractAddress, privateKey)
@@ -337,10 +337,10 @@ tape('EIP-3074 AUTH', (t) => {
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue.slice(31)
-    st.deepEquals(buf, hexToBytes('01'), 'auth returned right address')
+    assert.deepEqual(buf, hexToBytes('01'), 'auth returned right address')
   })
 
-  t.test('Should use zeros in case that memory size < 128', async (st) => {
+  it('Should use zeros in case that memory size < 128', async () => {
     const vm = await VM.create({ common })
     const message = hexToBytes('00')
     const signature = signMessage(message, contractAddress, privateKey)
@@ -363,10 +363,10 @@ tape('EIP-3074 AUTH', (t) => {
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const buf = result.execResult.returnValue.slice(31)
-    st.deepEquals(buf, hexToBytes('01'), 'auth returned right address')
+    assert.deepEqual(buf, hexToBytes('01'), 'auth returned right address')
   })
 
-  t.test('Should charge memory expansion gas if the memory size > 128', async (st) => {
+  it('Should charge memory expansion gas if the memory size > 128', async () => {
     const vm = await VM.create({ common })
     const message = hexToBytes('00')
     const signature = signMessage(message, contractAddress, privateKey)
@@ -386,7 +386,7 @@ tape('EIP-3074 AUTH', (t) => {
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
 
-    st.deepEquals(
+    assert.deepEqual(
       result.execResult.returnValue.slice(31),
       hexToBytes('80'),
       'reported msize is correct'
@@ -410,13 +410,12 @@ tape('EIP-3074 AUTH', (t) => {
 
     // the memory size in AUTH is 0x90 (so extra 16 bytes), but memory expands with words (32 bytes)
     // so the correct amount of msize is 0xa0, not 0x90
-    st.deepEquals(
+    assert.deepEqual(
       result2.execResult.returnValue.slice(31),
       hexToBytes('a0'),
       'reported msize is correct'
     )
-    st.ok(result2.execResult.executionGasUsed > gas, 'charged more gas for memory expansion')
-    st.end()
+    assert.ok(result2.execResult.executionGasUsed > gas, 'charged more gas for memory expansion')
   })
 })
 
@@ -432,8 +431,8 @@ async function setupVM(code: Uint8Array) {
   return vm
 }
 
-tape('EIP-3074 AUTHCALL', (t) => {
-  t.test('Should execute AUTHCALL correctly', async (st) => {
+describe('EIP-3074 AUTHCALL', () => {
+  it('Should execute AUTHCALL correctly', async () => {
     const message = hexToBytes('01')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = concatBytesNoTypeCheck(
@@ -454,13 +453,13 @@ tape('EIP-3074 AUTHCALL', (t) => {
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
 
     const buf = result.execResult.returnValue.slice(31)
-    st.deepEquals(buf, hexToBytes('01'), 'authcall success')
+    assert.deepEqual(buf, hexToBytes('01'), 'authcall success')
 
     const storage = await vm.stateManager.getContractStorage(contractStorageAddress, zeros(32))
-    st.deepEquals(storage, address.bytes, 'caller set correctly')
+    assert.deepEqual(storage, address.bytes, 'caller set correctly')
   })
 
-  t.test('Should forward max call gas when gas set to 0', async (st) => {
+  it('Should forward max call gas when gas set to 0', async () => {
     const message = hexToBytes('01')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = concatBytesNoTypeCheck(
@@ -497,10 +496,10 @@ tape('EIP-3074 AUTHCALL', (t) => {
       common.param('gasPrices', 'warmstorageread')! -
       common.param('gasPrices', 'coldaccountaccess')!
     const expected = preGas - preGas / 64n - 2n
-    st.equal(gasBigInt, expected, 'forwarded max call gas')
+    assert.equal(gasBigInt, expected, 'forwarded max call gas')
   })
 
-  t.test('Should forward max call gas when gas set to 0 - warm account', async (st) => {
+  it('Should forward max call gas when gas set to 0 - warm account', async () => {
     const message = hexToBytes('01')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = concatBytesNoTypeCheck(
@@ -537,116 +536,110 @@ tape('EIP-3074 AUTHCALL', (t) => {
     const gasBigInt = bytesToBigInt(gasUsed)
     const preGas = gas! - common.param('gasPrices', 'warmstorageread')!
     const expected = preGas - preGas / 64n - 2n
-    st.equal(gasBigInt, expected, 'forwarded max call gas')
+    assert.equal(gasBigInt, expected, 'forwarded max call gas')
   })
 
-  t.test(
-    'Should forward max call gas when gas set to 0 - cold account, nonzero transfer, create new account',
-    async (st) => {
-      const message = hexToBytes('01')
-      const signature = signMessage(message, contractAddress, privateKey)
-      const code = concatBytesNoTypeCheck(
-        getAuthCode(message, signature, authAddress),
-        getAuthCallCode({
-          address: new Address(hexToBytes('cc'.repeat(20))),
-          value: 1n,
-        }),
-        RETURNTOP
-      )
-      const vm = await setupVM(code)
+  it('Should forward max call gas when gas set to 0 - cold account, nonzero transfer, create new account', async () => {
+    const message = hexToBytes('01')
+    const signature = signMessage(message, contractAddress, privateKey)
+    const code = concatBytesNoTypeCheck(
+      getAuthCode(message, signature, authAddress),
+      getAuthCallCode({
+        address: new Address(hexToBytes('cc'.repeat(20))),
+        value: 1n,
+      }),
+      RETURNTOP
+    )
+    const vm = await setupVM(code)
 
-      let gas: bigint
-      let gasAfterCall: bigint
-      vm.evm.events!.on('step', async (e: InterpreterStep) => {
-        if (gas && gasAfterCall === undefined) {
-          gasAfterCall = e.gasLeft
-        }
-        if (e.opcode.name === 'AUTHCALL') {
-          gas = e.gasLeft
-        }
-      })
+    let gas: bigint
+    let gasAfterCall: bigint
+    vm.evm.events!.on('step', async (e: InterpreterStep) => {
+      if (gas && gasAfterCall === undefined) {
+        gasAfterCall = e.gasLeft
+      }
+      if (e.opcode.name === 'AUTHCALL') {
+        gas = e.gasLeft
+      }
+    })
 
-      const tx = LegacyTransaction.fromTxData({
-        to: contractAddress,
-        gasLimit: 900000,
-        gasPrice: 10,
-        value: 1,
-      }).sign(callerPrivateKey)
+    const tx = LegacyTransaction.fromTxData({
+      to: contractAddress,
+      gasLimit: 900000,
+      gasPrice: 10,
+      value: 1,
+    }).sign(callerPrivateKey)
 
-      await vm.runTx({ tx, block, skipHardForkValidation: true })
+    await vm.runTx({ tx, block, skipHardForkValidation: true })
 
-      const gasBigInt = gas! - gasAfterCall!
-      const expected =
-        common.param('gasPrices', 'coldaccountaccess')! +
-        common.param('gasPrices', 'warmstorageread')! +
-        common.param('gasPrices', 'callNewAccount')! +
-        common.param('gasPrices', 'authcallValueTransfer')!
+    const gasBigInt = gas! - gasAfterCall!
+    const expected =
+      common.param('gasPrices', 'coldaccountaccess')! +
+      common.param('gasPrices', 'warmstorageread')! +
+      common.param('gasPrices', 'callNewAccount')! +
+      common.param('gasPrices', 'authcallValueTransfer')!
 
-      st.equal(gasBigInt, expected, 'forwarded max call gas')
-    }
-  )
+    assert.equal(gasBigInt, expected, 'forwarded max call gas')
+  })
 
-  t.test(
-    'Should charge value transfer gas when transferring and transfer from contract, not authcall address',
-    async (st) => {
-      const message = hexToBytes('01')
-      const signature = signMessage(message, contractAddress, privateKey)
-      const code = concatBytesNoTypeCheck(
-        getAuthCode(message, signature, authAddress),
-        getAuthCallCode({
-          address: contractStorageAddress,
-          value: 1n,
-        }),
-        RETURNTOP
-      )
-      const vm = await setupVM(code)
+  it('Should charge value transfer gas when transferring and transfer from contract, not authcall address', async () => {
+    const message = hexToBytes('01')
+    const signature = signMessage(message, contractAddress, privateKey)
+    const code = concatBytesNoTypeCheck(
+      getAuthCode(message, signature, authAddress),
+      getAuthCallCode({
+        address: contractStorageAddress,
+        value: 1n,
+      }),
+      RETURNTOP
+    )
+    const vm = await setupVM(code)
 
-      let gas: bigint
-      vm.evm.events!.on('step', (e: InterpreterStep) => {
-        if (e.opcode.name === 'AUTHCALL') {
-          gas = e.gasLeft
-        }
-      })
+    let gas: bigint
+    vm.evm.events!.on('step', (e: InterpreterStep) => {
+      if (e.opcode.name === 'AUTHCALL') {
+        gas = e.gasLeft
+      }
+    })
 
-      const value = 3n
-      const gasPrice = 10n
+    const value = 3n
+    const gasPrice = 10n
 
-      const tx = LegacyTransaction.fromTxData({
-        to: contractAddress,
-        gasLimit: PREBALANCE / gasPrice - value * gasPrice,
-        gasPrice,
-        value,
-      }).sign(callerPrivateKey)
+    const tx = LegacyTransaction.fromTxData({
+      to: contractAddress,
+      gasLimit: PREBALANCE / gasPrice - value * gasPrice,
+      gasPrice,
+      value,
+    }).sign(callerPrivateKey)
 
-      const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
 
-      const gasUsed = await vm.stateManager.getContractStorage(
-        contractStorageAddress,
-        hexToBytes('00'.repeat(31) + '01')
-      )
-      const gasBigInt = bytesToBigInt(gasUsed)
-      const preGas =
-        gas! -
-        common.param('gasPrices', 'warmstorageread')! -
-        common.param('gasPrices', 'authcallValueTransfer')! -
-        common.param('gasPrices', 'coldaccountaccess')!
-      const expected = preGas - preGas / 64n - 2n
-      st.equal(gasBigInt, expected, 'forwarded max call gas')
+    const gasUsed = await vm.stateManager.getContractStorage(
+      contractStorageAddress,
+      hexToBytes('00'.repeat(31) + '01')
+    )
+    const gasBigInt = bytesToBigInt(gasUsed)
+    const preGas =
+      gas! -
+      common.param('gasPrices', 'warmstorageread')! -
+      common.param('gasPrices', 'authcallValueTransfer')! -
+      common.param('gasPrices', 'coldaccountaccess')!
+    const expected = preGas - preGas / 64n - 2n
+    assert.equal(gasBigInt, expected, 'forwarded max call gas')
 
-      const expectedBalance = PREBALANCE - result.amountSpent - value
-      const account = await vm.stateManager.getAccount(callerAddress)
+    const expectedBalance = PREBALANCE - result.amountSpent - value
+    const account = await vm.stateManager.getAccount(callerAddress)
 
-      st.equal(account!.balance, expectedBalance, 'caller balance ok')
+    assert.equal(account!.balance, expectedBalance, 'caller balance ok')
 
-      const contractAccount = await vm.stateManager.getAccount(contractAddress)
-      st.equal(contractAccount!.balance, 2n, 'contract balance ok')
+    const contractAccount = await vm.stateManager.getAccount(contractAddress)
+    assert.equal(contractAccount!.balance, 2n, 'contract balance ok')
 
-      const contractStorageAccount = await vm.stateManager.getAccount(contractStorageAddress)
-      st.equal(contractStorageAccount!.balance, 1n, 'storage balance ok')
-    }
-  )
+    const contractStorageAccount = await vm.stateManager.getAccount(contractStorageAddress)
+    assert.equal(contractStorageAccount!.balance, 1n, 'storage balance ok')
+  })
 
-  t.test('Should throw if AUTH not set', async (st) => {
+  it('Should throw if AUTH not set', async () => {
     const code = concatBytesNoTypeCheck(
       getAuthCallCode({
         address: contractStorageAddress,
@@ -662,15 +655,15 @@ tape('EIP-3074 AUTHCALL', (t) => {
     }).sign(callerPrivateKey)
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
-    st.equal(
+    assert.equal(
       result.execResult.exceptionError?.error,
       EVMErrorMessage.AUTHCALL_UNSET,
       'threw with right error'
     )
-    st.equal(result.amountSpent, tx.gasPrice * tx.gasLimit, 'spent all gas')
+    assert.equal(result.amountSpent, tx.gasPrice * tx.gasLimit, 'spent all gas')
   })
 
-  t.test('Should unset AUTH in case of invalid signature', async (st) => {
+  it('Should unset AUTH in case of invalid signature', async () => {
     const message = hexToBytes('01')
     const signature = signMessage(message, contractAddress, privateKey)
     const signature2 = {
@@ -698,15 +691,15 @@ tape('EIP-3074 AUTHCALL', (t) => {
     }).sign(callerPrivateKey)
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
-    st.equal(
+    assert.equal(
       result.execResult.exceptionError?.error,
       EVMErrorMessage.AUTHCALL_UNSET,
       'threw with right error'
     )
-    st.equal(result.amountSpent, tx.gasPrice * tx.gasLimit, 'spent all gas')
+    assert.equal(result.amountSpent, tx.gasPrice * tx.gasLimit, 'spent all gas')
   })
 
-  t.test('Should throw if not enough gas is available', async (st) => {
+  it('Should throw if not enough gas is available', async () => {
     const message = hexToBytes('01')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = concatBytesNoTypeCheck(
@@ -726,15 +719,15 @@ tape('EIP-3074 AUTHCALL', (t) => {
     }).sign(callerPrivateKey)
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
-    st.equal(result.amountSpent, tx.gasLimit * tx.gasPrice, 'spent all gas')
-    st.equal(
+    assert.equal(result.amountSpent, tx.gasLimit * tx.gasPrice, 'spent all gas')
+    assert.equal(
       result.execResult.exceptionError?.error,
       EVMErrorMessage.OUT_OF_GAS,
       'correct error type'
     )
   })
 
-  t.test('Should throw if valueExt is nonzero', async (st) => {
+  it('Should throw if valueExt is nonzero', async () => {
     const message = hexToBytes('01')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = concatBytesNoTypeCheck(
@@ -754,15 +747,15 @@ tape('EIP-3074 AUTHCALL', (t) => {
     }).sign(callerPrivateKey)
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
-    st.equal(result.amountSpent, tx.gasLimit * tx.gasPrice, 'spent all gas')
-    st.equal(
+    assert.equal(result.amountSpent, tx.gasLimit * tx.gasPrice, 'spent all gas')
+    assert.equal(
       result.execResult.exceptionError?.error,
       EVMErrorMessage.AUTHCALL_NONZERO_VALUEEXT,
       'correct error type'
     )
   })
 
-  t.test('Should forward the right amount of gas', async (st) => {
+  it('Should forward the right amount of gas', async () => {
     const message = hexToBytes('01')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = concatBytesNoTypeCheck(
@@ -787,10 +780,10 @@ tape('EIP-3074 AUTHCALL', (t) => {
       hexToBytes('00'.repeat(31) + '01')
     )
     const gasBigInt = bytesToBigInt(gas)
-    st.equals(gasBigInt, BigInt(700000 - 2), 'forwarded the right amount of gas') // The 2 is subtracted due to the GAS opcode base fee
+    assert.equal(gasBigInt, BigInt(700000 - 2), 'forwarded the right amount of gas') // The 2 is subtracted due to the GAS opcode base fee
   })
 
-  t.test('Should set input and output correctly', async (st) => {
+  it('Should set input and output correctly', async () => {
     const message = hexToBytes('01')
     const signature = signMessage(message, contractAddress, privateKey)
     const input = hexToBytes('aa'.repeat(32))
@@ -819,7 +812,7 @@ tape('EIP-3074 AUTHCALL', (t) => {
       contractStorageAddress,
       hexToBytes('00'.repeat(31) + '02')
     )
-    st.deepEquals(callInput, input, 'authcall input ok')
-    st.deepEquals(result.execResult.returnValue, input, 'authcall output ok')
+    assert.deepEqual(callInput, input, 'authcall input ok')
+    assert.deepEqual(result.execResult.returnValue, input, 'authcall output ok')
   })
 })

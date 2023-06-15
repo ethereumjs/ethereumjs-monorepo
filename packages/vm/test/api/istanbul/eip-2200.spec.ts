@@ -1,7 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, setLengthLeft, toBytes } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 import { createAccount } from '../utils'
@@ -42,8 +42,8 @@ const testCases = [
   { original:BigInt(1), gas: BigInt(2307), code: '6001600055', used: 806, refund: 0 }, // 1 -> 1 (2301 sentry + 2xPUSH)*/
 ]
 
-tape('Istanbul: EIP-2200', async (t) => {
-  t.test('net-metering SSTORE', async (st) => {
+describe('Istanbul: EIP-2200', () => {
+  it('net-metering SSTORE', async () => {
     const caller = new Address(hexToBytes('0000000000000000000000000000000000000000'))
     const addr = new Address(hexToBytes('00000000000000000000000000000000000000ff'))
     const key = setLengthLeft(toBytes('0x' + BigInt(0).toString(16)), 32)
@@ -72,17 +72,15 @@ tape('Istanbul: EIP-2200', async (t) => {
       try {
         const res = await vm.evm.runCall(runCallArgs)
         if (typeof testCase.err !== 'undefined') {
-          st.equal(res.execResult.exceptionError?.error, testCase.err)
+          assert.equal(res.execResult.exceptionError?.error, testCase.err)
         } else {
-          st.equal(res.execResult.exceptionError, undefined)
+          assert.equal(res.execResult.exceptionError, undefined)
         }
-        st.equal(res.execResult.executionGasUsed, BigInt(testCase.used))
-        st.equal(res.execResult.gasRefund!, BigInt(testCase.refund))
+        assert.equal(res.execResult.executionGasUsed, BigInt(testCase.used))
+        assert.equal(res.execResult.gasRefund!, BigInt(testCase.refund))
       } catch (e: any) {
-        st.fail(e.message)
+        assert.fail(e.message)
       }
     }
-
-    st.end()
   })
 })

@@ -1,12 +1,12 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getActivePrecompiles } from '@ethereumjs/evm'
 import { hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 
-tape('Istanbul: EIP-1108 tests', (t) => {
-  t.test('ECADD', async (st) => {
+describe('Istanbul: EIP-1108 tests', () => {
+  it('ECADD', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const vm = await VM.create({ common })
     const address = '0000000000000000000000000000000000000006'
@@ -19,11 +19,10 @@ tape('Istanbul: EIP-1108 tests', (t) => {
       _EVM: vm.evm,
     })
 
-    st.deepEqual(result.executionGasUsed, BigInt(150), 'should use istanbul gas costs')
-    st.end()
+    assert.deepEqual(result.executionGasUsed, BigInt(150), 'should use istanbul gas costs')
   })
 
-  t.test('ECMUL', async (st) => {
+  it('ECMUL', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const vm = await VM.create({ common })
     const address = '0000000000000000000000000000000000000007'
@@ -36,11 +35,10 @@ tape('Istanbul: EIP-1108 tests', (t) => {
       _EVM: vm.evm,
     })
 
-    st.deepEqual(result.executionGasUsed, BigInt(6000), 'should use istanbul gas costs')
-    st.end()
+    assert.deepEqual(result.executionGasUsed, BigInt(6000), 'should use istanbul gas costs')
   })
 
-  t.test('ECPAIRING', async (st) => {
+  it('ECPAIRING', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const vm = await VM.create({ common })
     const address = '0000000000000000000000000000000000000008'
@@ -55,11 +53,10 @@ tape('Istanbul: EIP-1108 tests', (t) => {
       _EVM: vm.evm,
     })
 
-    st.deepEqual(
+    assert.deepEqual(
       result.executionGasUsed,
       BigInt(113000),
       'should use petersburg gas costs (k ^= 2 pairings)'
     )
-    st.end()
   })
 })

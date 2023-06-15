@@ -2,7 +2,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 
@@ -19,8 +19,8 @@ const validSlot = hexToBytes('00'.repeat(32))
 const privateKey = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 const contractAddress = new Address(validAddress)
 
-tape('EIP-2930 Optional Access Lists tests', (t) => {
-  t.test('VM should charge the right gas when using access list transactions', async (st) => {
+describe('EIP-2930 Optional Access Lists tests', () => {
+  it('VM should charge the right gas when using access list transactions', async () => {
     const access = [
       {
         address: bytesToHex(validAddress),
@@ -67,16 +67,14 @@ tape('EIP-2930 Optional Access Lists tests', (t) => {
     })
 
     await vm.runTx({ tx: txnWithAccessList })
-    st.ok(trace[1][0] === 'SLOAD')
+    assert.ok(trace[1][0] === 'SLOAD')
     let gasUsed = trace[1][1] - trace[2][1]
-    st.equal(gasUsed, BigInt(100), 'charge warm sload gas')
+    assert.equal(gasUsed, BigInt(100), 'charge warm sload gas')
 
     trace = []
     await vm.runTx({ tx: txnWithoutAccessList, skipNonce: true })
-    st.ok(trace[1][0] === 'SLOAD')
+    assert.ok(trace[1][0] === 'SLOAD')
     gasUsed = trace[1][1] - trace[2][1]
-    st.equal(gasUsed, BigInt(2100), 'charge cold sload gas')
-
-    st.end()
+    assert.equal(gasUsed, BigInt(2100), 'charge cold sload gas')
   })
 })
