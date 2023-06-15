@@ -58,7 +58,7 @@ const server = http.createServer((request: any, result: any) => {
     })
     request.on('end', async () => {
       await runTest(message)
-      resul
+      result.end()
     })
   }
 })
