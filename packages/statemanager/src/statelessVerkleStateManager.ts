@@ -4,6 +4,7 @@ import {
   Account,
   bytesToHex,
   bytesToPrefixedHexString,
+  padToEven,
   readBigInt64LE,
   readInt32LE,
   setLengthLeft,
@@ -17,7 +18,9 @@ import { concatBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import * as wasm from 'rust-verkle-wasm'
 
 import { AccountCache, CacheType, StorageCache } from './cache'
+import { OriginalStorageCache } from './cache/originalStorageCache'
 
+import type { VerkleExecutionWitness, VerkleProof } from '@ethereumjs/block'
 import type {
   AccessList,
   AccountFields,
@@ -109,6 +112,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   _accountCache?: AccountCache
   _storageCache?: StorageCache
   _codeCache: { [key: string]: Uint8Array }
+
+  originalStorageCache: OriginalStorageCache
+
   protected readonly _accountCacheSettings: CacheSettings
   protected readonly _storageCacheSettings: CacheSettings
 
@@ -122,7 +128,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    */
   protected readonly DEBUG: boolean = false
 
-  private _proof: PrefixedHexString = '0x'
+  private _executionWitness: VerkleExecutionWitness | undefined
+
+  private _proof: VerkleProof | undefined
 
   // State along execution (should update)
   private _state: VerkleState = {}
@@ -160,6 +168,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       })
     }
 
+    this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
+
     this._codeCache = {}
 
     /*
@@ -176,9 +186,28 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     // this._cache = new Cache({ get, putCb, deleteCb })
   }
 
-  public initPreState(proof: PrefixedHexString, preState: VerkleState) {
-    this._proof = proof
-    // Initialize the state with the pre-state
+  public initVerkleExecutionWitness(executionWitness: VerkleExecutionWitness) {
+    this._executionWitness = executionWitness
+    this._proof = executionWitness.verkleProof
+
+    // Populate the pre-state from the executionWitness
+    const preStateRaw = executionWitness.stateDiff.flatMap(({ stem, suffixDiffs }) => {
+      const suffixDiffPairs = suffixDiffs.map(({ currentValue, suffix }) => {
+        const key = `${stem}${padToEven(suffix.toString(16))}`
+
+        return {
+          [key]: currentValue,
+        }
+      })
+
+      return suffixDiffPairs
+    })
+
+    const preState = preStateRaw.reduce((prevValue, currentValue) => {
+      const acc = { ...prevValue, ...currentValue }
+      return acc
+    }, {})
+
     this._state = preState
   }
 
@@ -280,7 +309,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    */
   copy(): EVMStateManagerInterface {
     const stateManager = new StatelessVerkleStateManager()
-    stateManager.initPreState(this._proof, this._state)
+    stateManager.initVerkleExecutionWitness(this._executionWitness!)
     return stateManager
   }
 
@@ -302,10 +331,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    */
   async getContractCode(address: Address): Promise<Uint8Array> {
     // Get the contract code size
-    const codeHashKey = this.getTreeKeyForCodeHash(address)
     const codeSizeKey = this.getTreeKeyForCodeSize(address)
 
-    const codeSizeLE = hexToBytes(this._state[bytesToPrefixedHexString(codeSizeKey)])
+    const codeSizeLE = hexToBytes(this._state[bytesToPrefixedHexString(codeSizeKey)] ?? '0x')
 
     // Calculate number of chunks
     const chunks = Math.ceil(readInt32LE(codeSizeLE) / 32)
