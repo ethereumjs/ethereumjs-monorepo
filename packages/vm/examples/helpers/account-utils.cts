@@ -1,4 +1,4 @@
-import { VM } from '../../dist'
+import { VM } from '../../dist/cjs/vm'
 import { Account, Address } from '@ethereumjs/util'
 
 export const keyPair = {

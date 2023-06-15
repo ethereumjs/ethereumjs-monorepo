@@ -16,10 +16,11 @@ import {
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Common, ConsensusType } from '@ethereumjs/common'
-import { VM } from '../'
-import { testData } from './helpers/blockchain-mock-data'
+import { VM } from '@ethereumjs/vm'
+//import testData from './helpers/blockchain-mock-data.json'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
+const testData = require('./helpers/blockchain-mock-data.json')
 async function main() {
   const common = new Common({ chain: 1, hardfork: testData.network.toLowerCase() })
   const validatePow = common.consensusType() === ConsensusType.ProofOfWork
@@ -54,11 +55,11 @@ async function main() {
   console.log('Expected:', testData.lastblockhash)
 }
 
-async function setupPreConditions(vm: VM, data: typeof testData) {
+async function setupPreConditions(vm: VM, data: any) {
   await vm.stateManager.checkpoint()
 
   for (const [addr, acct] of Object.entries(data.pre)) {
-    const { nonce, balance, storage, code } = acct
+    const { nonce, balance, storage, code } = acct as any
 
     const address = new Address(hexToBytes(addr.slice(2)))
     const account = Account.fromAccountData({ nonce, balance })
