@@ -1,7 +1,7 @@
 import { KeyEncoding, ValueEncoding, bytesToHex, hexStringToBytes } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
-import type { Checkpoint, CheckpointDBOpts } from '../types.js'
+import type { Checkpoint } from '../types.js'
 import type { BatchDBOp, DB, DelBatch, PutBatch } from '@ethereumjs/util'
 import type LRUCache from 'lru-cache'
 
@@ -11,7 +11,7 @@ const LRU = require('lru-cache')
  * DB is a thin wrapper around the underlying levelup db,
  * which validates inputs and sets encoding type.
  */
-export class CheckpointDB implements DB {
+export class CheckpointDB implements DB<Uint8Array, Uint8Array> {
   public checkpoints: Checkpoint[]
   public db: DB<string, string>
   public readonly cacheSize: number
@@ -34,7 +34,7 @@ export class CheckpointDB implements DB {
   /**
    * Initialize a DB instance.
    */
-  constructor(opts: CheckpointDBOpts) {
+  constructor(opts: any) {
     this.db = opts.db
     this.cacheSize = opts.cacheSize ?? 0
     // Roots of trie at the moment of checkpoint
@@ -96,7 +96,7 @@ export class CheckpointDB implements DB {
           batchOp.push({
             type: 'put',
             key: hexStringToBytes(key),
-            value,
+            value: value!,
           })
         }
       }
@@ -135,7 +135,7 @@ export class CheckpointDB implements DB {
     // Lookup the value in our diff cache. We return the latest checkpointed value (which should be the value on disk)
     for (let index = this.checkpoints.length - 1; index >= 0; index--) {
       if (this.checkpoints[index].keyValueMap.has(keyHex)) {
-        return this.checkpoints[index].keyValueMap.get(keyHex)
+        return this.checkpoints[index].keyValueMap.get(keyHex) ?? undefined
       }
     }
     // Nothing has been found in diff cache, look up from disk
@@ -152,7 +152,7 @@ export class CheckpointDB implements DB {
     if (this.hasCheckpoints()) {
       // Since we are a checkpoint, put this value in diff cache,
       // so future `get` calls will not look the key up again from disk.
-      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, value)
+      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, value!)
     }
 
     return value
@@ -188,7 +188,7 @@ export class CheckpointDB implements DB {
     const keyHex = bytesToHex(key)
     if (this.hasCheckpoints()) {
       // delete the value in the current diff cache
-      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, undefined)
+      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, null)
     } else {
       // delete the value on disk
       await this.db.del(keyHex, {
