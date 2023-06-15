@@ -1,4 +1,4 @@
-import { LegacyTransaction, Transaction } from '../src/index.js'
+import { LegacyTransaction, Transaction } from '../dist/cjs'
 import { toBytes } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 

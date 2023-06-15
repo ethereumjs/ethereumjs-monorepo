@@ -4,7 +4,7 @@
 
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
-import { getOpcodesForHF } from '../src/opcodes/index.js'
+import { getOpcodesForHF } from '../dist/cjs/opcodes/index.js'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 const opcodes = getOpcodesForHF(common).opcodes

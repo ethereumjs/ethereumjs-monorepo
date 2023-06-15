@@ -2,7 +2,7 @@
 // You can run them with ts-node, as this project is developed in TypeScript.
 // Install the dependencies and run `npx ts-node examples/transactions.ts`
 
-import { LegacyTransaction } from '../src/index.js'
+import { LegacyTransaction } from '../dist/cjs'
 import { bytesToPrefixedHexString, toBytes } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
