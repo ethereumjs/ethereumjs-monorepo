@@ -16,7 +16,7 @@ import {
 import * as kzg from 'c-kzg'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 
-import { VM } from '../../../src'
+import { VM } from '../../../dist/cjs'
 import { setupPreConditions, verifyPostConditions } from '../../util'
 
 import type { EthashConsensus } from '@ethereumjs/blockchain'
