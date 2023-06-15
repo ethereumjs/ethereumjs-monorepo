@@ -589,6 +589,29 @@ export class Blockchain implements BlockchainInterface {
         throw new Error(`Invalid block: base fee not correct ${header.errorStr()}`)
       }
     }
+
+    if (header._common.isActivatedEIP(4844) === true) {
+      const expectedExcessDataGas = this.calculateExcessDataGas(parentHeader)
+      if (header.excessDataGas !== expectedExcessDataGas) {
+        throw new Error(`expected data gas: ${expectedExcessDataGas}, got: ${header.excessDataGas}`)
+      }
+    }
+  }
+
+  private calculateExcessDataGas(parent: BlockHeader) {
+    const target = parent._common.param('gasConfig', 'targetDataGasPerBlob')
+    if (
+      parent.excessDataGas! + parent.dataGasUsed! <
+      parent._common.param('gasConfig', 'targetDataGasPerBlob')
+    ) {
+      return BigInt(0)
+    } else {
+      return (
+        parent.excessDataGas! +
+        parent.dataGasUsed! -
+        parent._common.param('gasConfig', 'targetDataGasPerBlob')
+      )
+    }
   }
 
   /**
