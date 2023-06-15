@@ -1,25 +1,23 @@
 import { utf8ToBytes } from 'ethereum-cryptography/utils.js'
 
-import type { BranchNode, ExtensionNode, LeafNode } from './trie/index.js'
-import type { WalkController } from './util/walkController.js'
-import type { DB } from '@ethereumjs/util'
+import { MerklePatriciaTrie } from './trie/merklePatricia.js'
+import { TrieWithDB } from './trie/trieDB.js'
+import { TrieWrap } from './trie/trieWrapper.js'
 
-export type TrieNode = BranchNode | ExtensionNode | LeafNode
+import type { TrieDatabase } from './db/index.js'
+import type { TNode } from './trie/node/types.js'
+import type { Debugger } from 'debug'
+import type LRUCache from 'lru-cache'
 
-export type Nibbles = number[]
+export type HashFunction = (data: Uint8Array) => Uint8Array
 
-// Branch and extension nodes might store
-// hash to next node, or embed it if its len < 32
-export type EmbeddedNode = Uint8Array | Uint8Array[]
+export type PathToNode = {
+  path: TNode[]
+  remainingNibbles: number[]
+}
+export type WalkFilterFunction = (TrieNode: TNode, key: number[]) => Promise<boolean>
 
-export type Proof = Uint8Array[]
-
-export type FoundNodeFunction = (
-  nodeRef: Uint8Array,
-  node: TrieNode | null,
-  key: Nibbles,
-  walkController: WalkController
-) => void
+export type FoundNodeFunction = (TrieNode: TNode, key: number[]) => Promise<void>
 
 export type HashKeysFunction = (msg: Uint8Array) => Uint8Array
 
@@ -27,13 +25,12 @@ export interface TrieOpts {
   /**
    * A database instance.
    */
-  db?: DB<string, string>
+  db?: DB
 
   /**
    * A `Uint8Array` for the root of a previously stored trie
    */
   root?: Uint8Array
-
   /**
    * Create as a secure Trie where the keys are automatically hashed using the
    * **keccak256** hash function or alternatively the custom hash function provided.
@@ -80,22 +77,97 @@ export type TrieOptsWithDefaults = TrieOpts & {
   cacheSize: number
 }
 
-export interface CheckpointDBOpts {
+export interface MerklePatriciaTrieOptions {
+  root?: TNode
+  rootHash?: Uint8Array
+  rootNodeRLP?: Uint8Array
+  nodes?: Map<Uint8Array, TNode>
+  secure?: boolean
+  hashFunction?: (data: Uint8Array) => Uint8Array
+  debug?: Debugger
+}
+
+export interface TrieDBOptions extends Exclude<MerklePatriciaTrieOptions, 'nodes'> {
+  db?: TrieDatabase
+  cache?: LRUCache<Uint8Array, TNode>
+  cacheSize?: number
+  checkpoints?: Uint8Array[]
+  maxCheckpoints?: number
+  persistent?: boolean
+  useNodePruning?: boolean
+  useKeyHashing?: boolean
+  useRootPersistence?: boolean
+}
+
+export interface TrieWrapOptions extends TrieDBOptions {}
+
+export const Tries = {
+  MERKLE_PATRICIA_TRIE: MerklePatriciaTrie,
+  TRIE_WITH_DB: TrieWithDB,
+  TRIE_WRAP: TrieWrap,
+}
+
+export type TrieType = keyof typeof Tries
+
+export type TrieOptions<T extends TrieType> = T extends 'MERKLE_PATRICIA_TRIE'
+  ? MerklePatriciaTrieOptions
+  : T extends 'TRIE_WITH_DB'
+  ? TrieDBOptions
+  : T extends 'TRIE_WRAP'
+  ? TrieWrapOptions
+  : never
+
+export type BatchDBOp = PutBatch | DelBatch
+
+export interface PutBatch {
+  type: 'put'
+  key: Uint8Array
+  value: Uint8Array
+}
+
+export interface DelBatch {
+  type: 'del'
+  key: Uint8Array
+}
+
+export interface DB {
   /**
-   * A database instance.
+   * Retrieves a raw value from leveldb.
+   * @param key
+   * @returns A Promise that resolves to `Uint8Array` if a value is found or `null` if no value is found.
    */
-  db: DB<string, string>
+  get(key: Uint8Array): Promise<Uint8Array | undefined>
 
   /**
-   * Cache size (default: 0)
+   * Writes a value directly to leveldb.
+   * @param key The key as a `Uint8Array`
+   * @param value The value to be stored
    */
-  cacheSize?: number
+  put(key: Uint8Array, val: Uint8Array): Promise<void>
+
+  /**
+   * Removes a raw value in the underlying leveldb.
+   * @param keys
+   */
+  del(key: Uint8Array): Promise<void>
+
+  /**
+   * Performs a batch operation on db.
+   * @param opStack A stack of levelup operations
+   */
+  batch(opStack: BatchDBOp[]): Promise<void>
+
+  /**
+   * Returns a copy of the DB instance, with a reference
+   * to the **same** underlying leveldb instance.
+   */
+  copy(): Promise<DB>
 }
 
 export type Checkpoint = {
   // We cannot use a Uint8Array => Uint8Array map directly. If you create two Uint8Arrays with the same internal value,
   // then when setting a value on the Map, it actually creates two indices.
-  keyValueMap: Map<string, Uint8Array | undefined>
+  keyValueMap: Map<string, Uint8Array | null>
   root: Uint8Array
 }
 
