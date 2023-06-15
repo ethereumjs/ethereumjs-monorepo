@@ -57,7 +57,9 @@ export function getTestDPTsWithDns(numDPTs: number, basePort: number) {
 export function initTwoPeerDPTSetup(basePort: number) {
   const dpts = getTestDPTs(2, basePort)
   const peer = { address: localhost, udpPort: basePort + 1 }
-  dpts[0].addPeer(peer)
+  dpts[0].addPeer(peer).catch(() => {
+    /* Silently catch rejections here since not an actual test error */
+  })
   return dpts
 }
 
@@ -103,7 +105,9 @@ export function initTwoPeerRLPXSetup(
 ) {
   const rlpxs = getTestRLPXs(2, maxPeers, basePort, capabilities, common)
   const peer = { address: localhost, udpPort: basePort + 1, tcpPort: basePort + 1 }
-  rlpxs[0]._dpt!.addPeer(peer)
+  rlpxs[0]._dpt!.addPeer(peer).catch(() => {
+    /* Silently catch rejections here since not an actual test error */
+  })
   return rlpxs
 }
 
