@@ -1,7 +1,7 @@
 import { bytesToPrefixedHexString } from '@ethereumjs/util'
 import { Readable } from 'readable-stream'
 
-import { nibblesEqual, nibblestoBytes } from '../../util/nibbles'
+import { nibblesEqual } from '../../util/nibbles'
 import { BranchNode, LeafNode } from '../node'
 
 import type { FoundNodeFunction, WalkFilterFunction } from '../../types'
@@ -18,9 +18,7 @@ export class TrieReadStream extends Readable {
 
     this.trie = trie
     this._started = false
-    this.nodeStream = this.trie
-      ._walkTrieRecursively(this.trie.rootNode, this.trie.rootNode.getPartialKey())
-      [Symbol.asyncIterator]()
+    this.nodeStream = this.trie._walkTrieRecursively(this.trie.root())[Symbol.asyncIterator]()
     this._nextValuePromise = this.nodeStream.next()
   }
 
@@ -31,7 +29,7 @@ export class TrieReadStream extends Readable {
     this._started = true
     let result: IteratorResult<{ node: TNode; currentKey: number[] }> = await this._nextValuePromise
     let done: boolean | undefined
-    let value: { node: TNode; currentKey: Uint8Array }
+    let value: { node: TNode; currentKey: number[] }
     do {
       result = await this._nextValuePromise
       done = result.done
@@ -46,7 +44,7 @@ export class TrieReadStream extends Readable {
       this._nextValuePromise = this.nodeStream.next()
       if (done === true) {
         this.push(null)
-      } else if (value.node.getValue() !== null) {
+      } else if (value.node.getValue() && value.node.getValue()!.length > 0) {
         this.trie.debug.extend(`readStream`).extend(`${value.node.getType()}`)(
           `key: ${value.currentKey}}`
         )
@@ -58,15 +56,17 @@ export class TrieReadStream extends Readable {
           `value: ${value.node.getValue()}`
         )
         const key = [...value.currentKey]
+        this.trie.debug.extend(`readStream`)(`key: ${key}`)
         if (!nibblesEqual(key, value.node.getPartialKey())) {
           key.push(...value.node.getPartialKey())
         }
+        this.trie.debug.extend(`readStream`)(`key: ${key}`)
         const keyValue = {
-          key,
+          key: Uint8Array.from(key),
           value: value.node.getValue(),
         }
         this.trie.debug.extend(`readStream`).extend(`${value.node.getType()}`)(
-          `key: ${bytesToPrefixedHexString(nibblestoBytes(keyValue.key))}`
+          `key: ${bytesToPrefixedHexString(keyValue.key)}`
         )
         this.trie.debug.extend(`readStream`).extend(`${value.node.getType()}`)(
           `val: ${keyValue.value && bytesToPrefixedHexString(keyValue.value)}`
@@ -89,27 +89,27 @@ export class TrieReadStream extends Readable {
 
     const onFoundDuringWalk: FoundNodeFunction = async (node: TNode, key: number[]) => {
       const value = node.getValue()
-      if (value !== null) {
+      if (value && value.length > 0) {
         await onFound(key, value)
       }
     }
 
     const walk = async (node: TNode, currentKey: number[] = []) => {
-      const fullKey = [...currentKey, ...nibblestoBytes(node.getPartialKey())]
+      const fullKey = [...currentKey, ...node.getPartialKey()]
 
       if (await filter(node, fullKey)) {
         await onFoundDuringWalk(node, fullKey)
       }
 
       if (node.type === 'BranchNode') {
-        for (const [nibble, childNode] of (node as BranchNode).childNodes().entries()) {
+        for (const [nibble, childNode] of (await (node as BranchNode).childNodes()).entries()) {
           await walk(childNode, [...fullKey, nibble])
         }
       } else if (node.type === 'ExtensionNode') {
-        await walk(node.child, fullKey)
+        await walk(await node.getChild(), [...fullKey])
       }
     }
 
-    await walk(this.trie.rootNode)
+    await walk(await this.trie.rootNode())
   }
 }

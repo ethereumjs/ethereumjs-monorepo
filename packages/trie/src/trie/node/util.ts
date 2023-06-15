@@ -4,13 +4,12 @@ import debug from 'debug'
 import { removeHexPrefix } from '../../util/hex'
 import { bytesToNibbles } from '../../util/nibbles'
 
-import { BranchNode, ExtensionNode, LeafNode, NullNode } from '.'
+import { BranchNode, ExtensionNode, LeafNode, NullNode, ProofNode } from '.'
 
 import type { NodeType, TNode } from './types'
 import type { Debugger } from 'debug'
 
-export function getNodeType(encoded: Uint8Array): NodeType {
-  const raw = RLP.decode(encoded as Uint8Array) as (Uint8Array | Uint8Array[])[]
+export function getNodeType(raw: Uint8Array | Uint8Array[]): NodeType {
   const type =
     raw.length === 32
       ? 'ProofNode'
@@ -22,7 +21,7 @@ export function getNodeType(encoded: Uint8Array): NodeType {
       ? 'LeafNode'
       : 'NullNode'
   if (!type) {
-    throw new Error(`Unknown node type with ${encoded.length} parts: ${type}`)
+    throw new Error(`Unknown node type with ${raw.length} parts: ${type}`)
   }
   return type
 }
@@ -35,7 +34,7 @@ export async function decodeToNode(
     return new NullNode({})
   } else {
     const raw = RLP.decode(encoded) as Uint8Array[]
-    const type = getNodeType(encoded)
+    const type = getNodeType(raw)
     d_bug = d_bug.extend(type)
     switch (type) {
       case 'LeafNode': {
@@ -51,21 +50,21 @@ export async function decodeToNode(
       case 'BranchNode': {
         const value = raw[16] as Uint8Array
         d_bug.extend('BranchNode')(`value=${value}`)
-        const children: TNode[] = []
-        for (let i = 0; i < raw.length - 1; i++) {
-          const branch = raw[i] as Uint8Array
-          if (branch.length > 0) {
-            try {
-              const node = await decodeToNode(RLP.encode(branch), d_bug)
-              d_bug.extend(`branch[${branch}]`)(`decoded into ${node.getType()}`)
-              children.push(node)
-            } catch {
-              d_bug(`can't decode branch[${i}]=${branch}`)
-            }
-          }
-        }
+        // const children: TNode[] = []
+        // for (let i = 0; i < raw.length - 1; i++) {
+        //   const branch = raw[i] as Uint8Array
+        //   if (branch.length > 0) {
+        //     try {
+        //       const node = await decodeToNode(RLP.encode(branch), d_bug)
+        //       d_bug.extend(`branch[${branch}]`)(`decoded into ${node.getType()}`)
+        //       children.push(node)
+        //     } catch {
+        //       d_bug(`can't decode branch[${i}]=${branch}`)
+        //     }
+        //   }
+        // }
         const decoded = new BranchNode({
-          children,
+          branches: raw.slice(0, 16),
           value,
         })
 
@@ -81,6 +80,13 @@ export async function decodeToNode(
       }
       case 'NullNode': {
         return new NullNode({})
+      }
+      case 'ProofNode': {
+        return new ProofNode({
+          hash: RLP.decode(encoded) as Uint8Array,
+          nibbles: [],
+          load: async () => new NullNode({}),
+        })
       }
       default:
         throw new Error(`Unknown node type: ${type}`)

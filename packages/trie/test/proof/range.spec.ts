@@ -91,7 +91,7 @@
 //     bytesToNibbles(endKey),
 //     targetRange.map(([key]) => bytesToNibbles(key)),
 //     targetRange.map(([, val]) => val),
-//     [...(await trie._createProof(startKey)), ...(await trie._createProof(endKey))]
+//     [...(await trie.createProof(startKey)), ...(await trie.createProof(endKey))]
 //   )
 // }
 
@@ -473,7 +473,7 @@
 
 //     let bloatedProof: Uint8Array[] = []
 //     for (let i = 0; i < TRIE_SIZE; i++) {
-//       bloatedProof = bloatedProof.concat(await trie._createProof(entries[i][0]))
+//       bloatedProof = bloatedProof.concat(await trie.createProof(entries[i][0]))
 //     }
 
 //     t.equal(await verify(trie, entries, 0, entries.length - 1), false)

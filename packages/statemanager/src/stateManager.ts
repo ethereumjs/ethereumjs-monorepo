@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { NullNode, Trie, nibblestoBytes } from '@ethereumjs/trie'
+import { Trie } from '@ethereumjs/trie'
 import {
   Account,
   Address,
@@ -17,7 +17,7 @@ import {
   hexStringToBytes,
   setLengthLeft,
   short,
-  // toBytes,
+  toBytes,
   unpadBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
@@ -27,7 +27,6 @@ import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { AccountCache, CacheType, StorageCache } from './cache'
 import { Journaling } from './cache/journaling'
-import { generateCanonicalGenesis } from './util'
 
 import type {
   AccessListItem,
@@ -206,7 +205,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     this._checkpointCount = 0
 
-    this._trie = opts.trie ?? new Trie({ useKeyHashing: true, persistent: true, secure: true })
+    this._trie = opts.trie ?? new Trie({ useKeyHashing: true })
     this._storageTries = {}
     this._codeCache = {}
 
@@ -251,19 +250,17 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   async getAccount(address: Address): Promise<Account | undefined> {
     if (!this._accountCacheSettings.deactivate) {
       const elem = this._accountCache!.get(address)
-      if (elem !== undefined && elem.accountRLP !== undefined) {
-        return Account.fromRlpSerializedAccount(elem.accountRLP)
+      if (elem !== undefined) {
+        return elem.accountRLP !== undefined
+          ? Account.fromRlpSerializedAccount(elem.accountRLP)
+          : undefined
       }
     }
+
     const rlp = await this._trie.get(address.bytes)
-    const account =
-      rlp !== null && rlp.length > 0 ? Account.fromRlpSerializedAccount(rlp) : undefined
+    const account = rlp !== null ? Account.fromRlpSerializedAccount(rlp) : undefined
     if (this.DEBUG) {
-      this._debug(
-        `Get account ${address} from DB (${
-          rlp !== null && rlp.length > 0 ? 'exists' : 'non-existent'
-        })`
-      )
+      this._debug(`Get account ${address} from DB (${account ? 'exists' : 'non-existent'})`)
     }
     this._accountCache?.put(address, account)
     return account
@@ -299,21 +296,19 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         }`
       )
     }
-    if (!account) {
-      await this._trie.del(address.bytes)
-      this._accountCache?.del(address)
-      return
-    }
     if (this._accountCacheSettings.deactivate) {
-      // nothing
+      const trie = this._trie
+      if (account !== undefined) {
+        await trie.put(address.bytes, account.serialize())
+      } else {
+        await trie.del(address.bytes)
+      }
     } else {
-      this._accountCache!.put(address, account)
-    }
-    if (account !== undefined) {
-      await this._trie.put(address.bytes, account.serialize())
-      // await this._trie.database().put(this._trie.keySecure(address.bytes), account.serialize())
-    } else {
-      await this._trie.database().del(this._trie.keySecure(address.bytes))
+      if (account !== undefined) {
+        this._accountCache!.put(address, account)
+      } else {
+        this._accountCache!.del(address)
+      }
     }
     if (touch) {
       this.touchAccount(address)
@@ -349,11 +344,10 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       this._debug(`Delete account ${address}`)
     }
     if (this._accountCacheSettings.deactivate) {
-      // do nothing
+      await this._trie.del(address.bytes)
     } else {
       this._accountCache!.del(address)
     }
-    await this._trie.del(address.bytes)
     if (!this._storageCacheSettings.deactivate) {
       this._storageCache?.clearContractStorage(address)
     }
@@ -461,8 +455,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     const storageTrie = this._storageTries[addressHex]
     if (storageTrie === undefined) {
       const storageTrie = await this._trie.copy(false)
-      await storageTrie.setRootByHash(account.storageRoot)
-      await storageTrie.flushCheckpoints()
+      storageTrie.root(account.storageRoot)
+      storageTrie.flushCheckpoints()
       this._storageTries[addressHex] = storageTrie
       return storageTrie
     }
@@ -487,7 +481,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       if (value !== undefined) {
         const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
         return decoded
-        // return value ?? Uint8Array.from([])
       }
     }
 
@@ -583,7 +576,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       if (value instanceof Uint8Array && value.length) {
         // format input
         const encodedValue = RLP.encode(value)
-        // const encodedValue = value
         if (this.DEBUG) {
           this._debug(`Update contract storage for account ${address} to ${short(value)}`)
         }
@@ -631,7 +623,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     value = unpadBytes(value)
     if (!this._storageCacheSettings.deactivate) {
       const encodedValue = RLP.encode(value)
-      // const encodedValue = value
       this._storageCache!.put(address, key, encodedValue)
     } else {
       await this._writeContractStorage(address, account, key, value)
@@ -652,8 +643,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       account = new Account()
     }
     this._storageCache?.clearContractStorage(address)
-    await this._modifyContractStorage(address, account, async (storageTrie, done) => {
-      await storageTrie.setRootNode(new NullNode({}))
+    await this._modifyContractStorage(address, account, (storageTrie, done) => {
+      storageTrie.root(storageTrie.EMPTY_TRIE_ROOT)
       done()
     })
     if (touch) {
@@ -667,7 +658,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * `commit` or `reverted` by calling rollback.
    */
   async checkpoint(): Promise<void> {
-    await this._trie.checkpoint()
+    this._trie.checkpoint()
     this._storageCache?.checkpoint()
     this._accountCache?.checkpoint()
     if (this._common.gteHardfork(Hardfork.Berlin)) {
@@ -740,14 +731,13 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   async flush(): Promise<void> {
     if (!this._storageCacheSettings.deactivate) {
       const items = this._storageCache!.flush()
-      for await (const item of items) {
+      for (const item of items) {
         const address = Address.fromString(`0x${item[0]}`)
         const keyHex = item[1]
         const keyBytes = hexToBytes(keyHex)
         const value = item[2]
 
         const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
-        // const decoded = value ?? Uint8Array.from([])
         const account = await this.getAccount(address)
         if (account) {
           await this._writeContractStorage(address, account, keyBytes, decoded)
@@ -756,14 +746,16 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     }
     if (!this._accountCacheSettings.deactivate) {
       const items = this._accountCache!.flush()
-      for await (const item of items) {
+      for (const item of items) {
         const addressHex = item[0]
         const addressBytes = hexToBytes(addressHex)
         const elem = item[1]
         if (elem.accountRLP === undefined) {
-          await this._trie.del(addressBytes)
+          const trie = this._trie
+          await trie.del(addressBytes)
         } else {
-          await this._trie.put(addressBytes, elem.accountRLP)
+          const trie = this._trie
+          await trie.put(addressBytes, elem.accountRLP)
         }
       }
     }
@@ -779,26 +771,26 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (!account) {
       // throw new Error(`getProof() can only be called for an existing account`)
       const returnValue: Proof = {
-        address: bytesToPrefixedHexString(address.bytes),
+        address: address.toString(),
         balance: '0x',
         codeHash: '0x' + KECCAK256_NULL_S,
-        nonce: '0x0',
+        nonce: '0x',
         storageHash: '0x' + KECCAK256_RLP_S,
-        accountProof: (await this._trie._createProof(address.bytes)).map((p) =>
+        accountProof: (await this._trie.createProof(address.bytes)).map((p) =>
           bytesToPrefixedHexString(p)
         ),
         storageProof: [],
       }
       return returnValue
     }
-    const accountProof: PrefixedHexString[] = (await this._trie._createProof(address.bytes)).map(
+    const accountProof: PrefixedHexString[] = (await this._trie.createProof(address.bytes)).map(
       (p) => bytesToPrefixedHexString(p)
     )
     const storageProof: StorageProof[] = []
     const storageTrie = await this._getStorageTrie(address, account)
 
     for (const storageKey of storageSlots) {
-      const proof = (await storageTrie._createProof(storageKey)).map((p) =>
+      const proof = (await storageTrie.createProof(storageKey)).map((p) =>
         bytesToPrefixedHexString(p)
       )
       const value = bytesToPrefixedHexString(await this.getContractStorage(address, storageKey))
@@ -835,11 +827,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     // This returns the account if the proof is valid.
     // Verify that it matches the reported account.
-    const value = await Trie.verifyProof(rootHash, key, accountProof, true)
-    if (value === false) {
-      throw new Error('Invalid proof provided: account proof is invalid')
-    }
-    if (value === null || value.length === 0) {
+    const value = await new Trie({ useKeyHashing: true }).verifyProof(rootHash, key, accountProof)
+
+    if (value === null) {
       // Verify that the account is empty in the proof.
       const emptyBytes = new Uint8Array(0)
       const notEmptyErrorMsg = 'Invalid proof provided: account is not empty'
@@ -883,16 +873,17 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       const storageProof = stProof.proof.map((value: PrefixedHexString) => hexStringToBytes(value))
       const storageValue = setLengthLeft(hexStringToBytes(stProof.value), 32)
       const storageKey = hexStringToBytes(stProof.key)
-      const trieValue = await Trie.verifyProof(storageRoot, storageKey, storageProof, true)
-      if (trieValue instanceof Uint8Array) {
-        const reportedValue = setLengthLeft(trieValue.slice(1), 32)
-        if (!equalsBytes(reportedValue, storageValue)) {
-          throw new Error('Reported trie value does not match storage')
-        }
-      } else {
-        if (bytesToHex(storageValue) !== bytesToHex(setLengthLeft(Uint8Array.from([]), 32))) {
-          throw new Error('Reported trie proof could not be verified')
-        }
+      const proofValue = await new Trie({ useKeyHashing: true }).verifyProof(
+        storageRoot,
+        storageKey,
+        storageProof
+      )
+      const reportedValue = setLengthLeft(
+        RLP.decode(proofValue ?? new Uint8Array(0)) as Uint8Array,
+        32
+      )
+      if (!equalsBytes(reportedValue, storageValue)) {
+        throw new Error('Reported trie value does not match storage')
       }
     }
     return true
@@ -926,7 +917,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       }
     }
 
-    await this._trie.setRootByHash(stateRoot)
+    this._trie.root(stateRoot)
     if (this._accountCache !== undefined && clearCache) {
       this._accountCache.clear()
     }
@@ -1084,12 +1075,12 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     return new Promise((resolve, reject) => {
       this._getStorageTrie(address, account)
-        .then(async (trie) => {
+        .then((trie) => {
           const storage: StorageDump = {}
-          const stream = await trie.createReadStream()
+          const stream = trie.createReadStream()
 
           stream.on('data', (val: any) => {
-            storage[bytesToHex(nibblestoBytes(val.key))] = bytesToHex(val.value)
+            storage[bytesToHex(val.key)] = bytesToHex(val.value)
           })
           stream.on('end', () => {
             resolve(storage)
@@ -1106,42 +1097,41 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * Will error if there are uncommitted checkpoints on the instance.
    * @param initState address -> balance | [balance, code, storage]
    */
-  // async generateCanonicalGenesis(initState: any): Promise<void> {
-  //   if (this._checkpointCount !== 0) {
-  //     throw new Error('Cannot create genesis state with uncommitted checkpoints')
-  //   }
-  //   if (this.DEBUG) {
-  //     this._debug(`Save genesis state into the state trie`)
-  //   }
-  //   const addresses = Object.keys(initState)
-  //   for (const address of addresses) {
-  //     const addr = Address.fromString(address)
-  //     const state = initState[address]
-  //     if (!Array.isArray(state)) {
-  //       // Prior format: address -> balance
-  //       const account = Account.fromAccountData({ balance: state })
-  //       await this.putAccount(addr, account)
-  //     } else {
-  //       // New format: address -> [balance, code, storage]
-  //       const [balance, code, storage, nonce] = state
-  //       const account = Account.fromAccountData({ balance, nonce })
-  //       await this.putAccount(addr, account)
-  //       if (code !== undefined) {
-  //         await this.putContractCode(addr, toBytes(code))
-  //       }
-  //       if (storage !== undefined) {
-  //         for (const [key, value] of storage) {
-  //           await this.putContractStorage(addr, toBytes(key), toBytes(value))
-  //         }
-  //       }
-  //     }
-  //   }
-  //   await this.flush()
-  //   // If any empty accounts are put, these should not be marked as touched
-  //   // (when first tx is ran, this account is deleted when it cleans up the accounts)
-  //   this.touchedJournal.clear()
-  // }
-  generateCanonicalGenesis = generateCanonicalGenesis.bind(this)
+  async generateCanonicalGenesis(initState: any): Promise<void> {
+    if (this._checkpointCount !== 0) {
+      throw new Error('Cannot create genesis state with uncommitted checkpoints')
+    }
+    if (this.DEBUG) {
+      this._debug(`Save genesis state into the state trie`)
+    }
+    const addresses = Object.keys(initState)
+    for (const address of addresses) {
+      const addr = Address.fromString(address)
+      const state = initState[address]
+      if (!Array.isArray(state)) {
+        // Prior format: address -> balance
+        const account = Account.fromAccountData({ balance: state })
+        await this.putAccount(addr, account)
+      } else {
+        // New format: address -> [balance, code, storage]
+        const [balance, code, storage, nonce] = state
+        const account = Account.fromAccountData({ balance, nonce })
+        await this.putAccount(addr, account)
+        if (code !== undefined) {
+          await this.putContractCode(addr, toBytes(code))
+        }
+        if (storage !== undefined) {
+          for (const [key, value] of storage) {
+            await this.putContractStorage(addr, toBytes(key), toBytes(value))
+          }
+        }
+      }
+    }
+    await this.flush()
+    // If any empty accounts are put, these should not be marked as touched
+    // (when first tx is ran, this account is deleted when it cleans up the accounts)
+    this.touchedJournal.clear()
+  }
 
   /**
    * Checks whether there is a state corresponding to a stateRoot
@@ -1202,6 +1192,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * 2. Cache values are generally not copied along
    */
   async copy(): Promise<DefaultStateManager> {
+    const trie = await this._trie.copy(false)
     const prefixCodeHashes = this._prefixCodeHashes
     let accountCacheOpts = { ...this._accountCacheSettings }
     if (!this._accountCacheSettings.deactivate) {
@@ -1213,54 +1204,11 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     }
 
     return new DefaultStateManager({
-      trie: await this._trie.copy(false),
+      trie,
       prefixCodeHashes,
       accountCacheOpts,
       storageCacheOpts,
     })
-
-    /**
-     * 
-    for (const [address, trie] of Object.entries(this._storageTries)) {
-      copy._storageTries[address] = await trie.copy()
-    }
-    for (const [address, code] of Object.entries(this._codeCache)) {
-      copy._codeCache[address] = code
-    }
-    const accountCacheCopy = new AccountCache(this._accountCacheSettings)
-    if (this._accountCache) {
-      accountCacheCopy._checkpoints = this._accountCache._checkpoints
-      accountCacheCopy._diffCache = [...this._accountCache._diffCache]
-      accountCacheCopy._orderedMapCache = new OrderedMap(this._accountCache._orderedMapCache)
-      accountCacheCopy._stats = { ...this._accountCache._stats }
-      if (this._accountCache._lruCache) {
-        accountCacheCopy._lruCache = new LRUCache({ max: this._accountCache._lruCache.max })
-        for (const [address, account] of this._accountCache._lruCache!.entries()) {
-          accountCacheCopy._lruCache.set(address, account)
-        }
-      }
-      copy._accountCache = accountCacheCopy
-    }
-    if (this._storageCache) {
-      const storageCacheCopy = new StorageCache({
-        size: this._storageCacheSettings.size,
-        type: this._storageCacheSettings.type,
-      })
-      storageCacheCopy._checkpoints = this._storageCache._checkpoints
-      storageCacheCopy._diffCache = [...this._storageCache._diffCache]
-      storageCacheCopy._orderedMapCache = new OrderedMap(this._storageCache._orderedMapCache)
-      storageCacheCopy._stats = { ...this._storageCache._stats }
-      if (this._storageCache._lruCache) {
-        storageCacheCopy._lruCache = new LRUCache({ max: this._storageCache._lruCache.max })
-        for (const [address, storage] of this._storageCache._lruCache!.entries()) {
-          storageCacheCopy._lruCache.set(address, storage)
-        }
-      }
-      copy._storageCache = storageCacheCopy
-    }
-    return copy
-    
-    */
   }
 
   /**

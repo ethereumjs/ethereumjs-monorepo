@@ -9,13 +9,13 @@ import { ROOT_DB_KEY } from '../types'
 import { bulkInsert } from '../util'
 import { bytesToNibbles } from '../util/nibbles'
 
-import { ProofNode } from './node'
+import { NullNode } from './node'
 import { createProof, updateFromProof } from './operations/proof'
 import { TrieReadStream } from './operations/readStream'
 import { _walkTrieRecursively, walkTrie } from './operations/walkTrie'
 import { TrieWithDB } from './trieDB'
 
-import type { FoundNodeFunction, TrieWrapOptions } from '../types'
+import type { TrieWrapOptions } from '../types'
 import type { TNode } from './node/types'
 import type { Debugger } from 'debug'
 
@@ -30,26 +30,18 @@ export class TrieWrap extends TrieWithDB {
     }
     if (options.rootNodeRLP) {
       if (!equalsBytes(options.rootNodeRLP, KECCAK256_RLP)) {
-        const rootHash = trie.hashFunction(options.rootNodeRLP)
+        // const rootHash = trie.hashFunction(options.rootNodeRLP)
         await trie.database().put(trie.hashFunction(options.rootNodeRLP), options.rootNodeRLP)
-        const rootNode = new ProofNode({
-          hash: rootHash,
-          rlp: options.rootNodeRLP,
-          hashFunction: trie.hashFunction,
-          load: async () => trie.lookupNodeByHash(rootHash),
-          nibbles: [],
-        })
         // const rootNode = await trie._decodeToNode(options.rootNodeRLP)
-        await trie.setRootNode(rootNode)
-        await trie.setRootByHash(trie.hashFunction(options.rootNodeRLP))
+        trie.root(trie.hashFunction(options.rootNodeRLP))
       }
       if (trie.persistent) {
         await trie.persistRoot(trie.keySecure(ROOT_DB_KEY))
       }
     }
-    if (options.root) {
-      await trie.setRootNode(options.root)
-    }
+    // if (options.root) {
+    //   await trie.setRootNode(options.root)
+    // }
     if (options.rootHash) {
       await trie.setRootByHash(options.rootHash)
     }
@@ -79,8 +71,10 @@ export class TrieWrap extends TrieWithDB {
       // await trie.storeNode(node)
       await trie.database().put(trie.hashFunction(p), p)
     }
-    await trie.setRootByHash(root)
-    // await trie.persistRoot()
+    trie.root(root)
+    if (options.persistent === true || options.useRootPersistence === true) {
+      await trie.persistRoot()
+    }
     return trie
   }
   static async verifyProof(
@@ -89,7 +83,7 @@ export class TrieWrap extends TrieWithDB {
     proof: Uint8Array[],
     secure: boolean = false,
     dbug: Debugger = debug('')
-  ): Promise<Uint8Array | null | false> {
+  ): Promise<Uint8Array | null> {
     dbug = dbug.extend('verifyProof')
     try {
       const trie = await TrieWrap.fromProof(proof, { secure })
@@ -98,7 +92,7 @@ export class TrieWrap extends TrieWithDB {
         throw new Error('Proof Invalid: root mismatch')
       }
       debug(`Resolving RootNode: ${bytesToPrefixedHexString(trie.root())}`)
-      const reachable = await trie.markReachableNodes(trie.rootNode)
+      const reachable = await trie.markReachableNodes(await trie.rootNode())
       dbug.extend(`ProofTrie`)(`Reachable nodes: ${reachable.size}`)
       for (const [idx, p] of [...reachable.values()].entries()) {
         dbug.extend(`ProofTrie`)(`Reachable node [${idx}]: ${p}`)
@@ -146,11 +140,13 @@ export class TrieWrap extends TrieWithDB {
       return value
     } catch (err: any) {
       debug(`Failed to verify proof: ${err.message}`)
-      return false
+      return null
     }
   }
+  _root: Uint8Array
   constructor(options: TrieWrapOptions = {}) {
     super(options)
+    this._root = options.rootHash ?? this.EMPTY_TRIE_ROOT
     this._opts = {
       cacheSize: options.cacheSize ?? 0,
       ...options,
@@ -162,7 +158,7 @@ export class TrieWrap extends TrieWithDB {
   updateFromProof = updateFromProof.bind(this)
   verifyRangeProof = _verifyRangeProof.bind(this)
   walkTrie = walkTrie.bind(this)
-  _createProof = createProof.bind(this)
+  createProof = createProof.bind(this)
   _walkTrieRecursively = _walkTrieRecursively.bind(this)
 
   async batch(
@@ -176,22 +172,21 @@ export class TrieWrap extends TrieWithDB {
         // await this.put(b.key, b.value ?? null)
         const _key = this.keySecure(b.key)
         await this._withLock(async () => {
+          const rootNode = await this.rootNode()
           const keyNibbles = bytesToNibbles(_key)
           dbug(`inserting new key/value node`)
-          dbug.extend('from ROOT_NODE')(
-            `${this.rootNode.getType()}: ${this.rootNode.getPartialKey()}`
-          )
+          dbug.extend('from ROOT_NODE')(`${rootNode.getType()}: ${rootNode.getPartialKey()}`)
           dbug.extend('Insert Key')(`[${keyNibbles}]`)
           dbug.extend('Value')(`${b.value}`)
-          const newNode = await this._insertAtNode(this.rootNode, keyNibbles, b.value!, debug)
-          this.rootNode = newNode
-          dbug.extend(`**NEW_ROOT**`)(`${bytesToPrefixedHexString(this.rootNode.hash())}`)
+          const newNode = await this._insertAtNode(rootNode, keyNibbles, b.value!, debug)
+          this.root(newNode.hash())
+          dbug.extend(`**NEW_ROOT**`)(`${bytesToPrefixedHexString(this.root())}`)
+          await this.storeNode(rootNode)
         })
       } else if (b.type === 'del') {
         await this.del(b.key)
       }
     }
-    await this.storeNode(this.rootNode)
   }
 
   async copy(includeCheckpoints: boolean = true): Promise<TrieWrap> {
@@ -205,7 +200,8 @@ export class TrieWrap extends TrieWithDB {
     }
     this.debug.extend('copy')(this.checkpoints.map((c) => bytesToPrefixedHexString(c)))
     const trieCopy = await TrieWrap.create({
-      root: this.rootNode,
+      rootHash: this.root(),
+      rootNodeRLP: (await this.rootNode()).rlpEncode(),
       debug: debug(this.debug.namespace).extend('copy'),
       secure: this.secure,
       useKeyHashing: this.secure,
@@ -224,7 +220,7 @@ export class TrieWrap extends TrieWithDB {
     root: Uint8Array,
     key: Uint8Array,
     proof: Uint8Array[]
-  ): Promise<Uint8Array | null | false> {
+  ): Promise<Uint8Array | null> {
     key = this.keySecure(key)
     this.debug.extend(`verifyProof`)(`verify proof for key: ${bytesToPrefixedHexString(key)}`)
     this.debug.extend(`verifyProof`)(`in trie with root: ${bytesToPrefixedHexString(root)}`)
@@ -234,55 +230,64 @@ export class TrieWrap extends TrieWithDB {
       useNodePruning: this.useNodePruning,
       secure: this.secure,
     })
-    await trie.updateFromProof(proof, this.debug.extend('verifyProof'))
-    const trieValue = await trie.get(key)
-    return trieValue
-  }
-  async setRootNode(root: TNode) {
-    this.rootNode = root
-    this.useNodePruning && (await this.garbageCollect())
-    const addNode: FoundNodeFunction = async (node: TNode, _) => {
-      await this.storeNode(node)
-    }
-    const walk = this.walkTrie(this.rootNode, this.rootNode.getPartialKey(), addNode)
-    for await (const _ of walk) {
-      // leave empty
+    try {
+      await trie.updateFromProof(proof, this.debug.extend('verifyProof'))
+      const trieValue = await trie.get(key)
+      return trieValue
+    } catch (err: any) {
+      this.debug.extend(`verifyProof`)(`Failed to verify proof: ${err.message}`)
+      return null
     }
   }
+  // async setRootNode(root: TNode) {
+  //   this.rootNode = root
+  //   this.useNodePruning && (await this.garbageCollect())
+  //   const addNode: FoundNodeFunction = async (node: TNode, _) => {
+  //     await this.storeNode(node)
+  //   }
+  //   const walk = this.walkTrie(this.rootNode, this.rootNode.getPartialKey(), addNode)
+  //   for await (const _ of walk) {
+  //     // leave empty
+  //   }
+  // }
 
   public async put(
     _key: Uint8Array,
     _value: Uint8Array | null,
     debug: Debugger = this.debug
   ): Promise<void> {
+    let rootNode = await this.rootNode()
+    debug.extend('ROOT_NODE').extend(rootNode.getType()).extend(`[${rootNode.getPartialKey()}]`)(
+      `${bytesToPrefixedHexString(this.root())}`
+    )
     if (_value === null) {
-      debug.extend('put')(`received null value`)
+      debug.extend('put')(`null value`)
       debug(`deleting key: ${bytesToPrefixedHexString(_key)}`)
       return this.del(_key, debug)
     }
-    debug = debug.extend('put')
-    if (equalsBytes(_key, ROOT_DB_KEY)) {
-      throw new Error(`Attempted to set '__root__' key but it is not allowed.`)
-    }
-    debug(
-      `key: ${bytesToPrefixedHexString(_key)}} => ${bytesToPrefixedHexString(this.keySecure(_key))}`
-    )
-    _key = this.keySecure(_key)
     await this._withLock(async () => {
-      const keyNibbles = bytesToNibbles(_key)
-      debug(`inserting new key/value node`)
-      debug.extend('from ROOT_NODE')(`${this.rootNode.getType()}: ${this.rootNode.getPartialKey()}`)
-      debug.extend('Insert Key')(`[${keyNibbles}]`)
-      debug.extend('Value')(`${_value}`)
-      const oldNode = await this.getNode(_key, debug)
-      const newNode = await this._insertAtNode(this.rootNode, keyNibbles, _value, debug)
-      await this.storeNode(newNode)
-      this.rootNode = newNode
-      if (this.useNodePruning) {
-        this.cache.delete(oldNode.hash())
-        await this.database().del(oldNode.hash())
+      debug = debug.extend('put')
+      if (equalsBytes(_key, ROOT_DB_KEY)) {
+        throw new Error(`Attempted to set '__root__' key but it is not allowed.`)
       }
-      // debug.extend(`**NEW_ROOT**`)(`${bytesToPrefixedHexString(this.rootNode.hash())}`)
+      debug.extend(`Key`)(`${bytesToPrefixedHexString(_key)}`)
+      if (this.secure) {
+        debug.extend(`Key`)(`secure: ${bytesToPrefixedHexString(this.keySecure(_key))}`)
+      }
+      _key = this.keySecure(_key)
+      const keyNibbles = bytesToNibbles(_key)
+      debug.extend('Value')(`${_value}`)
+      // const oldNode = await this.getNode(_key, debug)
+      rootNode = await this._insertAtNode(rootNode, keyNibbles, _value, debug)
+      // await this.storeNode(rootNode)
+      if (this.useNodePruning) {
+        this.cache.delete(this.root())
+        await this.database().del(this.root())
+      }
+      this.root(rootNode.hash())
+      debug.extend(`**NEW_ROOT**`).extend(rootNode.getType())(
+        `${bytesToPrefixedHexString(this.root())}`
+      )
     })
     if (this.useNodePruning) {
       await this.garbageCollect()
@@ -295,20 +300,27 @@ export class TrieWrap extends TrieWithDB {
     key = this.keySecure(key)
     await this._withLock(async () => {
       debug = debug.extend('del')
+      const rootNode = await this.rootNode()
       const keyNibbles = bytesToNibbles(key)
       debug(`deleting key: ${bytesToPrefixedHexString(key)}`)
-      debug.extend(`nibbles`)(`${keyNibbles}`)
-      const newNode = await this._deleteAtNode(this.rootNode, keyNibbles, debug)
+      let newNode = await this._deleteAtNode(rootNode, keyNibbles, debug)
       debug.extend('TRIE_UPDATE')(
         `${newNode.getType()}: ${bytesToPrefixedHexString(newNode.hash())}`
       )
-      this.rootNode = newNode
-      debug.extend('NEW_ROOT')(
-        `${this.rootNode.getType()}: ${bytesToPrefixedHexString(this.rootNode.hash())}`
-      )
-      // if (this.useNodePruning) {
-      //   await this.garbageCollect()
-      // }
+      if (newNode.getType() === 'NullNode') {
+        this.debug.extend('NEW_ROOT')(`Empty trie`)
+        this.root(this.EMPTY_TRIE_ROOT)
+        this._rootNode = new NullNode({})
+        return
+      } else {
+        newNode = await this._cleanupNode(newNode, debug)
+        await this.storeNode(newNode)
+        this.root(newNode.hash())
+        debug.extend('NEW_ROOT')(`${newNode.getType()}: ${bytesToPrefixedHexString(this.root())}`)
+      }
+      if (this.useNodePruning) {
+        await this.garbageCollect()
+      }
     })
     if (this.persistent) {
       await this.persistRoot(this.keySecure(ROOT_DB_KEY))
@@ -321,6 +333,7 @@ export class TrieWrap extends TrieWithDB {
     debug = debug.extend('get')
     key = this.keySecure(key)
     const lastNode = await this.getNode(key, debug)
+    debug(`Found node: ${lastNode.getType()} with value ${lastNode.getValue()}`)
     const value = lastNode.getValue()
     debug(`Returning: ${value}`)
     return value

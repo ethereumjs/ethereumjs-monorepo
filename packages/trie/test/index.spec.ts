@@ -35,7 +35,7 @@ tape('simple save and retrieve', function (tester) {
     t.end()
   })
 
-  const trie = new Trie()
+  const trie = new Trie({ secure: false, useKeyHashing: false })
 
   it('save a value', async function (t) {
     await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
@@ -95,82 +95,82 @@ tape('simple save and retrieve', function (tester) {
     t.equal(value, null)
     t.end()
   })
+})
 
-  tape('storing longer values', async function (tester) {
-    const it = tester.test
-    const trie = new Trie()
-    const longString = 'this will be a really really really long value'
-    const longStringRoot = 'b173e2db29e79c78963cff5196f8a983fbe0171388972106b114ef7f5c24dfa3'
+tape('storing longer values', async function (tester) {
+  const it = tester.test
+  const trie = new Trie()
+  const longString = 'this will be a really really really long value'
+  const longStringRoot = 'b173e2db29e79c78963cff5196f8a983fbe0171388972106b114ef7f5c24dfa3'
 
-    it('should store a longer string', async function (t) {
-      await trie.put(utf8ToBytes('done'), utf8ToBytes(longString))
-      await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
-      t.equal(longStringRoot, bytesToHex(trie.root()))
-      t.end()
-    })
-
-    it('should retrieve a longer value', async function (t) {
-      const value = await trie.get(utf8ToBytes('done'))
-      t.equal(bytesToUtf8(value!), longString)
-      t.end()
-    })
-
-    it('should when being modified delete the old value', async function (t) {
-      await trie.put(utf8ToBytes('done'), utf8ToBytes('test'))
-      t.end()
-    })
+  it('should store a longer string', async function (t) {
+    await trie.put(utf8ToBytes('done'), utf8ToBytes(longString))
+    await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
+    t.equal(longStringRoot, bytesToHex(trie.root()))
+    t.end()
   })
 
-  tape('testing extensions and branches', function (tester) {
-    const it = tester.test
-    const trie = new Trie({})
-
-    it('should store a value', async function (t) {
-      await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
-      t.end()
-    })
-
-    it('should create extension to store this value', async function (t) {
-      await trie.put(utf8ToBytes('do'), utf8ToBytes('verb'))
-      t.equal(
-        'f803dfcb7e8f1afd45e88eedb4699a7138d6c07b71243d9ae9bff720c99925f9',
-        bytesToHex(trie.root())
-      )
-      t.end()
-    })
-
-    it('should store this value under the extension', async function (t) {
-      await trie.put(utf8ToBytes('done'), utf8ToBytes('finished'))
-      t.equal(
-        '409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
-        bytesToHex(trie.root())
-      )
-      t.end()
-    })
+  it('should retrieve a longer value', async function (t) {
+    const value = await trie.get(utf8ToBytes('done'))
+    t.equal(bytesToUtf8(value!), longString)
+    t.end()
   })
 
-  tape('testing extensions and branches - reverse', function (tester) {
-    const it = tester.test
-    const trie = new Trie()
+  it('should when being modified delete the old value', async function (t) {
+    await trie.put(utf8ToBytes('done'), utf8ToBytes('test'))
+    t.end()
+  })
+})
 
-    it('should create extension to store this value', async function (t) {
-      await trie.put(utf8ToBytes('do'), utf8ToBytes('verb'))
-      t.end()
-    })
+tape('testing extensions and branches', function (tester) {
+  const it = tester.test
+  const trie = new Trie({})
 
-    it('should store a value', async function (t) {
-      await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
-      t.end()
-    })
+  it('should store a value', async function (t) {
+    await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
+    t.end()
+  })
 
-    it('should store this value under the extension', async function (t) {
-      await trie.put(utf8ToBytes('done'), utf8ToBytes('finished'))
-      t.equal(
-        '409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
-        bytesToHex(trie.root())
-      )
-      t.end()
-    })
+  it('should create extension to store this value', async function (t) {
+    await trie.put(utf8ToBytes('do'), utf8ToBytes('verb'))
+    t.equal(
+      'f803dfcb7e8f1afd45e88eedb4699a7138d6c07b71243d9ae9bff720c99925f9',
+      bytesToHex(trie.root())
+    )
+    t.end()
+  })
+
+  it('should store this value under the extension', async function (t) {
+    await trie.put(utf8ToBytes('done'), utf8ToBytes('finished'))
+    t.equal(
+      '409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
+      bytesToHex(trie.root())
+    )
+    t.end()
+  })
+})
+
+tape('testing extensions and branches - reverse', function (tester) {
+  const it = tester.test
+  const trie = new Trie()
+
+  it('should create extension to store this value', async function (t) {
+    await trie.put(utf8ToBytes('do'), utf8ToBytes('verb'))
+    t.end()
+  })
+
+  it('should store a value', async function (t) {
+    await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
+    t.end()
+  })
+
+  it('should store this value under the extension', async function (t) {
+    await trie.put(utf8ToBytes('done'), utf8ToBytes('finished'))
+    t.equal(
+      '409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
+      bytesToHex(trie.root())
+    )
+    t.end()
   })
 })
 
@@ -234,7 +234,7 @@ tape('testing deletion cases', function (tester) {
 })
 
 tape('shall handle the case of node not found correctly', async (t) => {
-  const trie = new Trie({})
+  const trie = new Trie({ useNodePruning: false })
   await trie.put(utf8ToBytes('a'), utf8ToBytes('value1'))
   await trie.put(utf8ToBytes('aa'), utf8ToBytes('value2'))
   await trie.put(utf8ToBytes('aaa'), utf8ToBytes('value3'))
@@ -258,7 +258,6 @@ tape('shall handle the case of node not found correctly', async (t) => {
     'ExtensionNode',
     'getPath should find the first extension node which is still in the DB'
   )
-
   t.end()
 })
 
@@ -325,7 +324,7 @@ tape('setting back state root (deleteFromDB)', async (t) => {
     'should return null on latest state root independently from deleteFromDB setting'
   )
 
-  await trieSetup.trie.setRootByHash(rootAfterK1)
+  trieSetup.trie.root(rootAfterK1)
   t.deepEqual(await trieSetup.trie.get(k1), trieSetup.expected, trieSetup.msg)
 
   t.end()

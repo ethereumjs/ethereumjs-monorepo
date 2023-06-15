@@ -1,4 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
+import { bytesToPrefixedHexString } from '@ethereumjs/util'
 import { equalsBytes } from 'ethereum-cryptography/utils'
 
 import { addHexPrefix } from '../../util/hex'
@@ -16,7 +17,9 @@ export class LeafNode extends BaseNode implements NodeInterface<'LeafNode'> {
     super(options)
     this.keyNibbles = options.key
     this.value = options.value
-    this.debug && this.debug(`Created with keyNibbles: ${this.keyNibbles}`)
+    this.debug && this.debug(`nibbles: ${this.keyNibbles}`)
+    this.debug && this.debug(`value: ${this.value}`)
+    this.debug && this.debug(`hash: ${bytesToPrefixedHexString(this.hash())}`)
   }
   prefixedNibbles(): number[] {
     const nibbles = this.keyNibbles
@@ -40,11 +43,11 @@ export class LeafNode extends BaseNode implements NodeInterface<'LeafNode'> {
     const result = equalsBytes(this.encodedKey(), rawKey) ? this.value : null
     return result
   }
-  getChildren(): Map<number, TNode> {
-    return new Map()
+  async getChildren(): Promise<Map<number, TNode>> {
+    throw new Error('LeafNode does not have children')
   }
-  getChild(_key: number): undefined {
-    return undefined
+  async getChild(_key: number): Promise<TNode> {
+    throw new Error('LeafNode does not have children')
   }
   getValue(): Uint8Array {
     return this.value ?? Uint8Array.from([])
@@ -58,7 +61,7 @@ export class LeafNode extends BaseNode implements NodeInterface<'LeafNode'> {
   async update(value: Uint8Array | null): Promise<LeafNode> {
     return this.updateValue(value)
   }
-  async updateValue(value: Uint8Array | null): Promise<LeafNode> {
+  updateValue(value: Uint8Array | null): LeafNode {
     this.markDirty()
     this.debug && this.debug.extend('updateValue')(`value=${value}`)
     this.value = value
@@ -70,7 +73,7 @@ export class LeafNode extends BaseNode implements NodeInterface<'LeafNode'> {
   async deleteChild(_nibble: number): Promise<TNode> {
     return this
   }
-  async updateKey(newKeyNibbles: number[]): Promise<LeafNode> {
+  updateKey(newKeyNibbles: number[]): LeafNode {
     this.markDirty()
     this.keyNibbles = newKeyNibbles
     return this

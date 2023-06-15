@@ -1,4 +1,4 @@
-import { bytesToPrefixedHexString } from '@ethereumjs/util'
+import { bytesToPrefixedHexString, equalsBytes } from '@ethereumjs/util'
 
 import type { FoundNodeFunction, WalkFilterFunction } from '../../types'
 import type { MerklePatriciaTrie } from '../merklePatricia'
@@ -24,14 +24,17 @@ export async function* _walk(
   }
   switch (node.type) {
     case 'BranchNode': {
-      for (const [nibble, childNode] of (node as BranchNode).childNodes().entries()) {
+      for (const [nibble, childNode] of (await (node as BranchNode).childNodes()).entries()) {
         const nextKey = [...currentKey, nibble]
         yield* this._walk(childNode, nextKey, onFound, filter)
       }
       break
     }
     case 'ExtensionNode': {
-      const childNode = await this.getNode(node.child.hash(), this.debug.extend('_walk'))
+      const childNode = await this.getNode(
+        (await node.getChild()).hash(),
+        this.debug.extend('_walk')
+      )
       const nextKey = [...currentKey, ...node.keyNibbles]
       yield* this._walk(childNode, nextKey, onFound, filter)
       break
@@ -43,17 +46,21 @@ export async function* _walk(
 
 export async function* walkTrie(
   this: TrieWrap,
-  startNode: TNode | null = this.rootNode,
+  startNodeHash: Uint8Array = this.root(),
   _currentKey: number[] = [],
   onFound: FoundNodeFunction = async (_trieNode: TNode, _key: number[]) => {},
   filter: WalkFilterFunction = async (_trieNode: TNode, _key: number[]) => true
 ): AsyncIterable<TNode> {
-  if (startNode === null) {
+  if (equalsBytes(startNodeHash, this.EMPTY_TRIE_ROOT)) {
     return
   }
   type Task = {
     node: TNode
     fullKey: number[]
+  }
+  const startNode = await this.lookupNodeByHash(startNodeHash)
+  if (!startNode) {
+    throw new Error(`Node with hash ${bytesToPrefixedHexString(startNodeHash)} not found`)
   }
   const tasks: Task[] = [
     {
@@ -76,14 +83,14 @@ export async function* walkTrie(
     }
     switch (node.type) {
       case 'BranchNode': {
-        for (const [nibble, childNode] of (node as BranchNode).childNodes().entries()) {
+        for (const [nibble, childNode] of (await (node as BranchNode).childNodes()).entries()) {
           const nextKey = [...fullKey, nibble]
           tasks.push({ node: childNode, fullKey: nextKey })
         }
         break
       }
       case 'ExtensionNode': {
-        const childNode = await this.getNode(node.child.hash())
+        const childNode = await this.getNode((await node.getChild()).hash())
         const nextKey = [...fullKey, ...node.keyNibbles]
         tasks.push({ node: childNode, fullKey: nextKey })
         break
@@ -96,13 +103,14 @@ export async function* walkTrie(
 
 export async function* _walkTrieRecursively(
   this: TrieWrap,
-  node: TNode | null,
+  nodeHash: Uint8Array,
   currentKey: number[] = [],
   onFound: FoundNodeFunction = async (_trieNode: TNode, _key: number[]) => {},
   filter: WalkFilterFunction = async (_trieNode: TNode, _key: number[]) => true,
   visited: Set<string> = new Set<string>() // Added visited set
 ): AsyncIterable<{ node: TNode; currentKey: number[] }> {
-  if (node === null || visited.has(bytesToPrefixedHexString(node.hash()))) {
+  const node = await this.lookupNodeByHash(nodeHash)
+  if (node === undefined || visited.has(bytesToPrefixedHexString(node.hash()))) {
     return
   }
   visited.add(bytesToPrefixedHexString(node.hash()))
@@ -112,16 +120,16 @@ export async function* _walkTrieRecursively(
   }
   switch (node.type) {
     case 'BranchNode': {
-      for (const [nibble, childNode] of (node as BranchNode).childNodes().entries()) {
+      for (const [nibble, childNode] of (await (node as BranchNode).childNodes()).entries()) {
         const nextKey = [...currentKey, nibble]
-        yield* this._walkTrieRecursively(childNode, nextKey, onFound, filter, visited)
+        yield* this._walkTrieRecursively(childNode.hash(), nextKey, onFound, filter, visited)
       }
       break
     }
     case 'ExtensionNode': {
-      const childNode = node.child
+      const childNode = await node.getChild()
       const nextKey = [...currentKey, ...node.getPartialKey()]
-      yield* this._walkTrieRecursively(childNode, nextKey, onFound, filter, visited)
+      yield* this._walkTrieRecursively(childNode.hash(), nextKey, onFound, filter, visited)
       break
     }
     default:

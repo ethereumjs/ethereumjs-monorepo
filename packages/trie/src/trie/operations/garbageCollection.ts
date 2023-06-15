@@ -10,7 +10,7 @@ export async function _garbageCollect(this: TrieWithDB): Promise<void> {
   this.debug.extend('garbageCollect')(`Collecting`)
   const collected = [0, 0, 0]
   await this._withLock(async () => {
-    const reachableHashes = await this.markReachableNodes(this.rootNode)
+    const reachableHashes = await this.markReachableNodes(await this.rootNode())
     this.debug.extend('garbageCollect')(`Collecting cache`)
     for (const hash of this.cache.keys()) {
       if (!reachableHashes.has(bytesToPrefixedHexString(hash))) {
@@ -35,7 +35,7 @@ export async function _garbageCollect(this: TrieWithDB): Promise<void> {
 }
 
 export async function _verifyPrunedIntegrity(this: TrieWithDB): Promise<boolean> {
-  const reachableHashes = await this.markReachableNodes(this.rootNode)
+  const reachableHashes = await this.markReachableNodes(await this.rootNode())
   for await (const key of await this.database().keys()) {
     if (equalsBytes(key, this.keySecure(ROOT_DB_KEY))) {
       continue
@@ -57,19 +57,19 @@ export async function _markReachableNodes(
   }
   reachableHashes.add(bytesToPrefixedHexString(node.hash()))
   if (node.type === 'BranchNode') {
-    for await (const [, childNode] of node.getChildren()) {
+    for await (const [, childNode] of await node.getChildren()) {
       await this.markReachableNodes(childNode, reachableHashes)
     }
   } else if (node.type === 'ExtensionNode') {
-    await this.markReachableNodes(node.child, reachableHashes)
+    await this.markReachableNodes(await node.getChild(), reachableHashes)
   } else if (node.type === 'ProofNode') {
     node = await this.resolveProofNode(node)
     if (node.type === 'BranchNode') {
-      for await (const [, childNode] of node.getChildren()) {
+      for await (const [, childNode] of await node.getChildren()) {
         await this.markReachableNodes(childNode, reachableHashes)
       }
     } else if (node.type === 'ExtensionNode') {
-      await this.markReachableNodes(node.child, reachableHashes)
+      await this.markReachableNodes(await node.getChild(), reachableHashes)
     }
   }
   return reachableHashes

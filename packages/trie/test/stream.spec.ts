@@ -116,7 +116,6 @@ tape('kv stream test', async function (t) {
       const key = bytesToUtf8(nibblestoBytes(d.key))
       const value = bytesToUtf8(d.value)
       st.equal(value, valObj[key], `value for key ${key} should match`)
-
       delete valObj[key]
     })
     stream.on('close', () => {})
@@ -174,7 +173,7 @@ tape('db stream test', function (tester) {
   ] as BatchDBOp[]
 
   it('should populate trie', async function (t) {
-    await trie.checkpoint()
+    trie.checkpoint()
     await trie.batch(ops)
     t.end()
   })

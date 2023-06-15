@@ -52,8 +52,12 @@ export async function _cleanupBranchNode(
       if (node.value) {
         return node
       } else {
-        const [nibble, child] = node.childNodes().entries().next().value as [number, TNode]
+        const [nibble, _child] = (await node.childNodes()).entries().next().value as [number, TNode]
+        let child = _child
         const childType = child.getType()
+        if (childType === 'ProofNode') {
+          child = (await this.lookupNodeByHash(child.hash())) ?? child
+        }
         debug.extend(`ONE_CHILD`)(
           `BranchNode is now ExtensionNode: [${nibble}]: child: ${childType}`
         )
@@ -63,13 +67,15 @@ export async function _cleanupBranchNode(
           hashFunction: this.hashFunction,
           source: debug,
         })
-        node = await this._cleanupNode(node)
+        // node = await this._cleanupNode(node)
         await this.storeNode(node, debug)
         return node
       }
     default:
       debug(
-        `BranchNode has more than 1 child. ${[...node.childNodes().keys()]}  No cleanup needed.`
+        `BranchNode has more than 1 child. ${[
+          ...(await node.childNodes()).keys(),
+        ]}  No cleanup needed.`
       )
       return node
   }
@@ -112,14 +118,13 @@ export async function _cleanupExtensionNode(
   node: ExtensionNode,
   debug: Debugger
 ): Promise<TNode> {
-  const child = node.child
+  const child = await node.getChild()
   const childType = child.getType()
   let combinedNibbles: number[]
   let newNode: TNode
   let newChild: TNode
   let resolved: TNode
-  debug = debug.extend('_cleanupExtensionNode')
-  debug(`keyNibbles: [${node.getPartialKey()}]`)
+  debug = debug.extend('_ExtensionNode').extend(`[${node.getPartialKey()}]`)
   debug(childCleanupMessage[childType](node.getPartialKey(), child.getPartialKey()))
   switch (childType) {
     case 'LeafNode':
@@ -135,29 +140,36 @@ export async function _cleanupExtensionNode(
       combinedNibbles = [...node.getPartialKey(), ...child.getPartialKey()]
       newNode = new ExtensionNode({
         keyNibbles: combinedNibbles,
-        subNode: (child as ExtensionNode).child,
+        subNode: await (child as ExtensionNode).getChild(),
         hashFunction: this.hashFunction,
       })
       newNode = await this._cleanupNode(newNode)
       await this.storeNode(newNode)
       return newNode
     case 'BranchNode':
-      debug(
-        `ExtensionNode has BranchNode child with ${
-          (child as BranchNode).childNodes().size
-        } children`
-      )
-      if ((child as BranchNode).childNodes().size > 1) {
+      if ((child as BranchNode).childCount() > 1) {
         debug(`ExtensionNode child: BranchNode has more than 1 child.  No cleanup needed`)
         await this.storeNode(node)
         return node
       }
+      debug(`ExtensionNode child: BranchNode has 1 child.`)
+      if (
+        (child as BranchNode).getValue() instanceof Uint8Array &&
+        (child as BranchNode).getValue()!.length > 0
+      ) {
+        debug(`ExtensionNode child: BranchNode has value.  No cleanup needed`)
+        await this.storeNode(node)
+        return node
+      }
+      // debug.extend(`ExtensionNode`)(`ExtensionNode child: BranchNode has 1 child.`)
       newChild = await this._cleanupNode(child)
       newNode = node.updateChild(newChild)
+      await this.storeNode(newChild)
+      // newNode = await this._cleanupNode(newNode)
       await this.storeNode(newNode)
       return newNode
     case 'ProofNode':
-      resolved = await this.resolveProofNode(node.child as ProofNode)
+      resolved = await this.resolveProofNode((await node.getChild()) as ProofNode)
       newNode = node.updateChild(resolved)
       debug(`ProofNode resolved.  Resuming cleanup`)
       newNode = await this._cleanupNode(newNode)

@@ -50,7 +50,7 @@ export async function unset(
     stack.push(child)
 
     // continue to the next node
-    const next = child.getChild(key[pos]) ?? null
+    const next = (await child.getChild(key[pos])) ?? null
     return unset(trie, child, next, key, pos + 1, removeLeft, stack)
   } else if (child instanceof ExtensionNode || child instanceof LeafNode) {
     /**
@@ -171,8 +171,8 @@ export async function unsetInternal(trie: Trie, left: number[], right: number[])
       // record this node on the stack
       stack.push(node)
 
-      const leftNode = node.getChild(left[pos]) ?? null
-      const rightNode = node.getChild(right[pos]) ?? null
+      const leftNode = (await node.getChild(left[pos])) ?? null
+      const rightNode = (await node.getChild(right[pos])) ?? null
 
       // One of `left` and `right` is `null`, stop searching
       if (leftNode === null || rightNode === null) {
@@ -318,7 +318,7 @@ export async function unsetInternal(trie: Trie, left: number[], right: number[])
        * we need to make a copy here.
        */
       const _stack = [...stack]
-      const next = node.getChild(left[pos])
+      const next = await node.getChild(left[pos])
       const child = next ?? null
       const endPos = await unset(trie, node, child, left.slice(pos), 1, false, _stack)
       await saveStack(left.slice(0, pos + endPos), _stack)
@@ -329,7 +329,7 @@ export async function unsetInternal(trie: Trie, left: number[], right: number[])
 
     try {
       const _stack = [...stack]
-      const next = node.getChild(right[pos])
+      const next = await node.getChild(right[pos])
       const child = next ?? null
       const endPos = await unset(trie, node, child, right.slice(pos), 1, true, _stack)
       await saveStack(right.slice(0, pos + endPos), _stack)
@@ -367,7 +367,7 @@ async function verifyProof(
       throw new Error('Proof Invalid: root mismatch')
     }
     debug(`Resolving RootNode: ${bytesToPrefixedHexString(trie.root())}`)
-    const reachable = await trie.markReachableNodes(trie.rootNode)
+    const reachable = await trie.markReachableNodes(await trie.rootNode())
     dbug.extend(`ProofTrie`)(`Reachable nodes: ${reachable.size}`)
     for (const [idx, p] of [...reachable.values()].entries()) {
       dbug.extend(`ProofTrie`)(`Reachable node [${idx}]: ${p}`)
@@ -427,16 +427,16 @@ async function verifyProof(
  */
 export async function hasRightElement(trie: Trie, key: number[]): Promise<boolean> {
   let pos = 0
-  let node: TNode | undefined = trie.rootNode
-  while (node) {
+  let node: TNode | undefined = await trie.rootNode()
+  while (node !== undefined) {
     if (node instanceof BranchNode) {
       for (let i = key[pos] + 1; i < 16; i++) {
-        if (node.getChild(i)) {
+        if ((await node.getChild(i)).getType() !== 'NullNode') {
           return true
         }
       }
 
-      const next = node.getChild(key[pos])
+      const next: TNode = await node.getChild(key[pos])
       node = next
       pos += 1
     } else if (node instanceof ExtensionNode) {
@@ -604,7 +604,7 @@ export async function verifyRangeProof(
 
   // const trie = new Trie({ root: rootHash, useKeyHashingFunction })
   const verified = await Trie.verifyProof(rootHash, nibblestoBytes(firstKey), proof)
-  if (verified === false) {
+  if (verified === null) {
     d_bug('invalid two edge elements proof: proof verification failed')
     return false
   }
@@ -616,7 +616,7 @@ export async function verifyRangeProof(
   const empty = await unsetInternal(trie, firstKey, lastKey)
   d_bug(`unsetInternal: ${empty}`)
   if (empty) {
-    await trie.setRootNode(new NullNode({}))
+    trie.root(trie.EMPTY_TRIE_ROOT)
   }
 
   // Put all elements to the trie

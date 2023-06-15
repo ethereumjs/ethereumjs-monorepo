@@ -50,7 +50,7 @@ export async function proofToPath(
   let valnode: Uint8Array | null = null
   parent = root
   while (parent !== null) {
-    ;[keyrest, child] = this.getChildOf(parent, key, false)
+    ;[keyrest, child] = await this.getChildOf(parent, key, false)
     if (child === null || child instanceof NullNode) {
       if (allowNonExistent) {
         return [root, null]
@@ -72,7 +72,7 @@ export async function proofToPath(
     if (parent instanceof ExtensionNode) {
       parent.updateChild(child)
     } else if (parent instanceof BranchNode) {
-      parent.children[key[0]] = child
+      parent.setChild(key[0], child)
     } else {
       throw new Error(`${typeof parent}: invalid node: ${parent}`)
     }
@@ -123,12 +123,12 @@ export function hasRightElement(parent: TNode, key: number[], pos: number): bool
   }
   return _hasRightElement[parent.getType()]()
 }
-export function getChildOf(
+export async function getChildOf(
   this: TrieWrap,
   parent: TNode | null,
   key: number[],
   skipResolved: boolean
-): [number[], TNode | null] {
+): Promise<[number[], TNode | null]> {
   while (parent) {
     if (parent instanceof ExtensionNode) {
       if (
@@ -143,7 +143,7 @@ export function getChildOf(
         return [key, parent]
       }
     } else if (parent instanceof BranchNode) {
-      parent = parent.getChild(key[0]) ?? null
+      parent = (await parent.getChild(key[0])) ?? null
       key = key.slice(1)
       if (!skipResolved) {
         return [key, parent]
@@ -174,7 +174,7 @@ export async function unset(
         await child.deleteChild(i)
       }
       child.markDirty()
-      return unset(child, child.getChild(key[pos])!, key, pos + 1, removeLeft)
+      return unset(child, await child.getChild(key[pos])!, key, pos + 1, removeLeft)
     },
     ExtensionNode: async () => {
       return null
@@ -243,7 +243,7 @@ export async function unsetInternal(
       //     return false
       //   }
       if (shortForkRight !== 0) {
-        const childR = n.getChild(right[pos])!
+        const childR = await n.getChild(right[pos])!
 
         const err = await unset(n, childR, right, pos + 1, false)
         if (err !== null) {
@@ -255,7 +255,7 @@ export async function unsetInternal(
         return true
       }
 
-      const childL = n.getChild(left[pos])!
+      const childL = await n.getChild(left[pos])!
       const err = await unset(n, childL, left, pos + 1, true)
       if (err !== null) {
         return false
@@ -267,7 +267,7 @@ export async function unsetInternal(
         await (parent as BranchNode).deleteChild(left[pos - 1])
         return false
       }
-      const childR = n.getChild(right[pos])!
+      const childR = await n.getChild(right[pos])!
       const errRight = await unset(n, childR, right, pos + 1, false)
       if (errRight !== null) {
         return false

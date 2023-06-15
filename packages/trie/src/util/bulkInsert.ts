@@ -237,8 +237,8 @@ export async function bulkInsert(
       // Insert into the correct slot in the branch node
       const restKey = prefix.commonPrefix.length > 0 ? key.slice(prefix.commonPrefix.length) : key
       const childIdx = restKey[0]
-      const divergentChild = divergingNode.getChild(childIdx)
-      if (!divergentChild) {
+      const divergentChild = await divergingNode.getChild(childIdx)
+      if (divergentChild.getType() === 'NullNode') {
         this.debug.extend('bulkInsert').extend(`[${i + 1} / ${entries.length}]`)(
           `No Child at index ${childIdx}`
         )
@@ -268,15 +268,15 @@ export async function bulkInsert(
       this.debug.extend('bulkInsert').extend(`[${i + 1} / ${entries.length}]`)('ExtensionNode')
       // Replace the extension node with a branch node
       const restKey = key.slice(prefix.commonPrefix.length)
-      const oldChild = divergingNode.child
+      const oldChild = await divergingNode.getChild()
       if (oldChild instanceof BranchNode) {
         const newBranchNode = oldChild.setChild(
           restKey[0],
           new LeafNode({ key: restKey.slice(1), value: hexStringToBytes(value) })
         )
         batch.set(bytesToPrefixedHexString(newBranchNode.hash()), newBranchNode.rlpEncode())
-        await this.setRootNode(newBranchNode)
-        // await this.storeNode(newBranchNode)
+        await this.storeNode(newBranchNode)
+        this.root(newBranchNode.hash())
       } else {
         let branchNode = new BranchNode({ value: null })
         branchNode = branchNode.setChild(
@@ -285,11 +285,11 @@ export async function bulkInsert(
         )
         branchNode = branchNode.setChild(
           oldChild.getPartialKey()[0],
-          await oldChild.updateKey(oldChild.getPartialKey().slice(1))
+          oldChild.updateKey(oldChild.getPartialKey().slice(1))
         )
         batch.set(bytesToPrefixedHexString(branchNode.hash()), branchNode.rlpEncode())
-        await this.setRootNode(branchNode)
-        // await this.storeNode(branchNode)
+        await this.storeNode(branchNode)
+        this.root(branchNode.hash())
       }
       // await this.setRootNode(divergingNode)
     } else {
@@ -316,8 +316,9 @@ export async function bulkInsert(
       .extend(`[${i + 1} / ${batch.size}]`)(pushed)
   }
   await this.database().batch(batchInput)
-  await this.setRootNode(await this._cleanupNode(this.rootNode))
-  await this.storeNode(this.rootNode)
+  const newRoot = await this._cleanupNode(await this.rootNode())
+  await this.storeNode(newRoot)
+  this.root(newRoot.hash())
   return this.root()
 }
 
@@ -344,7 +345,10 @@ export async function _insertNodeAtNode(
       updatedBranchNode = new BranchNode({ value: null })
     }
     // Get the next node (if exists).
-    const nextNode = updatedBranchNode.getChild(nextNibble) ?? new BranchNode({ value: null })
+    let nextNode = await updatedBranchNode.getChild(nextNibble)
+    if (nextNode.getType() === 'NullNode') {
+      nextNode = new BranchNode({ value: null })
+    }
     // Recursively call `_insertNodeAtNode` on the next node.
     const updatedNextNode = await _insertNodeAtNode(nextNode, restPath, newNode, debug)
     // Update the current BranchNode to point to the updated next node.
@@ -363,7 +367,7 @@ export type BulkNodeInput = LeafNodeInput[]
 export async function cleanupTrie(trie: Trie, debug: Debugger): Promise<Trie> {
   debug = debug.extend('cleanupTrie')
   // Depth-First Search stack
-  const stack: TNode[] = [trie.rootNode]
+  const stack: TNode[] = [await trie.rootNode()]
 
   while (stack.length > 0) {
     const node = stack.pop()
@@ -376,8 +380,8 @@ export async function cleanupTrie(trie: Trie, debug: Debugger): Promise<Trie> {
       if (node.type === 'BranchNode') {
         const branchNode = node as BranchNode
         for (let i = 0; i < 16; i++) {
-          const child = branchNode.getChild(i)
-          if (child) {
+          const child = await branchNode.getChild(i)
+          if (child.getType() !== 'NullNode') {
             const cleanupChild = await trie._cleanupNode(child)
             node.updateChild(cleanupChild, i)
             stack.push(cleanupChild)
@@ -401,7 +405,9 @@ export async function insertBatch(
   const trie = new Trie({ secure, persistent: true })
   if (nodeInputs.length === 1) {
     const { newNode, pathNibbles } = nodeInputs[0]
-    await trie.setRootNode(await newNode.updateKey([...pathNibbles, ...newNode.getPartialKey()]))
+    const newRoot = newNode.updateKey([...pathNibbles, ...newNode.getPartialKey()])
+    await trie.storeNode(newRoot)
+    trie.root(newRoot.hash())
     return trie
   }
   // Sort the nodeInputs array by pathNibbles to ensure we're inserting nodes in order of their position in the Trie.
@@ -418,7 +424,7 @@ export async function insertBatch(
 
   // We will use a reference to the root of the Trie, which will be updated during the insertions.
 
-  let rootNode = trie.rootNode
+  let rootNode = await trie.rootNode()
   for await (const [i, nodeInput] of nodeInputs.entries()) {
     dbug.extend('insertBatch').extend(`[${i + 1}/${nodeInputs.length}]`)(
       `[${nodeInput.pathNibbles}...${nodeInput.newNode.getPartialKey()}]`
@@ -435,6 +441,7 @@ export async function insertBatch(
     // rootNode = await trie._cleanupNode(rootNode)
   }
   // rootNode = await trie._cleanupNode(rootNode)
-  await trie.setRootNode(rootNode)
+  await trie.storeNode(rootNode)
+  trie.root(rootNode.hash())
   return cleanupTrie(trie, trie.debug)
 }

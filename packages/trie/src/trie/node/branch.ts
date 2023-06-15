@@ -3,6 +3,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { ExtensionNode } from './extension'
 import { LeafNode } from './leaf'
 import { BaseNode, NullNode } from './node'
+import { decodeToNode } from './util'
 
 import type {
   EncodedChild,
@@ -16,13 +17,11 @@ import type {
 export class BranchNode extends BaseNode implements NodeInterface<'BranchNode'> {
   type = 'BranchNode' as const
   keyNibbles: number[]
-  children: Array<TNode | undefined>
   value: Uint8Array | null
   branches: (Uint8Array | Uint8Array[])[]
   constructor(options: TNodeOptions<'BranchNode'>) {
     super(options)
     this.keyNibbles = []
-    this.children = options?.children ?? []
     this.branches = options?.branches ?? Array.from({ length: 16 }, () => Uint8Array.from([]))
     this.value = options?.value ?? null
     this.debug && this.debug(`BranchNode created`)
@@ -47,17 +46,18 @@ export class BranchNode extends BaseNode implements NodeInterface<'BranchNode'> 
         return Uint8Array.from([])
     }
   }
-  childrenRlp(): EncodedChild[] {
-    const children: (Uint8Array | Uint8Array[])[] = Array.from({ length: 16 }, (_, _i) => {
-      return Uint8Array.from([])
-    })
-    for (const [idx, child] of this.getChildren().entries()) {
-      children[idx] = this.encodeChild(child)
-    }
-    return children
-  }
+  // childrenRlp(): EncodedChild[] {
+  //   const children: (Uint8Array | Uint8Array[])[] = Array.from({ length: 16 }, (_, _i) => {
+  //     return Uint8Array.from([])
+  //   })
+  //   const childNodes = await this.getChildren()
+  //   for (const [idx, child] of this.getChildren().entries()) {
+  //     children[idx] = this.encodeChild(child)
+  //   }
+  //   return children
+  // }
   raw(): [...EncodedChild[], EncodedValue] {
-    const childrenRlp = this.childrenRlp()
+    const childrenRlp = this.branches
     const valueRlp = this.value ?? Uint8Array.from([])
     return [...childrenRlp, valueRlp]
   }
@@ -70,23 +70,23 @@ export class BranchNode extends BaseNode implements NodeInterface<'BranchNode'> 
     const hashed = this.hashFunction(this.rlpEncode())
     return hashed
   }
-  getChildren(): Map<number, TNode> {
+  async getChildren(): Promise<Map<number, TNode>> {
     const children: Map<number, TNode> = new Map()
     for (let i = 0; i < 16; i++) {
-      const child = this.children[i]
-      if (child !== undefined && child.getType() !== 'NullNode') {
-        children.set(i, child)
-      }
+      const child = await this.getChild(i)
+      children.set(i, child)
     }
     return children
   }
-  getChild(key: number): TNode | undefined {
-    return this.children[key]
+  async getChild(key: number): Promise<TNode> {
+    const branch = this.branches[key]
+    const child = await decodeToNode(RLP.encode(branch))
+    return child
   }
-  childNodes(): Map<number, TNode> {
+  async childNodes(): Promise<Map<number, TNode>> {
     const children: Map<number, TNode> = new Map()
     for (let i = 0; i < 16; i++) {
-      const child = this.children[i]
+      const child = await this.getChild(i)
       if (child !== undefined && child.getType() !== 'NullNode') {
         children.set(i, child)
       }
@@ -94,24 +94,26 @@ export class BranchNode extends BaseNode implements NodeInterface<'BranchNode'> 
     return children
   }
   childCount(): number {
-    return this.childNodes().size
+    return this.branches.filter((b) => b.length > 0).length
   }
   updateChild(newChild: TNode, nibble: number): TNode {
     if (newChild.getType() === 'NullNode' && this.childCount() === 1) {
-      this.debug && this.debug.extend('updateChild')(`deleting last child`)
-      if (this.value === null) {
-        return new NullNode({ hashFunction: this.hashFunction })
-      } else {
+      this.debug &&
+        this.debug.extend('updateChild')(`deleting last child.  node value: ${this.getValue()}`)
+      if (this.value instanceof Uint8Array && this.value.length > 0) {
         return new LeafNode({
           key: [],
           value: this.value,
           hashFunction: this.hashFunction,
         })
+      } else {
+        this.debug && this.debug.extend('updateChild')(`no value, returning NullNode`)
+        return new NullNode({ hashFunction: this.hashFunction })
       }
     }
     this.markDirty()
-    this.children[nibble] = newChild.getType() === 'NullNode' ? undefined : newChild
-    this.branches[nibble] = this.encodeChild(this.children[nibble])
+    // this.children[nibble] = newChild.getType() === 'NullNode' ? undefined : newChild
+    this.branches[nibble] = this.encodeChild(newChild)
     this.debug &&
       this.debug.extend('updateChild')(
         `updating child on branch:${nibble} to ${newChild.getType()}`
@@ -122,15 +124,15 @@ export class BranchNode extends BaseNode implements NodeInterface<'BranchNode'> 
     this.markDirty()
     return this.updateChild(new NullNode({ hashFunction: this.hashFunction }), nibble)
   }
-  async updateValue(value: Uint8Array | null) {
+  updateValue(value: Uint8Array | null): TNode {
     this.markDirty()
     this.debug && this.debug.extend('updateValue')(`value=${value}`)
     this.value = value
     return this
   }
   setChild(slot: number, node: TNode): BranchNode {
-    this.children[slot] = node.getType() === 'NullNode' ? undefined : node
-    this.branches[slot] = this.encodeChild(this.children[slot])
+    // this.children[slot] = node.getType() === 'NullNode' ? undefined : node
+    this.branches[slot] = this.encodeChild(node)
     return this
   }
   getValue(): Uint8Array | null {
@@ -139,7 +141,10 @@ export class BranchNode extends BaseNode implements NodeInterface<'BranchNode'> 
   getPartialKey(): number[] {
     return this.keyNibbles
   }
-  async updateKey(newKeyNibbles: number[]): Promise<TNode> {
+  updateKey(newKeyNibbles: number[]): TNode {
+    if (newKeyNibbles.length === 0) {
+      return this
+    }
     return new ExtensionNode({
       keyNibbles: newKeyNibbles,
       subNode: this,
@@ -149,7 +154,7 @@ export class BranchNode extends BaseNode implements NodeInterface<'BranchNode'> 
   async get(_rawKey: Uint8Array): Promise<Uint8Array | null> {
     throw new Error('Method to be removed.')
   }
-  async update(value: Uint8Array): Promise<BranchNode> {
+  async update(value: Uint8Array): Promise<TNode> {
     return this.updateValue(value)
   }
   async delete(_rawKey: Uint8Array): Promise<TNode> {
@@ -157,7 +162,7 @@ export class BranchNode extends BaseNode implements NodeInterface<'BranchNode'> 
   }
   copy(): TNode {
     return new BranchNode({
-      children: this.children,
+      // children: this.children,
       branches: this.branches,
       value: this.value,
       hashFunction: this.hashFunction,

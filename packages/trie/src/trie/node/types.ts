@@ -23,7 +23,7 @@ export type TNodeOptions<T extends NodeType> = T extends 'LeafNode'
   ? { key: number[]; value: Uint8Array | null } & NodeOptions
   : T extends 'BranchNode'
   ? {
-      children?: (TNode | undefined)[]
+      // children?: (TNode | undefined)[]
       branches?: (Uint8Array | Uint8Array[])[]
       value: Uint8Array | null
     } & NodeOptions
@@ -54,12 +54,12 @@ export interface NodeInterface<T extends NodeType> {
   rlpEncode(): Uint8Array
   hash(): Uint8Array
   get(rawKey: Uint8Array): Promise<Uint8Array | null>
-  getChildren(): Map<number, TNode>
-  getChild(key?: number): TNode | undefined
+  getChildren(): Promise<Map<number, TNode>>
+  getChild(key?: number): Promise<TNode>
   deleteChild(nibble: number): Promise<TNode>
   updateChild(newChild: TNode, nibble?: number): TNode
-  updateValue(newValue: Uint8Array | null): Promise<TNode>
-  updateKey(key: number[]): Promise<TNode>
+  updateValue(newValue: Uint8Array | null): TNode
+  updateKey(key: number[]): TNode
   getValue(): Uint8Array | null
   getType(): NodeType
   update(value: Uint8Array | null): Promise<TNode>
@@ -73,9 +73,9 @@ export interface LeafInterface extends NodeInterface<'LeafNode'> {
   value: Uint8Array | null
 }
 export interface BranchInterface extends NodeInterface<'BranchNode'> {
-  childNodes(): Map<number, TNode>
+  childNodes(): Promise<Map<number, TNode>>
   childCount(): number
-  children: (TNode | undefined)[]
+  // children: (TNode | undefined)[]
   value: Uint8Array | null
 }
 export interface ExtensionInterface extends NodeInterface<'ExtensionNode'> {

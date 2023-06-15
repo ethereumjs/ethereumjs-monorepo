@@ -138,5 +138,5 @@ export async function _verifyRangeProof(
   if (!equalsBytes(hash, rootHash)) {
     return false
   }
-  return { valid: true, more: hasRightElement(trie.rootNode, keys[keys.length - 1], 0) }
+  return { valid: true, more: hasRightElement(await trie.rootNode(), keys[keys.length - 1], 0) }
 }

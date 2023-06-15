@@ -83,8 +83,8 @@ export async function createProof(
   key: Uint8Array,
   debug: Debugger = this.debug
 ): Promise<Uint8Array[]> {
-  debug = debug.extend('_createProof')
-  let node: TNode | undefined = this.rootNode
+  debug = debug.extend('createProof')
+  let node: TNode | undefined = await this.rootNode()
   let childNode: TNode | undefined
   key = this.keySecure(key)
   const nibbles = bytesToNibbles(key)
@@ -113,20 +113,20 @@ export async function createProof(
       case 'LeafNode':
         proof.push(node.rlpEncode())
         debug = debug.extend(`[${nibbles[nibbleIndex]}]`)
-        this.debug.extend('_createProof')(
+        this.debug.extend('createProof')(
           `Reached LeafNode.  Returning proof with ${proof.length} nodes`
         )
         for (const [idx, p] of proof.entries()) {
-          this.debug.extend('_createProof').extend(idx.toString())(bytesToPrefixedHexString(p))
-          this.debug.extend('_createProof').extend(idx.toString()).extend('hash')(
+          this.debug.extend('createProof').extend(idx.toString())(bytesToPrefixedHexString(p))
+          this.debug.extend('createProof').extend(idx.toString()).extend('hash')(
             bytesToPrefixedHexString(this.hashFunction(p)).slice(0, 16)
           )
         }
         return proof
       case 'BranchNode':
         proof.push(node.rlpEncode())
-        childNode = node.getChild(nibbles[nibbleIndex])
-        if (!childNode) {
+        childNode = await node.getChild(nibbles[nibbleIndex])
+        if (childNode.getType() === 'NullNode') {
           return proof
         }
         debug = debug.extend(`[${nibbles[nibbleIndex]}]`)
@@ -138,7 +138,7 @@ export async function createProof(
         node = node as ExtensionNode
         debug = debug.extend(`[-]`)
         nibbleIndex += node.getPartialKey().length
-        node = node.child
+        node = await node.getChild()
     }
 
     if (node.getType() === 'LeafNode') {
@@ -163,7 +163,7 @@ export async function updateFromProof(
     }
     debug(`Proof length: ${proof.length} [${proof.map((p) => p.length)}]`)
     const proofRoot = proof[0]
-    if (!equalsBytes(this.root(), this.hashFunction(this.EMPTY_TRIE_ROOT))) {
+    if (!equalsBytes(this.root(), this.EMPTY_TRIE_ROOT)) {
       if (!equalsBytes(this.root(), this.hashFunction(proofRoot))) {
         debug(`Proof root: ${bytesToPrefixedHexString(this.root())}`)
         debug(`trie root: ${bytesToPrefixedHexString(this.hashFunction(proofRoot))}`)
@@ -186,6 +186,7 @@ export async function updateFromProof(
       await this.storeNode(node, debug)
     }
     const root = await this._decodeToNode(proofRoot, debug)
-    await this.setRootNode(root)
+    await this.storeNode(root, debug)
+    this.root(root.hash())
   })
 }

@@ -119,7 +119,7 @@ const runTests = async (testSizes: number[] = [100, 200]) => {
             st.end()
             return
           }
-          const proof = await trie._createProof(key, d_bug)
+          const proof = await trie.createProof(key, d_bug)
           st.ok(proof, `Proof for key ${idx} should exist -- length:${proof.length}`)
           const verified = await Trie.verifyProof(trie.root(), key, proof)
           st.deepEqual(verified, values[idx], `Proof for key ${idx} should verify`)
@@ -135,7 +135,7 @@ const runTests = async (testSizes: number[] = [100, 200]) => {
           const deleted = await trie.get(toDelete, d_bug)
           st.equal(deleted, null, `deleted key should return null`)
           try {
-            const nullProof = await trie._createProof(toDelete, d_bug)
+            const nullProof = await trie.createProof(toDelete, d_bug)
             st.ok(
               nullProof,
               `Proof for deleted key ${deleteIdx} should exist -- length:${nullProof.length}`
@@ -175,7 +175,7 @@ const runTests = async (testSizes: number[] = [100, 200]) => {
         const valuesFound: string[] = []
         const onFound: FoundNodeFunction = async (node, key) => {
           if (node instanceof BranchNode) {
-            for await (const child of node.childNodes().entries()) {
+            for await (const child of (await node.childNodes()).entries()) {
               branches.set(bytesToPrefixedHexString(child[1].hash()), {
                 parent: f,
                 branch: child[0],
@@ -189,7 +189,8 @@ const runTests = async (testSizes: number[] = [100, 200]) => {
           }
           f++
         }
-        const walk = trie.walkTrie(trie.rootNode, trie.rootNode.getPartialKey(), onFound)
+        const rootNode = await trie.rootNode()
+        const walk = trie.walkTrie(trie.root(), rootNode.getPartialKey(), onFound)
 
         const foundValues = []
         for await (const _ of walk) {
@@ -200,7 +201,7 @@ const runTests = async (testSizes: number[] = [100, 200]) => {
 
           if (_.getType() === 'BranchNode') {
             const c: { [k: typeof walkIdx]: number }[] = []
-            for await (const child of _.getChildren().entries()) {
+            for await (const child of (await _.getChildren()).entries()) {
               c.push({ [walkIdx]: child[0] })
             }
           }
@@ -260,11 +261,11 @@ tape('node serialization', async (t) => {
     key: [0, 0, 0, 1],
     value,
   })
-  const node = trie.rootNode
+  const node = await trie.rootNode()
   const serialized = node.rlpEncode()
   const deserialized = await trie._decodeToNode(serialized)
   t.equal(deserialized.getType(), 'LeafNode', 'should be a leaf node')
-  t.equal(trie.rootNode.getType(), 'LeafNode', 'should be a leaf node')
+  t.equal(node.getType(), 'LeafNode', 'should be a leaf node')
   t.deepEqual(deserialized.rlpEncode(), leaf.rlpEncode(), 'should serialize and deserialize')
   t.deepEqual(node.getPartialKey(), leaf.getPartialKey(), 'should serialize and deserialize')
   t.deepEqual(deserialized.rlpEncode(), node.rlpEncode(), 'should serialize and deserialize')

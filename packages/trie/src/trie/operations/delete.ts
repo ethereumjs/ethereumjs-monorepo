@@ -1,3 +1,5 @@
+import { bytesToPrefixedHexString } from '@ethereumjs/util'
+
 import { doKeysMatch, getSharedNibbles } from '../../util/nibbles'
 import { NullNode } from '../node'
 
@@ -14,8 +16,9 @@ export async function _deleteAtNode(
   _keyNibbles: number[],
   debug: Debugger
 ) {
-  debug = debug.extend('_deleteAtNode')
-  debug.extend(_node.getType())(`Seeking Node to DELETE: (${_keyNibbles.length}) [${_keyNibbles}]`)
+  debug = debug.extend('delete')
+  debug(`nibbles: [${_keyNibbles}]`)
+  debug(`at Node: [${_node.getPartialKey()}]`)
   const d: {
     [type in NodeType]: () => Promise<TNode>
   } = {
@@ -37,18 +40,20 @@ export async function _deleteAtNode(
       debug(
         `node_key: (${extensionNode.getPartialKey().length}) [${extensionNode.getPartialKey()}]`
       )
-      debug(`keyNibbles: (${_keyNibbles.length}) [${_keyNibbles}]`)
-      debug(`sharedNibbles: (${sharedNibbles.length}) [${sharedNibbles}]`)
-
+      debug(`shared:  [${sharedNibbles}]`)
       if (sharedNibbles.length === extensionNode.getPartialKey().length) {
-        debug(`shared nibbles match entirely.  nativagating from extension node into child node`)
+        if (_keyNibbles.length === sharedNibbles.length) {
+          debug(`shared nibbles match entirely. deleting extension`)
+          return new NullNode({ hashFunction: this.hashFunction })
+        }
         debug(
-          `shared (${sharedNibbles.length}): [${sharedNibbles}] remaining: (${
-            _keyNibbles.slice(sharedNibbles.length).length
-          })[${_keyNibbles.slice(sharedNibbles.length)}]`
+          `shared nibbles match with nibbles remaining.  nativagating from extension node into child node`
+        )
+        debug.extend(`[${sharedNibbles}]`)(
+          `Remaining: [${_keyNibbles.slice(sharedNibbles.length)}]`
         )
         const newChild = await this._deleteAtNode(
-          extensionNode.child,
+          await extensionNode.getChild(),
           _keyNibbles.slice(sharedNibbles.length),
           debug
         )
@@ -58,48 +63,82 @@ export async function _deleteAtNode(
       }
     },
     BranchNode: async () => {
-      const branchNode = _node as BranchNode
-      // if (_keyNibbles.length === 0) {
-      //   debug(`keyNibbles is empty, setting deleting branch`)
-      //   return new NullNode({ hashFunction: this.hashFunction })
-      // }
+      let branchNode: TNode = _node as BranchNode
+      if (_keyNibbles.length === 0) {
+        debug.extend('BranchNode')(`keyNibbles is empty, setting deleting branch`)
+        return new NullNode({ hashFunction: this.hashFunction })
+      }
       const childIndex = _keyNibbles[0]
-      // if (_keyNibbles.length === 1) {
-      //   return branchNode.updateChild(new NullNode({ hashFunction: this.hashFunction }), childIndex)
-      // }
-      const childNode = branchNode.getChild(childIndex)
-      if (childNode) {
-        const childType = childNode.getType()
-        const childNibbles = childNode.getPartialKey()
-        debug(`compare nibbles with child: ${childType} at index ${childIndex}`)
-        debug.extend(`[${childIndex}]`)(`[${childNode.getPartialKey()}]`)
-        debug(`[${_keyNibbles[0]}] [${_keyNibbles.slice(1)}]`)
-        if (childNode.getType() === 'LeafNode' && doKeysMatch(childNibbles, _keyNibbles.slice(1))) {
-          debug(`found LeafNode to delete, replacing with NullNode`)
-          _node = await branchNode.deleteChild(childIndex)
-          return _node
-        }
-        if (childNode.getType() === 'LeafNode') {
-          debug('WHAAAAAAT???')
-          debug.extend(`[${childIndex}]`)(`[${childNode.getPartialKey()}]`)
-          debug(`[${_keyNibbles[0]}] [${_keyNibbles.slice(1)}]`)
-        }
-        const updatedChildNode = await this._deleteAtNode(childNode, _keyNibbles.slice(1), debug)
-        debug(`update child at index ${childIndex}`)
-        debug(`before: ${childType}: [${childNibbles}]`)
-        debug(`update: ${updatedChildNode.getType()}: [${updatedChildNode.getPartialKey()}]`)
-        return branchNode.updateChild(updatedChildNode, childIndex)
-      } else {
+      if (_keyNibbles.length === 1) {
+        debug.extend('BranchNode')(`remaining keyNibble: [${_keyNibbles}}]`)
+        return branchNode.updateChild(new NullNode({ hashFunction: this.hashFunction }), childIndex)
+      }
+      if ((branchNode as BranchNode).branches[childIndex].length <= 0) {
+        debug.extend('BranchNode').extend(`[${childIndex}]`)(
+          `branch is empty, returning BranchNode`
+        )
         return branchNode
       }
+      let childNode = await branchNode.getChild(childIndex)
+      debug.extend('BranchNode').extend(`[${childIndex}]`)(`${childNode.getType()}`)
+      if (childNode.getType() === 'ProofNode') {
+        const lookup = await this.lookupNodeByHash(childNode.hash())
+        if (!lookup || lookup.getType() === 'ProofNode') {
+          // debug(`can't resolve proofNode.  returning without deleting`)
+          throw new Error(`can't resolve proofNode.`)
+        }
+        childNode = lookup
+      }
+      const childType = childNode.getType()
+      const childNibbles = childNode.getPartialKey()
+      debug.extend('BranchNode')(
+        `${childType} with hash: ${bytesToPrefixedHexString(
+          childNode.hash()
+        )} at index ${childIndex}`
+      )
+      debug.extend('BranchNode')(`compare nibbles with child: ${childType} at index ${childIndex}`)
+      debug.extend('BranchNode').extend(`[${childIndex}]`)(`[${childNode.getPartialKey()}]`)
+      debug.extend('BranchNode')(`[${_keyNibbles[0]}] [${_keyNibbles.slice(1)}]`)
+      if (childNode.getType() === 'LeafNode' && doKeysMatch(childNibbles, _keyNibbles.slice(1))) {
+        debug(`found LeafNode to delete, replacing with NullNode`)
+        debug.extend('BranchNode')(`before: ${bytesToPrefixedHexString(branchNode.hash())}`)
+        branchNode = await branchNode.deleteChild(childIndex)
+        debug.extend('BranchNode')(`update: ${bytesToPrefixedHexString(branchNode.hash())}`)
+        if (branchNode.getType() === 'NullNode') {
+          return branchNode
+        }
+        const deleted = await branchNode.getChild(childIndex)
+        if (deleted.getType() !== 'NullNode') {
+          throw new Error(`Failed to delete ${deleted.getType()}`)
+        }
+        await this.storeNode(branchNode)
+        return branchNode
+      }
+      if (childNode.getType() === 'LeafNode') {
+        debug('WHAAAAAAT???')
+        debug.extend(`[${childIndex}]`)(`[${childNode.getPartialKey()}]`)
+        debug(`[${_keyNibbles[0]}] [${_keyNibbles.slice(1)}]`)
+      }
+      const updatedChildNode = await this._deleteAtNode(childNode, _keyNibbles.slice(1), debug)
+      debug(`update child at index ${childIndex}`)
+      debug(`before: ${childType}: [${childNibbles}]`)
+      debug(`update: ${updatedChildNode.getType()}: [${updatedChildNode.getPartialKey()}]`)
+      branchNode = branchNode.updateChild(updatedChildNode, childIndex)
+      await this.storeNode(branchNode)
+      return branchNode
     },
     ProofNode: async () => {
-      return _node
+      const lookup = await this.lookupNodeByHash(_node.hash())
+      if (lookup && lookup.getType() !== 'ProofNode') {
+        return this._deleteAtNode(lookup, _keyNibbles, debug)
+      }
+      return new NullNode({ hashFunction: this.hashFunction })
     },
   }
   const deleted = await d[_node.getType()]()
-  debug(`old root: ${_node.getType()}`)
   const newRoot = await this._cleanupNode(deleted, debug)
-  debug(`new root: ${newRoot.getType()}`)
+  this._rootNode = newRoot
+  this.root(newRoot.hash())
+  debug(`new root {${newRoot.getType()}}: ${bytesToPrefixedHexString(newRoot.hash())}`)
   return newRoot
 }

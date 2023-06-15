@@ -23,17 +23,17 @@ export abstract class BaseNode {
     }
     this.hashFunction = _args.hashFunction ?? keccak256
     this.dirty = false
-    _args.source && _args.source.extend(this.constructor.name)('created')
+    _args.source && _args.source(`creating ${this.constructor.name}`)
   }
   abstract get(rawKey?: Uint8Array): Promise<Uint8Array | null>
   abstract rlpEncode(): Uint8Array
   abstract update(value: Uint8Array): Promise<TNode>
-  abstract getChild(key?: number): TNode | undefined
+  abstract getChild(key?: number): Promise<TNode | undefined>
   abstract deleteChild(nibble: number): Promise<TNode>
   abstract updateChild(newChild: TNode, nibble?: number): TNode
-  abstract updateValue(newValue: Uint8Array | null): Promise<TNode>
-  abstract updateKey(key: number[]): Promise<TNode>
-  abstract getChildren(): Map<number, TNode>
+  abstract updateValue(newValue: Uint8Array | null): TNode
+  abstract updateKey(key: number[]): TNode
+  abstract getChildren(): Promise<Map<number, TNode>>
   abstract getValue(): Uint8Array | null
   abstract getPartialKey(): number[]
   abstract getType(): NodeType
@@ -64,11 +64,11 @@ export class NullNode extends BaseNode {
   async get(): Promise<Uint8Array | null> {
     return null
   }
-  getChildren(): Map<number, TNode> {
-    return new Map()
+  async getChildren(): Promise<Map<number, TNode>> {
+    throw new Error('Cannot get children of NullNode')
   }
-  getChild(_key: number): TNode {
-    return new NullNode({ hashFunction: this.hashFunction })
+  async getChild(_key: number): Promise<TNode> {
+    throw new Error('Cannot get child of NullNode')
   }
   getType(): NodeType {
     return 'NullNode'
@@ -79,7 +79,7 @@ export class NullNode extends BaseNode {
   async deleteChild(_nibble: number) {
     return this
   }
-  async updateValue(_newValue: Uint8Array | null): Promise<TNode> {
+  updateValue(_newValue: Uint8Array | null): TNode {
     return this
   }
   getPartialKey(): number[] {
@@ -88,7 +88,7 @@ export class NullNode extends BaseNode {
   getValue(): Uint8Array | null {
     return null
   }
-  async updateKey(_newKey: number[]): Promise<TNode> {
+  updateKey(_newKey: number[]): TNode {
     return this
   }
   async update(value: Uint8Array): Promise<TNode> {
@@ -103,7 +103,7 @@ export class NullNode extends BaseNode {
     return this
   }
   copy(): TNode {
-    return new NullNode({ hashFunction: this.hashFunction })
+    return this
   }
 }
 
@@ -147,10 +147,10 @@ export class ProofNode extends BaseNode implements NodeInterface<'ProofNode'> {
   async get(): Promise<Uint8Array | null> {
     throw new Error('Method does not exist for proofnode')
   }
-  getChildren(): Map<number, TNode> {
+  async getChildren(): Promise<Map<number, TNode>> {
     throw new Error('Method does not exist for proofnode')
   }
-  getChild(_key: number): TNode {
+  async getChild(_key: number): Promise<TNode> {
     throw new Error('Method does not exist for proofnode')
   }
   getType(): NodeType {
@@ -162,7 +162,7 @@ export class ProofNode extends BaseNode implements NodeInterface<'ProofNode'> {
   async deleteChild(_nibble: number): Promise<TNode> {
     throw new Error('Method does not exist for proofnode')
   }
-  async updateValue(_newValue: Uint8Array | null): Promise<TNode> {
+  updateValue(_newValue: Uint8Array | null): TNode {
     throw new Error('Method does not exist for proofnode')
   }
   getPartialKey(): number[] {
@@ -171,13 +171,13 @@ export class ProofNode extends BaseNode implements NodeInterface<'ProofNode'> {
   getValue(): Uint8Array | null {
     return null
   }
-  async updateKey(_newKey: number[]): Promise<TNode> {
+  updateKey(_newKey: number[]): TNode {
     throw new Error('Method does not exist for proofnode')
   }
   async update(_value: Uint8Array): Promise<Exclude<TNode, NullNode>> {
     throw new Error('Method does not exist for proofnode')
   }
   async delete() {
-    return new NullNode({ hashFunction: this.hashFunction })
+    return this
   }
 }

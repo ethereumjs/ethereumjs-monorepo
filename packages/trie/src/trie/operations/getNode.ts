@@ -2,7 +2,7 @@ import { doKeysMatch } from '../../util/nibbles'
 import { NullNode } from '../node'
 
 import type { MerklePatriciaTrie } from '../merklePatricia'
-import type { BranchNode, ExtensionNode, LeafNode } from '../node'
+import type { BranchNode, ExtensionNode, LeafNode, ProofNode } from '../node'
 import type { TNode } from '../node/types'
 import type { Debugger } from 'debug'
 
@@ -18,15 +18,14 @@ export async function _getNodePath(
 ): Promise<WalkResult> {
   debug = debug.extend('_getNodePath')
   let nibbleIndex = 0
-  let currentNode: TNode = this.rootNode
+  let currentNode: TNode = await this.rootNode()
   // const keyNibbles = bytesToNibbles(key)
-  const path = []
-  debug(`key: ${keyNibbles}`)
-  debug(`(root): ${currentNode.getType()} [${currentNode.getPartialKey()}]`)
-  debug(`to_get: [${keyNibbles}]`)
+  const path = [currentNode]
+  debug(`From Root: ${currentNode.getType()} [${currentNode.getPartialKey()}]`)
+  debug(`Seeking Node Path: [${keyNibbles}]`)
   while (currentNode.type !== 'NullNode') {
     debug = debug.extend(currentNode.getType())
-    debug(`Pushing node to path`)
+    debug(`Pushing ${currentNode.getType()} to path`)
     path.push(currentNode)
     let childIndex: number | undefined
     let childNode: TNode | undefined
@@ -35,11 +34,6 @@ export async function _getNodePath(
     switch (currentNode.type) {
       case 'BranchNode':
         currentNode = currentNode as BranchNode
-        debug(
-          `children: ${[...currentNode.childNodes().entries()].map(
-            ([k, node]) => `[${k}] => ${node.getType()}`
-          )}`
-        )
         childIndex = keyNibbles[nibbleIndex]
         if (childIndex === undefined) {
           debug(`Child at index ${nibbleIndex} is undefined, returning`)
@@ -49,17 +43,12 @@ export async function _getNodePath(
             remainingNibbles: keyNibbles.slice(nibbleIndex),
           }
         }
-        debug(
-          `navigating to ${currentNode.getChild(nibbleIndex)?.getType()} at index [${
-            keyNibbles[nibbleIndex]
-          }]`
-        )
-        childNode = (currentNode as BranchNode).getChild(childIndex)
+        childNode = await (currentNode as BranchNode).getChild(childIndex)
+        debug(`navigating to ${childNode.getType()} at index [${keyNibbles[nibbleIndex]}]`)
         debug = debug.extend(`[${childIndex}]`)
-        debug(`found ${childNode?.getType()}`)
-        if (!childNode) {
+        if (childNode.getType() === 'NullNode') {
           debug.extend(`${childIndex}`)(`Child not found, returning`)
-          return { node: currentNode, path, remainingNibbles: keyNibbles.slice(nibbleIndex) }
+          return { node: new NullNode({}), path, remainingNibbles: keyNibbles.slice(nibbleIndex) }
         } else {
           nibbleIndex++
           currentNode = childNode
@@ -75,10 +64,14 @@ export async function _getNodePath(
           debug(`Shared nibbles match entirely.`)
           nibbleIndex += nodeNibbles.length
           if (nibbleIndex === keyNibbles.length) {
-            debug(`Reached end of key.`)
-            return { node: currentNode.child, path, remainingNibbles: [] }
+            let child = await currentNode.getChild()
+            debug(`Reached end of key with ExtensionNode child: ${child.getType()}`)
+            if (child.getType() === 'ProofNode') {
+              child = (await (child as ProofNode).load()) ?? child
+            }
+            return { node: child, path, remainingNibbles: [] }
           }
-          currentNode = (currentNode as ExtensionNode).child
+          currentNode = await currentNode.getChild()
         } else {
           debug.extend(currentNode.getType())(`Shared nibbles do not match.`)
           return {

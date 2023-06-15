@@ -192,7 +192,7 @@ tape('ProofStateManager', (t) => {
         addrHex: bytesToHex(address.bytes),
         addbyte: address.bytes,
       })
-      const trieProof = await trie._createProof(hexStringToBytes(proof.address))
+      const trieProof = await trie.createProof(hexStringToBytes(proof.address))
       st.deepEqual(
         trieProof,
         proof.accountProof.map((p) => hexStringToBytes(p)),

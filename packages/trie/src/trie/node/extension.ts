@@ -25,20 +25,29 @@ export class ExtensionNode extends BaseNode implements NodeInterface<'ExtensionN
   type = 'ExtensionNode' as const
   keyNibbles: number[]
   child: TNode
+  _subNode: Uint8Array | Uint8Array[]
 
   constructor(options: TNodeOptions<'ExtensionNode'>) {
     super(options)
     this.keyNibbles = options.keyNibbles
     this.child = options.subNode
+    this._subNode = this.child.raw()
     if (options.source) {
-      options.source.extend('ExtensionNode')(`key=[${this.keyNibbles}]`)
-      options.source.extend('ExtensionNode')(
-        `child={${this.child.getType()}: [${this.child.getPartialKey()}]}`
-      )
+      options.source = options.source.extend('ExtensionNode').extend(`[${this.keyNibbles}]`)
+
+      options.source(`child={${this.child.getType()}: [${this.child.getPartialKey()}]}`)
       options.source.extend('ExtensionNode')(`hash=${bytesToPrefixedHexString(this.hash())}`)
     } else if (this.debug) {
       this.debug(`key=[${this.keyNibbles}]`)
       this.debug(`child={${this.child.getType()}: [${this.child.getPartialKey()}]}`)
+      if (this.child.getType() === 'LeafNode' || this.child.getType() === 'BranchNode') {
+        this.debug(
+          `child.value=${
+            this.child.getValue() ? bytesToPrefixedHexString(this.child.getValue()!) : 'null'
+          }`
+        )
+      }
+      this.debug(`childHash={${bytesToPrefixedHexString(this.child.hash())}`)
       this.debug(`hash=${bytesToPrefixedHexString(this.hash())}`)
     }
   }
@@ -73,10 +82,10 @@ export class ExtensionNode extends BaseNode implements NodeInterface<'ExtensionN
   hash(): Uint8Array {
     return this.hashFunction(this.rlpEncode())
   }
-  getChildren(): Map<number, TNode> {
+  async getChildren(): Promise<Map<number, TNode>> {
     return new Map().set(0, this.child)
   }
-  getChild(_key: number = 0): TNode {
+  async getChild(_key: number = 0): Promise<TNode> {
     return this.child
   }
   getType(): NodeType {
@@ -85,25 +94,17 @@ export class ExtensionNode extends BaseNode implements NodeInterface<'ExtensionN
   async deleteChild(_nibble: number): Promise<TNode> {
     return new NullNode({ hashFunction: this.hashFunction })
   }
-  async updateKey(newKey: number[]): Promise<TNode> {
+  updateKey(newKey: number[]): TNode {
     this.markDirty()
     this.keyNibbles = newKey
     return this
   }
   updateChild(newNode: TNode): TNode {
     this.markDirty()
-    // if (equalsBytes(newNode.hash(), this.child.hash())) {
-    //   return this
-    // }
-    // const newKeyNibbles = this.keyNibbles
-    // if (newKeyNibbles.length === 0) {
-    //   return newNode
-    // }
-    // this.keyNibbles = newKeyNibbles
     this.child = newNode
     return this
   }
-  async updateValue(_newValue: Uint8Array | null): Promise<TNode> {
+  updateValue(_newValue: Uint8Array | null): TNode {
     throw new Error('method does not exist')
   }
 
@@ -119,11 +120,11 @@ export class ExtensionNode extends BaseNode implements NodeInterface<'ExtensionN
 
   async update(value: Uint8Array): Promise<TNode> {
     this.debug && this.debug.extend('update')(`value=${value}`)
-    const updatedChild = await this.child.updateValue(value)
+    const updatedChild = this.child.updateValue(value)
     return this.updateChild(updatedChild)
   }
 
-  async delete(rawKey: Uint8Array): Promise<ExtensionNode | NullNode> {
+  async delete(rawKey: Uint8Array): Promise<TNode> {
     const key = bytesToNibbles(rawKey)
     this.debug && this.debug.extend('delete')(`[${key}]`)
 
@@ -139,7 +140,7 @@ export class ExtensionNode extends BaseNode implements NodeInterface<'ExtensionN
     }
     if (updatedChild instanceof LeafNode) {
       const newPartialKey = concatNibbles(this.getPartialKey(), updatedChild.getPartialKey())
-      await this.updateKey(newPartialKey)
+      this.updateKey(newPartialKey)
       this.updateChild(updatedChild)
       return this
     }

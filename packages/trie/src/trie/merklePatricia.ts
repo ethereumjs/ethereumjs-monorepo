@@ -34,11 +34,14 @@ export class MerklePatriciaTrie {
   EMPTY_TRIE_ROOT: Uint8Array = Uint8Array.from([0x80])
   debug: Debugger
   hashFunction: (data: Uint8Array) => Uint8Array
-  rootNode: TNode
+  _rootNode: TNode
   nodes?: Map<Uint8Array, TNode>
+  _root: Uint8Array
+
   constructor(options: MerklePatriciaTrieOptions = {}) {
     this.hashFunction = options.hashFunction ?? keccak256
-    this.rootNode = options.root
+    this._root = options.rootHash ?? this.EMPTY_TRIE_ROOT
+    this._rootNode = options.root
       ? options.root
       : options.rootHash
       ? new ProofNode({
@@ -60,8 +63,18 @@ export class MerklePatriciaTrie {
       this._operationMutex.release()
     }
   }
-  root(): Uint8Array {
-    return this.rootNode.hash()
+  root(hash?: Uint8Array) {
+    if (hash && equalsBytes(hash, this.EMPTY_TRIE_ROOT)) {
+      this.debug(`Setting root to EMPTY (${bytesToPrefixedHexString(hash)})`)
+      this._root = hash
+      this._rootNode = new NullNode({})
+      return this.EMPTY_TRIE_ROOT
+    }
+    this._root = hash ?? this._root
+    return this._root
+  }
+  async rootNode(): Promise<TNode> {
+    return this._rootNode
   }
   async lookupNodeByHash(
     hash: Uint8Array,
@@ -76,8 +89,8 @@ export class MerklePatriciaTrie {
     const debug = this.debug.extend('setRootByHash')
     debug(`Setting root by hash: ${bytesToPrefixedHexString(rootHash)}`)
     if (equalsBytes(rootHash, this.EMPTY_TRIE_ROOT)) {
-      this.rootNode = new NullNode({ hashFunction: this.hashFunction })
-      return this.rootNode.hash()
+      this._rootNode = new NullNode({ hashFunction: this.hashFunction })
+      return this._rootNode.hash()
     }
 
     const newRoot = await this.lookupNodeByHash(rootHash)
@@ -94,12 +107,12 @@ export class MerklePatriciaTrie {
         next: Uint8Array.from([]),
         hashFunction: this.hashFunction,
       })
-      this.rootNode = proofRoot
+      this._rootNode = proofRoot
       return proofRoot.hash()
     }
     debug(`Setting root to ${newRoot.getType()}: ${newRoot.hash()}`)
-    this.rootNode = newRoot
-    return this.rootNode.hash()
+    this._rootNode = newRoot
+    return this._rootNode.hash()
   }
   async checkRoot(root: Uint8Array): Promise<boolean> {
     const node = await this.lookupNodeByHash(root)
@@ -112,6 +125,9 @@ export class MerklePatriciaTrie {
     return node
   }
   async storeNode(node: TNode, debug: Debugger = this.debug): Promise<void> {
+    if (node.getType() === 'NullNode') {
+      return
+    }
     debug.extend('storeNode')(
       `[${node.getPartialKey()}] with hash: ${bytesToPrefixedHexString(node.hash())}`
     )
