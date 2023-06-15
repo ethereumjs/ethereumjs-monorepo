@@ -102,11 +102,9 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       debug(`Apply DAO hardfork`)
     }
 
-    // If Verkle EIP is activated, populate StateManager with preState
     if (this.common.isActivatedEIP(999001)) {
-      ;(this._opts.stateManager as StatelessVerkleStateManager).initPreState(
-        block.header.verkleProof!,
-        block.header.verklePreState!
+      ;(this._opts.stateManager as StatelessVerkleStateManager).initVerkleExecutionWitness(
+        block.header.executionWitness!
       )
     }
 
