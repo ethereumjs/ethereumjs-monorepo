@@ -225,7 +225,7 @@ export class VM {
     const common = this._common.copy()
     common.setHardfork(this._common.hardfork())
     const blockchain = this.blockchain.copy()
-    const stateManager = this.stateManager.copy()
+    const stateManager = await this.stateManager.copy()
     const evmOpts = {
       ...(this.evm as any)._optsCached,
       common,

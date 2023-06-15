@@ -369,7 +369,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     const addressHex = bytesToHex(address.bytes)
     const storageTrie = this._storageTries[addressHex]
     if (storageTrie === undefined) {
-      const storageTrie = this._trie.copy(false)
+      const storageTrie = await this._trie.copy(false)
       storageTrie.root(account.storageRoot)
       storageTrie.flushCheckpoints()
       this._storageTries[addressHex] = storageTrie
@@ -785,9 +785,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     return new Promise((resolve, reject) => {
       this._getStorageTrie(address, account)
-        .then((trie) => {
+        .then(async (trie) => {
           const storage: StorageDump = {}
-          const stream = trie.createReadStream()
+          const stream = await trie.createReadStream()
 
           stream.on('data', (val: any) => {
             storage[bytesToHex(val.key)] = bytesToHex(val.value)
@@ -860,8 +860,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * a large overhead here.
    * 2. Cache values are generally not copied along
    */
-  copy(): DefaultStateManager {
-    const trie = this._trie.copy(false)
+  async copy(): Promise<DefaultStateManager> {
+    const trie = await this._trie.copy(false)
     const prefixCodeHashes = this._prefixCodeHashes
     let accountCacheOpts = { ...this._accountCacheSettings }
     if (!this._accountCacheSettings.deactivate) {
