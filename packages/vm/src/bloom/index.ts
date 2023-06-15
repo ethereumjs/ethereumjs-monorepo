@@ -1,5 +1,5 @@
 import { zeros } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 const BYTE_SIZE = 256
 
