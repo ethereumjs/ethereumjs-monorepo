@@ -22,7 +22,6 @@ import { OriginalStorageCache } from './cache/originalStorageCache'
 
 import type { VerkleExecutionWitness, VerkleProof } from '@ethereumjs/block'
 import type {
-  AccessList,
   AccountFields,
   Common,
   EVMStateManagerInterface,
@@ -549,29 +548,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     throw new Error('function not implemented')
   }
 
-  clearWarmedAccounts(): void {}
-  cleanupTouchedAccounts(): Promise<void> {
-    return Promise.resolve()
-  }
-  clearOriginalStorageCache(): void {
-    // throw new Error('function not implemented')
-  }
-  addWarmedAddress(_address: Uint8Array): void {
-    //  throw new Error('function not implemented')
-  }
-  isWarmedAddress(_address: Uint8Array): boolean {
-    throw new Error('function not implemented')
-  }
-  addWarmedStorage(_address: Uint8Array, _slot: Uint8Array): void {
-    //   throw new Error('function not implemented')
-  }
-  isWarmedStorage(_address: Uint8Array, _slot: Uint8Array): boolean {
-    throw new Error('function not implemented')
-  }
   generateCanonicalGenesis(_initState: any): Promise<void> {
     return Promise.resolve()
-  }
-  generateAccessList(_addressesRemoved: Address[], _addressesOnlyStorage: Address[]): AccessList {
-    throw new Error('function not implemented')
   }
 }
