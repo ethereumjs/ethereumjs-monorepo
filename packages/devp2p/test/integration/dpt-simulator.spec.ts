@@ -101,6 +101,9 @@ describe('DPT simulator tests', () => {
     const numDPTs = 6
     const basePort = 31251
     const dpts = util.getTestDPTs(numDPTs, basePort)
+    for (const dpt of dpts) {
+      ;(dpt as any)._shouldFindNeighbours = true // turn on findNeighbors for bootstrap test
+    }
     await util.delay(250)
     await dpts[0].addPeer({ address: util.localhost, udpPort: basePort + 1 })
     await util.delay(100)

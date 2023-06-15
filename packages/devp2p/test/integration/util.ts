@@ -24,6 +24,7 @@ export function getTestDPTs(numDPTs: number, basePort: number) {
         tcpPort: basePort + i,
       },
       timeout: 100,
+      shouldFindNeighbours: false, // Disable findNeighbors since only needed for bootstrap test
     })
     dpt.bind(basePort + i)
     dpts.push(dpt)
@@ -220,7 +221,6 @@ export async function twoPeerMsgExchange2(
         'Invalid Snappy bitstream',
         'unable to process snappy compressed message'
       )
-
       destroyRLPXs(rlpxs)
       opts.promise(undefined)
     })
