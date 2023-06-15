@@ -64,22 +64,25 @@ describe('ETH simulator tests', () => {
     util.twoPeerMsgExchange(it, opts, capabilities, undefined, 25182)
   })
 
-  function sendWithProtocolVersion(t: typeof it, version: number, cap?: Object) {
-    const opts: any = {}
-    opts.status0 = Object.assign({}, status)
-    opts.status1 = Object.assign({}, status)
-    opts.onOnceStatus0 = function (rlpxs: any, eth: any) {
-      assert.equal(eth.getVersion(), version, `should use eth${version} as protocol version`)
-      eth.sendMessage(devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES, [0, [437000, 1, 0, 0]])
-      assert.ok(true, 'should send NEW_BLOCK_HASHES message')
-    }
-    opts.onOnMsg1 = function (rlpxs: any, eth: any, code: any) {
-      if (code === devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES) {
-        assert.ok(true, 'should receive NEW_BLOCK_HASHES message')
-        util.destroyRLPXs(rlpxs)
+  async function sendWithProtocolVersion(t: typeof it, version: number, cap?: Object) {
+    await new Promise((resolve) => {
+      const opts: any = {}
+      opts.status0 = Object.assign({}, status)
+      opts.status1 = Object.assign({}, status)
+      opts.onOnceStatus0 = function (rlpxs: any, eth: any) {
+        assert.equal(eth.getVersion(), version, `should use eth${version} as protocol version`)
+        eth.sendMessage(devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES, [0, [437000, 1, 0, 0]])
+        assert.ok(true, 'should send NEW_BLOCK_HASHES message')
       }
-    }
-    util.twoPeerMsgExchange(it, opts, cap, undefined, 49182)
+      opts.onOnMsg1 = function (rlpxs: any, eth: any, code: any) {
+        if (code === devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES) {
+          assert.ok(true, 'should receive NEW_BLOCK_HASHES message')
+          util.destroyRLPXs(rlpxs)
+          resolve(undefined)
+        }
+      }
+      util.twoPeerMsgExchange(it, opts, cap, undefined, 49182)
+    })
   }
 
   function sendNotAllowed(
@@ -103,8 +106,8 @@ describe('ETH simulator tests', () => {
     util.twoPeerMsgExchange(it, opts, cap, undefined, 16281)
   }
 
-  it('ETH: should use latest protocol version on default', () => {
-    sendWithProtocolVersion(it, 66)
+  it('ETH: should use latest protocol version on default', async () => {
+    await sendWithProtocolVersion(it, 66)
   })
 
   it('ETH -> Eth64 -> sendStatus(): should throw on non-matching latest block provided', () => {
@@ -123,9 +126,9 @@ describe('ETH simulator tests', () => {
     })
   })
 
-  it('ETH: should work with allowed eth64', () => {
+  it('ETH: should work with allowed eth64', async () => {
     const cap = [devp2p.ETH.eth64]
-    sendWithProtocolVersion(it, 64, cap)
+    await sendWithProtocolVersion(it, 64, cap)
   })
 
   it('ETH: send not-allowed eth64', () => {
@@ -151,19 +154,19 @@ describe('ETH simulator tests', () => {
     util.twoPeerMsgExchange(it, opts, cap, common, 37812)
   })
 
-  it('ETH: should work with allowed eth63', () => {
+  it('ETH: should work with allowed eth63', async () => {
     const cap = [devp2p.ETH.eth63]
-    sendWithProtocolVersion(it, 63, cap)
+    await sendWithProtocolVersion(it, 63, cap)
   })
 
-  it('ETH: should work with allowed eth63', () => {
+  it('ETH: should work with allowed eth63', async () => {
     const cap = [devp2p.ETH.eth63]
-    sendWithProtocolVersion(it, 63, cap)
+    await sendWithProtocolVersion(it, 63, cap)
   })
 
-  it('ETH: work with allowed eth62', () => {
+  it('ETH: work with allowed eth62', async () => {
     const cap = [devp2p.ETH.eth62]
-    sendWithProtocolVersion(it, 62, cap)
+    await sendWithProtocolVersion(it, 62, cap)
   })
 
   it('ETH: send not-allowed eth62', () => {
