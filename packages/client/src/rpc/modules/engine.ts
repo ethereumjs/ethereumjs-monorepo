@@ -217,17 +217,6 @@ const validHash = async (hash: Uint8Array, chain: Chain): Promise<string | null>
 }
 
 /**
- * Returns the block hash as a 0x-prefixed hex string if found valid in the blockchain, otherwise returns null.
- */
-const validBlock = async (hash: Uint8Array, chain: Chain): Promise<Block | null> => {
-  try {
-    return await chain.getBlock(hash)
-  } catch (error: any) {
-    return null
-  }
-}
-
-/**
  * Validates that the block satisfies post-merge conditions.
  */
 const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolean> => {
@@ -541,17 +530,16 @@ export class Engine {
     // is pow block which this client would like to mint and attempt proposing it
     const optimisticLookup = await this.service.beaconSync?.extendChain(block)
 
-    const blockExists = await validBlock(hexStringToBytes(blockHash), this.chain)
-    if (blockExists) {
-      const isBlockExecuted = await this.vm.stateManager.hasStateRoot(blockExists.header.stateRoot)
-      if (isBlockExecuted) {
-        const response = {
-          status: Status.VALID,
-          latestValidHash: blockHash,
-          validationError: null,
-        }
-        return response
+    // Block could already be executed (and not in chain) because of series of newpayload requests
+    // together that could come because of retries and timeouts. So just check if stateRoot is committed
+    const isBlockExecuted = await this.vm.stateManager.hasStateRoot(block.header.stateRoot)
+    if (isBlockExecuted) {
+      const response = {
+        status: Status.VALID,
+        latestValidHash: blockHash,
+        validationError: null,
       }
+      return response
     }
 
     try {
@@ -624,11 +612,19 @@ export class Engine {
         lastBlock = block
         const root = (i > 0 ? blocks[i - 1] : await this.chain.getBlock(block.header.parentHash))
           .header.stateRoot
-        await this.execution.runWithoutSetHead({
+        const executed = await this.execution.runWithoutSetHead({
           block,
           root,
           hardforkByTTD: this.chain.headers.td,
         })
+
+        if (!executed) {
+          const status =
+            // If the transitioned to beacon sync and this block can extend beacon chain then
+            optimisticLookup === true ? Status.SYNCING : Status.ACCEPTED
+          const response = { status, latestValidHash: null, validationError: null }
+          return response
+        }
       }
     } catch (error) {
       const validationError = `Error verifying block while running: ${error}`

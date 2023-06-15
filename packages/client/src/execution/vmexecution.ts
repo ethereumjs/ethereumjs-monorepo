@@ -151,38 +151,46 @@ export class VMExecution extends Execution {
    * the entire procedure.
    * @param receipts If we built this block, pass the receipts to not need to run the block again
    */
-  async runWithoutSetHead(opts: RunBlockOpts, receipts?: TxReceipt[]): Promise<void> {
-    return this.runWithLock<void>(async () => {
-      const { block, root } = opts
+  async runWithoutSetHead(opts: RunBlockOpts, receipts?: TxReceipt[]): Promise<boolean> {
+    if (this.running || !this.started || this.config.shutdown) return false
+    this.running = true
 
-      if (receipts === undefined) {
-        // Check if we need to pass flag to clear statemanager cache or not
-        const prevVMStateRoot = await this.vm.stateManager.getStateRoot()
-        // If root is not provided its mean to be run on the same set state
-        const parentState = root ?? prevVMStateRoot
-        const clearCache = !equalsBytes(prevVMStateRoot, parentState)
+    try {
+      await this.runWithLock<void>(async () => {
+        const { block, root } = opts
 
-        const result = await this.vm.runBlock({ clearCache, ...opts })
-        receipts = result.receipts
-      }
-      if (receipts !== undefined) {
-        // Save receipts
-        this.pendingReceipts?.set(bytesToHex(block.hash()), receipts)
-      }
-      // Bypass updating head by using blockchain db directly
-      const [hash, num] = [block.hash(), block.header.number]
-      const td =
-        (await this.chain.getTd(block.header.parentHash, block.header.number - BigInt(1))) +
-        block.header.difficulty
+        if (receipts === undefined) {
+          // Check if we need to pass flag to clear statemanager cache or not
+          const prevVMStateRoot = await this.vm.stateManager.getStateRoot()
+          // If root is not provided its mean to be run on the same set state
+          const parentState = root ?? prevVMStateRoot
+          const clearCache = !equalsBytes(prevVMStateRoot, parentState)
 
-      await this.chain.blockchain.dbManager.batch([
-        DBSetTD(td, num, hash),
-        ...DBSetBlockOrHeader(block),
-        DBSetHashToNumber(hash, num),
-        // Skip the op for number to hash to not alter canonical chain
-        ...DBSaveLookups(hash, num, true),
-      ])
-    })
+          const result = await this.vm.runBlock({ clearCache, ...opts })
+          receipts = result.receipts
+        }
+        if (receipts !== undefined) {
+          // Save receipts
+          this.pendingReceipts?.set(bytesToHex(block.hash()), receipts)
+        }
+        // Bypass updating head by using blockchain db directly
+        const [hash, num] = [block.hash(), block.header.number]
+        const td =
+          (await this.chain.getTd(block.header.parentHash, block.header.number - BigInt(1))) +
+          block.header.difficulty
+
+        await this.chain.blockchain.dbManager.batch([
+          DBSetTD(td, num, hash),
+          ...DBSetBlockOrHeader(block),
+          DBSetHashToNumber(hash, num),
+          // Skip the op for number to hash to not alter canonical chain
+          ...DBSaveLookups(hash, num, true),
+        ])
+      })
+      return true
+    } finally {
+      this.running = false
+    }
   }
 
   /**
@@ -268,168 +276,169 @@ export class VMExecution extends Execution {
     if (this.running || !this.started || this.config.shutdown) return 0
     this.running = true
 
-    // run inside a lock so as to not be entangle with runWithoutSetHead or setHead
-    return this.runWithLock<number>(async () => {
-      let numExecuted: number | null | undefined = undefined
+    try {
+      // run inside a lock so as to not be entangle with runWithoutSetHead or setHead
+      return await this.runWithLock<number>(async () => {
+        let numExecuted: number | null | undefined = undefined
 
-      const { blockchain } = this.vm
-      if (typeof blockchain.getIteratorHead !== 'function') {
-        throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
-      }
-      let startHeadBlock = await blockchain.getIteratorHead()
-      if (typeof blockchain.getCanonicalHeadBlock !== 'function') {
-        throw new Error(
-          'cannot get iterator head: blockchain has no getCanonicalHeadBlock function'
+        const { blockchain } = this.vm
+        if (typeof blockchain.getIteratorHead !== 'function') {
+          throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
+        }
+        let startHeadBlock = await blockchain.getIteratorHead()
+        if (typeof blockchain.getCanonicalHeadBlock !== 'function') {
+          throw new Error(
+            'cannot get iterator head: blockchain has no getCanonicalHeadBlock function'
+          )
+        }
+        let canonicalHead = await blockchain.getCanonicalHeadBlock()
+
+        this.config.logger.debug(
+          `Running execution startHeadBlock=${startHeadBlock?.header.number} canonicalHead=${canonicalHead?.header.number} loop=${loop}`
         )
-      }
-      let canonicalHead = await blockchain.getCanonicalHeadBlock()
 
-      this.config.logger.debug(
-        `Running execution startHeadBlock=${startHeadBlock?.header.number} canonicalHead=${canonicalHead?.header.number} loop=${loop}`
-      )
+        let headBlock: Block | undefined
+        let parentState: Uint8Array | undefined
+        let errorBlock: Block | undefined
 
-      let headBlock: Block | undefined
-      let parentState: Uint8Array | undefined
-      let errorBlock: Block | undefined
+        // flag for vm to clear statemanager cache on runBlock
+        //  i) If on start of iterator the last run state is not same as the block's parent
+        //  ii) If reorg happens on the block iterator
+        let clearCache = false
 
-      // flag for vm to clear statemanager cache on runBlock
-      //  i) If on start of iterator the last run state is not same as the block's parent
-      //  ii) If reorg happens on the block iterator
-      let clearCache = false
+        while (
+          this.started &&
+          !this.config.shutdown &&
+          (!runOnlybatched ||
+            (runOnlybatched &&
+              canonicalHead.header.number - startHeadBlock.header.number >=
+                BigInt(this.config.numBlocksPerIteration))) &&
+          (numExecuted === undefined ||
+            (loop && numExecuted === this.config.numBlocksPerIteration)) &&
+          equalsBytes(startHeadBlock.hash(), canonicalHead.hash()) === false
+        ) {
+          let txCounter = 0
+          headBlock = undefined
+          parentState = undefined
+          errorBlock = undefined
+          this.vmPromise = blockchain
+            .iterator(
+              'vm',
+              async (block: Block, reorg: boolean) => {
+                // determine starting state for block run
+                // if we are just starting or if a chain reorg has happened
+                if (headBlock === undefined || reorg) {
+                  const headBlock = await blockchain.getBlock(block.header.parentHash)
+                  parentState = headBlock.header.stateRoot
 
-      while (
-        this.started &&
-        !this.config.shutdown &&
-        (!runOnlybatched ||
-          (runOnlybatched &&
-            canonicalHead.header.number - startHeadBlock.header.number >=
-              BigInt(this.config.numBlocksPerIteration))) &&
-        (numExecuted === undefined ||
-          (loop && numExecuted === this.config.numBlocksPerIteration)) &&
-        equalsBytes(startHeadBlock.hash(), canonicalHead.hash()) === false
-      ) {
-        let txCounter = 0
-        headBlock = undefined
-        parentState = undefined
-        errorBlock = undefined
-        this.vmPromise = blockchain
-          .iterator(
-            'vm',
-            async (block: Block, reorg: boolean) => {
-              // determine starting state for block run
-              // if we are just starting or if a chain reorg has happened
-              if (headBlock === undefined || reorg) {
-                const headBlock = await blockchain.getBlock(block.header.parentHash)
-                parentState = headBlock.header.stateRoot
-
-                if (reorg) {
-                  clearCache = true
-                  this.config.logger.info(
-                    `VM run: Chain reorged, setting new head to block number=${headBlock.header.number} clearCache=${clearCache}.`
-                  )
+                  if (reorg) {
+                    clearCache = true
+                    this.config.logger.info(
+                      `VM run: Chain reorged, setting new head to block number=${headBlock.header.number} clearCache=${clearCache}.`
+                    )
+                  } else {
+                    const prevVMStateRoot = await this.vm.stateManager.getStateRoot()
+                    clearCache = !equalsBytes(prevVMStateRoot, parentState)
+                  }
                 } else {
-                  const prevVMStateRoot = await this.vm.stateManager.getStateRoot()
-                  clearCache = !equalsBytes(prevVMStateRoot, parentState)
+                  // Continuation of last vm run, no need to clearCache
+                  clearCache = false
                 }
-              } else {
-                // Continuation of last vm run, no need to clearCache
-                clearCache = false
-              }
 
-              // run block, update head if valid
-              try {
-                const { number, timestamp } = block.header
-                if (typeof blockchain.getTotalDifficulty !== 'function') {
-                  throw new Error(
-                    'cannot get iterator head: blockchain has no getTotalDifficulty function'
-                  )
-                }
-                const td = await blockchain.getTotalDifficulty(block.header.parentHash)
+                // run block, update head if valid
+                try {
+                  const { number, timestamp } = block.header
+                  if (typeof blockchain.getTotalDifficulty !== 'function') {
+                    throw new Error(
+                      'cannot get iterator head: blockchain has no getTotalDifficulty function'
+                    )
+                  }
+                  const td = await blockchain.getTotalDifficulty(block.header.parentHash)
 
-                const hardfork = this.config.execCommon.getHardforkByBlockNumber(
-                  number,
-                  td,
-                  timestamp
-                )
-                if (hardfork !== this.hardfork) {
-                  const hash = short(block.hash())
-                  this.config.logger.info(
-                    `Execution hardfork switch on block number=${number} hash=${hash} old=${this.hardfork} new=${hardfork}`
-                  )
-                  this.hardfork = this.config.execCommon.setHardforkByBlockNumber(
+                  const hardfork = this.config.execCommon.getHardforkByBlockNumber(
                     number,
                     td,
                     timestamp
                   )
+                  if (hardfork !== this.hardfork) {
+                    const hash = short(block.hash())
+                    this.config.logger.info(
+                      `Execution hardfork switch on block number=${number} hash=${hash} old=${this.hardfork} new=${hardfork}`
+                    )
+                    this.hardfork = this.config.execCommon.setHardforkByBlockNumber(
+                      number,
+                      td,
+                      timestamp
+                    )
+                  }
+                  let skipBlockValidation = false
+                  if (this.config.execCommon.consensusType() === ConsensusType.ProofOfAuthority) {
+                    // Block validation is redundant here and leads to consistency problems
+                    // on PoA clique along blockchain-including validation checks
+                    // (signer states might have moved on when sync is ahead)
+                    skipBlockValidation = true
+                  }
+
+                  // we are skipping header validation because the block has been picked from the
+                  // blockchain and header should have already been validated while putBlock
+                  if (!this.started) {
+                    throw Error('Execution stopped')
+                  }
+
+                  const beforeTS = Date.now()
+                  this.stats(this.vm)
+                  const result = await this.vm.runBlock({
+                    block,
+                    root: parentState,
+                    clearCache,
+                    skipBlockValidation,
+                    skipHeaderValidation: true,
+                  })
+                  const afterTS = Date.now()
+                  const diffSec = Math.round((afterTS - beforeTS) / 1000)
+
+                  if (diffSec > this.MAX_TOLERATED_BLOCK_TIME) {
+                    const msg = `Slow block execution for block num=${
+                      block.header.number
+                    } hash=0x${bytesToHex(block.hash())} txs=${block.transactions.length} gasUsed=${
+                      result.gasUsed
+                    } time=${diffSec}secs`
+                    this.config.logger.warn(msg)
+                  }
+
+                  void this.receiptsManager?.saveReceipts(block, result.receipts)
+
+                  txCounter += block.transactions.length
+                  // set as new head block
+                  headBlock = block
+                  parentState = block.header.stateRoot
+                } catch (error: any) {
+                  // Store error block and throw which will make iterator stop, exit and save
+                  // last successfully executed head as vmHead
+                  errorBlock = block
+                  throw error
                 }
-                let skipBlockValidation = false
-                if (this.config.execCommon.consensusType() === ConsensusType.ProofOfAuthority) {
-                  // Block validation is redundant here and leads to consistency problems
-                  // on PoA clique along blockchain-including validation checks
-                  // (signer states might have moved on when sync is ahead)
-                  skipBlockValidation = true
-                }
-
-                // we are skipping header validation because the block has been picked from the
-                // blockchain and header should have already been validated while putBlock
-                if (!this.started) {
-                  throw Error('Execution stopped')
-                }
-
-                const beforeTS = Date.now()
-                this.stats(this.vm)
-                const result = await this.vm.runBlock({
-                  block,
-                  root: parentState,
-                  clearCache,
-                  skipBlockValidation,
-                  skipHeaderValidation: true,
-                })
-                const afterTS = Date.now()
-                const diffSec = Math.round((afterTS - beforeTS) / 1000)
-
-                if (diffSec > this.MAX_TOLERATED_BLOCK_TIME) {
-                  const msg = `Slow block execution for block num=${
-                    block.header.number
-                  } hash=0x${bytesToHex(block.hash())} txs=${block.transactions.length} gasUsed=${
-                    result.gasUsed
-                  } time=${diffSec}secs`
-                  this.config.logger.warn(msg)
-                }
-
-                void this.receiptsManager?.saveReceipts(block, result.receipts)
-
-                txCounter += block.transactions.length
-                // set as new head block
-                headBlock = block
-                parentState = block.header.stateRoot
-              } catch (error: any) {
-                // Store error block and throw which will make iterator stop, exit and save
-                // last successfully executed head as vmHead
-                errorBlock = block
-                throw error
-              }
-            },
-            this.config.numBlocksPerIteration,
-            // release lock on this callback so other blockchain ops can happen while this block is being executed
-            true
-          )
-          // Ensure to catch and not throw as this would lead to unCaughtException with process exit
-          .catch(async (error) => {
-            if (errorBlock !== undefined) {
-              // TODO: determine if there is a way to differentiate between the cases
-              // a) a bad block is served by a bad peer -> delete the block and restart sync
-              //    sync from parent block
-              // b) there is a consensus error in the VM -> stop execution until the
-              //    consensus error is fixed
-              //
-              // For now only option b) is implemented, atm this is a very likely case
-              // and the implemented behavior helps on debugging.
-              // Option a) would likely need some block comparison of the same blocks
-              // received by different peer to decide on bad blocks
-              // (minimal solution: receive block from 3 peers and take block if there is
-              // is equally served from at least 2 peers)
-              /*try {
+              },
+              this.config.numBlocksPerIteration,
+              // release lock on this callback so other blockchain ops can happen while this block is being executed
+              true
+            )
+            // Ensure to catch and not throw as this would lead to unCaughtException with process exit
+            .catch(async (error) => {
+              if (errorBlock !== undefined) {
+                // TODO: determine if there is a way to differentiate between the cases
+                // a) a bad block is served by a bad peer -> delete the block and restart sync
+                //    sync from parent block
+                // b) there is a consensus error in the VM -> stop execution until the
+                //    consensus error is fixed
+                //
+                // For now only option b) is implemented, atm this is a very likely case
+                // and the implemented behavior helps on debugging.
+                // Option a) would likely need some block comparison of the same blocks
+                // received by different peer to decide on bad blocks
+                // (minimal solution: receive block from 3 peers and take block if there is
+                // is equally served from at least 2 peers)
+                /*try {
             // remove invalid block
               await blockchain!.delBlock(block.header.hash())
             } catch (error: any) {
@@ -448,70 +457,76 @@ export class VMExecution extends Execution {
               )
               this.config.execCommon.setHardforkByBlockNumber(blockNumber, td)
             }*/
-              // Option a): set iterator head to the parent block so that an
-              // error can repeatedly processed for debugging
-              const { number } = errorBlock.header
-              const hash = short(errorBlock.hash())
-              this.config.logger.warn(
-                `Execution of block number=${number} hash=${hash} hardfork=${this.hardfork} failed:\n${error}`
-              )
-              if (this.config.debugCode) {
-                await debugCodeReplayBlock(this, errorBlock)
+                // Option a): set iterator head to the parent block so that an
+                // error can repeatedly processed for debugging
+                const { number } = errorBlock.header
+                const hash = short(errorBlock.hash())
+                this.config.logger.warn(
+                  `Execution of block number=${number} hash=${hash} hardfork=${this.hardfork} failed:\n${error}`
+                )
+                if (this.config.debugCode) {
+                  await debugCodeReplayBlock(this, errorBlock)
+                }
+                this.config.events.emit(Event.SYNC_EXECUTION_VM_ERROR, error)
+                const actualExecuted = Number(
+                  errorBlock.header.number - startHeadBlock.header.number
+                )
+                return actualExecuted
+              } else {
+                this.config.logger.error(`VM execution failed with error`, error)
+                return null
               }
-              this.config.events.emit(Event.SYNC_EXECUTION_VM_ERROR, error)
-              const actualExecuted = Number(errorBlock.header.number - startHeadBlock.header.number)
-              return actualExecuted
+            })
+
+          numExecuted = await this.vmPromise
+          if (numExecuted !== null) {
+            let endHeadBlock
+            if (typeof this.vm.blockchain.getIteratorHead === 'function') {
+              endHeadBlock = await this.vm.blockchain.getIteratorHead('vm')
             } else {
-              this.config.logger.error(`VM execution failed with error`, error)
-              return null
+              throw new Error(
+                'cannot get iterator head: blockchain has no getIteratorHead function'
+              )
             }
-          })
 
-        numExecuted = await this.vmPromise
-        if (numExecuted !== null) {
-          let endHeadBlock
-          if (typeof this.vm.blockchain.getIteratorHead === 'function') {
-            endHeadBlock = await this.vm.blockchain.getIteratorHead('vm')
-          } else {
-            throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
+            if (typeof numExecuted === 'number' && numExecuted > 0) {
+              const firstNumber = startHeadBlock.header.number
+              const firstHash = short(startHeadBlock.hash())
+              const lastNumber = endHeadBlock.header.number
+              const lastHash = short(endHeadBlock.hash())
+              const baseFeeAdd =
+                this.config.execCommon.gteHardfork(Hardfork.London) === true
+                  ? `baseFee=${endHeadBlock.header.baseFeePerGas} `
+                  : ''
+              const tdAdd =
+                this.config.execCommon.gteHardfork(Hardfork.Paris) === true
+                  ? ''
+                  : `td=${this.chain.blocks.td} `
+              this.config.logger.info(
+                `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} txs=${txCounter}`
+              )
+            } else {
+              this.config.logger.debug(
+                `No blocks executed past chain head hash=${short(endHeadBlock.hash())} number=${
+                  endHeadBlock.header.number
+                }`
+              )
+            }
+            startHeadBlock = endHeadBlock
+            if (typeof this.vm.blockchain.getCanonicalHeadBlock !== 'function') {
+              throw new Error(
+                'cannot get iterator head: blockchain has no getCanonicalHeadBlock function'
+              )
+            }
+            canonicalHead = await this.vm.blockchain.getCanonicalHeadBlock()
           }
-
-          if (typeof numExecuted === 'number' && numExecuted > 0) {
-            const firstNumber = startHeadBlock.header.number
-            const firstHash = short(startHeadBlock.hash())
-            const lastNumber = endHeadBlock.header.number
-            const lastHash = short(endHeadBlock.hash())
-            const baseFeeAdd =
-              this.config.execCommon.gteHardfork(Hardfork.London) === true
-                ? `baseFee=${endHeadBlock.header.baseFeePerGas} `
-                : ''
-            const tdAdd =
-              this.config.execCommon.gteHardfork(Hardfork.Paris) === true
-                ? ''
-                : `td=${this.chain.blocks.td} `
-            this.config.logger.info(
-              `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} txs=${txCounter}`
-            )
-          } else {
-            this.config.logger.debug(
-              `No blocks executed past chain head hash=${short(endHeadBlock.hash())} number=${
-                endHeadBlock.header.number
-              }`
-            )
-          }
-          startHeadBlock = endHeadBlock
-          if (typeof this.vm.blockchain.getCanonicalHeadBlock !== 'function') {
-            throw new Error(
-              'cannot get iterator head: blockchain has no getCanonicalHeadBlock function'
-            )
-          }
-          canonicalHead = await this.vm.blockchain.getCanonicalHeadBlock()
         }
-      }
 
+        return numExecuted ?? 0
+      })
+    } finally {
       this.running = false
-      return numExecuted ?? 0
-    })
+    }
   }
 
   /**
