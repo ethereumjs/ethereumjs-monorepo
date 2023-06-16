@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1686753145494,
+  "lastUpdate": 1686882931091,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "aadit2002nov@gmail.com",
-            "name": "Aadit Palande",
-            "username": "Coollaitar"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "dc075d4aaa2c78dbfc6d90fac33e8c9c38741204",
-          "message": "Updated  ethereum-cryptography to ^2.0.0 (#2737)",
-          "timestamp": "2023-05-30T11:53:31-04:00",
-          "tree_id": "50830b0a2de99501992f5f774eaf5f0627f4d138",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/dc075d4aaa2c78dbfc6d90fac33e8c9c38741204"
-        },
-        "date": 1685462765416,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31541,
-            "range": "±5.88%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31814,
-            "range": "±2.74%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31739,
-            "range": "±2.84%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 26133,
-            "range": "±11.46%",
-            "unit": "ops/sec",
-            "extra": "69 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30281,
-            "range": "±3.04%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.07%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b21e8d2db5b7338009e4a4c8ed85a39f9eba8beb",
+          "message": "Utils tests (#2781)\n\n* Add tests for lock.ts\r\n\r\n* Add tests for mapDB.ts\r\n\r\n* When copying, create a new coppied backing map\r\n\r\n* Fix linting issues\r\n\r\n* Revert \"When copying, create a new coppied backing map\"\r\n\r\nThis reverts commit a7cd158b2844c049e7892167976b37eca1f6e5d9.\r\n\r\n* Remove test for copy function\r\n\r\n* Update packages/util/test/mapDB.spec.ts\r\n\r\nCo-authored-by: acolytec3 <konjou@gmail.com>\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <konjou@gmail.com>",
+          "timestamp": "2023-06-15T22:11:57-04:00",
+          "tree_id": "3e33055e7fdc79f080301ee8e486a08b2f64ef40",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b21e8d2db5b7338009e4a4c8ed85a39f9eba8beb"
+        },
+        "date": 1686882930364,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 30703,
+            "range": "±6.19%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31580,
+            "range": "±2.62%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31287,
+            "range": "±2.81%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 30508,
+            "range": "±2.97%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 24263,
+            "range": "±11.62%",
+            "unit": "ops/sec",
+            "extra": "70 samples"
           }
         ]
       }
