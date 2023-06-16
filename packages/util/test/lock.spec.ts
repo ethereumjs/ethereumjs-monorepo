@@ -1,45 +1,39 @@
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { Lock } from '../src'
+import { Lock } from '../src/index.js'
 
-tape('Lock class', (t) => {
-  t.test('acquire', (t) => {
-    t.test('should return true when permits are available', async (t) => {
-      const lock = new Lock()
-      const result = await lock.acquire()
-      t.equal(result, true, 'should return true')
-    })
-
-    t.test('should return a promise when no permits are available', async (t) => {
-      const lock = new Lock()
-      await lock.acquire()
-
-      const result = lock.acquire()
-      t.ok(result instanceof Promise, 'should return a promise')
-      t.end()
-    })
+describe('Lock class: acquire', () => {
+  it('should return true when permits are available', async () => {
+    const lock = new Lock()
+    const result = await lock.acquire()
+    assert.equal(result, true, 'should return true')
   })
 
-  t.test('release', (t) => {
-    t.test('should increase the number of permits', (t) => {
-      const lock = new Lock()
-      lock.release()
-      t.equal(lock['permits'], 2, 'should increase permits by 1')
-      t.end()
-    })
+  it('should return a promise when no permits are available', async () => {
+    const lock = new Lock()
+    await lock.acquire()
 
-    t.test('should resolve the waiting promise when permits are released', async (t) => {
-      const lock = new Lock()
-      await lock.acquire() // Start waiting
+    const result = lock.acquire()
+    assert.ok(result instanceof Promise, 'should return a promise')
+  })
+})
 
-      setTimeout(() => {
-        lock.release() // Release the permits after a delay
-      }, 100)
-
-      const result = await lock.acquire()
-      t.equal(result, true, 'should resolve waiting promise')
-    })
+describe('Lock class: acquire', () => {
+  it('should increase the number of permits', () => {
+    const lock = new Lock()
+    lock.release()
+    assert.equal(lock['permits'], 2, 'should increase permits by 1')
   })
 
-  t.end()
+  it('should resolve the waiting promise when permits are released', async () => {
+    const lock = new Lock()
+    await lock.acquire() // Start waiting
+
+    setTimeout(() => {
+      lock.release() // Release the permits after a delay
+    }, 100)
+
+    const result = await lock.acquire()
+    assert.equal(result, true, 'should resolve waiting promise')
+  })
 })
