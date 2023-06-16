@@ -1,5 +1,5 @@
 import { RLP, utils } from '@ethereumjs/rlp'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { bytesToHex } from 'ethereum-cryptography/utils.js'
 import * as snappy from 'snappyjs'
 
 import { formatLogData } from '../util'

@@ -7,55 +7,53 @@ import {
   hexStringToBytes,
   zeros,
 } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { Block } from '../src/block'
-import { BlockHeader } from '../src/header'
+import { Block } from '../src/block.js'
+import { BlockHeader } from '../src/header.js'
 
 const common = new Common({
   chain: Chain.Mainnet,
   hardfork: Hardfork.Paris,
 })
 
-function validateMergeHeader(st: tape.Test, header: BlockHeader) {
-  st.ok(equalsBytes(header.parentHash, zeros(32)), 'parentHash')
-  st.ok(equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY), 'uncleHash')
-  st.ok(header.coinbase.equals(Address.zero()), 'coinbase')
-  st.ok(equalsBytes(header.stateRoot, zeros(32)), 'stateRoot')
-  st.ok(equalsBytes(header.transactionsTrie, KECCAK256_RLP), 'transactionsTrie')
-  st.ok(equalsBytes(header.receiptTrie, KECCAK256_RLP), 'receiptTrie')
-  st.ok(equalsBytes(header.logsBloom, zeros(256)), 'logsBloom')
-  st.equal(header.difficulty, BigInt(0), 'difficulty')
-  st.equal(header.number, BigInt(0), 'number')
-  st.equal(header.gasLimit, BigInt('0xffffffffffffff'), 'gasLimit')
-  st.equal(header.gasUsed, BigInt(0), 'gasUsed')
-  st.equal(header.timestamp, BigInt(0), 'timestamp')
-  st.ok(header.extraData.length <= 32, 'extraData')
-  st.equal(header.mixHash.length, 32, 'mixHash')
-  st.ok(equalsBytes(header.nonce, zeros(8)), 'nonce')
+function validateMergeHeader(header: BlockHeader) {
+  assert.ok(equalsBytes(header.parentHash, zeros(32)), 'parentHash')
+  assert.ok(equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY), 'uncleHash')
+  assert.ok(header.coinbase.equals(Address.zero()), 'coinbase')
+  assert.ok(equalsBytes(header.stateRoot, zeros(32)), 'stateRoot')
+  assert.ok(equalsBytes(header.transactionsTrie, KECCAK256_RLP), 'transactionsTrie')
+  assert.ok(equalsBytes(header.receiptTrie, KECCAK256_RLP), 'receiptTrie')
+  assert.ok(equalsBytes(header.logsBloom, zeros(256)), 'logsBloom')
+  assert.equal(header.difficulty, BigInt(0), 'difficulty')
+  assert.equal(header.number, BigInt(0), 'number')
+  assert.equal(header.gasLimit, BigInt('0xffffffffffffff'), 'gasLimit')
+  assert.equal(header.gasUsed, BigInt(0), 'gasUsed')
+  assert.equal(header.timestamp, BigInt(0), 'timestamp')
+  assert.ok(header.extraData.length <= 32, 'extraData')
+  assert.equal(header.mixHash.length, 32, 'mixHash')
+  assert.ok(equalsBytes(header.nonce, zeros(8)), 'nonce')
 }
 
-tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
-  t.test('should construct default blocks with post-merge PoS constants fields', function (st) {
+describe('[Header]: Casper PoS / The Merge Functionality', () => {
+  it('should construct default blocks with post-merge PoS constants fields', () => {
     const header = BlockHeader.fromHeaderData({}, { common })
-    validateMergeHeader(st, header)
+    validateMergeHeader(header)
 
     const block = new Block(undefined, undefined, undefined, undefined, { common })
-    validateMergeHeader(st, block.header)
-
-    st.end()
+    validateMergeHeader(block.header)
   })
 
-  t.test('should throw if non merge-conforming PoS constants are provided', function (st) {
+  it('should throw if non merge-conforming PoS constants are provided', () => {
     // Building a header with random values for constants
     try {
       const headerData = {
         uncleHash: hexStringToBytes('123abc'),
       }
       BlockHeader.fromHeaderData(headerData, { common })
-      st.fail('should throw')
+      assert.fail('should throw')
     } catch (e: any) {
-      st.pass('should throw on wrong uncleHash')
+      assert.ok(true, 'should throw on wrong uncleHash')
     }
 
     try {
@@ -64,9 +62,9 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
         number: 1n,
       }
       BlockHeader.fromHeaderData(headerData, { common })
-      st.fail('should throw')
+      assert.fail('should throw')
     } catch (e: any) {
-      st.pass('should throw on wrong difficulty')
+      assert.ok(true, 'should throw on wrong difficulty')
     }
 
     try {
@@ -75,9 +73,9 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
         number: 1n,
       }
       BlockHeader.fromHeaderData(headerData, { common })
-      st.fail('should throw')
+      assert.fail('should throw')
     } catch (e: any) {
-      st.pass('should throw on invalid extraData length')
+      assert.ok(true, 'should throw on invalid extraData length')
     }
 
     try {
@@ -85,9 +83,9 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
         mixHash: new Uint8Array(30).fill(1),
       }
       BlockHeader.fromHeaderData(headerData, { common })
-      st.fail('should throw')
+      assert.fail('should throw')
     } catch (e: any) {
-      st.pass('should throw on invalid mixHash length')
+      assert.ok(true, 'should throw on invalid mixHash length')
     }
 
     try {
@@ -96,15 +94,13 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
         number: 1n,
       }
       BlockHeader.fromHeaderData(headerData, { common })
-      st.fail('should throw')
+      assert.fail('should throw')
     } catch (e: any) {
-      st.pass('should throw on wrong nonce')
+      assert.ok(true, 'should throw on wrong nonce')
     }
-
-    st.end()
   })
 
-  t.test('test that a PoS block with uncles cannot be produced', function (st) {
+  it('test that a PoS block with uncles cannot be produced', () => {
     try {
       new Block(
         undefined,
@@ -115,27 +111,28 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
           common,
         }
       )
-      st.fail('should have thrown')
+      assert.fail('should have thrown')
     } catch (e: any) {
-      st.pass('should throw')
+      assert.ok(true, 'should throw')
     }
-    st.end()
   })
 
-  t.test('EIP-4399: prevRando should return mixHash value', function (st) {
+  it('EIP-4399: prevRando should return mixHash value', () => {
     const mixHash = new Uint8Array(32).fill(3)
     let block = Block.fromBlockData({ header: { mixHash } }, { common })
-    st.ok(equalsBytes(block.header.prevRandao, mixHash), 'prevRandao should return mixHash value')
+    assert.ok(
+      equalsBytes(block.header.prevRandao, mixHash),
+      'prevRandao should return mixHash value'
+    )
 
     const commonLondon = common.copy()
     commonLondon.setHardfork(Hardfork.London)
     block = Block.fromBlockData({ header: { mixHash } }, { common: commonLondon })
     try {
       block.header.prevRandao
-      st.fail('should have thrown')
+      assert.fail('should have thrown')
     } catch (e: any) {
-      st.pass('prevRandao should throw if EIP-4399 is not activated')
+      assert.ok(true, 'prevRandao should throw if EIP-4399 is not activated')
     }
-    st.end()
   })
 })

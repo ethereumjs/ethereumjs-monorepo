@@ -1,9 +1,9 @@
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src'
+import { EVM } from '../src/index.js'
 
 const STOP = '00'
 const JUMP = '56'
@@ -21,44 +21,46 @@ const testCases = [
   { code: [STOP], resultPC: 1 },
 ]
 
-tape('VM.runCode: initial program counter', async (t) => {
-  const evm = await EVM.create({
-    stateManager: new DefaultStateManager(),
-  })
+describe('VM.runCode: initial program counter', () => {
+  it('should work', async () => {
+    const evm = await EVM.create({
+      stateManager: new DefaultStateManager(),
+    })
 
-  for (const [i, testData] of testCases.entries()) {
-    const runCodeArgs = {
-      code: hexToBytes(testData.code.join('')),
-      pc: testData.pc,
-      gasLimit: BigInt(0xffff),
-    }
-
-    let err
-    try {
-      const result = await evm.runCode!(runCodeArgs)
-      if (testData.resultPC !== undefined) {
-        t.equal(
-          result.runState?.programCounter,
-          testData.resultPC,
-          `should start the execution at the specified pc or 0, testCases[${i}]`
-        )
+    for (const [i, testData] of testCases.entries()) {
+      const runCodeArgs = {
+        code: hexToBytes(testData.code.join('')),
+        pc: testData.pc,
+        gasLimit: BigInt(0xffff),
       }
-    } catch (e: any) {
-      err = e
-    }
 
-    if (testData.error !== undefined) {
-      err = err?.message ?? 'no error thrown'
-      t.equal(err, testData.error, 'error message should match')
-      err = false
-    }
+      let err
+      try {
+        const result = await evm.runCode!(runCodeArgs)
+        if (testData.resultPC !== undefined) {
+          assert.equal(
+            result.runState?.programCounter,
+            testData.resultPC,
+            `should start the execution at the specified pc or 0, testCases[${i}]`
+          )
+        }
+      } catch (e: any) {
+        err = e
+      }
 
-    t.assert(err === false || err === undefined)
-  }
+      if (testData.error !== undefined) {
+        err = err?.message ?? 'no error thrown'
+        assert.equal(err, testData.error, 'error message should match')
+        err = false
+      }
+
+      assert.ok(err === false || err === undefined)
+    }
+  })
 })
 
-tape('VM.runCode: interpreter', (t) => {
-  t.test('should return a EvmError as an exceptionError on the result', async (st) => {
+describe('VM.runCode: interpreter', () => {
+  it('should return a EvmError as an exceptionError on the result', async () => {
     const evm = await EVM.create({
       stateManager: new DefaultStateManager(),
     })
@@ -73,14 +75,13 @@ tape('VM.runCode: interpreter', (t) => {
     try {
       result = await evm.runCode!(runCodeArgs)
     } catch (e: any) {
-      st.fail('should not throw error')
+      assert.fail('should not throw error')
     }
-    st.equal(result!.exceptionError!.errorType, 'EvmError')
-    st.ok(result!.exceptionError!.error.includes('invalid opcode'))
-    st.end()
+    assert.equal(result!.exceptionError!.errorType, 'EvmError')
+    assert.ok(result!.exceptionError!.error.includes('invalid opcode'))
   })
 
-  t.test('should throw on non-EvmError', async (st) => {
+  it('should throw on non-EvmError', async () => {
     const evm = await EVM.create({
       stateManager: new DefaultStateManager(),
     })
@@ -103,16 +104,15 @@ tape('VM.runCode: interpreter', (t) => {
 
     try {
       await evm.runCode!(runCodeArgs)
-      st.fail('should throw error')
+      assert.fail('should throw error')
     } catch (e: any) {
-      st.ok(e.toString().includes('Test'), 'error thrown')
+      assert.ok(e.toString().includes('Test'), 'error thrown')
     }
-    st.end()
   })
 })
 
-tape('VM.runCode: RunCodeOptions', (t) => {
-  t.test('should throw on negative value args', async (st) => {
+describe('VM.runCode: RunCodeOptions', () => {
+  it('should throw on negative value args', async () => {
     const evm = await EVM.create({
       stateManager: new DefaultStateManager(),
     })
@@ -124,11 +124,12 @@ tape('VM.runCode: RunCodeOptions', (t) => {
 
     try {
       await evm.runCode!(runCodeArgs)
-      st.fail('should not accept a negative call value')
+      assert.fail('should not accept a negative call value')
     } catch (err: any) {
-      st.ok(err.message.includes('value field cannot be negative'), 'throws on negative call value')
+      assert.ok(
+        err.message.includes('value field cannot be negative'),
+        'throws on negative call value'
+      )
     }
-
-    st.end()
   })
 })

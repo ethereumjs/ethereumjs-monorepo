@@ -1,8 +1,8 @@
 import { Block } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 
-import { bytesBE8 } from './constants'
-import { DBOp, DBTarget } from './operation'
+import { bytesBE8 } from './constants.js'
+import { DBOp, DBTarget } from './operation.js'
 
 import type { BlockHeader } from '@ethereumjs/block'
 

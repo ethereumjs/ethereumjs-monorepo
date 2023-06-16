@@ -1,7 +1,7 @@
 import { bytesToBigInt, concatBytesNoTypeCheck, padToEven } from '@ethereumjs/util'
-import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
 
-import { ERROR, EvmError } from '../../exceptions'
+import { ERROR, EvmError } from '../../exceptions.js'
 
 // base field modulus as described in the EIP
 const fieldModulus = BigInt(

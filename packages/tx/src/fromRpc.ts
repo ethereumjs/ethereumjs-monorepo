@@ -1,6 +1,6 @@
 import { TypeOutput, setLengthLeft, toBytes, toType } from '@ethereumjs/util'
 
-import type { TypedTxData } from './types'
+import type { TypedTxData } from './types.js'
 
 export const normalizeTxParams = (_txParams: any): TypedTxData => {
   const txParams = Object.assign({}, _txParams)

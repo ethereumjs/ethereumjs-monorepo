@@ -1,6 +1,6 @@
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { fetchFromProvider, getProvider } from '../src'
+import { fetchFromProvider, getProvider } from '../src/index.js'
 
 const providerUrl = 'https://myfakeprovider.com'
 const fakeEthersProvider = {
@@ -11,36 +11,40 @@ const fakeEthersProvider = {
     return fakeConnection
   },
 }
-tape('getProvider', (t) => {
-  t.equal(getProvider(providerUrl), providerUrl, 'returned correct provider url string')
-  t.equal(
-    getProvider(fakeEthersProvider),
-    fakeEthersProvider._getConnection().url,
-    'returned correct provider url string'
-  )
-  t.throws(
-    () => getProvider(<any>1),
-    (err: any) => err.message.includes('Must provide valid provider URL or Web3Provider'),
-    'throws correct error'
-  )
-  t.end()
+describe('getProvider', () => {
+  it('should work', () => {
+    assert.equal(getProvider(providerUrl), providerUrl, 'returned correct provider url string')
+    assert.equal(
+      getProvider(fakeEthersProvider),
+      fakeEthersProvider._getConnection().url,
+      'returned correct provider url string'
+    )
+    assert.throws(
+      () => getProvider(<any>1),
+      'Must provide valid provider URL or Web3Provider',
+      undefined,
+      'throws correct error'
+    )
+  })
 })
 
-tape('fetchFromProvider', async (t) => {
-  try {
-    await fetchFromProvider(providerUrl, {
-      method: 'eth_getBalance',
-      params: ['0xabcd'],
-    })
-    t.fail('should throw')
-  } catch (err: any) {
-    if (global.fetch !== undefined) {
-      t.ok(err.message.includes('fetch'), 'tried to fetch and failed')
-    } else {
-      t.ok(
-        err.toString().includes(providerUrl.split('//')[1]),
-        'tries to fetch from specified provider url'
-      )
+describe('fetchFromProvider', () => {
+  it('should work', async () => {
+    try {
+      await fetchFromProvider(providerUrl, {
+        method: 'eth_getBalance',
+        params: ['0xabcd'],
+      })
+      assert.fail('should throw')
+    } catch (err: any) {
+      if (global.fetch !== undefined) {
+        assert.ok(err.message.includes('fetch'), 'tried to fetch and failed')
+      } else {
+        assert.ok(
+          err.toString().includes(providerUrl.split('//')[1]),
+          'tries to fetch from specified provider url'
+        )
+      }
     }
-  }
+  })
 })

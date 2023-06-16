@@ -30,6 +30,7 @@
     "Holger Drewes <holger.drewes@gmail.com>"
   ],
   "main": "dist/cjs/index.js",
+  "type": "module",
   "module": "dist/esm/index.js",
   "exports": {
     ".": {
@@ -50,8 +51,7 @@
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
-    "tape": "tape -r ts-node/register",
-    "test": "npm run tape -- './test/**/*.spec.ts'",
+    "test": "vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {

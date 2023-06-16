@@ -367,15 +367,6 @@ export async function setupPreConditions(state: EVMStateManagerInterface, testDa
 }
 
 /**
- * Checks if in a karma test runner.
- * @returns boolean whether running in karma
- */
-export function isRunningInKarma(): boolean {
-  // eslint-disable-next-line no-undef
-  return typeof (<any>globalThis).window !== 'undefined' && (<any>globalThis).window.__karma__
-}
-
-/**
  * Returns a DAO common which has a different activation block than the default block
  */
 export function getDAOCommon(activationBlock: number) {

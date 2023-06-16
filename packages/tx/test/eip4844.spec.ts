@@ -12,10 +12,11 @@ import {
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
-import { hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { assert, describe, it } from 'vitest'
 
-import { BlobEIP4844Transaction, TransactionFactory } from '../src'
+import gethGenesis from '../../block/test/testdata/4844-hardfork.json'
+import { BlobEIP4844Transaction, TransactionFactory } from '../src/index.js'
 
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
@@ -27,529 +28,534 @@ if (isBrowser() === false) {
     // eslint-disable-next-line
   } catch {}
 }
-
-const gethGenesis = require('../../block/test/testdata/4844-hardfork.json')
 const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
   hardfork: Hardfork.Cancun,
 })
 
-tape('EIP4844 constructor tests - valid scenarios', (t) => {
-  if (isBrowser() === true) {
-    t.end()
-  } else {
-    const txData = {
-      type: 0x03,
-      versionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
-      maxFeePerDataGas: 1n,
-    }
-    const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
-    t.equal(tx.type, 3, 'successfully instantiated a blob transaction from txData')
-    const factoryTx = TransactionFactory.fromTxData(txData, { common })
-    t.equal(factoryTx.type, 3, 'instantiated a blob transaction from the tx factory')
-
-    const serializedTx = tx.serialize()
-    t.equal(serializedTx[0], 3, 'successfully serialized a blob tx')
-    const deserializedTx = BlobEIP4844Transaction.fromSerializedTx(serializedTx, { common })
-    t.equal(deserializedTx.type, 3, 'deserialized a blob tx')
-
-    const signedTx = tx.sign(pk)
-    const sender = signedTx.getSenderAddress().toString()
-    const decodedTx = BlobEIP4844Transaction.fromSerializedTx(signedTx.serialize(), { common })
-    t.equal(
-      decodedTx.getSenderAddress().toString(),
-      sender,
-      'signature and sender were deserialized correctly'
-    )
-
-    t.end()
-  }
-})
-
-tape('fromTxData using from a json', (t) => {
-  if (isBrowser() === true) {
-    t.end()
-  } else {
-    const txData = {
-      type: '0x3',
-      nonce: '0x0',
-      gasPrice: null,
-      maxPriorityFeePerGas: '0x12a05f200',
-      maxFeePerGas: '0x12a05f200',
-      gasLimit: '0x33450',
-      value: '0xbc614e',
-      data: '0x',
-      v: '0x0',
-      r: '0x8a83833ec07806485a4ded33f24f5cea4b8d4d24dc8f357e6d446bcdae5e58a7',
-      s: '0x68a2ba422a50cf84c0b5fcbda32ee142196910c97198ffd99035d920c2b557f8',
-      to: '0xffb38a7a99e3e2335be83fc74b7faa19d5531243',
-      chainId: '0x28757b3',
-      accessList: null,
-      maxFeePerDataGas: '0xb2d05e00',
-      versionedHashes: ['0x01b0a4cdd5f55589f5c5b4d46c76704bb6ce95c0a8c09f77f197a57808dded28'],
-    }
-    const txMeta = {
-      hash: 'e5e02be0667b6d31895d1b5a8b916a6761cbc9865225c6144a3e2c50936d173e',
-      serialized:
-        '03f89b84028757b38085012a05f20085012a05f2008303345094ffb38a7a99e3e2335be83fc74b7faa19d553124383bc614e80c084b2d05e00e1a001b0a4cdd5f55589f5c5b4d46c76704bb6ce95c0a8c09f77f197a57808dded2880a08a83833ec07806485a4ded33f24f5cea4b8d4d24dc8f357e6d446bcdae5e58a7a068a2ba422a50cf84c0b5fcbda32ee142196910c97198ffd99035d920c2b557f8',
-    }
-
-    const c = common.copy()
-    c['_chainParams'] = Object.assign({}, common['_chainParams'], {
-      chainId: Number(txData.chainId),
-    })
-    try {
-      const tx = BlobEIP4844Transaction.fromTxData(txData, { common: c })
-      t.pass('Should be able to parse a json data and hash it')
-
-      t.equal(typeof tx.maxFeePerDataGas, 'bigint', 'should be able to parse correctly')
-      t.equal(bytesToHex(tx.serialize()), txMeta.serialized, 'serialization should match')
-      // TODO: fix the hash
-      t.equal(bytesToHex(tx.hash()), txMeta.hash, 'hash should match')
-
-      const jsonData = tx.toJSON()
-      // override few fields with equivalent values to have a match
-      t.deepEqual(
-        { ...txData, accessList: [] },
-        { gasPrice: null, ...jsonData },
-        'toJSON should give correct json'
-      )
-
-      const fromSerializedTx = BlobEIP4844Transaction.fromSerializedTx(
-        hexToBytes(txMeta.serialized),
-        { common: c }
-      )
-      t.equal(
-        bytesToHex(fromSerializedTx.hash()),
-        txMeta.hash,
-        'fromSerializedTx hash should match'
-      )
-    } catch (e) {
-      t.fail('failed to parse json data')
-    }
-
-    t.end()
-  }
-})
-
-tape('EIP4844 constructor tests - invalid scenarios', (t) => {
-  if (isBrowser() === true) {
-    t.end()
-  } else {
-    const baseTxData = {
-      type: 0x03,
-      maxFeePerDataGas: 1n,
-    }
-    const shortVersionHash = {
-      versionedHashes: [concatBytes(new Uint8Array([3]), randomBytes(3))],
-    }
-    const invalidVersionHash = {
-      versionedHashes: [concatBytes(new Uint8Array([3]), randomBytes(31))],
-    }
-    const tooManyBlobs = {
-      versionedHashes: [
-        concatBytes(new Uint8Array([1]), randomBytes(31)),
-        concatBytes(new Uint8Array([1]), randomBytes(31)),
-        concatBytes(new Uint8Array([1]), randomBytes(31)),
-      ],
-    }
-    try {
-      BlobEIP4844Transaction.fromTxData({ ...baseTxData, ...shortVersionHash }, { common })
-    } catch (err: any) {
-      t.ok(
-        err.message.includes('versioned hash is invalid length'),
-        'throws on invalid versioned hash length'
-      )
-    }
-    try {
-      BlobEIP4844Transaction.fromTxData({ ...baseTxData, ...invalidVersionHash }, { common })
-    } catch (err: any) {
-      t.ok(
-        err.message.includes('does not start with KZG commitment'),
-        'throws on invalid commitment version'
-      )
-    }
-    try {
-      BlobEIP4844Transaction.fromTxData({ ...baseTxData, ...tooManyBlobs }, { common })
-    } catch (err: any) {
-      t.ok(err.message.includes('tx can contain at most'), 'throws on too many versioned hashes')
-    }
-    t.end()
-  }
-})
-
-tape('Network wrapper tests', async (t) => {
-  if (isBrowser() === true) {
-    t.end()
-  } else {
-    const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(blobs)
-    const versionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobsToProofs(blobs, commitments)
-    const unsignedTx = BlobEIP4844Transaction.fromTxData(
-      {
-        versionedHashes,
-        blobs,
-        kzgCommitments: commitments,
-        kzgProofs: proofs,
-        maxFeePerDataGas: 100000000n,
-        gasLimit: 0xffffffn,
-        to: randomBytes(20),
-      },
-      { common }
-    )
-
-    const signedTx = unsignedTx.sign(pk)
-    const sender = signedTx.getSenderAddress().toString()
-    const wrapper = signedTx.serializeNetworkWrapper()
-    const deserializedTx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(wrapper, {
-      common,
-    })
-
-    t.equal(
-      deserializedTx.type,
-      0x03,
-      'successfully deserialized a blob transaction network wrapper'
-    )
-    t.equal(deserializedTx.blobs?.length, blobs.length, 'contains the correct number of blobs')
-    t.equal(
-      deserializedTx.getSenderAddress().toString(),
-      sender,
-      'decoded sender address correctly'
-    )
-    const minimalTx = BlobEIP4844Transaction.minimalFromNetworkWrapper(deserializedTx, { common })
-    t.ok(minimalTx.blobs === undefined, 'minimal representation contains no blobs')
-    t.ok(
-      equalsBytes(minimalTx.hash(), deserializedTx.hash()),
-      'has the same hash as the network wrapper version'
-    )
-
-    const simpleBlobTx = BlobEIP4844Transaction.fromTxData(
-      {
-        blobsData: ['hello world'],
-        maxFeePerDataGas: 100000000n,
-        gasLimit: 0xffffffn,
-        to: randomBytes(20),
-      },
-      { common }
-    )
-
-    t.equal(
-      bytesToHex(unsignedTx.versionedHashes[0]),
-      bytesToHex(simpleBlobTx.versionedHashes[0]),
-      'tx versioned hash for simplified blob txData constructor matches fully specified versioned hashes'
-    )
-
-    t.throws(
-      () =>
-        BlobEIP4844Transaction.fromTxData(
-          {
-            blobsData: ['hello world'],
-            blobs: ['hello world'],
-            maxFeePerDataGas: 100000000n,
-            gasLimit: 0xffffffn,
-            to: randomBytes(20),
-          },
-          { common }
-        ),
-      (err: any) => {
-        return err.message.includes('encoded blobs')
-      },
-      'throws on blobsData and blobs in txData'
-    )
-
-    t.throws(
-      () =>
-        BlobEIP4844Transaction.fromTxData(
-          {
-            blobsData: ['hello world'],
-            kzgCommitments: ['0xabcd'],
-            maxFeePerDataGas: 100000000n,
-            gasLimit: 0xffffffn,
-            to: randomBytes(20),
-          },
-          { common }
-        ),
-      (err: any) => {
-        return err.message.includes('KZG commitments')
-      },
-      'throws on blobsData and KZG commitments in txData'
-    )
-
-    t.throws(
-      () =>
-        BlobEIP4844Transaction.fromTxData(
-          {
-            blobsData: ['hello world'],
-            versionedHashes: ['0x01cd'],
-            maxFeePerDataGas: 100000000n,
-            gasLimit: 0xffffffn,
-            to: randomBytes(20),
-          },
-          { common }
-        ),
-      (err: any) => {
-        return err.message.includes('versioned hashes')
-      },
-      'throws on blobsData and versioned hashes in txData'
-    )
-
-    t.throws(
-      () =>
-        BlobEIP4844Transaction.fromTxData(
-          {
-            blobsData: ['hello world'],
-            kzgProofs: ['0x01cd'],
-            maxFeePerDataGas: 100000000n,
-            gasLimit: 0xffffffn,
-            to: randomBytes(20),
-          },
-          { common }
-        ),
-      (err: any) => {
-        return err.message.includes('KZG proofs')
-      },
-      'throws on blobsData and KZG proofs in txData'
-    )
-
-    const txWithEmptyBlob = BlobEIP4844Transaction.fromTxData(
-      {
-        versionedHashes: [],
-        blobs: [],
-        kzgCommitments: [],
-        kzgProofs: [],
-        maxFeePerDataGas: 100000000n,
-        gasLimit: 0xffffffn,
-        to: randomBytes(20),
-      },
-      { common }
-    )
-
-    const serializedWithEmptyBlob = txWithEmptyBlob.serializeNetworkWrapper()
-    t.throws(
-      () =>
-        BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(serializedWithEmptyBlob, {
-          common,
-        }),
-      (err: any) => err.message === 'Invalid transaction with empty blobs',
-      'throws a transaction with no blobs'
-    )
-
-    const txWithMissingBlob = BlobEIP4844Transaction.fromTxData(
-      {
-        versionedHashes,
-        blobs: blobs.slice(1),
-        kzgCommitments: commitments,
-        kzgProofs: proofs,
-        maxFeePerDataGas: 100000000n,
-        gasLimit: 0xffffffn,
-        to: randomBytes(20),
-      },
-      { common }
-    )
-
-    const serializedWithMissingBlob = txWithMissingBlob.serializeNetworkWrapper()
-    t.throws(
-      () =>
-        BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(serializedWithMissingBlob, {
-          common,
-        }),
-      (err: any) =>
-        err.message === 'Number of versionedHashes, blobs, and commitments not all equal',
-      'throws when blobs/commitments/hashes mismatch'
-    )
-
-    const mangledValue = commitments[0][0]
-
-    commitments[0][0] = 154
-    const txWithInvalidCommitment = BlobEIP4844Transaction.fromTxData(
-      {
-        versionedHashes,
-        blobs,
-        kzgCommitments: commitments,
-        kzgProofs: proofs,
-        maxFeePerDataGas: 100000000n,
-        gasLimit: 0xffffffn,
-        to: randomBytes(20),
-      },
-      { common }
-    )
-
-    const serializedWithInvalidCommitment = txWithInvalidCommitment.serializeNetworkWrapper()
-    t.throws(
-      () =>
-        BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(serializedWithInvalidCommitment, {
-          common,
-        }),
-      (err: any) => err.message.includes('KZG verification of blobs fail'),
-      'throws when kzg proof cant be verified'
-    )
-
-    versionedHashes[0][1] = 2
-    commitments[0][0] = mangledValue
-
-    const txWithInvalidVersionedHashes = BlobEIP4844Transaction.fromTxData(
-      {
-        versionedHashes,
-        blobs,
-        kzgCommitments: commitments,
-        kzgProofs: proofs,
-        maxFeePerDataGas: 100000000n,
-        gasLimit: 0xffffffn,
-        to: randomBytes(20),
-      },
-      { common }
-    )
-
-    const serializedWithInvalidVersionedHashes =
-      txWithInvalidVersionedHashes.serializeNetworkWrapper()
-    t.throws(
-      () =>
-        BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(
-          serializedWithInvalidVersionedHashes,
-          {
-            common,
-          }
-        ),
-      (err: any) => err.message === 'commitment for blob at index 0 does not match versionedHash',
-      'throws when versioned hashes dont match kzg commitments'
-    )
-    t.end()
-  }
-})
-
-tape('hash() and signature verification', async (t) => {
-  if (isBrowser() === true) {
-    t.end()
-  } else {
-    const unsignedTx = BlobEIP4844Transaction.fromTxData(
-      {
-        chainId: 1,
-        nonce: 1,
-        versionedHashes: [
-          hexToBytes('01624652859a6e98ffc1608e2af0147ca4e86e1ce27672d8d3f3c9d4ffd6ef7e'),
-        ],
-        maxFeePerDataGas: 10000000n,
-        gasLimit: 123457n,
-        maxFeePerGas: 42n,
-        maxPriorityFeePerGas: 10n,
-        accessList: [
-          {
-            address: '0x0000000000000000000000000000000000000001',
-            storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          },
-        ],
-      },
-      { common }
-    )
-    t.equal(
-      bytesToHex(unsignedTx.getMessageToSign(true)),
-      '8ce8c3544ca173c0e8dd0e86319d4ebfe649e15a730137a6659ba3a721a9ff8b',
-      'produced the correct transaction hash'
-    )
-    const signedTx = unsignedTx.sign(
-      hexStringToBytes('45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
-    )
-
-    t.equal(
-      signedTx.getSenderAddress().toString(),
-      '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
-      'was able to recover sender address'
-    )
-    t.ok(signedTx.verifySignature(), 'signature is valid')
-    t.end()
-  }
-})
-
-tape('Network wrapper deserialization test', async (t) => {
-  if (isBrowser() === true) {
-    t.end()
-  } else {
-    const txData = {
-      type: '0x3',
-      nonce: '0x0',
-      maxPriorityFeePerGas: '0x0',
-      maxFeePerGas: '0x0',
-      gasLimit: '0xffffff',
-      value: '0x0',
-      data: '0x',
-      v: '0x0',
-      r: '0x3d8cacf503f773c3ae4eed2b38ba68859063bc5ad253a4fb456b1295061f1e0b',
-      s: '0x616727b04ef78f58d2f521774c6261396fc21eac725ba2a2d89758eae171effb',
-      to: '0x1f738d535998ba73b31f38f1ecf6a6ad013eaa20',
-      chainId: '0x1',
-      accessList: [],
-      maxFeePerDataGas: '0x5f5e100',
-      versionedHashes: ['0x0172f7e05f83dde3e36fb3de430f65c09efb9dbbbf53826e1c1c9780b8fb9520'],
-    }
-    const txMeta = {
-      sender: '0x5b638bee5a4e8ff43701747afc023f906abe0636',
-      unsignedHash: '75754a0ce96fd090a1d0abeb0a7f01d9743bc31c206c45e666fd777979e92149',
-      hash: 'ae074935ea3899fbfd387d79c50e99a9f07c145f71182f8f2709648b308b8cf3',
-      // 131325 bytes long i.e. ~128KB
-      networkSerializedHexLength: 262650,
-      serialized:
-        '03f88a0180808083ffffff941f738d535998ba73b31f38f1ecf6a6ad013eaa208080c08405f5e100e1a00172f7e05f83dde3e36fb3de430f65c09efb9dbbbf53826e1c1c9780b8fb952080a03d8cacf503f773c3ae4eed2b38ba68859063bc5ad253a4fb456b1295061f1e0ba0616727b04ef78f58d2f521774c6261396fc21eac725ba2a2d89758eae171effb',
-    }
-
-    const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(blobs)
-    const proofs = blobsToProofs(blobs, commitments)
-
-    /* eslint-disable @typescript-eslint/no-use-before-define */
-    const wrapper = hexToBytes(serializedNetworkWrapperTx)
-    const deserializedTx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(wrapper, {
-      common,
-    })
-
-    const jsonData = deserializedTx.toJSON()
-    t.deepEqual(txData, jsonData, 'toJSON should give correct json')
-
-    t.equal(deserializedTx.blobs?.length, 1, 'contains the correct number of blobs')
-    t.ok(equalsBytes(deserializedTx.blobs![0], blobs[0]), 'blobs should match')
-    t.ok(equalsBytes(deserializedTx.kzgCommitments![0], commitments[0]), 'commitments should match')
-    t.ok(equalsBytes(deserializedTx.kzgProofs![0], proofs[0]), 'proofs should match')
-
-    const unsignedHash = bytesToHex(deserializedTx.getMessageToSign())
-    const hash = bytesToHex(deserializedTx.hash())
-    const networkSerialized = bytesToHex(deserializedTx.serializeNetworkWrapper())
-    const serialized = bytesToHex(deserializedTx.serialize())
-    const sender = deserializedTx.getSenderAddress().toString()
-    t.equal(networkSerialized, serializedNetworkWrapperTx, 'network serialization should match')
-
-    t.deepEqual(
-      txMeta,
-      {
-        unsignedHash,
-        hash,
-        serialized,
-        sender,
-        networkSerializedHexLength: networkSerialized.length,
-      },
-      'txMeta should match'
-    )
-
-    // override common chain id and test nethermind generated tx
-    common.chainId = () => BigInt(42)
-    const deserializedTxNethermind = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(
-      hexToBytes(networkSerializedNethermind),
-      {
-        common,
+describe('EIP4844 constructor tests - valid scenarios', () => {
+  it('should work', () => {
+    if (isBrowser() === false) {
+      const txData = {
+        type: 0x03,
+        versionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
+        maxFeePerDataGas: 1n,
       }
-    )
-    t.equal(
-      bytesToHex(deserializedTxNethermind.hash()),
-      'b5335626a286563f7b25a485bc6749e5d4f54076b16dd69e4d84d16f4a519a3a',
-      'Transaction should be correctly deserialized'
-    )
-    t.equal(
-      bytesToHex(deserializedTxNethermind.versionedHashes[0]),
-      '0126b24ad77fd0d2a6b63f903ef0ee8105c34aa035e0f67e7e6c21abb94da817',
-      'versioned hash should match'
-    )
+      const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
+      assert.equal(tx.type, 3, 'successfully instantiated a blob transaction from txData')
+      const factoryTx = TransactionFactory.fromTxData(txData, { common })
+      assert.equal(factoryTx.type, 3, 'instantiated a blob transaction from the tx factory')
 
-    t.end()
-  }
+      const serializedTx = tx.serialize()
+      assert.equal(serializedTx[0], 3, 'successfully serialized a blob tx')
+      const deserializedTx = BlobEIP4844Transaction.fromSerializedTx(serializedTx, { common })
+      assert.equal(deserializedTx.type, 3, 'deserialized a blob tx')
+
+      const signedTx = tx.sign(pk)
+      const sender = signedTx.getSenderAddress().toString()
+      const decodedTx = BlobEIP4844Transaction.fromSerializedTx(signedTx.serialize(), { common })
+      assert.equal(
+        decodedTx.getSenderAddress().toString(),
+        sender,
+        'signature and sender were deserialized correctly'
+      )
+    }
+  })
+})
+
+describe('fromTxData using from a json', () => {
+  it('should work', () => {
+    if (isBrowser() === false) {
+      const txData = {
+        type: '0x3',
+        nonce: '0x0',
+        gasPrice: null,
+        maxPriorityFeePerGas: '0x12a05f200',
+        maxFeePerGas: '0x12a05f200',
+        gasLimit: '0x33450',
+        value: '0xbc614e',
+        data: '0x',
+        v: '0x0',
+        r: '0x8a83833ec07806485a4ded33f24f5cea4b8d4d24dc8f357e6d446bcdae5e58a7',
+        s: '0x68a2ba422a50cf84c0b5fcbda32ee142196910c97198ffd99035d920c2b557f8',
+        to: '0xffb38a7a99e3e2335be83fc74b7faa19d5531243',
+        chainId: '0x28757b3',
+        accessList: null,
+        maxFeePerDataGas: '0xb2d05e00',
+        versionedHashes: ['0x01b0a4cdd5f55589f5c5b4d46c76704bb6ce95c0a8c09f77f197a57808dded28'],
+      }
+      const txMeta = {
+        hash: 'e5e02be0667b6d31895d1b5a8b916a6761cbc9865225c6144a3e2c50936d173e',
+        serialized:
+          '03f89b84028757b38085012a05f20085012a05f2008303345094ffb38a7a99e3e2335be83fc74b7faa19d553124383bc614e80c084b2d05e00e1a001b0a4cdd5f55589f5c5b4d46c76704bb6ce95c0a8c09f77f197a57808dded2880a08a83833ec07806485a4ded33f24f5cea4b8d4d24dc8f357e6d446bcdae5e58a7a068a2ba422a50cf84c0b5fcbda32ee142196910c97198ffd99035d920c2b557f8',
+      }
+
+      const c = common.copy()
+      c['_chainParams'] = Object.assign({}, common['_chainParams'], {
+        chainId: Number(txData.chainId),
+      })
+      try {
+        const tx = BlobEIP4844Transaction.fromTxData(txData, { common: c })
+        assert.ok(true, 'Should be able to parse a json data and hash it')
+
+        assert.equal(typeof tx.maxFeePerDataGas, 'bigint', 'should be able to parse correctly')
+        assert.equal(bytesToHex(tx.serialize()), txMeta.serialized, 'serialization should match')
+        // TODO: fix the hash
+        assert.equal(bytesToHex(tx.hash()), txMeta.hash, 'hash should match')
+
+        const jsonData = tx.toJSON()
+        // override few fields with equivalent values to have a match
+        assert.deepEqual(
+          { ...txData, accessList: [] },
+          { gasPrice: null, ...jsonData },
+          'toJSON should give correct json'
+        )
+
+        const fromSerializedTx = BlobEIP4844Transaction.fromSerializedTx(
+          hexToBytes(txMeta.serialized),
+          { common: c }
+        )
+        assert.equal(
+          bytesToHex(fromSerializedTx.hash()),
+          txMeta.hash,
+          'fromSerializedTx hash should match'
+        )
+      } catch (e) {
+        assert.fail('failed to parse json data')
+      }
+    }
+  })
+})
+
+describe('EIP4844 constructor tests - invalid scenarios', () => {
+  it('should work', () => {
+    if (isBrowser() === false) {
+      const baseTxData = {
+        type: 0x03,
+        maxFeePerDataGas: 1n,
+      }
+      const shortVersionHash = {
+        versionedHashes: [concatBytes(new Uint8Array([3]), randomBytes(3))],
+      }
+      const invalidVersionHash = {
+        versionedHashes: [concatBytes(new Uint8Array([3]), randomBytes(31))],
+      }
+      const tooManyBlobs = {
+        versionedHashes: [
+          concatBytes(new Uint8Array([1]), randomBytes(31)),
+          concatBytes(new Uint8Array([1]), randomBytes(31)),
+          concatBytes(new Uint8Array([1]), randomBytes(31)),
+        ],
+      }
+      try {
+        BlobEIP4844Transaction.fromTxData({ ...baseTxData, ...shortVersionHash }, { common })
+      } catch (err: any) {
+        assert.ok(
+          err.message.includes('versioned hash is invalid length'),
+          'throws on invalid versioned hash length'
+        )
+      }
+      try {
+        BlobEIP4844Transaction.fromTxData({ ...baseTxData, ...invalidVersionHash }, { common })
+      } catch (err: any) {
+        assert.ok(
+          err.message.includes('does not start with KZG commitment'),
+          'throws on invalid commitment version'
+        )
+      }
+      try {
+        BlobEIP4844Transaction.fromTxData({ ...baseTxData, ...tooManyBlobs }, { common })
+      } catch (err: any) {
+        assert.ok(
+          err.message.includes('tx can contain at most'),
+          'throws on too many versioned hashes'
+        )
+      }
+    }
+  })
+})
+
+describe('Network wrapper tests', () => {
+  it('should work', async () => {
+    if (isBrowser() === false) {
+      const blobs = getBlobs('hello world')
+      const commitments = blobsToCommitments(blobs)
+      const versionedHashes = commitmentsToVersionedHashes(commitments)
+      const proofs = blobsToProofs(blobs, commitments)
+      const unsignedTx = BlobEIP4844Transaction.fromTxData(
+        {
+          versionedHashes,
+          blobs,
+          kzgCommitments: commitments,
+          kzgProofs: proofs,
+          maxFeePerDataGas: 100000000n,
+          gasLimit: 0xffffffn,
+          to: randomBytes(20),
+        },
+        { common }
+      )
+
+      const signedTx = unsignedTx.sign(pk)
+      const sender = signedTx.getSenderAddress().toString()
+      const wrapper = signedTx.serializeNetworkWrapper()
+      const deserializedTx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(wrapper, {
+        common,
+      })
+
+      assert.equal(
+        deserializedTx.type,
+        0x03,
+        'successfully deserialized a blob transaction network wrapper'
+      )
+      assert.equal(
+        deserializedTx.blobs?.length,
+        blobs.length,
+        'contains the correct number of blobs'
+      )
+      assert.equal(
+        deserializedTx.getSenderAddress().toString(),
+        sender,
+        'decoded sender address correctly'
+      )
+      const minimalTx = BlobEIP4844Transaction.minimalFromNetworkWrapper(deserializedTx, { common })
+      assert.ok(minimalTx.blobs === undefined, 'minimal representation contains no blobs')
+      assert.ok(
+        equalsBytes(minimalTx.hash(), deserializedTx.hash()),
+        'has the same hash as the network wrapper version'
+      )
+
+      const simpleBlobTx = BlobEIP4844Transaction.fromTxData(
+        {
+          blobsData: ['hello world'],
+          maxFeePerDataGas: 100000000n,
+          gasLimit: 0xffffffn,
+          to: randomBytes(20),
+        },
+        { common }
+      )
+
+      assert.equal(
+        bytesToHex(unsignedTx.versionedHashes[0]),
+        bytesToHex(simpleBlobTx.versionedHashes[0]),
+        'tx versioned hash for simplified blob txData constructor matches fully specified versioned hashes'
+      )
+
+      assert.throws(
+        () =>
+          BlobEIP4844Transaction.fromTxData(
+            {
+              blobsData: ['hello world'],
+              blobs: ['hello world'],
+              maxFeePerDataGas: 100000000n,
+              gasLimit: 0xffffffn,
+              to: randomBytes(20),
+            },
+            { common }
+          ),
+        'encoded blobs',
+        undefined,
+        'throws on blobsData and blobs in txData'
+      )
+
+      assert.throws(
+        () =>
+          BlobEIP4844Transaction.fromTxData(
+            {
+              blobsData: ['hello world'],
+              kzgCommitments: ['0xabcd'],
+              maxFeePerDataGas: 100000000n,
+              gasLimit: 0xffffffn,
+              to: randomBytes(20),
+            },
+            { common }
+          ),
+        'KZG commitments',
+        undefined,
+        'throws on blobsData and KZG commitments in txData'
+      )
+
+      assert.throws(
+        () =>
+          BlobEIP4844Transaction.fromTxData(
+            {
+              blobsData: ['hello world'],
+              versionedHashes: ['0x01cd'],
+              maxFeePerDataGas: 100000000n,
+              gasLimit: 0xffffffn,
+              to: randomBytes(20),
+            },
+            { common }
+          ),
+        'versioned hashes',
+        undefined,
+        'throws on blobsData and versioned hashes in txData'
+      )
+
+      assert.throws(
+        () =>
+          BlobEIP4844Transaction.fromTxData(
+            {
+              blobsData: ['hello world'],
+              kzgProofs: ['0x01cd'],
+              maxFeePerDataGas: 100000000n,
+              gasLimit: 0xffffffn,
+              to: randomBytes(20),
+            },
+            { common }
+          ),
+        'KZG proofs',
+        undefined,
+        'throws on blobsData and KZG proofs in txData'
+      )
+
+      const txWithEmptyBlob = BlobEIP4844Transaction.fromTxData(
+        {
+          versionedHashes: [],
+          blobs: [],
+          kzgCommitments: [],
+          kzgProofs: [],
+          maxFeePerDataGas: 100000000n,
+          gasLimit: 0xffffffn,
+          to: randomBytes(20),
+        },
+        { common }
+      )
+
+      const serializedWithEmptyBlob = txWithEmptyBlob.serializeNetworkWrapper()
+      assert.throws(
+        () =>
+          BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(serializedWithEmptyBlob, {
+            common,
+          }),
+        'Invalid transaction with empty blobs',
+        undefined,
+        'throws a transaction with no blobs'
+      )
+
+      const txWithMissingBlob = BlobEIP4844Transaction.fromTxData(
+        {
+          versionedHashes,
+          blobs: blobs.slice(1),
+          kzgCommitments: commitments,
+          kzgProofs: proofs,
+          maxFeePerDataGas: 100000000n,
+          gasLimit: 0xffffffn,
+          to: randomBytes(20),
+        },
+        { common }
+      )
+
+      const serializedWithMissingBlob = txWithMissingBlob.serializeNetworkWrapper()
+      assert.throws(
+        () =>
+          BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(serializedWithMissingBlob, {
+            common,
+          }),
+        'Number of versionedHashes, blobs, and commitments not all equal',
+        undefined,
+        'throws when blobs/commitments/hashes mismatch'
+      )
+
+      const mangledValue = commitments[0][0]
+
+      commitments[0][0] = 154
+      const txWithInvalidCommitment = BlobEIP4844Transaction.fromTxData(
+        {
+          versionedHashes,
+          blobs,
+          kzgCommitments: commitments,
+          kzgProofs: proofs,
+          maxFeePerDataGas: 100000000n,
+          gasLimit: 0xffffffn,
+          to: randomBytes(20),
+        },
+        { common }
+      )
+
+      const serializedWithInvalidCommitment = txWithInvalidCommitment.serializeNetworkWrapper()
+      assert.throws(
+        () =>
+          BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(
+            serializedWithInvalidCommitment,
+            {
+              common,
+            }
+          ),
+        'KZG verification of blobs fail',
+        undefined,
+        'throws when kzg proof cant be verified'
+      )
+
+      versionedHashes[0][1] = 2
+      commitments[0][0] = mangledValue
+
+      const txWithInvalidVersionedHashes = BlobEIP4844Transaction.fromTxData(
+        {
+          versionedHashes,
+          blobs,
+          kzgCommitments: commitments,
+          kzgProofs: proofs,
+          maxFeePerDataGas: 100000000n,
+          gasLimit: 0xffffffn,
+          to: randomBytes(20),
+        },
+        { common }
+      )
+
+      const serializedWithInvalidVersionedHashes =
+        txWithInvalidVersionedHashes.serializeNetworkWrapper()
+      assert.throws(
+        () =>
+          BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(
+            serializedWithInvalidVersionedHashes,
+            {
+              common,
+            }
+          ),
+        'commitment for blob at index 0 does not match versionedHash',
+        undefined,
+        'throws when versioned hashes dont match kzg commitments'
+      )
+    }
+  })
+})
+
+describe('hash() and signature verification', () => {
+  it('should work', async () => {
+    if (isBrowser() === false) {
+      const unsignedTx = BlobEIP4844Transaction.fromTxData(
+        {
+          chainId: 1,
+          nonce: 1,
+          versionedHashes: [
+            hexToBytes('01624652859a6e98ffc1608e2af0147ca4e86e1ce27672d8d3f3c9d4ffd6ef7e'),
+          ],
+          maxFeePerDataGas: 10000000n,
+          gasLimit: 123457n,
+          maxFeePerGas: 42n,
+          maxPriorityFeePerGas: 10n,
+          accessList: [
+            {
+              address: '0x0000000000000000000000000000000000000001',
+              storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+            },
+          ],
+        },
+        { common }
+      )
+      assert.equal(
+        bytesToHex(unsignedTx.getMessageToSign(true)),
+        '8ce8c3544ca173c0e8dd0e86319d4ebfe649e15a730137a6659ba3a721a9ff8b',
+        'produced the correct transaction hash'
+      )
+      const signedTx = unsignedTx.sign(
+        hexStringToBytes('45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
+      )
+
+      assert.equal(
+        signedTx.getSenderAddress().toString(),
+        '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
+        'was able to recover sender address'
+      )
+      assert.ok(signedTx.verifySignature(), 'signature is valid')
+    }
+  })
+})
+
+describe('Network wrapper deserialization test', () => {
+  it('should work', async () => {
+    if (isBrowser() === false) {
+      const txData = {
+        type: '0x3',
+        nonce: '0x0',
+        maxPriorityFeePerGas: '0x0',
+        maxFeePerGas: '0x0',
+        gasLimit: '0xffffff',
+        value: '0x0',
+        data: '0x',
+        v: '0x0',
+        r: '0x3d8cacf503f773c3ae4eed2b38ba68859063bc5ad253a4fb456b1295061f1e0b',
+        s: '0x616727b04ef78f58d2f521774c6261396fc21eac725ba2a2d89758eae171effb',
+        to: '0x1f738d535998ba73b31f38f1ecf6a6ad013eaa20',
+        chainId: '0x1',
+        accessList: [],
+        maxFeePerDataGas: '0x5f5e100',
+        versionedHashes: ['0x0172f7e05f83dde3e36fb3de430f65c09efb9dbbbf53826e1c1c9780b8fb9520'],
+      }
+      const txMeta = {
+        sender: '0x5b638bee5a4e8ff43701747afc023f906abe0636',
+        unsignedHash: '75754a0ce96fd090a1d0abeb0a7f01d9743bc31c206c45e666fd777979e92149',
+        hash: 'ae074935ea3899fbfd387d79c50e99a9f07c145f71182f8f2709648b308b8cf3',
+        // 131325 bytes long i.e. ~128KB
+        networkSerializedHexLength: 262650,
+        serialized:
+          '03f88a0180808083ffffff941f738d535998ba73b31f38f1ecf6a6ad013eaa208080c08405f5e100e1a00172f7e05f83dde3e36fb3de430f65c09efb9dbbbf53826e1c1c9780b8fb952080a03d8cacf503f773c3ae4eed2b38ba68859063bc5ad253a4fb456b1295061f1e0ba0616727b04ef78f58d2f521774c6261396fc21eac725ba2a2d89758eae171effb',
+      }
+
+      const blobs = getBlobs('hello world')
+      const commitments = blobsToCommitments(blobs)
+      const proofs = blobsToProofs(blobs, commitments)
+
+      /* eslint-disable @typescript-eslint/no-use-before-define */
+      const wrapper = hexToBytes(serializedNetworkWrapperTx)
+      const deserializedTx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(wrapper, {
+        common,
+      })
+
+      const jsonData = deserializedTx.toJSON()
+      assert.deepEqual(txData, jsonData, 'toJSON should give correct json')
+
+      assert.equal(deserializedTx.blobs?.length, 1, 'contains the correct number of blobs')
+      assert.ok(equalsBytes(deserializedTx.blobs![0], blobs[0]), 'blobs should match')
+      assert.ok(
+        equalsBytes(deserializedTx.kzgCommitments![0], commitments[0]),
+        'commitments should match'
+      )
+      assert.ok(equalsBytes(deserializedTx.kzgProofs![0], proofs[0]), 'proofs should match')
+
+      const unsignedHash = bytesToHex(deserializedTx.getMessageToSign())
+      const hash = bytesToHex(deserializedTx.hash())
+      const networkSerialized = bytesToHex(deserializedTx.serializeNetworkWrapper())
+      const serialized = bytesToHex(deserializedTx.serialize())
+      const sender = deserializedTx.getSenderAddress().toString()
+      assert.equal(
+        networkSerialized,
+        serializedNetworkWrapperTx,
+        'network serialization should match'
+      )
+
+      assert.deepEqual(
+        txMeta,
+        {
+          unsignedHash,
+          hash,
+          serialized,
+          sender,
+          networkSerializedHexLength: networkSerialized.length,
+        },
+        'txMeta should match'
+      )
+
+      // override common chain id and test nethermind generated tx
+      common.chainId = () => BigInt(42)
+      const deserializedTxNethermind = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(
+        hexToBytes(networkSerializedNethermind),
+        {
+          common,
+        }
+      )
+      assert.equal(
+        bytesToHex(deserializedTxNethermind.hash()),
+        'b5335626a286563f7b25a485bc6749e5d4f54076b16dd69e4d84d16f4a519a3a',
+        'Transaction should be correctly deserialized'
+      )
+      assert.equal(
+        bytesToHex(deserializedTxNethermind.versionedHashes[0]),
+        '0126b24ad77fd0d2a6b63f903ef0ee8105c34aa035e0f67e7e6c21abb94da817',
+        'versioned hash should match'
+      )
+    }
+  })
 })
 
 const serializedNetworkWrapperTx =

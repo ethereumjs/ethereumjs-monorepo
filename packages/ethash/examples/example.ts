@@ -1,6 +1,6 @@
 import { bytesToHex } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
-import { Ethash } from '../src'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { Ethash } from '../src/index.js'
 
 const ethash = new Ethash()
 

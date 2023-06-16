@@ -1,82 +1,72 @@
 import { MapDB, bytesToHex, bytesToUtf8, equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { createHash } from 'crypto'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import * as tape from 'tape'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { assert, describe, it } from 'vitest'
 
-import { ROOT_DB_KEY, Trie } from '../../src'
+import { ROOT_DB_KEY, Trie } from '../../src/index.js'
 
 import type { BatchDBOp } from '@ethereumjs/util'
 
-tape('testing checkpoints', function (tester) {
-  const it = tester.test
-
+describe('testing checkpoints', () => {
   let trie: Trie
   let trieCopy: Trie
   let preRoot: string
   let postRoot: string
 
-  it('setup', async function (t) {
+  it('setup', async () => {
     trie = new Trie()
     await trie.put(utf8ToBytes('do'), utf8ToBytes('verb'))
     await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
     preRoot = bytesToHex(trie.root())
-    t.end()
   })
 
-  it('should copy trie and get value added to original trie', async function (t) {
+  it('should copy trie and get value added to original trie', async () => {
     trieCopy = trie.copy()
-    t.equal(bytesToHex(trieCopy.root()), preRoot)
+    assert.equal(bytesToHex(trieCopy.root()), preRoot)
     const res = await trieCopy.get(utf8ToBytes('do'))
-    t.ok(equalsBytes(utf8ToBytes('verb'), res!))
-    t.end()
+    assert.ok(equalsBytes(utf8ToBytes('verb'), res!))
   })
 
-  it('should deactivate cache on copy()', async function (t) {
+  it('should deactivate cache on copy()', async () => {
     const trie = new Trie({ cacheSize: 100 })
     trieCopy = trie.copy()
-    t.equal((trieCopy as any)._opts.cacheSize, 0)
-    t.end()
+    assert.equal((trieCopy as any)._opts.cacheSize, 0)
   })
 
-  it('should create a checkpoint', function (t) {
+  it('should create a checkpoint', () => {
     trie.checkpoint()
-    t.ok(trie.hasCheckpoints())
-    t.end()
+    assert.ok(trie.hasCheckpoints())
   })
 
-  it('should save to the cache', async function (t) {
+  it('should save to the cache', async () => {
     await trie.put(utf8ToBytes('test'), utf8ToBytes('something'))
     await trie.put(utf8ToBytes('love'), utf8ToBytes('emotion'))
     postRoot = bytesToHex(trie.root())
-    t.end()
   })
 
-  it('should get values from before checkpoint', async function (t) {
+  it('should get values from before checkpoint', async () => {
     const res = await trie.get(utf8ToBytes('doge'))
-    t.ok(equalsBytes(utf8ToBytes('coin'), res!))
-    t.end()
+    assert.ok(equalsBytes(utf8ToBytes('coin'), res!))
   })
 
-  it('should get values from cache', async function (t) {
+  it('should get values from cache', async () => {
     const res = await trie.get(utf8ToBytes('love'))
-    t.ok(equalsBytes(utf8ToBytes('emotion'), res!))
-    t.end()
+    assert.ok(equalsBytes(utf8ToBytes('emotion'), res!))
   })
 
-  it('should copy trie and get upstream and cache values after checkpoint', async function (t) {
+  it('should copy trie and get upstream and cache values after checkpoint', async () => {
     trieCopy = trie.copy()
-    t.equal(bytesToHex(trieCopy.root()), postRoot)
+    assert.equal(bytesToHex(trieCopy.root()), postRoot)
     // @ts-expect-error
-    t.equal(trieCopy._db.checkpoints.length, 1)
-    t.ok(trieCopy.hasCheckpoints())
+    assert.equal(trieCopy._db.checkpoints.length, 1)
+    assert.ok(trieCopy.hasCheckpoints())
     const res = await trieCopy.get(utf8ToBytes('do'))
-    t.ok(equalsBytes(utf8ToBytes('verb'), res!))
+    assert.ok(equalsBytes(utf8ToBytes('verb'), res!))
     const res2 = await trieCopy.get(utf8ToBytes('love'))
-    t.ok(equalsBytes(utf8ToBytes('emotion'), res2!))
-    t.end()
+    assert.ok(equalsBytes(utf8ToBytes('emotion'), res2!))
   })
 
-  it('should copy trie and use the correct hash function', async function (t) {
+  it('should copy trie and use the correct hash function', async () => {
     const trie = new Trie({
       db: new MapDB(),
       useKeyHashing: true,
@@ -88,41 +78,36 @@ tape('testing checkpoints', function (tester) {
     await trie.put(utf8ToBytes('key2'), utf8ToBytes('value2'))
     const trieCopy = trie.copy()
     const value = await trieCopy.get(utf8ToBytes('key1'))
-    t.equal(bytesToUtf8(value!), 'value1')
-    t.end()
+    assert.equal(bytesToUtf8(value!), 'value1')
   })
 
-  it('should revert to the original root', async function (t) {
-    t.ok(trie.hasCheckpoints())
+  it('should revert to the original root', async () => {
+    assert.ok(trie.hasCheckpoints())
     await trie.revert()
-    t.equal(bytesToHex(trie.root()), preRoot)
-    t.notOk(trie.hasCheckpoints())
-    t.end()
+    assert.equal(bytesToHex(trie.root()), preRoot)
+    assert.notOk(trie.hasCheckpoints())
   })
 
-  it('should not get values from cache after revert', async function (t) {
+  it('should not get values from cache after revert', async () => {
     const res = await trie.get(utf8ToBytes('love'))
-    t.notOk(res)
-    t.end()
+    assert.notOk(res)
   })
 
-  it('should commit a checkpoint', async function (t) {
+  it('should commit a checkpoint', async () => {
     trie.checkpoint()
     await trie.put(utf8ToBytes('test'), utf8ToBytes('something'))
     await trie.put(utf8ToBytes('love'), utf8ToBytes('emotion'))
     await trie.commit()
-    t.equal(trie.hasCheckpoints(), false)
-    t.equal(bytesToHex(trie.root()), postRoot)
-    t.end()
+    assert.equal(trie.hasCheckpoints(), false)
+    assert.equal(bytesToHex(trie.root()), postRoot)
   })
 
-  it('should get new values after commit', async function (t) {
+  it('should get new values after commit', async () => {
     const res = await trie.get(utf8ToBytes('love'))
-    t.ok(equalsBytes(utf8ToBytes('emotion'), res!))
-    t.end()
+    assert.ok(equalsBytes(utf8ToBytes('emotion'), res!))
   })
 
-  it('should commit a nested checkpoint', async function (t) {
+  it('should commit a nested checkpoint', async () => {
     trie.checkpoint()
     await trie.put(utf8ToBytes('test'), utf8ToBytes('something else'))
     const root = trie.root()
@@ -130,9 +115,8 @@ tape('testing checkpoints', function (tester) {
     await trie.put(utf8ToBytes('the feels'), utf8ToBytes('emotion'))
     await trie.revert()
     await trie.commit()
-    t.equal(trie.hasCheckpoints(), false)
-    t.equal(trie.root(), root)
-    t.end()
+    assert.equal(trie.hasCheckpoints(), false)
+    assert.equal(trie.root(), root)
   })
 
   const k1 = utf8ToBytes('k1')
@@ -140,35 +124,32 @@ tape('testing checkpoints', function (tester) {
   const v12 = utf8ToBytes('v12')
   const v123 = utf8ToBytes('v123')
 
-  it('revert -> put', async function (t) {
+  it('revert -> put', async () => {
     trie = new Trie()
 
     trie.checkpoint()
     await trie.put(k1, v1)
-    t.deepEqual(await trie.get(k1), v1, 'before revert: v1 in trie')
+    assert.deepEqual(await trie.get(k1), v1, 'before revert: v1 in trie')
     await trie.revert()
-    t.deepEqual(await trie.get(k1), null, 'after revert: v1 removed')
-
-    t.end()
+    assert.deepEqual(await trie.get(k1), null, 'after revert: v1 removed')
   })
 
-  it('revert -> put (update)', async (t) => {
+  it('revert -> put (update)', async () => {
     trie = new Trie()
 
     await trie.put(k1, v1)
-    t.deepEqual(await trie.get(k1), v1, 'before CP: v1')
+    assert.deepEqual(await trie.get(k1), v1, 'before CP: v1')
     trie.checkpoint()
     await trie.put(k1, v12)
     await trie.put(k1, v123)
     await trie.revert()
-    t.deepEqual(await trie.get(k1), v1, 'after revert: v1')
-    t.end()
+    assert.deepEqual(await trie.get(k1), v1, 'after revert: v1')
   })
 
-  it('revert -> put (update) batched', async (t) => {
+  it('revert -> put (update) batched', async () => {
     const trie = new Trie()
     await trie.put(k1, v1)
-    t.deepEqual(await trie.get(k1), v1, 'before CP: v1')
+    assert.deepEqual(await trie.get(k1), v1, 'before CP: v1')
     trie.checkpoint()
     const ops = [
       { type: 'put', key: k1, value: v12 },
@@ -176,35 +157,32 @@ tape('testing checkpoints', function (tester) {
     ] as BatchDBOp[]
     await trie.batch(ops)
     await trie.revert()
-    t.deepEqual(await trie.get(k1), v1, 'after revert: v1')
-    t.end()
+    assert.deepEqual(await trie.get(k1), v1, 'after revert: v1')
   })
 
-  it('Checkpointing: revert -> del', async (t) => {
+  it('Checkpointing: revert -> del', async () => {
     const trie = new Trie()
     await trie.put(k1, v1)
-    t.deepEqual(await trie.get(k1), v1, 'before CP: v1')
+    assert.deepEqual(await trie.get(k1), v1, 'before CP: v1')
     trie.checkpoint()
     await trie.del(k1)
-    t.deepEqual(await trie.get(k1), null, 'before revert: null')
+    assert.deepEqual(await trie.get(k1), null, 'before revert: null')
     await trie.revert()
-    t.deepEqual(await trie.get(k1), v1, 'after revert: v1')
-    t.end()
+    assert.deepEqual(await trie.get(k1), v1, 'after revert: v1')
   })
 
-  it('Checkpointing: nested checkpoints -> commit -> revert', async (t) => {
+  it('Checkpointing: nested checkpoints -> commit -> revert', async () => {
     const trie = new Trie()
     await trie.put(k1, v1)
-    t.deepEqual(await trie.get(k1), v1, 'before CP: v1')
+    assert.deepEqual(await trie.get(k1), v1, 'before CP: v1')
     trie.checkpoint()
     await trie.put(k1, v12)
     trie.checkpoint()
     await trie.put(k1, v123)
     await trie.commit()
-    t.deepEqual(await trie.get(k1), v123, 'after commit (second CP): v123')
+    assert.deepEqual(await trie.get(k1), v123, 'after commit (second CP): v123')
     await trie.revert()
-    t.deepEqual(await trie.get(k1), v1, 'after revert (first CP): v1')
-    t.end()
+    assert.deepEqual(await trie.get(k1), v1, 'after revert (first CP): v1')
   })
 
   /*
@@ -220,7 +198,7 @@ tape('testing checkpoints', function (tester) {
     If it would not deep copy, then some checks in this test will fail.
     See PR 2203 and 2236.
   */
-  it('Checkpointing: nested checkpoints -> with pruning, verify that checkpoints are deep-copied', async (t) => {
+  it('Checkpointing: nested checkpoints -> with pruning, verify that checkpoints are deep-copied', async () => {
     const KEY = utf8ToBytes('last_block_height')
     const KEY_ROOT = keccak256(ROOT_DB_KEY)
 
@@ -247,13 +225,13 @@ tape('testing checkpoints', function (tester) {
     await MemoryState.commit()
 
     // The CommittedState should not change (not the key/value pairs, not the root, and not the root in DB)
-    t.equal(bytesToUtf8((await CommittedState.get(KEY))!), '1')
-    t.equal(
+    assert.equal(bytesToUtf8((await CommittedState.get(KEY))!), '1')
+    assert.equal(
       // @ts-expect-error
       bytesToHex(await CommittedState._db.get(KEY_ROOT)),
       '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c'
     )
-    t.equal(
+    assert.equal(
       bytesToHex(CommittedState.root()),
       '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c'
     )
@@ -275,7 +253,7 @@ tape('testing checkpoints', function (tester) {
 
     // Make sure CommittedState looks like we expect (2 keys, last_block_height=2 + __root__)
     // I.e. the trie is pruned.
-    t.deepEqual(
+    assert.deepEqual(
       // @ts-expect-error
       [...CommittedState._db.db._database.values()].map((value) => value),
       [
@@ -284,6 +262,6 @@ tape('testing checkpoints', function (tester) {
       ]
     )
     // Verify that the key is updated
-    t.equal(bytesToUtf8((await CommittedState.get(KEY))!), '2')
+    assert.equal(bytesToUtf8((await CommittedState.get(KEY))!), '2')
   })
 })

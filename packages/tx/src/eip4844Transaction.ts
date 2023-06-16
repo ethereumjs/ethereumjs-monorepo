@@ -19,12 +19,12 @@ import {
   toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { BaseTransaction } from './baseTransaction'
-import { LIMIT_BLOBS_PER_TX } from './constants'
-import { TransactionType } from './types'
-import { AccessLists } from './util'
+import { BaseTransaction } from './baseTransaction.js'
+import { LIMIT_BLOBS_PER_TX } from './constants.js'
+import { TransactionType } from './types.js'
+import { AccessLists } from './util.js'
 
 import type {
   AccessList,
@@ -34,7 +34,7 @@ import type {
   BlobEIP4844NetworkValuesArray,
   JsonTx,
   TxOptions,
-} from './types'
+} from './types.js'
 import type { Common } from '@ethereumjs/common'
 
 type TxData = AllTypesTxData[TransactionType.BlobEIP4844]

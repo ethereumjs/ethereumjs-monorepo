@@ -21,11 +21,11 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
-import { AccountCache, CacheType, StorageCache } from './cache'
-import { OriginalStorageCache } from './cache/originalStorageCache'
+import { AccountCache, CacheType, StorageCache } from './cache/index.js'
+import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
 import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'

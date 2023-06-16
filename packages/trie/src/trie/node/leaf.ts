@@ -1,8 +1,8 @@
-import { addHexPrefix } from '../../util/hex'
+import { addHexPrefix } from '../../util/hex.js'
 
-import { Node } from './node'
+import { Node } from './node.js'
 
-import type { Nibbles } from '../../types'
+import type { Nibbles } from '../../types.js'
 
 export class LeafNode extends Node {
   constructor(nibbles: Nibbles, value: Uint8Array) {

@@ -1,13 +1,13 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
-import { concatBytes, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { concatBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
+import { assert, describe, it } from 'vitest'
 
-import { Blockchain } from '../src'
-import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from '../src/consensus/clique'
+import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from '../src/consensus/clique.js'
+import { Blockchain } from '../src/index.js'
 
-import type { CliqueConsensus } from '../src/consensus/clique'
+import type { CliqueConsensus } from '../src/consensus/clique.js'
 import type { CliqueConfig } from '@ethereumjs/common'
 
 const COMMON = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
@@ -180,23 +180,22 @@ const addNextBlock = async (
   return block
 }
 
-tape('Clique: Initialization', (t) => {
-  t.test('should initialize a clique blockchain', async (st) => {
+describe('Clique: Initialization', () => {
+  it('should initialize a clique blockchain', async () => {
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.create({ common })
 
     const head = await blockchain.getIteratorHead()
-    st.deepEquals(head.hash(), blockchain.genesisBlock.hash(), 'correct genesis hash')
+    assert.deepEqual(head.hash(), blockchain.genesisBlock.hash(), 'correct genesis hash')
 
-    st.deepEquals(
+    assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(head.header.number + BigInt(1)),
       head.header.cliqueEpochTransitionSigners(),
       'correct genesis signers'
     )
-    st.end()
   })
 
-  t.test('should throw if signer in epoch checkpoint is not active', async (st) => {
+  it('should throw if signer in epoch checkpoint is not active', async () => {
     const { blockchain } = await initWithSigners([A])
     ;(blockchain as any)._validateBlocks = false
     // _validateConsensus needs to be true to trigger this test condition
@@ -215,20 +214,16 @@ tape('Clique: Initialization', (t) => {
     )
     try {
       await blockchain.putBlock(block)
-      st.fail('should fail')
+      assert.fail('should fail')
     } catch (error: any) {
-      if (
-        (error.message as string).includes('checkpoint signer not found in active signers list')
-      ) {
-        st.pass('correct error')
-      } else {
-        st.fail('should fail with appropriate error')
-      }
+      assert.ok(
+        error.message.includes('checkpoint signer not found in active signers list'),
+        'correct error'
+      )
     }
-    st.end()
   })
 
-  t.test('should throw on invalid difficulty', async (st) => {
+  it('should throw on invalid difficulty', async () => {
     const { blocks, blockchain } = await initWithSigners([A])
     await addNextBlock(blockchain, blocks, A)
     const parentHeader = await blockchain.getCanonicalHeadHeader()
@@ -250,17 +245,12 @@ tape('Clique: Initialization', (t) => {
 
     try {
       await blockchain.putBlock(block)
-      st.fail('should fail')
+      assert.fail('should fail')
     } catch (error: any) {
-      if (
-        (error.message as string).includes(
-          'difficulty for clique block must be INTURN (2) or NOTURN (1)'
-        )
-      ) {
-        st.pass('correct error')
-      } else {
-        st.fail('should fail with appropriate error')
-      }
+      assert.ok(
+        error.message.includes('difficulty for clique block must be INTURN (2) or NOTURN (1)'),
+        'correct error'
+      )
     }
 
     difficulty = BigInt(1)
@@ -280,19 +270,13 @@ tape('Clique: Initialization', (t) => {
 
     try {
       await blockchain.putBlock(block)
-      st.fail('should fail')
+      assert.fail('should fail')
     } catch (error: any) {
-      if ((error.message as string).includes('invalid clique difficulty')) {
-        st.pass('correct error')
-      } else {
-        st.fail('should fail with appropriate error')
-      }
+      assert.ok(error.message.includes('invalid clique difficulty'), 'correct error')
     }
-
-    st.end()
   })
 
-  t.test("should set the inturn signer's block as canonical block", async (st) => {
+  it("should set the inturn signer's block as canonical block", async () => {
     const { blocks, blockchain } = await initWithSigners([A, B])
     // when the block number is 1, the inturn signer should be B
     const inturnBlock = await addNextBlock(blockchain, blocks, B)
@@ -300,44 +284,37 @@ tape('Clique: Initialization', (t) => {
     // noturn block
     await addNextBlock(blockchain, blocks, A)
     const block = await blockchain.getBlock(1)
-    if (equalsBytes(inturnBlock.hash(), block.hash())) {
-      st.pass('correct canonical block')
-    } else {
-      st.fail('invalid canonical block')
-    }
-    st.end()
+    assert.deepEqual(inturnBlock.hash(), block.hash(), 'correct canonical block')
   })
 
   // Test Cases: https://eips.ethereum.org/EIPS/eip-225
-  t.test('Clique Voting: Single signer, no votes cast', async (st) => {
+  it('Clique Voting: Single signer, no votes cast', async () => {
     const { blocks, blockchain } = await initWithSigners([A])
     const block = await addNextBlock(blockchain, blocks, A)
-    st.equal(block.header.number, BigInt(1))
-    st.deepEqual(
+    assert.equal(block.header.number, BigInt(1))
+    assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
         block.header.number + BigInt(1)
       ),
       [A.address]
     )
-    st.end()
   })
 
-  t.test('Clique Voting: Single signer, voting to add two others', async (st) => {
+  it('Clique Voting: Single signer, voting to add two others', async () => {
     const { blocks, blockchain } = await initWithSigners([A])
     await addNextBlock(blockchain, blocks, A, [B, true])
     await addNextBlock(blockchain, blocks, B)
     await addNextBlock(blockchain, blocks, A, [C, true])
-    st.deepEqual(
+    assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
         blocks[blocks.length - 1].header.number + BigInt(1)
       ),
       [A.address, B.address],
       'only accept first, second needs 2 votes'
     )
-    st.end()
   })
 
-  t.test('Two signers, voting to add three others', async (st) => {
+  it('Two signers, voting to add three others', async () => {
     const { blocks, blockchain } = await initWithSigners([A, B])
     await addNextBlock(blockchain, blocks, A, [C, true])
     await addNextBlock(blockchain, blocks, B, [C, true])
@@ -347,17 +324,16 @@ tape('Clique: Initialization', (t) => {
     await addNextBlock(blockchain, blocks, A, [E, true])
     await addNextBlock(blockchain, blocks, B, [E, true])
 
-    st.deepEqual(
+    assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
         blocks[blocks.length - 1].header.number + BigInt(1)
       ),
       [A.address, B.address, C.address, D.address],
       'only accept first two, third needs 3 votes already'
     )
-    st.end()
   })
 
-  t.test('Ensure old clique states are remembered', async (st) => {
+  it('Ensure old clique states are remembered', async () => {
     const { blocks, blockchain } = await initWithSigners([A, B])
     await addNextBlock(blockchain, blocks, A, [C, true])
     await addNextBlock(blockchain, blocks, B, [C, true])
@@ -371,108 +347,89 @@ tape('Clique: Initialization', (t) => {
     for (let i = 1; i < blocks.length; i++) {
       await blockchain.putBlock(blocks[i])
     }
-    st.end()
   })
 
-  t.test('Clique Voting: Single signer, dropping itself)', async (st) => {
+  it('Clique Voting: Single signer, dropping itself)', async () => {
     const { blocks, blockchain } = await initWithSigners([A])
     await addNextBlock(blockchain, blocks, A, [A, false])
 
-    st.deepEqual(
+    assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
         blocks[blocks.length - 1].header.number + BigInt(1)
       ),
       [],
       'weird, but one less cornercase by explicitly allowing this'
     )
-    st.end()
   })
 
-  t.test(
-    'Clique Voting: Two signers, actually needing mutual consent to drop either of them',
-    async (st) => {
-      const { blocks, blockchain } = await initWithSigners([A, B])
-      await addNextBlock(blockchain, blocks, A, [B, false])
+  it('Clique Voting: Two signers, actually needing mutual consent to drop either of them', async () => {
+    const { blocks, blockchain } = await initWithSigners([A, B])
+    await addNextBlock(blockchain, blocks, A, [B, false])
 
-      st.deepEqual(
-        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-          blocks[blocks.length - 1].header.number + BigInt(1)
-        ),
-        [A.address, B.address],
-        'not fulfilled'
-      )
-      st.end()
-    }
-  )
+    assert.deepEqual(
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+        blocks[blocks.length - 1].header.number + BigInt(1)
+      ),
+      [A.address, B.address],
+      'not fulfilled'
+    )
+  })
 
-  t.test(
-    'Clique Voting: Two signers, actually needing mutual consent to drop either of them',
-    async (st) => {
-      const { blocks, blockchain } = await initWithSigners([A, B])
-      await addNextBlock(blockchain, blocks, A, [B, false])
-      await addNextBlock(blockchain, blocks, B, [B, false])
+  it('Clique Voting: Two signers, actually needing mutual consent to drop either of them', async () => {
+    const { blocks, blockchain } = await initWithSigners([A, B])
+    await addNextBlock(blockchain, blocks, A, [B, false])
+    await addNextBlock(blockchain, blocks, B, [B, false])
 
-      st.deepEqual(
-        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-          blocks[blocks.length - 1].header.number + BigInt(1)
-        ),
-        [A.address],
-        'fulfilled'
-      )
-      st.end()
-    }
-  )
+    assert.deepEqual(
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+        blocks[blocks.length - 1].header.number + BigInt(1)
+      ),
+      [A.address],
+      'fulfilled'
+    )
+  })
 
-  t.test('Clique Voting: Three signers, two of them deciding to drop the third', async (st) => {
+  it('Clique Voting: Three signers, two of them deciding to drop the third', async () => {
     const { blocks, blockchain } = await initWithSigners([A, B, C])
     await addNextBlock(blockchain, blocks, A, [C, false])
     await addNextBlock(blockchain, blocks, B, [C, false])
 
-    st.deepEqual(
+    assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
         blocks[blocks.length - 1].header.number + BigInt(1)
       ),
       [A.address, B.address]
     )
-    st.end()
   })
 
-  t.test(
-    'Clique Voting: Four signers, consensus of two not being enough to drop anyone',
-    async (st) => {
-      const { blocks, blockchain } = await initWithSigners([A, B, C, D])
-      await addNextBlock(blockchain, blocks, A, [C, false])
-      await addNextBlock(blockchain, blocks, B, [C, false])
+  it('Clique Voting: Four signers, consensus of two not being enough to drop anyone', async () => {
+    const { blocks, blockchain } = await initWithSigners([A, B, C, D])
+    await addNextBlock(blockchain, blocks, A, [C, false])
+    await addNextBlock(blockchain, blocks, B, [C, false])
 
-      st.deepEqual(
-        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-          blocks[blocks.length - 1].header.number + BigInt(1)
-        ),
-        [A.address, B.address, C.address, D.address]
-      )
-      st.end()
-    }
-  )
+    assert.deepEqual(
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+        blocks[blocks.length - 1].header.number + BigInt(1)
+      ),
+      [A.address, B.address, C.address, D.address]
+    )
+  })
 
-  t.test(
-    'Clique Voting: Four signers, consensus of three already being enough to drop someone',
-    async (st) => {
-      const { blocks, blockchain } = await initWithSigners([A, B, C, D])
-      await addNextBlock(blockchain, blocks, A, [D, false])
-      await addNextBlock(blockchain, blocks, B, [D, false])
-      await addNextBlock(blockchain, blocks, C, [D, false])
+  it('Clique Voting: Four signers, consensus of three already being enough to drop someone', async () => {
+    const { blocks, blockchain } = await initWithSigners([A, B, C, D])
+    await addNextBlock(blockchain, blocks, A, [D, false])
+    await addNextBlock(blockchain, blocks, B, [D, false])
+    await addNextBlock(blockchain, blocks, C, [D, false])
 
-      st.deepEqual(
-        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-          blocks[blocks.length - 1].header.number + BigInt(1)
-        ),
-        [A.address, B.address, C.address]
-      )
-      st.end()
-    }
-  )
+    assert.deepEqual(
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+        blocks[blocks.length - 1].header.number + BigInt(1)
+      ),
+      [A.address, B.address, C.address]
+    )
+  })
 
-  t.test('Clique Voting: Authorizations are counted once per signer per target', async (st) => {
+  it('Clique Voting: Authorizations are counted once per signer per target', async () => {
     const { blocks, blockchain } = await initWithSigners([A, B])
     await addNextBlock(blockchain, blocks, A, [C, true])
     await addNextBlock(blockchain, blocks, B)
@@ -480,16 +437,15 @@ tape('Clique: Initialization', (t) => {
     await addNextBlock(blockchain, blocks, B)
     await addNextBlock(blockchain, blocks, A, [C, true])
 
-    st.deepEqual(
+    assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
         blocks[blocks.length - 1].header.number + BigInt(1)
       ),
       [A.address, B.address]
     )
-    st.end()
   })
 
-  t.test('Clique Voting: Authorizing multiple accounts concurrently is permitted', async (st) => {
+  it('Clique Voting: Authorizing multiple accounts concurrently is permitted', async () => {
     const { blocks, blockchain } = await initWithSigners([A, B])
     await addNextBlock(blockchain, blocks, A, [C, true])
     await addNextBlock(blockchain, blocks, B)
@@ -500,16 +456,15 @@ tape('Clique: Initialization', (t) => {
     await addNextBlock(blockchain, blocks, A)
     await addNextBlock(blockchain, blocks, B, [C, true])
 
-    st.deepEqual(
+    assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
         blocks[blocks.length - 1].header.number + BigInt(1)
       ),
       [A.address, B.address, C.address, D.address]
     )
-    st.end()
   })
 
-  t.test('Clique Voting: Deauthorizations are counted once per signer per target', async (st) => {
+  it('Clique Voting: Deauthorizations are counted once per signer per target', async () => {
     const { blocks, blockchain } = await initWithSigners([A, B])
     await addNextBlock(blockchain, blocks, A, [B, false])
     await addNextBlock(blockchain, blocks, B)
@@ -517,16 +472,15 @@ tape('Clique: Initialization', (t) => {
     await addNextBlock(blockchain, blocks, B)
     await addNextBlock(blockchain, blocks, A, [B, false])
 
-    st.deepEqual(
+    assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
         blocks[blocks.length - 1].header.number + BigInt(1)
       ),
       [A.address, B.address]
     )
-    st.end()
   })
 
-  t.test('Clique Voting: Deauthorizing multiple accounts concurrently is permitted', async (st) => {
+  it('Clique Voting: Deauthorizing multiple accounts concurrently is permitted', async () => {
     const { blocks, blockchain } = await initWithSigners([A, B, C, D])
     await addNextBlock(blockchain, blocks, A, [C, false])
     await addNextBlock(blockchain, blocks, B)
@@ -540,257 +494,220 @@ tape('Clique: Initialization', (t) => {
     await addNextBlock(blockchain, blocks, A)
     await addNextBlock(blockchain, blocks, B, [C, false])
 
-    st.deepEqual(
+    assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
         blocks[blocks.length - 1].header.number + BigInt(1)
       ),
       [A.address, B.address]
     )
-    st.end()
   })
 
-  t.test('Clique Voting: Votes from deauthorized signers are discarded immediately', async (st) => {
+  it('Clique Voting: Votes from deauthorized signers are discarded immediately', async () => {
     const { blocks, blockchain } = await initWithSigners([A, B, C])
     await addNextBlock(blockchain, blocks, C, [B, false])
     await addNextBlock(blockchain, blocks, A, [C, false])
     await addNextBlock(blockchain, blocks, B, [C, false])
     await addNextBlock(blockchain, blocks, A, [B, false])
 
-    st.deepEqual(
+    assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
         blocks[blocks.length - 1].header.number + BigInt(1)
       ),
       [A.address, B.address],
       'deauth votes'
     )
-    st.end()
   })
 
-  t.test('Clique Voting: Votes from deauthorized signers are discarded immediately', async (st) => {
+  it('Clique Voting: Votes from deauthorized signers are discarded immediately', async () => {
     const { blocks, blockchain } = await initWithSigners([A, B, C])
     await addNextBlock(blockchain, blocks, C, [D, true])
     await addNextBlock(blockchain, blocks, A, [C, false])
     await addNextBlock(blockchain, blocks, B, [C, false])
     await addNextBlock(blockchain, blocks, A, [D, true])
 
-    st.deepEqual(
+    assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
         blocks[blocks.length - 1].header.number + BigInt(1)
       ),
       [A.address, B.address],
       'auth votes'
     )
-    st.end()
   })
 
-  t.test(
-    'Clique Voting: Changes reaching consensus out of bounds (via a deauth) execute on touch',
-    async (st) => {
-      const { blocks, blockchain } = await initWithSigners([A, B, C, D])
-      await addNextBlock(blockchain, blocks, A, [C, false])
-      await addNextBlock(blockchain, blocks, B)
-      await addNextBlock(blockchain, blocks, C)
-      await addNextBlock(blockchain, blocks, A, [D, false])
-      await addNextBlock(blockchain, blocks, B, [C, false])
-      await addNextBlock(blockchain, blocks, C)
-      await addNextBlock(blockchain, blocks, A)
-      await addNextBlock(blockchain, blocks, B, [D, false])
-      await addNextBlock(blockchain, blocks, C, [D, false])
-      await addNextBlock(blockchain, blocks, A)
-      await addNextBlock(blockchain, blocks, C, [C, true])
+  it('Clique Voting: Changes reaching consensus out of bounds (via a deauth) execute on touch', async () => {
+    const { blocks, blockchain } = await initWithSigners([A, B, C, D])
+    await addNextBlock(blockchain, blocks, A, [C, false])
+    await addNextBlock(blockchain, blocks, B)
+    await addNextBlock(blockchain, blocks, C)
+    await addNextBlock(blockchain, blocks, A, [D, false])
+    await addNextBlock(blockchain, blocks, B, [C, false])
+    await addNextBlock(blockchain, blocks, C)
+    await addNextBlock(blockchain, blocks, A)
+    await addNextBlock(blockchain, blocks, B, [D, false])
+    await addNextBlock(blockchain, blocks, C, [D, false])
+    await addNextBlock(blockchain, blocks, A)
+    await addNextBlock(blockchain, blocks, C, [C, true])
 
-      st.deepEqual(
-        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-          blocks[blocks.length - 1].header.number + BigInt(1)
-        ),
-        [A.address, B.address]
-      )
-      st.end()
-    }
-  )
+    assert.deepEqual(
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+        blocks[blocks.length - 1].header.number + BigInt(1)
+      ),
+      [A.address, B.address]
+    )
+  })
 
-  t.test(
-    'Clique Voting: Changes reaching consensus out of bounds (via a deauth) may go out of consensus on first touch',
-    async (st) => {
-      const { blocks, blockchain } = await initWithSigners([A, B, C, D])
-      await addNextBlock(blockchain, blocks, A, [C, false])
-      await addNextBlock(blockchain, blocks, B)
-      await addNextBlock(blockchain, blocks, C)
-      await addNextBlock(blockchain, blocks, A, [D, false])
-      await addNextBlock(blockchain, blocks, B, [C, false])
-      await addNextBlock(blockchain, blocks, C)
-      await addNextBlock(blockchain, blocks, A)
-      await addNextBlock(blockchain, blocks, B, [D, false])
-      await addNextBlock(blockchain, blocks, C, [D, false])
-      await addNextBlock(blockchain, blocks, A)
-      await addNextBlock(blockchain, blocks, B, [C, true])
+  it('Clique Voting: Changes reaching consensus out of bounds (via a deauth) may go out of consensus on first touch', async () => {
+    const { blocks, blockchain } = await initWithSigners([A, B, C, D])
+    await addNextBlock(blockchain, blocks, A, [C, false])
+    await addNextBlock(blockchain, blocks, B)
+    await addNextBlock(blockchain, blocks, C)
+    await addNextBlock(blockchain, blocks, A, [D, false])
+    await addNextBlock(blockchain, blocks, B, [C, false])
+    await addNextBlock(blockchain, blocks, C)
+    await addNextBlock(blockchain, blocks, A)
+    await addNextBlock(blockchain, blocks, B, [D, false])
+    await addNextBlock(blockchain, blocks, C, [D, false])
+    await addNextBlock(blockchain, blocks, A)
+    await addNextBlock(blockchain, blocks, B, [C, true])
 
-      st.deepEqual(
-        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-          blocks[blocks.length - 1].header.number + BigInt(1)
-        ),
-        [A.address, B.address, C.address]
-      )
-      st.end()
-    }
-  )
+    assert.deepEqual(
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+        blocks[blocks.length - 1].header.number + BigInt(1)
+      ),
+      [A.address, B.address, C.address]
+    )
+  })
 
-  t.test(
-    "Clique Voting: Ensure that pending votes don't survive authorization status changes",
-    async (st) => {
-      // This corner case can only appear if a signer is quickly added, removed
-      // and then re-added (or the inverse), while one of the original voters
-      // dropped. If a past vote is left cached in the system somewhere, this
-      // will interfere with the final signer outcome.
-      const { blocks, blockchain } = await initWithSigners([A, B, C, D, E])
-      await addNextBlock(blockchain, blocks, A, [F, true]) // Authorize F, 3 votes needed
-      await addNextBlock(blockchain, blocks, B, [F, true])
-      await addNextBlock(blockchain, blocks, C, [F, true])
-      await addNextBlock(blockchain, blocks, D, [F, false]) // Deauthorize F, 4 votes needed (leave A's previous vote "unchanged")
-      await addNextBlock(blockchain, blocks, E, [F, false])
-      await addNextBlock(blockchain, blocks, B, [F, false])
-      await addNextBlock(blockchain, blocks, C, [F, false])
-      await addNextBlock(blockchain, blocks, D, [F, true]) // Almost authorize F, 2/3 votes needed
-      await addNextBlock(blockchain, blocks, E, [F, true])
-      await addNextBlock(blockchain, blocks, B, [A, false]) // Deauthorize A, 3 votes needed
-      await addNextBlock(blockchain, blocks, C, [A, false])
-      await addNextBlock(blockchain, blocks, D, [A, false])
-      await addNextBlock(blockchain, blocks, B, [F, true]) // Finish authorizing F, 3/3 votes needed
+  it("Clique Voting: Ensure that pending votes don't survive authorization status changes", async () => {
+    // This corner case can only appear if a signer is quickly added, removed
+    // and then re-added (or the inverse), while one of the original voters
+    // dropped. If a past vote is left cached in the system somewhere, this
+    // will interfere with the final signer outcome.
+    const { blocks, blockchain } = await initWithSigners([A, B, C, D, E])
+    await addNextBlock(blockchain, blocks, A, [F, true]) // Authorize F, 3 votes needed
+    await addNextBlock(blockchain, blocks, B, [F, true])
+    await addNextBlock(blockchain, blocks, C, [F, true])
+    await addNextBlock(blockchain, blocks, D, [F, false]) // Deauthorize F, 4 votes needed (leave A's previous vote "unchanged")
+    await addNextBlock(blockchain, blocks, E, [F, false])
+    await addNextBlock(blockchain, blocks, B, [F, false])
+    await addNextBlock(blockchain, blocks, C, [F, false])
+    await addNextBlock(blockchain, blocks, D, [F, true]) // Almost authorize F, 2/3 votes needed
+    await addNextBlock(blockchain, blocks, E, [F, true])
+    await addNextBlock(blockchain, blocks, B, [A, false]) // Deauthorize A, 3 votes needed
+    await addNextBlock(blockchain, blocks, C, [A, false])
+    await addNextBlock(blockchain, blocks, D, [A, false])
+    await addNextBlock(blockchain, blocks, B, [F, true]) // Finish authorizing F, 3/3 votes needed
 
-      st.deepEqual(
-        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-          blocks[blocks.length - 1].header.number + BigInt(1)
-        ),
-        [B.address, C.address, D.address, E.address, F.address]
-      )
-      st.end()
-    }
-  )
+    assert.deepEqual(
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+        blocks[blocks.length - 1].header.number + BigInt(1)
+      ),
+      [B.address, C.address, D.address, E.address, F.address]
+    )
+  })
 
-  t.test(
-    'Clique Voting: Epoch transitions reset all votes to allow chain checkpointing',
-    async (st) => {
-      const common = Common.custom(
-        {
-          consensus: {
-            type: ConsensusType.ProofOfAuthority,
-            algorithm: ConsensusAlgorithm.Clique,
-            clique: {
-              period: 15,
-              epoch: 3,
-            },
+  it('Clique Voting: Epoch transitions reset all votes to allow chain checkpointing', async () => {
+    const common = Common.custom(
+      {
+        consensus: {
+          type: ConsensusType.ProofOfAuthority,
+          algorithm: ConsensusAlgorithm.Clique,
+          clique: {
+            period: 15,
+            epoch: 3,
           },
         },
-        {
-          baseChain: Chain.Rinkeby,
-          hardfork: Hardfork.Chainstart,
-        }
-      )
-      const { blocks, blockchain } = await initWithSigners([A, B], common)
-      await addNextBlock(blockchain, blocks, A, [C, true], undefined, common)
-      await addNextBlock(blockchain, blocks, B, undefined, undefined, common)
-      await addNextBlock(blockchain, blocks, A, undefined, [A, B], common)
-      await addNextBlock(blockchain, blocks, B, [C, true], undefined, common)
+      },
+      {
+        baseChain: Chain.Rinkeby,
+        hardfork: Hardfork.Chainstart,
+      }
+    )
+    const { blocks, blockchain } = await initWithSigners([A, B], common)
+    await addNextBlock(blockchain, blocks, A, [C, true], undefined, common)
+    await addNextBlock(blockchain, blocks, B, undefined, undefined, common)
+    await addNextBlock(blockchain, blocks, A, undefined, [A, B], common)
+    await addNextBlock(blockchain, blocks, B, [C, true], undefined, common)
 
-      st.deepEqual(
-        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-          blocks[blocks.length - 1].header.number + BigInt(1)
-        ),
-        [A.address, B.address]
-      )
-      st.end()
-    }
-  )
+    assert.deepEqual(
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+        blocks[blocks.length - 1].header.number + BigInt(1)
+      ),
+      [A.address, B.address]
+    )
+  })
 
-  t.test('Clique Voting: An unauthorized signer should not be able to sign blocks', async (st) => {
+  it('Clique Voting: An unauthorized signer should not be able to sign blocks', async () => {
     const { blocks, blockchain } = await initWithSigners([A])
     await addNextBlock(blockchain, blocks, A)
     try {
       await addNextBlock(blockchain, blocks, B)
-      st.fail('should throw error')
+      assert.fail('should throw error')
     } catch (error: any) {
-      if ((error.message as string).includes('invalid PoA block signature (clique)')) {
-        st.pass('correct error thrown')
-      } else {
-        st.fail('correct error not thrown')
-      }
+      assert.ok(
+        error.message.includes('invalid PoA block signature (clique)'),
+        'correct error thrown'
+      )
     }
-    st.end()
   })
 
-  t.test(
-    'Clique Voting: An authorized signer that signed recently should not be able to sign again',
-    async (st) => {
-      const { blocks, blockchain } = await initWithSigners([A, B])
+  it('Clique Voting: An authorized signer that signed recently should not be able to sign again', async () => {
+    const { blocks, blockchain } = await initWithSigners([A, B])
+    await addNextBlock(blockchain, blocks, A)
+    try {
       await addNextBlock(blockchain, blocks, A)
-      try {
-        await addNextBlock(blockchain, blocks, A)
-        st.fail('should throw error')
-      } catch (error: any) {
-        if ((error.message as string).includes('recently signed')) {
-          st.pass('correct error thrown')
-        } else {
-          st.fail('correct error not thrown')
-        }
-      }
-      st.end()
+      assert.fail('should throw error')
+    } catch (error: any) {
+      assert.ok(error.message.includes('recently signed'), 'correct error thrown')
     }
-  )
+  })
 
-  t.test(
-    'Clique Voting: Recent signatures should not reset on checkpoint blocks imported in a batch',
-    async (st) => {
-      const common = Common.custom(
-        {
-          consensus: {
-            type: ConsensusType.ProofOfAuthority,
-            algorithm: ConsensusAlgorithm.Clique,
-            clique: {
-              period: 15,
-              epoch: 3,
-            },
+  it('Clique Voting: Recent signatures should not reset on checkpoint blocks imported in a batch', async () => {
+    const common = Common.custom(
+      {
+        consensus: {
+          type: ConsensusType.ProofOfAuthority,
+          algorithm: ConsensusAlgorithm.Clique,
+          clique: {
+            period: 15,
+            epoch: 3,
           },
         },
-        {
-          baseChain: Chain.Rinkeby,
-          hardfork: Hardfork.Chainstart,
-        }
-      )
-      const { blocks, blockchain } = await initWithSigners([A, B, C], common)
-      await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
-      await addNextBlock(blockchain, blocks, B, undefined, undefined, common)
-      await addNextBlock(blockchain, blocks, A, undefined, [A, B, C], common)
-      try {
-        await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
-        st.fail('should throw error')
-      } catch (error: any) {
-        if ((error.message as string).includes('recently signed')) {
-          st.pass('correct error thrown')
-        } else {
-          st.fail('correct error not thrown')
-        }
+      },
+      {
+        baseChain: Chain.Rinkeby,
+        hardfork: Hardfork.Chainstart,
       }
-      st.end()
+    )
+    const { blocks, blockchain } = await initWithSigners([A, B, C], common)
+    await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
+    await addNextBlock(blockchain, blocks, B, undefined, undefined, common)
+    await addNextBlock(blockchain, blocks, A, undefined, [A, B, C], common)
+    try {
+      await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
+      assert.fail('should throw error')
+    } catch (error: any) {
+      assert.ok(error.message.includes('recently signed'), 'correct error thrown')
     }
-  )
+  })
 
-  t.test('cliqueSignerInTurn() -> should work as expected', async (st) => {
+  it('cliqueSignerInTurn() -> should work as expected', async () => {
     const { blocks, blockchain } = await initWithSigners([A, B, C])
     // block 1: B, next signer: C
     await addNextBlock(blockchain, blocks, B)
-    st.notOk(
+    assert.notOk(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         A.address,
         blocks[blocks.length - 1].header.number
       )
     )
-    st.notOk(
+    assert.notOk(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         B.address,
         blocks[blocks.length - 1].header.number
       )
     )
-    st.ok(
+    assert.ok(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         C.address,
         blocks[blocks.length - 1].header.number
@@ -798,19 +715,19 @@ tape('Clique: Initialization', (t) => {
     )
     // block 2: C, next signer: A
     await addNextBlock(blockchain, blocks, C)
-    st.ok(
+    assert.ok(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         A.address,
         blocks[blocks.length - 1].header.number
       )
     )
-    st.notOk(
+    assert.notOk(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         B.address,
         blocks[blocks.length - 1].header.number
       )
     )
-    st.notOk(
+    assert.notOk(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         C.address,
         blocks[blocks.length - 1].header.number
@@ -818,19 +735,19 @@ tape('Clique: Initialization', (t) => {
     )
     // block 3: A, next signer: B
     await addNextBlock(blockchain, blocks, A)
-    st.notOk(
+    assert.notOk(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         A.address,
         blocks[blocks.length - 1].header.number
       )
     )
-    st.ok(
+    assert.ok(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         B.address,
         blocks[blocks.length - 1].header.number
       )
     )
-    st.notOk(
+    assert.notOk(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         C.address,
         blocks[blocks.length - 1].header.number
@@ -838,65 +755,59 @@ tape('Clique: Initialization', (t) => {
     )
     // block 4: B, next signer: C
     await addNextBlock(blockchain, blocks, B)
-    st.notOk(
+    assert.notOk(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         A.address,
         blocks[blocks.length - 1].header.number
       )
     )
-    st.notOk(
+    assert.notOk(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         B.address,
         blocks[blocks.length - 1].header.number
       )
     )
-    st.ok(
+    assert.ok(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         C.address,
         blocks[blocks.length - 1].header.number
       )
     )
-    st.end()
   })
 })
 
-tape('clique: reorgs', (t) => {
-  t.test(
-    'Two signers, voting to add one other signer, then reorg and revoke this addition',
-    async (st) => {
-      const { blocks, blockchain } = await initWithSigners([A, B])
-      const genesis = blocks[0]
-      await addNextBlock(blockchain, blocks, A, [C, true])
-      const headBlockUnforked = await addNextBlock(blockchain, blocks, B, [C, true])
-      st.deepEqual(
-        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-          blocks[blocks.length - 1].header.number + BigInt(1)
-        ),
-        [A.address, B.address, C.address],
-        'address C added to signers'
-      )
-      st.deepEquals((await blockchain.getCanonicalHeadBlock()).hash(), headBlockUnforked.hash())
-      await addNextBlockReorg(blockchain, blocks, genesis, B)
-      const headBlock = await addNextBlock(blockchain, blocks, A)
-      st.deepEquals((await blockchain.getCanonicalHeadBlock()).hash(), headBlock.hash())
-      await addNextBlock(blockchain, blocks, B)
-      await addNextBlock(blockchain, blocks, A)
+describe('clique: reorgs', () => {
+  it('Two signers, voting to add one other signer, then reorg and revoke this addition', async () => {
+    const { blocks, blockchain } = await initWithSigners([A, B])
+    const genesis = blocks[0]
+    await addNextBlock(blockchain, blocks, A, [C, true])
+    const headBlockUnforked = await addNextBlock(blockchain, blocks, B, [C, true])
+    assert.deepEqual(
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+        blocks[blocks.length - 1].header.number + BigInt(1)
+      ),
+      [A.address, B.address, C.address],
+      'address C added to signers'
+    )
+    assert.deepEqual((await blockchain.getCanonicalHeadBlock()).hash(), headBlockUnforked.hash())
+    await addNextBlockReorg(blockchain, blocks, genesis, B)
+    const headBlock = await addNextBlock(blockchain, blocks, A)
+    assert.deepEqual((await blockchain.getCanonicalHeadBlock()).hash(), headBlock.hash())
+    await addNextBlock(blockchain, blocks, B)
+    await addNextBlock(blockchain, blocks, A)
 
-      st.deepEqual(
-        (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-          blocks[blocks.length - 1].header.number + BigInt(1)
-        ),
-        [A.address, B.address],
-        'address C not added to signers'
-      )
-
-      st.end()
-    }
-  )
+    assert.deepEqual(
+      (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
+        blocks[blocks.length - 1].header.number + BigInt(1)
+      ),
+      [A.address, B.address],
+      'address C not added to signers'
+    )
+  })
 
   /**
    * This test fails, but demonstrates why at an epoch reorg with changing votes, we get an internal error.
-  t.test(
+  it(
     'Two signers, voting to add one other signer, epoch transition, then reorg and revoke this addition',
     async (st) => {
       const common = Common.custom(
@@ -928,14 +839,14 @@ tape('clique: reorgs', (t) => {
         undefined,
         common
       )
-      st.deepEqual(
+     assert.deepEqual(
         (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
           blocks[blocks.length - 1].header.number + BigInt(1)
         ),
         [A.address, B.address, C.address],
         'address C added to signers'
       )
-      st.deepEquals((await blockchain.getCanonicalHeadBlock()).hash(), headBlockUnforked.hash())
+     assert.deepEqual((await blockchain.getCanonicalHeadBlock()).hash(), headBlockUnforked.hash())
       await addNextBlockReorg(blockchain, blocks, genesis, B, undefined, undefined, common)
       await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
 
@@ -947,9 +858,9 @@ tape('clique: reorgs', (t) => {
       await addNextBlock(blockchain, blocks, B, undefined, undefined, common)
 
       const headBlock = await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
-      st.deepEquals((await blockchain.getCanonicalHeadBlock()).hash(), headBlock.hash())
+     assert.deepEqual((await blockchain.getCanonicalHeadBlock()).hash(), headBlock.hash())
 
-      st.deepEqual(
+     assert.deepEqual(
         (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
           blocks[blocks.length - 1].header.number + BigInt(1)
         ),
@@ -957,7 +868,6 @@ tape('clique: reorgs', (t) => {
         'address C not added to signers'
       )
 
-      st.end()
-    }
+          }
   ) */
 })

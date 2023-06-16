@@ -14,7 +14,7 @@ import {
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import genesisJSON = require('../../../../client/test/testdata/geth-genesis/eip4844.json')
 import { VM } from '../../../src/vm'
@@ -32,8 +32,8 @@ if (isBrowser() === false) {
   } catch {}
 }
 
-tape('EIP4844 tests', (t) => {
-  t.test('should build a block correctly with blobs', async (st) => {
+describe('EIP4844 tests', () => {
+  it('should build a block correctly with blobs', async () => {
     const common = Common.fromGethGenesis(genesisJSON, { chain: 'eip4844' })
     common.setHardfork(Hardfork.Cancun)
     const genesisBlock = Block.fromBlockData({ header: { gasLimit: 50000 } }, { common })
@@ -84,22 +84,21 @@ tape('EIP4844 tests', (t) => {
     await blockBuilder.addTransaction(signedTx)
 
     const block = await blockBuilder.build()
-    st.equal(block.transactions.length, 1, 'blob transaction should be included')
-    st.equal(
+    assert.equal(block.transactions.length, 1, 'blob transaction should be included')
+    assert.equal(
       bytesToHex(block.transactions[0].hash()),
       bytesToHex(signedTx.hash()),
       'blob transaction should be same'
     )
 
     const dataGasPerBlob = common.param('gasConfig', 'dataGasPerBlob')
-    st.equal(block.header.dataGasUsed, dataGasPerBlob, 'data gas used for 1 blob should match')
+    assert.equal(block.header.dataGasUsed, dataGasPerBlob, 'data gas used for 1 blob should match')
 
     // block should successfully execute with VM.runBlock and have same outputs
     const result = await vmCopy.runBlock({ block, skipBlockValidation: true })
-    st.equal(result.gasUsed, block.header.gasUsed)
-    st.deepEquals(result.receiptsRoot, block.header.receiptTrie)
-    st.deepEquals(result.stateRoot, block.header.stateRoot)
-    st.deepEquals(result.logsBloom, block.header.logsBloom)
-    st.end()
+    assert.equal(result.gasUsed, block.header.gasUsed)
+    assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
+    assert.deepEqual(result.stateRoot, block.header.stateRoot)
+    assert.deepEqual(result.logsBloom, block.header.logsBloom)
   })
 })

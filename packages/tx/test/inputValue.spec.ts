@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, hexStringToBytes, toBytes } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import {
   AccessListEIP2930Transaction,
@@ -8,9 +8,9 @@ import {
   LegacyTransaction,
   TransactionFactory,
   TransactionType,
-} from '../src'
+} from '../src/index.js'
 
-import type { TxValuesArray } from '../src'
+import type { TxValuesArray } from '../src/index.js'
 import type { AddressLike, BigIntLike, BytesLike } from '@ethereumjs/util'
 
 // @returns: Array with subtypes of the AddressLike type for a given address
@@ -108,8 +108,8 @@ const eip1559TxValues = {
   maxPriorityFeePerGas: generateBigIntLikeValues(50),
 }
 
-tape('[Transaction Input Values]', function (t) {
-  t.test('Legacy Transaction Values', function (st) {
+describe('[Transaction Input Values]', () => {
+  it('Legacy Transaction Values', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
     const options = { ...baseTxValues, ...legacyTxValues, type: '0' }
     const legacyTxData = generateCombinations({
@@ -118,12 +118,11 @@ tape('[Transaction Input Values]', function (t) {
     const randomSample = getRandomSubarray(legacyTxData, 100)
     for (const txData of randomSample) {
       const tx = LegacyTransaction.fromTxData(txData, { common })
-      t.throws(() => tx.hash(), 'tx.hash() throws if tx is unsigned')
+      assert.throws(() => tx.hash(), undefined, undefined, 'tx.hash() throws if tx is unsigned')
     }
-    st.end()
   })
 
-  t.test('EIP-1559 Transaction Values', function (st) {
+  it('EIP-1559 Transaction Values', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const options = {
       ...baseTxValues,
@@ -138,124 +137,127 @@ tape('[Transaction Input Values]', function (t) {
 
     for (const txData of randomSample) {
       const tx = LegacyTransaction.fromTxData(txData, { common })
-      t.throws(() => tx.hash(), 'tx.hash() should throw if unsigned')
+      assert.throws(() => tx.hash(), undefined, undefined, 'tx.hash() should throw if unsigned')
     }
-    st.end()
   })
 })
 
-tape('[Invalid Array Input values]', (t) => {
-  const txTypes = [
-    TransactionType.Legacy,
-    TransactionType.AccessListEIP2930,
-    TransactionType.FeeMarketEIP1559,
-  ]
-  for (const signed of [false, true]) {
-    for (const txType of txTypes) {
-      let tx = TransactionFactory.fromTxData({ type: txType })
-      if (signed) {
-        tx = tx.sign(hexStringToBytes('42'.repeat(32)))
-      }
-      const rawValues = tx.raw()
-      for (let x = 0; x < rawValues.length; x++) {
-        rawValues[x] = <any>[1, 2, 3]
-        switch (txType) {
-          case TransactionType.Legacy:
-            t.throws(() =>
-              LegacyTransaction.fromValuesArray(rawValues as TxValuesArray[TransactionType.Legacy])
-            )
-            break
-          case TransactionType.AccessListEIP2930:
-            t.throws(() =>
-              AccessListEIP2930Transaction.fromValuesArray(
-                rawValues as TxValuesArray[TransactionType.AccessListEIP2930]
+describe('[Invalid Array Input values]', () => {
+  it('should work', () => {
+    const txTypes = [
+      TransactionType.Legacy,
+      TransactionType.AccessListEIP2930,
+      TransactionType.FeeMarketEIP1559,
+    ]
+    for (const signed of [false, true]) {
+      for (const txType of txTypes) {
+        let tx = TransactionFactory.fromTxData({ type: txType })
+        if (signed) {
+          tx = tx.sign(hexStringToBytes('42'.repeat(32)))
+        }
+        const rawValues = tx.raw()
+        for (let x = 0; x < rawValues.length; x++) {
+          rawValues[x] = <any>[1, 2, 3]
+          switch (txType) {
+            case TransactionType.Legacy:
+              assert.throws(() =>
+                LegacyTransaction.fromValuesArray(
+                  rawValues as TxValuesArray[TransactionType.Legacy]
+                )
               )
-            )
-            break
-          case TransactionType.FeeMarketEIP1559:
-            t.throws(() =>
-              FeeMarketEIP1559Transaction.fromValuesArray(
-                rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559]
+              break
+            case TransactionType.AccessListEIP2930:
+              assert.throws(() =>
+                AccessListEIP2930Transaction.fromValuesArray(
+                  rawValues as TxValuesArray[TransactionType.AccessListEIP2930]
+                )
               )
-            )
-            break
+              break
+            case TransactionType.FeeMarketEIP1559:
+              assert.throws(() =>
+                FeeMarketEIP1559Transaction.fromValuesArray(
+                  rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559]
+                )
+              )
+              break
+          }
         }
       }
     }
-  }
-  t.end()
+  })
 })
 
-tape('[Invalid Access Lists]', (t) => {
-  const txTypes = [TransactionType.AccessListEIP2930, TransactionType.FeeMarketEIP1559]
-  const invalidAccessLists = [
-    [[]], // does not have an address and does not have slots
-    [[[], []]], // the address is an array
-    [['0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae']], // there is no storage slot array
-    [
+describe('[Invalid Access Lists]', () => {
+  it('should work', () => {
+    const txTypes = [TransactionType.AccessListEIP2930, TransactionType.FeeMarketEIP1559]
+    const invalidAccessLists = [
+      [[]], // does not have an address and does not have slots
+      [[[], []]], // the address is an array
+      [['0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae']], // there is no storage slot array
       [
-        '0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae',
-        ['0x0000000000000000000000000000000000000000000000000000000000000003', []],
-      ],
-    ], // one of the slots is an array
-    [
+        [
+          '0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae',
+          ['0x0000000000000000000000000000000000000000000000000000000000000003', []],
+        ],
+      ], // one of the slots is an array
+      [
+        [
+          '0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae',
+          ['0x0000000000000000000000000000000000000000000000000000000000000003'],
+          '0xab',
+        ],
+      ], // extra field
       [
         '0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae',
         ['0x0000000000000000000000000000000000000000000000000000000000000003'],
-        '0xab',
-      ],
-    ], // extra field
-    [
-      '0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae',
-      ['0x0000000000000000000000000000000000000000000000000000000000000003'],
-    ], // account/slot needs to be encoded in a deeper array layer
-  ]
-  for (const signed of [false, true]) {
-    for (const txType of txTypes) {
-      for (const invalidAccessListItem of invalidAccessLists) {
-        let tx: any
-        try {
-          tx = TransactionFactory.fromTxData({
-            type: txType,
-            accessList: <any>invalidAccessListItem,
-          })
-          if (signed) {
-            tx = tx.sign(hexStringToBytes('42'.repeat(32)))
+      ], // account/slot needs to be encoded in a deeper array layer
+    ]
+    for (const signed of [false, true]) {
+      for (const txType of txTypes) {
+        for (const invalidAccessListItem of invalidAccessLists) {
+          let tx: any
+          try {
+            tx = TransactionFactory.fromTxData({
+              type: txType,
+              accessList: <any>invalidAccessListItem,
+            })
+            if (signed) {
+              tx = tx.sign(hexStringToBytes('42'.repeat(32)))
+            }
+            assert.fail('did not fail on `fromTxData`')
+          } catch (e: any) {
+            assert.ok(true, 'failed ok on decoding in `fromTxData`')
+            tx = TransactionFactory.fromTxData({ type: txType })
+            if (signed) {
+              tx = tx.sign(hexStringToBytes('42'.repeat(32)))
+            }
           }
-          t.fail('did not fail on `fromTxData`')
-        } catch (e: any) {
-          t.pass('failed ok on decoding in `fromTxData`')
-          tx = TransactionFactory.fromTxData({ type: txType })
-          if (signed) {
-            tx = tx.sign(hexStringToBytes('42'.repeat(32)))
+          const rawValues = tx!.raw()
+
+          if (txType === TransactionType.AccessListEIP2930 && rawValues[7].length === 0) {
+            rawValues[7] = invalidAccessListItem
+          } else if (txType === TransactionType.FeeMarketEIP1559 && rawValues[8].length === 0) {
+            rawValues[8] = invalidAccessListItem
           }
-        }
-        const rawValues = tx!.raw()
 
-        if (txType === TransactionType.AccessListEIP2930 && rawValues[7].length === 0) {
-          rawValues[7] = invalidAccessListItem
-        } else if (txType === TransactionType.FeeMarketEIP1559 && rawValues[8].length === 0) {
-          rawValues[8] = invalidAccessListItem
-        }
-
-        switch (txType) {
-          case TransactionType.AccessListEIP2930:
-            t.throws(() =>
-              AccessListEIP2930Transaction.fromValuesArray(
-                rawValues as TxValuesArray[TransactionType.AccessListEIP2930]
+          switch (txType) {
+            case TransactionType.AccessListEIP2930:
+              assert.throws(() =>
+                AccessListEIP2930Transaction.fromValuesArray(
+                  rawValues as TxValuesArray[TransactionType.AccessListEIP2930]
+                )
               )
-            )
-            break
-          case TransactionType.FeeMarketEIP1559:
-            t.throws(() =>
-              FeeMarketEIP1559Transaction.fromValuesArray(
-                rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559]
+              break
+            case TransactionType.FeeMarketEIP1559:
+              assert.throws(() =>
+                FeeMarketEIP1559Transaction.fromValuesArray(
+                  rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559]
+                )
               )
-            )
-            break
+              break
+          }
         }
       }
     }
-  }
-  t.end()
+  })
 })

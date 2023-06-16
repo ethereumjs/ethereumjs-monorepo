@@ -1,24 +1,24 @@
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { Chain, Common, Hardfork } from '../src'
+import { Chain, Common, Hardfork } from '../src/index.js'
 
-tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: tape.Test) {
-  t.test('Basic usage', function (st: tape.Test) {
+describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
+  it('Basic usage', () => {
     const c = new Common({ chain: Chain.Mainnet, eips: [2537] })
     let msg = 'Should return correct value when HF directly provided'
-    st.equal(c.paramByHardfork('gasPrices', 'ecAdd', 'byzantium'), BigInt(500), msg)
+    assert.equal(c.paramByHardfork('gasPrices', 'ecAdd', 'byzantium'), BigInt(500), msg)
 
     msg = 'Should return correct value for HF set in class'
     c.setHardfork(Hardfork.Byzantium)
-    st.equal(c.param('gasPrices', 'ecAdd'), BigInt(500), msg)
+    assert.equal(c.param('gasPrices', 'ecAdd'), BigInt(500), msg)
     c.setHardfork(Hardfork.Istanbul)
-    st.equal(c.param('gasPrices', 'ecAdd'), BigInt(150), msg)
+    assert.equal(c.param('gasPrices', 'ecAdd'), BigInt(150), msg)
     c.setHardfork(Hardfork.MuirGlacier)
-    st.equal(c.param('gasPrices', 'ecAdd'), BigInt(150), msg)
+    assert.equal(c.param('gasPrices', 'ecAdd'), BigInt(150), msg)
 
     msg = 'Should return 0n for non-existing value'
-    st.equals(c.param('gasPrices', 'notexistingvalue'), BigInt(0), msg)
-    st.equals(c.paramByHardfork('gasPrices', 'notexistingvalue', 'byzantium'), BigInt(0), msg)
+    assert.equal(c.param('gasPrices', 'notexistingvalue'), BigInt(0), msg)
+    assert.equal(c.paramByHardfork('gasPrices', 'notexistingvalue', 'byzantium'), BigInt(0), msg)
 
     /*
     // Manual test since no test triggering EIP config available
@@ -26,102 +26,103 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
     // To run please manually add an "ecAdd" entry with value 12345 to EIP2537 config
     // and uncomment the test
     msg = 'EIP config should take precedence over HF config'
-    st.equal(c.param('gasPrices', 'ecAdd'), 12345, msg)
+    assert.equal(c.param('gasPrices', 'ecAdd'), 12345, msg)
     */
-
-    st.end()
   })
 
-  t.test('Error cases for param(), paramByHardfork()', function (st: tape.Test) {
+  it('Error cases for param(), paramByHardfork()', () => {
     const c = new Common({ chain: Chain.Mainnet })
 
     const f = function () {
       c.paramByHardfork('gasPrizes', 'ecAdd', 'byzantium')
     }
     const msg = 'Should throw when called with non-existing topic'
-    st.throws(f, /Topic gasPrizes not defined$/, msg)
+    assert.throws(f, /Topic gasPrizes not defined$/, undefined, msg)
 
     c.setHardfork(Hardfork.Byzantium)
-    st.equal(
+    assert.equal(
       c.param('gasPrices', 'ecAdd'),
       BigInt(500),
       'Should return correct value for HF set in class'
     )
-
-    st.end()
   })
 
-  t.test('Parameter updates', function (st: tape.Test) {
+  it('Parameter updates', () => {
     const c = new Common({ chain: Chain.Mainnet })
 
     let msg = 'Should return correct value for chain start'
-    st.equal(
+    assert.equal(
       c.paramByHardfork('pow', 'minerReward', 'chainstart'),
       BigInt(5000000000000000000),
       msg
     )
 
     msg = 'Should reflect HF update changes'
-    st.equal(c.paramByHardfork('pow', 'minerReward', 'byzantium'), BigInt(3000000000000000000), msg)
+    assert.equal(
+      c.paramByHardfork('pow', 'minerReward', 'byzantium'),
+      BigInt(3000000000000000000),
+      msg
+    )
 
     msg = 'Should return updated sstore gas prices for constantinople'
-    st.equal(c.paramByHardfork('gasPrices', 'netSstoreNoopGas', 'constantinople'), BigInt(200), msg)
+    assert.equal(
+      c.paramByHardfork('gasPrices', 'netSstoreNoopGas', 'constantinople'),
+      BigInt(200),
+      msg
+    )
 
     msg = 'Should nullify SSTORE related values for petersburg'
-    st.equals(c.paramByHardfork('gasPrices', 'netSstoreNoopGas', 'petersburg'), BigInt(0), msg)
-
-    st.end()
+    assert.equal(c.paramByHardfork('gasPrices', 'netSstoreNoopGas', 'petersburg'), BigInt(0), msg)
   })
 
-  t.test('Access by block number, paramByBlock()', function (st: tape.Test) {
+  it('Access by block number, paramByBlock()', () => {
     const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
     let msg = 'Should correctly translate block numbers into HF states (updated value)'
-    st.equal(c.paramByBlock('pow', 'minerReward', 4370000), BigInt(3000000000000000000), msg)
+    assert.equal(c.paramByBlock('pow', 'minerReward', 4370000), BigInt(3000000000000000000), msg)
 
     msg = 'Should correctly translate block numbers into HF states (original value)'
-    st.equal(c.paramByBlock('pow', 'minerReward', 4369999), BigInt(5000000000000000000), msg)
+    assert.equal(c.paramByBlock('pow', 'minerReward', 4369999), BigInt(5000000000000000000), msg)
 
     msg = 'Should correctly translate total difficulty into HF states'
     const td = BigInt('1196768507891266117779')
-    st.equal(c.paramByBlock('pow', 'minerReward', 4370000, td), BigInt(3000000000000000000), msg)
-
-    st.comment('-----------------------------------------------------------------')
-    st.end()
+    assert.equal(
+      c.paramByBlock('pow', 'minerReward', 4370000, td),
+      BigInt(3000000000000000000),
+      msg
+    )
   })
 
-  t.test('EIP param access, paramByEIP()', function (st: tape.Test) {
+  it('EIP param access, paramByEIP()', () => {
     const c = new Common({ chain: Chain.Mainnet })
 
     let msg = 'Should return undefined for non-existing value'
-    st.equals(c.paramByEIP('gasPrices', 'notexistingvalue', 2537), undefined, msg)
+    assert.equal(c.paramByEIP('gasPrices', 'notexistingvalue', 2537), undefined, msg)
 
     const UNSUPPORTED_EIP = 1000000
     let f = function () {
       c.paramByEIP('gasPrices', 'Bls12381G1AddGas', UNSUPPORTED_EIP)
     }
     msg = 'Should throw for using paramByEIP() with an unsupported EIP'
-    st.throws(f, /not supported$/, msg)
+    assert.throws(f, /not supported$/, undefined, msg)
 
     f = function () {
       c.paramByEIP('notExistingTopic', 'Bls12381G1AddGas', 2537)
     }
     msg = 'Should throw for using paramByEIP() with a not existing topic'
-    st.throws(f, /not defined$/, msg)
+    assert.throws(f, /not defined$/, undefined, msg)
 
     msg = 'Should return Bls12381G1AddGas gas price for EIP2537'
-    st.equal(c.paramByEIP('gasPrices', 'Bls12381G1AddGas', 2537), BigInt(600), msg)
-    st.end()
+    assert.equal(c.paramByEIP('gasPrices', 'Bls12381G1AddGas', 2537), BigInt(600), msg)
   })
 
-  t.test('returns the right block delay for EIP3554', function (st) {
+  it('returns the right block delay for EIP3554', () => {
     for (const fork of [Hardfork.MuirGlacier, Hardfork.Berlin]) {
       const c = new Common({ chain: Chain.Mainnet, hardfork: fork })
       let delay = c.param('pow', 'difficultyBombDelay')
-      st.equal(delay, BigInt(9000000))
+      assert.equal(delay, BigInt(9000000))
       c.setEIPs([3554])
       delay = c.param('pow', 'difficultyBombDelay')
-      st.equal(delay, BigInt(9500000))
+      assert.equal(delay, BigInt(9500000))
     }
-    st.end()
   })
 })

@@ -11,17 +11,17 @@ import {
   toChecksumAddress,
 } from '@ethereumjs/util'
 import { base58check } from '@scure/base'
-import * as aes from 'ethereum-cryptography/aes'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { pbkdf2 } from 'ethereum-cryptography/pbkdf2'
-import { scrypt } from 'ethereum-cryptography/scrypt'
-import { sha256 } from 'ethereum-cryptography/sha256'
-import { concatBytes, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+import * as aes from 'ethereum-cryptography/aes.js'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { pbkdf2 } from 'ethereum-cryptography/pbkdf2.js'
+import { scrypt } from 'ethereum-cryptography/scrypt.js'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
+import { concatBytes, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
-export { EthereumHDKey as hdkey } from './hdkey'
-export { Thirdparty as thirdparty } from './thirdparty'
+export { EthereumHDKey as hdkey } from './hdkey.js'
+export { Thirdparty as thirdparty } from './thirdparty.js'
 const uuidv4 = require('uuid').v4
 
 const bs58check = base58check(sha256)

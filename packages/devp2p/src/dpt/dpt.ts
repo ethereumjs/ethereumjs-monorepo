@@ -1,5 +1,5 @@
 import { bytesToInt, randomBytes } from '@ethereumjs/util'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'events'
 
 import { DNS } from '../dns'

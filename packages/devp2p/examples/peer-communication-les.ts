@@ -5,9 +5,9 @@ import { TypedTransaction } from '@ethereumjs/tx'
 import chalk from 'chalk'
 import ms = require('ms')
 
-import * as devp2p from '../src/index'
-import { LES, Peer } from '../src/index'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
+import * as devp2p from '../src/index.js'
+import { LES, Peer } from '../src/index.js'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
 
 const PRIVATE_KEY = randomBytes(32)
 

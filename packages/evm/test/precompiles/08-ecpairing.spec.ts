@@ -1,12 +1,12 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { assert, describe, it } from 'vitest'
 
-import { EVM, getActivePrecompiles } from '../../src'
+import { EVM, getActivePrecompiles } from '../../src/index.js'
 
-tape('Precompiles: ECPAIRING', (t) => {
-  t.test('ECPAIRING', async (st) => {
+describe('Precompiles: ECPAIRING', () => {
+  it('ECPAIRING', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     const evm = await EVM.create({
       common,
@@ -23,11 +23,10 @@ tape('Precompiles: ECPAIRING', (t) => {
       _EVM: evm,
     })
 
-    st.deepEqual(
+    assert.deepEqual(
       result.executionGasUsed,
       BigInt(260000),
       'should use petersburg gas costs (k ^= 2 pairings)'
     )
-    st.end()
   })
 })

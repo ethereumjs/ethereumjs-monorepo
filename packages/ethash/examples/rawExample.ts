@@ -1,7 +1,7 @@
-import { Ethash } from '../src'
+import { Ethash } from '../src/index.js'
 import { MemoryLevel } from 'memory-level'
 import { bytesToHex } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
 const ethash = new Ethash(new MemoryLevel())
 

@@ -1,11 +1,11 @@
 import { base64 } from '@scure/base'
-import { decrypt } from 'ethereum-cryptography/aes'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { pbkdf2Sync } from 'ethereum-cryptography/pbkdf2'
-import { bytesToUtf8, concatBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { decrypt } from 'ethereum-cryptography/aes.js'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { pbkdf2Sync } from 'ethereum-cryptography/pbkdf2.js'
+import { bytesToUtf8, concatBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 import * as md5 from 'js-md5'
 
-import { Wallet } from './index'
+import { Wallet } from './index.js'
 
 // evp_kdf
 

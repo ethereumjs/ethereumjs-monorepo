@@ -1,5 +1,5 @@
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
 /**
  * 2^64-1
