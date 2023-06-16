@@ -15,9 +15,9 @@ import {
   short,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
-import { Bloom } from './bloom'
+import { Bloom } from './bloom/index.js'
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
 
 import type {
@@ -27,8 +27,8 @@ import type {
   RunBlockOpts,
   RunBlockResult,
   TxReceipt,
-} from './types'
-import type { VM } from './vm'
+} from './types.js'
+import type { VM } from './vm.js'
 import type { EVM } from '@ethereumjs/evm'
 
 const debug = createDebugLogger('vm:block')

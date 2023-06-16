@@ -1,19 +1,19 @@
 import { fetchFromProvider, getProvider } from '@ethereumjs/util'
 
-import { FeeMarketEIP1559Transaction } from './eip1559Transaction'
-import { AccessListEIP2930Transaction } from './eip2930Transaction'
-import { BlobEIP4844Transaction } from './eip4844Transaction'
-import { normalizeTxParams } from './fromRpc'
-import { LegacyTransaction } from './legacyTransaction'
+import { FeeMarketEIP1559Transaction } from './eip1559Transaction.js'
+import { AccessListEIP2930Transaction } from './eip2930Transaction.js'
+import { BlobEIP4844Transaction } from './eip4844Transaction.js'
+import { normalizeTxParams } from './fromRpc.js'
+import { LegacyTransaction } from './legacyTransaction.js'
 import {
   TransactionType,
   isAccessListEIP2930TxData,
   isBlobEIP4844TxData,
   isFeeMarketEIP1559TxData,
   isLegacyTxData,
-} from './types'
+} from './types.js'
 
-import type { Transaction, TxData, TxOptions, TypedTxData } from './types'
+import type { Transaction, TxData, TxOptions, TypedTxData } from './types.js'
 import type { EthersProvider } from '@ethereumjs/util'
 
 export class TransactionFactory {

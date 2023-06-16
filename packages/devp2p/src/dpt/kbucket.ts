@@ -1,4 +1,4 @@
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { bytesToHex } from 'ethereum-cryptography/utils.js'
 import { EventEmitter } from 'events'
 
 import { KBucket as _KBucket } from '../ext'

@@ -8,11 +8,11 @@ import {
   short,
 } from '@ethereumjs/util'
 
-import { EvmErrorResult, OOGResult } from '../evm'
-import { ERROR, EvmError } from '../exceptions'
+import { EvmErrorResult, OOGResult } from '../evm.js'
+import { ERROR, EvmError } from '../exceptions.js'
 
-import type { ExecResult } from '../evm'
-import type { PrecompileInput } from './types'
+import type { ExecResult } from '../evm.js'
+import type { PrecompileInput } from './types.js'
 
 export const BLS_MODULUS = BigInt(
   '52435875175126190479447740508185965837690552500527637822603658699938581184513'

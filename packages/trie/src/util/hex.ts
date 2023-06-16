@@ -1,4 +1,4 @@
-import type { Nibbles } from '../types'
+import type { Nibbles } from '../types.js'
 
 /**
  * Prepends hex prefix to an array of nibbles.

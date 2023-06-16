@@ -11,10 +11,10 @@ import {
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
 
-import { ERROR } from '../exceptions'
+import { ERROR } from '../exceptions.js'
 
 import {
   addresstoBytes,
@@ -28,9 +28,9 @@ import {
   toTwos,
   trap,
   writeCallOutput,
-} from './util'
+} from './util.js'
 
-import type { RunState } from '../interpreter'
+import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
 
 const EIP3074MAGIC = hexToBytes('03')

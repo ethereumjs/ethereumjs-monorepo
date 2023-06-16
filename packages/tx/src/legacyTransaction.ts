@@ -9,17 +9,17 @@ import {
   unpadBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { BaseTransaction } from './baseTransaction'
-import { Capability, TransactionType } from './types'
+import { BaseTransaction } from './baseTransaction.js'
+import { Capability, TransactionType } from './types.js'
 
 import type {
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
   JsonTx,
   TxOptions,
-} from './types'
+} from './types.js'
 import type { Common } from '@ethereumjs/common'
 
 type TxData = AllTypesTxData[TransactionType.Legacy]

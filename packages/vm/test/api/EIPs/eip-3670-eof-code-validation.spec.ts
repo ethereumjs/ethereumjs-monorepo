@@ -3,7 +3,7 @@ import { EOF } from '@ethereumjs/evm'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Account, Address, privateToAddress } from '@ethereumjs/util'
 import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 const pkey = hexToBytes('20'.repeat(32))
@@ -23,42 +23,41 @@ async function runTx(vm: VM, data: string, nonce: number) {
   return { result, code }
 }
 
-tape('EIP 3670 tests', (t) => {
+describe('EIP 3670 tests', () => {
   const common = new Common({
     chain: Chain.Mainnet,
     hardfork: Hardfork.London,
     eips: [3540, 3670],
   })
 
-  t.test('EOF > validOpcodes() tests', (st) => {
-    st.ok(EOF.validOpcodes(Uint8Array.from([0])), 'valid -- STOP ')
-    st.ok(EOF.validOpcodes(Uint8Array.from([0xfe])), 'valid -- INVALID opcode')
-    st.ok(EOF.validOpcodes(Uint8Array.from([0x60, 0xaa, 0])), 'valid - PUSH1 AA STOP')
+  it('EOF > validOpcodes() tests', () => {
+    assert.ok(EOF.validOpcodes(Uint8Array.from([0])), 'valid -- STOP ')
+    assert.ok(EOF.validOpcodes(Uint8Array.from([0xfe])), 'valid -- INVALID opcode')
+    assert.ok(EOF.validOpcodes(Uint8Array.from([0x60, 0xaa, 0])), 'valid - PUSH1 AA STOP')
 
     for (const opcode of [0x00, 0xf3, 0xfd, 0xfe, 0xff]) {
-      st.ok(
+      assert.ok(
         EOF.validOpcodes(Uint8Array.from([0x60, 0xaa, opcode])),
         `code ends with valid terminating instruction 0x${opcode.toString(16)}`
       )
     }
 
-    st.notOk(EOF.validOpcodes(Uint8Array.from([0xaa])), 'invalid -- AA -- undefined opcode')
-    st.notOk(
+    assert.notOk(EOF.validOpcodes(Uint8Array.from([0xaa])), 'invalid -- AA -- undefined opcode')
+    assert.notOk(
       EOF.validOpcodes(Uint8Array.from([0x7f, 0xaa, 0])),
       'invalid -- PUSH32 AA STOP -- truncated push'
     )
-    st.notOk(
+    assert.notOk(
       EOF.validOpcodes(Uint8Array.from([0x61, 0xaa, 0])),
       'invalid -- PUSH2 AA STOP -- truncated push'
     )
-    st.notOk(
+    assert.notOk(
       EOF.validOpcodes(Uint8Array.from([0x60, 0xaa, 0x30])),
       'invalid -- PUSH1 AA ADDRESS -- invalid terminal opcode'
     )
-    st.end()
   })
 
-  t.test('valid contract code transactions', async (st) => {
+  it('valid contract code transactions', async () => {
     const vm = await VM.create({ common })
     await vm.stateManager.putAccount(sender, new Account())
     const account = await vm.stateManager.getAccount(sender)
@@ -68,14 +67,14 @@ tape('EIP 3670 tests', (t) => {
 
     let data = '0x67EF0001010001000060005260086018F3'
     let res = await runTx(vm, data, 0)
-    st.ok(res.code.length > 0, 'code section with no data section')
+    assert.ok(res.code.length > 0, 'code section with no data section')
 
     data = '0x6BEF00010100010200010000AA600052600C6014F3'
     res = await runTx(vm, data, 1)
-    st.ok(res.code.length > 0, 'code section with data section')
+    assert.ok(res.code.length > 0, 'code section with data section')
   })
 
-  t.test('invalid contract code transactions', async (st) => {
+  it('invalid contract code transactions', async () => {
     const vm = await VM.create({ common })
     await vm.stateManager.putAccount(sender, new Account())
     const account = await vm.stateManager.getAccount(sender)
@@ -85,14 +84,14 @@ tape('EIP 3670 tests', (t) => {
 
     const data = '0x67EF0001010001006060005260086018F3'
     const res = await runTx(vm, data, 0)
-    st.ok(res.code.length === 0, 'code should not be deposited')
-    st.ok(
+    assert.ok(res.code.length === 0, 'code should not be deposited')
+    assert.ok(
       res.result.execResult.exceptionError?.error === 'invalid EOF format',
       'deposited code does not end with terminating instruction'
     )
   })
 
-  t.test('ensure invalid eof headers are rejected when calling', async (st) => {
+  it('ensure invalid eof headers are rejected when calling', async () => {
     const common = new Common({
       chain: Chain.Mainnet,
       hardfork: Hardfork.Paris,
@@ -154,11 +153,11 @@ tape('EIP 3670 tests', (t) => {
       const expectReturn = returnValues[i]
       const expectError = expectedErrors[i]
 
-      st.deepEquals(ret.execResult.returnValue, expectReturn, 'return value ok')
+      assert.deepEqual(ret.execResult.returnValue, expectReturn, 'return value ok')
       if (expectError) {
-        st.ok(ret.execResult.exceptionError !== undefined, 'threw error')
+        assert.ok(ret.execResult.exceptionError !== undefined, 'threw error')
       } else {
-        st.ok(ret.execResult.exceptionError === undefined, 'did not throw error')
+        assert.ok(ret.execResult.exceptionError === undefined, 'did not throw error')
       }
     }
   })

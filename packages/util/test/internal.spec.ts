@@ -1,5 +1,5 @@
 import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import {
   arrayContainsArray,
@@ -10,43 +10,37 @@ import {
   padToEven,
   stripHexPrefix,
   toAscii,
-} from '../src/internal'
+} from '../src/index.js'
 
 const buf = utf8ToBytes('hello')
 
-tape('internal', (t) => {
-  t.test('isHexPrefixed', (st) => {
-    st.equal(isHexPrefixed('0xabc'), true)
-    st.equal(isHexPrefixed('abc'), false)
-    st.end()
+describe('internal', () => {
+  it('isHexPrefixed', () => {
+    assert.equal(isHexPrefixed('0xabc'), true)
+    assert.equal(isHexPrefixed('abc'), false)
   })
-  t.test('stripHexPrefix', (st) => {
-    st.equal(stripHexPrefix('0xabc'), 'abc')
-    st.equal(stripHexPrefix('abc'), 'abc')
-    st.end()
+  it('stripHexPrefix', () => {
+    assert.equal(stripHexPrefix('0xabc'), 'abc')
+    assert.equal(stripHexPrefix('abc'), 'abc')
   })
-  t.test('padToEven', (st) => {
-    st.equal(padToEven('123'), '0123')
-    st.equal(padToEven('1234'), '1234')
-    st.end()
+  it('padToEven', () => {
+    assert.equal(padToEven('123'), '0123')
+    assert.equal(padToEven('1234'), '1234')
   })
-  t.test('getBinarySize', (st) => {
-    st.equal(getBinarySize('hello'), buf.byteLength)
-    st.end()
+  it('getBinarySize', () => {
+    assert.equal(getBinarySize('hello'), buf.byteLength)
   })
-  t.test('arrayContainsArray', (st) => {
-    st.equal(arrayContainsArray([1, 2, 3], [1, 2]), true)
-    st.equal(arrayContainsArray([1, 2, 3], [4, 5]), false)
-    st.equal(arrayContainsArray([1, 2, 3], [3, 5], true), true)
-    st.equal(arrayContainsArray([1, 2, 3], [4, 5], true), false)
-    st.end()
+  it('arrayContainsArray', () => {
+    assert.equal(arrayContainsArray([1, 2, 3], [1, 2]), true)
+    assert.equal(arrayContainsArray([1, 2, 3], [4, 5]), false)
+    assert.equal(arrayContainsArray([1, 2, 3], [3, 5], true), true)
+    assert.equal(arrayContainsArray([1, 2, 3], [4, 5], true), false)
   })
-  t.test('toAscii', (st) => {
-    st.equal(toAscii(bytesToUtf8(buf)), '\x00\x00\x00')
-    st.end()
+  it('toAscii', () => {
+    assert.equal(toAscii(bytesToUtf8(buf)), '\x00\x00\x00')
   })
-  t.test('getKeys', (st) => {
-    st.deepEqual(
+  it('getKeys', () => {
+    assert.deepEqual(
       getKeys(
         [
           { a: '1', b: '2' },
@@ -56,7 +50,7 @@ tape('internal', (t) => {
       ),
       ['1', '3']
     )
-    st.deepEqual(
+    assert.deepEqual(
       getKeys(
         [
           { a: '', b: '2' },
@@ -67,12 +61,9 @@ tape('internal', (t) => {
       ),
       ['', '3']
     )
-    st.end()
   })
-  t.test('isHexString', (st) => {
-    st.equal(isHexString('0x0000000000000000000000000000000000000000'), true)
-    st.equal(isHexString('123'), false)
-    st.end()
+  it('isHexString', () => {
+    assert.equal(isHexString('0x0000000000000000000000000000000000000000'), true)
+    assert.equal(isHexString('123'), false)
   })
-  t.end()
 })

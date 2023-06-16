@@ -1,28 +1,31 @@
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { AsyncEventEmitter } from '../src/asyncEventEmitter'
+import { AsyncEventEmitter } from '../src/index.js'
 
-tape('async event emit/on test', (t) => {
-  const emitter = new AsyncEventEmitter()
-  emitter.on('event', async (data, next) => {
-    const startTime = Date.now()
-    t.equal(data, 'eventData', 'Received data from an event')
-    setTimeout(() => {
-      t.ok(Date.now() > startTime, 'some time passed before event resolved')
-      next?.()
-    }, 1000)
+describe('async event emit/on test', async () => {
+  it('should receive event', () => {
+    const emitter = new AsyncEventEmitter()
+    emitter.on('event', async (data, next) => {
+      const startTime = Date.now()
+      assert.equal(data, 'eventData', 'Received data from an event')
+      setTimeout(() => {
+        assert.ok(Date.now() > startTime, 'some time passed before event resolved')
+        next?.()
+      }, 1000)
+    })
+    emitter.emit('event', 'eventData')
   })
-  emitter.emit('event', 'eventData', t.end)
 })
 
-tape('async event emit/once test', (t) => {
-  const emitter = new AsyncEventEmitter()
-  emitter.once('event', async (data, next) => {
-    setTimeout(next!, 1000)
-  })
-  t.equal(emitter.listenerCount('event'), 1, 'emitter has one event listener')
-  emitter.emit('event', 'eventData', () => {
-    t.equal(emitter.listenerCount('event'), 0, 'listener removed after one event emitted')
-    t.end()
+describe('async event emit/once test', async () => {
+  it('should receive event', () => {
+    const emitter = new AsyncEventEmitter()
+    emitter.once('event', async (data, next) => {
+      setTimeout(next!, 1000)
+    })
+    assert.equal(emitter.listenerCount('event'), 1, 'emitter has one event listener')
+    emitter.emit('event', 'eventData', () => {
+      assert.equal(emitter.listenerCount('event'), 0, 'listener removed after one event emitted')
+    })
   })
 })

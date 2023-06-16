@@ -7,7 +7,7 @@ import {
   bytesToPrefixedHexString,
   intToBytes,
 } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 import * as snappy from 'snappyjs'
 
 import { assertEq, formatLogData, formatLogId } from '../util'

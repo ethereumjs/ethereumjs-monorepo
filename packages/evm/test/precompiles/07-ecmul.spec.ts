@@ -1,11 +1,11 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { EVM, getActivePrecompiles } from '../../src'
+import { EVM, getActivePrecompiles } from '../../src/index.js'
 
-tape('Precompiles: ECMUL', (t) => {
-  t.test('ECMUL', async (st) => {
+describe('Precompiles: ECMUL', () => {
+  it('ECMUL', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     const evm = await EVM.create({
       common,
@@ -20,7 +20,6 @@ tape('Precompiles: ECMUL', (t) => {
       _EVM: evm,
     })
 
-    st.deepEqual(result.executionGasUsed, BigInt(40000), 'should use petersburg gas costs')
-    st.end()
+    assert.deepEqual(result.executionGasUsed, BigInt(40000), 'should use petersburg gas costs')
   })
 })

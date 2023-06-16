@@ -3,7 +3,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address, privateToAddress } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 
@@ -59,8 +59,8 @@ function makeBlock(baseFee: bigint, transaction: TypedTransaction) {
   return block
 }
 
-tape('EIP3198 tests', (t) => {
-  t.test('test EIP3198 gas fee and correct value', async (st) => {
+describe('EIP3198 tests', () => {
+  it('test EIP3198 gas fee and correct value', async () => {
     // Initial base fee for EIP1559
     const fee = BigInt(1000000000)
     const tx = new FeeMarketEIP1559Transaction(
@@ -94,8 +94,7 @@ tape('EIP3198 tests', (t) => {
     })
     const txBaseFee = block.transactions[0].getBaseFee()
     const gasUsed = results.totalGasSpent - txBaseFee
-    st.equal(gasUsed, BigInt(2), 'gas used correct')
-    st.equal(stack[0], fee, 'right item pushed on stack')
-    st.end()
+    assert.equal(gasUsed, BigInt(2), 'gas used correct')
+    assert.equal(stack[0], fee, 'right item pushed on stack')
   })
 })

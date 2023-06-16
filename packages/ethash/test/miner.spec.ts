@@ -1,9 +1,9 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { MapDB } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { Ethash } from '../src'
+import { Ethash } from '../src/index.js'
 
 import type { BlockHeader } from '@ethereumjs/block'
 import type { DBObject } from '@ethereumjs/util'
@@ -11,138 +11,135 @@ import type { DBObject } from '@ethereumjs/util'
 const cacheDb = new MapDB<number, DBObject>()
 const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Petersburg })
 
-tape('Check if miner works as expected', async function (t) {
-  const e = new Ethash(cacheDb)
+describe('Miner', () => {
+  it('Check if miner works as expected', async () => {
+    const e = new Ethash(cacheDb)
 
-  const block = Block.fromBlockData(
-    {
-      header: {
-        difficulty: BigInt(100),
-        number: BigInt(1),
+    const block = Block.fromBlockData(
+      {
+        header: {
+          difficulty: BigInt(100),
+          number: BigInt(1),
+        },
       },
-    },
-    { common }
-  )
+      { common }
+    )
 
-  const invalidBlockResult = await e.verifyPOW(block)
-  t.ok(!invalidBlockResult, 'should be invalid')
+    const invalidBlockResult = await e.verifyPOW(block)
+    assert.ok(!invalidBlockResult, 'should be invalid')
 
-  const miner = e.getMiner(block.header)
-  t.equals(await miner.iterate(1), undefined, 'iterations can return undefined')
+    const miner = e.getMiner(block.header)
+    assert.equal(await miner.iterate(1), undefined, 'iterations can return undefined')
 
-  t.equals((miner as any).currentNonce, BigInt(1), 'miner saves current nonce')
-  await miner.iterate(1)
-  t.equals((miner as any).currentNonce, BigInt(2), 'miner successfully iterates over nonces')
+    assert.equal((miner as any).currentNonce, BigInt(1), 'miner saves current nonce')
+    await miner.iterate(1)
+    assert.equal((miner as any).currentNonce, BigInt(2), 'miner successfully iterates over nonces')
 
-  const solution = await miner.iterate(-1)
+    const solution = await miner.iterate(-1)
 
-  const validBlock = Block.fromBlockData(
-    {
-      header: {
-        difficulty: block.header.difficulty,
-        number: block.header.number,
-        nonce: solution?.nonce,
-        mixHash: solution?.mixHash,
+    const validBlock = Block.fromBlockData(
+      {
+        header: {
+          difficulty: block.header.difficulty,
+          number: block.header.number,
+          nonce: solution?.nonce,
+          mixHash: solution?.mixHash,
+        },
       },
-    },
-    { common }
-  )
+      { common }
+    )
 
-  const validBlockResult = await e.verifyPOW(validBlock)
-  t.ok(validBlockResult, 'successfully mined block')
-  t.ok((miner as any).solution !== undefined, 'cached the solution')
+    const validBlockResult = await e.verifyPOW(validBlock)
+    assert.ok(validBlockResult, 'successfully mined block')
+    assert.ok((miner as any).solution !== undefined, 'cached the solution')
+  }, 200000)
 
-  t.end()
-})
+  it('Check if it is possible to mine Blocks and BlockHeaders', async () => {
+    const e = new Ethash(cacheDb as any)
 
-tape('Check if it is possible to mine Blocks and BlockHeaders', async function (t) {
-  const e = new Ethash(cacheDb as any)
-
-  const block = Block.fromBlockData(
-    {
-      header: {
-        difficulty: BigInt(100),
-        number: BigInt(1),
+    const block = Block.fromBlockData(
+      {
+        header: {
+          difficulty: BigInt(100),
+          number: BigInt(1),
+        },
       },
-    },
-    { common }
-  )
-  const miner = e.getMiner(block.header)
-  const solution = <BlockHeader>await miner.mine(-1)
+      { common }
+    )
+    const miner = e.getMiner(block.header)
+    const solution = <BlockHeader>await miner.mine(-1)
 
-  t.ok(
-    e.verifyPOW(Block.fromBlockData({ header: solution.toJSON() }, { common })),
-    'successfully mined block'
-  )
+    assert.ok(
+      e.verifyPOW(Block.fromBlockData({ header: solution.toJSON() }, { common })),
+      'successfully mined block'
+    )
 
-  const blockMiner = e.getMiner(block)
-  const blockSolution = <Block>await blockMiner.mine(-1)
+    const blockMiner = e.getMiner(block)
+    const blockSolution = <Block>await blockMiner.mine(-1)
 
-  t.ok(e.verifyPOW(blockSolution))
+    assert.ok(e.verifyPOW(blockSolution))
+  }, 60000)
 
-  t.end()
-})
+  it('Check if it is possible to stop the miner', async () => {
+    const e = new Ethash(cacheDb as any)
 
-tape('Check if it is possible to stop the miner', async function (t) {
-  const e = new Ethash(cacheDb as any)
-
-  const block = Block.fromBlockData(
-    {
-      header: {
-        difficulty: BigInt(10000000000000),
-        number: BigInt(1),
+    const block = Block.fromBlockData(
+      {
+        header: {
+          difficulty: BigInt(10000000000000),
+          number: BigInt(1),
+        },
       },
-    },
-    { common }
-  )
-  const miner = e.getMiner(block.header)
-  setTimeout(function () {
-    miner.stop()
-  }, 1000)
-  const solution = await miner.iterate(-1)
-  t.ok(solution === undefined, 'successfully stopped miner')
+      { common }
+    )
+    const miner = e.getMiner(block.header)
+    setTimeout(function () {
+      miner.stop()
+    }, 1000)
+    const solution = await miner.iterate(-1)
+    assert.ok(solution === undefined, 'successfully stopped miner')
+  })
 
-  t.end()
-})
+  it('Check if it is possible to stop the miner', () => {
+    const e = new Ethash(cacheDb as any)
 
-tape('Check if it is possible to stop the miner', async function (t) {
-  const e = new Ethash(cacheDb as any)
+    const block: any = {}
 
-  const block: any = {}
-
-  t.throws(() => {
-    e.getMiner(block)
-  }, 'miner constructor successfully throws if no BlockHeader or Block object is passed')
-
-  t.end()
-})
-
-tape('Should keep common when mining blocks or headers', async function (t) {
-  const e = new Ethash(cacheDb as any)
-
-  const block = Block.fromBlockData(
-    {
-      header: {
-        difficulty: BigInt(100),
-        number: BigInt(1),
+    assert.throws(
+      () => {
+        e.getMiner(block)
       },
-    },
-    {
-      common,
-    }
-  )
+      undefined,
+      undefined,
+      'miner constructor successfully throws if no BlockHeader or Block object is passed'
+    )
+  })
 
-  const miner = e.getMiner(block.header)
-  const solution = <BlockHeader>await miner.mine(-1)
+  it('Should keep common when mining blocks or headers', async () => {
+    const e = new Ethash(cacheDb as any)
 
-  t.ok(solution._common.hardfork() === Hardfork.Petersburg, 'hardfork did not change')
-  t.ok(solution._common.chainName() === 'ropsten', 'chain name did not change')
+    const block = Block.fromBlockData(
+      {
+        header: {
+          difficulty: BigInt(100),
+          number: BigInt(1),
+        },
+      },
+      {
+        common,
+      }
+    )
 
-  const blockMiner = e.getMiner(block)
-  const blockSolution = <Block>await blockMiner.mine(-1)
+    const miner = e.getMiner(block.header)
+    const solution = <BlockHeader>await miner.mine(-1)
 
-  t.ok(blockSolution._common.hardfork() === Hardfork.Petersburg, 'hardfork did not change')
-  t.ok(blockSolution._common.chainName() === 'ropsten', 'chain name did not change')
+    assert.ok(solution._common.hardfork() === Hardfork.Petersburg, 'hardfork did not change')
+    assert.ok(solution._common.chainName() === 'ropsten', 'chain name did not change')
 
-  t.end()
+    const blockMiner = e.getMiner(block)
+    const blockSolution = <Block>await blockMiner.mine(-1)
+
+    assert.ok(blockSolution._common.hardfork() === Hardfork.Petersburg, 'hardfork did not change')
+    assert.ok(blockSolution._common.chainName() === 'ropsten', 'chain name did not change')
+  }, 60000)
 })
