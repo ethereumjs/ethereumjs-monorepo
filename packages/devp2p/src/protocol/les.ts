@@ -9,13 +9,13 @@ import {
 } from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 
-import { DISCONNECT_REASONS } from '../rlpx/peer'
-import { assertEq, formatLogData } from '../util'
+import { DISCONNECT_REASONS } from '../rlpx/peer.js'
+import { assertEq, formatLogData } from '../util.js'
 
-import { EthProtocol, Protocol } from './protocol'
+import { EthProtocol, Protocol } from './protocol.js'
 
-import type { Peer } from '../rlpx/peer'
-import type { SendMethod } from './protocol'
+import type { Peer } from '../rlpx/peer.js'
+import type { SendMethod } from './protocol.js'
 
 export const DEFAULT_ANNOUNCE_TYPE = 1
 
