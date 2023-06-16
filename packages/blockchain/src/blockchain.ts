@@ -23,7 +23,7 @@ import { DBManager } from './db/manager.js'
 import { DBTarget } from './db/operation.js'
 
 import type { Consensus } from './consensus/index.js'
-import type { BlockchainInterface, BlockchainOptions, GenesisState, OnBlock } from './types.js'
+import type { BlockchainInterface, BlockchainOptions, OnBlock } from './types.js'
 import type { BlockData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
