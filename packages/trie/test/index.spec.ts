@@ -3,6 +3,7 @@ import {
   KECCAK256_NULL,
   KECCAK256_RLP_S,
   bytesToHex,
+  bytesToPrefixedHexString,
   hexStringToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
@@ -294,7 +295,11 @@ for (const cacheSize of [0, 100]) {
       }
 
       await trieSetup.trie.put(k1, v1)
+      assert.deepEqual(trieSetup.trie.root(), rootAfterK1, 'should return the correct state root')
+      assert.deepEqual(await trieSetup.trie.get(k1), v1, 'should return v1 ')
       await trieSetup.trie.put(k2, v2)
+      assert.deepEqual(await trieSetup.trie.get(k1), v1, 'should return v1 ')
+      assert.deepEqual(await trieSetup.trie.get(k2), v2, 'should return v2 ')
       await trieSetup.trie.del(k1)
       assert.equal(
         await trieSetup.trie.get(k1),
@@ -303,6 +308,11 @@ for (const cacheSize of [0, 100]) {
       )
 
       trieSetup.trie.root(rootAfterK1)
+      assert.deepEqual(
+        trieSetup.trie.root(),
+        rootAfterK1,
+        `should set the trie root to: ${bytesToPrefixedHexString(rootAfterK1)}`
+      )
       assert.deepEqual(await trieSetup.trie.get(k1), trieSetup.expected, trieSetup.msg)
     })
   })

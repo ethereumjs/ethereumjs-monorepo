@@ -22,7 +22,7 @@ describe('SecureTrie', () => {
   })
 
   it('copy trie', async () => {
-    const t = await trie.copy()
+    const t = trie.copy()
     const res = await t.get(k)
     assert.ok(equalsBytes(v, res!))
   })
@@ -153,7 +153,7 @@ describe('Securetrie.copy', () => {
     await trie.put(utf8ToBytes('key1'), utf8ToBytes('value1'))
     await trie.put(utf8ToBytes('key2'), utf8ToBytes('value2'))
     trie.checkpoint()
-    const trieCopy = await trie.copy()
+    const trieCopy = trie.copy()
     const value = await trieCopy.get(utf8ToBytes('key2'))
     assert.ok(value, `trieCopy.get(key2): ${value ? bytesToUtf8(value) : 'null'}`)
   })
@@ -165,7 +165,7 @@ describe('Securetrie.copy', () => {
     await trie.commit()
     trie.flushCheckpoints()
     await trie.put(utf8ToBytes('address2'), utf8ToBytes('value2'))
-    const trieCopy = await trie.copy()
+    const trieCopy = trie.copy()
     const value = await trieCopy.get(utf8ToBytes('address1'))
     assert.deepEqual(value, utf8ToBytes('value1'), 'value 1 should be in trie copy')
     const lookup = await trieCopy.get(utf8ToBytes('address1'))
@@ -182,7 +182,7 @@ describe('Securetrie.copy', () => {
         return Uint8Array.from([...utf8ToBytes('HASHED'), ...value])
       },
     })
-    const trieCopy = await trie.copy()
+    const trieCopy = trie.copy()
 
     const key = utf8ToBytes('TestKey')
 

@@ -1,6 +1,6 @@
 // import { bytesToPrefixedHexString } from '@ethereumjs/util'
 
-import { bytesToPrefixedHexString } from '@ethereumjs/util'
+import { bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
 
 import { BranchNode, ExtensionNode, LeafNode, NullNode, ProofNode } from '../trie'
 import { nibblesCompare, nibblesEqual } from '../util'
@@ -27,11 +27,12 @@ export async function proofToPath(
   allowNonExistent: boolean
 ): Promise<[TNode, Uint8Array] | [TNode | null, null]> {
   const resolveNode = async (hash: Uint8Array): Promise<[TNode | null, string | null]> => {
-    const rlp = await proofDb.get(hash)
-    if (!rlp) {
+    let rlp = await proofDb.get(hash)
+    if (rlp === undefined) {
       this.debug(`proof node (hash ${bytesToPrefixedHexString(hash)}) missing`)
       return [null, null]
     }
+    rlp = rlp instanceof Uint8Array ? rlp : hexStringToBytes(rlp)
     const node = await this._decodeToNode(rlp)
     return [node, null]
   }

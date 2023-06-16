@@ -120,7 +120,11 @@ export class MerklePatriciaTrie {
   }
   async resolveProofNode(node: TNode): Promise<TNode> {
     if (node instanceof ProofNode) {
-      node = (await node.load()) ?? node
+      const lookup = await this.lookupNodeByHash(node.hash())
+      if (lookup) {
+        return lookup
+      }
+      throw new Error(`ProofNode ${bytesToPrefixedHexString(node.hash())} not found in DB`)
     }
     return node
   }

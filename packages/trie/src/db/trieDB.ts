@@ -1,26 +1,54 @@
-import { bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
+import {
+  KeyEncoding,
+  ValueEncoding,
+  bytesToPrefixedHexString,
+  hexStringToBytes,
+} from '@ethereumjs/util'
 import { debug } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex } from 'ethereum-cryptography/utils'
 import { MemoryLevel } from 'memory-level'
 
-import type { DB, HashFunction } from '../types'
-import type { EncodingOpts } from '@ethereumjs/util'
+import type { HashFunction } from '../types'
+import type { DB, EncodingOpts } from '@ethereumjs/util'
 import type { AbstractKeyIterator, AbstractLevel } from 'abstract-level'
 import type { Debugger } from 'debug'
 
-export class TrieDatabase implements DB {
-  static async create(
-    options: {
-      db?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
-      debug?: Debugger
-    } = {}
-  ): Promise<TrieDatabase> {
-    const db = new TrieDatabase(options)
-    await db.db.open()
-    return db
+// Helper to infer the `valueEncoding` option for `putting` a value in a levelDB
+const getEncodings = (opts: EncodingOpts = {}) => {
+  const encodings = { keyEncoding: '', valueEncoding: '' }
+  switch (opts.valueEncoding) {
+    case ValueEncoding.String:
+      encodings.valueEncoding = 'utf8'
+      break
+    case ValueEncoding.Bytes:
+      encodings.valueEncoding = 'view'
+      break
+    case ValueEncoding.JSON:
+      encodings.valueEncoding = 'json'
+      break
+    default:
+      encodings.valueEncoding = 'view'
   }
-  private readonly db: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+  switch (opts.keyEncoding) {
+    case KeyEncoding.Bytes:
+      encodings.keyEncoding = 'view'
+      break
+    case KeyEncoding.Number:
+    case KeyEncoding.String:
+      encodings.keyEncoding = 'utf8'
+      break
+    default:
+      encodings.keyEncoding = 'utf8'
+  }
+
+  return encodings
+}
+export class TrieDatabase<
+  TKey extends Uint8Array | string = Uint8Array | string,
+  TValue extends Uint8Array | string = Uint8Array | string
+> implements DB<TKey, TValue>
+{
+  _leveldb: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
   private readonly debug: Debugger
   keyIterator: () => AbstractKeyIterator<
     AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>,
@@ -33,96 +61,101 @@ export class TrieDatabase implements DB {
       _debug?: Debugger
     } = {}
   ) {
-    this.db =
-      options.db ??
-      (new MemoryLevel() as AbstractLevel<
-        string | Uint8Array,
-        string | Uint8Array,
-        string | Uint8Array
-      >)
-    this.keyIterator = this.db.keys
+    this._leveldb = options.db ?? new MemoryLevel()
+    this.keyIterator = this._leveldb.keys
     this.debug = options._debug ? options._debug.extend('db') : debug('trie:db')
   }
   stats(): any {}
+
+  /**
+   * @inheritDoc
+   */
   async get(
-    key: Uint8Array,
+    key: TKey,
     opts?: EncodingOpts,
     debug: Debugger = this.debug
-  ): Promise<Uint8Array | undefined> {
+  ): Promise<TValue | undefined> {
     debug = debug.extend('get')
-    debug(`key: ${bytesToPrefixedHexString(key)}`)
+    let value: string | Uint8Array | null
+    const encodings = getEncodings(opts)
+    const _key = key instanceof Uint8Array ? bytesToPrefixedHexString(key) : key
+    debug(`key: ${_key}`)
     try {
-      const value = await this.db.get(bytesToHex(key))
+      value = await this._leveldb.get(_key, encodings)
+      if (value === null) return undefined
       debug(`value: ${value}`)
-      return value instanceof Uint8Array ? value : hexStringToBytes(value)
+      debug(`value type: ${typeof value}`)
+      debug(`value u8a: ${value instanceof Uint8Array}`)
+      if (typeof value === 'string') {
+        value = hexStringToBytes(value)
+      }
+      return value as TValue
     } catch (error: any) {
       debug(`value: ${error.message}`)
       return undefined
     }
   }
   async put(
-    key: Uint8Array,
-    value: Uint8Array,
+    key: TKey,
+    value: TValue,
     opts?: EncodingOpts,
     debug: Debugger = this.debug
   ): Promise<void> {
+    const _key = key instanceof Uint8Array ? bytesToPrefixedHexString(key) : key
+    const _value = value instanceof Uint8Array ? bytesToPrefixedHexString(value) : value
     debug = debug.extend('put')
-    debug(`key: ${bytesToPrefixedHexString(key)}`)
-    await this.db.put(bytesToHex(key), bytesToPrefixedHexString(value))
+    debug(`key: ${_key}`)
+    await this._leveldb.put(_key, _value)
   }
-  async del(key: Uint8Array, opts?: EncodingOpts, debug: Debugger = this.debug): Promise<void> {
-    debug.extend('del')(bytesToHex(key))
-    await this.db.del(bytesToHex(key))
+  async del(key: TKey, opts?: EncodingOpts, debug: Debugger = this.debug): Promise<void> {
+    const _key = key instanceof Uint8Array ? bytesToPrefixedHexString(key) : key
+    debug.extend('del')(_key)
+
+    await this._leveldb.del(_key)
   }
   async batch(
-    operations: { type: 'put' | 'del'; key: Uint8Array; value?: Uint8Array }[],
+    operations: { type: 'put' | 'del'; key: TKey; value?: TValue }[],
     debug: Debugger = this.debug
   ): Promise<void> {
     debug = debug.extend('batch')
     debug(`operations: ${operations.length}`)
-    const batch = this.db.batch()
+    const batch = this._leveldb.batch()
     for (const [opIdx, op] of operations.entries()) {
+      const key = op.key instanceof Uint8Array ? bytesToPrefixedHexString(op.key) : op.key
+      const value = op.value instanceof Uint8Array ? bytesToPrefixedHexString(op.value) : op.value
       debug(`${opIdx + 1} / ${operations.length}: --`)
-      if (op.type === 'put' && op.value) {
-        batch.put(bytesToHex(op.key), bytesToHex(op.value))
+      if (op.type === 'put' && value !== undefined) {
+        batch.put(key, value)
       } else {
-        batch.del(bytesToHex(op.key))
+        batch.del(key)
       }
     }
     await batch.write()
   }
-  async copy(): Promise<TrieDatabase> {
-    const dbCopy = new MemoryLevel() as AbstractLevel<
-      string | Uint8Array,
-      string | Uint8Array,
-      string | Uint8Array
-    >
-    for await (const [key, value] of this.db.iterator()) {
-      await dbCopy.put(key, value)
-    }
-    return TrieDatabase.create({ db: dbCopy, debug: this.debug })
+  copy(): TrieDatabase<TKey, TValue> {
+    return new TrieDatabase({ db: this._leveldb, _debug: this.debug })
   }
   async open(): Promise<void> {
-    await this.db.open()
+    await this._leveldb.open()
     this.debug('DB opened')
   }
   async keys(): Promise<Uint8Array[]> {
     const keys = []
-    for await (const key of this.db.keys()) {
+    for await (const key of this._leveldb.keys()) {
       keys.push(key instanceof Uint8Array ? key : hexStringToBytes(key))
     }
     return keys
   }
   async values(): Promise<Uint8Array[]> {
     const values = []
-    for await (const value of this.db.values()) {
+    for await (const value of this._leveldb.values()) {
       values.push(value instanceof Uint8Array ? value : hexStringToBytes(value))
     }
     return values
   }
   async editKeys(callback?: (key: string) => Promise<any>): Promise<any[]> {
     const edits = []
-    for await (const key of this.db.keys()) {
+    for await (const key of this._leveldb.keys()) {
       if (callback) {
         edits.push(callback(key instanceof Uint8Array ? bytesToPrefixedHexString(key) : key))
       }
@@ -130,7 +163,7 @@ export class TrieDatabase implements DB {
     return Promise.allSettled(edits)
   }
   async close(): Promise<void> {
-    await this.db.close()
+    await this._leveldb.close()
     this.debug('DB closed')
   }
 }

@@ -28,7 +28,7 @@ describe('testing checkpoints', () => {
   })
 
   it('should copy trie and get value added to original trie', async () => {
-    trieCopy = await trie.copy()
+    trieCopy = trie.copy()
     assert.equal(
       bytesToHex(trieCopy.root()),
       preRoot,
@@ -40,7 +40,7 @@ describe('testing checkpoints', () => {
 
   it('should deactivate cache on copy()', async () => {
     const trie = new Trie({ cacheSize: 100 })
-    trieCopy = await trie.copy()
+    trieCopy = trie.copy()
     assert.equal((trieCopy as any)._opts.cacheSize, 0)
   })
 
@@ -66,7 +66,7 @@ describe('testing checkpoints', () => {
   })
 
   it('should copy trie and get upstream and cache values after checkpoint', async () => {
-    trieCopy = await trie.copy()
+    trieCopy = trie.copy()
     assert.equal(bytesToHex(trieCopy.root()), postRoot)
     assert.equal(trieCopy.checkpoints.length, 1)
     assert.ok(trieCopy.hasCheckpoints())
@@ -96,7 +96,7 @@ describe('testing checkpoints', () => {
     preRoot = bytesToHex(trie.root())
     trie.checkpoint()
     await trie.put(utf8ToBytes('key2'), utf8ToBytes('value2'))
-    const trieCopy = await trie.copy()
+    const trieCopy = trie.copy()
 
     t.equal(
       bytesToHex(trieCopy.root()),
@@ -247,7 +247,7 @@ describe('testing checkpoints', () => {
     CommittedState.checkpoint()
 
     // Copy CommittedState
-    const MemoryState = await CommittedState.copy()
+    const MemoryState = CommittedState.copy()
     MemoryState.checkpoint()
 
     // Test changes on MemoryState
@@ -256,10 +256,11 @@ describe('testing checkpoints', () => {
     // The CommittedState should not change (not the key/value pairs, not the root, and not the root in DB)
     assert.equal(bytesToUtf8((await CommittedState.get(KEY))!), '1')
     const dbRoot = await CommittedState.database().get(KEY_ROOT)
-    if (dbRoot) {
+    if (dbRoot !== undefined) {
+      // dbRoot = dbRoot instanceof Uint8Array ? bytesToHex(dbRoot) : dbRoot
       assert.equal(
-        bytesToHex(dbRoot),
-        '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c'
+        dbRoot.toString(),
+        '0x77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c'
       )
     } else {
       assert.fail(`DB_ROOT_KEY ${bytesToPrefixedHexString(KEY_ROOT)} not found in DB`)

@@ -188,7 +188,7 @@ export class CheckpointDB implements DB<Uint8Array, Uint8Array> {
     const keyHex = bytesToHex(key)
     if (this.hasCheckpoints()) {
       // delete the value in the current diff cache
-      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, null)
+      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, undefined)
     } else {
       // delete the value on disk
       await this.db.del(keyHex, {

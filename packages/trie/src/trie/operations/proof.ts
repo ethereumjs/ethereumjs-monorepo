@@ -1,4 +1,6 @@
-import { bytesToPrefixedHexString, equalsBytes } from '@ethereumjs/util'
+import { RLP } from '@ethereumjs/rlp'
+import { bytesToPrefixedHexString, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { bytesToNibbles } from '../../util/nibbles'
 
@@ -93,22 +95,20 @@ export async function createProof(
   debug = debug.extend('root')
   debug(`nibbles: [${node.getPartialKey()}]`)
   let nibbleIndex = 0
-  const proof = []
-  let proofNode: Uint8Array | undefined
+  const proof: Uint8Array[] = []
+  let dbValue: Uint8Array | undefined | string
   while (nibbleIndex <= nibbles.length) {
     debug(`${node.getType()} => [${node.getPartialKey()}]`)
     switch (node.getType()) {
       case 'ProofNode':
-        proofNode = await this.database().get(node.hash())
-        debug = debug.extend(`[${nibbles[nibbleIndex]}]`)
-        if (!proofNode) {
+        dbValue = await this.database().get(node.hash())
+        if (dbValue === undefined) {
           debug(`Path led to proof node with hash: ${node.hash()}`)
           debug(`Returning Proof with ${proof.length} nodes`)
           proof.push(node.hash())
           return proof
         }
-        proof.push(proofNode)
-        nibbleIndex += node?.getPartialKey().length
+        node = await this._decodeToNode(hexStringToBytes(dbValue.toString()))
         break
       case 'LeafNode':
         proof.push(node.rlpEncode())

@@ -33,6 +33,7 @@ describe('Pruned trie tests', () => {
     await trie.put(key, utf8ToBytes('5'))
     await trie.put(key, utf8ToBytes('6'))
 
+    assert.deepEqual(await trie.get(key), utf8ToBytes('6'), 'Value correct')
     assert.equal((await trie.database().keys()).length, 1, 'DB size correct')
   })
 
@@ -128,7 +129,7 @@ describe('Pruned trie tests', () => {
         const idx = Math.floor(Math.random() * keys.length)
         await trie.del(keys[idx])
       }
-
+      assert.pass('deleted keys')
       assert.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
 
       // Fill trie with items or randomly delete them

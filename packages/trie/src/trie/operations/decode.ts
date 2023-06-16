@@ -167,7 +167,7 @@ export async function decodeExtensionNode(
   const [key, subNode] = RLP.decode(encoded) as Uint8Array[]
   let child: TNode
   if (subNode.length < 32) {
-    child = await decodeToNode(RLP.encode(subNode))
+    child = await this._decodeToNode(RLP.encode(subNode))
     dbug(`child: ${child.getType()}`)
   }
   if (subNode.length === 32) {

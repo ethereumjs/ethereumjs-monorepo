@@ -10,7 +10,14 @@ export async function _garbageCollect(this: TrieWithDB): Promise<void> {
   this.debug.extend('garbageCollect')(`Collecting`)
   const collected = [0, 0, 0]
   await this._withLock(async () => {
-    const reachableHashes = await this.markReachableNodes(await this.rootNode())
+    const rootNode = await this.rootNode()
+    this.debug.extend('garbageCollect')(
+      `Collecting reachable nodes from root: ${bytesToPrefixedHexString(rootNode.hash())}`
+    )
+    this.debug.extend('garbageCollect')(
+      `Collecting reachable nodes from root: ${bytesToPrefixedHexString(this.root())}`
+    )
+    const reachableHashes = await this.markReachableNodes(rootNode)
     this.debug.extend('garbageCollect')(`Collecting cache`)
     for (const hash of this.cache.keys()) {
       if (!reachableHashes.has(bytesToPrefixedHexString(hash))) {
@@ -52,9 +59,12 @@ export async function _markReachableNodes(
   node: TNode | null,
   reachableHashes: Set<string> = new Set()
 ): Promise<Set<string>> {
+  const debug = this.debug.extend('markReachableNodes')
   if (node === null || node.getType() === 'NullNode') {
     return reachableHashes
   }
+  debug(`Marking reachable node: ${bytesToPrefixedHexString(node.hash())}`)
+  debug(`Reachable nodes: ${reachableHashes.size}`)
   reachableHashes.add(bytesToPrefixedHexString(node.hash()))
   if (node.type === 'BranchNode') {
     for await (const [, childNode] of await node.getChildren()) {

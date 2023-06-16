@@ -169,57 +169,21 @@ export async function bulkInsert(
   entries.sort(([keyA], [keyB]) => {
     return compareNibbleArray(keyA, keyB)
   })
-  // new Trie with branchNode root
-  // traverse trie using pre-nibbles
-  // insert new
-  // const bulkParsed = parseBulk(entries)
-  // console.log('bulkParsed', bulkParsed)
-  // for (const [key, value] of bulkParsed) {
-  //   let node: TNode = this.rootNode as BranchNode
-  //   for (const [i, k] of key.entries) {
-  //     if (i < key.length - 2) {
-  //       const child = node.getChild(k)
-  //       if (child) {
-  //         node = child as BranchNode
-  //       } else {
-  //         const newNode = new BranchNode({ value: null })
-  //         newNode.setChild(k, node)
-  //         node = newNode
-  //       }
-  //     } else {
-  //       node = new LeafNode({ key: k, value: hexStringToBytes(value) })
-  //     }
-  //   }
-  //   //
-  // }
-  // console.log(
-  //   'entries',
-  //   entries.slice(0, 10).map(([key, value]) => [JSON.stringify(key), value])
-  // )
-  // console.log(
-  //   'bulk',
-  //   bulkParsed.slice(0, 10).map(([key, value]) => [JSON.stringify(key.flat()), value])
-  // )
-
   const batch: Map<string, Uint8Array> = new Map()
-  // Iterate through each entry
   for await (const [i, [key, value]] of entries.entries()) {
     this.debug.extend('bulkInsert').extend(`[${i + 1} / ${entries.length}]`)(
       `Key: ${bytesToPrefixedHexString(nibblestoBytes(key))}`
     )
     this.debug.extend('bulkInsert').extend(`[${i + 1} / ${entries.length}]`)(`nibbles: ${key}`)
-    // If this is the first entry, just insert it
     if (i === 0) {
       await this.put(nibblestoBytes(key), hexStringToBytes(value))
       continue
     }
-
     // Otherwise, compare with the previous entry
     const [prevKey] = entries[i - 1]
     // Find common prefix
     const prefix = findCommonPrefix(key.flat(), prevKey)
     // Fetch the node where keys diverge
-
     this.debug.extend('bulkInsert').extend(`[${i + 1} / ${entries.length}]`)(
       `Get Node at common prefix: ${prefix.commonPrefix}`
     )
@@ -366,6 +330,7 @@ export interface LeafNodeInput {
 export type BulkNodeInput = LeafNodeInput[]
 export async function cleanupTrie(trie: Trie, debug: Debugger): Promise<Trie> {
   debug = debug.extend('cleanupTrie')
+  debug(`Cleaning up trie: ${bytesToPrefixedHexString(trie.root())}`)
   // Depth-First Search stack
   const stack: TNode[] = [await trie.rootNode()]
 
@@ -381,7 +346,7 @@ export async function cleanupTrie(trie: Trie, debug: Debugger): Promise<Trie> {
         const branchNode = node as BranchNode
         for (let i = 0; i < 16; i++) {
           const child = await branchNode.getChild(i)
-          if (child.getType() !== 'NullNode') {
+          if (child.getType() !== 'NullNode' && child.getType() !== 'ProofNode') {
             const cleanupChild = await trie._cleanupNode(child)
             node.updateChild(cleanupChild, i)
             stack.push(cleanupChild)
@@ -440,7 +405,7 @@ export async function insertBatch(
     rootNode = await _insertNodeAtNode(rootNode, nodeInput.pathNibbles, nodeInput.newNode, dbug)
     // rootNode = await trie._cleanupNode(rootNode)
   }
-  // rootNode = await trie._cleanupNode(rootNode)
+  rootNode = await trie._cleanupNode(rootNode)
   await trie.storeNode(rootNode)
   trie.root(rootNode.hash())
   return cleanupTrie(trie, trie.debug)

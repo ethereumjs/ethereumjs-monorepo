@@ -27,10 +27,12 @@ export async function _insertAtNode(
   } = {
     NullNode: async (): Promise<LeafNode> => {
       debug.extend('NULL_NODE')(`inserting as LeafNode`)
-      return new LeafNode({ key: keyNibbles, value, hashFunction: this.hashFunction })
+      const leaf = new LeafNode({ key: keyNibbles, value, hashFunction: this.hashFunction })
+      await this.storeNode(leaf)
+      return leaf
     },
     LeafNode: async (): Promise<TNode> => {
-      let toReplace = node as LeafNode
+      const toReplace = node as LeafNode
       const toReplaceNibbles = toReplace.getPartialKey()
       const { commonPrefix, remainingNibbles1, remainingNibbles2 } = findCommonPrefix(
         keyNibbles,
@@ -105,7 +107,10 @@ export async function _insertAtNode(
             `creating BranchNode with children on branches ${remainingNibblesNew[0]} and ${remainingNibblesOld[0]}`
           )
 
-          toReplace = toReplace.updateKey(remainingNibblesOld.slice(1))
+          const newReplacement = new LeafNode({
+            key: remainingNibblesOld.slice(1),
+            value: toReplace.getValue(),
+          })
           const newChild = new LeafNode({
             key: remainingNibblesNew.slice(1),
             value,
@@ -124,9 +129,9 @@ export async function _insertAtNode(
             `${newChild.getType()} => ${bytesToPrefixedHexString(newChild.hash())})`
           )
 
-          branchNode = (branchNode as BranchNode).setChild(remainingNibblesOld[0], toReplace)
+          branchNode = (branchNode as BranchNode).setChild(remainingNibblesOld[0], newReplacement)
           branchNode = (branchNode as BranchNode).setChild(remainingNibblesNew[0], newChild)
-          await this.storeNode(toReplace)
+          await this.storeNode(newReplacement)
           await this.storeNode(newChild)
           await this.storeNode(branchNode)
         }
@@ -252,13 +257,12 @@ export async function _insertAtNode(
           newBranch = await this._cleanupNode(newExtensionNode)
         } else {
           const subNode = await extensionNode.getChild()
-
           debug.extend('BranchNode')(
             `Replacing ExtensionNode with child: ${subNode.getType()}: ${bytesToPrefixedHexString(
               subNode.hash()
             )} on branch ${oldBranchNodeIndex}`
           )
-          newBranch = await this._cleanupNode(subNode)
+          newBranch = subNode
           await this.storeNode(newBranch)
         }
         branchNode = (branchNode as BranchNode).setChild(oldBranchNodeIndex, newBranch)

@@ -16,13 +16,13 @@ export class ExtensionNode extends BaseNode implements NodeInterface<'ExtensionN
   type = 'ExtensionNode' as const
   keyNibbles: number[]
   child: TNode
-  _subNode: Uint8Array | Uint8Array[]
+  // _subNode: Uint8Array | Uint8Array[]
 
   constructor(options: TNodeOptions<'ExtensionNode'>) {
     super(options)
     this.keyNibbles = options.keyNibbles
     this.child = options.subNode
-    this._subNode = this.child.raw()
+    // this._subNode = this.child.raw()
     if (options.source) {
       options.source = options.source.extend('ExtensionNode').extend(`[${this.keyNibbles}]`)
 

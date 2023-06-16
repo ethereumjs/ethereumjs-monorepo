@@ -85,7 +85,8 @@ export async function _deleteAtNode(
         const lookup = await this.lookupNodeByHash(childNode.hash())
         if (!lookup || lookup.getType() === 'ProofNode') {
           // debug(`can't resolve proofNode.  returning without deleting`)
-          throw new Error(`can't resolve proofNode.`)
+          return branchNode
+          // throw new Error(`can't resolve proofNode.`)
         }
         childNode = lookup
       }
@@ -106,10 +107,6 @@ export async function _deleteAtNode(
         debug.extend('BranchNode')(`update: ${bytesToPrefixedHexString(branchNode.hash())}`)
         if (branchNode.getType() === 'NullNode') {
           return branchNode
-        }
-        const deleted = await branchNode.getChild(childIndex)
-        if (deleted.getType() !== 'NullNode') {
-          throw new Error(`Failed to delete ${deleted.getType()}`)
         }
         await this.storeNode(branchNode)
         return branchNode

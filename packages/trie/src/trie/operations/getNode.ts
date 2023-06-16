@@ -24,6 +24,9 @@ export async function _getNodePath(
   debug(`From Root: ${currentNode.getType()} [${currentNode.getPartialKey()}]`)
   debug(`Seeking Node Path: [${keyNibbles}]`)
   while (currentNode.type !== 'NullNode') {
+    if (currentNode.getType() === 'ProofNode') {
+      currentNode = (await this.lookupNodeByHash(currentNode.hash())) ?? currentNode
+    }
     debug = debug.extend(currentNode.getType())
     debug(`Pushing ${currentNode.getType()} to path`)
     path.push(currentNode)
@@ -31,6 +34,9 @@ export async function _getNodePath(
     let childNode: TNode | undefined
     let nodeNibbles: number[]
     let sharedNibbles: number[]
+    if (currentNode.getType() === 'ProofNode') {
+      currentNode = (await this.lookupNodeByHash(currentNode.hash())) ?? currentNode
+    }
     switch (currentNode.type) {
       case 'BranchNode':
         currentNode = currentNode as BranchNode
@@ -43,8 +49,9 @@ export async function _getNodePath(
             remainingNibbles: keyNibbles.slice(nibbleIndex),
           }
         }
+        debug(`navigating to child at index [${keyNibbles[nibbleIndex]}]`)
         childNode = await (currentNode as BranchNode).getChild(childIndex)
-        debug(`navigating to ${childNode.getType()} at index [${keyNibbles[nibbleIndex]}]`)
+        debug(`found child: ${childNode.getType()}`)
         debug = debug.extend(`[${childIndex}]`)
         if (childNode.getType() === 'NullNode') {
           debug.extend(`${childIndex}`)(`Child not found, returning`)
@@ -59,6 +66,8 @@ export async function _getNodePath(
         currentNode = currentNode as ExtensionNode
         nodeNibbles = currentNode.getPartialKey()
         sharedNibbles = keyNibbles.slice(nibbleIndex, nibbleIndex + nodeNibbles.length)
+        debug(`keyNibbles: ${keyNibbles}`)
+        debug(`nodeNibbles: ${nodeNibbles}`)
         debug(`sharedNibbles: ${sharedNibbles}`)
         if (doKeysMatch(nodeNibbles, sharedNibbles)) {
           debug(`Shared nibbles match entirely.`)
@@ -72,6 +81,14 @@ export async function _getNodePath(
             return { node: child, path, remainingNibbles: [] }
           }
           currentNode = await currentNode.getChild()
+        } else if (nodeNibbles.length !== sharedNibbles.length) {
+          debug(`Shared nibbles do not match entirely.`)
+          nibbleIndex += sharedNibbles.length
+          return {
+            node: currentNode.child,
+            path,
+            remainingNibbles: keyNibbles.slice(nibbleIndex),
+          }
         } else {
           debug.extend(currentNode.getType())(`Shared nibbles do not match.`)
           return {

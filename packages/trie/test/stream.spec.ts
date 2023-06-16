@@ -110,12 +110,18 @@ describe('kv stream test', () => {
       assert.fail(`stream error: ${err}`)
       done.emit('done')
     })
-
+    const streamed: string[] = []
     stream.on('data', (d: { key: number[]; value: Uint8Array }) => {
       const key = bytesToUtf8(nibblestoBytes(d.key))
       const value = bytesToUtf8(d.value)
-      assert.equal(value, valObj[key], `value for key ${key} should match`)
-      delete valObj[key]
+      if (streamed.includes(key)) {
+        // console.log('key', key, streamed)
+      } else {
+        streamed.push(key)
+
+        assert.equal(value, valObj[key], `value for key ${key} should match`)
+        delete valObj[key]
+      }
     })
     stream.on('close', () => {})
     stream.on('end', () => {

@@ -17,6 +17,8 @@ export function getNodeType(raw: Uint8Array | Uint8Array[]): NodeType {
       ? 'BranchNode'
       : raw.length === 2 && (raw[1] as Uint8Array).length === 32
       ? 'ExtensionNode'
+      : raw.length === 2 && (raw[1] as Uint8Array).length === 17
+      ? 'ExtensionNode'
       : raw.length === 2
       ? 'LeafNode'
       : 'NullNode'
@@ -34,6 +36,7 @@ export async function decodeToNode(
     return new NullNode({})
   } else {
     const raw = RLP.decode(encoded) as Uint8Array[]
+    d_bug(`raw=${raw}`)
     const type = getNodeType(raw)
     d_bug = d_bug.extend(type)
     switch (type) {
@@ -72,11 +75,15 @@ export async function decodeToNode(
       }
       case 'ExtensionNode': {
         const [key, subNodeRlp] = raw
-        const subNode = await decodeToNode(subNodeRlp as Uint8Array, d_bug)
+        d_bug.extend('ExtensionNode')(`key=${key}, subNodeRlp=${subNodeRlp}`)
+        const subNode = await decodeToNode(RLP.encode(subNodeRlp) as Uint8Array, d_bug)
         d_bug.extend('ExtensionNode')(
           `decoded with keyNibbles=${key} and child=${subNode.getType()}`
         )
-        return new ExtensionNode({ keyNibbles: bytesToNibbles(key as Uint8Array), subNode })
+        return new ExtensionNode({
+          keyNibbles: removeHexPrefix(bytesToNibbles(key as Uint8Array)),
+          subNode,
+        })
       }
       case 'NullNode': {
         return new NullNode({})
