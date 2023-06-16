@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1686882931091,
+  "lastUpdate": 1686913233178,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "konjou@gmail.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "9c8f40799a2eb2d5631b7623a44434fd5dd1108f",
-          "message": "Add minimal wallet CI workflow (#2738)\n\n* Add minimal wallet CI workflow\n\n* rename wallet job\n\n* remove obsolete build file",
-          "timestamp": "2023-05-31T06:35:02-04:00",
-          "tree_id": "ae0bb54a48006b11ae89d1d9c431bc862e0736d2",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9c8f40799a2eb2d5631b7623a44434fd5dd1108f"
-        },
-        "date": 1685529505609,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31227,
-            "range": "±5.44%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31835,
-            "range": "±2.65%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 27837,
-            "range": "±9.37%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 30730,
-            "range": "±2.92%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30161,
-            "range": "±2.95%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±11.62%",
             "unit": "ops/sec",
             "extra": "70 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "972c6823551cebd5ca3a3c27eed26091208e9040",
+          "message": "Monorepo: Vitest Test Transition / ESM Part 2 (#2764)\n\n* RLP: Switch Tape -> Vitest, add dependencies, remove Karma config\n\n* Rebuild package-lock.json\n\n* (Hopefully) fix coverage\n\n* RLP: update import file path references\n\n* RLP: switch to type module in package.json, fix linter (explcitly switch to cjs)\n\n* Util: tape -> vitest\n\n* Util: add internal .js file references\n\n* Monorepo: renamed other .eslintrc.js files to .eslintrc.cjs\n\n* Util: adjust external import path references\n\n* ESLint config path fix\n\n* Common: tape -> vitest transition\n\n* Common: fix browser tests\n\n* Common: add missing path references\n\n* Common fixes\n\n* Block: Tape -> Vitest test transition (Node tests)\n\n* Migrate blockchain tests to vitest\n\n* Remove karma from blockchain\n\n* Small syntax updates\n\n* Block: require -> import JSON updates\n\n* Block: JSON import related test fixes\n\n* Block: update .js path references\n\n* Blockchain: .js additions\n\n* Blockchain: add more .js path references\n\n* Run browser tests in headless mode\n\n* StateManager: vitest transition part 1\n\n* StateManager: tape -> vitest test transitions (EthersStateManager test not yet working, need EVM transition first)\n\n* Remove require() from ESM test\n\n* StateManager: update lru-cache dependency from v7 -> v9\n\n* StateManager: more .js file additions\n\n* Add browser config for vitest in block\n\n* Tx: tape -> vitest test transition\n\n* Tx: adopt tx test runner\n\n* Tx: JSON require -> import\n\n* Tx: fixes\n\n* Tx: add .js path references\n\n* Rebuild package-lock.json\n\n* migrate wallet to esm/vitest\n\n* move devp2p to esm/vitest\n\n* Fix port in use errors in tests\n\n* ESM/Vitest Transition: add Trie and EVM (#2783)\n\n* Trie: tape -> vitest test transition\r\n\r\n* Trie: .js file path additions\r\n\r\n* EVM: tape -> vitest transition\r\n\r\n* EVM: .js path reference additions\r\n\r\n* Fix ethers state manager tests\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\n\n* Fix typo\n\n* Wrap async tests in promises so vitest waits for them to finish\n\n* Various lint fixes\n\n* VM: tape -> vitest transition (API tests)\n\n* VM: keep Blockchain/State tests on Tape for now\n\n* VM: run Blockchain/State tests on CJS dist folder\n\n* make most devp2p tests async\n\n* Vitest/ESM: VM File Path Additions and Ethash Transition (#2786)\n\n* VM: fix linting\r\n\r\n* VM: add .js path references\r\n\r\n* Ethash: tape -> vitest transition\r\n\r\n* Ethash: ad .js file path references\n\n* Wrap runBlock/runTx in describe\n\n* turn off vm browser tests in ci\n\n* Fix examples CI\n\n* Fix wallet/ethash CI work\n\n* Adjust dpt setup\n\n* Catch addpeer errors silently\n\n* Make trie/vm type module\n\n* fix vm examples\n\n* set higher timeout\n\n* revert vm module type\n\n* Fix Util tests\n\n* Etash: take timeout from script command (60000)\n\n* Etash test timeout adjustments\n\n* Etash timeout adjustment\n\n---------\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\nCo-authored-by: acolytec3 <konjou@gmail.com>",
+          "timestamp": "2023-06-16T06:56:05-04:00",
+          "tree_id": "60941f7968baa31b6ef1bd5f8af53b4a932af3a2",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/972c6823551cebd5ca3a3c27eed26091208e9040"
+        },
+        "date": 1686913232408,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 25695,
+            "range": "±5.72%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 26130,
+            "range": "±3.19%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 26582,
+            "range": "±3.15%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 26101,
+            "range": "±3.06%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 24808,
+            "range": "±3.99%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
           }
         ]
       }
