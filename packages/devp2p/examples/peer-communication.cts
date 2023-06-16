@@ -7,10 +7,10 @@ import chalk from 'chalk'
 import type LRUCache from 'lru-cache'
 
 const LRU = require('lru-cache')
-import ms = require('ms')
+import ms from 'ms'
 
-import * as devp2p from '../src/index.js'
-import { ETH, Peer } from '../src/index.js'
+import * as devp2p from '../dist/cjs/index.js'
+import { ETH, Peer } from '../dist/cjs/index.js'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
 
 const PRIVATE_KEY = randomBytes(32)
