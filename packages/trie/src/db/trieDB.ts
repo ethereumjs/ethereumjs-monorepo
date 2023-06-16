@@ -44,8 +44,8 @@ const getEncodings = (opts: EncodingOpts = {}) => {
   return encodings
 }
 export class TrieDatabase<
-  TKey extends Uint8Array | string = Uint8Array | string,
-  TValue extends Uint8Array | string = Uint8Array | string
+  TKey extends Uint8Array = Uint8Array,
+  TValue extends Uint8Array = Uint8Array
 > implements DB<TKey, TValue>
 {
   _leveldb: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
@@ -67,9 +67,6 @@ export class TrieDatabase<
   }
   stats(): any {}
 
-  /**
-   * @inheritDoc
-   */
   async get(
     key: TKey,
     opts?: EncodingOpts,

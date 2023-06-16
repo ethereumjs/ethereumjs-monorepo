@@ -296,7 +296,7 @@ export class TrieWrap extends TrieWithDB {
     debug(`Returning: ${value}`)
     return value
   }
-  async createReadStream(): Promise<TrieReadStream> {
+  createReadStream(): TrieReadStream {
     return new TrieReadStream(this)
   }
 }

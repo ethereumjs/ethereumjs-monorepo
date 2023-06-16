@@ -6,7 +6,7 @@ import { TrieWrap } from './trie/trieWrapper.js'
 
 import type { TrieDatabase } from './db/index.js'
 import type { TNode } from './trie/node/types.js'
-import type { DB } from '@ethereumjs/util'
+import type { DB, DBObject } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 import type LRUCache from 'lru-cache'
 
@@ -89,8 +89,12 @@ export interface MerklePatriciaTrieOptions {
   debug?: Debugger
 }
 
+type LevelDB<
+  TKey extends Uint8Array | string = Uint8Array | string,
+  TValue extends Uint8Array | string | DBObject = Uint8Array | string | DBObject
+> = DB<TKey, TValue>
 export interface TrieDBOptions extends Exclude<MerklePatriciaTrieOptions, 'nodes'> {
-  db?: DB<string, string> | TrieDatabase
+  db?: LevelDB | TrieDatabase
   cache?: LRUCache<Uint8Array, TNode>
   cacheSize?: number
   checkpoints?: Uint8Array[]

@@ -2,7 +2,7 @@ import { equalsBytes } from 'ethereum-cryptography/utils'
 
 import { ProofDatabase } from '../db'
 import { Trie } from '../trie'
-import { nibblesCompare, nibblesEqual, nibblestoBytes } from '../util/nibbles'
+import { bytesToNibbles, nibblesCompare, nibblesEqual, nibblestoBytes } from '../util/nibbles'
 
 import { hasRightElement } from './rangeHelpers'
 
@@ -11,12 +11,18 @@ import { hasRightElement } from './rangeHelpers'
 export async function _verifyRangeProof(
   this: Trie,
   rootHash: Uint8Array,
-  firstKey: number[] | null,
-  lastKey: number[] | null,
+  firstKey: Uint8Array | number[] | undefined,
+  lastKey: Uint8Array | number[] | undefined,
   keys: number[][],
   values: Uint8Array[],
   proof?: Uint8Array[]
-): Promise<{ valid: boolean; more: boolean } | false> {
+): Promise<boolean> {
+  if (firstKey instanceof Uint8Array) {
+    firstKey = bytesToNibbles(firstKey)
+  }
+  if (lastKey instanceof Uint8Array) {
+    lastKey = bytesToNibbles(lastKey)
+  }
   if (keys.length !== values.length) {
     throw new Error(`Inconsistent proof data, keys: ${keys.length}, values: ${values.length}`)
   }
@@ -44,7 +50,7 @@ export async function _verifyRangeProof(
     if (!equalsBytes(hash, rootHash)) {
       return false
     }
-    return { valid: true, more: false } // No more elements
+    return true // No more elements
   }
   if (!firstKey || !lastKey) {
     throw new Error('Invalid edge keys')
@@ -68,7 +74,7 @@ export async function _verifyRangeProof(
     if (val || hasRightElement(root, firstKey, 0)) {
       throw new Error('More entries available')
     }
-    return { valid: true, more: false }
+    return true
   }
 
   // Special case, there is only one element and two edge keys are the same.
@@ -94,7 +100,7 @@ export async function _verifyRangeProof(
       return false
       // throw new Error('Correct proof but invalid data')
     }
-    return { valid: true, more: hasRightElement(root, firstKey, 0) }
+    return true
   }
 
   // Ok, in all other cases, we require two edge paths available.
@@ -138,5 +144,5 @@ export async function _verifyRangeProof(
   if (!equalsBytes(hash, rootHash)) {
     return false
   }
-  return { valid: true, more: hasRightElement(await trie.rootNode(), keys[keys.length - 1], 0) }
+  return true
 }
