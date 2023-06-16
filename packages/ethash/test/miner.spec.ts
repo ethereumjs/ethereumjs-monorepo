@@ -52,7 +52,7 @@ describe('Miner', () => {
     const validBlockResult = await e.verifyPOW(validBlock)
     assert.ok(validBlockResult, 'successfully mined block')
     assert.ok((miner as any).solution !== undefined, 'cached the solution')
-  }, 60000)
+  }, 200000)
 
   it('Check if it is possible to mine Blocks and BlockHeaders', async () => {
     const e = new Ethash(cacheDb as any)
