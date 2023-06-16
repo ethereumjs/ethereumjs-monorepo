@@ -52,7 +52,7 @@ describe('Miner', () => {
     const validBlockResult = await e.verifyPOW(validBlock)
     assert.ok(validBlockResult, 'successfully mined block')
     assert.ok((miner as any).solution !== undefined, 'cached the solution')
-  }, 30000)
+  })
 
   it('Check if it is possible to mine Blocks and BlockHeaders', async () => {
     const e = new Ethash(cacheDb as any)
@@ -78,7 +78,7 @@ describe('Miner', () => {
     const blockSolution = <Block>await blockMiner.mine(-1)
 
     assert.ok(e.verifyPOW(blockSolution))
-  }, 30000)
+  })
 
   it('Check if it is possible to stop the miner', async () => {
     const e = new Ethash(cacheDb as any)
@@ -141,5 +141,5 @@ describe('Miner', () => {
 
     assert.ok(blockSolution._common.hardfork() === Hardfork.Petersburg, 'hardfork did not change')
     assert.ok(blockSolution._common.chainName() === 'ropsten', 'chain name did not change')
-  }, 30000)
+  })
 })
