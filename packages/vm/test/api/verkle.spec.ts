@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
 import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../src/vm'
 
@@ -10,8 +10,8 @@ import * as block1JSON from './testdata/verkleKaustinenBlock1.json'
 import * as block2JSON from './testdata/verkleKaustinenBlock2.json'
 import * as block3JSON from './testdata/verkleKaustinenBlock3.json'
 
-tape('Verkle-enabled VM', async (t) => {
-  t.test('should run verkle blocks (kaustinen)', async (st) => {
+describe('Verkle-enabled VM', async () => {
+  it('should run verkle blocks (kaustinen)', async () => {
     const common = Common.fromGethGenesis(testnetVerkleKaustinen, {
       chain: 'customChain',
       eips: [999001],
@@ -26,9 +26,7 @@ tape('Verkle-enabled VM', async (t) => {
         block,
       })
 
-      st.pass(`Should run verkle block ${index + 1} successfully`)
+      assert.ok(true, `Should run verkle block ${index + 1} successfully`)
     }
-
-    st.end()
   })
 })
