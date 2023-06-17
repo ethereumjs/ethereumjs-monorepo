@@ -1,70 +1,72 @@
 import { Block } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
 import { Address, bytesToHex } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { StatelessVerkleStateManager } from '../src'
+import { StatelessVerkleStateManager } from '../src/index.js'
 
 import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
-import * as verkleBlockJSON from './testdata/verkleKaustinenBlock.json'
+import * as verkleBlockJSON from './testdata/verkleKaustinenBlock1.json'
 
-tape('StatelessVerkleStateManager: Kaustinen Verkle Block', (t) => {
+describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   const common = Common.fromGethGenesis(testnetVerkleKaustinen, {
     chain: 'customChain',
     eips: [999001],
   })
   const block = Block.fromBlockData(verkleBlockJSON, { common })
 
-  t.test('initPreState()', async (st) => {
+  it('initPreState()', async () => {
     const stateManager = new StatelessVerkleStateManager()
-    stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
+    stateManager.initVerkleExecutionWitness(block.header.executionWitness!)
 
-    st.ok(Object.keys((stateManager as any)._state).length !== 0, 'should initialize with state')
+    assert.ok(
+      Object.keys((stateManager as any)._state).length !== 0,
+      'should initialize with state'
+    )
   })
 
-  // Test data from https://github.com/gballet/verkle-block-sample/tree/master#block-content
-  t.test('getTreeKey()', async (st) => {
+  it('getTreeKey()', async () => {
     const stateManager = new StatelessVerkleStateManager({ common })
-    stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
+    stateManager.initVerkleExecutionWitness(block.header.executionWitness!)
 
     const balanceKey = stateManager.getTreeKeyForBalance(
       Address.fromString('0x0000000000000000000000000000000000000000')
     )
-    st.equal(
+    assert.equal(
       bytesToHex(balanceKey),
       'bf101a6e1c8e83c11bd203a582c7981b91097ec55cbd344ce09005c1f26d1901'
     )
   })
 
-  t.test('getTreeKey()', async (st) => {
+  it('getTreeKey()', async () => {
     const stateManager = new StatelessVerkleStateManager({ common })
-    stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
+    stateManager.initVerkleExecutionWitness(block.header.executionWitness!)
 
     const balanceKey = stateManager.getTreeKeyForBalance(
       Address.fromString('0x71562b71999873DB5b286dF957af199Ec94617f7')
     )
-    st.equal(
+    assert.equal(
       bytesToHex(balanceKey),
       '274cde18dd9dbb04caf16ad5ee969c19fe6ca764d5688b5e1d419f4ac6cd1601'
     )
   })
 
-  t.test('getAccount()', async (st) => {
+  it('getAccount()', async () => {
     const stateManager = new StatelessVerkleStateManager({ common })
-    stateManager.initPreState(block.header.verkleProof!, block.header.verklePreState!)
+    stateManager.initVerkleExecutionWitness(block.header.executionWitness!)
 
     const account = await stateManager.getAccount(
       Address.fromString('0x9791ded6e5d3d5dafca71bb7bb2a14187d17e32e')
     )
 
-    st.equal(account.balance, 14208697090509495410n, 'should have correct balance')
-    st.equal(account.nonce, 697747n, 'should have correct nonce')
-    st.equal(
+    assert.equal(account.balance, 5353969573687549266n, 'should have correct balance')
+    assert.equal(account.nonce, 3963257n, 'should have correct nonce')
+    assert.equal(
       bytesToHex(account.storageRoot),
       '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       'should have correct storageRoot'
     )
-    st.equal(
+    assert.equal(
       bytesToHex(account.codeHash),
       'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
       'should have correct codeHash'
@@ -74,7 +76,7 @@ tape('StatelessVerkleStateManager: Kaustinen Verkle Block', (t) => {
 
 /**
 
-  t.test('checkpoint() / commit() / revert', async (st) => {
+  it('checkpoint() / commit() / revert', async () => {
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
 
     const tx = getTransaction(common, 0, true)
@@ -88,14 +90,14 @@ tape('StatelessVerkleStateManager: Kaustinen Verkle Block', (t) => {
       storage: {},
     })
     await stateManager.checkpoint()
-    st.equal((stateManager as any)._checkpoints.length, 1, 'should have set a checkpoint')
+    assert.equal((stateManager as any)._checkpoints.length, 1, 'should have set a checkpoint')
 
     await stateManager.putAccount(caller, acc)
     await stateManager.commit()
-    st.equal((stateManager as any)._checkpoints.length, 0, 'should remove checkpoint on commit')
+    assert.equal((stateManager as any)._checkpoints.length, 0, 'should remove checkpoint on commit')
     let isInState =
       '0xbe862ad9abfe6f22bcb087716c7d89a26051f74c' in (stateManager as any)._state.accounts
-    st.ok(isInState, 'should have caller account in current state on commit')
+    assert.ok(isInState, 'should have caller account in current state on commit')
 
     stateManager = new StatelessVerkleStateManager({ common })
     await stateManager.initPreState({
@@ -107,13 +109,13 @@ tape('StatelessVerkleStateManager: Kaustinen Verkle Block', (t) => {
 
     await stateManager.putAccount(caller, acc)
     await stateManager.revert()
-    st.equal((stateManager as any)._checkpoints.length, 0, 'should remove checkpoint on revert')
+    assert.equal((stateManager as any)._checkpoints.length, 0, 'should remove checkpoint on revert')
     isInState =
       '0xbe862ad9abfe6f22bcb087716c7d89a26051f74c' in (stateManager as any)._state.accounts
-    st.ok(!isInState, 'should not have caller account in current state on revert')
+    assert.ok(!isInState, 'should not have caller account in current state on revert')
   })
 
-  t.test('putContractStorage() / getContractStorage() / clearContractStorage()', async (st) => {
+  it('putContractStorage() / getContractStorage() / clearContractStorage()', async () => {
     const stateManager = new StatelessVerkleStateManager()
 
     // Init pre state (format: address -> RLP serialized account)
@@ -134,14 +136,14 @@ tape('StatelessVerkleStateManager: Kaustinen Verkle Block', (t) => {
     await stateManager.putContractStorage(address, key, val)
 
     let valReceived = await stateManager.getContractStorage(address, key)
-    st.deepEqual(valReceived, val, 'received correct storage value')
+    assert.deepEqual(valReceived, val, 'received correct storage value')
 
     await stateManager.clearContractStorage(address)
     valReceived = await stateManager.getContractStorage(address, key)
-    st.deepEqual(valReceived, Buffer.alloc(0), 'received empty Buffer after clearing')
+    assert.deepEqual(valReceived, Buffer.alloc(0), 'received empty Buffer after clearing')
   })
 
-  t.test('should run simple transfer-tx (stateful)', async (st) => {
+  it('should run simple transfer-tx (stateful)', async () => {
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
     const vm = new VM({ common })
     const tx = getTransaction(vm._common, 0, true)
@@ -151,10 +153,10 @@ tape('StatelessVerkleStateManager: Kaustinen Verkle Block', (t) => {
     await vm.stateManager.putAccount(caller, acc)
 
     const res = await vm.runTx({ tx })
-    st.pass('Ok, that is something. Passed in stateful mode.')
+    assert.pass('Ok, that is something. Passed in stateful mode.')
   })
 
-  t.test('should run simple transfer-tx (stateless)', async (st) => {
+  it('should run simple transfer-tx (stateless)', async () => {
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
 
     // Init pre state (format: address -> RLP serialized account)
@@ -177,22 +179,22 @@ tape('StatelessVerkleStateManager: Kaustinen Verkle Block', (t) => {
 
     let address = Address.fromString('0xbe862ad9abfe6f22bcb087716c7d89a26051f74c')
     let account = await stateManager.getAccount(address)
-    st.equal(account.nonce.toString('hex'), '1', 'should correctly update caller nonce')
+    assert.equal(account.nonce.toString('hex'), '1', 'should correctly update caller nonce')
 
     address = Address.fromString('0x0000000000000000000000000000000000000000')
     account = await stateManager.getAccount(address)
     let msg = 'should correctly update miner account balance'
-    st.equal(account.balance.toString('hex'), '1e2418')
+    assert.equal(account.balance.toString('hex'), '1e2418')
 
     msg = 'should correctly update underlying state datastructure'
-    st.ok(
+    assert.ok(
       '0x0000000000000000000000000000000000000000' in (stateManager as any)._state.accounts,
       `${msg}, accounts`
     )
-    st.pass('Whohoo, tx passed in stateless mode!!!')
+    assert.pass('Whohoo, tx passed in stateless mode!!!')
   })
 
-  t.test('should run simple code-tx (stateful)', async (st) => {
+  it('should run simple code-tx (stateful)', async () => {
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
     const vm = new VM({ common })
     const tx = getTransaction(vm._common, 0, true, '0x00', true)
@@ -202,10 +204,10 @@ tape('StatelessVerkleStateManager: Kaustinen Verkle Block', (t) => {
     await vm.stateManager.putAccount(caller, acc)
 
     const res = await vm.runTx({ tx })
-    st.pass('Ok, that is something. Passed in stateful mode.')
+    assert.pass('Ok, that is something. Passed in stateful mode.')
   })
 
-  t.test('should run simple contract-tx (stateless)', async (st) => {
+  it('should run simple contract-tx (stateless)', async () => {
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
 
     // Init pre state (format: address -> RLP serialized account)
@@ -228,19 +230,19 @@ tape('StatelessVerkleStateManager: Kaustinen Verkle Block', (t) => {
 
     let address = Address.fromString('0xbe862ad9abfe6f22bcb087716c7d89a26051f74c')
     let account = await stateManager.getAccount(address)
-    st.equal(account.nonce.toString('hex'), '1', 'should correctly update caller nonce')
+    assert.equal(account.nonce.toString('hex'), '1', 'should correctly update caller nonce')
 
     address = Address.fromString('0x0000000000000000000000000000000000000000')
     account = await stateManager.getAccount(address)
     let msg = 'should correctly update miner account balance'
-    st.equal(account.balance.toString('hex'), '5edd5a')
+    assert.equal(account.balance.toString('hex'), '5edd5a')
 
     msg = 'should correctly update underlying state datastructure'
-    st.ok(
+    assert.ok(
       '0x0000000000000000000000000000000000000000' in (stateManager as any)._state.accounts,
       `${msg}, accounts`
     )
-    st.equal(
+    assert.equal(
       (stateManager as any)._state.code[
         '0x8ba225ea8d12294db5a6a470baaea45e7f5ceba89a0ea0cb6d4c171f3ca2366f'
       ],
@@ -248,6 +250,6 @@ tape('StatelessVerkleStateManager: Kaustinen Verkle Block', (t) => {
       `${msg}, code`
     )
 
-    st.pass('Whohoo, tx passed in stateless mode!!!')
+    assert.pass('Whohoo, tx passed in stateless mode!!!')
   })*/
 // })
