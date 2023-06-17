@@ -1,6 +1,4 @@
-'use strict'
-
-export * from './ecies'
-export * from './mac'
-export * from './peer'
-export * from './rlpx'
+export * from './ecies.js'
+export * from './mac.js'
+export * from './peer.js'
+export * from './rlpx.js'

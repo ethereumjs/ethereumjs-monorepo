@@ -3,10 +3,10 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { TypedTransaction } from '@ethereumjs/tx'
 import chalk from 'chalk'
-import ms = require('ms')
+import ms from 'ms'
 
-import * as devp2p from '../src/index.js'
-import { LES, Peer } from '../src/index.js'
+import * as devp2p from '../dist/cjs/index.js'
+import { LES, Peer } from '../dist/cjs/index.js'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
 
 const PRIVATE_KEY = randomBytes(32)
