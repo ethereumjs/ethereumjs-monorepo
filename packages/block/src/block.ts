@@ -578,7 +578,7 @@ export class Block {
       return
     }
 
-    if (!this.transactionsTrieIsValid()) {
+    if (!(await this.transactionsTrieIsValid())) {
       const msg = this._errorMsg('invalid transaction trie')
       throw new Error(msg)
     }
