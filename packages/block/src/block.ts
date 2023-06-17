@@ -447,8 +447,9 @@ export class Block {
   /**
    * Validates the transaction trie by generating a trie
    * and do a check on the root hash.
+   * @returns True if the transaction trie is valid, false otherwise
    */
-  async validateTransactionsTrie(): Promise<boolean> {
+  async transactionsTrieIsValid(): Promise<boolean> {
     let result
     if (this.transactions.length === 0) {
       result = equalsBytes(this.header.transactionsTrie, KECCAK256_RLP)
@@ -464,13 +465,54 @@ export class Block {
 
   /**
    * Validates transaction signatures and minimum gas requirements.
-   *
-   * @param stringError - If `true`, a string with the indices of the invalid txs is returned.
+   * @returns True if all transactions are valid, false otherwise
    */
-  validateTransactions(): boolean
-  validateTransactions(stringError: false): boolean
-  validateTransactions(stringError: true): string[]
-  validateTransactions(stringError = false) {
+  transactionsAreValid(): boolean {
+    let dataGasUsed = BigInt(0)
+    const dataGasLimit = this._common.param('gasConfig', 'maxDataGasPerBlock')
+    const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
+
+    for (let tx of this.transactions) {
+      if (tx.isValid() === false) {
+        return false
+      }
+      if (this._common.isActivatedEIP(1559) === true) {
+        if (tx.supports(Capability.EIP1559FeeMarket)) {
+          tx = tx as FeeMarketEIP1559Transaction
+          if (tx.maxFeePerGas < this.header.baseFeePerGas!) {
+            return false
+          }
+        } else {
+          tx = tx as LegacyTransaction
+          if (tx.gasPrice < this.header.baseFeePerGas!) {
+            return false
+          }
+        }
+      }
+      if (this._common.isActivatedEIP(4844) === true) {
+        if (tx instanceof BlobEIP4844Transaction) {
+          dataGasUsed += BigInt(tx.numBlobs()) * dataGasPerBlob
+          if (dataGasUsed > dataGasLimit) {
+            return false
+          }
+        }
+      }
+    }
+
+    if (this._common.isActivatedEIP(4844) === true) {
+      if (dataGasUsed !== this.header.dataGasUsed) {
+        return false
+      }
+    }
+
+    return true
+  }
+
+  /**
+   * Validates transaction signatures and minimum gas requirements.
+   * @returns {string[]} an array of error strings
+   */
+  getTransactionsValidationErrors(): string[] {
     const errors: string[] = []
     let dataGasUsed = BigInt(0)
     const dataGasLimit = this._common.param('gasConfig', 'maxDataGasPerBlock')
@@ -478,7 +520,7 @@ export class Block {
 
     // eslint-disable-next-line prefer-const
     for (let [i, tx] of this.transactions.entries()) {
-      const errs = <string[]>tx.validate(true)
+      const errs = tx.getValidationErrors()
       if (this._common.isActivatedEIP(1559) === true) {
         if (tx.supports(Capability.EIP1559FeeMarket)) {
           tx = tx as FeeMarketEIP1559Transaction
@@ -513,7 +555,7 @@ export class Block {
       }
     }
 
-    return stringError ? errors : errors.length === 0
+    return errors
   }
 
   /**
@@ -526,7 +568,7 @@ export class Block {
    * @param onlyHeader if only passed the header, skip validating txTrie and unclesHash (default: false)
    */
   async validateData(onlyHeader: boolean = false): Promise<void> {
-    const txErrors = this.validateTransactions(true)
+    const txErrors = this.getTransactionsValidationErrors()
     if (txErrors.length > 0) {
       const msg = this._errorMsg(`invalid transactions: ${txErrors.join(' ')}`)
       throw new Error(msg)
@@ -536,18 +578,17 @@ export class Block {
       return
     }
 
-    const validateTxTrie = await this.validateTransactionsTrie()
-    if (!validateTxTrie) {
+    if (!this.transactionsTrieIsValid()) {
       const msg = this._errorMsg('invalid transaction trie')
       throw new Error(msg)
     }
 
-    if (!this.validateUnclesHash()) {
+    if (!this.uncleHashIsValid()) {
       const msg = this._errorMsg('invalid uncle hash')
       throw new Error(msg)
     }
 
-    if (this._common.isActivatedEIP(4895) && !(await this.validateWithdrawalsTrie())) {
+    if (this._common.isActivatedEIP(4895) && !(await this.withdrawalsTrieIsValid())) {
       const msg = this._errorMsg('invalid withdrawals trie')
       throw new Error(msg)
     }
@@ -603,8 +644,9 @@ export class Block {
 
   /**
    * Validates the uncle's hash.
+   * @returns true if the uncle's hash is valid, false otherwise.
    */
-  validateUnclesHash(): boolean {
+  uncleHashIsValid(): boolean {
     const uncles = this.uncleHeaders.map((uh) => uh.raw())
     const raw = RLP.encode(uncles)
     return equalsBytes(keccak256(raw), this.header.uncleHash)
@@ -612,8 +654,9 @@ export class Block {
 
   /**
    * Validates the withdrawal root
+   * @returns true if the withdrawals trie root is valid, false otherwise
    */
-  async validateWithdrawalsTrie(): Promise<boolean> {
+  async withdrawalsTrieIsValid(): Promise<boolean> {
     if (!this._common.isActivatedEIP(4895)) {
       throw new Error('EIP 4895 is not activated')
     }
