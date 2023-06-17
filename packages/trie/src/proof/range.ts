@@ -205,7 +205,7 @@ export async function unsetInternal(trie: Trie, left: number[], right: number[])
           return false
         }
       } else {
-        throw new Error(`invalid node ${node?.getType()}`)
+        return false
       }
     }
   }
@@ -429,6 +429,9 @@ export async function hasRightElement(trie: Trie, key: number[]): Promise<boolea
   let pos = 0
   let node: TNode | undefined = await trie.rootNode()
   while (node !== undefined) {
+    if (node.type === 'ProofNode') {
+      node = (await trie.lookupNodeByHash(node.hash())) ?? node
+    }
     if (node instanceof BranchNode) {
       for (let i = key[pos] + 1; i < 16; i++) {
         if ((await node.getChild(i)).getType() !== 'NullNode') {
@@ -453,7 +456,7 @@ export async function hasRightElement(trie: Trie, key: number[]): Promise<boolea
     } else if (node instanceof LeafNode) {
       return false
     } else {
-      throw new Error('invalid node')
+      throw new Error(`${node.getType()} invalid...`)
     }
   }
   return false

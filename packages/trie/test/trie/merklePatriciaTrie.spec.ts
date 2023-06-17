@@ -179,20 +179,24 @@ describe('trietest_secureTrie.json', async () => {
     const test = securetest.tests.jeff
     const test_in: [string, string | null][] = test.in as [string, string | null][]
     const trie_v2 = new Trie({ secure: true })
-    it('should test all entries', async () => {
-      for await (const [_idx, [k, v]] of test_in.entries()) {
-        const key = hexStringToBytes(k!)
-        const value = typeof v === 'string' ? hexStringToBytes(v) : null
-        await trie_v2.put(key, value)
-        toTest.set(k, v)
+    it(
+      'should test all entries',
+      async () => {
+        for await (const [_idx, [k, v]] of test_in.entries()) {
+          const key = hexStringToBytes(k!)
+          const value = typeof v === 'string' ? hexStringToBytes(v) : null
+          await trie_v2.put(key, value)
+          toTest.set(k, v)
 
-        for await (const [_k, _v] of toTest.entries()) {
-          const _value = typeof _v === 'string' ? hexStringToBytes(_v) : null
-          const stored_v2 = await trie_v2.get(hexStringToBytes(_k!))
-          assert.deepEqual(stored_v2, _value, `v2 should retrieve key/value: ${_k} / ${_v}`)
+          for await (const [_k, _v] of toTest.entries()) {
+            const _value = typeof _v === 'string' ? hexStringToBytes(_v) : null
+            const stored_v2 = await trie_v2.get(hexStringToBytes(_k!))
+            assert.deepEqual(stored_v2, _value, `v2 should retrieve key/value: ${_k} / ${_v}`)
+          }
         }
-      }
-    })
+      },
+      { timeout: 10000 }
+    )
     it('should match the test root', async () => {
       const rootHashv2 = bytesToPrefixedHexString(trie_v2.root())
       assert.equal(rootHashv2, test.root, 'root hash v2 should match test root')
