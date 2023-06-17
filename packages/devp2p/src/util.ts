@@ -5,8 +5,8 @@ import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { bytesToHex, concatBytes, equalsBytes } from 'ethereum-cryptography/utils.js'
 
-import type { ETH } from './protocol/eth'
-import type { LES } from './protocol/les'
+import type { ETH } from './protocol/eth.js'
+import type { LES } from './protocol/les.js'
 
 export const devp2pDebug = createDebugLogger('devp2p')
 

@@ -5,9 +5,9 @@ import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 import { Multiaddr } from 'multiaddr'
 import { sscanf } from 'scanf'
 
-import { keccak256, toNewUint8Array } from '../util'
+import { keccak256, toNewUint8Array } from '../util.js'
 
-import type { PeerInfo } from '../dpt'
+import type { PeerInfo } from '../dpt/index.js'
 
 const Convert = require('multiaddr/src/convert')
 

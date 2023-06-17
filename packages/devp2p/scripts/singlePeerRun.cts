@@ -1,6 +1,6 @@
 import { randomBytes } from '@ethereumjs/util'
 import { Chain, Common } from '@ethereumjs/common'
-import * as devp2p from '../src/index.js'
+import * as devp2p from '../dist/cjs/index.js'
 
 const PEER_ADDRESS = '[ADD_REMOTE_PEER_IP]'
 const PEER_PORT = 30303
