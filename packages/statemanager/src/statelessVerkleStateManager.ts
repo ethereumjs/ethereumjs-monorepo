@@ -14,10 +14,10 @@ import {
   writeInt32LE,
   zeros,
 } from '@ethereumjs/util'
-import { concatBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import { concatBytes, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import * as wasm from 'rust-verkle-wasm'
 
-import { AccountCache, CacheType, StorageCache } from './cache'
+import { AccountCache, CacheType, StorageCache } from './cache/index.js'
 import { OriginalStorageCache } from './cache/originalStorageCache'
 
 import type { VerkleExecutionWitness, VerkleProof } from '@ethereumjs/block'
@@ -31,6 +31,10 @@ import type {
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 export interface VerkleState {
+  [key: PrefixedHexString]: PrefixedHexString
+}
+
+export interface EncodedVerkleProof {
   [key: PrefixedHexString]: PrefixedHexString
 }
 
@@ -129,7 +133,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
   private _executionWitness: VerkleExecutionWitness | undefined
 
-  private _proof: VerkleProof | undefined
+  private _proof: Uint8Array | undefined
 
   // State along execution (should update)
   private _state: VerkleState = {}
@@ -187,7 +191,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
   public initVerkleExecutionWitness(executionWitness: VerkleExecutionWitness) {
     this._executionWitness = executionWitness
-    this._proof = executionWitness.verkleProof
+    this._proof = executionWitness.verkleProof as unknown as Uint8Array
 
     // Populate the pre-state from the executionWitness
     const preStateRaw = executionWitness.stateDiff.flatMap(({ stem, suffixDiffs }) => {
@@ -441,6 +445,30 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     await this.putAccount(address, account)
   }
 
+  getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
+    throw new Error('Not implemented yet')
+  }
+
+  async verifyProof(parentVerkleRoot: Uint8Array): Promise<boolean> {
+    // The root is the root of the current (un-updated) trie
+    // The proof is proof of membership of all of the accessed values
+    // keys_values is a map from the key of the accessed value to a tuple
+    // the tuple contains the old value and the updated value
+    //
+    // This function returns the new root when all of the updated values are applied
+
+    const updatedStateRoot: Uint8Array = wasm.verify_update(
+      parentVerkleRoot,
+      this._proof!, // TODO: Convert this into a Uint8Array ingestible by the method
+      new Map() // TODO: Generate the keys_values map from the old to the updated value
+    )
+    // TODO: Not sure if this should return the updated state Root (current block) or the un-updated one (parent block)
+    const verkleRoot = await this.getStateRoot()
+
+    // Verify that updatedStateRoot matches the state root of the block
+    return equalsBytes(updatedStateRoot, verkleRoot)
+  }
+
   /**
    * Checkpoints the current state of the StateManager instance.
    * State changes that follow can then be committed by calling
@@ -511,41 +539,11 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   }
 
   /**
-   * Checks whether the current instance has the canonical genesis state
-   * for the configured chain parameters.
-   * @returns {Promise<boolean>} - Whether the storage trie contains the
-   * canonical genesis state for the configured chain parameters.
-   */
-  async hasGenesisState(): Promise<boolean> {
-    return false
-  }
-
-  /**
-   * Checks if the `account` corresponding to `address`
-   * exists
-   * @param address - Address of the `account` to check
-   */
-  async accountExists(address: Address): Promise<boolean> {
-    return false
-  }
-
-  /**
    * Clears all underlying caches
    */
   clearCaches() {
     this._accountCache?.clear()
     this._storageCache?.clear()
-  }
-
-  accountIsEmptyOrNonExistent(_address: Address): Promise<boolean> {
-    throw new Error('function not implemented')
-  }
-  getOriginalContractStorage(_address: Address, _key: Uint8Array): Promise<Uint8Array> {
-    throw new Error('function not implemented')
-  }
-
-  getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
-    throw new Error('function not implemented')
   }
 
   generateCanonicalGenesis(_initState: any): Promise<void> {
