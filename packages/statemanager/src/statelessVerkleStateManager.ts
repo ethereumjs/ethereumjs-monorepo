@@ -450,6 +450,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   }
 
   async verifyProof(parentVerkleRoot: Uint8Array): Promise<boolean> {
+    // Implementation: https://github.com/crate-crypto/rust-verkle-wasm/blob/master/src/lib.rs#L45
     // The root is the root of the current (un-updated) trie
     // The proof is proof of membership of all of the accessed values
     // keys_values is a map from the key of the accessed value to a tuple
