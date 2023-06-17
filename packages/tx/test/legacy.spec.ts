@@ -135,9 +135,15 @@ describe('[Transaction]', () => {
     })
   })
 
-  it('validate() -> should validate with string option', () => {
+  it('getValidationErrors() -> should validate', () => {
     for (const tx of transactions) {
-      assert.equal(typeof tx.validate(true)[0], 'string')
+      assert.equal(typeof tx.getValidationErrors()[0], 'string')
+    }
+  })
+
+  it('isValid() -> should validate', () => {
+    for (const tx of transactions) {
+      assert.equal(typeof tx.isValid(), 'boolean')
     }
   })
 

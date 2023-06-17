@@ -151,25 +151,57 @@ export abstract class BaseTransaction<T extends TransactionType>
   }
 
   /**
-   * Checks if the transaction has the minimum amount of gas required
-   * (DataFee + TxFee + Creation Fee).
+   * Validates the transaction signature and minimum gas requirements.
+   * @returns {boolean} true if the transaction is valid, false otherwise
    */
-  validate(): boolean
-  validate(stringError: false): boolean
-  validate(stringError: true): string[]
-  validate(stringError: boolean = false): boolean | string[] {
-    const errors = []
-
+  isValid(): boolean {
+    // gasLimit is too low for baseFee
     if (this.getBaseFee() > this.gasLimit) {
-      errors.push(`gasLimit is too low. given ${this.gasLimit}, need at least ${this.getBaseFee()}`)
+      return false
     }
+
+    // Invalid signature
+    if (this.isSigned() && !this.verifySignature()) {
+      return false
+    }
+    return true
+  }
+
+  /**
+   * Validates the transaction signature and minimum gas requirements.
+   * @returns {string[]} an array of error strings
+   */
+  getValidationErrors(): string[] {
+    const errors = []
 
     if (this.isSigned() && !this.verifySignature()) {
       errors.push('Invalid Signature')
     }
 
-    return stringError ? errors : errors.length === 0
+    if (this.getBaseFee() > this.gasLimit) {
+      errors.push(`gasLimit is too low. given ${this.gasLimit}, need at least ${this.getBaseFee()}`)
+    }
+
+    return errors
   }
+
+  // /**
+  //  * Validates the transaction signature and minimum gas requirements.
+  //  * @returns {string[]} an array of error strings
+  //  */
+  // validate(): string[] {
+  //   const errors = []
+
+  //   if (this.isSigned() && !this.verifySignature()) {
+  //     errors.push('Invalid Signature')
+  //   }
+
+  //   if (this.getBaseFee() > this.gasLimit) {
+  //     errors.push(`gasLimit is too low. given ${this.gasLimit}, need at least ${this.getBaseFee()}`)
+  //   }
+
+  //   return errors
+  // }
 
   protected _validateYParity() {
     const { v } = this
