@@ -2,7 +2,7 @@ import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 import { EventEmitter } from 'events'
 import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../src/index.js'
+import { Trie, nibblestoBytes } from '../src/index.js'
 
 import type { BatchDBOp } from '../src'
 
@@ -105,7 +105,7 @@ describe('kv stream test', () => {
   it('should populate trie', async () => {
     await trie.batch(ops)
     const done = new EventEmitter()
-    const stream = await trie.createReadStream()
+    const stream = trie.createReadStream()
     stream.on('error', (err: any) => {
       assert.fail(`stream error: ${err}`)
       done.emit('done')

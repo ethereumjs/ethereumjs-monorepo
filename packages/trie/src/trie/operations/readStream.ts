@@ -1,12 +1,12 @@
 import { bytesToPrefixedHexString } from '@ethereumjs/util'
 import { Readable } from 'readable-stream'
 
-import { nibblesEqual } from '../../util/nibbles'
-import { BranchNode, LeafNode } from '../node'
+import { nibblesEqual } from '../../util/nibbles.js'
+import { BranchNode, LeafNode } from '../node/index.js'
 
-import type { FoundNodeFunction, WalkFilterFunction } from '../../types'
-import type { TNode } from '../node/types'
-import type { TrieWrap } from '../trieWrapper'
+import type { FoundNodeFunction, WalkFilterFunction } from '../../types.js'
+import type { TNode } from '../node/types.js'
+import type { TrieWrap } from '../trieWrapper.js'
 
 export class TrieReadStream extends Readable {
   private trie: TrieWrap

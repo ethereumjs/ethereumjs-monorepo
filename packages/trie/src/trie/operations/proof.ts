@@ -1,6 +1,4 @@
-import { RLP } from '@ethereumjs/rlp'
 import { bytesToPrefixedHexString, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { bytesToNibbles } from '../../util/nibbles'
 

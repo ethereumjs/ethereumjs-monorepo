@@ -2,7 +2,7 @@ import { bytesToNibbles, bytesToPrefixedHexString } from '@ethereumjs/util'
 import debug from 'debug'
 import { equalsBytes } from 'ethereum-cryptography/utils'
 
-import { BranchNode, ExtensionNode, LeafNode, NullNode, ProofNode, Trie } from '../trie.js'
+import { BranchNode, ExtensionNode, LeafNode, NullNode, ProofNode, Trie } from '../index.js'
 import { nibblesCompare, nibblesEqual, nibblestoBytes } from '../util/nibbles.js'
 
 import type { TNode } from '../trie/node/types.js'

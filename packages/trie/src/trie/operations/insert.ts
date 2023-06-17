@@ -1,13 +1,13 @@
 import { bytesToPrefixedHexString } from '@ethereumjs/util'
 
-import { findCommonPrefix, getSharedNibbles } from '../../util/nibbles'
-import { BranchNode, ExtensionNode, LeafNode } from '../node'
+import { findCommonPrefix, getSharedNibbles } from '../../util/nibbles.js'
+import { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
 
-import { _cleanupNode } from './cleanup'
+import { _cleanupNode } from './cleanup.js'
 
-import type { MerklePatriciaTrie } from '../merklePatricia'
-import type { ProofNode } from '../node'
-import type { NodeType, TNode } from '../node/types'
+import type { MerklePatriciaTrie } from '../merklePatricia.js'
+import type { ProofNode } from '../node/index.js'
+import type { NodeType, TNode } from '../node/types.js'
 import type { Debugger } from 'debug'
 
 export async function _insertAtNode(

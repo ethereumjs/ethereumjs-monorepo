@@ -46,6 +46,7 @@ describe('testing checkpoints', () => {
 
   it('should create a checkpoint', () => {
     trie.checkpoint()
+    assert.equal(trie.checkpoints.length, 1, 'should have one checkpoint')
     assert.ok(trie.hasCheckpoints())
   })
 
@@ -77,28 +78,18 @@ describe('testing checkpoints', () => {
   })
 
   it('should copy trie and use the correct hash function', async () => {
-    trie = new Trie({
+    const trie = new Trie({
+      useKeyHashing: true,
       secure: true,
-      hashFunction: (value) => createHash('sha256').update(value).digest(),    t.equal(bytesToUtf8((await CommittedState.get(KEY))!), '1')
-      const dbRoot = await CommittedState.database().get(KEY_ROOT)
-      if (dbRoot) {
-        t.equal(
-          bytesToHex(dbRoot),
-          '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c'
-        )
-      } else {
-        t.fail(`DB_ROOT_KEY ${bytesToPrefixedHexString(KEY_ROOT)} not found in DB`)
-      }
-      t.equal(
-  
+      hashFunction: (value) => createHash('sha256').update(value).digest(),
     })
     await trie.put(utf8ToBytes('key1'), utf8ToBytes('value1'))
-    preRoot = bytesToHex(trie.root())
     trie.checkpoint()
+    assert.equal(trie.checkpoints.length, 1, 'Trie should have 1 checkpoint')
     await trie.put(utf8ToBytes('key2'), utf8ToBytes('value2'))
     const trieCopy = trie.copy()
 
-    t.equal(
+    assert.equal(
       bytesToHex(trieCopy.root()),
       bytesToHex(trie.root()),
       'trieCopy.root() should equal root'
@@ -110,8 +101,10 @@ describe('testing checkpoints', () => {
 
   it('should revert to the original root', async () => {
     assert.ok(trie.hasCheckpoints())
+    assert.equal(trie.checkpoints.length, 1, 'Trie should have 1 remaining checkpoint')
     await trie.revert()
     assert.equal(bytesToHex(trie.root()), preRoot)
+    assert.equal(trie.checkpoints.length, 0, 'Trie should have no remaining checkpoints')
     assert.notOk(trie.hasCheckpoints())
   })
 

@@ -3,21 +3,21 @@ import debug from 'debug'
 import { equalsBytes } from 'ethereum-cryptography/utils'
 // import * as LRUCache from 'lru-cache'
 
-import { getChildOf, proofToPath } from '../proof/rangeHelpers'
-import { _verifyRangeProof } from '../proof/rangeProof'
-import { ROOT_DB_KEY } from '../types'
-import { bulkInsert } from '../util'
-import { bytesToNibbles } from '../util/nibbles'
+import { getChildOf, proofToPath } from '../proof/rangeHelpers.js'
+import { _verifyRangeProof } from '../proof/rangeProof.js'
+import { ROOT_DB_KEY } from '../types.js'
+import { bulkInsert } from '../util/index.js'
+import { bytesToNibbles } from '../util/nibbles.js'
 
-import { NullNode } from './node'
-import { createProof, updateFromProof } from './operations/proof'
-import { TrieReadStream } from './operations/readStream'
-import { _walkTrieRecursively, walkTrie } from './operations/walkTrie'
-import { TrieWithDB } from './trieDB'
+import { NullNode } from './node/index.js'
+import { createProof, updateFromProof } from './operations/proof.js'
+import { TrieReadStream } from './operations/readStream.js'
+import { _walkTrieRecursively, walkTrie } from './operations/walkTrie.js'
+import { TrieWithDB } from './trieDB.js'
 
-import { Trie } from '.'
+import { Trie } from './index.js'
 
-import type { TrieWrapOptions } from '../types'
+import type { TrieWrapOptions } from '../types.js'
 // import type { TNode } from './node/types'
 import type { Debugger } from 'debug'
 
@@ -193,7 +193,7 @@ export class TrieWrap extends TrieWithDB {
       return trieValue
     } catch (err: any) {
       this.debug.extend(`verifyProof`)(`Failed to verify proof: ${err.message}`)
-      return null
+      throw new Error('Invalid proof provided')
     }
   }
   // async setRootNode(root: TNode) {

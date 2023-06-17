@@ -1,10 +1,10 @@
 import { equalsBytes } from 'ethereum-cryptography/utils'
 
-import { ProofDatabase } from '../db'
-import { Trie } from '../trie'
-import { bytesToNibbles, nibblesCompare, nibblesEqual, nibblestoBytes } from '../util/nibbles'
+import { ProofDatabase } from '../db/index.js'
+import { Trie } from '../trie/index.js'
+import { bytesToNibbles, nibblesCompare, nibblesEqual, nibblestoBytes } from '../util/nibbles.js'
 
-import { hasRightElement } from './rangeHelpers'
+import { hasRightElement } from './rangeHelpers.js'
 
 // VerifyRangeProof checks whether the given leaf nodes and edge proof
 // can prove the given trie leaves range is matched with the specific root.

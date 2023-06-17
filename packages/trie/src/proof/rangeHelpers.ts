@@ -2,12 +2,12 @@
 
 import { bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
 
-import { BranchNode, ExtensionNode, LeafNode, NullNode, ProofNode } from '../trie'
-import { nibblesCompare, nibblesEqual } from '../util'
+import { BranchNode, ExtensionNode, LeafNode, NullNode, ProofNode } from '../trie/index.js'
+import { nibblesCompare, nibblesEqual } from '../util/index.js'
 
-import type { ProofDatabase } from '../db'
-import type { NodeType, TNode } from '../trie/node/types'
-import type { TrieWrap } from '../trie/trieWrapper'
+import type { ProofDatabase } from '../db/index.js'
+import type { NodeType, TNode } from '../trie/node/types.js'
+import type { TrieWrap } from '../trie/trieWrapper.js'
 
 // import { NullNode, ProofNode } from '../trie'
 // import { BranchNode, ExtensionNode, LeafNode } from '../trie/node'

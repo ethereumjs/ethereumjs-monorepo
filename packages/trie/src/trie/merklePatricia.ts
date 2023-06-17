@@ -6,24 +6,24 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 // import { getChildOf, unsetInternal } from '../proof/rangeHelpers'
 
 import { unset, unsetInternal } from '../proof/rangeHelpers'
-import { bytesToNibbles } from '../util'
+import { bytesToNibbles } from '../util/index.js'
 
-import { NullNode, ProofNode } from './node'
-import { _cleanupBranchNode, _cleanupExtensionNode, _cleanupNode } from './operations/cleanup'
+import { NullNode, ProofNode } from './node/index.js'
+import { _cleanupBranchNode, _cleanupExtensionNode, _cleanupNode } from './operations/cleanup.js'
 import {
   decodeBranchNode,
   decodeExtensionNode,
   decodeHashedChild,
   decodeLeafNode,
   decodeNode,
-} from './operations/decode'
-import { _deleteAtNode } from './operations/delete'
-import { _getNodePath } from './operations/getNode'
-import { _insertAtNode } from './operations/insert'
-import { _walk } from './operations/walkTrie'
+} from './operations/decode.js'
+import { _deleteAtNode } from './operations/delete.js'
+import { _getNodePath } from './operations/getNode.js'
+import { _insertAtNode } from './operations/insert.js'
+import { _walk } from './operations/walkTrie.js'
 
-import type { MerklePatriciaTrieOptions, PathToNode } from '../types'
-import type { TNode } from './node/types'
+import type { MerklePatriciaTrieOptions, PathToNode } from '../types.js'
+import type { TNode } from './node/types.js'
 import type { Debugger } from 'debug'
 
 export class MerklePatriciaTrie {

@@ -2,12 +2,12 @@ import { RLP } from '@ethereumjs/rlp'
 import { bytesToPrefixedHexString, equalsBytes } from '@ethereumjs/util'
 import debug from 'debug'
 
-import { isTerminator, removeHexPrefix } from '../../util/hex'
-import { bytesToNibbles } from '../../util/nibbles'
-import { BranchNode, ExtensionNode, LeafNode, NullNode, ProofNode, decodeToNode } from '../node'
+import { isTerminator, removeHexPrefix } from '../../util/hex.js'
+import { bytesToNibbles } from '../../util/nibbles.js'
+import { BranchNode, ExtensionNode, LeafNode, NullNode, ProofNode } from '../node/index.js'
 
-import type { MerklePatriciaTrie } from '../merklePatricia'
-import type { TNode } from '../node/types'
+import type { MerklePatriciaTrie } from '../merklePatricia.js'
+import type { TNode } from '../node/types.js'
 import type { Debugger } from 'debug'
 
 export async function decodeNode(

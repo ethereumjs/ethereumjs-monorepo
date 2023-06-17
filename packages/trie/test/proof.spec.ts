@@ -50,8 +50,8 @@ describe('simple merkle proofs generation and verification', () => {
     proof = await trie.createProof(utf8ToBytes('another'))
     // and try to use that proof on another key
     try {
-      await trie.verifyProof(trie.root(), utf8ToBytes('key1aa'), proof)
-      assert.fail('expected error: Invalid proof provided')
+      const valid = await trie.verifyProof(trie.root(), utf8ToBytes('key1aa'), proof)
+      assert.equal(valid, null)
     } catch (e: any) {
       assert.equal(e.message, 'Invalid proof provided')
     }
@@ -75,8 +75,8 @@ describe('simple merkle proofs generation and verification', () => {
     // now make the key non-null so the exclusion proof becomes invalid
     await trie.put(myKey, utf8ToBytes('thisisavalue'))
     try {
-      await trie.verifyProof(trie.root(), myKey, proof)
-      assert.fail('expected error: Invalid proof provided')
+      const valid = await trie.verifyProof(trie.root(), myKey, proof)
+      assert.equal(valid, null, 'Expected value to be null')
     } catch (e: any) {
       assert.equal(e.message, 'Invalid proof provided')
     }

@@ -1,10 +1,10 @@
 import { debug as _debug } from 'debug'
 
-import { BranchNode, ExtensionNode, LeafNode, NullNode } from '../node'
+import { BranchNode, ExtensionNode, LeafNode, NullNode } from '../node/index.js'
 
-import type { MerklePatriciaTrie } from '../merklePatricia'
-import type { ProofNode } from '../node'
-import type { NodeType, TNode } from '../node/types'
+import type { MerklePatriciaTrie } from '../merklePatricia.js'
+import type { ProofNode } from '../node/index.js'
+import type { NodeType, TNode } from '../node/types.js'
 import type { Debugger } from 'debug'
 
 export async function _cleanupNode(

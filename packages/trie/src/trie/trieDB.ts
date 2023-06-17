@@ -1,19 +1,19 @@
 import { bytesToPrefixedHexString, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
-import * as LRUCache from 'lru-cache'
+import LRUCache from 'lru-cache'
 
-import { TrieDatabase } from '../db'
-import { ROOT_DB_KEY } from '../types'
+import { TrieDatabase } from '../db/index.js'
+import { ROOT_DB_KEY } from '../types.js'
 
-import { MerklePatriciaTrie } from './merklePatricia'
-import { NullNode, ProofNode } from './node'
+import { MerklePatriciaTrie } from './merklePatricia.js'
+import { NullNode, ProofNode } from './node/index.js'
 import {
   _garbageCollect,
   _markReachableNodes,
   _verifyPrunedIntegrity,
-} from './operations/garbageCollection'
+} from './operations/garbageCollection.js'
 
-import type { TrieDBOptions } from '../types'
-import type { TNode } from './node/types'
+import type { TrieDBOptions } from '../types.js'
+import type { TNode } from './node/types.js'
 import type { Debugger } from 'debug'
 
 export class TrieWithDB extends MerklePatriciaTrie {

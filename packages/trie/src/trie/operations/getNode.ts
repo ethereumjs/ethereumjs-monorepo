@@ -1,9 +1,9 @@
-import { doKeysMatch } from '../../util/nibbles'
-import { NullNode } from '../node'
+import { doKeysMatch } from '../../util/nibbles.js'
+import { NullNode } from '../node/index.js'
 
-import type { MerklePatriciaTrie } from '../merklePatricia'
-import type { BranchNode, ExtensionNode, LeafNode, ProofNode } from '../node'
-import type { TNode } from '../node/types'
+import type { MerklePatriciaTrie } from '../merklePatricia.js'
+import type { BranchNode, ExtensionNode, LeafNode, ProofNode } from '../node/index.js'
+import type { TNode } from '../node/types.js'
 import type { Debugger } from 'debug'
 
 export type WalkResult = {
@@ -29,8 +29,8 @@ export async function _getNodePath(
     }
     debug = debug.extend(currentNode.getType())
     debug(`Pushing ${currentNode.getType()} to path`)
-    path.push(currentNode)
     let childIndex: number | undefined
+    path.push(currentNode)
     let childNode: TNode | undefined
     let nodeNibbles: number[]
     let sharedNibbles: number[]

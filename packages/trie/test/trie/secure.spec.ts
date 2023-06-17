@@ -178,20 +178,14 @@ describe('Securetrie.copy', () => {
   it('created copy uses the correct hash function', async () => {
     const trie = new Trie({
       useKeyHashing: true,
+      secure: true,
       hashFunction: (value) => {
         return Uint8Array.from([...utf8ToBytes('HASHED'), ...value])
       },
     })
-    const trieCopy = trie.copy()
 
     const key = utf8ToBytes('TestKey')
-
-    await trie.put(utf8ToBytes('key1'), utf8ToBytes('value1'))
-    trie.checkpoint()
-    await trie.put(utf8ToBytes('key2'), utf8ToBytes('value2'))
     const trieCopy = trie.copy()
-    const value = await trieCopy.get(utf8ToBytes('key1'))
-    assert.equal(bytesToUtf8(value!), 'value1')
     assert.equal(
       bytesToUtf8((trieCopy as any).hashFunction(key)),
       bytesToUtf8((trie as any).hashFunction(key)),
@@ -202,6 +196,5 @@ describe('Securetrie.copy', () => {
       'HASHEDTestKey',
       'hash should be custom hash function'
     )
-    assert.end()
   })
 })

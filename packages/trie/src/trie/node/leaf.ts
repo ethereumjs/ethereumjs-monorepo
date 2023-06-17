@@ -7,6 +7,8 @@ import { bytesToNibbles, doKeysMatch, nibblestoBytes } from '../../util/nibbles.
 
 import { BaseNode, NullNode } from './node.js'
 
+import type { NodeInterface, NodeType, TNode, TNodeOptions } from './types.js'
+
 export class LeafNode extends BaseNode implements NodeInterface<'LeafNode'> {
   type = 'LeafNode' as const
   keyNibbles: number[]

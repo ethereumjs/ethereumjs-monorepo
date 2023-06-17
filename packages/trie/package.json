@@ -61,6 +61,7 @@
     "readable-stream": "^3.6.0"
   },
   "devDependencies": {
+    "@esbuild/linux-x64": "^0.18.4",
     "0x": "^4.9.1",
     "@types/benchmark": "^1.0.33",
     "abstract-level": "^1.0.3",

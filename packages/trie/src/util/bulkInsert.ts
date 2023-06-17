@@ -1,7 +1,7 @@
 import { bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
 import debug from 'debug'
 
-import { BranchNode, ExtensionNode, LeafNode, Trie } from '../trie'
+import { BranchNode, ExtensionNode, LeafNode, Trie } from '../trie/index.js'
 
 import { findCommonPrefix, nibblestoBytes } from './nibbles'
 

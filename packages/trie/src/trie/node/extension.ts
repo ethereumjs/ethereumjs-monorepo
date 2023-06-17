@@ -12,6 +12,15 @@ import {
 import { LeafNode } from './leaf.js'
 import { BaseNode, NullNode } from './node.js'
 
+import type {
+  EncodedChild,
+  EncodedKey,
+  NodeInterface,
+  NodeType,
+  TNode,
+  TNodeOptions,
+} from './types.js'
+
 export class ExtensionNode extends BaseNode implements NodeInterface<'ExtensionNode'> {
   type = 'ExtensionNode' as const
   keyNibbles: number[]

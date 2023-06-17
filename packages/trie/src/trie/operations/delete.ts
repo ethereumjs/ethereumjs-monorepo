@@ -1,13 +1,13 @@
 import { bytesToPrefixedHexString } from '@ethereumjs/util'
 
-import { doKeysMatch, getSharedNibbles } from '../../util/nibbles'
-import { NullNode } from '../node'
+import { doKeysMatch, getSharedNibbles } from '../../util/nibbles.js'
+import { NullNode } from '../node/index.js'
 
-import { _cleanupNode } from './cleanup'
+import { _cleanupNode } from './cleanup.js'
 
-import type { MerklePatriciaTrie } from '../merklePatricia'
-import type { BranchNode, ExtensionNode, LeafNode } from '../node'
-import type { NodeType, TNode } from '../node/types'
+import type { MerklePatriciaTrie } from '../merklePatricia.js'
+import type { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
+import type { NodeType, TNode } from '../node/types.js'
 import type { Debugger } from 'debug'
 
 export async function _deleteAtNode(
