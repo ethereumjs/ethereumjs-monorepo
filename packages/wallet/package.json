@@ -55,7 +55,6 @@
   "devDependencies": {
     "@types/js-md5": "0.4.3",
     "@types/lodash.zip": "4.2.7",
-    "@types/node": "18.0.0",
     "ethers": "^6.4.0",
     "lodash.zip": "4.2.0",
     "nyc": "15.1.0"
