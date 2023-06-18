@@ -66,6 +66,20 @@ describe('MapDB: batch', () => {
   })
 })
 
+describe('MapDB: shallowCopy', () => {
+  it('should reuse underlying database in case of a shallowCopy', async () => {
+    const database = new Map()
+    database.set('key1', 'value1')
+    const mapDB = new MapDB(database)
+
+    const shallowCopyDB = mapDB.shallowCopy()
+    database.delete('key1')
+
+    const result = await shallowCopyDB.get('key1')
+    assert.equal(result, undefined, 'should reuse underlying database in case of a shallowCopy')
+  })
+})
+
 describe('MapDB: open', () => {
   it('should return a resolved promise', async () => {
     const mapDB = new MapDB()
