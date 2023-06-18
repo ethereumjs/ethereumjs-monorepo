@@ -39,7 +39,6 @@
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
-    "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "vitest run --browser.name=chrome --browser.headless",
     "test:node": "vitest run",
@@ -55,7 +54,6 @@
   "devDependencies": {
     "@types/js-md5": "0.4.3",
     "@types/lodash.zip": "4.2.7",
-    "@types/node": "18.0.0",
     "ethers": "^6.4.0",
     "lodash.zip": "4.2.0",
     "nyc": "15.1.0"
