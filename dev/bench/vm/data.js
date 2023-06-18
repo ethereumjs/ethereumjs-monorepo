@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1687104205820,
+  "lastUpdate": 1687123555246,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "20706f62b627c587c2df0ae0a1d7793d9adc02fe",
-          "message": "tx: Add serialized blob tx spec test (#2744)",
-          "timestamp": "2023-06-02T12:17:38+05:30",
-          "tree_id": "c47fbba0c2f4ac8ccef29994bf8ec92dcc6c5836",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/20706f62b627c587c2df0ae0a1d7793d9adc02fe"
-        },
-        "date": 1685688690421,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 26896,
-            "range": "±5.58%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 26851,
-            "range": "±3.36%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 26798,
-            "range": "±3.39%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 26185,
-            "range": "±3.74%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 20887,
-            "range": "±11.48%",
-            "unit": "ops/sec",
-            "extra": "66 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±10.40%",
             "unit": "ops/sec",
             "extra": "69 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": false,
+          "id": "4146f58af854fc31f528fd3252e0a5baacd19b94",
+          "message": "util: Rename mapdb copy function (#2795)\n\n* Rename copy function to shallowCopy\n\n* Add test for shallowCopy",
+          "timestamp": "2023-06-18T17:06:33-04:00",
+          "tree_id": "bcef1d36cef9dcb474c4b237a14208f14f950309",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4146f58af854fc31f528fd3252e0a5baacd19b94"
+        },
+        "date": 1687123554073,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 32834,
+            "range": "±4.35%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 32782,
+            "range": "±2.06%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 29881,
+            "range": "±7.29%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 31882,
+            "range": "±2.30%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 31043,
+            "range": "±2.32%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
           }
         ]
       }
