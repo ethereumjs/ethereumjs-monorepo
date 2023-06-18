@@ -252,7 +252,7 @@ export class CheckpointDB implements DB {
   /**
    * @inheritDoc
    */
-  copy(): CheckpointDB {
+  shallowCopy(): CheckpointDB {
     return new CheckpointDB({ db: this.db, cacheSize: this.cacheSize })
   }
 
