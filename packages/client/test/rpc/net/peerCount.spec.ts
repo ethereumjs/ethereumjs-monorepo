@@ -1,10 +1,10 @@
-import * as tape from 'tape'
+import { assert, describe } from 'vitest'
 
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 
 const method = 'net_peerCount'
 
-tape(`${method}: call`, async (t) => {
+describe(`${method}: call`, async () => {
   const manager = createManager(createClient({ opened: true }))
   const server = startRPC(manager.getMethods())
 
@@ -12,7 +12,7 @@ tape(`${method}: call`, async (t) => {
   const expectRes = (res: any) => {
     const { result } = res.body
     const msg = 'result should be a hex number'
-    t.equal(result.substring(0, 2), '0x', msg)
+    assert.equal(result.substring(0, 2), '0x', msg)
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
 })

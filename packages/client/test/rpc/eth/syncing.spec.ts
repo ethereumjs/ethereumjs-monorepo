@@ -1,5 +1,5 @@
-import * as tape from 'tape'
 import * as td from 'testdouble'
+import { assert, describe } from 'vitest'
 
 import { INTERNAL_ERROR } from '../../../src/rpc/error-code'
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
@@ -9,39 +9,39 @@ import type { FullSynchronizer } from '../../../src/sync'
 
 const method = 'eth_syncing'
 
-tape(`${method}: should return false when the client is synchronized`, async (t) => {
+describe(`${method}: should return false when the client is synchronized`, async () => {
   const client = createClient()
   const manager = createManager(client)
   const server = startRPC(manager.getMethods())
 
   client.config.synchronized = false
-  t.equals(client.config.synchronized, false, 'not synchronized yet')
+  assert.equal(client.config.synchronized, false, 'not synchronized yet')
   client.config.synchronized = true
-  t.equals(client.config.synchronized, true, 'synchronized')
+  assert.equal(client.config.synchronized, true, 'synchronized')
 
   const req = params(method, [])
   const expectRes = (res: any) => {
     const msg = 'should return false'
-    t.equal(res.body.result, false, msg)
+    assert.equal(res.body.result, false, msg)
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: should return no peer available error`, async (t) => {
+describe(`${method}: should return no peer available error`, async () => {
   const client = createClient({ noPeers: true })
   const manager = createManager(client)
   const rpcServer = startRPC(manager.getMethods())
 
   client.config.synchronized = false
-  t.equals(client.config.synchronized, false, 'not synchronized yet')
+  assert.equal(client.config.synchronized, false, 'not synchronized yet')
 
   const req = params(method, [])
 
-  const expectRes = checkError(t, INTERNAL_ERROR, 'no peer available for synchronization')
-  await baseRequest(t, rpcServer, req, 200, expectRes)
+  const expectRes = checkError(INTERNAL_ERROR, 'no peer available for synchronization')
+  await baseRequest(rpcServer, req, 200, expectRes)
 })
 
-tape(`${method}: should return highest block header unavailable error`, async (t) => {
+describe(`${method}: should return highest block header unavailable error`, async () => {
   const client = createClient()
   const manager = createManager(client)
   const rpcServer = startRPC(manager.getMethods())
@@ -51,15 +51,15 @@ tape(`${method}: should return highest block header unavailable error`, async (t
   td.when(synchronizer.best()).thenResolve('peer')
 
   client.config.synchronized = false
-  t.equals(client.config.synchronized, false, 'not synchronized yet')
+  assert.equal(client.config.synchronized, false, 'not synchronized yet')
 
   const req = params(method, [])
 
-  const expectRes = checkError(t, INTERNAL_ERROR, 'highest block header unavailable')
-  await baseRequest(t, rpcServer, req, 200, expectRes)
+  const expectRes = checkError(INTERNAL_ERROR, 'highest block header unavailable')
+  await baseRequest(rpcServer, req, 200, expectRes)
 })
 
-tape(`${method}: should return syncing status object when unsynced`, async (t) => {
+describe(`${method}: should return syncing status object when unsynced`, async () => {
   const client = createClient()
   const manager = createManager(client)
   const rpcServer = startRPC(manager.getMethods())
@@ -71,7 +71,7 @@ tape(`${method}: should return syncing status object when unsynced`, async (t) =
   td.when(synchronizer.latest('peer' as any)).thenResolve({ number: BigInt(2) })
 
   client.config.synchronized = false
-  t.equals(client.config.synchronized, false, 'not synchronized yet')
+  assert.equal(client.config.synchronized, false, 'not synchronized yet')
 
   const req = params(method, [])
   const expectRes = (res: any) => {
@@ -81,16 +81,15 @@ tape(`${method}: should return syncing status object when unsynced`, async (t) =
       res.body.result.currentBlock === '0x0' &&
       res.body.result.highestBlock === '0x2'
     ) {
-      t.pass(msg)
+      assert.ok(true, msg)
     } else {
-      t.fail(msg)
+      assert.fail(msg)
     }
   }
 
-  await baseRequest(t, rpcServer, req, 200, expectRes)
+  await baseRequest(rpcServer, req, 200, expectRes)
 })
 
-tape('should reset td', (t) => {
+describe('should reset td', () => {
   td.reset()
-  t.end()
 })

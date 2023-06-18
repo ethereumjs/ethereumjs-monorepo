@@ -1,6 +1,6 @@
 import { randomBytes } from '@ethereumjs/util'
 import { encode } from 'jwt-simple'
-import * as tape from 'tape'
+import { assert, describe } from 'vitest'
 
 import { METHOD_NOT_FOUND } from '../../src/rpc/error-code'
 
@@ -13,7 +13,7 @@ const request = require('superwstest')
 const jwtSecret = randomBytes(32)
 const wsPort = 3000
 
-tape('call JSON-RPC auth protected server with valid token', (t) => {
+describe('call JSON-RPC auth protected server with valid token', () => {
   const server = startRPC({}, { wsServer: true }, { jwtSecret })
   const claims = { iat: Math.floor(new Date().getTime() / 1000) }
   const token = encode(claims, jwtSecret as never as string, 'HS256' as TAlgorithm)
@@ -33,9 +33,8 @@ tape('call JSON-RPC auth protected server with valid token', (t) => {
         .expectJson((res: any) => res.error.code === METHOD_NOT_FOUND)
         .close()
         .expectClosed()
-      t.end()
     } catch (err) {
-      t.end(err)
+      assert.notOk(err)
     } finally {
       closeRPC(server)
     }
@@ -43,14 +42,13 @@ tape('call JSON-RPC auth protected server with valid token', (t) => {
   server.listen(wsPort, 'localhost', testFn)
 })
 
-tape('call JSON-RPC auth protected server without any auth headers', (t) => {
+describe('call JSON-RPC auth protected server without any auth headers', () => {
   const server = startRPC({}, { wsServer: true }, { jwtSecret })
   const testFn = async () => {
     try {
       await request(server).ws('/').expectConnectionError(401)
-      t.end()
     } catch (err) {
-      t.end(err)
+      assert.notOk(err)
     } finally {
       closeRPC(server)
     }
@@ -58,7 +56,7 @@ tape('call JSON-RPC auth protected server without any auth headers', (t) => {
   server.listen(wsPort, 'localhost', testFn)
 })
 
-tape('call JSON-RPC server without any auth headers', (t) => {
+describe('call JSON-RPC server without any auth headers', () => {
   const server = startRPC({}, { wsServer: true })
   const req = {
     jsonrpc: '2.0',
@@ -75,9 +73,8 @@ tape('call JSON-RPC server without any auth headers', (t) => {
         .expectJson((res: any) => res.error.code === METHOD_NOT_FOUND)
         .close()
         .expectClosed()
-      t.end()
     } catch (err) {
-      t.end(err)
+      assert.notOk(err)
     } finally {
       closeRPC(server)
     }

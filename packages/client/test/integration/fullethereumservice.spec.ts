@@ -4,8 +4,8 @@ import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Account, bytesToHex, equalsBytes, hexStringToBytes, toBytes } from '@ethereumjs/util'
-import * as tape from 'tape'
 import * as td from 'testdouble'
+import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/config'
 import { FullEthereumService } from '../../src/service'
@@ -17,7 +17,7 @@ import { destroy } from './util'
 
 const config = new Config({ accountCache: 10000, storageCache: 1000 })
 
-tape('[Integration:FullEthereumService]', async (t) => {
+describe('[Integration:FullEthereumService]', async () => {
   // Stub out setStateRoot since correct state root doesn't exist in mock state.
   const ogSetStateRoot = DefaultStateManager.prototype.setStateRoot
   DefaultStateManager.prototype.setStateRoot = (): any => {}
@@ -46,28 +46,27 @@ tape('[Integration:FullEthereumService]', async (t) => {
     return [server, service]
   }
 
-  t.test('should handle ETH requests', async (t) => {
-    t.plan(8)
+  it('should handle ETH requests', async () => {
     const [server, service] = await setup()
     const peer = await server.accept('peer0')
     const [reqId1, headers] = await peer.eth!.getBlockHeaders({ block: BigInt(1), max: 2 })
     const hash = hexStringToBytes(
       'a321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069'
     )
-    t.equal(reqId1, BigInt(1), 'handled GetBlockHeaders')
-    t.ok(equalsBytes(headers![1].hash(), hash), 'handled GetBlockHeaders')
+    assert.equal(reqId1, BigInt(1), 'handled GetBlockHeaders')
+    assert.ok(equalsBytes(headers![1].hash(), hash), 'handled GetBlockHeaders')
     const res = await peer.eth!.getBlockBodies({ hashes: [hash] })
     const [reqId2, bodies] = res
-    t.equal(reqId2, BigInt(2), 'handled GetBlockBodies')
-    t.deepEquals(bodies, [[[], []]], 'handled GetBlockBodies')
+    assert.equal(reqId2, BigInt(2), 'handled GetBlockBodies')
+    assert.deepEqual(bodies, [[[], []]], 'handled GetBlockBodies')
     service.config.events.on(Event.PROTOCOL_MESSAGE, async (msg) => {
       switch (msg.name) {
         case 'NewBlockHashes': {
-          t.pass('handled NewBlockHashes')
+          assert.ok(true, 'handled NewBlockHashes')
           break
         }
         case 'NewBlock': {
-          t.pass('handled NewBlock')
+          assert.ok(true, 'handled NewBlock')
           await destroy(server, service)
           break
         }
@@ -99,17 +98,17 @@ tape('[Integration:FullEthereumService]', async (t) => {
       Hardfork.London
     )
     const [_, txs] = await peer.eth!.getPooledTransactions({ hashes: [tx.hash()] })
-    t.ok(equalsBytes(txs[0].hash(), tx.hash()), 'handled GetPooledTransactions')
+    assert.ok(equalsBytes(txs[0].hash(), tx.hash()), 'handled GetPooledTransactions')
 
     peer.eth!.send('Transactions', [tx])
-    t.pass('handled Transactions')
+    assert.ok(true, 'handled Transactions')
   })
 
-  t.test('should handle LES requests', async (t) => {
+  it('should handle LES requests', async () => {
     const [server, service] = await setup()
     const peer = await server.accept('peer0')
     const { headers } = await peer.les!.getBlockHeaders({ block: BigInt(1), max: 2 })
-    t.equals(
+    assert.equal(
       bytesToHex(headers[1].hash()),
       'a321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069',
       'handled GetBlockHeaders'

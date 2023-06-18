@@ -17,7 +17,7 @@ import {
   randomBytes,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import * as tape from 'tape'
+import { assert, describe } from 'vitest'
 
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../src/rpc/error-code'
 import { baseRequest, baseSetup, params } from '../helpers'
@@ -27,7 +27,7 @@ import type { FullEthereumService } from '../../../src/service'
 
 const method = 'eth_sendRawTransaction'
 
-tape(`${method}: call with valid arguments`, async (t) => {
+describe(`${method}: call with valid arguments`, async () => {
   // Disable stateroot validation in TxPool since valid state root isn't available
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   const originalStateManagerCopy = DefaultStateManager.prototype.copy
@@ -60,19 +60,19 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const req = params(method, [txData])
   const expectRes = (res: any) => {
     const msg = 'should return the correct tx hash'
-    t.equal(
+    assert.equal(
       res.body.result,
       '0xd7217a7d3251880051783f305a3536e368c604aa1f1602e6cd107eb7b87129da',
       msg
     )
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
   // Restore setStateRoot
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
   DefaultStateManager.prototype.copy = originalStateManagerCopy
 })
 
-tape(`${method}: send local tx with gasprice lower than minimum`, async (t) => {
+describe(`${method}: send local tx with gasprice lower than minimum`, async () => {
   // Disable stateroot validation in TxPool since valid state root isn't available
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   DefaultStateManager.prototype.setStateRoot = (): any => {}
@@ -89,19 +89,19 @@ tape(`${method}: send local tx with gasprice lower than minimum`, async (t) => {
 
   const req = params(method, [txData])
   const expectRes = (res: any) => {
-    t.equal(
+    assert.equal(
       res.body.result,
       '0xf6798d5ed936a464ef4f49dd5a3abe1ad6947364912bd47c5e56781125d44ac3',
       'local tx with lower gasprice than minimum gasprice added to pool'
     )
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
 
   // Restore setStateRoot
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
 })
 
-tape(`${method}: call with invalid arguments: not enough balance`, async (t) => {
+describe(`${method}: call with invalid arguments: not enough balance`, async () => {
   // Disable stateroot validation in TxPool since valid state root isn't available
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   DefaultStateManager.prototype.setStateRoot = (): any => {}
@@ -113,14 +113,14 @@ tape(`${method}: call with invalid arguments: not enough balance`, async (t) => 
     '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
 
   const req = params(method, [txData])
-  const expectRes = checkError(t, INVALID_PARAMS, 'insufficient balance')
-  await baseRequest(t, server, req, 200, expectRes)
+  const expectRes = checkError(INVALID_PARAMS, 'insufficient balance')
+  await baseRequest(server, req, 200, expectRes)
 
   // Restore setStateRoot
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
 })
 
-tape(`${method}: call with sync target height not set yet`, async (t) => {
+describe(`${method}: call with sync target height not set yet`, async () => {
   const { server, client } = baseSetup()
   client.config.synchronized = false
 
@@ -130,14 +130,13 @@ tape(`${method}: call with sync target height not set yet`, async (t) => {
   const req = params(method, [txData])
 
   const expectRes = checkError(
-    t,
     INTERNAL_ERROR,
     'client is not aware of the current chain height yet (give sync some more time)'
   )
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with invalid tx (wrong chain ID)`, async (t) => {
+describe(`${method}: call with invalid tx (wrong chain ID)`, async () => {
   const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
   const { server } = baseSetup({ syncTargetHeight, includeVM: true })
 
@@ -146,11 +145,11 @@ tape(`${method}: call with invalid tx (wrong chain ID)`, async (t) => {
     '0x02f9010a82066a8001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
   const req = params(method, [txData])
 
-  const expectRes = checkError(t, PARSE_ERROR, 'serialized tx data could not be parsed')
-  await baseRequest(t, server, req, 200, expectRes)
+  const expectRes = checkError(PARSE_ERROR, 'serialized tx data could not be parsed')
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with unsigned tx`, async (t) => {
+describe(`${method}: call with unsigned tx`, async () => {
   const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
   const { server } = baseSetup({ syncTargetHeight })
 
@@ -168,11 +167,11 @@ tape(`${method}: call with unsigned tx`, async (t) => {
   const txHex = bytesToPrefixedHexString(tx.serialize())
   const req = params(method, [txHex])
 
-  const expectRes = checkError(t, INVALID_PARAMS, 'tx needs to be signed')
-  await baseRequest(t, server, req, 200, expectRes)
+  const expectRes = checkError(INVALID_PARAMS, 'tx needs to be signed')
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with no peers`, async (t) => {
+describe(`${method}: call with no peers`, async () => {
   // Disable stateroot validation in TxPool since valid state root isn't available
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   DefaultStateManager.prototype.setStateRoot = (): any => {}
@@ -204,16 +203,15 @@ tape(`${method}: call with no peers`, async (t) => {
 
   const req = params(method, [txData])
 
-  const expectRes = checkError(t, INTERNAL_ERROR, 'no peer connection available')
-  await baseRequest(t, server, req, 200, expectRes)
+  const expectRes = checkError(INTERNAL_ERROR, 'no peer connection available')
+  await baseRequest(server, req, 200, expectRes)
 
   // Restore setStateRoot
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
   DefaultStateManager.prototype.copy = originalStateManagerCopy
 })
 
-tape('blob EIP 4844 transaction', async (t) => {
-  t.plan(2)
+describe('blob EIP 4844 transaction', async () => {
   // Disable stateroot validation in TxPool since valid state root isn't available
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   DefaultStateManager.prototype.setStateRoot = (): any => {}
@@ -282,13 +280,13 @@ tape('blob EIP 4844 transaction', async (t) => {
   const req = params(method, [bytesToPrefixedHexString(tx.serializeNetworkWrapper())])
   const req2 = params(method, [bytesToPrefixedHexString(replacementTx.serializeNetworkWrapper())])
   const expectRes = (res: any) => {
-    t.equal(res.body.error, undefined, 'initial blob transaction accepted')
+    assert.equal(res.body.error, undefined, 'initial blob transaction accepted')
   }
 
-  const expectRes2 = checkError(t, INVALID_PARAMS, 'replacement data gas too low')
+  const expectRes2 = checkError(INVALID_PARAMS, 'replacement data gas too low')
 
-  await baseRequest(t, server, req, 200, expectRes, false)
-  await baseRequest(t, server, req2, 200, expectRes2)
+  await baseRequest(server, req, 200, expectRes, false)
+  await baseRequest(server, req2, 200, expectRes2)
 
   // Restore stubbed out functionality
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot

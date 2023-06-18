@@ -1,11 +1,11 @@
-import * as tape from 'tape'
 import * as td from 'testdouble'
+import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../../src/blockchain'
 import { Config } from '../../../src/config'
 import { Event } from '../../../src/types'
 
-tape('[HeaderFetcher]', async (t) => {
+describe('[HeaderFetcher]', async () => {
   class PeerPool {
     idle() {}
     ban() {}
@@ -16,25 +16,27 @@ tape('[HeaderFetcher]', async (t) => {
 
   const { HeaderFetcher } = await import('../../../src/sync/fetcher/headerfetcher')
 
-  t.test('should process', (t) => {
+  it('should process', () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool()
     const flow = td.object()
     const fetcher = new HeaderFetcher({ config, pool, flow })
     const headers = [{ number: 1 }, { number: 2 }]
-    t.deepEquals(
+    assert.deepEqual(
       //@ts-ignore
       fetcher.process({ task: { count: 2 }, peer: 'peer0' }, { headers, bv: BigInt(1) }),
       headers,
       'got results'
     )
     //@ts-ignore
-    t.notOk(fetcher.process({ task: { count: 2 } }, { headers: [], bv: BigInt(1) }), 'bad results')
+    assert.notOk(
+      fetcher.process({ task: { count: 2 } }, { headers: [], bv: BigInt(1) }),
+      'bad results'
+    )
     td.verify((fetcher as any).flow.handleReply('peer0', 1))
-    t.end()
   })
 
-  t.test('should adopt correctly', (t) => {
+  it('should adopt correctly', () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const flow = td.object()
@@ -50,27 +52,24 @@ tape('[HeaderFetcher]', async (t) => {
     const job = (fetcher as any).in.peek()
 
     let results = fetcher.process(job as any, { headers, bv: BigInt(1) } as any)
-    t.equal((fetcher as any).in.length, 1, 'Fetcher should still have same job')
-    t.equal(job?.partialResult?.length, 2, 'Should have two partial results')
-    t.equal(results, undefined, 'Process should not return full results yet')
+    assert.equal((fetcher as any).in.length, 1, 'Fetcher should still have same job')
+    assert.equal(job?.partialResult?.length, 2, 'Should have two partial results')
+    assert.equal(results, undefined, 'Process should not return full results yet')
 
     const remainingHeaders: any = [{ number: 3 }]
     results = fetcher.process(job as any, { headers: remainingHeaders, bv: BigInt(1) } as any)
-    t.equal(results?.length, 3, 'Should return full results')
-
-    t.end()
+    assert.equal(results?.length, 3, 'Should return full results')
   })
 
-  t.test('should find a fetchable peer', async (t) => {
+  it('should find a fetchable peer', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool()
     const fetcher = new HeaderFetcher({ config, pool })
     td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
-    t.equal(fetcher.peer(), 'peer0', 'found peer')
-    t.end()
+    assert.equal(fetcher.peer(), 'peer0', 'found peer')
   })
 
-  t.test('should request correctly', async (t) => {
+  it('should request correctly', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const flow = td.object()
@@ -95,12 +94,9 @@ tape('[HeaderFetcher]', async (t) => {
         reverse: false,
       })
     )
-    t.end()
   })
 
-  t.test('store()', async (st) => {
-    st.plan(2)
-
+  it('store()', async () => {
     const config = new Config({ maxPerRequest: 5, transports: [] })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
@@ -117,17 +113,16 @@ tape('[HeaderFetcher]', async (t) => {
     try {
       await fetcher.store([0 as any])
     } catch (err: any) {
-      st.equal(err.message, 'err0', 'store() threw on invalid header')
+      assert.equal(err.message, 'err0', 'store() threw on invalid header')
     }
     td.when(chain.putHeaders([1 as any])).thenResolve(1)
     config.events.on(Event.SYNC_FETCHED_HEADERS, () =>
-      st.pass('store() emitted SYNC_FETCHED_HEADERS event on putting headers')
+      assert.ok(true, 'store() emitted SYNC_FETCHED_HEADERS event on putting headers')
     )
     await fetcher.store([1 as any])
   })
 
-  t.test('should reset td', (t) => {
+  it('should reset td', () => {
     td.reset()
-    t.end()
   })
 })

@@ -3,7 +3,7 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe } from 'vitest'
 
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 
@@ -35,7 +35,7 @@ const expectedProof = {
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 
-tape(`${method}: call with valid arguments`, async (t) => {
+describe(`${method}: call with valid arguments`, async () => {
   const blockchain = await Blockchain.create({
     common,
     validateBlocks: false,
@@ -47,7 +47,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const server = startRPC(manager.getMethods())
 
   const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
-  t.notEqual(execution, undefined, 'should have valid execution')
+  assert.notEqual(execution, undefined, 'should have valid execution')
   const { vm } = execution
 
   // genesis address with balance
@@ -131,7 +131,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const req = params(method, [createdAddress!.toString(), ['0x0'], 'latest'])
   const expectRes = (res: any) => {
     const msg = 'should return the correct proof'
-    t.deepEqual(res.body.result, expectedProof, msg)
+    assert.deepEqual(res.body.result, expectedProof, msg)
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
 })

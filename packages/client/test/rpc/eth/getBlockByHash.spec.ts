@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import { assert, describe } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { baseRequest, baseSetup, params } from '../helpers'
@@ -6,28 +6,28 @@ import { checkError } from '../util'
 
 const method = 'eth_getBlockByHash'
 
-tape(`${method}: call with valid arguments`, async (t) => {
+describe(`${method}: call with valid arguments`, async () => {
   const { server } = baseSetup()
 
   const blockHash = '0x910abca1728c53e8d6df870dd7af5352e974357dc58205dea1676be17ba6becf'
   let includeTransactions = false
   let req = params(method, [blockHash, includeTransactions])
   let expectRes = (res: any) => {
-    t.equal(res.body.result.number, '0x444444', 'should return the correct number')
-    t.equal(typeof res.body.result.transactions[0], 'string', 'should only include tx hashes')
+    assert.equal(res.body.result.number, '0x444444', 'should return the correct number')
+    assert.equal(typeof res.body.result.transactions[0], 'string', 'should only include tx hashes')
   }
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(server, req, 200, expectRes, false)
 
   includeTransactions = true
   req = params(method, [blockHash, includeTransactions])
   expectRes = (res: any) => {
-    t.equal(res.body.result.number, '0x444444', 'should return the correct number')
-    t.equal(typeof res.body.result.transactions[0], 'object', 'should include tx objects')
+    assert.equal(res.body.result.number, '0x444444', 'should return the correct number')
+    assert.equal(typeof res.body.result.transactions[0], 'object', 'should include tx objects')
   }
-  await baseRequest(t, server, req, 200, expectRes, true) // pass endOnFinish=true for last test
+  await baseRequest(server, req, 200, expectRes, true) // pass endOnFinish=true for last test
 })
 
-tape(`${method}: call with false for second argument`, async (t) => {
+describe(`${method}: call with false for second argument`, async () => {
   const { server } = baseSetup()
 
   const req = params(method, [
@@ -36,45 +36,41 @@ tape(`${method}: call with false for second argument`, async (t) => {
   ])
   const expectRes = (res: any) => {
     let msg = 'should return the correct number'
-    t.equal(res.body.result.number, '0x444444', msg)
+    assert.equal(res.body.result.number, '0x444444', msg)
     msg = 'should return only the hashes of the transactions'
-    t.equal(typeof res.body.result.transactions[0], 'string', msg)
+    assert.equal(typeof res.body.result.transactions[0], 'string', msg)
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with invalid block hash without 0x`, async (t) => {
+describe(`${method}: call with invalid block hash without 0x`, async () => {
   const { server } = baseSetup()
 
   const req = params(method, ['WRONG BLOCK NUMBER', true])
-  const expectRes = checkError(
-    t,
-    INVALID_PARAMS,
-    'invalid argument 0: hex string without 0x prefix'
-  )
-  await baseRequest(t, server, req, 200, expectRes)
+  const expectRes = checkError(INVALID_PARAMS, 'invalid argument 0: hex string without 0x prefix')
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with invalid hex string as block hash`, async (t) => {
+describe(`${method}: call with invalid hex string as block hash`, async () => {
   const { server } = baseSetup()
 
   const req = params(method, ['0xWRONG BLOCK NUMBER', true])
-  const expectRes = checkError(t, INVALID_PARAMS, 'invalid argument 0: invalid block hash')
-  await baseRequest(t, server, req, 200, expectRes)
+  const expectRes = checkError(INVALID_PARAMS, 'invalid argument 0: invalid block hash')
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call without second parameter`, async (t) => {
+describe(`${method}: call without second parameter`, async () => {
   const { server } = baseSetup()
 
   const req = params(method, ['0x0'])
-  const expectRes = checkError(t, INVALID_PARAMS, 'missing value for required argument 1')
-  await baseRequest(t, server, req, 200, expectRes)
+  const expectRes = checkError(INVALID_PARAMS, 'missing value for required argument 1')
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with invalid second parameter`, async (t) => {
+describe(`${method}: call with invalid second parameter`, async () => {
   const { server } = baseSetup()
 
   const req = params(method, ['0x0', 'INVALID PARAMETER'])
-  const expectRes = checkError(t, INVALID_PARAMS)
-  await baseRequest(t, server, req, 200, expectRes)
+  const expectRes = checkError(INVALID_PARAMS)
+  await baseRequest(server, req, 200, expectRes)
 })

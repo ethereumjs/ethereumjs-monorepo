@@ -3,7 +3,7 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { randomBytes } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe } from 'vitest'
 
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 
@@ -11,7 +11,7 @@ import type { FullEthereumService } from '../../../src/service'
 
 const method = 'txpool_content'
 
-tape(`${method}: call with valid arguments`, async (t) => {
+describe(`${method}: call with valid arguments`, async () => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
   const blockchain = await Blockchain.create({
     common,
@@ -23,7 +23,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const manager = createManager(client)
   const server = startRPC(manager.getMethods())
   const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
-  t.notEqual(execution, undefined, 'should have valid execution')
+  assert.notEqual(execution, undefined, 'should have valid execution')
   const { vm } = execution
   await vm.stateManager.generateCanonicalGenesis(blockchain.genesisState())
   const gasLimit = 2000000
@@ -73,12 +73,12 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   const req = params(method, [])
   const expectedRes = (res: any) => {
-    t.equal(
+    assert.equal(
       Object.keys(res.body.result.pending).length,
       1,
       'received one pending transaction back from response'
     )
   }
 
-  await baseRequest(t, server, req, 200, expectedRes)
+  await baseRequest(server, req, 200, expectedRes)
 })

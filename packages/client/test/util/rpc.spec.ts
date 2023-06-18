@@ -1,5 +1,5 @@
 import { bytesToPrefixedHexString } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { EthereumClient } from '../../src/client'
 import { Config } from '../../src/config'
@@ -14,8 +14,8 @@ import {
 
 const request = require('supertest')
 
-tape('[Util/RPC]', (t) => {
-  t.test('should return enabled RPC servers', async (st) => {
+describe('[Util/RPC]', () => {
+  it('should return enabled RPC servers', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const client = await EthereumClient.create({ config })
     const manager = new RPCManager(client, config)
@@ -46,17 +46,16 @@ tape('[Util/RPC]', (t) => {
         server.emit('response', req, []) // empty
         server.emit('response', [req], respBulk) // mismatch length
 
-        st.ok(
+        assert.ok(
           httpServer !== undefined && wsServer !== undefined,
           'should return http and ws servers'
         )
       }
     }
-    st.end()
   })
 })
 
-tape('[Util/RPC/Engine eth methods]', async (t) => {
+describe('[Util/RPC/Engine eth methods]', async () => {
   const config = new Config({
     transports: [],
     accountCache: 10000,
@@ -82,7 +81,7 @@ tape('[Util/RPC/Engine eth methods]', async (t) => {
     'eth_syncing',
   ]
   for (const method of methods) {
-    t.test(`should have method ${method}`, (st) => {
+    it(`should have method ${method}`, () => {
       const req = {
         jsonrpc: '2.0',
         method,
@@ -99,7 +98,7 @@ tape('[Util/RPC/Engine eth methods]', async (t) => {
           }
         })
         .end((err: any) => {
-          st.end(err)
+          assert.notOk(err)
         })
     })
   }

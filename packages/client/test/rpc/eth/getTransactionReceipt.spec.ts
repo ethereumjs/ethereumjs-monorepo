@@ -13,7 +13,7 @@ import {
   randomBytes,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import * as tape from 'tape'
+import { assert, describe } from 'vitest'
 
 import {
   baseRequest,
@@ -28,7 +28,7 @@ import pow = require('./../../testdata/geth-genesis/pow.json')
 
 const method = 'eth_getTransactionReceipt'
 
-tape(`${method}: call with legacy tx`, async (t) => {
+describe(`${method}: call with legacy tx`, async () => {
   const { chain, common, execution, server } = await setupChain(pow, 'pow')
 
   // construct tx
@@ -47,12 +47,12 @@ tape(`${method}: call with legacy tx`, async (t) => {
   const req = params(method, [bytesToPrefixedHexString(tx.hash())])
   const expectRes = (res: any) => {
     const msg = 'should return the correct tx'
-    t.equal(res.body.result.transactionHash, bytesToPrefixedHexString(tx.hash()), msg)
+    assert.equal(res.body.result.transactionHash, bytesToPrefixedHexString(tx.hash()), msg)
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with 1559 tx`, async (t) => {
+describe(`${method}: call with 1559 tx`, async () => {
   const { chain, common, execution, server } = await setupChain(
     gethGenesisStartLondon(pow),
     'powLondon'
@@ -75,27 +75,27 @@ tape(`${method}: call with 1559 tx`, async (t) => {
   const req = params(method, [bytesToPrefixedHexString(tx.hash())])
   const expectRes = (res: any) => {
     const msg = 'should return the correct tx'
-    t.equal(res.body.result.transactionHash, bytesToPrefixedHexString(tx.hash()), msg)
+    assert.equal(res.body.result.transactionHash, bytesToPrefixedHexString(tx.hash()), msg)
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with unknown tx hash`, async (t) => {
+describe(`${method}: call with unknown tx hash`, async () => {
   const { server } = await setupChain(pow, 'pow')
 
   // get a random tx hash
   const req = params(method, ['0x89ea5b54111befb936851660a72b686a21bc2fc4889a9a308196ff99d08925a0'])
   const expectRes = (res: any) => {
     const msg = 'should return null'
-    t.equal(res.body.result, null, msg)
+    assert.equal(res.body.result, null, msg)
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: get dataGasUsed/dataGasPrice in blob tx receipt`, async (t) => {
+describe(`${method}: get dataGasUsed/dataGasPrice in blob tx receipt`, async () => {
   const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
   if (isBrowser() === true) {
-    t.end()
+    assert.ok(true)
   } else {
     try {
       // Verified KZG is loaded correctly -- NOOP if throws
@@ -134,10 +134,10 @@ tape(`${method}: get dataGasUsed/dataGasPrice in blob tx receipt`, async (t) => 
 
     const req = params(method, [bytesToPrefixedHexString(tx.hash())])
     const expectRes = (res: any) => {
-      t.equal(res.body.result.dataGasUsed, '0x20000', 'receipt has correct data gas usage')
-      t.equal(res.body.result.dataGasPrice, '0x1', 'receipt has correct data gas price')
+      assert.equal(res.body.result.dataGasUsed, '0x20000', 'receipt has correct data gas usage')
+      assert.equal(res.body.result.dataGasPrice, '0x1', 'receipt has correct data gas price')
     }
 
-    await baseRequest(t, server, req, 200, expectRes)
+    await baseRequest(server, req, 200, expectRes)
   }
 })

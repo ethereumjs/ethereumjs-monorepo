@@ -7,7 +7,7 @@ import {
   Hardfork,
 } from '@ethereumjs/common'
 import { Address, hexStringToBytes } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
@@ -19,7 +19,7 @@ import { destroy, setup } from './util'
 
 import type { CliqueConsensus } from '@ethereumjs/blockchain'
 
-tape('[Integration:Miner]', async (t) => {
+describe('[Integration:Miner]', async () => {
   // Schedule london at 0 and also unset any past scheduled timestamp hardforks that might collide with test
   const hardforks = new Common({ chain: ChainCommon.Goerli })
     .hardforks()
@@ -78,10 +78,10 @@ tape('[Integration:Miner]', async (t) => {
     return [server, service]
   }
 
-  t.test(
+  it(
     'should mine blocks while a peer stays connected to tip of chain',
     { timeout: 25000 },
-    async (t) => {
+    async () => {
       const [server, service] = await minerSetup()
       const [remoteServer, remoteService] = await setup({
         location: '127.0.0.2',
@@ -96,14 +96,17 @@ tape('[Integration:Miner]', async (t) => {
       const targetHeight = BigInt(5)
       remoteService.config.events.on(Event.SYNC_SYNCHRONIZED, async (chainHeight) => {
         if (chainHeight === targetHeight) {
-          t.equal(remoteService.chain.blocks.height, targetHeight, 'synced blocks successfully')
+          assert.equal(
+            remoteService.chain.blocks.height,
+            targetHeight,
+            'synced blocks successfully'
+          )
           await destroy(server, service)
           await destroy(remoteServer, remoteService)
-          t.end()
         }
       })
       await remoteService.synchronizer!.start()
-      await new Promise(() => {}) // resolves once t.end() is called
+      await new Promise(() => {}) // resolves once   is called
     }
   )
 })

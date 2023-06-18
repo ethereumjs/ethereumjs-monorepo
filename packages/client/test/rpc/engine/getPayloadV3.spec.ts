@@ -13,7 +13,7 @@ import {
   initKZG,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import * as tape from 'tape'
+import { assert, describe } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import genesisJSON = require('../../testdata/geth-genesis/eip4844.json')
@@ -41,27 +41,23 @@ try {
 } catch {}
 const method = 'engine_getPayloadV3'
 
-tape(`${method}: call with invalid payloadId`, async (t) => {
+describe(`${method}: call with invalid payloadId`, async () => {
   const { server } = baseSetup({ engine: true, includeVM: true })
 
   const req = params(method, [1])
-  const expectRes = checkError(
-    t,
-    INVALID_PARAMS,
-    'invalid argument 0: argument must be a hex string'
-  )
-  await baseRequest(t, server, req, 200, expectRes)
+  const expectRes = checkError(INVALID_PARAMS, 'invalid argument 0: argument must be a hex string')
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with unknown payloadId`, async (t) => {
+describe(`${method}: call with unknown payloadId`, async () => {
   const { server } = baseSetup({ engine: true, includeVM: true })
 
   const req = params(method, ['0x123'])
-  const expectRes = checkError(t, -32001, 'Unknown payload')
-  await baseRequest(t, server, req, 200, expectRes)
+  const expectRes = checkError(-32001, 'Unknown payload')
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with known payload`, async (t) => {
+describe(`${method}: call with known payload`, async () => {
   // Disable stateroot validation in TxPool since valid state root isn't available
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   const originalStateManagerCopy = DefaultStateManager.prototype.copy
@@ -85,9 +81,9 @@ tape(`${method}: call with known payload`, async (t) => {
   let payloadId
   let expectRes = (res: any) => {
     payloadId = res.body.result.payloadId
-    t.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
+    assert.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
   }
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(server, req, 200, expectRes, false)
 
   const txBlobs = getBlobs('hello world')
   const txCommitments = blobsToCommitments(txBlobs)
@@ -114,25 +110,29 @@ tape(`${method}: call with known payload`, async (t) => {
   req = params('engine_getPayloadV3', [payloadId])
   expectRes = (res: any) => {
     const { executionPayload, blobsBundle } = res.body.result
-    t.equal(
+    assert.equal(
       executionPayload.blockHash,
       '0x9db3128f029d4043d32786a8896fbaadac4c07ec475213a43534ec06079f08b1',
       'built expected block'
     )
-    t.equal(executionPayload.excessDataGas, '0x0', 'correct execess data gas')
-    t.equal(executionPayload.dataGasUsed, '0x20000', 'correct data gas used')
+    assert.equal(executionPayload.excessDataGas, '0x0', 'correct execess data gas')
+    assert.equal(executionPayload.dataGasUsed, '0x20000', 'correct data gas used')
     const { commitments, proofs, blobs } = blobsBundle
-    t.ok(
+    assert.ok(
       commitments.length === proofs.length && commitments.length === blobs.length,
       'equal commitments, proofs and blobs'
     )
-    t.equal(blobs.length, 1, '1 blob should be returned')
-    t.equal(proofs[0], bytesToPrefixedHexString(txProofs[0]), 'proof should match')
-    t.equal(commitments[0], bytesToPrefixedHexString(txCommitments[0]), 'commitment should match')
-    t.equal(blobs[0], bytesToPrefixedHexString(txBlobs[0]), 'blob should match')
+    assert.equal(blobs.length, 1, '1 blob should be returned')
+    assert.equal(proofs[0], bytesToPrefixedHexString(txProofs[0]), 'proof should match')
+    assert.equal(
+      commitments[0],
+      bytesToPrefixedHexString(txCommitments[0]),
+      'commitment should match'
+    )
+    assert.equal(blobs[0], bytesToPrefixedHexString(txBlobs[0]), 'blob should match')
   }
 
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(server, req, 200, expectRes, false)
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
   DefaultStateManager.prototype.copy = originalStateManagerCopy
 })

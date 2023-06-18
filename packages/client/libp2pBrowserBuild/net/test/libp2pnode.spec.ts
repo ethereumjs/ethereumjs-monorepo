@@ -1,19 +1,17 @@
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 import * as td from 'testdouble'
 
-tape('[Libp2pNode]', async (t) => {
+describe('[Libp2pNode]', async () => {
   td.replace('libp2p')
   const { Libp2pNode } = await import('../peer/libp2pnode')
 
-  t.test('should be a libp2p bundle', (t) => {
+  it('should be a libp2p bundle', () => {
     const peerId = td.object('PeerId') as any
     const node = new Libp2pNode({ peerId })
-    t.equals(node.constructor.name, Libp2pNode.name, 'is libp2p bundle')
-    t.end()
+    assert.equal(node.constructor.name, Libp2pNode.name, 'is libp2p bundle')
   })
 
-  t.test('should reset td', (t) => {
+  it('should reset td', () => {
     td.reset()
-    t.end()
   })
 })

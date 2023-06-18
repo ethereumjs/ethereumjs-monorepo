@@ -1,6 +1,6 @@
 import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { bigIntToHex, intToPrefixedHexString } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe } from 'vitest'
 
 import {
   baseRequest,
@@ -15,7 +15,7 @@ import pow = require('./../../testdata/geth-genesis/pow.json')
 
 const method = 'eth_gasPrice'
 
-tape(`${method}: call with legacy transaction data`, async (t) => {
+describe(`${method}: call with legacy transaction data`, async () => {
   const { chain, common, execution, server } = await setupChain(pow, 'pow')
 
   const GAS_PRICE = 100
@@ -30,12 +30,12 @@ tape(`${method}: call with legacy transaction data`, async (t) => {
   const req = params(method, [])
   const expectRes = (res: any) => {
     const msg = 'should return the correct suggested gas price with 1 legacy transaction'
-    t.equal(res.body.result, intToPrefixedHexString(GAS_PRICE), msg)
+    assert.equal(res.body.result, intToPrefixedHexString(GAS_PRICE), msg)
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with multiple legacy transactions`, async (t) => {
+describe(`${method}: call with multiple legacy transactions`, async () => {
   const { chain, common, execution, server } = await setupChain(pow, 'pow')
   const iterations = BigInt(20)
   let averageGasPrice = BigInt(0)
@@ -53,12 +53,12 @@ tape(`${method}: call with multiple legacy transactions`, async (t) => {
   const req = params(method, [])
   const expectRes = (res: any) => {
     const msg = 'should return the correct gas price with multiple legacy transactions'
-    t.equal(res.body.result, bigIntToHex(averageGasPrice), msg)
+    assert.equal(res.body.result, bigIntToHex(averageGasPrice), msg)
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with multiple legacy transactions in a single block`, async (t) => {
+describe(`${method}: call with multiple legacy transactions in a single block`, async () => {
   const { chain, common, execution, server } = await setupChain(pow, 'pow')
 
   const G1 = 100
@@ -79,12 +79,12 @@ tape(`${method}: call with multiple legacy transactions in a single block`, asyn
   const req = params(method, [])
   const expectRes = (res: any) => {
     const msg = 'should return the correct gas price with multiple legacy transactions in a block'
-    t.equal(res.body.result, intToPrefixedHexString(Math.trunc(averageGasPrice)), msg)
+    assert.equal(res.body.result, intToPrefixedHexString(Math.trunc(averageGasPrice)), msg)
   }
-  await baseRequest(t, server, req, 200, () => expectRes)
+  await baseRequest(server, req, 200, () => expectRes)
 })
 
-tape(`${method}: call with 1559 transaction data`, async (t) => {
+describe(`${method}: call with 1559 transaction data`, async () => {
   const { chain, common, execution, server } = await setupChain(
     gethGenesisStartLondon(pow),
     'powLondon'
@@ -108,12 +108,12 @@ tape(`${method}: call with 1559 transaction data`, async (t) => {
 
   const expectRes = (res: any) => {
     const msg = 'should return the correct gas price with 1 1559 transaction'
-    t.equal(res.body.result, bigIntToHex(gasPrice), msg)
+    assert.equal(res.body.result, bigIntToHex(gasPrice), msg)
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with multiple 1559 transactions`, async (t) => {
+describe(`${method}: call with multiple 1559 transactions`, async () => {
   const { chain, common, execution, server } = await setupChain(
     gethGenesisStartLondon(pow),
     'powLondon'
@@ -149,12 +149,12 @@ tape(`${method}: call with multiple 1559 transactions`, async (t) => {
   const gasPrice = BigInt(baseFee + averagePriorityFee)
   const expectRes = (res: any) => {
     const msg = 'should return the correct gas price with 1 1559 transaction'
-    t.equal(res.body.result, bigIntToHex(gasPrice), msg)
+    assert.equal(res.body.result, bigIntToHex(gasPrice), msg)
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: compute average gas price for 21 blocks`, async (t) => {
+describe(`${method}: compute average gas price for 21 blocks`, async () => {
   const { chain, common, execution, server } = await setupChain(pow, 'pow')
   const iterations = BigInt(21)
   const gasPrice = BigInt(20)
@@ -189,13 +189,13 @@ tape(`${method}: compute average gas price for 21 blocks`, async (t) => {
   const blockNumber = latest.number
 
   // Should be block number 21
-  t.equal(blockNumber, 21n)
+  assert.equal(blockNumber, 21n)
 
   const req = params(method, [])
   const expectRes = (res: any) => {
     const msg = 'should return the correct gas price for 21 blocks'
-    t.equal(res.body.result, bigIntToHex(gasPrice), msg)
+    assert.equal(res.body.result, bigIntToHex(gasPrice), msg)
   }
 
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
 })

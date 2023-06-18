@@ -3,7 +3,7 @@ import { parseGethGenesisState, privateToAddress } from '@ethereumjs/util'
 import debug from 'debug'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 import { Client } from 'jayson/promise'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/config'
 import { getLogger } from '../../src/logging'
@@ -36,7 +36,7 @@ export async function runTx(data: string, to?: string, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
 }
 
-tape('simple mainnet test run', async (t) => {
+describe('simple mainnet test run', async () => {
   // Better add it as a option in startnetwork
   process.env.NETWORKID = `${common.networkId()}`
   const { teardownCallBack, result } = await startNetwork(network, client, {
@@ -47,65 +47,60 @@ tape('simple mainnet test run', async (t) => {
   })
 
   if (result.includes('Geth')) {
-    t.pass('connected to Geth')
+    assert.ok(true, 'connected to Geth')
   } else {
-    t.fail('connected to wrong client')
+    assert.fail('connected to wrong client')
   }
 
   const nodeInfo = (await client.request('admin_nodeInfo', [])).result
-  t.ok(nodeInfo.enode !== undefined, 'fetched enode for peering')
+  assert.ok(nodeInfo.enode !== undefined, 'fetched enode for peering')
 
   console.log(`Waiting for network to start...`)
   try {
     await waitForELStart(client)
-    t.pass('geth<>lodestar started successfully')
+    assert.ok(true, 'geth<>lodestar started successfully')
   } catch (e) {
-    t.fail('geth<>lodestar failed to start')
+    assert.fail('geth<>lodestar failed to start')
     throw e
   }
 
   // ------------Sanity checks--------------------------------
-  t.test(
-    'add some EOA transfers',
-    { skip: process.env.ADD_EOA_STATE === undefined },
-    async (st) => {
-      const startBalance = await client.request('eth_getBalance', [
-        '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
-        'latest',
-      ])
-      st.ok(
-        startBalance.result !== undefined,
-        `fetched 0x3dA33B9A0894b908DdBb00d96399e506515A1009 balance=${startBalance.result}`
-      )
-      await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
-      let balance = await client.request('eth_getBalance', [
-        '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
-        'latest',
-      ])
-      st.equal(
-        BigInt(balance.result),
-        BigInt(startBalance.result) + 1000000n,
-        'sent a simple ETH transfer'
-      )
-      await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
-      balance = await client.request('eth_getBalance', [
-        '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
-        'latest',
-      ])
-      balance = await client.request('eth_getBalance', [
-        '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
-        'latest',
-      ])
-      st.equal(
-        BigInt(balance.result),
-        BigInt(startBalance.result) + 2000000n,
-        'sent a simple ETH transfer 2x'
-      )
-      st.end()
-    }
-  )
+  it('add some EOA transfers', { skip: process.env.ADD_EOA_STATE === undefined }, async () => {
+    const startBalance = await client.request('eth_getBalance', [
+      '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
+      'latest',
+    ])
+    assert.ok(
+      startBalance.result !== undefined,
+      `fetched 0x3dA33B9A0894b908DdBb00d96399e506515A1009 balance=${startBalance.result}`
+    )
+    await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
+    let balance = await client.request('eth_getBalance', [
+      '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
+      'latest',
+    ])
+    assert.equal(
+      BigInt(balance.result),
+      BigInt(startBalance.result) + 1000000n,
+      'sent a simple ETH transfer'
+    )
+    await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
+    balance = await client.request('eth_getBalance', [
+      '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
+      'latest',
+    ])
+    balance = await client.request('eth_getBalance', [
+      '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
+      'latest',
+    ])
+    assert.equal(
+      BigInt(balance.result),
+      BigInt(startBalance.result) + 2000000n,
+      'sent a simple ETH transfer 2x'
+    )
+  })
 
-  t.test('setup snap sync', { skip: process.env.SNAP_SYNC === undefined }, async (st) => {
+  it('setup snap sync', { skip: process.env.SNAP_SYNC === undefined }, async () => {
     // start client inline here for snap sync, no need for beacon
     const { ejsInlineClient, peerConnectedPromise, snapSyncCompletedPromise } =
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -118,23 +113,22 @@ tape('simple mainnet test run', async (t) => {
       }
     ejsClient = ejsInlineClient
     snapCompleted = snapSyncCompletedPromise
-    st.ok(ejsClient !== null, 'ethereumjs client started')
+    assert.ok(ejsClient !== null, 'ethereumjs client started')
 
     const enode = (ejsClient!.server('rlpx') as RlpxServer)!.getRlpxInfo().enode
     const res = await client.request('admin_addPeer', [enode])
-    st.equal(res.result, true, 'successfully requested Geth add EthereumJS as peer')
+    assert.equal(res.result, true, 'successfully requested Geth add EthereumJS as peer')
 
     const peerConnectTimeout = new Promise((_resolve, reject) => setTimeout(reject, 10000))
     try {
       await Promise.race([peerConnectedPromise, peerConnectTimeout])
-      st.pass('connected to geth peer')
+      assert.ok(true, 'connected to geth peer')
     } catch (e) {
-      st.fail('could not connect to geth peer in 10 seconds')
+      assert.fail('could not connect to geth peer in 10 seconds')
     }
-    st.end()
   })
 
-  t.test('should snap sync and finish', async (st) => {
+  it('should snap sync and finish', async () => {
     try {
       if (ejsClient !== null && snapCompleted !== undefined) {
         // call sync if not has been called yet
@@ -143,24 +137,21 @@ tape('simple mainnet test run', async (t) => {
         const snapSyncTimeout = new Promise((_resolve, reject) => setTimeout(reject, 40000))
         try {
           await Promise.race([snapCompleted, snapSyncTimeout])
-          st.pass('completed snap sync')
+          assert.ok(true, 'completed snap sync')
         } catch (e) {
-          st.fail('could not complete snap sync in 40 seconds')
+          assert.fail('could not complete snap sync in 40 seconds')
         }
         await ejsClient.stop()
       } else {
-        st.fail('ethereumjs client not setup properly for snap sync')
+        assert.fail('ethereumjs client not setup properly for snap sync')
       }
 
       await teardownCallBack()
-      st.pass('network cleaned')
+      assert.ok(true, 'network cleaned')
     } catch (e) {
-      st.fail('network not cleaned properly')
+      assert.fail('network not cleaned properly')
     }
-    st.end()
   })
-
-  t.end()
 })
 
 async function createSnapClient(common: any, customGenesisState: any, bootnodes: any) {

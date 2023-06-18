@@ -1,12 +1,12 @@
 import { BlockHeader } from '@ethereumjs/block'
-import * as tape from 'tape'
 import * as td from 'testdouble'
+import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
 import { Event } from '../../src/types'
 
-tape('[LightSynchronizer]', async (t) => {
+describe('[LightSynchronizer]', async () => {
   class PeerPool {
     open() {}
     close() {}
@@ -23,16 +23,15 @@ tape('[LightSynchronizer]', async (t) => {
 
   const { LightSynchronizer } = await import('../../src/sync/lightsync')
 
-  t.test('should initialize correctly', async (t) => {
+  it('should initialize correctly', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new LightSynchronizer({ config, pool, chain })
-    t.equals(sync.type, 'light', 'light type')
-    t.end()
+    assert.equal(sync.type, 'light', 'light type')
   })
 
-  t.test('should find best', async (t) => {
+  it('should find best', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
@@ -56,12 +55,10 @@ tape('[LightSynchronizer]', async (t) => {
     ]
     ;(sync as any).pool = { peers }
     ;(sync as any).forceSync = true
-    t.equal(await sync.best(), peers[1], 'found best')
-    t.end()
+    assert.equal(await sync.best(), peers[1], 'found best')
   })
 
-  t.test('should sync', async (t) => {
-    t.plan(3)
+  it('should sync', async () => {
     const config = new Config({
       transports: [],
       accountCache: 10000,
@@ -85,25 +82,24 @@ tape('[LightSynchronizer]', async (t) => {
     })
     td.when(HeaderFetcher.prototype.fetch(), { delay: 20, times: 2 }).thenResolve(undefined)
     ;(sync as any).chain = { headers: { height: BigInt(3) } }
-    t.notOk(await sync.sync(), 'local height > remote height')
+    assert.notOk(await sync.sync(), 'local height > remote height')
     ;(sync as any).chain = { headers: { height: BigInt(0) } }
     setTimeout(() => {
       config.events.emit(Event.SYNC_SYNCHRONIZED, BigInt(0))
     }, 100)
-    t.ok(await sync.sync(), 'local height < remote height')
+    assert.ok(await sync.sync(), 'local height < remote height')
     td.when(HeaderFetcher.prototype.fetch()).thenReject(new Error('err0'))
     try {
       await sync.sync()
     } catch (err: any) {
-      t.equals(err.message, 'err0', 'got error')
+      assert.equal(err.message, 'err0', 'got error')
       await sync.stop()
       await sync.close()
     }
   })
 
-  t.test('import headers', async (st) => {
+  it('import headers', async () => {
     td.reset()
-    st.plan(1)
     const config = new Config({
       transports: [],
       accountCache: 10000,
@@ -131,7 +127,7 @@ tape('[LightSynchronizer]', async (t) => {
     )
     config.logger.on('data', async (data) => {
       if ((data.message as string).includes('Imported headers count=1')) {
-        st.pass('successfully imported new header')
+        assert.ok(true, 'successfully imported new header')
         config.logger.removeAllListeners()
         await sync.stop()
         await sync.close()
@@ -140,9 +136,8 @@ tape('[LightSynchronizer]', async (t) => {
     await sync.sync()
   })
 
-  t.test('sync errors', async (st) => {
+  it('sync errors', async () => {
     td.reset()
-    st.plan(1)
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
@@ -165,7 +160,7 @@ tape('[LightSynchronizer]', async (t) => {
     )
     config.logger.on('data', async (data) => {
       if ((data.message as string).includes('No headers fetched are applicable for import')) {
-        st.pass('generated correct warning message when no headers received')
+        assert.ok(true, 'generated correct warning message when no headers received')
         config.logger.removeAllListeners()
         await sync.stop()
         await sync.close()

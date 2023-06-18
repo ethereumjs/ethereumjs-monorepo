@@ -3,7 +3,7 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Common } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
@@ -13,7 +13,7 @@ import type { FullEthereumService } from '../../../src/service'
 
 const method = 'eth_estimateGas'
 
-tape(`${method}: call with valid arguments`, async (t) => {
+describe(`${method}: call with valid arguments`, async () => {
   // Use custom genesis so we can test EIP1559 txs more easily
   const genesisJson = await import('../../testdata/geth-genesis/rpctestnet.json')
   const common = Common.fromGethGenesis(genesisJson, { chain: 'testnet', hardfork: 'berlin' })
@@ -28,7 +28,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const server = startRPC(manager.getMethods())
 
   const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
-  t.notEqual(execution, undefined, 'should have valid execution')
+  assert.notEqual(execution, undefined, 'should have valid execution')
   const { vm } = execution
   await vm.stateManager.generateCanonicalGenesis(blockchain.genesisState())
 
@@ -101,13 +101,13 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'latest'])
   const expectRes = (res: any) => {
     const msg = 'should return the correct gas estimate'
-    t.equal(res.body.result, '0x' + totalGasSpent.toString(16), msg)
+    assert.equal(res.body.result, '0x' + totalGasSpent.toString(16), msg)
   }
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(server, req, 200, expectRes, false)
 
   // Test without blockopt as its optional and should default to latest
   const reqWithoutBlockOpt = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }])
-  await baseRequest(t, server, reqWithoutBlockOpt, 200, expectRes, false)
+  await baseRequest(server, reqWithoutBlockOpt, 200, expectRes, false)
 
   // Setup chain to run an EIP1559 tx
   const service = client.services[0] as FullEthereumService
@@ -142,25 +142,25 @@ tape(`${method}: call with valid arguments`, async (t) => {
   ])
   const expect1559Res = (res: any) => {
     const msg = 'should return the correct gas estimate for EIP1559 tx'
-    t.equal(res.body.result, '0x' + totalGasSpent.toString(16), msg)
+    assert.equal(res.body.result, '0x' + totalGasSpent.toString(16), msg)
   }
 
-  await baseRequest(t, server, EIP1559req, 200, expect1559Res, false)
+  await baseRequest(server, EIP1559req, 200, expect1559Res, false)
 
   // Test EIP1559 tx with no maxFeePerGas
   const EIP1559reqNoGas = params(method, [
     { ...estimateTxData, type: 2, maxFeePerGas: undefined, gasLimit: undefined },
   ])
-  await baseRequest(t, server, EIP1559reqNoGas, 200, expect1559Res, false)
+  await baseRequest(server, EIP1559reqNoGas, 200, expect1559Res, false)
 
   // Test legacy tx with London head block
   const legacyTxNoGas = params(method, [
     { ...estimateTxData, maxFeePerGas: undefined, gasLimit: undefined },
   ])
-  await baseRequest(t, server, legacyTxNoGas, 200, expect1559Res)
+  await baseRequest(server, legacyTxNoGas, 200, expect1559Res)
 })
 
-tape(`${method}: call with unsupported block argument`, async (t) => {
+describe(`${method}: call with unsupported block argument`, async () => {
   const blockchain = await Blockchain.create()
 
   const client = createClient({ blockchain, includeVM: true })
@@ -179,6 +179,6 @@ tape(`${method}: call with unsupported block argument`, async (t) => {
   }
 
   const req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'pending'])
-  const expectRes = checkError(t, INVALID_PARAMS, '"pending" is not yet supported')
-  await baseRequest(t, server, req, 200, expectRes)
+  const expectRes = checkError(INVALID_PARAMS, '"pending" is not yet supported')
+  await baseRequest(server, req, 200, expectRes)
 })

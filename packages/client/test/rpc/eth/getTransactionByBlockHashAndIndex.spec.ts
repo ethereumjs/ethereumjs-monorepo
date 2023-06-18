@@ -1,5 +1,5 @@
 import { LegacyTransaction } from '@ethereumjs/tx'
-import * as tape from 'tape'
+import { assert, describe } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { baseRequest, baseSetup, dummy, params, runBlockWithTxs, setupChain } from '../helpers'
@@ -33,7 +33,7 @@ async function setUp() {
   return { server }
 }
 
-tape(`${method}: call with valid arguments`, async (t) => {
+describe(`${method}: call with valid arguments`, async () => {
   const { server } = await setUp()
 
   const mockBlockHash = '0x572856aae9a653012a7df7aeb56bfb7fe77f5bcb4b69fd971c04e989f6ccf9b1'
@@ -42,78 +42,70 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   const req = params(method, [mockBlockHash, mockTxIndex])
   const expectRes = (res: any) => {
-    t.equal(res.body.result.hash, mockTxHash, 'should return the correct tx hash')
+    assert.equal(res.body.result.hash, mockTxHash, 'should return the correct tx hash')
   }
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(server, req, 200, expectRes, false)
 })
 
-tape(`${method}: call with no argument`, async (t) => {
+describe(`${method}: call with no argument`, async () => {
   const { server } = baseSetup()
 
   const req = params(method, [])
-  const expectRes = checkError(t, INVALID_PARAMS, 'missing value for required argument 0')
-  await baseRequest(t, server, req, 200, expectRes)
+  const expectRes = checkError(INVALID_PARAMS, 'missing value for required argument 0')
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with unknown block hash`, async (t) => {
+describe(`${method}: call with unknown block hash`, async () => {
   const { server } = await setupChain(pow, 'pow')
 
   const mockBlockHash = '0x89ea5b54111befb936851660a72b686a21bc2fc4889a9a308196ff99d08925a0'
   const mockTxIndex = '0x1'
 
   const req = params(method, [mockBlockHash, mockTxIndex])
-  const expectRes = checkError(t, INVALID_PARAMS, 'not found in DB')
-  await baseRequest(t, server, req, 200, expectRes)
+  const expectRes = checkError(INVALID_PARAMS, 'not found in DB')
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with invalid block hash`, async (t) => {
+describe(`${method}: call with invalid block hash`, async () => {
   const { server } = baseSetup()
 
   const mockBlockHash = 'INVALID_BLOCKHASH'
   const mockTxIndex = '0x1'
 
   const req = params(method, [mockBlockHash, mockTxIndex])
-  const expectRes = checkError(
-    t,
-    INVALID_PARAMS,
-    'invalid argument 0: hex string without 0x prefix'
-  )
-  await baseRequest(t, server, req, 200, expectRes)
+  const expectRes = checkError(INVALID_PARAMS, 'invalid argument 0: hex string without 0x prefix')
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call without tx hash`, async (t) => {
+describe(`${method}: call without tx hash`, async () => {
   const { server } = baseSetup()
 
   const mockBlockHash = '0x572856aae9a653012a7df7aeb56bfb7fe77f5bcb4b69fd971c04e989f6ccf9b1'
 
   const req = params(method, [mockBlockHash])
-  const expectRes = checkError(t, INVALID_PARAMS, 'missing value for required argument 1')
-  await baseRequest(t, server, req, 200, expectRes)
+  const expectRes = checkError(INVALID_PARAMS, 'missing value for required argument 1')
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with invalid tx hash`, async (t) => {
+describe(`${method}: call with invalid tx hash`, async () => {
   const { server } = baseSetup()
 
   const mockBlockHash = '0x572856aae9a653012a7df7aeb56bfb7fe77f5bcb4b69fd971c04e989f6ccf9b1'
   const mockTxIndex = 'INVALIDA_TXINDEX'
   const req = params(method, [mockBlockHash, mockTxIndex])
 
-  const expectRes = checkError(
-    t,
-    INVALID_PARAMS,
-    'invalid argument 1: hex string without 0x prefix'
-  )
-  await baseRequest(t, server, req, 200, expectRes)
+  const expectRes = checkError(INVALID_PARAMS, 'invalid argument 1: hex string without 0x prefix')
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with out-of-bound tx hash `, async (t) => {
+describe(`${method}: call with out-of-bound tx hash `, async () => {
   const { server } = baseSetup()
 
   const mockBlockHash = '0x572856aae9a653012a7df7aeb56bfb7fe77f5bcb4b69fd971c04e989f6ccf9b1'
   const mockTxIndex = '0x10'
   const req = params(method, [mockBlockHash, mockTxIndex])
   const expectRes = (res: any) => {
-    t.equal(res.body.result, null, 'should return null')
+    assert.equal(res.body.result, null, 'should return null')
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
 })

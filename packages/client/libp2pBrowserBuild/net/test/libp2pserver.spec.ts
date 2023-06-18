@@ -1,7 +1,7 @@
 import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils'
 import { EventEmitter } from 'events'
 import { multiaddr } from 'multiaddr'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 import * as td from 'testdouble'
 
 import { Config } from '../../../src/config'
@@ -9,7 +9,7 @@ import { getLogger } from '../../../src/logging'
 import { Event } from '../../../src/types'
 import { wait } from '../../../test/integration/util'
 
-tape('[Libp2pServer]', async (t) => {
+describe('[Libp2pServer]', async () => {
   const Libp2pPeer = td.replace<any>('../../../src/net/peer/libp2ppeer')
   Libp2pPeer.id = 'id0'
 
@@ -41,7 +41,7 @@ tape('[Libp2pServer]', async (t) => {
 
   const { Libp2pServer } = await import('../server/libp2pserver')
 
-  t.test('should initialize correctly', async (t) => {
+  it('should initialize correctly', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const multiaddrs = [
       multiaddr('/ip4/192.0.2.1/tcp/12345'),
@@ -53,32 +53,30 @@ tape('[Libp2pServer]', async (t) => {
       bootnodes: ['0.0.0.0:3030', '1.1.1.1:3031'],
       key: utf8ToBytes('abcd'),
     })
-    t.deepEquals((server as any).multiaddrs, multiaddrs, 'multiaddrs correct')
-    t.deepEquals(
+    assert.deepEqual((server as any).multiaddrs, multiaddrs, 'multiaddrs correct')
+    assert.deepEqual(
       server.bootnodes,
       [multiaddr('/ip4/0.0.0.0/tcp/3030'), multiaddr('/ip4/1.1.1.1/tcp/3031')],
       'bootnodes split'
     )
-    t.equals(bytesToUtf8(server.key!), 'abcd', 'key is correct')
-    t.equals(server.name, 'libp2p', 'get name')
-    t.equals(
+    assert.equal(bytesToUtf8(server.key!), 'abcd', 'key is correct')
+    assert.equal(server.name, 'libp2p', 'get name')
+    assert.equal(
       (await server.getPeerId()).toB58String(),
       '12D3KooWHnPxZvSVGxToTNaK1xd9z3J1TkQM2S2hLeX4bhraGE64',
       'computes correct peerId'
     )
-    t.end()
   })
 
-  t.test('should get peer info', async (t) => {
+  it('should get peer info', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const server = new Libp2pServer({ config })
     const connection = td.object<any>()
     connection.remotePeer = 'id0'
-    t.equals(server.getPeerInfo(connection)[0], 'id0', 'got id')
-    t.end()
+    assert.equal(server.getPeerInfo(connection)[0], 'id0', 'got id')
   })
 
-  t.test('should create peer', async (t) => {
+  it('should create peer', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const multiaddrs = [multiaddr('/ip4/6.6.6.6')]
     const server = new Libp2pServer({ config, multiaddrs })
@@ -88,13 +86,11 @@ tape('[Libp2pServer]', async (t) => {
       },
     } as any
     const peer = server.createPeer(peerId, [])
-    t.equals(peer.constructor.name, 'Libp2pPeer', 'created peer')
-    t.equals((server as any).peers.get(peer.id), peer, 'has peer')
-    t.end()
+    assert.equal(peer.constructor.name, 'Libp2pPeer', 'created peer')
+    assert.equal((server as any).peers.get(peer.id), peer, 'has peer')
   })
 
-  t.test('should start/stop server and test banning', async (t) => {
-    t.plan(12)
+  it('should start/stop server and test banning', async () => {
     const config = new Config({
       transports: [],
       logger: getLogger({ loglevel: 'off' }),
@@ -139,35 +135,34 @@ tape('[Libp2pServer]', async (t) => {
     ;(server as any).peers.set('id', peer)
     server.addProtocols(protos)
     config.events.on(Event.SERVER_LISTENING, (info) =>
-      t.deepEquals(info, { transport: 'libp2p', url: 'ma0/p2p/id' }, 'listening')
+      assert.deepEqual(info, { transport: 'libp2p', url: 'ma0/p2p/id' }, 'listening')
     )
-    config.events.once(Event.PEER_CONNECTED, (p) => t.equals(p, peer, 'peer connected'))
-    config.events.on(Event.SERVER_ERROR, (err) => t.equals(err.message, 'err0', 'got err0'))
-    t.notOk(server.ban('peer'), 'unbannable')
-    t.notOk(await server.stop(), 'not started')
+    config.events.once(Event.PEER_CONNECTED, (p) => assert.equal(p, peer, 'peer connected'))
+    config.events.on(Event.SERVER_ERROR, (err) => assert.equal(err.message, 'err0', 'got err0'))
+    assert.notOk(server.ban('peer'), 'unbannable')
+    assert.notOk(await server.stop(), 'not started')
     await server.start()
     ;(server as any).node.emit('error', new Error('err0'))
-    t.notOk(server.addProtocols([]), 'cannot add protocols after start')
+    assert.notOk(server.addProtocols([]), 'cannot add protocols after start')
     server.ban('peer0', 10)
-    t.ok(server.isBanned('peer0'), 'banned')
+    assert.ok(server.isBanned('peer0'), 'banned')
     await wait(100)
-    t.notOk(server.isBanned('peer0'), 'ban expired')
+    assert.notOk(server.isBanned('peer0'), 'ban expired')
     const { node } = server as any
-    t.equals(node.constructor.name, 'Libp2pNode', 'libp2p node created')
+    assert.equal(node.constructor.name, 'Libp2pNode', 'libp2p node created')
     node.emit('peer:discovery', peerId)
     td.when(peer2.bindProtocols(node, 'id2', server)).thenResolve(null)
-    server.config.events.once(Event.PEER_CONNECTED, () => t.ok('peer2 connected'))
+    server.config.events.once(Event.PEER_CONNECTED, () => assert.ok('peer2 connected'))
     node.emit('peer:discovery', peerId2)
     td.when(server.getPeerInfo('conn3' as any)).thenReturn([peerId3, 'ma1' as any])
     node.connectionManager.emit('peer:connect', 'conn3')
     td.verify(server.createPeer(peerId3, ['ma1'] as any, td.matchers.anything()))
-    t.ok((await server.start()) === false, 'server already started')
+    assert.ok((await server.start()) === false, 'server already started')
     await server.stop()
-    t.notOk(server.running, 'stopped')
+    assert.notOk(server.running, 'stopped')
   })
 
-  t.test('should reset td', (t) => {
+  it('should reset td', () => {
     td.reset()
-    t.end()
   })
 })

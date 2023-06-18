@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { baseRequest, params, setupChain } from '../helpers'
@@ -11,7 +11,7 @@ import pow = require('./../../testdata/geth-genesis/pow.json')
 
 const method = 'eth_getStorageAt'
 
-tape(`${method}: call with valid arguments`, async (t) => {
+describe(`${method}: call with valid arguments`, async () => {
   const address = Address.fromString(`0x${'11'.repeat(20)}`)
   const emptySlotStr = `0x${'00'.repeat(32)}`
 
@@ -20,9 +20,9 @@ tape(`${method}: call with valid arguments`, async (t) => {
   let req = params(method, [address.toString(), '0x0', 'latest'])
   let expectRes = (res: any) => {
     const msg = 'should return the empty slot for nonexistent account'
-    t.equal(res.body.result, emptySlotStr, msg)
+    assert.equal(res.body.result, emptySlotStr, msg)
   }
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(server, req, 200, expectRes, false)
 
   // sample contract from https://ethereum.stackexchange.com/a/70791
   const data =
@@ -58,30 +58,30 @@ tape(`${method}: call with valid arguments`, async (t) => {
   req = params(method, [createdAddress!.toString(), '0x0', 'latest'])
   expectRes = (res: any) => {
     const msg = 'should return the correct slot value'
-    t.equal(res.body.result, expectedSlotValue, msg)
+    assert.equal(res.body.result, expectedSlotValue, msg)
   }
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(server, req, 200, expectRes, false)
 
   // call with 'earliest' tag to see if getStorageAt allows addressing blocks that are older than the latest block by tag
   req = params(method, [createdAddress!.toString(), '0x0', 'earliest'])
   expectRes = (res: any) => {
     const msg =
       'should not have new slot value for block that is addressed by "earliest" tag and is older than latest'
-    t.equal(res.body.result, emptySlotStr, msg)
+    assert.equal(res.body.result, emptySlotStr, msg)
   }
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(server, req, 200, expectRes, false)
 
   // call with integer for block number to see if getStorageAt allows addressing blocks by number index
   req = params(method, [createdAddress!.toString(), '0x0', '0x1'])
   expectRes = (res: any) => {
     const msg =
       'should return the correct slot value when addressing the latest block by integer index'
-    t.equal(res.body.result, expectedSlotValue, msg)
+    assert.equal(res.body.result, expectedSlotValue, msg)
   }
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(server, req, 200, expectRes, false)
 
   // call with unsupported block argument
   req = params(method, [address.toString(), '0x0', 'pending'])
-  expectRes = checkError(t, INVALID_PARAMS, '"pending" is not yet supported')
-  await baseRequest(t, server, req, 200, expectRes)
+  expectRes = checkError(INVALID_PARAMS, '"pending" is not yet supported')
+  await baseRequest(server, req, 200, expectRes)
 })

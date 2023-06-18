@@ -1,11 +1,11 @@
-import * as tape from 'tape'
 import * as td from 'testdouble'
+import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
 import { Event } from '../../src/types'
 
-tape('[LightEthereumService]', async (t) => {
+describe('[LightEthereumService]', async () => {
   class PeerPool {
     open() {}
     close() {}
@@ -32,25 +32,22 @@ tape('[LightEthereumService]', async (t) => {
 
   const { LightEthereumService } = await import('../../src/service/lightethereumservice')
 
-  t.test('should initialize correctly', async (t) => {
+  it('should initialize correctly', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
-    t.ok(service.synchronizer instanceof LightSynchronizer, 'light sync')
-    t.equals(service.name, 'eth', 'got name')
-    t.end()
+    assert.ok(service.synchronizer instanceof LightSynchronizer, 'light sync')
+    assert.equal(service.name, 'eth', 'got name')
   })
 
-  t.test('should get protocols', async (t) => {
+  it('should get protocols', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
-    t.ok(service.protocols[0] instanceof LesProtocol, 'light protocols')
-    t.end()
+    assert.ok(service.protocols[0] instanceof LesProtocol, 'light protocols')
   })
 
-  t.test('should open', async (t) => {
-    t.plan(3)
+  it('should open', async () => {
     const server = td.object() as any
     const config = new Config({ servers: [server], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
@@ -58,35 +55,33 @@ tape('[LightEthereumService]', async (t) => {
     await service.open()
     td.verify(service.synchronizer.open())
     td.verify(server.addProtocols(td.matchers.anything()))
-    service.config.events.on(Event.SYNC_SYNCHRONIZED, () => t.pass('synchronized'))
+    service.config.events.on(Event.SYNC_SYNCHRONIZED, () => assert.ok(true, 'synchronized'))
     service.config.events.on(Event.SYNC_ERROR, (err: Error) => {
-      if (err.message === 'error0') t.pass('got error 1')
+      if (err.message === 'error0') assert.ok(true, 'got error 1')
     })
     service.config.events.emit(Event.SYNC_SYNCHRONIZED, BigInt(0))
     service.config.events.emit(Event.SYNC_ERROR, new Error('error0'))
     service.config.events.on(Event.SERVER_ERROR, (err: Error) => {
-      if (err.message === 'error1') t.pass('got error 2')
+      if (err.message === 'error1') assert.ok(true, 'got error 2')
     })
     service.config.events.emit(Event.SERVER_ERROR, new Error('error1'), server)
     await service.close()
   })
 
-  t.test('should start/stop', async (t) => {
+  it('should start/stop', async () => {
     const server = td.object() as any
     const config = new Config({ servers: [server], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
     await service.start()
     td.verify(service.synchronizer.start())
-    t.notOk(await service.start(), 'already started')
+    assert.notOk(await service.start(), 'already started')
     await service.stop()
     td.verify(service.synchronizer.stop())
-    t.notOk(await service.stop(), 'already stopped')
-    t.end()
+    assert.notOk(await service.stop(), 'already stopped')
   })
 
-  t.test('should reset td', (t) => {
+  it('should reset td', () => {
     td.reset()
-    t.end()
   })
 })

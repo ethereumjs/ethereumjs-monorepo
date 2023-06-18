@@ -3,7 +3,7 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex, bytesToPrefixedHexString } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
@@ -13,7 +13,7 @@ import type { FullEthereumService } from '../../../src/service'
 
 const method = 'eth_call'
 
-tape(`${method}: call with valid arguments`, async (t) => {
+describe(`${method}: call with valid arguments`, async () => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
   const blockchain = await Blockchain.create({
     common,
@@ -26,7 +26,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const server = startRPC(manager.getMethods())
 
   const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
-  t.notEqual(execution, undefined, 'should have valid execution')
+  assert.notEqual(execution, undefined, 'should have valid execution')
   const { vm } = execution
 
   // genesis address with balance
@@ -98,30 +98,30 @@ tape(`${method}: call with valid arguments`, async (t) => {
   let req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'latest'])
   let expectRes = (res: any) => {
     const msg = 'should return the correct return value'
-    t.equal(res.body.result, bytesToPrefixedHexString(execResult.returnValue), msg)
+    assert.equal(res.body.result, bytesToPrefixedHexString(execResult.returnValue), msg)
   }
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(server, req, 200, expectRes, false)
 
   req = params(method, [{ ...estimateTxData }, 'latest'])
   expectRes = (res: any) => {
     const msg = 'should return the correct return value with no gas limit provided'
-    t.equal(res.body.result, bytesToPrefixedHexString(execResult.returnValue), msg)
+    assert.equal(res.body.result, bytesToPrefixedHexString(execResult.returnValue), msg)
   }
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(server, req, 200, expectRes, false)
 
   req = params(method, [{ gasLimit, data }, 'latest'])
   expectRes = (res: any) => {
     const msg = `should let run call without 'to' for contract creation`
-    t.equal(
+    assert.equal(
       res.body.result,
       bytesToPrefixedHexString(result.results[0].execResult.returnValue),
       msg
     )
   }
-  await baseRequest(t, server, req, 200, expectRes, true)
+  await baseRequest(server, req, 200, expectRes, true)
 })
 
-tape(`${method}: call with unsupported block argument`, async (t) => {
+describe(`${method}: call with unsupported block argument`, async () => {
   const blockchain = await Blockchain.create()
 
   const client = createClient({ blockchain, includeVM: true })
@@ -140,11 +140,11 @@ tape(`${method}: call with unsupported block argument`, async (t) => {
   }
 
   const req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'pending'])
-  const expectRes = checkError(t, INVALID_PARAMS, '"pending" is not yet supported')
-  await baseRequest(t, server, req, 200, expectRes)
+  const expectRes = checkError(INVALID_PARAMS, '"pending" is not yet supported')
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with invalid hex params`, async (t) => {
+describe(`${method}: call with invalid hex params`, async () => {
   const blockchain = await Blockchain.create()
 
   const client = createClient({ blockchain, includeVM: true })
@@ -162,9 +162,8 @@ tape(`${method}: call with invalid hex params`, async (t) => {
 
   const req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'latest'])
   const expectRes = checkError(
-    t,
     INVALID_PARAMS,
     'invalid argument data: hex string without 0x prefix'
   )
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
 })

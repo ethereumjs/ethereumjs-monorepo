@@ -1,5 +1,5 @@
 import { Common, parseGethGenesis } from '@ethereumjs/common'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../../src'
 import { CLConnectionManager } from '../../../src/rpc/util/CLConnectionManager'
@@ -33,15 +33,14 @@ const update = {
   },
 }
 
-tape('[CLConnectionManager]', (t) => {
-  t.test('Initialization', async (st) => {
-    st.plan(5)
+describe('[CLConnectionManager]', () => {
+  it('Initialization', async () => {
     let config = new Config()
     let manager = new CLConnectionManager({ config })
     manager.start()
-    st.ok(manager.running, 'should start')
+    assert.ok(manager.running, 'should start')
     manager.stop()
-    st.ok(!manager.running, 'should stop')
+    assert.ok(!manager.running, 'should stop')
     const prevMergeForkBlock = (genesisJSON.config as any).mergeForkBlock
     ;(genesisJSON.config as any).mergeForkBlock = 0
     const params = parseGethGenesis(genesisJSON, 'post-merge', false)
@@ -52,7 +51,7 @@ tape('[CLConnectionManager]', (t) => {
     common.setHardforkBy({ blockNumber: 0 })
     config = new Config({ common })
     manager = new CLConnectionManager({ config })
-    st.ok(manager.running, 'starts on instantiation if hardfork is MergeForkBlock')
+    assert.ok(manager.running, 'starts on instantiation if hardfork is MergeForkBlock')
     manager.stop()
     ;(genesisJSON.config as any).mergeForkBlock = 10
     common = new Common({
@@ -63,27 +62,26 @@ tape('[CLConnectionManager]', (t) => {
     manager = new CLConnectionManager({ config })
     config.chainCommon.setHardforkBy({ blockNumber: 11 })
     config.events.on(Event.CHAIN_UPDATED, () => {
-      st.ok(manager.running, 'connection manager started on chain update on mergeBlock')
+      assert.ok(manager.running, 'connection manager started on chain update on mergeBlock')
     })
     config.events.on(Event.CLIENT_SHUTDOWN, () => {
-      st.ok(!manager.running, 'connection manager stopped on client shutdown')
+      assert.ok(!manager.running, 'connection manager stopped on client shutdown')
     })
     config.events.emit(Event.CHAIN_UPDATED)
     config.events.emit(Event.CLIENT_SHUTDOWN)
-    // reset prevMergeForkBlock as it seems to be polluting other tests
+    // reset prevMergeForkBlock as it seems to be polluting other test   ;(genesisJSON.config as any).mergeForkBlock = prevMergeForkBlock
     ;(genesisJSON.config as any).mergeForkBlock = prevMergeForkBlock
   })
 
-  t.test('Status updates', async (st) => {
-    st.plan(2)
+  it('Status updates', async () => {
     const config = new Config()
     const manager = new CLConnectionManager({ config })
     config.logger.on('data', (chunk) => {
       if ((chunk.message as string).includes('consensus forkchoice update head=0x67b9')) {
-        st.pass('received last fork choice message')
+        assert.ok(true, 'received last fork choice message')
       }
       if ((chunk.message as string).includes('consensus payload received number=55504')) {
-        st.pass('received last payload message')
+        assert.ok(true, 'received last payload message')
         manager.stop()
         config.logger.removeAllListeners()
       }

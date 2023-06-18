@@ -1,12 +1,11 @@
-import * as tape from 'tape'
+import { describe, it } from 'vitest'
 
 import { destroy, setup } from './util'
 
-tape('[Integration:LightEthereumService]', async (t) => {
-  t.test('should handle LES requests', async (t) => {
+describe('[Integration:LightEthereumService]', async () => {
+  it('should handle LES requests', async () => {
     const [server, service] = await setup()
     // TO DO: test handlers once they are implemented
     await destroy(server, service)
-    t.end()
   })
 })

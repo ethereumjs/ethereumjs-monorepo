@@ -1,6 +1,6 @@
 import { randomBytes } from '@ethereumjs/util'
 import { encode } from 'jwt-simple'
-import * as tape from 'tape'
+import { assert, describe } from 'vitest'
 
 import { METHOD_NOT_FOUND } from '../../src/rpc/error-code'
 
@@ -12,7 +12,7 @@ const request = require('supertest')
 
 const jwtSecret = randomBytes(32)
 
-tape('call JSON-RPC without Content-Type header', (t) => {
+describe('call JSON-RPC without Content-Type header', () => {
   const server = startRPC({})
   const req = 'plaintext'
 
@@ -22,11 +22,11 @@ tape('call JSON-RPC without Content-Type header', (t) => {
     .expect(415)
     .end((err: any) => {
       closeRPC(server)
-      t.end(err)
+      assert.notOk(err)
     })
 })
 
-tape('call JSON-RPC auth protected server without any auth headers', (t) => {
+describe('call JSON-RPC auth protected server without any auth headers', () => {
   const server = startRPC({}, undefined, { jwtSecret })
   const req = 'plaintext'
 
@@ -36,11 +36,11 @@ tape('call JSON-RPC auth protected server without any auth headers', (t) => {
     .expect(401)
     .end((err: any) => {
       closeRPC(server)
-      t.end(err)
+      assert.notOk(err)
     })
 })
 
-tape('call JSON-RPC auth protected server with invalid token', (t) => {
+describe('call JSON-RPC auth protected server with invalid token', () => {
   const server = startRPC({}, undefined, { jwtSecret })
   const req = 'plaintext'
 
@@ -51,11 +51,11 @@ tape('call JSON-RPC auth protected server with invalid token', (t) => {
     .expect(401)
     .end((err: any) => {
       closeRPC(server)
-      t.end(err)
+      assert.notOk(err)
     })
 })
 
-tape('call JSON-RPC auth protected server with an invalid algorithm token', (t) => {
+describe('call JSON-RPC auth protected server with an invalid algorithm token', () => {
   const server = startRPC({}, undefined, { jwtSecret })
   const req = 'plaintext'
   const claims = { iat: Math.floor(new Date().getTime() / 1000) }
@@ -68,11 +68,11 @@ tape('call JSON-RPC auth protected server with an invalid algorithm token', (t) 
     .expect(401)
     .end((err: any) => {
       closeRPC(server)
-      t.end(err)
+      assert.notOk(err)
     })
 })
 
-tape('call JSON-RPC auth protected server with a valid token', (t) => {
+describe('call JSON-RPC auth protected server with a valid token', () => {
   const server = startRPC({}, undefined, { jwtSecret })
   const req = 'plaintext'
   const claims = { iat: Math.floor(new Date().getTime() / 1000) }
@@ -85,11 +85,11 @@ tape('call JSON-RPC auth protected server with a valid token', (t) => {
     .expect(415)
     .end((err: any) => {
       closeRPC(server)
-      t.end(err)
+      assert.notOk(err)
     })
 })
 
-tape('call JSON-RPC auth protected server with a valid but stale token', (t) => {
+describe('call JSON-RPC auth protected server with a valid but stale token', () => {
   const server = startRPC({}, undefined, { jwtSecret })
   const req = 'plaintext'
   const claims = { iat: Math.floor(new Date().getTime() / 1000 - 61) }
@@ -102,11 +102,11 @@ tape('call JSON-RPC auth protected server with a valid but stale token', (t) => 
     .expect(401)
     .end((err: any) => {
       closeRPC(server)
-      t.end(err)
+      assert.notOk(err)
     })
 })
 
-tape('call JSON-RPC without Content-Type header', (t) => {
+describe('call JSON-RPC without Content-Type header', () => {
   const server = startRPC({}, undefined, { jwtSecret })
   const req = 'plaintext'
 
@@ -116,11 +116,11 @@ tape('call JSON-RPC without Content-Type header', (t) => {
     .expect(401)
     .end((err: any) => {
       closeRPC(server)
-      t.end(err)
+      assert.notOk(err)
     })
 })
 
-tape('call JSON RPC with nonexistent method', (t) => {
+describe('call JSON RPC with nonexistent method', () => {
   const server = startRPC({})
   const req = {
     jsonrpc: '2.0',
@@ -143,11 +143,11 @@ tape('call JSON RPC with nonexistent method', (t) => {
     })
     .end((err: any) => {
       closeRPC(server)
-      t.end(err)
+      assert.notOk(err)
     })
 })
 
-tape('call JSON-RPC auth protected server with unprotected method without token', (t) => {
+describe('call JSON-RPC auth protected server with unprotected method without token', () => {
   const server = startRPC({}, undefined, {
     jwtSecret,
     unlessFn: (req: any) => req.body.method.includes('unprotected_'),
@@ -167,11 +167,11 @@ tape('call JSON-RPC auth protected server with unprotected method without token'
     .expect(200)
     .end((err: any) => {
       closeRPC(server)
-      t.end(err)
+      assert.notOk(err)
     })
 })
 
-tape('call JSON-RPC auth protected server with protected method without token', (t) => {
+describe('call JSON-RPC auth protected server with protected method without token', () => {
   const server = startRPC({}, undefined, {
     jwtSecret,
     unlessFn: (req: any) => !(req.body.method as string).includes('protected_'),
@@ -191,11 +191,11 @@ tape('call JSON-RPC auth protected server with protected method without token', 
     .expect(401)
     .end((err: any) => {
       closeRPC(server)
-      t.end(err)
+      assert.notOk(err)
     })
 })
 
-tape('call JSON-RPC auth protected server with protected method with token', (t) => {
+describe('call JSON-RPC auth protected server with protected method with token', () => {
   const server = startRPC({}, undefined, {
     jwtSecret,
     unlessFn: (req: any) => !(req.body.method as string).includes('protected_'),
@@ -218,6 +218,6 @@ tape('call JSON-RPC auth protected server with protected method with token', (t)
     .expect(200)
     .end((err: any) => {
       closeRPC(server)
-      t.end(err)
+      assert.notOk(err)
     })
 })

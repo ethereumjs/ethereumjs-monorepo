@@ -1,11 +1,11 @@
 import { bigIntToHex } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe } from 'vitest'
 
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 
 const method = 'eth_blockNumber'
 
-tape(`${method}: call with valid arguments`, async (t) => {
+describe(`${method}: call with valid arguments`, async () => {
   const mockBlockNumber = BigInt(123)
   const mockChain = {
     headers: { latest: { number: mockBlockNumber } },
@@ -20,7 +20,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   const req = params(method)
   const expectRes = (res: any) => {
-    t.equal(res.body.result, bigIntToHex(mockBlockNumber))
+    assert.equal(res.body.result, bigIntToHex(mockBlockNumber))
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
 })

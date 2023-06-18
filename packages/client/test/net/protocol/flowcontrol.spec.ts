@@ -1,14 +1,14 @@
 /// <reference path="./testdouble-timers.d.ts" />
 /// <reference path="./testdouble.d.ts" />
-import * as tape from 'tape'
 import * as td from 'testdouble'
 import timers from 'testdouble-timers'
+import { assert, describe, it } from 'vitest'
 
 import { FlowControl } from '../../../src/net/protocol'
 
 timers.use(td)
 
-tape('[FlowControl]', (t) => {
+describe('[FlowControl]', () => {
   const settings = {
     bl: 1000,
     mrc: {
@@ -19,7 +19,7 @@ tape('[FlowControl]', (t) => {
   const peer = { id: '1', les: { status: settings } } as any
   const clock = td.timers()
 
-  t.test('should handle incoming flow control', (t) => {
+  it('should handle incoming flow control', () => {
     const expected = [700, 700, 410, 120, -170]
     const flow = new FlowControl(settings)
     let correct = 0
@@ -28,12 +28,11 @@ tape('[FlowControl]', (t) => {
       if (bv === expected[count]) correct++
       clock.tick(1)
     }
-    t.equals(correct, 5, 'correct bv values')
-    t.notOk(flow.out.get(peer.id), 'peer should be dropped')
-    t.end()
+    assert.equal(correct, 5, 'correct bv values')
+    assert.notOk(flow.out.get(peer.id), 'peer should be dropped')
   })
 
-  t.test('should handle outgoing flow control', (t) => {
+  it('should handle outgoing flow control', () => {
     const expected = [9, 6, 3, 0, 0]
     const flow = new FlowControl()
     let correct = 0
@@ -43,7 +42,6 @@ tape('[FlowControl]', (t) => {
       if (max === expected[count]) correct++
       clock.tick(1)
     }
-    t.equals(correct, 5, 'correct max values')
-    t.end()
+    assert.equal(correct, 5, 'correct max values')
   })
 })

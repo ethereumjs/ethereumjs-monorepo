@@ -3,7 +3,7 @@ import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { Account, Address, bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe } from 'vitest'
 
 import { INVALID_PARAMS, TOO_LARGE_REQUEST } from '../../../src/rpc/error-code'
 import genesisJSON = require('../../testdata/geth-genesis/eip4844.json')
@@ -13,31 +13,23 @@ import { checkError } from '../util'
 
 const method = 'engine_getPayloadBodiesByRangeV1'
 
-tape(`${method}: call with too many hashes`, async (t) => {
+describe(`${method}: call with too many hashes`, async () => {
   const { server } = baseSetup({ engine: true, includeVM: true })
 
   const req = params(method, ['0x1', '0x55'])
-  const expectRes = checkError(
-    t,
-    TOO_LARGE_REQUEST,
-    'More than 32 execution payload bodies requested'
-  )
-  await baseRequest(t, server, req, 200, expectRes)
+  const expectRes = checkError(TOO_LARGE_REQUEST, 'More than 32 execution payload bodies requested')
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with invalid parameters`, async (t) => {
+describe(`${method}: call with invalid parameters`, async () => {
   const { server } = baseSetup({ engine: true, includeVM: true })
 
   const req = params(method, ['0x0', '0x0'])
-  const expectRes = checkError(
-    t,
-    INVALID_PARAMS,
-    'Start and Count parameters cannot be less than 1'
-  )
-  await baseRequest(t, server, req, 200, expectRes)
+  const expectRes = checkError(INVALID_PARAMS, 'Start and Count parameters cannot be less than 1')
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with valid parameters`, async (t) => {
+describe(`${method}: call with valid parameters`, async () => {
   // Disable stateroot validation in TxPool since valid state root isn't available
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   const originalStateManagerCopy = DefaultStateManager.prototype.copy
@@ -103,34 +95,34 @@ tape(`${method}: call with valid parameters`, async (t) => {
 
   const req = params(method, ['0x1', '0x4'])
   const expectRes = (res: any) => {
-    t.equal(
+    assert.equal(
       res.body.result[0].transactions[0],
       bytesToPrefixedHexString(tx.serialize()),
       'got expected transaction from first payload'
     )
-    t.equal(
+    assert.equal(
       res.body.result.length,
       2,
       'length of response matches start of range up to highest known block'
     )
   }
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(server, req, 200, expectRes, false)
 
   const req2 = params(method, ['0x3', '0x2'])
   const expectRes2 = (res: any) => {
-    t.equal(
+    assert.equal(
       res.body.result.length,
       0,
       'got empty array when start of requested range is beyond current chain head'
     )
   }
-  await baseRequest(t, server, req2, 200, expectRes2)
+  await baseRequest(server, req2, 200, expectRes2)
   // Restore setStateRoot
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
   DefaultStateManager.prototype.copy = originalStateManagerCopy
 })
 
-tape(`${method}: call with valid parameters on pre-Shanghai hardfork`, async (t) => {
+describe(`${method}: call with valid parameters on pre-Shanghai hardfork`, async () => {
   // Disable stateroot validation in TxPool since valid state root isn't available
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   const originalStateManagerCopy = DefaultStateManager.prototype.copy
@@ -196,14 +188,14 @@ tape(`${method}: call with valid parameters on pre-Shanghai hardfork`, async (t)
 
   const req = params(method, ['0x1', '0x4'])
   const expectRes = (res: any) => {
-    t.equal(
+    assert.equal(
       res.body.result[0].withdrawals,
       null,
       'withdrawals field is null for pre-shanghai blocks'
     )
   }
   service.execution.vm._common.setHardfork(Hardfork.London)
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
   // Restore setStateRoot
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
   DefaultStateManager.prototype.copy = originalStateManagerCopy

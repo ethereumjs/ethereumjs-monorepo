@@ -1,10 +1,10 @@
-import * as tape from 'tape'
 import * as td from 'testdouble'
+import { assert, describe, it } from 'vitest'
 
 import { Config } from '../src/config'
 import { PeerPool } from '../src/net/peerpool'
 
-tape('[EthereumClient]', async (t) => {
+describe('[EthereumClient]', async () => {
   const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
   class FullEthereumService {
     open() {}
@@ -38,38 +38,35 @@ tape('[EthereumClient]', async (t) => {
 
   const { EthereumClient } = await import('../src/client')
 
-  t.test('should initialize correctly', async (t) => {
+  it('should initialize correctly', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const client = await EthereumClient.create({ config })
-    t.ok(client.services[0] instanceof FullEthereumService, 'added service')
-    t.end()
+    assert.ok(client.services[0] instanceof FullEthereumService, 'added service')
   })
 
-  t.test('should open', async (t) => {
-    t.plan(2)
+  it('should open', async () => {
     const servers = [new Server()] as any
     const config = new Config({ servers, accountCache: 10000, storageCache: 1000 })
     const client = await EthereumClient.create({ config })
 
     await client.open()
-    t.ok(client.opened, 'opened')
-    t.equals(await client.open(), false, 'already opened')
+    assert.ok(client.opened, 'opened')
+    assert.equal(await client.open(), false, 'already opened')
   })
 
-  t.test('should start/stop', async (t) => {
+  it('should start/stop', async () => {
     const servers = [new Server()] as any
     const config = new Config({ servers, accountCache: 10000, storageCache: 1000 })
     const client = await EthereumClient.create({ config })
     await client.start()
-    t.ok(client.started, 'started')
-    t.equals(await client.start(), false, 'already started')
+    assert.ok(client.started, 'started')
+    assert.equal(await client.start(), false, 'already started')
     await client.stop()
-    t.notOk(client.started, 'stopped')
-    t.equals(await client.stop(), false, 'already stopped')
+    assert.notOk(client.started, 'stopped')
+    assert.equal(await client.stop(), false, 'already stopped')
   })
 
-  t.test('should reset td', (t) => {
+  it('should reset td', () => {
     td.reset()
-    t.end()
   })
 })

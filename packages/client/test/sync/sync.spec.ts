@@ -1,5 +1,5 @@
-import * as tape from 'tape'
 import * as td from 'testdouble'
+import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
@@ -18,7 +18,7 @@ class SynchronizerTest extends Synchronizer {
   }
 }
 
-tape('[Synchronizer]', async (t) => {
+describe('[Synchronizer]', async () => {
   class PeerPool {
     open() {}
     close() {}
@@ -26,7 +26,7 @@ tape('[Synchronizer]', async (t) => {
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
 
-  t.test('should sync', async (t) => {
+  it('should sync', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     config.syncTargetHeight = BigInt(1)
     const pool = new PeerPool() as any
@@ -35,12 +35,11 @@ tape('[Synchronizer]', async (t) => {
     ;(sync as any).sync = td.func()
     td.when((sync as any).sync()).thenResolve(true)
     config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
-      t.ok('synchronized', 'synchronized')
+      assert.ok('synchronized', 'synchronized')
       await sync.stop()
-      t.notOk((sync as any).running, 'stopped')
+      assert.notOk((sync as any).running, 'stopped')
       await sync.close()
       await chain.close()
-      t.end()
     })
     void sync.start()
     ;(sync as any).chain._headers = {
@@ -53,12 +52,11 @@ tape('[Synchronizer]', async (t) => {
     // test getting out of sync
     ;(config as any).syncedStateRemovalPeriod = 0
     config.updateSynchronizedState()
-    t.equal(config.synchronized, false, 'should fall out of sync')
-    await new Promise(() => {}) // resolves once t.end() is called
+    assert.equal(config.synchronized, false, 'should fall out of sync')
+    await new Promise(() => {}) // resolves once   is called
   })
 
-  t.test('should reset td', (t) => {
+  it('should reset td', () => {
     td.reset()
-    t.end()
   })
 })

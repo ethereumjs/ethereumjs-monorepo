@@ -2,8 +2,8 @@ import { Common, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory, TransactionType } from '@ethereumjs/tx'
 import { hexStringToBytes, randomBytes } from '@ethereumjs/util'
 import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
 import * as td from 'testdouble'
+import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
@@ -12,7 +12,7 @@ import genesisJSON = require('../testdata/geth-genesis/post-merge.json')
 
 import type { Log } from '@ethereumjs/evm'
 
-tape('[FullEthereumService]', async (t) => {
+describe('[FullEthereumService]', async () => {
   class PeerPool {
     open() {}
     close() {}
@@ -65,36 +65,33 @@ tape('[FullEthereumService]', async (t) => {
   td.replace<any>('@ethereumjs/block', { Block })
   const { FullEthereumService } = await import('../../src/service/fullethereumservice')
 
-  t.test('should initialize correctly', async (t) => {
+  it('should initialize correctly', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
-    t.ok(service.synchronizer instanceof FullSynchronizer, 'full mode')
-    t.equals(service.name, 'eth', 'got name')
-    t.end()
+    assert.ok(service.synchronizer instanceof FullSynchronizer, 'full mode')
+    assert.equal(service.name, 'eth', 'got name')
   })
 
-  t.test('should get protocols', async (t) => {
+  it('should get protocols', async () => {
     let config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     let service = new FullEthereumService({ config, chain })
-    t.ok(service.protocols.filter((p) => p instanceof EthProtocol).length > 0, 'full protocol')
-    t.notOk(
+    assert.ok(service.protocols.filter((p) => p instanceof EthProtocol).length > 0, 'full protocol')
+    assert.notOk(
       service.protocols.filter((p) => p instanceof LesProtocol).length > 0,
       'no light protocol'
     )
     config = new Config({ transports: [], lightserv: true })
     service = new FullEthereumService({ config, chain })
-    t.ok(service.protocols.filter((p) => p instanceof EthProtocol).length > 0, 'full protocol')
-    t.ok(
+    assert.ok(service.protocols.filter((p) => p instanceof EthProtocol).length > 0, 'full protocol')
+    assert.ok(
       service.protocols.filter((p) => p instanceof LesProtocol).length > 0,
       'lightserv protocols'
     )
-    t.end()
   })
 
-  t.test('should open', async (t) => {
-    t.plan(3)
+  it('should open', async () => {
     const server = td.object() as any
     const config = new Config({ servers: [server], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
@@ -102,35 +99,35 @@ tape('[FullEthereumService]', async (t) => {
     await service.open()
     td.verify(service.synchronizer!.open())
     td.verify(server.addProtocols(td.matchers.anything()))
-    service.config.events.on(Event.SYNC_SYNCHRONIZED, () => t.pass('synchronized'))
+    service.config.events.on(Event.SYNC_SYNCHRONIZED, () => assert.ok(true, 'synchronized'))
     service.config.events.on(Event.SYNC_ERROR, (err) => {
-      if (err.message === 'error0') t.pass('got error 1')
+      if (err.message === 'error0') assert.ok(true, 'got error 1')
     })
     service.config.events.emit(Event.SYNC_SYNCHRONIZED, BigInt(0))
     service.config.events.emit(Event.SYNC_ERROR, new Error('error0'))
     service.config.events.on(Event.SERVER_ERROR, (err) => {
-      if (err.message === 'error1') t.pass('got error 2')
+      if (err.message === 'error1') assert.ok(true, 'got error 2')
     })
     service.config.events.emit(Event.SERVER_ERROR, new Error('error1'), server)
     await service.close()
   })
 
-  t.test('should start/stop', async (t) => {
+  it('should start/stop', async () => {
     const server = td.object() as any
     const config = new Config({ servers: [server], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
 
     await service.start()
+
     td.verify(service.synchronizer!.start())
-    t.notOk(await service.start(), 'already started')
+    assert.notOk(await service.start(), 'already started')
     await service.stop()
     td.verify(service.synchronizer!.stop())
-    t.notOk(await service.stop(), 'already stopped')
-    t.end()
+    assert.notOk(await service.stop(), 'already stopped')
   })
 
-  t.test('should correctly handle GetBlockHeaders', async (t) => {
+  it('should correctly handle GetBlockHeaders', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     chain.getHeaders = () => [{ number: 1n }] as any
@@ -144,7 +141,7 @@ tape('[FullEthereumService]', async (t) => {
       {
         eth: {
           send: (title: string, msg: any) => {
-            t.ok(
+            assert.ok(
               title === 'BlockHeaders' && msg.headers.length === 0,
               'sent empty headers when block height is too high'
             )
@@ -167,61 +164,47 @@ tape('[FullEthereumService]', async (t) => {
       {
         eth: {
           send: (title: string, msg: any) => {
-            t.ok(
+            assert.ok(
               title === 'BlockHeaders' && msg.headers.length === 1,
               'sent 1 header when requested'
             )
-            t.end()
           },
         } as any,
       } as any
     )
   })
 
-  t.test(
-    'should call handleNewBlock on NewBlock and handleNewBlockHashes on NewBlockHashes',
-    async (t) => {
-      const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
-      const chain = await Chain.create({ config })
-      const service = new FullEthereumService({ config, chain })
-      await service.handle({ name: 'NewBlock', data: [{}, BigInt(1)] }, 'eth', undefined as any)
-      td.verify((service.synchronizer as any).handleNewBlock({}, undefined))
-      await service.handle(
-        { name: 'NewBlockHashes', data: [{}, BigInt(1)] },
-        'eth',
-        undefined as any
-      )
-      td.verify((service.synchronizer as any).handleNewBlockHashes([{}, BigInt(1)]))
-      // should not call when using BeaconSynchronizer
-      // (would error if called since handleNewBlock and handleNewBlockHashes are not available on BeaconSynchronizer)
-      await service.switchToBeaconSync()
-      t.ok(service.synchronizer instanceof BeaconSynchronizer, 'switched to BeaconSynchronizer')
-      t.ok(service.beaconSync, 'can access BeaconSynchronizer')
-      await service.handle({ name: 'NewBlock', data: [{}, BigInt(1)] }, 'eth', undefined as any)
-      await service.handle(
-        { name: 'NewBlockHashes', data: [{}, BigInt(1)] },
-        'eth',
-        undefined as any
-      )
-      t.end()
-    }
-  )
+  it('should call handleNewBlock on NewBlock and handleNewBlockHashes on NewBlockHashes', async () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const chain = await Chain.create({ config })
+    const service = new FullEthereumService({ config, chain })
+    await service.handle({ name: 'NewBlock', data: [{}, BigInt(1)] }, 'eth', undefined as any)
+    td.verify((service.synchronizer as any).handleNewBlock({}, undefined))
+    await service.handle({ name: 'NewBlockHashes', data: [{}, BigInt(1)] }, 'eth', undefined as any)
+    td.verify((service.synchronizer as any).handleNewBlockHashes([{}, BigInt(1)]))
+    // should not call when using BeaconSynchronizer
+    // (would error if called since handleNewBlock and handleNewBlockHashes are not available on BeaconSynchronizer)
+    await service.switchToBeaconSync()
+    assert.ok(service.synchronizer instanceof BeaconSynchronizer, 'switched to BeaconSynchronizer')
+    assert.ok(service.beaconSync, 'can access BeaconSynchronizer')
+    await service.handle({ name: 'NewBlock', data: [{}, BigInt(1)] }, 'eth', undefined as any)
+    await service.handle({ name: 'NewBlockHashes', data: [{}, BigInt(1)] }, 'eth', undefined as any)
+  })
 
-  t.test('should ban peer for sending NewBlock/NewBlockHashes after merge', async (t) => {
-    t.plan(2)
+  it('should ban peer for sending NewBlock/NewBlockHashes after merge', async () => {
     const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Paris })
     const config = new Config({ common, transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     service.pool.ban = () => {
-      t.pass('banned peer when NewBlock/NewBlockHashes announced after Merge')
+      assert.ok(true, 'banned peer when NewBlock/NewBlockHashes announced after Merge')
     }
 
     await service.handle({ name: 'NewBlock', data: [{}, BigInt(1)] }, 'eth', { id: 1 } as any)
     await service.handle({ name: 'NewBlockHashes', data: [] }, 'eth', { id: 1 } as any)
   })
 
-  t.test('should send Receipts on GetReceipts', async (t) => {
+  it('should send Receipts on GetReceipts', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
@@ -263,20 +246,18 @@ tape('[FullEthereumService]', async (t) => {
     const peer = { eth: { send: td.func() } } as any
     await service.handle({ name: 'GetReceipts', data: [BigInt(1), [blockHash]] }, 'eth', peer)
     td.verify(peer.eth.send('Receipts', { reqId: BigInt(1), receipts }))
-    t.end()
   })
 
-  t.test('should handle Transactions', async (st) => {
+  it('should handle Transactions', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     service.txPool.handleAnnouncedTxs = async (msg, _peer, _pool) => {
-      st.deepEqual(
+      assert.deepEqual(
         msg[0],
         TransactionFactory.fromTxData({ type: 2 }),
         'handled Transactions message'
       )
-      st.end()
     }
 
     await service.handle(
@@ -289,13 +270,12 @@ tape('[FullEthereumService]', async (t) => {
     )
   })
 
-  t.test('should handle NewPooledTransactionHashes', async (st) => {
+  it('should handle NewPooledTransactionHashes', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     service.txPool.handleAnnouncedTxHashes = async (msg, _peer, _pool) => {
-      st.deepEqual(msg[0], hexStringToBytes('0xabcd'), 'handled NewPooledTransactionhashes')
-      st.end()
+      assert.deepEqual(msg[0], hexStringToBytes('0xabcd'), 'handled NewPooledTransactionhashes')
     }
 
     await service.handle(
@@ -308,7 +288,7 @@ tape('[FullEthereumService]', async (t) => {
     )
   })
 
-  t.test('should handle GetPooledTransactions', async (st) => {
+  it('should handle GetPooledTransactions', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
@@ -323,28 +303,26 @@ tape('[FullEthereumService]', async (t) => {
       {
         eth: {
           send: (_: string, data: any): any => {
-            st.ok(equalsBytes(data.txs[0].hash(), tx.hash()), 'handled getPooledTransactions')
-            st.end()
+            assert.ok(equalsBytes(data.txs[0].hash(), tx.hash()), 'handled getPooledTransactions')
           },
         } as any,
       } as any
     )
   })
 
-  t.test('should start on beacon sync when past merge', async (t) => {
+  it('should start on beacon sync when past merge', async () => {
     const common = Common.fromGethGenesis(genesisJSON, { chain: 'post-merge' })
     common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000, common })
     const chain = await Chain.create({ config })
     let service = new FullEthereumService({ config, chain })
-    t.ok(service.beaconSync, 'beacon sync should be available')
+    assert.ok(service.beaconSync, 'beacon sync should be available')
     const configDisableBeaconSync = new Config({ transports: [], common, disableBeaconSync: true })
     service = new FullEthereumService({ config: configDisableBeaconSync, chain })
-    t.notOk(service.beaconSync, 'beacon sync should not be available')
+    assert.notOk(service.beaconSync, 'beacon sync should not be available')
   })
 
-  t.test('should reset td', (t) => {
+  it('should reset td', () => {
     td.reset()
-    t.end()
   })
 })

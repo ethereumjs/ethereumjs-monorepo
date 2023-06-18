@@ -3,7 +3,7 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
@@ -15,7 +15,7 @@ const method = 'eth_getCode'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 
-tape(`${method}: call with valid arguments`, async (t) => {
+describe(`${method}: call with valid arguments`, async () => {
   const blockchain = await Blockchain.create({ common })
 
   const client = createClient({ blockchain, commonChain: common, includeVM: true })
@@ -23,7 +23,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const server = startRPC(manager.getMethods())
 
   const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
-  t.notEqual(execution, undefined, 'should have valid execution')
+  assert.notEqual(execution, undefined, 'should have valid execution')
   const { vm } = execution
   await vm.stateManager.generateCanonicalGenesis(blockchain.genesisState())
 
@@ -34,12 +34,12 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const req = params(method, [address.toString(), 'latest'])
   const expectRes = (res: any) => {
     const msg = 'should return the correct code'
-    t.equal(res.body.result, '0x', msg)
+    assert.equal(res.body.result, '0x', msg)
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: ensure returns correct code`, async (t) => {
+describe(`${method}: ensure returns correct code`, async () => {
   const blockchain = await Blockchain.create({
     common,
     validateBlocks: false,
@@ -51,7 +51,7 @@ tape(`${method}: ensure returns correct code`, async (t) => {
   const server = startRPC(manager.getMethods())
 
   const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
-  t.notEqual(execution, undefined, 'should have valid execution')
+  assert.notEqual(execution, undefined, 'should have valid execution')
   const { vm } = execution
 
   // genesis address with balance
@@ -90,7 +90,7 @@ tape(`${method}: ensure returns correct code`, async (t) => {
   await vm.blockchain.putBlock(ranBlock!)
 
   const expectedContractAddress = Address.generate(address, BigInt(0))
-  t.ok(
+  assert.ok(
     createdAddress!.equals(expectedContractAddress),
     'should match the expected contract address'
   )
@@ -99,12 +99,12 @@ tape(`${method}: ensure returns correct code`, async (t) => {
   const req = params(method, [expectedContractAddress.toString(), 'latest'])
   const expectRes = (res: any) => {
     const msg = 'should return the correct code'
-    t.equal(res.body.result, code, msg)
+    assert.equal(res.body.result, code, msg)
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with unsupported block argument`, async (t) => {
+describe(`${method}: call with unsupported block argument`, async () => {
   const blockchain = await Blockchain.create()
 
   const client = createClient({ blockchain, includeVM: true })
@@ -112,6 +112,6 @@ tape(`${method}: call with unsupported block argument`, async (t) => {
   const server = startRPC(manager.getMethods())
 
   const req = params(method, ['0xccfd725760a68823ff1e062f4cc97e1360e8d997', 'pending'])
-  const expectRes = checkError(t, INVALID_PARAMS, '"pending" is not yet supported')
-  await baseRequest(t, server, req, 200, expectRes)
+  const expectRes = checkError(INVALID_PARAMS, '"pending" is not yet supported')
+  await baseRequest(server, req, 200, expectRes)
 })

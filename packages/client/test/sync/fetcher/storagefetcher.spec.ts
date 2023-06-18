@@ -1,7 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
 import * as td from 'testdouble'
+import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../../src/blockchain'
 import { Config } from '../../../src/config'
@@ -13,7 +13,7 @@ import { _accountRangeRLP } from './accountfetcher.spec'
 const _storageRangesRLP =
   'f83e0bf83af838f7a0290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5639594053cd080a26cb03d5e6d2956cebb31c56e7660cac0'
 
-tape('[StorageFetcher]', async (t) => {
+describe('[StorageFetcher]', async () => {
   class PeerPool {
     idle() {}
     ban() {}
@@ -23,7 +23,7 @@ tape('[StorageFetcher]', async (t) => {
 
   const { StorageFetcher } = await import('../../../src/sync/fetcher/storagefetcher')
 
-  t.test('should start/stop', async (t) => {
+  it('should start/stop', async () => {
     const config = new Config({ maxPerRequest: 5, transports: [] })
     const pool = new PeerPool() as any
     const fetcher = new StorageFetcher({
@@ -44,9 +44,9 @@ tape('[StorageFetcher]', async (t) => {
       ],
     })
     fetcher.next = () => false
-    t.notOk((fetcher as any).running, 'not started')
-    t.equals((fetcher as any).in.length, 0, 'No jobs have yet been added')
-    t.equal((fetcher as any).storageRequests.length, 1, 'one storageRequests have been added')
+    assert.notOk((fetcher as any).running, 'not started')
+    assert.equal((fetcher as any).in.length, 0, 'No jobs have yet been added')
+    assert.equal((fetcher as any).storageRequests.length, 1, 'one storageRequests have been added')
     fetcher.enqueueByStorageRequestList([
       {
         accountHash: hexToBytes('e9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1'),
@@ -55,21 +55,20 @@ tape('[StorageFetcher]', async (t) => {
         count: BigInt(2) ** BigInt(256) - BigInt(1),
       },
     ])
-    t.equals((fetcher as any).in.length, 1, 'A new task has been queued')
+    assert.equal((fetcher as any).in.length, 1, 'A new task has been queued')
     const job = (fetcher as any).in.peek()
-    t.equal(job!.task.storageRequests.length, 2, 'two storageRequests are added to job')
+    assert.equal(job!.task.storageRequests.length, 2, 'two storageRequests are added to job')
 
     void fetcher.fetch()
     await wait(100)
-    t.ok((fetcher as any).running, 'started')
-    t.ok(fetcher.write() === false, 'fetcher should not setup a new write pipe')
+    assert.ok((fetcher as any).running, 'started')
+    assert.ok(fetcher.write() === false, 'fetcher should not setup a new write pipe')
     fetcher.destroy()
     await wait(100)
-    t.notOk((fetcher as any).running, 'stopped')
-    t.end()
+    assert.notOk((fetcher as any).running, 'stopped')
   })
 
-  t.test('should process', (t) => {
+  it('should process', () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new StorageFetcher({
@@ -109,16 +108,15 @@ tape('[StorageFetcher]', async (t) => {
     ;(fetcher as any).running = true
     fetcher.enqueueTask(task)
     const job = (fetcher as any).in.peek()
-    t.deepEquals(
+    assert.deepEqual(
       (fetcher.process(job, StorageDataResponse) as any)[0],
       fullResult[0],
       'got results'
     )
-    t.notOk(fetcher.process({} as any, { StorageDataResponse: [] } as any), 'bad results')
-    t.end()
+    assert.notOk(fetcher.process({} as any, { StorageDataResponse: [] } as any), 'bad results')
   })
 
-  t.test('should adopt correctly', (t) => {
+  it('should adopt correctly', () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new StorageFetcher({
@@ -151,9 +149,9 @@ tape('[StorageFetcher]', async (t) => {
     fetcher.enqueueTask(task)
     const job = (fetcher as any).in.peek()
     let results = fetcher.process(job as any, StorageDataResponse)
-    t.equal((fetcher as any).in.length, 1, 'Fetcher should still have same job')
-    t.equal(job?.partialResult[0].length, 2, 'Should have two partial results')
-    t.equal(results, undefined, 'Process should not return full results yet')
+    assert.equal((fetcher as any).in.length, 1, 'Fetcher should still have same job')
+    assert.equal(job?.partialResult[0].length, 2, 'Should have two partial results')
+    assert.equal(results, undefined, 'Process should not return full results yet')
     const remainingStorageData: any = [
       [
         [{ hash: utf8ToBytes(''), body: utf8ToBytes('') }],
@@ -163,11 +161,10 @@ tape('[StorageFetcher]', async (t) => {
     ]
     remainingStorageData.completed = true
     results = fetcher.process(job as any, remainingStorageData)
-    t.equal((results as any)[0].length, 5, 'Should return full results')
-    t.end()
+    assert.equal((results as any)[0].length, 5, 'Should return full results')
   })
 
-  t.test('should request correctly', async (t) => {
+  it('should request correctly', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const pool = new PeerPool() as any
@@ -226,10 +223,9 @@ tape('[StorageFetcher]', async (t) => {
         bytes: BigInt(50000),
       })
     )
-    t.end()
   })
 
-  t.test('should verify proof correctly', async (t) => {
+  it('should verify proof correctly', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const pool = new PeerPool() as any
@@ -279,21 +275,21 @@ tape('[StorageFetcher]', async (t) => {
     }
     const job = { peer, partialResult, task }
     let results = await fetcher.request(job as any)
-    t.ok(results !== undefined, 'Proof verification is completed without errors')
+    assert.ok(results !== undefined, 'Proof verification is completed without errors')
 
     results!.completed = true
     results = fetcher.process(job as any, results!)
-    t.ok(results !== undefined, 'Response should be processed correctly')
-    t.equal(results![0].length, 3, '3 results should be there with dummy partials')
+    assert.ok(results !== undefined, 'Response should be processed correctly')
+    assert.equal(results![0].length, 3, '3 results should be there with dummy partials')
     // remove out the dummy partials
     results![0].splice(0, 2)
-    t.equal(results![0].length, 1, 'valid slot in results')
+    assert.equal(results![0].length, 1, 'valid slot in results')
 
     try {
       await fetcher.store(results! as any)
-      t.pass('fetcher stored results successfully')
+      assert.ok(true, 'fetcher stored results successfully')
     } catch (e) {
-      t.fail(`fetcher failed to store results, Error: ${(e as Error).message}`)
+      assert.fail(`fetcher failed to store results, Error: ${(e as Error).message}`)
     }
 
     // We have not been able to captured valid storage proof yet but we can try invalid
@@ -312,20 +308,21 @@ tape('[StorageFetcher]', async (t) => {
         slots,
         proof: proofInvalid,
       })
-      t.fail('verifyRangeProof should have failed for an proofInvalid')
+      assert.fail('verifyRangeProof should have failed for an proofInvalid')
     } catch (e) {
-      t.pass(`verifyRangeProof correctly failed on invalid proof, Error: ${(e as Error).message}`)
+      assert.ok(
+        true,
+        `verifyRangeProof correctly failed on invalid proof, Error: ${(e as Error).message}`
+      )
     }
 
     // send end of range input to store
     ;(fetcher as any)['destroyWhenDone'] = false
     await fetcher.store([Object.create(null)] as any)
-    t.ok(fetcher['destroyWhenDone'] === true, 'should have marked fetcher to close')
-
-    t.end()
+    assert.ok(fetcher['destroyWhenDone'] === true, 'should have marked fetcher to close')
   })
 
-  t.test('should find a fetchable peer', async (t) => {
+  it('should find a fetchable peer', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new StorageFetcher({
@@ -336,12 +333,10 @@ tape('[StorageFetcher]', async (t) => {
       count: BigInt(10),
     })
     td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
-    t.equals(fetcher.peer(), 'peer0', 'found peer')
-    t.end()
+    assert.equal(fetcher.peer(), 'peer0', 'found peer')
   })
 
-  t.test('should reset td', (t) => {
+  it('should reset td', () => {
     td.reset()
-    t.end()
   })
 })

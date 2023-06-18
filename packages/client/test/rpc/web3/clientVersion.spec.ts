@@ -1,11 +1,11 @@
 import { platform } from 'os'
-import * as tape from 'tape'
+import { assert, describe } from 'vitest'
 
 import { baseRequest, baseSetup, params } from '../helpers'
 
 const method = 'web3_clientVersion'
 
-tape(`${method}: call`, async (t) => {
+describe(`${method}: call`, async () => {
   const { server } = baseSetup()
 
   const req = params(method, [])
@@ -18,17 +18,17 @@ tape(`${method}: call`, async (t) => {
     const expectedNodeVersion = `node${process.version.substring(1)}`
 
     let msg = 'result string should not be empty'
-    t.notEqual(result.length, 0, msg)
+    assert.notEqual(result.length, 0, msg)
     const [actualClientTitle, actualPackageVersion, actualPlatform, actualNodeVersion] =
       result.split('/')
     msg = 'client title should be correct'
-    t.equal(actualClientTitle, expectedClientTitle, msg)
+    assert.equal(actualClientTitle, expectedClientTitle, msg)
     msg = 'package version should be correct'
-    t.equal(actualPackageVersion, expectedPackageVersion, msg)
+    assert.equal(actualPackageVersion, expectedPackageVersion, msg)
     msg = 'platform should be correct'
-    t.equal(actualPlatform, expectedPlatform, msg)
+    assert.equal(actualPlatform, expectedPlatform, msg)
     msg = 'Node.js version should be correct'
-    t.equal(actualNodeVersion, expectedNodeVersion, msg)
+    assert.equal(actualNodeVersion, expectedNodeVersion, msg)
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
 })

@@ -9,7 +9,7 @@ import {
   hexStringToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe } from 'vitest'
 
 import { TOO_LARGE_REQUEST } from '../../../src/rpc/error-code'
 import genesisJSON = require('../../testdata/geth-genesis/eip4844.json')
@@ -19,22 +19,18 @@ import { checkError } from '../util'
 
 const method = 'engine_getPayloadBodiesByHashV1'
 
-tape(`${method}: call with too many hashes`, async (t) => {
+describe(`${method}: call with too many hashes`, async () => {
   const { server } = baseSetup({ engine: true, includeVM: true })
   const tooManyHashes: string[] = []
   for (let x = 0; x < 35; x++) {
     tooManyHashes.push(bytesToPrefixedHexString(randomBytes(32)))
   }
   const req = params(method, [tooManyHashes])
-  const expectRes = checkError(
-    t,
-    TOO_LARGE_REQUEST,
-    'More than 32 execution payload bodies requested'
-  )
-  await baseRequest(t, server, req, 200, expectRes)
+  const expectRes = checkError(TOO_LARGE_REQUEST, 'More than 32 execution payload bodies requested')
+  await baseRequest(server, req, 200, expectRes)
 })
 
-tape(`${method}: call with valid parameters`, async (t) => {
+describe(`${method}: call with valid parameters`, async () => {
   // Disable stateroot validation in TxPool since valid state root isn't available
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   const originalStateManagerCopy = DefaultStateManager.prototype.copy
@@ -106,21 +102,25 @@ tape(`${method}: call with valid parameters`, async (t) => {
     ],
   ])
   const expectRes = (res: any) => {
-    t.equal(
+    assert.equal(
       res.body.result[0].transactions[0],
       bytesToPrefixedHexString(tx.serialize()),
       'got expected transaction from first payload'
     )
-    t.equal(res.body.result[1], null, 'got null for block not found in chain')
-    t.equal(res.body.result.length, 3, 'length of response matches number of block hashes sent')
+    assert.equal(res.body.result[1], null, 'got null for block not found in chain')
+    assert.equal(
+      res.body.result.length,
+      3,
+      'length of response matches number of block hashes sent'
+    )
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
   // Restore setStateRoot
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
   DefaultStateManager.prototype.copy = originalStateManagerCopy
 })
 
-tape(`${method}: call with valid parameters on pre-Shanghai block`, async (t) => {
+describe(`${method}: call with valid parameters on pre-Shanghai block`, async () => {
   // Disable stateroot validation in TxPool since valid state root isn't available
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   const originalStateManagerCopy = DefaultStateManager.prototype.copy
@@ -196,13 +196,13 @@ tape(`${method}: call with valid parameters on pre-Shanghai block`, async (t) =>
     ],
   ])
   const expectRes = (res: any) => {
-    t.equal(
+    assert.equal(
       res.body.result[0].withdrawals,
       null,
       'got null for withdrawals field on pre-Shanghai block'
     )
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(server, req, 200, expectRes)
   // Restore setStateRoot
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
   DefaultStateManager.prototype.copy = originalStateManagerCopy

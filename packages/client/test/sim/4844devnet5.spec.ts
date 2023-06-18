@@ -2,7 +2,7 @@ import { Common } from '@ethereumjs/common'
 import { bytesToPrefixedHexString, hexStringToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import { randomBytes } from 'node:crypto'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import {
   createBlobTxs,
@@ -42,31 +42,31 @@ export async function runTx(data: string, to?: string, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
 }
 
-tape(`running txes on ${rpcUrl}`, async (t) => {
+describe(`running txes on ${rpcUrl}`, async () => {
   const { teardownCallBack, result } = await startNetwork(network, client, {
     filterKeywords,
     filterOutWords,
     externalRun: 'true',
   })
-  t.pass(`connected to client ${result}`)
+  assert.ok(true, `connected to client ${result}`)
 
   console.log(`Checking for network running...`)
   try {
     await waitForELStart(client)
-    t.pass(`${result} confirmed running`)
+    assert.ok(true, `${result} confirmed running`)
   } catch (e) {
-    t.fail(`failed to confirm ${result} running`)
+    assert.fail(`failed to confirm ${result} running`)
     throw e
   }
 
-  t.test('run blob transactions', async (st) => {
+  it('run blob transactions', async () => {
     const nonceFetch = await client.request(
       'eth_getTransactionCount',
       [sender.toString(), 'latest'],
       2.0
     )
     const nonce = Number(nonceFetch.result)
-    st.pass(`fetched ${sender}'s  nonce=${nonce} for blob txs`)
+    assert.ok(true, `fetched ${sender}'s  nonce=${nonce} for blob txs`)
 
     const txns = await createBlobTxs(
       numTxs - 1,
@@ -88,24 +88,21 @@ tape(`running txes on ${rpcUrl}`, async (t) => {
       const res = await client.request('eth_sendRawTransaction', [txn], 2.0)
       if (res.result === undefined) {
         console.log('eth_sendRawTransaction returned invalid response', res)
-        st.fail(`Unable to post all txs`)
+        assert.fail(`Unable to post all txs`)
         break
       }
-      st.pass(`posted tx with hash=${res.result}`)
+      assert.ok(true, `posted tx with hash=${res.result}`)
       txHashes.push(res.result)
     }
-    st.pass(`posted txs=${txHashes.length}`)
+    assert.ok(true, `posted txs=${txHashes.length}`)
   })
 
-  t.test('cleanup', async (st) => {
+  it('cleanup', async () => {
     try {
       await teardownCallBack()
-      st.pass('script terminated')
+      assert.ok(true, 'script terminated')
     } catch (e) {
-      st.fail('could not terminate properly')
+      assert.fail('could not terminate properly')
     }
-    st.end()
   })
-
-  t.end()
 })
