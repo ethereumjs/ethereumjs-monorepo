@@ -1,5 +1,6 @@
 import { BranchNode, ExtensionNode, Trie, decodeNode } from '@ethereumjs/trie'
 import {
+  BatchDBOp,
   bytesToNibbles,
   compactBytesToNibbles,
   getPathTo,
@@ -7,6 +8,7 @@ import {
   nibblesToBytes,
   nibblesToCompactBytes,
   padToEven,
+  hasTerminator,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -117,7 +119,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     const { pathStrings, paths } = task
 
     this.debug(`requested paths:`)
-    this.debug(paths)
+    // this.debug(paths)
 
     const rangeResult = await peer!.snap!.getTrieNodes({
       root: this.root,
@@ -249,6 +251,12 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               // } else {
               //   embeddedNodeHash = node.raw()
               // }
+              // if (embeddedNode.length < 32) {
+              //   console.log('dbg4')
+              //   console.log(embeddedNode.length)
+              // } else {
+              //   console.log('dbg5')
+              // }
               childNodes.unshift({
                 nodeHash: embeddedNode, // TODO not sure if I'm calculating the node hash of an embedded node correctly since <32 bytes is embedded and not hashed
                 path: nodePath.concat(bytesToHex(Uint8Array.from([i]))),
@@ -257,24 +265,27 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           }
         } else if (node instanceof ExtensionNode) {
           this.debug('extension node found')
-          // TODO functionality unverified for extension node
-          // TODO remove optional terminator from key if it exists before postpending
-          console.log(node.key())
-          // console.log(this.nibblesToBytes(node.key()))
-          console.log(Uint8Array.from(node.key()))
-          let nibbles = bytesToNibbles(Uint8Array.from(node.key()))
-          nibbles = nibbles.subarray(0, nibbles.length - 1)
-          console.log(nibbles)
-          // console.log(bytesToNibbles(Uint8Array.from(node.key())))
-          console.log(bytesToHex(nibbles))
-          console.log(nodePath.concat(bytesToHex(nibbles)))
-          // console.log(bytesToHex(bytesToNibbles(this.nibblesToBytes(node.key()))))
-          // console.log(nodePath.concat(bytesToHex(bytesToNibbles(this.nibblesToBytes(node.key())))))
 
+          const key = node.key()
+          let hexEncodedKey
+          if (key.length < 2) {
+            console.log('key is of length less than 2')
+
+            hexEncodedKey = Uint8Array.from(key)
+          } else {
+            console.log('key is of length 2 or greater')
+
+            // I don't think you need both nibblesToBytes and bytesToNibbles, they seem to both be doing the same thing
+            // TODO this is still unverified for extensions of key length greater than 2
+            hexEncodedKey = this.nibblesToBytes(key)
+            hexEncodedKey = bytesToNibbles(hexEncodedKey)
+            hexEncodedKey = hexEncodedKey.subarray(0, hexEncodedKey.length - 1)
+          }
+          console.log(key)
+          console.log(bytesToHex(node.value()))
           const val = {
-            nodeHash: this.nibblesToBytes(node.key()),
-            // path: nodePath.concat(bytesToHex(bytesToNibbles(this.nibblesToBytes(node.key())))), // TODO verify this is correct way of encoding to hex encoded hex string from keybytes Nibbles typed value
-            path: nodePath.concat(bytesToHex(nibbles)),
+            nodeHash: node.value(),
+            path: nodePath.concat(bytesToHex(hexEncodedKey)),
           }
           childNodes.unshift(val)
         } else {
@@ -322,19 +333,42 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         this.requestedNodeToPath.delete(nodeHash)
         this.pathToNodeRequestData.eraseElementByKey(nodePath)
 
-        this.debug('At end of store phase')
-        this.debug(`unkownChildCount: ${unknownChildNodeCount}`)
-        this.debug(`childeNodes:`)
-        this.debug(childNodes)
+        // this.debug('At end of store phase')
+        // this.debug(`unkownChildCount: ${unknownChildNodeCount}`)
+        // this.debug(`childeNodes:`)
+        // this.debug(childNodes)
       }
-      this.debug(`fetchedAccountNodes:`)
-      this.debug(this.fetchedAccountNodes)
-      this.debug(`pathToNodeRequestData.length: ${this.pathToNodeRequestData.length}`)
-      // this.pathToNodeRequestData.forEach((elem, i, _) => {
-      //   this.debug(
-      //     `${i} - path ${elem[0]}\nnode hash ${elem[1].nodeHash}\nnodeParentHash ${elem[1].nodeParentHash}\n\n`
-      //   )
-      // })
+      // this.debug(`fetchedAccountNodes:`)
+      // this.debug(this.fetchedAccountNodes)
+      // this.debug(`pathToNodeRequestData.length: ${this.pathToNodeRequestData.length}`)
+
+      // for an initial implementation, just put nodes into trie and see if root maches stateRoot
+      if (this.pathToNodeRequestData.length === 0) {
+        // should be checking if 0, but since extension node request hangs currently, check for 1
+        const ops: BatchDBOp[] = []
+        for (const [nodeHash, data] of this.fetchedAccountNodes) {
+          const { parentHash, deps, nodeData, path } = data
+          ops.unshift({
+            type: 'put',
+            key: hexToBytes(nodeHash),
+            value: nodeData,
+          })
+        }
+        await this.accountTrie.batch(ops)
+        await this.accountTrie.persistRoot()
+        console.log('dbg0')
+        console.log(bytesToHex(this.accountTrie.root()))
+        console.log(bytesToHex(this.root))
+        // console.log(this.fetchedAccountNodes)
+
+        for (const [k, v] of (
+          this.fetchedAccountNodes as unknown as Map<string, FetchedNodeData>
+        ).entries()) {
+          console.log(k)
+          console.log(decodeNode(v.nodeData))
+          console.log('\n')
+        }
+      }
     } catch (e) {
       this.debug(e)
     }
@@ -356,14 +390,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
   mergeAndFormatPaths(pathStrings: string[]) {
     this.debug('At start of mergeAndFormatPaths')
-
-    for (let i = 0; i < pathStrings.length; i++) {
-      const pathString = pathStrings[i]
-      if (pathString === '06040000') {
-        console.log('Found extension node path')
-        console.log(pathStrings)
-      }
-    }
 
     // TODO this is where the conversion from hex to keybytes should happen, with anything that
     //      isn't hex, being kept the same since it should be compact encoded

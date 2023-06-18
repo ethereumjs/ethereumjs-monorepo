@@ -1,4 +1,4 @@
-import { Trie } from '@ethereumjs/trie'
+import { Trie, decodeNode } from '@ethereumjs/trie'
 import {
   KECCAK256_NULL,
   KECCAK256_RLP,
@@ -27,6 +27,7 @@ import type { FetcherOptions } from './fetcher'
 import type { StorageRequest } from './storagefetcher'
 import type { Job } from './types'
 import type { Debugger } from 'debug'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 
 type AccountDataResponse = AccountData[] & { completed?: boolean }
 
@@ -177,7 +178,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       config: this.config,
       pool: this.pool,
       root: this.root,
-      accountTrie: this.accountTrie,
+      accountTrie: new Trie({ useKeyHashing: false }),
       codeTrie: this.codeTrie,
       accountToStorageTrie: this.accountToStorageTrie,
       destroyWhenDone: false,
@@ -360,6 +361,16 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       this.debug('Final range received with no elements remaining to the right')
 
       await this.accountTrie.persistRoot()
+      console.log(bytesToHex(this.accountTrie.root()))
+      console.log(this.accountTrie.database().db)
+      for (const [k, v] of (
+        this.accountTrie.database().db as unknown as Map<string, string>
+      ).entries()) {
+        console.log(k)
+        console.log(decodeNode(hexToBytes(v)))
+        console.log('\n')
+      }
+
       snapFetchersCompleted(
         this.fetcherDoneFlags,
         AccountFetcher,
