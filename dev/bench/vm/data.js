@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1687055275504,
+  "lastUpdate": 1687104205820,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "403d42979b34fe12027006b5a87bbe2de72fe43b",
-          "message": "client: add another vm execution re-run test scenario (#2740)\n\nCo-authored-by: acolytec3 <konjou@gmail.com>",
-          "timestamp": "2023-06-01T22:32:46+02:00",
-          "tree_id": "95ce8ad06e102f5763b922d92bfbd3b07662f94a",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/403d42979b34fe12027006b5a87bbe2de72fe43b"
-        },
-        "date": 1685651762163,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 32072,
-            "range": "±4.62%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 32114,
-            "range": "±2.37%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 29064,
-            "range": "±7.98%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 31376,
-            "range": "±2.51%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30283,
-            "range": "±2.59%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.18%",
             "unit": "ops/sec",
             "extra": "77 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9b044028a4e50b976ed3da3446ffda34c2ded35a",
+          "message": "monorepo: remove tape scripts (#2794)",
+          "timestamp": "2023-06-18T11:59:31-04:00",
+          "tree_id": "3da7b02cf21eefb5a74e14a77cad9f454c3326bc",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9b044028a4e50b976ed3da3446ffda34c2ded35a"
+        },
+        "date": 1687104204543,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 30937,
+            "range": "±6.55%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31371,
+            "range": "±2.85%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 30706,
+            "range": "±3.09%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 30457,
+            "range": "±3.11%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 24784,
+            "range": "±10.40%",
+            "unit": "ops/sec",
+            "extra": "69 samples"
           }
         ]
       }
