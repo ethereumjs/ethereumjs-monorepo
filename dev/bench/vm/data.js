@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1686999397218,
+  "lastUpdate": 1687055275504,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "bb434aee3bdcebdffe7e8bf1bd0b1b1161cd90e6",
-          "message": "Update package lock as per latest packages (#2745)",
-          "timestamp": "2023-06-01T14:36:57-04:00",
-          "tree_id": "a650518606d9e3c7713c14474a4d25ed0830d6b7",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/bb434aee3bdcebdffe7e8bf1bd0b1b1161cd90e6"
-        },
-        "date": 1685644852608,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 30876,
-            "range": "±5.63%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 30655,
-            "range": "±2.88%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 30682,
-            "range": "±2.89%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25457,
-            "range": "±10.52%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29601,
-            "range": "±3.04%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.45%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b71b3d4ae81dadf32160cd67e621e6260e1d2985",
+          "message": "wallet: remove type/node devdependency (#2793)\n\n* wallet: remove type/node devdependency\n\n* wallet: remove tape script",
+          "timestamp": "2023-06-17T22:22:31-04:00",
+          "tree_id": "9d3245616d7ba95f450b7c63521c26e9e11821fa",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b71b3d4ae81dadf32160cd67e621e6260e1d2985"
+        },
+        "date": 1687055274018,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 16796,
+            "range": "±7.00%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 17836,
+            "range": "±3.09%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 16048,
+            "range": "±7.62%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 17926,
+            "range": "±2.89%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 16663,
+            "range": "±3.18%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
           }
         ]
       }
