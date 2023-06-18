@@ -128,47 +128,49 @@ describe('create a range proof and verify it', async () => {
   })
 })
 
-// describe('create a non-existent range proof and verify it', async () => {
-//   const { trie, entries } = await randomTrie(new MapDB())
-//   for (let i = 0; i < 10; i++) {
-//     const start = getRandomIntInclusive(0, entries.length - 1)
-//     const end = getRandomIntInclusive(start, entries.length - 1)
+describe('create a non-existent range proof and verify it', async () => {
+  const { trie, entries } = await randomTrie(new MapDB())
+  for await (const i of Array.from({ length: 10 }, (_, k) => k)) {
+    const start = getRandomIntInclusive(0, entries.length - 1)
+    const end = getRandomIntInclusive(start, entries.length - 1)
 
-//     const startKey = decreaseKey(entries[start][0])
-//     if (
-//       startKey === undefined ||
-//       (start > 0 && compareBytes(entries[start - 1][0], startKey) >= 0)
-//     ) {
-//       continue
-//     }
+    const startKey = decreaseKey(entries[start][0])
+    if (
+      startKey === undefined ||
+      (start > 0 && compareBytes(entries[start - 1][0], startKey) >= 0)
+    ) {
+      continue
+    }
 
-//     const endKey = increaseKey(entries[end][0])
-//     if (
-//       endKey === undefined ||
-//       (end < entries.length - 1 && compareBytes(endKey, entries[end + 1][0]) >= 0)
-//     ) {
-//       continue
-//     }
-//     it('should select random keys', async () => {
-//       assert.ok(startKey)
-//       assert.ok(start)
-//       assert.ok(end)
-//       assert.ok(endKey)
-//     })
-//     it('should verify a non-existent range proof', async () => {
-//       assert.equal(
-//         await verify(trie, entries, start, end, startKey, endKey),
-//         end !== entries.length - 1
-//       )
-//     })
-//   }
-//   it('should verify a non-existent range proof', async () => {
-//     // Special case, two edge proofs for two edge key.
-//     const startKey = hexStringToBytes('00'.repeat(32))
-//     const endKey = hexStringToBytes('ff'.repeat(32))
-//     assert.equal(await verify(trie, entries, 0, entries.length - 1, startKey, endKey), false)
-//   })
-// })
+    const endKey = increaseKey(entries[end][0])
+    if (
+      endKey === undefined ||
+      (end < entries.length - 1 && compareBytes(endKey, entries[end + 1][0]) >= 0)
+    ) {
+      continue
+    }
+    it(`Should run test #${i}`, async () => {
+      it('should select random keys', async () => {
+        assert.ok(startKey)
+        assert.ok(start)
+        assert.ok(end)
+        assert.ok(endKey)
+      })
+      it('should verify a non-existent range proof', async () => {
+        assert.equal(
+          await verify(trie, entries, start, end, startKey, endKey),
+          end !== entries.length - 1
+        )
+      })
+    })
+  }
+  it('should verify a non-existent range proof', async () => {
+    // Special case, two edge proofs for two edge key.
+    const startKey = hexStringToBytes('00'.repeat(32))
+    const endKey = hexStringToBytes('ff'.repeat(32))
+    assert.equal(await verify(trie, entries, 0, entries.length - 1, startKey, endKey), false)
+  })
+})
 
 // describe('create invalid non-existent range proof and verify it', async () => {
 //   const { trie, entries } = await randomTrie(new MapDB())

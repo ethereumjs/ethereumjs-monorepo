@@ -1,11 +1,9 @@
 import { KeyEncoding, ValueEncoding, bytesToHex, hexStringToBytes } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import LRUCache from 'lru-cache'
 
 import type { Checkpoint } from '../types.js'
 import type { BatchDBOp, DB, DelBatch, PutBatch } from '@ethereumjs/util'
-import type LRUCache from 'lru-cache'
-
-const LRU = require('lru-cache')
 
 /**
  * DB is a thin wrapper around the underlying levelup db,
@@ -41,7 +39,7 @@ export class CheckpointDB implements DB<Uint8Array, Uint8Array> {
     this.checkpoints = []
 
     if (this.cacheSize > 0) {
-      this._cache = new LRU({
+      this._cache = new LRUCache({
         max: this.cacheSize,
         updateAgeOnGet: true,
       })
