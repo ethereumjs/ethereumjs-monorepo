@@ -898,7 +898,7 @@ export class Trie {
   copy(includeCheckpoints = true): Trie {
     const trie = new Trie({
       ...this._opts,
-      db: this._db.db.copy(),
+      db: this._db.db.shallowCopy(),
       root: this.root(),
       cacheSize: 0,
     })

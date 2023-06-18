@@ -40,7 +40,7 @@ export class MapDB<
     }
   }
 
-  copy(): DB<TKey, TValue> {
+  shallowCopy(): DB<TKey, TValue> {
     return new MapDB<TKey, TValue>(this._database)
   }
 
