@@ -4,7 +4,7 @@ import { assert, describe, it } from 'vitest'
 import { Config } from '../../../src'
 import { CLConnectionManager } from '../../../src/rpc/util/CLConnectionManager'
 import { Event } from '../../../src/types'
-import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
+import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 
 const payload = {
   payload: {
