@@ -4,7 +4,7 @@ import { baseRequest, baseSetup, params } from '../helpers'
 
 const method = 'engine_exchangeCapabilities'
 
-describe(`${method}`, () => {
+describe(method, () => {
   it('call with invalid payloadId', async () => {
     const { server } = baseSetup({ engine: true })
 

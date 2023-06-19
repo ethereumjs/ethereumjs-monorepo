@@ -53,7 +53,7 @@ function createBlock(parentBlock: Block) {
 
 export const validPayload = [validForkChoiceState, validPayloadAttributes]
 
-describe(`${method}`, () => {
+describe(method, () => {
   it('call with invalid head block hash without 0x', async () => {
     const { server } = baseSetup({ engine: true, includeVM: true })
     const invalidForkChoiceState = {

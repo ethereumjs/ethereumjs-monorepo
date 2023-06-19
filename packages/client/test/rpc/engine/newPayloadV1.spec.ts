@@ -34,7 +34,7 @@ export const batchBlocks = async (server: HttpServer, inputBlocks: any[] = block
   }
 }
 
-describe(`${method}`, () => {
+describe(method, () => {
   it('call with invalid block hash without 0x', async () => {
     const { server } = baseSetup({ engine: true, includeVM: true })
 

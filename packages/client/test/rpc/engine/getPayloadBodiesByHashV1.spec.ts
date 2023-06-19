@@ -19,7 +19,7 @@ import { checkError } from '../util'
 
 const method = 'engine_getPayloadBodiesByHashV1'
 
-describe(`${method}`, () => {
+describe(method, () => {
   it('call with too many hashes', async () => {
     const { server } = baseSetup({ engine: true, includeVM: true })
     const tooManyHashes: string[] = []

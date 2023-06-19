@@ -9,7 +9,7 @@ import { validPayload } from './forkchoiceUpdatedV1.spec'
 
 const method = 'engine_getPayloadV1'
 
-describe(`${method}`, () => {
+describe(method, () => {
   it('call with invalid payloadId', async () => {
     const { server } = baseSetup({ engine: true, includeVM: true })
 

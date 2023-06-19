@@ -19,7 +19,7 @@ const invalidConfig = {
   terminalBlockNumber: '0x0',
 }
 
-describe(`${method}`, () => {
+describe(method, () => {
   it('call with valid config', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
