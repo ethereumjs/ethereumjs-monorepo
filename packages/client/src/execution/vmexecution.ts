@@ -595,7 +595,7 @@ export class VMExecution extends Execution {
       }
       const td = await vm.blockchain.getTotalDifficulty(block.header.parentHash)
       vm._common.setHardforkBy({
-        blockNumber: BigInt(blockNumber),
+        blockNumber,
         td,
         timestamp: block.header.timestamp,
       })

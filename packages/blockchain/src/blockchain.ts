@@ -1306,7 +1306,7 @@ export class Blockchain implements BlockchainInterface {
   createGenesisBlock(stateRoot: Uint8Array): Block {
     const common = this._common.copy()
     common.setHardforkBy({
-      blockNumber: BigInt(0),
+      blockNumber: 0,
       td: BigInt(common.genesis().difficulty),
       timestamp: common.genesis().timestamp,
     })

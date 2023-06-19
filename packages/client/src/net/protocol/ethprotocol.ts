@@ -120,7 +120,7 @@ export class EthProtocol extends Protocol {
             this.config.syncTargetHeight ?? // Use sync target height if available OR
             common.hardforkBlock(common.hardfork()) ?? // Use current hardfork block number OR
             BigInt(0), // Use chainstart,
-          timestamp: this.chain.headers.latest?.timestamp ?? BigInt(Math.floor(Date.now() / 1000)),
+          timestamp: this.chain.headers.latest?.timestamp ?? Math.floor(Date.now() / 1000),
         })
         return txs.map((txData) => TransactionFactory.fromSerializedData(txData, { common }))
       },
@@ -255,7 +255,7 @@ export class EthProtocol extends Protocol {
             this.config.syncTargetHeight ?? // Use sync target height if available OR
             common.hardforkBlock(common.hardfork()) ?? // Use current hardfork block number OR
             BigInt(0), // Use chainstart,
-          timestamp: this.chain.headers.latest?.timestamp ?? BigInt(Math.floor(Date.now() / 1000)),
+          timestamp: this.chain.headers.latest?.timestamp ?? Math.floor(Date.now() / 1000),
         })
         return [
           bytesToBigInt(reqId),

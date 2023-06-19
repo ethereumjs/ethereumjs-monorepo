@@ -186,7 +186,7 @@ export class BlockHeader {
     if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
       this._common.setHardforkBy({
         blockNumber: number,
-        td: toType(options.hardforkByTTD, TypeOutput.BigInt),
+        td: options.hardforkByTTD,
         timestamp,
       })
     }
