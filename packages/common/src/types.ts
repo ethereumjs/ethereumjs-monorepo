@@ -120,3 +120,9 @@ export interface GethConfigOpts extends BaseOpts {
   genesisHash?: Uint8Array
   mergeForkIdPostMerge?: boolean
 }
+
+export interface HardforkByOpts {
+  blockNumber?: bigint
+  timestamp?: bigint
+  td?: bigint
+}

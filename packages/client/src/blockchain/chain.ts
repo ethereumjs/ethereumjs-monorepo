@@ -297,11 +297,10 @@ export class Chain {
 
     // Check and log if this is a terminal block and next block could be merge
     if (!this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
-      const nextBlockHf = this.config.chainCommon.getHardforkByBlockNumber(
-        headers.height + BigInt(1),
-        headers.td,
-        undefined
-      )
+      const nextBlockHf = this.config.chainCommon.getHardforkBy({
+        blockNumber: headers.height + BigInt(1),
+        td: headers.td,
+      })
       if (this.config.chainCommon.hardforkGteHardfork(nextBlockHf, Hardfork.Paris)) {
         this.config.logger.info('*'.repeat(85))
         this.config.logger.info(

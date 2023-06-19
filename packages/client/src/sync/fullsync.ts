@@ -232,7 +232,8 @@ export class FullSynchronizer extends Synchronizer {
     if (nextHFBlockNum !== null) {
       const remaining = nextHFBlockNum - last
       if (remaining <= BigInt(10000)) {
-        const nextHF = this.config.chainCommon.getHardforkByBlockNumber(nextHFBlockNum)
+        // TODO: Do something about super-ugly nextHardforkBlockOrTimestamp() method
+        const nextHF = this.config.chainCommon.getHardforkBy({ blockNumber: nextHFBlockNum })
         attentionHF = `${nextHF} HF in ${remaining} blocks`
       }
     } else {

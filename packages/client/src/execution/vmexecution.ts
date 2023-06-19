@@ -346,11 +346,11 @@ export class VMExecution extends Execution {
                 }
                 const td = await blockchain.getTotalDifficulty(block.header.parentHash)
 
-                const hardfork = this.config.execCommon.getHardforkByBlockNumber(
-                  number,
+                const hardfork = this.config.execCommon.getHardforkBy({
+                  blockNumber: number,
                   td,
-                  timestamp
-                )
+                  timestamp,
+                })
                 if (hardfork !== this.hardfork) {
                   const hash = short(block.hash())
                   this.config.logger.info(
@@ -441,7 +441,7 @@ export class VMExecution extends Execution {
               `Deleted block number=${blockNumber} hash=${hash} on failed execution`
             )
 
-            const hardfork = this.config.execCommon.getHardforkByBlockNumber(blockNumber)
+            const hardfork = this.config.execCommon.getHardforkBy({ blockNumber })
             if (hardfork !== this.hardfork) {
               this.config.logger.warn(
                 `Set back hardfork along block deletion number=${blockNumber} hash=${hash} old=${this.hardfork} new=${hardfork}`
