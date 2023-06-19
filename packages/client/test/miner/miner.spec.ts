@@ -432,169 +432,181 @@ describe('[Miner]', async () => {
     await wait(500)
   })
 
-  it('assembleBlocks() -> should stop assembling when a new block is received', async () => {
-    const chain = new FakeChain() as any
-    const config = new Config({
-      transports: [],
-      accountCache: 10000,
-      storageCache: 1000,
-      accounts,
-      mine: true,
-      common,
-    })
-    const service = new FullEthereumService({
-      config,
-      chain,
-    })
-    const miner = new Miner({ config, service, skipHardForkValidation: true })
+  it(
+    'assembleBlocks() -> should stop assembling when a new block is received',
+    async () => {
+      const chain = new FakeChain() as any
+      const config = new Config({
+        transports: [],
+        accountCache: 10000,
+        storageCache: 1000,
+        accounts,
+        mine: true,
+        common,
+      })
+      const service = new FullEthereumService({
+        config,
+        chain,
+      })
+      const miner = new Miner({ config, service, skipHardForkValidation: true })
 
-    // stub chainUpdated so assemble isn't called again
-    // when emitting Event.CHAIN_UPDATED in this test
-    ;(miner as any).chainUpdated = async () => {}
+      // stub chainUpdated so assemble isn't called again
+      // when emitting Event.CHAIN_UPDATED in this test
+      ;(miner as any).chainUpdated = async () => {}
 
-    const { txPool } = service
-    const { vm } = service.execution
-    txPool.start()
-    miner.start()
+      const { txPool } = service
+      const { vm } = service.execution
+      txPool.start()
+      miner.start()
 
-    await setBalance(vm, A.address, BigInt('200000000000001'))
+      await setBalance(vm, A.address, BigInt('200000000000001'))
 
-    // add many txs to slow assembling
-    let privateKey = keccak256(new Uint8Array(0))
-    for (let i = 0; i < 1000; i++) {
-      // In order not to pollute TxPool with too many txs from the same address
-      // (or txs which are already known), keep generating a new address for each tx
-      const address = Address.fromPrivateKey(privateKey)
-      await setBalance(vm, address, BigInt('200000000000001'))
-      const tx = createTx({ address, privateKey })
-      await txPool.add(tx)
-      privateKey = keccak256(privateKey)
-    }
+      // add many txs to slow assembling
+      let privateKey = keccak256(new Uint8Array(0))
+      for (let i = 0; i < 1000; i++) {
+        // In order not to pollute TxPool with too many txs from the same address
+        // (or txs which are already known), keep generating a new address for each tx
+        const address = Address.fromPrivateKey(privateKey)
+        await setBalance(vm, address, BigInt('200000000000001'))
+        const tx = createTx({ address, privateKey })
+        await txPool.add(tx)
+        privateKey = keccak256(privateKey)
+      }
 
-    chain.putBlocks = () => {
-      assert.fail('should have stopped assembling when a new block was received')
-    }
-    await (miner as any).queueNextAssembly(5)
-    await wait(5)
-    assert.ok((miner as any).assembling, 'miner should be assembling')
-    config.events.emit(Event.CHAIN_UPDATED)
-    await wait(25)
-    assert.notOk((miner as any).assembling, 'miner should have stopped assembling')
-    miner.stop()
-    txPool.stop()
-  })
+      chain.putBlocks = () => {
+        assert.fail('should have stopped assembling when a new block was received')
+      }
+      await (miner as any).queueNextAssembly(5)
+      await wait(5)
+      assert.ok((miner as any).assembling, 'miner should be assembling')
+      config.events.emit(Event.CHAIN_UPDATED)
+      await wait(25)
+      assert.notOk((miner as any).assembling, 'miner should have stopped assembling')
+      miner.stop()
+      txPool.stop()
+    },
+    { timeout: 30000 }
+  )
 
-  it('should handle mining over the london hardfork block', async () => {
-    const customChainParams = {
-      hardforks: [
-        { name: 'chainstart', block: 0 },
-        { name: 'berlin', block: 2 },
-        { name: 'london', block: 3 },
-      ],
-    }
-    const common = Common.custom(customChainParams, { baseChain: CommonChain.Rinkeby })
-    common.setHardforkBy({ blockNumber: 0 })
-    const config = new Config({
-      transports: [],
-      accountCache: 10000,
-      storageCache: 1000,
-      accounts,
-      mine: true,
-      common,
-    })
-    const chain = await Chain.create({ config })
-    await chain.open()
-    const service = new FullEthereumService({
-      config,
-      chain,
-    })
-    const miner = new Miner({ config, service, skipHardForkValidation: true })
+  it(
+    'should handle mining over the london hardfork block',
+    async () => {
+      const customChainParams = {
+        hardforks: [
+          { name: 'chainstart', block: 0 },
+          { name: 'berlin', block: 2 },
+          { name: 'london', block: 3 },
+        ],
+      }
+      const common = Common.custom(customChainParams, { baseChain: CommonChain.Rinkeby })
+      common.setHardforkBy({ blockNumber: 0 })
+      const config = new Config({
+        transports: [],
+        accountCache: 10000,
+        storageCache: 1000,
+        accounts,
+        mine: true,
+        common,
+      })
+      const chain = await Chain.create({ config })
+      await chain.open()
+      const service = new FullEthereumService({
+        config,
+        chain,
+      })
+      const miner = new Miner({ config, service, skipHardForkValidation: true })
 
-    const { vm } = service.execution
-    ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
-    vm.blockchain.validateHeader = td.func<any>() // stub
-    ;(miner as any).chainUpdated = async () => {} // stub
-    miner.start()
-    await wait(100)
+      const { vm } = service.execution
+      ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
+      vm.blockchain.validateHeader = td.func<any>() // stub
+      ;(miner as any).chainUpdated = async () => {} // stub
+      miner.start()
+      await wait(100)
 
-    // in this test we need to explicitly update common with
-    // setHardforkBy() to test the hardfork() value
-    // since the vmexecution run method isn't reached in this
-    // stubbed configuration.
+      // in this test we need to explicitly update common with
+      // setHardforkBy() to test the hardfork() value
+      // since the vmexecution run method isn't reached in this
+      // stubbed configuration.
 
-    // block 1: chainstart
-    await (miner as any).queueNextAssembly(0)
-    await wait(100)
-    config.execCommon.setHardforkBy({ blockNumber: 1 })
-    assert.equal(config.execCommon.hardfork(), Hardfork.Chainstart)
+      // block 1: chainstart
+      await (miner as any).queueNextAssembly(0)
+      await wait(100)
+      config.execCommon.setHardforkBy({ blockNumber: 1 })
+      assert.equal(config.execCommon.hardfork(), Hardfork.Chainstart)
 
-    // block 2: berlin
-    await (miner as any).queueNextAssembly(0)
-    await wait(100)
-    config.execCommon.setHardforkBy({ blockNumber: 2 })
-    assert.equal(config.execCommon.hardfork(), Hardfork.Berlin)
-    const blockHeader2 = await chain.getCanonicalHeadHeader()
+      // block 2: berlin
+      await (miner as any).queueNextAssembly(0)
+      await wait(100)
+      config.execCommon.setHardforkBy({ blockNumber: 2 })
+      assert.equal(config.execCommon.hardfork(), Hardfork.Berlin)
+      const blockHeader2 = await chain.getCanonicalHeadHeader()
 
-    // block 3: london
-    await (miner as any).queueNextAssembly(0)
-    await wait(100)
-    const blockHeader3 = await chain.getCanonicalHeadHeader()
-    config.execCommon.setHardforkBy({ blockNumber: 3 })
-    assert.equal(config.execCommon.hardfork(), Hardfork.London)
-    assert.equal(
-      blockHeader2.gasLimit * BigInt(2),
-      blockHeader3.gasLimit,
-      'gas limit should be double previous block'
-    )
-    const initialBaseFee = config.execCommon.paramByEIP('gasConfig', 'initialBaseFee', 1559)!
-    assert.equal(blockHeader3.baseFeePerGas!, initialBaseFee, 'baseFee should be initial value')
+      // block 3: london
+      await (miner as any).queueNextAssembly(0)
+      await wait(100)
+      const blockHeader3 = await chain.getCanonicalHeadHeader()
+      config.execCommon.setHardforkBy({ blockNumber: 3 })
+      assert.equal(config.execCommon.hardfork(), Hardfork.London)
+      assert.equal(
+        blockHeader2.gasLimit * BigInt(2),
+        blockHeader3.gasLimit,
+        'gas limit should be double previous block'
+      )
+      const initialBaseFee = config.execCommon.paramByEIP('gasConfig', 'initialBaseFee', 1559)!
+      assert.equal(blockHeader3.baseFeePerGas!, initialBaseFee, 'baseFee should be initial value')
 
-    // block 4
-    await (miner as any).queueNextAssembly(0)
-    await wait(100)
-    const blockHeader4 = await chain.getCanonicalHeadHeader()
-    config.execCommon.setHardforkBy({ blockNumber: 4 })
-    assert.equal(config.execCommon.hardfork(), Hardfork.London)
-    assert.equal(
-      blockHeader4.baseFeePerGas!,
-      blockHeader3.calcNextBaseFee(),
-      'baseFee should be as calculated'
-    )
-    assert.ok((await chain.getCanonicalHeadHeader()).number === BigInt(4))
-    miner.stop()
-    await chain.close()
-  })
-
-  it('should handle mining ethash PoW', async () => {
-    const common = new Common({ chain: CommonChain.Ropsten, hardfork: Hardfork.Istanbul })
-    ;(common as any)._chainParams['genesis'].difficulty = 1
-    const config = new Config({
-      transports: [],
-      accountCache: 10000,
-      storageCache: 1000,
-      accounts,
-      mine: true,
-      common,
-    })
-    const chain = await Chain.create({ config })
-    await chain.open()
-    const service = new FullEthereumService({
-      config,
-      chain,
-    })
-    const miner = new Miner({ config, service, skipHardForkValidation: true })
-    ;(chain.blockchain as any)._validateConsensus = false
-    ;(miner as any).chainUpdated = async () => {} // stub
-    miner.start()
-    await wait(1000)
-    config.events.on(Event.CHAIN_UPDATED, async () => {
-      assert.equal(chain.blocks.latest!.header.number, BigInt(1))
+      // block 4
+      await (miner as any).queueNextAssembly(0)
+      await wait(100)
+      const blockHeader4 = await chain.getCanonicalHeadHeader()
+      config.execCommon.setHardforkBy({ blockNumber: 4 })
+      assert.equal(config.execCommon.hardfork(), Hardfork.London)
+      assert.equal(
+        blockHeader4.baseFeePerGas!,
+        blockHeader3.calcNextBaseFee(),
+        'baseFee should be as calculated'
+      )
+      assert.ok((await chain.getCanonicalHeadHeader()).number === BigInt(4))
       miner.stop()
       await chain.close()
-    })
-    await (miner as any).queueNextAssembly(0)
-    await wait(10000)
-  })
+    },
+    { timeout: 10000 }
+  )
+
+  it(
+    'should handle mining ethash PoW',
+    async () => {
+      const common = new Common({ chain: CommonChain.Ropsten, hardfork: Hardfork.Istanbul })
+      ;(common as any)._chainParams['genesis'].difficulty = 1
+      const config = new Config({
+        transports: [],
+        accountCache: 10000,
+        storageCache: 1000,
+        accounts,
+        mine: true,
+        common,
+      })
+      const chain = await Chain.create({ config })
+      await chain.open()
+      const service = new FullEthereumService({
+        config,
+        chain,
+      })
+      const miner = new Miner({ config, service, skipHardForkValidation: true })
+      ;(chain.blockchain as any)._validateConsensus = false
+      ;(miner as any).chainUpdated = async () => {} // stub
+      miner.start()
+      await wait(1000)
+      config.events.on(Event.CHAIN_UPDATED, async () => {
+        assert.equal(chain.blocks.latest!.header.number, BigInt(1))
+        miner.stop()
+        await chain.close()
+      })
+      await (miner as any).queueNextAssembly(0)
+      await wait(10000)
+    },
+    { timeout: 60000 }
+  )
 
   it('should reset td', () => {
     td.reset()

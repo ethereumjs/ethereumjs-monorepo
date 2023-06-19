@@ -4,13 +4,13 @@ import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
 import { Event } from '../../src/types'
-import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
+import genesisJSON from '../testdata/geth-genesis/post-merge.json'
 
 import { destroy, setup, wait } from './util'
 
 const originalValidate = BlockHeader.prototype._consensusFormatValidation
 
-describe('[Integration:BeaconSync]', async () => {
+describe('[Integration:BeaconSync]', () => {
   const common = Common.fromGethGenesis(genesisJSON, { chain: 'post-merge' })
   common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
 
@@ -92,7 +92,7 @@ describe('[Integration:BeaconSync]', async () => {
   })
 })
 
-describe('reset TD', () => {
+it('reset TD', () => {
   BlockHeader.prototype._consensusFormatValidation = originalValidate
   td.reset()
 })

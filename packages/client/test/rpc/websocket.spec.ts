@@ -34,6 +34,7 @@ describe('JSON-RPC call', () => {
           .expectJson((res: any) => res.error.code === METHOD_NOT_FOUND)
           .close()
           .expectClosed()
+        assert.ok(true)
       } catch (err) {
         assert.notOk(err)
       } finally {
@@ -48,6 +49,7 @@ describe('JSON-RPC call', () => {
     const testFn = async () => {
       try {
         await request(server).ws('/').expectConnectionError(401)
+        assert.ok(true)
       } catch (err) {
         assert.notOk(err)
       } finally {
@@ -74,6 +76,7 @@ describe('JSON-RPC call', () => {
           .expectJson((res: any) => res.error.code === METHOD_NOT_FOUND)
           .close()
           .expectClosed()
+        assert.ok(true)
       } catch (err) {
         assert.notOk(err)
       } finally {

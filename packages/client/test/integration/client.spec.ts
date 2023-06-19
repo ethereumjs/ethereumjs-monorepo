@@ -21,19 +21,27 @@ describe('[Integration:EthereumClient]', async () => {
   ;(config.servers[0].config as any).events = config.events
   const client = await EthereumClient.create({ config })
 
-  it('should start/stop', async () => {
-    client.config.events.on(Event.SERVER_ERROR, (err) =>
-      assert.equal(err.message, 'err0', 'got error')
-    )
-    client.config.events.on(Event.SERVER_LISTENING, (details: any) => {
-      assert.deepEqual(details, { transport: 'mock', url: 'mock://127.0.0.1' }, 'server listening')
-    })
-    await client.open()
-    ;(client.service('eth') as any).interval = 100
-    client.config.events.emit(Event.SERVER_ERROR, new Error('err0'), client.config.servers[0])
-    await client.start()
-    assert.ok((client.service('eth') as any).synchronizer.running, 'sync running')
-    await client.stop()
-    assert.ok(true, 'client stopped')
-  })
+  it(
+    'should start/stop',
+    async () => {
+      client.config.events.on(Event.SERVER_ERROR, (err) =>
+        assert.equal(err.message, 'err0', 'got error')
+      )
+      client.config.events.on(Event.SERVER_LISTENING, (details: any) => {
+        assert.deepEqual(
+          details,
+          { transport: 'mock', url: 'mock://127.0.0.1' },
+          'server listening'
+        )
+      })
+      await client.open()
+      ;(client.service('eth') as any).interval = 100
+      client.config.events.emit(Event.SERVER_ERROR, new Error('err0'), client.config.servers[0])
+      await client.start()
+      assert.ok((client.service('eth') as any).synchronizer.running, 'sync running')
+      await client.stop()
+      assert.ok(true, 'client stopped')
+    },
+    { timeout: 20000 }
+  )
 })

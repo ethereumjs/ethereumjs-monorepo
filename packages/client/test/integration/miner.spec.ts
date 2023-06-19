@@ -80,7 +80,6 @@ describe('[Integration:Miner]', async () => {
 
   it(
     'should mine blocks while a peer stays connected to tip of chain',
-    { timeout: 25000 },
     async () => {
       const [server, service] = await minerSetup()
       const [remoteServer, remoteService] = await setup({
@@ -107,6 +106,7 @@ describe('[Integration:Miner]', async () => {
       })
       await remoteService.synchronizer!.start()
       await new Promise(() => {}) // resolves once   is called
-    }
+    },
+    { timeout: 25000 }
   )
 })

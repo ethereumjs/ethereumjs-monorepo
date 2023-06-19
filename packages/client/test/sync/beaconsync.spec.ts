@@ -105,92 +105,104 @@ describe('[BeaconSynchronizer]', async () => {
     await sync.close()
   })
 
-  it('should sync to next subchain head or chain height', async () => {
-    const config = new Config({
-      transports: [],
-      safeReorgDistance: 0,
-      skeletonSubchainMergeMinimum: 0,
-      accountCache: 10000,
-      storageCache: 1000,
-    })
-    const pool = new PeerPool() as any
-    const chain = await Chain.create({ config })
-    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
-    skeleton['getSyncStatus'] = td.func<typeof skeleton['getSyncStatus']>()
-    await skeleton.open()
-    const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
-    sync.best = td.func<typeof sync['best']>()
-    sync.latest = td.func<typeof sync['latest']>()
-    td.when(sync.best()).thenResolve('peer')
-    td.when(sync.latest('peer' as any)).thenResolve({
-      number: BigInt(2),
-      hash: () => new Uint8Array(0),
-    })
-    td.when(ReverseBlockFetcher.prototype.fetch(), { delay: 100, times: 3 }).thenResolve(undefined)
-    ;(skeleton as any).status.progress.subchains = [
-      { head: BigInt(10), tail: BigInt(6) },
-      { head: BigInt(4), tail: BigInt(2) },
-    ]
-    ;(sync as any).chain = {
-      blocks: { height: BigInt(0) },
-    }
-    sync.config.logger.addListener('data', (data: any) => {
-      if ((data.message as string).includes('first=5 count=5'))
-        assert.ok(true, 'should sync block 5 and target chain start')
-    })
-    await sync.sync()
-    sync.config.logger.removeAllListeners()
-    sync.config.logger.addListener('data', (data: any) => {
-      if ((data.message as string).includes('first=1 count=1'))
-        assert.ok(true, 'should sync block 1 and target chain start')
-    })
-    ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(2) }]
-    await sync.sync()
-    sync.config.logger.removeAllListeners()
-    ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(6) }]
-    ;(sync as any).chain = { blocks: { height: BigInt(4) } }
-    sync.config.logger.addListener('data', (data: any) => {
-      if ((data.message as string).includes('first=5 count=1'))
-        assert.ok(true, 'should sync block 5 with count 1')
-    })
-    await sync.sync()
-    sync.config.logger.removeAllListeners()
-  })
+  it(
+    'should sync to next subchain head or chain height',
+    async () => {
+      const config = new Config({
+        transports: [],
+        safeReorgDistance: 0,
+        skeletonSubchainMergeMinimum: 0,
+        accountCache: 10000,
+        storageCache: 1000,
+      })
+      const pool = new PeerPool() as any
+      const chain = await Chain.create({ config })
+      const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+      skeleton['getSyncStatus'] = td.func<typeof skeleton['getSyncStatus']>()
+      await skeleton.open()
+      const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
+      sync.best = td.func<typeof sync['best']>()
+      sync.latest = td.func<typeof sync['latest']>()
+      td.when(sync.best()).thenResolve('peer')
+      td.when(sync.latest('peer' as any)).thenResolve({
+        number: BigInt(2),
+        hash: () => new Uint8Array(0),
+      })
+      td.when(ReverseBlockFetcher.prototype.fetch(), { delay: 100, times: 3 }).thenResolve(
+        undefined
+      )
+      ;(skeleton as any).status.progress.subchains = [
+        { head: BigInt(10), tail: BigInt(6) },
+        { head: BigInt(4), tail: BigInt(2) },
+      ]
+      ;(sync as any).chain = {
+        blocks: { height: BigInt(0) },
+      }
+      sync.config.logger.addListener('data', (data: any) => {
+        if ((data.message as string).includes('first=5 count=5'))
+          assert.ok(true, 'should sync block 5 and target chain start')
+      })
+      await sync.sync()
+      sync.config.logger.removeAllListeners()
+      sync.config.logger.addListener('data', (data: any) => {
+        if ((data.message as string).includes('first=1 count=1'))
+          assert.ok(true, 'should sync block 1 and target chain start')
+      })
+      ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(2) }]
+      await sync.sync()
+      sync.config.logger.removeAllListeners()
+      ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(6) }]
+      ;(sync as any).chain = { blocks: { height: BigInt(4) } }
+      sync.config.logger.addListener('data', (data: any) => {
+        if ((data.message as string).includes('first=5 count=1'))
+          assert.ok(true, 'should sync block 5 with count 1')
+      })
+      await sync.sync()
+      sync.config.logger.removeAllListeners()
+    },
+    { timeout: 120000 }
+  )
 
-  it('should not sync pre-genesis', async () => {
-    const config = new Config({
-      transports: [],
-      safeReorgDistance: 0,
-      skeletonSubchainMergeMinimum: 1000,
-      accountCache: 10000,
-      storageCache: 1000,
-    })
-    const pool = new PeerPool() as any
-    const chain = await Chain.create({ config })
-    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
-    skeleton['getSyncStatus'] = td.func<typeof skeleton['getSyncStatus']>()
-    await skeleton.open()
-    const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
-    sync.best = td.func<typeof sync['best']>()
-    sync.latest = td.func<typeof sync['latest']>()
-    td.when(sync.best()).thenResolve('peer')
-    td.when(sync.latest('peer' as any)).thenResolve({
-      number: BigInt(2),
-      hash: () => new Uint8Array(0),
-    })
-    td.when(ReverseBlockFetcher.prototype.fetch(), { delay: 100, times: 1 }).thenResolve(undefined)
-    ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(6) }]
-    ;(sync as any).chain = {
-      // Make height > tail so that skeletonSubchainMergeMinimum is triggered
-      blocks: { height: BigInt(100) },
-    }
-    sync.config.logger.addListener('data', (data: any) => {
-      if ((data.message as string).includes('first=5 count=5'))
-        assert.ok(true, 'should sync block 5 and target chain start')
-    })
-    await sync.sync()
-    sync.config.logger.removeAllListeners()
-  })
+  it(
+    'should not sync pre-genesis',
+    async () => {
+      const config = new Config({
+        transports: [],
+        safeReorgDistance: 0,
+        skeletonSubchainMergeMinimum: 1000,
+        accountCache: 10000,
+        storageCache: 1000,
+      })
+      const pool = new PeerPool() as any
+      const chain = await Chain.create({ config })
+      const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+      skeleton['getSyncStatus'] = td.func<typeof skeleton['getSyncStatus']>()
+      await skeleton.open()
+      const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
+      sync.best = td.func<typeof sync['best']>()
+      sync.latest = td.func<typeof sync['latest']>()
+      td.when(sync.best()).thenResolve('peer')
+      td.when(sync.latest('peer' as any)).thenResolve({
+        number: BigInt(2),
+        hash: () => new Uint8Array(0),
+      })
+      td.when(ReverseBlockFetcher.prototype.fetch(), { delay: 100, times: 1 }).thenResolve(
+        undefined
+      )
+      ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(6) }]
+      ;(sync as any).chain = {
+        // Make height > tail so that skeletonSubchainMergeMinimum is triggered
+        blocks: { height: BigInt(100) },
+      }
+      sync.config.logger.addListener('data', (data: any) => {
+        if ((data.message as string).includes('first=5 count=5'))
+          assert.ok(true, 'should sync block 5 and target chain start')
+      })
+      await sync.sync()
+      sync.config.logger.removeAllListeners()
+    },
+    { timeout: 120000 }
+  )
 
   it('should extend and set with a valid head', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })

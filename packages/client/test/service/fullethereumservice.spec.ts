@@ -8,7 +8,7 @@ import { assert, describe, it } from 'vitest'
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
 import { Event } from '../../src/types'
-import genesisJSON = require('../testdata/geth-genesis/post-merge.json')
+import genesisJSON from '../testdata/geth-genesis/post-merge.json'
 
 import type { Log } from '@ethereumjs/evm'
 

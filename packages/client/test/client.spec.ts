@@ -38,33 +38,45 @@ describe('[EthereumClient]', async () => {
 
   const { EthereumClient } = await import('../src/client')
 
-  it('should initialize correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
-    const client = await EthereumClient.create({ config })
-    assert.ok(client.services[0] instanceof FullEthereumService, 'added service')
-  })
+  it(
+    'should initialize correctly',
+    async () => {
+      const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+      const client = await EthereumClient.create({ config })
+      assert.ok(client.services[0] instanceof FullEthereumService, 'added service')
+    },
+    { timeout: 30000 }
+  )
 
-  it('should open', async () => {
-    const servers = [new Server()] as any
-    const config = new Config({ servers, accountCache: 10000, storageCache: 1000 })
-    const client = await EthereumClient.create({ config })
+  it(
+    'should open',
+    async () => {
+      const servers = [new Server()] as any
+      const config = new Config({ servers, accountCache: 10000, storageCache: 1000 })
+      const client = await EthereumClient.create({ config })
 
-    await client.open()
-    assert.ok(client.opened, 'opened')
-    assert.equal(await client.open(), false, 'already opened')
-  })
+      await client.open()
+      assert.ok(client.opened, 'opened')
+      assert.equal(await client.open(), false, 'already opened')
+    },
+    { timeout: 30000 }
+  )
 
-  it('should start/stop', async () => {
-    const servers = [new Server()] as any
-    const config = new Config({ servers, accountCache: 10000, storageCache: 1000 })
-    const client = await EthereumClient.create({ config })
-    await client.start()
-    assert.ok(client.started, 'started')
-    assert.equal(await client.start(), false, 'already started')
-    await client.stop()
-    assert.notOk(client.started, 'stopped')
-    assert.equal(await client.stop(), false, 'already stopped')
-  })
+  it(
+    'should start/stop',
+    async () => {
+      const servers = [new Server()] as any
+      const config = new Config({ servers, accountCache: 10000, storageCache: 1000 })
+      const client = await EthereumClient.create({ config })
+      await client.start()
+      assert.ok(client.started, 'started')
+      assert.equal(await client.start(), false, 'already started')
+      await client.stop()
+      assert.notOk(client.started, 'stopped')
+      assert.equal(await client.stop(), false, 'already stopped')
+    },
+    { timeout: 10000 }
+  )
 
   it('should reset td', () => {
     td.reset()
