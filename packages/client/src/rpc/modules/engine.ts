@@ -256,7 +256,7 @@ const assembleBlock = async (
   const common = config.chainCommon.copy()
 
   // This is a post merge block, so set its common accordingly
-  // Can't use hardforkByTTD flag, as the transactions will need to be deserialized
+  // Can't use setHardfork flag, as the transactions will need to be deserialized
   // first before the header can be constucted with their roots
   const ttd = common.hardforkTTD(Hardfork.Paris)
   common.setHardforkBy({ blockNumber, td: ttd !== null ? ttd : undefined, timestamp })
@@ -627,7 +627,7 @@ export class Engine {
         await this.execution.runWithoutSetHead({
           block,
           root,
-          hardforkByTTD: this.chain.headers.td,
+          setHardfork: this.chain.headers.td,
         })
       }
     } catch (error) {

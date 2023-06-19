@@ -487,7 +487,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
       try {
         const block = Block.fromValuesArray(buf.data as BlockBytes, {
           common: config.chainCommon,
-          hardforkByBlockNumber: true,
+          setHardfork: true,
         })
         blocks.push(block)
         buf = RLP.decode(buf.remainder, true)
