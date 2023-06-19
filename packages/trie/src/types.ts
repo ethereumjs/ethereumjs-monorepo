@@ -8,7 +8,7 @@ import type { TrieDatabase } from './db/index.js'
 import type { TNode } from './trie/node/types.js'
 import type { DB, DBObject } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-import type LRUCache from 'lru-cache'
+import type lruCache from 'lru-cache'
 
 export type HashFunction = (data: Uint8Array) => Uint8Array
 
@@ -95,7 +95,7 @@ type LevelDB<
 > = DB<TKey, TValue>
 export interface TrieDBOptions extends Exclude<MerklePatriciaTrieOptions, 'nodes'> {
   db?: LevelDB | TrieDatabase
-  cache?: LRUCache<Uint8Array, TNode>
+  cache?: lruCache<Uint8Array, TNode>
   cacheSize?: number
   checkpoints?: Uint8Array[]
   maxCheckpoints?: number

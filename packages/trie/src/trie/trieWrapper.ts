@@ -1,7 +1,6 @@
 import { KECCAK256_RLP, bytesToPrefixedHexString } from '@ethereumjs/util'
 import debug from 'debug'
 import { equalsBytes } from 'ethereum-cryptography/utils'
-// import * as LRUCache from 'lru-cache'
 
 import { getChildOf, proofToPath } from '../proof/rangeHelpers.js'
 import { _verifyRangeProof } from '../proof/rangeProof.js'
