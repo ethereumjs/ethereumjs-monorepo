@@ -52,7 +52,7 @@
     "test:browser": "karma start karma.conf.js",
     "test:cli": "npx vitest run ./test/cli/*.spec.ts",
     "test:integration": "npx vitest run ./test/integration/*.spec.ts",
-    "test:unit": "npx vitest run -- 'test/!(integration|cli|sim)/**/*.spec.ts' 'test/*.spec.ts'",
+    "test:unit": "npx vitest run -c=./vitest.config.js",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {

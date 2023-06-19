@@ -50,6 +50,9 @@ describe('[FullEthereumService]', async () => {
     stop() {}
     open() {}
     close() {}
+    get type() {
+      return 'beacon'
+    }
   }
   BeaconSynchronizer.prototype.start = td.func<any>()
   BeaconSynchronizer.prototype.stop = td.func<any>()
@@ -69,7 +72,8 @@ describe('[FullEthereumService]', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
-    assert.ok(service.synchronizer instanceof FullSynchronizer, 'full mode')
+
+    assert.equal(service.synchronizer?.type, 'full', 'full mode')
     assert.equal(service.name, 'eth', 'got name')
   })
 
@@ -77,18 +81,12 @@ describe('[FullEthereumService]', async () => {
     let config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     let service = new FullEthereumService({ config, chain })
-    assert.ok(service.protocols.filter((p) => p instanceof EthProtocol).length > 0, 'full protocol')
-    assert.notOk(
-      service.protocols.filter((p) => p instanceof LesProtocol).length > 0,
-      'no light protocol'
-    )
+    assert.ok(service.protocols.filter((p) => p.name === 'eth').length > 0, 'full protocol')
+    assert.notOk(service.protocols.filter((p) => p.name === 'les').length > 0, 'no light protocol')
     config = new Config({ transports: [], lightserv: true })
     service = new FullEthereumService({ config, chain })
-    assert.ok(service.protocols.filter((p) => p instanceof EthProtocol).length > 0, 'full protocol')
-    assert.ok(
-      service.protocols.filter((p) => p instanceof LesProtocol).length > 0,
-      'lightserv protocols'
-    )
+    assert.ok(service.protocols.filter((p) => p.name === 'eth').length > 0, 'full protocol')
+    assert.ok(service.protocols.filter((p) => p.name === 'les').length > 0, 'lightserv protocols')
   })
 
   it('should open', async () => {
@@ -185,7 +183,10 @@ describe('[FullEthereumService]', async () => {
     // should not call when using BeaconSynchronizer
     // (would error if called since handleNewBlock and handleNewBlockHashes are not available on BeaconSynchronizer)
     await service.switchToBeaconSync()
-    assert.ok(service.synchronizer instanceof BeaconSynchronizer, 'switched to BeaconSynchronizer')
+    assert.ok(
+      (service.synchronizer as BeaconSynchronizer).type === 'beacon',
+      'switched to BeaconSynchronizer'
+    )
     assert.ok(service.beaconSync, 'can access BeaconSynchronizer')
     await service.handle({ name: 'NewBlock', data: [{}, BigInt(1)] }, 'eth', undefined as any)
     await service.handle({ name: 'NewBlockHashes', data: [{}, BigInt(1)] }, 'eth', undefined as any)
