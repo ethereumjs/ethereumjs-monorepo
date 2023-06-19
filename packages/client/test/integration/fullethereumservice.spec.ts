@@ -95,22 +95,9 @@ tape('[Integration:FullEthereumService]', async (t) => {
     )
     await service.txPool.add(tx)
     service.config.chainCommon.getHardforkBy = td.func<typeof config.chainCommon.getHardforkBy>()
-    td.when(
-      service.config.chainCommon.getHardforkBy({
-        blockNumber: td.matchers.anything(),
-        td: td.matchers.anything(),
-        timestamp: td.matchers.anything(),
-      })
-    ).thenReturn(Hardfork.London)
-    td.when(
-      service.config.chainCommon.getHardforkBy({
-        blockNumber: td.matchers.anything(),
-        td: td.matchers.anything(),
-      })
-    ).thenReturn(Hardfork.London)
-    td.when(
-      service.config.chainCommon.getHardforkBy({ blockNumber: td.matchers.anything() })
-    ).thenReturn(Hardfork.London)
+    td.when(service.config.chainCommon.getHardforkBy(td.matchers.anything())).thenReturn(
+      Hardfork.London
+    )
     const [_, txs] = await peer.eth!.getPooledTransactions({ hashes: [tx.hash()] })
     t.ok(equalsBytes(txs[0].hash(), tx.hash()), 'handled GetPooledTransactions')
 
