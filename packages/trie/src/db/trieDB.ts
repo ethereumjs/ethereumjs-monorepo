@@ -129,7 +129,7 @@ export class TrieDatabase<
     }
     await batch.write()
   }
-  copy(): TrieDatabase<TKey, TValue> {
+  shallowCopy(): TrieDatabase<TKey, TValue> {
     return new TrieDatabase({ db: this._leveldb, _debug: this.debug })
   }
   async open(): Promise<void> {

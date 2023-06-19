@@ -1,13 +1,10 @@
-import { bytesToNibbles, bytesToPrefixedHexString } from '@ethereumjs/util'
-import debug from 'debug'
 import { equalsBytes } from 'ethereum-cryptography/utils'
 
 import { BranchNode, ExtensionNode, LeafNode, NullNode, ProofNode, Trie } from '../index.js'
-import { nibblesCompare, nibblesEqual, nibblestoBytes } from '../util/nibbles.js'
+import { nibblesCompare, nibblestoBytes } from '../util/nibbles.js'
 
 import type { TNode } from '../trie/node/types.js'
 import type { HashKeysFunction } from '../types.js'
-import type { Debugger } from 'debug'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof.go
 
@@ -473,10 +470,8 @@ export async function verifyRangeProof(
   keys: number[][],
   values: Uint8Array[],
   proof: Uint8Array[] | null,
-  useKeyHashingFunction: HashKeysFunction,
-  d_bug?: Debugger
+  useKeyHashingFunction: HashKeysFunction
 ): Promise<boolean> {
-  d_bug = d_bug ? d_bug.extend('verifyRangeProof') : debug('verifyRangeProof')
   if (keys.length !== values.length) {
     throw new Error('invalid keys length or values length')
   }

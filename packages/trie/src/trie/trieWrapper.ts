@@ -151,7 +151,7 @@ export class TrieWrap extends TrieWithDB {
     this.debug.extend('copy')(`Creating copy of Trie: ${bytesToPrefixedHexString(this.root())}`)
     this.debug.extend('copy')('include checkpoints: ' + includeCheckpoints)
     this.debug.extend('copy')('checkpoints: ' + this.checkpoints.length)
-    const dbCopy = this.database().copy()
+    const dbCopy = this.database().shallowCopy()
     // const cacheCopy = new LRUCache<Uint8Array, TNode>({ max: this.cache.max })
     // for (const [key, value] of this.cache.entries()) {
     //   cacheCopy.set(key, value)
