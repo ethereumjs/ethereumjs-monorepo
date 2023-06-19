@@ -18,12 +18,15 @@ import { assert, describe, it } from 'vitest'
 import gethGenesis from '../../block/test/testdata/4844-hardfork.json'
 import { BlobEIP4844Transaction, TransactionFactory } from '../src/index.js'
 
+import { TSKzg } from './tKzg.js'
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
 const pk = randomBytes(32)
 if (isBrowser() === false) {
   try {
+    const kzg = new TSKzg()
+    //   initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
     initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
     // eslint-disable-next-line
   } catch {}

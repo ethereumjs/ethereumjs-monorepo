@@ -56,6 +56,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
+    "@crate-crypto/crypto-4844": "^0.2.0",
     "@ethereumjs/common": "^3.1.2",
     "@ethereumjs/rlp": "^4.0.1",
     "@ethereumjs/util": "^8.0.6",
