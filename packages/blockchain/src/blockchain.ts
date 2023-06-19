@@ -1,5 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { getGenesis } from '@ethereumjs/genesis'
+import { genesisStateRoot } from '@ethereumjs/trie'
 import {
   KECCAK256_RLP,
   Lock,
@@ -19,14 +21,12 @@ import {
 } from './db/helpers.js'
 import { DBManager } from './db/manager.js'
 import { DBTarget } from './db/operation.js'
-import { genesisStateRoot } from './genesisStates/index.js'
-import {} from './utils.js'
 
 import type { Consensus } from './consensus/index.js'
-import type { BlockchainInterface, BlockchainOptions, GenesisState, OnBlock } from './types.js'
+import type { BlockchainInterface, BlockchainOptions, OnBlock } from './types.js'
 import type { BlockData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
-import type { BigIntLike, DB, DBObject } from '@ethereumjs/util'
+import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
 
 /**
  * This class stores and interacts with blocks.
@@ -1337,22 +1337,7 @@ export class Blockchain implements BlockchainInterface {
     if (this._customGenesisState) {
       return this._customGenesisState
     }
-    // Use require statements here in favor of import statements
-    // to load json files on demand
-    // (high memory usage by large mainnet.json genesis state file)
-    switch (this._common.chainName()) {
-      case 'mainnet':
-        return require('./genesisStates/mainnet.json')
-      case 'ropsten':
-        return require('./genesisStates/ropsten.json')
-      case 'rinkeby':
-        return require('./genesisStates/rinkeby.json')
-      case 'goerli':
-        return require('./genesisStates/goerli.json')
-      case 'sepolia':
-        return require('./genesisStates/sepolia.json')
-    }
 
-    return {}
+    return getGenesis(Number(this._common.chainId()) as Chain) ?? {}
   }
 }

@@ -53,6 +53,7 @@ export * from './encoding.js'
  */
 export * from './asyncEventEmitter.js'
 export * from './blobHelpers.js'
+export * from './genesis.js'
 export {
   arrayContainsArray,
   fromAscii,

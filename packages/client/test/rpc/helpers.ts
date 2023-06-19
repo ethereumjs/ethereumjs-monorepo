@@ -1,7 +1,7 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
+import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common, parseGethGenesis } from '@ethereumjs/common'
-import { Address, KECCAK256_RLP, hexStringToBytes } from '@ethereumjs/util'
+import { Address, KECCAK256_RLP, hexStringToBytes, parseGethGenesisState } from '@ethereumjs/util'
 import { Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
 
