@@ -503,6 +503,7 @@ export async function verifyRangeProof(
     if (!equalsBytes(rootHash, trie.root())) {
       throw new Error('invalid all elements proof: root mismatch')
     }
+    return false
   }
 
   if (anyNull({ firstKey, lastKey, proof })) {
