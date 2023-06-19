@@ -102,6 +102,7 @@ export class TrieWrap extends TrieWithDB {
     }
   }
   _root: Uint8Array
+
   constructor(options: TrieWrapOptions = {}) {
     super(options)
     this._root = options.rootHash ?? this.EMPTY_TRIE_ROOT

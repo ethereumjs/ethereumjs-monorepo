@@ -33,7 +33,7 @@ export class TrieWithDB extends MerklePatriciaTrie {
     trie.debug(`maxCheckpoints: ${trie.maxCheckpoints}`)
     return trie
   }
-  private db: TrieDatabase
+  private _db: TrieDatabase
   _opts: TrieDBOptions
   cache: LRUCache<Uint8Array, TNode>
   checkpoints: Uint8Array[]
@@ -49,7 +49,7 @@ export class TrieWithDB extends MerklePatriciaTrie {
       this.debug(`Building Trie from DB: ${options.db}`)
     }
     this._opts = options
-    this.db =
+    this._db =
       options.db && options.db instanceof TrieDatabase
         ? options.db
         : new TrieDatabase({ _debug: this.debug })
@@ -89,7 +89,7 @@ export class TrieWithDB extends MerklePatriciaTrie {
     return root
   }
   database(): TrieDatabase {
-    return this.db
+    return this._db
   }
   async setDataBase(db: TrieDatabase): Promise<void> {
     const newDB = new TrieDatabase({ _debug: this.debug })
@@ -120,7 +120,7 @@ export class TrieWithDB extends MerklePatriciaTrie {
     debug.extend('cache')(`Found: ${node !== undefined ? node.getType() : 'undefined'}`)
     if (node === undefined) {
       //  Check if node in db
-      let encoded = await this.db.get(hash)
+      let encoded = await this._db.get(hash)
       if (encoded === undefined) {
         return encoded
       }
@@ -146,13 +146,13 @@ export class TrieWithDB extends MerklePatriciaTrie {
       const serializedNode = node.rlpEncode()
       const nodeHash = node.hash()
       this.cache.set(nodeHash, node)
-      await this.db.put(nodeHash, serializedNode)
+      await this._db.put(nodeHash, serializedNode)
     }
   }
   async persistRoot(rootDbKey: Uint8Array = ROOT_DB_KEY): Promise<void> {
     this.debug.extend('persistRoot')(bytesToPrefixedHexString(this.root()))
     await this._withLock(async () => {
-      await this.db.put(rootDbKey, this.root())
+      await this._db.put(rootDbKey, this.root())
     })
     if (this.useNodePruning) {
       await this.garbageCollect()
@@ -172,26 +172,19 @@ export class TrieWithDB extends MerklePatriciaTrie {
     if (this.useNodePruning) {
       await this.garbageCollect()
     }
-    // await this.garbageCollect()
   }
   async revert(): Promise<void> {
     await this._withLock(async () => {
       const fromRoot = await this.rootNode()
+      this.debug.extend('revert')(`from: ${bytesToPrefixedHexString(fromRoot.hash())}`)
       if (this.checkpoints.length > 0) {
         const checkpoint = this.checkpoints.pop()
-        this.debug.extend('revert')(
-          `Reverting to last checkpoint: ${bytesToPrefixedHexString(checkpoint!)}`
-        )
         this.root(checkpoint!)
       } else {
         this.root(this.EMPTY_TRIE_ROOT)
       }
-      this.debug.extend('revert')(
-        `from: ${bytesToPrefixedHexString(fromRoot.hash())} to: ${bytesToPrefixedHexString(
-          this.root()
-        )}`
-      )
-      await this.db.del(fromRoot.hash())
+      this.debug.extend('revert')(`to: ${bytesToPrefixedHexString(this.root())}`)
+      await this._db.del(fromRoot.hash())
     })
     await this.garbageCollect()
   }
