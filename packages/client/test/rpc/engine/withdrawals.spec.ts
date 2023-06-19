@@ -1,9 +1,9 @@
 import { Block } from '@ethereumjs/block'
 import { Withdrawal, bigIntToHex, bytesToHex, intToPrefixedHexString } from '@ethereumjs/util'
-import { assert, describe } from 'vitest'
+import { assert, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import genesisJSON = require('../../testdata/geth-genesis/withdrawals.json')
+import genesisJSON from '../../testdata/geth-genesis/withdrawals.json'
 import { baseRequest, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 
@@ -101,7 +101,7 @@ const testCases = [
 
 for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
   const validPayloadAttributesWithWithdrawals = { ...validPayloadAttributes, withdrawals }
-  describe(name, async () => {
+  it(name, async () => {
     // check withdrawals root computation
     const computedWithdrawalsRoot = bytesToHex(
       await Block.genWithdrawalsTrieRoot(withdrawals.map(Withdrawal.fromWithdrawalData))

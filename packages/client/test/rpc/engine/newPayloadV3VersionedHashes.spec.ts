@@ -3,8 +3,8 @@ import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import blocks = require('../../testdata/blocks/beacon.json')
-import genesisJSON = require('../../testdata/geth-genesis/eip4844.json')
+import blocks from '../../testdata/blocks/beacon.json'
+import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
 import { baseRequest, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 
@@ -29,7 +29,7 @@ export const batchBlocks = async (server: HttpServer) => {
 }
 
 describe(`${method}: Cancun validations`, () => {
-  it(`${method}: versionedHashes`, async () => {
+  it('versionedHashes', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
     const blockDataExtraVersionedHashes = [

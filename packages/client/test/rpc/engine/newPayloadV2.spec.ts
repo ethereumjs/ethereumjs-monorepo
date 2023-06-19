@@ -5,8 +5,8 @@ import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import blocks = require('../../testdata/blocks/beacon.json')
-import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
+import blocks from '../../testdata/blocks/beacon.json'
+import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 
@@ -29,7 +29,7 @@ export const batchBlocks = async (server: HttpServer) => {
 }
 
 describe(`${method}: call with executionPayloadV1`, () => {
-  it(`${method}: call with invalid block hash without 0x`, async () => {
+  it('call with invalid block hash without 0x', async () => {
     const { server } = baseSetup({ engine: true, includeVM: true })
 
     const blockDataWithInvalidParentHash = [
@@ -47,7 +47,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     await baseRequest(server, req, 200, expectRes)
   })
 
-  it(`${method}: call with invalid hex string as block hash`, async () => {
+  it('call with invalid hex string as block hash', async () => {
     const { server } = baseSetup({ engine: true, includeVM: true })
 
     const blockDataWithInvalidBlockHash = [{ ...blockData, blockHash: '0x-invalid-block-hash' }]
@@ -59,7 +59,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     await baseRequest(server, req, 200, expectRes)
   })
 
-  it(`${method}: call with non existent block hash`, async () => {
+  it('call with non existent block hash', async () => {
     const { server } = await setupChain(genesisJSON, 'merge', { engine: true })
 
     const blockDataNonExistentBlockHash = [
@@ -76,7 +76,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     await baseRequest(server, req, 200, expectRes)
   })
 
-  it(`${method}: call with non existent parent hash`, async () => {
+  it('call with non existent parent hash', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
     const blockDataNonExistentParentHash = [
@@ -94,7 +94,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     await baseRequest(server, req, 200, expectRes)
   })
 
-  it(`${method}: call with unknown parent hash to store in remoteBlocks, then call valid ancestor in fcU`, async () => {
+  it('call with unknown parent hash to store in remoteBlocks, then call valid ancestor in fcU', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
     let req = params(method, [blocks[1]])
@@ -122,7 +122,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     await baseRequest(server, req, 200, expectRes)
   })
 
-  it(`${method}: invalid terminal block`, async () => {
+  it('invalid terminal block', async () => {
     const genesisWithHigherTtd = {
       ...genesisJSON,
       config: {
@@ -146,7 +146,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     await baseRequest(server, req, 200, expectRes)
   })
 
-  it(`${method}: call with valid data`, async () => {
+  it('call with valid data', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
     const req = params(method, [blockData])
@@ -157,7 +157,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     await baseRequest(server, req, 200, expectRes)
   })
 
-  it(`${method}: call with valid data but invalid transactions`, async () => {
+  it('call with valid data but invalid transactions', async () => {
     const { chain, server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
     chain.config.logger.silent = true
     const blockDataWithInvalidTransaction = {
@@ -179,7 +179,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     await baseRequest(server, req, 200, expectRes)
   })
 
-  it(`${method}: call with valid data & valid transaction but not signed`, async () => {
+  it('call with valid data & valid transaction but not signed', async () => {
     const { server, common, chain } = await setupChain(genesisJSON, 'post-merge', { engine: true })
     chain.config.logger.silent = true
 
@@ -211,7 +211,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     await baseRequest(server, req, 200, expectRes)
   })
 
-  it(`${method}: call with valid data & valid transaction`, async () => {
+  it('call with valid data & valid transaction', async () => {
     const accountPk = hexStringToBytes(
       'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
     )
@@ -253,7 +253,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     await baseRequest(server, req, 200, expectRes)
   })
 
-  it(`${method}: re-execute payload and verify that no errors occur`, async () => {
+  it('re-execute payload and verify that no errors occur', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
     await batchBlocks(server)
@@ -281,7 +281,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     await baseRequest(server, req, 200, expectRes)
   })
 
-  it(`${method}: parent hash equals to block hash`, async () => {
+  it('parent hash equals to block hash', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
     const blockDataHasBlockHashSameAsParentHash = [
       {
@@ -301,9 +301,9 @@ describe(`${method}: call with executionPayloadV1`, () => {
     BlockHeader.prototype._consensusFormatValidation = originalValidate
     td.reset()
   })
-})
 
-describe(`${method}: call with executionPayloadV2`, () => {
-  assert.ok(true, 'TODO: add tests for executionPayloadV2')
-  // TODO: add tests for executionPayloadV2
+  it('call with executionPayloadV2', () => {
+    assert.ok(true, 'TODO: add tests for executionPayloadV2')
+    // TODO: add tests for executionPayloadV2
+  })
 })

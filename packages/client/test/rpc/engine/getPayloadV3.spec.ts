@@ -13,10 +13,10 @@ import {
   initKZG,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { assert, describe } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import genesisJSON = require('../../testdata/geth-genesis/eip4844.json')
+import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 
@@ -41,98 +41,105 @@ try {
 } catch {}
 const method = 'engine_getPayloadV3'
 
-describe(`${method}: call with invalid payloadId`, async () => {
-  const { server } = baseSetup({ engine: true, includeVM: true })
+describe(`${method}`, () => {
+  it('call with invalid payloadId', async () => {
+    const { server } = baseSetup({ engine: true, includeVM: true })
 
-  const req = params(method, [1])
-  const expectRes = checkError(INVALID_PARAMS, 'invalid argument 0: argument must be a hex string')
-  await baseRequest(server, req, 200, expectRes)
-})
-
-describe(`${method}: call with unknown payloadId`, async () => {
-  const { server } = baseSetup({ engine: true, includeVM: true })
-
-  const req = params(method, ['0x123'])
-  const expectRes = checkError(-32001, 'Unknown payload')
-  await baseRequest(server, req, 200, expectRes)
-})
-
-describe(`${method}: call with known payload`, async () => {
-  // Disable stateroot validation in TxPool since valid state root isn't available
-  const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-  const originalStateManagerCopy = DefaultStateManager.prototype.copy
-  DefaultStateManager.prototype.setStateRoot = function (): any {}
-  DefaultStateManager.prototype.copy = function () {
-    return this
-  }
-  const { service, server, common } = await setupChain(genesisJSON, 'post-merge', {
-    engine: true,
-    hardfork: Hardfork.Cancun,
+    const req = params(method, [1])
+    const expectRes = checkError(
+      INVALID_PARAMS,
+      'invalid argument 0: argument must be a hex string'
+    )
+    await baseRequest(server, req, 200, expectRes)
   })
-  common.setHardfork(Hardfork.Cancun)
-  const pkey = hexStringToBytes('9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
-  const address = Address.fromPrivateKey(pkey)
-  await service.execution.vm.stateManager.putAccount(address, new Account())
-  const account = await service.execution.vm.stateManager.getAccount(address)
 
-  account!.balance = 0xfffffffffffffffn
-  await service.execution.vm.stateManager.putAccount(address, account!)
-  let req = params('engine_forkchoiceUpdatedV2', validPayload)
-  let payloadId
-  let expectRes = (res: any) => {
-    payloadId = res.body.result.payloadId
-    assert.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
-  }
-  await baseRequest(server, req, 200, expectRes, false)
+  it('call with unknown payloadId', async () => {
+    const { server } = baseSetup({ engine: true, includeVM: true })
 
-  const txBlobs = getBlobs('hello world')
-  const txCommitments = blobsToCommitments(txBlobs)
-  const txVersionedHashes = commitmentsToVersionedHashes(txCommitments)
-  const txProofs = blobsToProofs(txBlobs, txCommitments)
+    const req = params(method, ['0x123'])
+    const expectRes = checkError(-32001, 'Unknown payload')
+    await baseRequest(server, req, 200, expectRes)
+  })
 
-  const tx = TransactionFactory.fromTxData(
-    {
-      type: 0x03,
-      versionedHashes: txVersionedHashes,
-      blobs: txBlobs,
-      kzgCommitments: txCommitments,
-      kzgProofs: txProofs,
-      maxFeePerDataGas: 1n,
-      maxFeePerGas: 10000000000n,
-      maxPriorityFeePerGas: 100000000n,
-      gasLimit: 30000000n,
-    },
-    { common }
-  ).sign(pkey)
-
-  ;(service.txPool as any).vm._common.setHardfork(Hardfork.Cancun)
-  await service.txPool.add(tx, true)
-  req = params('engine_getPayloadV3', [payloadId])
-  expectRes = (res: any) => {
-    const { executionPayload, blobsBundle } = res.body.result
-    assert.equal(
-      executionPayload.blockHash,
-      '0x9db3128f029d4043d32786a8896fbaadac4c07ec475213a43534ec06079f08b1',
-      'built expected block'
+  it('call with known payload', async () => {
+    // Disable stateroot validation in TxPool since valid state root isn't available
+    const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
+    const originalStateManagerCopy = DefaultStateManager.prototype.copy
+    DefaultStateManager.prototype.setStateRoot = function (): any {}
+    DefaultStateManager.prototype.copy = function () {
+      return this
+    }
+    const { service, server, common } = await setupChain(genesisJSON, 'post-merge', {
+      engine: true,
+      hardfork: Hardfork.Cancun,
+    })
+    common.setHardfork(Hardfork.Cancun)
+    const pkey = hexStringToBytes(
+      '9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355'
     )
-    assert.equal(executionPayload.excessDataGas, '0x0', 'correct execess data gas')
-    assert.equal(executionPayload.dataGasUsed, '0x20000', 'correct data gas used')
-    const { commitments, proofs, blobs } = blobsBundle
-    assert.ok(
-      commitments.length === proofs.length && commitments.length === blobs.length,
-      'equal commitments, proofs and blobs'
-    )
-    assert.equal(blobs.length, 1, '1 blob should be returned')
-    assert.equal(proofs[0], bytesToPrefixedHexString(txProofs[0]), 'proof should match')
-    assert.equal(
-      commitments[0],
-      bytesToPrefixedHexString(txCommitments[0]),
-      'commitment should match'
-    )
-    assert.equal(blobs[0], bytesToPrefixedHexString(txBlobs[0]), 'blob should match')
-  }
+    const address = Address.fromPrivateKey(pkey)
+    await service.execution.vm.stateManager.putAccount(address, new Account())
+    const account = await service.execution.vm.stateManager.getAccount(address)
 
-  await baseRequest(server, req, 200, expectRes, false)
-  DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-  DefaultStateManager.prototype.copy = originalStateManagerCopy
+    account!.balance = 0xfffffffffffffffn
+    await service.execution.vm.stateManager.putAccount(address, account!)
+    let req = params('engine_forkchoiceUpdatedV2', validPayload)
+    let payloadId
+    let expectRes = (res: any) => {
+      payloadId = res.body.result.payloadId
+      assert.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
+    }
+    await baseRequest(server, req, 200, expectRes, false)
+
+    const txBlobs = getBlobs('hello world')
+    const txCommitments = blobsToCommitments(txBlobs)
+    const txVersionedHashes = commitmentsToVersionedHashes(txCommitments)
+    const txProofs = blobsToProofs(txBlobs, txCommitments)
+
+    const tx = TransactionFactory.fromTxData(
+      {
+        type: 0x03,
+        versionedHashes: txVersionedHashes,
+        blobs: txBlobs,
+        kzgCommitments: txCommitments,
+        kzgProofs: txProofs,
+        maxFeePerDataGas: 1n,
+        maxFeePerGas: 10000000000n,
+        maxPriorityFeePerGas: 100000000n,
+        gasLimit: 30000000n,
+      },
+      { common }
+    ).sign(pkey)
+
+    ;(service.txPool as any).vm._common.setHardfork(Hardfork.Cancun)
+    await service.txPool.add(tx, true)
+    req = params('engine_getPayloadV3', [payloadId])
+    expectRes = (res: any) => {
+      const { executionPayload, blobsBundle } = res.body.result
+      assert.equal(
+        executionPayload.blockHash,
+        '0x9db3128f029d4043d32786a8896fbaadac4c07ec475213a43534ec06079f08b1',
+        'built expected block'
+      )
+      assert.equal(executionPayload.excessDataGas, '0x0', 'correct execess data gas')
+      assert.equal(executionPayload.dataGasUsed, '0x20000', 'correct data gas used')
+      const { commitments, proofs, blobs } = blobsBundle
+      assert.ok(
+        commitments.length === proofs.length && commitments.length === blobs.length,
+        'equal commitments, proofs and blobs'
+      )
+      assert.equal(blobs.length, 1, '1 blob should be returned')
+      assert.equal(proofs[0], bytesToPrefixedHexString(txProofs[0]), 'proof should match')
+      assert.equal(
+        commitments[0],
+        bytesToPrefixedHexString(txCommitments[0]),
+        'commitment should match'
+      )
+      assert.equal(blobs[0], bytesToPrefixedHexString(txBlobs[0]), 'blob should match')
+    }
+
+    await baseRequest(server, req, 200, expectRes, false)
+    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
+    DefaultStateManager.prototype.copy = originalStateManagerCopy
+  })
 })
