@@ -179,11 +179,10 @@ export class TrieWrap extends TrieWithDB {
     key: Uint8Array,
     proof: Uint8Array[]
   ): Promise<Uint8Array | null> {
-    key = this.keySecure(key)
     this.debug.extend(`verifyProof`)(`verify proof for key: ${bytesToPrefixedHexString(key)}`)
     this.debug.extend(`verifyProof`)(`in trie with root: ${bytesToPrefixedHexString(root)}`)
     const trie = new TrieWrap({
-      rootNodeRLP: proof[0],
+      rootHash: this.hashFunction(proof[0]),
       persistent: this.persistent,
       useNodePruning: this.useNodePruning,
       secure: this.secure,

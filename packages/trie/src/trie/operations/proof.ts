@@ -177,14 +177,5 @@ export async function updateFromProof(
     for (const p of proof.slice()) {
       await this.database().put(this.hashFunction(p), p)
     }
-    for (const [i, p] of proof.slice().entries()) {
-      debug.extend(`Proof[${i}]`)(`${p.length} bytes`)
-      const node = await this._decodeToNode(p, debug)
-      debug.extend(`Proof[${i}]`)(`Storing: ${node.getType()}`)
-      await this.storeNode(node, debug)
-    }
-    const root = await this._decodeToNode(proofRoot, debug)
-    await this.storeNode(root, debug)
-    this.root(root.hash())
   })
 }
