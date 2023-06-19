@@ -32,7 +32,7 @@ describe('[Common]: Hardfork logic', () => {
     }
   })
 
-  it('getHardforkBy() / setHardforkByBlockNumber()', () => {
+  it('getHardforkBy() / setHardforkBy()', () => {
     let c = new Common({ chain: Chain.Mainnet })
     let msg = 'should get HF correctly'
 
@@ -49,19 +49,19 @@ describe('[Common]: Hardfork logic', () => {
     assert.equal(c.getHardforkBy({ blockNumber: 999999999999n }), Hardfork.Paris, msg)
     msg = 'should set HF correctly'
 
-    assert.equal(c.setHardforkByBlockNumber(0), Hardfork.Chainstart, msg)
-    assert.equal(c.setHardforkByBlockNumber(1149999), Hardfork.Chainstart, msg)
-    assert.equal(c.setHardforkByBlockNumber(1150000), Hardfork.Homestead, msg)
-    assert.equal(c.setHardforkByBlockNumber(1400000), Hardfork.Homestead, msg)
-    assert.equal(c.setHardforkByBlockNumber(12244000), Hardfork.Berlin, msg)
-    assert.equal(c.setHardforkByBlockNumber(12965000), Hardfork.London, msg)
-    assert.equal(c.setHardforkByBlockNumber(13773000), Hardfork.ArrowGlacier, msg)
-    assert.equal(c.setHardforkByBlockNumber(15050000), Hardfork.GrayGlacier, msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 0n }), Hardfork.Chainstart, msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 1149999n }), Hardfork.Chainstart, msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 1150000n }), Hardfork.Homestead, msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 1400000n }), Hardfork.Homestead, msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 12244000n }), Hardfork.Berlin, msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 12965000n }), Hardfork.London, msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 13773000n }), Hardfork.ArrowGlacier, msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 15050000n }), Hardfork.GrayGlacier, msg)
     // merge is now specified at 15537394 in config
-    assert.equal(c.setHardforkByBlockNumber(999999999999), Hardfork.Paris, msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 999999999999n }), Hardfork.Paris, msg)
 
     c = new Common({ chain: Chain.Ropsten })
-    assert.equal(c.setHardforkByBlockNumber(0), 'tangerineWhistle', msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 0n }), 'tangerineWhistle', msg)
   })
 
   it('should throw if no hardfork qualifies', () => {
@@ -87,7 +87,7 @@ describe('[Common]: Hardfork logic', () => {
     assert.throws(f, undefined, undefined, 'throw since no hardfork qualifies')
 
     const msg = 'should return correct value'
-    assert.equal(c.setHardforkByBlockNumber(3), Hardfork.SpuriousDragon, msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 3n }), Hardfork.SpuriousDragon, msg)
   })
 
   it('setHardfork(): hardforkChanged event', () => {

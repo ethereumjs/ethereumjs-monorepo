@@ -83,25 +83,25 @@ describe('[Common]: Merge/POS specific logic', () => {
     assert.equal(c.getHardforkBy({ blockNumber: 18n, td: 5001n }), 'shanghai', msg)
   })
 
-  it('setHardforkByBlockNumber(), merge block null, with total difficulty', () => {
+  it('setHardforkBy(), merge block null, with total difficulty', () => {
     const customChains = [testnetMerge]
     const c = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
 
     let msg = 'block number < last HF block number set, without TD set'
-    assert.equal(c.setHardforkByBlockNumber(0), 'chainstart', msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 0n }), 'chainstart', msg)
     msg = 'block number > last HF block number set, without TD set'
-    assert.equal(c.setHardforkByBlockNumber(14), 'london', msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 14n }), 'london', msg)
     msg = 'block number > last HF block number set, TD set and equal'
-    assert.equal(c.setHardforkByBlockNumber(15, 5000), 'paris', msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 15n, td: 5000n }), 'paris', msg)
     msg = 'block number > last HF block number set, TD set and higher'
-    assert.equal(c.setHardforkByBlockNumber(15, 5001), 'paris', msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 15n, td: 5001n }), 'paris', msg)
     msg = 'block number > last HF block number set, TD set and smaller'
-    assert.equal(c.setHardforkByBlockNumber(15, 4999), 'london', msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 15n, td: 4999n }), 'london', msg)
     msg = 'block number < last HF block number set, TD set and smaller'
-    assert.equal(c.setHardforkByBlockNumber(12, 4999), 'berlin', msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 12n, td: 4999n }), 'berlin', msg)
   })
 
-  it('setHardforkByBlockNumber(), merge block set, with total difficulty', () => {
+  it('setHardforkBy(), merge block set, with total difficulty', () => {
     const testnetMergeWithBlockNumber = JSON.parse(JSON.stringify(testnetMerge))
     // Set Merge block to 15
     testnetMergeWithBlockNumber['hardforks'][8]['block'] = 16
@@ -109,18 +109,18 @@ describe('[Common]: Merge/POS specific logic', () => {
     const c = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
 
     let msg = 'block number < last HF block number set, without TD set'
-    assert.equal(c.setHardforkByBlockNumber(0), 'chainstart', msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 0n }), 'chainstart', msg)
     msg = 'block number > last HF block number set, without TD set'
-    assert.equal(c.setHardforkByBlockNumber(16), 'paris', msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 16n }), 'paris', msg)
     msg = 'block number > last HF block number set, TD set and equal'
-    assert.equal(c.setHardforkByBlockNumber(16, 5000), 'paris', msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 16n, td: 5000n }), 'paris', msg)
     msg = 'block number > last HF block number set, TD set and higher'
-    assert.equal(c.setHardforkByBlockNumber(16, 5001), 'paris', msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 16n, td: 5001n }), 'paris', msg)
     msg = 'block number < last HF block number set, TD set and smaller'
-    assert.equal(c.setHardforkByBlockNumber(12, 4999), 'berlin', msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 12n, td: 4999n }), 'berlin', msg)
 
     try {
-      c.setHardforkByBlockNumber(16, 4999)
+      c.setHardforkBy({ blockNumber: 16n, td: 4999n })
       assert.fail(`should have thrown td < ttd validation error`)
     } catch (e: any) {
       msg = 'block number > last HF block number set, TD set and smaller (should throw)'
@@ -128,7 +128,7 @@ describe('[Common]: Merge/POS specific logic', () => {
       assert.ok(e.message.includes(eMsg), msg)
     }
     try {
-      c.setHardforkByBlockNumber(14, 5000)
+      c.setHardforkBy({ blockNumber: 14n, td: 5000n })
       assert.fail(`should have thrown td > ttd validation error`)
     } catch (e: any) {
       msg = 'block number < last HF block number set, TD set and higher (should throw)'
@@ -137,7 +137,7 @@ describe('[Common]: Merge/POS specific logic', () => {
     }
   })
 
-  it('setHardforkByBlockNumber(), merge block set + subsequent HF, with total difficulty', () => {
+  it('setHardforkBy(), merge block set + subsequent HF, with total difficulty', () => {
     const testnetMergeWithBlockNumber = JSON.parse(JSON.stringify(testnetMerge))
     // Set Merge block to 15
     testnetMergeWithBlockNumber['hardforks'][8]['block'] = 16
@@ -147,7 +147,7 @@ describe('[Common]: Merge/POS specific logic', () => {
     const c = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
 
     const msg = 'block number > last HF block number set, TD set and higher'
-    assert.equal(c.setHardforkByBlockNumber(18, 5001), 'shanghai', msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 18n, td: 5001n }), 'shanghai', msg)
   })
 
   it('Pure POS testnet', () => {
@@ -235,21 +235,21 @@ describe('[Common]: Merge/POS specific logic', () => {
 
     msg = 'should set HF correctly'
 
-    assert.equal(c.setHardforkByBlockNumber(0), Hardfork.London, msg)
-    assert.equal(c.setHardforkByBlockNumber(1450409), Hardfork.London, msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 0n }), Hardfork.London, msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 1450409n }), Hardfork.London, msg)
     assert.equal(
-      c.setHardforkByBlockNumber(1450409, BigInt('17000000000000000')),
+      c.setHardforkBy({ blockNumber: 1450409n, td: 17000000000000000n }),
       Hardfork.Paris,
       msg
     )
-    assert.equal(c.setHardforkByBlockNumber(1735371), Hardfork.MergeForkIdTransition, msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 1735371n }), Hardfork.MergeForkIdTransition, msg)
     assert.equal(
-      c.setHardforkByBlockNumber(1735371, BigInt('17000000000000000')),
+      c.setHardforkBy({ blockNumber: 1735371n, td: 17000000000000000n }),
       Hardfork.MergeForkIdTransition,
       msg
     )
     f = () => {
-      c.setHardforkByBlockNumber(1735371, BigInt('15000000000000000'))
+      c.setHardforkBy({ blockNumber: 1735371n, td: 15000000000000000n })
     }
     assert.throws(
       f,
@@ -272,15 +272,15 @@ describe('[Common]: Merge/POS specific logic', () => {
     const msg = 'should get HF correctly'
 
     // should get merge even without td supplied as the merge hf now has the block specified
-    assert.equal(c.setHardforkByBlockNumber(1450409), Hardfork.Paris, msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 1450409n }), Hardfork.Paris, msg)
     assert.equal(
-      c.setHardforkByBlockNumber(1450409, BigInt('17000000000000000')),
+      c.setHardforkBy({ blockNumber: 1450409n, td: 17000000000000000n }),
       Hardfork.Paris,
       msg
     )
-    assert.equal(c.setHardforkByBlockNumber(1735371), Hardfork.MergeForkIdTransition, msg)
+    assert.equal(c.setHardforkBy({ blockNumber: 1735371n }), Hardfork.MergeForkIdTransition, msg)
     assert.equal(
-      c.setHardforkByBlockNumber(1735371, BigInt('17000000000000000')),
+      c.setHardforkBy({ blockNumber: 1735371n, td: 17000000000000000n }),
       Hardfork.MergeForkIdTransition,
       msg
     )
@@ -308,7 +308,7 @@ describe('[Common]: Merge/POS specific logic', () => {
       '17000000000000000'
 
     const f = () => {
-      c.setHardforkByBlockNumber(1735371)
+      c.setHardforkBy({ blockNumber: 1735371n })
     }
     assert.throws(f, undefined, undefined, 'throws error as two hardforks with ttd specified')
   })

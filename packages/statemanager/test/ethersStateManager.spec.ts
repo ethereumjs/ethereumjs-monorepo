@@ -248,7 +248,7 @@ describe('runTx test: replay mainnet transactions', () => {
           : new MockProvider()
 
       const blockTag = 15496077n
-      common.setHardforkByBlockNumber(blockTag)
+      common.setHardforkBy({ blockNumber: blockTag })
       const tx = await TransactionFactory.fromRPC(txData, { common })
       const state = new EthersStateManager({
         provider,
@@ -285,7 +285,7 @@ describe('runBlock test', () => {
 
       // Set the common to HF, doesn't impact this specific blockTag, but will impact much recent
       // blocks, also for post merge network, ttd should also be passed
-      common.setHardforkByBlockNumber(blockTag - 1n)
+      common.setHardforkBy({ blockNumber: blockTag - 1n })
 
       const vm = await VM.create({ common, stateManager: state })
       const block = Block.fromRPC(blockData, [], { common })

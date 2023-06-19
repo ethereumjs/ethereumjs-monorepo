@@ -44,7 +44,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   testData.lastblockhash = stripHexPrefix(testData.lastblockhash)
 
   let common = options.common.copy() as Common
-  common.setHardforkByBlockNumber(0)
+  common.setHardforkBy({ blockNumber: 0 })
 
   let cacheDB = new MapDB()
   let state = new Trie({ useKeyHashing: true })
@@ -147,7 +147,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         // eslint-disable-next-line no-empty
       } catch (e) {}
 
-      common.setHardforkByBlockNumber(currentBlock, TD, timestamp)
+      common.setHardforkBy({ blockNumber: currentBlock, td: TD, timestamp })
 
       // transactionSequence is provided when txs are expected to be rejected.
       // To run this field we try to import them on the current state.

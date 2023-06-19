@@ -933,7 +933,10 @@ export class Eth {
     if (txTargetHeight <= chainHeight) {
       txTargetHeight = chainHeight + BigInt(1)
     }
-    common.setHardforkByBlockNumber(txTargetHeight, undefined, Math.floor(Date.now() / 1000))
+    common.setHardforkBy({
+      blockNumber: txTargetHeight,
+      timestamp: Math.floor(Date.now() / 1000),
+    })
 
     let tx
     try {

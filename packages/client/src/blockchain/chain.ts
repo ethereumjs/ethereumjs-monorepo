@@ -289,11 +289,11 @@ export class Chain {
     this._blocks = blocks
 
     const parentTd = await this.blockchain.getParentTD(headers.latest)
-    this.config.chainCommon.setHardforkByBlockNumber(
-      headers.latest.number,
-      parentTd,
-      headers.latest.timestamp
-    )
+    this.config.chainCommon.setHardforkBy({
+      blockNumber: headers.latest.number,
+      td: parentTd,
+      timestamp: headers.latest.timestamp,
+    })
 
     // Check and log if this is a terminal block and next block could be merge
     if (!this.config.chainCommon.gteHardfork(Hardfork.Paris)) {

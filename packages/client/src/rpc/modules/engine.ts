@@ -259,7 +259,7 @@ const assembleBlock = async (
   // Can't use hardforkByTTD flag, as the transactions will need to be deserialized
   // first before the header can be constucted with their roots
   const ttd = common.hardforkTTD(Hardfork.Paris)
-  common.setHardforkByBlockNumber(blockNumber, ttd !== null ? ttd : undefined, timestamp)
+  common.setHardforkBy({ blockNumber, td: ttd !== null ? ttd : undefined, timestamp })
 
   try {
     const block = await Block.fromExecutionPayload(payload, { common })

@@ -128,7 +128,7 @@ export class VMExecution extends Execution {
         throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
       }
       const td = await this.vm.blockchain.getTotalDifficulty(headBlock.header.hash())
-      this.config.execCommon.setHardforkByBlockNumber(number, td, timestamp)
+      this.config.execCommon.setHardforkBy({ blockNumber: number, td, timestamp })
       this.hardfork = this.config.execCommon.hardfork()
       this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
       if (number === BigInt(0)) {
@@ -356,11 +356,11 @@ export class VMExecution extends Execution {
                   this.config.logger.info(
                     `Execution hardfork switch on block number=${number} hash=${hash} old=${this.hardfork} new=${hardfork}`
                   )
-                  this.hardfork = this.config.execCommon.setHardforkByBlockNumber(
-                    number,
+                  this.hardfork = this.config.execCommon.setHardforkBy({
+                    blockNumber: number,
                     td,
-                    timestamp
-                  )
+                    timestamp,
+                  })
                 }
                 let skipBlockValidation = false
                 if (this.config.execCommon.consensusType() === ConsensusType.ProofOfAuthority) {
@@ -446,7 +446,7 @@ export class VMExecution extends Execution {
               this.config.logger.warn(
                 `Set back hardfork along block deletion number=${blockNumber} hash=${hash} old=${this.hardfork} new=${hardfork}`
               )
-              this.config.execCommon.setHardforkByBlockNumber(blockNumber, td)
+              this.config.execCommon.setHardforkBy({ blockNumber, td })
             }*/
               // Option a): set iterator head to the parent block so that an
               // error can repeatedly processed for debugging
@@ -594,7 +594,11 @@ export class VMExecution extends Execution {
         throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
       }
       const td = await vm.blockchain.getTotalDifficulty(block.header.parentHash)
-      vm._common.setHardforkByBlockNumber(blockNumber, td, block.header.timestamp)
+      vm._common.setHardforkBy({
+        blockNumber: BigInt(blockNumber),
+        td,
+        timestamp: block.header.timestamp,
+      })
 
       if (txHashes.length === 0) {
         // we are skipping header validation because the block has been picked from the

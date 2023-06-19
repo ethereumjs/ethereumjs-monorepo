@@ -333,7 +333,7 @@ tape('[FullEthereumService]', async (t) => {
 
   t.test('should start on beacon sync when past merge', async (t) => {
     const common = Common.fromGethGenesis(genesisJSON, { chain: 'post-merge' })
-    common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
+    common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000, common })
     const chain = await Chain.create({ config })
     let service = new FullEthereumService({ config, chain })

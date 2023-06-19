@@ -114,14 +114,14 @@ export class EthProtocol extends Protocol {
       decode: (txs: Uint8Array[]) => {
         if (!this.config.synchronized) return
         const common = this.config.chainCommon.copy()
-        common.setHardforkByBlockNumber(
-          this.chain.headers.latest?.number ?? // Use latest header number if available OR
+        common.setHardforkBy({
+          blockNumber:
+            this.chain.headers.latest?.number ?? // Use latest header number if available OR
             this.config.syncTargetHeight ?? // Use sync target height if available OR
             common.hardforkBlock(common.hardfork()) ?? // Use current hardfork block number OR
             BigInt(0), // Use chainstart,
-          undefined,
-          this.chain.headers.latest?.timestamp ?? Math.floor(Date.now() / 1000)
-        )
+          timestamp: this.chain.headers.latest?.timestamp ?? BigInt(Math.floor(Date.now() / 1000)),
+        })
         return txs.map((txData) => TransactionFactory.fromSerializedData(txData, { common }))
       },
     },
@@ -249,14 +249,14 @@ export class EthProtocol extends Protocol {
       },
       decode: ([reqId, txs]: [Uint8Array, any[]]) => {
         const common = this.config.chainCommon.copy()
-        common.setHardforkByBlockNumber(
-          this.chain.headers.latest?.number ?? // Use latest header number if available OR
+        common.setHardforkBy({
+          blockNumber:
+            this.chain.headers.latest?.number ?? // Use latest header number if available OR
             this.config.syncTargetHeight ?? // Use sync target height if available OR
             common.hardforkBlock(common.hardfork()) ?? // Use current hardfork block number OR
             BigInt(0), // Use chainstart,
-          undefined,
-          this.chain.headers.latest?.timestamp ?? Math.floor(Date.now() / 1000)
-        )
+          timestamp: this.chain.headers.latest?.timestamp ?? BigInt(Math.floor(Date.now() / 1000)),
+        })
         return [
           bytesToBigInt(reqId),
           txs.map((txData) => {

@@ -183,9 +183,9 @@ describe('custom chain setup with hardforks with undefined/null block numbers', 
     ]
 
     const common = Common.custom({ hardforks: nullHardforks })
-    common.setHardforkByBlockNumber(10)
+    common.setHardforkBy({ blockNumber: 10n })
     assert.equal('tangerineWhistle', common.hardfork(), 'set correct hardfork')
-    common.setHardforkByBlockNumber(3)
+    common.setHardforkBy({ blockNumber: 3n })
     assert.equal('chainstart', common.hardfork(), 'set correct hardfork')
   })
 })
