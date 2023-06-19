@@ -32,6 +32,7 @@ import type {
   EthashConfig,
   GenesisBlockConfig,
   GethConfigOpts,
+  HardforkByOpts,
   HardforkConfig,
 } from './types.js'
 import type { BigIntLike } from '@ethereumjs/util'
@@ -304,26 +305,22 @@ export class Common extends EventEmitter {
   }
 
   /**
-   * Returns the hardfork based on the block number or an optional
-   * total difficulty (Merge HF) provided.
+   * Returns the hardfork either based on block numer (older HFs) or
+   * timestamp (Shanghai upwards).
    *
    * An optional TD takes precedence in case the corresponding HF block
    * is set to `null` or otherwise needs to match (if not an error
    * will be thrown).
    *
-   * @param blockNumber
-   * @param td : total difficulty of the parent block (for block hf) OR of the chain latest (for chain hf)
-   * @param timestamp: timestamp in seconds at which block was/is to be minted
+   * @param Opts Block number, timestamp or TD (all optional)
    * @returns The name of the HF
    */
-  getHardforkByBlockNumber(
-    blockNumber: BigIntLike,
-    td?: BigIntLike,
-    timestamp?: BigIntLike
-  ): string {
+  getHardforkBy(opts: HardforkByOpts): string {
+    let { blockNumber, timestamp, td } = opts
+
     blockNumber = toType(blockNumber, TypeOutput.BigInt)
     td = toType(td, TypeOutput.BigInt)
-    timestamp = toType(timestamp, TypeOutput.Number)
+    timestamp = toType(timestamp, TypeOutput.BigInt)
 
     // Filter out hardforks with no block number, no ttd or no timestamp (i.e. unapplied hardforks)
     const hfs = this.hardforks().filter(
@@ -344,8 +341,10 @@ export class Common extends EventEmitter {
     // discovering/checking number hardforks.
     let hfIndex = hfs.findIndex(
       (hf) =>
-        (hf.block !== null && hf.block > blockNumber) ||
-        (timestamp !== undefined && Number(hf.timestamp) > timestamp)
+        (blockNumber !== undefined &&
+          hf.block !== null &&
+          BigInt(hf.block) > (blockNumber as bigint)) ||
+        (timestamp !== undefined && hf.timestamp !== undefined && hf.timestamp > timestamp)
     )
 
     if (hfIndex === -1) {
@@ -399,7 +398,7 @@ export class Common extends EventEmitter {
       }
     }
 
-    if (timestamp) {
+    if (timestamp !== undefined) {
       const minTimeStamp = hfs
         .slice(0, hfStartIndex)
         .reduce((acc: number, hf: HardforkConfig) => Math.max(Number(hf.timestamp ?? '0'), acc), 0)
@@ -411,7 +410,7 @@ export class Common extends EventEmitter {
         .slice(hfIndex + 1)
         .reduce(
           (acc: number, hf: HardforkConfig) => Math.min(Number(hf.timestamp ?? timestamp), acc),
-          timestamp
+          Number(timestamp)
         )
       if (maxTimeStamp < timestamp) {
         throw Error(`Maximum HF determined by block number/ttd is lower than timestamp HF`)
@@ -422,24 +421,18 @@ export class Common extends EventEmitter {
   }
 
   /**
-   * Sets a new hardfork based on the block number or an optional
-   * total difficulty (Merge HF) provided.
+   * Sets a new hardfork either based on block numer (older HFs) or
+   * timestamp (Shanghai upwards).
    *
    * An optional TD takes precedence in case the corresponding HF block
    * is set to `null` or otherwise needs to match (if not an error
    * will be thrown).
    *
-   * @param blockNumber
-   * @param td
-   * @param timestamp
+   * @param Opts Block number, timestamp or TD (all optional)
    * @returns The name of the HF set
    */
-  setHardforkByBlockNumber(
-    blockNumber: BigIntLike,
-    td?: BigIntLike,
-    timestamp?: BigIntLike
-  ): string {
-    const hardfork = this.getHardforkByBlockNumber(blockNumber, td, timestamp)
+  setHardforkBy(opts: HardforkByOpts): string {
+    const hardfork = this.getHardforkBy(opts)
     this.setHardfork(hardfork)
     return hardfork
   }
@@ -575,7 +568,7 @@ export class Common extends EventEmitter {
     td?: BigIntLike,
     timestamp?: BigIntLike
   ): bigint {
-    const hardfork = this.getHardforkByBlockNumber(blockNumber, td, timestamp)
+    const hardfork = this.getHardforkBy({ blockNumber, td, timestamp })
     return this.paramByHardfork(topic, name, hardfork)
   }
 

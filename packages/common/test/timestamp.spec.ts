@@ -11,17 +11,17 @@ describe('[Common]: Timestamp Hardfork logic', () => {
       chain: 'withdrawals',
     })
     assert.equal(
-      c.getHardforkByBlockNumber(1, undefined, 0),
+      c.getHardforkBy({ blockNumber: 1n, timestamp: 0n }),
       Hardfork.MergeForkIdTransition,
       'should match the HF'
     )
     assert.equal(
-      c.getHardforkByBlockNumber(1, undefined, 1668699476),
+      c.getHardforkBy({ blockNumber: 1n, timestamp: 1668699476n }),
       Hardfork.Shanghai,
       'should match the HF'
     )
     assert.equal(
-      c.getHardforkByBlockNumber(1, undefined, 1668699576),
+      c.getHardforkBy({ blockNumber: 1n, timestamp: 1668699576n }),
       Hardfork.Shanghai,
       'should match the HF'
     )
@@ -36,7 +36,7 @@ describe('[Common]: Timestamp Hardfork logic', () => {
       chain: 'modified',
     })
     assert.equal(
-      c.getHardforkByBlockNumber(1, undefined, 0),
+      c.getHardforkBy({ blockNumber: 1n, timestamp: 0n }),
       Hardfork.MergeForkIdTransition,
       'should match the HF'
     )
@@ -56,18 +56,18 @@ describe('[Common]: Timestamp Hardfork logic', () => {
       chain: 'modified',
     })
     assert.equal(
-      c.getHardforkByBlockNumber(1, undefined, 0),
+      c.getHardforkBy({ blockNumber: 1n, timestamp: 0n }),
       Hardfork.MergeForkIdTransition,
       'should match the HF'
     )
     // Should give the shanghai as sharding is schedule a bit post shanghai
     assert.equal(
-      c.getHardforkByBlockNumber(1, undefined, 1668699476),
+      c.getHardforkBy({ blockNumber: 1n, timestamp: 1668699476n }),
       Hardfork.Shanghai,
       'should match the HF'
     )
     assert.equal(
-      c.getHardforkByBlockNumber(1, undefined, 1668699576),
+      c.getHardforkBy({ blockNumber: 1n, timestamp: 1668699576n }),
       Hardfork.Shanghai,
       'should match the HF'
     )

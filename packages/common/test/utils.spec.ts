@@ -145,35 +145,34 @@ describe('[Utils/Parse]', () => {
       'hardfork parse order should be correct'
     )
 
-    assert.equal(common.getHardforkByBlockNumber(0), Hardfork.London, 'london at genesis')
-    assert.equal(common.getHardforkByBlockNumber(1, BigInt(2)), Hardfork.Paris, 'merge at block 1')
+    assert.equal(common.getHardforkBy({ blockNumber: 0n }), Hardfork.London, 'london at genesis')
+    assert.equal(
+      common.getHardforkBy({ blockNumber: 1n, td: 2n }),
+      Hardfork.Paris,
+      'merge at block 1'
+    )
     // shanghai is at timestamp 8
     assert.equal(
-      common.getHardforkByBlockNumber(8),
+      common.getHardforkBy({ blockNumber: 8n }),
       Hardfork.London,
       'without timestamp still london'
     )
     assert.equal(
-      common.getHardforkByBlockNumber(8, BigInt(2)),
+      common.getHardforkBy({ blockNumber: 8n, td: 2n }),
       Hardfork.Paris,
       'without timestamp at merge'
     )
     assert.equal(
-      common.getHardforkByBlockNumber(8, undefined, 8),
+      common.getHardforkBy({ blockNumber: 8n, timestamp: 8n }),
       Hardfork.Shanghai,
       'with timestamp at shanghai'
     )
     // should be post merge at shanghai
     assert.equal(
-      common.getHardforkByBlockNumber(8, BigInt(2), 8),
+      common.getHardforkBy({ blockNumber: 8n, td: 2n, timestamp: 8n }),
       Hardfork.Shanghai,
       'post merge shanghai'
     )
-    // if not post merge, then should error
-    const f = () => {
-      common.getHardforkByBlockNumber(8, BigInt(1), 8)
-    }
-    assert.throws(f, undefined, undefined, 'correctly fails if merge not completed before shanghai')
     assert.equal(common.hardfork(), Hardfork.Shanghai, 'should correctly infer common hardfork')
   })
 })

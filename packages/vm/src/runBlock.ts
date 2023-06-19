@@ -61,11 +61,11 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     this._hardforkByTTD !== undefined ||
     opts.hardforkByTTD !== undefined
   ) {
-    this._common.setHardforkByBlockNumber(
-      block.header.number,
-      opts.hardforkByTTD ?? this._hardforkByTTD,
-      block.header.timestamp
-    )
+    this._common.setHardforkBy({
+      blockNumber: block.header.number,
+      td: opts.hardforkByTTD ?? this._hardforkByTTD,
+      timestamp: block.header.timestamp,
+    })
   }
 
   if (this.DEBUG) {

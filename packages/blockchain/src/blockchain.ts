@@ -1232,11 +1232,15 @@ export class Blockchain implements BlockchainInterface {
   }
 
   async checkAndTransitionHardForkByNumber(
-    number: bigint,
+    number: BigIntLike,
     td?: BigIntLike,
     timestamp?: BigIntLike
   ): Promise<void> {
-    this._common.setHardforkByBlockNumber(number, td, timestamp)
+    this._common.setHardforkBy({
+      blockNumber: number,
+      td,
+      timestamp,
+    })
 
     // If custom consensus algorithm is used, skip merge hardfork consensus checks
     if (!Object.values(ConsensusAlgorithm).includes(this.consensus.algorithm as ConsensusAlgorithm))
@@ -1301,11 +1305,11 @@ export class Blockchain implements BlockchainInterface {
    */
   createGenesisBlock(stateRoot: Uint8Array): Block {
     const common = this._common.copy()
-    common.setHardforkByBlockNumber(
-      0,
-      BigInt(common.genesis().difficulty),
-      common.genesis().timestamp
-    )
+    common.setHardforkBy({
+      blockNumber: 0,
+      td: BigInt(common.genesis().difficulty),
+      timestamp: common.genesis().timestamp,
+    })
 
     const header: BlockData['header'] = {
       ...common.genesis(),

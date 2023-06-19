@@ -184,7 +184,11 @@ export class BlockHeader {
 
     const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
     if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
-      this._common.setHardforkByBlockNumber(number, options.hardforkByTTD, timestamp)
+      this._common.setHardforkBy({
+        blockNumber: number,
+        td: options.hardforkByTTD,
+        timestamp,
+      })
     }
 
     // Hardfork defaults which couldn't be paired with earlier defaults

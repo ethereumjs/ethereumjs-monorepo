@@ -505,7 +505,7 @@ tape('[Miner]', async (t) => {
       ],
     }
     const common = Common.custom(customChainParams, { baseChain: CommonChain.Rinkeby })
-    common.setHardforkByBlockNumber(0)
+    common.setHardforkBy({ blockNumber: 0 })
     const config = new Config({
       transports: [],
       accountCache: 10000,
@@ -530,20 +530,20 @@ tape('[Miner]', async (t) => {
     await wait(100)
 
     // in this test we need to explicitly update common with
-    // setHardforkByBlockNumber() to test the hardfork() value
+    // setHardforkBy() to test the hardfork() value
     // since the vmexecution run method isn't reached in this
     // stubbed configuration.
 
     // block 1: chainstart
     await (miner as any).queueNextAssembly(0)
     await wait(100)
-    config.execCommon.setHardforkByBlockNumber(1)
+    config.execCommon.setHardforkBy({ blockNumber: 1 })
     t.equal(config.execCommon.hardfork(), Hardfork.Chainstart)
 
     // block 2: berlin
     await (miner as any).queueNextAssembly(0)
     await wait(100)
-    config.execCommon.setHardforkByBlockNumber(2)
+    config.execCommon.setHardforkBy({ blockNumber: 2 })
     t.equal(config.execCommon.hardfork(), Hardfork.Berlin)
     const blockHeader2 = await chain.getCanonicalHeadHeader()
 
@@ -551,7 +551,7 @@ tape('[Miner]', async (t) => {
     await (miner as any).queueNextAssembly(0)
     await wait(100)
     const blockHeader3 = await chain.getCanonicalHeadHeader()
-    config.execCommon.setHardforkByBlockNumber(3)
+    config.execCommon.setHardforkBy({ blockNumber: 3 })
     t.equal(config.execCommon.hardfork(), Hardfork.London)
     t.equal(
       blockHeader2.gasLimit * BigInt(2),
@@ -565,7 +565,7 @@ tape('[Miner]', async (t) => {
     await (miner as any).queueNextAssembly(0)
     await wait(100)
     const blockHeader4 = await chain.getCanonicalHeadHeader()
-    config.execCommon.setHardforkByBlockNumber(4)
+    config.execCommon.setHardforkBy({ blockNumber: 4 })
     t.equal(config.execCommon.hardfork(), Hardfork.London)
     t.equal(
       blockHeader4.baseFeePerGas!,

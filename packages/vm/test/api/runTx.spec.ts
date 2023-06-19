@@ -637,7 +637,7 @@ describe('runTx tests', () => {
       const afterBalance = BigInt(129033829000000000)
 
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.SpuriousDragon })
-      common.setHardforkByBlockNumber(2772981)
+      common.setHardforkBy({ blockNumber: 2772981 })
       const vm = await VM.create({ common })
 
       const addr = Address.fromString('0xd3563d8f19a85c95beab50901fd59ca4de69174c')
