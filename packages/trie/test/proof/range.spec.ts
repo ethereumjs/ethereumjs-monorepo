@@ -1,7 +1,6 @@
 import {
   MapDB,
   compareBytes,
-  concatBytes,
   hexStringToBytes,
   randomBytes,
   setLengthLeft,
@@ -9,97 +8,17 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Trie, bytesToNibbles, verifyRangeProof } from '../../src/index.js'
+import { Trie } from '../../src/index.js'
 
-import type { DB } from '@ethereumjs/util'
+import {
+  decreaseKey,
+  getRandomIntInclusive,
+  increaseKey,
+  randomTrie,
+  verify,
+} from './utils.spec.js'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof_test.go
-
-const TRIE_SIZE = 512
-
-/**
- * Create a random trie.
- * @param addKey - whether to add 100 ordered keys
- * @returns Trie object and sorted entries
- */
-async function randomTrie(db: DB<string, string>, addKey: boolean = true) {
-  const entries: [Uint8Array, Uint8Array][] = []
-  const trie = new Trie({
-    db,
-  })
-
-  if (addKey) {
-    for (let i = 0; i < 100; i++) {
-      const key = setLengthLeft(toBytes(i), 32)
-      const val = toBytes(i)
-      await trie.put(key, val)
-      entries.push([key, val])
-    }
-  }
-
-  for (let i = 0; i < TRIE_SIZE; i++) {
-    const key = randomBytes(32)
-    const val = randomBytes(20)
-    if ((await trie.get(key)) === null) {
-      await trie.put(key, val)
-      entries.push([key, val])
-    }
-  }
-
-  return {
-    trie,
-    entries: entries.sort(([k1], [k2]) => compareBytes(k1, k2)),
-  }
-}
-
-function getRandomIntInclusive(min: number, max: number): number {
-  min = Math.ceil(min)
-  max = Math.floor(max)
-  if (max < min) {
-    throw new Error('The maximum value should be greater than the minimum value')
-  }
-  return Math.floor(Math.random() * (max - min + 1)) + min
-}
-
-function decreaseKey(key: Uint8Array) {
-  for (let i = key.length - 1; i >= 0; i--) {
-    if (key[i] > 0) {
-      return concatBytes(key.slice(0, i), toBytes(key[i] - 1), key.slice(i + 1))
-    }
-  }
-}
-
-function increaseKey(key: Uint8Array) {
-  for (let i = key.length - 1; i >= 0; i--) {
-    if (key[i] < 255) {
-      return concatBytes(key.slice(0, i), toBytes(key[i] + 1), key.slice(i + 1))
-    }
-  }
-}
-
-async function verify(
-  trie: Trie,
-  entries: [Uint8Array, Uint8Array][],
-  start: number,
-  end: number,
-  startKey?: Uint8Array,
-  endKey?: Uint8Array,
-  keys?: Uint8Array[],
-  vals?: Uint8Array[]
-) {
-  startKey = startKey ?? entries[start][0]
-  endKey = endKey ?? entries[end][0]
-  const targetRange = entries.slice(start, end + 1)
-  return verifyRangeProof(
-    trie.root(),
-    bytesToNibbles(startKey),
-    bytesToNibbles(endKey),
-    keys ? keys.map((key) => bytesToNibbles(key)) : targetRange.map(([key]) => bytesToNibbles(key)),
-    vals ?? targetRange.map(([, val]) => val),
-    [...(await trie.createProof(startKey)), ...(await trie.createProof(endKey))],
-    trie.hashFunction
-  )
-}
 
 describe('create a range proof and verify it', async () => {
   const { trie, entries } = await randomTrie(new MapDB())
@@ -118,13 +37,16 @@ describe('create a range proof and verify it', async () => {
       async () => {
         const start = getRandomIntInclusive(0, entries.length - 2)
         const end = getRandomIntInclusive(start + 1, entries.length - 1)
-        assert.equal(await verify(trie, entries, start, end), end !== entries.length - 1)
+        assert.equal(await verify({ trie, entries, start, end }), end !== entries.length - 1)
       },
       { timeout: 10000 }
     )
   }
   it('should verify a range proof', async () => {
-    assert.equal(await verify(trie, entries, entries.length - 2, entries.length - 1), false)
+    assert.equal(
+      await verify({ trie, entries, start: entries.length - 2, end: entries.length - 1 }),
+      false
+    )
   })
 })
 
@@ -158,7 +80,7 @@ describe('create a non-existent range proof and verify it', async () => {
       })
       it('should verify a non-existent range proof', async () => {
         assert.equal(
-          await verify(trie, entries, start, end, startKey, endKey),
+          await verify({ trie, entries, start, end, startKey, endKey }),
           end !== entries.length - 1
         )
       })
@@ -168,36 +90,52 @@ describe('create a non-existent range proof and verify it', async () => {
     // Special case, two edge proofs for two edge key.
     const startKey = hexStringToBytes('00'.repeat(32))
     const endKey = hexStringToBytes('ff'.repeat(32))
-    assert.equal(await verify(trie, entries, 0, entries.length - 1, startKey, endKey), false)
+    assert.equal(
+      await verify({ trie, entries, start: 0, end: entries.length - 1, startKey, endKey }),
+      false
+    )
   })
 })
 
-// describe('create invalid non-existent range proof and verify it', async () => {
-//   const { trie, entries } = await randomTrie(new MapDB())
+describe('create invalid non-existent range proof and verify it', async () => {
+  const { trie, entries } = await randomTrie(new MapDB())
 
-//   const start = 100
-//   const end = 200
-//   const startKey = entries[start][0]
-//   const endKey = entries[end][0]
-//   const decreasedStartKey = decreaseKey(startKey)!
-//   const increasedEndKey = increaseKey(endKey)!
+  const start = 100
+  const end = 200
+  const startKey = entries[start][0]
+  const endKey = entries[end][0]
+  const decreasedStartKey = decreaseKey(startKey)!
+  const increasedEndKey = increaseKey(endKey)!
 
-//   assert.equal(await verify(trie, entries, start, end, decreasedStartKey, endKey), true)
-//   try {
-//     await verify(trie, entries, start + 5, end, decreasedStartKey)
-//     assert.fail()
-//   } catch (err) {
-//     // ignore ..
-//   }
-
-//   assert.equal(await verify(trie, entries, start, end, startKey, increasedEndKey), true)
-//   try {
-//     await verify(trie, entries, start, end + 5, startKey, increasedEndKey)
-//     assert.fail()
-//   } catch (err) {
-//     // ignore ..
-//   }
-// })
+  it('should verify', async () => {
+    assert.equal(
+      await verify({ trie, entries, start, end, startKey: decreasedStartKey, endKey }),
+      true
+    )
+  })
+  it('should throw an error', async () => {
+    try {
+      await verify({ trie, entries, start: start + 5, end, startKey: decreasedStartKey })
+      assert.fail()
+    } catch (err: any) {
+      assert.equal(err.message, 'invalid two edge elements proof: root mismatch')
+      // ignore ..
+    }
+  })
+  it('should throw an error', async () => {
+    assert.equal(
+      await verify({ trie, entries, start, end, startKey, endKey: increasedEndKey }),
+      true
+    )
+    try {
+      await verify({ trie, entries, start, end: end + 5, startKey, endKey: increasedEndKey })
+      assert.fail()
+    } catch (err: any) {
+      assert.equal(err.message, 'invalid two edge elements proof: root mismatch')
+      // ignore ..
+    }
+  })
+})
 
 // describe('create a one element range proof and verify it', async () => {
 //   const { trie, entries } = await randomTrie(new MapDB())
@@ -282,104 +220,106 @@ describe('create a non-existent range proof and verify it', async () => {
 //   }
 // })
 
-// describe('create a bad range proof and verify it', async () => {
-//   const runTest = async (
-//     cb: (trie: Trie, entries: [Uint8Array, Uint8Array][]) => Promise<void>
-//   ) => {
-//     const { trie, entries } = await randomTrie(new MapDB(), false)
+describe('create a bad range proof and verify it', async () => {
+  const runTest = async (
+    cb: (trie: Trie, entries: [Uint8Array, Uint8Array][]) => Promise<void>
+  ) => {
+    it('should fail', async () => {
+      let result = false
+      const { trie, entries } = await randomTrie(new MapDB(), false)
+      try {
+        await cb(trie, entries)
+        result = true
+      } catch (err) {
+        // ignore
+      }
+      assert.isFalse(result)
+    })
+  }
 
-//     let result = false
-//     try {
-//       await cb(trie, entries)
-//       result = true
-//     } catch (err) {
-//       // ignore
-//     }
-//     assert.isFalse(result)
-//   }
+  // Modified key
+  await runTest(async (trie, entries) => {
+    const start = getRandomIntInclusive(0, entries.length - 2)
+    const end = getRandomIntInclusive(start + 1, entries.length - 1)
+    const targetIndex = getRandomIntInclusive(start, end)
+    entries[targetIndex][0] = randomBytes(32)
+    await verify({ trie, entries, start, end })
+  })
 
-//   // Modified key
-//   await runTest(async (trie, entries) => {
-//     const start = getRandomIntInclusive(0, entries.length - 2)
-//     const end = getRandomIntInclusive(start + 1, entries.length - 1)
-//     const targetIndex = getRandomIntInclusive(start, end)
-//     entries[targetIndex][0] = randomBytes(32)
-//     await verify(trie, entries, start, end)
-//   })
+  // Modified val
+  await runTest(async (trie, entries) => {
+    const start = getRandomIntInclusive(0, entries.length - 2)
+    const end = getRandomIntInclusive(start + 1, entries.length - 1)
+    const targetIndex = getRandomIntInclusive(start, end)
+    entries[targetIndex][1] = randomBytes(20)
+    await verify({ trie, entries, start, end })
+  })
 
-//   // Modified val
-//   await runTest(async (trie, entries) => {
-//     const start = getRandomIntInclusive(0, entries.length - 2)
-//     const end = getRandomIntInclusive(start + 1, entries.length - 1)
-//     const targetIndex = getRandomIntInclusive(start, end)
-//     entries[targetIndex][1] = randomBytes(20)
-//     await verify(trie, entries, start, end)
-//   })
+  // Gapped entry slice
+  await runTest(async (trie, entries) => {
+    const start = getRandomIntInclusive(0, entries.length - 3)
+    const end = getRandomIntInclusive(start + 2, entries.length - 1)
+    const targetIndex = getRandomIntInclusive(start + 1, end - 1)
+    entries = entries.slice(0, targetIndex).concat(entries.slice(targetIndex + 1))
+    await verify({ trie, entries, start, end })
+  })
 
-//   // Gapped entry slice
-//   await runTest(async (trie, entries) => {
-//     const start = getRandomIntInclusive(0, entries.length - 3)
-//     const end = getRandomIntInclusive(start + 2, entries.length - 1)
-//     const targetIndex = getRandomIntInclusive(start + 1, end - 1)
-//     entries = entries.slice(0, targetIndex).concat(entries.slice(targetIndex + 1))
-//     await verify(trie, entries, start, end)
-//   })
+  // Out of order
+  await runTest(async (trie, entries) => {
+    const start = getRandomIntInclusive(0, entries.length - 2)
+    const end = getRandomIntInclusive(start + 1, entries.length - 1)
+    let targetIndex1!: number
+    let targetIndex2!: number
+    while (targetIndex1 === targetIndex2) {
+      targetIndex1 = getRandomIntInclusive(start, end)
+      targetIndex2 = getRandomIntInclusive(start, end)
+    }
+    const temp = entries[targetIndex1]
+    entries[targetIndex1] = entries[targetIndex2]
+    entries[targetIndex2] = temp
+    await verify({ trie, entries, start, end })
+  })
+})
 
-//   // Out of order
-//   await runTest(async (trie, entries) => {
-//     const start = getRandomIntInclusive(0, entries.length - 2)
-//     const end = getRandomIntInclusive(start + 1, entries.length - 1)
-//     let targetIndex1!: number
-//     let targetIndex2!: number
-//     while (targetIndex1 === targetIndex2) {
-//       targetIndex1 = getRandomIntInclusive(start, end)
-//       targetIndex2 = getRandomIntInclusive(start, end)
-//     }
-//     const temp = entries[targetIndex1]
-//     entries[targetIndex1] = entries[targetIndex2]
-//     entries[targetIndex2] = temp
-//     await verify(trie, entries, start, end)
-//   })
-// })
+describe('create a gapped range proof and verify it', async () => {
+  const trie = new Trie()
+  const entries: [Uint8Array, Uint8Array][] = []
+  for (let i = 0; i < 10; i++) {
+    const key = setLengthLeft(toBytes(i), 32)
+    const val = toBytes(i)
+    await trie.put(key, val)
+    entries.push([key, val])
+  }
 
-// describe('create a gapped range proof and verify it', async () => {
-//   const trie = new Trie()
-//   const entries: [Uint8Array, Uint8Array][] = []
-//   for (let i = 0; i < 10; i++) {
-//     const key = setLengthLeft(toBytes(i), 32)
-//     const val = toBytes(i)
-//     await trie.put(key, val)
-//     entries.push([key, val])
-//   }
+  const start = 2
+  const end = 8
+  const targetRange: [Uint8Array, Uint8Array][] = []
+  for (let i = start; i <= end; i++) {
+    if (i === (start + end) / 2) {
+      continue
+    }
+    targetRange.push(entries[i])
+  }
 
-//   const start = 2
-//   const end = 8
-//   const targetRange: [Uint8Array, Uint8Array][] = []
-//   for (let i = start; i <= end; i++) {
-//     if (i === (start + end) / 2) {
-//       continue
-//     }
-//     targetRange.push(entries[i])
-//   }
-
-//   let result = false
-//   try {
-//     await verify(
-//       trie,
-//       entries,
-//       start,
-//       end,
-//       undefined,
-//       undefined,
-//       targetRange.map(([key]) => key),
-//       targetRange.map(([, val]) => val)
-//     )
-//     result = true
-//   } catch (err) {
-//     // ignore
-//   }
-//   assert.isFalse(result)
-// })
+  it('should not verify the proof', async () => {
+    let result = false
+    try {
+      result = await verify({
+        trie,
+        entries,
+        start,
+        end,
+        startKey: undefined,
+        endKey: undefined,
+        keys: targetRange.map(([key]) => key),
+        vals: targetRange.map(([, val]) => val),
+      })
+    } catch (err) {
+      //ignore
+    }
+    assert.isFalse(result)
+  })
+})
 
 // describe('create a same side range proof and verify it', async () => {
 //   const { trie, entries } = await randomTrie(new MapDB())
