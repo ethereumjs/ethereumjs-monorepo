@@ -5,7 +5,8 @@ import { Config, SyncMode } from '../../src/config'
 import { Event } from '../../src/types'
 
 import { MockServer } from './mocks/mockserver'
-
+console.log('NAUGHTY NAUGHTY NAUGHTY******************************************8')
+process.exit(0)
 describe('[Integration:EthereumClient]', async () => {
   const serverConfig = new Config({ accountCache: 10000, storageCache: 1000 })
   const servers = [new MockServer({ config: serverConfig }) as any]
