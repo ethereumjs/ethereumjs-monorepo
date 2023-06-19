@@ -354,6 +354,7 @@ describe('[Blockchain]: Block validation tests', () => {
       },
       {
         common,
+        setHardfork: false,
       }
     )
 
