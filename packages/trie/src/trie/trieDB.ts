@@ -1,5 +1,5 @@
 import { bytesToPrefixedHexString, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
-import lruCache from 'lru-cache'
+import { LRUCache } from 'lru-cache'
 
 import { TrieDatabase } from '../db/index.js'
 import { ROOT_DB_KEY } from '../types.js'
@@ -35,7 +35,7 @@ export class TrieWithDB extends MerklePatriciaTrie {
   }
   private _db: TrieDatabase
   _opts: TrieDBOptions
-  cache: lruCache<Uint8Array, TNode>
+  cache: LRUCache<Uint8Array, TNode>
   checkpoints: Uint8Array[]
   maxCheckpoints: number
   secure: boolean
@@ -44,7 +44,7 @@ export class TrieWithDB extends MerklePatriciaTrie {
   keySecure: (key: Uint8Array) => Uint8Array
   constructor(options: TrieDBOptions = { cacheSize: 1000 }) {
     super(options)
-    this.cache = options.cache ?? new lruCache({ max: 1000 })
+    this.cache = options.cache ?? new LRUCache({ max: 1000 })
     if (options.db) {
       this.debug(`Building Trie from DB: ${options.db}`)
     }

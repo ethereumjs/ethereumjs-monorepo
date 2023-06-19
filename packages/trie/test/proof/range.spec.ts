@@ -30,18 +30,19 @@ describe('create a range proof and verify it', async () => {
       assert.deepEqual(await trie.get(key), val)
     }
   })
-
-  for await (const _ of Array.from({ length: 10 }, (_, k) => k)) {
-    it(
-      'should verify a range proof',
-      async () => {
-        const start = getRandomIntInclusive(0, entries.length - 2)
-        const end = getRandomIntInclusive(start + 1, entries.length - 1)
-        assert.equal(await verify({ trie, entries, start, end }), end !== entries.length - 1)
-      },
-      { timeout: 10000 }
-    )
-  }
+  it('should run test 10 times', async () => {
+    for await (const _ of Array.from({ length: 10 }, (_, k) => k)) {
+      it(
+        'should verify a range proof',
+        async () => {
+          const start = getRandomIntInclusive(0, entries.length - 2)
+          const end = getRandomIntInclusive(start + 1, entries.length - 1)
+          assert.equal(await verify({ trie, entries, start, end }), end !== entries.length - 1)
+        },
+        { timeout: 10000 }
+      )
+    }
+  })
   it('should verify a range proof', async () => {
     assert.equal(
       await verify({ trie, entries, start: entries.length - 2, end: entries.length - 1 }),

@@ -1,6 +1,6 @@
 import { KeyEncoding, ValueEncoding, bytesToHex, hexStringToBytes } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils.js'
-import lruCache from 'lru-cache'
+import { LRUCache } from 'lru-cache'
 
 import type { Checkpoint } from '../types.js'
 import type { BatchDBOp, DB, DelBatch, PutBatch } from '@ethereumjs/util'
@@ -14,7 +14,7 @@ export class CheckpointDB implements DB<Uint8Array, Uint8Array> {
   public db: DB<string, string>
   public readonly cacheSize: number
 
-  protected _cache?: lruCache<string, Uint8Array | undefined>
+  protected _cache?: LRUCache<string, Uint8Array>
 
   _stats = {
     cache: {
@@ -39,7 +39,7 @@ export class CheckpointDB implements DB<Uint8Array, Uint8Array> {
     this.checkpoints = []
 
     if (this.cacheSize > 0) {
-      this._cache = new lruCache({
+      this._cache = new LRUCache({
         max: this.cacheSize,
         updateAgeOnGet: true,
       })

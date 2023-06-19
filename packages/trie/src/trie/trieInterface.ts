@@ -3,7 +3,7 @@ import type { FoundNodeFunction, WalkFilterFunction } from '../types'
 import type { TNode } from './node/types'
 import type { Mutex } from 'async-mutex'
 import type { Debugger } from 'debug'
-import type lruCache from 'lru-cache'
+import type { LRUCache } from 'lru-cache'
 
 export interface TrieInterface {
   /** The root node of the trie */
@@ -22,7 +22,7 @@ export interface TrieInterface {
   _operationMutex: Mutex
 
   /** A cache for storing recently accessed nodes */
-  cache: lruCache<Uint8Array, TNode>
+  cache: LRUCache<Uint8Array, TNode>
 
   /**
    * Retrieves the value associated with the given key in the trie
