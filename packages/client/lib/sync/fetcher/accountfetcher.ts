@@ -10,6 +10,7 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import { LevelDB } from '../../execution/level'
 import { Event } from '../../types'
@@ -27,7 +28,8 @@ import type { FetcherOptions } from './fetcher'
 import type { StorageRequest } from './storagefetcher'
 import type { Job } from './types'
 import type { Debugger } from 'debug'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+
+const util = require('node:util')
 
 type AccountDataResponse = AccountData[] & { completed?: boolean }
 
@@ -363,13 +365,12 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       await this.accountTrie.persistRoot()
       console.log(bytesToHex(this.accountTrie.root()))
       console.log(this.accountTrie.database().db)
-      for (const [k, v] of (
-        this.accountTrie.database().db as unknown as Map<string, string>
-      ).entries()) {
-        console.log(k)
-        console.log(decodeNode(hexToBytes(v)))
-        console.log('\n')
-      }
+      process.stdout.write(
+        `${util.inspect(this.accountTrie.database().db, { maxArrayLength: 1000 })}\n`
+      )
+      // for (const [k, v] of this.accountTrie.database().db as Map<string, Buffer>) {
+      //   console.log(`k: ${k} -- v: ${v}`)
+      // }
 
       snapFetchersCompleted(
         this.fetcherDoneFlags,

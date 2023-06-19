@@ -1,14 +1,13 @@
-import { BranchNode, ExtensionNode, Trie, decodeNode } from '@ethereumjs/trie'
+import { BranchNode, ExtensionNode, LeafNode, Trie, decodeNode } from '@ethereumjs/trie'
 import {
-  BatchDBOp,
   bytesToNibbles,
   compactBytesToNibbles,
   getPathTo,
+  hasTerminator,
   hexToKeybytes,
   nibblesToBytes,
   nibblesToCompactBytes,
   padToEven,
-  hasTerminator,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -22,7 +21,10 @@ import type { Peer } from '../../net/peer'
 import type { FetcherOptions } from './fetcher'
 import type { Job } from './types'
 import type { Nibbles, TrieNode } from '@ethereumjs/trie'
+import type { BatchDBOp } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+
+const util = require('node:util')
 
 type TrieNodesResponse = Uint8Array[] & { completed?: boolean }
 
@@ -73,6 +75,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   codeTrie: Trie
   accountToStorageTrie: Map<String, Trie>
 
+  nodeCount: number
+
   /**
    * Create new block fetcher
    */
@@ -85,6 +89,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     this.accountTrie = options.accountTrie ?? new Trie({ useKeyHashing: false })
     this.codeTrie = options.codeTrie ?? new Trie({ useKeyHashing: false })
     this.accountToStorageTrie = options.accountToStorageTrie ?? new Map<String, Trie>()
+
+    this.nodeCount = 0
 
     this.debug = createDebugLogger('client:TrieNodeFetcher')
 
@@ -175,17 +181,17 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     }
   }
 
-  getNodeKey(node: TrieNode) {
-    try {
-      const encoded = node.serialize()
-      if (encoded.length >= 32) {
-        return keccak256(encoded)
-      }
-      return node.raw()
-    } catch (e) {
-      this.debug(e)
-    }
-  }
+  // getNodeKey(node: TrieNode) {
+  //   try {
+  //     const encoded = node.serialize()
+  //     if (encoded.length >= 32) {
+  //       return keccak256(encoded)
+  //     }
+  //     return node.raw()
+  //   } catch (e) {
+  //     this.debug(e)
+  //   }
+  // }
 
   /**
    * Converts a nibble array into bytes.
@@ -281,8 +287,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             hexEncodedKey = bytesToNibbles(hexEncodedKey)
             hexEncodedKey = hexEncodedKey.subarray(0, hexEncodedKey.length - 1)
           }
-          console.log(key)
-          console.log(bytesToHex(node.value()))
+          // console.log(key)
+          // console.log(bytesToHex(node.value()))
           const val = {
             nodeHash: node.value(),
             path: nodePath.concat(bytesToHex(hexEncodedKey)),
@@ -348,12 +354,22 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         const ops: BatchDBOp[] = []
         for (const [nodeHash, data] of this.fetchedAccountNodes) {
           const { parentHash, deps, nodeData, path } = data
-          ops.unshift({
-            type: 'put',
-            key: hexToBytes(nodeHash),
-            value: nodeData,
-          })
+          // ops.unshift({
+          //   type: 'put',
+          //   key: hexToBytes(nodeHash),
+          //   value: nodeData,
+          // })
+          const node = decodeNode(nodeData)
+          if (node instanceof LeafNode) {
+            ops.unshift({
+              type: 'put',
+              key: this.nibblesToBytes(node.key()),
+              value: node.value(),
+            })
+          }
         }
+        console.log(ops.length)
+        console.log(this.fetchedAccountNodes.size)
         await this.accountTrie.batch(ops)
         await this.accountTrie.persistRoot()
         console.log('dbg0')
@@ -361,13 +377,16 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         console.log(bytesToHex(this.root))
         // console.log(this.fetchedAccountNodes)
 
-        for (const [k, v] of (
-          this.fetchedAccountNodes as unknown as Map<string, FetchedNodeData>
-        ).entries()) {
-          console.log(k)
-          console.log(decodeNode(v.nodeData))
-          console.log('\n')
-        }
+        // for (const [k, v] of (
+        //   this.fetchedAccountNodes as unknown as Map<string, FetchedNodeData>
+        // ).entries()) {
+        //   console.log(`k: ${k} -- v: ${v.nodeData}`)
+        //   // console.log(decodeNode(v.nodeData))
+        // }
+
+        process.stdout.write(
+          `${util.inspect(this.accountTrie.database().db, { maxArrayLength: 1000 })}\n`
+        )
       }
     } catch (e) {
       this.debug(e)
