@@ -134,7 +134,7 @@ describe('runBlock tests', () => {
       await simpleRun(vm)
     })
 
-    it('hardforkByBlockNumber option', async () => {
+    it('setHardfork option', async () => {
       const common1 = new Common({
         chain: Chain.Mainnet,
         hardfork: Hardfork.MuirGlacier,
@@ -170,7 +170,7 @@ describe('runBlock tests', () => {
         )
       }
 
-      const vm = await VM.create({ common: common1, hardforkByBlockNumber: true })
+      const vm = await VM.create({ common: common1, setHardfork: true })
       const vm_noSelect = await VM.create({ common: common2 })
 
       const txResultMuirGlacier = await vm.runBlock({
