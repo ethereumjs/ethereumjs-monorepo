@@ -2,9 +2,10 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Account, Address, privateToAddress } from '@ethereumjs/util'
 import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
+
 const pkey = hexToBytes('20'.repeat(32))
 
 const GWEI = BigInt(1000000000)
@@ -36,8 +37,8 @@ async function getVM(common: Common) {
   return vm
 }
 
-tape('EIP 6780 tests', (t) => {
-  t.test('should destroy contract if selfdestructed in same tx as it was created', async (st) => {
+describe('EIP 6780 tests', () => {
+  it('should destroy contract if selfdestructed in same tx as it was created', async () => {
     const vm = await getVM(common)
 
     const value = 1
@@ -52,14 +53,14 @@ tape('EIP 6780 tests', (t) => {
     const createdAddress = result.createdAddress!
 
     const contract = (await vm.stateManager.getAccount(createdAddress)) ?? new Account()
-    st.equals(contract.balance, BigInt(0), 'value sent')
-    st.equals(contract.nonce, BigInt(0), 'contract nonce 0')
+    assert.equal(contract.balance, BigInt(0), 'value sent')
+    assert.equal(contract.nonce, BigInt(0), 'contract nonce 0')
 
     const exists = (await vm.evm.stateManager.getAccount(createdAddress)) !== undefined
 
     // Account does not exist...
-    st.ok(!exists, 'account does not exist, so storage is cleared')
-    st.equals(
+    assert.ok(!exists, 'account does not exist, so storage is cleared')
+    assert.equal(
       (await vm.stateManager.getAccount(Address.fromString('0x' + '00'.repeat(19) + '01')))!
         .balance,
       BigInt(value),
@@ -67,42 +68,39 @@ tape('EIP 6780 tests', (t) => {
     )
   })
 
-  t.test(
-    'should not destroy contract if selfdestructed in a tx after creating the contract',
-    async (st) => {
-      const vm = await getVM(common)
+  it('should not destroy contract if selfdestructed in a tx after creating the contract', async () => {
+    const vm = await getVM(common)
 
-      const target = Address.fromString('0x' + 'ff'.repeat(20))
+    const target = Address.fromString('0x' + 'ff'.repeat(20))
 
-      await vm.stateManager.putContractCode(target, payload)
-      const targetContract = await vm.stateManager.getAccount(target)
-      targetContract!.nonce = BigInt(1)
-      await vm.stateManager.putAccount(target, targetContract)
+    await vm.stateManager.putContractCode(target, payload)
+    const targetContract = await vm.stateManager.getAccount(target)
+    targetContract!.nonce = BigInt(1)
+    await vm.stateManager.putAccount(target, targetContract)
 
-      const value = 1
-      const tx = LegacyTransaction.fromTxData({
-        value,
-        gasLimit: 1000000,
-        gasPrice: 10,
-        to: target,
-      }).sign(pkey)
+    const value = 1
+    const tx = LegacyTransaction.fromTxData({
+      value,
+      gasLimit: 1000000,
+      gasPrice: 10,
+      to: target,
+    }).sign(pkey)
 
-      await vm.runTx({ tx })
+    await vm.runTx({ tx })
 
-      const contract = (await vm.stateManager.getAccount(target)) ?? new Account()
-      st.equals(contract.balance, BigInt(0), 'value sent')
-      st.equals(contract.nonce, BigInt(1), 'nonce 1')
+    const contract = (await vm.stateManager.getAccount(target)) ?? new Account()
+    assert.equal(contract.balance, BigInt(0), 'value sent')
+    assert.equal(contract.nonce, BigInt(1), 'nonce 1')
 
-      const key = hexToBytes('00'.repeat(31) + '01')
-      const storage = await vm.stateManager.getContractStorage(target, key)
+    const key = hexToBytes('00'.repeat(31) + '01')
+    const storage = await vm.stateManager.getContractStorage(target, key)
 
-      st.ok(equalsBytes(storage, hexToBytes('01')), 'storage not cleared')
-      st.equals(
-        (await vm.stateManager.getAccount(Address.fromString('0x' + '00'.repeat(19) + '01')))!
-          .balance,
-        BigInt(value),
-        'balance sent to target'
-      )
-    }
-  )
+    assert.ok(equalsBytes(storage, hexToBytes('01')), 'storage not cleared')
+    assert.equal(
+      (await vm.stateManager.getAccount(Address.fromString('0x' + '00'.repeat(19) + '01')))!
+        .balance,
+      BigInt(value),
+      'balance sent to target'
+    )
+  })
 })
