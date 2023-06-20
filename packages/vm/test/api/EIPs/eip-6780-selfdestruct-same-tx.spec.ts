@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import { Account, Address, privateToAddress } from '@ethereumjs/util'
 import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
@@ -33,7 +33,7 @@ tape('EIP 6780 tests', (t) => {
     const vm = await getVM(common)
 
     const value = 1
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       value,
       gasLimit: 1000000,
       gasPrice: 10,
@@ -72,7 +72,7 @@ tape('EIP 6780 tests', (t) => {
       await vm.stateManager.putAccount(target, targetContract)
 
       const value = 1
-      const tx = Transaction.fromTxData({
+      const tx = LegacyTransaction.fromTxData({
         value,
         gasLimit: 1000000,
         gasPrice: 10,
