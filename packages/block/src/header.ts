@@ -183,8 +183,7 @@ export class BlockHeader {
         blockNumber: number,
         timestamp,
       })
-    }
-    else if (typeof setHardfork !== 'boolean') {
+    } else if (typeof setHardfork !== 'boolean') {
       this._common.setHardforkBy({
         blockNumber: number,
         td: setHardfork as BigIntLike,
