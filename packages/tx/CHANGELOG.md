@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.2.0 - 2023-06-06
+
+This release is part of a final planned release round for the current major EthereumJS release versions, with next major versions planned to be released in July 2023.
+
+It mainly removes all non-final EIP-4844, KZG and SSZ code from the libraries (mainly block, tx, util, evm, vm, blockchain) - see PR [#2721](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2721) - to allow for a clean slate for the current major versions to transition to maintenance mode. In particular the `@chainsafe/ssz` dependency is removed from the `@ethereumjs/util` library, which is a dependency of all other upstream EthereumJS libraries and removal therefore makes the whole stack lighter again.
+
+If you are interested in continuously following EIP-4844 work have a look at and follow our upcoming breaking releases where major changes will be integrated with 4844 nearing a final state.
+
+Other Changes:
+
+- Fix EIP-155 transaction encoding on chain ID 0 for legacy txs, PR [#2671](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2671)
+
 ## 4.1.2 - 2023-04-20
 
 ### Features

@@ -4,10 +4,6 @@
 
 ## Table of contents
 
-### Namespaces
-
-- [ssz](modules/ssz.md)
-
 ### Enumerations
 
 - [TypeOutput](enums/TypeOutput.md)
