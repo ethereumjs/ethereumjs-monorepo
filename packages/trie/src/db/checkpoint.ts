@@ -1,7 +1,7 @@
 import { KeyEncoding, ValueEncoding, bytesToHex, hexStringToBytes } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
-import type { Checkpoint, CheckpointDBOpts } from '../types'
+import type { Checkpoint, CheckpointDBOpts } from '../types.js'
 import type { BatchDBOp, DB, DelBatch, PutBatch } from '@ethereumjs/util'
 import type LRUCache from 'lru-cache'
 
@@ -252,7 +252,7 @@ export class CheckpointDB implements DB {
   /**
    * @inheritDoc
    */
-  copy(): CheckpointDB {
+  shallowCopy(): CheckpointDB {
     return new CheckpointDB({ db: this.db, cacheSize: this.cacheSize })
   }
 

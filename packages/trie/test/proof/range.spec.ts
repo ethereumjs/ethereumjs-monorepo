@@ -7,9 +7,9 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 import * as crypto from 'crypto'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../../src'
+import { Trie } from '../../src/index.js'
 
 import type { DB } from '@ethereumjs/util'
 
@@ -98,24 +98,20 @@ async function verify(
   )
 }
 
-tape('simple merkle range proofs generation and verification', function (tester) {
-  const it = tester.test
-
-  it('create a range proof and verify it', async (t) => {
+describe('simple merkle range proofs generation and verification', () => {
+  it('create a range proof and verify it', async () => {
     const { trie, entries } = await randomTrie(new MapDB())
 
     for (let i = 0; i < 10; i++) {
       const start = getRandomIntInclusive(0, entries.length - 2)
       const end = getRandomIntInclusive(start + 1, entries.length - 1)
-      t.equal(await verify(trie, entries, start, end), end !== entries.length - 1)
+      assert.equal(await verify(trie, entries, start, end), end !== entries.length - 1)
     }
 
-    t.equal(await verify(trie, entries, entries.length - 2, entries.length - 1), false)
-
-    t.end()
+    assert.equal(await verify(trie, entries, entries.length - 2, entries.length - 1), false)
   })
 
-  it('create a non-existent range proof and verify it', async (t) => {
+  it('create a non-existent range proof and verify it', async () => {
     const { trie, entries } = await randomTrie(new MapDB())
 
     for (let i = 0; i < 10; i++) {
@@ -138,18 +134,19 @@ tape('simple merkle range proofs generation and verification', function (tester)
         continue
       }
 
-      t.equal(await verify(trie, entries, start, end, startKey, endKey), end !== entries.length - 1)
+      assert.equal(
+        await verify(trie, entries, start, end, startKey, endKey),
+        end !== entries.length - 1
+      )
     }
 
     // Special case, two edge proofs for two edge key.
     const startKey = hexStringToBytes('00'.repeat(32))
     const endKey = hexStringToBytes('ff'.repeat(32))
-    t.equal(await verify(trie, entries, 0, entries.length - 1, startKey, endKey), false)
-
-    t.end()
+    assert.equal(await verify(trie, entries, 0, entries.length - 1, startKey, endKey), false)
   })
 
-  it('create invalid non-existent range proof and verify it', async (t) => {
+  it('create invalid non-existent range proof and verify it', async () => {
     const { trie, entries } = await randomTrie(new MapDB())
 
     const start = 100
@@ -159,24 +156,24 @@ tape('simple merkle range proofs generation and verification', function (tester)
     const decreasedStartKey = decreaseKey(startKey)!
     const increasedEndKey = increaseKey(endKey)!
 
-    t.equal(await verify(trie, entries, start, end, decreasedStartKey, endKey), true)
+    assert.equal(await verify(trie, entries, start, end, decreasedStartKey, endKey), true)
     try {
       await verify(trie, entries, start + 5, end, decreasedStartKey)
-      t.fail()
+      assert.fail()
     } catch (err) {
       // ignore ..
     }
 
-    t.equal(await verify(trie, entries, start, end, startKey, increasedEndKey), true)
+    assert.equal(await verify(trie, entries, start, end, startKey, increasedEndKey), true)
     try {
       await verify(trie, entries, start, end + 5, startKey, increasedEndKey)
-      t.fail()
+      assert.fail()
     } catch (err) {
       // ignore ..
     }
   })
 
-  it('create a one element range proof and verify it', async (t) => {
+  it('create a one element range proof and verify it', async () => {
     const { trie, entries } = await randomTrie(new MapDB())
 
     const start = 255
@@ -187,16 +184,19 @@ tape('simple merkle range proofs generation and verification', function (tester)
 
     // One element with existent edge proof, both edge proofs
     // point to the SAME key.
-    t.equal(await verify(trie, entries, start, start, startKey), true)
+    assert.equal(await verify(trie, entries, start, start, startKey), true)
 
     // One element with left non-existent edge proof
-    t.equal(await verify(trie, entries, start, start, decreasedStartKey), true)
+    assert.equal(await verify(trie, entries, start, start, decreasedStartKey), true)
 
     // One element with right non-existent edge proof
-    t.equal(await verify(trie, entries, start, start, undefined, increasedEndKey), true)
+    assert.equal(await verify(trie, entries, start, start, undefined, increasedEndKey), true)
 
     // One element with two non-existent edge proofs
-    t.equal(await verify(trie, entries, start, start, decreasedStartKey, increasedEndKey), true)
+    assert.equal(
+      await verify(trie, entries, start, start, decreasedStartKey, increasedEndKey),
+      true
+    )
 
     // Test the mini trie with only a single element.
     const tinyTrie = new Trie()
@@ -206,13 +206,13 @@ tape('simple merkle range proofs generation and verification', function (tester)
     await tinyTrie.put(tinyEntries[0][0], tinyEntries[0][1])
 
     const tinyStartKey = hexStringToBytes('00'.repeat(32))
-    t.equal(await verify(tinyTrie, tinyEntries, 0, 0, tinyStartKey), false)
+    assert.equal(await verify(tinyTrie, tinyEntries, 0, 0, tinyStartKey), false)
   })
 
-  it('create all element range proof and verify it', async (t) => {
+  it('create all element range proof and verify it', async () => {
     const { trie, entries } = await randomTrie(new MapDB())
 
-    t.equal(
+    assert.equal(
       await trie.verifyRangeProof(
         trie.root(),
         null,
@@ -225,10 +225,10 @@ tape('simple merkle range proofs generation and verification', function (tester)
     )
 
     // With edge proofs, it should still work.
-    t.equal(await verify(trie, entries, 0, entries.length - 1), false)
+    assert.equal(await verify(trie, entries, 0, entries.length - 1), false)
 
     // Even with non-existent edge proofs, it should still work.
-    t.equal(
+    assert.equal(
       await verify(
         trie,
         entries,
@@ -241,27 +241,27 @@ tape('simple merkle range proofs generation and verification', function (tester)
     )
   })
 
-  it('create a single side range proof and verify it', async (t) => {
+  it('create a single side range proof and verify it', async () => {
     const startKey = hexStringToBytes('00'.repeat(32))
     const { trie, entries } = await randomTrie(new MapDB(), false)
 
     const cases = [0, 1, 200, entries.length - 1]
     for (const end of cases) {
-      t.equal(await verify(trie, entries, 0, end, startKey), end !== entries.length - 1)
+      assert.equal(await verify(trie, entries, 0, end, startKey), end !== entries.length - 1)
     }
   })
 
-  it('create a revert single side range proof and verify it', async (t) => {
+  it('create a revert single side range proof and verify it', async () => {
     const endKey = hexStringToBytes('ff'.repeat(32))
     const { trie, entries } = await randomTrie(new MapDB(), false)
 
     const cases = [0, 1, 200, entries.length - 1]
     for (const start of cases) {
-      t.equal(await verify(trie, entries, start, entries.length - 1, undefined, endKey), false)
+      assert.equal(await verify(trie, entries, start, entries.length - 1, undefined, endKey), false)
     }
   })
 
-  it('create a bad range proof and verify it', async (t) => {
+  it('create a bad range proof and verify it', async () => {
     const runTest = async (
       cb: (trie: Trie, entries: [Uint8Array, Uint8Array][]) => Promise<void>
     ) => {
@@ -274,7 +274,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
       } catch (err) {
         // ignore
       }
-      t.assert(!result)
+      assert.isFalse(result)
     }
 
     // Modified key
@@ -321,7 +321,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
     })
   })
 
-  it('create a gapped range proof and verify it', async (t) => {
+  it('create a gapped range proof and verify it', async () => {
     const trie = new Trie()
     const entries: [Uint8Array, Uint8Array][] = []
     for (let i = 0; i < 10; i++) {
@@ -357,10 +357,10 @@ tape('simple merkle range proofs generation and verification', function (tester)
     } catch (err) {
       // ignore
     }
-    t.assert(!result)
+    assert.isFalse(result)
   })
 
-  it('create a same side range proof and verify it', async (t) => {
+  it('create a same side range proof and verify it', async () => {
     const { trie, entries } = await randomTrie(new MapDB())
 
     const start = 200
@@ -377,7 +377,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
     } catch (err) {
       // ignore
     }
-    t.assert(!result)
+    assert.isFalse(result)
 
     const increasedStartKey = increaseKey(startKey)!
     const increasedEndKey = increaseKey(increaseKey(endKey)!)!
@@ -389,10 +389,10 @@ tape('simple merkle range proofs generation and verification', function (tester)
     } catch (err) {
       // ignore
     }
-    t.assert(!result)
+    assert.isFalse(result)
   })
 
-  it('should hasRightElement succeed', async (t) => {
+  it('should hasRightElement succeed', async () => {
     const { trie, entries } = await randomTrie(new MapDB(), false)
 
     const cases: { start: number; end: number; expect: boolean }[] = [
@@ -467,11 +467,11 @@ tape('simple merkle range proofs generation and verification', function (tester)
         endKey = entries[end][0]
       }
 
-      t.equal(await verify(trie, entries, start, end, startKey, endKey), expect)
+      assert.equal(await verify(trie, entries, start, end, startKey, endKey), expect)
     }
   })
 
-  it('create a bloated range proof and verify it', async (t) => {
+  it('create a bloated range proof and verify it', async () => {
     const { trie, entries } = await randomTrie(new MapDB(), false)
 
     let bloatedProof: Uint8Array[] = []
@@ -479,6 +479,6 @@ tape('simple merkle range proofs generation and verification', function (tester)
       bloatedProof = bloatedProof.concat(await trie.createProof(entries[i][0]))
     }
 
-    t.equal(await verify(trie, entries, 0, entries.length - 1), false)
+    assert.equal(await verify(trie, entries, 0, entries.length - 1), false)
   })
 })

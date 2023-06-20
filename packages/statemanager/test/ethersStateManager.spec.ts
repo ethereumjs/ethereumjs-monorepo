@@ -12,11 +12,13 @@ import {
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import { ethers } from 'ethers'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { EthersStateManager } from '../src/ethersStateManager'
+import { EthersStateManager } from '../src/ethersStateManager.js'
 
-import { MockProvider } from './testdata/providerData/mockProvider'
+import * as blockData from './testdata/providerData/blocks/block0x7a120.json'
+import { MockProvider } from './testdata/providerData/mockProvider.js'
+import * as txData from './testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.json'
 
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
@@ -24,263 +26,283 @@ const isBrowser = new Function('try {return this===window;}catch(e){ return fals
 // To run the tests with a live provider, set the PROVIDER environmental variable with a valid provider url
 // from Infura/Alchemy or your favorite web3 provider when running the test.  Below is an example command:
 // `PROVIDER=https://mainnet.infura.io/v3/[mySuperS3cretproviderKey] npm run tape -- 'test/ethersStateManager.spec.ts'
-tape('Ethers State Manager initialization tests', (t) => {
-  const provider = new MockProvider()
-  let state = new EthersStateManager({ provider, blockTag: 1n })
-  t.ok(
-    state instanceof EthersStateManager,
-    'was able to instantiate state manager with JsonRpcProvider subclass'
-  )
-  t.equal((state as any).blockTag, '0x1', 'State manager starts with default block tag of 1')
+describe('Ethers State Manager initialization tests', () => {
+  it('should work', () => {
+    const provider = new MockProvider()
+    let state = new EthersStateManager({ provider, blockTag: 1n })
+    assert.ok(
+      state instanceof EthersStateManager,
+      'was able to instantiate state manager with JsonRpcProvider subclass'
+    )
+    assert.equal((state as any).blockTag, '0x1', 'State manager starts with default block tag of 1')
 
-  state = new EthersStateManager({ provider, blockTag: 1n })
-  t.equal((state as any).blockTag, '0x1', 'State Manager instantiated with predefined blocktag')
+    state = new EthersStateManager({ provider, blockTag: 1n })
+    assert.equal(
+      (state as any).blockTag,
+      '0x1',
+      'State Manager instantiated with predefined blocktag'
+    )
 
-  state = new EthersStateManager({ provider: 'https://google.com', blockTag: 1n })
-  t.ok(state instanceof EthersStateManager, 'was able to instantiate state manager with valid url')
+    state = new EthersStateManager({ provider: 'https://google.com', blockTag: 1n })
+    assert.ok(
+      state instanceof EthersStateManager,
+      'was able to instantiate state manager with valid url'
+    )
 
-  const invalidProvider = new ethers.SocketProvider('mainnet')
-  t.throws(
-    () => new EthersStateManager({ provider: invalidProvider as any, blockTag: 1n }),
-    'cannot instantiate state manager with invalid provider'
-  )
-  t.end()
+    const invalidProvider = new ethers.SocketProvider('mainnet')
+    assert.throws(
+      () => new EthersStateManager({ provider: invalidProvider as any, blockTag: 1n }),
+      undefined,
+      undefined,
+      'cannot instantiate state manager with invalid provider'
+    )
+  })
 })
 
-tape('Ethers State Manager API tests', async (t) => {
-  if (isBrowser() === true) {
-    // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
-    t.end()
-  } else {
-    const provider =
-      process.env.PROVIDER !== undefined
-        ? new ethers.JsonRpcProvider(process.env.PROVIDER, 1)
-        : new MockProvider()
-    const state = new EthersStateManager({ provider, blockTag: 1n })
-    const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
-    const account = await state.getAccount(vitalikDotEth)
-    t.ok(account!.nonce > 0n, 'Vitalik.eth returned a valid nonce')
+describe('Ethers State Manager API tests', () => {
+  it('should work', async () => {
+    if (isBrowser() === true) {
+      // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
+    } else {
+      const provider =
+        process.env.PROVIDER !== undefined
+          ? new ethers.JsonRpcProvider(process.env.PROVIDER, 1)
+          : new MockProvider()
+      const state = new EthersStateManager({ provider, blockTag: 1n })
+      const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
+      const account = await state.getAccount(vitalikDotEth)
+      assert.ok(account!.nonce > 0n, 'Vitalik.eth returned a valid nonce')
 
-    await state.putAccount(vitalikDotEth, account!)
+      await state.putAccount(vitalikDotEth, account!)
 
-    const retrievedVitalikAccount = Account.fromRlpSerializedAccount(
-      (state as any)._accountCache.get(vitalikDotEth)!.accountRLP
-    )
+      const retrievedVitalikAccount = Account.fromRlpSerializedAccount(
+        (state as any)._accountCache.get(vitalikDotEth)!.accountRLP
+      )
 
-    t.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
-    const doesThisAccountExist =
-      (await state.getAccount(Address.fromString('0xccAfdD642118E5536024675e776d32413728DD07'))) ===
-      undefined
-    t.ok(!doesThisAccountExist, 'getAccount returns undefined for non-existent account')
+      assert.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
+      const doesThisAccountExist =
+        (await state.getAccount(
+          Address.fromString('0xccAfdD642118E5536024675e776d32413728DD07')
+        )) === undefined
+      assert.ok(!doesThisAccountExist, 'getAccount returns undefined for non-existent account')
 
-    t.ok(state.getAccount(vitalikDotEth) !== undefined, 'vitalik.eth does exist')
+      assert.ok(state.getAccount(vitalikDotEth) !== undefined, 'vitalik.eth does exist')
 
-    const UNIerc20ContractAddress = Address.fromString('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984')
-    const UNIContractCode = await state.getContractCode(UNIerc20ContractAddress)
-    t.ok(UNIContractCode.length > 0, 'was able to retrieve UNI contract code')
+      const UNIerc20ContractAddress = Address.fromString(
+        '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984'
+      )
+      const UNIContractCode = await state.getContractCode(UNIerc20ContractAddress)
+      assert.ok(UNIContractCode.length > 0, 'was able to retrieve UNI contract code')
 
-    await state.putContractCode(UNIerc20ContractAddress, UNIContractCode)
-    t.ok(
-      typeof (state as any).contractCache.get(UNIerc20ContractAddress.toString()) !== 'undefined',
-      'UNI ERC20 contract code was found in cache'
-    )
+      await state.putContractCode(UNIerc20ContractAddress, UNIContractCode)
+      assert.ok(
+        typeof (state as any).contractCache.get(UNIerc20ContractAddress.toString()) !== 'undefined',
+        'UNI ERC20 contract code was found in cache'
+      )
 
-    const storageSlot = await state.getContractStorage(
-      UNIerc20ContractAddress,
-      setLengthLeft(bigIntToBytes(1n), 32)
-    )
-    t.ok(storageSlot.length > 0, 'was able to retrieve storage slot 1 for the UNI contract')
+      const storageSlot = await state.getContractStorage(
+        UNIerc20ContractAddress,
+        setLengthLeft(bigIntToBytes(1n), 32)
+      )
+      assert.ok(storageSlot.length > 0, 'was able to retrieve storage slot 1 for the UNI contract')
 
-    await state.putContractStorage(
-      UNIerc20ContractAddress,
-      setLengthLeft(bigIntToBytes(2n), 32),
-      utf8ToBytes('abcd')
-    )
-    const slotValue = await state.getContractStorage(
-      UNIerc20ContractAddress,
-      setLengthLeft(bigIntToBytes(2n), 32)
-    )
-    t.ok(equalsBytes(slotValue, utf8ToBytes('abcd')), 'should retrieve slot 2 value')
+      await state.putContractStorage(
+        UNIerc20ContractAddress,
+        setLengthLeft(bigIntToBytes(2n), 32),
+        utf8ToBytes('abcd')
+      )
+      const slotValue = await state.getContractStorage(
+        UNIerc20ContractAddress,
+        setLengthLeft(bigIntToBytes(2n), 32)
+      )
+      assert.ok(equalsBytes(slotValue, utf8ToBytes('abcd')), 'should retrieve slot 2 value')
 
-    // Verify that provider is not called for cached data
-    ;(provider as any).getStorageAt = function () {
-      throw new Error('should not be called!')
+      // Verify that provider is not called for cached data
+      ;(provider as any).getStorageAt = function () {
+        throw new Error('should not be called!')
+      }
+
+      assert.doesNotThrow(
+        async () =>
+          state.getContractStorage(UNIerc20ContractAddress, setLengthLeft(bigIntToBytes(2n), 32)),
+        'should not call provider.getStorageAt'
+      )
+
+      await state.putContractStorage(
+        UNIerc20ContractAddress,
+        setLengthLeft(bigIntToBytes(2n), 32),
+        new Uint8Array(0)
+      )
+
+      await state.modifyAccountFields(vitalikDotEth, { nonce: 39n })
+      assert.equal(
+        (await state.getAccount(vitalikDotEth))?.nonce,
+        39n,
+        'modified account fields successfully'
+      )
+
+      // Verify that provider is not called
+      ;(state as any).getAccountFromProvider = function () {
+        throw new Error('should not have called this!')
+      }
+      assert.doesNotThrow(
+        async () => state.getAccount(vitalikDotEth),
+        'does not call getAccountFromProvider'
+      )
+
+      try {
+        await state.getAccount(Address.fromString('0x9Cef824A8f4b3Dc6B7389933E52e47F010488Fc8'))
+      } catch (err) {
+        assert.ok(true, 'calls getAccountFromProvider for non-cached account')
+      }
+
+      const deletedSlot = await state.getContractStorage(
+        UNIerc20ContractAddress,
+        setLengthLeft(bigIntToBytes(2n), 32)
+      )
+
+      assert.equal(deletedSlot.length, 0, 'deleted slot from storage cache')
+
+      await state.deleteAccount(vitalikDotEth)
+      assert.ok(
+        (await state.getAccount(vitalikDotEth)) === undefined,
+        'account should not exist after being deleted'
+      )
+
+      try {
+        await Block.fromJsonRpcProvider(provider, 'fakeBlockTag', {} as any)
+        assert.fail('should have thrown')
+      } catch (err: any) {
+        assert.ok(
+          err.message.includes('expected blockTag to be block hash, bigint, hex prefixed string'),
+          'threw with correct error when invalid blockTag provided'
+        )
+      }
+
+      const newState = state.copy()
+
+      assert.equal(
+        undefined,
+        (state as any).contractCache.get(UNIerc20ContractAddress),
+        'should not have any code for contract after cache is cleared'
+      )
+
+      assert.notEqual(
+        undefined,
+        (newState as any).contractCache.get(UNIerc20ContractAddress.toString()),
+        'state manager copy should have code for contract after cache is cleared on original state manager'
+      )
+
+      assert.equal((state as any).blockTag, '0x1', 'blockTag defaults to 1')
+      state.setBlockTag(5n)
+      assert.equal((state as any).blockTag, '0x5', 'blockTag set to 0x5')
+      state.setBlockTag('earliest')
+      assert.equal((state as any).blockTag, 'earliest', 'blockTag set to earliest')
     }
+  })
+})
 
-    t.doesNotThrow(
-      async () =>
-        state.getContractStorage(UNIerc20ContractAddress, setLengthLeft(bigIntToBytes(2n), 32)),
-      'should not call provider.getStorageAt'
-    )
+describe('runTx custom transaction test', () => {
+  it('should work', async () => {
+    if (isBrowser() === true) {
+      // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
+    } else {
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+      const provider =
+        process.env.PROVIDER !== undefined
+          ? new ethers.JsonRpcProvider(process.env.PROVIDER, 1)
+          : new MockProvider()
+      const state = new EthersStateManager({ provider, blockTag: 1n })
+      const vm = await VM.create({ common, stateManager: <any>state }) // TODO fix the type DefaultStateManager back to StateManagerInterface in VM
 
-    await state.putContractStorage(
-      UNIerc20ContractAddress,
-      setLengthLeft(bigIntToBytes(2n), 32),
-      new Uint8Array(0)
-    )
+      const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
+      const privateKey = hexStringToBytes(
+        'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+      )
+      const tx = FeeMarketEIP1559Transaction.fromTxData(
+        { to: vitalikDotEth, value: '0x100', gasLimit: 500000n, maxFeePerGas: 7 },
+        { common }
+      ).sign(privateKey)
 
-    await state.modifyAccountFields(vitalikDotEth, { nonce: 39n })
-    t.equal(
-      (await state.getAccount(vitalikDotEth))?.nonce,
-      39n,
-      'modified account fields successfully'
-    )
+      const result = await vm.runTx({
+        skipBalance: true,
+        skipNonce: true,
+        tx,
+      })
 
-    // Verify that provider is not called
-    ;(state as any).getAccountFromProvider = function () {
-      throw new Error('should not have called this!')
+      assert.equal(result.totalGasSpent, 21000n, 'sent some ETH to vitalik.eth')
     }
-    t.doesNotThrow(
-      async () => state.getAccount(vitalikDotEth),
-      'does not call getAccountFromProvider'
-    )
+  })
+})
 
-    try {
-      await state.getAccount(Address.fromString('0x9Cef824A8f4b3Dc6B7389933E52e47F010488Fc8'))
-    } catch (err) {
-      t.pass('calls getAccountFromProvider for non-cached account')
-    }
+describe('runTx test: replay mainnet transactions', () => {
+  it('should work', async () => {
+    if (isBrowser() === true) {
+      // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
+    } else {
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
-    const deletedSlot = await state.getContractStorage(
-      UNIerc20ContractAddress,
-      setLengthLeft(bigIntToBytes(2n), 32)
-    )
+      const provider =
+        process.env.PROVIDER !== undefined
+          ? new ethers.JsonRpcProvider(process.env.PROVIDER)
+          : new MockProvider()
 
-    t.equal(deletedSlot.length, 0, 'deleted slot from storage cache')
-
-    await state.deleteAccount(vitalikDotEth)
-    t.ok(
-      (await state.getAccount(vitalikDotEth)) === undefined,
-      'account should not exist after being deleted'
-    )
-
-    try {
-      await Block.fromJsonRpcProvider(provider, 'fakeBlockTag', {} as any)
-      t.fail('should have thrown')
-    } catch (err: any) {
-      t.ok(
-        err.message.includes('expected blockTag to be block hash, bigint, hex prefixed string'),
-        'threw with correct error when invalid blockTag provided'
+      const blockTag = 15496077n
+      common.setHardforkBy({ blockNumber: blockTag })
+      const tx = await TransactionFactory.fromRPC(txData, { common })
+      const state = new EthersStateManager({
+        provider,
+        // Set the state manager to look at the state of the chain before the block has been executed
+        blockTag: blockTag - 1n,
+      })
+      const vm = await VM.create({ common, stateManager: <any>state })
+      const res = await vm.runTx({ tx })
+      assert.equal(
+        res.totalGasSpent,
+        21000n,
+        'calculated correct total gas spent for simple transfer'
       )
     }
-
-    const newState = state.copy()
-
-    t.equal(
-      undefined,
-      (state as any).contractCache.get(UNIerc20ContractAddress),
-      'should not have any code for contract after cache is cleared'
-    )
-
-    t.notEqual(
-      undefined,
-      (newState as any).contractCache.get(UNIerc20ContractAddress.toString()),
-      'state manager copy should have code for contract after cache is cleared on original state manager'
-    )
-
-    t.equal((state as any).blockTag, '0x1', 'blockTag defaults to 1')
-    state.setBlockTag(5n)
-    t.equal((state as any).blockTag, '0x5', 'blockTag set to 0x5')
-    state.setBlockTag('earliest')
-    t.equal((state as any).blockTag, 'earliest', 'blockTag set to earliest')
-    t.end()
-  }
+  })
 })
 
-tape('runTx custom transaction test', async (t) => {
-  if (isBrowser() === true) {
-    // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
-    t.end()
-  } else {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const provider =
-      process.env.PROVIDER !== undefined
-        ? new ethers.JsonRpcProvider(process.env.PROVIDER, 1)
-        : new MockProvider()
-    const state = new EthersStateManager({ provider, blockTag: 1n })
-    const vm = await VM.create({ common, stateManager: <any>state }) // TODO fix the type DefaultStateManager back to StateManagerInterface in VM
-
-    const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
-    const privateKey = hexStringToBytes(
-      'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
-    )
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
-      { to: vitalikDotEth, value: '0x100', gasLimit: 500000n, maxFeePerGas: 7 },
-      { common }
-    ).sign(privateKey)
-
-    const result = await vm.runTx({
-      skipBalance: true,
-      skipNonce: true,
-      tx,
-    })
-
-    t.equal(result.totalGasSpent, 21000n, 'sent some ETH to vitalik.eth')
-    t.end()
-  }
-})
-
-tape('runTx test: replay mainnet transactions', async (t) => {
-  if (isBrowser() === true) {
-    // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
-    t.end()
-  } else {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-
-    const provider =
-      process.env.PROVIDER !== undefined
-        ? new ethers.JsonRpcProvider(process.env.PROVIDER)
-        : new MockProvider()
-
-    const blockTag = 15496077n
-    common.setHardforkByBlockNumber(blockTag)
-    const txData = require('./testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.json')
-    const tx = await TransactionFactory.fromRPC(txData, { common })
-    const state = new EthersStateManager({
-      provider,
-      // Set the state manager to look at the state of the chain before the block has been executed
-      blockTag: blockTag - 1n,
-    })
-    const vm = await VM.create({ common, stateManager: <any>state })
-    const res = await vm.runTx({ tx })
-    t.equal(res.totalGasSpent, 21000n, 'calculated correct total gas spent for simple transfer')
-    t.end()
-  }
-})
-
-tape('runBlock test', async (t) => {
-  if (isBrowser() === true) {
-    // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
-    t.end()
-  } else {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const provider =
-      process.env.PROVIDER !== undefined
-        ? new ethers.JsonRpcProvider(process.env.PROVIDER)
-        : new MockProvider()
-    const blockTag = 500000n
-    const state = new EthersStateManager({
-      provider,
-      // Set the state manager to look at the state of the chain before the block has been executed
-      blockTag: blockTag - 1n,
-    })
-
-    // Set the common to HF, doesn't impact this specific blockTag, but will impact much recent
-    // blocks, also for post merge network, ttd should also be passed
-    common.setHardforkByBlockNumber(blockTag - 1n)
-
-    const vm = await VM.create({ common, stateManager: state })
-    const blockData = require('./testdata/providerData/blocks/block0x7a120.json')
-    const block = Block.fromRPC(blockData, [], { common })
-    try {
-      const res = await vm.runBlock({
-        block,
-        generate: true,
-        skipHeaderValidation: true,
+describe('runBlock test', () => {
+  it('should work', async () => {
+    if (isBrowser() === true) {
+      // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
+    } else {
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+      const provider =
+        process.env.PROVIDER !== undefined
+          ? new ethers.JsonRpcProvider(process.env.PROVIDER)
+          : new MockProvider()
+      const blockTag = 500000n
+      const state = new EthersStateManager({
+        provider,
+        // Set the state manager to look at the state of the chain before the block has been executed
+        blockTag: blockTag - 1n,
       })
-      t.equal(res.gasUsed, block.header.gasUsed, 'should compute correct cumulative gas for block')
-    } catch (err: any) {
-      t.fail(`should have successfully ran block; got error ${err.message}`)
+
+      // Set the common to HF, doesn't impact this specific blockTag, but will impact much recent
+      // blocks, also for post merge network, ttd should also be passed
+      common.setHardforkBy({ blockNumber: blockTag - 1n })
+
+      const vm = await VM.create({ common, stateManager: state })
+      const block = Block.fromRPC(blockData, [], { common })
+      try {
+        const res = await vm.runBlock({
+          block,
+          generate: true,
+          skipHeaderValidation: true,
+        })
+        assert.equal(
+          res.gasUsed,
+          block.header.gasUsed,
+          'should compute correct cumulative gas for block'
+        )
+      } catch (err: any) {
+        assert.fail(`should have successfully ran block; got error ${err.message}`)
+      }
     }
-  }
+  })
 })

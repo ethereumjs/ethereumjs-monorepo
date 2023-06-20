@@ -4,7 +4,7 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
-  Transaction,
+  LegacyTransaction,
 } from '@ethereumjs/tx'
 import {
   Account,
@@ -109,19 +109,19 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
  * Make a tx using JSON from tests repo
  * @param {Object} txData The tx object from tests repo
  * @param {TxOptions} opts Tx opts that can include an @ethereumjs/common object
- * @returns {FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | Transaction} Transaction to be passed to VM.runTx function
+ * @returns {FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | LegacyTransaction} Transaction to be passed to VM.runTx function
  */
 export function makeTx(
   txData: any,
   opts?: TxOptions
-): FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | Transaction {
+): FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | LegacyTransaction {
   let tx
   if (txData.maxFeePerGas !== undefined) {
     tx = FeeMarketEIP1559Transaction.fromTxData(txData, opts)
   } else if (txData.accessLists !== undefined) {
     tx = AccessListEIP2930Transaction.fromTxData(txData, opts)
   } else {
-    tx = Transaction.fromTxData(txData, opts)
+    tx = LegacyTransaction.fromTxData(txData, opts)
   }
 
   if (txData.secretKey !== undefined) {
@@ -364,15 +364,6 @@ export async function setupPreConditions(state: EVMStateManagerInterface, testDa
     await state.putAccount(address, account)
   }
   await state.commit()
-}
-
-/**
- * Checks if in a karma test runner.
- * @returns boolean whether running in karma
- */
-export function isRunningInKarma(): boolean {
-  // eslint-disable-next-line no-undef
-  return typeof (<any>globalThis).window !== 'undefined' && (<any>globalThis).window.__karma__
 }
 
 /**

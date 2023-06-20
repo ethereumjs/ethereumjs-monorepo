@@ -47,6 +47,14 @@ export interface BlobsBundle {
 // Max two payload to be cached
 const MAX_PAYLOAD_CACHE = 2
 
+enum AddTxResult {
+  Success,
+  BlockFull,
+  SkippedByGasLimit,
+  SkippedByErrors,
+  RemovedByErrors,
+}
+
 export class PendingBlock {
   config: Config
   txPool: TxPool
@@ -118,7 +126,11 @@ export class PendingBlock {
       throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
     }
     const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
-    vm._common.setHardforkByBlockNumber(number, td, timestamp)
+    vm._common.setHardforkBy({
+      blockNumber: number,
+      td,
+      timestamp,
+    })
 
     const baseFeePerGas = vm._common.isActivatedEIP(1559)
       ? parentBlock.header.calcNextBaseFee()
@@ -164,41 +176,11 @@ export class PendingBlock {
     this.config.logger.info(
       `Pending: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`
     )
-    let index = 0
-    let blockFull = false
-    const blobTxs = []
-    while (index < txs.length && !blockFull) {
-      try {
-        const tx = txs[index]
-        await builder.addTransaction(tx, {
-          skipHardForkValidation: this.skipHardForkValidation,
-        })
 
-        // Push the tx in blobTxs only after successful addTransaction
-        if (tx instanceof BlobEIP4844Transaction) blobTxs.push(tx)
-      } catch (error) {
-        if (
-          (error as Error).message ===
-          'tx has a higher gas limit than the remaining gas in the block'
-        ) {
-          if (builder.gasUsed > gasLimit - BigInt(21000)) {
-            // If block has less than 21000 gas remaining, consider it full
-            blockFull = true
-            this.config.logger.info(
-              `Pending: Assembled block full (gasLeft: ${gasLimit - builder.gasUsed})`
-            )
-          }
-        } else {
-          // If there is an error adding a tx, it will be skipped
-          this.config.logger.debug(
-            `Pending: Skipping tx ${bytesToPrefixedHexString(
-              txs[index].hash()
-            )}, error encountered when trying to add tx:\n${error}`
-          )
-        }
-      }
-      index++
-    }
+    const { addedTxs, skippedByAddErrors, blobTxs } = await this.addTransactions(builder, txs)
+    this.config.logger.info(
+      `Pending: Added txs=${addedTxs} skippedByAddErrors=${skippedByAddErrors} from total=${txs.length} tx candidates`
+    )
 
     // Construct initial blobs bundle when payload is constructed
     if (vm._common.isActivatedEIP(4844)) {
@@ -263,54 +245,8 @@ export class PendingBlock {
           equalsBytes(t.hash(), tx.hash())
         ) === false
     )
-    this.config.logger.info(`Pending: Adding ${txs.length} additional eligible txs`)
-    let index = 0
-    let blockFull = false
-    let skippedByAddErrors = 0
-    const blobTxs = []
-    while (index < txs.length && !blockFull) {
-      try {
-        const tx = txs[index]
-        await builder.addTransaction(tx, {
-          skipHardForkValidation: this.skipHardForkValidation,
-        })
 
-        // Push tx in blobTxs only after successful inclusion in the builder addTransaction
-        if (tx instanceof BlobEIP4844Transaction) {
-          blobTxs.push(tx)
-        }
-      } catch (error: any) {
-        if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
-          if (builder.gasUsed > (builder as any).headerData.gasLimit - BigInt(21000)) {
-            // If block has less than 21000 gas remaining, consider it full
-            blockFull = true
-            this.config.logger.info(`Pending: Assembled block full`)
-          }
-        } else if ((error as Error).message.includes('tx has a different hardfork than the vm')) {
-          // We can here decide to keep a tx in pool if it belongs to future hf
-          // but for simplicity just remove the tx as the sender can always retransmit
-          // the tx
-          this.txPool.removeByHash(bytesToHex(txs[index].hash()))
-          this.config.logger.error(
-            `Pending: Removed from txPool tx ${bytesToPrefixedHexString(
-              txs[index].hash()
-            )} having different hf=${txs[
-              index
-            ].common.hardfork()} than block vm hf=${vm._common.hardfork()}`
-          )
-        } else {
-          skippedByAddErrors++
-          // If there is an error adding a tx, it will be skipped
-          this.config.logger.debug(
-            `Pending: Skipping tx ${bytesToPrefixedHexString(
-              txs[index].hash()
-            )}, error encountered when trying to add tx:\n${error}`
-          )
-        }
-      }
-      index++
-    }
-
+    const { skippedByAddErrors, blobTxs } = await this.addTransactions(builder, txs)
     const block = await builder.build()
     // Construct blobs bundle
     const blobs = block._common.isActivatedEIP(4844)
@@ -329,6 +265,79 @@ export class PendingBlock {
     )
 
     return [block, builder.transactionReceipts, builder.minerValue, blobs]
+  }
+
+  private async addTransactions(builder: BlockBuilder, txs: TypedTransaction[]) {
+    this.config.logger.info(`Pending: Adding ${txs.length} additional eligible txs`)
+    let index = 0
+    let blockFull = false
+    let skippedByAddErrors = 0
+    const blobTxs = []
+
+    while (index < txs.length && !blockFull) {
+      const tx = txs[index]
+      const addTxResult = await this.addTransaction(builder, tx)
+
+      switch (addTxResult) {
+        case AddTxResult.Success:
+          // Push the tx in blobTxs only after successful addTransaction
+          if (tx instanceof BlobEIP4844Transaction) blobTxs.push(tx)
+          break
+
+        case AddTxResult.BlockFull:
+          blockFull = true
+        // Falls through
+        default:
+          skippedByAddErrors++
+      }
+      index++
+    }
+
+    return {
+      addedTxs: index - skippedByAddErrors,
+      skippedByAddErrors,
+      totalTxs: txs.length,
+      blobTxs,
+    }
+  }
+
+  private async addTransaction(builder: BlockBuilder, tx: TypedTransaction) {
+    let addTxResult: AddTxResult
+
+    try {
+      await builder.addTransaction(tx, {
+        skipHardForkValidation: this.skipHardForkValidation,
+      })
+      addTxResult = AddTxResult.Success
+    } catch (error: any) {
+      if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
+        if (builder.gasUsed > (builder as any).headerData.gasLimit - BigInt(21000)) {
+          // If block has less than 21000 gas remaining, consider it full
+          this.config.logger.info(`Pending: Assembled block full`)
+          addTxResult = AddTxResult.BlockFull
+        } else {
+          addTxResult = AddTxResult.SkippedByGasLimit
+        }
+      } else if ((error as Error).message.includes('blobs missing')) {
+        // Remove the blob tx which doesn't has blobs bundled
+        this.txPool.removeByHash(bytesToHex(tx.hash()))
+        this.config.logger.error(
+          `Pending: Removed from txPool a blob tx ${bytesToPrefixedHexString(
+            tx.hash()
+          )} with missing blobs`
+        )
+        addTxResult = AddTxResult.RemovedByErrors
+      } else {
+        // If there is an error adding a tx, it will be skipped
+        this.config.logger.debug(
+          `Pending: Skipping tx ${bytesToPrefixedHexString(
+            tx.hash()
+          )}, error encountered when trying to add tx:\n${error}`
+        )
+        addTxResult = AddTxResult.SkippedByErrors
+      }
+    }
+    return addTxResult
   }
 
   /**

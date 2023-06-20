@@ -1,9 +1,11 @@
-import type { FeeMarketEIP1559Transaction } from './eip1559Transaction'
-import type { AccessListEIP2930Transaction } from './eip2930Transaction'
-import type { BlobEIP4844Transaction } from './eip4844Transaction'
-import type { Transaction } from './legacyTransaction'
+import { bytesToBigInt, toBytes } from '@ethereumjs/util'
+
+import type { FeeMarketEIP1559Transaction } from './eip1559Transaction.js'
+import type { AccessListEIP2930Transaction } from './eip2930Transaction.js'
+import type { BlobEIP4844Transaction } from './eip4844Transaction.js'
+import type { LegacyTransaction } from './legacyTransaction.js'
 import type { AccessList, AccessListBytes, Common } from '@ethereumjs/common'
-import type { AddressLike, BigIntLike, BytesLike } from '@ethereumjs/util'
+import type { Address, AddressLike, BigIntLike, BytesLike } from '@ethereumjs/util'
 export type {
   AccessList,
   AccessListBytes,
@@ -93,20 +95,98 @@ export function isAccessList(input: AccessListBytes | AccessList): input is Acce
 
 /**
  * Encompassing type for all transaction types.
- *
- * Note that this also includes legacy txs which are
- * referenced as {@link Transaction} for compatibility reasons.
  */
-export type TypedTransaction =
-  | Transaction
-  | AccessListEIP2930Transaction
-  | FeeMarketEIP1559Transaction
-  | BlobEIP4844Transaction
+export enum TransactionType {
+  Legacy = 0,
+  AccessListEIP2930 = 1,
+  FeeMarketEIP1559 = 2,
+  BlobEIP4844 = 3,
+}
+
+export interface Transaction {
+  [TransactionType.Legacy]: LegacyTransaction
+  [TransactionType.FeeMarketEIP1559]: FeeMarketEIP1559Transaction
+  [TransactionType.AccessListEIP2930]: AccessListEIP2930Transaction
+  [TransactionType.BlobEIP4844]: BlobEIP4844Transaction
+}
+
+export type TypedTransaction = Transaction[TransactionType]
+
+export function isLegacyTx(tx: TypedTransaction): tx is LegacyTransaction {
+  return tx.type === TransactionType.Legacy
+}
+
+export function isAccessListEIP2930Tx(tx: TypedTransaction): tx is AccessListEIP2930Transaction {
+  return tx.type === TransactionType.AccessListEIP2930
+}
+
+export function isFeeMarketEIP1559Tx(tx: TypedTransaction): tx is FeeMarketEIP1559Transaction {
+  return tx.type === TransactionType.FeeMarketEIP1559
+}
+
+export function isBlobEIP4844Tx(tx: TypedTransaction): tx is BlobEIP4844Transaction {
+  return tx.type === TransactionType.BlobEIP4844
+}
+
+export interface TransactionInterface<T extends TransactionType> {
+  supports(capability: Capability): boolean
+  type: number
+  validate(): boolean
+  validate(stringError: false): boolean
+  validate(stringError: true): string[]
+  validate(stringError: boolean): boolean | string[]
+  getBaseFee(): bigint
+  getDataFee(): bigint
+  getUpfrontCost(): bigint
+  toCreationAddress(): boolean
+  raw(): TxValuesArray[T]
+  serialize(): Uint8Array
+  getMessageToSign(hashMessage: false): Uint8Array | Uint8Array[]
+  getMessageToSign(hashMessage?: true): Uint8Array
+  hash(): Uint8Array
+  getMessageToVerifySignature(): Uint8Array
+  isSigned(): boolean
+  verifySignature(): boolean
+  getSenderAddress(): Address
+  getSenderPublicKey(): Uint8Array
+  sign(privateKey: Uint8Array): Transaction[T]
+  toJSON(): JsonTx
+  errorStr(): string
+}
+
+export interface TxData {
+  [TransactionType.Legacy]: LegacyTxData
+  [TransactionType.AccessListEIP2930]: AccessListEIP2930TxData
+  [TransactionType.FeeMarketEIP1559]: FeeMarketEIP1559TxData
+  [TransactionType.BlobEIP4844]: BlobEIP4844TxData
+}
+
+export type TypedTxData = TxData[TransactionType]
+
+export function isLegacyTxData(txData: TypedTxData): txData is LegacyTxData {
+  const txType = Number(bytesToBigInt(toBytes(txData.type)))
+  return txType === TransactionType.Legacy
+}
+
+export function isAccessListEIP2930TxData(txData: TypedTxData): txData is AccessListEIP2930TxData {
+  const txType = Number(bytesToBigInt(toBytes(txData.type)))
+  return txType === TransactionType.AccessListEIP2930
+}
+
+export function isFeeMarketEIP1559TxData(txData: TypedTxData): txData is FeeMarketEIP1559TxData {
+  const txType = Number(bytesToBigInt(toBytes(txData.type)))
+  return txType === TransactionType.FeeMarketEIP1559
+}
+
+export function isBlobEIP4844TxData(txData: TypedTxData): txData is BlobEIP4844TxData {
+  const txType = Number(bytesToBigInt(toBytes(txData.type)))
+  return txType === TransactionType.BlobEIP4844
+}
 
 /**
  * Legacy {@link Transaction} Data
  */
-export type TxData = {
+export type LegacyTxData = {
   /**
    * The transaction's nonce.
    */
@@ -162,7 +242,7 @@ export type TxData = {
 /**
  * {@link AccessListEIP2930Transaction} data.
  */
-export interface AccessListEIP2930TxData extends TxData {
+export interface AccessListEIP2930TxData extends LegacyTxData {
   /**
    * The transaction's chain ID
    */
@@ -223,15 +303,22 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   blobsData?: string[]
 }
 
+export interface TxValuesArray {
+  [TransactionType.Legacy]: LegacyTxValuesArray
+  [TransactionType.AccessListEIP2930]: AccessListEIP2930TxValuesArray
+  [TransactionType.FeeMarketEIP1559]: FeeMarketEIP1559TxValuesArray
+  [TransactionType.BlobEIP4844]: BlobEIP4844TxValuesArray
+}
+
 /**
  * Bytes values array for a legacy {@link Transaction}
  */
-export type TxValuesArray = Uint8Array[]
+type LegacyTxValuesArray = Uint8Array[]
 
 /**
  * Bytes values array for an {@link AccessListEIP2930Transaction}
  */
-export type AccessListEIP2930ValuesArray = [
+type AccessListEIP2930TxValuesArray = [
   Uint8Array,
   Uint8Array,
   Uint8Array,
@@ -248,7 +335,7 @@ export type AccessListEIP2930ValuesArray = [
 /**
  * Bytes values array for a {@link FeeMarketEIP1559Transaction}
  */
-export type FeeMarketEIP1559ValuesArray = [
+type FeeMarketEIP1559TxValuesArray = [
   Uint8Array,
   Uint8Array,
   Uint8Array,
@@ -266,7 +353,7 @@ export type FeeMarketEIP1559ValuesArray = [
 /**
  * Bytes values array for a {@link BlobEIP4844Transaction}
  */
-export type BlobEIP4844ValuesArray = [
+type BlobEIP4844TxValuesArray = [
   Uint8Array,
   Uint8Array,
   Uint8Array,
@@ -284,7 +371,7 @@ export type BlobEIP4844ValuesArray = [
 ]
 
 export type BlobEIP4844NetworkValuesArray = [
-  BlobEIP4844ValuesArray,
+  BlobEIP4844TxValuesArray,
   Uint8Array[],
   Uint8Array[],
   Uint8Array[]

@@ -1,9 +1,9 @@
-import { equalsBytes } from 'ethereum-cryptography/utils'
+import { equalsBytes } from 'ethereum-cryptography/utils.js'
 
-import { BranchNode, ExtensionNode, LeafNode, Trie } from '../trie'
-import { nibblesCompare, nibblestoBytes } from '../util/nibbles'
+import { BranchNode, ExtensionNode, LeafNode, Trie } from '../trie/index.js'
+import { nibblesCompare, nibblestoBytes } from '../util/nibbles.js'
 
-import type { HashKeysFunction, Nibbles, TrieNode } from '../types'
+import type { HashKeysFunction, Nibbles, TrieNode } from '../types.js'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof.go
 

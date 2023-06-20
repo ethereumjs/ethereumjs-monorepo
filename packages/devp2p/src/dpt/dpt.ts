@@ -1,13 +1,13 @@
 import { bytesToInt, randomBytes } from '@ethereumjs/util'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'events'
 
-import { DNS } from '../dns'
-import { devp2pDebug, pk2id } from '../util'
+import { DNS } from '../dns/index.js'
+import { devp2pDebug, pk2id } from '../util.js'
 
-import { BanList } from './ban-list'
-import { KBucket } from './kbucket'
-import { Server as DPTServer } from './server'
+import { BanList } from './ban-list.js'
+import { KBucket } from './kbucket.js'
+import { Server as DPTServer } from './server.js'
 
 import type { Debugger } from 'debug'
 

@@ -7,18 +7,25 @@ import {
   bytesToUtf8,
   equalsBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
-import { CheckpointDB } from '../db'
-import { verifyRangeProof } from '../proof/range'
-import { ROOT_DB_KEY } from '../types'
-import { Lock } from '../util/lock'
-import { bytesToNibbles, doKeysMatch, matchingNibbleLength } from '../util/nibbles'
-import { TrieReadStream as ReadStream } from '../util/readStream'
-import { WalkController } from '../util/walkController'
+import { CheckpointDB } from '../db/index.js'
+import { verifyRangeProof } from '../proof/range.js'
+import { ROOT_DB_KEY } from '../types.js'
+import { Lock } from '../util/lock.js'
+import { bytesToNibbles, doKeysMatch, matchingNibbleLength } from '../util/nibbles.js'
+import { TrieReadStream as ReadStream } from '../util/readStream.js'
+import { WalkController } from '../util/walkController.js'
 
-import { BranchNode, ExtensionNode, LeafNode, decodeNode, decodeRawNode, isRawNode } from './node'
+import {
+  BranchNode,
+  ExtensionNode,
+  LeafNode,
+  decodeNode,
+  decodeRawNode,
+  isRawNode,
+} from './node/index.js'
 
 import type {
   EmbeddedNode,
@@ -28,7 +35,7 @@ import type {
   TrieNode,
   TrieOpts,
   TrieOptsWithDefaults,
-} from '../types'
+} from '../types.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
 
 interface Path {
@@ -891,7 +898,7 @@ export class Trie {
   copy(includeCheckpoints = true): Trie {
     const trie = new Trie({
       ...this._opts,
-      db: this._db.db.copy(),
+      db: this._db.db.shallowCopy(),
       root: this.root(),
       cacheSize: 0,
     })

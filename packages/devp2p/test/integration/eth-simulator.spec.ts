@@ -1,12 +1,12 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { intToBytes } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
-import * as test from 'tape'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { assert, describe, it } from 'vitest'
 
-import * as devp2p from '../../src'
-import { ETH } from '../../src'
+import * as devp2p from '../../src/index.js'
+import { ETH } from '../../src/index.js'
 
-import * as util from './util'
+import * as util from './util.js'
 
 const GENESIS_TD = 17179869184
 const GENESIS_HASH = hexToBytes('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3')
@@ -19,199 +19,218 @@ const status = {
   genesisHash: GENESIS_HASH,
 }
 
-// FIXME: Handle unhandled promises directly
-process.on('unhandledRejection', () => {})
-
-test('ETH: send status message (successful)', (t) => {
-  const opts: any = {}
-  opts.status0 = Object.assign({}, status)
-  opts.status1 = Object.assign({}, status)
-  opts.onOnceStatus0 = function (rlpxs: any) {
-    t.pass('should receive echoing status message and welcome connection')
-    util.destroyRLPXs(rlpxs)
-    t.end()
-  }
-  util.twoPeerMsgExchange(t, opts, capabilities)
-})
-
-test('ETH: send status message (NetworkId mismatch)', (t) => {
-  const opts: any = {}
-  opts.status0 = Object.assign({}, status)
-  opts.status1 = Object.assign({}, status)
-  opts.onPeerError0 = function (err: Error, rlpxs: any) {
-    const msg = 'NetworkId mismatch: 01 / 03'
-    t.equal(err.message, msg, `should emit error: ${msg}`)
-    util.destroyRLPXs(rlpxs)
-    t.end()
-  }
-
-  const c1 = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-  const c2 = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.London })
-  util.twoPeerMsgExchange(t, opts, capabilities, [c1, c2])
-})
-
-test('ETH: send status message (Genesis block mismatch)', (t) => {
-  const opts: any = {}
-  opts.status0 = Object.assign({}, status)
-  const status1 = Object.assign({}, status)
-  status1['genesisHash'] = new Uint8Array(32)
-  opts.status1 = status1
-  opts.onPeerError0 = function (err: Error, rlpxs: any) {
-    const msg =
-      'Genesis block mismatch: d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3 / 0000000000000000000000000000000000000000000000000000000000000000'
-    t.equal(err.message, msg, `should emit error: ${msg}`)
-    util.destroyRLPXs(rlpxs)
-    t.end()
-  }
-  util.twoPeerMsgExchange(t, opts, capabilities)
-})
-
-function sendWithProtocolVersion(t: test.Test, version: number, cap?: Object) {
-  const opts: any = {}
-  opts.status0 = Object.assign({}, status)
-  opts.status1 = Object.assign({}, status)
-  opts.onOnceStatus0 = function (rlpxs: any, eth: any) {
-    t.equal(eth.getVersion(), version, `should use eth${version} as protocol version`)
-    eth.sendMessage(devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES, [0, [437000, 1, 0, 0]])
-    t.pass('should send NEW_BLOCK_HASHES message')
-  }
-  opts.onOnMsg1 = function (rlpxs: any, eth: any, code: any) {
-    if (code === devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES) {
-      t.pass('should receive NEW_BLOCK_HASHES message')
-      util.destroyRLPXs(rlpxs)
-      t.end()
-    }
-  }
-  util.twoPeerMsgExchange(t, opts, cap)
-}
-
-function sendNotAllowed(
-  t: test.Test,
-  version: number,
-  cap: Object,
-  expectedCode: ETH.MESSAGE_CODES
-) {
-  const opts: any = {}
-  opts.status0 = Object.assign({}, status)
-  opts.status1 = Object.assign({}, status)
-  opts.onOnceStatus0 = function (rlpxs: any, eth: any) {
-    try {
-      eth.sendMessage(expectedCode, [])
-    } catch (err: any) {
-      const msg = `Error: Code ${expectedCode} not allowed with version ${version}`
-      t.equal(err.toString(), msg, `should emit error: ${msg}`)
-      util.destroyRLPXs(rlpxs)
-      t.end()
-    }
-  }
-  util.twoPeerMsgExchange(t, opts, cap)
-}
-
-test('ETH: should use latest protocol version on default', (t) => {
-  sendWithProtocolVersion(t, 66)
-})
-
-test('ETH -> Eth64 -> sendStatus(): should throw on non-matching latest block provided', (t) => {
-  const cap = [devp2p.ETH.eth65]
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
-  const status0: any = Object.assign({}, status)
-  status0['latestBlock'] = intToBytes(100000) // lower than Byzantium fork block 4370000
-
-  const rlpxs = util.initTwoPeerRLPXSetup(null, cap, common)
-  rlpxs[0].on('peer:added', function (peer: any) {
-    const protocol = peer.getProtocols()[0]
-    t.throws(() => {
-      protocol.sendStatus(status0)
-    }, /latest block provided is not matching the HF setting/)
-    util.destroyRLPXs(rlpxs)
-    t.end()
+describe('ETH simulator tests', () => {
+  it('ETH: send status message (successful)', async () => {
+    await new Promise((resolve) => {
+      const opts: any = {}
+      opts.status0 = Object.assign({}, status)
+      opts.status1 = Object.assign({}, status)
+      opts.onOnceStatus0 = function (rlpxs: any) {
+        assert.ok(true, 'should receive echoing status message and welcome connection')
+        util.destroyRLPXs(rlpxs)
+        resolve(undefined)
+      }
+      util.twoPeerMsgExchange(it, opts, capabilities, undefined, 21762)
+    })
   })
-})
 
-test('ETH: should work with allowed eth64', (t) => {
-  const cap = [devp2p.ETH.eth64]
-  sendWithProtocolVersion(t, 64, cap)
-})
+  it('ETH: send status message (NetworkId mismatch)', async () => {
+    await new Promise((resolve) => {
+      const opts: any = {}
+      opts.status0 = Object.assign({}, status)
+      opts.status1 = Object.assign({}, status)
+      opts.onPeerError0 = function (err: Error, rlpxs: any) {
+        const msg = 'NetworkId mismatch: 01 / 03'
+        assert.equal(err.message, msg, `should emit error: ${msg}`)
+        util.destroyRLPXs(rlpxs)
+        resolve(undefined)
+      }
 
-test('ETH: send not-allowed eth64', (t) => {
-  sendNotAllowed(t, 64, [devp2p.ETH.eth64], ETH.MESSAGE_CODES.POOLED_TRANSACTIONS)
-})
+      const c1 = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+      const c2 = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.London })
+      util.twoPeerMsgExchange(it, opts, capabilities, [c1, c2], 27126)
+    })
+  })
 
-test('ETH -> Eth64 -> ForkId validation 1a)', (t) => {
-  const opts: any = {}
-  const cap = [devp2p.ETH.eth64]
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
-  const status0: any = Object.assign({}, status)
-  // Take a latest block > next mainnet fork block (constantinople)
-  // to trigger validation condition
-  status0['latestBlock'] = intToBytes(9069000)
-  opts.status0 = status0
-  opts.status1 = Object.assign({}, status)
-  opts.onPeerError0 = function (err: Error, rlpxs: any) {
-    const msg = 'Remote is advertising a future fork that passed locally'
-    t.equal(err.message, msg, `should emit error: ${msg}`)
-    util.destroyRLPXs(rlpxs)
-    t.end()
+  it('ETH: send status message (Genesis block mismatch)', async () => {
+    await new Promise((resolve) => {
+      const opts: any = {}
+      opts.status0 = Object.assign({}, status)
+      const status1 = Object.assign({}, status)
+      status1['genesisHash'] = new Uint8Array(32)
+      opts.status1 = status1
+      opts.onPeerError0 = function (err: Error, rlpxs: any) {
+        const msg =
+          'Genesis block mismatch: d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3 / 0000000000000000000000000000000000000000000000000000000000000000'
+        assert.equal(err.message, msg, `should emit error: ${msg}`)
+        util.destroyRLPXs(rlpxs)
+        resolve(undefined)
+      }
+      util.twoPeerMsgExchange(it, opts, capabilities, undefined, 25182)
+    })
+  })
+
+  async function sendWithProtocolVersion(t: typeof it, version: number, cap?: Object) {
+    await new Promise((resolve) => {
+      const opts: any = {}
+      opts.status0 = Object.assign({}, status)
+      opts.status1 = Object.assign({}, status)
+      opts.onOnceStatus0 = function (rlpxs: any, eth: any) {
+        assert.equal(eth.getVersion(), version, `should use eth${version} as protocol version`)
+        eth.sendMessage(devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES, [0, [437000, 1, 0, 0]])
+        assert.ok(true, 'should send NEW_BLOCK_HASHES message')
+      }
+      opts.onOnMsg1 = function (rlpxs: any, eth: any, code: any) {
+        if (code === devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES) {
+          assert.ok(true, 'should receive NEW_BLOCK_HASHES message')
+          util.destroyRLPXs(rlpxs)
+          resolve(undefined)
+        }
+      }
+      util.twoPeerMsgExchange(it, opts, cap, undefined, 49182)
+    })
   }
 
-  util.twoPeerMsgExchange(t, opts, cap, common)
-})
-
-test('ETH: should work with allowed eth63', (t) => {
-  const cap = [devp2p.ETH.eth63]
-  sendWithProtocolVersion(t, 63, cap)
-})
-
-test('ETH: should work with allowed eth63', (t) => {
-  const cap = [devp2p.ETH.eth63]
-  sendWithProtocolVersion(t, 63, cap)
-})
-
-test('ETH: work with allowed eth62', (t) => {
-  const cap = [devp2p.ETH.eth62]
-  sendWithProtocolVersion(t, 62, cap)
-})
-
-test('ETH: send not-allowed eth62', (t) => {
-  sendNotAllowed(t, 62, [devp2p.ETH.eth62], ETH.MESSAGE_CODES.GET_NODE_DATA)
-})
-
-test('ETH: send unknown message code', (t) => {
-  const opts: any = {}
-  opts.status0 = Object.assign({}, status)
-  opts.status1 = Object.assign({}, status)
-  opts.onOnceStatus0 = function (rlpxs: any, eth: any) {
-    try {
-      eth.sendMessage(0x55, [])
-    } catch (err: any) {
-      const msg = 'Error: Unknown code 85'
-      t.equal(err.toString(), msg, `should emit error: ${msg}`)
-      util.destroyRLPXs(rlpxs)
-      t.end()
-    }
+  async function sendNotAllowed(
+    t: typeof it,
+    version: number,
+    cap: Object,
+    expectedCode: ETH.MESSAGE_CODES
+  ) {
+    await new Promise((resolve) => {
+      const opts: any = {}
+      opts.status0 = Object.assign({}, status)
+      opts.status1 = Object.assign({}, status)
+      opts.onOnceStatus0 = function (rlpxs: any, eth: any) {
+        try {
+          eth.sendMessage(expectedCode, [])
+        } catch (err: any) {
+          const msg = `Error: Code ${expectedCode} not allowed with version ${version}`
+          assert.equal(err.toString(), msg, `should emit error: ${msg}`)
+          util.destroyRLPXs(rlpxs)
+          resolve(undefined)
+        }
+      }
+      util.twoPeerMsgExchange(it, opts, cap, undefined, 16281)
+    })
   }
-  util.twoPeerMsgExchange(t, opts, capabilities)
-})
 
-test('ETH: invalid status send', (t) => {
-  const opts: any = {}
-  opts.status0 = Object.assign({}, status)
-  opts.status1 = Object.assign({}, status)
-  opts.onOnceStatus0 = function (rlpxs: any, eth: any) {
-    try {
-      eth.sendMessage(devp2p.ETH.MESSAGE_CODES.STATUS, [])
-    } catch (err: any) {
-      const msg = 'Error: Please send status message through .sendStatus'
-      t.equal(err.toString(), msg, `should emit error: ${msg}`)
-      util.destroyRLPXs(rlpxs)
-      t.end()
-    }
-  }
-  util.twoPeerMsgExchange(t, opts, capabilities)
-})
+  it('ETH: should use latest protocol version on default', async () => {
+    await sendWithProtocolVersion(it, 66)
+  })
 
-test('RLPX: verify that snappy compression is not used with an RLPX peer that only supports devp2p 4', (t) => {
-  const opts: any = {}
-  opts.status0 = Object.assign({}, status)
-  util.twoPeerMsgExchange2(t, opts, capabilities)
+  it('ETH -> Eth64 -> sendStatus(): should throw on non-matching latest block provided', async () => {
+    await new Promise((resolve) => {
+      const cap = [devp2p.ETH.eth65]
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+      const status0: any = Object.assign({}, status)
+      status0['latestBlock'] = intToBytes(100000) // lower than Byzantium fork block 4370000
+
+      const rlpxs = util.initTwoPeerRLPXSetup(null, cap, common, 50505)
+      rlpxs[0].on('peer:added', function (peer: any) {
+        const protocol = peer.getProtocols()[0]
+        assert.throws(() => {
+          protocol.sendStatus(status0)
+        }, /latest block provided is not matching the HF setting/)
+        util.destroyRLPXs(rlpxs)
+        resolve(undefined)
+      })
+    })
+  })
+
+  it('ETH: should work with allowed eth64', async () => {
+    const cap = [devp2p.ETH.eth64]
+    await sendWithProtocolVersion(it, 64, cap)
+  })
+
+  it('ETH: send not-allowed eth64', async () => {
+    await sendNotAllowed(it, 64, [devp2p.ETH.eth64], ETH.MESSAGE_CODES.POOLED_TRANSACTIONS)
+  })
+
+  it('ETH -> Eth64 -> ForkId validation 1a)', async () => {
+    await new Promise((resolve) => {
+      const opts: any = {}
+      const cap = [devp2p.ETH.eth64]
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+      const status0: any = Object.assign({}, status)
+      // Take a latest block > next mainnet fork block (constantinople)
+      // to trigger validation condition
+      status0['latestBlock'] = intToBytes(9069000)
+      opts.status0 = status0
+      opts.status1 = Object.assign({}, status)
+      opts.onPeerError0 = function (err: Error, rlpxs: any) {
+        const msg = 'Remote is advertising a future fork that passed locally'
+        assert.equal(err.message, msg, `should emit error: ${msg}`)
+        util.destroyRLPXs(rlpxs)
+        resolve(undefined)
+      }
+
+      util.twoPeerMsgExchange(it, opts, cap, common, 37812)
+    })
+  })
+
+  it('ETH: should work with allowed eth63', async () => {
+    const cap = [devp2p.ETH.eth63]
+    await sendWithProtocolVersion(it, 63, cap)
+  })
+
+  it('ETH: should work with allowed eth63', async () => {
+    const cap = [devp2p.ETH.eth63]
+    await sendWithProtocolVersion(it, 63, cap)
+  })
+
+  it('ETH: work with allowed eth62', async () => {
+    const cap = [devp2p.ETH.eth62]
+    await sendWithProtocolVersion(it, 62, cap)
+  })
+
+  it('ETH: send not-allowed eth62', async () => {
+    await sendNotAllowed(it, 62, [devp2p.ETH.eth62], ETH.MESSAGE_CODES.GET_NODE_DATA)
+  })
+
+  it('ETH: send unknown message code', async () => {
+    await new Promise((resolve) => {
+      const opts: any = {}
+      opts.status0 = Object.assign({}, status)
+      opts.status1 = Object.assign({}, status)
+      opts.onOnceStatus0 = function (rlpxs: any, eth: any) {
+        try {
+          eth.sendMessage(0x55, [])
+        } catch (err: any) {
+          const msg = 'Error: Unknown code 85'
+          assert.equal(err.toString(), msg, `should emit error: ${msg}`)
+          util.destroyRLPXs(rlpxs)
+          resolve(undefined)
+        }
+      }
+      util.twoPeerMsgExchange(it, opts, capabilities, undefined, 12473)
+    })
+  })
+
+  it('ETH: invalid status send', async () => {
+    await new Promise((resolve) => {
+      const opts: any = {}
+      opts.status0 = Object.assign({}, status)
+      opts.status1 = Object.assign({}, status)
+      opts.onOnceStatus0 = function (rlpxs: any, eth: any) {
+        try {
+          eth.sendMessage(devp2p.ETH.MESSAGE_CODES.STATUS, [])
+        } catch (err: any) {
+          const msg = 'Error: Please send status message through .sendStatus'
+          assert.equal(err.toString(), msg, `should emit error: ${msg}`)
+          util.destroyRLPXs(rlpxs)
+          resolve(undefined)
+        }
+      }
+      util.twoPeerMsgExchange(it, opts, capabilities, undefined, 12437)
+    })
+  })
+
+  it('RLPX: verify that snappy compression is not used with an RLPX peer that only supports devp2p 4', async () => {
+    await new Promise((resolve) => {
+      const opts: any = { promise: resolve }
+      opts.status0 = Object.assign({}, status)
+      util.twoPeerMsgExchange2(it, opts, capabilities, undefined, 19631)
+    })
+  })
 })

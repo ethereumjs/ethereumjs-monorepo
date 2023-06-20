@@ -12,16 +12,16 @@ import {
   fetchFromProvider,
   getProvider,
   hexStringToBytes,
-  intToHex,
+  intToPrefixedHexString,
   isHexPrefixed,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { executionPayloadFromBeaconPayload } from './from-beacon-payload'
-import { blockFromRpc } from './from-rpc'
-import { BlockHeader } from './header'
+import { executionPayloadFromBeaconPayload } from './from-beacon-payload.js'
+import { blockFromRpc } from './from-rpc.js'
+import { BlockHeader } from './header.js'
 
-import type { BeaconPayloadJson } from './from-beacon-payload'
+import type { BeaconPayloadJson } from './from-beacon-payload.js'
 import type {
   BlockBytes,
   BlockData,
@@ -30,11 +30,11 @@ import type {
   HeaderData,
   JsonBlock,
   JsonRpcBlock,
-} from './types'
+} from './types.js'
 import type { Common } from '@ethereumjs/common'
 import type {
   FeeMarketEIP1559Transaction,
-  Transaction,
+  LegacyTransaction,
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
@@ -277,7 +277,7 @@ export class Block {
       for (let x = 0; x < blockData.uncles.length; x++) {
         const headerData = await fetchFromProvider(providerUrl, {
           method: 'eth_getUncleByBlockHashAndIndex',
-          params: [blockData.hash, intToHex(x)],
+          params: [blockData.hash, intToPrefixedHexString(x)],
         })
         uncleHeaders.push(headerData)
       }
@@ -493,7 +493,7 @@ export class Block {
             errs.push('tx unable to pay base fee (EIP-1559 tx)')
           }
         } else {
-          tx = tx as Transaction
+          tx = tx as LegacyTransaction
           if (tx.gasPrice < this.header.baseFeePerGas!) {
             errs.push('tx unable to pay base fee (non EIP-1559 tx)')
           }

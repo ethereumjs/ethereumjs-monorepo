@@ -11,11 +11,15 @@ import {
   hexStringToBytes,
   privateToAddress,
 } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '../src'
+import {
+  AccessListEIP2930Transaction,
+  FeeMarketEIP1559Transaction,
+  TransactionType,
+} from '../src/index.js'
 
-import type { AccessList, AccessListBytesItem } from '../src'
+import type { AccessList, AccessListBytesItem } from '../src/index.js'
 
 const pKey = hexStringToBytes('4646464646464646464646464646464646464646464646464646464646464646')
 const address = privateToAddress(pKey)
@@ -29,312 +33,357 @@ const txTypes = [
   {
     class: AccessListEIP2930Transaction,
     name: 'AccessListEIP2930Transaction',
-    type: 1,
+    type: TransactionType.AccessListEIP2930,
   },
   {
     class: FeeMarketEIP1559Transaction,
     name: 'FeeMarketEIP1559Transaction',
-    type: 2,
+    type: TransactionType.FeeMarketEIP1559,
   },
 ]
 
 const validAddress = hexStringToBytes('01'.repeat(20))
 const validSlot = hexStringToBytes('01'.repeat(32))
-const chainId = BigInt(1)
+const chainId = BigInt(Chain.Mainnet)
 
-tape(
-  '[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-2930 Compatibility',
-  function (t) {
-    t.test('Initialization / Getter -> fromTxData()', function (t) {
-      for (const txType of txTypes) {
-        let tx = txType.class.fromTxData({}, { common })
-        t.ok(tx, `should initialize correctly (${txType.name})`)
+describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-2930 Compatibility', () => {
+  it('Initialization / Getter -> fromTxData()', () => {
+    for (const txType of txTypes) {
+      let tx = txType.class.fromTxData({}, { common })
+      assert.ok(tx, `should initialize correctly (${txType.name})`)
 
-        tx = txType.class.fromTxData({
-          chainId: 5,
-        })
-        t.ok(
-          tx.common.chainId() === BigInt(5),
-          'should initialize Common with chain ID provided (supported chain ID)'
-        )
+      tx = txType.class.fromTxData({
+        chainId: Chain.Goerli,
+      })
+      assert.ok(
+        tx.common.chainId() === BigInt(5),
+        'should initialize Common with chain ID provided (supported chain ID)'
+      )
 
-        tx = txType.class.fromTxData({
-          chainId: 99999,
-        })
-        t.ok(
-          tx.common.chainId() === BigInt(99999),
-          'should initialize Common with chain ID provided (unsupported chain ID)'
-        )
+      tx = txType.class.fromTxData({
+        chainId: 99999,
+      })
+      assert.ok(
+        tx.common.chainId() === BigInt(99999),
+        'should initialize Common with chain ID provided (unsupported chain ID)'
+      )
 
-        const nonEIP2930Common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-        t.throws(() => {
+      const nonEIP2930Common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+      assert.throws(
+        () => {
           txType.class.fromTxData({}, { common: nonEIP2930Common })
-        }, `should throw on a pre-Berlin Hardfork (EIP-2930 not activated) (${txType.name})`)
+        },
+        undefined,
+        undefined,
+        `should throw on a pre-Berlin Hardfork (EIP-2930 not activated) (${txType.name})`
+      )
 
-        t.throws(() => {
+      assert.throws(
+        () => {
           txType.class.fromTxData(
             {
               chainId: chainId + BigInt(1),
             },
             { common }
           )
-        }, `should reject transactions with wrong chain ID (${txType.name})`)
+        },
+        undefined,
+        undefined,
+        `should reject transactions with wrong chain ID (${txType.name})`
+      )
 
-        t.throws(() => {
+      assert.throws(
+        () => {
           txType.class.fromTxData(
             {
               v: 2,
             },
             { common }
           )
-        }, `should reject transactions with invalid yParity (v) values (${txType.name})`)
-      }
-      t.end()
-    })
+        },
+        undefined,
+        undefined,
+        `should reject transactions with invalid yParity (v) values (${txType.name})`
+      )
+    }
+  })
 
-    t.test('cannot input decimal values', (st) => {
-      const values = ['chainId', 'nonce', 'gasPrice', 'gasLimit', 'value', 'v', 'r', 's']
-      const cases = [
-        10.1,
-        '10.1',
-        '0xaa.1',
-        -10.1,
-        -1,
-        BigInt(-10),
-        '-100',
-        '-10.1',
-        '-0xaa',
-        Infinity,
-        -Infinity,
-        NaN,
-        {},
-        true,
-        false,
-        () => {},
-        Number.MAX_SAFE_INTEGER + 1,
+  it(`cannot input decimal values`, () => {
+    const values = ['chainId', 'nonce', 'gasPrice', 'gasLimit', 'value', 'v', 'r', 's']
+    const cases = [
+      10.1,
+      '10.1',
+      '0xaa.1',
+      -10.1,
+      -1,
+      BigInt(-10),
+      '-100',
+      '-10.1',
+      '-0xaa',
+      Infinity,
+      -Infinity,
+      NaN,
+      {},
+      true,
+      false,
+      () => {},
+      Number.MAX_SAFE_INTEGER + 1,
+    ]
+    for (const value of values) {
+      const txData: any = {}
+      for (const testCase of cases) {
+        if (
+          !(
+            value === 'chainId' &&
+            ((typeof testCase === 'number' && isNaN(<number>testCase)) || testCase === false)
+          )
+        ) {
+          txData[value] = testCase
+          assert.throws(() => {
+            AccessListEIP2930Transaction.fromTxData(txData)
+          })
+        }
+      }
+    }
+  })
+
+  it('Initialization / Getter -> fromSerializedTx()', () => {
+    for (const txType of txTypes) {
+      try {
+        txType.class.fromSerializedTx(new Uint8Array([99]), {})
+      } catch (e: any) {
+        assert.ok(
+          e.message.includes('wrong tx type'),
+          `should throw on wrong tx type (${txType.name})`
+        )
+      }
+
+      try {
+        // Correct tx type + RLP-encoded 5
+        const serialized = concatBytes(new Uint8Array([txType.type]), new Uint8Array([5]))
+        txType.class.fromSerializedTx(serialized, {})
+      } catch (e: any) {
+        assert.ok(
+          e.message.includes('must be array'),
+          `should throw when RLP payload not an array (${txType.name})`
+        )
+      }
+
+      try {
+        // Correct tx type + RLP-encoded empty list
+        const serialized = concatBytes(new Uint8Array([txType.type]), hexStringToBytes('c0'))
+        txType.class.fromSerializedTx(serialized, {})
+      } catch (e: any) {
+        assert.ok(
+          e.message.includes('values (for unsigned tx)'),
+          `should throw with invalid number of values (${txType.name})`
+        )
+      }
+    }
+  })
+
+  it('Access Lists -> success cases', () => {
+    for (const txType of txTypes) {
+      const access: AccessList = [
+        {
+          address: bytesToPrefixedHexString(validAddress),
+          storageKeys: [bytesToPrefixedHexString(validSlot)],
+        },
       ]
-      for (const value of values) {
-        const txData: any = {}
-        for (const testCase of cases) {
-          if (
-            !(
-              value === 'chainId' &&
-              ((typeof testCase === 'number' && isNaN(<number>testCase)) || testCase === false)
-            )
-          ) {
-            txData[value] = testCase
-            st.throws(() => {
-              AccessListEIP2930Transaction.fromTxData(txData)
-            })
-          }
-        }
-      }
-      st.end()
-    })
+      const txn = txType.class.fromTxData(
+        {
+          accessList: access,
+          chainId: Chain.Mainnet,
+        },
+        { common }
+      )
 
-    t.test('Initialization / Getter -> fromSerializedTx()', function (t) {
-      for (const txType of txTypes) {
-        try {
-          txType.class.fromSerializedTx(new Uint8Array([99]), {})
-        } catch (e: any) {
-          t.ok(
-            e.message.includes('wrong tx type'),
-            `should throw on wrong tx type (${txType.name})`
-          )
-        }
+      // Check if everything is converted
 
-        try {
-          // Correct tx type + RLP-encoded 5
-          const serialized = concatBytes(new Uint8Array([txType.type]), new Uint8Array([5]))
-          txType.class.fromSerializedTx(serialized, {})
-        } catch (e: any) {
-          t.ok(
-            e.message.includes('must be array'),
-            `should throw when RLP payload not an array (${txType.name})`
-          )
-        }
+      const bytes = txn.accessList
+      const JSON = txn.AccessListJSON
 
-        try {
-          // Correct tx type + RLP-encoded empty list
-          const serialized = concatBytes(new Uint8Array([txType.type]), hexStringToBytes('c0'))
-          txType.class.fromSerializedTx(serialized, {})
-        } catch (e: any) {
-          t.ok(
-            e.message.includes('values (for unsigned tx)'),
-            `should throw with invalid number of values (${txType.name})`
-          )
-        }
-      }
-      t.end()
-    })
+      assert.ok(equalsBytes(bytes[0][0], validAddress))
+      assert.ok(equalsBytes(bytes[0][1][0], validSlot))
 
-    t.test('Access Lists -> success cases', function (st) {
-      for (const txType of txTypes) {
-        const access: AccessList = [
-          {
-            address: bytesToPrefixedHexString(validAddress),
-            storageKeys: [bytesToPrefixedHexString(validSlot)],
-          },
-        ]
-        const txn = txType.class.fromTxData(
-          {
-            accessList: access,
-            chainId: 1,
-          },
-          { common }
-        )
+      assert.deepEqual(JSON, access, `should allow json-typed access lists (${txType.name})`)
 
-        // Check if everything is converted
+      // also verify that we can always get the json access list, even if we don't provide one.
 
-        const bytes = txn.accessList
-        const JSON = txn.AccessListJSON
+      const txnRaw = txType.class.fromTxData(
+        {
+          accessList: bytes,
+          chainId: Chain.Mainnet,
+        },
+        { common }
+      )
 
-        st.ok(equalsBytes(bytes[0][0], validAddress))
-        st.ok(equalsBytes(bytes[0][1][0], validSlot))
+      const JSONRaw = txnRaw.AccessListJSON
 
-        st.deepEqual(JSON, access, `should allow json-typed access lists (${txType.name})`)
+      assert.deepEqual(JSONRaw, access, `should allow json-typed access lists (${txType.name})`)
+    }
+  })
 
-        // also verify that we can always get the json access list, even if we don't provide one.
-
-        const txnRaw = txType.class.fromTxData(
-          {
-            accessList: bytes,
-            chainId: 1,
-          },
-          { common }
-        )
-
-        const JSONRaw = txnRaw.AccessListJSON
-
-        st.deepEqual(JSONRaw, access, `should allow json-typed access lists (${txType.name})`)
-      }
-      st.end()
-    })
-
-    t.test('Access Lists -> error cases', function (st) {
-      for (const txType of txTypes) {
-        let accessList: any[] = [
-          [
-            hexStringToBytes('01'.repeat(21)), // Address of 21 bytes instead of 20
-            [],
-          ],
-        ]
-
-        st.throws(() => {
-          txType.class.fromTxData({ chainId, accessList }, { common })
-        }, txType.name)
-
-        accessList = [
-          [
-            validAddress,
-            [
-              hexStringToBytes('01'.repeat(31)), // Slot of 31 bytes instead of 32
-            ],
-          ],
-        ]
-
-        st.throws(() => {
-          txType.class.fromTxData({ chainId, accessList }, { common })
-        }, txType.name)
-
-        accessList = [[]] // Address does not exist
-
-        st.throws(() => {
-          txType.class.fromTxData({ chainId, accessList }, { common })
-        }, txType.name)
-
-        accessList = [[validAddress]] // Slots does not exist
-
-        st.throws(() => {
-          txType.class.fromTxData({ chainId, accessList }, { common })
-        }, txType.name)
-
-        accessList = [[validAddress, validSlot]] // Slots is not an array
-
-        st.throws(() => {
-          txType.class.fromTxData({ chainId, accessList }, { common })
-        }, txType.name)
-
-        accessList = [[validAddress, [], []]] // 3 items where 2 are expected
-
-        st.throws(() => {
-          txType.class.fromTxData({ chainId, accessList }, { common })
-        }, txType.name)
-      }
-      st.end()
-    })
-
-    t.test('sign()', function (t) {
-      for (const txType of txTypes) {
-        let tx = txType.class.fromTxData(
-          {
-            data: hexStringToBytes('010200'),
-            to: validAddress,
-            accessList: [[validAddress, [validSlot]]],
-            chainId,
-          },
-          { common }
-        )
-        let signed = tx.sign(pKey)
-        const signedAddress = signed.getSenderAddress()
-        t.ok(
-          equalsBytes(signedAddress.bytes, address),
-          `should sign a transaction (${txType.name})`
-        )
-        signed.verifySignature() // If this throws, test will not end.
-
-        tx = txType.class.fromTxData({}, { common })
-        signed = tx.sign(pKey)
-
-        t.deepEqual(
-          tx.accessList,
+  it('Access Lists -> error cases', () => {
+    for (const txType of txTypes) {
+      let accessList: any[] = [
+        [
+          hexStringToBytes('01'.repeat(21)), // Address of 21 bytes instead of 20
           [],
-          `should create and sign transactions without passing access list value (${txType.name})`
-        )
-        t.deepEqual(signed.accessList, [])
+        ],
+      ]
 
-        tx = txType.class.fromTxData({}, { common })
+      assert.throws(
+        () => {
+          txType.class.fromTxData({ chainId, accessList }, { common })
+        },
+        undefined,
+        undefined,
+        txType.name
+      )
 
-        t.throws(() => {
+      accessList = [
+        [
+          validAddress,
+          [
+            hexStringToBytes('01'.repeat(31)), // Slot of 31 bytes instead of 32
+          ],
+        ],
+      ]
+
+      assert.throws(
+        () => {
+          txType.class.fromTxData({ chainId, accessList }, { common })
+        },
+        undefined,
+        undefined,
+        txType.name
+      )
+
+      accessList = [[]] // Address does not exist
+
+      assert.throws(
+        () => {
+          txType.class.fromTxData({ chainId, accessList }, { common })
+        },
+        undefined,
+        undefined,
+        txType.name
+      )
+
+      accessList = [[validAddress]] // Slots does not exist
+
+      assert.throws(
+        () => {
+          txType.class.fromTxData({ chainId, accessList }, { common })
+        },
+        undefined,
+        undefined,
+        txType.name
+      )
+
+      accessList = [[validAddress, validSlot]] // Slots is not an array
+
+      assert.throws(
+        () => {
+          txType.class.fromTxData({ chainId, accessList }, { common })
+        },
+        undefined,
+        undefined,
+        txType.name
+      )
+
+      accessList = [[validAddress, [], []]] // 3 items where 2 are expected
+
+      assert.throws(
+        () => {
+          txType.class.fromTxData({ chainId, accessList }, { common })
+        },
+        undefined,
+        undefined,
+        txType.name
+      )
+    }
+  })
+
+  it('sign()', () => {
+    for (const txType of txTypes) {
+      let tx = txType.class.fromTxData(
+        {
+          data: hexStringToBytes('010200'),
+          to: validAddress,
+          accessList: [[validAddress, [validSlot]]],
+          chainId,
+        },
+        { common }
+      )
+      let signed = tx.sign(pKey)
+      const signedAddress = signed.getSenderAddress()
+      assert.ok(
+        equalsBytes(signedAddress.bytes, address),
+        `should sign a transaction (${txType.name})`
+      )
+      signed.verifySignature() // If this throws, test will not end.
+
+      tx = txType.class.fromTxData({}, { common })
+      signed = tx.sign(pKey)
+
+      assert.deepEqual(
+        tx.accessList,
+        [],
+        `should create and sign transactions without passing access list value (${txType.name})`
+      )
+      assert.deepEqual(signed.accessList, [])
+
+      tx = txType.class.fromTxData({}, { common })
+
+      assert.throws(
+        () => {
           tx.hash()
-        }, `should throw calling hash with unsigned tx (${txType.name})`)
+        },
+        undefined,
+        undefined,
+        `should throw calling hash with unsigned tx (${txType.name})`
+      )
 
-        t.throws(() => {
-          tx.getSenderPublicKey()
-        })
+      assert.throws(() => {
+        tx.getSenderPublicKey()
+      })
 
-        t.throws(() => {
+      assert.throws(
+        () => {
           const high = SECP256K1_ORDER_DIV_2 + BigInt(1)
           const tx = txType.class.fromTxData({ s: high, r: 1, v: 1 }, { common })
           const signed = tx.sign(pKey)
           signed.getSenderPublicKey()
-        }, `should throw with invalid s value (${txType.name})`)
-      }
-      t.end()
-    })
+        },
+        undefined,
+        undefined,
+        `should throw with invalid s value (${txType.name})`
+      )
+    }
+  })
 
-    t.test('getDataFee()', function (st) {
-      for (const txType of txTypes) {
-        let tx = txType.class.fromTxData({}, { common })
-        st.equal(tx.getDataFee(), BigInt(0), 'Should return data fee when frozen')
+  it('getDataFee()', () => {
+    for (const txType of txTypes) {
+      let tx = txType.class.fromTxData({}, { common })
+      assert.equal(tx.getDataFee(), BigInt(0), 'Should return data fee when frozen')
 
-        tx = txType.class.fromTxData({}, { common, freeze: false })
-        st.equal(tx.getDataFee(), BigInt(0), 'Should return data fee when not frozen')
+      tx = txType.class.fromTxData({}, { common, freeze: false })
+      assert.equal(tx.getDataFee(), BigInt(0), 'Should return data fee when not frozen')
 
-        const mutableCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-        tx = txType.class.fromTxData({}, { common: mutableCommon })
-        tx.common.setHardfork(Hardfork.Istanbul)
-        st.equal(tx.getDataFee(), BigInt(0), 'Should invalidate cached value on hardfork change')
-      }
-      st.end()
-    })
-  }
-)
+      const mutableCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+      tx = txType.class.fromTxData({}, { common: mutableCommon })
+      tx.common.setHardfork(Hardfork.Istanbul)
+      assert.equal(tx.getDataFee(), BigInt(0), 'Should invalidate cached value on hardfork change')
+    }
+  })
+})
 
-tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
-  t.test('Initialization', (st) => {
+describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
+  it(`Initialization`, () => {
     const tx = AccessListEIP2930Transaction.fromTxData({}, { common })
-    t.ok(
+    assert.ok(
       AccessListEIP2930Transaction.fromTxData(tx, { common }),
       'should initialize correctly from its own data'
     )
@@ -355,26 +404,30 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
         { common }
       )
     } catch (err: any) {
-      st.ok(
+      assert.ok(
         err.message.includes('gasLimit * gasPrice cannot exceed MAX_INTEGER'),
         'throws when gasLimit * gasPrice exceeds MAX_INTEGER'
       )
     }
-    st.end()
   })
 
-  t.throws(() => {
-    const bytes = new Uint8Array(0)
-    const address = new Uint8Array(0)
-    const storageKeys = [new Uint8Array(0), new Uint8Array(0)]
-    const aclBytes: AccessListBytesItem = [address, storageKeys]
-    AccessListEIP2930Transaction.fromValuesArray(
-      [bytes, bytes, bytes, bytes, bytes, bytes, bytes, [aclBytes], bytes],
-      {}
-    )
-  }, 'should throw with values array with length different than 8 or 11')
+  assert.throws(
+    () => {
+      const bytes = new Uint8Array(0)
+      const address = new Uint8Array(0)
+      const storageKeys = [new Uint8Array(0), new Uint8Array(0)]
+      const aclBytes: AccessListBytesItem = [address, storageKeys]
+      AccessListEIP2930Transaction.fromValuesArray(
+        [bytes, bytes, bytes, bytes, bytes, bytes, bytes, [aclBytes], bytes],
+        {}
+      )
+    },
+    undefined,
+    undefined,
+    'should throw with values array with length different than 8 or 11'
+  )
 
-  t.test('should return right upfront cost', (st) => {
+  it(`should return right upfront cost`, () => {
     let tx = AccessListEIP2930Transaction.fromTxData(
       {
         data: hexStringToBytes('010200'),
@@ -395,7 +448,7 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
     const baseFee: number = Number(common.param('gasPrices', 'tx'))
     const creationFee: number = Number(common.param('gasPrices', 'txCreation'))
 
-    st.ok(
+    assert.ok(
       tx.getBaseFee() ===
         BigInt(
           txDataNonZero * 2 +
@@ -416,7 +469,7 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
       { common }
     )
 
-    st.ok(
+    assert.ok(
       tx.getBaseFee() ===
         BigInt(
           txDataNonZero * 2 +
@@ -441,14 +494,12 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
       { common }
     )
 
-    st.ok(
+    assert.ok(
       tx.getBaseFee() === BigInt(baseFee + accessListAddressCost * 2 + accessListStorageKeyCost * 3)
     )
-
-    st.end()
   })
 
-  t.test('getUpfrontCost() -> should return upfront cost', function (st) {
+  it('getUpfrontCost() -> should return upfront cost', () => {
     const tx = AccessListEIP2930Transaction.fromTxData(
       {
         gasPrice: 1000,
@@ -457,11 +508,10 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
       },
       { common }
     )
-    st.equal(tx.getUpfrontCost(), BigInt(10000000042))
-    st.end()
+    assert.equal(tx.getUpfrontCost(), BigInt(10000000042))
   })
 
-  t.test('unsigned tx -> getMessageToSign()', function (t) {
+  it('unsigned tx -> getMessageToSign()', () => {
     const unsignedTx = AccessListEIP2930Transaction.fromTxData(
       {
         data: hexStringToBytes('010200'),
@@ -474,24 +524,22 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
     const expectedHash = hexStringToBytes(
       '78528e2724aa359c58c13e43a7c467eb721ce8d410c2a12ee62943a3aaefb60b'
     )
-    t.deepEqual(unsignedTx.getMessageToSign(true), expectedHash), 'correct hashed version'
+    assert.deepEqual(unsignedTx.getMessageToSign(true), expectedHash), 'correct hashed version'
 
     const expectedSerialization = hexStringToBytes(
       '01f858018080809401010101010101010101010101010101010101018083010200f838f7940101010101010101010101010101010101010101e1a00101010101010101010101010101010101010101010101010101010101010101'
     )
-    t.deepEqual(
+    assert.deepEqual(
       unsignedTx.getMessageToSign(false),
       expectedSerialization,
       'correct serialized unhashed version'
     )
-
-    t.end()
   })
 
   // Data from
   // https://github.com/INFURA/go-ethlibs/blob/75b2a52a39d353ed8206cffaf68d09bd1b154aae/eth/transaction_signing_test.go#L87
 
-  t.test('should sign transaction correctly and return expected JSON', function (t) {
+  it('should sign transaction correctly and return expected JSON', () => {
     const address = hexStringToBytes('0000000000000000000000000000000000001337')
     const slot1 = hexStringToBytes(
       '0000000000000000000000000000000000000000000000000000000000000000'
@@ -542,18 +590,18 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
 
     const serializedMessageRaw = unsignedTx.serialize()
 
-    t.ok(
+    assert.ok(
       equalsBytes(expectedUnsignedRaw, serializedMessageRaw),
       'serialized unsigned message correct'
     )
 
     const signed = unsignedTx.sign(pkey)
 
-    t.ok(v === signed.v!, 'v correct')
-    t.ok(r === signed.r!, 'r correct')
-    t.ok(s === signed.s!, 's correct')
-    t.ok(equalsBytes(expectedSigned, signed.serialize()), 'serialized signed message correct')
-    t.ok(equalsBytes(expectedHash, signed.hash()), 'hash correct')
+    assert.ok(v === signed.v!, 'v correct')
+    assert.ok(r === signed.r!, 'r correct')
+    assert.ok(s === signed.s!, 's correct')
+    assert.ok(equalsBytes(expectedSigned, signed.serialize()), 'serialized signed message correct')
+    assert.ok(equalsBytes(expectedHash, signed.hash()), 'hash correct')
 
     const expectedJSON = {
       type: '0x1',
@@ -575,30 +623,26 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
       s: '0xbe950468ba1c25a5cb50e9f6d8aa13c8cd21f24ba909402775b262ac76d374d',
     }
 
-    t.deepEqual(signed.toJSON(), expectedJSON)
-
-    t.end()
+    assert.deepEqual(signed.toJSON(), expectedJSON)
   })
 
-  t.test('freeze property propagates from unsigned tx to signed tx', function (st) {
+  it('freeze property propagates from unsigned tx to signed tx', () => {
     const tx = AccessListEIP2930Transaction.fromTxData({}, { freeze: false })
-    st.notOk(Object.isFrozen(tx), 'tx object is not frozen')
+    assert.notOk(Object.isFrozen(tx), 'tx object is not frozen')
     const signedTxn = tx.sign(pKey)
-    st.notOk(Object.isFrozen(signedTxn), 'tx object is not frozen')
-    st.end()
+    assert.notOk(Object.isFrozen(signedTxn), 'tx object is not frozen')
   })
 
-  t.test('common propagates from the common of tx, not the common in TxOptions', function (st) {
+  it('common propagates from the common of tx, not the common in TxOptions', () => {
     const txn = AccessListEIP2930Transaction.fromTxData({}, { common, freeze: false })
     const newCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [2537] })
-    st.notDeepEqual(newCommon, common, 'new common is different than original common')
+    assert.notDeepEqual(newCommon, common, 'new common is different than original common')
     Object.defineProperty(txn, 'common', {
       get() {
         return newCommon
       },
     })
     const signedTxn = txn.sign(pKey)
-    st.ok(signedTxn.common.eips().includes(2537), 'signed tx common is taken from tx.common')
-    st.end()
+    assert.ok(signedTxn.common.eips().includes(2537), 'signed tx common is taken from tx.common')
   })
 })

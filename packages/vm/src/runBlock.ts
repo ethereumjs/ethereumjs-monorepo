@@ -2,6 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
+import { TransactionType } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -14,9 +15,9 @@ import {
   short,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
-import { Bloom } from './bloom'
+import { Bloom } from './bloom/index.js'
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
 
 import type {
@@ -26,8 +27,8 @@ import type {
   RunBlockOpts,
   RunBlockResult,
   TxReceipt,
-} from './types'
-import type { VM } from './vm'
+} from './types.js'
+import type { VM } from './vm.js'
 import type { EVM } from '@ethereumjs/evm'
 
 const debug = createDebugLogger('vm:block')
@@ -60,11 +61,11 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     this._hardforkByTTD !== undefined ||
     opts.hardforkByTTD !== undefined
   ) {
-    this._common.setHardforkByBlockNumber(
-      block.header.number,
-      opts.hardforkByTTD ?? this._hardforkByTTD,
-      block.header.timestamp
-    )
+    this._common.setHardforkBy({
+      blockNumber: block.header.number,
+      td: opts.hardforkByTTD ?? this._hardforkByTTD,
+      timestamp: block.header.timestamp,
+    })
   }
 
   if (this.DEBUG) {
@@ -409,7 +410,7 @@ export async function rewardAccount(evm: EVM, address: Address, reward: bigint):
 /**
  * Returns the encoded tx receipt.
  */
-export function encodeReceipt(receipt: TxReceipt, txType: number) {
+export function encodeReceipt(receipt: TxReceipt, txType: TransactionType) {
   const encoded = RLP.encode([
     (receipt as PreByzantiumTxReceipt).stateRoot ??
       ((receipt as PostByzantiumTxReceipt).status === 0 ? Uint8Array.from([]) : hexToBytes('01')),
@@ -418,7 +419,7 @@ export function encodeReceipt(receipt: TxReceipt, txType: number) {
     receipt.logs,
   ])
 
-  if (txType === 0) {
+  if (txType === TransactionType.Legacy) {
     return encoded
   }
 

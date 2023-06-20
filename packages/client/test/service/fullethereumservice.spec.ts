@@ -1,5 +1,5 @@
 import { Common, Hardfork } from '@ethereumjs/common'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { TransactionFactory, TransactionType } from '@ethereumjs/tx'
 import { hexStringToBytes, randomBytes } from '@ethereumjs/util'
 import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
@@ -241,7 +241,7 @@ tape('[FullEthereumService]', async (t) => {
             new Uint8Array(10),
           ],
         ] as Log[],
-        txType: 2,
+        txType: TransactionType.FeeMarketEIP1559,
       },
       {
         status: 0 as 0 | 1,
@@ -254,7 +254,7 @@ tape('[FullEthereumService]', async (t) => {
             new Uint8Array(10),
           ],
         ] as Log[],
-        txType: 0,
+        txType: TransactionType.Legacy,
       },
     ]
     td.when(service.execution.receiptsManager!.getReceipts(blockHash, true, true)).thenResolve(
@@ -333,7 +333,7 @@ tape('[FullEthereumService]', async (t) => {
 
   t.test('should start on beacon sync when past merge', async (t) => {
     const common = Common.fromGethGenesis(genesisJSON, { chain: 'post-merge' })
-    common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
+    common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000, common })
     const chain = await Chain.create({ config })
     let service = new FullEthereumService({ config, chain })

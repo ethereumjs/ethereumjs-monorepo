@@ -9,15 +9,21 @@ import {
   unpadBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { BaseTransaction } from './baseTransaction'
-import { Capability } from './types'
+import { BaseTransaction } from './baseTransaction.js'
+import { Capability, TransactionType } from './types.js'
 
-import type { JsonTx, TxData, TxOptions, TxValuesArray } from './types'
+import type {
+  TxData as AllTypesTxData,
+  TxValuesArray as AllTypesTxValuesArray,
+  JsonTx,
+  TxOptions,
+} from './types.js'
 import type { Common } from '@ethereumjs/common'
 
-const TRANSACTION_TYPE = 0
+type TxData = AllTypesTxData[TransactionType.Legacy]
+type TxValuesArray = AllTypesTxValuesArray[TransactionType.Legacy]
 
 function meetsEIP155(_v: bigint, chainId: bigint) {
   const v = Number(_v)
@@ -28,7 +34,7 @@ function meetsEIP155(_v: bigint, chainId: bigint) {
 /**
  * An Ethereum non-typed (legacy) transaction
  */
-export class Transaction extends BaseTransaction<Transaction> {
+export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
   public readonly gasPrice: bigint
 
   public readonly common: Common
@@ -42,7 +48,7 @@ export class Transaction extends BaseTransaction<Transaction> {
    * - All parameters are optional and have some basic default values
    */
   public static fromTxData(txData: TxData, opts: TxOptions = {}) {
-    return new Transaction(txData, opts)
+    return new LegacyTransaction(txData, opts)
   }
 
   /**
@@ -78,7 +84,7 @@ export class Transaction extends BaseTransaction<Transaction> {
 
     validateNoLeadingZeroes({ nonce, gasPrice, gasLimit, value, v, r, s })
 
-    return new Transaction(
+    return new LegacyTransaction(
       {
         nonce,
         gasPrice,
@@ -102,7 +108,7 @@ export class Transaction extends BaseTransaction<Transaction> {
    * varying data types.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
-    super({ ...txData, type: TRANSACTION_TYPE }, opts)
+    super({ ...txData, type: TransactionType.Legacy }, opts)
 
     this.common = this._validateTxV(this.v, opts.common)
 
@@ -315,7 +321,7 @@ export class Transaction extends BaseTransaction<Transaction> {
 
     const opts = { ...this.txOptions, common: this.common }
 
-    return Transaction.fromTxData(
+    return LegacyTransaction.fromTxData(
       {
         nonce: this.nonce,
         gasPrice: this.gasPrice,

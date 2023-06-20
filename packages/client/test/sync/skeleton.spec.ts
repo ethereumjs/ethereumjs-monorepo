@@ -649,7 +649,7 @@ tape('[Skeleton] / setHead', async (t) => {
         difficulty: '0x1',
       }
       const common = Common.fromGethGenesis(genesis, { chain: 'post-merge' })
-      common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
+      common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
       const config = new Config({
         transports: [],
         common,
@@ -757,7 +757,7 @@ tape('[Skeleton] / setHead', async (t) => {
         difficulty: '0x1',
       }
       const common = Common.fromGethGenesis(genesis, { chain: 'post-merge' })
-      common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
+      common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
       const config = new Config({
         transports: [],
         common,
@@ -821,7 +821,7 @@ tape('[Skeleton] / setHead', async (t) => {
         difficulty: '0x1',
       }
       const common = Common.fromGethGenesis(genesis, { chain: 'post-merge' })
-      common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
+      common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
       const config = new Config({
         transports: [],
         common,

@@ -6,7 +6,7 @@ import {
   bigIntToHex,
   bytesToPrefixedHexString,
   hexStringToBytes,
-  intToHex,
+  intToPrefixedHexString,
   setLengthLeft,
   toType,
   utf8ToBytes,
@@ -25,7 +25,11 @@ import type { RpcTx } from '../types'
 import type { Block, JsonRpcBlock } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'
-import type { FeeMarketEIP1559Transaction, Transaction, TypedTransaction } from '@ethereumjs/tx'
+import type {
+  FeeMarketEIP1559Transaction,
+  LegacyTransaction,
+  TypedTransaction,
+} from '@ethereumjs/tx'
 import type {
   EIP4844BlobTxReceipt,
   PostByzantiumTxReceipt,
@@ -118,7 +122,7 @@ const jsonRpcBlock = async (
     difficulty: header.difficulty!,
     totalDifficulty: bigIntToHex(td),
     extraData: header.extraData!,
-    size: intToHex(utf8ToBytes(JSON.stringify(json)).byteLength),
+    size: intToPrefixedHexString(utf8ToBytes(JSON.stringify(json)).byteLength),
     gasLimit: header.gasLimit!,
     gasUsed: header.gasUsed!,
     timestamp: header.timestamp!,
@@ -142,9 +146,9 @@ const jsonRpcLog = async (
   logIndex?: number
 ): Promise<JsonRpcLog> => ({
   removed: false, // TODO implement
-  logIndex: logIndex !== undefined ? intToHex(logIndex) : null,
-  transactionIndex: txIndex !== undefined ? intToHex(txIndex) : null,
-  transactionHash: tx ? bytesToPrefixedHexString(tx.hash()) : null,
+  logIndex: logIndex !== undefined ? intToPrefixedHexString(logIndex) : null,
+  transactionIndex: txIndex !== undefined ? intToPrefixedHexString(txIndex) : null,
+  transactionHash: tx !== undefined ? bytesToPrefixedHexString(tx.hash()) : null,
   blockHash: block ? bytesToPrefixedHexString(block.hash()) : null,
   blockNumber: block ? bigIntToHex(block.header.number) : null,
   address: bytesToPrefixedHexString(log[0]),
@@ -168,7 +172,7 @@ const jsonRpcReceipt = async (
   dataGasPrice?: bigint
 ): Promise<JsonRpcReceipt> => ({
   transactionHash: bytesToPrefixedHexString(tx.hash()),
-  transactionIndex: intToHex(txIndex),
+  transactionIndex: intToPrefixedHexString(txIndex),
   blockHash: bytesToPrefixedHexString(block.hash()),
   blockNumber: bigIntToHex(block.header.number),
   from: tx.getSenderAddress().toString(),
@@ -187,7 +191,7 @@ const jsonRpcReceipt = async (
       : undefined,
   status:
     ((receipt as PostByzantiumTxReceipt).status as unknown) instanceof Uint8Array
-      ? intToHex((receipt as PostByzantiumTxReceipt).status)
+      ? intToPrefixedHexString((receipt as PostByzantiumTxReceipt).status)
       : undefined,
   dataGasUsed: dataGasUsed !== undefined ? bigIntToHex(dataGasUsed) : undefined,
   dataGasPrice: dataGasPrice !== undefined ? bigIntToHex(dataGasPrice) : undefined,
@@ -577,7 +581,7 @@ export class Eth {
     const [blockHash] = params
     try {
       const block = await this._chain.getBlock(hexStringToBytes(blockHash))
-      return intToHex(block.transactions.length)
+      return intToPrefixedHexString(block.transactions.length)
     } catch (error) {
       throw {
         code: INVALID_PARAMS,
@@ -726,7 +730,7 @@ export class Eth {
    * @param params An empty array
    */
   protocolVersion(_params = []) {
-    return intToHex(this.ethVersion)
+    return intToPrefixedHexString(this.ethVersion)
   }
 
   /**
@@ -778,7 +782,7 @@ export class Eth {
           : (tx as FeeMarketEIP1559Transaction).maxFeePerGas -
             block.header.baseFeePerGas! +
             block.header.baseFeePerGas!
-        : (tx as Transaction).gasPrice
+        : (tx as LegacyTransaction).gasPrice
 
       const vmCopy = await this._vm!.copy()
       vmCopy._common.setHardfork(tx.common.hardfork())
@@ -929,7 +933,10 @@ export class Eth {
     if (txTargetHeight <= chainHeight) {
       txTargetHeight = chainHeight + BigInt(1)
     }
-    common.setHardforkByBlockNumber(txTargetHeight, undefined, Math.floor(Date.now() / 1000))
+    common.setHardforkBy({
+      blockNumber: txTargetHeight,
+      timestamp: Math.floor(Date.now() / 1000),
+    })
 
     let tx
     try {
@@ -1079,7 +1086,7 @@ export class Eth {
   async getBlockTransactionCountByNumber(params: [string]) {
     const [blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
-    return intToHex(block.transactions.length)
+    return intToPrefixedHexString(block.transactions.length)
   }
 
   /**
@@ -1116,7 +1123,7 @@ export class Eth {
         }
 
         for (const tx of block.transactions) {
-          const txGasPrice = (tx as Transaction).gasPrice
+          const txGasPrice = (tx as LegacyTransaction).gasPrice
           gasPrice += txGasPrice
           txCount++
         }

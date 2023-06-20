@@ -1,9 +1,9 @@
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { bytesToHex } from 'ethereum-cryptography/utils.js'
 import { EventEmitter } from 'events'
 
-import { KBucket as _KBucket } from '../ext'
+import { KBucket as _KBucket } from '../ext/index.js'
 
-import type { PeerInfo } from './dpt'
+import type { PeerInfo } from './dpt.js'
 
 const KBUCKET_SIZE = 16
 const KBUCKET_CONCURRENCY = 3

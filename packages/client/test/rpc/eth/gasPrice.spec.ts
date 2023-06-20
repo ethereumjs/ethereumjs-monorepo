@@ -1,5 +1,5 @@
-import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
-import { bigIntToHex, intToHex } from '@ethereumjs/util'
+import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
+import { bigIntToHex, intToPrefixedHexString } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import {
@@ -20,7 +20,7 @@ tape(`${method}: call with legacy transaction data`, async (t) => {
 
   const GAS_PRICE = 100
   // construct tx
-  const tx = Transaction.fromTxData(
+  const tx = LegacyTransaction.fromTxData(
     { gasLimit: 21000, gasPrice: GAS_PRICE, to: '0x0000000000000000000000000000000000000000' },
     { common }
   ).sign(dummy.privKey)
@@ -30,7 +30,7 @@ tape(`${method}: call with legacy transaction data`, async (t) => {
   const req = params(method, [])
   const expectRes = (res: any) => {
     const msg = 'should return the correct suggested gas price with 1 legacy transaction'
-    t.equal(res.body.result, intToHex(GAS_PRICE), msg)
+    t.equal(res.body.result, intToPrefixedHexString(GAS_PRICE), msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
@@ -42,7 +42,7 @@ tape(`${method}: call with multiple legacy transactions`, async (t) => {
   for (let i = 0; i < iterations; i++) {
     const gasPrice = i * 100
     averageGasPrice += BigInt(gasPrice)
-    const tx = Transaction.fromTxData(
+    const tx = LegacyTransaction.fromTxData(
       { nonce: i, gasLimit: 21000, gasPrice, to: '0x0000000000000000000000000000000000000000' },
       { common }
     ).sign(dummy.privKey)
@@ -64,11 +64,11 @@ tape(`${method}: call with multiple legacy transactions in a single block`, asyn
   const G1 = 100
   const G2 = 1231231
 
-  const tx1 = Transaction.fromTxData(
+  const tx1 = LegacyTransaction.fromTxData(
     { gasLimit: 21000, gasPrice: G1, to: '0x0000000000000000000000000000000000000000' },
     { common }
   ).sign(dummy.privKey)
-  const tx2 = Transaction.fromTxData(
+  const tx2 = LegacyTransaction.fromTxData(
     { nonce: 1, gasLimit: 21000, gasPrice: G2, to: '0x0000000000000000000000000000000000000000' },
     { common }
   ).sign(dummy.privKey)
@@ -79,7 +79,7 @@ tape(`${method}: call with multiple legacy transactions in a single block`, asyn
   const req = params(method, [])
   const expectRes = (res: any) => {
     const msg = 'should return the correct gas price with multiple legacy transactions in a block'
-    t.equal(res.body.result, intToHex(Math.trunc(averageGasPrice)), msg)
+    t.equal(res.body.result, intToPrefixedHexString(Math.trunc(averageGasPrice)), msg)
   }
   await baseRequest(t, server, req, 200, () => expectRes)
 })
@@ -159,10 +159,10 @@ tape(`${method}: compute average gas price for 21 blocks`, async (t) => {
   const iterations = BigInt(21)
   const gasPrice = BigInt(20)
   const firstBlockGasPrice = BigInt(11111111111111)
-  let tx: Transaction
+  let tx: LegacyTransaction
   for (let i = 0; i < iterations; i++) {
     if (i === 0) {
-      tx = Transaction.fromTxData(
+      tx = LegacyTransaction.fromTxData(
         {
           nonce: i,
           gasLimit: 21000,
@@ -172,7 +172,7 @@ tape(`${method}: compute average gas price for 21 blocks`, async (t) => {
         { common }
       ).sign(dummy.privKey)
     } else {
-      tx = Transaction.fromTxData(
+      tx = LegacyTransaction.fromTxData(
         {
           nonce: i,
           gasLimit: 21000,

@@ -1,13 +1,6 @@
-import type { BlockHeader } from './header'
+import type { BlockHeader } from './header.js'
 import type { Common } from '@ethereumjs/common'
-import type {
-  AccessListEIP2930TxData,
-  BlobEIP4844TxData,
-  FeeMarketEIP1559TxData,
-  JsonRpcTx,
-  JsonTx,
-  TxData,
-} from '@ethereumjs/tx'
+import type { JsonRpcTx, JsonTx, TransactionType, TxData } from '@ethereumjs/tx'
 import type {
   AddressLike,
   BigIntLike,
@@ -117,9 +110,7 @@ export interface BlockData {
    * Header data for the block
    */
   header?: HeaderData
-  transactions?: Array<
-    TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData | BlobEIP4844TxData
-  >
+  transactions?: Array<TxData[TransactionType]>
   uncleHeaders?: Array<HeaderData>
   withdrawals?: Array<WithdrawalData>
 }

@@ -1,13 +1,13 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { assert, describe, it } from 'vitest'
 
-import { EVM, getActivePrecompiles } from '../../src'
+import { EVM, getActivePrecompiles } from '../../src/index.js'
 
-tape('Precompiles: hardfork availability', (t) => {
-  t.test('Test ECPAIRING availability', async (st) => {
+describe('Precompiles: hardfork availability', () => {
+  it('Test ECPAIRING availability', async () => {
     const ECPAIR_AddressStr = '0000000000000000000000000000000000000008'
     const ECPAIR_Address = new Address(hexToBytes(ECPAIR_AddressStr))
 
@@ -17,9 +17,9 @@ tape('Precompiles: hardfork availability', (t) => {
     let ECPAIRING = getActivePrecompiles(commonByzantium).get(ECPAIR_AddressStr)
 
     if (!ECPAIRING) {
-      st.fail('ECPAIRING is not available in petersburg while it should be available')
+      assert.fail('ECPAIRING is not available in petersburg while it should be available')
     } else {
-      st.pass('ECPAIRING available in petersburg')
+      assert.ok(true, 'ECPAIRING available in petersburg')
     }
 
     let evm = await EVM.create({
@@ -33,15 +33,15 @@ tape('Precompiles: hardfork availability', (t) => {
       value: BigInt(0),
     })
 
-    st.equal(result.execResult.executionGasUsed, BigInt(100000)) // check that we are using gas (if address would contain no code we use 0 gas)
+    assert.equal(result.execResult.executionGasUsed, BigInt(100000)) // check that we are using gas (if address would contain no code we use 0 gas)
 
     // Check if ECPAIR is available in future hard forks.
     const commonPetersburg = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     ECPAIRING = getActivePrecompiles(commonPetersburg).get(ECPAIR_AddressStr)!
     if (ECPAIRING === undefined) {
-      st.fail('ECPAIRING is not available in petersburg while it should be available')
+      assert.fail('ECPAIRING is not available in petersburg while it should be available')
     } else {
-      st.pass('ECPAIRING available in petersburg')
+      assert.ok(true, 'ECPAIRING available in petersburg')
     }
 
     evm = await EVM.create({
@@ -55,16 +55,16 @@ tape('Precompiles: hardfork availability', (t) => {
       value: BigInt(0),
     })
 
-    st.equal(result.execResult.executionGasUsed, BigInt(100000))
+    assert.equal(result.execResult.executionGasUsed, BigInt(100000))
 
     // Check if ECPAIR is not available in Homestead.
     const commonHomestead = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
     ECPAIRING = getActivePrecompiles(commonHomestead).get(ECPAIR_AddressStr)!
 
     if (ECPAIRING !== undefined) {
-      st.fail('ECPAIRING is available in homestead while it should not be available')
+      assert.fail('ECPAIRING is available in homestead while it should not be available')
     } else {
-      st.pass('ECPAIRING not available in homestead')
+      assert.ok(true, 'ECPAIRING not available in homestead')
     }
 
     evm = await EVM.create({
@@ -79,8 +79,6 @@ tape('Precompiles: hardfork availability', (t) => {
       value: BigInt(0),
     })
 
-    st.equal(result.execResult.executionGasUsed, BigInt(0)) // check that we use no gas, because we are calling into an address without code.
-
-    st.end()
+    assert.equal(result.execResult.executionGasUsed, BigInt(0)) // check that we use no gas, because we are calling into an address without code.
   })
 })

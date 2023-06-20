@@ -39,7 +39,7 @@ export function parseMultiaddrs(input: MultiaddrLike): Multiaddr[] {
       }
       // parse as object
       if (typeof s === 'object') {
-        const { ip, port } = s as any
+        const { ip, port } = s
         if (ip !== undefined && port !== undefined) {
           return multiaddr(`/ip4/${ip}/tcp/${port}`)
         }
@@ -54,7 +54,7 @@ export function parseMultiaddrs(input: MultiaddrLike): Multiaddr[] {
       const ipv6WithPort = new RegExp('\\[(?<ip6>' + ip6RegExp.source + ')\\]:(?<port>[0-9]+)$')
       const matchip6 = s.match(ipv6WithPort)
       if (matchip6) {
-        const { ip6, port } = matchip6.groups as any
+        const { ip6, port } = matchip6.groups!
         return multiaddr(`/ip6/${ip6}/tcp/${port}`)
       }
       // parse using WHATWG URL API

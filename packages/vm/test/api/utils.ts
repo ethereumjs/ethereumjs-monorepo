@@ -1,5 +1,5 @@
 import { Blockchain } from '@ethereumjs/blockchain'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { TransactionFactory, TransactionType } from '@ethereumjs/tx'
 import { Account, blobsToCommitments, computeVersionedHash, getBlobs } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { hexToBytes } from 'ethereum-cryptography/utils'
@@ -45,7 +45,7 @@ export async function setupVM(opts: VMOpts & { genesisBlock?: Block } = {}) {
 
 export function getTransaction(
   common: Common,
-  txType = 0,
+  txType = TransactionType.Legacy,
   sign = false,
   value = '0x00',
   createContract = false,
@@ -69,11 +69,11 @@ export function getTransaction(
     data,
   }
 
-  if (txType > 0) {
+  if (txType > TransactionType.Legacy) {
     txParams['type'] = txType
   }
 
-  if (txType === 1) {
+  if (txType === TransactionType.AccessListEIP2930) {
     txParams['chainId'] = common.chainId()
     txParams['accessList'] = [
       {
@@ -84,11 +84,11 @@ export function getTransaction(
         ],
       },
     ]
-  } else if (txType === 2) {
+  } else if (txType === TransactionType.FeeMarketEIP1559) {
     txParams['gasPrice'] = undefined
     txParams['maxFeePerGas'] = BigInt(100)
     txParams['maxPriorityFeePerGas'] = BigInt(10)
-  } else if (txType === 3) {
+  } else if (txType === TransactionType.BlobEIP4844) {
     txParams['gasPrice'] = undefined
     txParams['maxFeePerGas'] = BigInt(1000000000)
     txParams['maxPriorityFeePerGas'] = BigInt(10)
@@ -113,13 +113,4 @@ export function getTransaction(
   }
 
   return tx
-}
-
-/**
- * Checks if in a karma test runner.
- * @returns boolean whether running in karma
- */
-export function isRunningInKarma(): boolean {
-  // eslint-disable-next-line no-undef
-  return typeof (<any>globalThis).window !== 'undefined' && (<any>globalThis).window.__karma__
 }

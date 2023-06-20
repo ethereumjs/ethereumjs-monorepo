@@ -1,15 +1,14 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { KECCAK256_RLP } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 
-tape('General MuirGlacier VM tests', (t) => {
-  t.test('should accept muirGlacier harfork option for supported chains', async (st) => {
+describe('General MuirGlacier VM tests', () => {
+  it('should accept muirGlacier harfork option for supported chains', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
     const vm = await VM.create({ common })
-    st.ok(vm.stateManager)
-    st.deepEqual((<any>vm.stateManager)._trie.root(), KECCAK256_RLP, 'it has default trie')
-    st.end()
+    assert.ok(vm.stateManager)
+    assert.deepEqual((<any>vm.stateManager)._trie.root(), KECCAK256_RLP, 'it has default trie')
   })
 })

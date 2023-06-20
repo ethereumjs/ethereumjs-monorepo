@@ -32,13 +32,13 @@ npm install @ethereumjs/vm
 ```typescript
 import { Address } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import { VM } from '@ethereumjs/vm'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 const vm = await VM.create({ common })
 
-const tx = Transaction.fromTxData({
+const tx = LegacyTransaction.fromTxData({
   gasLimit: BigInt(21000),
   value: BigInt(1),
   to: Address.zero(),
@@ -59,7 +59,7 @@ The following non-complete example gives some illustration on how to use the Blo
 
 ```typescript
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import { VM } from '@ethereumjs/vm'
 
 const common = new Common({ chain: Chain.Mainnet })
@@ -71,7 +71,7 @@ const blockBuilder = await vm.buildBlock({
   blockOpts: { calcDifficultyFromHeader: parentBlock.header, freeze: false },
 })
 
-const tx = Transaction.fromTxData()
+const tx = LegacyTransaction.fromTxData()
 await blockBuilder.addTransaction(tx)
 
 // Add more transactions

@@ -1,14 +1,14 @@
 import { Common, Hardfork } from '@ethereumjs/common'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { Block, BlockHeader } from '../src/index'
+import * as shardingJson from '../../client/test/sim/configs/sharding.json'
+import { Block, BlockHeader } from '../src/index.js'
 
 import * as payload87335 from './testdata/payload-slot-87335.json'
 import * as payload87475 from './testdata/payload-slot-87475.json'
 
-tape('[fromExecutionPayloadJson]: 4844 devnet 5', async function (t) {
+describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
   const network = 'sharding'
-  const shardingJson = require(`../../client/test/sim/configs/sharding.json`)
 
   // safely change chainId without modifying undelying json
   const commonJson = { ...shardingJson }
@@ -16,38 +16,37 @@ tape('[fromExecutionPayloadJson]: 4844 devnet 5', async function (t) {
   const common = Common.fromGethGenesis(commonJson, { chain: network })
   common.setHardfork(Hardfork.Cancun)
 
-  t.test('reconstruct cancun block with blob txs', async function (st) {
+  it('reconstruct cancun block with blob txs', async () => {
     for (const payload of [payload87335, payload87475]) {
       try {
         const block = await Block.fromBeaconPayloadJson(payload, { common })
         const parentHeader = BlockHeader.fromHeaderData(
-          { excessDataGas: BigInt(0), dataGasUsed: block.header.excessDataGas! + BigInt(262144) },
+          { excessDataGas: BigInt(0), dataGasUsed: block.header.excessDataGas! + BigInt(393216) },
           { common }
         )
         block.validateBlobTransactions(parentHeader)
-        st.pass(`successfully constructed block=${block.header.number}`)
+        assert.ok(true, `successfully constructed block=${block.header.number}`)
       } catch (e) {
-        st.fail(`failed to construct block, error: ${e}`)
+        assert.fail(`failed to construct block, error: ${e}`)
       }
     }
-    st.end()
   })
 
-  t.test('should validate block hash', async function (st) {
+  it('should validate block hash', async () => {
     try {
       // construct a payload with differing block hash
       await Block.fromBeaconPayloadJson(
         { ...payload87335, block_hash: payload87475.block_hash },
         { common }
       )
-      st.fail(`should have failed constructing the block`)
+      assert.fail(`should have failed constructing the block`)
     } catch (e) {
-      st.pass(`correctly failed constructing block, error: ${e}`)
-      st.ok(`${e}`.includes('Invalid blockHash'), 'failed with correct error')
+      assert.ok(true, `correctly failed constructing block, error: ${e}`)
+      assert.ok(`${e}`.includes('Invalid blockHash'), 'failed with correct error')
     }
   })
 
-  t.test('should validate excess data gas', async function (st) {
+  it('should validate excess data gas', async () => {
     try {
       // construct a payload with a different excess data gas but matching hash
       const block = await Block.fromBeaconPayloadJson(
@@ -59,10 +58,10 @@ tape('[fromExecutionPayloadJson]: 4844 devnet 5', async function (t) {
       )
       const parentHeader = BlockHeader.fromHeaderData({ excessDataGas: BigInt(0) }, { common })
       block.validateBlobTransactions(parentHeader)
-      st.fail(`should have failed constructing the block`)
+      assert.fail(`should have failed constructing the block`)
     } catch (e) {
-      st.pass(`correctly failed constructing block, error: ${e}`)
-      st.ok(`${e}`.includes('block excessDataGas mismatch'), 'failed with correct error')
+      assert.ok(true, `correctly failed constructing block, error: ${e}`)
+      assert.ok(`${e}`.includes('block excessDataGas mismatch'), 'failed with correct error')
     }
   })
 })

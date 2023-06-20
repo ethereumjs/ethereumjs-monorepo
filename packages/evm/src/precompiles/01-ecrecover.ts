@@ -9,10 +9,10 @@ import {
   short,
 } from '@ethereumjs/util'
 
-import { OOGResult } from '../evm'
+import { OOGResult } from '../evm.js'
 
-import type { ExecResult } from '../evm'
-import type { PrecompileInput } from './types'
+import type { ExecResult } from '../evm.js'
+import type { PrecompileInput } from './types.js'
 
 export function precompile01(opts: PrecompileInput): ExecResult {
   const gasUsed = opts._common.param('gasPrices', 'ecRecover')

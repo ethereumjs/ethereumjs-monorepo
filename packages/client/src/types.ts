@@ -1,8 +1,6 @@
 import { EventEmitter } from 'events'
 
 import type { SyncMode } from '.'
-import type Connection = require('../../../node_modules/libp2p-interfaces/dist/src/connection/connection')
-import type { MuxedStream } from '../../../node_modules/libp2p-interfaces/dist/src/stream-muxer/types'
 import type { Peer } from './net/peer'
 import type { Server } from './net/server'
 import type { Block, BlockHeader } from '@ethereumjs/block'
@@ -95,12 +93,6 @@ export type MultiaddrLike = string | string[] | Multiaddr | Multiaddr[]
  * DNS
  */
 export type DnsNetwork = string
-
-/**
- * Libp2p aliases for convenience
- */
-export type Libp2pConnection = Connection
-export type Libp2pMuxedStream = MuxedStream
 
 export interface ClientOpts {
   network?: string

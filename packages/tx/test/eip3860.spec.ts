@@ -1,8 +1,8 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { TransactionFactory } from '../src'
+import { TransactionFactory, TransactionType } from '../src/index.js'
 
 const common = new Common({
   chain: Chain.Mainnet,
@@ -11,65 +11,65 @@ const common = new Common({
 })
 
 const maxInitCodeSize = common.param('vm', 'maxInitCodeSize')
-const txTypes = [0, 1, 2, 3]
+const txTypes = [
+  TransactionType.Legacy,
+  TransactionType.AccessListEIP2930,
+  TransactionType.FeeMarketEIP1559,
+  TransactionType.BlobEIP4844,
+]
 const addressZero = Address.zero()
 
-tape('[EIP3860 tests]', function (t) {
-  t.test('Should instantiate create txs with MAX_INITCODE_SIZE', (st) => {
+describe('[EIP3860 tests]', () => {
+  it(`Should instantiate create txs with MAX_INITCODE_SIZE`, () => {
     const data = new Uint8Array(Number(maxInitCodeSize))
     for (const txType of txTypes) {
       try {
         TransactionFactory.fromTxData({ data, type: txType }, { common })
-        st.ok('Instantiated create tx with MAX_INITCODE_SIZE data')
+        assert.ok('Instantiated create tx with MAX_INITCODE_SIZE data')
       } catch (e) {
-        st.fail('Did not instantiate create tx with MAX_INITCODE_SIZE')
+        assert.fail('Did not instantiate create tx with MAX_INITCODE_SIZE')
       }
     }
-    st.end()
   })
 
-  t.test('Should instantiate txs with MAX_INITCODE_SIZE data', (st) => {
+  it(`Should instantiate txs with MAX_INITCODE_SIZE data`, () => {
     const data = new Uint8Array(Number(maxInitCodeSize))
     for (const txType of txTypes) {
       try {
         TransactionFactory.fromTxData({ data, type: txType, to: addressZero }, { common })
-        st.ok('Instantiated tx with MAX_INITCODE_SIZE')
+        assert.ok('Instantiated tx with MAX_INITCODE_SIZE')
       } catch (e) {
-        st.fail('Did not instantiated tx with MAX_INITCODE_SIZE')
+        assert.fail('Did not instantiated tx with MAX_INITCODE_SIZE')
       }
     }
-    st.end()
   })
 
-  t.test('Should not instantiate create txs with MAX_INITCODE_SIZE+1 data', (st) => {
+  it(`Should not instantiate create txs with MAX_INITCODE_SIZE+1 data`, () => {
     const data = new Uint8Array(Number(maxInitCodeSize) + 1)
     for (const txType of txTypes) {
       try {
         TransactionFactory.fromTxData({ data, type: txType }, { common })
-        st.fail('Instantiated create tx with MAX_INITCODE_SIZE+1')
+        assert.fail('Instantiated create tx with MAX_INITCODE_SIZE+1')
       } catch (e) {
-        st.ok('Did not instantiate create tx with MAX_INITCODE_SIZE+1')
+        assert.ok('Did not instantiate create tx with MAX_INITCODE_SIZE+1')
       }
     }
-    st.end()
   })
 
-  t.test('Should instantiate txs with MAX_INITCODE_SIZE+1 data', (st) => {
+  it(`Should instantiate txs with MAX_INITCODE_SIZE+1 data`, () => {
     const data = new Uint8Array(Number(maxInitCodeSize) + 1)
     for (const txType of txTypes) {
       try {
         TransactionFactory.fromTxData({ data, type: txType, to: addressZero }, { common })
-        st.ok('Instantiated tx with MAX_INITCODE_SIZE+1')
+        assert.ok('Instantiated tx with MAX_INITCODE_SIZE+1')
       } catch (e) {
-        st.fail('Did not instantiate tx with MAX_INITCODE_SIZE+1')
+        assert.fail('Did not instantiate tx with MAX_INITCODE_SIZE+1')
       }
     }
-    st.end()
   })
 
-  tape(
-    'Should allow txs with MAX_INITCODE_SIZE+1 data if allowUnlimitedInitCodeSize is active',
-    (st) => {
+  describe('Should allow txs with MAX_INITCODE_SIZE+1 data if allowUnlimitedInitCodeSize is active', () => {
+    it('should work', () => {
       const data = new Uint8Array(Number(maxInitCodeSize) + 1)
       for (const txType of txTypes) {
         try {
@@ -77,31 +77,31 @@ tape('[EIP3860 tests]', function (t) {
             { data, type: txType },
             { common, allowUnlimitedInitCodeSize: true }
           )
-          st.ok('Instantiated create tx with MAX_INITCODE_SIZE+1')
+          assert.ok('Instantiated create tx with MAX_INITCODE_SIZE+1')
         } catch (e) {
-          st.fail('Did not instantiate tx with MAX_INITCODE_SIZE+1')
+          assert.fail('Did not instantiate tx with MAX_INITCODE_SIZE+1')
         }
       }
-      st.end()
-    }
-  )
+    })
+  })
 
-  tape('Should charge initcode analysis gas is allowUnlimitedInitCodeSize is active', (st) => {
-    const data = new Uint8Array(Number(maxInitCodeSize))
-    for (const txType of txTypes) {
-      const eip3860ActiveTx = TransactionFactory.fromTxData(
-        { data, type: txType },
-        { common, allowUnlimitedInitCodeSize: true }
-      )
-      const eip3860DeactivedTx = TransactionFactory.fromTxData(
-        { data, type: txType },
-        { common, allowUnlimitedInitCodeSize: false }
-      )
-      st.ok(
-        eip3860ActiveTx.getDataFee() === eip3860DeactivedTx.getDataFee(),
-        'charged initcode analysis gas'
-      )
-    }
-    st.end()
+  describe('Should charge initcode analysis gas is allowUnlimitedInitCodeSize is active', () => {
+    it('should work', () => {
+      const data = new Uint8Array(Number(maxInitCodeSize))
+      for (const txType of txTypes) {
+        const eip3860ActiveTx = TransactionFactory.fromTxData(
+          { data, type: txType },
+          { common, allowUnlimitedInitCodeSize: true }
+        )
+        const eip3860DeactivedTx = TransactionFactory.fromTxData(
+          { data, type: txType },
+          { common, allowUnlimitedInitCodeSize: false }
+        )
+        assert.ok(
+          eip3860ActiveTx.getDataFee() === eip3860DeactivedTx.getDataFee(),
+          'charged initcode analysis gas'
+        )
+      }
+    })
   })
 })

@@ -1,8 +1,8 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import { Account, Address } from '@ethereumjs/util'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 
@@ -110,10 +110,10 @@ const testCases = [
   },
 ]
 
-tape('EIP-3529 tests', (t) => {
+describe('EIP-3529 tests', () => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [3529] })
 
-  t.test('should verify EIP test cases', async (st) => {
+  it('should verify EIP test cases', async () => {
     const vm = await VM.create({ common })
 
     let gasRefund: bigint
@@ -149,20 +149,18 @@ tape('EIP-3529 tests', (t) => {
 
       const gasUsed = gasLimit - gasLeft!
       const effectiveGas = gasUsed - gasRefund!
-      st.equal(effectiveGas, BigInt(testCase.effectiveGas), 'correct effective gas')
-      st.equal(gasUsed, BigInt(testCase.usedGas), 'correct used gas')
+      assert.equal(effectiveGas, BigInt(testCase.effectiveGas), 'correct effective gas')
+      assert.equal(gasUsed, BigInt(testCase.usedGas), 'correct used gas')
 
       // clear the storage cache, otherwise next test will use current original value
       vm.stateManager.originalStorageCache.clear()
     }
-
-    st.end()
   })
 
-  t.test('should not refund selfdestructs', async (st) => {
+  it('should not refund selfdestructs', async () => {
     const vm = await VM.create({ common })
 
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       data: '0x6000ff',
       gasLimit: 100000,
     }).sign(pkey)
@@ -172,12 +170,11 @@ tape('EIP-3529 tests', (t) => {
       skipHardForkValidation: true,
     })
 
-    st.equal(result.execResult.exceptionError, undefined, 'transaction executed successfully')
-    st.equal(result.gasRefund, BigInt(0), 'gas refund is zero')
-    st.end()
+    assert.equal(result.execResult.exceptionError, undefined, 'transaction executed successfully')
+    assert.equal(result.gasRefund, BigInt(0), 'gas refund is zero')
   })
 
-  t.test('refunds are capped at 1/5 of the tx gas used', async (st) => {
+  it('refunds are capped at 1/5 of the tx gas used', async () => {
     /**
      * This test initializes a contract with slots 0-99 initialized to a nonzero value
      * Then, it resets all these 100 slots back to 0. This is to check if the
@@ -215,7 +212,7 @@ tape('EIP-3529 tests', (t) => {
 
     await vm.stateManager.putContractCode(address, hexToBytes(code))
 
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       to: address,
       gasLimit: 10000000,
     }).sign(pkey)
@@ -225,8 +222,7 @@ tape('EIP-3529 tests', (t) => {
     const actualGasUsed = startGas! - finalGas! + BigInt(21000)
     const maxRefund = actualGasUsed / BigInt(5)
     const minGasUsed = actualGasUsed - maxRefund
-    st.ok(result.gasRefund! > maxRefund, 'refund is larger than the max refund')
-    st.ok(result.totalGasSpent >= minGasUsed, 'gas used respects the max refund quotient')
-    st.end()
+    assert.ok(result.gasRefund! > maxRefund, 'refund is larger than the max refund')
+    assert.ok(result.totalGasSpent >= minGasUsed, 'gas used respects the max refund quotient')
   })
 })

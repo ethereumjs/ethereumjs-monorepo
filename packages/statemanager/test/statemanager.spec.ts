@@ -1,25 +1,24 @@
 import { KECCAK256_RLP } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { CacheType, DefaultStateManager } from '../src'
+import { CacheType, DefaultStateManager } from '../src/index.js'
 
-tape('StateManager -> General', (t) => {
-  t.test('should instantiate', async (st) => {
+describe('StateManager -> General', () => {
+  it(`should instantiate`, async () => {
     const sm = new DefaultStateManager()
 
-    st.deepEqual(sm._trie.root(), KECCAK256_RLP, 'it has default root')
+    assert.deepEqual(sm._trie.root(), KECCAK256_RLP, 'it has default root')
     const res = await sm.getStateRoot()
-    st.deepEqual(res, KECCAK256_RLP, 'it has default root')
-    st.end()
+    assert.deepEqual(res, KECCAK256_RLP, 'it has default root')
   })
 
-  t.test('copy()', async (st) => {
+  it(`copy()`, async () => {
     let sm = new DefaultStateManager({
       prefixCodeHashes: false,
     })
 
     let smCopy = sm.copy()
-    st.equal(
+    assert.equal(
       (smCopy as any)._prefixCodeHashes,
       (sm as any)._prefixCodeHashes,
       'should retain non-default values'
@@ -35,16 +34,15 @@ tape('StateManager -> General', (t) => {
     })
 
     smCopy = sm.copy()
-    st.equal(
+    assert.equal(
       (smCopy as any)._accountCacheSettings.type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP account cache on copy()'
     )
-    st.equal(
+    assert.equal(
       (smCopy as any)._storageCacheSettings.type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP storage cache on copy()'
     )
-    st.end()
   })
 })

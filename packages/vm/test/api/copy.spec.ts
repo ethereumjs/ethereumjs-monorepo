@@ -1,10 +1,10 @@
 import { Account, Address } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { setupVM } from './utils'
 
-tape('VM Copy Test', async (t) => {
-  t.test('should pass copy of state manager', async (st) => {
+describe('VM Copy Test', () => {
+  it('should pass copy of state manager', async () => {
     const vm = await setupVM()
     const account = Account.fromAccountData({
       balance: 100n,
@@ -13,11 +13,14 @@ tape('VM Copy Test', async (t) => {
     const address = Address.fromString(`0x` + '1234'.repeat(10))
     await vm.stateManager.putAccount(address, account)
 
-    st.ok((await vm.stateManager.getAccount(address)) !== undefined, 'account exists before copy')
+    assert.ok(
+      (await vm.stateManager.getAccount(address)) !== undefined,
+      'account exists before copy'
+    )
 
     const vmCopy = await vm.copy()
-    st.notok(
-      (await vmCopy.stateManager.getAccount(address)) !== undefined,
+    assert.isUndefined(
+      await vmCopy.stateManager.getAccount(address),
       'non-committed checkpoints will not be copied'
     )
 
@@ -26,11 +29,9 @@ tape('VM Copy Test', async (t) => {
 
     const vmCopy2 = await vm.copy()
 
-    st.ok(
+    assert.ok(
       (await vmCopy2.stateManager.getAccount(address)) !== undefined,
       'committed checkpoints will be copied'
     )
-
-    st.end()
   })
 })

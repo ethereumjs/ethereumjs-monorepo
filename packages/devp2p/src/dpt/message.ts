@@ -1,8 +1,8 @@
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToInt, intToBytes } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
-import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
-import { bytesToHex, bytesToUtf8, concatBytes } from 'ethereum-cryptography/utils'
+import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
+import { bytesToHex, bytesToUtf8, concatBytes } from 'ethereum-cryptography/utils.js'
 
 import {
   assertEq,
@@ -12,9 +12,9 @@ import {
   isV6Format,
   keccak256,
   unstrictDecode,
-} from '../util'
+} from '../util.js'
 
-import type { PeerInfo } from './dpt'
+import type { PeerInfo } from './dpt.js'
 
 const debug = createDebugLogger('devp2p:dpt:server')
 

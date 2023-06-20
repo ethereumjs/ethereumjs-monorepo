@@ -1,25 +1,23 @@
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { dns } from '../src/browser/dns'
+import { dns } from '../src/browser/dns.js'
 
-tape('dns browser polyfill stub', async (t) => {
+describe('dns browser polyfill stub', () => {
   const expectedError = 'EIP-1459 DNS Discovery is not supported for browser environments'
 
-  t.test('dns.promises.resolve throws an error', async (t) => {
+  it('dns.promises.resolve throws an error', async () => {
     try {
       await dns.promises.resolve('www.hello.com', 'TXT')
     } catch (e: any) {
-      t.ok(e.toString().includes(expectedError), 'throws expected error')
-      t.end()
+      assert.ok(e.toString().includes(expectedError), 'throws expected error')
     }
   })
 
-  t.test('dns.setServers throws and error', (t) => {
+  it('dns.setServers throws and error', () => {
     try {
       dns.setServers(['8.8.8.8'])
     } catch (e: any) {
-      t.ok(e.toString().includes(expectedError), 'throws expected error')
-      t.end()
+      assert.ok(e.toString().includes(expectedError), 'throws expected error')
     }
   })
 })

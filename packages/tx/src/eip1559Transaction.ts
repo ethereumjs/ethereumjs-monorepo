@@ -12,23 +12,28 @@ import {
   toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { BaseTransaction } from './baseTransaction'
-import { AccessLists } from './util'
+import { BaseTransaction } from './baseTransaction.js'
+import { TransactionType } from './types.js'
+import { AccessLists } from './util.js'
 
 import type {
   AccessList,
   AccessListBytes,
-  FeeMarketEIP1559TxData,
-  FeeMarketEIP1559ValuesArray,
+  TxData as AllTypesTxData,
+  TxValuesArray as AllTypesTxValuesArray,
   JsonTx,
   TxOptions,
-} from './types'
+} from './types.js'
 import type { Common } from '@ethereumjs/common'
 
-const TRANSACTION_TYPE = 2
-const TRANSACTION_TYPE_BYTES = hexStringToBytes(TRANSACTION_TYPE.toString(16).padStart(2, '0'))
+type TxData = AllTypesTxData[TransactionType.FeeMarketEIP1559]
+type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP1559]
+
+const TRANSACTION_TYPE_BYTES = hexStringToBytes(
+  TransactionType.FeeMarketEIP1559.toString(16).padStart(2, '0')
+)
 
 /**
  * Typed transaction with a new gas fee market mechanism
@@ -36,7 +41,7 @@ const TRANSACTION_TYPE_BYTES = hexStringToBytes(TRANSACTION_TYPE.toString(16).pa
  * - TransactionType: 2
  * - EIP: [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)
  */
-export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP1559Transaction> {
+export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType.FeeMarketEIP1559> {
   public readonly chainId: bigint
   public readonly accessList: AccessListBytes
   public readonly AccessListJSON: AccessList
@@ -44,14 +49,6 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
   public readonly maxFeePerGas: bigint
 
   public readonly common: Common
-
-  /**
-   * The default HF if the tx type is active on that HF
-   * or the first greater HF where the tx is active.
-   *
-   * @hidden
-   */
-  protected DEFAULT_HARDFORK = 'london'
 
   /**
    * Instantiate a transaction from a data dictionary.
@@ -63,7 +60,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
    * - `chainId` will be set automatically if not provided
    * - All parameters are optional and have some basic default values
    */
-  public static fromTxData(txData: FeeMarketEIP1559TxData, opts: TxOptions = {}) {
+  public static fromTxData(txData: TxData, opts: TxOptions = {}) {
     return new FeeMarketEIP1559Transaction(txData, opts)
   }
 
@@ -76,9 +73,9 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
   public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
     if (equalsBytes(serialized.subarray(0, 1), TRANSACTION_TYPE_BYTES) === false) {
       throw new Error(
-        `Invalid serialized tx input: not an EIP-1559 transaction (wrong tx type, expected: ${TRANSACTION_TYPE}, received: ${bytesToHex(
-          serialized.subarray(0, 1)
-        )}`
+        `Invalid serialized tx input: not an EIP-1559 transaction (wrong tx type, expected: ${
+          TransactionType.FeeMarketEIP1559
+        }, received: ${bytesToHex(serialized.subarray(0, 1))}`
       )
     }
 
@@ -88,7 +85,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
       throw new Error('Invalid serialized tx input: must be array')
     }
 
-    return FeeMarketEIP1559Transaction.fromValuesArray(values as any, opts)
+    return FeeMarketEIP1559Transaction.fromValuesArray(values as TxValuesArray, opts)
   }
 
   /**
@@ -97,7 +94,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
    * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
    * accessList, signatureYParity, signatureR, signatureS]`
    */
-  public static fromValuesArray(values: FeeMarketEIP1559ValuesArray, opts: TxOptions = {}) {
+  public static fromValuesArray(values: TxValuesArray, opts: TxOptions = {}) {
     if (values.length !== 9 && values.length !== 12) {
       throw new Error(
         'Invalid EIP-1559 transaction. Only expecting 9 values (for unsigned tx) or 12 values (for signed tx).'
@@ -148,8 +145,8 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
    * the static factory methods to assist in creating a Transaction object from
    * varying data types.
    */
-  public constructor(txData: FeeMarketEIP1559TxData, opts: TxOptions = {}) {
-    super({ ...txData, type: TRANSACTION_TYPE }, opts)
+  public constructor(txData: TxData, opts: TxOptions = {}) {
+    super({ ...txData, type: TransactionType.FeeMarketEIP1559 }, opts)
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
     this.common = this._getCommon(opts.common, chainId)
@@ -246,7 +243,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
    * representation for external signing use {@link FeeMarketEIP1559Transaction.getMessageToSign}.
    */
-  raw(): FeeMarketEIP1559ValuesArray {
+  raw(): TxValuesArray {
     return [
       bigIntToUnpaddedBytes(this.chainId),
       bigIntToUnpaddedBytes(this.nonce),

@@ -1,39 +1,47 @@
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { RLP, utils } from '../src'
+import { RLP, utils } from '../src/index.js'
 
 import * as invalid from './fixture/invalid.json'
 
 const { hexToBytes } = utils
 
-tape('invalid tests', (t) => {
+describe('invalid tests', () => {
   for (const [testName, test] of Object.entries(invalid.tests)) {
-    t.test(`should pass ${testName}`, (st) => {
+    it(`should pass ${testName}`, () => {
       let { out } = test
       if (out[0] === '0' && out[1] === 'x') {
         out = out.slice(2)
       }
-      st.throws(() => {
-        RLP.decode(hexToBytes(out))
-      }, `should not decode invalid RLPs, input: ${out}`)
-      st.end()
+      assert.throws(
+        () => {
+          RLP.decode(hexToBytes(out))
+        },
+        undefined,
+        undefined,
+        `should not decode invalid RLPs, input: ${out}`
+      )
     })
   }
 
-  t.test('should pass long string sanity check test', function (st) {
+  it('should pass long string sanity check test', function () {
     // long string invalid test; string length > 55
     const longBufferTest = RLP.encode(
       'zoo255zoo255zzzzzzzzzzzzssssssssssssssssssssssssssssssssssssssssssssss'
     )
     // sanity checks
-    st.ok(longBufferTest[0] > 0xb7)
-    st.ok(longBufferTest[0] <= 0xbf)
+    assert.ok(longBufferTest[0] > 0xb7)
+    assert.ok(longBufferTest[0] <= 0xbf)
 
     // try to decode the partial buffer
-    st.throws(() => {
-      RLP.decode(longBufferTest.slice(1, longBufferTest.length - 1))
-    }, 'string longer than 55 bytes: should throw')
-    st.end()
+    assert.throws(
+      () => {
+        RLP.decode(longBufferTest.slice(1, longBufferTest.length - 1))
+      },
+      undefined,
+      undefined,
+      'string longer than 55 bytes: should throw'
+    )
   })
 })
 
@@ -69,14 +77,18 @@ const invalidGethCases: string[] = [
   'F8020004',
 ]
 
-tape('invalid geth tests', (t) => {
+describe('invalid geth tests', () => {
   for (const gethCase of invalidGethCases) {
     const input = hexToBytes(gethCase)
-    t.test('should pass Geth test', (st) => {
-      st.throws(() => {
-        RLP.decode(input)
-      }, `should throw: ${gethCase}`)
-      st.end()
+    it('should pass Geth test', () => {
+      assert.throws(
+        () => {
+          RLP.decode(input)
+        },
+        undefined,
+        undefined,
+        `should throw: ${gethCase}`
+      )
     })
   }
 })

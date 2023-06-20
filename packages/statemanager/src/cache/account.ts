@@ -1,15 +1,13 @@
 import { bytesToHex } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { OrderedMap } from 'js-sdsl'
+import { LRUCache } from 'lru-cache'
 
-import { Cache } from './cache'
-import { CacheType } from './types'
+import { Cache } from './cache.js'
+import { CacheType } from './types.js'
 
-import type { CacheOpts } from './types'
+import type { CacheOpts } from './types.js'
 import type { Account, Address } from '@ethereumjs/util'
-import type LRUCache from 'lru-cache'
-
-const LRU = require('lru-cache')
 
 /**
  * account: undefined
@@ -37,7 +35,7 @@ export class AccountCache extends Cache {
   constructor(opts: CacheOpts) {
     super()
     if (opts.type === CacheType.LRU) {
-      this._lruCache = new LRU({
+      this._lruCache = new LRUCache({
         max: opts.size,
         updateAgeOnGet: true,
       })

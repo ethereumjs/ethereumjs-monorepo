@@ -1,10 +1,10 @@
 import { debug as createDebugLogger } from 'debug'
 import { EventEmitter } from 'events'
 
-import { DISCONNECT_REASONS } from '../rlpx/peer'
-import { devp2pDebug } from '../util'
+import { DISCONNECT_REASONS } from '../rlpx/peer.js'
+import { devp2pDebug } from '../util.js'
 
-import type { Peer } from '../rlpx/peer'
+import type { Peer } from '../rlpx/peer.js'
 import type { Debugger } from 'debug'
 
 export enum EthProtocol { // What does this represent?
