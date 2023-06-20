@@ -114,7 +114,7 @@ export class BlockHeader {
     const header = BlockHeader.fromHeaderData(headerData, opts)
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (header._common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
-      const eip1559ActivationBlock = bigIntToBytes(opts.common?.eipBlock(1559)!)
+      const eip1559ActivationBlock = bigIntToBytes(header._common.eipBlock(1559)!)
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
       if (eip1559ActivationBlock && equalsBytes(eip1559ActivationBlock, number as Uint8Array)) {
         throw new Error('invalid header. baseFeePerGas should be provided')
