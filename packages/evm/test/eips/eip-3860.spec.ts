@@ -1,16 +1,16 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address, concatBytesNoTypeCheck, privateToAddress } from '@ethereumjs/util'
-import { concatBytes, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { concatBytes, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
+import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../../src'
+import { EVM } from '../../src/index.js'
 
 const pkey = hexToBytes('20'.repeat(32))
 const sender = new Address(privateToAddress(pkey))
 
-tape('EIP 3860 tests', (t) => {
-  t.test('code exceeds max initcode size', async (st) => {
+describe('EIP 3860 tests', () => {
+  it('code exceeds max initcode size', async () => {
     const common = new Common({
       chain: Chain.Mainnet,
       hardfork: Hardfork.London,
@@ -38,13 +38,13 @@ tape('EIP 3860 tests', (t) => {
       ),
     }
     const result = await evm.runCall(runCallArgs)
-    st.ok(
+    assert.ok(
       (result.execResult.exceptionError?.error as string) === 'initcode exceeds max initcode size',
       'initcode exceeds max size'
     )
   })
 
-  t.test('ensure EIP-3860 gas is applied on CREATE calls', async (st) => {
+  it('ensure EIP-3860 gas is applied on CREATE calls', async () => {
     // Transaction/Contract data taken from https://github.com/ethereum/tests/pull/990
     const commonWith3860 = new Common({
       chain: Chain.Mainnet,
@@ -84,14 +84,13 @@ tape('EIP 3860 tests', (t) => {
     }
     const res = await evm.runCall(runCallArgs)
     const res2 = await evmWithout3860.runCall(runCallArgs)
-    st.ok(
+    assert.ok(
       res.execResult.executionGasUsed > res2.execResult.executionGasUsed,
       'execution gas used is higher with EIP 3860 active'
     )
-    st.end()
   })
 
-  t.test('ensure EIP-3860 gas is applied on CREATE2 calls', async (st) => {
+  it('ensure EIP-3860 gas is applied on CREATE2 calls', async () => {
     // Transaction/Contract data taken from https://github.com/ethereum/tests/pull/990
     const commonWith3860 = new Common({
       chain: Chain.Mainnet,
@@ -131,14 +130,13 @@ tape('EIP 3860 tests', (t) => {
     }
     const res = await evm.runCall(runCallArgs)
     const res2 = await evmWithout3860.runCall(runCallArgs)
-    st.ok(
+    assert.ok(
       res.execResult.executionGasUsed > res2.execResult.executionGasUsed,
       'execution gas used is higher with EIP 3860 active'
     )
-    st.end()
   })
 
-  t.test('code exceeds max initcode size: allowUnlimitedInitCodeSize active', async (st) => {
+  it('code exceeds max initcode size: allowUnlimitedInitCodeSize active', async () => {
     const common = new Common({
       chain: Chain.Mainnet,
       hardfork: Hardfork.London,
@@ -166,13 +164,13 @@ tape('EIP 3860 tests', (t) => {
       ),
     }
     const result = await evm.runCall(runCallArgs)
-    st.ok(
+    assert.ok(
       result.execResult.exceptionError === undefined,
       'succesfully created a contract with data size > MAX_INITCODE_SIZE and allowUnlimitedInitCodeSize active'
     )
   })
 
-  t.test('CREATE with MAX_INITCODE_SIZE+1, allowUnlimitedContractSize active', async (st) => {
+  it('CREATE with MAX_INITCODE_SIZE+1, allowUnlimitedContractSize active', async () => {
     const commonWith3860 = new Common({
       chain: Chain.Mainnet,
       hardfork: Hardfork.London,
@@ -224,11 +222,11 @@ tape('EIP 3860 tests', (t) => {
         key0
       )
 
-      st.ok(
+      assert.ok(
         !equalsBytes(storageActive, new Uint8Array()),
         'created contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=true'
       )
-      st.ok(
+      assert.ok(
         equalsBytes(storageInactive, new Uint8Array()),
         'did not create contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=false'
       )
@@ -248,11 +246,10 @@ tape('EIP 3860 tests', (t) => {
       // Verify that the gas cost on the prior one is higher than the first one
       const res2 = await evmDisabled.runCall(runCallArgs2)
 
-      st.ok(
+      assert.ok(
         res.execResult.executionGasUsed > res2.execResult.executionGasUsed,
         'charged initcode analysis gas cost on both allowUnlimitedCodeSize=true, allowUnlimitedInitCodeSize=false'
       )
     }
-    st.end()
   })
 })

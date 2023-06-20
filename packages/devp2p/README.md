@@ -44,16 +44,16 @@ dpt.on('peer:added', (peer) => {
 
 Basic example to connect to some bootstrap nodes and get basic peer info:
 
-- [simple](examples/simple.ts)
+- [simple](examples/simple.cts)
 
 Communicate with peers to read new transaction and block information:
 
-- [peer-communication](examples/peer-communication.ts)
+- [peer-communication](examples/peer-communication.cts)
 
 Run an example with:
 
 ```
-DEBUG=ethjs,devp2p:* node -r ts-node/register ./examples/peer-communication.ts
+DEBUG=ethjs,devp2p:* node -r ts-node/register ./examples/peer-communication.cts
 ```
 
 ## Docs

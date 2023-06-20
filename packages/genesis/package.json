@@ -1,0 +1,57 @@
+{
+  "name": "@ethereumjs/genesis",
+  "version": "0.0.1",
+  "description": "A module to provide genesis states of well known networks",
+  "keywords": [
+    "ethereum",
+    "genesis"
+  ],
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/genesis#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+genesis%22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "license": "MPL-2.0",
+  "author": "g11tech <gajinder@g11.in>",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "../../config/cli/ts-build.sh",
+    "clean": "../../config/cli/clean-package.sh",
+    "coverage": "../../config/cli/coverage.sh",
+    "docs:build": "typedoc --options typedoc.js",
+    "lint": "../../config/cli/lint.sh",
+    "lint:diff": "../../config/cli/lint-diff.sh",
+    "lint:fix": "../../config/cli/lint-fix.sh",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
+    "tape": "tape -r ts-node/register",
+    "test": "npm run test:node && npm run test:browser",
+    "test:browser": "karma start karma.conf.js",
+    "test:node": "npm run tape -- ./test/*.spec.ts",
+    "tsc": "../../config/cli/ts-compile.sh"
+  },
+  "dependencies": {
+    "@ethereumjs/common": "^3.1.2",
+    "@ethereumjs/util": "^8.0.6"
+  },
+  "devDependencies": {
+    "@types/async": "^2.4.1",
+    "@types/level-errors": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

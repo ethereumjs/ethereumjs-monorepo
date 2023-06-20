@@ -401,15 +401,15 @@ tape('[Skeleton] / setHead', async (t) => {
     const genesis = await chain.getBlock(BigInt(0))
     const block1 = Block.fromBlockData(
       { header: { number: 1, parentHash: genesis.hash(), difficulty: 100 } },
-      { common, hardforkByBlockNumber: true }
+      { common, setHardfork: true }
     )
     const block2 = Block.fromBlockData(
       { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
-      { common, hardforkByBlockNumber: true }
+      { common, setHardfork: true }
     )
     const block3 = Block.fromBlockData(
       { header: { number: 3, difficulty: 100 } },
-      { common, hardforkByBlockNumber: true }
+      { common, setHardfork: true }
     )
 
     await skeleton.open()
@@ -505,23 +505,23 @@ tape('[Skeleton] / setHead', async (t) => {
     const genesis = await chain.getBlock(BigInt(0))
     const block1 = Block.fromBlockData(
       { header: { number: 1, parentHash: genesis.hash(), difficulty: 100 } },
-      { common, hardforkByBlockNumber: true }
+      { common, setHardfork: true }
     )
     const block2 = Block.fromBlockData(
       { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
-      { common, hardforkByBlockNumber: true }
+      { common, setHardfork: true }
     )
     const block3 = Block.fromBlockData(
       { header: { number: 3, parentHash: block2.hash(), difficulty: 100 } },
-      { common, hardforkByBlockNumber: true }
+      { common, setHardfork: true }
     )
     const block4 = Block.fromBlockData(
       { header: { number: 4, parentHash: block3.hash(), difficulty: 100 } },
-      { common, hardforkByBlockNumber: true }
+      { common, setHardfork: true }
     )
     const block5 = Block.fromBlockData(
       { header: { number: 5, parentHash: block4.hash(), difficulty: 100 } },
-      { common, hardforkByBlockNumber: true }
+      { common, setHardfork: true }
     )
 
     await skeleton.open()
@@ -578,23 +578,23 @@ tape('[Skeleton] / setHead', async (t) => {
 
       const block1 = Block.fromBlockData(
         { header: { number: 1, parentHash: genesis.hash(), difficulty: 100 } },
-        { common, hardforkByBlockNumber: true }
+        { common, setHardfork: true }
       )
       const block2 = Block.fromBlockData(
         { header: { number: 2, parentHash: block1.hash(), difficulty: 100 } },
-        { common, hardforkByBlockNumber: true }
+        { common, setHardfork: true }
       )
       const block3 = Block.fromBlockData(
         { header: { number: 3, parentHash: block2.hash(), difficulty: 100 } },
-        { common, hardforkByBlockNumber: true }
+        { common, setHardfork: true }
       )
       const block4 = Block.fromBlockData(
         { header: { number: 4, parentHash: block3.hash(), difficulty: 100 } },
-        { common, hardforkByBlockNumber: true }
+        { common, setHardfork: true }
       )
       const block5 = Block.fromBlockData(
         { header: { number: 5, parentHash: block4.hash(), difficulty: 100 } },
-        { common, hardforkByBlockNumber: true }
+        { common, setHardfork: true }
       )
 
       await chain.putBlocks([block1, block2])
@@ -649,7 +649,7 @@ tape('[Skeleton] / setHead', async (t) => {
         difficulty: '0x1',
       }
       const common = Common.fromGethGenesis(genesis, { chain: 'post-merge' })
-      common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
+      common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
       const config = new Config({
         transports: [],
         common,
@@ -675,19 +675,19 @@ tape('[Skeleton] / setHead', async (t) => {
       )
       const block3PoS = Block.fromBlockData(
         { header: { number: 3, parentHash: block2.hash(), difficulty: 0 } },
-        { common, hardforkByTTD: BigInt(200) }
+        { common, setHardfork: BigInt(200) }
       )
       const block4InvalidPoS = Block.fromBlockData(
         { header: { number: 4, parentHash: block3PoW.hash(), difficulty: 0 } },
-        { common, hardforkByTTD: BigInt(200) }
+        { common, setHardfork: BigInt(200) }
       )
       const block4PoS = Block.fromBlockData(
         { header: { number: 4, parentHash: block3PoS.hash(), difficulty: 0 } },
-        { common, hardforkByTTD: BigInt(200) }
+        { common, setHardfork: BigInt(200) }
       )
       const block5 = Block.fromBlockData(
         { header: { number: 5, parentHash: block4PoS.hash(), difficulty: 0 } },
-        { common, hardforkByTTD: BigInt(200) }
+        { common, setHardfork: BigInt(200) }
       )
 
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -757,7 +757,7 @@ tape('[Skeleton] / setHead', async (t) => {
         difficulty: '0x1',
       }
       const common = Common.fromGethGenesis(genesis, { chain: 'post-merge' })
-      common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
+      common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
       const config = new Config({
         transports: [],
         common,
@@ -784,7 +784,7 @@ tape('[Skeleton] / setHead', async (t) => {
       )
       const block4InvalidPoS = Block.fromBlockData(
         { header: { number: 4, parentHash: block3PoW.hash(), difficulty: 0 } },
-        { common, hardforkByTTD: 200 }
+        { common, setHardfork: 200 }
       )
 
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -821,7 +821,7 @@ tape('[Skeleton] / setHead', async (t) => {
         difficulty: '0x1',
       }
       const common = Common.fromGethGenesis(genesis, { chain: 'post-merge' })
-      common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
+      common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
       const config = new Config({
         transports: [],
         common,

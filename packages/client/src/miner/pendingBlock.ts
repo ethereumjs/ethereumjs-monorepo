@@ -126,7 +126,11 @@ export class PendingBlock {
       throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
     }
     const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
-    vm._common.setHardforkByBlockNumber(number, td, timestamp)
+    vm._common.setHardforkBy({
+      blockNumber: number,
+      td,
+      timestamp,
+    })
 
     const baseFeePerGas = vm._common.isActivatedEIP(1559)
       ? parentBlock.header.calcNextBaseFee()
@@ -149,7 +153,7 @@ export class PendingBlock {
       withdrawals,
       blockOpts: {
         putBlockIntoBlockchain: false,
-        hardforkByTTD: td,
+        setHardfork: td,
       },
     })
 

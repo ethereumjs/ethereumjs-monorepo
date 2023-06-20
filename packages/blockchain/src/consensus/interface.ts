@@ -1,4 +1,4 @@
-import type { Blockchain } from '..'
+import type { Blockchain } from '../index.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { ConsensusAlgorithm } from '@ethereumjs/common'
 

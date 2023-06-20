@@ -17,12 +17,12 @@ dim() {
     echo "${DIM}$1${NOCOLOR}"
 }
 
-dim "> eslint --fix --config ./.eslintrc.js . \\ "
+dim "> eslint --fix --config ./.eslintrc.cjs . \\ "
 dim "\t --ext .js,.jsx,.ts,.tsx \\ "
 
 blue "[Lint]${NOCOLOR} fixing..."
 
-eslint --fix --config ./.eslintrc.js . --ext .js,.jsx,.ts,.tsx
+eslint --fix --config ./.eslintrc.cjs . --ext .js,.jsx,.ts,.tsx
 
 RETURN_CODE=$?
 

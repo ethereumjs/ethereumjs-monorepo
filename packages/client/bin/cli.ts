@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Block } from '@ethereumjs/block'
-import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
+import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -10,6 +10,7 @@ import {
   bytesToPrefixedHexString,
   hexStringToBytes,
   initKZG,
+  parseGethGenesisState,
   randomBytes,
   short,
   toBytes,
@@ -38,7 +39,7 @@ import type { FullEthereumService } from '../src/service'
 import type { ClientOpts } from '../src/types'
 import type { RPCArgs } from './startRpc'
 import type { BlockBytes } from '@ethereumjs/block'
-import type { GenesisState } from '@ethereumjs/blockchain'
+import type { GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
 type Account = [address: Address, privateKey: Uint8Array]
@@ -486,7 +487,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
       try {
         const block = Block.fromValuesArray(buf.data as BlockBytes, {
           common: config.chainCommon,
-          hardforkByBlockNumber: true,
+          setHardfork: true,
         })
         blocks.push(block)
         buf = RLP.decode(buf.remainder, true)

@@ -16,6 +16,7 @@ import {
 import * as kzg from 'c-kzg'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 
+import { VM } from '../../../dist/cjs'
 import { setupPreConditions, verifyPostConditions } from '../../util'
 
 import type { EthashConsensus } from '@ethereumjs/blockchain'
@@ -43,7 +44,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   testData.lastblockhash = stripHexPrefix(testData.lastblockhash)
 
   let common = options.common.copy() as Common
-  common.setHardforkByBlockNumber(0)
+  common.setHardforkBy({ blockNumber: 0 })
 
   let cacheDB = new MapDB()
   let state = new Trie({ useKeyHashing: true })
@@ -84,26 +85,23 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     ;(blockchain.consensus as EthashConsensus)._ethash!.cacheDB = cacheDB as any
   }
 
-  let VM
-  if (options.dist === true) {
-    ;({ VM } = require('../../../dist'))
-  } else {
-    ;({ VM } = require('../../../src'))
-  }
-
   const begin = Date.now()
 
   let vm = await VM.create({
     stateManager,
     blockchain,
     common,
-    hardforkByBlockNumber: true,
+    setHardfork: true,
   })
 
   // set up pre-state
   await setupPreConditions(vm.stateManager, testData)
 
-  t.deepEquals(vm.stateManager._trie.root(), genesisBlock.header.stateRoot, 'correct pre stateRoot')
+  t.deepEquals(
+    (vm.stateManager as any)._trie.root(),
+    genesisBlock.header.stateRoot,
+    'correct pre stateRoot'
+  )
 
   async function handleError(error: string | undefined, expectException: string | boolean) {
     if (expectException !== false) {
@@ -149,7 +147,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         // eslint-disable-next-line no-empty
       } catch (e) {}
 
-      common.setHardforkByBlockNumber(currentBlock, TD, timestamp)
+      common.setHardforkBy({ blockNumber: currentBlock, td: TD, timestamp })
 
       // transactionSequence is provided when txs are expected to be rejected.
       // To run this field we try to import them on the current state.
@@ -190,14 +188,15 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       // state. Generating the genesis state is not needed because
       // blockchain tests come with their own `pre` world state.
       // TODO: Add option to `runBlockchain` not to generate genesis state.
-      vm._common.genesis().stateRoot = vm.stateManager._trie.root()
+      //
+      //vm._common.genesis().stateRoot = vm.stateManager._trie.root()
       try {
         await blockchain.iterator('vm', async (block: Block) => {
           const parentBlock = await blockchain!.getBlock(block.header.parentHash)
           const parentState = parentBlock.header.stateRoot
           // run block, update head if valid
           try {
-            await vm.runBlock({ block, root: parentState, hardforkByTTD: TD })
+            await vm.runBlock({ block, root: parentState, setHardfork: TD })
             // set as new head block
           } catch (error: any) {
             // remove invalid block
@@ -214,7 +213,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         if (options.debug !== true) {
           // make sure the state is set before checking post conditions
           const headBlock = await vm.blockchain.getIteratorHead()
-          vm.stateManager._trie.root(headBlock.header.stateRoot)
+          ;(vm.stateManager as any)._trie.root(headBlock.header.stateRoot)
         } else {
           await verifyPostConditions(state, testData.postState, t)
         }
@@ -239,10 +238,6 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     testData.lastblockhash,
     'correct last header block'
   )
-
-  if (bytesToHex((blockchain as any)._headHeaderHash) !== testData.lastblockhash) {
-    process.exit()
-  }
 
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`

@@ -14,8 +14,8 @@ import {
   unpadBytes,
 } from '@ethereumjs/util'
 
-import { Capability, TransactionType } from './types'
-import { checkMaxInitCodeSize } from './util'
+import { Capability, TransactionType } from './types.js'
+import { checkMaxInitCodeSize } from './util.js'
 
 import type {
   JsonTx,
@@ -24,7 +24,7 @@ import type {
   TxData,
   TxOptions,
   TxValuesArray,
-} from './types'
+} from './types.js'
 import type { Hardfork } from '@ethereumjs/common'
 import type { BigIntLike } from '@ethereumjs/util'
 

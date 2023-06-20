@@ -1,11 +1,11 @@
-import * as tape from 'tape'
 import * as td from 'testdouble'
+import { assert, describe, it } from 'vitest'
 
-import { DNS } from '../src/dns'
+import { DNS } from '../src/dns/index.js'
 
 import * as testdata from './testdata.json'
 
-tape('DNS', async (t) => {
+describe('DNS', () => {
   const mockData = testdata.dns
   const mockDns = td.replace<any>('dns')
 
@@ -41,20 +41,19 @@ tape('DNS', async (t) => {
 
   td.when(mockDns.resolve(host, 'TXT')).thenReturn([[mockData.enrRoot]])
 
-  t.test('retrieves a single peer', async (t) => {
+  it('retrieves a single peer', async () => {
     td.when(mockDns.resolve(`${rootDomain}.${host}`, 'TXT')).thenReturn([[singleBranch]])
     td.when(mockDns.resolve(`${branchDomainA}.${host}`, 'TXT')).thenReturn([[mockData.enrA]])
 
     initializeDns()
     const peers = await dns.getPeers(1, [mockData.enrTree])
 
-    t.equal(peers.length, 1, 'returns single peer')
-    t.equal(peers[0].address, '45.77.40.127', 'peer has correct address')
-    t.equal(peers[0].tcpPort, 30303, 'peer has correct port')
-    t.end()
+    assert.equal(peers.length, 1, 'returns single peer')
+    assert.equal(peers[0].address, '45.77.40.127', 'peer has correct address')
+    assert.equal(peers[0].tcpPort, 30303, 'peer has correct port')
   })
 
-  t.test('retrieves all peers (2) when maxQuantity larger than DNS tree size', async (t) => {
+  it('retrieves all peers (2) when maxQuantity larger than DNS tree size', async () => {
     td.when(mockDns.resolve(`${rootDomain}.${host}`, 'TXT')).thenReturn([[doubleBranch]])
     td.when(mockDns.resolve(`${branchDomainA}.${host}`, 'TXT')).thenReturn([[mockData.enrA]])
     td.when(mockDns.resolve(`${branchDomainB}.${host}`, 'TXT')).thenReturn([[mockData.enrB]])
@@ -62,33 +61,28 @@ tape('DNS', async (t) => {
     initializeDns()
     const peers = await dns.getPeers(50, [mockData.enrTree])
 
-    t.equal(peers.length, 2, 'returns two peers')
-    t.ok(peers[0].address !== peers[1].address, 'peer addresses are different')
-    t.end()
+    assert.equal(peers.length, 2, 'returns two peers')
+    assert.ok(peers[0].address !== peers[1].address, 'peer addresses are different')
   })
 
-  t.test(
-    'retrieves all peers (3) when branch entries are composed of multiple strings',
-    async (t) => {
-      td.when(mockDns.resolve(`${rootDomain}.${host}`, 'TXT')).thenReturn([multiComponentBranch])
-      td.when(mockDns.resolve(`${branchDomainA}.${host}`, 'TXT')).thenReturn([[mockData.enr]])
-      td.when(mockDns.resolve(`${branchDomainB}.${host}`, 'TXT')).thenReturn([[mockData.enrA]])
-      td.when(mockDns.resolve(`${partialBranchA}${partialBranchB}.${host}`, 'TXT')).thenReturn([
-        [mockData.enrB],
-      ])
+  it('retrieves all peers (3) when branch entries are composed of multiple strings', async () => {
+    td.when(mockDns.resolve(`${rootDomain}.${host}`, 'TXT')).thenReturn([multiComponentBranch])
+    td.when(mockDns.resolve(`${branchDomainA}.${host}`, 'TXT')).thenReturn([[mockData.enr]])
+    td.when(mockDns.resolve(`${branchDomainB}.${host}`, 'TXT')).thenReturn([[mockData.enrA]])
+    td.when(mockDns.resolve(`${partialBranchA}${partialBranchB}.${host}`, 'TXT')).thenReturn([
+      [mockData.enrB],
+    ])
 
-      initializeDns()
-      const peers = await dns.getPeers(50, [mockData.enrTree])
+    initializeDns()
+    const peers = await dns.getPeers(50, [mockData.enrTree])
 
-      t.equal(peers.length, 3, 'returns three peers')
-      t.ok(peers[0].address !== peers[1].address, 'peer 0 is not peer 1')
-      t.ok(peers[0].address !== peers[2].address, 'peer 0 is not peer 2')
-      t.ok(peers[1].address !== peers[2].address, 'peer 1 is not peer 2')
-      t.end()
-    }
-  )
+    assert.equal(peers.length, 3, 'returns three peers')
+    assert.ok(peers[0].address !== peers[1].address, 'peer 0 is not peer 1')
+    assert.ok(peers[0].address !== peers[2].address, 'peer 0 is not peer 2')
+    assert.ok(peers[1].address !== peers[2].address, 'peer 1 is not peer 2')
+  })
 
-  t.test('it tolerates circular branch references', async (t) => {
+  it('it tolerates circular branch references', async () => {
     // root --> branchA
     // branchA --> branchA
     td.when(mockDns.resolve(`${rootDomain}.${host}`, 'TXT')).thenReturn([[singleBranch]])
@@ -96,11 +90,10 @@ tape('DNS', async (t) => {
 
     initializeDns()
     const peers = await dns.getPeers(1, [mockData.enrTree])
-    t.equal(peers.length, 0, 'method resolves (zero peers)')
-    t.end()
+    assert.equal(peers.length, 0, 'method resolves (zero peers)')
   })
 
-  t.test('recovers when dns.resolve returns empty', async (t) => {
+  it('recovers when dns.resolve returns empty', async () => {
     td.when(mockDns.resolve(`${rootDomain}.${host}`, 'TXT')).thenReturn([[singleBranch]])
 
     // Empty response case
@@ -108,81 +101,75 @@ tape('DNS', async (t) => {
 
     initializeDns()
     let peers = await dns.getPeers(1, [mockData.enrTree])
-    t.equal(peers.length, 0, 'method resolves when dns response is [] (zero peers)')
+    assert.equal(peers.length, 0, 'method resolves when dns response is [] (zero peers)')
 
     // No TXT records case
     td.when(mockDns.resolve(`${branchDomainA}.${host}`, 'TXT')).thenReturn([[]])
 
     peers = await dns.getPeers(1, [mockData.enrTree])
-    t.equal(peers.length, 0, 'method resolves when dns response is [[]] (zero peers)')
-    t.end()
+    assert.equal(peers.length, 0, 'method resolves when dns response is [[]] (zero peers)')
   })
 
-  t.test('ignores domain fetching errors', async (t) => {
+  it('ignores domain fetching errors', async () => {
     td.when(mockDns.resolve(`${rootDomain}.${host}`, 'TXT')).thenReturn([[errorBranchA]])
     td.when(mockDns.resolve(`${branchDomainC}.${host}`, 'TXT')).thenThrow(new Error('failure'))
 
     initializeDns()
     const peers = await dns.getPeers(1, [mockData.enrTree])
-    t.equal(peers.length, 0, 'method resolves (zero peers)')
-    t.end()
+    assert.equal(peers.length, 0, 'method resolves (zero peers)')
   })
 
-  t.test('ignores unrecognized TXT record formats', async (t) => {
+  it('ignores unrecognized TXT record formats', async () => {
     td.when(mockDns.resolve(`${rootDomain}.${host}`, 'TXT')).thenReturn([
       [mockData.enrBranchBadPrefix],
     ])
 
     initializeDns()
     const peers = await dns.getPeers(1, [mockData.enrTree])
-    t.equal(peers.length, 0, 'method resolves (zero peers)')
-    t.end()
+    assert.equal(peers.length, 0, 'method resolves (zero peers)')
   })
 
-  t.test('caches peers it previously fetched', async (t) => {
+  it('caches peers it previously fetched', async () => {
     td.when(mockDns.resolve(`${rootDomain}.${host}`, 'TXT')).thenReturn([[errorBranchB]])
     td.when(mockDns.resolve(`${branchDomainD}.${host}`, 'TXT')).thenReturn([[mockData.enrA]])
 
     // Run initial fetch...
     initializeDns()
     const peersA = await dns.getPeers(1, [mockData.enrTree])
-    t.equal(peersA.length, 1, 'returns a  network fetched peer')
+    assert.equal(peersA.length, 1, 'returns a  network fetched peer')
 
     // Specify that a subsequent network call retrieving the same peer should throw.
     // This test passes only if the peer is fetched from cache
     td.when(mockDns.resolve(`${branchDomainD}.${host}`, 'TXT')).thenThrow(new Error('failure'))
 
     const peersB = await dns.getPeers(1, [mockData.enrTree])
-    t.equal(peersB.length, 1, 'returns a cached peer')
-    t.equal(peersA[0].address, peersB[0].address, 'network fetched and cached peers are same')
-    t.end()
+    assert.equal(peersB.length, 1, 'returns a cached peer')
+    assert.equal(peersA[0].address, peersB[0].address, 'network fetched and cached peers are same')
   })
 
-  t.test('should reset td', (t) => {
+  it('should reset td', () => {
     td.reset()
-    t.end()
   })
 })
 
-tape('DNS: (integration)', async (t) => {
+describe('DNS: (integration)', () => {
   const publicKey = 'AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE'
   const goerliDNS = 'all.goerli.ethdisco.net'
   const enrTree = `enrtree://${publicKey}@${goerliDNS}`
   const ipTestRegex = /^\d+\.\d+\.\d+\.\d+$/ // e.g 123.44.55.77
 
-  t.test('should retrieve 5 PeerInfos for goerli', async (t) => {
+  it('should retrieve 5 PeerInfos for goerli', async () => {
     // Google's dns server address. Needs to be set explicitly to run in CI
     const dns = new DNS({ dnsServerAddress: '8.8.8.8' })
     const peers = await dns.getPeers(5, [enrTree])
 
-    t.equal(peers.length, 5, 'returns 5 peers')
+    assert.equal(peers.length, 5, 'returns 5 peers')
 
     const seen: string[] = []
     for (const peer of peers) {
-      t.ok(peer!.address!.match(ipTestRegex), 'address is a valid ip')
-      t.ok(!seen.includes(peer!.address as string), 'peer is not duplicate')
+      assert.ok(peer!.address!.match(ipTestRegex), 'address is a valid ip')
+      assert.ok(!seen.includes(peer!.address as string), 'peer is not duplicate')
       seen.push(peer!.address as string)
     }
-    t.end()
   })
 })

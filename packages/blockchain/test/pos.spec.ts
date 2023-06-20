@@ -1,9 +1,9 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { bytesToHex } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { bytesToHex } from 'ethereum-cryptography/utils.js'
+import { assert, describe, it } from 'vitest'
 
-import { Blockchain } from '../src'
+import { Blockchain } from '../src/index.js'
 
 import * as testnet from './testdata/testnet.json'
 
@@ -32,7 +32,7 @@ const buildChain = async (blockchain: Blockchain, common: Common, height: number
       {
         calcDifficultyFromHeader: blocks[number - 1].header,
         common,
-        hardforkByTTD: await blockchain.getTotalDifficulty(blocks[number - 1].hash()),
+        setHardfork: await blockchain.getTotalDifficulty(blocks[number - 1].hash()),
       }
     )
     blocks.push(block)
@@ -40,7 +40,7 @@ const buildChain = async (blockchain: Blockchain, common: Common, height: number
   }
 }
 
-tape('Proof of Stake - inserting blocks into blockchain', async (t) => {
+describe('Proof of Stake - inserting blocks into blockchain', () => {
   const testnetOnlyTD = JSON.parse(JSON.stringify(testnet))
   testnetOnlyTD['hardforks'][11] = {
     name: 'paris',
@@ -57,53 +57,58 @@ tape('Proof of Stake - inserting blocks into blockchain', async (t) => {
   ]
 
   for (const s of scenarios) {
-    const blockchain = await Blockchain.create({
-      validateBlocks: true,
-      validateConsensus: false,
-      common: s.common,
-      hardforkByHeadBlockNumber: true,
-    })
-    const genesisHeader = await blockchain.getCanonicalHeadHeader()
-    t.equal(
-      bytesToHex(genesisHeader.hash()),
-      '1119dc5ff680bf7b4c3d9cd41168334dee127d46b3626482076025cdd498ed0b',
-      'genesis hash matches'
-    )
-    await buildChain(blockchain, s.common, 15)
-
-    const latestHeader = await blockchain.getCanonicalHeadHeader()
-    t.equal(latestHeader.number, BigInt(15), 'blockchain is at correct height')
-
-    t.equal(
-      (blockchain as any)._common.hardfork(),
-      'paris',
-      'HF should have been correctly updated'
-    )
-    const td = await blockchain.getTotalDifficulty(latestHeader.hash())
-    t.equal(td, BigInt(1313601), 'should have calculated the correct post-Merge total difficulty')
-
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const powBlock = Block.fromBlockData(
-      {
-        header: {
-          number: 16,
-          difficulty: BigInt(1),
-          parentHash: latestHeader.hash(),
-          timestamp: latestHeader.timestamp + BigInt(1),
-          gasLimit: BigInt(10000),
-        },
-      },
-      { common }
-    )
-    try {
-      await blockchain.putBlock(powBlock)
-      t.fail('should throw when inserting PoW block')
-    } catch (err: any) {
-      t.ok(
-        err.message.includes('invalid difficulty'),
-        'should throw with invalid difficulty message'
+    it('should pass', async () => {
+      const blockchain = await Blockchain.create({
+        validateBlocks: true,
+        validateConsensus: false,
+        common: s.common,
+        hardforkByHeadBlockNumber: true,
+      })
+      const genesisHeader = await blockchain.getCanonicalHeadHeader()
+      assert.equal(
+        bytesToHex(genesisHeader.hash()),
+        '1119dc5ff680bf7b4c3d9cd41168334dee127d46b3626482076025cdd498ed0b',
+        'genesis hash matches'
       )
-    }
+      await buildChain(blockchain, s.common, 15)
+
+      const latestHeader = await blockchain.getCanonicalHeadHeader()
+      assert.equal(latestHeader.number, BigInt(15), 'blockchain is at correct height')
+
+      assert.equal(
+        (blockchain as any)._common.hardfork(),
+        'paris',
+        'HF should have been correctly updated'
+      )
+      const td = await blockchain.getTotalDifficulty(latestHeader.hash())
+      assert.equal(
+        td,
+        BigInt(1313601),
+        'should have calculated the correct post-Merge total difficulty'
+      )
+
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+      const powBlock = Block.fromBlockData(
+        {
+          header: {
+            number: 16,
+            difficulty: BigInt(1),
+            parentHash: latestHeader.hash(),
+            timestamp: latestHeader.timestamp + BigInt(1),
+            gasLimit: BigInt(10000),
+          },
+        },
+        { common }
+      )
+      try {
+        await blockchain.putBlock(powBlock)
+        assert.fail('should throw when inserting PoW block')
+      } catch (err: any) {
+        assert.ok(
+          err.message.includes('invalid difficulty'),
+          'should throw with invalid difficulty message'
+        )
+      }
+    })
   }
-  t.end()
 })

@@ -1,10 +1,15 @@
 import { decode, encode } from '@ethereumjs/rlp'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { Withdrawal, bigIntToHex, bytesToPrefixedHexString, intToHex } from '../src'
+import {
+  Withdrawal,
+  bigIntToHex,
+  bytesToPrefixedHexString,
+  intToPrefixedHexString,
+} from '../src/index.js'
 
-import type { WithdrawalBytes } from '../src'
+import type { WithdrawalBytes } from '../src/index.js'
 
 const withdrawalsVector = [
   {
@@ -57,43 +62,40 @@ const withdrawalsVector = [
   },
 ]
 const withdrawalsGethVector = withdrawalsVector.map((testVec) => ({
-  index: intToHex(testVec.Index),
-  validatorIndex: intToHex(testVec.Validator),
+  index: intToPrefixedHexString(testVec.Index),
+  validatorIndex: intToPrefixedHexString(testVec.Validator),
   address: testVec.Recipient,
   amount: bigIntToHex(BigInt(testVec.Amount)),
 }))
 const gethWithdrawals8BlockRlp =
   'f903e1f90213a0fe950635b1bd2a416ff6283b0bbd30176e1b1125ad06fa729da9f3f4c1c61710a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d4934794aa00000000000000000000000000000000000000a07f7510a0cb6203f456e34ec3e2ce30d6c5590ded42c10a9cf3f24784119c5afba056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b901000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080018401c9c380802f80a0ff0000000000000000000000000000000000000000000000000000000000000088000000000000000007a0b695b29ec7ee934ef6a68838b13729f2d49fffe26718de16a1a9ed94a4d7d06dc0c0f901c6da8082ffff94000000000000000000000000000000000000000080f83b0183010000940100000000000000000000000000000000000000a00100000000000000000000000000000000000000000000000000000000000000f83b0283010001940200000000000000000000000000000000000000a00200000000000000000000000000000000000000000000000000000000000000f83b0383010002940300000000000000000000000000000000000000a00300000000000000000000000000000000000000000000000000000000000000f83b0483010003940400000000000000000000000000000000000000a00400000000000000000000000000000000000000000000000000000000000000f83b0583010004940500000000000000000000000000000000000000a00500000000000000000000000000000000000000000000000000000000000000f83b0683010005940600000000000000000000000000000000000000a00600000000000000000000000000000000000000000000000000000000000000f83b0783010006940700000000000000000000000000000000000000a00700000000000000000000000000000000000000000000000000000000000000'
 
-tape('Withdrawal', (t) => {
+describe('Withdrawal', () => {
   // gethWithdrawals8Rlp is rlp encoded block with withdrawals in the 4th element of the top array
   const gethWithdrawalsBuffer = decode(hexToBytes(gethWithdrawals8BlockRlp))[3]!
   const gethWithdrawalsRlp = bytesToHex(encode(gethWithdrawalsBuffer))
-  t.test('fromWithdrawalData and toBytesArray', (st) => {
+  it('fromWithdrawalData and toBytesArray', () => {
     const withdrawals = withdrawalsGethVector.map(Withdrawal.fromWithdrawalData)
     const withdrawalstoBytesArr = withdrawals.map((wt) => wt.raw())
     const withdrawalsToRlp = bytesToHex(encode(withdrawalstoBytesArr))
-    st.equal(gethWithdrawalsRlp, withdrawalsToRlp, 'The withdrawals to buffer should match')
-    st.end()
+    assert.equal(gethWithdrawalsRlp, withdrawalsToRlp, 'The withdrawals to buffer should match')
   })
 
-  t.test('toBytesArray from withdrawalData', (st) => {
+  it('toBytesArray from withdrawalData', () => {
     const withdrawalsDatatoBytesArr = withdrawalsGethVector.map(Withdrawal.toBytesArray)
     const withdrawalsDataToRlp = bytesToHex(encode(withdrawalsDatatoBytesArr))
-    st.equal(gethWithdrawalsRlp, withdrawalsDataToRlp, 'The withdrawals to buffer should match')
-    st.end()
+    assert.equal(gethWithdrawalsRlp, withdrawalsDataToRlp, 'The withdrawals to buffer should match')
   })
 
-  t.test('fromValuesArray, toJSON and toValue', (st) => {
+  it('fromValuesArray, toJSON and toValue', () => {
     const withdrawals = (gethWithdrawalsBuffer as WithdrawalBytes[]).map(Withdrawal.fromValuesArray)
     const withdrawalsJson = withdrawals.map((wt) => wt.toJSON())
-    st.deepEqual(withdrawalsGethVector, withdrawalsJson, 'Withdrawals json should match')
+    assert.deepEqual(withdrawalsGethVector, withdrawalsJson, 'Withdrawals json should match')
 
     const withdrawalsValue = withdrawals.map((wt) => wt.toValue())
-    st.deepEqual(
+    assert.deepEqual(
       withdrawalsValue.map((wt) => bytesToPrefixedHexString(wt.address)),
       withdrawalsJson.map((wt) => wt.address)
     )
-    st.end()
   })
 })

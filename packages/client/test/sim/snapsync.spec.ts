@@ -1,6 +1,5 @@
-import { parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Common } from '@ethereumjs/common'
-import { privateToAddress } from '@ethereumjs/util'
+import { parseGethGenesisState, privateToAddress } from '@ethereumjs/util'
 import debug from 'debug'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 import { Client } from 'jayson/promise'

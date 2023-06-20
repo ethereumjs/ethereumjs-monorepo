@@ -1,133 +1,118 @@
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address, bigIntToBytes, setLengthLeft } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src'
-import { Stack } from '../src/stack'
+import { EVM } from '../src/index.js'
+import { Stack } from '../src/stack.js'
 
-import { createAccount } from './utils'
+import { createAccount } from './utils.js'
 
-tape('Stack', (t) => {
-  t.test('should be empty initially', (st) => {
+describe('Stack', () => {
+  it('should be empty initially', () => {
     const s = new Stack()
-    st.equal(s._store.length, 0)
-    st.throws(() => s.pop())
-    st.end()
+    assert.equal(s._store.length, 0)
+    assert.throws(() => s.pop())
   })
 
-  t.test('popN should throw for empty stack', (st) => {
+  it('popN should throw for empty stack', () => {
     const s = new Stack()
-    st.deepEqual(s.popN(0), [])
-    st.throws(() => s.popN(1))
-    st.end()
+    assert.deepEqual(s.popN(0), [])
+    assert.throws(() => s.popN(1))
   })
 
-  t.test('should not push invalid type values', (st) => {
+  it('should not push invalid type values', () => {
     const s = new Stack()
-    st.throws(() => s.push(<any>'str'))
-    st.throws(() => s.push(<any>5))
-    st.end()
+    assert.throws(() => s.push(<any>'str'))
+    assert.throws(() => s.push(<any>5))
   })
 
-  t.test('should push item', (st) => {
+  it('should push item', () => {
     const s = new Stack()
     s.push(BigInt(5))
-    st.equal(s.pop(), BigInt(5))
-    st.end()
+    assert.equal(s.pop(), BigInt(5))
   })
 
-  t.test('popN should return array for n = 1', (st) => {
+  it('popN should return array for n = 1', () => {
     const s = new Stack()
     s.push(BigInt(5))
-    st.deepEqual(s.popN(1), [BigInt(5)])
-    st.end()
+    assert.deepEqual(s.popN(1), [BigInt(5)])
   })
 
-  t.test('popN should fail on underflow', (st) => {
+  it('popN should fail on underflow', () => {
     const s = new Stack()
     s.push(BigInt(5))
-    st.throws(() => s.popN(2))
-    st.end()
+    assert.throws(() => s.popN(2))
   })
 
-  t.test('popN should return in correct order', (st) => {
+  it('popN should return in correct order', () => {
     const s = new Stack()
     s.push(BigInt(5))
     s.push(BigInt(7))
-    st.deepEqual(s.popN(2), [BigInt(7), BigInt(5)])
-    st.end()
+    assert.deepEqual(s.popN(2), [BigInt(7), BigInt(5)])
   })
 
-  t.test('should throw on overflow', (st) => {
+  it('should throw on overflow', () => {
     const s = new Stack()
     for (let i = 0; i < 1024; i++) {
       s.push(BigInt(i))
     }
-    st.throws(() => s.push(BigInt(1024)))
-    st.end()
+    assert.throws(() => s.push(BigInt(1024)))
   })
 
-  t.test('overflow limit should be configurable', (st) => {
+  it('overflow limit should be configurable', () => {
     const s = new Stack(1023)
     for (let i = 0; i < 1023; i++) {
       s.push(BigInt(i))
     }
-    st.throws(() => s.push(BigInt(1023)))
-    st.end()
+    assert.throws(() => s.push(BigInt(1023)))
   })
 
-  t.test('should swap top with itself', (st) => {
+  it('should swap top with itself', () => {
     const s = new Stack()
     s.push(BigInt(5))
     s.swap(0)
-    st.deepEqual(s.pop(), BigInt(5))
-    st.end()
+    assert.deepEqual(s.pop(), BigInt(5))
   })
 
-  t.test('swap should throw on underflow', (st) => {
+  it('swap should throw on underflow', () => {
     const s = new Stack()
     s.push(BigInt(5))
-    st.throws(() => s.swap(1))
-    st.end()
+    assert.throws(() => s.swap(1))
   })
 
-  t.test('should swap', (st) => {
+  it('should swap', () => {
     const s = new Stack()
     s.push(BigInt(5))
     s.push(BigInt(7))
     s.swap(1)
-    st.deepEqual(s.pop(), BigInt(5))
-    st.end()
+    assert.deepEqual(s.pop(), BigInt(5))
   })
 
-  t.test('dup should throw on underflow', (st) => {
+  it('dup should throw on underflow', () => {
     const s = new Stack()
-    st.throws(() => s.dup(1))
+    assert.throws(() => s.dup(1))
     s.push(BigInt(5))
-    st.throws(() => s.dup(2))
-    st.end()
+    assert.throws(() => s.dup(2))
   })
 
-  t.test('should dup', (st) => {
+  it('should dup', () => {
     const s = new Stack()
     s.push(BigInt(5))
     s.push(BigInt(7))
     s.dup(2)
-    st.deepEqual(s.pop(), BigInt(5))
-    st.end()
+    assert.deepEqual(s.pop(), BigInt(5))
   })
 
-  t.test('should validate value overflow', (st) => {
+  it('should validate value overflow', () => {
     const s = new Stack()
     const max = BigInt(2) ** BigInt(256) - BigInt(1)
     s.push(max)
-    st.deepEqual(s.pop(), max)
-    st.throws(() => s.push(max + BigInt(1)))
-    st.end()
+    assert.deepEqual(s.pop(), max)
+    assert.throws(() => s.push(max + BigInt(1)))
   })
 
-  t.test('stack items should not change if they are DUPed', async (st) => {
+  it('stack items should not change if they are DUPed', async () => {
     const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee'))
     const addr = new Address(hexToBytes('00000000000000000000000000000000000000ff'))
     const evm = await EVM.create({
@@ -166,10 +151,9 @@ tape('Stack', (t) => {
     try {
       const res = await evm.runCall(runCallArgs)
       const executionReturnValue = res.execResult.returnValue
-      st.deepEquals(executionReturnValue, expectedReturnValue)
-      st.end()
+      assert.deepEqual(executionReturnValue, expectedReturnValue)
     } catch (e: any) {
-      st.fail(e.message)
+      assert.fail(e.message)
     }
   })
 })

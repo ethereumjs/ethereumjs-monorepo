@@ -11,6 +11,7 @@
   "references": [
     { "path": "../common/tsconfig.prod.cjs.json" },
     { "path": "../ethash/tsconfig.prod.cjs.json" },
+    { "path": "../genesis/tsconfig.prod.cjs.json" },
     { "path": "../rlp/tsconfig.prod.cjs.json" },
     { "path": "../util/tsconfig.prod.cjs.json" }
   ]

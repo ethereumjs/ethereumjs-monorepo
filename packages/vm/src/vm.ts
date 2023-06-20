@@ -2,15 +2,15 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
 import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Account, Address, AsyncEventEmitter, TypeOutput, toType } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { Account, Address, AsyncEventEmitter } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 import { promisify } from 'util'
 
-import { buildBlock } from './buildBlock'
-import { runBlock } from './runBlock'
-import { runTx } from './runTx'
+import { buildBlock } from './buildBlock.js'
+import { runBlock } from './runBlock.js'
+import { runTx } from './runTx.js'
 
-import type { BlockBuilder } from './buildBlock'
+import type { BlockBuilder } from './buildBlock.js'
 import type {
   BuildBlockOpts,
   RunBlockOpts,
@@ -19,9 +19,10 @@ import type {
   RunTxResult,
   VMEvents,
   VMOpts,
-} from './types'
+} from './types.js'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
+import type { BigIntLike } from '@ethereumjs/util'
 
 /**
  * Execution engine which can be used to run a blockchain, individual
@@ -51,8 +52,7 @@ export class VM {
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
 
-  protected readonly _hardforkByBlockNumber: boolean
-  protected readonly _hardforkByTTD?: bigint
+  protected readonly _setHardfork: boolean | BigIntLike
 
   /**
    * Cached emit() function, not for public usage
@@ -121,14 +121,7 @@ export class VM {
       })
     }
 
-    if (opts.hardforkByBlockNumber !== undefined && opts.hardforkByTTD !== undefined) {
-      throw new Error(
-        `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
-      )
-    }
-
-    this._hardforkByBlockNumber = opts.hardforkByBlockNumber ?? false
-    this._hardforkByTTD = toType(opts.hardforkByTTD, TypeOutput.BigInt)
+    this._setHardfork = opts.setHardfork ?? false
 
     // We cache this promisified function as it's called from the main execution loop, and
     // promisifying each time has a huge performance impact.
@@ -245,8 +238,7 @@ export class VM {
       blockchain: this.blockchain,
       common,
       evm: evmCopy,
-      hardforkByBlockNumber: this._hardforkByBlockNumber ? true : undefined,
-      hardforkByTTD: this._hardforkByTTD,
+      setHardfork: this._setHardfork,
     })
   }
 

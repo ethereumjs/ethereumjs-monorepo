@@ -1,6 +1,6 @@
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { bytesToHex } from 'ethereum-cryptography/utils.js'
 
-import type { BatchDBOp, DB, DBObject } from './db'
+import type { BatchDBOp, DB, DBObject } from './db.js'
 
 export class MapDB<
   TKey extends Uint8Array | string | number,
@@ -40,7 +40,7 @@ export class MapDB<
     }
   }
 
-  copy(): DB<TKey, TValue> {
+  shallowCopy(): DB<TKey, TValue> {
     return new MapDB<TKey, TValue>(this._database)
   }
 

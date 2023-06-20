@@ -1,13 +1,13 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { AccessListEIP2930Transaction, LegacyTransaction } from '@ethereumjs/tx'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import type { BlockData } from '@ethereumjs/block'
 import type { AccessListEIP2930TxData, TransactionType, TxData } from '@ethereumjs/tx'
 
-tape('[Types]', function (t) {
-  t.test('should ensure that the actual objects can be safely used as their data types', (st) => {
+describe('[Types]', () => {
+  it('should ensure that the actual objects can be safely used as their data types', () => {
     // Dev note:
     // This test was written by @alcuadrado after discovering
     // issues in creating an object from its own data. It will
@@ -22,7 +22,7 @@ tape('[Types]', function (t) {
 
     // Block
     const block: Omit<Required<BlockData>, 'withdrawals'> = Block.fromBlockData({}, { common })
-    st.ok(block, 'block')
+    assert.ok(block, 'block')
 
     // Transactions
     type OptionalTxFields = 'to' | 'r' | 's' | 'v'
@@ -30,13 +30,11 @@ tape('[Types]', function (t) {
     // Legacy tx
     const legacyTx: RequiredExceptOptionals<TxData[TransactionType.Legacy], OptionalTxFields> =
       LegacyTransaction.fromTxData({}, { common })
-    st.ok(legacyTx, 'legacy tx')
+    assert.ok(legacyTx, 'legacy tx')
 
     // Access List tx
     const accessListTx: RequiredExceptOptionals<AccessListEIP2930TxData, OptionalTxFields> =
       AccessListEIP2930Transaction.fromTxData({}, { common })
-    st.ok(accessListTx, 'accessList tx')
-
-    st.end()
+    assert.ok(accessListTx, 'accessList tx')
   })
 })

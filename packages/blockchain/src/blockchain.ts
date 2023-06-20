@@ -1,5 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { getGenesis } from '@ethereumjs/genesis'
+import { genesisStateRoot } from '@ethereumjs/trie'
 import {
   KECCAK256_RLP,
   Lock,
@@ -7,20 +9,24 @@ import {
   bytesToPrefixedHexString,
   concatBytesNoTypeCheck,
 } from '@ethereumjs/util'
-import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
 
-import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus'
-import { DBOp, DBSaveLookups, DBSetBlockOrHeader, DBSetHashToNumber, DBSetTD } from './db/helpers'
-import { DBManager } from './db/manager'
-import { DBTarget } from './db/operation'
-import { genesisStateRoot } from './genesisStates'
-import {} from './utils'
+import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus/index.js'
+import {
+  DBOp,
+  DBSaveLookups,
+  DBSetBlockOrHeader,
+  DBSetHashToNumber,
+  DBSetTD,
+} from './db/helpers.js'
+import { DBManager } from './db/manager.js'
+import { DBTarget } from './db/operation.js'
 
-import type { Consensus } from './consensus'
-import type { BlockchainInterface, BlockchainOptions, GenesisState, OnBlock } from './types'
+import type { Consensus } from './consensus/index.js'
+import type { BlockchainInterface, BlockchainOptions, OnBlock } from './types.js'
 import type { BlockData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
-import type { BigIntLike, DB, DBObject } from '@ethereumjs/util'
+import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
 
 /**
  * This class stores and interacts with blocks.
@@ -84,7 +90,7 @@ export class Blockchain implements BlockchainInterface {
     for (const blockData of blocksData) {
       const block = Block.fromBlockData(blockData, {
         common: blockchain._common,
-        hardforkByBlockNumber: true,
+        setHardfork: true,
       })
       await blockchain.putBlock(block)
     }
@@ -1249,11 +1255,15 @@ export class Blockchain implements BlockchainInterface {
   }
 
   async checkAndTransitionHardForkByNumber(
-    number: bigint,
+    number: BigIntLike,
     td?: BigIntLike,
     timestamp?: BigIntLike
   ): Promise<void> {
-    this._common.setHardforkByBlockNumber(number, td, timestamp)
+    this._common.setHardforkBy({
+      blockNumber: number,
+      td,
+      timestamp,
+    })
 
     // If custom consensus algorithm is used, skip merge hardfork consensus checks
     if (!Object.values(ConsensusAlgorithm).includes(this.consensus.algorithm as ConsensusAlgorithm))
@@ -1318,11 +1328,11 @@ export class Blockchain implements BlockchainInterface {
    */
   createGenesisBlock(stateRoot: Uint8Array): Block {
     const common = this._common.copy()
-    common.setHardforkByBlockNumber(
-      0,
-      BigInt(common.genesis().difficulty),
-      common.genesis().timestamp
-    )
+    common.setHardforkBy({
+      blockNumber: 0,
+      td: BigInt(common.genesis().difficulty),
+      timestamp: common.genesis().timestamp,
+    })
 
     const header: BlockData['header'] = {
       ...common.genesis(),
@@ -1354,22 +1364,7 @@ export class Blockchain implements BlockchainInterface {
     if (this._customGenesisState) {
       return this._customGenesisState
     }
-    // Use require statements here in favor of import statements
-    // to load json files on demand
-    // (high memory usage by large mainnet.json genesis state file)
-    switch (this._common.chainName()) {
-      case 'mainnet':
-        return require('./genesisStates/mainnet.json')
-      case 'ropsten':
-        return require('./genesisStates/ropsten.json')
-      case 'rinkeby':
-        return require('./genesisStates/rinkeby.json')
-      case 'goerli':
-        return require('./genesisStates/goerli.json')
-      case 'sepolia':
-        return require('./genesisStates/sepolia.json')
-    }
 
-    return {}
+    return getGenesis(Number(this._common.chainId()) as Chain) ?? {}
   }
 }

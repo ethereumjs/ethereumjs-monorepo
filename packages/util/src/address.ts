@@ -1,4 +1,4 @@
-import { equalsBytes } from 'ethereum-cryptography/utils'
+import { equalsBytes } from 'ethereum-cryptography/utils.js'
 
 import {
   generateAddress,
@@ -6,8 +6,8 @@ import {
   isValidAddress,
   privateToAddress,
   pubToAddress,
-} from './account'
-import { bigIntToBytes, bytesToBigInt, bytesToPrefixedHexString, toBytes, zeros } from './bytes'
+} from './account.js'
+import { bigIntToBytes, bytesToBigInt, bytesToPrefixedHexString, toBytes, zeros } from './bytes.js'
 
 /**
  * Handling and generating Ethereum addresses

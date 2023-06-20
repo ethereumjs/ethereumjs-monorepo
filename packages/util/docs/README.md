@@ -95,7 +95,7 @@
 - [hashPersonalMessage](README.md#hashpersonalmessage)
 - [importPublic](README.md#importpublic)
 - [intToBuffer](README.md#inttobuffer)
-- [intToHex](README.md#inttohex)
+- [intToPrefixedHexString](README.md#inttohex)
 - [intToUnpaddedBuffer](README.md#inttounpaddedbuffer)
 - [isHexPrefixed](README.md#ishexprefixed)
 - [isHexString](README.md#ishexstring)
@@ -1254,9 +1254,9 @@ Converts an `Number` to a `Buffer`
 
 ___
 
-### intToHex
+### intToPrefixedHexString
 
-▸ **intToHex**(`i`): `string`
+▸ **intToPrefixedHexString**(`i`): `string`
 
 Converts a `Number` into a hex `String`
 

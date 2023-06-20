@@ -256,13 +256,16 @@ const assembleBlock = async (
   const common = config.chainCommon.copy()
 
   // This is a post merge block, so set its common accordingly
-  // Can't use hardforkByTTD flag, as the transactions will need to be deserialized
+  // Can't use setHardfork flag, as the transactions will need to be deserialized
   // first before the header can be constucted with their roots
   const ttd = common.hardforkTTD(Hardfork.Paris)
-  common.setHardforkByBlockNumber(blockNumber, ttd !== null ? ttd : undefined, timestamp)
+  common.setHardforkBy({ blockNumber, td: ttd !== null ? ttd : undefined, timestamp })
 
   try {
     const block = await Block.fromExecutionPayload(payload, { common })
+    // TODO: validateData is also called in applyBlock while runBlock, may be it can be optimized
+    // by removing/skipping block data validation from there
+    await block.validateData()
     return { block }
   } catch (error) {
     const validationError = `Error assembling block during from payload: ${error}`
@@ -509,13 +512,13 @@ export class Engine {
       // if there was a validation error return invalid
       if (validationError !== null) {
         this.config.logger.debug(validationError)
-        const latestValidHash = await validHash(hexStringToBytes(payload.parentHash), this.chain)
+        const latestValidHash = await validHash(hexStringToBytes(parentHash), this.chain)
         const response = { status: Status.INVALID, latestValidHash, validationError }
         return response
       }
     } else if (versionedHashes !== undefined && versionedHashes !== null) {
       const validationError = `Invalid versionedHashes before EIP-4844 is activated`
-      const latestValidHash = await validHash(hexStringToBytes(payload.parentHash), this.chain)
+      const latestValidHash = await validHash(hexStringToBytes(parentHash), this.chain)
       const response = { status: Status.INVALID, latestValidHash, validationError }
       return response
     }
@@ -552,7 +555,16 @@ export class Engine {
     }
 
     try {
-      const parent = await this.chain.getBlock(hexStringToBytes(parentHash))
+      // get the parent from beacon skeleton or from remoteBlocks cache or from the chain
+      const parent =
+        (await this.service.beaconSync?.skeleton.getBlockByHash(
+          hexStringToBytes(parentHash),
+          true
+        )) ??
+        this.remoteBlocks.get(parentHash.slice(2)) ??
+        (await this.chain.getBlock(hexStringToBytes(parentHash)))
+
+      // Validations with parent
       if (!parent._common.gteHardfork(Hardfork.Paris)) {
         const validTerminalBlock = await validateTerminalBlock(parent, this.chain)
         if (!validTerminalBlock) {
@@ -564,6 +576,20 @@ export class Engine {
           return response
         }
       }
+
+      // validate 4844 transactions and fields as these validations generally happen on putBlocks
+      // when parent is confirmed to be in the chain. But we can do it here early
+      if (block._common.isActivatedEIP(4844)) {
+        try {
+          block.validateBlobTransactions(parent.header)
+        } catch (error: any) {
+          const validationError = `Invalid 4844 transactions: ${error}`
+          const latestValidHash = await validHash(hexStringToBytes(parentHash), this.chain)
+          const response = { status: Status.INVALID, latestValidHash, validationError }
+          return response
+        }
+      }
+
       const isBlockExecuted = await this.vm.stateManager.hasStateRoot(parent.header.stateRoot)
       // If the parent is not executed throw an error, it will be caught and return SYNCING or ACCEPTED.
       if (!isBlockExecuted) {
@@ -601,7 +627,7 @@ export class Engine {
         await this.execution.runWithoutSetHead({
           block,
           root,
-          hardforkByTTD: this.chain.headers.td,
+          setHardfork: this.chain.headers.td,
         })
       }
     } catch (error) {

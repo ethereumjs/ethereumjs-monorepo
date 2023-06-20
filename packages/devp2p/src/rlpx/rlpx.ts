@@ -1,17 +1,17 @@
 import { bytesToInt } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
-import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 import { EventEmitter } from 'events'
 import * as net from 'net'
 import * as os from 'os'
 
-import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util'
+import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
 
-import { DISCONNECT_REASONS, Peer } from './peer'
+import { DISCONNECT_REASONS, Peer } from './peer.js'
 
-import type { DPT, PeerInfo } from '../dpt'
-import type { Capabilities } from './peer'
+import type { DPT, PeerInfo } from '../dpt/index.js'
+import type { Capabilities } from './peer.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type LRUCache from 'lru-cache'

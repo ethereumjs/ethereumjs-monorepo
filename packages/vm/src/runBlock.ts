@@ -15,9 +15,9 @@ import {
   short,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
-import { Bloom } from './bloom'
+import { Bloom } from './bloom/index.js'
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
 
 import type {
@@ -27,8 +27,8 @@ import type {
   RunBlockOpts,
   RunBlockResult,
   TxReceipt,
-} from './types'
-import type { VM } from './vm'
+} from './types.js'
+import type { VM } from './vm.js'
 import type { EVM } from '@ethereumjs/evm'
 
 const debug = createDebugLogger('vm:block')
@@ -44,6 +44,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   const state = this.stateManager
   const { root } = opts
   const clearCache = opts.clearCache ?? true
+  const setHardfork = opts.setHardfork ?? false
   let { block } = opts
   const generateFields = opts.generate === true
 
@@ -56,16 +57,20 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
    */
   await this._emit('beforeBlock', block)
 
-  if (
-    this._hardforkByBlockNumber ||
-    this._hardforkByTTD !== undefined ||
-    opts.hardforkByTTD !== undefined
-  ) {
-    this._common.setHardforkByBlockNumber(
-      block.header.number,
-      opts.hardforkByTTD ?? this._hardforkByTTD,
-      block.header.timestamp
-    )
+  if (setHardfork !== false || this._setHardfork !== false) {
+    const setHardforkUsed = setHardfork ?? this._setHardfork
+    if (setHardforkUsed === true) {
+      this._common.setHardforkBy({
+        blockNumber: block.header.number,
+        timestamp: block.header.timestamp,
+      })
+    } else if (typeof setHardforkUsed !== 'boolean') {
+      this._common.setHardforkBy({
+        blockNumber: block.header.number,
+        td: setHardforkUsed,
+        timestamp: block.header.timestamp,
+      })
+    }
   }
 
   if (this.DEBUG) {

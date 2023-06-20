@@ -1,7 +1,7 @@
-import type { Consensus } from './consensus'
+import type { Consensus } from './consensus/index.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type { DB, DBObject, PrefixedHexString } from '@ethereumjs/util'
+import type { DB, DBObject, GenesisState } from '@ethereumjs/util'
 
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
@@ -60,7 +60,7 @@ export interface BlockchainInterface {
    *
    * @param name - Optional name of the iterator head (default: 'vm')
    */
-  getIteratorHead?(name?: string): Promise<Block>
+  getIteratorHead(name?: string): Promise<Block>
 
   /**
    * Set header hash of a certain `tag`.
@@ -79,25 +79,12 @@ export interface BlockchainInterface {
    * Returns the genesis state of the blockchain.
    * All values are provided as hex-prefixed strings.
    */
-  genesisState?(): GenesisState
+  genesisState(): GenesisState
 
   /**
    * Returns the latest full block in the canonical chain.
    */
-  getCanonicalHeadBlock?(): Promise<Block>
-}
-
-export type StoragePair = [key: PrefixedHexString, value: PrefixedHexString]
-
-export type AccountState = [
-  balance: PrefixedHexString,
-  code: PrefixedHexString,
-  storage: Array<StoragePair>,
-  nonce: PrefixedHexString
-]
-
-export interface GenesisState {
-  [key: PrefixedHexString]: PrefixedHexString | AccountState
+  getCanonicalHeadBlock(): Promise<Block>
 }
 
 /**

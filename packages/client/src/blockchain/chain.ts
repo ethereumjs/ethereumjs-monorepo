@@ -289,19 +289,18 @@ export class Chain {
     this._blocks = blocks
 
     const parentTd = await this.blockchain.getParentTD(headers.latest)
-    this.config.chainCommon.setHardforkByBlockNumber(
-      headers.latest.number,
-      parentTd,
-      headers.latest.timestamp
-    )
+    this.config.chainCommon.setHardforkBy({
+      blockNumber: headers.latest.number,
+      td: parentTd,
+      timestamp: headers.latest.timestamp,
+    })
 
     // Check and log if this is a terminal block and next block could be merge
     if (!this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
-      const nextBlockHf = this.config.chainCommon.getHardforkByBlockNumber(
-        headers.height + BigInt(1),
-        headers.td,
-        undefined
-      )
+      const nextBlockHf = this.config.chainCommon.getHardforkBy({
+        blockNumber: headers.height + BigInt(1),
+        td: headers.td,
+      })
       if (this.config.chainCommon.hardforkGteHardfork(nextBlockHf, Hardfork.Paris)) {
         this.config.logger.info('*'.repeat(85))
         this.config.logger.info(
@@ -404,7 +403,7 @@ export class Chain {
 
       const block = Block.fromValuesArray(b.raw(), {
         common: this.config.chainCommon,
-        hardforkByTTD: td,
+        setHardfork: td,
       })
 
       await this.blockchain.putBlock(block)
@@ -454,7 +453,7 @@ export class Chain {
       }
       const header = BlockHeader.fromValuesArray(h.raw(), {
         common: this.config.chainCommon,
-        hardforkByTTD: this.headers.td,
+        setHardfork: this.headers.td,
       })
       await this.blockchain.putHeader(header)
       numAdded++

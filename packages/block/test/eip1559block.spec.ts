@@ -1,14 +1,14 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { hexStringToBytes } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { Block } from '../src/block'
-import { BlockHeader } from '../src/header'
+import { Block } from '../src/block.js'
+import { BlockHeader } from '../src/header.js'
 
 // Test data from Besu (retrieved via Discord)
 // Older version at https://github.com/abdelhamidbakhta/besu/blob/bf54b6c0b40d3015fc85ff9b078fbc26592d80c0/ethereum/core/src/test/resources/org/hyperledger/besu/ethereum/core/fees/basefee-test.json
-const eip1559BaseFee = require('./testdata/eip1559baseFee.json')
+import * as eip1559BaseFee from './testdata/eip1559baseFee.json'
 
 const common = new Common({
   eips: [1559],
@@ -30,27 +30,31 @@ common.hardforkBlock = function (hardfork: string | undefined) {
   return BigInt(0)
 }
 
-tape('EIP1559 tests', function (t) {
-  t.test('Header -> Initialization', function (st) {
+describe('EIP1559 tests', () => {
+  it('Header -> Initialization', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    st.throws(() => {
-      BlockHeader.fromHeaderData(
-        {
-          number: BigInt(1),
-          parentHash: genesis.hash(),
-          timestamp: BigInt(1),
-          gasLimit: genesis.header.gasLimit * BigInt(2), // Special case on EIP-1559 transition block
-          baseFeePerGas: BigInt(5),
-        },
-        {
-          common,
-        }
-      )
-    }, 'should throw when setting baseFeePerGas with EIP1559 not being activated')
-    st.end()
+    assert.throws(
+      () => {
+        BlockHeader.fromHeaderData(
+          {
+            number: BigInt(1),
+            parentHash: genesis.hash(),
+            timestamp: BigInt(1),
+            gasLimit: genesis.header.gasLimit * BigInt(2), // Special case on EIP-1559 transition block
+            baseFeePerGas: BigInt(5),
+          },
+          {
+            common,
+          }
+        )
+      },
+      undefined,
+      undefined,
+      'should throw when setting baseFeePerGas with EIP1559 not being activated'
+    )
   })
 
-  t.test('Header -> genericFormatValidation checks', async function (st) {
+  it('Header -> genericFormatValidation checks', async () => {
     try {
       BlockHeader.fromHeaderData(
         {
@@ -66,10 +70,10 @@ tape('EIP1559 tests', function (t) {
           freeze: false,
         }
       )
-      st.fail('should throw when baseFeePerGas is not set to initial base fee')
+      assert.fail('should throw when baseFeePerGas is not set to initial base fee')
     } catch (e: any) {
       const expectedError = 'Initial EIP1559 block does not have initial base fee'
-      st.ok(
+      assert.ok(
         e.message.includes(expectedError),
         'should throw if base fee is not set to initial value'
       )
@@ -93,16 +97,14 @@ tape('EIP1559 tests', function (t) {
       await (header as any)._genericFormatValidation()
     } catch (e: any) {
       const expectedError = 'EIP1559 block has no base fee field'
-      st.ok(
+      assert.ok(
         e.message.includes(expectedError),
         'should throw with no base fee field when EIP1559 is activated'
       )
     }
-
-    st.end()
   })
 
-  t.test('Header -> _genericFormValidation -> success case', async function (st) {
+  it('Header -> _genericFormValidation -> success case', async () => {
     Block.fromBlockData(
       {
         header: {
@@ -119,12 +121,10 @@ tape('EIP1559 tests', function (t) {
       }
     )
 
-    st.pass('Valid initial EIP1559 header should be valid')
-
-    st.end()
+    assert.ok(true, 'Valid initial EIP1559 header should be valid')
   })
 
-  t.test('Header -> validate()', async function (st) {
+  it('Header -> validate()', async () => {
     try {
       BlockHeader.fromHeaderData(
         {
@@ -139,14 +139,13 @@ tape('EIP1559 tests', function (t) {
           common,
         }
       )
-      st.fail('should throw')
+      assert.fail('should throw')
     } catch (e: any) {
-      st.ok(e.message.includes('base fee'), 'should throw on wrong initial base fee')
+      assert.ok(e.message.includes('base fee'), 'should throw on wrong initial base fee')
     }
-    st.end()
   })
 
-  t.test('Header -> validate() -> success cases', async function (st) {
+  it('Header -> validate() -> success cases', async () => {
     const block1 = Block.fromBlockData(
       {
         header: {
@@ -177,11 +176,10 @@ tape('EIP1559 tests', function (t) {
         common,
       }
     )
-    st.pass('should correctly validate subsequent EIP-1559 blocks')
-    st.end()
+    assert.ok(true, 'should correctly validate subsequent EIP-1559 blocks')
   })
 
-  t.test('Header -> validate() -> gas usage', async function (st) {
+  it('Header -> validate() -> gas usage', async () => {
     try {
       BlockHeader.fromHeaderData(
         {
@@ -200,14 +198,13 @@ tape('EIP1559 tests', function (t) {
           common,
         }
       )
-      st.fail('should throw')
+      assert.fail('should throw')
     } catch (e: any) {
-      st.ok(e.message.includes('too much gas used'), 'should throw when elasticity is exceeded')
+      assert.ok(e.message.includes('too much gas used'), 'should throw when elasticity is exceeded')
     }
-    st.end()
   })
 
-  t.test('Header -> validate() -> gas usage', async function (st) {
+  it('Header -> validate() -> gas usage', async () => {
     BlockHeader.fromHeaderData(
       {
         number: BigInt(1),
@@ -223,8 +220,7 @@ tape('EIP1559 tests', function (t) {
       }
     )
 
-    st.pass('should not throw when elasticity is exactly matched')
-    st.end()
+    assert.ok(true, 'should not throw when elasticity is exactly matched')
   })
 
   const block1 = Block.fromBlockData(
@@ -243,7 +239,7 @@ tape('EIP1559 tests', function (t) {
     }
   )
 
-  t.test('Header -> validate() -> gasLimit -> success cases', async function (st) {
+  it('Header -> validate() -> gasLimit -> success cases', async () => {
     let parentGasLimit = genesis.header.gasLimit * BigInt(2)
     BlockHeader.fromHeaderData(
       {
@@ -259,7 +255,7 @@ tape('EIP1559 tests', function (t) {
       }
     )
 
-    st.pass('should not throw if gas limit is between bounds (HF transition block)')
+    assert.ok(true, 'should not throw if gas limit is between bounds (HF transition block)')
 
     BlockHeader.fromHeaderData(
       {
@@ -275,7 +271,7 @@ tape('EIP1559 tests', function (t) {
       }
     )
 
-    st.pass('should not throw if gas limit is between bounds (HF transition block)')
+    assert.ok(true, 'should not throw if gas limit is between bounds (HF transition block)')
 
     parentGasLimit = block1.header.gasLimit
     BlockHeader.fromHeaderData(
@@ -292,7 +288,7 @@ tape('EIP1559 tests', function (t) {
       }
     )
 
-    st.pass('should not throw if gas limit is between bounds (post-HF transition block)')
+    assert.ok(true, 'should not throw if gas limit is between bounds (post-HF transition block)')
 
     BlockHeader.fromHeaderData(
       {
@@ -308,11 +304,10 @@ tape('EIP1559 tests', function (t) {
       }
     )
 
-    st.pass('should not throw if gas limit is between bounds (post-HF transition block)')
-    st.end()
+    assert.ok(true, 'should not throw if gas limit is between bounds (post-HF transition block)')
   })
 
-  t.test('Header -> validateGasLimit() -> error cases', async function (st) {
+  it('Header -> validateGasLimit() -> error cases', async () => {
     let parentGasLimit = genesis.header.gasLimit * BigInt(2)
     let header = BlockHeader.fromHeaderData(
       {
@@ -329,9 +324,9 @@ tape('EIP1559 tests', function (t) {
     )
     try {
       header.validateGasLimit(genesis.header)
-      st.fail('should throw')
+      assert.fail('should throw')
     } catch (e: any) {
-      st.ok(
+      assert.ok(
         e.message.includes('gas limit increased too much'),
         'should throw if gas limit is increased too much (HF transition block)'
       )
@@ -353,17 +348,16 @@ tape('EIP1559 tests', function (t) {
     )
     try {
       header.validateGasLimit(block1.header)
-      st.fail('should throw')
+      assert.fail('should throw')
     } catch (e: any) {
-      st.ok(
+      assert.ok(
         e.message.includes('gas limit increased too much'),
         'should throw if gas limit is increased too much (post-HF transition block)'
       )
     }
-    st.end()
   })
 
-  t.test('Header -> validateGasLimit() -> error cases', async function (st) {
+  it('Header -> validateGasLimit() -> error cases', async () => {
     let parentGasLimit = genesis.header.gasLimit * BigInt(2)
     let header = BlockHeader.fromHeaderData(
       {
@@ -380,9 +374,9 @@ tape('EIP1559 tests', function (t) {
     )
     try {
       header.validateGasLimit(genesis.header)
-      st.fail('should throw')
+      assert.fail('should throw')
     } catch (e: any) {
-      st.ok(
+      assert.ok(
         e.message.includes('gas limit decreased too much'),
         'should throw if gas limit is decreased too much (HF transition block)'
       )
@@ -404,17 +398,16 @@ tape('EIP1559 tests', function (t) {
     )
     try {
       header.validateGasLimit(block1.header)
-      st.fail('should throw')
+      assert.fail('should throw')
     } catch (e: any) {
-      st.ok(
+      assert.ok(
         e.message.includes('gas limit decreased too much'),
         'should throw if gas limit is decreased too much (post-HF transition block)'
       )
     }
-    st.end()
   })
 
-  t.test('Header -> validateTransactions() -> tx', async (st) => {
+  it('Header -> validateTransactions() -> tx', async () => {
     const transaction = FeeMarketEIP1559Transaction.fromTxData(
       {
         maxFeePerGas: BigInt(0),
@@ -450,14 +443,13 @@ tape('EIP1559 tests', function (t) {
     )
 
     const errs = block.validateTransactions(true)
-    st.ok(
+    assert.ok(
       errs[0].includes('unable to pay base fee'),
       'should throw if transaction is unable to pay base fee'
     )
-    st.end()
   })
 
-  t.test('Header -> calcNextBaseFee()', function (st) {
+  it('Header -> calcNextBaseFee()', () => {
     for (let index = 0; index < eip1559BaseFee.length; index++) {
       const item = eip1559BaseFee[index]
       const result = BlockHeader.fromHeaderData(
@@ -469,12 +461,11 @@ tape('EIP1559 tests', function (t) {
         { common }
       ).calcNextBaseFee()
       const expected = BigInt(item.expectedBaseFee)
-      st.equal(expected, result, 'base fee correct')
+      assert.equal(expected, result, 'base fee correct')
     }
-    st.end()
   })
 
-  t.test('Header -> toJSON()', function (st) {
+  it('Header -> toJSON()', () => {
     const header = BlockHeader.fromHeaderData(
       {
         number: BigInt(3),
@@ -487,7 +478,6 @@ tape('EIP1559 tests', function (t) {
         common,
       }
     )
-    st.equal(header.toJSON().baseFeePerGas, '0x5')
-    st.end()
+    assert.equal(header.toJSON().baseFeePerGas, '0x5')
   })
 })

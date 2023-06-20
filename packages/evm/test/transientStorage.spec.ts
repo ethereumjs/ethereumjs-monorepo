@@ -1,11 +1,10 @@
 import { Address } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { TransientStorage } from '../src/transientStorage'
+import { TransientStorage } from '../src/transientStorage.js'
 
-tape('Transient Storage', (tester) => {
-  const it = tester.test
-  it('should set and get storage', (t) => {
+describe('Transient Storage', () => {
+  it('should set and get storage', () => {
     const transientStorage = new TransientStorage()
 
     const address = Address.fromString('0xff00000000000000000000000000000000000002')
@@ -14,11 +13,10 @@ tape('Transient Storage', (tester) => {
 
     transientStorage.put(address, key, value)
     const got = transientStorage.get(address, key)
-    t.strictEqual(value, got)
-    t.end()
+    assert.strictEqual(value, got)
   })
 
-  it('should return bytes32(0) if there is no key set', (t) => {
+  it('should return bytes32(0) if there is no key set', () => {
     const transientStorage = new TransientStorage()
 
     const address = Address.fromString('0xff00000000000000000000000000000000000002')
@@ -27,16 +25,15 @@ tape('Transient Storage', (tester) => {
 
     // No address set
     const got = transientStorage.get(address, key)
-    t.deepEqual(new Uint8Array(32).fill(0x00), got)
+    assert.deepEqual(new Uint8Array(32).fill(0x00), got)
 
     // Address set, no key set
     transientStorage.put(address, key, value)
     const got2 = transientStorage.get(address, new Uint8Array(32).fill(0x22))
-    t.deepEqual(new Uint8Array(32).fill(0x00), got2)
-    t.end()
+    assert.deepEqual(new Uint8Array(32).fill(0x00), got2)
   })
 
-  it('should revert', (t) => {
+  it('should revert', () => {
     const transientStorage = new TransientStorage()
 
     const address = Address.fromString('0xff00000000000000000000000000000000000002')
@@ -50,16 +47,15 @@ tape('Transient Storage', (tester) => {
     const value2 = new Uint8Array(32).fill(0x22)
     transientStorage.put(address, key, value2)
     const got = transientStorage.get(address, key)
-    t.deepEqual(got, value2)
+    assert.deepEqual(got, value2)
 
     transientStorage.revert()
 
     const got2 = transientStorage.get(address, key)
-    t.deepEqual(got2, value)
-    t.end()
+    assert.deepEqual(got2, value)
   })
 
-  it('should commit', (t) => {
+  it('should commit', () => {
     const transientStorage = new TransientStorage()
 
     const address = Address.fromString('0xff00000000000000000000000000000000000002')
@@ -72,27 +68,24 @@ tape('Transient Storage', (tester) => {
     transientStorage.commit()
 
     const got = transientStorage.get(address, key)
-    t.deepEqual(got, value)
-    t.end()
+    assert.deepEqual(got, value)
   })
 
-  it('should fail with wrong size key/value', (t) => {
+  it('should fail with wrong size key/value', () => {
     const transientStorage = new TransientStorage()
 
     const address = Address.fromString('0xff00000000000000000000000000000000000002')
 
-    t.throws(() => {
+    assert.throws(() => {
       transientStorage.put(address, new Uint8Array(10), new Uint8Array(1))
     }, /Transient storage key must be 32 bytes long/)
 
-    t.throws(() => {
+    assert.throws(() => {
       transientStorage.put(address, new Uint8Array(32), new Uint8Array(33))
     }, /Transient storage value cannot be longer than 32 bytes/)
-
-    t.end()
   })
 
-  it('keys are stringified', (t) => {
+  it('keys are stringified', () => {
     const transientStorage = new TransientStorage()
 
     const address = Address.fromString('0xff00000000000000000000000000000000000002')
@@ -100,17 +93,16 @@ tape('Transient Storage', (tester) => {
     const value = new Uint8Array(32).fill(0x99)
 
     transientStorage.put(address, key, value)
-    t.deepEqual(
+    assert.deepEqual(
       transientStorage.get(
         Address.fromString('0xff00000000000000000000000000000000000002'),
         new Uint8Array(32).fill(0xff)
       ),
       value
     )
-    t.end()
   })
 
-  it('revert applies changes in correct order', (t) => {
+  it('revert applies changes in correct order', () => {
     const transientStorage = new TransientStorage()
 
     const address = Address.fromString('0xff00000000000000000000000000000000000002')
@@ -125,11 +117,10 @@ tape('Transient Storage', (tester) => {
     transientStorage.put(address, key, value3)
     transientStorage.revert()
 
-    t.deepEqual(transientStorage.get(address, key), value1)
-    t.end()
+    assert.deepEqual(transientStorage.get(address, key), value1)
   })
 
-  it('nested reverts', (t) => {
+  it('nested reverts', () => {
     const transientStorage = new TransientStorage()
 
     const address = Address.fromString('0xff00000000000000000000000000000000000002')
@@ -147,21 +138,19 @@ tape('Transient Storage', (tester) => {
     transientStorage.put(address, key, value2)
     transientStorage.checkpoint()
 
-    t.deepEqual(transientStorage.get(address, key), value2)
+    assert.deepEqual(transientStorage.get(address, key), value2)
     transientStorage.revert()
     // not changed since nothing happened after latest checkpoint
-    t.deepEqual(transientStorage.get(address, key), value2)
+    assert.deepEqual(transientStorage.get(address, key), value2)
     transientStorage.revert()
-    t.deepEqual(transientStorage.get(address, key), value3)
+    assert.deepEqual(transientStorage.get(address, key), value3)
     transientStorage.revert()
-    t.deepEqual(transientStorage.get(address, key), value1)
+    assert.deepEqual(transientStorage.get(address, key), value1)
     transientStorage.revert()
-    t.deepEqual(transientStorage.get(address, key), value0)
-
-    t.end()
+    assert.deepEqual(transientStorage.get(address, key), value0)
   })
 
-  it('commit batches changes into next revert', (t) => {
+  it('commit batches changes into next revert', () => {
     const transientStorage = new TransientStorage()
 
     const address = Address.fromString('0xff00000000000000000000000000000000000002')
@@ -183,10 +172,8 @@ tape('Transient Storage', (tester) => {
     // now revert should go all the way to 1
     transientStorage.commit()
 
-    t.deepEqual(transientStorage.get(address, key), value2)
+    assert.deepEqual(transientStorage.get(address, key), value2)
     transientStorage.revert()
-    t.deepEqual(transientStorage.get(address, key), value1)
-
-    t.end()
+    assert.deepEqual(transientStorage.get(address, key), value1)
   })
 })

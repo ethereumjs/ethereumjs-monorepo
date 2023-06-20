@@ -1,10 +1,10 @@
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 // @ts-ignore - package has no types...
 import { run, mark, logMem } from 'micro-bmark'
 
-import { DB, Trie } from '../dist'
+import { DB, Trie } from '../dist/esm/index.js'
 
-import { keys } from './keys'
+import { keys } from './keys.js'
 
 export function createSuite(db: DB) {
   const trie = new Trie({ db })

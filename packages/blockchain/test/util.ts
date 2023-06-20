@@ -2,10 +2,10 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { MapDB, toBytes } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 
-import { Blockchain } from '../src'
+import { Blockchain } from '../src/index.js'
 
 import type { DB } from '@ethereumjs/util'
 

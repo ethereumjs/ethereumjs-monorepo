@@ -1,36 +1,36 @@
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { Chain, Common, Hardfork } from '../src'
+import { Chain, Common, Hardfork } from '../src/index.js'
 
-tape('[Common/EIPs]: Initialization / Chain params', function (t: tape.Test) {
-  t.test('Correct initialization', function (st: tape.Test) {
+describe('[Common/EIPs]: Initialization / Chain params', () => {
+  it('Correct initialization', () => {
     let eips = [2537, 2929]
     const c = new Common({ chain: Chain.Mainnet, eips })
-    st.equal(c.eips(), eips, 'should initialize with supported EIP')
+    assert.equal(c.eips(), eips, 'should initialize with supported EIP')
 
     eips = [2718, 2929, 2930]
-    new Common({ chain: Chain.Mainnet, eips, hardfork: Hardfork.Istanbul })
-    st.pass('Should not throw when initializing with a consistent EIP list')
+    let f = () => {
+      new Common({ chain: Chain.Mainnet, eips, hardfork: Hardfork.Istanbul })
+    }
+    assert.doesNotThrow(f, 'Should not throw when initializing with a consistent EIP list')
 
     eips = [2930]
     const msg =
       'should throw when initializing with an EIP with required EIPs not being activated along'
-    const f = () => {
+    f = () => {
       new Common({ chain: Chain.Mainnet, eips, hardfork: Hardfork.Istanbul })
     }
-    st.throws(f, msg)
-
-    st.end()
+    assert.throws(f, undefined, undefined, msg)
   })
 
-  t.test('Initialization errors', function (st: tape.Test) {
+  it('Initialization errors', () => {
     const UNSUPPORTED_EIP = 1000000
     const eips = [UNSUPPORTED_EIP]
     const msg = 'should throw on an unsupported EIP'
     const f = () => {
       new Common({ chain: Chain.Mainnet, eips })
     }
-    st.throws(f, /not supported$/, msg)
+    assert.throws(f, /not supported$/, undefined, msg)
 
     /*
     // Manual test since no test triggering EIP config available
@@ -41,34 +41,28 @@ tape('[Common/EIPs]: Initialization / Chain params', function (t: tape.Test) {
     f = () => {
       new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium, eips })
     }
-    st.throws(f, /minimumHardfork/, msg)
+    assert.throws(f, /minimumHardfork/, undefined, msg)
     */
-
-    st.end()
   })
 
-  t.test('isActivatedEIP()', function (st) {
+  it('isActivatedEIP()', () => {
     let c = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Istanbul })
-    st.equal(c.isActivatedEIP(2315), false, 'istanbul, eips: [] -> false (EIP-2315)')
+    assert.equal(c.isActivatedEIP(2315), false, 'istanbul, eips: [] -> false (EIP-2315)')
     c = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Istanbul, eips: [2315] })
-    st.equal(c.isActivatedEIP(2315), true, 'istanbul, eips: [2315] -> true (EIP-2315)')
+    assert.equal(c.isActivatedEIP(2315), true, 'istanbul, eips: [2315] -> true (EIP-2315)')
     c = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Berlin })
-    st.equal(c.isActivatedEIP(2929), true, 'berlin, eips: [] -> true (EIP-2929)')
-    st.equal(c.isActivatedEIP(2315), false, 'berlin, eips: [] -> true (EIP-2315)')
-    st.equal(c.isActivatedEIP(2537), false, 'berlin, eips: [] -> false (EIP-2537)')
-
-    st.end()
+    assert.equal(c.isActivatedEIP(2929), true, 'berlin, eips: [] -> true (EIP-2929)')
+    assert.equal(c.isActivatedEIP(2315), false, 'berlin, eips: [] -> true (EIP-2315)')
+    assert.equal(c.isActivatedEIP(2537), false, 'berlin, eips: [] -> false (EIP-2537)')
   })
 
-  t.test('eipBlock', function (st: tape.Test) {
+  it('eipBlock', () => {
     const c = new Common({ chain: Chain.Mainnet })
 
     let msg = 'should return correct value'
-    st.ok(c.eipBlock(1559)! === 12965000n, msg)
+    assert.ok(c.eipBlock(1559)! === 12965000n, msg)
 
     msg = 'should return null for unscheduled eip'
-    st.equal(c.eipBlock(0), null, msg)
-
-    st.end()
+    assert.equal(c.eipBlock(0), null, msg)
   })
 })

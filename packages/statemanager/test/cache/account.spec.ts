@@ -1,21 +1,20 @@
 import { Account, Address, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { AccountCache, CacheType } from '../../src/cache'
-import { createAccount } from '../util'
+import { AccountCache, CacheType } from '../../src/cache/index.js'
+import { createAccount } from '../util.js'
 
-tape('Account Cache: initialization', (t) => {
+describe('Account Cache: initialization', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
-    t.test('should initialize', async (st) => {
+    it(`should initialize`, async () => {
       const cache = new AccountCache({ size: 100, type })
 
-      st.equal(cache._checkpoints, 0, 'initializes given trie')
-      st.end()
+      assert.equal(cache._checkpoints, 0, 'initializes given trie')
     })
   }
 })
 
-tape('Account Cache: put and get account', (t) => {
+describe('Account Cache: put and get account', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
     const cache = new AccountCache({ size: 100, type })
 
@@ -23,39 +22,32 @@ tape('Account Cache: put and get account', (t) => {
     const acc: Account = createAccount(BigInt(1), BigInt(0xff11))
     const accRLP = acc.serialize()
 
-    t.test(
-      'should return undefined for CacheElement if account not present in the cache',
-      async (st) => {
-        const elem = cache.get(addr)
-        st.ok(elem === undefined)
-        st.end()
-      }
-    )
+    it('should return undefined for CacheElement if account not present in the cache', async () => {
+      const elem = cache.get(addr)
+      assert.ok(elem === undefined)
+    })
 
-    t.test('should put account', async (st) => {
+    it(`should put account`, async () => {
       cache.put(addr, acc)
       const elem = cache.get(addr)
-      st.ok(elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, accRLP))
-      st.end()
+      assert.ok(elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, accRLP))
     })
 
-    t.test('should flush', async (st) => {
+    it(`should flush`, async () => {
       const items = cache.flush()
-      st.equal(items.length, 1)
-      st.end()
+      assert.equal(items.length, 1)
     })
 
-    t.test('should delete account from cache', async (st) => {
+    it(`should delete account from cache`, async () => {
       cache.del(addr)
 
       const elem = cache.get(addr)
-      st.ok(elem !== undefined && elem.accountRLP === undefined)
-      st.end()
+      assert.ok(elem !== undefined && elem.accountRLP === undefined)
     })
   }
 })
 
-tape('Account Cache: checkpointing', (t) => {
+describe('Account Cache: checkpointing', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
     const cache = new AccountCache({ size: 100, type })
 
@@ -66,23 +58,23 @@ tape('Account Cache: checkpointing', (t) => {
     const updatedAcc = createAccount(BigInt(0x00), BigInt(0xff00))
     const updatedAccRLP = updatedAcc.serialize()
 
-    t.test('should revert to correct state', async (st) => {
+    it(`should revert to correct state`, async () => {
       cache.put(addr, acc)
       cache.checkpoint()
       cache.put(addr, updatedAcc)
 
       let elem = cache.get(addr)
-      st.ok(elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, updatedAccRLP))
+      assert.ok(
+        elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, updatedAccRLP)
+      )
 
       cache.revert()
 
       elem = cache.get(addr)
-      st.ok(elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, accRLP))
-
-      st.end()
+      assert.ok(elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, accRLP))
     })
 
-    t.test('should use outer revert', async (st) => {
+    it(`should use outer revert`, async () => {
       const cache = new AccountCache({ size: 100, type: CacheType.LRU })
 
       const account1 = new Account(undefined, 1n)
@@ -93,16 +85,14 @@ tape('Account Cache: checkpointing', (t) => {
       cache.commit()
       cache.revert()
       const accCmp = cache.get(addr)
-      st.ok(accCmp === undefined)
+      assert.ok(accCmp === undefined)
     })
 
-    t.test('cache clearing', async (st) => {
+    it(`cache clearing`, async () => {
       const cache = new AccountCache({ size: 100, type: CacheType.LRU })
       cache.put(addr, acc)
       cache.clear()
-      st.equal(cache.size(), 0, 'should delete cache objects with clear=true')
-
-      st.end()
+      assert.equal(cache.size(), 0, 'should delete cache objects with clear=true')
     })
   }
 })

@@ -3,7 +3,7 @@ import { EOF } from '@ethereumjs/evm'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Account, Address, concatBytesNoTypeCheck, privateToAddress } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 
@@ -24,22 +24,22 @@ async function runTx(vm: VM, data: string, nonce: number) {
   return { result, code }
 }
 
-tape('EIP 3540 tests', (t) => {
+describe('EIP 3540 tests', () => {
   const common = new Common({
     chain: Chain.Mainnet,
     hardfork: Hardfork.London,
     eips: [3540],
   })
 
-  t.test('EOF > codeAnalysis() tests', async (st) => {
+  it('EOF > codeAnalysis() tests', async () => {
     const eofHeader = Uint8Array.from([EOF.FORMAT, EOF.MAGIC, EOF.VERSION])
-    st.ok(
+    assert.ok(
       EOF.codeAnalysis(
         concatBytesNoTypeCheck(eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00]))
       )?.code! > 0,
       'valid code section'
     )
-    st.ok(
+    assert.ok(
       EOF.codeAnalysis(
         concatBytesNoTypeCheck(
           eofHeader,
@@ -48,7 +48,7 @@ tape('EIP 3540 tests', (t) => {
       )?.data! > 0,
       'valid data section'
     )
-    st.ok(
+    assert.ok(
       !(
         EOF.codeAnalysis(
           concatBytesNoTypeCheck(eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00, 0x00]))
@@ -56,7 +56,7 @@ tape('EIP 3540 tests', (t) => {
       ),
       'invalid container length (too long)'
     )
-    st.ok(
+    assert.ok(
       !(
         EOF.codeAnalysis(
           concatBytesNoTypeCheck(eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00]))
@@ -64,10 +64,9 @@ tape('EIP 3540 tests', (t) => {
       ),
       'invalid container length (too short)'
     )
-    st.end()
   })
 
-  t.test('valid EOF format / contract creation', async (st) => {
+  it('valid EOF format / contract creation', async () => {
     const common = new Common({
       chain: Chain.Mainnet,
       hardfork: Hardfork.London,
@@ -82,14 +81,14 @@ tape('EIP 3540 tests', (t) => {
 
     let data = '0x67' + 'EF0001' + '01000100' + '00' + '60005260086018F3'
     let res = await runTx(vm, data, 0)
-    st.ok(res.code.length > 0, 'code section with no data section')
+    assert.ok(res.code.length > 0, 'code section with no data section')
 
     data = '0x6B' + 'EF0001' + '01000102000100' + '00' + 'AA' + '600052600C6014F3'
     res = await runTx(vm, data, 1)
-    st.ok(res.code.length > 0, 'code section with data section')
+    assert.ok(res.code.length > 0, 'code section with data section')
   })
 
-  t.test('invalid EOF format / contract creation', async (st) => {
+  it('invalid EOF format / contract creation', async () => {
     const vm = await VM.create({ common })
     await vm.stateManager.putAccount(sender, new Account())
     const account = await vm.stateManager.getAccount(sender)
@@ -99,27 +98,27 @@ tape('EIP 3540 tests', (t) => {
 
     let data = '0x60EF60005360016000F3'
     let res = await runTx(vm, data, 0)
-    st.ok(res.code.length === 0, 'no magic')
+    assert.ok(res.code.length === 0, 'no magic')
 
     data = '0x7FEF0000000000000000000000000000000000000000000000000000000000000060005260206000F3'
     res = await runTx(vm, data, 1)
-    st.ok(res.code.length === 0, 'invalid header')
+    assert.ok(res.code.length === 0, 'invalid header')
 
     data = '0x7FEF0002000000000000000000000000000000000000000000000000000000000060005260206000F3'
     res = await runTx(vm, data, 2)
-    st.ok(res.code.length === 0, 'valid header but invalid EOF version')
+    assert.ok(res.code.length === 0, 'valid header but invalid EOF version')
 
     data = '0x7FEF0001000000000000000000000000000000000000000000000000000000000060005260206000F3'
     res = await runTx(vm, data, 3)
-    st.ok(res.code.length === 0, 'valid header and version but no code section')
+    assert.ok(res.code.length === 0, 'valid header and version but no code section')
 
     data = '0x7FEF0001030000000000000000000000000000000000000000000000000000000060005260206000F3'
     res = await runTx(vm, data, 4)
-    st.ok(res.code.length === 0, 'valid header and version but unknown section type')
+    assert.ok(res.code.length === 0, 'valid header and version but unknown section type')
 
     data = '0x7FEF0001010002006000DEADBEEF0000000000000000000000000000000000000060005260206000F3'
     res = await runTx(vm, data, 5)
-    st.ok(res.code.length === 0, 'code section with trailing bytes')
+    assert.ok(res.code.length === 0, 'code section with trailing bytes')
   })
 })
 
@@ -154,8 +153,8 @@ function deployCreate2Code(initcode: string) {
   return CREATE2Deploy + initcode
 }
 
-tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => {
-  t.test('case: tx', async (st) => {
+describe('ensure invalid EOF initcode in EIP-3540 does not consume all gas', () => {
+  it('case: tx', async () => {
     const common = new Common({
       chain: Chain.Mainnet,
       hardfork: Hardfork.London,
@@ -173,13 +172,13 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
 
     data = generateInvalidEOFCode('60016001F3')
     const res2 = await runTx(vm, data, 1)
-    st.ok(
+    assert.ok(
       res.result.totalGasSpent > res2.result.totalGasSpent,
       'invalid initcode did not consume all gas'
     )
   })
 
-  t.test('case: create', async (st) => {
+  it('case: create', async () => {
     const common = new Common({
       chain: Chain.Mainnet,
       hardfork: Hardfork.London,
@@ -198,13 +197,13 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
     data = deployCreateCode(generateInvalidEOFCode('60016001F3').substring(2))
     const res2 = await runTx(vm, data, 1)
 
-    st.ok(
+    assert.ok(
       res.result.totalGasSpent > res2.result.totalGasSpent,
       'invalid initcode did not consume all gas'
     )
   })
 
-  t.test('case: create2', async (st) => {
+  it('case: create2', async () => {
     const common = new Common({
       chain: Chain.Mainnet,
       hardfork: Hardfork.London,
@@ -222,7 +221,7 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
 
     data = deployCreate2Code(generateInvalidEOFCode('60016001F3').substring(2))
     const res2 = await runTx(vm, data, 1)
-    st.ok(
+    assert.ok(
       res.result.totalGasSpent > res2.result.totalGasSpent,
       'invalid initcode did not consume all gas'
     )

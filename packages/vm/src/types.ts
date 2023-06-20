@@ -1,4 +1,4 @@
-import type { Bloom } from './bloom'
+import type { Bloom } from './bloom/index.js'
 import type { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
@@ -129,22 +129,15 @@ export interface VMOpts {
   activateGenesisState?: boolean
 
   /**
-   * Select hardfork based upon block number. This automatically switches to the right hard fork based upon the block number.
+   * Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number
+   * for older Hfs.
    *
-   * Default: `false`
+   * Additionally it is possible to pass in a specific TD value to support live-Merge-HF
+   * transitions. Note that this should only be needed in very rare and specific scenarios.
+   *
+   * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
-  hardforkByBlockNumber?: boolean
-  /**
-   * Select the HF by total difficulty (Paris Merge HF)
-   *
-   * This option is a superset of `hardforkByBlockNumber` (so only use one of both options)
-   * and determines the HF by both the block number and the TD.
-   *
-   * Since the TD is only a threshold the block number will in doubt take precedence (imagine
-   * e.g. both Paris (Merge) and Shanghai HF blocks set and the block number from the block provided
-   * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
-   */
-  hardforkByTTD?: BigIntLike
+  setHardfork?: boolean | BigIntLike
 
   /**
    * Use a custom EVM to run Messages on. If this is not present, use the default EVM.
@@ -262,9 +255,15 @@ export interface RunBlockOpts {
    */
   skipBalance?: boolean
   /**
-   * For merge transition support, pass the chain TD up to the block being run
+   * Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number
+   * for older Hfs.
+   *
+   * Additionally it is possible to pass in a specific TD value to support live-Merge-HF
+   * transitions. Note that this should only be needed in very rare and specific scenarios.
+   *
+   * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
-  hardforkByTTD?: bigint
+  setHardfork?: boolean | BigIntLike
 }
 
 /**
