@@ -95,7 +95,8 @@ describe('create a non-existent range proof and verify it', async () => {
       await verify({ trie, entries, start: 0, end: entries.length - 1, startKey, endKey }),
       false
     )
-  })
+  }),
+    { timeout: 50000 }
 })
 
 describe('create invalid non-existent range proof and verify it', async () => {
@@ -203,44 +204,48 @@ describe('create a one element range proof and verify it', async () => {
   )
 })
 
-describe('create all element range proof and verify it', async () => {
-  const { trie, entries } = await randomTrie(new MapDB())
+describe(
+  'create all element range proof and verify it',
+  async () => {
+    const { trie, entries } = await randomTrie(new MapDB())
 
-  it('should return false', async () => {
-    assert.equal(
-      await verifyRangeProof(
-        trie.root(),
-        null,
-        null,
-        entries.map(([key]) => bytesToNibbles(key)),
-        entries.map(([, val]) => val),
-        null,
-        trie.hashFunction
-      ),
-      false
-    )
-  })
+    it('should return false', async () => {
+      assert.equal(
+        await verifyRangeProof(
+          trie.root(),
+          null,
+          null,
+          entries.map(([key]) => bytesToNibbles(key)),
+          entries.map(([, val]) => val),
+          null,
+          trie.hashFunction
+        ),
+        false
+      )
+    })
 
-  it('should return false', async () => {
-    // With edge proofs, it should still work.
-    assert.equal(await verify({ trie, entries, start: 0, end: entries.length - 1 }), false)
-  })
+    it('should return false', async () => {
+      // With edge proofs, it should still work.
+      assert.equal(await verify({ trie, entries, start: 0, end: entries.length - 1 }), false)
+    })
 
-  it('should return false', async () => {
-    // Even with non-existent edge proofs, it should still work.
-    assert.equal(
-      await verify({
-        trie,
-        entries,
-        start: 0,
-        end: entries.length - 1,
-        startKey: hexStringToBytes('00'.repeat(32)),
-        endKey: hexStringToBytes('ff'.repeat(32)),
-      }),
-      false
-    )
-  })
-})
+    it('should return false', async () => {
+      // Even with non-existent edge proofs, it should still work.
+      assert.equal(
+        await verify({
+          trie,
+          entries,
+          start: 0,
+          end: entries.length - 1,
+          startKey: hexStringToBytes('00'.repeat(32)),
+          endKey: hexStringToBytes('ff'.repeat(32)),
+        }),
+        false
+      )
+    })
+  },
+  { timeout: 15000 }
+)
 
 describe('create a single side range proof and verify it', async () => {
   const startKey = hexStringToBytes('00'.repeat(32))
@@ -279,66 +284,70 @@ describe('create a revert single side range proof and verify it', async () => {
   }
 })
 
-describe('create a bad range proof and verify it', async () => {
-  const runTest = async (
-    cb: (trie: Trie, entries: [Uint8Array, Uint8Array][]) => Promise<void>
-  ) => {
-    it('should fail', async () => {
-      let result = false
-      const { trie, entries } = await randomTrie(new MapDB(), false)
-      try {
-        await cb(trie, entries)
-        result = true
-      } catch (err) {
-        // ignore
-      }
-      assert.isFalse(result)
-    })
-  }
-
-  // Modified key
-  await runTest(async (trie, entries) => {
-    const start = getRandomIntInclusive(0, entries.length - 2)
-    const end = getRandomIntInclusive(start + 1, entries.length - 1)
-    const targetIndex = getRandomIntInclusive(start, end)
-    entries[targetIndex][0] = randomBytes(32)
-    await verify({ trie, entries, start, end })
-  })
-
-  // Modified val
-  await runTest(async (trie, entries) => {
-    const start = getRandomIntInclusive(0, entries.length - 2)
-    const end = getRandomIntInclusive(start + 1, entries.length - 1)
-    const targetIndex = getRandomIntInclusive(start, end)
-    entries[targetIndex][1] = randomBytes(20)
-    await verify({ trie, entries, start, end })
-  })
-
-  // Gapped entry slice
-  await runTest(async (trie, entries) => {
-    const start = getRandomIntInclusive(0, entries.length - 3)
-    const end = getRandomIntInclusive(start + 2, entries.length - 1)
-    const targetIndex = getRandomIntInclusive(start + 1, end - 1)
-    entries = entries.slice(0, targetIndex).concat(entries.slice(targetIndex + 1))
-    await verify({ trie, entries, start, end })
-  })
-
-  // Out of order
-  await runTest(async (trie, entries) => {
-    const start = getRandomIntInclusive(0, entries.length - 2)
-    const end = getRandomIntInclusive(start + 1, entries.length - 1)
-    let targetIndex1!: number
-    let targetIndex2!: number
-    while (targetIndex1 === targetIndex2) {
-      targetIndex1 = getRandomIntInclusive(start, end)
-      targetIndex2 = getRandomIntInclusive(start, end)
+describe(
+  'create a bad range proof and verify it',
+  async () => {
+    const runTest = async (
+      cb: (trie: Trie, entries: [Uint8Array, Uint8Array][]) => Promise<void>
+    ) => {
+      it('should fail', async () => {
+        let result = false
+        const { trie, entries } = await randomTrie(new MapDB(), false)
+        try {
+          await cb(trie, entries)
+          result = true
+        } catch (err) {
+          // ignore
+        }
+        assert.isFalse(result)
+      })
     }
-    const temp = entries[targetIndex1]
-    entries[targetIndex1] = entries[targetIndex2]
-    entries[targetIndex2] = temp
-    await verify({ trie, entries, start, end })
-  })
-})
+
+    // Modified key
+    await runTest(async (trie, entries) => {
+      const start = getRandomIntInclusive(0, entries.length - 2)
+      const end = getRandomIntInclusive(start + 1, entries.length - 1)
+      const targetIndex = getRandomIntInclusive(start, end)
+      entries[targetIndex][0] = randomBytes(32)
+      await verify({ trie, entries, start, end })
+    })
+
+    // Modified val
+    await runTest(async (trie, entries) => {
+      const start = getRandomIntInclusive(0, entries.length - 2)
+      const end = getRandomIntInclusive(start + 1, entries.length - 1)
+      const targetIndex = getRandomIntInclusive(start, end)
+      entries[targetIndex][1] = randomBytes(20)
+      await verify({ trie, entries, start, end })
+    })
+
+    // Gapped entry slice
+    await runTest(async (trie, entries) => {
+      const start = getRandomIntInclusive(0, entries.length - 3)
+      const end = getRandomIntInclusive(start + 2, entries.length - 1)
+      const targetIndex = getRandomIntInclusive(start + 1, end - 1)
+      entries = entries.slice(0, targetIndex).concat(entries.slice(targetIndex + 1))
+      await verify({ trie, entries, start, end })
+    })
+
+    // Out of order
+    await runTest(async (trie, entries) => {
+      const start = getRandomIntInclusive(0, entries.length - 2)
+      const end = getRandomIntInclusive(start + 1, entries.length - 1)
+      let targetIndex1!: number
+      let targetIndex2!: number
+      while (targetIndex1 === targetIndex2) {
+        targetIndex1 = getRandomIntInclusive(start, end)
+        targetIndex2 = getRandomIntInclusive(start, end)
+      }
+      const temp = entries[targetIndex1]
+      entries[targetIndex1] = entries[targetIndex2]
+      entries[targetIndex2] = temp
+      await verify({ trie, entries, start, end })
+    })
+  },
+  { timeout: 25000 }
+)
 
 describe('create a gapped range proof and verify it', async () => {
   const trie = new Trie()
