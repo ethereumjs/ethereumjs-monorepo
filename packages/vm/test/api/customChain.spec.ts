@@ -107,32 +107,14 @@ describe('VM initialized with custom state', () => {
     assert.equal(bytesToHex(callResult.execResult.returnValue), storage[0][1].slice(2))
   })
 
-  it('hardforkByBlockNumber, hardforkByTTD', async () => {
+  it('setHardfork', async () => {
     const customChains = [testnetMerge]
     const common = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
 
-    let vm = await VM.create({ common, hardforkByBlockNumber: true })
-    assert.equal(
-      (vm as any)._hardforkByBlockNumber,
-      true,
-      'should set hardforkByBlockNumber option'
-    )
+    let vm = await VM.create({ common, setHardfork: true })
+    assert.equal((vm as any)._setHardfork, true, 'should set setHardfork option')
 
-    vm = await VM.create({ common, hardforkByTTD: 5001 })
-    assert.equal((vm as any)._hardforkByTTD, BigInt(5001), 'should set hardforkByTTD option')
-
-    try {
-      await VM.create({ common, hardforkByBlockNumber: true, hardforkByTTD: 3000 })
-      assert.fail('should not reach this')
-    } catch (e: any) {
-      const msg =
-        'should throw if hardforkByBlockNumber and hardforkByTTD options are used in conjunction'
-      assert.ok(
-        e.message.includes(
-          `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
-        ),
-        msg
-      )
-    }
+    vm = await VM.create({ common, setHardfork: 5001 })
+    assert.equal((vm as any)._setHardfork, BigInt(5001), 'should set setHardfork option')
   })
 })

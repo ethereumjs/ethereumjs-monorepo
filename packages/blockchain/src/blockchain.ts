@@ -90,7 +90,7 @@ export class Blockchain implements BlockchainInterface {
     for (const blockData of blocksData) {
       const block = Block.fromBlockData(blockData, {
         common: blockchain._common,
-        hardforkByBlockNumber: true,
+        setHardfork: true,
       })
       await blockchain.putBlock(block)
     }

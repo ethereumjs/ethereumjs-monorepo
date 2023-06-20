@@ -163,9 +163,7 @@ export class EthProtocol extends Protocol {
           // to correct hardfork choice
           const header = BlockHeader.fromValuesArray(
             h,
-            difficulty > 0
-              ? { common, hardforkByBlockNumber: true }
-              : { common, hardforkByTTD: this.chainTTD }
+            difficulty > 0 ? { common, setHardfork: true } : { common, setHardfork: this.chainTTD }
           )
           return header
         }),
@@ -200,7 +198,7 @@ export class EthProtocol extends Protocol {
       decode: ([block, td]: [BlockBytes, Uint8Array]) => [
         Block.fromValuesArray(block, {
           common: this.config.chainCommon,
-          hardforkByBlockNumber: true,
+          setHardfork: true,
         }),
         td,
       ],

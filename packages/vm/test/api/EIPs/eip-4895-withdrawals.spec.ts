@@ -219,7 +219,7 @@ describe('EIP4895 tests', () => {
       blockOpts: {
         calcDifficultyFromHeader: genesisBlock.header,
         freeze: false,
-        hardforkByTTD: td,
+        setHardfork: td,
       },
     })
 

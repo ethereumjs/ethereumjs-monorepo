@@ -91,7 +91,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     stateManager,
     blockchain,
     common,
-    hardforkByBlockNumber: true,
+    setHardfork: true,
   })
 
   // set up pre-state
@@ -196,7 +196,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           const parentState = parentBlock.header.stateRoot
           // run block, update head if valid
           try {
-            await vm.runBlock({ block, root: parentState, hardforkByTTD: TD })
+            await vm.runBlock({ block, root: parentState, setHardfork: TD })
             // set as new head block
           } catch (error: any) {
             // remove invalid block

@@ -279,7 +279,7 @@ describe('[Blockchain]: Block validation tests', () => {
      * Pre-fork block can have legacy uncles
      * London block has london uncles
      * London block has legacy uncles
-     * London block has legacy uncles, where hardforkByBlockNumber set to false (this should not throw)
+     * London block has legacy uncles, where setHardfork set to false (this should not throw)
      *    In this situation, the london block creates a london uncle, but this london uncle should be
      *    a berlin block, and therefore has no base fee. Since common will report london as active hardfork,
      *    evaluation of uncle header will initialize base fee to 7 per default header constructor rules for
@@ -354,6 +354,7 @@ describe('[Blockchain]: Block validation tests', () => {
       },
       {
         common,
+        setHardfork: false,
       }
     )
 
@@ -373,7 +374,7 @@ describe('[Blockchain]: Block validation tests', () => {
           },
           {
             common,
-            hardforkByBlockNumber: false,
+            setHardfork: false,
           }
         ),
       'should create block even with pre-London uncle and common evaluated with london since uncle is given default base fee'
