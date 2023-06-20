@@ -109,7 +109,7 @@ export class LesProtocol extends Protocol {
         bv: bytesToBigInt(bv),
         headers: headers.map((h: BlockHeaderBytes) =>
           BlockHeader.fromValuesArray(h, {
-            hardforkByBlockNumber: true,
+            setHardfork: true,
             common: this.config.chainCommon, // eslint-disable-line no-invalid-this
           })
         ),

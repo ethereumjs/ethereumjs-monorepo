@@ -153,7 +153,7 @@ export class PendingBlock {
       withdrawals,
       blockOpts: {
         putBlockIntoBlockchain: false,
-        hardforkByTTD: td,
+        setHardfork: td,
       },
     })
 

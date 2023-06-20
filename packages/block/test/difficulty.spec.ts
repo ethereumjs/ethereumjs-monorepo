@@ -90,7 +90,7 @@ describe('[Header]: difficulty tests', () => {
       for (const testName in testData.default) {
         const test = testData[testName]
         const common = new Common({ chain })
-        const blockOpts = { common, hardforkByBlockNumber: true }
+        const blockOpts = { common, setHardfork: true }
         const uncleHash = test.parentUncles === '0x00' ? undefined : test.parentUncles
         const parentBlock = Block.fromBlockData(
           {

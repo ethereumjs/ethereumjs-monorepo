@@ -97,7 +97,7 @@ export class Block {
     for (const txData of txsData ?? []) {
       const tx = TransactionFactory.fromTxData(txData, {
         ...opts,
-        // Use header common in case of hardforkByBlockNumber being activated
+        // Use header common in case of setHardfork being activated
         common: header._common,
       } as TxOptions)
       transactions.push(tx)
@@ -106,18 +106,15 @@ export class Block {
     // parse uncle headers
     const uncleHeaders = []
     const uncleOpts: BlockOptions = {
-      hardforkByBlockNumber: true,
       ...opts,
-      // Use header common in case of hardforkByBlockNumber being activated
+      // Use header common in case of setHardfork being activated
       common: header._common,
       // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
       calcDifficultyFromHeader: undefined,
-      // This potentially overwrites hardforkBy options but we will set them cleanly just below
-      hardforkByTTD: undefined,
     }
-    // Uncles are obsolete post-merge, any hardfork by option implies hardforkByBlockNumber
-    if (opts?.hardforkByTTD !== undefined) {
-      uncleOpts.hardforkByBlockNumber = true
+    // Uncles are obsolete post-merge, any hardfork by option implies setHardfork
+    if (opts?.setHardfork !== undefined) {
+      uncleOpts.setHardfork = true
     }
     for (const uhData of uhsData ?? []) {
       const uh = BlockHeader.fromHeaderData(uhData, uncleOpts)
@@ -156,7 +153,7 @@ export class Block {
       throw new Error('invalid block. More values than expected were received')
     }
 
-    // First try to load header so that we can use its common (in case of hardforkByBlockNumber being activated)
+    // First try to load header so that we can use its common (in case of setHardfork being activated)
     // to correctly make checks on the hardforks
     const [headerData, txsData, uhsData, withdrawalBytes] = values
     const header = BlockHeader.fromValuesArray(headerData, opts)
@@ -176,7 +173,7 @@ export class Block {
       transactions.push(
         TransactionFactory.fromBlockBodyData(txData, {
           ...opts,
-          // Use header common in case of hardforkByBlockNumber being activated
+          // Use header common in case of setHardfork being activated
           common: header._common,
         })
       )
@@ -185,18 +182,15 @@ export class Block {
     // parse uncle headers
     const uncleHeaders = []
     const uncleOpts: BlockOptions = {
-      hardforkByBlockNumber: true,
       ...opts,
-      // Use header common in case of hardforkByBlockNumber being activated
+      // Use header common in case of setHardfork being activated
       common: header._common,
       // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
       calcDifficultyFromHeader: undefined,
-      // This potentially overwrites hardforkBy options but we will set them cleanly just below
-      hardforkByTTD: undefined,
     }
-    // Uncles are obsolete post-merge, any hardfork by option implies hardforkByBlockNumber
-    if (opts?.hardforkByTTD !== undefined) {
-      uncleOpts.hardforkByBlockNumber = true
+    // Uncles are obsolete post-merge, any hardfork by option implies setHardfork
+    if (opts?.setHardfork !== undefined) {
+      uncleOpts.setHardfork = true
     }
     for (const uncleHeaderData of uhsData ?? []) {
       uncleHeaders.push(BlockHeader.fromValuesArray(uncleHeaderData, uncleOpts))
@@ -333,8 +327,7 @@ export class Block {
       coinbase,
     }
 
-    // we are not setting hardforkByBlockNumber or hardforkByTTD as common is already
-    // correctly set to the correct hf
+    // we are not setting setHardfork as common is already set to the correct hf
     const block = Block.fromBlockData({ header, transactions: txs, withdrawals }, options)
     // Verify blockHash matches payload
     if (!equalsBytes(block.hash(), hexStringToBytes(payload.blockHash))) {

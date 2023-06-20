@@ -287,7 +287,7 @@ export class Miner {
       },
       blockOpts: {
         cliqueSigner,
-        hardforkByBlockNumber: true,
+        setHardfork: true,
         calcDifficultyFromHeader,
         putBlockIntoBlockchain: false,
       },
