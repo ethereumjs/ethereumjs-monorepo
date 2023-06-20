@@ -110,13 +110,21 @@ export class BlockHeader {
    */
   public static fromValuesArray(values: BlockHeaderBytes, opts: BlockOptions = {}) {
     const headerData = valuesArrayToHeaderData(values)
-    const { number, baseFeePerGas } = headerData
+    const { number, baseFeePerGas, excessDataGas, dataGasUsed } = headerData
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (opts.common?.isActivatedEIP(1559) && baseFeePerGas === undefined) {
       const eip1559ActivationBlock = bigIntToBytes(opts.common?.eipBlock(1559)!)
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
       if (eip1559ActivationBlock && equalsBytes(eip1559ActivationBlock, number as Uint8Array)) {
         throw new Error('invalid header. baseFeePerGas should be provided')
+      }
+    }
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    if (opts.common?.isActivatedEIP(4844)) {
+      if (excessDataGas === undefined) {
+        throw new Error('invalid header. excessDataGas should be provided')
+      } else if (dataGasUsed === undefined) {
+        throw new Error('invalid header. dataGasUsed should be provided')
       }
     }
     return BlockHeader.fromHeaderData(headerData, opts)
