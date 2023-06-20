@@ -16,6 +16,14 @@ const common = new Common({
   eips: [6780],
 })
 
+/*
+  PUSH 1
+  PUSH 1
+  SSTORE
+  PUSH 1 
+  SELFDESTRUCT
+  This payload stores 1 in slot 1 of the contract, and then selfdestructs to address 0x00..01
+*/
 const payload = hexToBytes('60016001556001FF')
 
 async function getVM(common: Common) {
