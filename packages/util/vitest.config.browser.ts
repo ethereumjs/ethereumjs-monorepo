@@ -7,5 +7,6 @@ export default defineConfig({
       // access control
       'test/provider.spec.ts',
     ],
+    isolate: true,
   },
 })
