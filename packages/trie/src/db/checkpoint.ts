@@ -21,8 +21,10 @@ export class CheckpointDB implements DB {
   //
   // Solution here seems therefore adequate, other solutions would rather
   // be some not so clean workaround.
-  // @ts-ignore
-  protected _cache?: LRUCache<string, Uint8Array | undefined>
+  //
+  // (note that @ts-ignore doesn't work since stripped on declaration (.d.ts) files)
+  protected _cache?: LRUCache<string, any>
+  // protected _cache?: LRUCache<string, Uint8Array | undefined>
 
   _stats = {
     cache: {
