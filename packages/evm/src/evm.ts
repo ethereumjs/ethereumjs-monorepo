@@ -474,7 +474,7 @@ export class EVM implements EVMInterface {
     message.to = await this._generateAddress(message)
 
     if (this._common.isActivatedEIP(6780)) {
-      message.createdAddresses![message.to.toString()] = true
+      message.createdAddresses!.add(message.to.toString())
     }
 
     if (this.DEBUG) {
@@ -739,7 +739,7 @@ export class EVM implements EVMInterface {
         ...result,
         logs: [],
         selfdestruct: {},
-        createdAddresses: {},
+        createdAddresses: new Set(),
       }
     }
 
@@ -799,7 +799,7 @@ export class EVM implements EVMInterface {
         isStatic: opts.isStatic,
         salt: opts.salt,
         selfdestruct: opts.selfdestruct ?? {},
-        createdAddresses: opts.createdAddresses ?? {},
+        createdAddresses: opts.createdAddresses ?? new Set(),
         delegatecall: opts.delegatecall,
         versionedHashes: opts.versionedHashes,
       })
@@ -869,7 +869,7 @@ export class EVM implements EVMInterface {
     // then the error is dismissed
     if (err && err.error !== ERROR.CODESTORE_OUT_OF_GAS) {
       result.execResult.selfdestruct = {}
-      result.execResult.createdAddresses = {}
+      result.execResult.createdAddresses = new Set()
       result.execResult.gasRefund = BigInt(0)
     }
     if (
@@ -1079,7 +1079,7 @@ export interface ExecResult {
   /**
    * Map of addresses which were created (used in EIP 6780)
    */
-  createdAddresses?: { [k: string]: boolean }
+  createdAddresses?: Set<string>
   /**
    * The gas refund counter
    */

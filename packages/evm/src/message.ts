@@ -32,7 +32,7 @@ interface MessageOpts {
   /**
    * Map of addresses which were created (used in EIP 6780)
    */
-  createdAddresses?: { [key: string]: boolean }
+  createdAddresses?: Set<string>
   delegatecall?: boolean
   authcallOrigin?: Address
   gasRefund?: bigint
@@ -60,7 +60,7 @@ export class Message {
   /**
    * Map of addresses which were created (used in EIP 6780)
    */
-  createdAddresses?: { [key: string]: boolean }
+  createdAddresses?: Set<string>
   delegatecall: boolean
   /**
    * This is used to store the origin of the AUTHCALL,

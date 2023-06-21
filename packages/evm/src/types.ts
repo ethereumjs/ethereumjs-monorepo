@@ -98,7 +98,7 @@ export interface EVMRunCallOpts {
   /**
    * Created addresses in current context. Used in EIP 6780
    */
-  createdAddresses?: { [k: string]: boolean }
+  createdAddresses?: Set<string>
   /**
    * Skip balance checks if true. If caller balance is less than message value,
    * sets balance to message value to ensure execution doesn't fail.

@@ -507,7 +507,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     for (const k of keys) {
       const address = new Address(hexToBytes(k))
       if (this._common.isActivatedEIP(6780)) {
-        if (!results.execResult.createdAddresses![address.toString()]) {
+        // skip cleanup of addresses not in createdAddresses
+        if (!results.execResult.createdAddresses!.has(address.toString())) {
           continue
         }
       }
