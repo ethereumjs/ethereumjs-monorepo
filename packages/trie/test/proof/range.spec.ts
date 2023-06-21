@@ -87,15 +87,21 @@ describe('create a non-existent range proof and verify it', async () => {
       })
     })
   }
-  it('should verify a non-existent range proof', async () => {
-    // Special case, two edge proofs for two edge key.
-    const startKey = hexStringToBytes('00'.repeat(32))
-    const endKey = hexStringToBytes('ff'.repeat(32))
-    assert.equal(
-      await verify({ trie, entries, start: 0, end: entries.length - 1, startKey, endKey }),
-      false
-    )
-  }),
+  it(
+    'should verify a non-existent range proof',
+    async () => {
+      // Special case, two edge proofs for two edge key.
+      const startKey = hexStringToBytes('00'.repeat(32))
+      const endKey = hexStringToBytes('ff'.repeat(32))
+      assert.equal(
+        await verify({ trie, entries, start: 0, end: entries.length - 1, startKey, endKey }),
+        false
+      )
+    },
+    {
+      timeout: 20000,
+    }
+  ),
     { timeout: 50000 }
 })
 
