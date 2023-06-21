@@ -54,7 +54,7 @@
     "@ethereumjs/rlp": "^4.0.1",
     "@ethereumjs/util": "^8.0.6",
     "@types/readable-stream": "^2.3.13",
-    "lru-cache": "^7.18.3",
+    "lru-cache": "^10.0.0",
     "ethereum-cryptography": "^2.0.0",
     "readable-stream": "^3.6.0"
   },
