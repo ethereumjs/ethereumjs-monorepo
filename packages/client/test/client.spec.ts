@@ -1,8 +1,10 @@
 import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, expect, expectTypeOf, it } from 'vitest'
 
+import { EthereumClient } from '../src/client'
 import { Config } from '../src/config'
 import { PeerPool } from '../src/net/peerpool'
+import { RlpxServer } from '../src/net/server'
 
 describe('[EthereumClient]', async () => {
   const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
@@ -36,14 +38,16 @@ describe('[EthereumClient]', async () => {
   td.when(Server.prototype.stop()).thenResolve()
   td.when(Server.prototype.bootstrap()).thenResolve()
 
-  const { EthereumClient } = await import('../src/client')
+  // const { EthereumClient } = await import('../src/client')
 
   it(
     'should initialize correctly',
     async () => {
       const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
       const client = await EthereumClient.create({ config })
-      assert.ok(client.services[0] instanceof FullEthereumService, 'added service')
+      assert.ok('lightserv' in client.services[0], 'added FullEthereumService')
+      assert.ok('execution' in client.services[0], 'added FullEthereumService')
+      assert.ok('txPool' in client.services[0], 'added FullEthereumService')
     },
     { timeout: 30000 }
   )
@@ -51,7 +55,7 @@ describe('[EthereumClient]', async () => {
   it(
     'should open',
     async () => {
-      const servers = [new Server()] as any
+      const servers = [new RlpxServer({ config: new Config() })]
       const config = new Config({ servers, accountCache: 10000, storageCache: 1000 })
       const client = await EthereumClient.create({ config })
 
@@ -59,7 +63,7 @@ describe('[EthereumClient]', async () => {
       assert.ok(client.opened, 'opened')
       assert.equal(await client.open(), false, 'already opened')
     },
-    { timeout: 30000 }
+    { timeout: 15000 }
   )
 
   it(
