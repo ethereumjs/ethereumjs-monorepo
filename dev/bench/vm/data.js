@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1687358932222,
+  "lastUpdate": 1687370893510,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "399247b2ad03759dcf7558df3f010b34cb4396d8",
-          "message": "Client: Fix eth_getStorage RPC method (#2646)\n\n* Client: fix eth_getStorage RPC method, replace and expand tests (WIP)\r\n\r\n* eth: define EMPTY_SLOT variable\r\n\r\n* ETH: use this._vm instead of copy for getStorageAt\r\n\r\n* ETH: throw error for 'pending' block request\r\n\r\n* getStorageAt:  expect 32 byte value as return\r\n\r\n* VM: create copy.spec.ts to teset vm.copy()\r\n\r\n* revert back to using vm.copy()\r\n\r\n* add checkpointing calls to test\r\n\r\n* vm: update copy.spec.ts\r\n\r\n* Add tests for testing getStorageAt on blocks other than \"latest\" and \"pending\"\r\n\r\n* Check for empty slot response instead of using notEqual\r\n\r\n* Remove references to functions accountExists and flush that no longer exist on StateManager\r\n\r\n* Use blockOpt parameter to lookup block for storage lookup and update tests\r\n\r\n---------\r\n\r\nCo-authored-by: ScottyPoi <scott.simpson@ethereum.org>\r\nCo-authored-by: Amir <indigophi@protonmail.com>",
-          "timestamp": "2023-06-06T11:37:34-07:00",
-          "tree_id": "7416008556eca581666ffd961ad2bcd441ce9b92",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/399247b2ad03759dcf7558df3f010b34cb4396d8"
-        },
-        "date": 1686076851877,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 32247,
-            "range": "±5.16%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 32499,
-            "range": "±2.41%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 32459,
-            "range": "±2.39%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 31093,
-            "range": "±3.00%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 24054,
-            "range": "±12.20%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±11.29%",
             "unit": "ops/sec",
             "extra": "67 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a37f51faf5d3d9cec4728576723ad7ea61736dab",
+          "message": "Monorepo: Update lru-cache dependencies (ESM) / Switch Browser Test Provider (#2804)\n\n* StateManager: update lru-cache from v9 to v10 (seamless)\r\n\r\n* Trie: update lru-cache from v7 to v9, added undefined/null @ts-ignore and comment\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Trie: replace @ts-ignore by any\r\n\r\n* Util: fix browser tests (JSON import update)\r\n\r\n* Monorepo: add browser CI workflow run (temporary or permanent, TBD)\r\n\r\n* Add possibility to skip browser test files, excluding transactionRunner.spec.ts and eip4844.spec.ts for tx\r\n\r\n* Monorepo: update vitest from 0.32.0 -> 0.32.2, switched to playwright browser test provider, removed webdriverio\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Update packages to playwright test provider, updated browser workflow file\r\n\r\n* Add install step for playwright dependencies in ci\r\n\r\n* set isolate flag\r\n\r\n* Exclude account/address as these are failing\r\n\r\n* Add browser comment\r\n\r\n* Remove lint command\r\n\r\n* Remove util from browser tests for now\r\n\r\n* disable util, enable common\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-06-21T14:02:58-04:00",
+          "tree_id": "3d978a108e114f34e0accba084343e4854df421b",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a37f51faf5d3d9cec4728576723ad7ea61736dab"
+        },
+        "date": 1687370891985,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18380,
+            "range": "±6.41%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18681,
+            "range": "±3.10%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18278,
+            "range": "±3.11%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18734,
+            "range": "±3.15%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18316,
+            "range": "±3.21%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
           }
         ]
       }
