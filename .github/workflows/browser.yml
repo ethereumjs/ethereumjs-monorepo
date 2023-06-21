@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-common:
+  test-all-browser:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -40,3 +40,8 @@ jobs:
       - run: cd ../rlp && npm run test:browser
       - run: cd ../util && npm run test:browser
       - run: cd ../common && npm run test:browser
+#     Trie currently hangs (no test execution)
+#     - run: cd ../trie && npm run test:browser
+#     See vitest.config.browser.ts for exclusions
+      - run: cd ../tx && npm run test:browser
+      
