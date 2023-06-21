@@ -43,7 +43,7 @@ export const hexToKeybytes = (hex: Uint8Array) => {
   if (hex.length % 2 === 1) {
     throw Error("Can't convert hex key of odd length")
   }
-  const key = new Uint8Array()
+  const key = new Uint8Array(hex.length / 2)
   nibblesToBytes(hex, key)
 
   return key
