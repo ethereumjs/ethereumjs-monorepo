@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1687340413215,
+  "lastUpdate": 1687353067591,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "d1ba362f034f8ca1d76a18f7a872f80648e60f4b",
-          "message": "Client: Fix PeerPool Memory Leak (#2752)\n\n* Client: set memory shutdown threshold from 95 to 92 (did not trigger in all occasions)\r\n\r\n* Client: tsconfig path fix\r\n\r\n* Client: send disconnect to peer banned from peer pool (fixes unbounded messageQueue growths), fix reconnect after ban\r\n\r\n* Client: add additional messageQueue safe guard for BoundProtocol\r\n\r\n* Fix tests",
-          "timestamp": "2023-06-05T22:59:08+05:30",
-          "tree_id": "03ec34b5493281f53b6273c7bd61642634641328",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d1ba362f034f8ca1d76a18f7a872f80648e60f4b"
-        },
-        "date": 1685986346196,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 30991,
-            "range": "±5.57%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31055,
-            "range": "±2.79%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 30879,
-            "range": "±2.84%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 30262,
-            "range": "±3.01%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 23948,
-            "range": "±11.29%",
-            "unit": "ops/sec",
-            "extra": "68 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.41%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "13403c56235f1bae1db26e22586970635479758e",
+          "message": "Implement EIP6780: SELFDESTRUCT only in same transaction (v2) (#2771)\n\n* common/vm/evm: add eip6780\r\n\r\n* vm: add test\r\n\r\n* vm/statemanager: buffer->uint8array + lint\r\n\r\n* fix test\r\n\r\n* vm: fix eip6780 tests + lint\r\n\r\n* vm: add 6780 test comment\r\n\r\n* vm: update eip6780 tests to vitest\r\n\r\n* move from object to set\r\n\r\n---------\r\n\r\nCo-authored-by: harkamal <gajinder@g11.in>",
+          "timestamp": "2023-06-21T15:04:28+02:00",
+          "tree_id": "e0037dbeb366d2844e62e9e264d40e543e6f631a",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/13403c56235f1bae1db26e22586970635479758e"
+        },
+        "date": 1687353066809,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18545,
+            "range": "±5.09%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 19320,
+            "range": "±2.90%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 19109,
+            "range": "±3.06%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18663,
+            "range": "±3.25%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18911,
+            "range": "±3.23%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
           }
         ]
       }
