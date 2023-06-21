@@ -1,0 +1,42 @@
+name: Browser
+on:
+  push:
+    branches: [master, develop]
+    tags: ['*']
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
+
+env:
+  cwd: ${{github.workspace}}/packages/rlp
+
+defaults:
+  run:
+    working-directory: packages/rlp
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  test-common:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - run: npm ci
+        working-directory: ${{github.workspace}}
+
+      - run: npm run lint
+      - run: cd ../rlp && npm run test:browser
+      - run: cd ../util && npm run test:browser
+      - run: cd ../common && npm run test:browser
