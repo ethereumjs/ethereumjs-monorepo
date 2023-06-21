@@ -1,7 +1,7 @@
-import { addHexPrefix, bigIntToHex } from './bytes'
-import { isHexPrefixed } from './internal'
+import { addHexPrefix, bigIntToHex } from './bytes.js'
+import { isHexPrefixed } from './internal.js'
 
-import type { PrefixedHexString } from './types'
+import type { PrefixedHexString } from './types.js'
 
 export type StoragePair = [key: PrefixedHexString, value: PrefixedHexString]
 
