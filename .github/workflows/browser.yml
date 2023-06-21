@@ -40,8 +40,21 @@ jobs:
       - run: cd ../rlp && npm run test:browser
       - run: cd ../util && npm run test:browser
       - run: cd ../common && npm run test:browser
-#     Trie currently hangs (no test execution)
+#     Trie: several tests not passing yet
 #     - run: cd ../trie && npm run test:browser
-#     See vitest.config.browser.ts for exclusions
       - run: cd ../tx && npm run test:browser
-      
+#     Block: serveral tests not passing yet
+#     - run: cd ../block && npm run test:browser
+#     No browser tests for devp2p
+#     Blockchain: strange errors, needs another look
+#     - run: cd ../blockchain && npm run test:browser
+#     No browser tests for ethash
+#     EVM: several tests not passing yet
+#     - run: cd ../evm && npm run test:browser
+#     StateManager: selected tests not passing yet
+#     - run: cd ../statemanager && npm run test:browser
+#     Wallet: import failing
+#     - run: cd ../wallet && npm run test:browser
+#     VM: several tests not passing yet
+#     - run: cd ../vm && npm run test:browser
+
