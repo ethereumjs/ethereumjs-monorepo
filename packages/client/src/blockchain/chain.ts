@@ -403,7 +403,7 @@ export class Chain {
 
       const block = Block.fromValuesArray(b.raw(), {
         common: this.config.chainCommon,
-        hardforkByTTD: td,
+        setHardfork: td,
       })
 
       await this.blockchain.putBlock(block)
@@ -453,7 +453,7 @@ export class Chain {
       }
       const header = BlockHeader.fromValuesArray(h.raw(), {
         common: this.config.chainCommon,
-        hardforkByTTD: this.headers.td,
+        setHardfork: this.headers.td,
       })
       await this.blockchain.putHeader(header)
       numAdded++

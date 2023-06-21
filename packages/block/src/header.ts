@@ -27,6 +27,7 @@ import { fakeExponential, valuesArrayToHeaderData } from './helpers.js'
 
 import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from './types.js'
 import type { CliqueConfig } from '@ethereumjs/common'
+import type { BigIntLike } from '@ethereumjs/util'
 
 interface HeaderCache {
   hash: Uint8Array | undefined
@@ -136,12 +137,6 @@ export class BlockHeader {
       })
     }
 
-    if (options.hardforkByBlockNumber !== undefined && options.hardforkByTTD !== undefined) {
-      throw new Error(
-        `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
-      )
-    }
-
     const skipValidateConsensusFormat = options.skipConsensusFormatValidation ?? false
 
     const defaults = {
@@ -182,11 +177,16 @@ export class BlockHeader {
     const mixHash = toType(headerData.mixHash, TypeOutput.Uint8Array) ?? defaults.mixHash
     const nonce = toType(headerData.nonce, TypeOutput.Uint8Array) ?? defaults.nonce
 
-    const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
-    if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
+    const setHardfork = options.setHardfork ?? false
+    if (setHardfork === true) {
       this._common.setHardforkBy({
         blockNumber: number,
-        td: options.hardforkByTTD,
+        timestamp,
+      })
+    } else if (typeof setHardfork !== 'boolean') {
+      this._common.setHardforkBy({
+        blockNumber: number,
+        td: setHardfork as BigIntLike,
         timestamp,
       })
     }

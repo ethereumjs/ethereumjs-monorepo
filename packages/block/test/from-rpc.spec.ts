@@ -122,13 +122,13 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
 
   it('should create pre and post merge blocks from Infura API responses to eth_getBlockByHash and eth_getBlockByNumber', () => {
     const common = new Common({ chain: Chain.Mainnet })
-    let block = blockFromRpc(infura2000004woTxs, [], { common, hardforkByBlockNumber: true })
+    let block = blockFromRpc(infura2000004woTxs, [], { common, setHardfork: true })
     assert.equal(
       bytesToPrefixedHexString(block.hash()),
       infura2000004woTxs.hash,
       'created premerge block w/o txns'
     )
-    block = blockFromRpc(infura2000004wTxs, [], { common, hardforkByBlockNumber: true })
+    block = blockFromRpc(infura2000004wTxs, [], { common, setHardfork: true })
     assert.equal(
       bytesToPrefixedHexString(block.hash()),
       infura2000004wTxs.hash,
@@ -136,7 +136,7 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
     )
     block = blockFromRpc(infura15571241woTxs, [], {
       common,
-      hardforkByTTD: 58750000000000000000000n,
+      setHardfork: 58750000000000000000000n,
     })
     assert.equal(
       bytesToPrefixedHexString(block.hash()),
@@ -146,7 +146,7 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
 
     block = blockFromRpc(infura15571241wTxs, [], {
       common,
-      hardforkByTTD: 58750000000000000000000n,
+      setHardfork: 58750000000000000000000n,
     })
     assert.equal(
       bytesToPrefixedHexString(block.hash()),

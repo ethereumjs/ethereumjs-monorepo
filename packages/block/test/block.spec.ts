@@ -71,7 +71,7 @@ describe('[Block]: block functions', () => {
     )
   })
 
-  it('initialization -> hardforkByBlockNumber option', () => {
+  it('initialization -> setHardfork option', () => {
     const customChains = [testnetMerge]
     const common = new Common({
       chain: 'testnetMerge',
@@ -86,13 +86,9 @@ describe('[Block]: block functions', () => {
           extraData: new Uint8Array(97),
         },
       },
-      { common, hardforkByBlockNumber: true }
+      { common, setHardfork: true }
     )
-    assert.equal(
-      block._common.hardfork(),
-      Hardfork.Berlin,
-      'should use hardforkByBlockNumber option'
-    )
+    assert.equal(block._common.hardfork(), Hardfork.Berlin, 'should use setHardfork option')
 
     block = Block.fromBlockData(
       {
@@ -100,12 +96,12 @@ describe('[Block]: block functions', () => {
           number: 20, // Future block
         },
       },
-      { common, hardforkByTTD: 5001 }
+      { common, setHardfork: 5001 }
     )
     assert.equal(
       block._common.hardfork(),
       Hardfork.Paris,
-      'should use hardforkByTTD option (td > threshold)'
+      'should use setHardfork option (td > threshold)'
     )
 
     block = Block.fromBlockData(
@@ -115,27 +111,13 @@ describe('[Block]: block functions', () => {
           extraData: new Uint8Array(97),
         },
       },
-      { common, hardforkByTTD: 3000 }
+      { common, setHardfork: 3000 }
     )
     assert.equal(
       block._common.hardfork(),
       Hardfork.Berlin,
-      'should work with hardforkByTTD option (td < threshold)'
+      'should work with setHardfork option (td < threshold)'
     )
-
-    try {
-      Block.fromBlockData({}, { common, hardforkByBlockNumber: true, hardforkByTTD: 3000 })
-      assert.fail('should not reach this')
-    } catch (e: any) {
-      const msg =
-        'should throw if hardforkByBlockNumber and hardforkByTTD options are used in conjunction'
-      assert.ok(
-        e.message.includes(
-          `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
-        ),
-        msg
-      )
-    }
   })
 
   it('should initialize with undefined parameters without throwing', () => {

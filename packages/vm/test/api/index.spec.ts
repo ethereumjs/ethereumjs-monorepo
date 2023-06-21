@@ -149,34 +149,16 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
   })
 })
 
-describe('VM -> hardforkByBlockNumber, hardforkByTTD, state (deprecated), blockchain', () => {
-  it('hardforkByBlockNumber, hardforkByTTD', async () => {
+describe('VM -> setHardfork, state (deprecated), blockchain', () => {
+  it('setHardfork', async () => {
     const customChains = [testnetMerge]
     const common = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
 
-    let vm = await VM.create({ common, hardforkByBlockNumber: true })
-    assert.equal(
-      (vm as any)._hardforkByBlockNumber,
-      true,
-      'should set hardforkByBlockNumber option'
-    )
+    let vm = await VM.create({ common, setHardfork: true })
+    assert.equal((vm as any)._setHardfork, true, 'should set setHardfork option')
 
-    vm = await VM.create({ common, hardforkByTTD: 5001 })
-    assert.equal((vm as any)._hardforkByTTD, BigInt(5001), 'should set hardforkByTTD option')
-
-    try {
-      await VM.create({ common, hardforkByBlockNumber: true, hardforkByTTD: 3000 })
-      assert.fail('should not reach this')
-    } catch (e: any) {
-      const msg =
-        'should throw if hardforkByBlockNumber and hardforkByTTD options are used in conjunction'
-      assert.ok(
-        e.message.includes(
-          `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
-        ),
-        msg
-      )
-    }
+    vm = await VM.create({ common, setHardfork: 5001 })
+    assert.equal((vm as any)._setHardfork, BigInt(5001), 'should set setHardfork option')
   })
 
   it('should instantiate', async () => {
@@ -203,38 +185,38 @@ describe('VM -> hardforkByBlockNumber, hardforkByTTD, state (deprecated), blockc
 
   it('should pass the correct VM options when copying the VM', async () => {
     let opts: VMOpts = {
-      hardforkByBlockNumber: true,
+      setHardfork: true,
     }
 
     let vm = await VM.create(opts)
     let vmCopy = await vm.copy()
     assert.deepEqual(
-      (vmCopy as any)._hardforkByBlockNumber,
+      (vmCopy as any)._setHardfork,
       true,
-      'copy() correctly passes hardforkByBlockNumber option'
+      'copy() correctly passes setHardfork option'
     )
     assert.deepEqual(
-      (vm as any)._hardforkByBlockNumber,
-      (vmCopy as any)._hardforkByBlockNumber,
-      'hardforkByBlockNumber options match'
+      (vm as any)._setHardfork,
+      (vmCopy as any)._setHardfork,
+      'setHardfork options match'
     )
 
     //
 
     opts = {
-      hardforkByTTD: BigInt(5001),
+      setHardfork: BigInt(5001),
     }
     vm = await VM.create(opts)
     vmCopy = await vm.copy()
     assert.deepEqual(
-      (vmCopy as any)._hardforkByTTD,
+      (vmCopy as any)._setHardfork,
       BigInt(5001),
-      'copy() correctly passes hardforkByTTD option'
+      'copy() correctly passes setHardfork option'
     )
     assert.deepEqual(
-      (vm as any)._hardforkByBlockNumber,
-      (vmCopy as any)._hardforkByBlockNumber,
-      'hardforkByTTD options match'
+      (vm as any)._setHardfork,
+      (vmCopy as any)._setHardfork,
+      'setHardfork options match'
     )
   })
   describe('Ensure that precompile activation creates non-empty accounts', () => {

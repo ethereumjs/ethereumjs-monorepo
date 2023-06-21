@@ -201,9 +201,12 @@ tape('[BlockFetcher]', async (t) => {
         td: td.matchers.anything(),
       })
     ).thenReturn(Hardfork.Shanghai)
-    td.when(config.chainCommon.getHardforkBy({ blockNumber: td.matchers.anything() })).thenReturn(
-      Hardfork.Shanghai
-    )
+    td.when(
+      config.chainCommon.getHardforkBy({
+        blockNumber: td.matchers.anything(),
+        timestamp: td.matchers.anything(),
+      })
+    ).thenReturn(Hardfork.Shanghai)
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
@@ -216,7 +219,7 @@ tape('[BlockFetcher]', async (t) => {
 
     const shanghaiHeader = BlockHeader.fromHeaderData(
       { number: 1, withdrawalsRoot: KECCAK256_RLP },
-      { common: config.chainCommon, hardforkByBlockNumber: true }
+      { common: config.chainCommon, setHardfork: true }
     )
 
     const task = { count: 1, first: BigInt(1) }

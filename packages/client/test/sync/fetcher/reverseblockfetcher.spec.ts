@@ -243,19 +243,19 @@ tape('[ReverseBlockFetcher]', async (t) => {
     })
     const block47 = Block.fromBlockData(
       { header: { number: BigInt(47), difficulty: BigInt(1) } },
-      { hardforkByBlockNumber: true }
+      { setHardfork: true }
     )
     const block48 = Block.fromBlockData(
       {
         header: { number: BigInt(48), parentHash: block47.hash(), difficulty: BigInt(1) },
       },
-      { hardforkByBlockNumber: true }
+      { setHardfork: true }
     )
     const block49 = Block.fromBlockData(
       {
         header: { number: BigInt(49), parentHash: block48.hash(), difficulty: BigInt(1) },
       },
-      { hardforkByBlockNumber: true }
+      { setHardfork: true }
     )
     ;(skeleton as any).status.progress.subchains = [
       { head: BigInt(100), tail: BigInt(50), next: block49.hash() },
