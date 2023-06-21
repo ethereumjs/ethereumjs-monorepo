@@ -6,7 +6,8 @@ export default defineConfig({
       ...configDefaults.exclude,
       // access control
       'test/provider.spec.ts',
+      'test/account.spec.ts',
+      'test/address.spec.ts',
     ],
-    isolate: true,
   },
 })
