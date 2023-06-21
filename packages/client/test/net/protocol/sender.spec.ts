@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-const { Sender } = require('../../../src/net/protocol')
+import { Sender } from '../../../src/net/protocol'
 
 describe('[Sender]', () => {
   it('should get/set status', () => {
@@ -12,7 +12,7 @@ describe('[Sender]', () => {
 
   it('should error on abstract method calls', () => {
     const sender = new Sender()
-    assert.throws(() => sender.sendStatus(), /Unimplemented/)
-    assert.throws(() => sender.sendMessage(), /Unimplemented/)
+    assert.throws(() => sender.sendStatus(undefined), /Unimplemented/)
+    assert.throws(() => sender.sendMessage(0, []), /Unimplemented/)
   })
 })
