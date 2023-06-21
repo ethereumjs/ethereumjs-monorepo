@@ -19,7 +19,6 @@
   "contributors": [
     "g11tech <gajinder@g11.in>"
   ],
-  "type": "module",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "exports": {
@@ -42,7 +41,7 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh && npm run test:node",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "npx vitest run --browser.name=chrome --browser.headless",
+    "test:browser": "npx vitest run --browser.name=webkit --browser.provider=playwright --browser.headless",
     "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
@@ -53,7 +52,7 @@
     "ethereum-cryptography": "^2.0.0",
     "ethers": "^6.4.0",
     "js-sdsl": "^4.1.4",
-    "lru-cache": "^9.1.0"
+    "lru-cache": "^10.0.0"
   },
   "devDependencies": {
     "@ethereumjs/block": "^4.2.2",

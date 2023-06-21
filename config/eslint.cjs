@@ -26,6 +26,8 @@ module.exports = {
     'scripts',
     'typedoc.js',
     'webpack.config.js',
+    'vitest.config.ts',
+    'vitest.config.browser.ts',
   ],
   extends: [
     'typestrict',
