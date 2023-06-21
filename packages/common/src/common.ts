@@ -6,7 +6,7 @@ import {
   intToBytes,
   toType,
 } from '@ethereumjs/util'
-import { buf as crc32Buffer } from 'crc-32'
+import crc from 'crc/crc32'
 import { EventEmitter } from 'events'
 
 import * as goerli from './chains/goerli.json'
@@ -792,7 +792,7 @@ export class Common extends EventEmitter {
 
     // CRC32 delivers result as signed (negative) 32-bit integer,
     // convert to hex string
-    const forkhash = bytesToHex(intToBytes(crc32Buffer(inputBytes) >>> 0))
+    const forkhash = bytesToHex(intToBytes(crc(inputBytes) >>> 0))
     return `0x${forkhash}`
   }
 
