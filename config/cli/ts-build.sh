@@ -65,6 +65,8 @@ post_build_fixes() {
     blue "[Post Build Fixes]"
     if [ -f ./dist/esm/index.js ];
     then
+        echo "Adding JSON type assertions to ESM build outputs"
+        find . -wholename "**/dist/esm/**.js" -exec sed -i  '/from \S\+\.json'\''/ s/;//;/from \S\+\.json/ s/.*/& assert {type: \"json\"};/' {} +
         echo "Adding ./dist/cjs/package.json"
         rm -f ./dist/cjs/package.json
         cat <<EOT >> ./dist/cjs/package.json
