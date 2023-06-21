@@ -34,7 +34,6 @@ jobs:
 # Install playwright dependencies
       - run: npx playwright install-deps
 
-      - run: npm run lint
       - run: npm run test:browser -w=@ethereumjs/rlp
       - run: npm run test:browser -w=@ethereumjs/util
 #     Provider, Account, and Address tests are skipped as currently failing
