@@ -181,7 +181,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         await blockBuilder.revert() // will only revert if checkpointed
       }
 
-      const block = Block.fromRLPSerializedBlock(blockRlp, { common })
+      const block = Block.fromRLPSerializedBlock(blockRlp, { common, setHardfork: true })
       await blockchain.putBlock(block)
 
       // This is a trick to avoid generating the canonical genesis
