@@ -126,6 +126,9 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
   accountToStorageTrie: Map<String, Trie>
 
+  accountFetcherAccounts: Map<String, Uint8Array>
+  trieFetcherAccounts: Map<String, Uint8Array>
+
   /** Contains known bytecodes */
   codeTrie: Trie
 
@@ -176,6 +179,9 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         throw Error('Snap fetcher failed to exit')
       }
     )
+
+    this.accountFetcherAccounts = new Map<String, Uint8Array>()
+    this.trieFetcherAccounts = new Map<String, Uint8Array>()
     this.trieNodeFetcher = new TrieNodeFetcher({
       config: this.config,
       pool: this.pool,
@@ -184,6 +190,8 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       codeTrie: this.codeTrie,
       accountToStorageTrie: this.accountToStorageTrie,
       destroyWhenDone: false,
+      accountFetcherAccounts: this.accountFetcherAccounts,
+      trieFetcherAccounts: this.trieFetcherAccounts,
     })
     this.trieNodeFetcher.fetch().then(
       () => snapFetchersCompleted(this.fetcherDoneFlags, TrieNodeFetcher),
@@ -363,14 +371,27 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       this.debug('Final range received with no elements remaining to the right')
 
       await this.accountTrie.persistRoot()
+      console.log('dbg1')
       console.log(bytesToHex(this.accountTrie.root()))
-      console.log(this.accountTrie.database().db)
+      // process.stdout.write(
+      //   `${util.inspect(this.accountTrie.database().db, { maxArrayLength: 1000 })}\n`
+      // )
+      console.log(this.accountFetcherAccounts.size)
+      console.log(this.trieFetcherAccounts.size)
+      for (const key of this.trieFetcherAccounts.keys()) {
+        const deleted = this.accountFetcherAccounts.delete(key)
+        if (!deleted) {
+          console.log(`Account key ${key} does not exist in fetched accounts`)
+        } else {
+          console.log(`Account key ${key} deleted`)
+        }
+      }
       process.stdout.write(
-        `${util.inspect(this.accountTrie.database().db, { maxArrayLength: 1000 })}\n`
+        `${util.inspect(this.accountFetcherAccounts.keys(), { maxArrayLength: 1000 })}\n`
       )
-      // for (const [k, v] of this.accountTrie.database().db as Map<string, Buffer>) {
-      //   console.log(`k: ${k} -- v: ${v}`)
-      // }
+      process.stdout.write(
+        `${util.inspect(this.trieFetcherAccounts.keys(), { maxArrayLength: 1000 })}\n`
+      )
 
       snapFetchersCompleted(
         this.fetcherDoneFlags,
@@ -388,6 +409,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const storageFetchRequests = new Set()
     const byteCodeFetchRequests = new Set<Uint8Array>()
     for (const account of result) {
+      this.accountFetcherAccounts.set(bytesToHex(account.hash), accountBodyToRLP(account.body))
       await this.accountTrie.put(account.hash, accountBodyToRLP(account.body))
 
       // build record of accounts that need storage slots to be fetched

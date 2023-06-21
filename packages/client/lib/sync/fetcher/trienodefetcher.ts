@@ -3,11 +3,12 @@ import {
   bytesToNibbles,
   compactBytesToNibbles,
   getPathTo,
-  hasTerminator,
-  hexToKeybytes,
-  nibblesToBytes,
+  // hasTerminator,
+  // hexToKeybytes,
+  // nibblesToBytes,
   nibblesToCompactBytes,
   padToEven,
+  toBytes,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -26,6 +27,49 @@ import type { Debugger } from 'debug'
 
 const util = require('node:util')
 
+/**
+ * Converts a bytes to a nibble array.
+ * @private
+ * @param key
+ */
+const bytesToNibbles2 = (key: Uint8Array): Nibbles => {
+  const bkey = toBytes(key)
+  const nibbles = [] as Nibbles
+
+  for (let i = 0; i < bkey.length; i++) {
+    const q = i
+    // nibbles[q] = bkey[i] >> 4
+    // ++q
+    nibbles[q] = bkey[i] % 16
+  }
+
+  return nibbles
+}
+
+const hasTerminator = (nibbles: Uint8Array) => {
+  return nibbles.length > 0 && nibbles[nibbles.length - 1] === 16
+}
+
+const nibblesToBytes = (nibbles: Uint8Array, bytes: Uint8Array) => {
+  for (let bi = 0, ni = 0; ni < nibbles.length; bi += 1, ni += 2) {
+    bytes[bi] = (nibbles[ni] << 4) | nibbles[ni + 1]
+  }
+}
+
+const hexToKeybytes = (hex: Uint8Array) => {
+  if (hasTerminator(hex)) {
+    hex = hex.subarray(0, hex.length - 1)
+  }
+  if (hex.length % 2 === 1) {
+    console.log(hex)
+    throw Error("Can't convert hex key of odd length")
+  }
+  const key = new Uint8Array(hex.length / 2)
+  nibblesToBytes(hex, key)
+
+  return key
+}
+
 type TrieNodesResponse = Uint8Array[] & { completed?: boolean }
 
 /**
@@ -37,6 +81,9 @@ export interface TrieNodeFetcherOptions extends FetcherOptions {
   accountTrie?: Trie
   codeTrie?: Trie
   accountToStorageTrie?: Map<String, Trie>
+
+  accountFetcherAccounts: Map<String, Uint8Array>
+  trieFetcherAccounts: Map<String, Uint8Array>
 
   /** Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
@@ -75,6 +122,9 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   codeTrie: Trie
   accountToStorageTrie: Map<String, Trie>
 
+  accountFetcherAccounts: Map<String, Uint8Array>
+  trieFetcherAccounts: Map<String, Uint8Array>
+
   nodeCount: number
 
   /**
@@ -90,6 +140,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     this.codeTrie = options.codeTrie ?? new Trie({ useKeyHashing: false })
     this.accountToStorageTrie = options.accountToStorageTrie ?? new Map<String, Trie>()
 
+    this.accountFetcherAccounts = options.accountFetcherAccounts
+    this.trieFetcherAccounts = options.trieFetcherAccounts
     this.nodeCount = 0
 
     this.debug = createDebugLogger('client:TrieNodeFetcher')
@@ -204,8 +256,26 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       let q = i * 2
       buf[i] = (arr[q] << 4) + arr[++q]
     }
+    // console.log('dbg3')
+    // console.log(arr)
+    // console.log(arr.length)
+    // console.log(buf)
     return buf
   }
+
+  /**
+   * Converts a nibble array into bytes.
+   * @private
+   * @param arr - Nibble array
+   */
+  // nibblesToBytes(arr: Nibbles): Uint8Array {
+  //   const buf = new Uint8Array(Math.ceil(arr.length / 2))
+  //   for (let i = 0; i < buf.length; i++) {
+  //     let q = i * 2
+  //     buf[i] = (arr[q] << 4) + arr[++q]
+  //   }
+  //   return buf
+  // }
 
   // ResolvePath resolves the provided composite node path by separating the
   // path in account trie if it's existent.
@@ -275,12 +345,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           const key = node.key()
           let hexEncodedKey
           if (key.length < 2) {
-            console.log('key is of length less than 2')
-
             hexEncodedKey = Uint8Array.from(key)
           } else {
-            console.log('key is of length 2 or greater')
-
             // I don't think you need both nibblesToBytes and bytesToNibbles, they seem to both be doing the same thing
             // TODO this is still unverified for extensions of key length greater than 2
             hexEncodedKey = this.nibblesToBytes(key)
@@ -317,7 +383,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             // if error is thrown, than the node is unknown and should be queued for fetching
             unknownChildNodeCount++
             this.pathToNodeRequestData.setElement(childNode.path, {
-              // TODO don't keep paths compact encoded until request is sent in request phase
               nodeHash: bytesToHex(childNode.nodeHash as Uint8Array),
               nodeParentHash: nodeHash, // root node does not have a parent, so handle that in the leaf callback when checking if dependencies are met recursively
             } as NodeRequestData)
@@ -350,10 +415,10 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
       // for an initial implementation, just put nodes into trie and see if root maches stateRoot
       if (this.pathToNodeRequestData.length === 0) {
-        // should be checking if 0, but since extension node request hangs currently, check for 1
         const ops: BatchDBOp[] = []
         for (const [nodeHash, data] of this.fetchedAccountNodes) {
           const { parentHash, deps, nodeData, path } = data
+
           // ops.unshift({
           //   type: 'put',
           //   key: hexToBytes(nodeHash),
@@ -361,20 +426,41 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           // })
           const node = decodeNode(nodeData)
           if (node instanceof LeafNode) {
+            console.log('dbg4')
+
+            console.log(path)
+
+            const b = hexToBytes(path)
+            console.log(b)
+
+            const n = bytesToNibbles2(b)
+            console.log(n)
+
+            // const key = bytesToHex(hexToKeybytes(b)).concat(
+            //   bytesToHex(this.nibblesToBytes(node.key()))
+            // )
+            const key = bytesToHex(this.nibblesToBytes(n.concat(node.key())))
+
+            console.log(key)
+            console.log(key.length)
+            this.trieFetcherAccounts.set(key, node.value())
             ops.unshift({
               type: 'put',
-              key: this.nibblesToBytes(node.key()),
+              key: hexToBytes(key),
               value: node.value(),
             })
           }
         }
-        console.log(ops.length)
-        console.log(this.fetchedAccountNodes.size)
         await this.accountTrie.batch(ops)
         await this.accountTrie.persistRoot()
+
         console.log('dbg0')
+        console.log(ops.length)
+        console.log(this.trieFetcherAccounts.size)
+        console.log(this.fetchedAccountNodes.size)
         console.log(bytesToHex(this.accountTrie.root()))
         console.log(bytesToHex(this.root))
+        console.log(ops)
         // console.log(this.fetchedAccountNodes)
 
         // for (const [k, v] of (
@@ -384,9 +470,9 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         //   // console.log(decodeNode(v.nodeData))
         // }
 
-        process.stdout.write(
-          `${util.inspect(this.accountTrie.database().db, { maxArrayLength: 1000 })}\n`
-        )
+        // process.stdout.write(
+        //   `${util.inspect(this.accountTrie.database().db, { maxArrayLength: 1000 })}\n`
+        // )
       }
     } catch (e) {
       this.debug(e)
