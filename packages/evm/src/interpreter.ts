@@ -29,9 +29,9 @@ export interface RunResult {
   logs: Log[]
   returnValue?: Uint8Array
   /**
-   * A map from the accounts that have self-destructed to the addresses to send their funds to
+   * A set of accounts to selfdestruct
    */
-  selfdestruct: { [k: string]: Uint8Array }
+  selfdestruct: Set<string>
 
   /**
    * A map which tracks which addresses were created (used in EIP 6780)
@@ -160,7 +160,7 @@ export class Interpreter {
     this._result = {
       logs: [],
       returnValue: undefined,
-      selfdestruct: {},
+      selfdestruct: new Set(),
     }
   }
 
@@ -1017,11 +1017,11 @@ export class Interpreter {
 
   async _selfDestruct(toAddress: Address): Promise<void> {
     // only add to refund if this is the first selfdestruct for the address
-    if (this._result.selfdestruct[bytesToHex(this._env.address.bytes)] === undefined) {
+    if (!this._result.selfdestruct.has(bytesToHex(this._env.address.bytes))) {
       this.refundGas(this._common.param('gasPrices', 'selfdestructRefund'))
     }
 
-    this._result.selfdestruct[bytesToHex(this._env.address.bytes)] = toAddress.bytes
+    this._result.selfdestruct.add(bytesToHex(this._env.address.bytes))
 
     // Add to beneficiary balance
     let toAccount = await this._stateManager.getAccount(toAddress)
