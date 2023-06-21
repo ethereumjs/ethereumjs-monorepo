@@ -36,6 +36,9 @@ jobs:
       - run: npm ci
         working-directory: ${{github.workspace}}
 
+# Install playwright dependencies
+      - run: npx playwright install-deps
+      
       - run: npm run lint
       - run: cd ../rlp && npm run test:browser
       - run: cd ../util && npm run test:browser
