@@ -8,11 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  cwd: ${{github.workspace}}/packages/rlp
-
-defaults:
-  run:
-    working-directory: packages/rlp
+  cwd: ${{github.workspace}}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -34,18 +30,18 @@ jobs:
           cache: 'npm'
 
       - run: npm ci
-        working-directory: ${{github.workspace}}
 
 # Install playwright dependencies
       - run: npx playwright install-deps
-      
+
       - run: npm run lint
-      - run: cd ../rlp && npm run test:browser
-      - run: cd ../util && npm run test:browser
-      - run: cd ../common && npm run test:browser
+      - run: npm run test:browser -w=@ethereumjs/rlp
+      - run: npm run test:browser -w=@ethereumjs/util
+#     Provider, Account, and Address tests are skipped as currently failing
+      - run: npm run test:browser -w=@etheruemjs/common
 #     Trie: several tests not passing yet
 #     - run: cd ../trie && npm run test:browser
-      - run: cd ../tx && npm run test:browser
+      - run: npm run test:browser -w=@ethereumjs/tx
 #     Block: serveral tests not passing yet
 #     - run: cd ../block && npm run test:browser
 #     No browser tests for devp2p
