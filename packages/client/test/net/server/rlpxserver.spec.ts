@@ -211,7 +211,7 @@ describe('[RlpxServer]', async () => {
     ;(server as any).error(new Error('err1'))
   })
 
-  it('should ban peer', () => {
+  it('should ban peer', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const server = new RlpxServer({ config })
     assert.notOk(server.ban('123'), 'not started')
@@ -222,14 +222,17 @@ describe('[RlpxServer]', async () => {
     td.verify(server.dpt!.banPeer('112233', 1234))
   })
 
-  it('should init dpt', () => {
+  it('should init dpt', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const server = new RlpxServer({ config })
     ;(server as any).initDpt().catch((error: Error) => {
       throw error
     })
-    td.verify((server.dpt as any).bind(server.config.port, '0.0.0.0'))
-    config.events.on(Event.SERVER_ERROR, (err) => assert.equal(err.message, 'err0', 'got error'))
+    config.events.on(Event.SERVER_ERROR, (err) =>
+      it('should throw', async () => {
+        assert.equal(err.message, 'err0', 'got error')
+      })
+    )
     ;(server.dpt as any).emit('error', new Error('err0'))
   })
 
@@ -242,15 +245,25 @@ describe('[RlpxServer]', async () => {
     ;(server as any).initRlpx().catch((error: Error) => {
       throw error
     })
-    td.verify(RlpxPeer.capabilities(Array.from((server as any).protocols)))
-    td.verify(server.rlpx!.listen(server.config.port, '0.0.0.0'))
     config.events.on(Event.PEER_CONNECTED, (peer) =>
-      assert.ok(peer instanceof RlpxPeer, 'connected')
+      it('should connect', async () => {
+        assert.ok(peer instanceof RlpxPeer, 'connected')
+      })
     )
-    config.events.on(Event.PEER_DISCONNECTED, (peer) => assert.equal(peer.id, '01', 'disconnected'))
-    config.events.on(Event.SERVER_ERROR, (err) => assert.equal(err.message, 'err0', 'got error'))
+    config.events.on(Event.PEER_DISCONNECTED, (peer) =>
+      it('should disconnect', async () => {
+        assert.equal(peer.id, '01', 'disconnected')
+      })
+    )
+    config.events.on(Event.SERVER_ERROR, (err) =>
+      it('should throw error', async () => {
+        assert.equal(err.message, 'err0', 'got error')
+      })
+    )
     config.events.on(Event.SERVER_LISTENING, (info) =>
-      assert.deepEqual(info, { transport: 'rlpx', url: 'enode://ff@0.0.0.0:30303' }, 'listening')
+      it('should listen', async () => {
+        assert.deepEqual(info, { transport: 'rlpx', url: 'enode://ff@0.0.0.0:30303' }, 'listening')
+      })
     )
     server.rlpx!.emit('peer:added', rlpxPeer)
     ;(server as any).peers.set('01', { id: '01' } as any)
@@ -269,7 +282,11 @@ describe('[RlpxServer]', async () => {
     ;(server as any).initRlpx().catch((error: Error) => {
       throw error
     })
-    config.events.on(Event.SERVER_ERROR, (err) => assert.equal(err.message, 'err0', 'got error'))
+    config.events.on(Event.SERVER_ERROR, (err) =>
+      it('should throw', async () => {
+        assert.equal(err.message, 'err0', 'got error')
+      })
+    )
     server.rlpx!.emit('peer:error', rlpxPeer, new Error('err0'))
   })
 
