@@ -36,23 +36,23 @@ jobs:
 
       - run: npm run test:browser -w=@ethereumjs/rlp
       - run: npm run test:browser -w=@ethereumjs/util
-#     Provider, Account, and Address tests are skipped as currently failing
-      - run: npm run test:browser -w=@etheruemjs/common
+#     Util: random tests fail with an odd "unable to import a module" error
+#     - run: npm run test:browser -w=@etheruemjs/common
 #     Trie: several tests not passing yet
-#     - run: cd ../trie && npm run test:browser
+#     - run: npm run test:browser -w=@ethereumjs/trie
       - run: npm run test:browser -w=@ethereumjs/tx
 #     Block: serveral tests not passing yet
-#     - run: cd ../block && npm run test:browser
+#     - run: npm run test:browser -w=@ethereumjs/block
 #     No browser tests for devp2p
 #     Blockchain: strange errors, needs another look
-#     - run: cd ../blockchain && npm run test:browser
+#     - run: npm run test:browser -w=@ethereumjs/blockchain
 #     No browser tests for ethash
 #     EVM: several tests not passing yet
 #     - run: cd ../evm && npm run test:browser
 #     StateManager: selected tests not passing yet
 #     - run: cd ../statemanager && npm run test:browser
 #     Wallet: import failing
-#     - run: cd ../wallet && npm run test:browser
+#     - run: npm run test:browser -w=@ethereumjs/wallet
 #     VM: several tests not passing yet
-#     - run: cd ../vm && npm run test:browser
+#     - run: npm run test:browser -w=@ethereumjs/vm
 
