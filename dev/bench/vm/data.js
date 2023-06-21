@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1687353067591,
+  "lastUpdate": 1687358932222,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "konjou@gmail.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "752b2707f88c3fae50aee8f6ed42fabcbbbb4ec9",
-          "message": "Add low overhead blob tx constructor option (#2755)\n\n* Add no boilerplate option for blob tx constructor\r\n\r\n* remaining items",
-          "timestamp": "2023-06-06T18:02:32+05:30",
-          "tree_id": "ece25f77e5ad1cf531ad93c9a8b3882dc010a8b7",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/752b2707f88c3fae50aee8f6ed42fabcbbbb4ec9"
-        },
-        "date": 1686054962850,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 30102,
-            "range": "±7.19%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31163,
-            "range": "±3.12%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 30963,
-            "range": "±2.98%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 30452,
-            "range": "±3.32%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 23533,
-            "range": "±12.11%",
-            "unit": "ops/sec",
-            "extra": "66 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.23%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "konjou@gmail.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "005595cca658369730fa1015795fe6b626464028",
+          "message": "Add json type assertions to ESM post build fixes (#2805)",
+          "timestamp": "2023-06-21T16:43:36+02:00",
+          "tree_id": "aa1d9e3809ec240a60f4b351fdfe70bc28ecdee3",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/005595cca658369730fa1015795fe6b626464028"
+        },
+        "date": 1687358931009,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18794,
+            "range": "±7.37%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 19286,
+            "range": "±3.29%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 19156,
+            "range": "±2.90%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19476,
+            "range": "±3.80%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 16789,
+            "range": "±11.29%",
+            "unit": "ops/sec",
+            "extra": "67 samples"
           }
         ]
       }
