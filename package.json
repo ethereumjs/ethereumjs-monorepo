@@ -22,9 +22,9 @@
     "@types/tape": "4.13.2",
     "@typescript-eslint/eslint-plugin": "5.33.1",
     "@typescript-eslint/parser": "5.33.1",
-    "@vitest/browser": "0.32.0",
-    "@vitest/coverage-v8": "0.32.0",
-    "@vitest/ui": "0.32.0",
+    "@vitest/browser": "0.32.2",
+    "@vitest/coverage-v8": "0.32.2",
+    "@vitest/ui": "0.32.2",
     "c8": "7.12.0",
     "eslint": "8.22.0",
     "eslint-config-prettier": "8.5.0",
@@ -45,6 +45,7 @@
     "karma-typescript-es6-transform": "5.5.3",
     "lint-staged": "13.0.3",
     "lockfile-lint-api": "^5.5.1",
+    "playwright": "^1.35.1",
     "prettier": "2.7.1",
     "sort-package-json": "1.57.0",
     "tape": "5.6.0",
@@ -52,8 +53,7 @@
     "typedoc": "0.23.10",
     "typedoc-plugin-markdown": "3.13.4",
     "typescript": "4.7.4",
-    "vitest": "0.32.0",
-    "webdriverio": "^8.10.7"
+    "vitest": "0.32.2"
   },
   "engines": {
     "node": ">=14",
