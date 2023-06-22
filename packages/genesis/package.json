@@ -23,6 +23,26 @@
     ".": {
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
+    },
+    "./mainnet": {
+      "import": "./dist/esm/genesisStates/mainnet.js",
+      "require": "./dist/cjs/genesisStates/mainnet.js"
+    },
+    "./goerli": {
+      "import": "./dist/esm/genesisStates/goerli.js",
+      "require": "./dist/cjs/genesisStates/goerli.js"
+    },
+    "./ropsten": {
+      "import": "./dist/esm/genesisStates/ropsten.js",
+      "require": "./dist/cjs/genesisStates/ropsten.js"
+    },
+    "./rinkeby": {
+      "import": "./dist/esm/genesisStates/rinkeby.js",
+      "require": "./dist/cjs/genesisStates/rinkeby.js"
+    },
+    "./sepolia": {
+      "import": "./dist/esm/genesisStates/sepolia.js",
+      "require": "./dist/cjs/genesisStates/sepolia.js"
     }
   },
   "files": [
@@ -46,10 +66,6 @@
   "dependencies": {
     "@ethereumjs/common": "^3.1.2",
     "@ethereumjs/util": "^8.0.6"
-  },
-  "devDependencies": {
-    "@types/async": "^2.4.1",
-    "@types/level-errors": "^3.0.0"
   },
   "engines": {
     "node": ">=16"

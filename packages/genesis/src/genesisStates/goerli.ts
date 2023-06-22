@@ -1,4 +1,6 @@
-export const goerliGenesis = {
+import { GenesisState } from '@ethereumjs/util'
+
+export const goerliGenesis: GenesisState = {
   '0x0000000000000000000000000000000000000000': '0x1',
   '0x0000000000000000000000000000000000000001': '0x1',
   '0x0000000000000000000000000000000000000002': '0x1',
