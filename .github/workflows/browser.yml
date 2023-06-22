@@ -43,12 +43,11 @@ jobs:
 #     No browser tests for devp2p
       - run: npm run test:browser -w=@ethereumjs/blockchain
 #     No browser tests for ethash
+      - run: npm run test:browser -w=@ethereumjs/wallet
 #     EVM: several tests not passing yet
 #     - run: cd ../evm && npm run test:browser
 #     StateManager: selected tests not passing yet
 #     - run: cd ../statemanager && npm run test:browser
-#     Wallet: import failing
-#     - run: npm run test:browser -w=@ethereumjs/wallet
 #     VM: several tests not passing yet
 #     - run: npm run test:browser -w=@ethereumjs/vm
 
