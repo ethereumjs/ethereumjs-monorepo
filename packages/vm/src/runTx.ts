@@ -503,9 +503,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    * Cleanup accounts
    */
   if (results.execResult.selfdestruct !== undefined) {
-    const keys = Object.keys(results.execResult.selfdestruct)
-    for (const k of keys) {
-      const address = new Address(hexToBytes(k))
+    for (const addressToSelfdestructHex of results.execResult.selfdestruct) {
+      const address = new Address(hexToBytes(addressToSelfdestructHex))
       if (this._common.isActivatedEIP(6780)) {
         // skip cleanup of addresses not in createdAddresses
         if (!results.execResult.createdAddresses!.has(address.toString())) {
