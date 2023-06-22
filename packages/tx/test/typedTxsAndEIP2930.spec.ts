@@ -511,7 +511,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
     assert.equal(tx.getUpfrontCost(), BigInt(10000000042))
   })
 
-  it('unsigned tx -> getMessageToSign()', () => {
+  it('unsigned tx -> getHashedMessageToSign()/getMessageToSign()', () => {
     const unsignedTx = AccessListEIP2930Transaction.fromTxData(
       {
         data: hexStringToBytes('010200'),
@@ -524,13 +524,13 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
     const expectedHash = hexStringToBytes(
       '78528e2724aa359c58c13e43a7c467eb721ce8d410c2a12ee62943a3aaefb60b'
     )
-    assert.deepEqual(unsignedTx.getMessageToSign(true), expectedHash), 'correct hashed version'
+    assert.deepEqual(unsignedTx.getHashedMessageToSign(), expectedHash), 'correct hashed version'
 
     const expectedSerialization = hexStringToBytes(
       '01f858018080809401010101010101010101010101010101010101018083010200f838f7940101010101010101010101010101010101010101e1a00101010101010101010101010101010101010101010101010101010101010101'
     )
     assert.deepEqual(
-      unsignedTx.getMessageToSign(false),
+      unsignedTx.getMessageToSign(),
       expectedSerialization,
       'correct serialized unhashed version'
     )
