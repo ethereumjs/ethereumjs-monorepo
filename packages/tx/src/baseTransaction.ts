@@ -289,12 +289,11 @@ export abstract class BaseTransaction<T extends TransactionType>
    */
   abstract serialize(): Uint8Array
 
-  // Returns the unsigned tx (hashed or raw), which is used to sign the transaction.
-  //
-  // Note: do not use code docs here since VS Studio is then not able to detect the
-  // comments from the inherited methods
-  abstract getMessageToSign(hashMessage: false): Uint8Array | Uint8Array[]
-  abstract getMessageToSign(hashMessage?: true): Uint8Array
+  // Returns the raw unsigned tx, which is used to sign the transaction.
+  abstract getMessageToSign(): Uint8Array | Uint8Array[]
+
+  // Returns the hashed unsigned tx, which is used to sign the transaction.
+  abstract getHashedMessageToSign(): Uint8Array
 
   abstract hash(): Uint8Array
 
@@ -363,7 +362,7 @@ export abstract class BaseTransaction<T extends TransactionType>
       hackApplied = true
     }
 
-    const msgHash = this.getMessageToSign(true)
+    const msgHash = this.getHashedMessageToSign()
     const { v, r, s } = ecsign(msgHash, privateKey)
     const tx = this._processSignature(v, r, s)
 
