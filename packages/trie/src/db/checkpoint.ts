@@ -14,7 +14,18 @@ export class CheckpointDB implements DB<Uint8Array, Uint8Array> {
   public db: DB<string, string>
   public readonly cacheSize: number
 
-  protected _cache?: LRUCache<string, Uint8Array>
+
+  // Starting with lru-cache v8 undefined and null are not allowed any more
+  // as cache values. At the same time our design works well, since undefined
+  // indicates for us that we know that the value is not present in the
+  // underlying trie database as well (so it carries real value).
+  //
+  // Solution here seems therefore adequate, other solutions would rather
+  // be some not so clean workaround.
+  //
+  // (note that @ts-ignore doesn't work since stripped on declaration (.d.ts) files)
+  protected _cache?: LRUCache<string, any>
+  // protected _cache?: LRUCache<string, Uint8Array | undefined>
 
   _stats = {
     cache: {

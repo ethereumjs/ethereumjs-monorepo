@@ -46,7 +46,7 @@
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "profiling": "tsc --target ES5 benchmarks/random.ts && 0x benchmarks/random.js",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "npx vitest run --browser.name=chrome --browser.headless",
+    "test:browser": "npx vitest run --browser.name=webkit --browser.provider=playwright --browser.headless",
     "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
@@ -56,7 +56,8 @@
     "@types/readable-stream": "^2.3.13",
     "async-mutex": "0.4.0",
     "debug": "^4.3.1",
-    "lru-cache": "^9.1.0",
+
+    "lru-cache": "^10.0.0",
     "ethereum-cryptography": "^2.0.0",
     "readable-stream": "^3.6.0"
   },
