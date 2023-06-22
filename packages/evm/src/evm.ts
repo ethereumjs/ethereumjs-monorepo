@@ -286,7 +286,7 @@ export class EVM implements EVMInterface {
     // Supported EIPs
     const supportedEIPs = [
       1153, 1559, 2315, 2537, 2565, 2718, 2929, 2930, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
-      3670, 3855, 3860, 4399, 4895, 4844, 5133, 6780,
+      3670, 3855, 3860, 4399, 4895, 4844, 5133, 5656, 6780,
     ]
 
     for (const eip of this._common.eips()) {
