@@ -37,6 +37,8 @@ const debug = createDebugLogger('vm:block')
 const DAOAccountList = DAOConfig.DAOAccounts
 const DAORefundContract = DAOConfig.DAORefundContract
 
+const beaconRootAddress = Address.fromString('0x000000000000000000000000000000000000000b')
+
 /**
  * @ignore
  */
@@ -252,6 +254,15 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
       }
       await block.validateData()
     }
+  }
+  if (this._common.isActivatedEIP(4788)) {
+    // Apply beacon root
+    const root = block.header.beaconRoot!
+    await this.stateManager.putContractStorage(
+      beaconRootAddress,
+      root,
+      bigIntToBytes(block.header.timestamp)
+    )
   }
   // Apply transactions
   if (this.DEBUG) {
