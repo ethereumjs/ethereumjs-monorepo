@@ -2,7 +2,7 @@ import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import ropstenJSON from '../../../genesis/src/genesisStates/ropsten.json'
-import { genesisStateRoot } from '../../src/util/genesisState'
+import { genesisStateRoot } from '../../src/util/genesisState.js'
 // kiln genesis with deposit contract storage set
 import gethGenesisKilnJSON from '../fixtures/geth-genesis-kiln.json'
 
