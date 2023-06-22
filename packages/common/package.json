@@ -49,7 +49,7 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "npx vitest run --browser.name=chrome --browser.headless",
+    "test:browser": "npx vitest run --browser.name=webkit --browser.provider=playwright --browser.headless",
     "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },

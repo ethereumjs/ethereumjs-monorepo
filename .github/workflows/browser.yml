@@ -1,0 +1,58 @@
+name: Browser
+on:
+  push:
+    branches: [master, develop]
+    tags: ['*']
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
+
+env:
+  cwd: ${{github.workspace}}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  test-all-browser:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - run: npm ci
+
+# Install playwright dependencies
+      - run: npx playwright install-deps
+
+      - run: npm run test:browser -w=@ethereumjs/rlp
+#      - run: npm run test:browser -w=@ethereumjs/util
+#     Util: random tests fail with an odd "unable to import a module" error
+     - run: npm run test:browser -w=@etheruemjs/common
+#     Trie: several tests not passing yet
+#     - run: npm run test:browser -w=@ethereumjs/trie
+      - run: npm run test:browser -w=@ethereumjs/tx
+#     Block: serveral tests not passing yet
+#     - run: npm run test:browser -w=@ethereumjs/block
+#     No browser tests for devp2p
+#     Blockchain: strange errors, needs another look
+#     - run: npm run test:browser -w=@ethereumjs/blockchain
+#     No browser tests for ethash
+#     EVM: several tests not passing yet
+#     - run: cd ../evm && npm run test:browser
+#     StateManager: selected tests not passing yet
+#     - run: cd ../statemanager && npm run test:browser
+#     Wallet: import failing
+#     - run: npm run test:browser -w=@ethereumjs/wallet
+#     VM: several tests not passing yet
+#     - run: npm run test:browser -w=@ethereumjs/vm
+

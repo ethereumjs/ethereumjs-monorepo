@@ -506,6 +506,12 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const keys = Object.keys(results.execResult.selfdestruct)
     for (const k of keys) {
       const address = new Address(hexToBytes(k))
+      if (this._common.isActivatedEIP(6780)) {
+        // skip cleanup of addresses not in createdAddresses
+        if (!results.execResult.createdAddresses!.has(address.toString())) {
+          continue
+        }
+      }
       await this.evm.journal.deleteAccount(address)
       if (this.DEBUG) {
         debug(`tx selfdestruct on address=${address}`)
