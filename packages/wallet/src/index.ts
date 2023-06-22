@@ -17,12 +17,12 @@ import { pbkdf2 } from 'ethereum-cryptography/pbkdf2.js'
 import { scrypt } from 'ethereum-cryptography/scrypt.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { concatBytes, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
+import { v4 as uuidv4 } from 'uuid'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 export { EthereumHDKey as hdkey } from './hdkey.js'
 export { Thirdparty as thirdparty } from './thirdparty.js'
-const uuidv4 = require('uuid').v4
 
 const bs58check = base58check(sha256)
 
