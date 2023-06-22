@@ -578,7 +578,7 @@ tape('[Miner]', async (t) => {
   })
 
   t.test('should handle mining ethash PoW', async (t) => {
-    const common = new Common({ chain: CommonChain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: CommonChain.Mainnet, hardfork: Hardfork.Homestead })
     ;(common as any)._chainParams['genesis'].difficulty = 1
     const config = new Config({
       transports: [],

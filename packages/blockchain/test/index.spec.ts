@@ -36,7 +36,7 @@ describe('blockchain test', () => {
     blockchain = await Blockchain.create({ common, hardforkByHeadBlockNumber: true })
     assert.equal(
       common.hardfork(),
-      'tangerineWhistle',
+      'chainstart',
       'correct HF setting with hardforkByHeadBlockNumber option'
     )
   })
@@ -142,11 +142,7 @@ describe('blockchain test', () => {
       } else {
         const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 12, 0, false)
         assert.equal(getBlocks.length, 12)
-        assert.equal(
-          common.hardfork(),
-          'spuriousDragon',
-          'correct HF updates along block additions'
-        )
+        assert.equal(common.hardfork(), 'chainstart', 'correct HF updates along block additions')
       }
     }
 
@@ -720,7 +716,7 @@ describe('blockchain test', () => {
       genesisBlock,
       Block.fromBlockData(blockData1, { common, calcDifficultyFromHeader: genesisBlock.header }),
       Block.fromBlockData(blockData2, {
-        common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart }),
+        common: new Common({ chain: Chain.Sepolia, hardfork: Hardfork.Chainstart }),
         calcDifficultyFromHeader: genesisBlock.header,
       }),
     ]
