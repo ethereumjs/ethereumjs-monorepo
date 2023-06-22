@@ -1,6 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
-import { Address } from '@ethereumjs/util'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
+import { bytesToHex } from 'ethereum-cryptography/utils.js'
 
 import { precompile01 } from './01-ecrecover.js'
 import { precompile02 } from './02-sha256.js'
@@ -12,6 +11,7 @@ import { precompile07 } from './07-ecmul.js'
 import { precompile08 } from './08-ecpairing.js'
 import { precompile09 } from './09-blake2f.js'
 import { precompile0a } from './0a-bls12-g1add.js'
+import { precompile0a as precompile0a_kzg } from './0a-kzg-point-evaluation.js'
 import { precompile0b } from './0b-bls12-g1mul.js'
 import { precompile0c } from './0c-bls12-g1multiexp.js'
 import { precompile0d } from './0d-bls12-g2add.js'
@@ -20,10 +20,10 @@ import { precompile0f } from './0f-bls12-g2multiexp.js'
 import { precompile10 } from './10-bls12-pairing.js'
 import { precompile11 } from './11-bls12-map-fp-to-g1.js'
 import { precompile12 } from './12-bls12-map-fp2-to-g2.js'
-import { precompile14 } from './14-kzg-point-evaluation.js'
 
 import type { PrecompileFunc, PrecompileInput } from './types.js'
 import type { Common } from '@ethereumjs/common'
+import type { Address } from '@ethereumjs/util'
 
 interface Precompiles {
   [key: string]: PrecompileFunc
@@ -64,6 +64,7 @@ const precompiles: Precompiles = {
   '0000000000000000000000000000000000000008': precompile08,
   '0000000000000000000000000000000000000009': precompile09,
   '000000000000000000000000000000000000000a': precompile0a,
+  '000000000000000000000000000000000000000a-kzg': precompile0a_kzg,
   '000000000000000000000000000000000000000b': precompile0b,
   '000000000000000000000000000000000000000c': precompile0c,
   '000000000000000000000000000000000000000d': precompile0d,
@@ -72,7 +73,29 @@ const precompiles: Precompiles = {
   '0000000000000000000000000000000000000010': precompile10,
   '0000000000000000000000000000000000000011': precompile11,
   '0000000000000000000000000000000000000012': precompile12,
-  '0000000000000000000000000000000000000014': precompile14,
+}
+
+const addressMap: { [key: string]: string } = {
+  '0000000000000000000000000000000000000001': '0000000000000000000000000000000000000001',
+  '0000000000000000000000000000000000000002': '0000000000000000000000000000000000000002',
+  [ripemdPrecompileAddress]: ripemdPrecompileAddress,
+  '0000000000000000000000000000000000000004': '0000000000000000000000000000000000000004',
+  '0000000000000000000000000000000000000005': '0000000000000000000000000000000000000005',
+  '0000000000000000000000000000000000000006': '0000000000000000000000000000000000000006',
+  '0000000000000000000000000000000000000007': '0000000000000000000000000000000000000007',
+  '0000000000000000000000000000000000000008': '0000000000000000000000000000000000000008',
+  '0000000000000000000000000000000000000009': '0000000000000000000000000000000000000009',
+  '000000000000000000000000000000000000000a': '000000000000000000000000000000000000000a',
+  '000000000000000000000000000000000000000a-kzg': '000000000000000000000000000000000000000a',
+  '000000000000000000000000000000000000000b': '000000000000000000000000000000000000000b',
+  '000000000000000000000000000000000000000c': '000000000000000000000000000000000000000c',
+  '000000000000000000000000000000000000000d': '000000000000000000000000000000000000000d',
+  '000000000000000000000000000000000000000e': '000000000000000000000000000000000000000e',
+  '000000000000000000000000000000000000000f': '000000000000000000000000000000000000000f',
+  '0000000000000000000000000000000000000010': '0000000000000000000000000000000000000010',
+  '0000000000000000000000000000000000000011': '0000000000000000000000000000000000000011',
+  '0000000000000000000000000000000000000012': '0000000000000000000000000000000000000012',
+  '0000000000000000000000000000000000000014': '0000000000000000000000000000000000000014',
 }
 
 const precompileAvailability: PrecompileAvailability = {
@@ -148,23 +171,26 @@ const precompileAvailability: PrecompileAvailability = {
     type: PrecompileAvailabilityCheck.EIP,
     param: 2537,
   },
-  '0000000000000000000000000000000000000014': {
+  '000000000000000000000000000000000000000a-kzg': {
     type: PrecompileAvailabilityCheck.EIP,
     param: 4844,
   },
+  '000000000000000000000000000000000000000b-beaconroot': {
+    type: PrecompileAvailabilityCheck.EIP,
+    param: 4788,
+  },
 }
 
-function getPrecompile(address: Address, common: Common): PrecompileFunc {
-  const addr = bytesToHex(address.bytes)
-  if (precompiles[addr] !== undefined) {
-    const availability = precompileAvailability[addr]
+function getPrecompile(tag: string, common: Common): PrecompileFunc {
+  if (precompiles[tag] !== undefined) {
+    const availability = precompileAvailability[tag]
     if (
       (availability.type === PrecompileAvailabilityCheck.Hardfork &&
         common.gteHardfork(availability.param)) ||
       (availability.type === PrecompileAvailabilityCheck.EIP &&
         common.isActivatedEIP(availability.param))
     ) {
-      return precompiles[addr]
+      return precompiles[tag]
     }
   }
   return precompiles['']
@@ -194,13 +220,13 @@ function getActivePrecompiles(
       )
     }
   }
-  for (const addressString in precompiles) {
+  for (const tag in precompiles) {
+    const addressString = addressMap[tag]
     if (precompileMap.has(addressString)) {
       continue
     }
 
-    const address = new Address(hexToBytes(addressString))
-    const precompileFunc = getPrecompile(address, common)
+    const precompileFunc = getPrecompile(tag, common)
     if (precompileFunc !== undefined) {
       precompileMap.set(addressString, precompileFunc)
     }

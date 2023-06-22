@@ -20,7 +20,7 @@ export const BLS_MODULUS = BigInt(
 
 const modulusBuffer = setLengthLeft(bigIntToBytes(BLS_MODULUS), 32)
 
-export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
+export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   const gasUsed = opts._common.param('gasPrices', 'kzgPointEvaluationGasPrecompilePrice')
   if (opts._debug !== undefined) {
     opts._debug(
