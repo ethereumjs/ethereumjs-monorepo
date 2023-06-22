@@ -93,6 +93,7 @@ export interface HeaderData {
   withdrawalsRoot?: BytesLike
   dataGasUsed?: BigIntLike
   excessDataGas?: BigIntLike
+  beaconRoot?: BytesLike
 }
 
 /**
