@@ -1,11 +1,10 @@
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
 import { encryptKeystoreJsonSync, Wallet as ethersWallet } from 'ethers'
+import zip from 'lodash.zip'
 import { assert, describe, it } from 'vitest'
 
 import { Wallet } from '../src/index.js'
 import { Thirdparty } from '../src/thirdparty.js'
-
-const zip = require('lodash.zip')
 
 const n = 262144
 const r = 8
