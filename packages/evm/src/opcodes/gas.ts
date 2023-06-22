@@ -266,8 +266,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       0x5e,
       async function (runState, gas, common): Promise<bigint> {
         const [dst, src, length] = runState.stack.peek(3)
-        // If src > dst, then from there the memory could be expanded and we need to pay that expansion cost
-        const readFrom = dst > src ? dst : src
         const wordsCopied = (length + BigInt(31)) / BigInt(32)
         gas += BigInt(3) * wordsCopied
         gas += subMemUsage(runState, src, length, common)

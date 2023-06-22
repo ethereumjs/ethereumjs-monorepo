@@ -92,7 +92,6 @@ describe('should test mcopy', () => {
       let currentMem = ''
 
       evm.events.on('step', (e) => {
-        console.log(e.opcode.name)
         if (e.opcode.name === 'STOP') {
           currentMem = bytesToHex(e.memory)
         }
