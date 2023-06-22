@@ -1,6 +1,5 @@
 export enum Chain {
   Mainnet = 1,
-  Rinkeby = 4,
   Goerli = 5,
   Sepolia = 11155111,
 }
@@ -52,13 +51,6 @@ export enum CustomChain {
    * - [Documentation](https://docs.matic.network/docs/develop/network-details/network)
    */
   PolygonMumbai = 'polygon-mumbai',
-
-  /**
-   * Arbitrum Rinkeby Testnet
-   *
-   * - [Documentation](https://developer.offchainlabs.com/docs/public_testnet)
-   */
-  ArbitrumRinkebyTestnet = 'arbitrum-rinkeby-testnet',
 
   /**
    * Arbitrum One - mainnet for Arbitrum roll-up
