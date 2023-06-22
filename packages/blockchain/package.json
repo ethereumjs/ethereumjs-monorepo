@@ -55,7 +55,7 @@
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.0.0",
     "level": "^8.0.0",
-    "lru-cache": "^7.18.3"
+    "lru-cache": "^10.0.0"
   },
   "devDependencies": {
     "@types/async": "^2.4.1",
