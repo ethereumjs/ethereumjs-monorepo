@@ -1,4 +1,6 @@
-export const sepoliaGenesis = {
+import { GenesisState } from '@ethereumjs/util'
+
+export const sepoliaGenesis: GenesisState = {
   '0xa2A6d93439144FFE4D27c9E088dCD8b783946263': '0xD3C21BCECCEDA1000000',
   '0xBc11295936Aa79d594139de1B2e12629414F3BDB': '0xD3C21BCECCEDA1000000',
   '0x7cF5b79bfe291A67AB02b393E456cCc4c266F753': '0xD3C21BCECCEDA1000000',
