@@ -143,28 +143,11 @@ export abstract class BaseTransaction<T extends TransactionType>
    * tx type is unknown (e.g. when instantiated with
    * the tx factory).
    *
-   * See `Capabilites` in the `types` module for a reference
+   * See `Capabilities` in the `types` module for a reference
    * on all supported capabilities.
    */
   supports(capability: Capability) {
     return this.activeCapabilities.includes(capability)
-  }
-
-  /**
-   * Validates the transaction signature and minimum gas requirements.
-   * @returns {boolean} true if the transaction is valid, false otherwise
-   */
-  isValid(): boolean {
-    // gasLimit is too low for baseFee
-    if (this.getBaseFee() > this.gasLimit) {
-      return false
-    }
-
-    // Invalid signature
-    if (this.isSigned() && !this.verifySignature()) {
-      return false
-    }
-    return true
   }
 
   /**
@@ -185,23 +168,15 @@ export abstract class BaseTransaction<T extends TransactionType>
     return errors
   }
 
-  // /**
-  //  * Validates the transaction signature and minimum gas requirements.
-  //  * @returns {string[]} an array of error strings
-  //  */
-  // validate(): string[] {
-  //   const errors = []
+  /**
+   * Validates the transaction signature and minimum gas requirements.
+   * @returns {boolean} true if the transaction is valid, false otherwise
+   */
+  isValid(): boolean {
+    const errors = this.getValidationErrors()
 
-  //   if (this.isSigned() && !this.verifySignature()) {
-  //     errors.push('Invalid Signature')
-  //   }
-
-  //   if (this.getBaseFee() > this.gasLimit) {
-  //     errors.push(`gasLimit is too low. given ${this.gasLimit}, need at least ${this.getBaseFee()}`)
-  //   }
-
-  //   return errors
-  // }
+    return errors.length === 0
+  }
 
   protected _validateYParity() {
     const { v } = this
