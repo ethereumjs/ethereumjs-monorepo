@@ -2,11 +2,11 @@ import { Chain } from '@ethereumjs/common'
 
 import type { GenesisState } from '@ethereumjs/util'
 
-import mainnetJSON from './genesisStates/mainnet.json'
-import ropstenJSON from './genesisStates/ropsten.json'
-import rinkebyJSON from './genesisStates/rinkeby.json'
-import goerliJSON from './genesisStates/goerli.json'
-import sepoliaJSON from './genesisStates/sepolia.json'
+import { mainnetGenesis } from './genesisStates/mainnet.js'
+import { ropstenGenesis } from './genesisStates/ropsten.js'
+import { rinkebyGenesis } from './genesisStates/rinkeby.js'
+import { goerliGenesis } from './genesisStates/goerli.js'
+import { sepoliaGenesis } from './genesisStates/sepolia.js'
 
 /**
  * Utility to get the genesisState of a well known network
@@ -19,15 +19,15 @@ export function getGenesis(chainId: number): GenesisState | null {
   // (high memory usage by large mainnet.json genesis state file)
   switch (chainId) {
     case Chain.Mainnet:
-      return mainnetJSON
+      return mainnetGenesis
     case Chain.Ropsten:
-      return ropstenJSON
+      return ropstenGenesis
     case Chain.Rinkeby:
-      return rinkebyJSON
+      return rinkebyGenesis
     case Chain.Goerli:
-      return goerliJSON
+      return goerliGenesis
     case Chain.Sepolia:
-      return sepoliaJSON
+      return sepoliaGenesis
 
     default:
       return null
