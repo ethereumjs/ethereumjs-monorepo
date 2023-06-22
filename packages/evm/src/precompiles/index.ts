@@ -10,27 +10,29 @@ import { precompile06 } from './06-ecadd.js'
 import { precompile07 } from './07-ecmul.js'
 import { precompile08 } from './08-ecpairing.js'
 import { precompile09 } from './09-blake2f.js'
-import { precompile0a } from './0a-bls12-g1add.js'
-import { precompile0a as precompile0a_kzg } from './0a-kzg-point-evaluation.js'
-import { precompile0b } from './0b-bls12-g1mul.js'
-import { precompile0c } from './0c-bls12-g1multiexp.js'
-import { precompile0d } from './0d-bls12-g2add.js'
-import { precompile0e } from './0e-bls12-g2mul.js'
-import { precompile0f } from './0f-bls12-g2multiexp.js'
-import { precompile10 } from './10-bls12-pairing.js'
-import { precompile11 } from './11-bls12-map-fp-to-g1.js'
-import { precompile12 } from './12-bls12-map-fp2-to-g2.js'
+import { precompile0a } from './0a-kzg-point-evaluation.js'
+import { precompile0c } from './0c-bls12-g1add.js'
+import { precompile0d } from './0d-bls12-g1mul.js'
+import { precompile0e } from './0e-bls12-g1multiexp.js'
+import { precompile0f } from './0f-bls12-g2add.js'
+import { precompile10 } from './10-bls12-g2mul.js'
+import { precompile11 } from './11-bls12-g2multiexp.js'
+import { precompile12 } from './12-bls12-pairing.js'
+import { precompile13 } from './13-bls12-map-fp-to-g1.js'
+import { precompile14 } from './14-bls12-map-fp2-to-g2.js'
 
 import type { PrecompileFunc, PrecompileInput } from './types.js'
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 
-interface Precompiles {
-  [key: string]: PrecompileFunc
+interface PrecompileEntry {
+  address: string
+  check: PrecompileAvailabilityCheckType
+  precompile: PrecompileFunc
 }
 
-interface PrecompileAvailability {
-  [key: string]: PrecompileAvailabilityCheckType
+interface Precompiles {
+  [key: string]: PrecompileFunc
 }
 
 type PrecompileAvailabilityCheckType =
@@ -53,6 +55,163 @@ interface PrecompileAvailabilityCheckTypeEIP {
 }
 
 const ripemdPrecompileAddress = '0000000000000000000000000000000000000003'
+
+const precompileEntries: PrecompileEntry[] = [
+  {
+    address: '0000000000000000000000000000000000000001',
+    check: {
+      type: PrecompileAvailabilityCheck.Hardfork,
+      param: Hardfork.Chainstart,
+    },
+    precompile: precompile01,
+  },
+  {
+    address: '0000000000000000000000000000000000000002',
+    check: {
+      type: PrecompileAvailabilityCheck.Hardfork,
+      param: Hardfork.Chainstart,
+    },
+    precompile: precompile02,
+  },
+  {
+    address: '0000000000000000000000000000000000000003',
+    check: {
+      type: PrecompileAvailabilityCheck.Hardfork,
+      param: Hardfork.Chainstart,
+    },
+    precompile: precompile03,
+  },
+  {
+    address: '0000000000000000000000000000000000000004',
+    check: {
+      type: PrecompileAvailabilityCheck.Hardfork,
+      param: Hardfork.Chainstart,
+    },
+    precompile: precompile04,
+  },
+  {
+    address: '0000000000000000000000000000000000000005',
+    check: {
+      type: PrecompileAvailabilityCheck.Hardfork,
+      param: Hardfork.Byzantium,
+    },
+    precompile: precompile05,
+  },
+  {
+    address: '0000000000000000000000000000000000000006',
+    check: {
+      type: PrecompileAvailabilityCheck.Hardfork,
+      param: Hardfork.Byzantium,
+    },
+    precompile: precompile06,
+  },
+  {
+    address: '0000000000000000000000000000000000000007',
+    check: {
+      type: PrecompileAvailabilityCheck.Hardfork,
+      param: Hardfork.Byzantium,
+    },
+    precompile: precompile07,
+  },
+  {
+    address: '0000000000000000000000000000000000000008',
+    check: {
+      type: PrecompileAvailabilityCheck.Hardfork,
+      param: Hardfork.Byzantium,
+    },
+    precompile: precompile08,
+  },
+  {
+    address: '0000000000000000000000000000000000000009',
+    check: {
+      type: PrecompileAvailabilityCheck.Hardfork,
+      param: Hardfork.Istanbul,
+    },
+    precompile: precompile09,
+  },
+  {
+    address: '000000000000000000000000000000000000000a',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 4844,
+    },
+    precompile: precompile0a,
+  },
+  // 0x00..0b: beacon block root, see PR 2810
+  {
+    address: '000000000000000000000000000000000000000c',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 2537,
+    },
+    precompile: precompile0c,
+  },
+  {
+    address: '000000000000000000000000000000000000000d',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 2537,
+    },
+    precompile: precompile0d,
+  },
+  {
+    address: '000000000000000000000000000000000000000e',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 2537,
+    },
+    precompile: precompile0e,
+  },
+  {
+    address: '000000000000000000000000000000000000000f',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 2537,
+    },
+    precompile: precompile0f,
+  },
+  {
+    address: '0000000000000000000000000000000000000010',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 2537,
+    },
+    precompile: precompile10,
+  },
+  {
+    address: '0000000000000000000000000000000000000011',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 2537,
+    },
+    precompile: precompile11,
+  },
+  {
+    address: '0000000000000000000000000000000000000012',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 2537,
+    },
+    precompile: precompile12,
+  },
+  {
+    address: '0000000000000000000000000000000000000013',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 2537,
+    },
+    precompile: precompile13,
+  },
+  {
+    address: '0000000000000000000000000000000000000014',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 2537,
+    },
+    precompile: precompile14,
+  },
+]
+
 const precompiles: Precompiles = {
   '0000000000000000000000000000000000000001': precompile01,
   '0000000000000000000000000000000000000002': precompile02,
@@ -64,8 +223,7 @@ const precompiles: Precompiles = {
   '0000000000000000000000000000000000000008': precompile08,
   '0000000000000000000000000000000000000009': precompile09,
   '000000000000000000000000000000000000000a': precompile0a,
-  '000000000000000000000000000000000000000a-kzg': precompile0a_kzg,
-  '000000000000000000000000000000000000000b': precompile0b,
+  // 0b: beacon block root see PR 2810
   '000000000000000000000000000000000000000c': precompile0c,
   '000000000000000000000000000000000000000d': precompile0d,
   '000000000000000000000000000000000000000e': precompile0e,
@@ -73,127 +231,8 @@ const precompiles: Precompiles = {
   '0000000000000000000000000000000000000010': precompile10,
   '0000000000000000000000000000000000000011': precompile11,
   '0000000000000000000000000000000000000012': precompile12,
-}
-
-const addressMap: { [key: string]: string } = {
-  '0000000000000000000000000000000000000001': '0000000000000000000000000000000000000001',
-  '0000000000000000000000000000000000000002': '0000000000000000000000000000000000000002',
-  [ripemdPrecompileAddress]: ripemdPrecompileAddress,
-  '0000000000000000000000000000000000000004': '0000000000000000000000000000000000000004',
-  '0000000000000000000000000000000000000005': '0000000000000000000000000000000000000005',
-  '0000000000000000000000000000000000000006': '0000000000000000000000000000000000000006',
-  '0000000000000000000000000000000000000007': '0000000000000000000000000000000000000007',
-  '0000000000000000000000000000000000000008': '0000000000000000000000000000000000000008',
-  '0000000000000000000000000000000000000009': '0000000000000000000000000000000000000009',
-  '000000000000000000000000000000000000000a': '000000000000000000000000000000000000000a',
-  '000000000000000000000000000000000000000a-kzg': '000000000000000000000000000000000000000a',
-  '000000000000000000000000000000000000000b': '000000000000000000000000000000000000000b',
-  '000000000000000000000000000000000000000c': '000000000000000000000000000000000000000c',
-  '000000000000000000000000000000000000000d': '000000000000000000000000000000000000000d',
-  '000000000000000000000000000000000000000e': '000000000000000000000000000000000000000e',
-  '000000000000000000000000000000000000000f': '000000000000000000000000000000000000000f',
-  '0000000000000000000000000000000000000010': '0000000000000000000000000000000000000010',
-  '0000000000000000000000000000000000000011': '0000000000000000000000000000000000000011',
-  '0000000000000000000000000000000000000012': '0000000000000000000000000000000000000012',
-  '0000000000000000000000000000000000000014': '0000000000000000000000000000000000000014',
-}
-
-const precompileAvailability: PrecompileAvailability = {
-  '0000000000000000000000000000000000000001': {
-    type: PrecompileAvailabilityCheck.Hardfork,
-    param: Hardfork.Chainstart,
-  },
-  '0000000000000000000000000000000000000002': {
-    type: PrecompileAvailabilityCheck.Hardfork,
-    param: Hardfork.Chainstart,
-  },
-  [ripemdPrecompileAddress]: {
-    type: PrecompileAvailabilityCheck.Hardfork,
-    param: Hardfork.Chainstart,
-  },
-  '0000000000000000000000000000000000000004': {
-    type: PrecompileAvailabilityCheck.Hardfork,
-    param: Hardfork.Chainstart,
-  },
-  '0000000000000000000000000000000000000005': {
-    type: PrecompileAvailabilityCheck.Hardfork,
-    param: Hardfork.Byzantium,
-  },
-  '0000000000000000000000000000000000000006': {
-    type: PrecompileAvailabilityCheck.Hardfork,
-    param: Hardfork.Byzantium,
-  },
-  '0000000000000000000000000000000000000007': {
-    type: PrecompileAvailabilityCheck.Hardfork,
-    param: Hardfork.Byzantium,
-  },
-  '0000000000000000000000000000000000000008': {
-    type: PrecompileAvailabilityCheck.Hardfork,
-    param: Hardfork.Byzantium,
-  },
-  '0000000000000000000000000000000000000009': {
-    type: PrecompileAvailabilityCheck.Hardfork,
-    param: Hardfork.Istanbul,
-  },
-  '000000000000000000000000000000000000000a': {
-    type: PrecompileAvailabilityCheck.EIP,
-    param: 2537,
-  },
-  '000000000000000000000000000000000000000b': {
-    type: PrecompileAvailabilityCheck.EIP,
-    param: 2537,
-  },
-  '000000000000000000000000000000000000000c': {
-    type: PrecompileAvailabilityCheck.EIP,
-    param: 2537,
-  },
-  '000000000000000000000000000000000000000d': {
-    type: PrecompileAvailabilityCheck.EIP,
-    param: 2537,
-  },
-  '000000000000000000000000000000000000000f': {
-    type: PrecompileAvailabilityCheck.EIP,
-    param: 2537,
-  },
-  '000000000000000000000000000000000000000e': {
-    type: PrecompileAvailabilityCheck.EIP,
-    param: 2537,
-  },
-  '0000000000000000000000000000000000000010': {
-    type: PrecompileAvailabilityCheck.EIP,
-    param: 2537,
-  },
-  '0000000000000000000000000000000000000011': {
-    type: PrecompileAvailabilityCheck.EIP,
-    param: 2537,
-  },
-  '0000000000000000000000000000000000000012': {
-    type: PrecompileAvailabilityCheck.EIP,
-    param: 2537,
-  },
-  '000000000000000000000000000000000000000a-kzg': {
-    type: PrecompileAvailabilityCheck.EIP,
-    param: 4844,
-  },
-  '000000000000000000000000000000000000000b-beaconroot': {
-    type: PrecompileAvailabilityCheck.EIP,
-    param: 4788,
-  },
-}
-
-function getPrecompile(tag: string, common: Common): PrecompileFunc {
-  if (precompiles[tag] !== undefined) {
-    const availability = precompileAvailability[tag]
-    if (
-      (availability.type === PrecompileAvailabilityCheck.Hardfork &&
-        common.gteHardfork(availability.param)) ||
-      (availability.type === PrecompileAvailabilityCheck.EIP &&
-        common.isActivatedEIP(availability.param))
-    ) {
-      return precompiles[tag]
-    }
-  }
-  return precompiles['']
+  '0000000000000000000000000000000000000013': precompile13,
+  '0000000000000000000000000000000000000014': precompile14,
 }
 
 type DeletePrecompile = {
@@ -220,15 +259,18 @@ function getActivePrecompiles(
       )
     }
   }
-  for (const tag in precompiles) {
-    const addressString = addressMap[tag]
-    if (precompileMap.has(addressString)) {
+  for (const entry of precompileEntries) {
+    if (precompileMap.has(entry.address)) {
       continue
     }
+    const type = entry.check.type
 
-    const precompileFunc = getPrecompile(tag, common)
-    if (precompileFunc !== undefined) {
-      precompileMap.set(addressString, precompileFunc)
+    if (
+      (type === PrecompileAvailabilityCheck.Hardfork && common.gteHardfork(entry.check.param)) ||
+      (entry.check.type === PrecompileAvailabilityCheck.EIP &&
+        common.isActivatedEIP(entry.check.param))
+    ) {
+      precompileMap.set(entry.address, entry.precompile)
     }
   }
   return precompileMap
