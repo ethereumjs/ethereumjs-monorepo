@@ -16,6 +16,7 @@
   },
   "license": "MPL-2.0",
   "author": "mjbecze (mb@ethdev.com)",
+  "type": "commonjs",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "exports": {
@@ -38,7 +39,7 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "npx vitest run --browser.name=webkit --browser.provider=playwright --browser.headless",
+    "test:browser": "npx vitest run --config=vitest.config.browser.ts --browser.name=webkit --browser.provider=playwright --browser.headless",
     "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },

@@ -1,7 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 
-import { isTerminator } from '../../util/hex.js'
-import { bytesToNibbles } from '../../util/nibbles.js'
+import { isTerminator } from '../util/hex.js'
+import { bytesToNibbles } from '../util/nibbles.js'
 
 import { BranchNode } from './branch.js'
 import { ExtensionNode } from './extension.js'

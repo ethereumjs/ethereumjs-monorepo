@@ -26,7 +26,7 @@
       "email": "Holger.Drewes@gmail.com"
     }
   ],
-  "type": "module",
+  "type": "commonjs",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "exports": {
@@ -49,12 +49,12 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "npx vitest run --browser.name=webkit --browser.provider=playwright --browser.headless",
+    "test:browser": "npx vitest run --browser.name=chrome --browser.headless",
     "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
     "@ethereumjs/util": "^8.0.6",
-    "crc-32": "^1.2.0"
+    "crc": "^4.3.2"
   }
 }
