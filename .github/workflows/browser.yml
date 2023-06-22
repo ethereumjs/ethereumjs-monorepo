@@ -35,8 +35,8 @@ jobs:
       - run: npx playwright install-deps
 
       - run: npm run test:browser -w=@ethereumjs/rlp
-#     - run: npm run test:browser -w=@ethereumjs/util
-#     Util: random tests fail with an odd "unable to import a module" error
+#     Util: provider test skipped (access control)
+      - run: npm run test:browser -w=@ethereumjs/util
       - run: npm run test:browser -w=@ethereumjs/common
 #     Trie: several tests not passing yet
 #     - run: npm run test:browser -w=@ethereumjs/trie
