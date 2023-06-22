@@ -1,6 +1,6 @@
 import type { ExecResult } from '../evm.js'
 import type { EVMInterface } from '../types.js'
-import type { Common } from '@ethereumjs/common'
+import type { Common, StateManagerInterface } from '@ethereumjs/common'
 import type { debug } from 'debug'
 
 export interface PrecompileFunc {
@@ -13,4 +13,5 @@ export interface PrecompileInput {
   _common: Common
   _EVM: EVMInterface
   _debug?: debug.Debugger
+  stateManager: StateManagerInterface
 }
