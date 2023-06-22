@@ -37,7 +37,7 @@ jobs:
       - run: npm run test:browser -w=@ethereumjs/rlp
 #      - run: npm run test:browser -w=@ethereumjs/util
 #     Util: random tests fail with an odd "unable to import a module" error
-     - run: npm run test:browser -w=@etheruemjs/common
+      - run: npm run test:browser -w=@ethereumjs/common
 #     Trie: several tests not passing yet
 #     - run: npm run test:browser -w=@ethereumjs/trie
       - run: npm run test:browser -w=@ethereumjs/tx
