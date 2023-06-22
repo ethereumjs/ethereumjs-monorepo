@@ -465,51 +465,6 @@ export class Block {
 
   /**
    * Validates transaction signatures and minimum gas requirements.
-   * @returns True if all transactions are valid, false otherwise
-   */
-  transactionsAreValid(): boolean {
-    let dataGasUsed = BigInt(0)
-    const dataGasLimit = this._common.param('gasConfig', 'maxDataGasPerBlock')
-    const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
-
-    for (let tx of this.transactions) {
-      if (tx.isValid() === false) {
-        return false
-      }
-      if (this._common.isActivatedEIP(1559) === true) {
-        if (tx.supports(Capability.EIP1559FeeMarket)) {
-          tx = tx as FeeMarketEIP1559Transaction
-          if (tx.maxFeePerGas < this.header.baseFeePerGas!) {
-            return false
-          }
-        } else {
-          tx = tx as LegacyTransaction
-          if (tx.gasPrice < this.header.baseFeePerGas!) {
-            return false
-          }
-        }
-      }
-      if (this._common.isActivatedEIP(4844) === true) {
-        if (tx instanceof BlobEIP4844Transaction) {
-          dataGasUsed += BigInt(tx.numBlobs()) * dataGasPerBlob
-          if (dataGasUsed > dataGasLimit) {
-            return false
-          }
-        }
-      }
-    }
-
-    if (this._common.isActivatedEIP(4844) === true) {
-      if (dataGasUsed !== this.header.dataGasUsed) {
-        return false
-      }
-    }
-
-    return true
-  }
-
-  /**
-   * Validates transaction signatures and minimum gas requirements.
    * @returns {string[]} an array of error strings
    */
   getTransactionsValidationErrors(): string[] {
@@ -556,6 +511,16 @@ export class Block {
     }
 
     return errors
+  }
+
+  /**
+   * Validates transaction signatures and minimum gas requirements.
+   * @returns True if all transactions are valid, false otherwise
+   */
+  transactionsAreValid(): boolean {
+    const errors = this.getTransactionsValidationErrors()
+
+    return errors.length === 0
   }
 
   /**
