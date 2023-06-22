@@ -3,7 +3,7 @@ import { Account, isHexPrefixed, toBytes, unpadBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
-import { Trie } from '../trie/index.js'
+import { Trie } from '../trie.js'
 
 import type { AccountState, GenesisState } from '@ethereumjs/util'
 

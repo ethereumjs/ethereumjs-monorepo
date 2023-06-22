@@ -18,6 +18,7 @@
   "author": "g11tech <gajinder@g11.in>",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
+  "type": "commonjs",
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
@@ -37,10 +38,9 @@
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
-    "tape": "tape -r ts-node/register",
-    "test": "npm run test:node && npm run test:browser",
-    "test:browser": "karma start karma.conf.js",
-    "test:node": "npm run tape -- ./test/*.spec.ts",
+    "test": "npm run test:node",
+    "test:browser": "vitest run test/* --browser.name=chrome --browser.headless",
+    "test:node": "vitest run test/*",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {

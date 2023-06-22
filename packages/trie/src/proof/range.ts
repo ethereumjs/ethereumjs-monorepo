@@ -1,6 +1,7 @@
 import { equalsBytes } from 'ethereum-cryptography/utils.js'
 
-import { BranchNode, ExtensionNode, LeafNode, Trie } from '../trie/index.js'
+import { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
+import { Trie } from '../trie.js'
 import { nibblesCompare, nibblestoBytes } from '../util/nibbles.js'
 
 import type { HashKeysFunction, Nibbles, TrieNode } from '../types.js'
