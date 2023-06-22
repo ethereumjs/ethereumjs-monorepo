@@ -39,8 +39,7 @@ jobs:
       - run: npm run test:browser -w=@ethereumjs/common
       - run: npm run test:browser -w=@ethereumjs/trie
       - run: npm run test:browser -w=@ethereumjs/tx
-#     Block: serveral tests not passing yet
-#     - run: npm run test:browser -w=@ethereumjs/block
+      - run: npm run test:browser -w=@ethereumjs/block
 #     No browser tests for devp2p
 #     Blockchain: strange errors, needs another look
 #     - run: npm run test:browser -w=@ethereumjs/blockchain
