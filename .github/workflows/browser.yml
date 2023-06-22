@@ -42,7 +42,7 @@ jobs:
       - run: npm run test:browser -w=@ethereumjs/block
 #     No browser tests for devp2p
 #     Blockchain: strange errors, needs another look
-#     - run: npm run test:browser -w=@ethereumjs/blockchain
+      - run: npm run test:browser -w=@ethereumjs/blockchain
 #     No browser tests for ethash
 #     EVM: several tests not passing yet
 #     - run: cd ../evm && npm run test:browser
