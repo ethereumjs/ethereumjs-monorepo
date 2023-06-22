@@ -1,10 +1,10 @@
 import { Readable } from 'readable-stream'
 
-import { BranchNode, LeafNode } from '../trie/index.js'
+import { BranchNode, LeafNode } from '../node/index.js'
 
 import { nibblestoBytes } from './nibbles.js'
 
-import type { Trie } from '../trie/index.js'
+import type { Trie } from '../trie.js'
 import type { FoundNodeFunction } from '../types.js'
 
 export class TrieReadStream extends Readable {

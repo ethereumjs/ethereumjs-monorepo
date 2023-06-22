@@ -1,9 +1,9 @@
 import { RLP } from '@ethereumjs/rlp'
 
-import { addHexPrefix, removeHexPrefix } from '../../util/hex.js'
-import { nibblestoBytes } from '../../util/nibbles.js'
+import { addHexPrefix, removeHexPrefix } from '../util/hex.js'
+import { nibblestoBytes } from '../util/nibbles.js'
 
-import type { Nibbles } from '../../types.js'
+import type { Nibbles } from '../types.js'
 
 export class Node {
   _nibbles: Nibbles
