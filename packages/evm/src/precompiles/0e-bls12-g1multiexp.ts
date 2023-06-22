@@ -13,7 +13,7 @@ import {
 import type { ExecResult } from '../evm.js'
 import type { PrecompileInput } from './types.js'
 
-export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
+export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
   const mcl = (<any>opts._EVM)._mcl!
 
   const inputData = opts.data
