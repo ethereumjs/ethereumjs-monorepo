@@ -137,8 +137,8 @@ export interface TransactionInterface<T extends TransactionType> {
   toCreationAddress(): boolean
   raw(): TxValuesArray[T]
   serialize(): Uint8Array
-  getMessageToSign(hashMessage: false): Uint8Array | Uint8Array[]
-  getMessageToSign(hashMessage?: true): Uint8Array
+  getMessageToSign(): Uint8Array | Uint8Array[]
+  getHashedMessageToSign(): Uint8Array
   hash(): Uint8Array
   getMessageToVerifySignature(): Uint8Array
   getValidationErrors(): string[]
