@@ -6,6 +6,9 @@ import { assert, describe, it } from 'vitest'
 
 import { Blockchain } from '../src/blockchain.js'
 
+// kiln genesis with deposit contract storage set
+import gethGenesisKilnJSON from './testdata/geth-genesis-kiln.json'
+
 async function getBlockchain(gethGenesis: any): Promise<Blockchain> {
   const common = Common.fromGethGenesis(gethGenesis, { chain: 'kiln' })
   const genesisState = parseGethGenesisState(gethGenesis)
@@ -18,9 +21,7 @@ async function getBlockchain(gethGenesis: any): Promise<Blockchain> {
 
 describe('[Utils/Parse]', () => {
   it('should properly parse genesis state from gethGenesis', async () => {
-    // kiln genesis with deposit contract storage set
-    const json = require(`./testdata/geth-genesis-kiln.json`)
-    const genesisState = parseGethGenesisState(json)
+    const genesisState = parseGethGenesisState(gethGenesisKilnJSON)
     const stateRoot = await genesisStateRoot(genesisState)
     assert.equal(
       bytesToHex(stateRoot),
@@ -30,9 +31,7 @@ describe('[Utils/Parse]', () => {
   })
 
   it('should initialize blockchain from gethGenesis', async () => {
-    // kiln genesis with deposit contract storage set
-    const json = require(`./testdata/geth-genesis-kiln.json`)
-    const blockchain = await getBlockchain(json)
+    const blockchain = await getBlockchain(gethGenesisKilnJSON)
     const genesisHash = blockchain.genesisBlock.hash()
 
     assert.equal(

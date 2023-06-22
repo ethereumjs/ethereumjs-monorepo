@@ -5,7 +5,7 @@ import { pbkdf2Sync } from 'ethereum-cryptography/pbkdf2.js'
 import { bytesToUtf8, concatBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 import * as md5 from 'js-md5'
 
-import { Wallet } from './index.js'
+import { Wallet } from './wallet.js'
 
 // evp_kdf
 

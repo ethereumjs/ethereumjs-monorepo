@@ -8,9 +8,10 @@
   },
   "include": ["src/**/*.ts"],
   "references": [
-    { "path": "../rlp/tsconfig.prod.cjs.json" },
-    { "path": "../trie/tsconfig.prod.cjs.json" },
-    { "path": "../tx/tsconfig.prod.cjs.json" },
-    { "path": "../util/tsconfig.prod.cjs.json" }
+    { "path": "../common/tsconfig.prod.esm.json" },
+    { "path": "../rlp/tsconfig.prod.esm.json" },
+    { "path": "../trie/tsconfig.prod.esm.json" },
+    { "path": "../tx/tsconfig.prod.esm.json" },
+    { "path": "../util/tsconfig.prod.esm.json" }
   ]
 }

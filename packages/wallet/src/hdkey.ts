@@ -1,6 +1,6 @@
 import { HDKey } from 'ethereum-cryptography/hdkey.js'
 
-import { Wallet } from './index.js'
+import { Wallet } from './wallet.js'
 
 export class EthereumHDKey {
   /**

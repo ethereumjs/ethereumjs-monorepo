@@ -29,9 +29,9 @@ export interface RunResult {
   logs: Log[]
   returnValue?: Uint8Array
   /**
-   * A map from the accounts that have self-destructed to the addresses to send their funds to
+   * A set of accounts to selfdestruct
    */
-  selfdestruct: { [k: string]: Uint8Array }
+  selfdestruct: Set<string>
 
   /**
    * A map which tracks which addresses were created (used in EIP 6780)
@@ -160,7 +160,7 @@ export class Interpreter {
     this._result = {
       logs: [],
       returnValue: undefined,
-      selfdestruct: {},
+      selfdestruct: new Set(),
     }
   }
 
@@ -840,7 +840,7 @@ export class Interpreter {
   }
 
   async _baseCall(msg: Message): Promise<bigint> {
-    const selfdestruct = { ...this._result.selfdestruct }
+    const selfdestruct = new Set(this._result.selfdestruct)
     msg.selfdestruct = selfdestruct
     msg.gasRefund = this._runState.gasRefund
 
@@ -882,7 +882,9 @@ export class Interpreter {
     }
 
     if (!results.execResult.exceptionError) {
-      Object.assign(this._result.selfdestruct, selfdestruct)
+      for (const addressToSelfdestructHex of selfdestruct) {
+        this._result.selfdestruct.add(addressToSelfdestructHex)
+      }
       if (this._common.isActivatedEIP(6780)) {
         // copy over the items to result via iterator
         for (const item of createdAddresses!) {
@@ -910,7 +912,7 @@ export class Interpreter {
     data: Uint8Array,
     salt?: Uint8Array
   ): Promise<bigint> {
-    const selfdestruct = { ...this._result.selfdestruct }
+    const selfdestruct = new Set(this._result.selfdestruct)
     const caller = this._env.address
     const depth = this._env.depth + 1
 
@@ -954,6 +956,12 @@ export class Interpreter {
       versionedHashes: this._env.versionedHashes,
     })
 
+    let createdAddresses: Set<string>
+    if (this._common.isActivatedEIP(6780)) {
+      createdAddresses = new Set(this._result.createdAddresses)
+      message.createdAddresses = createdAddresses
+    }
+
     const results = await this._evm.runCall({ message })
 
     if (results.execResult.logs) {
@@ -975,7 +983,15 @@ export class Interpreter {
       !results.execResult.exceptionError ||
       results.execResult.exceptionError.error === ERROR.CODESTORE_OUT_OF_GAS
     ) {
-      Object.assign(this._result.selfdestruct, selfdestruct)
+      for (const addressToSelfdestructHex of selfdestruct) {
+        this._result.selfdestruct.add(addressToSelfdestructHex)
+      }
+      if (this._common.isActivatedEIP(6780)) {
+        // copy over the items to result via iterator
+        for (const item of createdAddresses!) {
+          this._result.createdAddresses!.add(item)
+        }
+      }
       // update stateRoot on current contract
       const account = await this._stateManager.getAccount(this._env.address)
       if (!account) {
@@ -1017,11 +1033,11 @@ export class Interpreter {
 
   async _selfDestruct(toAddress: Address): Promise<void> {
     // only add to refund if this is the first selfdestruct for the address
-    if (this._result.selfdestruct[bytesToHex(this._env.address.bytes)] === undefined) {
+    if (!this._result.selfdestruct.has(bytesToHex(this._env.address.bytes))) {
       this.refundGas(this._common.param('gasPrices', 'selfdestructRefund'))
     }
 
-    this._result.selfdestruct[bytesToHex(this._env.address.bytes)] = toAddress.bytes
+    this._result.selfdestruct.add(bytesToHex(this._env.address.bytes))
 
     // Add to beneficiary balance
     let toAccount = await this._stateManager.getAccount(toAddress)

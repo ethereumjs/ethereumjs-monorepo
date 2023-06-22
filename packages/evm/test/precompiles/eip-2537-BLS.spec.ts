@@ -7,8 +7,8 @@ import { assert, describe, it } from 'vitest'
 import { EVM } from '../../src/evm.js'
 import { getActivePrecompiles } from '../../src/index.js'
 
-const precompileAddressStart = 0x0a
-const precompileAddressEnd = 0x12
+const precompileAddressStart = 0x0c
+const precompileAddressEnd = 0x14
 
 const precompiles: string[] = []
 
@@ -100,7 +100,7 @@ describe('EIP-2537 BLS tests', () => {
         stateManager: new DefaultStateManager(),
       })
       const BLS12G2MultiExp = getActivePrecompiles(common).get(
-        '000000000000000000000000000000000000000f'
+        '0000000000000000000000000000000000000011'
       )!
 
       const testVector =

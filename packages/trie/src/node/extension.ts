@@ -1,8 +1,8 @@
-import { addHexPrefix } from '../../util/hex.js'
+import { addHexPrefix } from '../util/hex.js'
 
 import { Node } from './node.js'
 
-import type { Nibbles } from '../../types.js'
+import type { Nibbles } from '../types.js'
 
 export class ExtensionNode extends Node {
   constructor(nibbles: Nibbles, value: Uint8Array) {
