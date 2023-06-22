@@ -276,6 +276,6 @@ function getActivePrecompiles(
   return precompileMap
 }
 
-export { getActivePrecompiles, precompileAvailability, precompiles, ripemdPrecompileAddress }
+export { getActivePrecompiles, precompileEntries, precompiles, ripemdPrecompileAddress }
 
 export type { AddPrecompile, CustomPrecompile, DeletePrecompile, PrecompileFunc, PrecompileInput }
