@@ -26,9 +26,9 @@ interface MessageOpts {
   isCompiled?: boolean
   salt?: Uint8Array
   /**
-   * A map of addresses to selfdestruct, see {@link Message.selfdestruct}
+   * A set of addresses to selfdestruct, see {@link Message.selfdestruct}
    */
-  selfdestruct?: { [key: string]: boolean } | { [key: string]: Uint8Array }
+  selfdestruct?: Set<string>
   /**
    * Map of addresses which were created (used in EIP 6780)
    */
@@ -53,10 +53,9 @@ export class Message {
   salt?: Uint8Array
   containerCode?: Uint8Array /** container code for EOF1 contracts - used by CODECOPY/CODESIZE */
   /**
-   * Map of addresses to selfdestruct. Key is the unprefixed address.
-   * Value is a boolean when marked for destruction and replaced with a Uint8Array containing the address where the remaining funds are sent.
+   * Set of addresses to selfdestruct. Key is the unprefixed address.
    */
-  selfdestruct?: { [key: string]: boolean } | { [key: string]: Uint8Array }
+  selfdestruct?: Set<string>
   /**
    * Map of addresses which were created (used in EIP 6780)
    */
