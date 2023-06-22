@@ -14,8 +14,6 @@ export function getGenesis(chainId: number): GenesisState | null {
   switch (chainId) {
     case Chain.Mainnet:
       return require('./genesisStates/mainnet.json')
-    case Chain.Ropsten:
-      return require('./genesisStates/ropsten.json')
     case Chain.Rinkeby:
       return require('./genesisStates/rinkeby.json')
     case Chain.Goerli:
