@@ -13,6 +13,8 @@ type Situation = {
   length: number
 }
 
+// Taken from EIP
+
 const situations: Situation[] = [
   {
     pre: '0000000000000000000000000000000000000000000000000000000000000000000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f',
@@ -28,6 +30,7 @@ const situations: Situation[] = [
     src: 0,
     length: 32,
   },
+  // For the situation below, pre/post have 1 byte less than in the current state of the EIP
   {
     pre: '0001020304050607080000000000000000000000000000000000000000000000',
     post: '0102030405060708080000000000000000000000000000000000000000000000',
@@ -35,6 +38,7 @@ const situations: Situation[] = [
     src: 1,
     length: 8,
   },
+  // For the situation below, pre/post have 1 byte less than in the current state of the EIP
   {
     pre: '0001020304050607080000000000000000000000000000000000000000000000',
     post: '0000010203040506070000000000000000000000000000000000000000000000',
