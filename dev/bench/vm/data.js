@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1687460946687,
+  "lastUpdate": 1687466368218,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "06fb9a6eadc02775524d7b6b8ec2aed9a3053b0c",
-          "message": "client: fix the newPayloadV3 validations (#2762)\n\n* client: fix the newPayloadV3 validations\r\n\r\n* fix spec",
-          "timestamp": "2023-06-08T08:41:59+02:00",
-          "tree_id": "8395c3ed23ffd8fb98f2e20cdf7742bb745b0f6a",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/06fb9a6eadc02775524d7b6b8ec2aed9a3053b0c"
-        },
-        "date": 1686206719782,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31691,
-            "range": "±4.51%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31964,
-            "range": "±2.73%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31390,
-            "range": "±2.91%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 26873,
-            "range": "±9.39%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30502,
-            "range": "±3.04%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.03%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e0282e3d02bd5d3fbd1f8ea0a1afe7a2d9440763",
+          "message": "Monorepo: More LRU updates and ESM Fixes (#2809)\n\n* GitHub Actions browser workflow file fix\r\n\r\n* Fix yaml file\r\n\r\n* Util: switch to type commonjs for main package.json, skip provider tests, re-add to browser CI run\r\n\r\n* Common: switch to type commonjs in package.json\r\n\r\n* Tx: switch to type commonjs in package.json\r\n\r\n* Trie: switch to type commonjs in package.json, require fixes, skip stream.spec.ts, activate in browser CI workflow\r\n\r\n* Add missing import path\r\n\r\n* Bring back webdriverio for additional browser testing flexibility\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Block: fixes and re-add to browser CI workflow\r\n\r\n* Blockchain: fixes\r\n\r\n* Blockchain: update LRU cache from v7 to v10\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Blockchain: move Consensus interface to types.ts (fixes Blockchain test run so might be something generally quirky and generally can't hurt anyhow)\r\n\r\n* Genesis: require -> import (only temporary, will refactored anyhow, then: no central JSON-distribution-file)\r\n\r\n* Blockchain: reactivate browser test CI workflow\r\n\r\n* Wallet fixes\r\n\r\n* Wallet: update uuid from v8 to v9, require -> import, added @types/uuid\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Wallet: move main source to dedicated file, index.ts -> wallet.ts\r\n\r\n* Wallet: rework Wallet to have its own wallet.ts file and a distributing index.ts file\r\n\r\n* Wallet: add vitest.config.browser.ts, exclude index.spec.ts, add to CI browser test workflow\r\n\r\n* StateManager: switch type to commonjs in package.json, add vitest.config.browser.ts file, exlude two failing test files, activate CI browser test workflow\r\n\r\n* Util: test other browser test provider and browser in CI\r\n\r\n* Do not cancel browser workflow in progress to see all results\r\n\r\n* Partially switch back to (default) webdriverio provider, remove fail-fast from browser CI workflow, other fixes\r\n\r\n* Update crc dep\r\n\r\n* Remove sed from tsbuild\r\n\r\n* Trie: remove src/trie subfolder\r\n\r\n* Trie: adopt paths to new structure\r\n\r\n* Fix trie export\r\n\r\n* Switch genesisStates to js and migrate tape to vitest\r\n\r\n* Merge remote-tracking branch 'origin/master' into more-lru-updates-and-esm-fixes\r\n\r\n* fix trie test again\r\n\r\n* Remove broken karma test run\r\n\r\n* Remove karma tsconfig\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: acolytec3 <konjou@gmail.com>",
+          "timestamp": "2023-06-22T16:01:17-04:00",
+          "tree_id": "d994478459671f3841f8e31c89618978b4697679",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e0282e3d02bd5d3fbd1f8ea0a1afe7a2d9440763"
+        },
+        "date": 1687466367470,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 32454,
+            "range": "±5.58%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 32932,
+            "range": "±2.54%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 32323,
+            "range": "±2.79%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 27252,
+            "range": "±9.54%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 31198,
+            "range": "±2.83%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
