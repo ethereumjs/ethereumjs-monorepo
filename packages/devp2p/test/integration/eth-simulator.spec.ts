@@ -47,7 +47,7 @@ describe('ETH simulator tests', () => {
       }
 
       const c1 = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-      const c2 = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.London })
+      const c2 = new Common({ chain: Chain.Goerli, hardfork: Hardfork.London })
       util.twoPeerMsgExchange(it, opts, capabilities, [c1, c2], 27126)
     })
   })

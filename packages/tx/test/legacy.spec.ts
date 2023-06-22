@@ -316,27 +316,6 @@ describe('[Transaction]', () => {
     }
   })
 
-  it('sign(), serialize(): serialize correctly after being signed with EIP155 Signature for tx created on ropsten', () => {
-    const txRaw = [
-      '0x1',
-      '0x02540be400',
-      '0x5208',
-      '0xd7250824390ec5c8b71d856b5de895e271170d9d',
-      '0x0de0b6b3a7640000',
-      '0x',
-    ]
-    const privateKey = hexStringToBytes(
-      'DE3128752F183E8930D7F00A2AAA302DCB5E700B2CBA2D8CA5795660F07DEFD5'
-    )
-    const common = new Common({ chain: 3 })
-    const tx = LegacyTransaction.fromValuesArray(txRaw.map(toBytes), { common })
-    const signedTx = tx.sign(privateKey)
-    assert.equal(
-      bytesToHex(signedTx.serialize()),
-      'f86c018502540be40082520894d7250824390ec5c8b71d856b5de895e271170d9d880de0b6b3a76400008029a0d3512c68099d184ccf54f44d9d6905bff303128574b663dcf10b4c726ddd8133a0628acc8f481dea593f13309dfc5f0340f83fdd40cf9fbe47f782668f6f3aec74'
-    )
-  })
-
   it('sign(), verifySignature(): should ignore any previous signature when decided if EIP155 should be used in a new one', () => {
     const txData: TxData[TransactionType.Legacy] = {
       data: '0x7cf5dab00000000000000000000000000000000000000000000000000000000000000005',

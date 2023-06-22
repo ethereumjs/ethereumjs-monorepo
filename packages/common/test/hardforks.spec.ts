@@ -33,7 +33,7 @@ describe('[Common]: Hardfork logic', () => {
   })
 
   it('getHardforkBy() / setHardforkBy()', () => {
-    let c = new Common({ chain: Chain.Mainnet })
+    const c = new Common({ chain: Chain.Mainnet })
     let msg = 'should get HF correctly'
 
     assert.equal(c.getHardforkBy({ blockNumber: 0n }), Hardfork.Chainstart, msg)
@@ -59,9 +59,6 @@ describe('[Common]: Hardfork logic', () => {
     assert.equal(c.setHardforkBy({ blockNumber: 15050000n }), Hardfork.GrayGlacier, msg)
     // merge is now specified at 15537394 in config
     assert.equal(c.setHardforkBy({ blockNumber: 999999999999n }), Hardfork.Paris, msg)
-
-    c = new Common({ chain: Chain.Ropsten })
-    assert.equal(c.setHardforkBy({ blockNumber: 0n }), 'tangerineWhistle', msg)
   })
 
   it('should throw if no hardfork qualifies', () => {
@@ -98,25 +95,8 @@ describe('[Common]: Hardfork logic', () => {
     c.setHardfork(Hardfork.Byzantium)
   })
 
-  it('hardforkBlock()', () => {
-    let c = new Common({ chain: Chain.Ropsten })
-    let msg = 'should return the correct HF change block for byzantium (provided)'
-    assert.equal(c.hardforkBlock(Hardfork.Byzantium)!, BigInt(1700000), msg)
-
-    msg = 'should return null if HF does not exist on chain'
-    assert.equal(c.hardforkBlock('thisHardforkDoesNotExist'), null, msg)
-
-    c = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
-    msg = 'should return the correct HF change block for byzantium (set)'
-    assert.equal(c.hardforkBlock()!, BigInt(1700000), msg)
-
-    c = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Istanbul })
-    msg = 'should return the correct HF change block for istanbul (set)'
-    assert.equal(c.hardforkBlock()!, BigInt(6485846), msg)
-  })
-
   it('nextHardforkBlockOrTimestamp()', () => {
-    let c = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
+    const c = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
     let msg =
       'should work with HF set / return correct next HF block for chainstart (rinkeby: chainstart -> homestead)'
     assert.equal(c.nextHardforkBlockOrTimestamp()!, BigInt(1), msg)
@@ -130,36 +110,6 @@ describe('[Common]: Hardfork logic', () => {
 
     msg = 'should return null if next HF is not available (rinkeby: london -> shanghai)'
     assert.equal(c.nextHardforkBlockOrTimestamp(Hardfork.London), null, msg)
-
-    msg =
-      'should work correctly along the need to skip several forks (ropsten: chainstart -> (homestead) -> (dao) -> (tangerineWhistle) -> spuriousDragon)'
-    c = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
-    assert.equal(c.nextHardforkBlockOrTimestamp()!, BigInt(10), msg)
-  })
-
-  it('hardforkIsActiveOnBlock() / activeOnBlock()', () => {
-    let c = new Common({ chain: Chain.Ropsten })
-    let msg = 'Ropsten, byzantium (provided), 1700000 -> true'
-    assert.equal(c.hardforkIsActiveOnBlock(Hardfork.Byzantium, 1700000), true, msg)
-
-    msg = 'Ropsten, byzantium (provided), 1700005 -> true'
-    assert.equal(c.hardforkIsActiveOnBlock(Hardfork.Byzantium, 1700005), true, msg)
-
-    msg = 'Ropsten, byzantium (provided), 1699999 -> false'
-    assert.equal(c.hardforkIsActiveOnBlock(Hardfork.Byzantium, 1699999), false, msg)
-
-    c = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
-    msg = 'Ropsten, byzantium (set), 1700000 -> true'
-    assert.equal(c.hardforkIsActiveOnBlock(null, 1700000), true, msg)
-
-    msg = 'Ropsten, byzantium (set), 1700000 -> true (alias function)'
-    assert.equal(c.activeOnBlock(1700000), true, msg)
-
-    msg = 'Ropsten, byzantium (set), 1700005 -> true'
-    assert.equal(c.hardforkIsActiveOnBlock(null, 1700005), true, msg)
-
-    msg = 'Ropsten, byzantium (set), 1699999 -> false'
-    assert.equal(c.hardforkIsActiveOnBlock(null, 1699999), false, msg)
   })
 
   it('hardforkBlock()', () => {
@@ -177,49 +127,11 @@ describe('[Common]: Hardfork logic', () => {
     assert.equal(c.nextHardforkBlockOrTimestamp(Hardfork.Shanghai), null, msg)
   })
 
-  it('hardforkGteHardfork()', () => {
-    let c = new Common({ chain: Chain.Ropsten })
-    let msg = 'Ropsten, constantinople >= byzantium (provided) -> true'
-    assert.equal(c.hardforkGteHardfork(Hardfork.Constantinople, Hardfork.Byzantium), true, msg)
-
-    msg = 'Ropsten, dao >= chainstart (provided) -> false'
-    assert.equal(c.hardforkGteHardfork(Hardfork.Dao, Hardfork.Chainstart), false, msg)
-
-    msg = 'Ropsten, byzantium >= byzantium (provided) -> true'
-    assert.equal(c.hardforkGteHardfork(Hardfork.Byzantium, Hardfork.Byzantium), true, msg)
-
-    msg = 'Ropsten, spuriousDragon >= byzantium (provided) -> false'
-    assert.equal(c.hardforkGteHardfork(Hardfork.SpuriousDragon, Hardfork.Byzantium), false, msg)
-
-    c = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
-    msg = 'Ropsten, byzantium (set) >= spuriousDragon -> true'
-    assert.equal(c.hardforkGteHardfork(null, Hardfork.SpuriousDragon), true, msg)
-
-    msg = 'Ropsten, byzantium (set) >= spuriousDragon -> true (alias function)'
-    assert.equal(c.gteHardfork(Hardfork.SpuriousDragon), true, msg)
-
-    msg = 'Ropsten, byzantium (set) >= byzantium -> true'
-    assert.equal(c.hardforkGteHardfork(null, Hardfork.Byzantium), true, msg)
-
-    msg = 'Ropsten, byzantium (set) >= constantinople -> false'
-    assert.equal(c.hardforkGteHardfork(null, Hardfork.Constantinople), false, msg)
-  })
-
-  it('hardforkGteHardfork() ropsten', () => {
-    const c = new Common({ chain: Chain.Ropsten })
-    const msg = 'ropsten, spuriousDragon >= muirGlacier (provided) -> false'
-    assert.equal(c.hardforkGteHardfork(Hardfork.SpuriousDragon, Hardfork.MuirGlacier), false, msg)
-  })
-
   it('_calcForkHash()', () => {
     const chains: [Chain, Uint8Array][] = [
       [
         Chain.Mainnet,
         hexStringToBytes('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'),
-      ],
-      [
-        Chain.Ropsten,
-        hexStringToBytes('41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d'),
       ],
       [
         Chain.Rinkeby,

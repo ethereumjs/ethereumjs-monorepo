@@ -50,7 +50,7 @@ describe('[Block]: Header functions', () => {
   })
 
   it('Initialization -> fromHeaderData()', () => {
-    const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     let header = BlockHeader.fromHeaderData(undefined, { common })
     assert.ok(bytesToHex(header.hash()), 'genesis block should initialize')
     assert.equal(

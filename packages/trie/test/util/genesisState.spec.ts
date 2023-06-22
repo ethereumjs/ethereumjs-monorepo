@@ -15,14 +15,4 @@ describe('[Util/genesisStateRoot]', () => {
       'kiln stateRoot matches'
     )
   })
-
-  it('should correctly derive ropsten stateRoot from ethereumjs genesis', async () => {
-    const json = require(`../../../genesis/src/genesisStates/ropsten.json`)
-    const stateRoot = await genesisStateRoot(json)
-    assert.equal(
-      bytesToHex(stateRoot),
-      '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b',
-      'ropsten stateRoot matches'
-    )
-  })
 })

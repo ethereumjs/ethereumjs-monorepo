@@ -93,7 +93,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
   })
 
   it('Should provide the bootnode information in a uniform way', () => {
-    const configs = ['mainnet', 'ropsten', 'rinkeby', 'goerli']
+    const configs = ['mainnet', 'rinkeby', 'goerli']
     for (const network of configs) {
       const c = new Common({ chain: network })
       const bootnode = c.bootstrapNodes()[0]
@@ -114,7 +114,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
   })
 
   it('Should provide DNS network information in a uniform way', () => {
-    const configs = ['mainnet', 'ropsten', 'rinkeby', 'goerli']
+    const configs = ['mainnet', 'rinkeby', 'goerli']
     for (const network of configs) {
       const c = new Common({ chain: network })
       const dnsNetworks = c.dnsNetworks()

@@ -42,10 +42,6 @@ describe('stateManager', () => {
   it(`should generate the genesis state root correctly for all other chains`, async () => {
     const chains: [Chain, Uint8Array][] = [
       [
-        Chain.Ropsten,
-        hexToBytes('217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'),
-      ],
-      [
         Chain.Rinkeby,
         hexToBytes('53580584816f617295ea26c0e17641e0120cab2f0a8ffb53a866fd53aa8e8c2d'),
       ],

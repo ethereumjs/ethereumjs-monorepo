@@ -9,7 +9,6 @@ import { VM } from '../../../src/vm'
 const testCases = [
   { chain: Chain.Mainnet, hardfork: Hardfork.Istanbul, chainId: BigInt(1) },
   { chain: Chain.Mainnet, hardfork: Hardfork.Constantinople, err: EVMErrorMessage.INVALID_OPCODE },
-  { chain: Chain.Ropsten, hardfork: Hardfork.Istanbul, chainId: BigInt(3) },
 ]
 
 // CHAINID PUSH8 0x00 MSTORE8 PUSH8 0x01 PUSH8 0x00 RETURN

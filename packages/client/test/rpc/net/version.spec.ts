@@ -18,9 +18,9 @@ function compareResult(t: any, result: any, chainId: any) {
   t.equal(result, chainId, msg)
 }
 
-tape(`${method}: call on ropsten`, async (t) => {
+tape(`${method}: call on mainnnet`, async (t) => {
   const manager = createManager(
-    createClient({ opened: true, commonChain: new Common({ chain: Chain.Ropsten }) })
+    createClient({ opened: true, commonChain: new Common({ chain: Chain.Mainnet }) })
   )
   const server = startRPC(manager.getMethods())
 
