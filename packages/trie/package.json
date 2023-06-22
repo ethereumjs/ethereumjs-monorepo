@@ -22,7 +22,7 @@
     "Aaron Kumavis <http://aaron.kumavis.me/> (https://github.com/kumavis)"
   ],
   "main": "dist/cjs/index.js",
-  "type": "module",
+  "type": "commonjs",
   "module": "dist/esm/index.js",
   "exports": {
     ".": {
@@ -46,7 +46,7 @@
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "profiling": "tsc --target ES5 benchmarks/random.ts && 0x benchmarks/random.js",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "npx vitest run --browser.name=webkit --browser.provider=playwright --browser.headless",
+    "test:browser": "npx vitest run --config=./vitest.config.browser.ts --browser.name=webkit --browser.provider=playwright --browser.headless",
     "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },

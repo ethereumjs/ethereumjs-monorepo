@@ -1,13 +1,14 @@
 import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import ropstenJSON from '../../../genesis/src/genesisStates/ropsten.json'
 import { genesisStateRoot } from '../../src/util/genesisState'
+// kiln genesis with deposit contract storage set
+import gethGenesisKilnJSON from '../fixtures/geth-genesis-kiln.json'
 
 describe('[Util/genesisStateRoot]', () => {
   it('should properly generate stateRoot from gethGenesis', async () => {
-    // kiln genesis with deposit contract storage set
-    const json = require(`../../../blockchain/test/testdata/geth-genesis-kiln.json`)
-    const genesisState = parseGethGenesisState(json)
+    const genesisState = parseGethGenesisState(gethGenesisKilnJSON)
     const stateRoot = await genesisStateRoot(genesisState)
     assert.equal(
       bytesToHex(stateRoot),
@@ -17,8 +18,7 @@ describe('[Util/genesisStateRoot]', () => {
   })
 
   it('should correctly derive ropsten stateRoot from ethereumjs genesis', async () => {
-    const json = require(`../../../genesis/src/genesisStates/ropsten.json`)
-    const stateRoot = await genesisStateRoot(json)
+    const stateRoot = await genesisStateRoot(ropstenJSON)
     assert.equal(
       bytesToHex(stateRoot),
       '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b',
