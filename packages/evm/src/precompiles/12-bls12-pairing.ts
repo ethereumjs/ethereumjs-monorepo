@@ -12,7 +12,7 @@ import type { PrecompileInput } from './types.js'
 const zeroBuffer = new Uint8Array(32)
 const oneBuffer = concatBytesNoTypeCheck(new Uint8Array(31), hexToBytes('01'))
 
-export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
+export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
   const mcl = (<any>opts._EVM)._mcl!
 
   const inputData = opts.data
