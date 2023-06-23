@@ -8,12 +8,11 @@ import { hexToBytes } from 'ethereum-cryptography/utils'
 import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 
-import { VM } from '../../src'
-import { BlockBuilder } from '../../src/buildBlock'
+import { BlockBuilder, VM } from '../../dist/cjs'
 import { getCommon } from '../tester/config'
 import { makeBlockFromEnv, setupPreConditions } from '../util'
 
-import type { PostByzantiumTxReceipt } from '../../src'
+import type { PostByzantiumTxReceipt } from '../../dist/cjs'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { NestedUint8Array } from '@ethereumjs/util'
 
