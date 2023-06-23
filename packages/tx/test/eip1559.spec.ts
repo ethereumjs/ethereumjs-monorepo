@@ -145,7 +145,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
     assert.ok(signedTxn.common.eips().includes(2537), 'signed tx common is taken from tx.common')
   })
 
-  it('unsigned tx -> getMessageToSign()', () => {
+  it('unsigned tx -> getMessageToSign()/getHashedMessageToSign()', () => {
     const unsignedTx = FeeMarketEIP1559Transaction.fromTxData(
       {
         data: hexStringToBytes('010200'),
@@ -158,13 +158,13 @@ describe('[FeeMarketEIP1559Transaction]', () => {
     const expectedHash = hexStringToBytes(
       'fa81814f7dd57bad435657a05eabdba2815f41e3f15ddd6139027e7db56b0dea'
     )
-    assert.deepEqual(unsignedTx.getMessageToSign(true), expectedHash), 'correct hashed version'
+    assert.deepEqual(unsignedTx.getHashedMessageToSign(), expectedHash), 'correct hashed version'
 
     const expectedSerialization = hexStringToBytes(
       '02f85904808080809401010101010101010101010101010101010101018083010200f838f7940101010101010101010101010101010101010101e1a00101010101010101010101010101010101010101010101010101010101010101'
     )
     assert.deepEqual(
-      unsignedTx.getMessageToSign(false),
+      unsignedTx.getMessageToSign(),
       expectedSerialization,
       'correct serialized unhashed version'
     )

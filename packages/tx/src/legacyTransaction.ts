@@ -183,8 +183,21 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     return RLP.encode(this.raw())
   }
 
-  private _getMessageToSign() {
-    const values = [
+  /**
+   * Returns the raw unsigned tx, which can be used
+   * to sign the transaction (e.g. for sending to a hardware wallet).
+   *
+   * Note: the raw message message format for the legacy tx is not RLP encoded
+   * and you might need to do yourself with:
+   *
+   * ```javascript
+   * import { RLP } from '@ethereumjs/rlp'
+   * const message = tx.getMessageToSign()
+   * const serializedMessage = RLP.encode(message)) // use this for the HW wallet input
+   * ```
+   */
+  getMessageToSign(): Uint8Array[] {
+    const message = [
       bigIntToUnpaddedBytes(this.nonce),
       bigIntToUnpaddedBytes(this.gasPrice),
       bigIntToUnpaddedBytes(this.gasLimit),
@@ -194,38 +207,21 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     ]
 
     if (this.supports(Capability.EIP155ReplayProtection)) {
-      values.push(bigIntToUnpaddedBytes(this.common.chainId()))
-      values.push(unpadBytes(toBytes(0)))
-      values.push(unpadBytes(toBytes(0)))
+      message.push(bigIntToUnpaddedBytes(this.common.chainId()))
+      message.push(unpadBytes(toBytes(0)))
+      message.push(unpadBytes(toBytes(0)))
     }
 
-    return values
+    return message
   }
 
   /**
-   * Returns the unsigned tx (hashed or raw), which can be used
+   * Returns the hashed serialized unsigned tx, which can be used
    * to sign the transaction (e.g. for sending to a hardware wallet).
-   *
-   * Note: the raw message message format for the legacy tx is not RLP encoded
-   * and you might need to do yourself with:
-   *
-   * ```javascript
-   * import { RLP } from '@ethereumjs/rlp'
-   * const message = tx.getMessageToSign(false)
-   * const serializedMessage = RLP.encode(message)) // use this for the HW wallet input
-   * ```
-   *
-   * @param hashMessage - Return hashed message if set to true (default: true)
    */
-  getMessageToSign(hashMessage: false): Uint8Array[]
-  getMessageToSign(hashMessage?: true): Uint8Array
-  getMessageToSign(hashMessage = true) {
-    const message = this._getMessageToSign()
-    if (hashMessage) {
-      return keccak256(RLP.encode(message))
-    } else {
-      return message
-    }
+  getHashedMessageToSign() {
+    const message = this.getMessageToSign()
+    return keccak256(RLP.encode(message))
   }
 
   /**
@@ -283,8 +279,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
       const msg = this._errorMsg('This transaction is not signed')
       throw new Error(msg)
     }
-    const message = this._getMessageToSign()
-    return keccak256(RLP.encode(message))
+    return this.getHashedMessageToSign()
   }
 
   /**

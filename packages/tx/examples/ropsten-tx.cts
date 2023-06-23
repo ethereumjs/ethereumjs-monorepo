@@ -10,7 +10,7 @@ const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Petersburg 
 const tx = LegacyTransaction.fromSerializedTx(txData, { common })
 
 if (
-  tx.validate() &&
+  tx.isValid() &&
   tx.getSenderAddress().toString() === '0x9dfd2d2b2ed960923f7bf2e8883d73f213f3b24b'
 ) {
   console.log('Correctly created the tx')

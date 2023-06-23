@@ -456,10 +456,32 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     )
   }
 
-  getMessageToSign(hashMessage = true): Uint8Array {
+  /**
+   * Returns the raw serialized unsigned tx, which can be used
+   * to sign the transaction (e.g. for sending to a hardware wallet).
+   *
+   * Note: in contrast to the legacy tx the raw message format is already
+   * serialized and doesn't need to be RLP encoded any more.
+   *
+   * ```javascript
+   * const serializedMessage = tx.getMessageToSign() // use this for the HW wallet input
+   * ```
+   */
+  getMessageToSign(): Uint8Array {
     const base = this.raw().slice(0, 11)
     const message = concatBytes(TRANSACTION_TYPE_BYTES, RLP.encode(base))
-    return hashMessage ? keccak256(message) : message
+    return message
+  }
+
+  /**
+   * Returns the hashed serialized unsigned tx, which can be used
+   * to sign the transaction (e.g. for sending to a hardware wallet).
+   *
+   * Note: in contrast to the legacy tx the raw message format is already
+   * serialized and doesn't need to be RLP encoded any more.
+   */
+  getHashedMessageToSign(): Uint8Array {
+    return keccak256(this.getMessageToSign())
   }
 
   /**
@@ -485,7 +507,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
   }
 
   getMessageToVerifySignature(): Uint8Array {
-    return this.getMessageToSign()
+    return this.getHashedMessageToSign()
   }
 
   /**

@@ -378,7 +378,7 @@ Note: in contrast to the legacy tx the raw message format is already
 serialized and doesn't need to be RLP encoded any more.
 
 ```javascript
-const serializedMessage = tx.getMessageToSign(false) // use this for the HW wallet input
+const serializedMessage = tx.getMessageToSign() // use this for the HW wallet input
 ```
 
 #### Parameters
