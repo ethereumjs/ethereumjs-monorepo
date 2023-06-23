@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1687507152202,
+  "lastUpdate": 1687509162426,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "4fe13f420b62a3c0b66cf1c181c517bec98bafd5",
-          "message": "block: add missing tx type (#2769)",
-          "timestamp": "2023-06-10T09:28:37-04:00",
-          "tree_id": "4da8312671ac357f24c1ca118b719ba5914e4760",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4fe13f420b62a3c0b66cf1c181c517bec98bafd5"
-        },
-        "date": 1686403908436,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31870,
-            "range": "±4.90%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 32168,
-            "range": "±2.17%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31794,
-            "range": "±2.33%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 30948,
-            "range": "±2.47%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 25545,
-            "range": "±9.83%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±8.61%",
             "unit": "ops/sec",
             "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": false,
+          "id": "c51d81ee8b0d500677fc9492430ae05170dd3960",
+          "message": "tx: simplify validate methods (#2792)\n\n* tx: remove validate method and add isValid and getValidationErrors\r\n\r\n* tx: update usage of validate()\r\n\r\n* vm: update usage of tx.validate()\r\n\r\n* block: update usage of tx.validate() and unify validation method naming pattern\r\n\r\n* devp2p: update usage of validation methods\r\n\r\n* block: add missing await\r\n\r\n* block: fix tests\r\n\r\n* tx: split getMessageToSign into two methods\r\n\r\n* tx: split getMessageToSign into two methods\r\n\r\n* tx: update tx tests\r\n\r\n* tx: update docs\r\n\r\n* tx: refactor isValid logic\r\n\r\n* block: refactor transactionsAreValid logic\r\n\r\n* client: fix test\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-06-23T10:28:26+02:00",
+          "tree_id": "b615c8d5f4bb70ec3bd2cd4dd9ab26aca489f67f",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c51d81ee8b0d500677fc9492430ae05170dd3960"
+        },
+        "date": 1687509161694,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 32232,
+            "range": "±4.88%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 32353,
+            "range": "±2.80%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31945,
+            "range": "±2.89%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 26540,
+            "range": "±10.90%",
+            "unit": "ops/sec",
+            "extra": "70 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30277,
+            "range": "±3.08%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
