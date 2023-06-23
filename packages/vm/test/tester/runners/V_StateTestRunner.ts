@@ -26,52 +26,52 @@ export class VStateTestRunner implements VitestRunnerInterface {
       ...config,
     }
   }
-  public onBeforeCollect?(paths: string[]): unknown {
+  public onBeforeCollect?(_paths: string[]): unknown {
     return
   }
-  public onCollected?(files: File[]): unknown {
+  public onCollected?(_files: File[]): unknown {
     return
   }
-  public onCancel?(reason: CancelReason): unknown {
+  public onCancel?(_reason: CancelReason): unknown {
     return
   }
-  public onBeforeRunTest?(test: Test): unknown {
+  public onBeforeRunTest?(_test: Test): unknown {
     return
   }
-  public onBeforeTryTest?(test: Test, retryCount: number): unknown {
+  public onBeforeTryTest?(_test: Test, _retryCount: number): unknown {
     return
   }
-  public onAfterRunTest?(test: Test): unknown {
+  public onAfterRunTest?(_test: Test): unknown {
     return
   }
-  public onAfterTryTest?(test: Test, retryCount: number): unknown {
+  public onAfterTryTest?(_test: Test, _retryCount: number): unknown {
     return
   }
-  public onBeforeRunSuite?(suite: Suite): unknown {
+  public onBeforeRunSuite?(_suite: Suite): unknown {
     return
   }
-  public onAfterRunSuite?(suite: Suite): unknown {
+  public onAfterRunSuite?(_suite: Suite): unknown {
     return
   }
-  public runSuite?(suite: Suite): Promise<void> {
+  public runSuite?(_suite: Suite): Promise<void> {
     return Promise.resolve()
   }
-  public runTest?(test: Test): Promise<void> {
+  public runTest?(_test: Test): Promise<void> {
     return Promise.resolve()
   }
-  public onTaskUpdate?(task: [string, TaskResult | undefined][]): Promise<void> {
+  public onTaskUpdate?(_task: [string, TaskResult | undefined][]): Promise<void> {
     return Promise.resolve()
   }
-  public onBeforeRun?(files: File[]): unknown {
+  public onBeforeRun?(_files: File[]): unknown {
     return
   }
-  public onAfterRun?(files: File[]): unknown {
+  public onAfterRun?(_files: File[]): unknown {
     return
   }
   public extendTestContext?(context: TestContext): TestContext {
     return context
   }
-  public importFile(filepath: string, source: VitestRunnerImportSource): unknown {
+  public importFile(_filepath: string, _source: VitestRunnerImportSource): unknown {
     return
   }
 }

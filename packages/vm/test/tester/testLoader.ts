@@ -73,32 +73,14 @@ function skipTest(testName: string, skipList = []) {
  * @param onFile callback function invoked with contents of specified file (or an error message)
  */
 export function getTestFromSource(file: string, onFile: Function) {
-  const stream = fs.createReadStream(file)
-  let contents = ''
-  let test: any = null
+  const stream = fs.readFileSync(file)
+  const contents = stream.toString()
+  const test: any = JSON.parse(contents)
+  const testName = Object.keys(test)[0]
+  const testData = test[testName]
+  testData.testName = testName
 
-  stream
-    .on('data', function (data: string) {
-      contents += data
-    })
-    .on('error', function (err: Error) {
-      // eslint-disable-next-line no-console
-      console.warn('♦︎ [WARN] Please check if submodule `ethereum-tests` is properly loaded.')
-      onFile(err)
-    })
-    .on('end', function () {
-      try {
-        test = JSON.parse(contents)
-      } catch (e: any) {
-        onFile(e)
-      }
-
-      const testName = Object.keys(test)[0]
-      const testData = test[testName]
-      testData.testName = testName
-
-      onFile(null, testData)
-    })
+  onFile(null, testData)
 }
 
 /**
