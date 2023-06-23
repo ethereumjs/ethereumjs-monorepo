@@ -1,11 +1,12 @@
 import { short } from '@ethereumjs/util'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
-import bn128 from 'rustbn.js'
 
 import { OOGResult } from '../evm.js'
 
 import type { ExecResult } from '../evm.js'
 import type { PrecompileInput } from './types.js'
+
+const bn128 = require('rustbn.js')
 
 export function precompile08(opts: PrecompileInput): ExecResult {
   const inputData = opts.data
