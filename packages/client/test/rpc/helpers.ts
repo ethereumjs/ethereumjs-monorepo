@@ -45,7 +45,7 @@ type createClientArgs = {
 }
 export function startRPC(
   methods: any,
-  opts: StartRPCOpts = { port: 3001 },
+  opts: StartRPCOpts = { port: 0 },
   withEngineMiddleware?: WithEngineMiddleware
 ) {
   const { port, wsServer } = opts
