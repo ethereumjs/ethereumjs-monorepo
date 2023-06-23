@@ -444,7 +444,7 @@ describe('hash() and signature verification', () => {
         { common }
       )
       assert.equal(
-        bytesToHex(unsignedTx.getMessageToSign(true)),
+        bytesToHex(unsignedTx.getHashedMessageToSign()),
         '8ce8c3544ca173c0e8dd0e86319d4ebfe649e15a730137a6659ba3a721a9ff8b',
         'produced the correct transaction hash'
       )
@@ -513,7 +513,7 @@ describe('Network wrapper deserialization test', () => {
       )
       assert.ok(equalsBytes(deserializedTx.kzgProofs![0], proofs[0]), 'proofs should match')
 
-      const unsignedHash = bytesToHex(deserializedTx.getMessageToSign())
+      const unsignedHash = bytesToHex(deserializedTx.getHashedMessageToSign())
       const hash = bytesToHex(deserializedTx.hash())
       const networkSerialized = bytesToHex(deserializedTx.serializeNetworkWrapper())
       const serialized = bytesToHex(deserializedTx.serialize())

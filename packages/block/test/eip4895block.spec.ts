@@ -130,7 +130,7 @@ describe('EIP4895 tests', () => {
       }
     )
     assert.notOk(
-      await block.validateWithdrawalsTrie(),
+      await block.withdrawalsTrieIsValid(),
       'should invalidate the empty withdrawals root'
     )
     const validHeader = BlockHeader.fromHeaderData(
@@ -148,7 +148,7 @@ describe('EIP4895 tests', () => {
         common,
       }
     )
-    assert.ok(await validBlock.validateWithdrawalsTrie(), 'should validate empty withdrawals root')
+    assert.ok(await validBlock.withdrawalsTrieIsValid(), 'should validate empty withdrawals root')
 
     const withdrawal = <WithdrawalData>{
       index: BigInt(0),
@@ -171,7 +171,7 @@ describe('EIP4895 tests', () => {
       }
     )
     assert.ok(
-      await validBlockWithWithdrawal.validateWithdrawalsTrie(),
+      await validBlockWithWithdrawal.withdrawalsTrieIsValid(),
       'should validate withdrawals root'
     )
 
@@ -196,7 +196,7 @@ describe('EIP4895 tests', () => {
       }
     )
     assert.ok(
-      await validBlockWithWithdrawal2.validateWithdrawalsTrie(),
+      await validBlockWithWithdrawal2.withdrawalsTrieIsValid(),
       'should validate withdrawals root'
     )
     assert.doesNotThrow(() => {

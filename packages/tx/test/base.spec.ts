@@ -261,10 +261,10 @@ describe('[BaseTransaction]', () => {
         const tx = txType.class.fromTxData((txFixture as any).data, { common })
         assert.equal(tx.verifySignature(), false, `${txType.name}: signature should not be valid`)
         assert.ok(
-          (<string[]>tx.validate(true)).includes('Invalid Signature'),
+          tx.getValidationErrors().includes('Invalid Signature'),
           `${txType.name}: should return an error string about not verifying signatures`
         )
-        assert.notOk(tx.validate(), `${txType.name}: should not validate correctly`)
+        assert.notOk(tx.isValid(), `${txType.name}: should not validate correctly`)
       }
     }
   })
