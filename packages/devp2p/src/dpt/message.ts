@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToInt, intToBytes } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import createDebugLogger from 'debug'
 import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
 import { bytesToHex, bytesToUtf8, concatBytes } from 'ethereum-cryptography/utils.js'
 

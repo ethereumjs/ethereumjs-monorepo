@@ -1,5 +1,5 @@
 import { bytesToInt } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import createDebugLogger from 'debug'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 import { EventEmitter } from 'events'

@@ -1,4 +1,4 @@
-import { debug as createDebugLogger } from 'debug'
+import createDebugLogger from 'debug'
 import { EventEmitter } from 'events'
 
 import { DISCONNECT_REASONS } from '../rlpx/peer.js'

@@ -14,7 +14,7 @@ import {
   short,
   zeros,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import createDebugLogger from 'debug'
 import { promisify } from 'util'
 
 import { EOF, getEOFCode } from './eof.js'

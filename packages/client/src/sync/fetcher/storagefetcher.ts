@@ -7,7 +7,7 @@ import {
   equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import createDebugLogger from 'debug'
 
 import { LevelDB } from '../../execution/level'
 import { short } from '../../util'

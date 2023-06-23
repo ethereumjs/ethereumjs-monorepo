@@ -1,7 +1,7 @@
 import { CODEHASH_PREFIX } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { bytesToHex, concatBytes, equalsBytes } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import createDebugLogger from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { Fetcher } from './fetcher'

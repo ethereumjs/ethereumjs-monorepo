@@ -1,6 +1,6 @@
 import { Trie } from '@ethereumjs/trie'
 import { Account, bigIntToHex, bytesToBigInt, bytesToHex, toBytes } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import createDebugLogger from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { ethers } from 'ethers'
 

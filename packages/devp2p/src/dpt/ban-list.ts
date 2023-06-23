@@ -1,4 +1,4 @@
-import { debug as createDebugLogger } from 'debug'
+import createDebugLogger from 'debug'
 
 import { formatLogId } from '../util.js'
 

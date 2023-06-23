@@ -1,5 +1,5 @@
 import { bytesToHex } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import createDebugLogger from 'debug'
 import { OrderedMap } from 'js-sdsl'
 import { LRUCache } from 'lru-cache'
 

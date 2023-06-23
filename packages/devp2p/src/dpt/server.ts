@@ -1,4 +1,4 @@
-import { debug as createDebugLogger } from 'debug'
+import createDebugLogger from 'debug'
 import * as dgram from 'dgram'
 import { bytesToHex } from 'ethereum-cryptography/utils.js'
 import { EventEmitter } from 'events'

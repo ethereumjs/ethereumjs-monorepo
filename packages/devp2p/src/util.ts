@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { debug as createDebugLogger } from 'debug'
+import createDebugLogger from 'debug'
 import { keccak256 as _keccak256 } from 'ethereum-cryptography/keccak.js'
 import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'

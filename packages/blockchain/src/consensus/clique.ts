@@ -1,7 +1,7 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Address, TypeOutput, bigIntToBytes, bytesToBigInt, toType } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import createDebugLogger from 'debug'
 import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
 
 import type { Blockchain } from '../index.js'

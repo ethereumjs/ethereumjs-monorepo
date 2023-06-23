@@ -14,7 +14,7 @@ import {
   intToBytes,
   short,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import createDebugLogger from 'debug'
 import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
 import { Bloom } from './bloom/index.js'

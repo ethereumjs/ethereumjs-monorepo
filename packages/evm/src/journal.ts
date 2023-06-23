@@ -6,7 +6,7 @@ import {
   stripHexPrefix,
   toBytes,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import createDebugLogger from 'debug'
 
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Account } from '@ethereumjs/util'

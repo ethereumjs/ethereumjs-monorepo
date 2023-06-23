@@ -7,7 +7,7 @@ import {
   intToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import createDebugLogger from 'debug'
 import { bytesToUtf8, hexToBytes } from 'ethereum-cryptography/utils.js'
 import { EventEmitter } from 'events'
 import * as snappy from 'snappyjs'
