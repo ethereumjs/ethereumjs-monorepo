@@ -1,4 +1,6 @@
-export const mainnetGenesis = {
+import { GenesisState } from '@ethereumjs/util'
+
+export const mainnetGenesis: GenesisState = {
   '0x000d836201318ec6899a67540690382780743280': '0xad78ebc5ac6200000',
   '0x001762430ea9c3a26e5749afdb70da5f78ddbb8c': '0xad78ebc5ac6200000',
   '0x001d14804b399c6ef80e64576f657660804fec0b': '0xe3aeb5737240a00000',

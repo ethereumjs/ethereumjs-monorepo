@@ -1,4 +1,6 @@
-export const ropstenGenesis = {
+import { GenesisState } from '@ethereumjs/util'
+
+export const ropstenGenesis: GenesisState = {
   '0x0000000000000000000000000000000000000000': '0x1',
   '0x0000000000000000000000000000000000000001': '0x1',
   '0x0000000000000000000000000000000000000002': '0x1',
