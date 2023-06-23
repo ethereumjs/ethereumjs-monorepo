@@ -125,7 +125,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   }
 
   if (tx) {
-    if (tx.validate()) {
+    if (tx.isValid()) {
       const block = makeBlockFromEnv(testData.env, { common })
 
       if (options.jsontrace === true) {

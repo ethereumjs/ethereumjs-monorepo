@@ -40,7 +40,7 @@ const privateKey = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dc
 const signedTx = tx.sign(privateKey)
 const address = Address.fromPrivateKey(privateKey)
 
-if (signedTx.validate() && signedTx.getSenderAddress().equals(address)) {
+if (signedTx.isValid() && signedTx.getSenderAddress().equals(address)) {
   console.log('Valid signature')
 } else {
   console.log('Invalid signature')

@@ -1,5 +1,6 @@
 export * from './db/index.js'
+export * from './node/index.js'
 export * from './proof/index.js'
-export * from './trie/index.js'
+export * from './trie.js'
 export * from './types.js'
 export * from './util/index.js'

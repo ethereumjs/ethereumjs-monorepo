@@ -131,21 +131,19 @@ export function isBlobEIP4844Tx(tx: TypedTransaction): tx is BlobEIP4844Transact
 export interface TransactionInterface<T extends TransactionType> {
   supports(capability: Capability): boolean
   type: number
-  validate(): boolean
-  validate(stringError: false): boolean
-  validate(stringError: true): string[]
-  validate(stringError: boolean): boolean | string[]
   getBaseFee(): bigint
   getDataFee(): bigint
   getUpfrontCost(): bigint
   toCreationAddress(): boolean
   raw(): TxValuesArray[T]
   serialize(): Uint8Array
-  getMessageToSign(hashMessage: false): Uint8Array | Uint8Array[]
-  getMessageToSign(hashMessage?: true): Uint8Array
+  getMessageToSign(): Uint8Array | Uint8Array[]
+  getHashedMessageToSign(): Uint8Array
   hash(): Uint8Array
   getMessageToVerifySignature(): Uint8Array
+  getValidationErrors(): string[]
   isSigned(): boolean
+  isValid(): boolean
   verifySignature(): boolean
   getSenderAddress(): Address
   getSenderPublicKey(): Uint8Array

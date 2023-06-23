@@ -92,9 +92,9 @@ export interface EVMRunCallOpts {
    */
   salt?: Uint8Array
   /**
-   * Addresses to selfdestruct. Defaults to none.
+   * Addresses to selfdestruct. Defaults to the empty set.
    */
-  selfdestruct?: { [k: string]: boolean }
+  selfdestruct?: Set<string>
   /**
    * Created addresses in current context. Used in EIP 6780
    */
@@ -171,9 +171,9 @@ export interface EVMRunCodeOpts {
    */
   isStatic?: boolean
   /**
-   * Addresses to selfdestruct. Defaults to none.
+   * Addresses to selfdestruct. Defaults to the empty set.
    */
-  selfdestruct?: { [k: string]: boolean }
+  selfdestruct?: Set<string>
   /**
    * The address of the account that is executing this code (`address(this)`). Defaults to the zero address.
    */
