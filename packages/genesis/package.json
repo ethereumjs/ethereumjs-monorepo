@@ -18,10 +18,31 @@
   "author": "g11tech <gajinder@g11.in>",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
+  "type": "commonjs",
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
+    },
+    "./mainnet": {
+      "import": "./dist/esm/genesisStates/mainnet.js",
+      "require": "./dist/cjs/genesisStates/mainnet.js"
+    },
+    "./goerli": {
+      "import": "./dist/esm/genesisStates/goerli.js",
+      "require": "./dist/cjs/genesisStates/goerli.js"
+    },
+    "./ropsten": {
+      "import": "./dist/esm/genesisStates/ropsten.js",
+      "require": "./dist/cjs/genesisStates/ropsten.js"
+    },
+    "./rinkeby": {
+      "import": "./dist/esm/genesisStates/rinkeby.js",
+      "require": "./dist/cjs/genesisStates/rinkeby.js"
+    },
+    "./sepolia": {
+      "import": "./dist/esm/genesisStates/sepolia.js",
+      "require": "./dist/cjs/genesisStates/sepolia.js"
     }
   },
   "files": [
@@ -37,19 +58,14 @@
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
-    "tape": "tape -r ts-node/register",
-    "test": "npm run test:node && npm run test:browser",
-    "test:browser": "karma start karma.conf.js",
-    "test:node": "npm run tape -- ./test/*.spec.ts",
+    "test": "npm run test:node",
+    "test:browser": "vitest run test/* --browser.name=chrome --browser.headless",
+    "test:node": "vitest run test/*",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
     "@ethereumjs/common": "^3.1.2",
     "@ethereumjs/util": "^8.0.6"
-  },
-  "devDependencies": {
-    "@types/async": "^2.4.1",
-    "@types/level-errors": "^3.0.0"
   },
   "engines": {
     "node": ">=16"

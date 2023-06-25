@@ -1,8 +1,8 @@
-import { BranchNode, ExtensionNode, LeafNode } from '../trie/node/index.js'
+import { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
 
 import { PrioritizedTaskExecutor } from './tasks.js'
 
-import type { Trie } from '../trie/index.js'
+import type { Trie } from '../trie.js'
 import type { FoundNodeFunction, Nibbles, TrieNode } from '../types.js'
 
 /**

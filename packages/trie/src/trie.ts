@@ -10,14 +10,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
-import { CheckpointDB } from '../db/index.js'
-import { verifyRangeProof } from '../proof/range.js'
-import { ROOT_DB_KEY } from '../types.js'
-import { Lock } from '../util/lock.js'
-import { bytesToNibbles, doKeysMatch, matchingNibbleLength } from '../util/nibbles.js'
-import { TrieReadStream as ReadStream } from '../util/readStream.js'
-import { WalkController } from '../util/walkController.js'
-
+import { CheckpointDB } from './db/index.js'
 import {
   BranchNode,
   ExtensionNode,
@@ -26,6 +19,12 @@ import {
   decodeRawNode,
   isRawNode,
 } from './node/index.js'
+import { verifyRangeProof } from './proof/range.js'
+import { ROOT_DB_KEY } from './types.js'
+import { Lock } from './util/lock.js'
+import { bytesToNibbles, doKeysMatch, matchingNibbleLength } from './util/nibbles.js'
+import { TrieReadStream as ReadStream } from './util/readStream.js'
+import { WalkController } from './util/walkController.js'
 
 import type {
   EmbeddedNode,
@@ -35,7 +34,7 @@ import type {
   TrieNode,
   TrieOpts,
   TrieOptsWithDefaults,
-} from '../types.js'
+} from './types.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
 
 interface Path {

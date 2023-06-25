@@ -168,8 +168,8 @@ describe('[Block]: block functions', () => {
   })
 
   async function testTransactionValidation(block: Block) {
-    assert.ok(block.validateTransactions())
-    assert.ok(await block.validateTransactionsTrie())
+    assert.ok(block.transactionsAreValid())
+    assert.ok(block.getTransactionsValidationErrors().length === 0)
   }
 
   it('should test transaction validation', async () => {
@@ -197,7 +197,7 @@ describe('[Block]: block functions', () => {
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     await testTransactionValidation(block)
     ;(block.transactions[0] as any).gasPrice = BigInt(0)
-    const result = block.validateTransactions(true)
+    const result = block.getTransactionsValidationErrors()
     assert.ok(
       result[0].includes('tx unable to pay base fee (non EIP-1559 tx)'),
       'should throw when legacy tx is unable to pay base fee'
@@ -208,7 +208,7 @@ describe('[Block]: block functions', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const blockRlp = toBytes(testDataPreLondon2.blocks[2].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
-    assert.equal(block.validateUnclesHash(), true)
+    assert.equal(block.uncleHashIsValid(), true)
     ;(block.header as any).uncleHash = new Uint8Array(32)
     try {
       await block.validateData()

@@ -37,7 +37,7 @@ describe('Precompiles: point evaluation', () => {
         common,
         stateManager: new DefaultStateManager(),
       })
-      const addressStr = '0000000000000000000000000000000000000014'
+      const addressStr = '000000000000000000000000000000000000000a'
       const pointEvaluation = getActivePrecompiles(common).get(addressStr)!
 
       const testCase = {
