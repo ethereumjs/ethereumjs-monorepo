@@ -14,7 +14,7 @@ import type { PrecompileInput } from './types.js'
 
 const address = Address.fromString('0x000000000000000000000000000000000000000b')
 
-export async function precompile0B_Beaconroot(opts: PrecompileInput): Promise<ExecResult> {
+export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
   const data = opts.data
 
   const gasUsed = opts._common.param('gasPrices', 'beaconrootCost')
