@@ -8,7 +8,7 @@ import { FeeMarketEIP1559Transaction } from '../src/index.js'
 import testdata from './json/eip1559.json' // Source: Besu
 
 const common = new Common({
-  chain: Chain.Rinkeby,
+  chain: Chain.Mainnet,
   hardfork: Hardfork.London,
 })
 
@@ -134,7 +134,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
     const data = testdata[0]
     const pkey = hexStringToBytes(data.privateKey)
     const txn = FeeMarketEIP1559Transaction.fromTxData(data, { common, freeze: false })
-    const newCommon = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London, eips: [2537] })
+    const newCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [2537] })
     assert.notDeepEqual(newCommon, common, 'new common is different than original common')
     Object.defineProperty(txn, 'common', {
       get() {

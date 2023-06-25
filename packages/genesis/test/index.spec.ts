@@ -5,7 +5,6 @@ import { getGenesis } from '../src/index'
 
 const chainToName: Record<Chain, string> = {
   [Chain.Mainnet]: 'mainnet',
-  [Chain.Rinkeby]: 'rinkeby',
   [Chain.Goerli]: 'goerli',
   [Chain.Sepolia]: 'sepolia',
 }

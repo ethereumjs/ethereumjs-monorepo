@@ -82,7 +82,7 @@ tape('[Miner]', async (t) => {
     }
   }
 
-  const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berlin })
+  const common = new Common({ chain: CommonChain.Mainnet, hardfork: Hardfork.Berlin })
   common.setMaxListeners(50)
   const accounts: [Address, Uint8Array][] = [[A.address, A.privateKey]]
   const config = new Config({
@@ -334,7 +334,7 @@ tape('[Miner]', async (t) => {
     t.plan(1)
     const customChainParams = { hardforks: [{ name: 'london', block: 0 }] }
     const common = Common.custom(customChainParams, {
-      baseChain: CommonChain.Rinkeby,
+      baseChain: CommonChain.Goerli,
       hardfork: Hardfork.London,
     })
     const config = new Config({
@@ -504,7 +504,7 @@ tape('[Miner]', async (t) => {
         { name: 'london', block: 3 },
       ],
     }
-    const common = Common.custom(customChainParams, { baseChain: CommonChain.Rinkeby })
+    const common = Common.custom(customChainParams, { baseChain: CommonChain.Goerli })
     common.setHardforkBy({ blockNumber: 0 })
     const config = new Config({
       transports: [],

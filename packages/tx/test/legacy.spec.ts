@@ -421,10 +421,10 @@ describe('[Transaction]', () => {
   })
 
   it('common propagates from the common of tx, not the common in TxOptions', () => {
-    const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const pkey = hexStringToBytes(txFixtures[0].privateKey)
     const txn = LegacyTransaction.fromTxData({}, { common, freeze: false })
-    const newCommon = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London, eips: [2537] })
+    const newCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [2537] })
     assert.notDeepEqual(newCommon, common, 'new common is different than original common')
     Object.defineProperty(txn, 'common', {
       get() {

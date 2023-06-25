@@ -64,12 +64,12 @@ describe('runTx tests', () => {
       let vm = await VM.create({ common })
       await simpleRun(vm, 'mainnet (PoW), london HF, default SM - should run without errors')
 
-      common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
+      common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.London })
       vm = await VM.create({
         common,
         blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),
       })
-      await simpleRun(vm, 'rinkeby (PoA), london HF, default SM - should run without errors')
+      await simpleRun(vm, 'goerli (PoA), london HF, default SM - should run without errors')
     })
 
     it('test successful hardfork matching', async () => {

@@ -49,7 +49,7 @@ const setBalance = async (vm: VM, address: Address, balance: bigint) => {
   await vm.stateManager.commit()
 }
 
-const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berlin })
+const common = new Common({ chain: CommonChain.Goerli, hardfork: Hardfork.Berlin })
 const config = new Config({
   transports: [],
   common,

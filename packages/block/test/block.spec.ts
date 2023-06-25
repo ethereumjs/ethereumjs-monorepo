@@ -135,7 +135,7 @@ describe('[Block]: block functions', () => {
   })
 
   it('should throw when trying to initialize with uncle headers on a PoA network', () => {
-    const common = new Common({ chain: Chain.Rinkeby })
+    const common = new Common({ chain: Chain.Mainnet })
     const uncleBlock = Block.fromBlockData(
       { header: { extraData: new Uint8Array(117) } },
       { common }

@@ -43,23 +43,6 @@ tape(`${method}: call on mainnet`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call on rinkeby`, async (t) => {
-  // Stub out block consensusFormatValidation checks
-  BlockHeader.prototype._consensusFormatValidation = td.func<any>()
-  const manager = createManager(
-    createClient({ opened: true, commonChain: new Common({ chain: Chain.Rinkeby }) })
-  )
-  const server = startRPC(manager.getMethods())
-
-  const req = params(method, [])
-  const expectRes = (res: any) => {
-    const { result } = res.body
-    compareResult(t, result, '4')
-  }
-  await baseRequest(t, server, req, 200, expectRes)
-  td.reset()
-})
-
 tape(`${method}: call on goerli`, async (t) => {
   const manager = createManager(
     createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })

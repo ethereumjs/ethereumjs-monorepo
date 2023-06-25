@@ -5,6 +5,8 @@ import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../s
 
 import * as gethGenesisKilnJSON from './data/geth-genesis/geth-genesis-kiln.json'
 
+import type { ChainConfig } from '../src/index.js'
+
 describe('[Common]: Hardfork logic', () => {
   it('Hardfork access', () => {
     const supportedHardforks = [
@@ -96,20 +98,22 @@ describe('[Common]: Hardfork logic', () => {
   })
 
   it('nextHardforkBlockOrTimestamp()', () => {
-    const c = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
+    const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     let msg =
-      'should work with HF set / return correct next HF block for chainstart (rinkeby: chainstart -> homestead)'
-    assert.equal(c.nextHardforkBlockOrTimestamp()!, BigInt(1), msg)
+      'should work with HF set / return correct next HF block for chainstart (mainnet: chainstart -> homestead)'
+    assert.equal(c.nextHardforkBlockOrTimestamp()!, BigInt(1150000), msg)
+
+    msg = 'should return correct next HF (mainnet: byzantium -> constantinople)'
+    assert.equal(c.nextHardforkBlockOrTimestamp(Hardfork.Byzantium)!, BigInt(7280000), msg)
+
+    const c2 = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+
+    msg = 'should return null if next HF is not available (mainnet: shanghai -> cancun)'
+    assert.equal(c2.nextHardforkBlockOrTimestamp(Hardfork.Shanghai), null, msg)
 
     msg =
-      'should correctly skip a HF where block is set to null (rinkeby: homestead -> (dao) -> tangerineWhistle)'
-    assert.equal(c.nextHardforkBlockOrTimestamp('homestead')!, BigInt(2), msg)
-
-    msg = 'should return correct next HF (rinkeby: byzantium -> constantinople)'
-    assert.equal(c.nextHardforkBlockOrTimestamp(Hardfork.Byzantium)!, BigInt(3660663), msg)
-
-    msg = 'should return null if next HF is not available (rinkeby: london -> shanghai)'
-    assert.equal(c.nextHardforkBlockOrTimestamp(Hardfork.London), null, msg)
+      'should correctly skip a HF where block is set to null (goerli: homestead -> (dao) -> tangerineWhistle)'
+    assert.equal(c2.nextHardforkBlockOrTimestamp('petersburg')!, BigInt(1561651), msg)
   })
 
   it('hardforkBlock()', () => {
@@ -132,10 +136,6 @@ describe('[Common]: Hardfork logic', () => {
       [
         Chain.Mainnet,
         hexStringToBytes('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'),
-      ],
-      [
-        Chain.Rinkeby,
-        hexStringToBytes('6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177'),
       ],
       [
         Chain.Goerli,

@@ -130,7 +130,7 @@ describe('BlockBuilder', () => {
       ),
     }
 
-    const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Istanbul })
     // extraData: [vanity, activeSigner, seal]
     const extraData = concatBytesNoTypeCheck(
       new Uint8Array(32),
