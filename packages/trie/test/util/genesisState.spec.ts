@@ -1,4 +1,3 @@
-import { getGenesis } from '@ethereumjs/genesis'
 import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
