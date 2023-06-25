@@ -82,7 +82,54 @@ tape('[Miner]', async (t) => {
     }
   }
 
-  const common = new Common({ chain: CommonChain.Mainnet, hardfork: Hardfork.Berlin })
+  // const common = new Common({ chain: CommonChain.Mainnet, hardfork: Hardfork.Berlin })
+
+  // const common = Common.custom({ chainId: 4 })
+  // common.setHardfork(Hardfork.Berlin)
+
+  const consensusConfig = {
+    clique: {
+      period: 10,
+      epoch: 30000,
+    },
+  }
+  const defaultChainData = {
+    config: {
+      chainId: 123456,
+      homesteadBlock: 0,
+      eip150Block: 0,
+      eip150Hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      eip155Block: 0,
+      eip158Block: 0,
+      byzantiumBlock: 0,
+      constantinopleBlock: 0,
+      petersburgBlock: 0,
+      istanbulBlock: 0,
+      berlinBlock: 0,
+      londonBlock: 0,
+      ...consensusConfig,
+    },
+    nonce: '0x0',
+    timestamp: '0x614b3731',
+    gasLimit: '0x47b760',
+    difficulty: '0x1',
+    mixHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+    coinbase: '0x0000000000000000000000000000000000000000',
+    number: '0x0',
+    gasUsed: '0x0',
+    parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+    baseFeePerGas: 7,
+  }
+  const addr = A.address.toString().slice(2)
+
+  const extraData = '0x' + '0'.repeat(64) + addr + '0'.repeat(130)
+  const chainData = {
+    ...defaultChainData,
+    extraData,
+    alloc: { [addr]: { balance: '0x10000000000000000000' } },
+  }
+  const common = Common.fromGethGenesis(chainData, { chain: 'devnet', hardfork: Hardfork.London })
+
   common.setMaxListeners(50)
   const accounts: [Address, Uint8Array][] = [[A.address, A.privateKey]]
   const config = new Config({
