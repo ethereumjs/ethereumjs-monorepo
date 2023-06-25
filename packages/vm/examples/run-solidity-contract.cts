@@ -14,7 +14,7 @@ const solc = require('solc')
 const INITIAL_GREETING = 'Hello, World!'
 const SECOND_GREETING = 'Hola, Mundo!'
 
-const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Istanbul })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 const block = Block.fromBlockData({ header: { extraData: new Uint8Array(97) } }, { common })
 
 /**

@@ -14,7 +14,7 @@ const PRIVATE_KEY = randomBytes(32)
 const GENESIS_TD = 1
 const GENESIS_HASH = hexToBytes('6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177')
 
-const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 const bootstrapNodes = common.bootstrapNodes()
 const BOOTNODES = bootstrapNodes.map((node: any) => {
   return {
