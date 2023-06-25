@@ -3,8 +3,6 @@ import { Chain } from '@ethereumjs/common'
 import type { GenesisState } from '@ethereumjs/util'
 
 import { mainnetGenesis } from './genesisStates/mainnet.js'
-import { ropstenGenesis } from './genesisStates/ropsten.js'
-import { rinkebyGenesis } from './genesisStates/rinkeby.js'
 import { goerliGenesis } from './genesisStates/goerli.js'
 import { sepoliaGenesis } from './genesisStates/sepolia.js'
 
@@ -19,7 +17,7 @@ export function getGenesis(chainId: number): GenesisState | null {
   // (high memory usage by large mainnet.json genesis state file)
   switch (chainId) {
     case Chain.Mainnet:
-      return require('./genesisStates/mainnet.json')
+      return mainnetGenesis
     case Chain.Goerli:
       return goerliGenesis
     case Chain.Sepolia:
