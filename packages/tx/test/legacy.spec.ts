@@ -135,9 +135,15 @@ describe('[Transaction]', () => {
     })
   })
 
-  it('validate() -> should validate with string option', () => {
+  it('getValidationErrors() -> should validate', () => {
     for (const tx of transactions) {
-      assert.equal(typeof tx.validate(true)[0], 'string')
+      assert.equal(typeof tx.getValidationErrors()[0], 'string')
+    }
+  })
+
+  it('isValid() -> should validate', () => {
+    for (const tx of transactions) {
+      assert.equal(typeof tx.isValid(), 'boolean')
     }
   })
 
@@ -205,7 +211,7 @@ describe('[Transaction]', () => {
     assert.ok(equalsBytes(s1, s2))
   })
 
-  it('hash() / getMessageToSign(true) / getMessageToSign(false)', () => {
+  it('hash() / getHashedMessageToSign() / getMessageToSign()', () => {
     const common = new Common({
       chain: Chain.Mainnet,
       hardfork: Hardfork.TangerineWhistle,
@@ -230,10 +236,10 @@ describe('[Transaction]', () => {
       hexStringToBytes('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa')
     )
     assert.deepEqual(
-      tx.getMessageToSign(),
+      tx.getHashedMessageToSign(),
       hexStringToBytes('61e1ec33764304dddb55348e7883d4437426f44ab3ef65e6da1e025734c03ff0')
     )
-    assert.equal(tx.getMessageToSign(false).length, 6)
+    assert.equal(tx.getMessageToSign().length, 6)
     assert.deepEqual(
       tx.hash(),
       hexStringToBytes('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa')
@@ -251,21 +257,21 @@ describe('[Transaction]', () => {
       '0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4'
     )
     assert.equal(
-      bytesToHex(tx.getMessageToSign()),
+      bytesToHex(tx.getHashedMessageToSign()),
       'f97c73fdca079da7652dbc61a46cd5aeef804008e057be3e712c43eac389aaf0'
     )
   })
 
-  it("getMessageToSign(), getSenderPublicKey() (implicit call) -> verify EIP155 signature based on Vitalik's tests", () => {
+  it("getHashedMessageToSign(), getSenderPublicKey() (implicit call) -> verify EIP155 signature based on Vitalik's tests", () => {
     for (const tx of txFixturesEip155) {
       const pt = LegacyTransaction.fromSerializedTx(toBytes(tx.rlp))
-      assert.equal(bytesToHex(pt.getMessageToSign()), tx.hash)
+      assert.equal(bytesToHex(pt.getHashedMessageToSign()), tx.hash)
       assert.equal(bytesToPrefixedHexString(pt.serialize()), tx.rlp)
       assert.equal(pt.getSenderAddress().toString(), '0x' + tx.sender)
     }
   })
 
-  it('getMessageToSign(), sign(), getSenderPublicKey() (implicit call) -> verify EIP155 signature before and after signing', () => {
+  it('getHashedMessageToSign(), sign(), getSenderPublicKey() (implicit call) -> verify EIP155 signature before and after signing', () => {
     // Inputs and expected results for this test are taken directly from the example in https://eips.ethereum.org/EIPS/eip-155
     const txRaw = [
       '0x09',
@@ -289,7 +295,7 @@ describe('[Transaction]', () => {
     )
     const signedTx = pt.sign(privateKey)
     assert.equal(
-      bytesToHex(signedTx.getMessageToSign()),
+      bytesToHex(signedTx.getHashedMessageToSign()),
       'daf5a779ae972f972197303d7b574746c7ef83eadac0f2791ad23db92e4c8e53'
     )
     assert.equal(

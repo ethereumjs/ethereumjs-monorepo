@@ -1,8 +1,4 @@
 {
   "extends": "../../config/tsconfig.json",
-  "include": ["src/**/*.ts", "src/**/*.json", "test/**/*.ts"],
-  "compilerOptions": {
-    "types": ["node"],
-    "typeRoots": ["node_modules/@types"]
-  }
+  "include": ["src/**/*.ts", "test/**/*.ts"]
 }

@@ -96,13 +96,13 @@ describe('[fromRPC]:', () => {
   it('should create a block with uncles', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const block = blockFromRpc(blockDataWithUncles, [uncleBlockData], { common })
-    assert.ok(block.validateUnclesHash())
+    assert.ok(block.uncleHashIsValid())
   })
 
   it('should create a block with EIP-4896 withdrawals', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
     const block = blockFromRpc(blockDataWithWithdrawals, [], { common })
-    assert.ok(block.validateWithdrawalsTrie())
+    assert.ok(block.withdrawalsTrieIsValid())
   })
 
   it('should create a block header with the correct hash when EIP-4896 withdrawals are present', () => {

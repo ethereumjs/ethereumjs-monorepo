@@ -250,7 +250,7 @@ describe('transaction validation tests', () => {
 
       assert.ok(
         blockWithTooManyBlobs
-          .validateTransactions(true)
+          .getTransactionsValidationErrors()
           .join(' ')
           .includes('exceed maximum data gas per block'),
         'tx erros includes correct error message when too many blobs in a block'

@@ -136,7 +136,7 @@ rlpx.on('peer:added', (peer) => {
 
         for (const item of payload) {
           const tx = TransactionFactory.fromBlockBodyData(item)
-          if (isValidTx(tx)) onNewTx(tx, peer)
+          if (tx.isValid()) onNewTx(tx, peer)
         }
 
         break
@@ -352,15 +352,11 @@ function onNewBlock(block: Block, peer: Peer) {
   for (const tx of block.transactions) onNewTx(tx, peer)
 }
 
-function isValidTx(tx: TypedTransaction) {
-  return tx.validate()
-}
-
 async function isValidBlock(block: Block) {
   return (
-    block.validateUnclesHash() &&
-    block.transactions.every(isValidTx) &&
-    block.validateTransactionsTrie()
+    block.uncleHashIsValid() &&
+    block.transactions.every(({ isValid }) => isValid()) &&
+    block.transactionsTrieIsValid()
   )
 }
 

@@ -22,8 +22,7 @@ import {
 import { DBManager } from './db/manager.js'
 import { DBTarget } from './db/operation.js'
 
-import type { Consensus } from './consensus/index.js'
-import type { BlockchainInterface, BlockchainOptions, OnBlock } from './types.js'
+import type { BlockchainInterface, BlockchainOptions, Consensus, OnBlock } from './types.js'
 import type { BlockData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
@@ -593,6 +592,13 @@ export class Blockchain implements BlockchainInterface {
 
       if (header.baseFeePerGas! !== expectedBaseFee) {
         throw new Error(`Invalid block: base fee not correct ${header.errorStr()}`)
+      }
+    }
+
+    if (header._common.isActivatedEIP(4844) === true) {
+      const expectedExcessDataGas = parentHeader.calcNextExcessDataGas()
+      if (header.excessDataGas !== expectedExcessDataGas) {
+        throw new Error(`expected data gas: ${expectedExcessDataGas}, got: ${header.excessDataGas}`)
       }
     }
   }

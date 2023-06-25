@@ -717,7 +717,7 @@ export class EVM implements EVMInterface {
       this.journal
     )
     if (message.selfdestruct) {
-      interpreter._result.selfdestruct = message.selfdestruct as { [key: string]: Uint8Array }
+      interpreter._result.selfdestruct = message.selfdestruct
     }
     if (message.createdAddresses) {
       interpreter._result.createdAddresses = message.createdAddresses
@@ -739,7 +739,7 @@ export class EVM implements EVMInterface {
       result = {
         ...result,
         logs: [],
-        selfdestruct: {},
+        selfdestruct: new Set(),
         createdAddresses: new Set(),
       }
     }
@@ -799,7 +799,7 @@ export class EVM implements EVMInterface {
         isCompiled: opts.isCompiled,
         isStatic: opts.isStatic,
         salt: opts.salt,
-        selfdestruct: opts.selfdestruct ?? {},
+        selfdestruct: opts.selfdestruct ?? new Set(),
         createdAddresses: opts.createdAddresses ?? new Set(),
         delegatecall: opts.delegatecall,
         versionedHashes: opts.versionedHashes,
@@ -869,7 +869,7 @@ export class EVM implements EVMInterface {
     // (this only happens the Frontier/Chainstart fork)
     // then the error is dismissed
     if (err && err.error !== ERROR.CODESTORE_OUT_OF_GAS) {
-      result.execResult.selfdestruct = {}
+      result.execResult.selfdestruct = new Set()
       result.execResult.createdAddresses = new Set()
       result.execResult.gasRefund = BigInt(0)
     }
@@ -915,7 +915,7 @@ export class EVM implements EVMInterface {
       caller: opts.caller,
       value: opts.value,
       depth: opts.depth,
-      selfdestruct: opts.selfdestruct ?? {},
+      selfdestruct: opts.selfdestruct ?? new Set(),
       isStatic: opts.isStatic,
       versionedHashes: opts.versionedHashes,
     })
@@ -1075,9 +1075,9 @@ export interface ExecResult {
    */
   logs?: Log[]
   /**
-   * A map from the accounts that have self-destructed to the addresses to send their funds to
+   * A set of accounts to selfdestruct
    */
-  selfdestruct?: { [k: string]: Uint8Array }
+  selfdestruct?: Set<string>
   /**
    * Map of addresses which were created (used in EIP 6780)
    */
