@@ -5,8 +5,6 @@ import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../s
 
 import * as gethGenesisKilnJSON from './data/geth-genesis/geth-genesis-kiln.json'
 
-import type { ChainConfig } from '../src/index.js'
-
 describe('[Common]: Hardfork logic', () => {
   it('Hardfork access', () => {
     const supportedHardforks = [
