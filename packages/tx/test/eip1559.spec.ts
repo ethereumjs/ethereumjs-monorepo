@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { TWO_POW256, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
