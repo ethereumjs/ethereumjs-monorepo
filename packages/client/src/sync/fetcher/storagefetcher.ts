@@ -136,8 +136,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         <any>proof
       )
     } catch (err) {
-      this.debug(`verifyRangeProof failure: ${(err as any).stack}`)
-      throw Error((err as any).message)
+      this.debug(`verifyRangeProof failure: ${(err as Error).stack}`)
+      throw Error((err as Error).message)
     }
   }
 
@@ -167,8 +167,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       )
       return equalsBytes(trie.root(), root)
     } catch (err) {
-      this.debug(`verifyRangeProof failure: ${(err as any).stack}`)
-      throw Error((err as any).message)
+      this.debug(`verifyRangeProof failure: ${(err as Error).stack}`)
+      throw Error((err as Error).message)
     }
   }
 
@@ -202,7 +202,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       return setLengthLeft(bigIntToBytes(TOTAL_RANGE_END), 32)
     }
     const { first, count } = task.storageRequests[0]
-    const limit = bigIntToBytes((first + (BigInt(count as any) as any)) as any)
+    const limit = bigIntToBytes(first + BigInt(count))
     return setLengthLeft(limit, 32)
   }
 
@@ -453,7 +453,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       )
       tasks.unshift({
         storageRequests: this.storageRequests, // TODO limit max number of accounts per single fetch request
-      } as any)
+      })
       this.storageRequests = [] // greedilly request as many account slots by requesting all known ones
       return tasks
     } else if (this.fragmentedRequests.length > 0) {
@@ -482,7 +482,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         first: myFirst,
         count: max,
       }
-      tasks.push(task as any)
+      tasks.push(task)
       myFirst += BigInt(max)
       myCount -= BigInt(max)
       pushedCount += BigInt(max)
@@ -491,8 +491,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       const task = {
         storageRequests: [
           {
-            accountHash: storageRequest?.accountHash,
-            storageRoot: storageRequest?.storageRoot,
+            accountHash: storageRequest!.accountHash,
+            storageRoot: storageRequest!.storageRoot,
             first: myFirst,
             count: myCount,
           },
@@ -500,7 +500,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         first: myFirst,
         count: myCount,
       }
-      tasks.push(task as any)
+      tasks.push(task)
       myFirst += BigInt(myCount)
       pushedCount += myCount
       myCount = BigInt(0)
@@ -511,11 +511,11 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     if (myCount !== BigInt(0) && startedWith === whereFirstwas) {
       // create new fragmented request to keep track of where to start building the next set of tasks for fetching the same account
       this.fragmentedRequests.unshift({
-        accountHash: storageRequest?.accountHash,
-        storageRoot: storageRequest?.storageRoot,
+        accountHash: storageRequest!.accountHash,
+        storageRoot: storageRequest!.storageRoot,
         first: myFirst,
         count: storageRequest!.count - pushedCount,
-      } as StorageRequest)
+      })
     }
     debugStr += ` limit=${short(setLengthLeft(bigIntToBytes(startedWith + pushedCount), 32))}`
     this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)
@@ -547,19 +547,19 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         if (this.storageRequests.length > 0) {
           fullJob = {
             task: { storageRequests: this.storageRequests },
-          } as Job<JobTask, StorageData[], StorageData>
+          } as Job<JobTask, StorageData[][], StorageData[]>
         } else if (this.fragmentedRequests.length > 0) {
           fullJob = {
             task: {
               storageRequests: [this.fragmentedRequests[0]],
             },
-          } as Job<JobTask, StorageData[], StorageData>
+          } as Job<JobTask, StorageData[][], StorageData[]>
         } else {
           this.debug('No requests left to queue')
           return
         }
-        const origin = this.getOrigin(fullJob as any)
-        const limit = this.getLimit(fullJob as any)
+        const origin = this.getOrigin(fullJob)
+        const limit = this.getLimit(fullJob)
 
         const tasks = this.tasks()
         for (const task of tasks) {
@@ -567,7 +567,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         }
         this.debug(
           `Fetcher pending with ${
-            (fullJob as any)!.task.storageRequests.length
+            fullJob!.task.storageRequests.length
           } accounts requested and origin=${short(origin)} limit=${short(limit)}`
         )
       }
@@ -589,8 +589,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
   ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
     const stepBack = BigInt(0)
     const destroyFetcher =
-      !(error.message as string).includes(`InvalidRangeProof`) &&
-      !(error.message as string).includes(`InvalidStorageRange`)
+      !error.message.includes(`InvalidRangeProof`) && !error.message.includes(`InvalidStorageRange`)
     const banPeer = true
     return { destroyFetcher, banPeer, stepBack }
   }

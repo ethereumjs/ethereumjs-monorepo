@@ -1,11 +1,9 @@
 import { KeyEncoding, ValueEncoding, bytesToHex, hexStringToBytes } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { LRUCache } from 'lru-cache'
 
-import type { Checkpoint, CheckpointDBOpts } from '../types'
+import type { Checkpoint, CheckpointDBOpts } from '../types.js'
 import type { BatchDBOp, DB, DelBatch, PutBatch } from '@ethereumjs/util'
-import type LRUCache from 'lru-cache'
-
-const LRU = require('lru-cache')
 
 /**
  * DB is a thin wrapper around the underlying levelup db,
@@ -16,7 +14,17 @@ export class CheckpointDB implements DB {
   public db: DB<string, string>
   public readonly cacheSize: number
 
-  protected _cache?: LRUCache<string, Uint8Array | undefined>
+  // Starting with lru-cache v8 undefined and null are not allowed any more
+  // as cache values. At the same time our design works well, since undefined
+  // indicates for us that we know that the value is not present in the
+  // underlying trie database as well (so it carries real value).
+  //
+  // Solution here seems therefore adequate, other solutions would rather
+  // be some not so clean workaround.
+  //
+  // (note that @ts-ignore doesn't work since stripped on declaration (.d.ts) files)
+  protected _cache?: LRUCache<string, any>
+  // protected _cache?: LRUCache<string, Uint8Array | undefined>
 
   _stats = {
     cache: {
@@ -41,7 +49,8 @@ export class CheckpointDB implements DB {
     this.checkpoints = []
 
     if (this.cacheSize > 0) {
-      this._cache = new LRU({
+      // @ts-ignore
+      this._cache = new LRUCache({
         max: this.cacheSize,
         updateAgeOnGet: true,
       })
@@ -252,7 +261,7 @@ export class CheckpointDB implements DB {
   /**
    * @inheritDoc
    */
-  copy(): CheckpointDB {
+  shallowCopy(): CheckpointDB {
     return new CheckpointDB({ db: this.db, cacheSize: this.cacheSize })
   }
 

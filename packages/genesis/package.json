@@ -1,0 +1,73 @@
+{
+  "name": "@ethereumjs/genesis",
+  "version": "0.0.1",
+  "description": "A module to provide genesis states of well known networks",
+  "keywords": [
+    "ethereum",
+    "genesis"
+  ],
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/genesis#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+genesis%22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "license": "MPL-2.0",
+  "author": "g11tech <gajinder@g11.in>",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "type": "commonjs",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./mainnet": {
+      "import": "./dist/esm/genesisStates/mainnet.js",
+      "require": "./dist/cjs/genesisStates/mainnet.js"
+    },
+    "./goerli": {
+      "import": "./dist/esm/genesisStates/goerli.js",
+      "require": "./dist/cjs/genesisStates/goerli.js"
+    },
+    "./ropsten": {
+      "import": "./dist/esm/genesisStates/ropsten.js",
+      "require": "./dist/cjs/genesisStates/ropsten.js"
+    },
+    "./rinkeby": {
+      "import": "./dist/esm/genesisStates/rinkeby.js",
+      "require": "./dist/cjs/genesisStates/rinkeby.js"
+    },
+    "./sepolia": {
+      "import": "./dist/esm/genesisStates/sepolia.js",
+      "require": "./dist/cjs/genesisStates/sepolia.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "../../config/cli/ts-build.sh",
+    "clean": "../../config/cli/clean-package.sh",
+    "coverage": "../../config/cli/coverage.sh",
+    "docs:build": "typedoc --options typedoc.js",
+    "lint": "../../config/cli/lint.sh",
+    "lint:diff": "../../config/cli/lint-diff.sh",
+    "lint:fix": "../../config/cli/lint-fix.sh",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
+    "test": "npm run test:node",
+    "test:browser": "vitest run test/* --browser.name=chrome --browser.headless",
+    "test:node": "vitest run test/*",
+    "tsc": "../../config/cli/ts-compile.sh"
+  },
+  "dependencies": {
+    "@ethereumjs/common": "^3.1.2",
+    "@ethereumjs/util": "^8.0.6"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

@@ -1,43 +1,38 @@
 import { Hardfork } from '@ethereumjs/common'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { getCommon } from '../../tester/config'
 
-tape('bloom', (t: tape.Test) => {
-  t.test('should initialize common with the right hardfork', (st) => {
+describe('bloom', () => {
+  it('should initialize common with the right hardfork', () => {
     const common = getCommon('byzantium')
-    st.ok(common.hardfork() === Hardfork.Byzantium)
-    st.end()
+    assert.ok(common.hardfork() === Hardfork.Byzantium)
   })
-  t.test('should initialize common with the right hardfork uppercased', (st) => {
+  it('should initialize common with the right hardfork uppercased', () => {
     let common = getCommon('Byzantium')
-    st.ok(common.hardfork() === Hardfork.Byzantium)
+    assert.ok(common.hardfork() === Hardfork.Byzantium)
     common = getCommon('BYZANTIUM')
-    st.ok(common.hardfork() === Hardfork.Byzantium)
-    st.end()
+    assert.ok(common.hardfork() === Hardfork.Byzantium)
   })
-  t.test('should always activate EIP 3607', (st) => {
+  it('should always activate EIP 3607', () => {
     let common = getCommon('byzantium')
-    st.ok(common.isActivatedEIP(3607))
+    assert.ok(common.isActivatedEIP(3607))
     common = getCommon('ArrowGlacierToMergeAtDiffC0000')
-    st.ok(common.isActivatedEIP(3607))
+    assert.ok(common.isActivatedEIP(3607))
     common = getCommon('ByzantiumToConstantinopleFixAt5')
-    st.ok(common.isActivatedEIP(3607))
-    st.end()
+    assert.ok(common.isActivatedEIP(3607))
   })
-  t.test('should be able to activate hardforks with EIPs enabled', (st) => {
+  it('should be able to activate hardforks with EIPs enabled', () => {
     let common = getCommon('byzantium+2537')
-    st.ok(common.isActivatedEIP(2537))
+    assert.ok(common.isActivatedEIP(2537))
     common = getCommon('byzantium+2537+2929')
-    st.ok(common.isActivatedEIP(2537))
-    st.ok(common.isActivatedEIP(2929))
-    st.end()
+    assert.ok(common.isActivatedEIP(2537))
+    assert.ok(common.isActivatedEIP(2929))
   })
-  t.test('should be able to activate transition forks', (st) => {
-    st.doesNotThrow(() => getCommon('ByzantiumToConstantinopleFixAt5'))
-    st.end()
+  it('should be able to activate transition forks', () => {
+    assert.doesNotThrow(() => getCommon('ByzantiumToConstantinopleFixAt5'))
   })
-  t.test('should be able to activate merge transition fork with the correct TTD set', (st) => {
+  it('should be able to activate merge transition fork with the correct TTD set', () => {
     const forks = [
       { hf: 'arrowGlacier', TTD: 20000 },
       { hf: 'london', TTD: 20000 },
@@ -46,13 +41,11 @@ tape('bloom', (t: tape.Test) => {
     forks.map((testCase) => {
       const str = testCase.hf + 'ToMergeAtDiff' + testCase.TTD.toString(16)
       const common = getCommon(str)
-      st.ok(common.hardfork() === testCase.hf)
-      st.ok(common.hardforkTTD('paris') === BigInt(testCase.TTD))
+      assert.ok(common.hardfork() === testCase.hf)
+      assert.ok(common.hardforkTTD('paris') === BigInt(testCase.TTD))
     })
-    st.end()
   })
-  t.test('should throw on a non-existing fork', (st) => {
-    st.throws(() => getCommon('NonExistingFork'))
-    st.end()
+  it('should throw on a non-existing fork', () => {
+    assert.throws(() => getCommon('NonExistingFork'))
   })
 })

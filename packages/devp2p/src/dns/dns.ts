@@ -1,8 +1,8 @@
 import { debug as createDebugLogger } from 'debug'
 
-import { ENR } from './enr'
+import { ENR } from './enr.js'
 
-import type { PeerInfo } from '../dpt'
+import type { PeerInfo } from '../dpt/index.js'
 
 let dns: any
 try {

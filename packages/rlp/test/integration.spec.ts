@@ -1,59 +1,61 @@
 import { exec } from 'child_process'
-import * as tape from 'tape'
 import { promisify } from 'util'
+import { assert, describe, it } from 'vitest'
 import * as vm from 'vm'
 
-import { RLP } from '../src'
+import { RLP } from '../src/index.js'
 
 import * as official from './fixture/rlptest.json'
-import { bytesToUtf8 } from './utils'
+import { bytesToUtf8 } from './utils.js'
 
-tape('Distribution', (t) => {
-  t.test('should be able to execute functionality from distribution build', (st) => {
+const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
+
+describe('Distribution', () => {
+  it('should be able to execute functionality from distribution build', () => {
     const encodedSelf = RLP.encode('a')
-    st.deepEqual(bytesToUtf8(encodedSelf), 'a')
-    st.deepEqual(encodedSelf.length, 1)
-    st.end()
+    assert.deepEqual(bytesToUtf8(encodedSelf), 'a')
+    assert.deepEqual(encodedSelf.length, 1)
   })
 })
 
 const execAsync = promisify(exec)
 
-tape('CLI command', (t) => {
-  t.test('should be able to run CLI command', async (st) => {
+describe.skipIf(isBrowser)('CLI command', () => {
+  it('should be able to run CLI command', async () => {
     const result = await execAsync('./bin/rlp encode "[ 5 ]"')
     const resultFormatted = result.stdout.trim()
-    st.deepEqual(resultFormatted, '0xc105')
-    st.end()
+    assert.deepEqual(resultFormatted, '0xc105')
   })
 
-  t.test('should return valid values for official tests', { timeout: 10000 }, async (st) => {
-    for (const [testName, test] of Object.entries(official.tests)) {
-      const { in: incoming, out } = test
+  it(
+    'should return valid values for official tests',
+    async () => {
+      for (const [testName, test] of Object.entries(official.tests)) {
+        const { in: incoming, out } = test
 
-      // skip if testing a big number
-      if ((incoming as any)[0] === '#') {
-        continue
+        // skip if testing a big number
+        if ((incoming as any)[0] === '#') {
+          continue
+        }
+
+        const json = JSON.stringify(incoming)
+        const encodeResult = await execAsync(`./bin/rlp encode '${json}'`)
+        const encodeResultTrimmed = encodeResult.stdout.trim()
+        assert.deepEqual(encodeResultTrimmed, out.toLowerCase(), `should pass encoding ${testName}`)
       }
-
-      const json = JSON.stringify(incoming)
-      const encodeResult = await execAsync(`./bin/rlp encode '${json}'`)
-      const encodeResultTrimmed = encodeResult.stdout.trim()
-      st.deepEqual(encodeResultTrimmed, out.toLowerCase(), `should pass encoding ${testName}`)
-    }
-    st.end()
-  })
+    },
+    { timeout: 10000 }
+  )
 })
 
-tape('Cross-frame', (t) => {
-  t.test('should be able to encode Arrays across stack frames', (st) => {
-    st.deepEqual(
+describe('Cross-frame', () => {
+  it('should be able to encode Arrays across stack frames', () => {
+    assert.deepEqual(
       vm.runInNewContext(
         "Array.from(RLP.encode(['dog', 'god', 'cat'])).map(n => n.toString(16).padStart(2, '0')).join('')",
         { RLP }
       ),
       'cc83646f6783676f6483636174'
     )
-    st.end()
   })
 })

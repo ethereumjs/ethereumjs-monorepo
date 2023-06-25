@@ -9,15 +9,21 @@ import {
   unpadBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { BaseTransaction } from './baseTransaction'
-import { Capability } from './types'
+import { BaseTransaction } from './baseTransaction.js'
+import { Capability, TransactionType } from './types.js'
 
-import type { JsonTx, TxData, TxOptions, TxValuesArray } from './types'
+import type {
+  TxData as AllTypesTxData,
+  TxValuesArray as AllTypesTxValuesArray,
+  JsonTx,
+  TxOptions,
+} from './types.js'
 import type { Common } from '@ethereumjs/common'
 
-const TRANSACTION_TYPE = 0
+type TxData = AllTypesTxData[TransactionType.Legacy]
+type TxValuesArray = AllTypesTxValuesArray[TransactionType.Legacy]
 
 function meetsEIP155(_v: bigint, chainId: bigint) {
   const v = Number(_v)
@@ -28,7 +34,7 @@ function meetsEIP155(_v: bigint, chainId: bigint) {
 /**
  * An Ethereum non-typed (legacy) transaction
  */
-export class Transaction extends BaseTransaction<Transaction> {
+export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
   public readonly gasPrice: bigint
 
   public readonly common: Common
@@ -42,7 +48,7 @@ export class Transaction extends BaseTransaction<Transaction> {
    * - All parameters are optional and have some basic default values
    */
   public static fromTxData(txData: TxData, opts: TxOptions = {}) {
-    return new Transaction(txData, opts)
+    return new LegacyTransaction(txData, opts)
   }
 
   /**
@@ -78,7 +84,7 @@ export class Transaction extends BaseTransaction<Transaction> {
 
     validateNoLeadingZeroes({ nonce, gasPrice, gasLimit, value, v, r, s })
 
-    return new Transaction(
+    return new LegacyTransaction(
       {
         nonce,
         gasPrice,
@@ -102,7 +108,7 @@ export class Transaction extends BaseTransaction<Transaction> {
    * varying data types.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
-    super({ ...txData, type: TRANSACTION_TYPE }, opts)
+    super({ ...txData, type: TransactionType.Legacy }, opts)
 
     this.common = this._validateTxV(this.v, opts.common)
 
@@ -177,8 +183,21 @@ export class Transaction extends BaseTransaction<Transaction> {
     return RLP.encode(this.raw())
   }
 
-  private _getMessageToSign() {
-    const values = [
+  /**
+   * Returns the raw unsigned tx, which can be used
+   * to sign the transaction (e.g. for sending to a hardware wallet).
+   *
+   * Note: the raw message message format for the legacy tx is not RLP encoded
+   * and you might need to do yourself with:
+   *
+   * ```javascript
+   * import { RLP } from '@ethereumjs/rlp'
+   * const message = tx.getMessageToSign()
+   * const serializedMessage = RLP.encode(message)) // use this for the HW wallet input
+   * ```
+   */
+  getMessageToSign(): Uint8Array[] {
+    const message = [
       bigIntToUnpaddedBytes(this.nonce),
       bigIntToUnpaddedBytes(this.gasPrice),
       bigIntToUnpaddedBytes(this.gasLimit),
@@ -188,38 +207,21 @@ export class Transaction extends BaseTransaction<Transaction> {
     ]
 
     if (this.supports(Capability.EIP155ReplayProtection)) {
-      values.push(bigIntToUnpaddedBytes(this.common.chainId()))
-      values.push(unpadBytes(toBytes(0)))
-      values.push(unpadBytes(toBytes(0)))
+      message.push(bigIntToUnpaddedBytes(this.common.chainId()))
+      message.push(unpadBytes(toBytes(0)))
+      message.push(unpadBytes(toBytes(0)))
     }
 
-    return values
+    return message
   }
 
   /**
-   * Returns the unsigned tx (hashed or raw), which can be used
+   * Returns the hashed serialized unsigned tx, which can be used
    * to sign the transaction (e.g. for sending to a hardware wallet).
-   *
-   * Note: the raw message message format for the legacy tx is not RLP encoded
-   * and you might need to do yourself with:
-   *
-   * ```javascript
-   * import { RLP } from '@ethereumjs/rlp'
-   * const message = tx.getMessageToSign(false)
-   * const serializedMessage = RLP.encode(message)) // use this for the HW wallet input
-   * ```
-   *
-   * @param hashMessage - Return hashed message if set to true (default: true)
    */
-  getMessageToSign(hashMessage: false): Uint8Array[]
-  getMessageToSign(hashMessage?: true): Uint8Array
-  getMessageToSign(hashMessage = true) {
-    const message = this._getMessageToSign()
-    if (hashMessage) {
-      return keccak256(RLP.encode(message))
-    } else {
-      return message
-    }
+  getHashedMessageToSign() {
+    const message = this.getMessageToSign()
+    return keccak256(RLP.encode(message))
   }
 
   /**
@@ -277,8 +279,7 @@ export class Transaction extends BaseTransaction<Transaction> {
       const msg = this._errorMsg('This transaction is not signed')
       throw new Error(msg)
     }
-    const message = this._getMessageToSign()
-    return keccak256(RLP.encode(message))
+    return this.getHashedMessageToSign()
   }
 
   /**
@@ -315,7 +316,7 @@ export class Transaction extends BaseTransaction<Transaction> {
 
     const opts = { ...this.txOptions, common: this.common }
 
-    return Transaction.fromTxData(
+    return LegacyTransaction.fromTxData(
       {
         nonce: this.nonce,
         gasPrice: this.gasPrice,

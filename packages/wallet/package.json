@@ -17,6 +17,7 @@
   },
   "license": "MIT",
   "author": "Alex Beregszaszi <alex@rtfs.hu>",
+  "type": "commonjs",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "exports": {
@@ -38,26 +39,25 @@
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
-    "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "karma start karma.conf.js",
-    "test:node": "tape --require ts-node/register ./test/**/*.spec.ts",
+    "test:browser": "vitest run --config=vitest.config.browser.ts --browser.name=webkit --browser.provider=playwright --browser.headless",
+    "test:node": "vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
     "@ethereumjs/util": "^8.0.6",
-    "@scure/base": "1.1.1",
+    "@scure/base": "^1.1.1",
     "ethereum-cryptography": "^2.0.0",
-    "js-md5": "0.7.3",
-    "uuid": "8.3.2"
+    "js-md5": "^0.7.3",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "@types/js-md5": "0.4.3",
-    "@types/lodash.zip": "4.2.7",
-    "@types/node": "18.0.0",
+    "@types/js-md5": "^0.4.3",
+    "@types/lodash.zip": "^4.2.7",
+    "@types/uuid": "^9.0.2",
     "ethers": "^6.4.0",
-    "lodash.zip": "4.2.0",
-    "nyc": "15.1.0"
+    "lodash.zip": "^4.2.0",
+    "nyc": "^15.1.0"
   },
   "engines": {
     "node": ">=16"

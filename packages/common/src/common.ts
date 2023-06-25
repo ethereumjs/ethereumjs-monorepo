@@ -6,7 +6,7 @@ import {
   intToBytes,
   toType,
 } from '@ethereumjs/util'
-import { buf as crc32Buffer } from 'crc-32'
+import crc from 'crc/crc32'
 import { EventEmitter } from 'events'
 
 import * as goerli from './chains/goerli.json'
@@ -14,12 +14,12 @@ import * as mainnet from './chains/mainnet.json'
 import * as rinkeby from './chains/rinkeby.json'
 import * as ropsten from './chains/ropsten.json'
 import * as sepolia from './chains/sepolia.json'
-import { EIPs } from './eips'
-import { Chain, CustomChain, Hardfork } from './enums'
-import { hardforks as HARDFORK_SPECS } from './hardforks'
-import { parseGethGenesis } from './utils'
+import { EIPs } from './eips/index.js'
+import { Chain, CustomChain, Hardfork } from './enums.js'
+import { hardforks as HARDFORK_SPECS } from './hardforks/index.js'
+import { parseGethGenesis } from './utils.js'
 
-import type { ConsensusAlgorithm, ConsensusType } from './enums'
+import type { ConsensusAlgorithm, ConsensusType } from './enums.js'
 import type {
   BootstrapNodeConfig,
   CasperConfig,
@@ -32,8 +32,9 @@ import type {
   EthashConfig,
   GenesisBlockConfig,
   GethConfigOpts,
+  HardforkByOpts,
   HardforkConfig,
-} from './types'
+} from './types.js'
 import type { BigIntLike } from '@ethereumjs/util'
 
 type HardforkSpecKeys = keyof typeof HARDFORK_SPECS
@@ -304,26 +305,22 @@ export class Common extends EventEmitter {
   }
 
   /**
-   * Returns the hardfork based on the block number or an optional
-   * total difficulty (Merge HF) provided.
+   * Returns the hardfork either based on block numer (older HFs) or
+   * timestamp (Shanghai upwards).
    *
    * An optional TD takes precedence in case the corresponding HF block
    * is set to `null` or otherwise needs to match (if not an error
    * will be thrown).
    *
-   * @param blockNumber
-   * @param td : total difficulty of the parent block (for block hf) OR of the chain latest (for chain hf)
-   * @param timestamp: timestamp in seconds at which block was/is to be minted
+   * @param Opts Block number, timestamp or TD (all optional)
    * @returns The name of the HF
    */
-  getHardforkByBlockNumber(
-    blockNumber: BigIntLike,
-    td?: BigIntLike,
-    timestamp?: BigIntLike
-  ): string {
+  getHardforkBy(opts: HardforkByOpts): string {
+    let { blockNumber, timestamp, td } = opts
+
     blockNumber = toType(blockNumber, TypeOutput.BigInt)
     td = toType(td, TypeOutput.BigInt)
-    timestamp = toType(timestamp, TypeOutput.Number)
+    timestamp = toType(timestamp, TypeOutput.BigInt)
 
     // Filter out hardforks with no block number, no ttd or no timestamp (i.e. unapplied hardforks)
     const hfs = this.hardforks().filter(
@@ -344,8 +341,10 @@ export class Common extends EventEmitter {
     // discovering/checking number hardforks.
     let hfIndex = hfs.findIndex(
       (hf) =>
-        (hf.block !== null && hf.block > blockNumber) ||
-        (timestamp !== undefined && Number(hf.timestamp) > timestamp)
+        (blockNumber !== undefined &&
+          hf.block !== null &&
+          BigInt(hf.block) > (blockNumber as bigint)) ||
+        (timestamp !== undefined && hf.timestamp !== undefined && hf.timestamp > timestamp)
     )
 
     if (hfIndex === -1) {
@@ -399,7 +398,7 @@ export class Common extends EventEmitter {
       }
     }
 
-    if (timestamp) {
+    if (timestamp !== undefined) {
       const minTimeStamp = hfs
         .slice(0, hfStartIndex)
         .reduce((acc: number, hf: HardforkConfig) => Math.max(Number(hf.timestamp ?? '0'), acc), 0)
@@ -411,7 +410,7 @@ export class Common extends EventEmitter {
         .slice(hfIndex + 1)
         .reduce(
           (acc: number, hf: HardforkConfig) => Math.min(Number(hf.timestamp ?? timestamp), acc),
-          timestamp
+          Number(timestamp)
         )
       if (maxTimeStamp < timestamp) {
         throw Error(`Maximum HF determined by block number/ttd is lower than timestamp HF`)
@@ -422,24 +421,18 @@ export class Common extends EventEmitter {
   }
 
   /**
-   * Sets a new hardfork based on the block number or an optional
-   * total difficulty (Merge HF) provided.
+   * Sets a new hardfork either based on block numer (older HFs) or
+   * timestamp (Shanghai upwards).
    *
    * An optional TD takes precedence in case the corresponding HF block
    * is set to `null` or otherwise needs to match (if not an error
    * will be thrown).
    *
-   * @param blockNumber
-   * @param td
-   * @param timestamp
+   * @param Opts Block number, timestamp or TD (all optional)
    * @returns The name of the HF set
    */
-  setHardforkByBlockNumber(
-    blockNumber: BigIntLike,
-    td?: BigIntLike,
-    timestamp?: BigIntLike
-  ): string {
-    const hardfork = this.getHardforkByBlockNumber(blockNumber, td, timestamp)
+  setHardforkBy(opts: HardforkByOpts): string {
+    const hardfork = this.getHardforkBy(opts)
     this.setHardfork(hardfork)
     return hardfork
   }
@@ -524,11 +517,11 @@ export class Common extends EventEmitter {
         }
         // Parameter-inlining HF file (e.g. istanbul.json)
       } else {
-        if (hfChanges[1][topic] === undefined) {
+        if ((hfChanges[1] as any)[topic] === undefined) {
           throw new Error(`Topic ${topic} not defined`)
         }
-        if (hfChanges[1][topic][name] !== undefined) {
-          value = hfChanges[1][topic][name].v
+        if ((hfChanges[1] as any)[topic][name] !== undefined) {
+          value = (hfChanges[1] as any)[topic][name].v
         }
       }
       if (hfChanges[0] === hardfork) break
@@ -575,7 +568,7 @@ export class Common extends EventEmitter {
     td?: BigIntLike,
     timestamp?: BigIntLike
   ): bigint {
-    const hardfork = this.getHardforkByBlockNumber(blockNumber, td, timestamp)
+    const hardfork = this.getHardforkBy({ blockNumber, td, timestamp })
     return this.paramByHardfork(topic, name, hardfork)
   }
 
@@ -692,7 +685,7 @@ export class Common extends EventEmitter {
       const hf = hfChanges[1]
       if ('eips' in hf) {
         // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-        if (hf['eips'].includes(eip)) {
+        if ((hf['eips'] as any).includes(eip)) {
           return this.hardforkBlock(hfChanges[0])
         }
       }
@@ -799,7 +792,7 @@ export class Common extends EventEmitter {
 
     // CRC32 delivers result as signed (negative) 32-bit integer,
     // convert to hex string
-    const forkhash = bytesToHex(intToBytes(crc32Buffer(inputBytes) >>> 0))
+    const forkhash = bytesToHex(intToBytes(crc(inputBytes) >>> 0))
     return `0x${forkhash}`
   }
 
@@ -987,7 +980,7 @@ export class Common extends EventEmitter {
     for (const hfChanges of this.HARDFORK_CHANGES) {
       if ('consensus' in hfChanges[1]) {
         // The config parameter is named after the respective consensus algorithm
-        value = hfChanges[1]['consensus'][hfChanges[1]['consensus']['algorithm']]
+        value = (hfChanges[1] as any)['consensus'][hfChanges[1]['consensus']['algorithm']]
       }
       if (hfChanges[0] === hardfork) break
     }

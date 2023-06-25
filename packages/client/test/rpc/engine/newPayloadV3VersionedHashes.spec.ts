@@ -78,9 +78,9 @@ tape(`${method}: Cancun validations`, (v1) => {
       {
         ...blockData,
         parentHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
-        blockHash: '0x3044dc57fc1e7e8adbd4c5db53ee58303f312ee7cda31b851ebbd365ae10f200',
+        blockHash: '0x8346f46bbac879e28dd521762b50de3946fbdb84d1af466eeb1f3c4c9893abff',
         withdrawals: [],
-        dataGasUsed: '0x0',
+        dataGasUsed: '0x40000',
         excessDataGas: '0x0',
         // two blob transactions but missing versioned hash of second
         transactions: [txString, txString],
@@ -101,9 +101,9 @@ tape(`${method}: Cancun validations`, (v1) => {
       {
         ...blockData,
         parentHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
-        blockHash: '0x3044dc57fc1e7e8adbd4c5db53ee58303f312ee7cda31b851ebbd365ae10f200',
+        blockHash: '0x8346f46bbac879e28dd521762b50de3946fbdb84d1af466eeb1f3c4c9893abff',
         withdrawals: [],
-        dataGasUsed: '0x0',
+        dataGasUsed: '0x40000',
         excessDataGas: '0x0',
         // two blob transactions but mismatching versioned hash of second
         transactions: [txString, txString],
@@ -124,9 +124,9 @@ tape(`${method}: Cancun validations`, (v1) => {
       {
         ...blockData,
         parentHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
-        blockHash: '0x3044dc57fc1e7e8adbd4c5db53ee58303f312ee7cda31b851ebbd365ae10f200',
+        blockHash: '0x8346f46bbac879e28dd521762b50de3946fbdb84d1af466eeb1f3c4c9893abff',
         withdrawals: [],
-        dataGasUsed: '0x0',
+        dataGasUsed: '0x40000',
         excessDataGas: '0x0',
         // two blob transactions with matching versioned hashes
         transactions: [txString, txString],

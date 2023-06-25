@@ -317,7 +317,7 @@ and you might need to do yourself with:
 ```javascript
 import { bufArrToArr } from '@ethereumjs/util'
 import { RLP } from '@ethereumjs/rlp'
-const message = tx.getMessageToSign(false)
+const message = tx.getMessageToSign()
 const serializedMessage = Buffer.from(RLP.encode(bufArrToArr(message))) // use this for the HW wallet input
 ```
 

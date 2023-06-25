@@ -55,3 +55,13 @@ export function timeDiff(timestamp: number) {
   const diff = new Date().getTime() / 1000 - timestamp
   return timeDuration(diff)
 }
+
+/**
+ * Stub to exclude node only stats function
+ * @returns null
+ */
+export async function getV8Engine(): Promise<null> {
+  return null
+}
+
+export const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')

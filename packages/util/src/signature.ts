@@ -1,6 +1,6 @@
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
-import { concatBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import { concatBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 
 import {
   bytesToBigInt,
@@ -8,9 +8,9 @@ import {
   bytesToPrefixedHexString,
   setLengthLeft,
   toBytes,
-} from './bytes'
-import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants'
-import { assertIsBytes } from './helpers'
+} from './bytes.js'
+import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants.js'
+import { assertIsBytes } from './helpers.js'
 
 export interface ECDSASignature {
   v: bigint

@@ -22,6 +22,7 @@
     "Aaron Kumavis <http://aaron.kumavis.me/> (https://github.com/kumavis)"
   ],
   "main": "dist/cjs/index.js",
+  "type": "commonjs",
   "module": "dist/esm/index.js",
   "exports": {
     ".": {
@@ -37,24 +38,23 @@
     "benchmarks": "node -r ts-node/register --max-old-space-size=8024 benchmarks",
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "../../config/cli/coverage.sh",
+    "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "docs:build": "typedoc --options typedoc.js",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "profiling": "tsc --target ES5 benchmarks/random.ts && 0x benchmarks/random.js",
-    "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "karma start karma.conf.js",
-    "test:node": "tape -r ts-node/register 'test/**/*.ts'",
+    "test:browser": "npx vitest run --config=./vitest.config.browser.ts --browser.name=chrome --browser.headless",
+    "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
     "@ethereumjs/rlp": "^4.0.1",
     "@ethereumjs/util": "^8.0.6",
     "@types/readable-stream": "^2.3.13",
-    "lru-cache": "^7.18.3",
+    "lru-cache": "^10.0.0",
     "ethereum-cryptography": "^2.0.0",
     "readable-stream": "^3.6.0"
   },

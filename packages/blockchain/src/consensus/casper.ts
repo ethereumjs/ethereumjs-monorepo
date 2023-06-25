@@ -1,6 +1,6 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 
-import type { Consensus } from './interface'
+import type { Consensus } from '../types.js'
 import type { BlockHeader } from '@ethereumjs/block'
 
 /**

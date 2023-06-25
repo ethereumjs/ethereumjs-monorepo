@@ -1,10 +1,10 @@
 import { short } from '@ethereumjs/util'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
 
-import { OOGResult } from '../evm'
+import { OOGResult } from '../evm.js'
 
-import type { ExecResult } from '../evm'
-import type { PrecompileInput } from './types'
+import type { ExecResult } from '../evm.js'
+import type { PrecompileInput } from './types.js'
 
 const bn128 = require('rustbn.js')
 

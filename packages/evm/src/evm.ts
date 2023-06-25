@@ -17,21 +17,21 @@ import {
 import { debug as createDebugLogger } from 'debug'
 import { promisify } from 'util'
 
-import { EOF, getEOFCode } from './eof'
-import { ERROR, EvmError } from './exceptions'
-import { Interpreter } from './interpreter'
-import { Journal } from './journal'
-import { Message } from './message'
-import { getOpcodesForHF } from './opcodes'
-import { getActivePrecompiles } from './precompiles'
-import { TransientStorage } from './transientStorage'
-import { DefaultBlockchain } from './types'
+import { EOF, getEOFCode } from './eof.js'
+import { ERROR, EvmError } from './exceptions.js'
+import { Interpreter } from './interpreter.js'
+import { Journal } from './journal.js'
+import { Message } from './message.js'
+import { getOpcodesForHF } from './opcodes/index.js'
+import { getActivePrecompiles } from './precompiles/index.js'
+import { TransientStorage } from './transientStorage.js'
+import { DefaultBlockchain } from './types.js'
 
-import type { InterpreterOpts, RunState } from './interpreter'
-import type { MessageWithTo } from './message'
-import type { OpHandler, OpcodeList } from './opcodes'
-import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
-import type { CustomPrecompile, PrecompileFunc } from './precompiles'
+import type { InterpreterOpts, RunState } from './interpreter.js'
+import type { MessageWithTo } from './message.js'
+import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
+import type { OpHandler, OpcodeList } from './opcodes/index.js'
+import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.js'
 import type {
   Block,
   Blockchain,
@@ -41,7 +41,7 @@ import type {
   EVMRunCallOpts,
   EVMRunCodeOpts,
   Log,
-} from './types'
+} from './types.js'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
 
 const debug = createDebugLogger('evm:evm')
@@ -286,7 +286,7 @@ export class EVM implements EVMInterface {
     // Supported EIPs
     const supportedEIPs = [
       1153, 1559, 2315, 2537, 2565, 2718, 2929, 2930, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
-      3670, 3855, 3860, 4399, 4895, 4844, 5133,
+      3670, 3855, 3860, 4399, 4895, 4844, 5133, 6780,
     ]
 
     for (const eip of this._common.eips()) {
@@ -472,6 +472,11 @@ export class EVM implements EVMInterface {
     message.code = message.data
     message.data = new Uint8Array(0)
     message.to = await this._generateAddress(message)
+
+    if (this._common.isActivatedEIP(6780)) {
+      message.createdAddresses!.add(message.to.toString())
+    }
+
     if (this.DEBUG) {
       debug(`Generated CREATE contract address ${message.to}`)
     }
@@ -711,7 +716,10 @@ export class EVM implements EVMInterface {
       this.journal
     )
     if (message.selfdestruct) {
-      interpreter._result.selfdestruct = message.selfdestruct as { [key: string]: Uint8Array }
+      interpreter._result.selfdestruct = message.selfdestruct
+    }
+    if (message.createdAddresses) {
+      interpreter._result.createdAddresses = message.createdAddresses
     }
 
     const interpreterRes = await interpreter.run(message.code as Uint8Array, opts)
@@ -730,7 +738,8 @@ export class EVM implements EVMInterface {
       result = {
         ...result,
         logs: [],
-        selfdestruct: {},
+        selfdestruct: new Set(),
+        createdAddresses: new Set(),
       }
     }
 
@@ -789,7 +798,8 @@ export class EVM implements EVMInterface {
         isCompiled: opts.isCompiled,
         isStatic: opts.isStatic,
         salt: opts.salt,
-        selfdestruct: opts.selfdestruct ?? {},
+        selfdestruct: opts.selfdestruct ?? new Set(),
+        createdAddresses: opts.createdAddresses ?? new Set(),
         delegatecall: opts.delegatecall,
         versionedHashes: opts.versionedHashes,
       })
@@ -858,7 +868,8 @@ export class EVM implements EVMInterface {
     // (this only happens the Frontier/Chainstart fork)
     // then the error is dismissed
     if (err && err.error !== ERROR.CODESTORE_OUT_OF_GAS) {
-      result.execResult.selfdestruct = {}
+      result.execResult.selfdestruct = new Set()
+      result.execResult.createdAddresses = new Set()
       result.execResult.gasRefund = BigInt(0)
     }
     if (
@@ -903,7 +914,7 @@ export class EVM implements EVMInterface {
       caller: opts.caller,
       value: opts.value,
       depth: opts.depth,
-      selfdestruct: opts.selfdestruct ?? {},
+      selfdestruct: opts.selfdestruct ?? new Set(),
       isStatic: opts.isStatic,
       versionedHashes: opts.versionedHashes,
     })
@@ -1062,9 +1073,13 @@ export interface ExecResult {
    */
   logs?: Log[]
   /**
-   * A map from the accounts that have self-destructed to the addresses to send their funds to
+   * A set of accounts to selfdestruct
    */
-  selfdestruct?: { [k: string]: Uint8Array }
+  selfdestruct?: Set<string>
+  /**
+   * Map of addresses which were created (used in EIP 6780)
+   */
+  createdAddresses?: Set<string>
   /**
    * The gas refund counter
    */

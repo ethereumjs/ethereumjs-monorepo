@@ -1,14 +1,14 @@
 import { Block } from '@ethereumjs/block'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Account, Address, bytesToPrefixedHexString, toBytes } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../src/vm'
 
-tape('VM events', (t) => {
+describe('VM events', () => {
   const privKey = toBytes('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07')
 
-  t.test('should emit the Block before running it', async (st) => {
+  it('should emit the Block before running it', async () => {
     const vm = await VM.create()
 
     let emitted
@@ -24,12 +24,10 @@ tape('VM events', (t) => {
       skipBlockValidation: true,
     })
 
-    st.equal(emitted, block)
-
-    st.end()
+    assert.equal(emitted, block)
   })
 
-  t.test('should emit a RunBlockResult after running a block', async (st) => {
+  it('should emit a RunBlockResult after running a block', async () => {
     const vm = await VM.create()
 
     let emitted
@@ -45,13 +43,11 @@ tape('VM events', (t) => {
       skipBlockValidation: true,
     })
 
-    st.deepEqual((emitted as any).receipts, [])
-    st.deepEqual((emitted as any).results, [])
-
-    st.end()
+    assert.deepEqual((emitted as any).receipts, [])
+    assert.deepEqual((emitted as any).results, [])
   })
 
-  t.test('should emit the Transaction before running it', async (st) => {
+  it('should emit the Transaction before running it', async () => {
     const vm = await VM.create()
 
     let emitted
@@ -67,12 +63,10 @@ tape('VM events', (t) => {
 
     await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
-    st.equal(emitted, tx)
-
-    st.end()
+    assert.equal(emitted, tx)
   })
 
-  t.test('should emit RunTxResult after running a tx', async (st) => {
+  it('should emit RunTxResult after running a tx', async () => {
     const vm = await VM.create()
     const address = Address.fromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
@@ -90,12 +84,10 @@ tape('VM events', (t) => {
 
     await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
-    st.equal(bytesToPrefixedHexString(emitted.execResult.returnValue), '0x')
-
-    st.end()
+    assert.equal(bytesToPrefixedHexString(emitted.execResult.returnValue), '0x')
   })
 
-  t.test('should emit the Message before running it', async (st) => {
+  it('should emit the Message before running it', async () => {
     const vm = await VM.create()
     const address = Address.fromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
@@ -113,13 +105,11 @@ tape('VM events', (t) => {
 
     await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
-    st.equal(emitted.to.toString(), '0x1111111111111111111111111111111111111111')
-    st.equal(bytesToPrefixedHexString(emitted.code), '0x')
-
-    st.end()
+    assert.equal(emitted.to.toString(), '0x1111111111111111111111111111111111111111')
+    assert.equal(bytesToPrefixedHexString(emitted.code), '0x')
   })
 
-  t.test('should emit EVMResult after running a message', async (st) => {
+  it('should emit EVMResult after running a message', async () => {
     const vm = await VM.create()
     const address = Address.fromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
@@ -137,12 +127,10 @@ tape('VM events', (t) => {
 
     await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
-    st.equal(bytesToPrefixedHexString(emitted.createdAddress), '0x')
-
-    st.end()
+    assert.equal(bytesToPrefixedHexString(emitted.createdAddress), '0x')
   })
 
-  t.test('should emit InterpreterStep on each step', async (st) => {
+  it('should emit InterpreterStep on each step', async () => {
     const vm = await VM.create()
 
     let lastEmitted: any
@@ -161,12 +149,10 @@ tape('VM events', (t) => {
 
     await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
-    st.equal(lastEmitted.opcode.name, 'RETURN')
-
-    st.end()
+    assert.equal(lastEmitted.opcode.name, 'RETURN')
   })
 
-  t.test('should emit a NewContractEvent on new contracts', async (st) => {
+  it('should emit a NewContractEvent on new contracts', async () => {
     const vm = await VM.create()
 
     let emitted: any
@@ -185,11 +171,9 @@ tape('VM events', (t) => {
 
     await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
-    st.equal(
+    assert.equal(
       bytesToPrefixedHexString(emitted.code),
       '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3'
     )
-
-    st.end()
   })
 })

@@ -5,11 +5,11 @@ import { Trie } from '@ethereumjs/trie'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { Address, GWEI_TO_WEI, TypeOutput, Withdrawal, toBytes, toType } from '@ethereumjs/util'
 
-import { Bloom } from './bloom'
-import { calculateMinerReward, encodeReceipt, rewardAccount } from './runBlock'
+import { Bloom } from './bloom/index.js'
+import { calculateMinerReward, encodeReceipt, rewardAccount } from './runBlock.js'
 
-import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types'
-import type { VM } from './vm'
+import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types.js'
+import type { VM } from './vm.js'
 import type { HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
 
@@ -194,6 +194,11 @@ export class BlockBuilder {
         throw Error('eip4844 not activated yet for adding a blob transaction')
       }
       const blobTx = tx as BlobEIP4844Transaction
+
+      // Guard against the case if a tx came into the pool without blobs i.e. network wrapper payload
+      if (blobTx.blobs === undefined) {
+        throw new Error('blobs missing for 4844 transaction')
+      }
 
       if (this.dataGasUsed + BigInt(blobTx.numBlobs()) * dataGasPerBlob > dataGasLimit) {
         throw new Error('block data gas limit reached')

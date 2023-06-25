@@ -48,7 +48,7 @@ export function inspectParams(params: any, shorten?: number) {
   let inspected = inspect(params, {
     colors: true,
     maxStringLength: 100,
-  } as any)
+  })
   if (typeof shorten === 'number') {
     inspected = inspected.replace(/\n/g, '').replace(/ {2}/g, ' ')
     if (inspected.length > shorten) {
@@ -217,6 +217,7 @@ export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer 
         socket.destroy()
       }
     }
+
     ;(wss as any).handleUpgrade(req, socket, head, (ws: any) => {
       ;(wss as any).emit('connection', ws, req)
     })

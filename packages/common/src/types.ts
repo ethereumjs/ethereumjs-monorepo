@@ -1,4 +1,5 @@
-import type { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from './enums'
+import type { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.js'
+import type { BigIntLike } from '@ethereumjs/util'
 
 export interface ChainName {
   [chainId: string]: string
@@ -119,4 +120,10 @@ export interface GethConfigOpts extends BaseOpts {
   chain?: string
   genesisHash?: Uint8Array
   mergeForkIdPostMerge?: boolean
+}
+
+export interface HardforkByOpts {
+  blockNumber?: BigIntLike
+  timestamp?: BigIntLike
+  td?: BigIntLike
 }

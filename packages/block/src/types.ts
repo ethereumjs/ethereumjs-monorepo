@@ -1,12 +1,6 @@
-import type { BlockHeader } from './header'
+import type { BlockHeader } from './header.js'
 import type { Common } from '@ethereumjs/common'
-import type {
-  AccessListEIP2930TxData,
-  FeeMarketEIP1559TxData,
-  JsonRpcTx,
-  JsonTx,
-  TxData,
-} from '@ethereumjs/tx'
+import type { JsonRpcTx, JsonTx, TransactionType, TxData } from '@ethereumjs/tx'
 import type {
   AddressLike,
   BigIntLike,
@@ -35,22 +29,15 @@ export interface BlockOptions {
    */
   common?: Common
   /**
-   * Determine the HF by the block number
+   * Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number
+   * for older Hfs.
+   *
+   * Additionally it is possible to pass in a specific TD value to support live-Merge-HF
+   * transitions. Note that this should only be needed in very rare and specific scenarios.
    *
    * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
-  hardforkByBlockNumber?: boolean
-  /**
-   * Determine the HF by total difficulty (Merge HF)
-   *
-   * This option is a superset of `hardforkByBlockNumber` (so only use one of both options)
-   * and determines the HF by both the block number and the TD.
-   *
-   * Since the TTD is only a threshold the block number will in doubt take precedence (imagine
-   * e.g. both Merge and Shanghai HF blocks set and the block number from the block provided
-   * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
-   */
-  hardforkByTTD?: BigIntLike
+  setHardfork?: boolean | BigIntLike
   /**
    * If a preceding {@link BlockHeader} (usually the parent header) is given the preceding
    * header will be used to calculate the difficulty for this block and the calculated
@@ -116,7 +103,7 @@ export interface BlockData {
    * Header data for the block
    */
   header?: HeaderData
-  transactions?: Array<TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData>
+  transactions?: Array<TxData[TransactionType]>
   uncleHeaders?: Array<HeaderData>
   withdrawals?: Array<WithdrawalData>
 }

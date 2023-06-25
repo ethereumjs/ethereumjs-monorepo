@@ -12,7 +12,7 @@ const originalValidate = BlockHeader.prototype._consensusFormatValidation
 
 tape('[Integration:BeaconSync]', async (t) => {
   const common = Common.fromGethGenesis(genesisJSON, { chain: 'post-merge' })
-  common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
+  common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
 
   t.test('should sync blocks', async (t) => {
     BlockHeader.prototype._consensusFormatValidation = td.func<any>()

@@ -1,13 +1,13 @@
 import { RLP } from '@ethereumjs/rlp'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import {
   bytesToHex,
   concatBytes,
   equalsBytes,
   hexToBytes,
   utf8ToBytes,
-} from 'ethereum-cryptography/utils'
+} from 'ethereum-cryptography/utils.js'
 
 import {
   bigIntToUnpaddedBytes,
@@ -15,12 +15,12 @@ import {
   bytesToPrefixedHexString,
   toBytes,
   zeros,
-} from './bytes'
-import { KECCAK256_NULL, KECCAK256_RLP } from './constants'
-import { assertIsBytes, assertIsHexString, assertIsString } from './helpers'
-import { stripHexPrefix } from './internal'
+} from './bytes.js'
+import { KECCAK256_NULL, KECCAK256_RLP } from './constants.js'
+import { assertIsBytes, assertIsHexString, assertIsString } from './helpers.js'
+import { stripHexPrefix } from './internal.js'
 
-import type { BigIntLike, BytesLike } from './types'
+import type { BigIntLike, BytesLike } from './types.js'
 
 const _0n = BigInt(0)
 

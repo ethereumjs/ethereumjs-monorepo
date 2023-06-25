@@ -1,10 +1,10 @@
 import { bytesToHex, short } from '@ethereumjs/util'
 
-import { OOGResult } from '../evm'
-import { ERROR, EvmError } from '../exceptions'
+import { OOGResult } from '../evm.js'
+import { ERROR, EvmError } from '../exceptions.js'
 
-import type { ExecResult } from '../evm'
-import type { PrecompileInput } from './types'
+import type { ExecResult } from '../evm.js'
+import type { PrecompileInput } from './types.js'
 
 // The following blake2 code has been taken from (license: Creative Commons CC0):
 // https://github.com/dcposch/blakejs/blob/410c640d0f08d3b26904c6d1ab3d81df3619d282/blake2b.js

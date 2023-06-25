@@ -19,14 +19,15 @@ import {
   toType,
   zeros,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
-import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique'
-import { fakeExponential, valuesArrayToHeaderData } from './helpers'
+import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique.js'
+import { fakeExponential, valuesArrayToHeaderData } from './helpers.js'
 
-import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from './types'
+import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from './types.js'
 import type { CliqueConfig } from '@ethereumjs/common'
+import type { BigIntLike } from '@ethereumjs/util'
 
 interface HeaderCache {
   hash: Uint8Array | undefined
@@ -109,16 +110,25 @@ export class BlockHeader {
    */
   public static fromValuesArray(values: BlockHeaderBytes, opts: BlockOptions = {}) {
     const headerData = valuesArrayToHeaderData(values)
-    const { number, baseFeePerGas } = headerData
+    const { number, baseFeePerGas, excessDataGas, dataGasUsed } = headerData
+    const header = BlockHeader.fromHeaderData(headerData, opts)
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    if (opts.common?.isActivatedEIP(1559) && baseFeePerGas === undefined) {
-      const eip1559ActivationBlock = bigIntToBytes(opts.common?.eipBlock(1559)!)
+    if (header._common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
+      const eip1559ActivationBlock = bigIntToBytes(header._common.eipBlock(1559)!)
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
       if (eip1559ActivationBlock && equalsBytes(eip1559ActivationBlock, number as Uint8Array)) {
         throw new Error('invalid header. baseFeePerGas should be provided')
       }
     }
-    return BlockHeader.fromHeaderData(headerData, opts)
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    if (header._common.isActivatedEIP(4844)) {
+      if (excessDataGas === undefined) {
+        throw new Error('invalid header. excessDataGas should be provided')
+      } else if (dataGasUsed === undefined) {
+        throw new Error('invalid header. dataGasUsed should be provided')
+      }
+    }
+    return header
   }
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
@@ -134,12 +144,6 @@ export class BlockHeader {
       this._common = new Common({
         chain: Chain.Mainnet, // default
       })
-    }
-
-    if (options.hardforkByBlockNumber !== undefined && options.hardforkByTTD !== undefined) {
-      throw new Error(
-        `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
-      )
     }
 
     const skipValidateConsensusFormat = options.skipConsensusFormatValidation ?? false
@@ -182,9 +186,18 @@ export class BlockHeader {
     const mixHash = toType(headerData.mixHash, TypeOutput.Uint8Array) ?? defaults.mixHash
     const nonce = toType(headerData.nonce, TypeOutput.Uint8Array) ?? defaults.nonce
 
-    const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
-    if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
-      this._common.setHardforkByBlockNumber(number, options.hardforkByTTD, timestamp)
+    const setHardfork = options.setHardfork ?? false
+    if (setHardfork === true) {
+      this._common.setHardforkBy({
+        blockNumber: number,
+        timestamp,
+      })
+    } else if (typeof setHardfork !== 'boolean') {
+      this._common.setHardforkBy({
+        blockNumber: number,
+        td: setHardfork as BigIntLike,
+        timestamp,
+      })
     }
 
     // Hardfork defaults which couldn't be paired with earlier defaults

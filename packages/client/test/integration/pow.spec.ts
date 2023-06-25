@@ -1,6 +1,5 @@
-import { parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Common, Hardfork } from '@ethereumjs/common'
-import { Address } from '@ethereumjs/util'
+import { Address, parseGethGenesisState } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import { removeSync } from 'fs-extra'
 import * as tape from 'tape'

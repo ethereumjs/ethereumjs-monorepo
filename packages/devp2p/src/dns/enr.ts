@@ -1,13 +1,13 @@
 import { RLP } from '@ethereumjs/rlp'
 import { base32, base64url } from '@scure/base'
-import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat'
-import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat.js'
+import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 import { Multiaddr } from 'multiaddr'
 import { sscanf } from 'scanf'
 
-import { keccak256, toNewUint8Array } from '../util'
+import { keccak256, toNewUint8Array } from '../util.js'
 
-import type { PeerInfo } from '../dpt'
+import type { PeerInfo } from '../dpt/index.js'
 
 const Convert = require('multiaddr/src/convert')
 

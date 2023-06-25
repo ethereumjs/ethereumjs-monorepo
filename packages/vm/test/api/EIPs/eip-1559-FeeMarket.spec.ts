@@ -3,15 +3,15 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
-  Transaction,
+  LegacyTransaction,
 } from '@ethereumjs/tx'
 import { Account, Address, bigIntToBytes, privateToAddress, setLengthLeft } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 
-import type { TypedTransaction } from '@ethereumjs/tx'
+import type { TransactionType, TypedTransaction } from '@ethereumjs/tx'
 
 const GWEI = BigInt('1000000000')
 
@@ -41,9 +41,9 @@ const sender = new Address(privateToAddress(pkey))
  * Creates an EIP1559 block
  * @param baseFee - base fee of the block
  * @param transaction - the transaction in the block
- * @param txType - the txtype to use
+ * @param txType - the txType to use
  */
-function makeBlock(baseFee: bigint, transaction: TypedTransaction, txType: number) {
+function makeBlock(baseFee: bigint, transaction: TypedTransaction, txType: TransactionType) {
   const signed = transaction.sign(pkey)
   const json = <any>signed.toJSON()
   json.type = txType
@@ -62,8 +62,8 @@ function makeBlock(baseFee: bigint, transaction: TypedTransaction, txType: numbe
   return block
 }
 
-tape('EIP1559 tests', (t) => {
-  t.test('test EIP1559 with all transaction types', async (st) => {
+describe('EIP1559 tests', () => {
+  it('test EIP1559 with all transaction types', async () => {
     const tx = new FeeMarketEIP1559Transaction(
       {
         maxFeePerGas: GWEI * BigInt(5),
@@ -99,10 +99,10 @@ tape('EIP1559 tests', (t) => {
 
     let miner = await vm.stateManager.getAccount(coinbase)
 
-    st.equal(miner!.balance, expectedMinerBalance, 'miner balance correct')
+    assert.equal(miner!.balance, expectedMinerBalance, 'miner balance correct')
     account = await vm.stateManager.getAccount(sender)
-    st.equal(account!.balance, expectedAccountBalance, 'account balance correct')
-    st.equal(results.amountSpent, expectedCost, 'reported cost correct')
+    assert.equal(account!.balance, expectedAccountBalance, 'account balance correct')
+    assert.equal(results.amountSpent, expectedCost, 'reported cost correct')
 
     const tx2 = new AccessListEIP2930Transaction(
       {
@@ -127,12 +127,12 @@ tape('EIP1559 tests', (t) => {
 
     miner = await vm.stateManager.getAccount(coinbase)
 
-    st.equal(miner!.balance, expectedMinerBalance, 'miner balance correct')
+    assert.equal(miner!.balance, expectedMinerBalance, 'miner balance correct')
     account = await vm.stateManager.getAccount(sender)
-    st.equal(account!.balance, expectedAccountBalance, 'account balance correct')
-    st.equal(results2.amountSpent, expectedCost, 'reported cost correct')
+    assert.equal(account!.balance, expectedAccountBalance, 'account balance correct')
+    assert.equal(results2.amountSpent, expectedCost, 'reported cost correct')
 
-    const tx3 = new Transaction(
+    const tx3 = new LegacyTransaction(
       {
         gasLimit: 21000,
         gasPrice: GWEI * BigInt(5),
@@ -155,15 +155,13 @@ tape('EIP1559 tests', (t) => {
 
     miner = await vm.stateManager.getAccount(coinbase)
 
-    st.equal(miner!.balance, expectedMinerBalance, 'miner balance correct')
+    assert.equal(miner!.balance, expectedMinerBalance, 'miner balance correct')
     account = await vm.stateManager.getAccount(sender)
-    st.equal(account!.balance, expectedAccountBalance, 'account balance correct')
-    st.equal(results3.amountSpent, expectedCost, 'reported cost correct')
-
-    st.end()
+    assert.equal(account!.balance, expectedAccountBalance, 'account balance correct')
+    assert.equal(results3.amountSpent, expectedCost, 'reported cost correct')
   })
 
-  t.test('gasPrice uses the effective gas price', async (st) => {
+  it('gasPrice uses the effective gas price', async () => {
     const contractAddress = new Address(hexToBytes('20'.repeat(20)))
     const tx = new FeeMarketEIP1559Transaction(
       {
@@ -200,7 +198,6 @@ tape('EIP1559 tests', (t) => {
     const expectedCost = GWEI * BigInt(3)
     const expectedReturn = setLengthLeft(bigIntToBytes(expectedCost), 32)
 
-    st.deepEquals(returnValue, expectedReturn)
-    st.end()
+    assert.deepEqual(returnValue, expectedReturn)
   })
 })

@@ -1,9 +1,9 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import { Account, Address, privateToAddress } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 const pkey = hexToBytes('20'.repeat(32))
@@ -43,11 +43,11 @@ async function getVM(common: Common) {
   return vm
 }
 
-tape('EIP 3651 tests', (t) => {
-  t.test('invalid contract code transactions', async (st) => {
+describe('EIP 3651 tests', () => {
+  it('invalid contract code transactions', async () => {
     const vm = await getVM(common)
 
-    const tx = Transaction.fromTxData({
+    const tx = LegacyTransaction.fromTxData({
       to: contractAddress,
       value: 1,
       gasLimit: 1000000,
@@ -71,7 +71,7 @@ tape('EIP 3651 tests', (t) => {
     const expectedDiff =
       common.param('gasPrices', 'coldaccountaccess')! -
       common.param('gasPrices', 'warmstorageread')!
-    st.equal(
+    assert.equal(
       result2.totalGasSpent - result.totalGasSpent,
       expectedDiff,
       'gas difference is correct'
