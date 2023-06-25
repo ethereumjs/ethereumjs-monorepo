@@ -263,6 +263,18 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
     const historicalRootsLength = BigInt(this._common.param('vm', 'historicalRootsLength'))
     const timestampIndex = timestamp % historicalRootsLength
     const timestampExtended = timestampIndex + historicalRootsLength
+
+    /**
+     * Note: (by Jochem)
+     * If we don't do this (put account if undefined / non-existant), block runner crashes because the beacon root address does not exist
+     * This is hence (for me) again a reason why it should /not/ throw if the address does not exist
+     * All ethereum accounts have empty storage by default
+     */
+
+    if ((await this.stateManager.getAccount(beaconRootAddress)) === undefined) {
+      await this.stateManager.putAccount(beaconRootAddress, new Account())
+    }
+
     await this.stateManager.putContractStorage(
       beaconRootAddress,
       setLengthLeft(bigIntToBytes(timestampIndex), 32),
