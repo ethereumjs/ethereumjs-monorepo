@@ -158,6 +158,7 @@ export interface JsonHeader {
   withdrawalsRoot?: string
   dataGasUsed?: string
   excessDataGas?: string
+  beaconRoot?: string
 }
 
 /*

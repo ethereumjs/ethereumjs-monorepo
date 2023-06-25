@@ -268,7 +268,7 @@ export class BlockHeader {
     this.withdrawalsRoot = withdrawalsRoot
     this.dataGasUsed = dataGasUsed
     this.excessDataGas = excessDataGas
-    this.beaconRoot = this.beaconRoot
+    this.beaconRoot = beaconRoot
     this._genericFormatValidation()
     this._validateDAOExtraData()
 
@@ -915,6 +915,9 @@ export class BlockHeader {
     if (this._common.isActivatedEIP(4844) === true) {
       jsonDict.dataGasUsed = bigIntToHex(this.dataGasUsed!)
       jsonDict.excessDataGas = bigIntToHex(this.excessDataGas!)
+    }
+    if (this._common.isActivatedEIP(4788) === true) {
+      jsonDict.beaconRoot = bytesToPrefixedHexString(this.beaconRoot!)
     }
     return jsonDict
   }
