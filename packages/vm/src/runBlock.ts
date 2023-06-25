@@ -12,6 +12,7 @@ import {
   concatBytesNoTypeCheck,
   equalsBytes,
   intToBytes,
+  setLengthLeft,
   short,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
@@ -256,12 +257,21 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
     }
   }
   if (this._common.isActivatedEIP(4788)) {
-    // Apply beacon root
+    // Save the beaconRoot to the beaconroot stateful precompile ring buffers
     const root = block.header.beaconRoot!
+    const timestamp = block.header.timestamp
+    const historicalRootsLength = BigInt(this._common.param('vm', 'historicalRootsLength'))
+    const timestampIndex = timestamp % historicalRootsLength
+    const timestampExtended = timestampIndex + historicalRootsLength
     await this.stateManager.putContractStorage(
       beaconRootAddress,
-      root,
+      setLengthLeft(bigIntToBytes(timestampIndex), 32),
       bigIntToBytes(block.header.timestamp)
+    )
+    await this.stateManager.putContractStorage(
+      beaconRootAddress,
+      setLengthLeft(bigIntToBytes(timestampExtended), 32),
+      root
     )
   }
   // Apply transactions

@@ -9,10 +9,15 @@
   "gasConfig": {},
   "gasPrices": {
     "beaconrootCost": {
-      "v": 2100,
+      "v": 4200,
       "d": "Gas cost when calling the beaconroot stateful precompile"
     }
   },
-  "vm": {},
+  "vm": {
+    "historicalRootsLength": {
+      "v": 98304,
+      "d": "The modulo parameter of the beaconroot ring buffer in the beaconroot statefull precompile"
+    }
+  },
   "pow": {}
 }

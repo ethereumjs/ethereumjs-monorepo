@@ -1,6 +1,14 @@
-import { Address, short } from '@ethereumjs/util'
+import {
+  Address,
+  bigIntToBytes,
+  bytesToBigInt,
+  setLengthLeft,
+  short,
+  zeros,
+} from '@ethereumjs/util'
 
 import { type ExecResult, OOGResult } from '../evm.js'
+import { ERROR, EvmError } from '../exceptions.js'
 
 import type { PrecompileInput } from './types.js'
 
@@ -25,7 +33,37 @@ export async function precompile0B_Beaconroot(opts: PrecompileInput): Promise<Ex
     return OOGResult(opts.gasLimit)
   }
 
-  const returnData = await opts.stateManager.getContractStorage(address, opts.data)
+  if (data.length < 32) {
+    return {
+      returnValue: new Uint8Array(0),
+      executionGasUsed: gasUsed,
+      exceptionError: new EvmError(ERROR.INVALID_INPUT_LENGTH),
+    }
+  }
+
+  const timestampInput = bytesToBigInt(data.slice(0, 32))
+  const historicalRootsLength = BigInt(opts._common.param('vm', 'historicalRootsLength'))
+
+  const timestampIndex = timestampInput % historicalRootsLength
+  const recordedTimestamp = await opts.stateManager.getContractStorage(
+    address,
+    setLengthLeft(bigIntToBytes(timestampIndex), 32)
+  )
+
+  if (bytesToBigInt(recordedTimestamp) !== timestampInput) {
+    return {
+      executionGasUsed: gasUsed,
+      returnValue: zeros(32),
+    }
+  }
+  const timestampExtended = timestampIndex + historicalRootsLength
+  const returnData = setLengthLeft(
+    await opts.stateManager.getContractStorage(
+      address,
+      setLengthLeft(bigIntToBytes(timestampExtended), 32)
+    ),
+    32
+  )
 
   if (opts._debug !== undefined) {
     opts._debug(`BEACONROOT (0x0B) return data=${short(returnData)}`)
