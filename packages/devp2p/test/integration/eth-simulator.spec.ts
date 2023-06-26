@@ -138,8 +138,8 @@ describe('ETH simulator tests', () => {
     })
   })
 
-  it('ETH: send not-allowed eth67', () => {
-    sendNotAllowed(it, 67, [devp2p.ETH.eth67], ETH.MESSAGE_CODES.GET_NODE_DATA)
+  it('ETH: send not-allowed eth67', async () => {
+    await sendNotAllowed(it, 67, [devp2p.ETH.eth67], ETH.MESSAGE_CODES.GET_NODE_DATA)
     sendNotAllowed(it, 67, [devp2p.ETH.eth67], ETH.MESSAGE_CODES.NODE_DATA)
   })
 
