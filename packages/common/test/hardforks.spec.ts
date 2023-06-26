@@ -95,6 +95,23 @@ describe('[Common]: Hardfork logic', () => {
     c.setHardfork(Hardfork.Byzantium)
   })
 
+  it('hardforkBlock()', () => {
+    let c = new Common({ chain: Chain.Mainnet })
+    let msg = 'should return the correct HF change block for byzantium (provided)'
+    assert.equal(c.hardforkBlock(Hardfork.Byzantium)!, BigInt(4370000), msg)
+
+    msg = 'should return null if HF does not exist on chain'
+    assert.equal(c.hardforkBlock('thisHardforkDoesNotExist'), null, msg)
+
+    c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+    msg = 'should return the correct HF change block for byzantium (set)'
+    assert.equal(c.hardforkBlock()!, BigInt(4370000), msg)
+
+    c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    msg = 'should return the correct HF change block for istanbul (set)'
+    assert.equal(c.hardforkBlock()!, BigInt(9069000), msg)
+  })
+
   it('nextHardforkBlockOrTimestamp()', () => {
     const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     let msg =
