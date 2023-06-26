@@ -55,11 +55,11 @@ Here are some simple usage examples:
 
 ```typescript
 // Instantiate with the chain (and the default hardfork)
-let c = new Common({ chain: Chain.Ropsten })
+let c = new Common({ chain: Chain.Mainnet })
 c.param('gasPrices', 'ecAddGas') // 500
 
 // Chain and hardfork provided
-c = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
+c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
 c.param('pow', 'minerReward') // 3000000000000000000
 
 // Get bootstrap nodes for chain/network
@@ -102,13 +102,12 @@ on which you can react within your code:
 The `chain` can be set in the constructor like this:
 
 ```typescript
-const c = new Common({ chain: Chain.Ropsten })
+const c = new Common({ chain: Chain.Mainnet })
 ```
 
 Supported chains:
 
 - `mainnet` (`Chain.Mainnet`)
-- `ropsten` (`Chain.Ropsten`)
 - `rinkeby` (`Chain.Rinkeby`)
 - `goerli` (`Chain.Goerli`)
 - `sepolia` (`Chain.Sepolia`) (`v2.6.1`+)
@@ -218,7 +217,7 @@ The `hardfork` can be set in constructor like this:
 ```typescript
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 
-const c = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
+const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
 ```
 
 ### Active Hardforks
