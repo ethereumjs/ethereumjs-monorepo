@@ -22,6 +22,8 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: recursive # necessary for block tests to load ethereum/tests
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
