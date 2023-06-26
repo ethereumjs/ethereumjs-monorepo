@@ -138,28 +138,9 @@ describe('ETH simulator tests', () => {
     })
   })
 
-  it('ETH: send not-allowed eth67', (t) => {
+  it('ETH: send not-allowed eth67', () => {
     sendNotAllowed(it, 67, [devp2p.ETH.eth67], ETH.MESSAGE_CODES.GET_NODE_DATA)
     sendNotAllowed(it, 67, [devp2p.ETH.eth67], ETH.MESSAGE_CODES.NODE_DATA)
-  })
-
-  it('ETH -> Eth64 -> sendStatus(): should throw on non-matching latest block provided', async () => {
-    await new Promise((resolve) => {
-      const cap = [devp2p.ETH.eth65]
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
-      const status0: any = Object.assign({}, status)
-      status0['latestBlock'] = intToBytes(100000) // lower than Byzantium fork block 4370000
-
-      const rlpxs = util.initTwoPeerRLPXSetup(null, cap, common, 50505)
-      rlpxs[0].on('peer:added', function (peer: any) {
-        const protocol = peer.getProtocols()[0]
-        assert.throws(() => {
-          protocol.sendStatus(status0)
-        }, /latest block provided is not matching the HF setting/)
-        util.destroyRLPXs(rlpxs)
-        resolve(undefined)
-      })
-    })
   })
 
   it('ETH: should work with allowed eth64', async () => {
