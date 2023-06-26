@@ -43,9 +43,9 @@ jobs:
       - run: npm run test:browser -w=@ethereumjs/tx
       - run: npm run test:browser -w=@ethereumjs/block
 #     No browser tests for devp2p
-      - run: npm run test:browser -w=@ethereumjs/blockchain
+      - run: cd ../blockchain && npm run test:browser
 #     No browser tests for ethash
-      - run: npm run test:browser -w=@ethereumjs/wallet
+      - run: cd ../wallet && npm run test:browser
       - run: cd ../statemanager && npm run test:browser
 #     EVM: several tests not passing yet
 #     - run: cd ../evm && npm run test:browser
