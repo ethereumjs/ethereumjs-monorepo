@@ -8,7 +8,6 @@
 
 - [Goerli](Chain.md#goerli)
 - [Mainnet](Chain.md#mainnet)
-- [Rinkeby](Chain.md#rinkeby)
 - [Sepolia](Chain.md#sepolia)
 
 ## Enumeration Members
@@ -30,16 +29,6 @@ ___
 #### Defined in
 
 [packages/common/src/enums.ts:2](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L2)
-
-___
-
-### Rinkeby
-
-• **Rinkeby** = ``4``
-
-#### Defined in
-
-[packages/common/src/enums.ts:4](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L4)
 
 ___
 

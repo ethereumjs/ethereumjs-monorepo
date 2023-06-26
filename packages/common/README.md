@@ -108,7 +108,6 @@ const c = new Common({ chain: Chain.Mainnet })
 Supported chains:
 
 - `mainnet` (`Chain.Mainnet`)
-- `rinkeby` (`Chain.Rinkeby`)
 - `goerli` (`Chain.Goerli`)
 - `sepolia` (`Chain.Sepolia`) (`v2.6.1`+)
 - Private/custom chain parameters
