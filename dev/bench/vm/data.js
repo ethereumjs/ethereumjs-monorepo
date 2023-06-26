@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1687783645828,
+  "lastUpdate": 1687810849018,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "960fd0a4c58af3d234f568ec56e221bf1c0ccaee",
-          "message": "tx: Generic Transaction Interface (#2767)\n\n* tx/transaction-interface\r\n\r\n* tx: implemement transaction interface in basetransaction\r\n\r\n* tx: update transaction types to use new generic types\r\n\r\n* tx: refactor with updated tx interfaces\r\n\r\n* block: refactor with updated tx interfaces\r\n\r\n* client: refactor with updated tx interfaces\r\n\r\n* vm: refactor with updated tx interfaces\r\n\r\n* devp2p: refactor with updated tx interfaces\r\n\r\n* monorepo: adjust test with updated tx types\r\n\r\n* docs: update READMEs Transaction->LegacyTransaction\r\n\r\n* tx: replace as any typecast with more precise typecast\r\n\r\n* client: simplify TxData typecastings\r\n\r\n* tx: more simplifications\r\n\r\n* tx: new tx typeguards and use enums instead of direct number comparison\r\n\r\n* tx: TTransactionType -> T generic renaming\r\n\r\n* tx: address review by renaming UnknownTransaction to TypedTransaction and using the TransactionType enum instead of numbers\r\n\r\n* linting fix\r\n\r\n* tx: update naming UnknownTxData -> TypedTxData\r\n\r\n* tx: declare TxData and TxValuesArray types in transaction class files\r\n\r\n* client: Transaction -> LegacyTransaction\r\n\r\n* vm: simplify test and use enums when possible\r\n\r\n* tx: update example import\r\n\r\n* tx: update more examples\r\n\r\n* add improvements\r\n\r\n* fix error message\r\n\r\n* improv\r\n\r\n* type improv\r\n\r\n* tx: fix rebase issue\r\n\r\n---------\r\n\r\nCo-authored-by: harkamal <gajinder@g11.in>",
-          "timestamp": "2023-06-12T11:47:22+02:00",
-          "tree_id": "ef48186c3d10072231e52fdad6bc276b8845f6b4",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/960fd0a4c58af3d234f568ec56e221bf1c0ccaee"
-        },
-        "date": 1686563445665,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31101,
-            "range": "±5.45%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31378,
-            "range": "±2.78%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 27259,
-            "range": "±9.68%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 30825,
-            "range": "±2.96%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29935,
-            "range": "±3.10%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.19%",
             "unit": "ops/sec",
             "extra": "78 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9f46c956efbe243e06029a42e3f0a0df69bbc672",
+          "message": "client: fix getStorageAt (#2825)",
+          "timestamp": "2023-06-26T16:16:38-04:00",
+          "tree_id": "1ede0db08d3160ce9d4971a2b4489d84e549461a",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9f46c956efbe243e06029a42e3f0a0df69bbc672"
+        },
+        "date": 1687810848250,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 32005,
+            "range": "±6.60%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 32073,
+            "range": "±2.94%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 32330,
+            "range": "±2.80%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 26585,
+            "range": "±9.40%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 31007,
+            "range": "±3.13%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
