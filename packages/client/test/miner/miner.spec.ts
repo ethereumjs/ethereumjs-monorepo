@@ -82,11 +82,6 @@ tape('[Miner]', async (t) => {
     }
   }
 
-  // const common = new Common({ chain: CommonChain.Mainnet, hardfork: Hardfork.Berlin })
-
-  // const common = Common.custom({ chainId: 4 })
-  // common.setHardfork(Hardfork.Berlin)
-
   const consensusConfig = {
     clique: {
       period: 10,
