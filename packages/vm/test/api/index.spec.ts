@@ -101,6 +101,22 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
     assert.equal(vm._common, common)
   })
 
+  it('should only accept valid chain and fork', async () => {
+    // let common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
+    let common = Common.custom({ chainId: 3 })
+    common.setHardfork(Hardfork.Byzantium)
+    let vm = await VM.create({ common })
+    assert.equal(vm._common.param('gasPrices', 'ecAdd'), BigInt(500))
+
+    try {
+      common = new Common({ chain: 'mainchain', hardfork: Hardfork.Homestead })
+      vm = await VM.create({ common })
+      assert.fail('should have failed for invalid chain')
+    } catch (e: any) {
+      assert.ok(e.message.includes('not supported'))
+    }
+  })
+
   it('should accept a supported EIP', async () => {
     const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
