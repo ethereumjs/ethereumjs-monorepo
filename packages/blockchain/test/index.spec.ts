@@ -851,3 +851,16 @@ describe('initialization tests', () => {
     }
   })
 })
+
+it('should correctly derive mainnet genesis block hash and stateRoot', async () => {
+  const common = new Common({ chain: Chain.Mainnet })
+  const blockchain = await Blockchain.create({ common })
+  const mainnetGenesisBlockHash = hexToBytes(
+    'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
+  )
+  const mainnetGenesisStateRoot = hexToBytes(
+    'd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'
+  )
+  assert.deepEqual(blockchain.genesisBlock.hash(), mainnetGenesisBlockHash)
+  assert.deepEqual(blockchain.genesisBlock.header.stateRoot, mainnetGenesisStateRoot)
+})
