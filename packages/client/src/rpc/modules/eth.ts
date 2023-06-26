@@ -1,4 +1,3 @@
-import { RLP } from '@ethereumjs/rlp'
 import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
   Address,
@@ -645,9 +644,7 @@ export class Eth {
     const key = setLengthLeft(hexStringToBytes(keyHex), 32)
     const storage = await vm.stateManager.getContractStorage(address, key)
     return storage !== null && storage !== undefined
-      ? bytesToPrefixedHexString(
-          setLengthLeft(RLP.decode(Uint8Array.from(storage)) as Uint8Array, 32)
-        )
+      ? bytesToPrefixedHexString(setLengthLeft(Uint8Array.from(storage) as Uint8Array, 32))
       : EMPTY_SLOT
   }
 
