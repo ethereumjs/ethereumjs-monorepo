@@ -131,6 +131,31 @@ describe('[Common]: Hardfork logic', () => {
     assert.equal(c2.nextHardforkBlockOrTimestamp('petersburg')!, BigInt(1561651), msg)
   })
 
+  it('hardforkIsActiveOnBlock() / activeOnBlock()', () => {
+    let c = new Common({ chain: Chain.Mainnet })
+    let msg = 'Mainnet, byzantium (provided), 4370000 -> true'
+    assert.equal(c.hardforkIsActiveOnBlock(Hardfork.Byzantium, 4370000), true, msg)
+
+    msg = 'Mainnet, byzantium (provided), 4370005 -> true'
+    assert.equal(c.hardforkIsActiveOnBlock(Hardfork.Byzantium, 4370005), true, msg)
+
+    msg = 'Mainnet, byzantium (provided), 4369999 -> false'
+    assert.equal(c.hardforkIsActiveOnBlock(Hardfork.Byzantium, 4369999), false, msg)
+
+    c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+    msg = 'Mainnet, byzantium (set), 4370000 -> true'
+    assert.equal(c.hardforkIsActiveOnBlock(null, 4370000), true, msg)
+
+    msg = 'Mainnet, byzantium (set), 4370000 -> true (alias function)'
+    assert.equal(c.activeOnBlock(4370000), true, msg)
+
+    msg = 'Mainnet, byzantium (set), 4370005 -> true'
+    assert.equal(c.hardforkIsActiveOnBlock(null, 4370005), true, msg)
+
+    msg = 'Mainnet, byzantium (set), 4369999 -> false'
+    assert.equal(c.hardforkIsActiveOnBlock(null, 4369999), false, msg)
+  })
+
   it('hardforkBlock()', () => {
     const c = new Common({ chain: Chain.Mainnet })
 
@@ -144,6 +169,34 @@ describe('[Common]: Hardfork logic', () => {
     assert.equal(c.hardforkBlock(Hardfork.Shanghai), null, msg)
     assert.equal(c.hardforkBlock(Hardfork.Shanghai), null, msg)
     assert.equal(c.nextHardforkBlockOrTimestamp(Hardfork.Shanghai), null, msg)
+  })
+
+  it('hardforkGteHardfork()', () => {
+    let c = new Common({ chain: Chain.Mainnet })
+    let msg = 'Mainnet, constantinople >= byzantium (provided) -> true'
+    assert.equal(c.hardforkGteHardfork(Hardfork.Constantinople, Hardfork.Byzantium), true, msg)
+
+    msg = 'Mainnet, chainstart >= dao (provided) -> false'
+    assert.equal(c.hardforkGteHardfork(Hardfork.Chainstart, Hardfork.Dao), false, msg)
+
+    msg = 'Mainnet, byzantium >= byzantium (provided) -> true'
+    assert.equal(c.hardforkGteHardfork(Hardfork.Byzantium, Hardfork.Byzantium), true, msg)
+
+    msg = 'Mainnet, spuriousDragon >= byzantium (provided) -> false'
+    assert.equal(c.hardforkGteHardfork(Hardfork.SpuriousDragon, Hardfork.Byzantium), false, msg)
+
+    c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+    msg = 'Mainnet, byzantium (set) >= spuriousDragon -> true'
+    assert.equal(c.hardforkGteHardfork(null, Hardfork.SpuriousDragon), true, msg)
+
+    msg = 'Mainnet, byzantium (set) >= spuriousDragon -> true (alias function)'
+    assert.equal(c.gteHardfork(Hardfork.SpuriousDragon), true, msg)
+
+    msg = 'Mainnet, byzantium (set) >= byzantium -> true'
+    assert.equal(c.hardforkGteHardfork(null, Hardfork.Byzantium), true, msg)
+
+    msg = 'Mainnet, byzantium (set) >= constantinople -> false'
+    assert.equal(c.hardforkGteHardfork(null, Hardfork.Constantinople), false, msg)
   })
 
   it('_calcForkHash()', () => {
