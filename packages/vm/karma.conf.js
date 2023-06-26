@@ -8,7 +8,7 @@ module.exports = function (config) {
     frameworks: ['karma-typescript', 'tap'],
 
     // list of files / patterns to load in the browser
-    files: ['./src/**/*.ts', './tests/**/*.ts'],
+    files: ['./src/**/*.ts', './test/api/*.ts', 'test/util.ts'],
 
     // list of files / patterns to exclude
     exclude: [],
@@ -24,13 +24,14 @@ module.exports = function (config) {
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
         acornOptions: {
-          ecmaVersion: 11,
+          ecmaVersion: 13,
         },
         resolve: {
           alias: {
-            'bigint-crypto-utils': '../../node_modules/bigint-crypto-utils/dist/bundles/umd.js',
+            'bigint-crypto-utils': '../../node_modules/bigint-crypto-utils/dist/bundle.umd.js',
           },
         },
+        ignore: ['c-kzg', 'safer-buffer'],
       },
     },
 

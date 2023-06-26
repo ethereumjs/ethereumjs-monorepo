@@ -1,28 +1,30 @@
+import { bytesToInt } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
-import { getPublicKey } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 import { EventEmitter } from 'events'
-import * as LRUCache from 'lru-cache'
-import ms = require('ms')
 import * as net from 'net'
 import * as os from 'os'
 
-import { buffer2int, createDeferred, devp2pDebug, formatLogId, pk2id } from '../util'
+import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
 
-import { DISCONNECT_REASONS, Peer } from './peer'
+import { DISCONNECT_REASONS, Peer } from './peer.js'
 
-import type { DPT, PeerInfo } from '../dpt'
-import type { Capabilities } from './peer'
+import type { DPT, PeerInfo } from '../dpt/index.js'
+import type { Capabilities } from './peer.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
+import type LRUCache from 'lru-cache'
 
 // note: relative path only valid in .js file in dist
-const { version: pVersion } = require('../../package.json')
+
+const LRU = require('lru-cache')
 
 const DEBUG_BASE_NAME = 'rlpx'
 const verbose = createDebugLogger('verbose').enabled
 
 export interface RLPxOptions {
-  clientId?: Buffer
+  clientId?: Uint8Array
   /* Timeout (default: 10s) */
   timeout?: number
   dpt?: DPT | null
@@ -35,12 +37,12 @@ export interface RLPxOptions {
 }
 
 export class RLPx extends EventEmitter {
-  _privateKey: Buffer
-  _id: Buffer
+  _privateKey: Uint8Array
+  _id: Uint8Array
   _debug: Debugger
   _timeout: number
   _maxPeers: number
-  _clientId: Buffer
+  _clientId: Uint8Array
   _remoteClientIdFilter?: string[]
   _capabilities: Capabilities[]
   _common: Common
@@ -55,19 +57,19 @@ export class RLPx extends EventEmitter {
   _refillIntervalId: NodeJS.Timeout
   _refillIntervalSelectionCounter: number = 0
 
-  constructor(privateKey: Buffer, options: RLPxOptions) {
+  constructor(privateKey: Uint8Array, options: RLPxOptions) {
     super()
 
-    this._privateKey = Buffer.from(privateKey)
-    this._id = pk2id(Buffer.from(getPublicKey(this._privateKey, false)))
+    this._privateKey = privateKey
+    this._id = pk2id(secp256k1.getPublicKey(this._privateKey, false))
 
     // options
-    this._timeout = options.timeout ?? ms('10s')
+    this._timeout = options.timeout ?? 10000 // 10 sec * 1000
     this._maxPeers = options.maxPeers ?? 10
 
     this._clientId = options.clientId
-      ? Buffer.from(options.clientId)
-      : Buffer.from(`ethereumjs-devp2p/v${pVersion}/${os.platform()}-${os.arch()}/nodejs`)
+      ? options.clientId
+      : utf8ToBytes(`ethereumjs-devp2p/${os.platform()}-${os.arch()}/nodejs`)
 
     this._remoteClientIdFilter = options.remoteClientIdFilter
     this._capabilities = options.capabilities
@@ -79,13 +81,13 @@ export class RLPx extends EventEmitter {
     if (this._dpt !== null) {
       this._dpt.on('peer:new', (peer: PeerInfo) => {
         if (peer.tcpPort === null || peer.tcpPort === undefined) {
-          this._dpt!.banPeer(peer, ms('5m'))
+          this._dpt!.banPeer(peer, 300000) // 5 min * 60 * 1000
           this._debug(`banning peer with missing tcp port: ${peer.address}`)
           return
         }
-
-        if (this._peersLRU.has(peer.id!.toString('hex'))) return
-        this._peersLRU.set(peer.id!.toString('hex'), true)
+        const key = bytesToHex(peer.id!)
+        if (this._peersLRU.has(key)) return
+        this._peersLRU.set(key, true)
 
         if (this._getOpenSlots() > 0) {
           return this._connectToPeer(peer)
@@ -96,7 +98,7 @@ export class RLPx extends EventEmitter {
       this._dpt.on('peer:removed', (peer: PeerInfo) => {
         // remove from queue
         this._peersQueue = this._peersQueue.filter(
-          (item) => !(item.peer.id! as Buffer).equals(peer.id as Buffer)
+          (item) => !equalsBytes(item.peer.id! as Uint8Array, peer.id as Uint8Array)
         )
       })
     }
@@ -113,8 +115,8 @@ export class RLPx extends EventEmitter {
         : devp2pDebug.extend(DEBUG_BASE_NAME)
     this._peers = new Map()
     this._peersQueue = []
-    this._peersLRU = new LRUCache({ max: 25000 })
-    const REFILL_INTERVALL = ms('10s')
+    this._peersLRU = new LRU({ max: 25000 })
+    const REFILL_INTERVALL = 10000 // 10 sec * 1000
     const refillIntervalSubdivided = Math.floor(REFILL_INTERVALL / 10)
     this._refillIntervalId = setInterval(() => this._refillConnections(), refillIntervalSubdivided)
   }
@@ -135,15 +137,15 @@ export class RLPx extends EventEmitter {
     if (this._server) this._server.close(...args)
     this._server = null
 
-    for (const peerKey of this._peers.keys()) this.disconnect(Buffer.from(peerKey, 'hex'))
+    for (const peerKey of this._peers.keys()) this.disconnect(hexToBytes(peerKey))
   }
 
   async connect(peer: PeerInfo) {
     if (peer.tcpPort === undefined || peer.tcpPort === null || peer.address === undefined) return
     this._isAliveCheck()
 
-    if (!Buffer.isBuffer(peer.id)) throw new TypeError('Expected peer.id as Buffer')
-    const peerKey = peer.id.toString('hex')
+    if (!(peer.id instanceof Uint8Array)) throw new TypeError('Expected peer.id as Uint8Array')
+    const peerKey = bytesToHex(peer.id)
 
     if (this._peers.has(peerKey)) throw new Error('Already connected')
     if (this._getOpenSlots() === 0) throw new Error('Too many peers already connected')
@@ -170,9 +172,11 @@ export class RLPx extends EventEmitter {
     return Array.from(this._peers.values()).filter((item) => item instanceof Peer)
   }
 
-  disconnect(id: Buffer) {
-    const peer = this._peers.get(id.toString('hex'))
-    if (peer instanceof Peer) peer.disconnect(DISCONNECT_REASONS.CLIENT_QUITTING)
+  disconnect(id: Uint8Array) {
+    const peer = this._peers.get(bytesToHex(id))
+    if (peer instanceof Peer) {
+      peer.disconnect(DISCONNECT_REASONS.CLIENT_QUITTING)
+    }
   }
 
   _isAlive() {
@@ -195,12 +199,12 @@ export class RLPx extends EventEmitter {
     this.connect(peer).catch((err) => {
       if (this._dpt === null) return
       if (err.code === 'ECONNRESET' || (err.toString() as string).includes('Connection timeout')) {
-        this._dpt.banPeer(peer, ms('5m'))
+        this._dpt.banPeer(peer, 300000) // 5 min * 60 * 1000
       }
     })
   }
 
-  _onConnect(socket: net.Socket, peerId: Buffer | null) {
+  _onConnect(socket: net.Socket, peerId: Uint8Array | null) {
     this._debug(`connected to ${socket.remoteAddress}:${socket.remotePort}, handshake waiting..`)
 
     const peer: Peer = new Peer({
@@ -234,11 +238,11 @@ export class RLPx extends EventEmitter {
       }
       this._debug(msg)
       const id = peer.getId()
-      if (id && id.equals(this._id)) {
+      if (id && equalsBytes(id, this._id)) {
         return peer.disconnect(DISCONNECT_REASONS.SAME_IDENTITY)
       }
 
-      const peerKey = id!.toString('hex')
+      const peerKey = bytesToHex(id!)
       const item = this._peers.get(peerKey)
       if (item && item instanceof Peer) {
         return peer.disconnect(DISCONNECT_REASONS.ALREADY_CONNECTED)
@@ -265,14 +269,14 @@ export class RLPx extends EventEmitter {
               address: peer._socket.remoteAddress,
               tcpPort: peer._socket.remotePort,
             },
-            ts: (Date.now() + ms('5m')) as number,
+            ts: (Date.now() + 300000) as number, // 5 min * 60 * 1000
           })
         }
       }
 
       const id = peer.getId()
       if (id) {
-        const peerKey = id.toString('hex')
+        const peerKey = bytesToHex(id)
         this._peers.delete(peerKey)
         this.emit('peer:removed', peer, reason, disconnectWe)
       }
@@ -299,7 +303,7 @@ export class RLPx extends EventEmitter {
 
       // Randomly distributed selector based on peer ID
       // to decide on subdivided execution
-      const selector = buffer2int((item.peer.id! as Buffer).slice(0, 1)) % 10
+      const selector = bytesToInt((item.peer.id! as Uint8Array).subarray(0, 1)) % 10
       if (selector === this._refillIntervalSelectionCounter) {
         this._connectToPeer(item.peer)
         return false

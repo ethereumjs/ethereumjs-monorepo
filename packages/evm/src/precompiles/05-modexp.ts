@@ -1,15 +1,16 @@
 import {
-  bigIntToBuffer,
-  bufferToBigInt,
-  isFalsy,
+  bigIntToBytes,
+  bytesToBigInt,
+  bytesToHex,
   setLengthLeft,
   setLengthRight,
+  short,
 } from '@ethereumjs/util'
 
-import { OOGResult } from '../evm'
+import { OOGResult } from '../evm.js'
 
-import type { ExecResult } from '../evm'
-import type { PrecompileInput } from './types'
+import type { ExecResult } from '../evm.js'
+import type { PrecompileInput } from './types.js'
 
 function multComplexity(x: bigint): bigint {
   let fac1
@@ -34,18 +35,18 @@ function multComplexityEIP2565(x: bigint): bigint {
   return words * words
 }
 
-function getAdjustedExponentLength(data: Buffer): bigint {
+function getAdjustedExponentLength(data: Uint8Array): bigint {
   let expBytesStart
   try {
-    const baseLen = bufferToBigInt(data.slice(0, 32))
+    const baseLen = bytesToBigInt(data.subarray(0, 32))
     expBytesStart = 96 + Number(baseLen) // 96 for base length, then exponent length, and modulus length, then baseLen for the base data, then exponent bytes start
   } catch (e: any) {
     expBytesStart = Number.MAX_SAFE_INTEGER - 32
   }
-  const expLen = bufferToBigInt(data.slice(32, 64))
-  let firstExpBytes = Buffer.from(data.slice(expBytesStart, expBytesStart + 32)) // first word of the exponent data
+  const expLen = bytesToBigInt(data.subarray(32, 64))
+  let firstExpBytes = data.subarray(expBytesStart, expBytesStart + 32) // first word of the exponent data
   firstExpBytes = setLengthRight(firstExpBytes, 32) // reading past the data reads virtual zeros
-  let firstExpBigInt = bufferToBigInt(firstExpBytes)
+  let firstExpBigInt = bytesToBigInt(firstExpBytes)
   let max32expLen = 0
   if (expLen < BigInt(32)) {
     max32expLen = 32 - Number(expLen)
@@ -83,8 +84,6 @@ export function expmod(a: bigint, power: bigint, modulo: bigint) {
 }
 
 export function precompile05(opts: PrecompileInput): ExecResult {
-  if (isFalsy(opts.data)) throw new Error('opts.data missing but required')
-
   const data = opts.data
 
   let adjustedELen = getAdjustedExponentLength(data)
@@ -92,9 +91,9 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     adjustedELen = BigInt(1)
   }
 
-  const bLen = bufferToBigInt(data.slice(0, 32))
-  const eLen = bufferToBigInt(data.slice(32, 64))
-  const mLen = bufferToBigInt(data.slice(64, 96))
+  const bLen = bytesToBigInt(data.subarray(0, 32))
+  const eLen = bytesToBigInt(data.subarray(32, 64))
+  const mLen = bytesToBigInt(data.subarray(64, 96))
 
   let maxLen = bLen
   if (maxLen < mLen) {
@@ -118,22 +117,32 @@ export function precompile05(opts: PrecompileInput): ExecResult {
       gasUsed = BigInt(200)
     }
   }
+  if (opts._debug !== undefined) {
+    opts._debug(
+      `Run MODEXP (0x05) precompile data=${short(opts.data)} length=${opts.data.length} gasLimit=${
+        opts.gasLimit
+      } gasUsed=${gasUsed}`
+    )
+  }
 
   if (opts.gasLimit < gasUsed) {
+    if (opts._debug !== undefined) {
+      opts._debug(`MODEXP (0x05) failed: OOG`)
+    }
     return OOGResult(opts.gasLimit)
   }
 
   if (bLen === BigInt(0)) {
     return {
       executionGasUsed: gasUsed,
-      returnValue: setLengthLeft(bigIntToBuffer(BigInt(0)), Number(mLen)),
+      returnValue: setLengthLeft(bigIntToBytes(BigInt(0)), Number(mLen)),
     }
   }
 
   if (mLen === BigInt(0)) {
     return {
       executionGasUsed: gasUsed,
-      returnValue: Buffer.alloc(0),
+      returnValue: new Uint8Array(0),
     }
   }
 
@@ -141,14 +150,20 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   const maxSize = BigInt(2147483647) // @ethereumjs/util setLengthRight limitation
 
   if (bLen > maxSize || eLen > maxSize || mLen > maxSize) {
+    if (opts._debug !== undefined) {
+      opts._debug(`MODEXP (0x05) failed: OOG`)
+    }
     return OOGResult(opts.gasLimit)
   }
 
-  const B = bufferToBigInt(setLengthRight(data.slice(Number(bStart), Number(bEnd)), Number(bLen)))
-  const E = bufferToBigInt(setLengthRight(data.slice(Number(eStart), Number(eEnd)), Number(eLen)))
-  const M = bufferToBigInt(setLengthRight(data.slice(Number(mStart), Number(mEnd)), Number(mLen)))
+  const B = bytesToBigInt(setLengthRight(data.subarray(Number(bStart), Number(bEnd)), Number(bLen)))
+  const E = bytesToBigInt(setLengthRight(data.subarray(Number(eStart), Number(eEnd)), Number(eLen)))
+  const M = bytesToBigInt(setLengthRight(data.subarray(Number(mStart), Number(mEnd)), Number(mLen)))
 
   if (mEnd > maxInt) {
+    if (opts._debug !== undefined) {
+      opts._debug(`MODEXP (0x05) failed: OOG`)
+    }
     return OOGResult(opts.gasLimit)
   }
 
@@ -159,8 +174,13 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     R = expmod(B, E, M)
   }
 
+  const res = setLengthLeft(bigIntToBytes(R), Number(mLen))
+  if (opts._debug !== undefined) {
+    opts._debug(`MODEXP (0x05) return value=${bytesToHex(res)}`)
+  }
+
   return {
     executionGasUsed: gasUsed,
-    returnValue: setLengthLeft(bigIntToBuffer(R), Number(mLen)),
+    returnValue: setLengthLeft(bigIntToBytes(R), Number(mLen)),
   }
 }

@@ -1,47 +1,47 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { MemoryLevel } from 'memory-level'
-import * as tape from 'tape'
+import { MapDB } from '@ethereumjs/util'
+import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
+import { assert, describe, it } from 'vitest'
 
-import { Blockchain } from '../src'
+import { Blockchain } from '../src/index.js'
 
-import * as blocksData from './testdata/blocks_mainnet.json'
+import blocksData from './testdata/blocks_mainnet.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
-import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from './util'
+import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from './util.js'
 
 import type { BlockOptions } from '@ethereumjs/block'
 
-tape('blockchain test', (t) => {
-  t.test('should not crash on getting head of a blockchain without a genesis', async (st) => {
+describe('blockchain test', () => {
+  it('should not crash on getting head of a blockchain without a genesis', async () => {
     const blockchain = await Blockchain.create({
       validateBlocks: true,
       validateConsensus: false,
     })
     await blockchain.getIteratorHead()
-    st.end()
   })
 
-  t.test('should initialize correctly', async (st) => {
+  it('should initialize correctly', async () => {
     const common = new Common({ chain: Chain.Ropsten })
     let blockchain = await Blockchain.create({ common })
 
     const iteratorHead = await blockchain.getIteratorHead()
 
-    st.ok(
-      iteratorHead.hash().equals(blockchain.genesisBlock.hash()),
+    assert.deepEqual(
+      iteratorHead.hash(),
+      blockchain.genesisBlock.hash(),
       'correct genesis hash (getIteratorHead())'
     )
 
     blockchain = await Blockchain.create({ common, hardforkByHeadBlockNumber: true })
-    st.equal(
+    assert.equal(
       common.hardfork(),
       'tangerineWhistle',
       'correct HF setting with hardforkByHeadBlockNumber option'
     )
-    st.end()
   })
 
-  t.test('should initialize correctly with Blockchain.fromBlocksData()', async (st) => {
+  it('should initialize correctly with Blockchain.fromBlocksData()', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.fromBlocksData(blocksData, {
       validateBlocks: true,
@@ -49,25 +49,24 @@ tape('blockchain test', (t) => {
       common,
     })
     const head = await blockchain.getIteratorHead()
-    st.equals(head.header.number, BigInt(0), 'correct block number')
-    st.end()
+    assert.equal(head.header.number, BigInt(0), 'correct block number')
   })
 
-  t.test('should only initialize with supported consensus validation options', async (st) => {
+  it('should only initialize with supported consensus validation options', async () => {
     let common = new Common({ chain: Chain.Mainnet })
     try {
       await Blockchain.create({ common, validateConsensus: true })
       await Blockchain.create({ common, validateBlocks: true })
       common = new Common({ chain: Chain.Goerli })
       await Blockchain.create({ common, validateConsensus: true })
-      await Blockchain.create({ common, validateBlocks: true })
-      st.pass('should not throw')
+      const chain = await Blockchain.create({ common, validateBlocks: true })
+      assert.ok(chain instanceof Blockchain, 'should not throw')
     } catch (error) {
-      st.fail('show not have thrown')
+      assert.fail('show not have thrown')
     }
   })
 
-  t.test('should add a genesis block without errors', async (st) => {
+  it('should add a genesis block without errors', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const genesisBlock = Block.fromBlockData({ header: { number: 0 } }, { common })
     const blockchain = await Blockchain.create({
@@ -76,14 +75,14 @@ tape('blockchain test', (t) => {
       validateConsensus: false,
       genesisBlock,
     })
-    st.ok(
-      genesisBlock.hash().equals((await blockchain.getCanonicalHeadHeader()).hash()),
+    assert.deepEqual(
+      genesisBlock.hash(),
+      (await blockchain.getCanonicalHeadHeader()).hash(),
       'genesis block hash should be correct'
     )
-    st.end()
   })
 
-  t.test('should not validate a block incorrectly flagged as genesis', async (st) => {
+  it('should not validate a block incorrectly flagged as genesis', async () => {
     const genesisBlock = Block.fromBlockData({ header: { number: BigInt(8) } })
     try {
       await Blockchain.create({
@@ -92,22 +91,20 @@ tape('blockchain test', (t) => {
         genesisBlock,
       })
     } catch (error: any) {
-      st.ok(error, 'returned with error')
-      st.end()
+      assert.ok(error, 'returned with error')
     }
   })
 
-  t.test('should initialize with a genesis block', async (st) => {
+  it('should initialize with a genesis block', async () => {
     const blockchain = await Blockchain.create({
       validateBlocks: true,
       validateConsensus: false,
     })
     const blocks = await blockchain.getBlocks(0, 5, 0, false)
-    st.equal(blocks!.length, 1)
-    st.end()
+    assert.equal(blocks!.length, 1)
   })
 
-  t.test('should add 12 blocks, one at a time', async (st) => {
+  it('should add 12 blocks, one at a time', async () => {
     const blocks: Block[] = []
     const gasLimit = 8000000
     const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Istanbul })
@@ -144,16 +141,19 @@ tape('blockchain test', (t) => {
         await addNextBlock(number + 1)
       } else {
         const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 12, 0, false)
-        st.equal(getBlocks.length, 12)
-        st.equal(common.hardfork(), 'spuriousDragon', 'correct HF updates along block additions')
-        st.end()
+        assert.equal(getBlocks.length, 12)
+        assert.equal(
+          common.hardfork(),
+          'spuriousDragon',
+          'correct HF updates along block additions'
+        )
       }
     }
 
     await addNextBlock(1)
   })
 
-  t.test('should get block by number', async (st) => {
+  it('getBlock(): should get block by number', async () => {
     const blocks: Block[] = []
     const gasLimit = 8000000
     const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Istanbul })
@@ -185,14 +185,13 @@ tape('blockchain test', (t) => {
 
     const returnedBlock = await blockchain.getBlock(1)
     if (typeof returnedBlock !== 'undefined') {
-      st.ok(returnedBlock.hash().equals(blocks[1].hash()))
+      assert.deepEqual(returnedBlock.hash(), blocks[1].hash())
     } else {
-      st.fail('block is not defined!')
+      assert.fail('block is not defined!')
     }
-    st.end()
   })
 
-  t.test('should get block by hash', async (st) => {
+  it('getBlock(): should get block by hash / not existing', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const gasLimit = 8000000
     const genesisBlock = Block.fromBlockData({ header: { gasLimit } }, { common })
@@ -204,310 +203,219 @@ tape('blockchain test', (t) => {
       genesisBlock,
     })
     const block = await blockchain.getBlock(genesisBlock.hash())
-    if (typeof block !== 'undefined') {
-      st.ok(block.hash().equals(genesisBlock.hash()))
-    } else {
-      st.fail('block is not defined!')
+    assert.deepEqual(block.hash(), genesisBlock.hash())
+
+    try {
+      await blockchain.getBlock(5)
+      assert.fail('should throw an exception')
+    } catch (e: any) {
+      assert.ok(
+        e.message.includes('not found in DB'),
+        `should throw for non-existing block-by-number request`
+      )
     }
-    st.end()
+
+    try {
+      await blockchain.getBlock(hexToBytes('1234'))
+      assert.fail('should throw an exception')
+    } catch (e: any) {
+      assert.ok(
+        e.message.includes('not found in DB'),
+        `should throw for non-existing block-by-hash request`
+      )
+    }
   })
 
-  t.test('should get 5 consecutive blocks, starting from genesis hash', async (st) => {
+  it('should get 5 consecutive blocks, starting from genesis hash', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
+    assert.equal(error, null, 'no error')
     // start: genesisHash, max: 5, skip: 0, reverse: false
     const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 5, 0, false)
-    st.equal(getBlocks!.length, 5)
-    st.equal(blocks[0].header.number, getBlocks[0].header.number)
-    st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
-    st.end()
+    assert.equal(getBlocks!.length, 5)
+    assert.equal(blocks[0].header.number, getBlocks[0].header.number)
+    assert.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
+
+    const canonicalHeaderOriginal = await blockchain.getCanonicalHeadHeader()
+    assert.equal(canonicalHeaderOriginal.number, BigInt(24), 'block 24 should be canonical header')
+    const block22 = await blockchain.getBlock(22)
+    assert.equal(block22.header.number, BigInt(22), 'should fetch block by number')
+
+    await blockchain.resetCanonicalHead(BigInt(4))
+    let canonicalHeader = await blockchain.getCanonicalHeadHeader()
+    assert.equal(canonicalHeader.number, BigInt(4), 'block 4 should be new canonical header')
+
+    try {
+      await blockchain.getBlock(22)
+      assert.fail('canonical references should have been deleted')
+    } catch (err: any) {
+      assert.ok(err.message.includes('not found in DB'), 'canonical references correctly deleted')
+    }
+
+    try {
+      await blockchain.getCanonicalHeader(BigInt(22))
+      assert.fail('canonical references should have been deleted')
+    } catch (err: any) {
+      assert.equal(
+        err.message,
+        'header with number 22 not found in canonical chain',
+        'canonical references correctly deleted'
+      )
+    }
+
+    await blockchain.putHeader(canonicalHeaderOriginal)
+    canonicalHeader = await blockchain.getCanonicalHeadHeader()
+    assert.equal(canonicalHeader.number, BigInt(24), 'block 24 should be new canonical header')
+
+    const newblock22 = await blockchain.getBlock(22)
+    assert.equal(newblock22.header.number, BigInt(22), 'canonical references should be restored')
+    assert.equal(
+      bytesToHex(newblock22.hash()),
+      bytesToHex(newblock22.hash()),
+      'fetched block should match'
+    )
+    const newheader22 = await blockchain.getCanonicalHeader(BigInt(22))
+    assert.equal(newheader22.number, BigInt(22), 'canonical references should be restored')
   })
 
-  t.test('should get 5 blocks, skipping 1 apart, starting from genesis hash', async (st) => {
+  it('should get 5 blocks, skipping 1 apart, starting from genesis hash', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
+    assert.equal(error, null, 'no error')
     // start: genesisHash, max: 5, skip: 1, reverse: false
     const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 5, 1, false)
-    st.equal(getBlocks!.length, 5, 'should get 5 blocks')
-    st.equal(getBlocks![1].header.number, blocks[2].header.number, 'should skip second block')
-    st.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
-    st.end()
+    assert.equal(getBlocks!.length, 5, 'should get 5 blocks')
+    assert.equal(getBlocks![1].header.number, blocks[2].header.number, 'should skip second block')
+    assert.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
   })
 
-  t.test('should get 4 blocks, skipping 2 apart, starting from genesis hash', async (st) => {
+  it('should get 4 blocks, skipping 2 apart, starting from genesis hash', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
+    assert.equal(error, null, 'no error')
     // start: genesisHash, max: 4, skip: 2, reverse: false
     const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 4, 2, false)
-    st.equal(getBlocks!.length, 4, 'should get 4 blocks')
-    st.equal(getBlocks![1].header.number, blocks[3].header.number, 'should skip two blocks apart')
-    st.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
-    st.end()
+    assert.equal(getBlocks!.length, 4, 'should get 4 blocks')
+    assert.equal(
+      getBlocks![1].header.number,
+      blocks[3].header.number,
+      'should skip two blocks apart'
+    )
+    assert.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
   })
 
-  t.test('should get 10 consecutive blocks, starting from genesis hash', async (st) => {
+  it('should get 10 consecutive blocks, starting from genesis hash', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(15)
-    st.error(error, 'no error')
+    assert.equal(error, null, 'no error')
     // start: genesisHash, max: 17, skip: 0, reverse: false
     const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 17, 0, false)
-    st.equal(getBlocks!.length, 15)
-    st.equal(getBlocks![0].header.number, blocks[0].header.number)
-    st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
-    st.end()
+    assert.equal(getBlocks!.length, 15)
+    assert.equal(getBlocks![0].header.number, blocks[0].header.number)
+    assert.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
   })
 
-  t.test('should get 5 consecutive blocks, starting from block 0', async (st) => {
+  it('should get 5 consecutive blocks, starting from block 0', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
+    assert.equal(error, null, 'no error')
     // start: 0, max: 5, skip: 0, reverse: false
     const getBlocks = await blockchain.getBlocks(0, 5, 0, false)
-    st.equal(getBlocks!.length, 5)
-    st.equal(getBlocks![0].header.number, blocks[0].header.number)
-    st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
-    st.end()
+    assert.equal(getBlocks!.length, 5)
+    assert.equal(getBlocks![0].header.number, blocks[0].header.number)
+    assert.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
   })
 
-  t.test('should get 5 blocks, skipping 1 apart, starting from block 1', async (st) => {
+  it('should get 5 blocks, skipping 1 apart, starting from block 1', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
+    assert.equal(error, null, 'no error')
     // start: 1, max: 5, skip: 1, reverse: false
     const getBlocks = await blockchain.getBlocks(1, 5, 1, false)
-    st.equal(getBlocks!.length, 5)
-    st.equal(getBlocks![1].header.number, blocks[3].header.number, 'should skip one block')
-    st.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
-    st.end()
+    assert.equal(getBlocks!.length, 5)
+    assert.equal(getBlocks![1].header.number, blocks[3].header.number, 'should skip one block')
+    assert.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
   })
 
-  t.test('should get 5 blocks, skipping 2 apart, starting from block 0', async (st) => {
+  it('should get 5 blocks, skipping 2 apart, starting from block 0', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
+    assert.equal(error, null, 'no error')
     // start: 0, max: 5, skip: 2, reverse: false
     const getBlocks = await blockchain.getBlocks(0, 5, 2, false)
-    st.equal(getBlocks!.length, 5)
-    st.equal(getBlocks![1].header.number, blocks[3].header.number, 'should skip two blocks')
-    st.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
-    st.end()
+    assert.equal(getBlocks!.length, 5)
+    assert.equal(getBlocks![1].header.number, blocks[3].header.number, 'should skip two blocks')
+    assert.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
   })
 
-  t.test('should get 15 consecutive blocks, starting from block 0', async (st) => {
+  it('should get 15 consecutive blocks, starting from block 0', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(15)
-    st.error(error, 'no error')
+    assert.equal(error, null, 'no error')
     // start: 0, max: 17, skip: 0, reverse: false
     const getBlocks = await blockchain.getBlocks(0, 17, 0, false)
-    st.equal(getBlocks!.length, 15)
-    st.equal(getBlocks![0].header.number, blocks[0].header.number)
-    st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
-    st.end()
+    assert.equal(getBlocks!.length, 15)
+    assert.equal(getBlocks![0].header.number, blocks[0].header.number)
+    assert.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
   })
 
-  t.test('should get 5 consecutive blocks, starting from block 1', async (st) => {
+  it('should get 5 consecutive blocks, starting from block 1', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
+    assert.equal(error, null, 'no error')
     // start: 1, max: 5, skip: 0, reverse: false
     const getBlocks = await blockchain.getBlocks(1, 5, 0, false)
-    st.equal(getBlocks!.length, 5)
-    st.equal(getBlocks![0].header.number, blocks[1].header.number)
-    st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
-    st.end()
+    assert.equal(getBlocks!.length, 5)
+    assert.equal(getBlocks![0].header.number, blocks[1].header.number)
+    assert.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
   })
 
-  t.test('should get 5 consecutive blocks, starting from block 5', async (st) => {
+  it('should get 5 consecutive blocks, starting from block 5', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
+    assert.equal(error, null, 'no error')
     // start: 5, max: 5, skip: 0, reverse: false
     const getBlocks = await blockchain.getBlocks(5, 5, 0, false)
-    st.equal(getBlocks!.length, 5)
-    st.equal(getBlocks![0].header.number, blocks[5].header.number)
-    st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
-    st.end()
+    assert.equal(getBlocks!.length, 5)
+    assert.equal(getBlocks![0].header.number, blocks[5].header.number)
+    assert.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
   })
 
-  t.test('should get 5 consecutive blocks, starting from block 5, reversed', async (st) => {
+  it('should get 5 consecutive blocks, starting from block 5, reversed', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
+    assert.equal(error, null, 'no error')
     // start: 5, max: 5, skip: 0, reverse: true
     const getBlocks = await blockchain.getBlocks(5, 5, 0, true)
-    st.equal(getBlocks!.length, 5)
-    st.equal(getBlocks![0].header.number, blocks[5].header.number)
-    st.ok(isConsecutive(getBlocks!.reverse()), 'blocks should be consecutive')
-    st.end()
+    assert.equal(getBlocks!.length, 5)
+    assert.equal(getBlocks![0].header.number, blocks[5].header.number)
+    assert.ok(isConsecutive(getBlocks!.reverse()), 'blocks should be consecutive')
   })
 
-  t.test('should get 6 consecutive blocks, starting from block 5, reversed', async (st) => {
+  it('should get 6 consecutive blocks, starting from block 5, reversed', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(15)
-    st.error(error, 'no error')
+    assert.equal(error, null, 'no error')
     // start: 5, max: 15, skip: 0, reverse: true
     const getBlocks = await blockchain.getBlocks(5, 15, 0, true)
-    st.equal(getBlocks!.length, 6)
-    st.equal(getBlocks![0].header.number, blocks[5].header.number)
-    st.ok(isConsecutive(getBlocks!.reverse()), 'blocks should be consecutive')
-    st.end()
+    assert.equal(getBlocks!.length, 6)
+    assert.equal(getBlocks![0].header.number, blocks[5].header.number)
+    assert.ok(isConsecutive(getBlocks!.reverse()), 'blocks should be consecutive')
   })
 
-  t.test('should get 6 blocks, starting from block 10, reversed, skipping 1 apart', async (st) => {
+  it('should get 6 blocks, starting from block 10, reversed, skipping 1 apart', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
+    assert.equal(error, null, 'no error')
     // start: 10, max: 10, skip: 1, reverse: true
     const getBlocks = await blockchain.getBlocks(10, 10, 1, true)
-    st.equal(getBlocks!.length, 6)
-    st.equal(getBlocks![1].header.number, blocks[8].header.number, 'should skip one block')
-    st.ok(!isConsecutive(getBlocks!.reverse()), 'blocks should not be consecutive')
-    st.end()
+    assert.equal(getBlocks!.length, 6)
+    assert.equal(getBlocks![1].header.number, blocks[8].header.number, 'should skip one block')
+    assert.ok(!isConsecutive(getBlocks!.reverse()), 'blocks should not be consecutive')
   })
 
-  t.test('should find needed hashes', async (st) => {
+  it('should find needed hashes', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
-    const neededHash = Buffer.from('abcdef', 'hex')
+    assert.equal(error, null, 'no error')
+    const neededHash = hexToBytes('abcdef')
     const hashes = await blockchain.selectNeededHashes([
       blocks[0].hash(),
       blocks[9].hash(),
       neededHash,
     ])
-    st.ok(hashes[0].equals(neededHash))
-    st.end()
+    assert.deepEqual(hashes[0], neededHash)
   })
 
-  t.test('should iterate through 24 blocks', async (st) => {
-    const { blockchain, blocks, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
-    let i = 0
-    const iterated = await blockchain.iterator('test', (block: Block) => {
-      if (block.hash().equals(blocks[i + 1].hash())) {
-        i++
-      }
-    })
-    st.equal(iterated, 24)
-    st.equal(i, 24)
-    st.end()
-  })
-
-  t.test(
-    'should iterate through maxBlocks blocks if maxBlocks parameter is provided',
-    async (st) => {
-      const { blockchain, blocks, error } = await generateBlockchain(25)
-      st.error(error, 'no error')
-      let i = 0
-      const iterated = await blockchain.iterator(
-        'test',
-        (block: Block) => {
-          if (block.hash().equals(blocks[i + 1].hash())) {
-            i++
-          }
-        },
-        5
-      )
-      st.equal(iterated, 5)
-      st.equal(i, 5)
-      st.end()
-    }
-  )
-
-  t.test(
-    'should iterate through 0 blocks in case 0 maxBlocks parameter is provided',
-    async (st) => {
-      const { blockchain, blocks, error } = await generateBlockchain(25)
-      st.error(error, 'no error')
-      let i = 0
-      const iterated = await blockchain
-        .iterator(
-          'test',
-          (block: Block) => {
-            if (block.hash().equals(blocks[i + 1].hash())) {
-              i++
-            }
-          },
-          0
-        )
-        .catch(() => {
-          st.fail('Promise cannot throw when running 0 blocks')
-        })
-      st.equal(iterated, 0)
-      st.equal(i, 0)
-      st.end()
-    }
-  )
-
-  t.test('should throw on a negative maxBlocks parameter in iterator', async (st) => {
-    const { blockchain, blocks, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
-    let i = 0
-    await blockchain
-      .iterator(
-        'test',
-        (block: Block) => {
-          if (block.hash().equals(blocks[i + 1].hash())) {
-            i++
-          }
-        },
-        -1
-      )
-      .catch(() => {
-        st.end()
-      })
-    // Note: if st.end() is not called (Promise did not throw), then this test fails, as it does not end.
-  })
-
-  t.test('should test setIteratorHead method', async (st) => {
-    const { blockchain, blocks, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
-
-    const headBlockIndex = 5
-
-    const headHash = blocks[headBlockIndex].hash()
-    await blockchain.setIteratorHead('myHead', headHash)
-    const currentHeadBlock = await blockchain.getIteratorHead('myHead')
-
-    st.ok(headHash.equals(currentHeadBlock.hash()), 'head hash equals the provided head hash')
-
-    let i = 0
-    // check that iterator starts from this head block
-    await blockchain.iterator(
-      'myHead',
-      (block: Block) => {
-        if (block.hash().equals(blocks[headBlockIndex + 1].hash())) {
-          i++
-        }
-      },
-      5
-    )
-
-    st.equal(i, 1)
-
-    st.end()
-  })
-
-  t.test('should catch iterator func error', async (st) => {
-    const { blockchain, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
-    try {
-      await blockchain.iterator('error', () => {
-        throw new Error('iterator func error')
-      })
-    } catch (error: any) {
-      st.ok(error)
-      st.equal(error.message, 'iterator func error', 'should return correct error')
-      st.end()
-    }
-  })
-
-  t.test('should not call iterator function in an empty blockchain', async (st) => {
-    const blockchain = await Blockchain.create({
-      validateBlocks: true,
-      validateConsensus: false,
-    })
-
-    await blockchain.iterator('test', () => {
-      st.fail('should not call iterator function')
-    })
-
-    st.pass('should finish iterating')
-    st.end()
-  })
-
-  t.test('should add fork header and reset stale heads', async (st) => {
+  it('should add fork header and reset stale heads', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(15)
-    st.error(error, 'no error')
+    assert.equal(error, null, 'no error')
 
     await blockchain.putBlocks(blocks.slice(1))
 
@@ -527,14 +435,13 @@ tape('blockchain test', (t) => {
 
     await blockchain.putHeader(forkHeader)
 
-    st.ok(blockchain._heads['staletest'].equals(blocks[14].hash()), 'should update stale head')
-    st.ok(blockchain._headBlockHash.equals(blocks[14].hash()), 'should update stale headBlock')
-    st.end()
+    assert.deepEqual(blockchain._heads['staletest'], blocks[14].hash(), 'should update stale head')
+    assert.deepEqual(blockchain._headBlockHash, blocks[14].hash(), 'should update stale headBlock')
   })
 
-  t.test('should delete fork header', async (st) => {
+  it('should delete fork header', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(15)
-    st.error(error, 'no error')
+    assert.equal(error, null, 'no error')
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const headerData = {
@@ -553,19 +460,18 @@ tape('blockchain test', (t) => {
 
     await blockchain.putHeader(forkHeader)
 
-    st.ok(blockchain._heads['staletest'].equals(blocks[14].hash()), 'should update stale head')
-    st.ok(blockchain._headBlockHash.equals(blocks[14].hash()), 'should update stale headBlock')
+    assert.deepEqual(blockchain._heads['staletest'], blocks[14].hash(), 'should update stale head')
+    assert.deepEqual(blockchain._headBlockHash, blocks[14].hash(), 'should update stale headBlock')
 
     await blockchain.delBlock(forkHeader.hash())
 
-    st.ok(blockchain._headHeaderHash.equals(blocks[14].hash()), 'should reset headHeader')
-    st.ok(blockchain._headBlockHash.equals(blocks[14].hash()), 'should not change headBlock')
-    st.end()
+    assert.deepEqual(blockchain._headHeaderHash, blocks[14].hash(), 'should reset headHeader')
+    assert.deepEqual(blockchain._headBlockHash, blocks[14].hash(), 'should not change headBlock')
   })
 
-  t.test('should delete blocks', async (st) => {
+  it('should delete blocks', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
+    assert.equal(error, null, 'no error')
 
     const delNextBlock = async (number: number): Promise<any> => {
       const block = blocks[number]
@@ -576,19 +482,17 @@ tape('blockchain test', (t) => {
     }
 
     await delNextBlock(9)
-    st.ok(blockchain._headHeaderHash.equals(blocks[5].hash()), 'should have block 5 as head')
-    st.end()
+    assert.deepEqual(blockchain._headHeaderHash, blocks[5].hash(), 'should have block 5 as head')
   })
 
-  t.test('should delete blocks and children', async (st) => {
+  it('should delete blocks and children', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
+    assert.equal(error, null, 'no error')
     await blockchain.delBlock(blocks[1].hash())
-    st.ok(blockchain._headHeaderHash.equals(blocks[0].hash()), 'should have genesis as head')
-    st.end()
+    assert.deepEqual(blockchain._headHeaderHash, blocks[0].hash(), 'should have genesis as head')
   })
 
-  t.test('should put one block at a time', async (st) => {
+  it('should put one block at a time', async () => {
     const blocks = generateBlocks(15)
     const blockchain = await Blockchain.create({
       validateBlocks: true,
@@ -598,10 +502,39 @@ tape('blockchain test', (t) => {
     await blockchain.putBlock(blocks[1])
     await blockchain.putBlock(blocks[2])
     await blockchain.putBlock(blocks[3])
-    st.end()
   })
 
-  t.test('should put multiple blocks at once', async (st) => {
+  it('should test nil bodies / throw', async () => {
+    const blocks = generateBlocks(3)
+    const blockchain = await Blockchain.create({
+      validateBlocks: false,
+      validateConsensus: false,
+      genesisBlock: blocks[0],
+    })
+    await blockchain.putHeader(blocks[1].header)
+    // Should be able to get the block
+    await blockchain.getBlock(BigInt(1))
+
+    const block2HeaderValuesArray = blocks[2].header.raw()
+
+    block2HeaderValuesArray[1] = new Uint8Array(32)
+    const block2Header = BlockHeader.fromValuesArray(block2HeaderValuesArray, {
+      common: blocks[2]._common,
+    })
+    await blockchain.putHeader(block2Header)
+    try {
+      await blockchain.getBlock(BigInt(2))
+      assert.fail('block should not be constucted')
+    } catch (e: any) {
+      assert.equal(
+        e.message,
+        'uncle hash should be equal to hash of empty array',
+        'block not constructed from empty bodies'
+      )
+    }
+  })
+
+  it('should put multiple blocks at once', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blocks: Block[] = []
     const genesisBlock = Block.fromBlockData({ header: { gasLimit: 8000000 } }, { common })
@@ -612,27 +545,9 @@ tape('blockchain test', (t) => {
       genesisBlock,
     })
     await blockchain.putBlocks(blocks.slice(1))
-    st.end()
   })
 
-  t.test('should get heads', async (st) => {
-    const [db, genesis] = await createTestDB()
-    const blockchain = await Blockchain.create({ db, genesisBlock: genesis })
-    const head = await blockchain.getIteratorHead()
-    if (typeof genesis !== 'undefined') {
-      st.ok(head.hash().equals(genesis.hash()), 'should get head')
-      st.equal(
-        (blockchain as any)._heads['head0'].toString('hex'),
-        'abcd',
-        'should get state root heads'
-      )
-      st.end()
-    } else {
-      st.fail()
-    }
-  })
-
-  t.test('should validate', async (st) => {
+  it('should validate', async () => {
     const genesisBlock = Block.fromBlockData({ header: { gasLimit: 8000000 } })
     const blockchain = await Blockchain.create({
       validateBlocks: true,
@@ -643,16 +558,15 @@ tape('blockchain test', (t) => {
     const invalidBlock = Block.fromBlockData({ header: { number: 50 } })
     try {
       await blockchain.putBlock(invalidBlock)
-      st.fail('should not validate an invalid block')
+      assert.fail('should not validate an invalid block')
     } catch (error: any) {
-      t.ok(error, 'should not validate an invalid block')
+      assert.ok(error, 'should not validate an invalid block')
     }
-    st.end()
   })
 
-  t.test('should add block with body', async (st) => {
+  it('should add block with body', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const genesisRlp = Buffer.from(testDataPreLondon.genesisRLP.slice(2), 'hex')
+    const genesisRlp = hexToBytes(testDataPreLondon.genesisRLP.slice(2))
     const genesisBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
     const blockchain = await Blockchain.create({
       validateBlocks: true,
@@ -660,33 +574,31 @@ tape('blockchain test', (t) => {
       genesisBlock,
     })
 
-    const blockRlp = Buffer.from(testDataPreLondon.blocks[0].rlp.slice(2), 'hex')
+    const blockRlp = hexToBytes(testDataPreLondon.blocks[0].rlp.slice(2))
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
     await blockchain.putBlock(block)
-    st.end()
   })
 
-  t.test('uncached db ops', async (st) => {
+  it('uncached db ops', async () => {
     const [db, genesis] = await createTestDB()
     if (typeof genesis === 'undefined') {
-      return st.fail('genesis not defined!')
+      return assert.fail('genesis not defined!')
     }
     const blockchain = await Blockchain.create({ db, genesisBlock: genesis })
 
     const number = await blockchain.dbManager.hashToNumber(genesis?.hash())
-    st.equal(number, BigInt(0), 'should perform _hashToNumber correctly')
+    assert.equal(number, BigInt(0), 'should perform _hashToNumber correctly')
 
     const hash = await blockchain.dbManager.numberToHash(BigInt(0))
-    st.ok(genesis.hash().equals(hash), 'should perform _numberToHash correctly')
+    assert.deepEqual(genesis.hash(), hash, 'should perform _numberToHash correctly')
 
     // cast the blockchain as <any> in order to get access to the private getTotalDifficulty
     const td = await (<any>blockchain).getTotalDifficulty(genesis.hash(), BigInt(0))
-    st.equal(td, genesis.header.difficulty, 'should perform getTotalDifficulty correctly')
-    st.end()
+    assert.equal(td, genesis.header.difficulty, 'should perform getTotalDifficulty correctly')
   })
 
-  t.test('should save headers', async (st) => {
-    const db = new MemoryLevel<string | Buffer, string | Buffer>()
+  it('should save headers', async () => {
+    const db = new MapDB()
     const gasLimit = 8000000
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
@@ -718,14 +630,13 @@ tape('blockchain test', (t) => {
     })
 
     const latestHeader = await blockchain.getCanonicalHeadHeader()
-    st.ok(latestHeader.hash().equals(header.hash()), 'should save headHeader')
+    assert.deepEqual(latestHeader.hash(), header.hash(), 'should save headHeader')
 
     const latestBlock = await blockchain.getCanonicalHeadBlock()
-    st.ok(latestBlock.hash().equals(genesisBlock.hash()), 'should save headBlock')
-    st.end()
+    assert.deepEqual(latestBlock.hash(), genesisBlock.hash(), 'should save headBlock')
   })
 
-  t.test('should get latest', async (st) => {
+  it('should get latest', async () => {
     const gasLimit = 8000000
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const opts: BlockOptions = { common }
@@ -771,22 +682,21 @@ tape('blockchain test', (t) => {
     await blockchain.putHeaders(headers)
 
     const latestHeader = await blockchain.getCanonicalHeadHeader()
-    st.ok(latestHeader.hash().equals(headers[1].hash()), 'should update latest header')
+    assert.deepEqual(latestHeader.hash(), headers[1].hash(), 'should update latest header')
 
     const latestBlock = await blockchain.getCanonicalHeadBlock()
-    st.ok(latestBlock.hash().equals(genesisBlock.hash()), 'should not change latest block')
+    assert.deepEqual(latestBlock.hash(), genesisBlock.hash(), 'should not change latest block')
 
     await blockchain.putBlock(block)
 
     const latestHeader2 = await blockchain.getCanonicalHeadHeader()
-    st.ok(latestHeader2.hash().equals(headers[1].hash()), 'should not change latest header')
+    assert.deepEqual(latestHeader2.hash(), headers[1].hash(), 'should not change latest header')
 
     const getBlock = await blockchain.getCanonicalHeadBlock()
-    st.ok(getBlock!.hash().equals(block.hash()), 'should update latest block')
-    st.end()
+    assert.deepEqual(getBlock!.hash(), block.hash(), 'should update latest block')
   })
 
-  t.test('mismatched chains', async (st) => {
+  it('mismatched chains', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const gasLimit = 8000000
 
@@ -830,17 +740,16 @@ tape('blockchain test', (t) => {
         error = err
       }
       if (i === 2) {
-        st.ok(error.message.match('Chain mismatch'), 'should return chain mismatch error')
+        assert.ok(error.message.match('Chain mismatch'), 'should return chain mismatch error')
       } else {
-        st.error(error, 'should not return mismatch error')
+        assert.isUndefined(error, 'should not return mismatch error')
       }
     }
-    st.end()
   })
 })
 
-tape('initialization tests', (t) => {
-  t.test('should read genesis from database', async (st) => {
+describe('initialization tests', () => {
+  it('should read genesis from database', async () => {
     const common = new Common({
       chain: Chain.Ropsten,
       hardfork: Hardfork.Chainstart,
@@ -848,8 +757,9 @@ tape('initialization tests', (t) => {
     const blockchain = await Blockchain.create({ common })
     const genesisHash = blockchain.genesisBlock.hash()
 
-    st.ok(
-      (await blockchain.getIteratorHead()).hash().equals(genesisHash),
+    assert.deepEqual(
+      (await blockchain.getIteratorHead()).hash(),
+      genesisHash,
       'head hash should equal expected ropsten genesis hash'
     )
 
@@ -857,19 +767,19 @@ tape('initialization tests', (t) => {
 
     const newBlockchain = await Blockchain.create({ db, common })
 
-    st.ok(
-      (await newBlockchain.getIteratorHead()).hash().equals(genesisHash),
+    assert.deepEqual(
+      (await newBlockchain.getIteratorHead()).hash(),
+      genesisHash,
       'head hash should be read from the provided db'
     )
-    st.end()
   })
 
-  t.test('should allow to put a custom genesis block', async (st) => {
+  it('should allow to put a custom genesis block', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const genesisBlock = Block.fromBlockData(
       {
         header: {
-          extraData: Buffer.from('custom extra data'),
+          extraData: utf8ToBytes('custom extra data'),
         },
       },
       { common }
@@ -878,25 +788,26 @@ tape('initialization tests', (t) => {
     const blockchain = await Blockchain.create({ common, genesisBlock })
     const db = blockchain.db
 
-    st.ok(
-      (await blockchain.getIteratorHead()).hash().equals(hash),
+    assert.deepEqual(
+      (await blockchain.getIteratorHead()).hash(),
+      hash,
       'blockchain should put custom genesis block'
     )
 
     const newBlockchain = await Blockchain.create({ db, genesisBlock })
-    st.ok(
-      (await newBlockchain.getIteratorHead()).hash().equals(hash),
+    assert.deepEqual(
+      (await newBlockchain.getIteratorHead()).hash(),
+      hash,
       'head hash should be read from the provided db'
     )
-    st.end()
   })
 
-  t.test('should not allow to change the genesis block in the database', async (st) => {
+  it('should not allow to change the genesis block in the database', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const genesisBlock = Block.fromBlockData(
       {
         header: {
-          extraData: Buffer.from('custom extra data'),
+          extraData: utf8ToBytes('custom extra data'),
         },
       },
       { common }
@@ -908,49 +819,52 @@ tape('initialization tests', (t) => {
     const otherGenesisBlock = Block.fromBlockData(
       {
         header: {
-          extraData: Buffer.from('other extra data'),
+          extraData: utf8ToBytes('other extra data'),
         },
       },
       { common }
     )
 
     // assert that this is a block with a new hash
-    if (otherGenesisBlock.hash().equals(hash)) {
-      st.fail('other genesis block should have a different hash than the genesis block')
+    if (equalsBytes(otherGenesisBlock.hash(), hash)) {
+      assert.fail('other genesis block should have a different hash than the genesis block')
     }
 
     // try to put a new genesis block should throw
     try {
       await blockchain.putBlock(otherGenesisBlock)
-      st.fail('putting a genesis block did not throw')
+      assert.fail('putting a genesis block did not throw')
     } catch (e: any) {
-      st.pass('putting a genesis block did throw')
+      assert.equal(
+        e.message,
+        'Cannot put a genesis block: create a new Blockchain',
+        'putting a genesis block did throw (otherGenesisBlock not found in chain)'
+      )
     }
 
     // trying to input a genesis block which differs from the one in db should throw on creation
     try {
       await Blockchain.create({ genesisBlock: otherGenesisBlock, db })
-      st.fail('creating blockchain with different genesis block than in db did not throw')
+      assert.fail('creating blockchain with different genesis block than in db did not throw')
     } catch (e: any) {
-      st.pass('creating blockchain with different genesis block than in db throws')
+      assert.equal(
+        e.message,
+        'The genesis block in the DB has a different hash than the provided genesis block.',
+        'creating blockchain with different genesis block than in db throws'
+      )
     }
-
-    st.end()
   })
 
-  t.test('should correctly derive ropsten genesis block hash and stateRoot', async (st) => {
+  it('should correctly derive ropsten genesis block hash and stateRoot', async () => {
     const common = new Common({ chain: Chain.Ropsten })
     const blockchain = await Blockchain.create({ common })
-    const ropstenGenesisBlockHash = Buffer.from(
-      '41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d',
-      'hex'
+    const ropstenGenesisBlockHash = hexToBytes(
+      '41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d'
     )
-    const ropstenGenesisStateRoot = Buffer.from(
-      '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b',
-      'hex'
+    const ropstenGenesisStateRoot = hexToBytes(
+      '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
     )
-    st.ok(blockchain.genesisBlock.hash().equals(ropstenGenesisBlockHash))
-    st.ok(blockchain.genesisBlock.header.stateRoot.equals(ropstenGenesisStateRoot))
-    st.end()
+    assert.deepEqual(blockchain.genesisBlock.hash(), ropstenGenesisBlockHash)
+    assert.deepEqual(blockchain.genesisBlock.header.stateRoot, ropstenGenesisStateRoot)
   })
 })

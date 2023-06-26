@@ -1,20 +1,25 @@
+import { equalsBytes } from 'ethereum-cryptography/utils.js'
+
 import {
   generateAddress,
   generateAddress2,
   isValidAddress,
   privateToAddress,
   pubToAddress,
-} from './account'
-import { bigIntToBuffer, bufferToBigInt, toBuffer, zeros } from './bytes'
+} from './account.js'
+import { bigIntToBytes, bytesToBigInt, bytesToPrefixedHexString, toBytes, zeros } from './bytes.js'
 
+/**
+ * Handling and generating Ethereum addresses
+ */
 export class Address {
-  public readonly buf: Buffer
+  public readonly bytes: Uint8Array
 
-  constructor(buf: Buffer) {
-    if (buf.length !== 20) {
+  constructor(bytes: Uint8Array) {
+    if (bytes.length !== 20) {
       throw new Error('Invalid address length')
     }
-    this.buf = buf
+    this.bytes = bytes
   }
 
   /**
@@ -32,31 +37,31 @@ export class Address {
     if (!isValidAddress(str)) {
       throw new Error('Invalid address')
     }
-    return new Address(toBuffer(str))
+    return new Address(toBytes(str))
   }
 
   /**
    * Returns an address for a given public key.
    * @param pubKey The two points of an uncompressed key
    */
-  static fromPublicKey(pubKey: Buffer): Address {
-    if (!Buffer.isBuffer(pubKey)) {
-      throw new Error('Public key should be Buffer')
+  static fromPublicKey(pubKey: Uint8Array): Address {
+    if (!(pubKey instanceof Uint8Array)) {
+      throw new Error('Public key should be Uint8Array')
     }
-    const buf = pubToAddress(pubKey)
-    return new Address(buf)
+    const bytes = pubToAddress(pubKey)
+    return new Address(bytes)
   }
 
   /**
    * Returns an address for a given private key.
    * @param privateKey A private key must be 256 bits wide
    */
-  static fromPrivateKey(privateKey: Buffer): Address {
-    if (!Buffer.isBuffer(privateKey)) {
-      throw new Error('Private key should be Buffer')
+  static fromPrivateKey(privateKey: Uint8Array): Address {
+    if (!(privateKey instanceof Uint8Array)) {
+      throw new Error('Private key should be Uint8Array')
     }
-    const buf = privateToAddress(privateKey)
-    return new Address(buf)
+    const bytes = privateToAddress(privateKey)
+    return new Address(bytes)
   }
 
   /**
@@ -68,7 +73,7 @@ export class Address {
     if (typeof nonce !== 'bigint') {
       throw new Error('Expected nonce to be a bigint')
     }
-    return new Address(generateAddress(from.buf, bigIntToBuffer(nonce)))
+    return new Address(generateAddress(from.bytes, bigIntToBytes(nonce)))
   }
 
   /**
@@ -77,21 +82,21 @@ export class Address {
    * @param salt A salt
    * @param initCode The init code of the contract being created
    */
-  static generate2(from: Address, salt: Buffer, initCode: Buffer): Address {
-    if (!Buffer.isBuffer(salt)) {
-      throw new Error('Expected salt to be a Buffer')
+  static generate2(from: Address, salt: Uint8Array, initCode: Uint8Array): Address {
+    if (!(salt instanceof Uint8Array)) {
+      throw new Error('Expected salt to be a Uint8Array')
     }
-    if (!Buffer.isBuffer(initCode)) {
-      throw new Error('Expected initCode to be a Buffer')
+    if (!(initCode instanceof Uint8Array)) {
+      throw new Error('Expected initCode to be a Uint8Array')
     }
-    return new Address(generateAddress2(from.buf, salt, initCode))
+    return new Address(generateAddress2(from.bytes, salt, initCode))
   }
 
   /**
    * Is address equal to another.
    */
   equals(address: Address): boolean {
-    return this.buf.equals(address.buf)
+    return equalsBytes(this.bytes, address.bytes)
   }
 
   /**
@@ -106,7 +111,7 @@ export class Address {
    * by EIP-1352
    */
   isPrecompileOrSystemAddress(): boolean {
-    const address = bufferToBigInt(this.buf)
+    const address = bytesToBigInt(this.bytes)
     const rangeMin = BigInt(0)
     const rangeMax = BigInt('0xffff')
     return address >= rangeMin && address <= rangeMax
@@ -116,13 +121,13 @@ export class Address {
    * Returns hex encoding of address.
    */
   toString(): string {
-    return '0x' + this.buf.toString('hex')
+    return bytesToPrefixedHexString(this.bytes)
   }
 
   /**
-   * Returns Buffer representation of address.
+   * Returns a new Uint8Array representation of address.
    */
-  toBuffer(): Buffer {
-    return Buffer.from(this.buf)
+  toBytes(): Uint8Array {
+    return new Uint8Array(this.bytes)
   }
 }

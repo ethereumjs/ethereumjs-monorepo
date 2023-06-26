@@ -1,9 +1,9 @@
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Chain } from '../../lib/blockchain'
-import { Config } from '../../lib/config'
-import { Event } from '../../lib/types'
+import { Chain } from '../../src/blockchain'
+import { Config } from '../../src/config'
+import { Event } from '../../src/types'
 
 tape('[LightEthereumService]', async (t) => {
   class PeerPool {
@@ -12,12 +12,12 @@ tape('[LightEthereumService]', async (t) => {
   }
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
-  td.replace('../../lib/net/peerpool', { PeerPool })
+  td.replace<any>('../../src/net/peerpool', { PeerPool })
   const MockChain = td.constructor([] as any)
   MockChain.prototype.open = td.func()
-  td.replace('../../lib/blockchain', { MockChain })
+  td.replace<any>('../../src/blockchain', { MockChain })
   const LesProtocol = td.constructor([] as any)
-  td.replace('../../lib/net/protocol/lesprotocol', { LesProtocol })
+  td.replace<any>('../../src/net/protocol/lesprotocol', { LesProtocol })
   class LightSynchronizer {
     start() {}
     stop() {}
@@ -28,13 +28,13 @@ tape('[LightEthereumService]', async (t) => {
   LightSynchronizer.prototype.stop = td.func<any>()
   LightSynchronizer.prototype.open = td.func<any>()
   LightSynchronizer.prototype.close = td.func<any>()
-  td.replace('../../lib/sync/lightsync', { LightSynchronizer })
+  td.replace<any>('../../src/sync/lightsync', { LightSynchronizer })
 
-  const { LightEthereumService } = await import('../../lib/service/lightethereumservice')
+  const { LightEthereumService } = await import('../../src/service/lightethereumservice')
 
   t.test('should initialize correctly', async (t) => {
-    const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
     t.ok(service.synchronizer instanceof LightSynchronizer, 'light sync')
     t.equals(service.name, 'eth', 'got name')
@@ -42,8 +42,8 @@ tape('[LightEthereumService]', async (t) => {
   })
 
   t.test('should get protocols', async (t) => {
-    const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
     t.ok(service.protocols[0] instanceof LesProtocol, 'light protocols')
     t.end()
@@ -52,8 +52,8 @@ tape('[LightEthereumService]', async (t) => {
   t.test('should open', async (t) => {
     t.plan(3)
     const server = td.object() as any
-    const config = new Config({ servers: [server] })
-    const chain = new Chain({ config })
+    const config = new Config({ servers: [server], accountCache: 10000, storageCache: 1000 })
+    const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
     await service.open()
     td.verify(service.synchronizer.open())
@@ -73,8 +73,8 @@ tape('[LightEthereumService]', async (t) => {
 
   t.test('should start/stop', async (t) => {
     const server = td.object() as any
-    const config = new Config({ servers: [server] })
-    const chain = new Chain({ config })
+    const config = new Config({ servers: [server], accountCache: 10000, storageCache: 1000 })
+    const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
     await service.start()
     td.verify(service.synchronizer.start())

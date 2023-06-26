@@ -1,7 +1,10 @@
-import { BranchNode, ExtensionNode, LeafNode, Trie } from '../trie'
-import { nibblesCompare, nibblesToBuffer } from '../util/nibbles'
+import { equalsBytes } from 'ethereum-cryptography/utils.js'
 
-import type { HashKeysFunction, Nibbles, TrieNode } from '../types'
+import { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
+import { Trie } from '../trie.js'
+import { nibblesCompare, nibblestoBytes } from '../util/nibbles.js'
+
+import type { HashKeysFunction, Nibbles, TrieNode } from '../types.js'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof.go
 
@@ -46,7 +49,7 @@ async function unset(
     // continue to the next node
     const next = child.getBranch(key[pos])
     const _child = next && (await trie.lookupNode(next))
-    return await unset(trie, child, _child, key, pos + 1, removeLeft, stack)
+    return unset(trie, child, _child, key, pos + 1, removeLeft, stack)
   } else if (child instanceof ExtensionNode || child instanceof LeafNode) {
     /**
      * This node is an extension node or lead node,
@@ -85,7 +88,7 @@ async function unset(
       stack.push(child)
 
       // continue to the next node
-      return await unset(trie, child, _child, key, pos + child.keyLength(), removeLeft, stack)
+      return unset(trie, child, _child, key, pos + child.keyLength(), removeLeft, stack)
     }
   } else if (child === null) {
     return pos - 1
@@ -160,8 +163,8 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
       }
 
       // Stop searching if `left` and `right` are not equal
-      if (!(leftNode instanceof Buffer)) {
-        if (rightNode instanceof Buffer) {
+      if (!(leftNode instanceof Uint8Array)) {
+        if (rightNode instanceof Uint8Array) {
           break
         }
 
@@ -171,7 +174,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
 
         let abort = false
         for (let i = 0; i < leftNode.length; i++) {
-          if (leftNode[i].compare(rightNode[i]) !== 0) {
+          if (!equalsBytes(leftNode[i], rightNode[i])) {
             abort = true
             break
           }
@@ -180,11 +183,11 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
           break
         }
       } else {
-        if (!(rightNode instanceof Buffer)) {
+        if (!(rightNode instanceof Uint8Array)) {
           break
         }
 
-        if (leftNode.compare(rightNode) !== 0) {
+        if (!equalsBytes(leftNode, rightNode)) {
           break
         }
       }
@@ -234,18 +237,18 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
 
     if (shortForkLeft !== 0 && shortForkRight !== 0) {
       // Unset the entire trie
-      return await removeSelfFromParentAndSaveStack(left)
+      return removeSelfFromParentAndSaveStack(left)
     }
 
     // Unset left node
     if (shortForkRight !== 0) {
       if (node instanceof LeafNode) {
-        return await removeSelfFromParentAndSaveStack(left)
+        return removeSelfFromParentAndSaveStack(left)
       }
 
       const child = await trie.lookupNode(node._value)
       if (child && child instanceof LeafNode) {
-        return await removeSelfFromParentAndSaveStack(left)
+        return removeSelfFromParentAndSaveStack(left)
       }
 
       const endPos = await unset(trie, node, child, left.slice(pos), node.keyLength(), false, stack)
@@ -257,12 +260,12 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
     // Unset right node
     if (shortForkLeft !== 0) {
       if (node instanceof LeafNode) {
-        return await removeSelfFromParentAndSaveStack(right)
+        return removeSelfFromParentAndSaveStack(right)
       }
 
       const child = await trie.lookupNode(node._value)
       if (child && child instanceof LeafNode) {
-        return await removeSelfFromParentAndSaveStack(right)
+        return removeSelfFromParentAndSaveStack(right)
       }
 
       const endPos = await unset(trie, node, child, right.slice(pos), node.keyLength(), true, stack)
@@ -314,11 +317,11 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
  * @returns The value from the key, or null if valid proof of non-existence.
  */
 async function verifyProof(
-  rootHash: Buffer,
-  key: Buffer,
-  proof: Buffer[],
+  rootHash: Uint8Array,
+  key: Uint8Array,
+  proof: Uint8Array[],
   useKeyHashingFunction: HashKeysFunction
-): Promise<{ value: Buffer | null; trie: Trie }> {
+): Promise<{ value: Uint8Array | null; trie: Trie }> {
   const proofTrie = new Trie({ root: rootHash, useKeyHashingFunction })
   try {
     await proofTrie.fromProof(proof)
@@ -395,7 +398,7 @@ async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
  *   Besides, if there are still some other leaves available on the right side, then
  *   an error will be returned.
  *
- * - Two edge elements proof. In this case two existent or non-existent proof(fisrt and last) should be provided.
+ * - Two edge elements proof. In this case two existent or non-existent proof(first and last) should be provided.
  *
  * NOTE: Currently only supports verification when the length of firstKey and lastKey are the same.
  *
@@ -408,12 +411,12 @@ async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
  * @returns a flag to indicate whether there exists more trie node in the trie
  */
 export async function verifyRangeProof(
-  rootHash: Buffer,
+  rootHash: Uint8Array,
   firstKey: Nibbles | null,
   lastKey: Nibbles | null,
   keys: Nibbles[],
-  values: Buffer[],
-  proof: Buffer[] | null,
+  values: Uint8Array[],
+  proof: Uint8Array[] | null,
   useKeyHashingFunction: HashKeysFunction
 ): Promise<boolean> {
   if (keys.length !== values.length) {
@@ -437,9 +440,9 @@ export async function verifyRangeProof(
   if (proof === null && firstKey === null && lastKey === null) {
     const trie = new Trie({ useKeyHashingFunction })
     for (let i = 0; i < keys.length; i++) {
-      await trie.put(nibblesToBuffer(keys[i]), values[i])
+      await trie.put(nibblestoBytes(keys[i]), values[i])
     }
-    if (rootHash.compare(trie.root()) !== 0) {
+    if (!equalsBytes(rootHash, trie.root())) {
       throw new Error('invalid all elements proof: root mismatch')
     }
     return false
@@ -455,7 +458,7 @@ export async function verifyRangeProof(
   if (keys.length === 0) {
     const { trie, value } = await verifyProof(
       rootHash,
-      nibblesToBuffer(firstKey),
+      nibblestoBytes(firstKey),
       proof,
       useKeyHashingFunction
     )
@@ -471,7 +474,7 @@ export async function verifyRangeProof(
   if (keys.length === 1 && nibblesCompare(firstKey, lastKey) === 0) {
     const { trie, value } = await verifyProof(
       rootHash,
-      nibblesToBuffer(firstKey),
+      nibblestoBytes(firstKey),
       proof,
       useKeyHashingFunction
     )
@@ -479,7 +482,7 @@ export async function verifyRangeProof(
     if (nibblesCompare(firstKey, keys[0]) !== 0) {
       throw new Error('invalid one element proof: firstKey should be equal to keys[0]')
     }
-    if (value === null || value.compare(values[0]) !== 0) {
+    if (value === null || !equalsBytes(value, values[0])) {
       throw new Error('invalid one element proof: value mismatch')
     }
 
@@ -507,11 +510,11 @@ export async function verifyRangeProof(
 
   // Put all elements to the trie
   for (let i = 0; i < keys.length; i++) {
-    await trie.put(nibblesToBuffer(keys[i]), values[i])
+    await trie.put(nibblestoBytes(keys[i]), values[i])
   }
 
   // Compare rootHash
-  if (trie.root().compare(rootHash) !== 0) {
+  if (!equalsBytes(trie.root(), rootHash)) {
     throw new Error('invalid two edge elements proof: root mismatch')
   }
 

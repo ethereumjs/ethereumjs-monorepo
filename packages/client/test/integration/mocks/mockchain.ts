@@ -1,9 +1,9 @@
 import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 
-import { Chain } from '../../../lib/blockchain'
+import { Chain } from '../../../src/blockchain'
 
-import type { ChainOptions } from '../../../lib/blockchain'
+import type { ChainOptions } from '../../../src/blockchain'
 
 interface MockChainOptions extends ChainOptions {
   height?: number
@@ -33,7 +33,7 @@ export class MockChain extends Chain {
         {
           header: {
             number: number + 1,
-            difficulty: common.gteHardfork(Hardfork.Merge) ? 0 : 1,
+            difficulty: common.gteHardfork(Hardfork.Paris) ? 0 : 1,
             parentHash: number ? blocks[number - 1].hash() : this.genesis.hash(),
           },
         },

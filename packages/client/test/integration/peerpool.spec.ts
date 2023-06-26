@@ -1,10 +1,10 @@
 import { Blockchain } from '@ethereumjs/blockchain'
 import * as tape from 'tape'
 
-import { Config } from '../../lib/config'
-import { PeerPool } from '../../lib/net/peerpool'
-import { EthProtocol } from '../../lib/net/protocol'
-import { Event } from '../../lib/types'
+import { Config } from '../../src/config'
+import { PeerPool } from '../../src/net/peerpool'
+import { EthProtocol } from '../../src/net/protocol'
+import { Event } from '../../src/types'
 
 import { MockChain } from './mocks/mockchain'
 import { MockServer } from './mocks/mockserver'
@@ -12,10 +12,10 @@ import { wait } from './util'
 
 tape('[Integration:PeerPool]', async (t) => {
   async function setup(protocols: EthProtocol[] = []): Promise<[MockServer, PeerPool]> {
-    const serverConfig = new Config()
+    const serverConfig = new Config({ accountCache: 10000, storageCache: 1000 })
     const server = new MockServer({ config: serverConfig }) as any
     server.addProtocols(protocols)
-    const config = new Config({ servers: [server] })
+    const config = new Config({ servers: [server], accountCache: 10000, storageCache: 1000 })
     await server.start()
     const pool = new PeerPool({ config })
     await pool.open()
@@ -64,7 +64,7 @@ tape('[Integration:PeerPool]', async (t) => {
   })
 
   t.test('should handle peer messages', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const blockchain = await Blockchain.create({
       validateBlocks: false,
       validateConsensus: false,

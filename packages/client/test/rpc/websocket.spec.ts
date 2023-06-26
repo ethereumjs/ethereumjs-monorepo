@@ -1,7 +1,8 @@
+import { randomBytes } from '@ethereumjs/util'
 import { encode } from 'jwt-simple'
 import * as tape from 'tape'
 
-import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code'
+import { METHOD_NOT_FOUND } from '../../src/rpc/error-code'
 
 import { closeRPC, startRPC } from './helpers'
 
@@ -9,7 +10,7 @@ import type { TAlgorithm } from 'jwt-simple'
 
 const request = require('superwstest')
 
-const jwtSecret = Buffer.from(Array.from({ length: 32 }, () => Math.round(Math.random() * 255)))
+const jwtSecret = randomBytes(32)
 const wsPort = 3000
 
 tape('call JSON-RPC auth protected server with valid token', (t) => {

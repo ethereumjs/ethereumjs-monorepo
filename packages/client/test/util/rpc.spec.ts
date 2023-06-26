@@ -1,23 +1,23 @@
-import { isTruthy } from '@ethereumjs/util'
+import { bytesToPrefixedHexString } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { EthereumClient } from '../../lib/client'
-import { Config } from '../../lib/config'
-import { RPCManager } from '../../lib/rpc'
-import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code'
+import { EthereumClient } from '../../src/client'
+import { Config } from '../../src/config'
+import { RPCManager } from '../../src/rpc'
+import { METHOD_NOT_FOUND } from '../../src/rpc/error-code'
 import {
   MethodConfig,
   createRPCServer,
   createRPCServerListener,
   createWsRPCServerListener,
-} from '../../lib/util/rpc'
+} from '../../src/util/rpc'
 
 const request = require('supertest')
 
 tape('[Util/RPC]', (t) => {
-  t.test('should return enabled RPC servers', (st) => {
-    const config = new Config({ transports: [] })
-    const client = new EthereumClient({ config })
+  t.test('should return enabled RPC servers', async (st) => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const client = await EthereumClient.create({ config })
     const manager = new RPCManager(client, config)
     const { logger } = config
     for (const methodConfig of Object.values(MethodConfig)) {
@@ -25,14 +25,17 @@ tape('[Util/RPC]', (t) => {
         const { server } = createRPCServer(manager, { methodConfig, rpcDebug, logger })
         const httpServer = createRPCServerListener({
           server,
-          withEngineMiddleware: { jwtSecret: Buffer.alloc(32) },
+          withEngineMiddleware: { jwtSecret: new Uint8Array(32) },
         })
         const wsServer = createWsRPCServerListener({
           server,
-          withEngineMiddleware: { jwtSecret: Buffer.alloc(32) },
+          withEngineMiddleware: { jwtSecret: new Uint8Array(32) },
         })
         const req = { id: 1, method: 'eth_getCanonicalHeadBlock', params: [] }
-        const resp = { id: 1, result: { test: '0x' + Buffer.alloc(64, 1).toString('hex') } }
+        const resp = {
+          id: 1,
+          result: { test: bytesToPrefixedHexString(new Uint8Array(64).fill(1)) },
+        }
         const reqBulk = [req, req]
         const respBulk = [resp, { id: 2, error: { err0: '456' } }]
         // Valid
@@ -43,7 +46,10 @@ tape('[Util/RPC]', (t) => {
         server.emit('response', req, []) // empty
         server.emit('response', [req], respBulk) // mismatch length
 
-        st.ok(isTruthy(httpServer) && isTruthy(wsServer), 'should return http and ws servers')
+        st.ok(
+          httpServer !== undefined && wsServer !== undefined,
+          'should return http and ws servers'
+        )
       }
     }
     st.end()
@@ -51,8 +57,13 @@ tape('[Util/RPC]', (t) => {
 })
 
 tape('[Util/RPC/Engine eth methods]', async (t) => {
-  const config = new Config({ transports: [], saveReceipts: true })
-  const client = new EthereumClient({ config })
+  const config = new Config({
+    transports: [],
+    accountCache: 10000,
+    storageCache: 1000,
+    saveReceipts: true,
+  })
+  const client = await EthereumClient.create({ config })
   const manager = new RPCManager(client, config)
   const { server } = createRPCServer(manager, {
     methodConfig: MethodConfig.EngineOnly,

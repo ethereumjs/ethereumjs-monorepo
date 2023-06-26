@@ -1,7 +1,7 @@
-import { BlockHeader } from './header'
-import { numberToHex } from './helpers'
+import { BlockHeader } from './header.js'
+import { numberToHex } from './helpers.js'
 
-import type { BlockOptions } from './types'
+import type { BlockOptions, JsonRpcBlock } from './types.js'
 
 /**
  * Creates a new block header object from Ethereum JSON RPC.
@@ -9,7 +9,7 @@ import type { BlockOptions } from './types'
  * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
  * @param options - An object describing the blockchain
  */
-export function blockHeaderFromRpc(blockParams: any, options?: BlockOptions) {
+export function blockHeaderFromRpc(blockParams: JsonRpcBlock, options?: BlockOptions) {
   const {
     parentHash,
     sha3Uncles,
@@ -27,6 +27,9 @@ export function blockHeaderFromRpc(blockParams: any, options?: BlockOptions) {
     mixHash,
     nonce,
     baseFeePerGas,
+    withdrawalsRoot,
+    dataGasUsed,
+    excessDataGas,
   } = blockParams
 
   const blockHeader = BlockHeader.fromHeaderData(
@@ -47,6 +50,9 @@ export function blockHeaderFromRpc(blockParams: any, options?: BlockOptions) {
       mixHash,
       nonce,
       baseFeePerGas,
+      withdrawalsRoot,
+      dataGasUsed,
+      excessDataGas,
     },
     options
   )

@@ -7,13 +7,13 @@ import {
   ConsensusType,
   Hardfork,
 } from '@ethereumjs/common'
-import { Address, isFalsy, isTruthy } from '@ethereumjs/util'
+import { Address, hexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { Chain } from '../../lib/blockchain'
-import { Config } from '../../lib/config'
-import { FullEthereumService } from '../../lib/service'
-import { Event } from '../../lib/types'
+import { Chain } from '../../src/blockchain'
+import { Config } from '../../src/config'
+import { FullEthereumService } from '../../src/service'
+import { Event } from '../../src/types'
 
 import { MockServer } from './mocks/mockserver'
 import { destroy, setup } from './util'
@@ -32,9 +32,10 @@ tape('[Integration:Merge]', async (t) => {
         },
       },
       hardforks: [
+        { name: 'chainstart', block: 0 },
         { name: 'london', block: 0 },
         {
-          name: 'merge',
+          name: 'paris',
           block: null,
           forkHash: null,
           ttd: BigInt(5),
@@ -52,9 +53,10 @@ tape('[Integration:Merge]', async (t) => {
         extraData: '0x3535353535353535353535353535353535353535353535353535353535353535',
       },
       hardforks: [
+        { name: 'chainstart', block: 0 },
         { name: 'london', block: 0 },
         {
-          name: 'merge',
+          name: 'paris',
           block: null,
           forkHash: null,
           ttd: BigInt(1000),
@@ -63,14 +65,14 @@ tape('[Integration:Merge]', async (t) => {
     },
     { baseChain: ChainCommon.Ropsten, hardfork: Hardfork.London }
   )
-  const accounts: [Address, Buffer][] = [
+  const accounts: [Address, Uint8Array][] = [
     [
-      new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
-      Buffer.from('64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993', 'hex'),
+      new Address(hexStringToBytes('0b90087d864e82a284dca15923f3776de6bb016f')),
+      hexStringToBytes('64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
     ],
   ]
   async function minerSetup(common: Common): Promise<[MockServer, FullEthereumService]> {
-    const config = new Config({ common })
+    const config = new Config({ common, accountCache: 10000, storageCache: 1000 })
     const server = new MockServer({ config })
     const blockchain = await Blockchain.create({
       common,
@@ -84,7 +86,7 @@ tape('[Integration:Merge]', async (t) => {
       mine: true,
       accounts,
     })
-    const chain = new Chain({ config: serviceConfig, blockchain })
+    const chain = await Chain.create({ config: serviceConfig, blockchain })
     // attach server to centralized event bus
     ;(server.config as any).events = serviceConfig.events
     const service = new FullEthereumService({
@@ -128,7 +130,7 @@ tape('[Integration:Merge]', async (t) => {
         t.fail('chain should not exceed merge TTD')
       }
     })
-    await remoteService.synchronizer.start()
+    await remoteService.synchronizer!.start()
     await new Promise(() => {}) // resolves once t.end() is called
   })
 
@@ -145,7 +147,7 @@ tape('[Integration:Merge]', async (t) => {
     remoteService.config.events.on(Event.CHAIN_UPDATED, async () => {
       const { height, td } = remoteService.chain.headers
       if (td > targetTTD) {
-        if (isFalsy(terminalHeight)) {
+        if (terminalHeight === undefined || terminalHeight === BigInt(0)) {
           terminalHeight = height
         }
         t.equal(
@@ -159,11 +161,15 @@ tape('[Integration:Merge]', async (t) => {
         await destroy(remoteServer, remoteService)
         t.end()
       }
-      if (isTruthy(terminalHeight) && terminalHeight < height) {
+      if (
+        typeof terminalHeight === 'bigint' &&
+        terminalHeight !== BigInt(0) &&
+        terminalHeight < height
+      ) {
         t.fail('chain should not exceed merge terminal block')
       }
     })
-    await remoteService.synchronizer.start()
+    await remoteService.synchronizer!.start()
     await new Promise(() => {}) // resolves once t.end() is called
   })
 })

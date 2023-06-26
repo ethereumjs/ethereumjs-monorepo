@@ -1,52 +1,57 @@
 import { RLP } from '@ethereumjs/rlp'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { Point, utils } from 'ethereum-cryptography/secp256k1'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import {
+  bytesToHex,
+  concatBytes,
+  equalsBytes,
+  hexToBytes,
+  utf8ToBytes,
+} from 'ethereum-cryptography/utils.js'
 
 import {
-  arrToBufArr,
-  bigIntToUnpaddedBuffer,
-  bufArrToArr,
-  bufferToBigInt,
-  bufferToHex,
-  toBuffer,
+  bigIntToUnpaddedBytes,
+  bytesToBigInt,
+  bytesToPrefixedHexString,
+  toBytes,
   zeros,
-} from './bytes'
-import { KECCAK256_NULL, KECCAK256_RLP } from './constants'
-import { assertIsBuffer, assertIsHexString, assertIsString } from './helpers'
-import { stripHexPrefix } from './internal'
-import { isTruthy } from './types'
+} from './bytes.js'
+import { KECCAK256_NULL, KECCAK256_RLP } from './constants.js'
+import { assertIsBytes, assertIsHexString, assertIsString } from './helpers.js'
+import { stripHexPrefix } from './internal.js'
 
-import type { BigIntLike, BufferLike } from './types'
+import type { BigIntLike, BytesLike } from './types.js'
 
 const _0n = BigInt(0)
 
 export interface AccountData {
   nonce?: BigIntLike
   balance?: BigIntLike
-  storageRoot?: BufferLike
-  codeHash?: BufferLike
+  storageRoot?: BytesLike
+  codeHash?: BytesLike
 }
+
+export type AccountBodyBytes = [Uint8Array, Uint8Array, Uint8Array, Uint8Array]
 
 export class Account {
   nonce: bigint
   balance: bigint
-  storageRoot: Buffer
-  codeHash: Buffer
+  storageRoot: Uint8Array
+  codeHash: Uint8Array
 
   static fromAccountData(accountData: AccountData) {
     const { nonce, balance, storageRoot, codeHash } = accountData
 
     return new Account(
-      isTruthy(nonce) ? bufferToBigInt(toBuffer(nonce)) : undefined,
-      isTruthy(balance) ? bufferToBigInt(toBuffer(balance)) : undefined,
-      isTruthy(storageRoot) ? toBuffer(storageRoot) : undefined,
-      isTruthy(codeHash) ? toBuffer(codeHash) : undefined
+      nonce !== undefined ? bytesToBigInt(toBytes(nonce)) : undefined,
+      balance !== undefined ? bytesToBigInt(toBytes(balance)) : undefined,
+      storageRoot !== undefined ? toBytes(storageRoot) : undefined,
+      codeHash !== undefined ? toBytes(codeHash) : undefined
     )
   }
 
-  public static fromRlpSerializedAccount(serialized: Buffer) {
-    const values = arrToBufArr(RLP.decode(Uint8Array.from(serialized)) as Uint8Array[]) as Buffer[]
+  public static fromRlpSerializedAccount(serialized: Uint8Array) {
+    const values = RLP.decode(serialized) as Uint8Array[]
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized account input. Must be array')
@@ -55,10 +60,10 @@ export class Account {
     return this.fromValuesArray(values)
   }
 
-  public static fromValuesArray(values: Buffer[]) {
+  public static fromValuesArray(values: Uint8Array[]) {
     const [nonce, balance, storageRoot, codeHash] = values
 
-    return new Account(bufferToBigInt(nonce), bufferToBigInt(balance), storageRoot, codeHash)
+    return new Account(bytesToBigInt(nonce), bytesToBigInt(balance), storageRoot, codeHash)
   }
 
   /**
@@ -90,29 +95,29 @@ export class Account {
   }
 
   /**
-   * Returns a Buffer Array of the raw Buffers for the account, in order.
+   * Returns an array of Uint8Arrays of the raw bytes for the account, in order.
    */
-  raw(): Buffer[] {
+  raw(): Uint8Array[] {
     return [
-      bigIntToUnpaddedBuffer(this.nonce),
-      bigIntToUnpaddedBuffer(this.balance),
+      bigIntToUnpaddedBytes(this.nonce),
+      bigIntToUnpaddedBytes(this.balance),
       this.storageRoot,
       this.codeHash,
     ]
   }
 
   /**
-   * Returns the RLP serialization of the account as a `Buffer`.
+   * Returns the RLP serialization of the account as a `Uint8Array`.
    */
-  serialize(): Buffer {
-    return Buffer.from(RLP.encode(bufArrToArr(this.raw())))
+  serialize(): Uint8Array {
+    return RLP.encode(this.raw())
   }
 
   /**
    * Returns a `Boolean` determining if the account is a contract.
    */
   isContract(): boolean {
-    return !this.codeHash.equals(KECCAK256_NULL)
+    return !equalsBytes(this.codeHash, KECCAK256_NULL)
   }
 
   /**
@@ -121,7 +126,7 @@ export class Account {
    * "An account is considered empty when it has no code and zero nonce and zero balance."
    */
   isEmpty(): boolean {
-    return this.balance === _0n && this.nonce === _0n && this.codeHash.equals(KECCAK256_NULL)
+    return this.balance === _0n && this.nonce === _0n && equalsBytes(this.codeHash, KECCAK256_NULL)
   }
 }
 
@@ -158,13 +163,13 @@ export const toChecksumAddress = function (
   const address = stripHexPrefix(hexAddress).toLowerCase()
 
   let prefix = ''
-  if (isTruthy(eip1191ChainId)) {
-    const chainId = bufferToBigInt(toBuffer(eip1191ChainId))
+  if (eip1191ChainId !== undefined) {
+    const chainId = bytesToBigInt(toBytes(eip1191ChainId))
     prefix = chainId.toString() + '0x'
   }
 
-  const buf = Buffer.from(prefix + address, 'utf8')
-  const hash = bytesToHex(keccak256(buf))
+  const bytes = utf8ToBytes(prefix + address)
+  const hash = bytesToHex(keccak256(bytes))
   let ret = '0x'
 
   for (let i = 0; i < address.length; i++) {
@@ -195,18 +200,18 @@ export const isValidChecksumAddress = function (
  * @param from The address which is creating this new address
  * @param nonce The nonce of the from account
  */
-export const generateAddress = function (from: Buffer, nonce: Buffer): Buffer {
-  assertIsBuffer(from)
-  assertIsBuffer(nonce)
+export const generateAddress = function (from: Uint8Array, nonce: Uint8Array): Uint8Array {
+  assertIsBytes(from)
+  assertIsBytes(nonce)
 
-  if (bufferToBigInt(nonce) === BigInt(0)) {
+  if (bytesToBigInt(nonce) === BigInt(0)) {
     // in RLP we want to encode null in the case of zero nonce
     // read the RLP documentation for an answer if you dare
-    return Buffer.from(keccak256(RLP.encode(bufArrToArr([from, null] as any)))).slice(-20)
+    return keccak256(RLP.encode([from, Uint8Array.from([])])).subarray(-20)
   }
 
   // Only take the lower 160bits of the hash
-  return Buffer.from(keccak256(RLP.encode(bufArrToArr([from, nonce])))).slice(-20)
+  return keccak256(RLP.encode([from, nonce])).subarray(-20)
 }
 
 /**
@@ -215,10 +220,14 @@ export const generateAddress = function (from: Buffer, nonce: Buffer): Buffer {
  * @param salt A salt
  * @param initCode The init code of the contract being created
  */
-export const generateAddress2 = function (from: Buffer, salt: Buffer, initCode: Buffer): Buffer {
-  assertIsBuffer(from)
-  assertIsBuffer(salt)
-  assertIsBuffer(initCode)
+export const generateAddress2 = function (
+  from: Uint8Array,
+  salt: Uint8Array,
+  initCode: Uint8Array
+): Uint8Array {
+  assertIsBytes(from)
+  assertIsBytes(salt)
+  assertIsBytes(initCode)
 
   if (from.length !== 20) {
     throw new Error('Expected from to be of length 20')
@@ -227,18 +236,16 @@ export const generateAddress2 = function (from: Buffer, salt: Buffer, initCode: 
     throw new Error('Expected salt to be of length 32')
   }
 
-  const address = keccak256(
-    Buffer.concat([Buffer.from('ff', 'hex'), from, salt, keccak256(initCode)])
-  )
+  const address = keccak256(concatBytes(hexToBytes('ff'), from, salt, keccak256(initCode)))
 
-  return toBuffer(address).slice(-20)
+  return address.subarray(-20)
 }
 
 /**
  * Checks if the private key satisfies the rules of the curve secp256k1.
  */
-export const isValidPrivate = function (privateKey: Buffer): boolean {
-  return utils.isValidPrivateKey(privateKey)
+export const isValidPrivate = function (privateKey: Uint8Array): boolean {
+  return secp256k1.utils.isValidPrivateKey(privateKey)
 }
 
 /**
@@ -247,13 +254,13 @@ export const isValidPrivate = function (privateKey: Buffer): boolean {
  * @param publicKey The two points of an uncompressed key, unless sanitize is enabled
  * @param sanitize Accept public keys in other formats
  */
-export const isValidPublic = function (publicKey: Buffer, sanitize: boolean = false): boolean {
-  assertIsBuffer(publicKey)
+export const isValidPublic = function (publicKey: Uint8Array, sanitize: boolean = false): boolean {
+  assertIsBytes(publicKey)
   if (publicKey.length === 64) {
     // Convert to SEC1 for secp256k1
     // Automatically checks whether point is on curve
     try {
-      Point.fromHex(Buffer.concat([Buffer.from([4]), publicKey]))
+      secp256k1.ProjectivePoint.fromHex(concatBytes(Uint8Array.from([4]), publicKey))
       return true
     } catch (e) {
       return false
@@ -265,7 +272,7 @@ export const isValidPublic = function (publicKey: Buffer, sanitize: boolean = fa
   }
 
   try {
-    Point.fromHex(publicKey)
+    secp256k1.ProjectivePoint.fromHex(publicKey)
     return true
   } catch (e) {
     return false
@@ -278,16 +285,16 @@ export const isValidPublic = function (publicKey: Buffer, sanitize: boolean = fa
  * @param pubKey The two points of an uncompressed key, unless sanitize is enabled
  * @param sanitize Accept public keys in other formats
  */
-export const pubToAddress = function (pubKey: Buffer, sanitize: boolean = false): Buffer {
-  assertIsBuffer(pubKey)
+export const pubToAddress = function (pubKey: Uint8Array, sanitize: boolean = false): Uint8Array {
+  assertIsBytes(pubKey)
   if (sanitize && pubKey.length !== 64) {
-    pubKey = Buffer.from(Point.fromHex(pubKey).toRawBytes(false).slice(1))
+    pubKey = secp256k1.ProjectivePoint.fromHex(pubKey).toRawBytes(false).slice(1)
   }
   if (pubKey.length !== 64) {
     throw new Error('Expected pubKey to be of length 64')
   }
   // Only take the lower 160bits of the hash
-  return Buffer.from(keccak256(pubKey)).slice(-20)
+  return keccak256(pubKey).subarray(-20)
 }
 export const publicToAddress = pubToAddress
 
@@ -295,27 +302,27 @@ export const publicToAddress = pubToAddress
  * Returns the ethereum public key of a given private key.
  * @param privateKey A private key must be 256 bits wide
  */
-export const privateToPublic = function (privateKey: Buffer): Buffer {
-  assertIsBuffer(privateKey)
+export const privateToPublic = function (privateKey: Uint8Array): Uint8Array {
+  assertIsBytes(privateKey)
   // skip the type flag and use the X, Y points
-  return Buffer.from(Point.fromPrivateKey(privateKey).toRawBytes(false).slice(1))
+  return secp256k1.ProjectivePoint.fromPrivateKey(privateKey).toRawBytes(false).slice(1)
 }
 
 /**
  * Returns the ethereum address of a given private key.
  * @param privateKey A private key must be 256 bits wide
  */
-export const privateToAddress = function (privateKey: Buffer): Buffer {
+export const privateToAddress = function (privateKey: Uint8Array): Uint8Array {
   return publicToAddress(privateToPublic(privateKey))
 }
 
 /**
  * Converts a public key to the Ethereum format.
  */
-export const importPublic = function (publicKey: Buffer): Buffer {
-  assertIsBuffer(publicKey)
+export const importPublic = function (publicKey: Uint8Array): Uint8Array {
+  assertIsBytes(publicKey)
   if (publicKey.length !== 64) {
-    publicKey = Buffer.from(Point.fromHex(publicKey).toRawBytes(false).slice(1))
+    publicKey = secp256k1.ProjectivePoint.fromHex(publicKey).toRawBytes(false).slice(1)
   }
   return publicKey
 }
@@ -326,7 +333,7 @@ export const importPublic = function (publicKey: Buffer): Buffer {
 export const zeroAddress = function (): string {
   const addressLength = 20
   const addr = zeros(addressLength)
-  return bufferToHex(addr)
+  return bytesToPrefixedHexString(addr)
 }
 
 /**
@@ -343,18 +350,33 @@ export const isZeroAddress = function (hexAddress: string): boolean {
   return zeroAddr === hexAddress
 }
 
+export function accountBodyFromSlim(body: AccountBodyBytes) {
+  const [nonce, balance, storageRoot, codeHash] = body
+  return [
+    nonce,
+    balance,
+    storageRoot.length === 0 ? KECCAK256_RLP : storageRoot,
+    codeHash.length === 0 ? KECCAK256_NULL : codeHash,
+  ]
+}
+
+const emptyUint8Arr = new Uint8Array(0)
+export function accountBodyToSlim(body: AccountBodyBytes) {
+  const [nonce, balance, storageRoot, codeHash] = body
+  return [
+    nonce,
+    balance,
+    equalsBytes(storageRoot, KECCAK256_RLP) ? emptyUint8Arr : storageRoot,
+    equalsBytes(codeHash, KECCAK256_NULL) ? emptyUint8Arr : codeHash,
+  ]
+}
+
 /**
- * Converts a slim account RLP to a normal account RLP
+ * Converts a slim account (per snap protocol spec) to the RLP encoded version of the account
+ * @param body Array of 4 Uint8Array-like items to represent the account
+ * @returns RLP encoded version of the account
  */
-export function convertSlimAccount(body: any) {
-  const cpy = [body[0], body[1], body[2], body[3]]
-  if (arrToBufArr(body[2]).length === 0) {
-    // StorageRoot
-    cpy[2] = KECCAK256_RLP
-  }
-  if (arrToBufArr(body[3]).length === 0) {
-    // CodeHash
-    cpy[3] = KECCAK256_NULL
-  }
-  return arrToBufArr(RLP.encode(cpy))
+export function accountBodyToRLP(body: AccountBodyBytes, couldBeSlim = true) {
+  const accountBody = couldBeSlim ? accountBodyFromSlim(body) : body
+  return RLP.encode(accountBody)
 }

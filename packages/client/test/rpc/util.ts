@@ -1,17 +1,15 @@
-import { isFalsy, isTruthy } from '@ethereumjs/util'
-
 import type * as tape from 'tape'
 
 export function checkError(t: tape.Test, expectedCode: number, expectedMessage?: string) {
   return (res: any) => {
-    if (isFalsy(res.body.error)) {
+    if (res.body.error === undefined) {
       throw new Error('should return an error object')
     }
     if (res.body.error.code !== expectedCode) {
       throw new Error(`should have an error code ${expectedCode}, got ${res.body.error.code}`)
     }
     if (
-      isTruthy(expectedMessage) &&
+      expectedMessage !== undefined &&
       !(res.body.error.message as string).includes(expectedMessage)
     ) {
       throw new Error(

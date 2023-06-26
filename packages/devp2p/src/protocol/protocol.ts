@@ -1,11 +1,10 @@
 import { debug as createDebugLogger } from 'debug'
 import { EventEmitter } from 'events'
-import ms = require('ms')
 
-import { DISCONNECT_REASONS } from '../rlpx/peer'
-import { devp2pDebug } from '../util'
+import { DISCONNECT_REASONS } from '../rlpx/peer.js'
+import { devp2pDebug } from '../util.js'
 
-import type { Peer } from '../rlpx/peer'
+import type { Peer } from '../rlpx/peer.js'
 import type { Debugger } from 'debug'
 
 export enum EthProtocol { // What does this represent?
@@ -16,7 +15,7 @@ export enum EthProtocol { // What does this represent?
 
 type MessageCodes = { [key: number | string]: number | string }
 
-export type SendMethod = (code: number, data: Buffer) => any
+export type SendMethod = (code: number, data: Uint8Array) => any
 
 export class Protocol extends EventEmitter {
   _version: number
@@ -53,7 +52,7 @@ export class Protocol extends EventEmitter {
       protocol !== EthProtocol.SNAP
         ? setTimeout(() => {
             this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
-          }, ms('5s'))
+          }, 5000) // 5 sec * 1000
         : undefined
 
     this._debug = devp2pDebug.extend(protocol)

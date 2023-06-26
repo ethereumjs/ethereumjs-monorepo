@@ -3,47 +3,45 @@ import { Chain, Common } from '@ethereumjs/common'
 import debug from 'debug'
 import { Level } from 'level'
 
-import { EthereumClient } from '../lib/client'
-import { Config } from '../lib/config'
-import { parseMultiaddrs } from '../lib/util'
+import { EthereumClient } from '../src/client'
+import { Config, SyncMode } from '../src/config'
+import { LevelDB } from '../src/execution/level'
+import { parseMultiaddrs } from '../src/util'
 
 import { getLogger } from './logging'
 // Blockchain
-export * from '../lib/blockchain/chain'
+export * from '../src/blockchain/chain'
 
 // Peer
-export * from '../lib/net/peer/libp2ppeer'
-export * from '../lib/net/peer/peer'
-export * from './libp2pnode'
+export * from '../src/net/peer/peer'
 
 // Peer Pool
-export * from '../lib/net/peerpool'
+export * from '../src/net/peerpool'
 
 // Protocol
-export * from '../lib/net/protocol/ethprotocol'
-export * from '../lib/net/protocol/flowcontrol'
-export * from '../lib/net/protocol/lesprotocol'
-export * from '../lib/net/protocol/protocol'
+export * from '../src/net/protocol/ethprotocol'
+export * from '../src/net/protocol/flowcontrol'
+export * from '../src/net/protocol/lesprotocol'
+export * from '../src/net/protocol/protocol'
 
 // Server
-export * from '../lib/net/server/libp2pserver'
-export * from '../lib/net/server/server'
+export * from '../src/net/server/server'
 
 // EthereumClient
-export * from '../lib/client'
+export * from '../src/client'
 
 // Service
-export * from '../lib/service/fullethereumservice'
-export * from '../lib/service/lightethereumservice'
-export * from '../lib/service/service'
+export * from '../src/service/fullethereumservice'
+export * from '../src/service/lightethereumservice'
+export * from '../src/service/service'
 
 // Synchronizer
-export * from '../lib/sync/fullsync'
-export * from '../lib/sync/lightsync'
-export * from '../lib/sync/sync'
+export * from '../src/sync/fullsync'
+export * from '../src/sync/lightsync'
+export * from '../src/sync/sync'
 
 // Utilities
-export * from '../lib/util/parse'
+export * from '../src/util/parse'
 
 // Logging
 export * from './logging'
@@ -59,8 +57,8 @@ export async function createClient(args: any) {
   const config = new Config({
     common,
     key,
-    transports: ['libp2p'],
-    syncmode: args.syncmode,
+    transports: ['rlpx'],
+    syncmode: SyncMode.None,
     bootnodes,
     multiaddrs: [],
     logger,
@@ -70,16 +68,18 @@ export async function createClient(args: any) {
     discDns: false,
   })
   config.events.setMaxListeners(50)
-  const chainDB = new Level<string | Buffer, string | Buffer>(`${datadir}/${common.chainName()}`)
+  const chainDB = new Level<string | Uint8Array, string | Uint8Array>(
+    `${datadir}/${common.chainName()}`
+  )
 
   const blockchain = await Blockchain.create({
-    db: chainDB,
+    db: new LevelDB(chainDB),
     common: config.chainCommon,
     hardforkByHeadBlockNumber: true,
     validateBlocks: true,
     validateConsensus: false,
   })
-  return new EthereumClient({ config, blockchain, chainDB })
+  return EthereumClient.create({ config, blockchain, chainDB })
 }
 
 export async function run(args: any) {

@@ -1,29 +1,29 @@
 import { createCipheriv } from 'crypto'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { xor } from '../util'
+import { xor } from '../util.js'
 
 export type Hash = ReturnType<typeof keccak256.create>
 
 export class MAC {
   _hash: Hash
-  _secret: Buffer
-  constructor(secret: Buffer) {
+  _secret: Uint8Array
+  constructor(secret: Uint8Array) {
     this._hash = keccak256.create()
     this._secret = secret
   }
 
-  update(data: Buffer | string) {
+  update(data: Uint8Array | string) {
     this._hash.update(data)
   }
 
-  updateHeader(data: Buffer | string) {
+  updateHeader(data: Uint8Array | string) {
     const aes = createCipheriv('aes-256-ecb', this._secret, '')
     const encrypted = aes.update(this.digest())
     this._hash.update(xor(encrypted, data))
   }
 
-  updateBody(data: Buffer | string) {
+  updateBody(data: Uint8Array | string) {
     this._hash.update(data)
     const prev = this.digest()
     const aes = createCipheriv('aes-256-ecb', this._secret, '')
@@ -32,6 +32,6 @@ export class MAC {
   }
 
   digest() {
-    return Buffer.from(this._hash.clone().digest().slice(0, 16))
+    return Uint8Array.from(this._hash.clone().digest().subarray(0, 16))
   }
 }

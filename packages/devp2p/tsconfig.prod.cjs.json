@@ -1,0 +1,15 @@
+{
+  "extends": "../../config/tsconfig.prod.cjs.json",
+  "exclude": ["test", "examples", "scripts", "node_modules", "dist"],
+  "compilerOptions": {
+    "outDir": "dist/cjs",
+    "rootDir": "src",
+    "typeRoots": ["node_modules/@types", "src/@types"],
+    "composite": true
+  },
+  "references": [
+    { "path": "../common/tsconfig.prod.cjs.json" },
+    { "path": "../rlp/tsconfig.prod.cjs.json" },
+    { "path": "../util/tsconfig.prod.cjs.json" }
+  ]
+}

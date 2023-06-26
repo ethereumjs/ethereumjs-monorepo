@@ -6,6 +6,127 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.1.2 - 2023-04-20
+
+### Features
+
+- Add `allowUnlimitedInitcodeSize` option to partially disable EIP-3860, PR [#2594](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2594)
+- Better Optimism RPC compatibility, new `TransactionFactory.fromRPCTx()` static constructor, PR [#2613](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2613)
+
+### Bugfixes
+
+- Fixed EIP-3860 (max init code size) check when deserializing RLPs, PR [#2601](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2601)
+- EIP-3860: only check max init code size on create contract tx, PR [#2575](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2575)
+
+### Maintenance
+
+- Removed `Ethers` dependency, alternative `fromEthersProvider()` static constructor implementation, PR [#2633](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2633)
+- Bump `@ethereumjs/util` `@chainsafe/ssz` dependency to 0.11.1 (no WASM, native SHA-256 implementation, ES2019 compatible, explicit imports), PRs [#2622](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2622), [#2564](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2564) and [#2656](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2656)
+- Update ethereum-cryptography from 1.2 to 2.0 (switch from noble-secp256k1 to noble-curves), PR [#2641](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2641)
+
+## 4.1.1 - 2023-02-27
+
+- Pinned `@ethereumjs/util` `@chainsafe/ssz` dependency to `v0.9.4` due to ES2021 features used in `v0.10.+` causing compatibility issues, PR [#2555](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2555)
+- Fixed `kzg` imports, PR [#2552](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2552)
+
+## 4.1.0 - 2023-02-21
+
+**DEPRECATED**: Release is deprecated due to broken dependencies, please update to the subsequent bugfix release version.
+
+### Functional Shanghai Support
+
+This release fully supports all EIPs included in the [Shanghai](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/shanghai.md) feature hardfork scheduled for early 2023. Note that a `timestamp` to trigger the `Shanghai` fork update is only added for the `sepolia` testnet and not yet for `goerli` or `mainnet`.
+
+You can instantiate a Shanghai-enabled Common instance for your transactions with:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+```
+
+### Experimental EIP-4844 Shard Blob Transactions Support
+
+This release supports an experimental version of the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023), see PR [#2349](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2349) as well as PRs [#2522](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2522) and [#2526](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2526).
+
+**Note:** This functionality needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
+
+##### Usage
+
+See the following code snipped for an example on how to instantiate.
+
+```typescript
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { BlobEIP4844Transaction, initKZG } from '@ethereumjs/tx'
+import * as kzg from 'c-kzg'
+
+initKZG(kzg, 'path/to/my/trusted_setup.txt')
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+
+const txData = {
+  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+  gasLimit: '0x02625a00',
+  maxPriorityFeePerGas: '0x01',
+  maxFeePerGas: '0xff',
+  maxFeePerDataGas: '0xfff',
+  nonce: '0x00',
+  to: '0xcccccccccccccccccccccccccccccccccccccccc',
+  value: '0x0186a0',
+  v: '0x01',
+  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
+  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
+  chainId: '0x01',
+  accessList: [],
+  type: '0x05',
+  versionedHashes: ['0xabc...'], // Test with empty array on a first run
+  kzgCommitments: ['0xdef...'], // Test with empty array on a first run
+  blobs: ['0xghi...'], // Test with empty array on a first run
+}
+
+const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
+```
+
+Note that `versionedHashes` and `kzgCommitments` have a real length of 32 bytes and `blobs` have a real length of `4096` bytes and values are trimmed here for brevity.
+
+See the [Blob Transaction Tests](./test/eip4844.spec.ts) for examples of usage in instantiating, serializing, and deserializing these transactions.
+
+## 4.0.2 - 2022-12-09
+
+Maintenance release with dependency updates, PR [#2445](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2445)
+
+## 4.0.1 - 2022-10-18
+
+### Support for Geth genesis.json Genesis Format
+
+For lots of custom chains (for e.g. devnets and testnets), you might come across a [Geth genesis.json config](https://geth.ethereum.org/docs/interface/private-network) which has both config specification for the chain as well as the genesis state specification.
+
+`Common` now has a new constructor `Common.fromGethGenesis()` - see PRs [#2300](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2300) and [#2319](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2319) - which can be used in following manner to instantiate for example a VM run or a tx with a `genesis.json` based Common:
+
+```typescript
+import { Common } from '@ethereumjs/common'
+// Load geth genesis json file into lets say `genesisJson` and optional `chain` and `genesisHash`
+const common = Common.fromGethGenesis(genesisJson, { chain: 'customChain', genesisHash })
+// If you don't have `genesisHash` while initiating common, you can later configure common (for e.g.
+// calculating it afterwards by using the `@ethereumjs/blockchain` package)
+common.setForkHashes(genesisHash)
+```
+
+### New Ethers Static Constructor
+
+There is a new static constructor `TransactionFactory.fromEthersProvider()` which has been added to the library, see PR [#2315](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2315). The new constructor allows for an easy instantiation of a fitting transaction object using an [Ethers](https://ethers.io) provider connecting e.g. to a local node or a service provider like Infura.
+
+### Other Changes and Fixes
+
+- Disallow tx initialization with values incorrectly passed in as arrays, PR [#2284](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2284)
+
+## 4.0.0 - 2022-09-06
+
+Final release - tada 🎉 - of a wider breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2, Beta 3 and Release Candidate (RC) 1 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/CHANGELOG.md)).
+
+### Changes
+
+- Internal refactor: removed ambiguous boolean checks within conditional clauses, PR [#2250](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2250)
+
 ## 4.0.0-rc.1 - 2022-08-29
 
 Release candidate 1 for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 and 3 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/CHANGELOG.md)).
@@ -38,7 +159,7 @@ If you want to prevent these kind of implicit HF switches in the future it is li
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-const tx = Transaction.fromTxData(
+const tx = LegacyTransaction.fromTxData(
   {
     // Provide your tx data here or use default values
   },
@@ -110,7 +231,7 @@ If you want to prevent these kind of implicit HF switches in the future it is li
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
-const tx = Transaction.fromTxData(
+const tx = LegacyTransaction.fromTxData(
   {
     // Provide your tx data here or use default values
   },
@@ -220,7 +341,7 @@ import { Transaction } from '@ethereumjs/tx'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.ArrowGlacier })
-const tx = Transaction.fromTxData({}, { common })
+const tx = LegacyTransaction.fromTxData({}, { common })
 ```
 
 ### Additional Error Context for Error Messages
@@ -289,7 +410,7 @@ const txData = {
   value: 1,
 }
 
-const tx = Transaction.fromTxData(txData, { common })
+const tx = LegacyTransaction.fromTxData(txData, { common })
 const signedTx = tx.sign(Buffer.from(PRIV_KEY, 'hex'))
 ```
 
@@ -390,7 +511,7 @@ import Common from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 
 const common = new Common({ chain: 'goerli', hardfork: 'berlin' })
-const tx = Transaction.fromTxData({}, { common })
+const tx = LegacyTransaction.fromTxData({}, { common })
 
 const message = tx.getMessageToSign(false)
 const serializedMessage = rlp.encode(message) // use this for the ledger input
@@ -591,7 +712,7 @@ const txData = {
   gasLimit: 10000000,
   value: 42,
 }
-const tx = Transaction.fromTxData(txData)
+const tx = LegacyTransaction.fromTxData(txData)
 
 // Initializing from array of 0x-prefixed strings.
 // First, convert to array of Buffers.
@@ -704,7 +825,7 @@ const txData = {
   gasLimit: 10000000,
   value: 42,
 }
-const tx = Transaction.fromTxData(txData)
+const tx = LegacyTransaction.fromTxData(txData)
 
 // Initializing from array of 0x-prefixed strings.
 // First, convert to array of Buffers.

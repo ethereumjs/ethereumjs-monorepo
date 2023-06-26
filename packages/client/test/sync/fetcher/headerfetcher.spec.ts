@@ -1,9 +1,9 @@
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Chain } from '../../../lib/blockchain'
-import { Config } from '../../../lib/config'
-import { Event } from '../../../lib/types'
+import { Chain } from '../../../src/blockchain'
+import { Config } from '../../../src/config'
+import { Event } from '../../../src/types'
 
 tape('[HeaderFetcher]', async (t) => {
   class PeerPool {
@@ -12,12 +12,12 @@ tape('[HeaderFetcher]', async (t) => {
   }
   PeerPool.prototype.idle = td.func<any>()
   PeerPool.prototype.ban = td.func<any>()
-  td.replace('../../lib/net/peerpool', { PeerPool })
+  td.replace<any>('../../src/net/peerpool', { PeerPool })
 
-  const { HeaderFetcher } = await import('../../../lib/sync/fetcher/headerfetcher')
+  const { HeaderFetcher } = await import('../../../src/sync/fetcher/headerfetcher')
 
   t.test('should process', (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool()
     const flow = td.object()
     const fetcher = new HeaderFetcher({ config, pool, flow })
@@ -35,7 +35,7 @@ tape('[HeaderFetcher]', async (t) => {
   })
 
   t.test('should adopt correctly', (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const flow = td.object()
     const fetcher = new HeaderFetcher({
@@ -62,7 +62,7 @@ tape('[HeaderFetcher]', async (t) => {
   })
 
   t.test('should find a fetchable peer', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool()
     const fetcher = new HeaderFetcher({ config, pool })
     td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
@@ -71,7 +71,7 @@ tape('[HeaderFetcher]', async (t) => {
   })
 
   t.test('should request correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const flow = td.object()
     const fetcher = new HeaderFetcher({
@@ -103,7 +103,7 @@ tape('[HeaderFetcher]', async (t) => {
 
     const config = new Config({ maxPerRequest: 5, transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     chain.putHeaders = td.func<any>()
     const fetcher = new HeaderFetcher({
       config,

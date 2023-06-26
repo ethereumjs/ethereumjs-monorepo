@@ -1,12 +1,13 @@
 import { RLP, utils } from '@ethereumjs/rlp'
+import { bytesToHex } from 'ethereum-cryptography/utils.js'
 import * as snappy from 'snappyjs'
 
-import { formatLogData } from '../util'
+import { formatLogData } from '../util.js'
 
-import { EthProtocol, Protocol } from './protocol'
+import { EthProtocol, Protocol } from './protocol.js'
 
-import type { Peer } from '../rlpx/peer'
-import type { SendMethod } from './protocol'
+import type { Peer } from '../rlpx/peer.js'
+import type { SendMethod } from './protocol.js'
 
 export class SNAP extends Protocol {
   constructor(version: number, peer: Peer, send: SendMethod) {
@@ -21,7 +22,7 @@ export class SNAP extends Protocol {
 
     // Note, this needs optimization, see issue #1882
     const debugMsg = `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}`
-    const logData = formatLogData(data.toString('hex'), this._verbose)
+    const logData = formatLogData(bytesToHex(data), this._verbose)
     this.debug(messageName, `${debugMsg}: ${logData}`)
 
     switch (code) {
@@ -42,7 +43,7 @@ export class SNAP extends Protocol {
   }
 
   sendStatus() {
-    throw Error('SNAP prococol doesnot support status handshake')
+    throw Error('SNAP protocol does not support status handshake')
   }
 
   /**

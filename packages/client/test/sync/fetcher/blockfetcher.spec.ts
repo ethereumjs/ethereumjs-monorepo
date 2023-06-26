@@ -1,9 +1,12 @@
+import { BlockHeader } from '@ethereumjs/block'
+import { Hardfork } from '@ethereumjs/common'
+import { KECCAK256_RLP } from '@ethereumjs/util'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Chain } from '../../../lib/blockchain/chain'
-import { Config } from '../../../lib/config'
-import { Event } from '../../../lib/types'
+import { Chain } from '../../../src/blockchain/chain'
+import { Config } from '../../../src/config'
+import { Event } from '../../../src/types'
 import { wait } from '../../integration/util'
 
 tape('[BlockFetcher]', async (t) => {
@@ -14,12 +17,12 @@ tape('[BlockFetcher]', async (t) => {
   PeerPool.prototype.idle = td.func<any>()
   PeerPool.prototype.ban = td.func<any>()
 
-  const { BlockFetcher } = await import('../../../lib/sync/fetcher/blockfetcher')
+  const { BlockFetcher } = await import('../../../src/sync/fetcher/blockfetcher')
 
   t.test('should start/stop', async (t) => {
     const config = new Config({ maxPerRequest: 5, transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
       config,
       pool,
@@ -43,7 +46,7 @@ tape('[BlockFetcher]', async (t) => {
   t.test('enqueueByNumberList()', async (t) => {
     const config = new Config({ maxPerRequest: 5, transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
       config,
       pool,
@@ -90,10 +93,10 @@ tape('[BlockFetcher]', async (t) => {
     t.end()
   })
 
-  t.test('should process', (t) => {
-    const config = new Config({ transports: [] })
+  t.test('should process', async (t) => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
       config,
       pool,
@@ -107,10 +110,10 @@ tape('[BlockFetcher]', async (t) => {
     t.end()
   })
 
-  t.test('should adopt correctly', (t) => {
-    const config = new Config({ transports: [] })
+  t.test('should adopt correctly', async (t) => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
       config,
       pool,
@@ -136,9 +139,9 @@ tape('[BlockFetcher]', async (t) => {
   })
 
   t.test('should find a fetchable peer', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
       config,
       pool,
@@ -152,9 +155,9 @@ tape('[BlockFetcher]', async (t) => {
   })
 
   t.test('should request correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
       config,
       pool,
@@ -182,13 +185,65 @@ tape('[BlockFetcher]', async (t) => {
     t.end()
   })
 
+  t.test('should parse bodies correctly', async (t) => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    config.chainCommon.getHardforkBy = td.func<typeof config.chainCommon.getHardforkBy>()
+    td.when(
+      config.chainCommon.getHardforkBy({
+        blockNumber: td.matchers.anything(),
+        td: td.matchers.anything(),
+        timestamp: td.matchers.anything(),
+      })
+    ).thenReturn(Hardfork.Shanghai)
+    td.when(
+      config.chainCommon.getHardforkBy({
+        blockNumber: td.matchers.anything(),
+        td: td.matchers.anything(),
+      })
+    ).thenReturn(Hardfork.Shanghai)
+    td.when(
+      config.chainCommon.getHardforkBy({
+        blockNumber: td.matchers.anything(),
+        timestamp: td.matchers.anything(),
+      })
+    ).thenReturn(Hardfork.Shanghai)
+    const pool = new PeerPool() as any
+    const chain = await Chain.create({ config })
+    const fetcher = new BlockFetcher({
+      config,
+      pool,
+      chain,
+      first: BigInt(0),
+      count: BigInt(0),
+    })
+
+    const shanghaiHeader = BlockHeader.fromHeaderData(
+      { number: 1, withdrawalsRoot: KECCAK256_RLP },
+      { common: config.chainCommon, setHardfork: true }
+    )
+
+    const task = { count: 1, first: BigInt(1) }
+    const peer = {
+      eth: { getBlockBodies: td.func<any>(), getBlockHeaders: td.func<any>() },
+      id: 'random',
+      address: 'random',
+    }
+    td.when(peer.eth.getBlockHeaders(td.matchers.anything())).thenResolve([0, [shanghaiHeader]])
+    td.when(peer.eth.getBlockBodies(td.matchers.anything())).thenResolve([0, [[[], [], []]]])
+    const job = { peer, task }
+    const resp = await fetcher.request(job as any)
+    t.equal(resp.length, 1, 'shanghai block should have been returned')
+    t.equal(resp[0].withdrawals?.length, 0, 'should have withdrawals array')
+    t.end()
+  })
+
   t.test('store()', async (st) => {
     td.reset()
     st.plan(4)
 
     const config = new Config({ maxPerRequest: 5, transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const chain = await Chain.create({ config })
     chain.putBlocks = td.func<any>()
     const fetcher = new BlockFetcher({
       config,

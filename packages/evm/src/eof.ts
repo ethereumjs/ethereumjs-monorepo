@@ -1,4 +1,4 @@
-import { handlers } from './opcodes'
+import { handlers } from './opcodes/index.js'
 
 export const FORMAT = 0xef
 export const MAGIC = 0x00
@@ -6,13 +6,13 @@ export const VERSION = 0x01
 
 /**
  *
- * @param container A `Buffer` containing bytecode to be checked for EOF1 compliance
+ * @param container A `Uint8Array` containing bytecode to be checked for EOF1 compliance
  * @returns an object containing the size of the code section and data sections for a valid
  * EOF1 container or else undefined if `container` is not valid EOF1 bytecode
  *
  * Note: See https://eips.ethereum.org/EIPS/eip-3540 for further details
  */
-export const codeAnalysis = (container: Buffer) => {
+export const codeAnalysis = (container: Uint8Array) => {
   const secCode = 0x01
   const secData = 0x02
   const secTerminator = 0x00
@@ -21,7 +21,7 @@ export const codeAnalysis = (container: Buffer) => {
     code: 0,
     data: 0,
   }
-  if (container[1] !== MAGIC || container[2] !== VERSION)
+  if (container[0] !== FORMAT || container[1] !== MAGIC || container[2] !== VERSION)
     // Bytecode does not contain EOF1 "magic" or version number in expected positions
     return
 
@@ -62,7 +62,7 @@ export const codeAnalysis = (container: Buffer) => {
   return sectionSizes
 }
 
-export const validOpcodes = (code: Buffer) => {
+export const validOpcodes = (code: Uint8Array) => {
   // EIP-3670 - validate all opcodes
   const opcodes = new Set(handlers.keys())
   opcodes.add(0xfe) // Add INVALID opcode to set
@@ -90,6 +90,16 @@ export const validOpcodes = (code: Buffer) => {
     return false
   }
   return true
+}
+
+export const getEOFCode = (code: Uint8Array) => {
+  const sectionSizes = codeAnalysis(code)
+  if (sectionSizes === undefined) {
+    return code
+  } else {
+    const codeStart = sectionSizes.data > 0 ? 10 : 7
+    return code.subarray(codeStart, codeStart + sectionSizes.code)
+  }
 }
 
 export const EOF = { FORMAT, MAGIC, VERSION, codeAnalysis, validOpcodes }

@@ -1,8 +1,8 @@
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Config } from '../../../lib/config'
-import { BoundProtocol, Protocol, Sender } from '../../../lib/net/protocol'
+import { Config } from '../../../src/config'
+import { BoundProtocol, Protocol, Sender } from '../../../src/net/protocol'
 
 tape('[Protocol]', (t) => {
   const testMessage = {
@@ -13,7 +13,7 @@ tape('[Protocol]', (t) => {
   }
   class TestProtocol extends Protocol {
     constructor() {
-      const config = new Config({ transports: [] })
+      const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
       super({ config })
     }
 
@@ -35,7 +35,7 @@ tape('[Protocol]', (t) => {
   }
 
   t.test('should throw if missing abstract methods', (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const p = new Protocol({ config })
     t.throws(() => p.versions, /Unimplemented/)
     t.throws(() => p.messages, /Unimplemented/)
@@ -45,7 +45,7 @@ tape('[Protocol]', (t) => {
   })
 
   t.test('should handle open', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const p = new Protocol({ config })
     await p.open()
     t.ok(p.opened, 'is open')

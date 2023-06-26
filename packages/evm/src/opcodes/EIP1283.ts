@@ -1,28 +1,30 @@
-import type { RunState } from '../interpreter'
+import { equalsBytes } from 'ethereum-cryptography/utils.js'
+
+import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
 
 /**
  * Adjusts gas usage and refunds of SStore ops per EIP-1283 (Constantinople)
  *
  * @param {RunState} runState
- * @param {Buffer}   currentStorage
- * @param {Buffer}   originalStorage
- * @param {Buffer}   value
+ * @param {Uint8Array}   currentStorage
+ * @param {Uint8Array}   originalStorage
+ * @param {Uint8Array}   value
  * @param {Common}   common
  */
 export function updateSstoreGasEIP1283(
   runState: RunState,
-  currentStorage: Buffer,
-  originalStorage: Buffer,
-  value: Buffer,
+  currentStorage: Uint8Array,
+  originalStorage: Uint8Array,
+  value: Uint8Array,
   common: Common
 ) {
-  if (currentStorage.equals(value)) {
+  if (equalsBytes(currentStorage, value)) {
     // If current value equals new value (this is a no-op), 200 gas is deducted.
     return common.param('gasPrices', 'netSstoreNoopGas')
   }
   // If current value does not equal new value
-  if (originalStorage.equals(currentStorage)) {
+  if (equalsBytes(originalStorage, currentStorage)) {
     // If original value equals current value (this storage slot has not been changed by the current execution context)
     if (originalStorage.length === 0) {
       // If original value is 0, 20000 gas is deducted.
@@ -55,7 +57,7 @@ export function updateSstoreGasEIP1283(
       )
     }
   }
-  if (originalStorage.equals(value)) {
+  if (equalsBytes(originalStorage, value)) {
     // If original value equals new value (this storage slot is reset)
     if (originalStorage.length === 0) {
       // If original value is 0, add 19800 gas to refund counter.

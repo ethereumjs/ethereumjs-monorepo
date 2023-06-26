@@ -21,9 +21,12 @@ This package provides the core Ethereum Virtual Machine (EVM) implementation whi
 
 Note that this package atm cannot be run in a standalone mode but needs to be executed via the `VM` package which provides an outer Ethereum `mainnet` compatible execution context. Standalone functionality will be added along a future non-breaking release.
 
+**Note:** If you want to work with `EIP-4844` related functionality, you will have additional manual installation steps for the **KZG setup**, see related section below.
+
 ## Usage
 
 ```typescript
+import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EEI } from '@ethereumjs/vm'
 import { EVM } from '@ethereumjs/evm'
@@ -31,38 +34,42 @@ import { DefaultStateManager } from '@ethereumjs/statemanager'
 
 // Note: in a future release there will be an EEI default implementation
 // which will ease standalone initialization
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-const stateManager = new DefaultStateManager({ common })
-const eei = new EEI(stateManager, common, blockchain)
+const main = async () => {
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+  const stateManager = new DefaultStateManager()
+  const blockchain = await Blockchain.create()
+  const eei = new EEI(stateManager, common, blockchain)
 
-const evm = new EVM({
-  common,
-  eei
-})
-
-const STOP = '00'
-const ADD = '01'
-const PUSH1 = '60'
-
-// Note that numbers added are hex values, so '20' would be '32' as decimal e.g.
-const code = [PUSH1, '03', PUSH1, '05', ADD, STOP]
-
-evm.on('step', function (data) {
-  // Note that data.stack is not immutable, i.e. it is a reference to the vm's internal stack object
-  console.log(`Opcode: ${data.opcode.name}\tStack: ${data.stack}`)
-})
-
-evm
-  .runCode({
-    code: Buffer.from(code.join(''), 'hex'),
-    gasLimit: BigInt(0xffff),
+  const evm = new EVM({
+    common,
+    eei,
   })
-  .then((results) => {
-    console.log(`Returned: ${results.returnValue.toString('hex')}`)
-    console.log(gasUsed: ${result.executionGasUsed.toString()})
 
+  const STOP = '00'
+  const ADD = '01'
+  const PUSH1 = '60'
+
+  // Note that numbers added are hex values, so '20' would be '32' as decimal e.g.
+  const code = [PUSH1, '03', PUSH1, '05', ADD, STOP]
+
+  evm.events.on('step', function (data) {
+    // Note that data.stack is not immutable, i.e. it is a reference to the vm's internal stack object
+    console.log(`Opcode: ${data.opcode.name}\tStack: ${data.stack}`)
   })
-  .catch(console.error)
+
+  evm
+    .runCode({
+      code: Buffer.from(code.join(''), 'hex'),
+      gasLimit: BigInt(0xffff),
+    })
+    .then((results) => {
+      console.log(`Returned: ${results.returnValue.toString('hex')}`)
+      console.log(`gasUsed: ${results.executionGasUsed.toString()}`)
+    })
+    .catch(console.error)
+}
+
+void main()
 ```
 
 ### Example
@@ -70,7 +77,7 @@ evm
 This projects contain the following examples:
 
 1. [./examples/decode-opcodes](./examples/decode-opcodes.ts): Decodes a binary EVM program into its opcodes.
-1. [./examples/run-code-browser](./examples/run-code-browser.js): Show how to use this library in a browser.
+1. [./examples/runCode](./examples/runCode.ts): Show how to use this library in a browser.
 
 All of the examples have their own `README.md` explaining how to run them.
 
@@ -106,7 +113,7 @@ The [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/mast
 
 ## Browser
 
-To build the EVM for standalone use in the browser, see: [Running the EVM in a browser](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm/examples/run-code-browser.js).
+To build the EVM for standalone use in the browser, see: [Running the EVM in a browser](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/examples/runCode.ts).
 
 ## Setup
 
@@ -149,6 +156,7 @@ const vm = new VM({ common })
 
 Currently supported EIPs:
 
+- [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153) - Transient Storage Opcodes (`experimental`)
 - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee Market (`london` EIP)
 - [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - Simple subroutines (`experimental`)
 - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS precompiles (`experimental`)
@@ -161,9 +169,30 @@ Currently supported EIPs:
 - [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`experimental`)
 - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte (`london` EIP)
 - [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`experimental`)
-- [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
-- [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
-- [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
+- [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction
+- [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode
+- [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge)
+- [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (`experimental`)
+- [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations
+- [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022
+
+### EIP-4844 Shard Blob Transactions Support (experimental)
+
+This library supports an experimental version of the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023) starting with `v1.3.0`.
+
+#### Initialization
+
+To run EVM related EIP-4844 functionality you have to active the EIP in the associated `@ethereumjs/common` library:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+```
+
+EIP-4844 comes with a new opcode `DATAHASH` and adds a new point evaluation precompile at address `0x14`.
+
+**Note:** Usage of the point evaluation precompile needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
 ### Tracing Events
 
@@ -200,14 +229,14 @@ to receive a function as the handler's second argument, nor call it.
 Note that if your event handler receives multiple arguments, the second
 one will be the continuation function, and it must be called.
 
-If an exception is thrown from withing the handler or a function called
+If an exception is thrown from within the handler or a function called
 by it, the exception will bubble into the EVM and interrupt it, possibly
-corrupting its state. It's strongly recommended not to throw from withing
+corrupting its state. It's strongly recommended not to throw from within
 event handlers.
 
 ## Understanding the EVM
 
-If you want to understand your EVM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=[Logger Selection] node [Your Script to Run].js` and produce output like the following:
+If you want to understand your EVM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=ethjs,[Logger Selection] node [Your Script to Run].js` and produce output like the following:
 
 ![EthereumJS EVM Debug Logger](./debug.png?raw=true)
 
@@ -226,31 +255,31 @@ Here are some examples for useful logger combinations.
 Run one specific logger:
 
 ```shell
-DEBUG=evm ts-node test.ts
+DEBUG=ethjs,evm ts-node test.ts
 ```
 
 Run all loggers currently available:
 
 ```shell
-DEBUG=evm:*,evm:*:* ts-node test.ts
+DEBUG=ethjs,evm:*,evm:*:* ts-node test.ts
 ```
 
 Run only the gas loggers:
 
 ```shell
-DEBUG=evm:*:gas ts-node test.ts
+DEBUG=ethjs,evm:*:gas ts-node test.ts
 ```
 
 Excluding the ops logger:
 
 ```shell
-DEBUG=evm:*,evm:*:*,-evm:ops ts-node test.ts
+DEBUG=ethjs,evm:*,evm:*:*,-evm:ops ts-node test.ts
 ```
 
 Run some specific loggers including a logger specifically logging the `SSTORE` executions from the EVM (this is from the screenshot above):
 
 ```shell
-DEBUG=evm,evm:ops:sstore,evm:*:gas ts-node test.ts
+DEBUG=ethjs,evm,evm:ops:sstore,evm:*:gas ts-node test.ts
 ```
 
 ### Internal Structure

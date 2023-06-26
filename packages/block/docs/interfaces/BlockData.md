@@ -11,6 +11,7 @@ A block's data.
 - [header](BlockData.md#header)
 - [transactions](BlockData.md#transactions)
 - [uncleHeaders](BlockData.md#uncleheaders)
+- [withdrawals](BlockData.md#withdrawals)
 
 ## Properties
 
@@ -22,17 +23,17 @@ Header data for the block
 
 #### Defined in
 
-[types.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L106)
+[types.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L117)
 
 ___
 
 ### transactions
 
-• `Optional` **transactions**: (`AccessListEIP2930TxData` \| `TxData` \| `FeeMarketEIP1559TxData`)[]
+• `Optional` **transactions**: (`AccessListEIP2930TxData` \| `FeeMarketEIP1559TxData` \| `TxData`)[]
 
 #### Defined in
 
-[types.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L107)
+[types.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L118)
 
 ___
 
@@ -42,4 +43,14 @@ ___
 
 #### Defined in
 
-[types.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L108)
+[types.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L119)
+
+___
+
+### withdrawals
+
+• `Optional` **withdrawals**: `WithdrawalData`[]
+
+#### Defined in
+
+[types.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L120)

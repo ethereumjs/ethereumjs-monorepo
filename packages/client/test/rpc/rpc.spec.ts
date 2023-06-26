@@ -1,8 +1,8 @@
-import { isFalsy } from '@ethereumjs/util'
+import { randomBytes } from '@ethereumjs/util'
 import { encode } from 'jwt-simple'
 import * as tape from 'tape'
 
-import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code'
+import { METHOD_NOT_FOUND } from '../../src/rpc/error-code'
 
 import { closeRPC, startRPC } from './helpers'
 
@@ -10,7 +10,7 @@ import type { TAlgorithm } from 'jwt-simple'
 
 const request = require('supertest')
 
-const jwtSecret = Buffer.from(Array.from({ length: 32 }, () => Math.round(Math.random() * 255)))
+const jwtSecret = randomBytes(32)
 
 tape('call JSON-RPC without Content-Type header', (t) => {
   const server = startRPC({})
@@ -92,7 +92,7 @@ tape('call JSON-RPC auth protected server with a valid token', (t) => {
 tape('call JSON-RPC auth protected server with a valid but stale token', (t) => {
   const server = startRPC({}, undefined, { jwtSecret })
   const req = 'plaintext'
-  const claims = { iat: Math.floor(new Date().getTime() / 1000 - 6) }
+  const claims = { iat: Math.floor(new Date().getTime() / 1000 - 61) }
   const token = encode(claims, jwtSecret as never as string, 'HS256' as TAlgorithm)
 
   request(server)
@@ -134,7 +134,7 @@ tape('call JSON RPC with nonexistent method', (t) => {
     .set('Content-Type', 'application/json')
     .send(req)
     .expect((res: any) => {
-      if (isFalsy(res.body.error)) {
+      if (res.body.error === undefined) {
         throw new Error('should return an error object')
       }
       if (res.body.error.code !== METHOD_NOT_FOUND) {

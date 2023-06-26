@@ -1,7 +1,8 @@
 {
   "extends": "../../config/tsconfig.json",
-  "include": ["bin", "lib", "test"],
+  "include": ["bin", "src", "test"],
   "compilerOptions": {
-    "typeRoots": ["node_modules/@types", "lib/@types"]
-  }
+    "typeRoots": ["node_modules/@types", "src/@types"]
+  },
+  "exclude": ["browser/index.ts", "browser/util/index.ts"]
 }

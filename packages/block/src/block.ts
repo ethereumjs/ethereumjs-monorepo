@@ -1,20 +1,44 @@
 import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { Capability, TransactionFactory } from '@ethereumjs/tx'
-import { KECCAK256_RLP, arrToBufArr, bufArrToArr, bufferToHex, isTruthy } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
+import {
+  KECCAK256_RLP,
+  Withdrawal,
+  bigIntToHex,
+  bytesToHex,
+  bytesToPrefixedHexString,
+  equalsBytes,
+  fetchFromProvider,
+  getProvider,
+  hexStringToBytes,
+  intToPrefixedHexString,
+  isHexPrefixed,
+} from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { BlockHeader } from './header'
+import { executionPayloadFromBeaconPayload } from './from-beacon-payload.js'
+import { blockFromRpc } from './from-rpc.js'
+import { BlockHeader } from './header.js'
 
-import type { BlockBuffer, BlockData, BlockOptions, JsonBlock } from './types'
+import type { BeaconPayloadJson } from './from-beacon-payload.js'
+import type {
+  BlockBytes,
+  BlockData,
+  BlockOptions,
+  ExecutionPayload,
+  HeaderData,
+  JsonBlock,
+  JsonRpcBlock,
+} from './types.js'
 import type { Common } from '@ethereumjs/common'
 import type {
   FeeMarketEIP1559Transaction,
-  Transaction,
+  LegacyTransaction,
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
+import type { EthersProvider, WithdrawalBytes } from '@ethereumjs/util'
 
 /**
  * An object that represents the block.
@@ -23,8 +47,35 @@ export class Block {
   public readonly header: BlockHeader
   public readonly transactions: TypedTransaction[] = []
   public readonly uncleHeaders: BlockHeader[] = []
+  public readonly withdrawals?: Withdrawal[]
   public readonly txTrie = new Trie()
   public readonly _common: Common
+
+  /**
+   * Returns the withdrawals trie root for array of Withdrawal.
+   * @param wts array of Withdrawal to compute the root of
+   * @param optional emptyTrie to use to generate the root
+   */
+  public static async genWithdrawalsTrieRoot(wts: Withdrawal[], emptyTrie?: Trie) {
+    const trie = emptyTrie ?? new Trie()
+    for (const [i, wt] of wts.entries()) {
+      await trie.put(RLP.encode(i), RLP.encode(wt.raw()))
+    }
+    return trie.root()
+  }
+
+  /**
+   * Returns the txs trie root for array of TypedTransaction
+   * @param txs array of TypedTransaction to compute the root of
+   * @param optional emptyTrie to use to generate the root
+   */
+  public static async genTransactionsTrieRoot(txs: TypedTransaction[], emptyTrie?: Trie) {
+    const trie = emptyTrie ?? new Trie()
+    for (const [i, tx] of txs.entries()) {
+      await trie.put(RLP.encode(i), tx.serialize())
+    }
+    return trie.root()
+  }
 
   /**
    * Static constructor to create a block from a block data dictionary
@@ -33,7 +84,12 @@ export class Block {
    * @param opts
    */
   public static fromBlockData(blockData: BlockData = {}, opts?: BlockOptions) {
-    const { header: headerData, transactions: txsData, uncleHeaders: uhsData } = blockData
+    const {
+      header: headerData,
+      transactions: txsData,
+      uncleHeaders: uhsData,
+      withdrawals: withdrawalsData,
+    } = blockData
     const header = BlockHeader.fromHeaderData(headerData, opts)
 
     // parse transactions
@@ -41,7 +97,7 @@ export class Block {
     for (const txData of txsData ?? []) {
       const tx = TransactionFactory.fromTxData(txData, {
         ...opts,
-        // Use header common in case of hardforkByBlockNumber being activated
+        // Use header common in case of setHardfork being activated
         common: header._common,
       } as TxOptions)
       transactions.push(tx)
@@ -50,25 +106,24 @@ export class Block {
     // parse uncle headers
     const uncleHeaders = []
     const uncleOpts: BlockOptions = {
-      hardforkByBlockNumber: true,
       ...opts,
-      // Use header common in case of hardforkByBlockNumber being activated
+      // Use header common in case of setHardfork being activated
       common: header._common,
       // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
       calcDifficultyFromHeader: undefined,
-      // This potentially overwrites hardforkBy options but we will set them cleanly just below
-      hardforkByTTD: undefined,
     }
-    // Uncles are obsolete post-merge, any hardfork by option implies hardforkByBlockNumber
-    if (opts?.hardforkByTTD !== undefined) {
-      uncleOpts.hardforkByBlockNumber = true
+    // Uncles are obsolete post-merge, any hardfork by option implies setHardfork
+    if (opts?.setHardfork !== undefined) {
+      uncleOpts.setHardfork = true
     }
     for (const uhData of uhsData ?? []) {
       const uh = BlockHeader.fromHeaderData(uhData, uncleOpts)
       uncleHeaders.push(uh)
     }
 
-    return new Block(header, transactions, uncleHeaders, opts)
+    const withdrawals = withdrawalsData?.map(Withdrawal.fromWithdrawalData)
+
+    return new Block(header, transactions, uncleHeaders, withdrawals, opts)
   }
 
   /**
@@ -77,8 +132,8 @@ export class Block {
    * @param serialized
    * @param opts
    */
-  public static fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions) {
-    const values = arrToBufArr(RLP.decode(Uint8Array.from(serialized))) as BlockBuffer
+  public static fromRLPSerializedBlock(serialized: Uint8Array, opts?: BlockOptions) {
+    const values = RLP.decode(Uint8Array.from(serialized)) as BlockBytes
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized block input. Must be array')
@@ -88,27 +143,37 @@ export class Block {
   }
 
   /**
-   * Static constructor to create a block from an array of Buffer values
+   * Static constructor to create a block from an array of Bytes values
    *
    * @param values
    * @param opts
    */
-  public static fromValuesArray(values: BlockBuffer, opts?: BlockOptions) {
-    if (values.length > 3) {
+  public static fromValuesArray(values: BlockBytes, opts?: BlockOptions) {
+    if (values.length > 4) {
       throw new Error('invalid block. More values than expected were received')
     }
 
-    const [headerData, txsData, uhsData] = values
-
+    // First try to load header so that we can use its common (in case of setHardfork being activated)
+    // to correctly make checks on the hardforks
+    const [headerData, txsData, uhsData, withdrawalBytes] = values
     const header = BlockHeader.fromValuesArray(headerData, opts)
+
+    if (
+      header._common.isActivatedEIP(4895) &&
+      (values[3] === undefined || !Array.isArray(values[3]))
+    ) {
+      throw new Error(
+        'Invalid serialized block input: EIP-4895 is active, and no withdrawals were provided as array'
+      )
+    }
 
     // parse transactions
     const transactions = []
-    for (const txData of isTruthy(txsData) ? txsData : []) {
+    for (const txData of txsData ?? []) {
       transactions.push(
         TransactionFactory.fromBlockBodyData(txData, {
           ...opts,
-          // Use header common in case of hardforkByBlockNumber being activated
+          // Use header common in case of setHardfork being activated
           common: header._common,
         })
       )
@@ -117,24 +182,176 @@ export class Block {
     // parse uncle headers
     const uncleHeaders = []
     const uncleOpts: BlockOptions = {
-      hardforkByBlockNumber: true,
       ...opts,
-      // Use header common in case of hardforkByBlockNumber being activated
+      // Use header common in case of setHardfork being activated
       common: header._common,
       // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
       calcDifficultyFromHeader: undefined,
-      // This potentially overwrites hardforkBy options but we will set them cleanly just below
-      hardforkByTTD: undefined,
     }
-    // Uncles are obsolete post-merge, any hardfork by option implies hardforkByBlockNumber
-    if (opts?.hardforkByTTD !== undefined) {
-      uncleOpts.hardforkByBlockNumber = true
+    // Uncles are obsolete post-merge, any hardfork by option implies setHardfork
+    if (opts?.setHardfork !== undefined) {
+      uncleOpts.setHardfork = true
     }
-    for (const uncleHeaderData of isTruthy(uhsData) ? uhsData : []) {
+    for (const uncleHeaderData of uhsData ?? []) {
       uncleHeaders.push(BlockHeader.fromValuesArray(uncleHeaderData, uncleOpts))
     }
 
-    return new Block(header, transactions, uncleHeaders, opts)
+    const withdrawals = (withdrawalBytes as WithdrawalBytes[])
+      ?.map(([index, validatorIndex, address, amount]) => ({
+        index,
+        validatorIndex,
+        address,
+        amount,
+      }))
+      ?.map(Withdrawal.fromWithdrawalData)
+
+    return new Block(header, transactions, uncleHeaders, withdrawals, opts)
+  }
+
+  /**
+   * Creates a new block object from Ethereum JSON RPC.
+   *
+   * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
+   * @param uncles - Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
+   * @param options - An object describing the blockchain
+   */
+  public static fromRPC(blockData: JsonRpcBlock, uncles?: any[], opts?: BlockOptions) {
+    return blockFromRpc(blockData, uncles, opts)
+  }
+
+  /**
+   *  Method to retrieve a block from a JSON-RPC provider and format as a {@link Block}
+   * @param provider either a url for a remote provider or an Ethers JsonRpcProvider object
+   * @param blockTag block hash or block number to be run
+   * @param opts {@link BlockOptions}
+   * @returns the block specified by `blockTag`
+   */
+  public static fromJsonRpcProvider = async (
+    provider: string | EthersProvider,
+    blockTag: string | bigint,
+    opts: BlockOptions
+  ) => {
+    let blockData
+    const providerUrl = getProvider(provider)
+
+    if (typeof blockTag === 'string' && blockTag.length === 66) {
+      blockData = await fetchFromProvider(providerUrl, {
+        method: 'eth_getBlockByHash',
+        params: [blockTag, true],
+      })
+    } else if (typeof blockTag === 'bigint') {
+      blockData = await fetchFromProvider(providerUrl, {
+        method: 'eth_getBlockByNumber',
+        params: [bigIntToHex(blockTag), true],
+      })
+    } else if (
+      isHexPrefixed(blockTag) ||
+      blockTag === 'latest' ||
+      blockTag === 'earliest' ||
+      blockTag === 'pending' ||
+      blockTag === 'finalized' ||
+      blockTag === 'safe'
+    ) {
+      blockData = await fetchFromProvider(providerUrl, {
+        method: 'eth_getBlockByNumber',
+        params: [blockTag, true],
+      })
+    } else {
+      throw new Error(
+        `expected blockTag to be block hash, bigint, hex prefixed string, or earliest/latest/pending; got ${blockTag}`
+      )
+    }
+
+    if (blockData === null) {
+      throw new Error('No block data returned from provider')
+    }
+
+    const uncleHeaders = []
+    if (blockData.uncles.length > 0) {
+      for (let x = 0; x < blockData.uncles.length; x++) {
+        const headerData = await fetchFromProvider(providerUrl, {
+          method: 'eth_getUncleByBlockHashAndIndex',
+          params: [blockData.hash, intToPrefixedHexString(x)],
+        })
+        uncleHeaders.push(headerData)
+      }
+    }
+
+    return blockFromRpc(blockData, uncleHeaders, opts)
+  }
+
+  /**
+   *  Method to retrieve a block from an execution payload
+   * @param execution payload constructed from beacon payload
+   * @param opts {@link BlockOptions}
+   * @returns the block constructed block
+   */
+  public static async fromExecutionPayload(
+    payload: ExecutionPayload,
+    options?: BlockOptions
+  ): Promise<Block> {
+    const {
+      blockNumber: number,
+      receiptsRoot: receiptTrie,
+      prevRandao: mixHash,
+      feeRecipient: coinbase,
+      transactions,
+      withdrawals: withdrawalsData,
+    } = payload
+
+    const txs = []
+    for (const [index, serializedTx] of transactions.entries()) {
+      try {
+        const tx = TransactionFactory.fromSerializedData(hexStringToBytes(serializedTx), {
+          common: options?.common,
+        })
+        txs.push(tx)
+      } catch (error) {
+        const validationError = `Invalid tx at index ${index}: ${error}`
+        throw validationError
+      }
+    }
+
+    const transactionsTrie = await Block.genTransactionsTrieRoot(txs)
+    const withdrawals = withdrawalsData?.map((wData) => Withdrawal.fromWithdrawalData(wData))
+    const withdrawalsRoot = withdrawals
+      ? await Block.genWithdrawalsTrieRoot(withdrawals)
+      : undefined
+    const header: HeaderData = {
+      ...payload,
+      number,
+      receiptTrie,
+      transactionsTrie,
+      withdrawalsRoot,
+      mixHash,
+      coinbase,
+    }
+
+    // we are not setting setHardfork as common is already set to the correct hf
+    const block = Block.fromBlockData({ header, transactions: txs, withdrawals }, options)
+    // Verify blockHash matches payload
+    if (!equalsBytes(block.hash(), hexStringToBytes(payload.blockHash))) {
+      const validationError = `Invalid blockHash, expected: ${
+        payload.blockHash
+      }, received: ${bytesToPrefixedHexString(block.hash())}`
+      throw Error(validationError)
+    }
+
+    return block
+  }
+
+  /**
+   *  Method to retrieve a block from a beacon payload json
+   * @param payload json of a beacon beacon fetched from beacon apis
+   * @param opts {@link BlockOptions}
+   * @returns the block constructed block
+   */
+  public static async fromBeaconPayloadJson(
+    payload: BeaconPayloadJson,
+    options?: BlockOptions
+  ): Promise<Block> {
+    const executionPayload = executionPayloadFromBeaconPayload(payload)
+    return Block.fromExecutionPayload(executionPayload, options)
   }
 
   /**
@@ -145,12 +362,15 @@ export class Block {
     header?: BlockHeader,
     transactions: TypedTransaction[] = [],
     uncleHeaders: BlockHeader[] = [],
+    withdrawals?: Withdrawal[],
     opts: BlockOptions = {}
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
-    this.transactions = transactions
-    this.uncleHeaders = uncleHeaders
     this._common = this.header._common
+
+    this.transactions = transactions
+    this.withdrawals = withdrawals ?? (this._common.isActivatedEIP(4895) ? [] : undefined)
+    this.uncleHeaders = uncleHeaders
     if (uncleHeaders.length > 0) {
       this.validateUncles()
       if (this._common.consensusType() === ConsensusType.ProofOfAuthority) {
@@ -167,6 +387,10 @@ export class Block {
       }
     }
 
+    if (!this._common.isActivatedEIP(4895) && withdrawals !== undefined) {
+      throw new Error('Cannot have a withdrawals field if EIP 4895 is not active')
+    }
+
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -174,22 +398,27 @@ export class Block {
   }
 
   /**
-   * Returns a Buffer Array of the raw Buffers of this block, in order.
+   * Returns a Array of the raw Bytes Arays of this block, in order.
    */
-  raw(): BlockBuffer {
-    return [
+  raw(): BlockBytes {
+    const bytesArray = <BlockBytes>[
       this.header.raw(),
       this.transactions.map((tx) =>
         tx.supports(Capability.EIP2718TypedTransaction) ? tx.serialize() : tx.raw()
-      ) as Buffer[],
+      ) as Uint8Array[],
       this.uncleHeaders.map((uh) => uh.raw()),
     ]
+    const withdrawalsRaw = this.withdrawals?.map((wt) => wt.raw())
+    if (withdrawalsRaw) {
+      bytesArray.push(withdrawalsRaw)
+    }
+    return bytesArray
   }
 
   /**
    * Returns the hash of the block.
    */
-  hash(): Buffer {
+  hash(): Uint8Array {
     return this.header.hash()
   }
 
@@ -203,8 +432,8 @@ export class Block {
   /**
    * Returns the rlp encoding of the block.
    */
-  serialize(): Buffer {
-    return Buffer.from(RLP.encode(bufArrToArr(this.raw())))
+  serialize(): Uint8Array {
+    return RLP.encode(this.raw())
   }
 
   /**
@@ -212,45 +441,41 @@ export class Block {
    */
   async genTxTrie(): Promise<void> {
     const { transactions, txTrie } = this
-    for (let i = 0; i < transactions.length; i++) {
-      const tx = transactions[i]
-      const key = Buffer.from(RLP.encode(i))
-      const value = tx.serialize()
-      await txTrie.put(key, value)
-    }
+    await Block.genTransactionsTrieRoot(transactions, txTrie)
   }
 
   /**
    * Validates the transaction trie by generating a trie
    * and do a check on the root hash.
+   * @returns True if the transaction trie is valid, false otherwise
    */
-  async validateTransactionsTrie(): Promise<boolean> {
+  async transactionsTrieIsValid(): Promise<boolean> {
     let result
     if (this.transactions.length === 0) {
-      result = this.header.transactionsTrie.equals(KECCAK256_RLP)
+      result = equalsBytes(this.header.transactionsTrie, KECCAK256_RLP)
       return result
     }
 
-    if (this.txTrie.root().equals(KECCAK256_RLP)) {
+    if (equalsBytes(this.txTrie.root(), KECCAK256_RLP)) {
       await this.genTxTrie()
     }
-    result = this.txTrie.root().equals(this.header.transactionsTrie)
+    result = equalsBytes(this.txTrie.root(), this.header.transactionsTrie)
     return result
   }
 
   /**
    * Validates transaction signatures and minimum gas requirements.
-   *
-   * @param stringError - If `true`, a string with the indices of the invalid txs is returned.
+   * @returns {string[]} an array of error strings
    */
-  validateTransactions(): boolean
-  validateTransactions(stringError: false): boolean
-  validateTransactions(stringError: true): string[]
-  validateTransactions(stringError = false) {
+  getTransactionsValidationErrors(): string[] {
     const errors: string[] = []
+    let dataGasUsed = BigInt(0)
+    const dataGasLimit = this._common.param('gasConfig', 'maxDataGasPerBlock')
+    const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
+
     // eslint-disable-next-line prefer-const
     for (let [i, tx] of this.transactions.entries()) {
-      const errs = <string[]>tx.validate(true)
+      const errs = tx.getValidationErrors()
       if (this._common.isActivatedEIP(1559) === true) {
         if (tx.supports(Capability.EIP1559FeeMarket)) {
           tx = tx as FeeMarketEIP1559Transaction
@@ -258,9 +483,19 @@ export class Block {
             errs.push('tx unable to pay base fee (EIP-1559 tx)')
           }
         } else {
-          tx = tx as Transaction
+          tx = tx as LegacyTransaction
           if (tx.gasPrice < this.header.baseFeePerGas!) {
             errs.push('tx unable to pay base fee (non EIP-1559 tx)')
+          }
+        }
+      }
+      if (this._common.isActivatedEIP(4844) === true) {
+        if (tx instanceof BlobEIP4844Transaction) {
+          dataGasUsed += BigInt(tx.numBlobs()) * dataGasPerBlob
+          if (dataGasUsed > dataGasLimit) {
+            errs.push(
+              `tx causes total data gas of ${dataGasUsed} to exceed maximum data gas per block of ${dataGasLimit}`
+            )
           }
         }
       }
@@ -269,7 +504,23 @@ export class Block {
       }
     }
 
-    return stringError ? errors : errors.length === 0
+    if (this._common.isActivatedEIP(4844) === true) {
+      if (dataGasUsed !== this.header.dataGasUsed) {
+        errors.push(`invalid dataGasUsed expected=${this.header.dataGasUsed} actual=${dataGasUsed}`)
+      }
+    }
+
+    return errors
+  }
+
+  /**
+   * Validates transaction signatures and minimum gas requirements.
+   * @returns True if all transactions are valid, false otherwise
+   */
+  transactionsAreValid(): boolean {
+    const errors = this.getTransactionsValidationErrors()
+
+    return errors.length === 0
   }
 
   /**
@@ -282,7 +533,7 @@ export class Block {
    * @param onlyHeader if only passed the header, skip validating txTrie and unclesHash (default: false)
    */
   async validateData(onlyHeader: boolean = false): Promise<void> {
-    const txErrors = this.validateTransactions(true)
+    const txErrors = this.getTransactionsValidationErrors()
     if (txErrors.length > 0) {
       const msg = this._errorMsg(`invalid transactions: ${txErrors.join(' ')}`)
       throw new Error(msg)
@@ -292,25 +543,90 @@ export class Block {
       return
     }
 
-    const validateTxTrie = await this.validateTransactionsTrie()
-    if (!validateTxTrie) {
+    if (!(await this.transactionsTrieIsValid())) {
       const msg = this._errorMsg('invalid transaction trie')
       throw new Error(msg)
     }
 
-    if (!this.validateUnclesHash()) {
+    if (!this.uncleHashIsValid()) {
       const msg = this._errorMsg('invalid uncle hash')
+      throw new Error(msg)
+    }
+
+    if (this._common.isActivatedEIP(4895) && !(await this.withdrawalsTrieIsValid())) {
+      const msg = this._errorMsg('invalid withdrawals trie')
       throw new Error(msg)
     }
   }
 
   /**
-   * Validates the uncle's hash.
+   * Validates that data gas fee for each transaction is greater than or equal to the
+   * dataGasPrice for the block and that total data gas in block is less than maximum
+   * data gas per block
+   * @param parentHeader header of parent block
    */
-  validateUnclesHash(): boolean {
+  validateBlobTransactions(parentHeader: BlockHeader) {
+    if (this._common.isActivatedEIP(4844)) {
+      const dataGasLimit = this._common.param('gasConfig', 'maxDataGasPerBlock')
+      const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
+      let dataGasUsed = BigInt(0)
+
+      for (const tx of this.transactions) {
+        if (tx instanceof BlobEIP4844Transaction) {
+          const dataGasPrice = this.header.getDataGasPrice()
+          if (tx.maxFeePerDataGas < dataGasPrice) {
+            throw new Error(
+              `blob transaction maxFeePerDataGas ${
+                tx.maxFeePerDataGas
+              } < than block data gas price ${dataGasPrice} - ${this.errorStr()}`
+            )
+          }
+
+          dataGasUsed += BigInt(tx.versionedHashes.length) * dataGasPerBlob
+
+          if (dataGasUsed > dataGasLimit) {
+            throw new Error(
+              `tx causes total data gas of ${dataGasUsed} to exceed maximum data gas per block of ${dataGasLimit}`
+            )
+          }
+        }
+      }
+
+      if (this.header.dataGasUsed !== dataGasUsed) {
+        throw new Error(
+          `block dataGasUsed mismatch: have ${this.header.dataGasUsed}, want ${dataGasUsed}`
+        )
+      }
+
+      const expectedExcessDataGas = parentHeader.calcNextExcessDataGas()
+      if (this.header.excessDataGas !== expectedExcessDataGas) {
+        throw new Error(
+          `block excessDataGas mismatch: have ${this.header.excessDataGas}, want ${expectedExcessDataGas}`
+        )
+      }
+    }
+  }
+
+  /**
+   * Validates the uncle's hash.
+   * @returns true if the uncle's hash is valid, false otherwise.
+   */
+  uncleHashIsValid(): boolean {
     const uncles = this.uncleHeaders.map((uh) => uh.raw())
-    const raw = RLP.encode(bufArrToArr(uncles))
-    return Buffer.from(keccak256(raw)).equals(this.header.uncleHash)
+    const raw = RLP.encode(uncles)
+    return equalsBytes(keccak256(raw), this.header.uncleHash)
+  }
+
+  /**
+   * Validates the withdrawal root
+   * @returns true if the withdrawals trie root is valid, false otherwise
+   */
+  async withdrawalsTrieIsValid(): Promise<boolean> {
+    if (!this._common.isActivatedEIP(4895)) {
+      throw new Error('EIP 4895 is not activated')
+    }
+    const withdrawalsRoot = await Block.genWithdrawalsTrieRoot(this.withdrawals!)
+    return equalsBytes(withdrawalsRoot, this.header.withdrawalsRoot!)
   }
 
   /**
@@ -334,7 +650,7 @@ export class Block {
     }
 
     // Header does not count an uncle twice.
-    const uncleHashes = this.uncleHeaders.map((header) => header.hash().toString('hex'))
+    const uncleHashes = this.uncleHeaders.map((header) => bytesToHex(header.hash()))
     if (!(new Set(uncleHashes).size === uncleHashes.length)) {
       const msg = this._errorMsg('duplicate uncles')
       throw new Error(msg)
@@ -364,10 +680,16 @@ export class Block {
    * Returns the block in JSON format.
    */
   toJSON(): JsonBlock {
+    const withdrawalsAttr = this.withdrawals
+      ? {
+          withdrawals: this.withdrawals.map((wt) => wt.toJSON()),
+        }
+      : {}
     return {
       header: this.header.toJSON(),
       transactions: this.transactions.map((tx) => tx.toJSON()),
       uncleHeaders: this.uncleHeaders.map((uh) => uh.toJSON()),
+      ...withdrawalsAttr,
     }
   }
 
@@ -377,7 +699,7 @@ export class Block {
   public errorStr() {
     let hash = ''
     try {
-      hash = bufferToHex(this.hash())
+      hash = bytesToHex(this.hash())
     } catch (e: any) {
       hash = 'error'
     }

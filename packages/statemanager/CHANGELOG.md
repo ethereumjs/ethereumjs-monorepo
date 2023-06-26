@@ -6,6 +6,59 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 1.0.5 - 2023-04-20
+
+- Update ethereum-cryptography from 1.2 to 2.0 (switch from noble-secp256k1 to noble-curves), PR [#2641](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2641)
+- Bump `@ethereumjs/util` `@chainsafe/ssz` dependency to 0.11.1 (no WASM, native SHA-256 implementation, ES2019 compatible, explicit imports), PRs [#2622](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2622), [#2564](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2564) and [#2656](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2656)
+
+## 1.0.4 - 2023-02-27
+
+- Pinned `@ethereumjs/util` `@chainsafe/ssz` dependency to `v0.9.4` due to ES2021 features used in `v0.10.+` causing compatibility issues, PR [#2555](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2555)
+
+## 1.0.3 - 2023-02-21
+
+**DEPRECATED**: Release is deprecated due to broken dependencies, please update to the subsequent bugfix release version.
+
+Maintenance release with dependency updates, PR [#2521](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2521)
+
+## 1.0.2 - 2022-12-09
+
+Added `EthersStateManager` to direct exports (if you use please fix our deep imports), see PR [#2419](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2419).
+
+Import is now simplified to:
+
+```typescript
+import { EthersStateManager } from '@ethereumjs/statemanager'
+```
+
+## 1.0.1 - 2022-10-18
+
+### New EthersStateManager (experimental)
+
+There is a new dedicated state manager `EthersStateManager` added to the library. This new state manager gets its state via Ethers RPC calls and allows e.g. for a stateless execution of selected mainnet (or other Ethereum network) blocks and transactions, see PR [#2315](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2315).
+
+There are some caveats and therefore the new state manager is marked as `experimental` for now:
+
+- No `stateRoot` calculation for now, only secondary measures like `gasUsed`
+- Performance is rather slow (when using a remote provider for state data), particularly for more recent `mainnet` blocks
+- The API of this new state manager might change in future (bugfix or minor) releases
+
+This should nevertheless be useful for a certain number of use cases, if there is e.g. the need for some quick analysis of certain mainnet (EVM) behavior e.g.. The `StateManager` package [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanager#ethersstatemanager) contains a new dedicated section on how to use the new state manager.
+
+**Note:** Usage of this StateManager can cause a heavy load regarding state request API calls, so be careful (or at least: aware) if used in combination with an Ethers provider connecting to a third-party API service like Infura!
+
+### Other Changes and Fixes
+
+- Migrated from `rbtree` to [js-sdsl](https://github.com/js-sdsl/js-sdsl) package for caching functionality (maintained, better performance), PR [#2285](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2285)
+
+## 1.0.0 - 2022-09-06
+
+Final release - tada 🎉 - of a wider breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2, Beta 3 and Release Candidate (RC) 1 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/CHANGELOG.md)).
+
+### Changes
+
+- Internal refactor: removed ambiguous boolean checks within conditional clauses, PR [#2251](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2251)
+
 ## 1.0.0-rc.1 - 2022-08-29
 
 Release candidate 1 for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 and 3 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/CHANGELOG.md)).

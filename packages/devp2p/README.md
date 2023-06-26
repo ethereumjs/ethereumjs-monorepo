@@ -19,13 +19,13 @@ This library bundles different components for lower-level peer-to-peer connectio
 
 To build the `dist/` directory, run:
 
-```
+```shell
 npm run build
 ```
 
 You can also use `ts-node` to run a script without first transpiling to js (you need to `npm i --save-dev ts-node` first):
 
-```
+```shell
 node -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
 ```
 
@@ -36,7 +36,7 @@ and make heavy use of the Node.js network stack.
 
 You can react on events from the network like this:
 
-```
+```typescript
 dpt.on('peer:added', (peer) => {
   // Do something...
 })
@@ -44,16 +44,16 @@ dpt.on('peer:added', (peer) => {
 
 Basic example to connect to some bootstrap nodes and get basic peer info:
 
-- [simple](examples/simple.ts)
+- [simple](examples/simple.cts)
 
 Communicate with peers to read new transaction and block information:
 
-- [peer-communication](examples/peer-communication.ts)
+- [peer-communication](examples/peer-communication.cts)
 
 Run an example with:
 
 ```
-DEBUG=devp2p:* node -r ts-node/register ./examples/peer-communication.ts
+DEBUG=ethjs,devp2p:* node -r ts-node/register ./examples/peer-communication.cts
 ```
 
 ## Docs
@@ -72,19 +72,19 @@ includes node discovery ([./src/dpt/server.ts](./src/dpt/server.ts))
 
 Create your peer table:
 
-```
+```typescript
 const dpt = new DPT(Buffer.from(PRIVATE_KEY, 'hex'), {
   endpoint: {
     address: '0.0.0.0',
     udpPort: null,
-    tcpPort: null
-  }
+    tcpPort: null,
+  },
 })
 ```
 
 Add some bootstrap nodes (or some custom nodes with `dpt.addPeer()`):
 
-```
+```typescript
 dpt.bootstrap(bootnode).catch((err) => console.error('Something went wrong!'))
 ```
 
@@ -142,7 +142,7 @@ Events emitted:
 
 ### Reference
 
-- [Node discovery protocol](https://github.com/ethereum/wiki/wiki/Node-discovery-protocol)
+- [Node discovery protocol](https://ethereum.org/en/developers/docs/networking-layer/#discovery)
 - [RLPx - Node Discovery Protocol](https://github.com/ethereum/devp2p/blob/master/rlpx.md#node-discovery)
 - [Kademlia Peer Selection](https://github.com/ethereum/wiki/wiki/Kademlia-Peer-Selection)
 
@@ -218,14 +218,14 @@ Events emitted:
 
 ## Ethereum Wire Protocol (ETH)
 
-Upper layer protocol for exchanging Ethereum network data like block headers or transactions with a node, see [./src/eth/](./src/eth/).
+Upper layer protocol for exchanging Ethereum network data like block headers or transactions with a node, see [./src/protocol/eth/](./src/protocol/eth/).
 
 ### Usage
 
 Send the initial status message with `sendStatus()`, then wait for the corresponding `status` message
 to arrive to start the communication.
 
-```
+```typescript
 eth.once('status', () => {
   // Send an initial message
   eth.sendMessage()
@@ -234,7 +234,7 @@ eth.once('status', () => {
 
 Wait for follow-up messages to arrive, send your responses.
 
-```
+```typescript
 eth.on('message', async (code, payload) => {
   if (code === devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES) {
     // Do something with your new block hashes :-)
@@ -287,14 +287,14 @@ Events emitted:
 
 ## Light Ethereum Subprotocol (LES)
 
-Upper layer protocol used by light clients, see [./src/les/](./src/les/).
+Upper layer protocol used by light clients, see [./src/protocol/les/](./src/protocol/les/).
 
 ### Usage
 
 Send the initial status message with `sendStatus()`, then wait for the corresponding `status` message
 to arrive to start the communication.
 
-```
+```typescript
 les.once('status', () => {
   // Send an initial message
   les.sendMessage()
@@ -303,7 +303,7 @@ les.once('status', () => {
 
 Wait for follow-up messages to arrive, send your responses.
 
-```
+```typescript
 les.on('message', async (code, payload) => {
   if (code === devp2p.LES.MESSAGE_CODES.BLOCK_HEADERS) {
     // Do something with your new block headers :-)
@@ -359,7 +359,7 @@ Events emitted:
 
 ### Reference
 
-- [Light client protocol](https://github.com/ethereum/wiki/wiki/Light-client-protocol)
+- [Light client protocol](https://ethereum.org/en/developers/docs/nodes-and-clients/#light-node)
 
 ## Browser
 
@@ -373,7 +373,7 @@ While it's possible to bundle this package for the browser, some features do not
 
 There are unit tests in the `test/` directory which can be run with:
 
-```
+```shell
 npm run test
 ```
 
@@ -384,12 +384,12 @@ npm run test
 This library uses the [debug](https://github.com/visionmedia/debug) debugging utility package.
 
 For the debugging output to show up, set the `DEBUG` environment variable (e.g. in Linux/Mac OS:
-`export DEBUG=*,-babel`).
+`export DEBUG=ethjs,*,-babel`).
 
 Use the `DEBUG` environment variable to active the logger output you are interested in, e.g.:
 
 ```shell
-DEBUG=devp2p:dpt:\*,devp2p:eth node -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
+DEBUG=ethjs,devp2p:dpt:\*,devp2p:eth node -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
 ```
 
 The following loggers are available:
@@ -410,7 +410,7 @@ The following loggers are available:
 For more verbose output on logging (e.g. to output the entire msg payload) use the `verbose` logger
 in addition:
 
-DEBUG=devp2p:dpt:\*,devp2p:eth,verbose node -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
+DEBUG=ethjs,devp2p:dpt:\*,devp2p:eth,verbose node -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
 
 Exemplary logging output:
 
@@ -439,7 +439,7 @@ Available messages can be added to the logger base name to filter on a per messa
 on two message names along `ETH` protocol debugging:
 
 ```shell
-DEBUG=devp2p:eth:GET_BLOCK_HEADERS,devp2p:eth:BLOCK_HEADERS -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
+DEBUG=ethjs,devp2p:eth:GET_BLOCK_HEADERS,devp2p:eth:BLOCK_HEADERS -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
 ```
 
 Exemplary logging output:
@@ -461,7 +461,7 @@ There are the following ways to limit debug output to a certain peer:
 Log output can be limited to one or several certain IPs. This can be useful to follow on the message exchange with a certain remote peer (e.g. a bootstrap peer):
 
 ```shell
-DEBUG=devp2p:3.209.45.79 -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
+DEBUG=ethjs,devp2p:3.209.45.79 -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
 ```
 
 #### First Connected
@@ -469,7 +469,7 @@ DEBUG=devp2p:3.209.45.79 -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
 Logging can be limited to the peer the first successful subprotocol (e.g. `ETH`) connection could be established:
 
 ```shell
-DEBUG=devp2p:FIRST_PEER -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
+DEBUG=ethjs,devp2p:FIRST_PEER -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
 ```
 
 This logger can be used in various practical scenarios if you want to concentrate on the message exchange with just one peer.

@@ -1,13 +1,13 @@
 import { RLP } from '@ethereumjs/rlp'
-import { arrToBufArr, bufArrToArr } from '@ethereumjs/util'
 import { base32, base64url } from '@scure/base'
-import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat'
+import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat.js'
+import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 import { Multiaddr } from 'multiaddr'
 import { sscanf } from 'scanf'
 
-import { keccak256, toNewUint8Array } from '../util'
+import { keccak256, toNewUint8Array } from '../util.js'
 
-import type { PeerInfo } from '../dpt'
+import type { PeerInfo } from '../dpt/index.js'
 
 const Convert = require('multiaddr/src/convert')
 
@@ -52,22 +52,29 @@ export class ENR {
     if (!enr.startsWith(this.RECORD_PREFIX))
       throw new Error(`String encoded ENR must start with '${this.RECORD_PREFIX}'`)
 
-    // ENRs are RLP encoded and written to DNS TXT entries as base64 url-safe strings
-    const base64BufferEnr = Buffer.from(base64url.decode(enr.slice(this.RECORD_PREFIX.length)))
-    const decoded = arrToBufArr(RLP.decode(Uint8Array.from(base64BufferEnr))) as Buffer[]
+    // ENRs are RLP encoded and written to DNS TXT entries as base64 url-safe strings respectively
+    // RawURLEncoding, which is the unpadded alternate base64 encoding defined in RFC 4648
+    // Records need to prepared like the following: replace - wth +, replace _ with / and add padding
+    let enrMod = enr.slice(this.RECORD_PREFIX.length)
+    enr = enrMod.replace('-', '+').replace('_', '/')
+    while (enrMod.length % 4 !== 0) {
+      enrMod = enrMod + '='
+    }
+    const base64BytesEnr = base64url.decode(enrMod)
+    const decoded = RLP.decode(base64BytesEnr)
     const [signature, seq, ...kvs] = decoded
 
     // Convert ENR key/value pairs to object
-    const obj: Record<string, Buffer> = {}
+    const obj: Record<string, Uint8Array> = {}
 
     for (let i = 0; i < kvs.length; i += 2) {
-      obj[kvs[i].toString()] = Buffer.from(kvs[i + 1])
+      obj[bytesToUtf8(kvs[i] as Uint8Array)] = kvs[i + 1] as Uint8Array
     }
 
     // Validate sig
     const isVerified = ecdsaVerify(
-      signature,
-      keccak256(Buffer.from(RLP.encode(bufArrToArr([seq, ...kvs])))),
+      signature as Uint8Array,
+      keccak256(RLP.encode([seq, ...kvs])),
       obj.secp256k1
     )
 
@@ -116,14 +123,14 @@ export class ENR {
     // of the record content, excluding the `sig=` part, encoded as URL-safe base64 string
     // (Trailing recovery bit must be trimmed to pass `ecdsaVerify` method)
     const signedComponent = root.split(' sig')[0]
-    const signedComponentBuffer = Buffer.from(signedComponent)
-    const signatureBuffer = Buffer.from(
+    const signedComponentBytes = utf8ToBytes(signedComponent)
+    const signatureBytes = Uint8Array.from(
       [...base64url.decode(rootVals.signature + '=').values()].slice(0, 64)
     )
 
-    const keyBuffer = Buffer.from(decodedPublicKey)
+    const keyBytes = Uint8Array.from(decodedPublicKey)
 
-    const isVerified = ecdsaVerify(signatureBuffer, keccak256(signedComponentBuffer), keyBuffer)
+    const isVerified = ecdsaVerify(signatureBytes, keccak256(signedComponentBytes), keyBytes)
 
     if (!isVerified) throw new Error('Unable to verify ENR root signature')
 
@@ -170,13 +177,13 @@ export class ENR {
 
   /**
    * Gets relevant multiaddr conversion codes for ipv4, ipv6 and tcp, udp formats
-   * @param  {Buffer}        protocolId
+   * @param  {Uint8Array}        protocolId
    * @return {ProtocolCodes}
    */
-  static _getIpProtocolConversionCodes(protocolId: Buffer): ProtocolCodes {
+  static _getIpProtocolConversionCodes(protocolId: Uint8Array): ProtocolCodes {
     let ipCode
 
-    switch (protocolId.toString()) {
+    switch (bytesToUtf8(protocolId)) {
       case 'v4':
         ipCode = Multiaddr.protocols.names.ip4.code
         break

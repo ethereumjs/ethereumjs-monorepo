@@ -1,10 +1,10 @@
-import { isFalsy } from '@ethereumjs/util'
+import { bytesToHex, short } from '@ethereumjs/util'
 
-import { OOGResult } from '../evm'
-import { ERROR, EvmError } from '../exceptions'
+import { OOGResult } from '../evm.js'
+import { ERROR, EvmError } from '../exceptions.js'
 
-import type { ExecResult } from '../evm'
-import type { PrecompileInput } from './types'
+import type { ExecResult } from '../evm.js'
+import type { PrecompileInput } from './types.js'
 
 // The following blake2 code has been taken from (license: Creative Commons CC0):
 // https://github.com/dcposch/blakejs/blob/410c640d0f08d3b26904c6d1ab3d81df3619d282/blake2b.js
@@ -158,58 +158,78 @@ export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, ro
 }
 
 export function precompile09(opts: PrecompileInput): ExecResult {
-  if (isFalsy(opts.data)) throw new Error('opts.data missing but required')
-
   const data = opts.data
   if (data.length !== 213) {
+    if (opts._debug !== undefined) {
+      opts._debug(`BLAKE2F (0x09) failed: OUT_OF_RANGE dataLength=${data.length}`)
+    }
     return {
-      returnValue: Buffer.alloc(0),
+      returnValue: new Uint8Array(0),
       executionGasUsed: opts.gasLimit,
       exceptionError: new EvmError(ERROR.OUT_OF_RANGE),
     }
   }
-  const lastByte = data.slice(212, 213)[0]
+  const lastByte = data.subarray(212, 213)[0]
   if (lastByte !== 1 && lastByte !== 0) {
+    if (opts._debug !== undefined) {
+      opts._debug(`BLAKE2F (0x09) failed: OUT_OF_RANGE lastByte=${lastByte}`)
+    }
     return {
-      returnValue: Buffer.alloc(0),
+      returnValue: new Uint8Array(0),
       executionGasUsed: opts.gasLimit,
       exceptionError: new EvmError(ERROR.OUT_OF_RANGE),
     }
   }
 
-  const rounds = data.slice(0, 4).readUInt32BE(0)
-  const hRaw = data.slice(4, 68)
-  const mRaw = data.slice(68, 196)
-  const tRaw = data.slice(196, 212)
+  const rounds = new DataView(data.subarray(0, 4).buffer).getUint32(0)
+  const hRaw = new DataView(data.buffer, 4, 64)
+  const mRaw = new DataView(data.buffer, 68, 128)
+  const tRaw = new DataView(data.buffer, 196, 16)
   // final
   const f = lastByte === 1
 
   let gasUsed = opts._common.param('gasPrices', 'blake2Round')
   gasUsed *= BigInt(rounds)
+  if (opts._debug !== undefined) {
+    opts._debug(
+      `Run BLAKE2F (0x09) precompile data=${short(opts.data)} length=${opts.data.length} gasLimit=${
+        opts.gasLimit
+      } gasUsed=${gasUsed}`
+    )
+  }
+
   if (opts.gasLimit < gasUsed) {
+    if (opts._debug !== undefined) {
+      opts._debug(`BLAKE2F (0x09) failed: OOG`)
+    }
     return OOGResult(opts.gasLimit)
   }
 
   const h = new Uint32Array(16)
   for (let i = 0; i < 16; i++) {
-    h[i] = hRaw.readUInt32LE(i * 4)
+    h[i] = hRaw.getUint32(i * 4, true)
   }
 
   const m = new Uint32Array(32)
   for (let i = 0; i < 32; i++) {
-    m[i] = mRaw.readUInt32LE(i * 4)
+    m[i] = mRaw.getUint32(i * 4, true)
   }
 
   const t = new Uint32Array(4)
   for (let i = 0; i < 4; i++) {
-    t[i] = tRaw.readUInt32LE(i * 4)
+    t[i] = tRaw.getUint32(i * 4, true)
   }
 
   F(h, m, t, f, rounds)
 
-  const output = Buffer.alloc(64)
+  const output = new Uint8Array(64)
+  const outputView = new DataView(output.buffer)
   for (let i = 0; i < 16; i++) {
-    output.writeUInt32LE(h[i], i * 4)
+    outputView.setUint32(i * 4, h[i], true)
+  }
+
+  if (opts._debug !== undefined) {
+    opts._debug(`BLAKE2F (0x09) return hash=${bytesToHex(output)}`)
   }
 
   return {

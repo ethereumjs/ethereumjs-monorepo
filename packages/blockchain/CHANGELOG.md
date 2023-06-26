@@ -6,6 +6,115 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.2.2 - 2023-04-20
+
+- Update ethereum-cryptography from 1.2 to 2.0 (switch from noble-secp256k1 to noble-curves), PR [#2641](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2641)
+- Bump `@ethereumjs/util` `@chainsafe/ssz` dependency to 0.11.1 (no WASM, native SHA-256 implementation, ES2019 compatible, explicit imports), PRs [#2622](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2622), [#2564](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2564) and [#2656](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2656)
+
+## 6.2.1 - 2023-02-27
+
+- Pinned `@ethereumjs/util` `@chainsafe/ssz` dependency to `v0.9.4` due to ES2021 features used in `v0.10.+` causing compatibility issues, PR [#2555](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2555)
+- Fixed `kzg` imports, PR [#2552](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2552)
+
+## 6.2.0 - 2023-02-21
+
+**DEPRECATED**: Release is deprecated due to broken dependencies, please update to the subsequent bugfix release version.
+
+### Functional Shanghai Support
+
+This release fully supports all EIPs included in the [Shanghai](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/shanghai.md) feature hardfork scheduled for early 2023. Note that a `timestamp` to trigger the `Shanghai` fork update is only added for the `sepolia` testnet and not yet for `goerli` or `mainnet`.
+
+You can instantiate a Shanghai-enabled Common instance for your transactions with:
+
+```typescript
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+```
+
+### Experimental EIP-4844 Shard Blob Transactions Support
+
+This release supports an experimental version of the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023), see PR [#2349](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2349) as well as PRs [#2522](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2522) and [#2526](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2526).
+
+The blockchain library now allows for blob transactions to be validated and included in a chain where EIP-4844 activated either by hardfork or standalone EIP (see latest tx library release for additional details).
+
+### Block Interface getBlock() Signature Fix
+
+Always a bit tricky, but we felt that we needed to do this. We had a misalignment of our blockchain implementation of the `Blockchain.getBlock()` method and the definition of the associated interface:
+
+- Blockchain class: `async getBlock(blockId: Buffer | number | bigint): Promise<Block>`
+- Blockchain interface: `getBlock(blockId: Buffer | number | bigint): Promise<Block | null>`
+
+So the Blockchain interface was - falsely - claiming that there would be the possibility of a `null` value returned in the case of a block not being found while the actual implementation was throwing an error in such a case.
+
+We now fixed this by removing the `null` from the interface return values - see PR [#2524](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2524), after exploring the other way around as well (and the reverting), see PR [#2516](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2516).
+
+While this might lead to breaking code constallations on the TypeScript level if this `null` value is picked up we felt this is the right thing to do since this divergence would otherwise continue to "trick" people into assuming and dealing with `null` values for non-existing-block assumptions in their code and continue to produce eventual bugs (we actually fell over this ourselves).
+
+A bit on the verge of breaking vs. bug fixing, sorry if you are eventually affected, but we just can't do a single breaking release update for a fix on that level.
+
+### Other Changes
+
+- Timestamp-related `Blockchain.createGenesisBlock()` fix, PR [#2529](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2529)
+- Allow genesis to be post merge, PR [#2530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2530)
+- Add extra validations for assuming nil bodies in `getBlock()`, PR [#2534](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2534)
+- New method `resetCanonicalHead(canonicalHead: bigint)`, PR [#2532](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2532)
+- Made `checkAndTransitionHardForkByNumber()` async and public, PR [#2532](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2532)
+- Total difficulty related HF switch fixes, PR [#2545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2545)
+- Revert to previous sane heads if block or header put fails, PR [#2548](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2548)
+
+## 6.1.0 - 2022-12-09
+
+### Experimental EIP-4895 Beacon Chain Withdrawals Support
+
+This release comes with experimental [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals support, see PR [#2353](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2353) for the plain implementation and PR [#2401](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2401) for updated calls for the CL/EL engine API. Also note that there is a new helper module in [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) with a new dedicated `Withdrawal` class together with additional TypeScript types to ease withdrawal handling.
+
+Withdrawals support can be activated by initializing a respective `Common` object, see [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) library README for an example how to create an Ethereum Block containing withdrawal operations.
+
+```typescript
+import { Common, Chain } from '@ethereumjs/common'
+```
+
+The Blockchain class now fully supports including/adding withdrawal blocks as well as directly start with a genesis block including withdrawal operations.
+
+### Hardfork-By-Time Support
+
+The Blockchain library is now ready to work with hardforks triggered by timestamp, which will first be applied along the `Shanghai` HF, see PR [#2437](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2437). This is achieved by integrating a new timestamp supporting `@ethereumjs/common` library version.
+
+## 6.0.2 - 2022-10-25
+
+- Updated `@ethereumjs/util` minimal package version to `v8.0.2` to ensure functioning of the library (otherwise the newly exported `Lock` functionality might be missing)
+
+## 6.0.1 - 2022-10-18
+
+### Support for Geth genesis.json Genesis Format
+
+For lots of custom chains (for e.g. devnets and testnets), you might come across a [Geth genesis.json config](https://geth.ethereum.org/docs/interface/private-network) which has both config specification for the chain as well as the genesis state specification.
+
+`Common` now has a new constructor `Common.fromGethGenesis()` - see PRs [#2300](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2300) and [#2319](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2319) - which can be used in following manner to instantiate for example a VM run or a tx with a `genesis.json` based Common:
+
+```typescript
+import { Common } from '@ethereumjs/common'
+// Load geth genesis json file into lets say `genesisJson` and optional `chain` and `genesisHash`
+const common = Common.fromGethGenesis(genesisJson, { chain: 'customChain', genesisHash })
+// If you don't have `genesisHash` while initiating common, you can later configure common (for e.g.
+// calculating it afterwards by using the `@ethereumjs/blockchain` package)
+common.setForkHashes(genesisHash)
+```
+
+### Other Changes and Fixes
+
+- New `releaseLockOnCallback` parameter for blockchain iterator (`Blockchain.iterator()` to allow for not locking the blockchain for running the callback (default: `false`), PR [#2308](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2308)
+- Fixed reorg handling for blockchain iterator (`Blockchain.iterator()`), PR [#2308](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2308)
+
+## 6.0.0 - 2022-09-06
+
+Final release - tada 🎉 - of a wider breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2, Beta 3 and Release Candidate (RC) 1 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/CHANGELOG.md)).
+
+### Changes
+
+- Internal refactor: removed ambiguous boolean checks within conditional clauses, PR [#2257](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2257)
+
 ## 6.0.0-rc.1 - 2022-08-29
 
 Release candidate 1 for the upcoming breaking release round on the [EthereumJS monorepo](https://github.com/ethereumjs/ethereumjs-monorepo) libraries, see the Beta 1 release notes for the main long change set description as well as the Beta 2 and 3 release notes for notes on some additional changes ([CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/CHANGELOG.md)).

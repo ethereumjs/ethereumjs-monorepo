@@ -1,9 +1,8 @@
 import { Block } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
-import { bufArrToArr } from '@ethereumjs/util'
 
-import { bufBE8 } from './constants'
-import { DBOp, DBTarget } from './operation'
+import { bytesBE8 } from './constants.js'
+import { DBOp, DBTarget } from './operation.js'
 
 import type { BlockHeader } from '@ethereumjs/block'
 
@@ -12,8 +11,8 @@ import type { BlockHeader } from '@ethereumjs/block'
  * and the DB operations from `db/operation.ts` and also handles the right encoding of the keys
  */
 
-function DBSetTD(TD: bigint, blockNumber: bigint, blockHash: Buffer): DBOp {
-  return DBOp.set(DBTarget.TotalDifficulty, Buffer.from(RLP.encode(TD)), {
+function DBSetTD(TD: bigint, blockNumber: bigint, blockHash: Uint8Array): DBOp {
+  return DBOp.set(DBTarget.TotalDifficulty, RLP.encode(TD), {
     blockNumber,
     blockHash,
   })
@@ -45,9 +44,12 @@ function DBSetBlockOrHeader(blockBody: Block | BlockHeader): DBOp[] {
 
   if (
     isGenesis ||
-    (blockBody instanceof Block && (blockBody.transactions.length || blockBody.uncleHeaders.length))
+    (blockBody instanceof Block &&
+      (blockBody.transactions.length ||
+        (blockBody.withdrawals?.length ?? 0) ||
+        blockBody.uncleHeaders.length))
   ) {
-    const bodyValue = Buffer.from(RLP.encode(bufArrToArr(blockBody.raw()).slice(1)))
+    const bodyValue = RLP.encode(blockBody.raw().slice(1))
     dbOps.push(
       DBOp.set(DBTarget.Body, bodyValue, {
         blockNumber,
@@ -59,18 +61,20 @@ function DBSetBlockOrHeader(blockBody: Block | BlockHeader): DBOp[] {
   return dbOps
 }
 
-function DBSetHashToNumber(blockHash: Buffer, blockNumber: bigint): DBOp {
-  const blockNumber8Byte = bufBE8(blockNumber)
+function DBSetHashToNumber(blockHash: Uint8Array, blockNumber: bigint): DBOp {
+  const blockNumber8Byte = bytesBE8(blockNumber)
   return DBOp.set(DBTarget.HashToNumber, blockNumber8Byte, {
     blockHash,
   })
 }
 
-function DBSaveLookups(blockHash: Buffer, blockNumber: bigint): DBOp[] {
+function DBSaveLookups(blockHash: Uint8Array, blockNumber: bigint, skipNumIndex?: boolean): DBOp[] {
   const ops = []
-  ops.push(DBOp.set(DBTarget.NumberToHash, blockHash, { blockNumber }))
+  if (skipNumIndex !== true) {
+    ops.push(DBOp.set(DBTarget.NumberToHash, blockHash, { blockNumber }))
+  }
 
-  const blockNumber8Bytes = bufBE8(blockNumber)
+  const blockNumber8Bytes = bytesBE8(blockNumber)
   ops.push(
     DBOp.set(DBTarget.HashToNumber, blockNumber8Bytes, {
       blockHash,

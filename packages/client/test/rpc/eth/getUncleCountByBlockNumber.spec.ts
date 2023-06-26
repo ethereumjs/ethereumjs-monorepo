@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 
-import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 import { checkError } from '../util'
 
@@ -9,7 +9,7 @@ function createChain() {
     uncleHeaders: ['0x1', '0x2', '0x3'],
     transactions: [],
     header: {
-      hash: () => Buffer.from([1]),
+      hash: () => new Uint8Array([1]),
       number: BigInt('5'),
     },
   }

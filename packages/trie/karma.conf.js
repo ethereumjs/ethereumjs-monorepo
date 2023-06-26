@@ -11,7 +11,12 @@ module.exports = function (config) {
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
         acornOptions: {
-          ecmaVersion: 11,
+          ecmaVersion: 13,
+        },
+        resolve: {
+          alias: {
+            'bigint-crypto-utils': '../../node_modules/bigint-crypto-utils/dist/bundle.umd.js',
+          },
         },
       },
     },

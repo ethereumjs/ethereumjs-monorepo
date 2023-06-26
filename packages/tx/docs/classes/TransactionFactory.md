@@ -7,6 +7,8 @@
 ### Methods
 
 - [fromBlockBodyData](TransactionFactory.md#fromblockbodydata)
+- [fromEthersProvider](TransactionFactory.md#fromethersprovider)
+- [fromRPCTx](TransactionFactory.md#fromrpctx)
 - [fromSerializedData](TransactionFactory.md#fromserializeddata)
 - [fromTxData](TransactionFactory.md#fromtxdata)
 
@@ -34,7 +36,57 @@ This method returns the right transaction.
 
 #### Defined in
 
-[transactionFactory.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L86)
+[transactionFactory.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L84)
+
+___
+
+### fromEthersProvider
+
+▸ `Static` **fromEthersProvider**(`provider`, `txHash`, `txOptions?`): `Promise`<[`TypedTransaction`](../README.md#typedtransaction)\>
+
+Method to retrieve a transaction from the provider
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `provider` | `any` | An Ethers JsonRPCProvider |
+| `txHash` | `string` | Transaction hash |
+| `txOptions?` | [`TxOptions`](../interfaces/TxOptions.md) | The transaction options |
+
+#### Returns
+
+`Promise`<[`TypedTransaction`](../README.md#typedtransaction)\>
+
+the transaction specified by `txHash`
+
+#### Defined in
+
+[transactionFactory.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L102)
+
+___
+
+### fromRPCTx
+
+▸ `Static` **fromRPCTx**(`txData`, `txOptions?`): `Promise`<[`TypedTransaction`](../README.md#typedtransaction)\>
+
+Method to decode data retrieved from RPC, such as `eth_getTransactionByHash`
+Note that this normalizes some of the parameters
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `txData` | [`BlobEIP4844TxData`](../interfaces/BlobEIP4844TxData.md) \| [`FeeMarketEIP1559TxData`](../interfaces/FeeMarketEIP1559TxData.md) \| [`AccessListEIP2930TxData`](../interfaces/AccessListEIP2930TxData.md) \| [`TxData`](../README.md#txdata) | The RPC-encoded data |
+| `txOptions` | [`TxOptions`](../interfaces/TxOptions.md) | The transaction options |
+
+#### Returns
+
+`Promise`<[`TypedTransaction`](../README.md#typedtransaction)\>
+
+#### Defined in
+
+[transactionFactory.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L125)
 
 ___
 
@@ -57,7 +109,7 @@ This method tries to decode serialized data.
 
 #### Defined in
 
-[transactionFactory.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L52)
+[transactionFactory.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L57)
 
 ___
 
@@ -71,7 +123,7 @@ Create a transaction from a `txData` object
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `txData` | [`FeeMarketEIP1559TxData`](../interfaces/FeeMarketEIP1559TxData.md) \| [`AccessListEIP2930TxData`](../interfaces/AccessListEIP2930TxData.md) \| [`TxData`](../README.md#txdata) | The transaction data. The `type` field will determine which transaction type is returned (if undefined, creates a legacy transaction) |
+| `txData` | [`BlobEIP4844TxData`](../interfaces/BlobEIP4844TxData.md) \| [`FeeMarketEIP1559TxData`](../interfaces/FeeMarketEIP1559TxData.md) \| [`AccessListEIP2930TxData`](../interfaces/AccessListEIP2930TxData.md) \| [`TxData`](../README.md#txdata) | The transaction data. The `type` field will determine which transaction type is returned (if undefined, creates a legacy transaction) |
 | `txOptions` | [`TxOptions`](../interfaces/TxOptions.md) | Options to pass on to the constructor of the transaction |
 
 #### Returns
@@ -80,4 +132,4 @@ Create a transaction from a `txData` object
 
 #### Defined in
 
-[transactionFactory.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L25)
+[transactionFactory.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L28)

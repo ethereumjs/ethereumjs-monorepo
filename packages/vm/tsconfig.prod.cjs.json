@@ -1,0 +1,20 @@
+{
+  "extends": "../../config/tsconfig.prod.cjs.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist/cjs",
+    "composite": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.json"],
+  "references": [
+    { "path": "../block/tsconfig.prod.cjs.json" },
+    { "path": "../blockchain/tsconfig.prod.cjs.json" },
+    { "path": "../common/tsconfig.prod.cjs.json" },
+    { "path": "../evm/tsconfig.prod.cjs.json" },
+    { "path": "../rlp/tsconfig.prod.cjs.json" },
+    { "path": "../statemanager/tsconfig.prod.cjs.json" },
+    { "path": "../trie/tsconfig.prod.cjs.json" },
+    { "path": "../tx/tsconfig.prod.cjs.json" },
+    { "path": "../util/tsconfig.prod.cjs.json" }
+  ]
+}

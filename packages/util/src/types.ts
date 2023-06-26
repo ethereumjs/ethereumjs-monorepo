@@ -1,24 +1,25 @@
-import { bufferToBigInt, bufferToHex, toBuffer } from './bytes'
-import { isHexString } from './internal'
+import { bytesToHex } from 'ethereum-cryptography/utils.js'
 
-import type { Address } from './address'
-import type { ToBufferInputTypes } from './bytes'
+import { bytesToBigInt, toBytes } from './bytes.js'
+import { isHexString } from './internal.js'
+
+import type { Address } from './address.js'
+import type { ToBytesInputTypes } from './bytes.js'
 
 /*
  * A type that represents an input that can be converted to a BigInt.
  */
-export type BigIntLike = bigint | PrefixedHexString | number | Buffer
+export type BigIntLike = bigint | PrefixedHexString | number | Uint8Array
 
 /*
- * A type that represents an input that can be converted to a Buffer.
+ * A type that represents an input that can be converted to a Uint8Array.
  */
-export type BufferLike =
-  | Buffer
+export type BytesLike =
   | Uint8Array
   | number[]
   | number
   | bigint
-  | TransformableToBuffer
+  | TransformabletoBytes
   | PrefixedHexString
 
 /*
@@ -29,26 +30,13 @@ export type PrefixedHexString = string
 /**
  * A type that represents an input that can be converted to an Address.
  */
-export type AddressLike = Address | Buffer | PrefixedHexString
+export type AddressLike = Address | Uint8Array | PrefixedHexString
 
-/*
- * A type that represents an object that has a `toArray()` method.
- */
-export interface TransformableToArray {
-  toArray(): Uint8Array
-  toBuffer?(): Buffer
-}
-
-/*
- * A type that represents an object that has a `toBuffer()` method.
- */
-export interface TransformableToBuffer {
-  toBuffer(): Buffer
-  toArray?(): Uint8Array
+export interface TransformabletoBytes {
+  toBytes?(): Uint8Array
 }
 
 export type NestedUint8Array = Array<Uint8Array | NestedUint8Array>
-export type NestedBufferArray = Array<Buffer | NestedBufferArray>
 
 /**
  * Type output options
@@ -56,14 +44,14 @@ export type NestedBufferArray = Array<Buffer | NestedBufferArray>
 export enum TypeOutput {
   Number,
   BigInt,
-  Buffer,
+  Uint8Array,
   PrefixedHexString,
 }
 
 export type TypeOutputReturnType = {
   [TypeOutput.Number]: number
   [TypeOutput.BigInt]: bigint
-  [TypeOutput.Buffer]: Buffer
+  [TypeOutput.Uint8Array]: Uint8Array
   [TypeOutput.PrefixedHexString]: PrefixedHexString
 }
 
@@ -76,11 +64,11 @@ export type TypeOutputReturnType = {
 export function toType<T extends TypeOutput>(input: null, outputType: T): null
 export function toType<T extends TypeOutput>(input: undefined, outputType: T): undefined
 export function toType<T extends TypeOutput>(
-  input: ToBufferInputTypes,
+  input: ToBytesInputTypes,
   outputType: T
 ): TypeOutputReturnType[T]
 export function toType<T extends TypeOutput>(
-  input: ToBufferInputTypes,
+  input: ToBytesInputTypes,
   outputType: T
 ): TypeOutputReturnType[T] | undefined | null {
   if (input === null) {
@@ -98,15 +86,15 @@ export function toType<T extends TypeOutput>(
     )
   }
 
-  const output = toBuffer(input)
+  const output = toBytes(input)
 
   switch (outputType) {
-    case TypeOutput.Buffer:
+    case TypeOutput.Uint8Array:
       return output as TypeOutputReturnType[T]
     case TypeOutput.BigInt:
-      return bufferToBigInt(output) as TypeOutputReturnType[T]
+      return bytesToBigInt(output) as TypeOutputReturnType[T]
     case TypeOutput.Number: {
-      const bigInt = bufferToBigInt(output)
+      const bigInt = bytesToBigInt(output)
       if (bigInt > BigInt(Number.MAX_SAFE_INTEGER)) {
         throw new Error(
           'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative output type)'
@@ -115,40 +103,8 @@ export function toType<T extends TypeOutput>(
       return Number(bigInt) as TypeOutputReturnType[T]
     }
     case TypeOutput.PrefixedHexString:
-      return bufferToHex(output) as TypeOutputReturnType[T]
+      return bytesToHex(output) as TypeOutputReturnType[T]
     default:
       throw new Error('unknown outputType')
   }
-}
-
-type Falsy = false | '' | 0 | null | undefined | 0n
-
-/**
- * Returns true if a value is falsy
- *
- * @param value - Value to check for falseness
- *
- * @deprecated This helper function should only be used temporarily until the monorepo types are explicit enough
- */
-export function isFalsy(value: unknown): value is Falsy {
-  return !!(
-    value === false ||
-    value === '' ||
-    value === 0 ||
-    Number.isNaN(value) ||
-    value === null ||
-    typeof value === 'undefined' ||
-    value === BigInt(0)
-  )
-}
-
-/**
- * Returns true if a value is truthy
- *
- * @param value - Value to check for truthiness
- *
- * @deprecated This helper function should only be used temporarily until the monorepo types are explicit enough
- */
-export function isTruthy<T>(value: T | Falsy): value is T {
-  return !isFalsy(value)
 }

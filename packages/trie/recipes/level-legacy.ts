@@ -1,9 +1,9 @@
 import level from 'level-mem'
 
-import type { BatchDBOp, DB } from '@ethereumjs/trie'
+import type { BatchDBOp, DB } from '@ethereumjs/util'
 import type { LevelUp } from 'levelup'
 
-const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
+const ENCODING_OPTS = { keyEncoding: 'view', valueEncoding: 'view' }
 
 export class LevelDB implements DB {
   readonly _leveldb: LevelUp
@@ -12,8 +12,8 @@ export class LevelDB implements DB {
     this._leveldb = leveldb ?? level()
   }
 
-  async get(key: Buffer): Promise<Buffer | null> {
-    let value: Buffer | null = null
+  async get(key: Uint8Array): Promise<Uint8Array | undefined> {
+    let value
     try {
       value = await this._leveldb.get(key, ENCODING_OPTS)
     } catch (error: any) {
@@ -27,11 +27,11 @@ export class LevelDB implements DB {
     return value
   }
 
-  async put(key: Buffer, val: Buffer): Promise<void> {
+  async put(key: Uint8Array, val: Uint8Array): Promise<void> {
     await this._leveldb.put(key, val, ENCODING_OPTS)
   }
 
-  async del(key: Buffer): Promise<void> {
+  async del(key: Uint8Array): Promise<void> {
     await this._leveldb.del(key, ENCODING_OPTS)
   }
 
@@ -41,5 +41,9 @@ export class LevelDB implements DB {
 
   copy(): DB {
     return new LevelDB(this._leveldb)
+  }
+
+  open() {
+    return Promise.resolve()
   }
 }

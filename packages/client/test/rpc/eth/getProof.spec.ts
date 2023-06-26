@@ -1,13 +1,13 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 
-import type { FullEthereumService } from '../../../lib/service'
+import type { FullEthereumService } from '../../../src/service'
 
 const method = 'eth_getProof'
 
@@ -53,11 +53,11 @@ tape(`${method}: call with valid arguments`, async (t) => {
   // genesis address with balance
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
-  // contract inspired from https://eth.wiki/json-rpc/API#example-14
+  // contract inspired from https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_getstorageat/
   /*
     // SPDX-License-Identifier: MIT
     pragma solidity ^0.7.4;
-    
+
     contract Storage {
         uint pos0;
         mapping(address => uint) pos1;
@@ -72,7 +72,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   // construct block with tx
   const gasLimit = 2000000
-  const tx = Transaction.fromTxData({ gasLimit, data }, { common, freeze: false })
+  const tx = LegacyTransaction.fromTxData({ gasLimit, data }, { common, freeze: false })
   tx.getSenderAddress = () => {
     return address
   }
@@ -105,7 +105,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
     gasLimit: bigIntToHex(BigInt(530000)),
     nonce: 1,
   }
-  const storeTx = Transaction.fromTxData(storeTxData, { common, freeze: false })
+  const storeTx = LegacyTransaction.fromTxData(storeTxData, { common, freeze: false })
   storeTx.getSenderAddress = () => {
     return address
   }

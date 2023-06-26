@@ -2,7 +2,7 @@
   "name": "sepolia",
   "chainId": 11155111,
   "networkId": 11155111,
-  "defaultHardfork": "merge",
+  "defaultHardfork": "shanghai",
   "consensus": {
     "type": "pow",
     "algorithm": "ethash",
@@ -74,10 +74,10 @@
       "forkHash": "0xfe3366e7"
     },
     {
-      "//_comment": "The forkHash will remain same as mergeForkIdTransition is post merge",
-      "name": "merge",
+      "//_comment": "The forkHash will remain same as mergeForkIdTransition is post merge, terminal block: https://sepolia.etherscan.io/block/1450408",
+      "name": "paris",
       "ttd": "17000000000000000",
-      "block": null,
+      "block": 1450409,
       "forkHash": "0xfe3366e7"
     },
     {
@@ -87,6 +87,12 @@
     },
     {
       "name": "shanghai",
+      "block": null,
+      "timestamp": "1677557088",
+      "forkHash": "0xf7f9bc08"
+    },
+    {
+      "name": "cancun",
       "block": null,
       "forkHash": null
     }

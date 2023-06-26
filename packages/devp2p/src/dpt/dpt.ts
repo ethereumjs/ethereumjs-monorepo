@@ -1,21 +1,20 @@
-import { randomBytes } from 'crypto'
-import { getPublicKey } from 'ethereum-cryptography/secp256k1'
+import { bytesToInt, randomBytes } from '@ethereumjs/util'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'events'
-import ms = require('ms')
 
-import { DNS } from '../dns'
-import { buffer2int, devp2pDebug, pk2id } from '../util'
+import { DNS } from '../dns/index.js'
+import { devp2pDebug, pk2id } from '../util.js'
 
-import { BanList } from './ban-list'
-import { KBucket } from './kbucket'
-import { Server as DPTServer } from './server'
+import { BanList } from './ban-list.js'
+import { KBucket } from './kbucket.js'
+import { Server as DPTServer } from './server.js'
 
 import type { Debugger } from 'debug'
 
 const DEBUG_BASE_NAME = 'dpt'
 
 export interface PeerInfo {
-  id?: Uint8Array | Buffer
+  id?: Uint8Array
   address?: string
   udpPort?: number | null
   tcpPort?: number | null
@@ -87,12 +86,12 @@ export interface DPTOptions {
 }
 
 export class DPT extends EventEmitter {
-  privateKey: Buffer
+  privateKey: Uint8Array
   banlist: BanList
   dns: DNS
   _debug: Debugger
 
-  private _id: Buffer | undefined
+  private _id: Uint8Array | undefined
   private _kbucket: KBucket
   private _server: DPTServer
   private _refreshIntervalId: NodeJS.Timeout
@@ -103,11 +102,11 @@ export class DPT extends EventEmitter {
   private _dnsNetworks: string[]
   private _dnsAddr: string
 
-  constructor(privateKey: Buffer, options: DPTOptions) {
+  constructor(privateKey: Uint8Array, options: DPTOptions) {
     super()
 
-    this.privateKey = Buffer.from(privateKey)
-    this._id = pk2id(Buffer.from(getPublicKey(this.privateKey, false)))
+    this.privateKey = privateKey
+    this._id = pk2id(secp256k1.getPublicKey(this.privateKey, false))
     this._shouldFindNeighbours = options.shouldFindNeighbours ?? true
     this._shouldGetDnsPeers = options.shouldGetDnsPeers ?? false
     // By default, tries to connect to 12 new peers every 3s
@@ -140,7 +139,7 @@ export class DPT extends EventEmitter {
     })
 
     // By default calls refresh every 3s
-    const refreshIntervalSubdivided = Math.floor((options.refreshInterval ?? ms('60s')) / 10)
+    const refreshIntervalSubdivided = Math.floor((options.refreshInterval ?? 60000) / 10) // 60 sec * 1000
     this._refreshIntervalId = setInterval(() => this.refresh(), refreshIntervalSubdivided)
   }
 
@@ -162,13 +161,13 @@ export class DPT extends EventEmitter {
       this._server
         .ping(peer)
         .catch((_err: Error) => {
-          this.banlist.add(peer, ms('5m'))
+          this.banlist.add(peer, 300000) // 5 min * 60 * 1000
           this._kbucket.remove(peer)
           err = err ?? _err
         })
         .then(() => {
           if (++count < oldPeers.length) return
-          if (err === null) this.banlist.add(newPeer, ms('5m'))
+          if (err === null) this.banlist.add(newPeer, 300000) // 5 min * 60 * 1000
           else this._kbucket.add(newPeer)
         })
     }
@@ -215,12 +214,12 @@ export class DPT extends EventEmitter {
       this._kbucket.add(peer)
       return peer
     } catch (err: any) {
-      this.banlist.add(obj, ms('5m'))
+      this.banlist.add(obj, 300000) // 5 min * 60 * 1000
       throw err
     }
   }
 
-  getPeer(obj: string | Buffer | PeerInfo) {
+  getPeer(obj: string | Uint8Array | PeerInfo) {
     return this._kbucket.get(obj)
   }
 
@@ -228,7 +227,7 @@ export class DPT extends EventEmitter {
     return this._kbucket.getAll()
   }
 
-  getClosestPeers(id: string) {
+  getClosestPeers(id: Uint8Array) {
     return this._kbucket.closest(id)
   }
 
@@ -236,7 +235,7 @@ export class DPT extends EventEmitter {
     this._kbucket.remove(obj)
   }
 
-  banPeer(obj: string | Buffer | PeerInfo, maxAge?: number) {
+  banPeer(obj: string | Uint8Array | PeerInfo, maxAge?: number) {
     this.banlist.add(obj, maxAge)
     this._kbucket.remove(obj)
   }
@@ -258,7 +257,7 @@ export class DPT extends EventEmitter {
       for (const peer of peers) {
         // Randomly distributed selector based on peer ID
         // to decide on subdivided execution
-        const selector = buffer2int((peer.id as Buffer).slice(0, 1)) % 10
+        const selector = bytesToInt((peer.id as Uint8Array).subarray(0, 1)) % 10
         if (selector === this._refreshIntervalSelectionCounter) {
           this._server.findneighbours(peer, randomBytes(64))
         }

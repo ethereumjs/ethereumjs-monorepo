@@ -1,13 +1,14 @@
+import { bytesToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { Chain } from '../../../lib/blockchain'
-import { Config } from '../../../lib/config'
-import { FlowControl, LesProtocol } from '../../../lib/net/protocol'
+import { Chain } from '../../../src/blockchain'
+import { Config } from '../../../src/config'
+import { FlowControl, LesProtocol } from '../../../src/net/protocol'
 
 tape('[LesProtocol]', (t) => {
-  t.test('should get properties', (t) => {
-    const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+  t.test('should get properties', async (t) => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const chain = await Chain.create({ config })
     const p = new LesProtocol({ config, chain })
     t.ok(typeof p.name === 'string', 'get name')
     t.ok(Array.isArray(p.versions), 'get versions')
@@ -16,8 +17,8 @@ tape('[LesProtocol]', (t) => {
   })
 
   t.test('should open correctly', async (t) => {
-    const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const chain = await Chain.create({ config })
     const p = new LesProtocol({ config, chain })
     await p.open()
     t.ok(p.opened, 'opened is true')
@@ -25,9 +26,9 @@ tape('[LesProtocol]', (t) => {
     t.end()
   })
 
-  t.test('should encode/decode status', (t) => {
-    const config = new Config({ transports: [] })
-    const chain = new Chain({ config })
+  t.test('should encode/decode status', async (t) => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const chain = await Chain.create({ config })
     const flow = new FlowControl({
       bl: 1000,
       mrr: 10,
@@ -66,23 +67,23 @@ tape('[LesProtocol]', (t) => {
     })
     let status = p.encodeStatus()
     t.ok(
-      status.networkId.toString('hex') === '01' &&
-        status.headTd.toString('hex') === '64' &&
+      bytesToHex(status.networkId) === '01' &&
+        bytesToHex(status.headTd) === '64' &&
         status.headHash === '0xaa' &&
-        status.headNum.toString('hex') === '64' &&
+        bytesToHex(status.headNum) === '64' &&
         status.genesisHash === '0xbb' &&
-        status.forkID[0].toString('hex') === 'fc64ec04' &&
-        status.forkID[1].toString('hex') === '118c30' &&
-        status.recentTxLookup.toString('hex') === '01' &&
+        bytesToHex(status.forkID[0]) === 'fc64ec04' &&
+        bytesToHex(status.forkID[1]) === '118c30' &&
+        bytesToHex(status.recentTxLookup) === '01' &&
         status.serveHeaders === 1 &&
         status.serveChainSince === 0 &&
         status.serveStateSince === 0 &&
         //status.txRelay === 1 && TODO: uncomment with client tx pool functionality
-        status['flowControl/BL'].toString('hex') === '03e8' &&
-        status['flowControl/MRR'].toString('hex') === '0a' &&
-        status['flowControl/MRC'][0][0].toString('hex') === '02' &&
-        status['flowControl/MRC'][0][1].toString('hex') === '0a' &&
-        status['flowControl/MRC'][0][2].toString('hex') === '0a',
+        bytesToHex(status['flowControl/BL']) === '03e8' &&
+        bytesToHex(status['flowControl/MRR']) === '0a' &&
+        bytesToHex(status['flowControl/MRC'][0][0]) === '02' &&
+        bytesToHex(status['flowControl/MRC'][0][1]) === '0a' &&
+        bytesToHex(status['flowControl/MRC'][0][2]) === '0a',
       'encode status'
     )
     status = { ...status, networkId: [0x01] }
@@ -93,9 +94,9 @@ tape('[LesProtocol]', (t) => {
         status.headHash === '0xaa' &&
         status.headNum === BigInt(100) &&
         status.genesisHash === '0xbb' &&
-        status.forkID[0].toString('hex') === 'fc64ec04' &&
-        status.forkID[1].toString('hex') === '118c30' &&
-        status.recentTxLookup.toString('hex') === '01' &&
+        bytesToHex(status.forkID[0]) === 'fc64ec04' &&
+        bytesToHex(status.forkID[1]) === '118c30' &&
+        bytesToHex(status.recentTxLookup) === '01' &&
         status.serveHeaders === true &&
         status.serveChainSince === 0 &&
         status.serveStateSince === 0 &&

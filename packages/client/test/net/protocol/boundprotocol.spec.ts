@@ -3,10 +3,10 @@ import { EventEmitter } from 'events'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Config } from '../../../lib/config'
-import { BoundProtocol } from '../../../lib/net/protocol'
-import { Sender } from '../../../lib/net/protocol/sender'
-import { Event } from '../../../lib/types'
+import { Config } from '../../../src/config'
+import { BoundProtocol } from '../../../src/net/protocol'
+import { Sender } from '../../../src/net/protocol/sender'
+import { Event } from '../../../src/types'
 
 tape('[BoundProtocol]', (t) => {
   const peer = td.object('Peer') as any
@@ -29,7 +29,7 @@ tape('[BoundProtocol]', (t) => {
 
   t.test('should add methods for messages with a response', (t) => {
     const sender = new Sender()
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const bound = new BoundProtocol({
       config,
       protocol,
@@ -42,7 +42,7 @@ tape('[BoundProtocol]', (t) => {
 
   t.test('should get/set status', (t) => {
     const sender = new Sender()
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const bound = new BoundProtocol({
       config,
       protocol,
@@ -56,7 +56,7 @@ tape('[BoundProtocol]', (t) => {
   })
 
   t.test('should do handshake', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const sender = new EventEmitter() as Sender
     const bound = new BoundProtocol({
       config,
@@ -71,7 +71,7 @@ tape('[BoundProtocol]', (t) => {
   })
 
   t.test('should handle incoming without resolver', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const sender = new Sender()
     const bound = new BoundProtocol({
       config,
@@ -93,7 +93,7 @@ tape('[BoundProtocol]', (t) => {
   })
 
   t.test('should perform send', (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const sender = new Sender()
     sender.sendMessage = td.func<Sender['sendMessage']>()
     const bound = new BoundProtocol({
@@ -110,7 +110,7 @@ tape('[BoundProtocol]', (t) => {
   })
 
   t.test('should perform request', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const sender = new Sender()
     const bound = new BoundProtocol({
       config,
@@ -138,7 +138,7 @@ tape('[BoundProtocol]', (t) => {
   })
 
   t.test('should timeout request', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const sender = td.object<Sender>('Sender')
     const bound = new BoundProtocol({
       config,

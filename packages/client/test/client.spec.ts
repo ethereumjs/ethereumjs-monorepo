@@ -1,11 +1,11 @@
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Config } from '../lib/config'
-import { PeerPool } from '../lib/net/peerpool'
+import { Config } from '../src/config'
+import { PeerPool } from '../src/net/peerpool'
 
 tape('[EthereumClient]', async (t) => {
-  const config = new Config({ transports: [] })
+  const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
   class FullEthereumService {
     open() {}
     start() {}
@@ -16,7 +16,7 @@ tape('[EthereumClient]', async (t) => {
   FullEthereumService.prototype.open = td.func<any>()
   FullEthereumService.prototype.start = td.func<any>()
   FullEthereumService.prototype.stop = td.func<any>()
-  td.replace('../lib/service', { FullEthereumService })
+  td.replace<any>('../src/service', { FullEthereumService })
   td.when(FullEthereumService.prototype.open()).thenResolve()
   td.when(FullEthereumService.prototype.start()).thenResolve()
   td.when(FullEthereumService.prototype.stop()).thenResolve()
@@ -31,16 +31,16 @@ tape('[EthereumClient]', async (t) => {
   Server.prototype.start = td.func<any>()
   Server.prototype.stop = td.func<any>()
   Server.prototype.bootstrap = td.func<any>()
-  td.replace('../lib/net/server/server', { Server })
+  td.replace<any>('../src/net/server/server', { Server })
   td.when(Server.prototype.start()).thenResolve()
   td.when(Server.prototype.stop()).thenResolve()
   td.when(Server.prototype.bootstrap()).thenResolve()
 
-  const { EthereumClient } = await import('../lib/client')
+  const { EthereumClient } = await import('../src/client')
 
-  t.test('should initialize correctly', (t) => {
-    const config = new Config({ transports: [] })
-    const client = new EthereumClient({ config })
+  t.test('should initialize correctly', async (t) => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const client = await EthereumClient.create({ config })
     t.ok(client.services[0] instanceof FullEthereumService, 'added service')
     t.end()
   })
@@ -48,8 +48,8 @@ tape('[EthereumClient]', async (t) => {
   t.test('should open', async (t) => {
     t.plan(2)
     const servers = [new Server()] as any
-    const config = new Config({ servers })
-    const client = new EthereumClient({ config })
+    const config = new Config({ servers, accountCache: 10000, storageCache: 1000 })
+    const client = await EthereumClient.create({ config })
 
     await client.open()
     t.ok(client.opened, 'opened')
@@ -58,8 +58,8 @@ tape('[EthereumClient]', async (t) => {
 
   t.test('should start/stop', async (t) => {
     const servers = [new Server()] as any
-    const config = new Config({ servers })
-    const client = new EthereumClient({ config })
+    const config = new Config({ servers, accountCache: 10000, storageCache: 1000 })
+    const client = await EthereumClient.create({ config })
     await client.start()
     t.ok(client.started, 'started')
     t.equals(await client.start(), false, 'already started')

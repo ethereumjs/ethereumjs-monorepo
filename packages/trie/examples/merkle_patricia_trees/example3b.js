@@ -24,7 +24,7 @@ async function test() {
   console.log('Branch node 1 hash: ', node1._value)
   console.log('Branch node 2 hash: ', node2._value)
 
-  console.log('Root of trie 1: ', trie1.root)
-  console.log('Root of trie 2: ', trie2.root)
+  console.log('Root of trie 1: ', trie1.root())
+  console.log('Root of trie 2: ', trie2.root())
 }
 test()

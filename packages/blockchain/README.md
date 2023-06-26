@@ -19,6 +19,8 @@ To obtain the latest version, simply require the project using `npm`:
 npm install @ethereumjs/blockchain
 ```
 
+**Note:** If you want to work with `EIP-4844` related functionality, you will have additional manual installation steps for the **KZG setup**, see related section below.
+
 ## Usage
 
 ### Introduction
@@ -79,13 +81,36 @@ Starting with v6 responsibility for setting up a custom genesis state moved from
 
 A genesis state can be set along `Blockchain` creation by passing in a custom `genesisBlock` and `genesisState`. For `mainnet` and the official test networks like `sepolia` or `goerli` genesis is already provided with the block data coming from `@ethereumjs/common`. The genesis state is being integrated in the `Blockchain` library (see `genesisStates` folder).
 
-TODO: add code example here!
+### Custom genesis from a Geth genesis config
+
+For many custom chains we might come across a genesis configuration, which can be used to build both chain config as well the genesis state (and hence the genesis block as well to start off with)
+
+```typescript
+import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
+import { Common, parseGethGenesis } from '@ethereumjs/common'
+
+// Load geth genesis json file into lets say `gethGenesisJson`
+const common = Common.fromGethGenesis(gethGenesisJson, { chain: 'customChain' })
+const genesisState = parseGethGenesisState(gethGenesisJson)
+const blockchain = await Blockchain.create({
+  genesisState,
+  common,
+})
+const genesisBlockHash = blockchain.genesisBlock.hash()
+common.setForkHashes(genesisBlockHash)
+```
 
 The genesis block from the initialized `Blockchain` can be retrieved via the `Blockchain.genesisBlock` getter. For creating a genesis block from the params in `@ethereumjs/common`, the `createGenesisBlock(stateRoot: Buffer): Block` method can be used.
 
 ## EIP-1559 Support
 
 This library supports the handling of `EIP-1559` blocks and transactions starting with the `v5.3.0` release.
+
+### EIP-4844 Shard Blob Transactions Support (experimental)
+
+This library supports an experimental version of the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023) starting with `v6.2.0`.
+
+The blockchain library now allows for blob transactions to be validated and included in a chain where EIP-4844 activated either by hardfork or standalone EIP (see latest tx library release for additional details).
 
 ## API
 

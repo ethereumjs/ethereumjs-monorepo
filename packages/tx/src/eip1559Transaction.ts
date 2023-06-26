@@ -1,32 +1,39 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
   MAX_INTEGER,
-  arrToBufArr,
   bigIntToHex,
-  bigIntToUnpaddedBuffer,
-  bufArrToArr,
-  bufferToBigInt,
+  bigIntToUnpaddedBytes,
+  bytesToBigInt,
+  bytesToHex,
+  concatBytes,
   ecrecover,
-  toBuffer,
+  equalsBytes,
+  hexStringToBytes,
+  toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { BaseTransaction } from './baseTransaction'
-import { AccessLists, checkMaxInitCodeSize } from './util'
+import { BaseTransaction } from './baseTransaction.js'
+import { TransactionType } from './types.js'
+import { AccessLists } from './util.js'
 
 import type {
   AccessList,
-  AccessListBuffer,
-  FeeMarketEIP1559TxData,
-  FeeMarketEIP1559ValuesArray,
+  AccessListBytes,
+  TxData as AllTypesTxData,
+  TxValuesArray as AllTypesTxValuesArray,
   JsonTx,
   TxOptions,
-} from './types'
+} from './types.js'
 import type { Common } from '@ethereumjs/common'
 
-const TRANSACTION_TYPE = 2
-const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')
+type TxData = AllTypesTxData[TransactionType.FeeMarketEIP1559]
+type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP1559]
+
+const TRANSACTION_TYPE_BYTES = hexStringToBytes(
+  TransactionType.FeeMarketEIP1559.toString(16).padStart(2, '0')
+)
 
 /**
  * Typed transaction with a new gas fee market mechanism
@@ -34,22 +41,14 @@ const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padSta
  * - TransactionType: 2
  * - EIP: [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)
  */
-export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP1559Transaction> {
+export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType.FeeMarketEIP1559> {
   public readonly chainId: bigint
-  public readonly accessList: AccessListBuffer
+  public readonly accessList: AccessListBytes
   public readonly AccessListJSON: AccessList
   public readonly maxPriorityFeePerGas: bigint
   public readonly maxFeePerGas: bigint
 
   public readonly common: Common
-
-  /**
-   * The default HF if the tx type is active on that HF
-   * or the first greater HF where the tx is active.
-   *
-   * @hidden
-   */
-  protected DEFAULT_HARDFORK = 'london'
 
   /**
    * Instantiate a transaction from a data dictionary.
@@ -61,7 +60,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
    * - `chainId` will be set automatically if not provided
    * - All parameters are optional and have some basic default values
    */
-  public static fromTxData(txData: FeeMarketEIP1559TxData, opts: TxOptions = {}) {
+  public static fromTxData(txData: TxData, opts: TxOptions = {}) {
     return new FeeMarketEIP1559Transaction(txData, opts)
   }
 
@@ -71,22 +70,22 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
    * Format: `0x02 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
    * accessList, signatureYParity, signatureR, signatureS])`
    */
-  public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
-    if (!serialized.slice(0, 1).equals(TRANSACTION_TYPE_BUFFER)) {
+  public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
+    if (equalsBytes(serialized.subarray(0, 1), TRANSACTION_TYPE_BYTES) === false) {
       throw new Error(
-        `Invalid serialized tx input: not an EIP-1559 transaction (wrong tx type, expected: ${TRANSACTION_TYPE}, received: ${serialized
-          .slice(0, 1)
-          .toString('hex')}`
+        `Invalid serialized tx input: not an EIP-1559 transaction (wrong tx type, expected: ${
+          TransactionType.FeeMarketEIP1559
+        }, received: ${bytesToHex(serialized.subarray(0, 1))}`
       )
     }
 
-    const values = arrToBufArr(RLP.decode(serialized.slice(1)))
+    const values = RLP.decode(serialized.subarray(1))
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized tx input: must be array')
     }
 
-    return FeeMarketEIP1559Transaction.fromValuesArray(values as any, opts)
+    return FeeMarketEIP1559Transaction.fromValuesArray(values as TxValuesArray, opts)
   }
 
   /**
@@ -95,7 +94,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
    * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
    * accessList, signatureYParity, signatureR, signatureS]`
    */
-  public static fromValuesArray(values: FeeMarketEIP1559ValuesArray, opts: TxOptions = {}) {
+  public static fromValuesArray(values: TxValuesArray, opts: TxOptions = {}) {
     if (values.length !== 9 && values.length !== 12) {
       throw new Error(
         'Invalid EIP-1559 transaction. Only expecting 9 values (for unsigned tx) or 12 values (for signed tx).'
@@ -117,11 +116,12 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
       s,
     ] = values
 
+    this._validateNotArray({ chainId, v })
     validateNoLeadingZeroes({ nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, value, v, r, s })
 
     return new FeeMarketEIP1559Transaction(
       {
-        chainId: bufferToBigInt(chainId),
+        chainId: bytesToBigInt(chainId),
         nonce,
         maxPriorityFeePerGas,
         maxFeePerGas,
@@ -130,7 +130,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
         value,
         data,
         accessList: accessList ?? [],
-        v: v !== undefined ? bufferToBigInt(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
+        v: v !== undefined ? bytesToBigInt(v) : undefined, // EIP2930 supports v's with value 0 (empty Uint8Array)
         r,
         s,
       },
@@ -145,8 +145,8 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
    * the static factory methods to assist in creating a Transaction object from
    * varying data types.
    */
-  public constructor(txData: FeeMarketEIP1559TxData, opts: TxOptions = {}) {
-    super({ ...txData, type: TRANSACTION_TYPE }, opts)
+  public constructor(txData: TxData, opts: TxOptions = {}) {
+    super({ ...txData, type: TransactionType.FeeMarketEIP1559 }, opts)
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
     this.common = this._getCommon(opts.common, chainId)
@@ -164,15 +164,17 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
     // Verify the access list format.
     AccessLists.verifyAccessList(this.accessList)
 
-    this.maxFeePerGas = bufferToBigInt(toBuffer(maxFeePerGas === '' ? '0x' : maxFeePerGas))
-    this.maxPriorityFeePerGas = bufferToBigInt(
-      toBuffer(maxPriorityFeePerGas === '' ? '0x' : maxPriorityFeePerGas)
+    this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas === '' ? '0x' : maxFeePerGas))
+    this.maxPriorityFeePerGas = bytesToBigInt(
+      toBytes(maxPriorityFeePerGas === '' ? '0x' : maxPriorityFeePerGas)
     )
 
     this._validateCannotExceedMaxInteger({
       maxFeePerGas: this.maxFeePerGas,
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
     })
+
+    BaseTransaction._validateNotArray(txData)
 
     if (this.gasLimit * this.maxFeePerGas > MAX_INTEGER) {
       const msg = this._errorMsg('gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)')
@@ -188,10 +190,6 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
 
     this._validateYParity()
     this._validateHighS()
-
-    if (this.common.isActivatedEIP(3860)) {
-      checkMaxInitCodeSize(this.common, this.data.length)
-    }
 
     const freeze = opts?.freeze ?? true
     if (freeze) {
@@ -233,7 +231,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
   }
 
   /**
-   * Returns a Buffer Array of the raw Buffers of the EIP-1559 transaction, in order.
+   * Returns a Uint8Array Array of the raw Bytes of the EIP-1559 transaction, in order.
    *
    * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
    * accessList, signatureYParity, signatureR, signatureS]`
@@ -241,24 +239,24 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
    * Use {@link FeeMarketEIP1559Transaction.serialize} to add a transaction to a block
    * with {@link Block.fromValuesArray}.
    *
-   * For an unsigned tx this method uses the empty Buffer values for the
+   * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
    * representation for external signing use {@link FeeMarketEIP1559Transaction.getMessageToSign}.
    */
-  raw(): FeeMarketEIP1559ValuesArray {
+  raw(): TxValuesArray {
     return [
-      bigIntToUnpaddedBuffer(this.chainId),
-      bigIntToUnpaddedBuffer(this.nonce),
-      bigIntToUnpaddedBuffer(this.maxPriorityFeePerGas),
-      bigIntToUnpaddedBuffer(this.maxFeePerGas),
-      bigIntToUnpaddedBuffer(this.gasLimit),
-      this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bigIntToUnpaddedBuffer(this.value),
+      bigIntToUnpaddedBytes(this.chainId),
+      bigIntToUnpaddedBytes(this.nonce),
+      bigIntToUnpaddedBytes(this.maxPriorityFeePerGas),
+      bigIntToUnpaddedBytes(this.maxFeePerGas),
+      bigIntToUnpaddedBytes(this.gasLimit),
+      this.to !== undefined ? this.to.bytes : new Uint8Array(0),
+      bigIntToUnpaddedBytes(this.value),
       this.data,
       this.accessList,
-      this.v !== undefined ? bigIntToUnpaddedBuffer(this.v) : Buffer.from([]),
-      this.r !== undefined ? bigIntToUnpaddedBuffer(this.r) : Buffer.from([]),
-      this.s !== undefined ? bigIntToUnpaddedBuffer(this.s) : Buffer.from([]),
+      this.v !== undefined ? bigIntToUnpaddedBytes(this.v) : new Uint8Array(0),
+      this.r !== undefined ? bigIntToUnpaddedBytes(this.r) : new Uint8Array(0),
+      this.s !== undefined ? bigIntToUnpaddedBytes(this.s) : new Uint8Array(0),
     ]
   }
 
@@ -272,38 +270,37 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
    * valid RLP any more due to the raw tx type preceding and concatenated to
    * the RLP encoding of the values.
    */
-  serialize(): Buffer {
+  serialize(): Uint8Array {
     const base = this.raw()
-    return Buffer.concat([
-      TRANSACTION_TYPE_BUFFER,
-      Buffer.from(RLP.encode(bufArrToArr(base as Buffer[]))),
-    ])
+    return concatBytes(TRANSACTION_TYPE_BYTES, RLP.encode(base))
   }
 
   /**
-   * Returns the serialized unsigned tx (hashed or raw), which can be used
+   * Returns the raw serialized unsigned tx, which can be used
    * to sign the transaction (e.g. for sending to a hardware wallet).
    *
    * Note: in contrast to the legacy tx the raw message format is already
    * serialized and doesn't need to be RLP encoded any more.
    *
    * ```javascript
-   * const serializedMessage = tx.getMessageToSign(false) // use this for the HW wallet input
+   * const serializedMessage = tx.getMessageToSign() // use this for the HW wallet input
    * ```
-   *
-   * @param hashMessage - Return hashed message if set to true (default: true)
    */
-  getMessageToSign(hashMessage = true): Buffer {
+  getMessageToSign(): Uint8Array {
     const base = this.raw().slice(0, 9)
-    const message = Buffer.concat([
-      TRANSACTION_TYPE_BUFFER,
-      Buffer.from(RLP.encode(bufArrToArr(base as Buffer[]))),
-    ])
-    if (hashMessage) {
-      return Buffer.from(keccak256(message))
-    } else {
-      return message
-    }
+    const message = concatBytes(TRANSACTION_TYPE_BYTES, RLP.encode(base))
+    return message
+  }
+
+  /**
+   * Returns the hashed serialized unsigned tx, which can be used
+   * to sign the transaction (e.g. for sending to a hardware wallet).
+   *
+   * Note: in contrast to the legacy tx the raw message format is already
+   * serialized and doesn't need to be RLP encoded any more.
+   */
+  getHashedMessageToSign(): Uint8Array {
+    return keccak256(this.getMessageToSign())
   }
 
   /**
@@ -312,7 +309,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
    * This method can only be used for signed txs (it throws otherwise).
    * Use {@link FeeMarketEIP1559Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
-  public hash(): Buffer {
+  public hash(): Uint8Array {
     if (!this.isSigned()) {
       const msg = this._errorMsg('Cannot call hash method if transaction is not signed')
       throw new Error(msg)
@@ -320,25 +317,25 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
 
     if (Object.isFrozen(this)) {
       if (!this.cache.hash) {
-        this.cache.hash = Buffer.from(keccak256(this.serialize()))
+        this.cache.hash = keccak256(this.serialize())
       }
       return this.cache.hash
     }
 
-    return Buffer.from(keccak256(this.serialize()))
+    return keccak256(this.serialize())
   }
 
   /**
    * Computes a sha3-256 hash which can be used to verify the signature
    */
-  public getMessageToVerifySignature(): Buffer {
-    return this.getMessageToSign()
+  public getMessageToVerifySignature(): Uint8Array {
+    return this.getHashedMessageToSign()
   }
 
   /**
    * Returns the public key of the sender
    */
-  public getSenderPublicKey(): Buffer {
+  public getSenderPublicKey(): Uint8Array {
     if (!this.isSigned()) {
       const msg = this._errorMsg('Cannot call this method if transaction is not signed')
       throw new Error(msg)
@@ -353,8 +350,8 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
       return ecrecover(
         msgHash,
         v! + BigInt(27), // Recover the 27 which was stripped from ecsign
-        bigIntToUnpaddedBuffer(r!),
-        bigIntToUnpaddedBuffer(s!)
+        bigIntToUnpaddedBytes(r!),
+        bigIntToUnpaddedBytes(s!)
       )
     } catch (e: any) {
       const msg = this._errorMsg('Invalid Signature')
@@ -362,7 +359,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
     }
   }
 
-  _processSignature(v: bigint, r: Buffer, s: Buffer) {
+  _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
     const opts = { ...this.txOptions, common: this.common }
 
     return FeeMarketEIP1559Transaction.fromTxData(
@@ -377,8 +374,8 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
         data: this.data,
         accessList: this.accessList,
         v: v - BigInt(27), // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
-        r: bufferToBigInt(r),
-        s: bufferToBigInt(s),
+        r: bytesToBigInt(r),
+        s: bytesToBigInt(s),
       },
       opts
     )
@@ -389,20 +386,14 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP155
    */
   toJSON(): JsonTx {
     const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
+    const baseJson = super.toJSON()
 
     return {
+      ...baseJson,
       chainId: bigIntToHex(this.chainId),
-      nonce: bigIntToHex(this.nonce),
       maxPriorityFeePerGas: bigIntToHex(this.maxPriorityFeePerGas),
       maxFeePerGas: bigIntToHex(this.maxFeePerGas),
-      gasLimit: bigIntToHex(this.gasLimit),
-      to: this.to !== undefined ? this.to.toString() : undefined,
-      value: bigIntToHex(this.value),
-      data: '0x' + this.data.toString('hex'),
       accessList: accessListJSON,
-      v: this.v !== undefined ? bigIntToHex(this.v) : undefined,
-      r: this.r !== undefined ? bigIntToHex(this.r) : undefined,
-      s: this.s !== undefined ? bigIntToHex(this.s) : undefined,
     }
   }
 

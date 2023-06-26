@@ -1,4 +1,5 @@
-import type { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from './enums'
+import type { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.js'
+import type { BigIntLike } from '@ethereumjs/util'
 
 export interface ChainName {
   [chainId: string]: string
@@ -19,9 +20,9 @@ export interface ChainConfig {
   name: string
   chainId: number | bigint
   networkId: number | bigint
-  defaultHardfork: string
-  comment: string
-  url: string
+  defaultHardfork?: string
+  comment?: string
+  url?: string
   genesis: GenesisBlockConfig
   hardforks: HardforkConfig[]
   bootstrapNodes: BootstrapNodeConfig[]
@@ -37,8 +38,8 @@ export interface ChainConfig {
 
 export interface GenesisBlockConfig {
   timestamp?: string
-  gasLimit: number
-  difficulty: number
+  gasLimit: number | string
+  difficulty: number | string
   nonce: string
   extraData: string
   baseFeePerGas?: string
@@ -48,6 +49,7 @@ export interface HardforkConfig {
   name: Hardfork | string
   block: number | null // null is used for hardforks that should not be applied -- since `undefined` isn't a valid value in JSON
   ttd?: bigint | string
+  timestamp?: number | string
   forkHash?: string | null
 }
 
@@ -112,4 +114,16 @@ export interface CustomCommonOpts extends BaseOpts {
    * a standard chain used to base the custom chain params on.
    */
   baseChain?: string | number | Chain | bigint
+}
+
+export interface GethConfigOpts extends BaseOpts {
+  chain?: string
+  genesisHash?: Uint8Array
+  mergeForkIdPostMerge?: boolean
+}
+
+export interface HardforkByOpts {
+  blockNumber?: BigIntLike
+  timestamp?: BigIntLike
+  td?: BigIntLike
 }

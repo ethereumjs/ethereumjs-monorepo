@@ -1,49 +1,52 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
+  Account,
   Address,
+  AsyncEventEmitter,
   KECCAK256_NULL,
   MAX_INTEGER,
-  bigIntToBuffer,
+  bigIntToBytes,
+  bytesToHex,
+  equalsBytes,
   generateAddress,
   generateAddress2,
-  isFalsy,
-  isTruthy,
   short,
   zeros,
 } from '@ethereumjs/util'
-import AsyncEventEmitter = require('async-eventemitter')
 import { debug as createDebugLogger } from 'debug'
 import { promisify } from 'util'
 
-import { EOF } from './eof'
-import { ERROR, EvmError } from './exceptions'
-import { Interpreter } from './interpreter'
-import { Message } from './message'
-import { getOpcodesForHF } from './opcodes'
-import { getActivePrecompiles } from './precompiles'
-import { TransientStorage } from './transientStorage'
+import { EOF, getEOFCode } from './eof.js'
+import { ERROR, EvmError } from './exceptions.js'
+import { Interpreter } from './interpreter.js'
+import { Journal } from './journal.js'
+import { Message } from './message.js'
+import { getOpcodesForHF } from './opcodes/index.js'
+import { getActivePrecompiles } from './precompiles/index.js'
+import { TransientStorage } from './transientStorage.js'
+import { DefaultBlockchain } from './types.js'
 
-import type { InterpreterOpts, RunState } from './interpreter'
-import type { MessageWithTo } from './message'
-import type { OpHandler, OpcodeList } from './opcodes'
-import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
-import type { CustomPrecompile, PrecompileFunc } from './precompiles'
+import type { InterpreterOpts, RunState } from './interpreter.js'
+import type { MessageWithTo } from './message.js'
+import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
+import type { OpHandler, OpcodeList } from './opcodes/index.js'
+import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.js'
 import type {
   Block,
+  Blockchain,
   CustomOpcode,
-  EEIInterface,
   EVMEvents,
   EVMInterface,
   EVMRunCallOpts,
   EVMRunCodeOpts,
-  /*ExternalInterface,*/
-  /*ExternalInterfaceFactory,*/
   Log,
-} from './types'
-import type { Account } from '@ethereumjs/util'
+} from './types.js'
+import type { EVMStateManagerInterface } from '@ethereumjs/common'
 
-const debug = createDebugLogger('evm')
+const debug = createDebugLogger('evm:evm')
 const debugGas = createDebugLogger('evm:gas')
+const debugPrecompiles = createDebugLogger('evm:precompiles')
 
 // very ugly way to detect if we are running in a browser
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
@@ -78,11 +81,13 @@ export interface EVMOpts {
    * - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
    *   [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) - Warm COINBASE (`experimental`)
    * - [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`experimental`)
-   * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
-   * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
-   * - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
+   * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction
+   * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode
+   * - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge)
+   * - [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (`experimental`)
+   * - [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations
    * - [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022
-   *
+   * - [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656) - MCOPY - Memory copying instruction (`experimental`)
    * *Annotations:*
    *
    * - `experimental`: behaviour can change on patch versions
@@ -96,6 +101,12 @@ export interface EVMOpts {
    * Default: `false` [ONLY set to `true` during debugging]
    */
   allowUnlimitedContractSize?: boolean
+
+  /**
+   * Allows unlimited contract code-size init while debugging. This (partially) disables EIP-3860.
+   * Gas cost for initcode size analysis will still be charged. Use with caution.
+   */
+  allowUnlimitedInitCodeSize?: boolean
 
   /**
    * Override or add custom opcodes to the EVM instruction set
@@ -128,9 +139,14 @@ export interface EVMOpts {
   customPrecompiles?: CustomPrecompile[]
 
   /*
-   * The External Interface Factory, used to build an External Interface when this is necessary
+   * The StateManager which is used to update the trie
    */
-  eei: EEIInterface
+  stateManager: EVMStateManagerInterface
+
+  /**
+   *
+   */
+  blockchain?: Blockchain
 }
 
 /**
@@ -140,6 +156,26 @@ export interface EVMOpts {
  * @ignore
  */
 export class EVM implements EVMInterface {
+  private static supportedHardforks = [
+    Hardfork.Chainstart,
+    Hardfork.Homestead,
+    Hardfork.Dao,
+    Hardfork.TangerineWhistle,
+    Hardfork.SpuriousDragon,
+    Hardfork.Byzantium,
+    Hardfork.Constantinople,
+    Hardfork.Petersburg,
+    Hardfork.Istanbul,
+    Hardfork.MuirGlacier,
+    Hardfork.Berlin,
+    Hardfork.London,
+    Hardfork.ArrowGlacier,
+    Hardfork.GrayGlacier,
+    Hardfork.MergeForkIdTransition,
+    Hardfork.Paris,
+    Hardfork.Shanghai,
+    Hardfork.Cancun,
+  ]
   protected _tx?: {
     gasPrice: bigint
     origin: Address
@@ -148,7 +184,9 @@ export class EVM implements EVMInterface {
 
   readonly _common: Common
 
-  public eei: EEIInterface
+  public stateManager: EVMStateManagerInterface
+  public blockchain: Blockchain
+  public journal: Journal
 
   public readonly _transientStorage: TransientStorage
 
@@ -161,6 +199,7 @@ export class EVM implements EVMInterface {
   _opcodes!: OpcodeList
 
   public readonly _allowUnlimitedContractSize: boolean
+  public readonly _allowUnlimitedInitCodeSize: boolean
 
   protected readonly _customOpcodes?: CustomOpcode[]
   protected readonly _customPrecompiles?: CustomPrecompile[]
@@ -190,13 +229,6 @@ export class EVM implements EVMInterface {
   protected _isInitialized: boolean = false
 
   /**
-   * Cached emit() function, not for public usage
-   * set to public due to implementation internals
-   * @hidden
-   */
-  public readonly _emit: (topic: string, data: any) => Promise<void>
-
-  /**
    * Pointer to the mcl package, not for public usage
    * set to public due to implementation internals
    * @hidden
@@ -213,6 +245,8 @@ export class EVM implements EVMInterface {
    */
   readonly DEBUG: boolean = false
 
+  public readonly _emit: (topic: string, data: any) => Promise<void>
+
   /**
    * EVM async constructor. Creates engine instance and initializes it.
    *
@@ -225,11 +259,9 @@ export class EVM implements EVMInterface {
   }
 
   constructor(opts: EVMOpts) {
-    this.events = new AsyncEventEmitter<EVMEvents>()
+    this.events = new AsyncEventEmitter()
 
     this._optsCached = opts
-
-    this.eei = opts.eei
 
     this._transientStorage = new TransientStorage()
 
@@ -240,10 +272,21 @@ export class EVM implements EVMInterface {
       this._common = new Common({ chain: DEFAULT_CHAIN })
     }
 
+    let blockchain: Blockchain
+
+    if (opts.blockchain === undefined) {
+      blockchain = new DefaultBlockchain()
+    } else {
+      blockchain = opts.blockchain
+    }
+
+    this.blockchain = blockchain
+    this.stateManager = opts.stateManager ?? new DefaultStateManager()
+
     // Supported EIPs
     const supportedEIPs = [
       1153, 1559, 2315, 2537, 2565, 2718, 2929, 2930, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
-      3670, 3855, 3860, 4399, 5133,
+      3670, 3855, 3860, 4399, 4895, 4844, 5133, 5656, 6780,
     ]
 
     for (const eip of this._common.eips()) {
@@ -252,33 +295,18 @@ export class EVM implements EVMInterface {
       }
     }
 
-    const supportedHardforks = [
-      Hardfork.Chainstart,
-      Hardfork.Homestead,
-      Hardfork.Dao,
-      Hardfork.TangerineWhistle,
-      Hardfork.SpuriousDragon,
-      Hardfork.Byzantium,
-      Hardfork.Constantinople,
-      Hardfork.Petersburg,
-      Hardfork.Istanbul,
-      Hardfork.MuirGlacier,
-      Hardfork.Berlin,
-      Hardfork.London,
-      Hardfork.ArrowGlacier,
-      Hardfork.GrayGlacier,
-      Hardfork.MergeForkIdTransition,
-      Hardfork.Merge,
-    ]
-    if (!supportedHardforks.includes(this._common.hardfork() as Hardfork)) {
+    if (!EVM.supportedHardforks.includes(this._common.hardfork() as Hardfork)) {
       throw new Error(
         `Hardfork ${this._common.hardfork()} not set as supported in supportedHardforks`
       )
     }
 
     this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false
+    this._allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
     this._customOpcodes = opts.customOpcodes
     this._customPrecompiles = opts.customPrecompiles
+
+    this.journal = new Journal(this.stateManager, this._common)
 
     this._common.on('hardforkChanged', () => {
       this.getActiveOpcodes()
@@ -297,16 +325,14 @@ export class EVM implements EVMInterface {
       }
     }
 
-    // Safeguard if "process" is not available (browser)
-    if (typeof process?.env.DEBUG !== 'undefined') {
-      this.DEBUG = true
-    }
-
     // We cache this promisified function as it's called from the main execution loop, and
     // promisifying each time has a huge performance impact.
     this._emit = <(topic: string, data: any) => Promise<void>>(
       promisify(this.events.emit.bind(this.events))
     )
+
+    // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
+    this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
   }
 
   protected async init(): Promise<void> {
@@ -342,7 +368,10 @@ export class EVM implements EVMInterface {
   }
 
   protected async _executeCall(message: MessageWithTo): Promise<EVMResult> {
-    const account = await this.eei.getAccount(message.authcallOrigin ?? message.caller)
+    let account = await this.stateManager.getAccount(message.authcallOrigin ?? message.caller)
+    if (!account) {
+      account = new Account()
+    }
     let errorMessage
     // Reduce tx value from sender
     if (!message.delegatecall) {
@@ -353,7 +382,10 @@ export class EVM implements EVMInterface {
       }
     }
     // Load `to` account
-    const toAccount = await this.eei.getAccount(message.to)
+    let toAccount = await this.stateManager.getAccount(message.to)
+    if (!toAccount) {
+      toAccount = new Account()
+    }
     // Add tx value to the `to` account
     if (!message.delegatecall) {
       try {
@@ -369,13 +401,13 @@ export class EVM implements EVMInterface {
     if (!message.code || message.code.length === 0) {
       exit = true
       if (this.DEBUG) {
-        debug(`Exit early on no code`)
+        debug(`Exit early on no code (CALL)`)
       }
     }
-    if (isTruthy(errorMessage)) {
+    if (errorMessage !== undefined) {
       exit = true
       if (this.DEBUG) {
-        debug(`Exit early on value transfer overflowed`)
+        debug(`Exit early on value transfer overflowed (CALL)`)
       }
     }
     if (exit) {
@@ -384,16 +416,13 @@ export class EVM implements EVMInterface {
           gasRefund: message.gasRefund,
           executionGasUsed: BigInt(0),
           exceptionError: errorMessage, // Only defined if addToBalance failed
-          returnValue: Buffer.alloc(0),
+          returnValue: new Uint8Array(0),
         },
       }
     }
 
     let result: ExecResult
     if (message.isCompiled) {
-      if (this.DEBUG) {
-        debug(`Run precompile`)
-      }
       result = await this.runPrecompile(
         message.code as PrecompileFunc,
         message.data,
@@ -417,16 +446,22 @@ export class EVM implements EVMInterface {
   }
 
   protected async _executeCreate(message: Message): Promise<EVMResult> {
-    const account = await this.eei.getAccount(message.caller)
+    let account = await this.stateManager.getAccount(message.caller)
+    if (!account) {
+      account = new Account()
+    }
     // Reduce tx value from sender
     await this._reduceSenderBalance(account, message)
 
     if (this._common.isActivatedEIP(3860)) {
-      if (message.data.length > Number(this._common.param('vm', 'maxInitCodeSize'))) {
+      if (
+        message.data.length > Number(this._common.param('vm', 'maxInitCodeSize')) &&
+        !this._allowUnlimitedInitCodeSize
+      ) {
         return {
           createdAddress: message.to,
           execResult: {
-            returnValue: Buffer.alloc(0),
+            returnValue: new Uint8Array(0),
             exceptionError: new EvmError(ERROR.INITCODE_SIZE_VIOLATION),
             executionGasUsed: message.gasLimit,
           },
@@ -435,17 +470,25 @@ export class EVM implements EVMInterface {
     }
 
     message.code = message.data
-    message.data = Buffer.alloc(0)
+    message.data = new Uint8Array(0)
     message.to = await this._generateAddress(message)
+
+    if (this._common.isActivatedEIP(6780)) {
+      message.createdAddresses!.add(message.to.toString())
+    }
+
     if (this.DEBUG) {
       debug(`Generated CREATE contract address ${message.to}`)
     }
-    let toAccount = await this.eei.getAccount(message.to)
+    let toAccount = await this.stateManager.getAccount(message.to)
+    if (!toAccount) {
+      toAccount = new Account()
+    }
 
     // Check for collision
     if (
       (toAccount.nonce && toAccount.nonce > BigInt(0)) ||
-      !toAccount.codeHash.equals(KECCAK256_NULL)
+      !(equalsBytes(toAccount.codeHash, KECCAK256_NULL) === true)
     ) {
       if (this.DEBUG) {
         debug(`Returning on address collision`)
@@ -453,14 +496,15 @@ export class EVM implements EVMInterface {
       return {
         createdAddress: message.to,
         execResult: {
-          returnValue: Buffer.alloc(0),
+          returnValue: new Uint8Array(0),
           exceptionError: new EvmError(ERROR.CREATE_COLLISION),
           executionGasUsed: message.gasLimit,
         },
       }
     }
 
-    await this.eei.clearContractStorage(message.to)
+    await this.journal.putAccount(message.to, toAccount)
+    await this.stateManager.clearContractStorage(message.to)
 
     const newContractEvent = {
       address: message.to,
@@ -469,7 +513,10 @@ export class EVM implements EVMInterface {
 
     await this._emit('newContract', newContractEvent)
 
-    toAccount = await this.eei.getAccount(message.to)
+    toAccount = await this.stateManager.getAccount(message.to)
+    if (!toAccount) {
+      toAccount = new Account()
+    }
     // EIP-161 on account creation and CREATE execution
     if (this._common.gteHardfork(Hardfork.SpuriousDragon)) {
       toAccount.nonce += BigInt(1)
@@ -484,16 +531,16 @@ export class EVM implements EVMInterface {
     }
 
     let exit = false
-    if (isFalsy(message.code) || message.code.length === 0) {
+    if (message.code === undefined || message.code.length === 0) {
       exit = true
       if (this.DEBUG) {
-        debug(`Exit early on no code`)
+        debug(`Exit early on no code (CREATE)`)
       }
     }
-    if (isTruthy(errorMessage)) {
+    if (errorMessage !== undefined) {
       exit = true
       if (this.DEBUG) {
-        debug(`Exit early on value transfer overflowed`)
+        debug(`Exit early on value transfer overflowed (CREATE)`)
       }
     }
     if (exit) {
@@ -503,7 +550,7 @@ export class EVM implements EVMInterface {
           executionGasUsed: BigInt(0),
           gasRefund: message.gasRefund,
           exceptionError: errorMessage, // only defined if addToBalance failed
-          returnValue: Buffer.alloc(0),
+          returnValue: new Uint8Array(0),
         },
       }
     }
@@ -558,7 +605,7 @@ export class EVM implements EVMInterface {
           // in the bytecode of the contract
           if (
             !EOF.validOpcodes(
-              result.returnValue.slice(codeStart, codeStart + eof1CodeAnalysisResults.code)
+              result.returnValue.subarray(codeStart, codeStart + eof1CodeAnalysisResults.code)
             )
           ) {
             result = {
@@ -574,20 +621,30 @@ export class EVM implements EVMInterface {
       }
     } else {
       if (this._common.gteHardfork(Hardfork.Homestead)) {
-        if (this.DEBUG) {
-          debug(`Not enough gas or code size not allowed (>= Homestead)`)
+        if (!allowedCodeSize) {
+          if (this.DEBUG) {
+            debug(`Code size exceeds maximum code size (>= SpuriousDragon)`)
+          }
+          result = { ...result, ...CodesizeExceedsMaximumError(message.gasLimit) }
+        } else {
+          if (this.DEBUG) {
+            debug(`Contract creation: out of gas`)
+          }
+          result = { ...result, ...OOGResult(message.gasLimit) }
         }
-        result = { ...result, ...CodesizeExceedsMaximumError(message.gasLimit) }
       } else {
         // we are in Frontier
-        if (this.DEBUG) {
-          debug(`Not enough gas or code size not allowed (Frontier)`)
-        }
         if (totalGas - returnFee <= message.gasLimit) {
           // we cannot pay the code deposit fee (but the deposit code actually did run)
+          if (this.DEBUG) {
+            debug(`Not enough gas to pay the code deposit fee (Frontier)`)
+          }
           result = { ...result, ...COOGResult(totalGas - returnFee) }
           CodestoreOOG = true
         } else {
+          if (this.DEBUG) {
+            debug(`Contract creation: out of gas`)
+          }
           result = { ...result, ...OOGResult(message.gasLimit) }
         }
       }
@@ -596,10 +653,10 @@ export class EVM implements EVMInterface {
     // Save code if a new contract was created
     if (
       !result.exceptionError &&
-      isTruthy(result.returnValue) &&
-      result.returnValue.toString() !== ''
+      result.returnValue !== undefined &&
+      result.returnValue.length !== 0
     ) {
-      await this.eei.putContractCode(message.to, result.returnValue)
+      await this.stateManager.putContractCode(message.to, result.returnValue)
       if (this.DEBUG) {
         debug(`Code saved on new contract creation`)
       }
@@ -608,11 +665,10 @@ export class EVM implements EVMInterface {
       if (!this._common.gteHardfork(Hardfork.Homestead)) {
         // Pre-Homestead behavior; put an empty contract.
         // This contract would be considered "DEAD" in later hard forks.
-        // It is thus an unecessary default item, which we have to save to dik
+        // It is thus an unnecessary default item, which we have to save to disk
         // It does change the state root, but it only wastes storage.
-        //await this._state.putContractCode(message.to, result.returnValue)
-        const account = await this.eei.getAccount(message.to)
-        await this.eei.putAccount(message.to, account)
+        const account = await this.stateManager.getAccount(message.to)
+        await this.journal.putAccount(message.to, account ?? new Account())
       }
     }
 
@@ -623,35 +679,50 @@ export class EVM implements EVMInterface {
   }
 
   /**
-   * Starts the actual bytecode processing for a CALL or CREATE, providing
-   * it with the {@link EEI}.
+   * Starts the actual bytecode processing for a CALL or CREATE
    */
   protected async runInterpreter(
     message: Message,
     opts: InterpreterOpts = {}
   ): Promise<ExecResult> {
+    let contract = await this.stateManager.getAccount(message.to ?? Address.zero())
+    if (!contract) {
+      contract = new Account()
+    }
     const env = {
       address: message.to ?? Address.zero(),
       caller: message.caller ?? Address.zero(),
-      callData: message.data ?? Buffer.from([0]),
+      callData: message.data ?? Uint8Array.from([0]),
       callValue: message.value ?? BigInt(0),
-      code: message.code as Buffer,
+      code: message.code as Uint8Array,
       isStatic: message.isStatic ?? false,
       depth: message.depth ?? 0,
       gasPrice: this._tx!.gasPrice,
       origin: this._tx!.origin ?? message.caller ?? Address.zero(),
       block: this._block ?? defaultBlock(),
-      contract: await this.eei.getAccount(message.to ?? Address.zero()),
+      contract,
       codeAddress: message.codeAddress,
       gasRefund: message.gasRefund,
+      containerCode: message.containerCode,
+      versionedHashes: message.versionedHashes ?? [],
     }
 
-    const interpreter = new Interpreter(this, this.eei, env, message.gasLimit)
+    const interpreter = new Interpreter(
+      this,
+      this.stateManager,
+      this.blockchain,
+      env,
+      message.gasLimit,
+      this.journal
+    )
     if (message.selfdestruct) {
-      interpreter._result.selfdestruct = message.selfdestruct as { [key: string]: Buffer }
+      interpreter._result.selfdestruct = message.selfdestruct
+    }
+    if (message.createdAddresses) {
+      interpreter._result.createdAddresses = message.createdAddresses
     }
 
-    const interpreterRes = await interpreter.run(message.code as Buffer, opts)
+    const interpreterRes = await interpreter.run(message.code as Uint8Array, opts)
 
     let result = interpreter._result
     let gasUsed = message.gasLimit - interpreterRes.runState!.gasLeft
@@ -667,7 +738,8 @@ export class EVM implements EVMInterface {
       result = {
         ...result,
         logs: [],
-        selfdestruct: {},
+        selfdestruct: new Set(),
+        createdAddresses: new Set(),
       }
     }
 
@@ -682,7 +754,7 @@ export class EVM implements EVMInterface {
       gas: interpreterRes.runState?.gasLeft,
       executionGasUsed: gasUsed,
       gasRefund: interpreterRes.runState!.gasRefund,
-      returnValue: result.returnValue ? result.returnValue : Buffer.alloc(0),
+      returnValue: result.returnValue ? result.returnValue : new Uint8Array(0),
     }
   }
 
@@ -693,22 +765,25 @@ export class EVM implements EVMInterface {
    */
   async runCall(opts: EVMRunCallOpts): Promise<EVMResult> {
     let message = opts.message
+    let callerAccount
     if (!message) {
       this._block = opts.block ?? defaultBlock()
       this._tx = {
         gasPrice: opts.gasPrice ?? BigInt(0),
         origin: opts.origin ?? opts.caller ?? Address.zero(),
       }
-
       const caller = opts.caller ?? Address.zero()
 
       const value = opts.value ?? BigInt(0)
       if (opts.skipBalance === true) {
-        const callerAccount = await this.eei.getAccount(caller)
+        callerAccount = await this.stateManager.getAccount(caller)
+        if (!callerAccount) {
+          callerAccount = new Account()
+        }
         if (callerAccount.balance < value) {
           // if skipBalance and balance less than value, set caller balance to `value` to ensure sufficient funds
           callerAccount.balance = value
-          await this.eei.putAccount(caller, callerAccount)
+          await this.journal.putAccount(caller, callerAccount)
         }
       }
 
@@ -723,20 +798,36 @@ export class EVM implements EVMInterface {
         isCompiled: opts.isCompiled,
         isStatic: opts.isStatic,
         salt: opts.salt,
-        selfdestruct: opts.selfdestruct ?? {},
+        selfdestruct: opts.selfdestruct ?? new Set(),
+        createdAddresses: opts.createdAddresses ?? new Set(),
         delegatecall: opts.delegatecall,
+        versionedHashes: opts.versionedHashes,
       })
+    }
+
+    if (message.depth === 0) {
+      if (!callerAccount) {
+        callerAccount = await this.stateManager.getAccount(message.caller)
+      }
+      if (!callerAccount) {
+        callerAccount = new Account()
+      }
+      callerAccount.nonce++
+      await this.journal.putAccount(message.caller, callerAccount)
+      if (this.DEBUG) {
+        debug(`Update fromAccount (caller) nonce (-> ${callerAccount.nonce}))`)
+      }
     }
 
     await this._emit('beforeMessage', message)
 
     if (!message.to && this._common.isActivatedEIP(2929) === true) {
       message.code = message.data
-      this.eei.addWarmedAddress((await this._generateAddress(message)).buf)
+      this.journal.addWarmedAddress((await this._generateAddress(message)).bytes)
     }
 
-    await this.eei.checkpoint()
-    this._transientStorage.checkpoint()
+    await this.journal.checkpoint()
+    if (this._common.isActivatedEIP(1153)) this._transientStorage.checkpoint()
     if (this.DEBUG) {
       debug('-'.repeat(100))
       debug(`message checkpoint`)
@@ -773,33 +864,27 @@ export class EVM implements EVMInterface {
     const err = result.execResult.exceptionError
     // This clause captures any error which happened during execution
     // If that is the case, then all refunds are forfeited
-    if (err) {
-      result.execResult.selfdestruct = {}
+    // There is one exception: if the CODESTORE_OUT_OF_GAS error is thrown
+    // (this only happens the Frontier/Chainstart fork)
+    // then the error is dismissed
+    if (err && err.error !== ERROR.CODESTORE_OUT_OF_GAS) {
+      result.execResult.selfdestruct = new Set()
+      result.execResult.createdAddresses = new Set()
       result.execResult.gasRefund = BigInt(0)
     }
-    if (err) {
-      if (
-        this._common.gteHardfork(Hardfork.Homestead) ||
-        err.error !== ERROR.CODESTORE_OUT_OF_GAS
-      ) {
-        result.execResult.logs = []
-        await this.eei.revert()
-        this._transientStorage.revert()
-        if (this.DEBUG) {
-          debug(`message checkpoint reverted`)
-        }
-      } else {
-        // we are in chainstart and the error was the code deposit error
-        // we do like nothing happened.
-        await this.eei.commit()
-        this._transientStorage.commit()
-        if (this.DEBUG) {
-          debug(`message checkpoint committed`)
-        }
+    if (
+      err &&
+      !(this._common.hardfork() === Hardfork.Chainstart && err.error === ERROR.CODESTORE_OUT_OF_GAS)
+    ) {
+      result.execResult.logs = []
+      await this.journal.revert()
+      if (this._common.isActivatedEIP(1153)) this._transientStorage.revert()
+      if (this.DEBUG) {
+        debug(`message checkpoint reverted`)
       }
     } else {
-      await this.eei.commit()
-      this._transientStorage.commit()
+      await this.journal.commit()
+      if (this._common.isActivatedEIP(1153)) this._transientStorage.commit()
       if (this.DEBUG) {
         debug(`message checkpoint committed`)
       }
@@ -829,8 +914,9 @@ export class EVM implements EVMInterface {
       caller: opts.caller,
       value: opts.value,
       depth: opts.depth,
-      selfdestruct: opts.selfdestruct ?? {},
+      selfdestruct: opts.selfdestruct ?? new Set(),
       isStatic: opts.isStatic,
+      versionedHashes: opts.versionedHashes,
     })
 
     return this.runInterpreter(message, { pc: opts.pc })
@@ -841,7 +927,7 @@ export class EVM implements EVMInterface {
    * if no such precompile exists.
    */
   getPrecompile(address: Address): PrecompileFunc | undefined {
-    return this.precompiles.get(address.buf.toString('hex'))
+    return this.precompiles.get(bytesToHex(address.bytes))
   }
 
   /**
@@ -849,7 +935,7 @@ export class EVM implements EVMInterface {
    */
   protected runPrecompile(
     code: PrecompileFunc,
-    data: Buffer,
+    data: Uint8Array,
     gasLimit: bigint
   ): Promise<ExecResult> | ExecResult {
     if (typeof code !== 'function') {
@@ -861,6 +947,7 @@ export class EVM implements EVMInterface {
       gasLimit,
       _common: this._common,
       _EVM: this,
+      _debug: this.DEBUG ? debugPrecompiles : undefined,
     }
 
     return code(opts)
@@ -873,8 +960,13 @@ export class EVM implements EVMInterface {
         message.code = precompile
         message.isCompiled = true
       } else {
-        message.code = await this.eei.getContractCode(message.codeAddress)
+        message.containerCode = await this.stateManager.getContractCode(message.codeAddress)
         message.isCompiled = false
+        if (this._common.isActivatedEIP(3540)) {
+          message.code = getEOFCode(message.containerCode)
+        } else {
+          message.code = message.containerCode
+        }
       }
     }
   }
@@ -882,14 +974,14 @@ export class EVM implements EVMInterface {
   protected async _generateAddress(message: Message): Promise<Address> {
     let addr
     if (message.salt) {
-      addr = generateAddress2(message.caller.buf, message.salt, message.code as Buffer)
+      addr = generateAddress2(message.caller.bytes, message.salt, message.code as Uint8Array)
     } else {
-      const acc = await this.eei.getAccount(message.caller)
-      let newNonce = acc.nonce
-      if (message.depth > 0) {
-        newNonce--
+      let acc = await this.stateManager.getAccount(message.caller)
+      if (!acc) {
+        acc = new Account()
       }
-      addr = generateAddress(message.caller.buf, bigIntToBuffer(newNonce))
+      const newNonce = acc.nonce - BigInt(1)
+      addr = generateAddress(message.caller.bytes, bigIntToBytes(newNonce))
     }
     return new Address(addr)
   }
@@ -899,7 +991,7 @@ export class EVM implements EVMInterface {
     if (account.balance < BigInt(0)) {
       throw new EvmError(ERROR.INSUFFICIENT_BALANCE)
     }
-    const result = this.eei.putAccount(message.authcallOrigin ?? message.caller, account)
+    const result = this.journal.putAccount(message.authcallOrigin ?? message.caller, account)
     if (this.DEBUG) {
       debug(`Reduced sender (${message.caller}) balance (-> ${account.balance})`)
     }
@@ -913,16 +1005,11 @@ export class EVM implements EVMInterface {
     }
     toAccount.balance = newBalance
     // putAccount as the nonce may have changed for contract creation
-    const result = this.eei.putAccount(message.to, toAccount)
+    const result = this.journal.putAccount(message.to, toAccount)
     if (this.DEBUG) {
       debug(`Added toAccount (${message.to}) balance (-> ${toAccount.balance})`)
     }
     return result
-  }
-
-  protected async _touchAccount(address: Address): Promise<void> {
-    const account = await this.eei.getAccount(address)
-    return this.eei.putAccount(address, account)
   }
 
   /**
@@ -932,12 +1019,16 @@ export class EVM implements EVMInterface {
     if (this._common.isActivatedEIP(1153)) this._transientStorage.clear()
   }
 
-  public copy() {
+  public copy(): EVMInterface {
+    const common = this._common.copy()
+    common.setHardfork(this._common.hardfork())
+
     const opts = {
       ...this._optsCached,
-      common: this._common.copy(),
-      eei: this.eei.copy(),
+      common,
+      stateManager: this.stateManager.copy(),
     }
+    ;(opts.stateManager as any)._common = common
     return new EVM(opts)
   }
 }
@@ -976,24 +1067,32 @@ export interface ExecResult {
   /**
    * Return value from the contract
    */
-  returnValue: Buffer
+  returnValue: Uint8Array
   /**
    * Array of logs that the contract emitted
    */
   logs?: Log[]
   /**
-   * A map from the accounts that have self-destructed to the addresses to send their funds to
+   * A set of accounts to selfdestruct
    */
-  selfdestruct?: { [k: string]: Buffer }
+  selfdestruct?: Set<string>
+  /**
+   * Map of addresses which were created (used in EIP 6780)
+   */
+  createdAddresses?: Set<string>
   /**
    * The gas refund counter
    */
   gasRefund?: bigint
+  /**
+   * Amount of data gas consumed by the transaction
+   */
+  dataGasUsed?: bigint
 }
 
 export function OOGResult(gasLimit: bigint): ExecResult {
   return {
-    returnValue: Buffer.alloc(0),
+    returnValue: new Uint8Array(0),
     executionGasUsed: gasLimit,
     exceptionError: new EvmError(ERROR.OUT_OF_GAS),
   }
@@ -1001,7 +1100,7 @@ export function OOGResult(gasLimit: bigint): ExecResult {
 // CodeDeposit OOG Result
 export function COOGResult(gasUsedCreateCode: bigint): ExecResult {
   return {
-    returnValue: Buffer.alloc(0),
+    returnValue: new Uint8Array(0),
     executionGasUsed: gasUsedCreateCode,
     exceptionError: new EvmError(ERROR.CODESTORE_OUT_OF_GAS),
   }
@@ -1009,7 +1108,7 @@ export function COOGResult(gasUsedCreateCode: bigint): ExecResult {
 
 export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
   return {
-    returnValue: Buffer.alloc(0),
+    returnValue: new Uint8Array(0),
     executionGasUsed: gasLimit,
     exceptionError: new EvmError(ERROR.INVALID_BYTECODE_RESULT),
   }
@@ -1017,7 +1116,7 @@ export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
 
 export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
   return {
-    returnValue: Buffer.alloc(0),
+    returnValue: new Uint8Array(0),
     executionGasUsed: gasLimit,
     exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
   }
@@ -1025,7 +1124,7 @@ export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
 
 export function CodesizeExceedsMaximumError(gasUsed: bigint): ExecResult {
   return {
-    returnValue: Buffer.alloc(0),
+    returnValue: new Uint8Array(0),
     executionGasUsed: gasUsed,
     exceptionError: new EvmError(ERROR.CODESIZE_EXCEEDS_MAXIMUM),
   }
@@ -1033,7 +1132,7 @@ export function CodesizeExceedsMaximumError(gasUsed: bigint): ExecResult {
 
 export function EvmErrorResult(error: EvmError, gasUsed: bigint): ExecResult {
   return {
-    returnValue: Buffer.alloc(0),
+    returnValue: new Uint8Array(0),
     executionGasUsed: gasUsed,
     exceptionError: error,
   }

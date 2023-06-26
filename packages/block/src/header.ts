@@ -5,30 +5,32 @@ import {
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   TypeOutput,
-  arrToBufArr,
-  bigIntToBuffer,
+  bigIntToBytes,
   bigIntToHex,
-  bigIntToUnpaddedBuffer,
-  bufArrToArr,
-  bufferToBigInt,
-  bufferToHex,
+  bigIntToUnpaddedBytes,
+  bytesToBigInt,
+  bytesToHex,
+  bytesToPrefixedHexString,
+  concatBytes,
+  concatBytesNoTypeCheck,
   ecrecover,
   ecsign,
-  isFalsy,
-  isTruthy,
+  equalsBytes,
   toType,
   zeros,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
-import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique'
-import { valuesArrayToHeaderData } from './helpers'
+import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique.js'
+import { fakeExponential, valuesArrayToHeaderData } from './helpers.js'
 
-import type { BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
+import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from './types.js'
 import type { CliqueConfig } from '@ethereumjs/common'
+import type { BigIntLike } from '@ethereumjs/util'
 
 interface HeaderCache {
-  hash: Buffer | undefined
+  hash: Uint8Array | undefined
 }
 
 const DEFAULT_GAS_LIMIT = BigInt('0xffffffffffffff')
@@ -37,22 +39,25 @@ const DEFAULT_GAS_LIMIT = BigInt('0xffffffffffffff')
  * An object that represents the block header.
  */
 export class BlockHeader {
-  public readonly parentHash: Buffer
-  public readonly uncleHash: Buffer
+  public readonly parentHash: Uint8Array
+  public readonly uncleHash: Uint8Array
   public readonly coinbase: Address
-  public readonly stateRoot: Buffer
-  public readonly transactionsTrie: Buffer
-  public readonly receiptTrie: Buffer
-  public readonly logsBloom: Buffer
+  public readonly stateRoot: Uint8Array
+  public readonly transactionsTrie: Uint8Array
+  public readonly receiptTrie: Uint8Array
+  public readonly logsBloom: Uint8Array
   public readonly difficulty: bigint
   public readonly number: bigint
   public readonly gasLimit: bigint
   public readonly gasUsed: bigint
   public readonly timestamp: bigint
-  public readonly extraData: Buffer
-  public readonly mixHash: Buffer
-  public readonly nonce: Buffer
+  public readonly extraData: Uint8Array
+  public readonly mixHash: Uint8Array
+  public readonly nonce: Uint8Array
   public readonly baseFeePerGas?: bigint
+  public readonly withdrawalsRoot?: Uint8Array
+  public readonly dataGasUsed?: bigint
+  public readonly excessDataGas?: bigint
 
   public readonly _common: Common
 
@@ -89,32 +94,41 @@ export class BlockHeader {
    * @param serializedHeaderData
    * @param opts
    */
-  public static fromRLPSerializedHeader(serializedHeaderData: Buffer, opts: BlockOptions = {}) {
-    const values = arrToBufArr(RLP.decode(Uint8Array.from(serializedHeaderData)))
+  public static fromRLPSerializedHeader(serializedHeaderData: Uint8Array, opts: BlockOptions = {}) {
+    const values = RLP.decode(serializedHeaderData)
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized header input. Must be array')
     }
-    return BlockHeader.fromValuesArray(values as Buffer[], opts)
+    return BlockHeader.fromValuesArray(values as Uint8Array[], opts)
   }
 
   /**
-   * Static constructor to create a block header from an array of Buffer values
+   * Static constructor to create a block header from an array of Bytes values
    *
    * @param values
    * @param opts
    */
-  public static fromValuesArray(values: BlockHeaderBuffer, opts: BlockOptions = {}) {
+  public static fromValuesArray(values: BlockHeaderBytes, opts: BlockOptions = {}) {
     const headerData = valuesArrayToHeaderData(values)
-    const { number, baseFeePerGas } = headerData
+    const { number, baseFeePerGas, excessDataGas, dataGasUsed } = headerData
+    const header = BlockHeader.fromHeaderData(headerData, opts)
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    if (opts.common?.isActivatedEIP(1559) && baseFeePerGas === undefined) {
-      const eip1559ActivationBlock = bigIntToBuffer(opts.common?.eipBlock(1559)!)
+    if (header._common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
+      const eip1559ActivationBlock = bigIntToBytes(header._common.eipBlock(1559)!)
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      if (eip1559ActivationBlock && eip1559ActivationBlock.equals(number! as Buffer)) {
+      if (eip1559ActivationBlock && equalsBytes(eip1559ActivationBlock, number as Uint8Array)) {
         throw new Error('invalid header. baseFeePerGas should be provided')
       }
     }
-    return BlockHeader.fromHeaderData(headerData, opts)
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    if (header._common.isActivatedEIP(4844)) {
+      if (excessDataGas === undefined) {
+        throw new Error('invalid header. excessDataGas should be provided')
+      } else if (dataGasUsed === undefined) {
+        throw new Error('invalid header. dataGasUsed should be provided')
+      }
+    }
+    return header
   }
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
@@ -132,13 +146,8 @@ export class BlockHeader {
       })
     }
 
-    if (options.hardforkByBlockNumber !== undefined && options.hardforkByTTD !== undefined) {
-      throw new Error(
-        `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
-      )
-    }
-
     const skipValidateConsensusFormat = options.skipConsensusFormatValidation ?? false
+
     const defaults = {
       parentHash: zeros(32),
       uncleHash: KECCAK256_RLP_ARRAY,
@@ -152,51 +161,83 @@ export class BlockHeader {
       gasLimit: DEFAULT_GAS_LIMIT,
       gasUsed: BigInt(0),
       timestamp: BigInt(0),
-      extraData: Buffer.from([]),
+      extraData: new Uint8Array(0),
       mixHash: zeros(32),
       nonce: zeros(8),
-      baseFeePerGas: undefined,
     }
 
-    const parentHash = toType(headerData.parentHash, TypeOutput.Buffer) ?? defaults.parentHash
-    const uncleHash = toType(headerData.uncleHash, TypeOutput.Buffer) ?? defaults.uncleHash
-    const coinbase = isTruthy(headerData.coinbase)
-      ? new Address(toType(headerData.coinbase, TypeOutput.Buffer))
-      : defaults.coinbase
-    const stateRoot = toType(headerData.stateRoot, TypeOutput.Buffer) ?? defaults.stateRoot
+    const parentHash = toType(headerData.parentHash, TypeOutput.Uint8Array) ?? defaults.parentHash
+    const uncleHash = toType(headerData.uncleHash, TypeOutput.Uint8Array) ?? defaults.uncleHash
+    const coinbase = new Address(
+      toType(headerData.coinbase ?? defaults.coinbase, TypeOutput.Uint8Array)
+    )
+    const stateRoot = toType(headerData.stateRoot, TypeOutput.Uint8Array) ?? defaults.stateRoot
     const transactionsTrie =
-      toType(headerData.transactionsTrie, TypeOutput.Buffer) ?? defaults.transactionsTrie
-    const receiptTrie = toType(headerData.receiptTrie, TypeOutput.Buffer) ?? defaults.receiptTrie
-    const logsBloom = toType(headerData.logsBloom, TypeOutput.Buffer) ?? defaults.logsBloom
+      toType(headerData.transactionsTrie, TypeOutput.Uint8Array) ?? defaults.transactionsTrie
+    const receiptTrie =
+      toType(headerData.receiptTrie, TypeOutput.Uint8Array) ?? defaults.receiptTrie
+    const logsBloom = toType(headerData.logsBloom, TypeOutput.Uint8Array) ?? defaults.logsBloom
     const difficulty = toType(headerData.difficulty, TypeOutput.BigInt) ?? defaults.difficulty
     const number = toType(headerData.number, TypeOutput.BigInt) ?? defaults.number
     const gasLimit = toType(headerData.gasLimit, TypeOutput.BigInt) ?? defaults.gasLimit
     const gasUsed = toType(headerData.gasUsed, TypeOutput.BigInt) ?? defaults.gasUsed
     const timestamp = toType(headerData.timestamp, TypeOutput.BigInt) ?? defaults.timestamp
-    const extraData = toType(headerData.extraData, TypeOutput.Buffer) ?? defaults.extraData
-    const mixHash = toType(headerData.mixHash, TypeOutput.Buffer) ?? defaults.mixHash
-    const nonce = toType(headerData.nonce, TypeOutput.Buffer) ?? defaults.nonce
-    let baseFeePerGas =
-      toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? defaults.baseFeePerGas
+    const extraData = toType(headerData.extraData, TypeOutput.Uint8Array) ?? defaults.extraData
+    const mixHash = toType(headerData.mixHash, TypeOutput.Uint8Array) ?? defaults.mixHash
+    const nonce = toType(headerData.nonce, TypeOutput.Uint8Array) ?? defaults.nonce
 
-    const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
-    if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
-      this._common.setHardforkByBlockNumber(number, options.hardforkByTTD)
+    const setHardfork = options.setHardfork ?? false
+    if (setHardfork === true) {
+      this._common.setHardforkBy({
+        blockNumber: number,
+        timestamp,
+      })
+    } else if (typeof setHardfork !== 'boolean') {
+      this._common.setHardforkBy({
+        blockNumber: number,
+        td: setHardfork as BigIntLike,
+        timestamp,
+      })
     }
 
-    if (this._common.isActivatedEIP(1559) === true) {
-      if (baseFeePerGas === undefined) {
-        if (number === this._common.hardforkBlock(Hardfork.London)) {
-          baseFeePerGas = this._common.param('gasConfig', 'initialBaseFee')
-        } else {
-          // Minimum possible value for baseFeePerGas is 7,
-          // so we use it as the default if the field is missing.
-          baseFeePerGas = BigInt(7)
-        }
+    // Hardfork defaults which couldn't be paired with earlier defaults
+    const hardforkDefaults = {
+      baseFeePerGas: this._common.isActivatedEIP(1559)
+        ? number === this._common.hardforkBlock(Hardfork.London)
+          ? this._common.param('gasConfig', 'initialBaseFee')
+          : BigInt(7)
+        : undefined,
+      withdrawalsRoot: this._common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
+      dataGasUsed: this._common.isActivatedEIP(4844) ? BigInt(0) : undefined,
+      excessDataGas: this._common.isActivatedEIP(4844) ? BigInt(0) : undefined,
+    }
+
+    const baseFeePerGas =
+      toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? hardforkDefaults.baseFeePerGas
+    const withdrawalsRoot =
+      toType(headerData.withdrawalsRoot, TypeOutput.Uint8Array) ?? hardforkDefaults.withdrawalsRoot
+    const dataGasUsed =
+      toType(headerData.dataGasUsed, TypeOutput.BigInt) ?? hardforkDefaults.dataGasUsed
+    const excessDataGas =
+      toType(headerData.excessDataGas, TypeOutput.BigInt) ?? hardforkDefaults.excessDataGas
+
+    if (!this._common.isActivatedEIP(1559) && baseFeePerGas !== undefined) {
+      throw new Error('A base fee for a block can only be set with EIP1559 being activated')
+    }
+
+    if (!this._common.isActivatedEIP(4895) && withdrawalsRoot !== undefined) {
+      throw new Error(
+        'A withdrawalsRoot for a header can only be provided with EIP4895 being activated'
+      )
+    }
+
+    if (!this._common.isActivatedEIP(4844)) {
+      if (headerData.dataGasUsed !== undefined) {
+        throw new Error('data gas used can only be provided with EIP4844 activated')
       }
-    } else {
-      if (baseFeePerGas) {
-        throw new Error('A base fee for a block can only be set with EIP1559 being activated')
+
+      if (headerData.excessDataGas !== undefined) {
+        throw new Error('excess data gas can only be provided with EIP4844 activated')
       }
     }
 
@@ -216,7 +257,9 @@ export class BlockHeader {
     this.mixHash = mixHash
     this.nonce = nonce
     this.baseFeePerGas = baseFeePerGas
-
+    this.withdrawalsRoot = withdrawalsRoot
+    this.dataGasUsed = dataGasUsed
+    this.excessDataGas = excessDataGas
     this._genericFormatValidation()
     this._validateDAOExtraData()
 
@@ -236,7 +279,7 @@ export class BlockHeader {
       const minExtraDataLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
       if (this.extraData.length < minExtraDataLength) {
         const remainingLength = minExtraDataLength - this.extraData.length
-        this.extraData = Buffer.concat([this.extraData, Buffer.alloc(remainingLength)])
+        this.extraData = concatBytes(this.extraData, new Uint8Array(remainingLength))
       }
 
       this.extraData = this.cliqueSealBlock(options.cliqueSigner)
@@ -300,12 +343,29 @@ export class BlockHeader {
         throw new Error(msg)
       }
       const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
-      if (isTruthy(londonHfBlock) && this.number === londonHfBlock) {
+      if (
+        typeof londonHfBlock === 'bigint' &&
+        londonHfBlock !== BigInt(0) &&
+        this.number === londonHfBlock
+      ) {
         const initialBaseFee = this._common.param('gasConfig', 'initialBaseFee')
-        if (this.baseFeePerGas! !== initialBaseFee) {
+        if (this.baseFeePerGas !== initialBaseFee) {
           const msg = this._errorMsg('Initial EIP1559 block does not have initial base fee')
           throw new Error(msg)
         }
+      }
+    }
+
+    if (this._common.isActivatedEIP(4895) === true) {
+      if (this.withdrawalsRoot === undefined) {
+        const msg = this._errorMsg('EIP4895 block has no withdrawalsRoot field')
+        throw new Error(msg)
+      }
+      if (this.withdrawalsRoot?.length !== 32) {
+        const msg = this._errorMsg(
+          `withdrawalsRoot must be 32 bytes, received ${this.withdrawalsRoot!.length} bytes`
+        )
+        throw new Error(msg)
       }
     }
   }
@@ -315,15 +375,17 @@ export class BlockHeader {
    * @throws if any check fails
    */
   _consensusFormatValidation() {
-    const { nonce, uncleHash, difficulty, extraData } = this
+    const { nonce, uncleHash, difficulty, extraData, number } = this
     const hardfork = this._common.hardfork()
 
     // Consensus type dependent checks
     if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Ethash) {
       // PoW/Ethash
       if (
+        number > BigInt(0) &&
         this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)
       ) {
+        // Check length of data on all post-genesis blocks
         const msg = this._errorMsg('invalid amount of extra data')
         throw new Error(msg)
       }
@@ -356,7 +418,7 @@ export class BlockHeader {
         }
       }
       // MixHash format
-      if (!this.mixHash.equals(Buffer.alloc(32))) {
+      if (!equalsBytes(this.mixHash, new Uint8Array(32))) {
         const msg = this._errorMsg(`mixHash must be filled with zeros, received ${this.mixHash}`)
         throw new Error(msg)
       }
@@ -366,28 +428,31 @@ export class BlockHeader {
       let error = false
       let errorMsg = ''
 
-      if (!uncleHash.equals(KECCAK256_RLP_ARRAY)) {
-        errorMsg += `, uncleHash: ${uncleHash.toString(
-          'hex'
-        )} (expected: ${KECCAK256_RLP_ARRAY.toString('hex')})`
+      if (!equalsBytes(uncleHash, KECCAK256_RLP_ARRAY)) {
+        errorMsg += `, uncleHash: ${bytesToHex(uncleHash)} (expected: ${bytesToHex(
+          KECCAK256_RLP_ARRAY
+        )})`
         error = true
       }
-      if (difficulty !== BigInt(0)) {
-        errorMsg += `, difficulty: ${difficulty} (expected: 0)`
-        error = true
-      }
-      if (extraData.length > 32) {
-        errorMsg += `, extraData: ${extraData.toString(
-          'hex'
-        )} (cannot exceed 32 bytes length, received ${extraData.length} bytes)`
-        error = true
-      }
-      if (!nonce.equals(zeros(8))) {
-        errorMsg += `, nonce: ${nonce.toString('hex')} (expected: ${zeros(8).toString('hex')})`
-        error = true
+      if (number !== BigInt(0)) {
+        // Skip difficulty, nonce, and extraData check for PoS genesis block as genesis block may have non-zero difficulty (if TD is > 0)
+        if (difficulty !== BigInt(0)) {
+          errorMsg += `, difficulty: ${difficulty} (expected: 0)`
+          error = true
+        }
+        if (extraData.length > 32) {
+          errorMsg += `, extraData: ${bytesToHex(
+            extraData
+          )} (cannot exceed 32 bytes length, received ${extraData.length} bytes)`
+          error = true
+        }
+        if (!equalsBytes(nonce, zeros(8))) {
+          errorMsg += `, nonce: ${bytesToHex(nonce)} (expected: ${bytesToHex(zeros(8))})`
+          error = true
+        }
       }
       if (error) {
-        const msg = this._errorMsg(`Invalid PoS block${errorMsg}`)
+        const msg = this._errorMsg(`Invalid PoS block: ${errorMsg}`)
         throw new Error(msg)
       }
     }
@@ -404,7 +469,11 @@ export class BlockHeader {
     // EIP-1559: assume double the parent gas limit on fork block
     // to adopt to the new gas target centered logic
     const londonHardforkBlock = this._common.hardforkBlock(Hardfork.London)
-    if (isTruthy(londonHardforkBlock) && this.number === londonHardforkBlock) {
+    if (
+      typeof londonHardforkBlock === 'bigint' &&
+      londonHardforkBlock !== BigInt(0) &&
+      this.number === londonHardforkBlock
+    ) {
       const elasticity = this._common.param('gasConfig', 'elasticityMultiplier')
       parentGasLimit = parentGasLimit * elasticity
     }
@@ -479,29 +548,81 @@ export class BlockHeader {
   }
 
   /**
-   * Returns a Buffer Array of the raw Buffers in this header, in order.
+   * Returns the price per unit of data gas for a blob transaction in the current/pending block
+   * @returns the price in gwei per unit of data gas spent
    */
-  raw(): BlockHeaderBuffer {
+  getDataGasPrice(): bigint {
+    if (this.excessDataGas === undefined) {
+      throw new Error('header must have excessDataGas field populated')
+    }
+    return fakeExponential(
+      this._common.param('gasPrices', 'minDataGasPrice'),
+      this.excessDataGas,
+      this._common.param('gasConfig', 'dataGasPriceUpdateFraction')
+    )
+  }
+
+  /**
+   * Returns the total fee for data gas spent for including blobs in block.
+   *
+   * @param numBlobs number of blobs in the transaction/block
+   * @returns the total data gas fee for numBlobs blobs
+   */
+  calcDataFee(numBlobs: number): bigint {
+    const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
+    const dataGasUsed = dataGasPerBlob * BigInt(numBlobs)
+
+    const dataGasPrice = this.getDataGasPrice()
+    return dataGasUsed * dataGasPrice
+  }
+
+  /**
+   * Calculates the excess data gas for next (hopefully) post EIP 4844 block.
+   */
+  public calcNextExcessDataGas(): bigint {
+    // The validation of the fields and 4844 activation is already taken care in BlockHeader constructor
+    const targetGasConsumed = (this.excessDataGas ?? BigInt(0)) + (this.dataGasUsed ?? BigInt(0))
+    const targetDataGasPerBlock = this._common.param('gasConfig', 'targetDataGasPerBlock')
+
+    if (targetGasConsumed <= targetDataGasPerBlock) {
+      return BigInt(0)
+    } else {
+      return targetGasConsumed - targetDataGasPerBlock
+    }
+  }
+
+  /**
+   * Returns a Uint8Array Array of the raw Bytes in this header, in order.
+   */
+  raw(): BlockHeaderBytes {
     const rawItems = [
       this.parentHash,
       this.uncleHash,
-      this.coinbase.buf,
+      this.coinbase.bytes,
       this.stateRoot,
       this.transactionsTrie,
       this.receiptTrie,
       this.logsBloom,
-      bigIntToUnpaddedBuffer(this.difficulty),
-      bigIntToUnpaddedBuffer(this.number),
-      bigIntToUnpaddedBuffer(this.gasLimit),
-      bigIntToUnpaddedBuffer(this.gasUsed),
-      bigIntToUnpaddedBuffer(this.timestamp ?? BigInt(0)),
+      bigIntToUnpaddedBytes(this.difficulty),
+      bigIntToUnpaddedBytes(this.number),
+      bigIntToUnpaddedBytes(this.gasLimit),
+      bigIntToUnpaddedBytes(this.gasUsed),
+      bigIntToUnpaddedBytes(this.timestamp ?? BigInt(0)),
       this.extraData,
       this.mixHash,
       this.nonce,
     ]
 
     if (this._common.isActivatedEIP(1559) === true) {
-      rawItems.push(bigIntToUnpaddedBuffer(this.baseFeePerGas!))
+      rawItems.push(bigIntToUnpaddedBytes(this.baseFeePerGas!))
+    }
+
+    if (this._common.isActivatedEIP(4895) === true) {
+      rawItems.push(this.withdrawalsRoot!)
+    }
+    if (this._common.isActivatedEIP(4844) === true) {
+      rawItems.push(bigIntToUnpaddedBytes(this.dataGasUsed!))
+      rawItems.push(bigIntToUnpaddedBytes(this.excessDataGas!))
     }
 
     return rawItems
@@ -510,15 +631,15 @@ export class BlockHeader {
   /**
    * Returns the hash of the block header.
    */
-  hash(): Buffer {
+  hash(): Uint8Array {
     if (Object.isFrozen(this)) {
       if (!this.cache.hash) {
-        this.cache.hash = Buffer.from(keccak256(RLP.encode(bufArrToArr(this.raw()))))
+        this.cache.hash = keccak256(RLP.encode(this.raw()))
       }
       return this.cache.hash
     }
 
-    return Buffer.from(keccak256(RLP.encode(bufArrToArr(this.raw()))))
+    return keccak256(RLP.encode(this.raw()))
   }
 
   /**
@@ -566,7 +687,7 @@ export class BlockHeader {
 
     if (this._common.hardforkGteHardfork(hardfork, Hardfork.Byzantium) === true) {
       // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99) (EIP100)
-      const uncleAddend = parentBlockHeader.uncleHash.equals(KECCAK256_RLP_ARRAY) ? 1 : 2
+      const uncleAddend = equalsBytes(parentBlockHeader.uncleHash, KECCAK256_RLP_ARRAY) ? 1 : 2
       let a = BigInt(uncleAddend) - (blockTs - parentTs) / BigInt(9)
       const cutoff = BigInt(-99)
       // MAX(cutoff, a)
@@ -618,8 +739,8 @@ export class BlockHeader {
   cliqueSigHash() {
     this._requireClique('cliqueSigHash')
     const raw = this.raw()
-    raw[12] = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
-    return Buffer.from(keccak256(RLP.encode(bufArrToArr(raw))))
+    raw[12] = this.extraData.subarray(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
+    return keccak256(RLP.encode(raw))
   }
 
   /**
@@ -638,18 +759,18 @@ export class BlockHeader {
    * Returns extra vanity data
    * (only clique PoA, throws otherwise)
    */
-  cliqueExtraVanity(): Buffer {
+  cliqueExtraVanity(): Uint8Array {
     this._requireClique('cliqueExtraVanity')
-    return this.extraData.slice(0, CLIQUE_EXTRA_VANITY)
+    return this.extraData.subarray(0, CLIQUE_EXTRA_VANITY)
   }
 
   /**
    * Returns extra seal data
    * (only clique PoA, throws otherwise)
    */
-  cliqueExtraSeal(): Buffer {
+  cliqueExtraSeal(): Uint8Array {
     this._requireClique('cliqueExtraSeal')
-    return this.extraData.slice(-CLIQUE_EXTRA_SEAL)
+    return this.extraData.subarray(-CLIQUE_EXTRA_SEAL)
   }
 
   /**
@@ -657,18 +778,21 @@ export class BlockHeader {
    * Returns the final extraData field to be assigned to `this.extraData`.
    * @hidden
    */
-  private cliqueSealBlock(privateKey: Buffer) {
+  private cliqueSealBlock(privateKey: Uint8Array) {
     this._requireClique('cliqueSealBlock')
 
     const signature = ecsign(this.cliqueSigHash(), privateKey)
-    const signatureB = Buffer.concat([
+    const signatureB = concatBytesNoTypeCheck(
       signature.r,
       signature.s,
-      bigIntToBuffer(signature.v - BigInt(27)),
-    ])
+      bigIntToBytes(signature.v - BigInt(27))
+    )
 
-    const extraDataWithoutSeal = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
-    const extraData = Buffer.concat([extraDataWithoutSeal, signatureB])
+    const extraDataWithoutSeal = this.extraData.subarray(
+      0,
+      this.extraData.length - CLIQUE_EXTRA_SEAL
+    )
+    const extraData = concatBytesNoTypeCheck(extraDataWithoutSeal, signatureB)
     return extraData
   }
 
@@ -689,12 +813,12 @@ export class BlockHeader {
 
     const start = CLIQUE_EXTRA_VANITY
     const end = this.extraData.length - CLIQUE_EXTRA_SEAL
-    const signerBuffer = this.extraData.slice(start, end)
+    const signerBytes = this.extraData.subarray(start, end)
 
-    const signerList: Buffer[] = []
+    const signerList: Uint8Array[] = []
     const signerLength = 20
-    for (let start = 0; start <= signerBuffer.length - signerLength; start += signerLength) {
-      signerList.push(signerBuffer.slice(start, start + signerLength))
+    for (let start = 0; start <= signerBytes.length - signerLength; start += signerLength) {
+      signerList.push(signerBytes.subarray(start, start + signerLength))
     }
     return signerList.map((buf) => new Address(buf))
   }
@@ -721,12 +845,12 @@ export class BlockHeader {
     this._requireClique('cliqueSigner')
     const extraSeal = this.cliqueExtraSeal()
     // Reasonable default for default blocks
-    if (extraSeal.length === 0 || extraSeal.equals(Buffer.alloc(65).fill(0))) {
+    if (extraSeal.length === 0 || equalsBytes(extraSeal, new Uint8Array(65))) {
       return Address.zero()
     }
-    const r = extraSeal.slice(0, 32)
-    const s = extraSeal.slice(32, 64)
-    const v = bufferToBigInt(extraSeal.slice(64, 65)) + BigInt(27)
+    const r = extraSeal.subarray(0, 32)
+    const s = extraSeal.subarray(32, 64)
+    const v = bytesToBigInt(extraSeal.subarray(64, 65)) + BigInt(27)
     const pubKey = ecrecover(this.cliqueSigHash(), v, r, s)
     return Address.fromPublicKey(pubKey)
   }
@@ -734,33 +858,41 @@ export class BlockHeader {
   /**
    * Returns the rlp encoding of the block header.
    */
-  serialize(): Buffer {
-    return Buffer.from(RLP.encode(bufArrToArr(this.raw())))
+  serialize(): Uint8Array {
+    return RLP.encode(this.raw())
   }
 
   /**
    * Returns the block header in JSON format.
    */
   toJSON(): JsonHeader {
+    const withdrawalAttr = this.withdrawalsRoot
+      ? { withdrawalsRoot: bytesToPrefixedHexString(this.withdrawalsRoot) }
+      : {}
     const jsonDict: JsonHeader = {
-      parentHash: '0x' + this.parentHash.toString('hex'),
-      uncleHash: '0x' + this.uncleHash.toString('hex'),
+      parentHash: bytesToPrefixedHexString(this.parentHash),
+      uncleHash: bytesToPrefixedHexString(this.uncleHash),
       coinbase: this.coinbase.toString(),
-      stateRoot: '0x' + this.stateRoot.toString('hex'),
-      transactionsTrie: '0x' + this.transactionsTrie.toString('hex'),
-      receiptTrie: '0x' + this.receiptTrie.toString('hex'),
-      logsBloom: '0x' + this.logsBloom.toString('hex'),
+      stateRoot: bytesToPrefixedHexString(this.stateRoot),
+      transactionsTrie: bytesToPrefixedHexString(this.transactionsTrie),
+      ...withdrawalAttr,
+      receiptTrie: bytesToPrefixedHexString(this.receiptTrie),
+      logsBloom: bytesToPrefixedHexString(this.logsBloom),
       difficulty: bigIntToHex(this.difficulty),
       number: bigIntToHex(this.number),
       gasLimit: bigIntToHex(this.gasLimit),
       gasUsed: bigIntToHex(this.gasUsed),
       timestamp: bigIntToHex(this.timestamp),
-      extraData: '0x' + this.extraData.toString('hex'),
-      mixHash: '0x' + this.mixHash.toString('hex'),
-      nonce: '0x' + this.nonce.toString('hex'),
+      extraData: bytesToPrefixedHexString(this.extraData),
+      mixHash: bytesToPrefixedHexString(this.mixHash),
+      nonce: bytesToPrefixedHexString(this.nonce),
     }
     if (this._common.isActivatedEIP(1559) === true) {
       jsonDict.baseFeePerGas = bigIntToHex(this.baseFeePerGas!)
+    }
+    if (this._common.isActivatedEIP(4844) === true) {
+      jsonDict.dataGasUsed = bigIntToHex(this.dataGasUsed!)
+      jsonDict.excessDataGas = bigIntToHex(this.excessDataGas!)
     }
     return jsonDict
   }
@@ -774,13 +906,13 @@ export class BlockHeader {
       return
     }
     const DAOActivationBlock = this._common.hardforkBlock(Hardfork.Dao)
-    if (isFalsy(DAOActivationBlock) || this.number < DAOActivationBlock) {
+    if (DAOActivationBlock === null || this.number < DAOActivationBlock) {
       return
     }
-    const DAO_ExtraData = Buffer.from('64616f2d686172642d666f726b', 'hex')
+    const DAO_ExtraData = hexToBytes('64616f2d686172642d666f726b')
     const DAO_ForceExtraDataRange = BigInt(9)
     const drift = this.number - DAOActivationBlock
-    if (drift <= DAO_ForceExtraDataRange && !this.extraData.equals(DAO_ExtraData)) {
+    if (drift <= DAO_ForceExtraDataRange && !equalsBytes(this.extraData, DAO_ExtraData)) {
       const msg = this._errorMsg("extraData should be 'dao-hard-fork'")
       throw new Error(msg)
     }
@@ -792,7 +924,7 @@ export class BlockHeader {
   public errorStr() {
     let hash = ''
     try {
-      hash = bufferToHex(this.hash())
+      hash = bytesToHex(this.hash())
     } catch (e: any) {
       hash = 'error'
     }

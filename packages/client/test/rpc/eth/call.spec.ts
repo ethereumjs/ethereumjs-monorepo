@@ -1,15 +1,15 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
-import { Address, bigIntToHex, bufferToHex } from '@ethereumjs/util'
+import { LegacyTransaction } from '@ethereumjs/tx'
+import { Address, bigIntToHex, bytesToPrefixedHexString } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 import { checkError } from '../util'
 
-import type { FullEthereumService } from '../../../lib/service'
+import type { FullEthereumService } from '../../../src/service'
 
 const method = 'eth_call'
 
@@ -36,7 +36,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   /*
     // SPDX-License-Identifier: MIT
     pragma solidity ^0.7.4;
-    
+
     contract HelloWorld {
         function myAddress() public view returns (address addr) {
             return msg.sender;
@@ -48,7 +48,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   // construct block with tx
   const gasLimit = 2000000
-  const tx = Transaction.fromTxData({ gasLimit, data }, { common, freeze: false })
+  const tx = LegacyTransaction.fromTxData({ gasLimit, data }, { common, freeze: false })
   tx.getSenderAddress = () => {
     return address
   }
@@ -80,7 +80,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
     data: `0x${funcHash}`,
     gasLimit: bigIntToHex(BigInt(53000)),
   }
-  const estimateTx = Transaction.fromTxData(estimateTxData, { freeze: false })
+  const estimateTx = LegacyTransaction.fromTxData(estimateTxData, { freeze: false })
   estimateTx.getSenderAddress = () => {
     return address
   }
@@ -91,27 +91,32 @@ tape(`${method}: call with valid arguments`, async (t) => {
     skipNonce: true,
     skipBalance: true,
     skipBlockGasLimitValidation: true,
+    skipHardForkValidation: true,
   })
 
   // verify return value is accurate
   let req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'latest'])
   let expectRes = (res: any) => {
     const msg = 'should return the correct return value'
-    t.equal(res.body.result, bufferToHex(execResult.returnValue), msg)
+    t.equal(res.body.result, bytesToPrefixedHexString(execResult.returnValue), msg)
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
   req = params(method, [{ ...estimateTxData }, 'latest'])
   expectRes = (res: any) => {
     const msg = 'should return the correct return value with no gas limit provided'
-    t.equal(res.body.result, bufferToHex(execResult.returnValue), msg)
+    t.equal(res.body.result, bytesToPrefixedHexString(execResult.returnValue), msg)
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
   req = params(method, [{ gasLimit, data }, 'latest'])
   expectRes = (res: any) => {
     const msg = `should let run call without 'to' for contract creation`
-    t.equal(res.body.result, bufferToHex(result.results[0].execResult.returnValue), msg)
+    t.equal(
+      res.body.result,
+      bytesToPrefixedHexString(result.results[0].execResult.returnValue),
+      msg
+    )
   }
   await baseRequest(t, server, req, 200, expectRes, true)
 })
@@ -136,5 +141,30 @@ tape(`${method}: call with unsupported block argument`, async (t) => {
 
   const req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'pending'])
   const expectRes = checkError(t, INVALID_PARAMS, '"pending" is not yet supported')
+  await baseRequest(t, server, req, 200, expectRes)
+})
+
+tape(`${method}: call with invalid hex params`, async (t) => {
+  const blockchain = await Blockchain.create()
+
+  const client = createClient({ blockchain, includeVM: true })
+  const manager = createManager(client)
+  const server = startRPC(manager.getMethods())
+
+  // genesis address with balance
+  const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+  const estimateTxData = {
+    to: address.toString(),
+    from: address.toString(),
+    data: ``,
+    gasLimit: bigIntToHex(BigInt(53000)),
+  }
+
+  const req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'latest'])
+  const expectRes = checkError(
+    t,
+    INVALID_PARAMS,
+    'invalid argument data: hex string without 0x prefix'
+  )
   await baseRequest(t, server, req, 200, expectRes)
 })

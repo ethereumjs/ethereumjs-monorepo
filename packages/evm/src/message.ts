@@ -1,11 +1,11 @@
 import { Address } from '@ethereumjs/util'
 
-import type { PrecompileFunc } from './precompiles'
+import type { PrecompileFunc } from './precompiles/index.js'
 
 const defaults = {
   value: BigInt(0),
   caller: Address.zero(),
-  data: Buffer.alloc(0),
+  data: new Uint8Array(0),
   depth: 0,
   isStatic: false,
   isCompiled: false,
@@ -18,20 +18,25 @@ interface MessageOpts {
   value?: bigint
   caller?: Address
   gasLimit: bigint
-  data?: Buffer
+  data?: Uint8Array
   depth?: number
-  code?: Buffer | PrecompileFunc
+  code?: Uint8Array | PrecompileFunc
   codeAddress?: Address
   isStatic?: boolean
   isCompiled?: boolean
-  salt?: Buffer
+  salt?: Uint8Array
   /**
-   * A map of addresses to selfdestruct, see {@link Message.selfdestruct}
+   * A set of addresses to selfdestruct, see {@link Message.selfdestruct}
    */
-  selfdestruct?: { [key: string]: boolean } | { [key: string]: Buffer }
+  selfdestruct?: Set<string>
+  /**
+   * Map of addresses which were created (used in EIP 6780)
+   */
+  createdAddresses?: Set<string>
   delegatecall?: boolean
   authcallOrigin?: Address
   gasRefund?: bigint
+  versionedHashes?: Uint8Array[]
 }
 
 export class Message {
@@ -39,18 +44,22 @@ export class Message {
   value: bigint
   caller: Address
   gasLimit: bigint
-  data: Buffer
+  data: Uint8Array
   depth: number
-  code?: Buffer | PrecompileFunc
+  code?: Uint8Array | PrecompileFunc
   _codeAddress?: Address
   isStatic: boolean
   isCompiled: boolean
-  salt?: Buffer
+  salt?: Uint8Array
+  containerCode?: Uint8Array /** container code for EOF1 contracts - used by CODECOPY/CODESIZE */
   /**
-   * Map of addresses to selfdestruct. Key is the unprefixed address.
-   * Value is a boolean when marked for destruction and replaced with a Buffer containing the address where the remaining funds are sent.
+   * Set of addresses to selfdestruct. Key is the unprefixed address.
    */
-  selfdestruct?: { [key: string]: boolean } | { [key: string]: Buffer }
+  selfdestruct?: Set<string>
+  /**
+   * Map of addresses which were created (used in EIP 6780)
+   */
+  createdAddresses?: Set<string>
   delegatecall: boolean
   /**
    * This is used to store the origin of the AUTHCALL,
@@ -58,6 +67,10 @@ export class Message {
    */
   authcallOrigin?: Address
   gasRefund: bigint // Keeps track of the gasRefund at the start of the frame (used for journaling purposes)
+  /**
+   * List of versioned hashes if message is a blob transaction in the outer VM
+   */
+  versionedHashes?: Uint8Array[]
 
   constructor(opts: MessageOpts) {
     this.to = opts.to
@@ -72,10 +85,11 @@ export class Message {
     this.isCompiled = opts.isCompiled ?? defaults.isCompiled
     this.salt = opts.salt
     this.selfdestruct = opts.selfdestruct
+    this.createdAddresses = opts.createdAddresses
     this.delegatecall = opts.delegatecall ?? defaults.delegatecall
     this.authcallOrigin = opts.authcallOrigin
     this.gasRefund = opts.gasRefund ?? defaults.gasRefund
-
+    this.versionedHashes = opts.versionedHashes
     if (this.value < 0) {
       throw new Error(`value field cannot be negative, received ${this.value}`)
     }

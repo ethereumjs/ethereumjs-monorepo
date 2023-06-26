@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/evm",
-  "version": "1.0.0-rc.1",
+  "version": "1.3.2",
   "description": "JavaScript Ethereum Virtual Machine (EVM) implementation",
   "keywords": [
     "ethereum",
@@ -21,8 +21,14 @@
   "contributors": [
     "Alex Beregszaszi <alex@rtfs.hu>"
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "files": [
     "dist",
     "src"
@@ -30,40 +36,38 @@
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "c8 --all --reporter=lcov --reporter=text --reporter=text-lcov npm run coverage:test",
-    "coverage:test": "npm run test; cd ../vm; npm run tester -- --state",
+    "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
+    "coverage:test": "npm run test:node && cd ../vm && npm run tester -- --state",
     "docs:build": "typedoc --options typedoc.js",
-    "examples": "ts-node ../../scripts/examples-runner.ts -- vm",
+    "examples": "ts-node ../../scripts/examples-runner.ts -- evm",
     "formatTest": "node ./scripts/formatTest",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "profiling": "0x ./benchmarks/run.js profiling",
-    "tape": "tape -r ts-node/register --stack-size=1500",
-    "test": "npm run tape -- './tests/**/*.spec.ts'",
-    "test:browser": "karma start karma.conf.js",
+    "test:browser": "npx vitest run --browser.name=webkit --browser.provider=playwright --browser.headless",
+    "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "3.0.0-rc.1",
-    "@ethereumjs/util": "8.0.0-rc.1",
-    "@types/async-eventemitter": "^0.2.1",
-    "async-eventemitter": "^0.2.4",
+    "@ethereumjs/common": "^3.1.2",
+    "@ethereumjs/tx": "^4.1.2",
+    "@ethereumjs/util": "^8.0.6",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^1.1.2",
+    "ethereum-cryptography": "^2.0.0",
     "mcl-wasm": "^0.7.1",
-    "rustbn.js": "~0.2.0"
+    "rustbn.js": "^0.3.0"
   },
   "devDependencies": {
-    "@ethereumjs/statemanager": "1.0.0-rc.1",
+    "@ethereumjs/statemanager": "^1.0.5",
     "@ethersproject/abi": "^5.0.12",
     "@types/benchmark": "^1.0.33",
     "@types/core-js": "^2.5.0",
-    "@types/lru-cache": "^5.1.0",
     "@types/minimist": "^1.2.2",
     "@types/node-dir": "^0.0.34",
     "benchmark": "^2.1.4",
+    "c-kzg": "^2.1.0",
     "level": "^8.0.0",
     "memory-level": "^1.0.0",
     "minimist": "^1.2.5",
@@ -71,6 +75,6 @@
     "solc": "^0.8.1"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   }
 }

@@ -1,4 +1,3 @@
-import { isTruthy } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
@@ -13,7 +12,7 @@ tape(method, async (t) => {
 
   const expectRes = (res: any) => {
     const { result } = res.body
-    if (isTruthy(result)) {
+    if (result !== undefined) {
       t.pass('admin_nodeInfo returns a value')
     } else {
       throw new Error('no return value')

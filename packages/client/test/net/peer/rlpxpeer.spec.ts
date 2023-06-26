@@ -2,9 +2,9 @@ import { EventEmitter } from 'events'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Config } from '../../../lib/config'
-import { RlpxSender } from '../../../lib/net/protocol/rlpxsender'
-import { Event } from '../../../lib/types'
+import { Config } from '../../../src/config'
+import { RlpxSender } from '../../../src/net/protocol/rlpxsender'
+import { Event } from '../../../src/types'
 
 tape('[RlpxPeer]', async (t) => {
   const { DPT, ETH, LES, SNAP } = await import('@ethereumjs/devp2p')
@@ -12,11 +12,11 @@ tape('[RlpxPeer]', async (t) => {
     connect(_: any) {}
   }
   RLPx.prototype.connect = td.func<any>()
-  td.replace('@ethereumjs/devp2p', { DPT, ETH, LES, SNAP, RLPx })
-  const { RlpxPeer } = await import('../../../lib/net/peer/rlpxpeer')
+  td.replace<any>('@ethereumjs/devp2p', { DPT, ETH, LES, SNAP, RLPx })
+  const { RlpxPeer } = await import('../../../src/net/peer/rlpxpeer')
 
   t.test('should initialize correctly', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const peer = new RlpxPeer({
       config,
       id: 'abcdef0123',
@@ -52,7 +52,7 @@ tape('[RlpxPeer]', async (t) => {
   })
 
   t.test('should connect to peer', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const proto0 = { name: 'les', versions: [4] } as any
     const peer = new RlpxPeer({
       config,
@@ -71,7 +71,7 @@ tape('[RlpxPeer]', async (t) => {
 
   t.test('should handle peer events', async (t) => {
     t.plan(5)
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const peer = new RlpxPeer({ config, id: 'abcdef0123', host: '10.0.0.1', port: 1234 })
     const rlpxPeer = { id: 'zyx321', getDisconnectPrefix: td.func() } as any
     ;(peer as any).bindProtocols = td.func<typeof peer['bindProtocols']>()
@@ -106,7 +106,7 @@ tape('[RlpxPeer]', async (t) => {
   })
 
   t.test('should accept peer connection', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const peer: any = new RlpxPeer({ config, id: 'abcdef0123', host: '10.0.0.1', port: 1234 })
     peer.bindProtocols = td.func<typeof peer['bindProtocols']>()
     td.when(peer.bindProtocols('rlpxpeer' as any)).thenResolve(null)
@@ -116,7 +116,7 @@ tape('[RlpxPeer]', async (t) => {
   })
 
   t.test('should bind protocols', async (t) => {
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const protocols = [{ name: 'proto0' }] as any
     const peer = new RlpxPeer({ config, id: 'abcdef0123', protocols, host: '10.0.0.1', port: 1234 })
     const proto0 = new (class Proto0 extends EventEmitter {})()

@@ -31,7 +31,7 @@ jobs:
         working-directory: ${{github.workspace}}
 
       - run: npm run test:API
-      - run: npm run test:API:browser
+ #     - run: npm run test:API:browser
 
   test-vm-state:
     runs-on: ubuntu-latest

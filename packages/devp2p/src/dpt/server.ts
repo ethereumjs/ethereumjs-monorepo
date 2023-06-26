@@ -1,16 +1,18 @@
 import { debug as createDebugLogger } from 'debug'
 import * as dgram from 'dgram'
+import { bytesToHex } from 'ethereum-cryptography/utils.js'
 import { EventEmitter } from 'events'
-import LRUCache = require('lru-cache')
-import ms = require('ms')
 
-import { createDeferred, devp2pDebug, formatLogId, keccak256, pk2id } from '../util'
+import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
 
-import { decode, encode } from './message'
+import { decode, encode } from './message.js'
 
-import type { DPT, PeerInfo } from './dpt'
+import type { DPT, PeerInfo } from './dpt.js'
 import type { Debugger } from 'debug'
 import type { Socket as DgramSocket, RemoteInfo } from 'dgram'
+import type LRUCache from 'lru-cache'
+
+const LRU = require('lru-cache')
 
 const DEBUG_BASE_NAME = 'dpt:server'
 const verbose = createDebugLogger('verbose').enabled
@@ -42,26 +44,24 @@ export interface DPTServerOptions {
 
 export class Server extends EventEmitter {
   _dpt: DPT
-  _privateKey: Buffer
+  _privateKey: Uint8Array
   _timeout: number
   _endpoint: PeerInfo
   _requests: Map<string, any>
-  _parityRequestMap: Map<string, string>
   _requestsCache: LRUCache<string, Promise<any>>
   _socket: DgramSocket | null
   _debug: Debugger
 
-  constructor(dpt: DPT, privateKey: Buffer, options: DPTServerOptions) {
+  constructor(dpt: DPT, privateKey: Uint8Array, options: DPTServerOptions) {
     super()
 
     this._dpt = dpt
     this._privateKey = privateKey
 
-    this._timeout = options.timeout ?? ms('10s')
+    this._timeout = options.timeout ?? 2000 // 2 * 1000
     this._endpoint = options.endpoint ?? { address: '0.0.0.0', udpPort: null, tcpPort: null }
     this._requests = new Map()
-    this._parityRequestMap = new Map()
-    this._requestsCache = new LRUCache({ max: 1000, maxAge: ms('1s'), stale: false })
+    this._requestsCache = new LRU({ max: 1000, ttl: 1000, stale: false }) // 1 sec * 1000
 
     const createSocket = options.createSocket ?? dgram.createSocket.bind(null, { type: 'udp4' })
     this._socket = createSocket()
@@ -70,7 +70,7 @@ export class Server extends EventEmitter {
       this._socket.once('listening', () => this.emit('listening'))
       this._socket.once('close', () => this.emit('close'))
       this._socket.on('error', (err) => this.emit('error', err))
-      this._socket.on('message', (msg: Buffer, rinfo: RemoteInfo) => {
+      this._socket.on('message', (msg: Uint8Array, rinfo: RemoteInfo) => {
         try {
           this._handler(msg, rinfo)
         } catch (err: any) {
@@ -111,7 +111,7 @@ export class Server extends EventEmitter {
     })
 
     const deferred = createDeferred()
-    const rkey = hash.toString('hex')
+    const rkey = bytesToHex(hash)
     this._requests.set(rkey, {
       peer,
       deferred,
@@ -119,7 +119,7 @@ export class Server extends EventEmitter {
         if (this._requests.get(rkey) !== undefined) {
           this._debug(
             `ping timeout: ${peer.address}:${peer.udpPort} ${
-              peer.id ? formatLogId(peer.id.toString('hex'), verbose) : '-'
+              peer.id ? formatLogId(bytesToHex(peer.id), verbose) : '-'
             }`
           )
           this._requests.delete(rkey)
@@ -133,7 +133,7 @@ export class Server extends EventEmitter {
     return deferred.promise
   }
 
-  findneighbours(peer: PeerInfo, id: Buffer) {
+  findneighbours(peer: PeerInfo, id: Uint8Array) {
     this._isAliveCheck()
     this._send(peer, 'findneighbours', { id })
   }
@@ -144,42 +144,29 @@ export class Server extends EventEmitter {
 
   _send(peer: PeerInfo, typename: string, data: any) {
     const debugMsg = `send ${typename} to ${peer.address}:${peer.udpPort} (peerId: ${
-      peer.id ? formatLogId(peer.id.toString('hex'), verbose) : '-'
+      peer.id ? formatLogId(bytesToHex(peer.id), verbose) : '-'
     })`
     this.debug(typename, debugMsg)
 
     const msg = encode(typename, data, this._privateKey)
-    // Parity hack
-    // There is a bug in Parity up to at lease 1.8.10 not echoing the hash from
-    // discovery spec (hash: sha3(signature || packet-type || packet-data))
-    // but just hashing the RLP-encoded packet data (see discovery.rs, on_ping())
-    // 2018-02-28
-    if (typename === 'ping') {
-      const rkeyParity = keccak256(msg.slice(98)).toString('hex')
-      this._parityRequestMap.set(rkeyParity, msg.slice(0, 32).toString('hex'))
-      setTimeout(() => {
-        if (this._parityRequestMap.get(rkeyParity) !== undefined) {
-          this._parityRequestMap.delete(rkeyParity)
-        }
-      }, this._timeout)
-    }
+
     if (this._socket && typeof peer.udpPort === 'number')
       this._socket.send(msg, 0, msg.length, peer.udpPort, peer.address)
-    return msg.slice(0, 32) // message id
+    return msg.subarray(0, 32) // message id
   }
 
-  _handler(msg: Buffer, rinfo: RemoteInfo) {
-    const info = decode(msg)
+  _handler(msg: Uint8Array, rinfo: RemoteInfo) {
+    const info = decode(msg) // Dgram serializes everything to `Uint8Array`
     const peerId = pk2id(info.publicKey)
     const debugMsg = `received ${info.typename} from ${rinfo.address}:${
       rinfo.port
-    } (peerId: ${formatLogId(peerId.toString('hex'), verbose)})`
+    } (peerId: ${formatLogId(bytesToHex(peerId), verbose)})`
     this.debug(info.typename.toString(), debugMsg)
 
     // add peer if not in our table
     const peer = this._dpt.getPeer(peerId)
     if (peer === null && info.typename === 'ping' && info.data.from.udpPort !== null) {
-      setTimeout(() => this.emit('peers', [info.data.from]), ms('100ms'))
+      setTimeout(() => this.emit('peers', [info.data.from]), 100) // 100 ms
     }
 
     switch (info.typename) {
@@ -195,18 +182,13 @@ export class Server extends EventEmitter {
             udpPort: rinfo.port,
             tcpPort: info.data.from.tcpPort,
           },
-          hash: msg.slice(0, 32),
+          hash: msg.subarray(0, 32),
         })
         break
       }
 
       case 'pong': {
-        let rkey = info.data.hash.toString('hex')
-        const rkeyParity = this._parityRequestMap.get(rkey)
-        if (typeof rkeyParity === 'string') {
-          rkey = rkeyParity
-          this._parityRequestMap.delete(rkeyParity)
-        }
+        const rkey = bytesToHex(info.data.hash)
         const request = this._requests.get(rkey)
         if (request !== undefined) {
           this._requests.delete(rkey)

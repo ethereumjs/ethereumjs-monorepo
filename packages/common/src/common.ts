@@ -1,5 +1,12 @@
-import { TypeOutput, intToBuffer, toType } from '@ethereumjs/util'
-import { buf as crc32Buffer } from 'crc-32'
+import {
+  TypeOutput,
+  bytesToHex,
+  concatBytes,
+  hexStringToBytes,
+  intToBytes,
+  toType,
+} from '@ethereumjs/util'
+import crc from 'crc/crc32'
 import { EventEmitter } from 'events'
 
 import * as goerli from './chains/goerli.json'
@@ -7,11 +14,12 @@ import * as mainnet from './chains/mainnet.json'
 import * as rinkeby from './chains/rinkeby.json'
 import * as ropsten from './chains/ropsten.json'
 import * as sepolia from './chains/sepolia.json'
-import { EIPs } from './eips'
-import { Chain, CustomChain, Hardfork } from './enums'
-import { hardforks as HARDFORK_CHANGES } from './hardforks'
+import { EIPs } from './eips/index.js'
+import { Chain, CustomChain, Hardfork } from './enums.js'
+import { hardforks as HARDFORK_SPECS } from './hardforks/index.js'
+import { parseGethGenesis } from './utils.js'
 
-import type { ConsensusAlgorithm, ConsensusType } from './enums'
+import type { ConsensusAlgorithm, ConsensusType } from './enums.js'
 import type {
   BootstrapNodeConfig,
   CasperConfig,
@@ -23,10 +31,14 @@ import type {
   CustomCommonOpts,
   EthashConfig,
   GenesisBlockConfig,
+  GethConfigOpts,
+  HardforkByOpts,
   HardforkConfig,
-} from './types'
+} from './types.js'
 import type { BigIntLike } from '@ethereumjs/util'
 
+type HardforkSpecKeys = keyof typeof HARDFORK_SPECS
+type HardforkSpecValues = typeof HARDFORK_SPECS[HardforkSpecKeys]
 /**
  * Common class to access chain and hardfork parameters and to provide
  * a unified and shared view on the network and hardfork state.
@@ -42,6 +54,8 @@ export class Common extends EventEmitter {
   private _hardfork: string | Hardfork
   private _eips: number[] = []
   private _customChains: ChainConfig[]
+
+  private HARDFORK_CHANGES: [HardforkSpecKeys, HardforkSpecValues][]
 
   /**
    * Creates a {@link Common} object for a custom chain, based on a standard one.
@@ -114,6 +128,16 @@ export class Common extends EventEmitter {
           opts
         )
       }
+      if (chainParamsOrName === CustomChain.ArbitrumOne) {
+        return Common.custom(
+          {
+            name: CustomChain.ArbitrumOne,
+            chainId: 42161,
+            networkId: 42161,
+          },
+          opts
+        )
+      }
       if (chainParamsOrName === CustomChain.xDaiChain) {
         return Common.custom(
           {
@@ -153,6 +177,29 @@ export class Common extends EventEmitter {
   }
 
   /**
+   * Static method to load and set common from a geth genesis json
+   * @param genesisJson json of geth configuration
+   * @param { chain, eips, genesisHash, hardfork, mergeForkIdPostMerge } to further configure the common instance
+   * @returns Common
+   */
+  static fromGethGenesis(
+    genesisJson: any,
+    { chain, eips, genesisHash, hardfork, mergeForkIdPostMerge }: GethConfigOpts
+  ): Common {
+    const genesisParams = parseGethGenesis(genesisJson, chain, mergeForkIdPostMerge)
+    const common = new Common({
+      chain: genesisParams.name ?? 'custom',
+      customChains: [genesisParams],
+      eips,
+      hardfork: hardfork ?? genesisParams.hardfork,
+    })
+    if (genesisHash !== undefined) {
+      common.setForkHashes(genesisHash)
+    }
+    return common
+  }
+
+  /**
    * Static method to determine if a {@link chainId} is supported as a standard chain
    * @param chainId bigint id (`1`) of a standard chain
    * @returns boolean
@@ -189,7 +236,12 @@ export class Common extends EventEmitter {
     super()
     this._customChains = opts.customChains ?? []
     this._chainParams = this.setChain(opts.chain)
-    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Merge
+    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Shanghai
+    // Assign hardfork changes in the sequence of the applied hardforks
+    this.HARDFORK_CHANGES = this.hardforks().map((hf) => [
+      hf.name as HardforkSpecKeys,
+      HARDFORK_SPECS[hf.name as HardforkSpecKeys],
+    ])
     this._hardfork = this.DEFAULT_HARDFORK
     if (opts.hardfork !== undefined) {
       this.setHardfork(opts.hardfork)
@@ -238,7 +290,7 @@ export class Common extends EventEmitter {
    */
   setHardfork(hardfork: string | Hardfork): void {
     let existing = false
-    for (const hfChanges of HARDFORK_CHANGES) {
+    for (const hfChanges of this.HARDFORK_CHANGES) {
       if (hfChanges[0] === hardfork) {
         if (this._hardfork !== hardfork) {
           this._hardfork = hardfork
@@ -253,81 +305,134 @@ export class Common extends EventEmitter {
   }
 
   /**
-   * Returns the hardfork based on the block number or an optional
-   * total difficulty (Merge HF) provided.
+   * Returns the hardfork either based on block numer (older HFs) or
+   * timestamp (Shanghai upwards).
    *
    * An optional TD takes precedence in case the corresponding HF block
    * is set to `null` or otherwise needs to match (if not an error
    * will be thrown).
    *
-   * @param blockNumber
-   * @param td
+   * @param Opts Block number, timestamp or TD (all optional)
    * @returns The name of the HF
    */
-  getHardforkByBlockNumber(blockNumber: BigIntLike, td?: BigIntLike): string {
+  getHardforkBy(opts: HardforkByOpts): string {
+    let { blockNumber, timestamp, td } = opts
+
     blockNumber = toType(blockNumber, TypeOutput.BigInt)
     td = toType(td, TypeOutput.BigInt)
+    timestamp = toType(timestamp, TypeOutput.BigInt)
 
-    let hardfork = Hardfork.Chainstart
-    let minTdHF
-    let maxTdHF
-    let previousHF
-    for (const hf of this.hardforks()) {
-      // Skip comparison for not applied HFs
-      if (hf.block === null) {
-        if (td !== undefined && td !== null && hf.ttd !== undefined && hf.ttd !== null) {
-          if (td >= BigInt(hf.ttd)) {
-            return hf.name
-          }
-        }
-        continue
-      }
-      if (blockNumber >= BigInt(hf.block)) {
-        hardfork = hf.name as Hardfork
-      }
-      if (td && (typeof hf.ttd === 'string' || typeof hf.ttd === 'bigint')) {
-        if (td >= BigInt(hf.ttd)) {
-          minTdHF = hf.name
-        } else {
-          maxTdHF = previousHF
-        }
-      }
-      previousHF = hf.name
+    // Filter out hardforks with no block number, no ttd or no timestamp (i.e. unapplied hardforks)
+    const hfs = this.hardforks().filter(
+      (hf) =>
+        hf.block !== null || (hf.ttd !== null && hf.ttd !== undefined) || hf.timestamp !== undefined
+    )
+    const mergeIndex = hfs.findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined)
+    const doubleTTDHF = hfs
+      .slice(mergeIndex + 1)
+      .findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined)
+    if (doubleTTDHF >= 0) {
+      throw Error(`More than one merge hardforks found with ttd specified`)
     }
-    if (td) {
-      let msgAdd = `block number: ${blockNumber} (-> ${hardfork}), `
-      if (minTdHF !== undefined) {
-        if (!this.hardforkGteHardfork(hardfork, minTdHF)) {
-          const msg = 'HF determined by block number is lower than the minimum total difficulty HF'
-          msgAdd += `total difficulty: ${td} (-> ${minTdHF})`
-          throw new Error(`${msg}: ${msgAdd}`)
-        }
+
+    // Find the first hardfork that has a block number greater than `blockNumber`
+    // (skips the merge hardfork since it cannot have a block number specified).
+    // If timestamp is not provided, it also skips timestamps hardforks to continue
+    // discovering/checking number hardforks.
+    let hfIndex = hfs.findIndex(
+      (hf) =>
+        (blockNumber !== undefined &&
+          hf.block !== null &&
+          BigInt(hf.block) > (blockNumber as bigint)) ||
+        (timestamp !== undefined && hf.timestamp !== undefined && hf.timestamp > timestamp)
+    )
+
+    if (hfIndex === -1) {
+      // all hardforks apply, set hfIndex to the last one as that's the candidate
+      hfIndex = hfs.length
+    } else if (hfIndex === 0) {
+      // cannot have a case where a block number is before all applied hardforks
+      // since the chain has to start with a hardfork
+      throw Error('Must have at least one hardfork at block 0')
+    }
+
+    // If timestamp is not provided, we need to rollback to the last hf with block or ttd
+    if (timestamp === undefined) {
+      const stepBack = hfs
+        .slice(0, hfIndex)
+        .reverse()
+        .findIndex((hf) => hf.block !== null || hf.ttd !== undefined)
+      hfIndex = hfIndex - stepBack
+    }
+    // Move hfIndex one back to arrive at candidate hardfork
+    hfIndex = hfIndex - 1
+
+    // If the timestamp was not provided, we could have skipped timestamp hardforks to look for number
+    // hardforks. so it will now be needed to rollback
+    if (hfs[hfIndex].block === null && hfs[hfIndex].timestamp === undefined) {
+      // We're on the merge hardfork.  Let's check the TTD
+      if (td === undefined || td === null || BigInt(hfs[hfIndex].ttd!) > td) {
+        // Merge ttd greater than current td so we're on hardfork before merge
+        hfIndex -= 1
       }
-      if (maxTdHF !== undefined) {
-        if (!this.hardforkGteHardfork(maxTdHF, hardfork)) {
-          const msg = 'Maximum HF determined by total difficulty is lower than the block number HF'
-          msgAdd += `total difficulty: ${td} (-> ${maxTdHF})`
-          throw new Error(`${msg}: ${msgAdd}`)
+    } else {
+      if (mergeIndex >= 0 && td !== undefined && td !== null) {
+        if (hfIndex >= mergeIndex && BigInt(hfs[mergeIndex].ttd!) > td) {
+          throw Error('Maximum HF determined by total difficulty is lower than the block number HF')
+        } else if (hfIndex < mergeIndex && BigInt(hfs[mergeIndex].ttd!) <= td) {
+          throw Error('HF determined by block number is lower than the minimum total difficulty HF')
         }
       }
     }
-    return hardfork
+
+    const hfStartIndex = hfIndex
+    // Move the hfIndex to the end of the hardforks that might be scheduled on the same block/timestamp
+    // This won't anyway be the case with Merge hfs
+    for (; hfIndex < hfs.length - 1; hfIndex++) {
+      // break out if hfIndex + 1 is not scheduled at hfIndex
+      if (
+        hfs[hfIndex].block !== hfs[hfIndex + 1].block ||
+        hfs[hfIndex].timestamp !== hfs[hfIndex + 1].timestamp
+      ) {
+        break
+      }
+    }
+
+    if (timestamp !== undefined) {
+      const minTimeStamp = hfs
+        .slice(0, hfStartIndex)
+        .reduce((acc: number, hf: HardforkConfig) => Math.max(Number(hf.timestamp ?? '0'), acc), 0)
+      if (minTimeStamp > timestamp) {
+        throw Error(`Maximum HF determined by timestamp is lower than the block number/ttd HF`)
+      }
+
+      const maxTimeStamp = hfs
+        .slice(hfIndex + 1)
+        .reduce(
+          (acc: number, hf: HardforkConfig) => Math.min(Number(hf.timestamp ?? timestamp), acc),
+          Number(timestamp)
+        )
+      if (maxTimeStamp < timestamp) {
+        throw Error(`Maximum HF determined by block number/ttd is lower than timestamp HF`)
+      }
+    }
+    const hardfork = hfs[hfIndex]
+    return hardfork.name
   }
 
   /**
-   * Sets a new hardfork based on the block number or an optional
-   * total difficulty (Merge HF) provided.
+   * Sets a new hardfork either based on block numer (older HFs) or
+   * timestamp (Shanghai upwards).
    *
    * An optional TD takes precedence in case the corresponding HF block
    * is set to `null` or otherwise needs to match (if not an error
    * will be thrown).
    *
-   * @param blockNumber
-   * @param td
+   * @param Opts Block number, timestamp or TD (all optional)
    * @returns The name of the HF set
    */
-  setHardforkByBlockNumber(blockNumber: BigIntLike, td?: BigIntLike): string {
-    const hardfork = this.getHardforkByBlockNumber(blockNumber, td)
+  setHardforkBy(opts: HardforkByOpts): string {
+    const hardfork = this.getHardforkBy(opts)
     this.setHardfork(hardfork)
     return hardfork
   }
@@ -374,7 +479,7 @@ export class Common extends EventEmitter {
   /**
    * Returns a parameter for the current chain setup
    *
-   * If the parameter is present in an EIP, the EIP always takes precendence.
+   * If the parameter is present in an EIP, the EIP always takes precedence.
    * Otherwise the parameter if taken from the latest applied HF with
    * a change on the respective parameter.
    *
@@ -402,7 +507,7 @@ export class Common extends EventEmitter {
    */
   paramByHardfork(topic: string, name: string, hardfork: string | Hardfork): bigint {
     let value = null
-    for (const hfChanges of HARDFORK_CHANGES) {
+    for (const hfChanges of this.HARDFORK_CHANGES) {
       // EIP-referencing HF file (e.g. berlin.json)
       if ('eips' in hfChanges[1]) {
         const hfEIPs = hfChanges[1]['eips']
@@ -412,11 +517,11 @@ export class Common extends EventEmitter {
         }
         // Parameter-inlining HF file (e.g. istanbul.json)
       } else {
-        if (hfChanges[1][topic] === undefined) {
+        if ((hfChanges[1] as any)[topic] === undefined) {
           throw new Error(`Topic ${topic} not defined`)
         }
-        if (hfChanges[1][topic][name] !== undefined) {
-          value = hfChanges[1][topic][name].v
+        if ((hfChanges[1] as any)[topic][name] !== undefined) {
+          value = (hfChanges[1] as any)[topic][name].v
         }
       }
       if (hfChanges[0] === hardfork) break
@@ -456,8 +561,14 @@ export class Common extends EventEmitter {
    * @param td Total difficulty
    *    * @returns The value requested or `BigInt(0)` if not found
    */
-  paramByBlock(topic: string, name: string, blockNumber: BigIntLike, td?: BigIntLike): bigint {
-    const hardfork = this.getHardforkByBlockNumber(blockNumber, td)
+  paramByBlock(
+    topic: string,
+    name: string,
+    blockNumber: BigIntLike,
+    td?: BigIntLike,
+    timestamp?: BigIntLike
+  ): bigint {
+    const hardfork = this.getHardforkBy({ blockNumber, td, timestamp })
     return this.paramByHardfork(topic, name, hardfork)
   }
 
@@ -474,7 +585,7 @@ export class Common extends EventEmitter {
     if (this.eips().includes(eip)) {
       return true
     }
-    for (const hfChanges of HARDFORK_CHANGES) {
+    for (const hfChanges of this.HARDFORK_CHANGES) {
       const hf = hfChanges[1]
       if (this.gteHardfork(hf['name']) && 'eips' in hf) {
         if ((hf['eips'] as number[]).includes(eip)) {
@@ -555,17 +666,26 @@ export class Common extends EventEmitter {
     return BigInt(block)
   }
 
+  hardforkTimestamp(hardfork?: string | Hardfork): bigint | null {
+    hardfork = hardfork ?? this._hardfork
+    const timestamp = this._getHardfork(hardfork)?.['timestamp']
+    if (timestamp === undefined || timestamp === null) {
+      return null
+    }
+    return BigInt(timestamp)
+  }
+
   /**
    * Returns the hardfork change block for eip
    * @param eip EIP number
    * @returns Block number or null if unscheduled
    */
   eipBlock(eip: number): bigint | null {
-    for (const hfChanges of HARDFORK_CHANGES) {
+    for (const hfChanges of this.HARDFORK_CHANGES) {
       const hf = hfChanges[1]
       if ('eips' in hf) {
         // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-        if (hf['eips'].includes(eip)) {
+        if ((hf['eips'] as any).includes(eip)) {
           return this.hardforkBlock(hfChanges[0])
         }
       }
@@ -588,52 +708,52 @@ export class Common extends EventEmitter {
   }
 
   /**
-   * True if block number provided is the hardfork (given or set) change block
-   * @param blockNumber Number of the block to check
-   * @param hardfork Hardfork name, optional if HF set
-   * @returns True if blockNumber is HF block
-   */
-  isHardforkBlock(blockNumber: BigIntLike, hardfork?: string | Hardfork): boolean {
-    blockNumber = toType(blockNumber, TypeOutput.BigInt)
-    hardfork = hardfork ?? this._hardfork
-    const block = this.hardforkBlock(hardfork)
-    return typeof block === 'bigint' && block !== BigInt(0) ? block === blockNumber : false
-  }
-
-  /**
    * Returns the change block for the next hardfork after the hardfork provided or set
    * @param hardfork Hardfork name, optional if HF set
-   * @returns Block number or null if not available
+   * @returns Block timestamp, number or null if not available
    */
-  nextHardforkBlock(hardfork?: string | Hardfork): bigint | null {
+  nextHardforkBlockOrTimestamp(hardfork?: string | Hardfork): bigint | null {
     hardfork = hardfork ?? this._hardfork
-    const hfBlock = this.hardforkBlock(hardfork)
-    if (hfBlock === null) {
+    const hfs = this.hardforks()
+    let hfIndex = hfs.findIndex((hf) => hf.name === hardfork)
+    // If the current hardfork is merge, go one behind as merge hf is not part of these
+    // calcs even if the merge hf block is set
+    if (hardfork === Hardfork.Paris) {
+      hfIndex -= 1
+    }
+    // Hardfork not found
+    if (hfIndex < 0) {
       return null
     }
-    // Next fork block number or null if none available
-    // Logic: if accumulator is still null and on the first occurrence of
-    // a block greater than the current hfBlock set the accumulator,
-    // pass on the accumulator as the final result from this time on
-    const nextHfBlock = this.hardforks().reduce((acc: bigint | null, hf: HardforkConfig) => {
-      const block = BigInt(typeof hf.block !== 'number' ? 0 : hf.block)
-      return block > hfBlock && acc === null ? block : acc
-    }, null)
-    return nextHfBlock
-  }
 
-  /**
-   * True if block number provided is the hardfork change block following the hardfork given or set
-   * @param blockNumber Number of the block to check
-   * @param hardfork Hardfork name, optional if HF set
-   * @returns True if blockNumber is HF block
-   */
-  isNextHardforkBlock(blockNumber: BigIntLike, hardfork?: string | Hardfork): boolean {
-    blockNumber = toType(blockNumber, TypeOutput.BigInt)
-    hardfork = hardfork ?? this._hardfork
-    const nextHardforkBlock = this.nextHardforkBlock(hardfork)
+    let currHfTimeOrBlock = hfs[hfIndex].timestamp ?? hfs[hfIndex].block
+    currHfTimeOrBlock =
+      currHfTimeOrBlock !== null && currHfTimeOrBlock !== undefined
+        ? Number(currHfTimeOrBlock)
+        : null
 
-    return nextHardforkBlock === null ? false : nextHardforkBlock === blockNumber
+    const nextHf = hfs.slice(hfIndex + 1).find((hf) => {
+      let hfTimeOrBlock = hf.timestamp ?? hf.block
+      hfTimeOrBlock =
+        hfTimeOrBlock !== null && hfTimeOrBlock !== undefined ? Number(hfTimeOrBlock) : null
+      return (
+        hf.name !== Hardfork.Paris &&
+        hfTimeOrBlock !== null &&
+        hfTimeOrBlock !== undefined &&
+        hfTimeOrBlock !== currHfTimeOrBlock
+      )
+    })
+    // If no next hf found with valid block or timestamp return null
+    if (nextHf === undefined) {
+      return null
+    }
+
+    const nextHfBlock = nextHf.timestamp ?? nextHf.block
+    if (nextHfBlock === null || nextHfBlock === undefined) {
+      return null
+    }
+
+    return BigInt(nextHfBlock)
   }
 
   /**
@@ -642,29 +762,37 @@ export class Common extends EventEmitter {
    * @param genesisHash Genesis block hash of the chain
    * @returns Fork hash as hex string
    */
-  _calcForkHash(hardfork: string | Hardfork, genesisHash: Buffer) {
-    let hfBuffer = Buffer.alloc(0)
-    let prevBlock = 0
+  _calcForkHash(hardfork: string | Hardfork, genesisHash: Uint8Array) {
+    let hfBytes = new Uint8Array(0)
+    let prevBlockOrTime = 0
     for (const hf of this.hardforks()) {
-      const block = hf.block
+      const { block, timestamp, name } = hf
+      // Timestamp to be used for timestamp based hfs even if we may bundle
+      // block number with them retrospectively
+      let blockOrTime = timestamp ?? block
+      blockOrTime = blockOrTime !== null ? Number(blockOrTime) : null
 
       // Skip for chainstart (0), not applied HFs (null) and
-      // when already applied on same block number HFs
-      if (typeof block === 'number' && block !== 0 && block !== prevBlock) {
-        const hfBlockBuffer = Buffer.from(block.toString(16).padStart(16, '0'), 'hex')
-        hfBuffer = Buffer.concat([hfBuffer, hfBlockBuffer])
+      // when already applied on same blockOrTime HFs
+      // and on the merge since forkhash doesn't change on merge hf
+      if (
+        typeof blockOrTime === 'number' &&
+        blockOrTime !== 0 &&
+        blockOrTime !== prevBlockOrTime &&
+        name !== Hardfork.Paris
+      ) {
+        const hfBlockBytes = hexStringToBytes(blockOrTime.toString(16).padStart(16, '0'))
+        hfBytes = concatBytes(hfBytes, hfBlockBytes)
+        prevBlockOrTime = blockOrTime
       }
 
       if (hf.name === hardfork) break
-      if (typeof block === 'number') {
-        prevBlock = block
-      }
     }
-    const inputBuffer = Buffer.concat([genesisHash, hfBuffer])
+    const inputBytes = concatBytes(genesisHash, hfBytes)
 
     // CRC32 delivers result as signed (negative) 32-bit integer,
     // convert to hex string
-    const forkhash = intToBuffer(crc32Buffer(inputBuffer) >>> 0).toString('hex')
+    const forkhash = bytesToHex(intToBytes(crc(inputBytes) >>> 0))
     return `0x${forkhash}`
   }
 
@@ -673,10 +801,13 @@ export class Common extends EventEmitter {
    * @param hardfork Hardfork name, optional if HF set
    * @param genesisHash Genesis block hash of the chain, optional if already defined and not needed to be calculated
    */
-  forkHash(hardfork?: string | Hardfork, genesisHash?: Buffer): string {
+  forkHash(hardfork?: string | Hardfork, genesisHash?: Uint8Array): string {
     hardfork = hardfork ?? this._hardfork
     const data = this._getHardfork(hardfork)
-    if (data === null || (data?.block === null && data?.ttd === undefined)) {
+    if (
+      data === null ||
+      (data?.block === null && data?.timestamp === undefined && data?.ttd === undefined)
+    ) {
       const msg = 'No fork hash calculation possible for future hardfork'
       throw new Error(msg)
     }
@@ -697,6 +828,23 @@ export class Common extends EventEmitter {
       return hf.forkHash === forkHash
     })
     return resArray.length >= 1 ? resArray[resArray.length - 1] : null
+  }
+
+  /**
+   * Sets any missing forkHashes on the passed-in {@link Common} instance
+   * @param common The {@link Common} to set the forkHashes for
+   * @param genesisHash The genesis block hash
+   */
+  setForkHashes(genesisHash: Uint8Array) {
+    for (const hf of this.hardforks()) {
+      const blockOrTime = hf.timestamp ?? hf.block
+      if (
+        (hf.forkHash === null || hf.forkHash === undefined) &&
+        ((blockOrTime !== null && blockOrTime !== undefined) || typeof hf.ttd !== 'undefined')
+      ) {
+        hf.forkHash = this.forkHash(hf.name, genesisHash)
+      }
+    }
   }
 
   /**
@@ -781,7 +929,7 @@ export class Common extends EventEmitter {
     const hardfork = this.hardfork()
 
     let value
-    for (const hfChanges of HARDFORK_CHANGES) {
+    for (const hfChanges of this.HARDFORK_CHANGES) {
       if ('consensus' in hfChanges[1]) {
         value = hfChanges[1]['consensus']['type']
       }
@@ -803,7 +951,7 @@ export class Common extends EventEmitter {
     const hardfork = this.hardfork()
 
     let value
-    for (const hfChanges of HARDFORK_CHANGES) {
+    for (const hfChanges of this.HARDFORK_CHANGES) {
       if ('consensus' in hfChanges[1]) {
         value = hfChanges[1]['consensus']['algorithm']
       }
@@ -819,10 +967,9 @@ export class Common extends EventEmitter {
    * Expected returns (parameters must be present in
    * the respective chain json files):
    *
-   * ethash: -
+   * ethash: empty object
    * clique: period, epoch
-   * aura: -
-   * casper: -
+   * casper: empty object
    *
    * Note: This value can update along a Hardfork.
    */
@@ -830,14 +977,16 @@ export class Common extends EventEmitter {
     const hardfork = this.hardfork()
 
     let value
-    for (const hfChanges of HARDFORK_CHANGES) {
+    for (const hfChanges of this.HARDFORK_CHANGES) {
       if ('consensus' in hfChanges[1]) {
         // The config parameter is named after the respective consensus algorithm
-        value = hfChanges[1]['consensus'][hfChanges[1]['consensus']['algorithm']]
+        value = (hfChanges[1] as any)['consensus'][hfChanges[1]['consensus']['algorithm']]
       }
       if (hfChanges[0] === hardfork) break
     }
-    return value ?? this._chainParams['consensus'][this.consensusAlgorithm() as ConsensusAlgorithm]!
+    return (
+      value ?? this._chainParams['consensus'][this.consensusAlgorithm() as ConsensusAlgorithm] ?? {}
+    )
   }
 
   /**

@@ -1,26 +1,29 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
   MAX_INTEGER,
-  arrToBufArr,
   bigIntToHex,
-  bigIntToUnpaddedBuffer,
-  bufArrToArr,
-  bufferToBigInt,
+  bigIntToUnpaddedBytes,
+  bytesToBigInt,
   ecrecover,
-  toBuffer,
-  unpadBuffer,
+  toBytes,
+  unpadBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { BaseTransaction } from './baseTransaction'
-import { Capability } from './types'
-import { checkMaxInitCodeSize } from './util'
+import { BaseTransaction } from './baseTransaction.js'
+import { Capability, TransactionType } from './types.js'
 
-import type { JsonTx, TxData, TxOptions, TxValuesArray } from './types'
+import type {
+  TxData as AllTypesTxData,
+  TxValuesArray as AllTypesTxValuesArray,
+  JsonTx,
+  TxOptions,
+} from './types.js'
 import type { Common } from '@ethereumjs/common'
 
-const TRANSACTION_TYPE = 0
+type TxData = AllTypesTxData[TransactionType.Legacy]
+type TxValuesArray = AllTypesTxValuesArray[TransactionType.Legacy]
 
 function meetsEIP155(_v: bigint, chainId: bigint) {
   const v = Number(_v)
@@ -31,7 +34,7 @@ function meetsEIP155(_v: bigint, chainId: bigint) {
 /**
  * An Ethereum non-typed (legacy) transaction
  */
-export class Transaction extends BaseTransaction<Transaction> {
+export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
   public readonly gasPrice: bigint
 
   public readonly common: Common
@@ -45,7 +48,7 @@ export class Transaction extends BaseTransaction<Transaction> {
    * - All parameters are optional and have some basic default values
    */
   public static fromTxData(txData: TxData, opts: TxOptions = {}) {
-    return new Transaction(txData, opts)
+    return new LegacyTransaction(txData, opts)
   }
 
   /**
@@ -53,14 +56,14 @@ export class Transaction extends BaseTransaction<Transaction> {
    *
    * Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
    */
-  public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
-    const values = arrToBufArr(RLP.decode(Uint8Array.from(serialized))) as Buffer[]
+  public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
+    const values = RLP.decode(serialized)
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized tx input. Must be array')
     }
 
-    return this.fromValuesArray(values, opts)
+    return this.fromValuesArray(values as TxValuesArray, opts)
   }
 
   /**
@@ -69,7 +72,7 @@ export class Transaction extends BaseTransaction<Transaction> {
    * Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
    */
   public static fromValuesArray(values: TxValuesArray, opts: TxOptions = {}) {
-    // If length is not 6, it has length 9. If v/r/s are empty Buffers, it is still an unsigned transaction
+    // If length is not 6, it has length 9. If v/r/s are empty Uint8Arrays, it is still an unsigned transaction
     // This happens if you get the RLP data from `raw()`
     if (values.length !== 6 && values.length !== 9) {
       throw new Error(
@@ -81,7 +84,7 @@ export class Transaction extends BaseTransaction<Transaction> {
 
     validateNoLeadingZeroes({ nonce, gasPrice, gasLimit, value, v, r, s })
 
-    return new Transaction(
+    return new LegacyTransaction(
       {
         nonce,
         gasPrice,
@@ -105,17 +108,18 @@ export class Transaction extends BaseTransaction<Transaction> {
    * varying data types.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
-    super({ ...txData, type: TRANSACTION_TYPE }, opts)
+    super({ ...txData, type: TransactionType.Legacy }, opts)
 
     this.common = this._validateTxV(this.v, opts.common)
 
-    this.gasPrice = bufferToBigInt(toBuffer(txData.gasPrice === '' ? '0x' : txData.gasPrice))
+    this.gasPrice = bytesToBigInt(toBytes(txData.gasPrice === '' ? '0x' : txData.gasPrice))
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
       const msg = this._errorMsg('gas limit * gasPrice cannot exceed MAX_INTEGER (2^256-1)')
       throw new Error(msg)
     }
     this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
+    BaseTransaction._validateNotArray(txData)
 
     if (this.common.gteHardfork('spuriousDragon')) {
       if (!this.isSigned()) {
@@ -133,10 +137,6 @@ export class Transaction extends BaseTransaction<Transaction> {
       }
     }
 
-    if (this.common.isActivatedEIP(3860)) {
-      checkMaxInitCodeSize(this.common, this.data.length)
-    }
-
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -144,7 +144,7 @@ export class Transaction extends BaseTransaction<Transaction> {
   }
 
   /**
-   * Returns a Buffer Array of the raw Buffers of the legacy transaction, in order.
+   * Returns a Uint8Array Array of the raw Bytes of the legacy transaction, in order.
    *
    * Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
    *
@@ -152,21 +152,21 @@ export class Transaction extends BaseTransaction<Transaction> {
    * to a block with {@link Block.fromValuesArray} (use the `serialize()` method
    * for typed txs).
    *
-   * For an unsigned tx this method returns the empty Buffer values
+   * For an unsigned tx this method returns the empty Bytes values
    * for the signature parameters `v`, `r` and `s`. For an EIP-155 compliant
    * representation have a look at {@link Transaction.getMessageToSign}.
    */
   raw(): TxValuesArray {
     return [
-      bigIntToUnpaddedBuffer(this.nonce),
-      bigIntToUnpaddedBuffer(this.gasPrice),
-      bigIntToUnpaddedBuffer(this.gasLimit),
-      this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bigIntToUnpaddedBuffer(this.value),
+      bigIntToUnpaddedBytes(this.nonce),
+      bigIntToUnpaddedBytes(this.gasPrice),
+      bigIntToUnpaddedBytes(this.gasLimit),
+      this.to !== undefined ? this.to.bytes : new Uint8Array(0),
+      bigIntToUnpaddedBytes(this.value),
       this.data,
-      this.v !== undefined ? bigIntToUnpaddedBuffer(this.v) : Buffer.from([]),
-      this.r !== undefined ? bigIntToUnpaddedBuffer(this.r) : Buffer.from([]),
-      this.s !== undefined ? bigIntToUnpaddedBuffer(this.s) : Buffer.from([]),
+      this.v !== undefined ? bigIntToUnpaddedBytes(this.v) : new Uint8Array(0),
+      this.r !== undefined ? bigIntToUnpaddedBytes(this.r) : new Uint8Array(0),
+      this.s !== undefined ? bigIntToUnpaddedBytes(this.s) : new Uint8Array(0),
     ]
   }
 
@@ -175,58 +175,53 @@ export class Transaction extends BaseTransaction<Transaction> {
    *
    * Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
    *
-   * For an unsigned tx this method uses the empty Buffer values for the
+   * For an unsigned tx this method uses the empty Uint8Array values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
    * representation for external signing use {@link Transaction.getMessageToSign}.
    */
-  serialize(): Buffer {
-    return Buffer.from(RLP.encode(bufArrToArr(this.raw())))
-  }
-
-  private _getMessageToSign() {
-    const values = [
-      bigIntToUnpaddedBuffer(this.nonce),
-      bigIntToUnpaddedBuffer(this.gasPrice),
-      bigIntToUnpaddedBuffer(this.gasLimit),
-      this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bigIntToUnpaddedBuffer(this.value),
-      this.data,
-    ]
-
-    if (this.supports(Capability.EIP155ReplayProtection)) {
-      values.push(toBuffer(this.common.chainId()))
-      values.push(unpadBuffer(toBuffer(0)))
-      values.push(unpadBuffer(toBuffer(0)))
-    }
-
-    return values
+  serialize(): Uint8Array {
+    return RLP.encode(this.raw())
   }
 
   /**
-   * Returns the unsigned tx (hashed or raw), which can be used
+   * Returns the raw unsigned tx, which can be used
    * to sign the transaction (e.g. for sending to a hardware wallet).
    *
    * Note: the raw message message format for the legacy tx is not RLP encoded
    * and you might need to do yourself with:
    *
    * ```javascript
-   * import { bufArrToArr } from '@ethereumjs/util'
    * import { RLP } from '@ethereumjs/rlp'
-   * const message = tx.getMessageToSign(false)
-   * const serializedMessage = Buffer.from(RLP.encode(bufArrToArr(message))) // use this for the HW wallet input
+   * const message = tx.getMessageToSign()
+   * const serializedMessage = RLP.encode(message)) // use this for the HW wallet input
    * ```
-   *
-   * @param hashMessage - Return hashed message if set to true (default: true)
    */
-  getMessageToSign(hashMessage: false): Buffer[]
-  getMessageToSign(hashMessage?: true): Buffer
-  getMessageToSign(hashMessage = true) {
-    const message = this._getMessageToSign()
-    if (hashMessage) {
-      return Buffer.from(keccak256(RLP.encode(bufArrToArr(message))))
-    } else {
-      return message
+  getMessageToSign(): Uint8Array[] {
+    const message = [
+      bigIntToUnpaddedBytes(this.nonce),
+      bigIntToUnpaddedBytes(this.gasPrice),
+      bigIntToUnpaddedBytes(this.gasLimit),
+      this.to !== undefined ? this.to.bytes : new Uint8Array(0),
+      bigIntToUnpaddedBytes(this.value),
+      this.data,
+    ]
+
+    if (this.supports(Capability.EIP155ReplayProtection)) {
+      message.push(bigIntToUnpaddedBytes(this.common.chainId()))
+      message.push(unpadBytes(toBytes(0)))
+      message.push(unpadBytes(toBytes(0)))
     }
+
+    return message
+  }
+
+  /**
+   * Returns the hashed serialized unsigned tx, which can be used
+   * to sign the transaction (e.g. for sending to a hardware wallet).
+   */
+  getHashedMessageToSign() {
+    const message = this.getMessageToSign()
+    return keccak256(RLP.encode(message))
   }
 
   /**
@@ -260,7 +255,7 @@ export class Transaction extends BaseTransaction<Transaction> {
    * This method can only be used for signed txs (it throws otherwise).
    * Use {@link Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
-  hash(): Buffer {
+  hash(): Uint8Array {
     if (!this.isSigned()) {
       const msg = this._errorMsg('Cannot call hash method if transaction is not signed')
       throw new Error(msg)
@@ -268,12 +263,12 @@ export class Transaction extends BaseTransaction<Transaction> {
 
     if (Object.isFrozen(this)) {
       if (!this.cache.hash) {
-        this.cache.hash = Buffer.from(keccak256(RLP.encode(bufArrToArr(this.raw()))))
+        this.cache.hash = keccak256(RLP.encode(this.raw()))
       }
       return this.cache.hash
     }
 
-    return Buffer.from(keccak256(RLP.encode(bufArrToArr(this.raw()))))
+    return keccak256(RLP.encode(this.raw()))
   }
 
   /**
@@ -284,14 +279,13 @@ export class Transaction extends BaseTransaction<Transaction> {
       const msg = this._errorMsg('This transaction is not signed')
       throw new Error(msg)
     }
-    const message = this._getMessageToSign()
-    return Buffer.from(keccak256(RLP.encode(bufArrToArr(message))))
+    return this.getHashedMessageToSign()
   }
 
   /**
    * Returns the public key of the sender
    */
-  getSenderPublicKey(): Buffer {
+  getSenderPublicKey(): Uint8Array {
     const msgHash = this.getMessageToVerifySignature()
 
     const { v, r, s } = this
@@ -302,8 +296,8 @@ export class Transaction extends BaseTransaction<Transaction> {
       return ecrecover(
         msgHash,
         v!,
-        bigIntToUnpaddedBuffer(r!),
-        bigIntToUnpaddedBuffer(s!),
+        bigIntToUnpaddedBytes(r!),
+        bigIntToUnpaddedBytes(s!),
         this.supports(Capability.EIP155ReplayProtection) ? this.common.chainId() : undefined
       )
     } catch (e: any) {
@@ -315,14 +309,14 @@ export class Transaction extends BaseTransaction<Transaction> {
   /**
    * Process the v, r, s values from the `sign` method of the base transaction.
    */
-  protected _processSignature(v: bigint, r: Buffer, s: Buffer) {
+  protected _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
     if (this.supports(Capability.EIP155ReplayProtection)) {
       v += this.common.chainId() * BigInt(2) + BigInt(8)
     }
 
     const opts = { ...this.txOptions, common: this.common }
 
-    return Transaction.fromTxData(
+    return LegacyTransaction.fromTxData(
       {
         nonce: this.nonce,
         gasPrice: this.gasPrice,
@@ -331,8 +325,8 @@ export class Transaction extends BaseTransaction<Transaction> {
         value: this.value,
         data: this.data,
         v,
-        r: bufferToBigInt(r),
-        s: bufferToBigInt(s),
+        r: bytesToBigInt(r),
+        s: bytesToBigInt(s),
       },
       opts
     )
@@ -342,16 +336,10 @@ export class Transaction extends BaseTransaction<Transaction> {
    * Returns an object with the JSON representation of the transaction.
    */
   toJSON(): JsonTx {
+    const baseJson = super.toJSON()
     return {
-      nonce: bigIntToHex(this.nonce),
+      ...baseJson,
       gasPrice: bigIntToHex(this.gasPrice),
-      gasLimit: bigIntToHex(this.gasLimit),
-      to: this.to !== undefined ? this.to.toString() : undefined,
-      value: bigIntToHex(this.value),
-      data: '0x' + this.data.toString('hex'),
-      v: this.v !== undefined ? bigIntToHex(this.v) : undefined,
-      r: this.r !== undefined ? bigIntToHex(this.r) : undefined,
-      s: this.s !== undefined ? bigIntToHex(this.s) : undefined,
     }
   }
 

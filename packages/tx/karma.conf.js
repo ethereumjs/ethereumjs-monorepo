@@ -13,7 +13,13 @@ module.exports = function (config) {
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
         acornOptions: {
-          ecmaVersion: 11,
+          ecmaVersion: 13,
+        },
+        ignore: ['c-kzg', 'safer-buffer'],
+        resolve: {
+          alias: {
+            '@ethereumjs/util/provider': '../util/dist/cjs/provider.js',
+          },
         },
       },
     },
