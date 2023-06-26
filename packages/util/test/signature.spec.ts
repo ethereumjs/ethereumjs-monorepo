@@ -16,6 +16,7 @@ import {
 
 const echash = hexToBytes('82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
 const ecprivkey = hexToBytes('3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1')
+const chainId = BigInt(3) // ropsten
 
 describe('ecsign', () => {
   it('should produce a signature', () => {
@@ -29,6 +30,19 @@ describe('ecsign', () => {
       hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     )
     assert.equal(sig.v, BigInt(27))
+  })
+
+  it('should produce a signature for Ropsten testnet', () => {
+    const sig = ecsign(echash, ecprivkey, chainId)
+    assert.deepEqual(
+      sig.r,
+      hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    )
+    assert.deepEqual(
+      sig.s,
+      hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+    )
+    assert.equal(sig.v, BigInt(41))
   })
 
   it('should produce a signature for chainId=150', () => {
@@ -68,6 +82,13 @@ describe('ecrecover', () => {
     const s = hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(27)
     const pubkey = ecrecover(echash, v, r, s)
+    assert.deepEqual(pubkey, privateToPublic(ecprivkey))
+  })
+  it('should recover a public key (chainId = 3)', () => {
+    const r = hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+    const v = BigInt(41)
+    const pubkey = ecrecover(echash, v, r, s, chainId)
     assert.deepEqual(pubkey, privateToPublic(ecprivkey))
   })
   it('should recover a public key (chainId = 150)', () => {
@@ -212,6 +233,12 @@ describe('isValidSignature', () => {
     const s = hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(1)
     assert.ok(isValidSignature(v, r, s))
+  })
+  it('should work otherwise (chainId=3)', () => {
+    const r = hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+    const v = BigInt(41)
+    assert.ok(isValidSignature(v, r, s, false, chainId))
   })
   it('should work otherwise (chainId=150)', () => {
     const chainId = BigInt(150)
