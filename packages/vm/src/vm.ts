@@ -224,7 +224,7 @@ export class VM {
   async shallowCopy(): Promise<VM> {
     const common = this._common.copy()
     common.setHardfork(this._common.hardfork())
-    const blockchain = this.blockchain.copy()
+    const blockchain = this.blockchain.shallowCopy()
     const stateManager = this.stateManager.shallowCopy()
     const evmOpts = {
       ...(this.evm as any)._optsCached,

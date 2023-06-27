@@ -46,7 +46,7 @@ export interface BlockchainInterface {
   /**
    * Returns a copy of the blockchain
    */
-  copy(): BlockchainInterface
+  shallowCopy(): BlockchainInterface
 
   /**
    * Validates a block header, throwing if invalid. It is being validated against the reported `parentHash`.
