@@ -1,10 +1,10 @@
 import * as path from 'path'
-import * as process from 'process'
 import { afterEach, assert, describe, it } from 'vitest'
 
 import {
   DEFAULT_FORK_CONFIG,
   DEFAULT_TESTS_PATH,
+  SKIP_SLOW,
   getCommon,
   getExpectedTests,
   getRequiredForkConfigAlias,
@@ -12,7 +12,6 @@ import {
   getTestDirs,
 } from './config'
 import { runBlockchainTest } from './runners/BlockchainTestsRunner'
-import { runStateTest } from './runners/GeneralStateTestsRunner'
 import { getTestFromSource, getTestsFromArgs } from './testLoader'
 
 import type { Common } from '@ethereumjs/common'
@@ -27,7 +26,7 @@ interface Args {
   test?: string
   dir?: string
   excludeDir?: string
-  testsPath: string
+  testsPath?: string
   customTestsPath?: string
   customStateTest?: string
   jsontrace?: boolean
@@ -41,60 +40,23 @@ interface Args {
   reps?: number
 }
 
-const defaultArgs: Args = {
-  skip: 'all',
-  runSkipped: 'none',
-  testsPath: DEFAULT_TESTS_PATH,
+export const defaultArgs: Args = {
+  blockchain: true,
+  skip: 'ALL',
+  runSkipped: 'NONE',
   'verify-test-amount-alltests': 1,
 }
 
-/**
- * Test runner
- * CLI arguments:
- * --state: boolean.                      Run state tests
- * --blockchain: boolean.                 Run blockchain tests
- * --fork: string.                        Fork to use for these tests
- * --skip: string.                        Comma-separated list of tests to skip. choices of: all,broken,permanent,slow. Defaults to all
- * --runSkipped: string.                  Comma-separated list of tests to skip if --skip is not set. choices of: all,broken,permanent,slow. Defaults to none
- * --file: string.                        Test file to run
- * --test: string.                        Test name to run
- * --dir: string.                         Test directory to look for tests
- * --excludeDir: string.                  Test directory to exclude from testing
- * --testsPath: string.                   Root directory of tests to look (default: '../ethereum-tests')
- * --customTestsPath: string.             Custom directory to look for tests (e.g. '../../my_custom_test_folder')
- * --customStateTest: string.             Run a file with a custom state test (not in test directory)
- * --jsontrace: boolean.                  Enable json step tracing in state tests
- * --dist: boolean.                       Use the compiled version of the VM
- * --data: number.                        Only run this state test if the transaction has this calldata
- * --gas: number.                         Only run this state test if the transaction has this gasLimit
- * --value: number.                       Only run this state test if the transaction has this call value
- * --debug: boolean.                      Enable BlockchainTests debugger (compares post state against the expected post state)
- * --expected-test-amount: number.        If passed, check after tests are ran if at least this amount of tests have passed (inclusive)
- * --verify-test-amount-alltests: number. If passed, get the expected amount from tests and verify afterwards if this is the count of tests (expects tests are ran with default settings)
- * --reps: number.                        If passed, each test case will be run the number of times indicated
- */
-
-async function runTests(argv: Args) {
+export async function runTests(argv: Args) {
   let assertCount = 0
-  let name: 'GeneralStateTests' | 'BlockchainTests'
-  let runner: any
-  if ((argv.state as boolean) === true) {
-    name = 'GeneralStateTests'
-    runner = runStateTest
-  } else if ((argv.blockchain as boolean) === true) {
-    name = 'BlockchainTests'
-    runner = runBlockchainTest
-  } else {
-    console.log(`Test type not supported or provided`)
-    process.exit(1)
-  }
+  const name = 'BlockchainTests'
+  const runner = runBlockchainTest
 
   const FORK_CONFIG: string = argv.fork !== undefined ? argv.fork : DEFAULT_FORK_CONFIG
   const FORK_CONFIG_TEST_SUITE = getRequiredForkConfigAlias(FORK_CONFIG)
 
   // Examples: Istanbul -> istanbul, MuirGlacier -> muirGlacier
   const FORK_CONFIG_VM = FORK_CONFIG.charAt(0).toLowerCase() + FORK_CONFIG.substring(1)
-
   /**
    * Configuration for getting the tests from the ethereum/tests repository
    */
@@ -120,7 +82,6 @@ async function runTests(argv: Args) {
     testsPath: argv.testsPath,
     customStateTest: argv.customStateTest,
   }
-
   /**
    * Run-time configuration
    */
@@ -165,6 +126,19 @@ async function runTests(argv: Args) {
     }
     testGetterArgs.forkConfig = str
   }
+  console.log({
+    FORK_CONFIG,
+    forkConfig: testGetterArgs.forkConfig,
+    FORK_CONFIG_TEST_SUITE,
+    FORK_CONFIG_VM,
+    jsontrace: argv.jsontrace,
+    dist: argv.dist,
+    data: argv.data,
+    gasLimit: argv.gas,
+    value: argv.value,
+    debug: argv.debug,
+    reps: argv.reps,
+  })
 
   const expectedTests: number | undefined =
     argv['verify-test-amount-alltests'] > 0
@@ -172,167 +146,72 @@ async function runTests(argv: Args) {
       : argv['expected-test-amount'] !== undefined && argv['expected-test-amount'] > 0
       ? argv['expected-test-amount']
       : undefined
+  let testIdentifier: string
+  const failingTests: Record<string, string[] | undefined> = {}
+  afterEach((context) => {
+    context.onTestFailed(() => {
+      if (failingTests[testIdentifier] !== undefined) {
+        ;(failingTests[testIdentifier] as string[]).push(context.task.name)
+      } else {
+        failingTests[testIdentifier] = [context.task.name]
+      }
+    })
+    assertCount++
+  })
+  // Tests for HFs before Istanbul have been moved under `LegacyTests/Constantinople`:
+  // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
 
-  /**
-   * Initialization output to console
-   */
-  const width = 50
-  const fillWidth = width
-  const fillParam = 20
-  const delimiter = `| `.padEnd(fillWidth) + ' |'
-  const formatArgs = (args: any) => {
-    return Object.assign(
-      {},
-      ...Object.entries(args)
-        .filter(([_k, v]) => typeof v === 'string' || (Array.isArray(v) && v.length !== 0))
-        .map(([k, v]) => ({
-          [k]: Array.isArray(v) && v.length > 0 ? v.length : v,
-        }))
-    )
-  }
-  const formattedGetterArgs = formatArgs(testGetterArgs)
-  const formattedRunnerArgs = formatArgs(runnerArgs)
-
-  console.log(`+${'-'.repeat(width)}+`)
-  console.log(`| VM -> ${name} `.padEnd(fillWidth) + ' |')
-  console.log(delimiter)
-  console.log(`| TestGetterArgs`.padEnd(fillWidth) + ' |')
-  for (const [key, value] of Object.entries(formattedGetterArgs)) {
-    console.log(`| ${key.padEnd(fillParam)}: ${value}`.padEnd(fillWidth) + ' |')
-  }
-  console.log(delimiter)
-  console.log(`| RunnerArgs`.padEnd(fillWidth) + ' |')
-  for (const [key, value] of Object.entries(formattedRunnerArgs)) {
-    if (key === 'common') {
-      const hf = (value as Common).hardfork()
-      console.log(`| ${key.padEnd(fillParam)}: ${hf}`.padEnd(fillWidth) + ' |')
+  const dirs = getTestDirs(FORK_CONFIG_VM, name)
+  for await (const dir of dirs) {
+    if (argv.customTestsPath !== undefined) {
+      testGetterArgs.directory = argv.customTestsPath as string
     } else {
-      console.log(`| ${key.padEnd(fillParam)}: ${value}`.padEnd(fillWidth) + ' |')
+      const testDir = testGetterArgs.dir ?? ''
+      const testsPath = testGetterArgs.testsPath ?? DEFAULT_TESTS_PATH
+      testGetterArgs.directory = path.join(testsPath, dir, testDir)
     }
-  }
-  console.log(`+${'-'.repeat(width)}+`)
-  console.log()
-
-  if (argv.customStateTest !== undefined) {
-    const fileName: string = argv.customStateTest
-    getTestFromSource(fileName, async (err: string | null, test: any) => {
-      it('customStateTest', async () => {
-        if (err !== null) {
-          return assert.equal(err, 'err')
-        } else {
-          assert.ok(`file: ${fileName} test: ${test.testName}`)
-          await runStateTest(runnerArgs, test)
-        }
-      })
-    })
-  } else {
-    let testIdentifier: string
-    const failingTests: Record<string, string[] | undefined> = {}
-    afterEach((context) => {
-      context.onTestFailed(() => {
-        if (failingTests[testIdentifier] !== undefined) {
-          ;(failingTests[testIdentifier] as string[]).push(context.task.name)
-        } else {
-          failingTests[testIdentifier] = [context.task.name]
-        }
-      })
-      assertCount++
-    })
-    // Tests for HFs before Istanbul have been moved under `LegacyTests/Constantinople`:
-    // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
-
-    const dirs = getTestDirs(FORK_CONFIG_VM, name)
-    for await (const dir of dirs) {
-      await new Promise<void>((resolve, _reject) => {
-        if (argv.customTestsPath !== undefined) {
-          testGetterArgs.directory = argv.customTestsPath as string
-        } else {
-          const testDir = testGetterArgs.dir ?? ''
-          const testsPath = testGetterArgs.testsPath ?? DEFAULT_TESTS_PATH
-          testGetterArgs.directory = path.join(testsPath, dir, testDir)
-        }
-        getTestsFromArgs(
-          dir,
-          async (fileName: string, subDir: string, testName: string, test: any) => {
-            const runSkipped = testGetterArgs.runSkipped
-            const inRunSkipped = runSkipped.includes(fileName)
-            if (runSkipped.length === 0 || inRunSkipped === true) {
-              testIdentifier = `file: ${subDir} test: ${testName}`
-              it('should test from args', async () => {
-                assert.ok(testIdentifier)
-                await runner(runnerArgs, test)
-              })
-            }
-          },
-          testGetterArgs
-        )
-          .then(() => {
-            resolve()
+    const runT = async (fileName: string, subDir: string, testName: string, test: any) => {
+      SKIP_SLOW.includes(fileName) && console.log(` slow test: ${fileName}`)
+      const runSkipped = testGetterArgs.runSkipped
+      const inRunSkipped = runSkipped.includes(fileName)
+      if (runSkipped.length === 0 || inRunSkipped === true) {
+        testIdentifier = `file: ${subDir} test: ${testName}`
+        it(`should run blockchain test: ${testName}`, async () => {
+          afterEach((context) => {
+            context.onTestFailed(() => {
+              if (failingTests[testIdentifier] !== undefined) {
+                ;(failingTests[testIdentifier] as string[]).push(context.task.name)
+              } else {
+                failingTests[testIdentifier] = [context.task.name]
+              }
+            })
+            assertCount++
           })
-          .catch((error: string) => {
-            assert.equal(error, 'null')
-          })
-      })
-    }
-
-    for (const failingTestIdentifier in failingTests) {
-      console.log(`Errors thrown in ${failingTestIdentifier}:`)
-      const errors = failingTests[failingTestIdentifier] as string[]
-      for (let i = 0; i < errors.length; i++) {
-        console.log('\t' + errors[i])
+          assert.ok(testIdentifier)
+          await runner(runnerArgs, test)
+        })
       }
     }
+    await getTestsFromArgs(dir, runT, testGetterArgs)
+  }
 
-    if (expectedTests !== undefined) {
-      it('checks assert count', async () => {
-        assert.ok(
-          assertCount >= expectedTests,
-          `expected ${expectedTests} checks, got ${assertCount}`
-        )
-      })
+  for (const failingTestIdentifier in failingTests) {
+    console.log(`Errors thrown in ${failingTestIdentifier}:`)
+    const errors = failingTests[failingTestIdentifier] as string[]
+    for (let i = 0; i < errors.length; i++) {
+      console.log('\t' + errors[i])
     }
   }
-}
 
-// describe('VM Tests', async () => {
-const args = { ...defaultArgs }
-args.blockchain = true
-//   await runTests(args) // eslint-disable-line @typescript-eslint/no-floating-promises
-
-//    ' | xargs -n1 | xargs -I v1 npm run test:state -- --fork=v1 --verify-test-amount-alltests"
-// })
-const allForks = [
-  'Chainstart',
-  'Homestead',
-  'dao',
-  'TangerineWhistle',
-  'SpuriousDragon',
-  'Byzantium',
-  'Constantinople',
-  'Petersburg',
-  'Istanbul',
-  'MuirGlacier',
-  'Berlin',
-  'London',
-  'ByzantiumToConstantinopleFixAt5',
-  'EIP158ToByzantiumAt5',
-  'FrontierToHomesteadAt5',
-  'HomesteadToDaoAt5',
-  'HomesteadToEIP150At5',
-  'BerlinToLondonAt5',
-]
-
-const allForksArgs = allForks.map((fork) => {
-  const args = { ...defaultArgs }
-  args.state = true
-  args.fork = fork
-  return args
-})
-
-describe(`VM AllForks Tests: ${allForks.toString()}`, async () => {
-  for await (const args of allForksArgs) {
-    it(args.fork!, async () => {
-      await runTests(args) // eslint-disable-line @typescript-eslint/no-floating-promises
+  if (expectedTests !== undefined) {
+    it('checks assert count', async () => {
+      assert.ok(
+        assertCount >= expectedTests,
+        `expected ${expectedTests} checks, got ${assertCount}`
+      )
     })
   }
-})
+  for (const slow of SKIP_SLOW) {
+    console.log({ slow })
+  }
+}

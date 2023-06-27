@@ -133,7 +133,7 @@ jobs:
       - run: npm ci
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:blockchain -- ${{ matrix.args }}
+      - run: FORK=${{ matrix.args }} npx vitest run test/tester/blockchain/index.spec.ts
 
   vm-blockchain-extended:
     if: contains(join(github.event.pull_request.labels.*.name, ' '), 'Test all hardforks')

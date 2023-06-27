@@ -1,14 +1,17 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
+import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { Account, Address } from '@ethereumjs/util'
+import { Account, Address, MapDB, isHexPrefixed, toBytes } from '@ethereumjs/util'
 import * as path from 'path'
+import { assert, it } from 'vitest'
 
 import { VM } from '../../../src'
 import { makeTx, setupPreConditions } from '../../util'
 import { DEFAULT_TESTS_PATH, getCommon, getExpectedTests, getSkipTests } from '../config'
 
+import type { EthashConsensus } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
 import type {
   AccessListEIP2930Transaction,
@@ -196,7 +199,7 @@ export function parseTestCases(
   return testCases
 }
 
-export async function setupVM(
+export async function setupStateTestVM(
   common: Common,
   testData: any
 ): Promise<{
@@ -227,6 +230,75 @@ export async function setupVM(
   const account = await (<VM>vm).stateManager.getAccount(coinbaseAddress)
   await (<VM>vm).evm.journal.putAccount(coinbaseAddress, account ?? new Account())
   return { vm, tx, execInfo }
+}
+function formatBlockHeader(data: any) {
+  const formatted: any = {}
+  for (const [key, value] of Object.entries(data) as [string, string][]) {
+    formatted[key] = isHexPrefixed(value) ? value : BigInt(value)
+  }
+  return formatted
+}
+export async function setupBlockchainTestVM(
+  common: Common,
+  testData: any
+): Promise<{ vm: VM; blockchain: Blockchain; state: Trie }> {
+  common.setHardforkBy({ blockNumber: 0 })
+  const cacheDB = new MapDB()
+  const state = new Trie({ useKeyHashing: true })
+  const stateManager = new DefaultStateManager({
+    trie: state,
+    common,
+  })
+  let validatePow = false
+  // Only run with block validation when sealEngine present in test file
+  // and being set to Ethash PoW validation
+  if (testData.sealEngine === 'Ethash') {
+    if (common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
+      console.log('SealEngine setting is not matching chain consensus type, skip test.')
+      // it.skip()
+    }
+    validatePow = true
+  }
+
+  // create and add genesis block
+  const header = formatBlockHeader(testData.genesisBlockHeader)
+  const withdrawals = common.isActivatedEIP(4895) ? [] : undefined
+  const blockData = { header, withdrawals }
+  const genesisBlock = Block.fromBlockData(blockData, { common })
+
+  if (typeof testData.genesisRLP === 'string') {
+    const rlp = toBytes(testData.genesisRLP)
+    assert.deepEqual(genesisBlock.serialize(), rlp, 'correct genesis RLP')
+  }
+
+  const blockchain = await Blockchain.create({
+    common,
+    validateBlocks: true,
+    validateConsensus: validatePow,
+    genesisBlock,
+  })
+
+  if (validatePow) {
+    ;(blockchain.consensus as EthashConsensus)._ethash!.cacheDB = cacheDB as any
+  }
+
+  const vm = await VM.create({
+    stateManager,
+    blockchain,
+    common,
+    setHardfork: true,
+  })
+
+  // set up pre-state
+  await setupPreConditions(vm.stateManager, testData)
+  it('should get correct pre stateRoot', async () => {
+    assert.deepEqual(
+      (vm.stateManager as any)._trie.root(),
+      genesisBlock.header.stateRoot,
+      'correct pre stateRoot'
+    )
+  })
+  return { vm, blockchain, state }
 }
 
 export const defaultStateTestArgs: TestArgs = {

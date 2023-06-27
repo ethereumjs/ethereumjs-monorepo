@@ -134,7 +134,7 @@ export function makeTx(
   return tx
 }
 
-export async function verifyPostConditions(state: any, testData: any, t: tape.Test) {
+export async function verifyPostConditions(state: any, testData: any) {
   describe('verify post conditions', async () => {
     return new Promise<void>((resolve) => {
       const hashedAccounts: any = {}
@@ -160,10 +160,9 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
           delete keyMap[key]
 
           if (testData !== undefined) {
-            const promise = verifyAccountPostConditions(state, address, account, testData, t)
+            const promise = verifyAccountPostConditions(state, address, account, testData)
             queue.push(promise)
           } else {
-            t.comment('invalid account in the trie: ' + <string>key)
             assert.ok('invalid account in the trie: ' + <string>key)
           }
         })
@@ -174,7 +173,6 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
           await Promise.all(queue)
           for (const [_key, address] of Object.entries(keyMap)) {
             assert.ok(`Missing account!: ${address}`)
-            t.comment(`Missing account!: ${address}`)
           }
         })
         resolve()
@@ -194,20 +192,13 @@ export function verifyAccountPostConditions(
   state: any,
   address: string,
   account: Account,
-  acctData: any,
-  t: tape.Test
+  acctData: any
 ) {
   return new Promise<void>((resolve) => {
     describe('verify account post conditions', async () => {
       assert.ok('Account: ' + address)
-      t.comment('Account: ' + address)
       if (!equalsBytes(format(account.balance, true), format(acctData.balance, true))) {
         assert.ok(
-          `Expected balance of ${bytesToBigInt(format(acctData.balance, true))}, but got ${
-            account.balance
-          }`
-        )
-        t.comment(
           `Expected balance of ${bytesToBigInt(format(acctData.balance, true))}, but got ${
             account.balance
           }`
@@ -215,11 +206,6 @@ export function verifyAccountPostConditions(
       }
       if (!equalsBytes(format(account.nonce, true), format(acctData.nonce, true))) {
         assert.ok(
-          `Expected nonce of ${bytesToBigInt(format(acctData.nonce, true))}, but got ${
-            account.nonce
-          }`
-        )
-        t.comment(
           `Expected nonce of ${bytesToBigInt(format(acctData.nonce, true))}, but got ${
             account.nonce
           }`
@@ -247,14 +233,15 @@ export function verifyAccountPostConditions(
           delete acctData.storage['0x']
         }
 
-        if (val !== hashedStorage[key]) {
-          t.comment(
-            `Expected storage key 0x${bytesToHex(data.key)} at address ${address} to have value ${
-              hashedStorage[key] ?? '0x'
-            }, but got ${val}}`
-          )
-        }
-        delete hashedStorage[key]
+          if (val !== hashedStorage[key]) {
+            assert.ok(
+              `Expected storage key 0x${bytesToHex(data.key)} at address ${address} to have value ${
+                hashedStorage[key] ?? '0x'
+              }, but got ${val}}`
+            )
+          }
+          delete hashedStorage[key]
+        })
       })
 
       rs.on('end', function () {
@@ -262,7 +249,6 @@ export function verifyAccountPostConditions(
           for (const key in hashedStorage) {
             if (hashedStorage[key] !== '0x00') {
               assert.ok(`key: ${key} not found in storage at address ${address}`)
-              t.comment(`key: ${key} not found in storage at address ${address}`)
             }
           }
         })

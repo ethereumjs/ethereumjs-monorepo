@@ -1,253 +1,293 @@
 import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
-import {
-  MapDB,
-  bytesToBigInt,
-  bytesToHex,
-  hexToBytes,
-  initKZG,
-  isHexPrefixed,
-  stripHexPrefix,
-  toBytes,
-} from '@ethereumjs/util'
+import { bytesToBigInt, initKZG } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { describe } from 'vitest'
+import { assert, expect, it } from 'vitest'
 
-import { VM } from '../../../dist/cjs'
-import { setupPreConditions, verifyPostConditions } from '../../util'
+import { verifyPostConditions } from '../../util'
+import { DEFAULT_FORK_CONFIG, getRequiredForkConfigAlias, getTestDirs } from '../config'
+import { getTestsFromArgs } from '../testLoader'
 
-import type { EthashConsensus } from '@ethereumjs/blockchain'
+import {
+  describeerArgs,
+  getBlockchainTests,
+  getGetterArgs,
+  getRunnerArgs,
+  getTestPath,
+  setupBlockchainTestVM,
+  shouldSkip,
+} from './runnerUtils'
+
+import type { Blockchain } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
-import type * as tape from 'tape'
+import type { Trie } from '@ethereumjs/trie'
+import type { TaskResult, Test } from 'vitest'
 
 initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet6.txt')
 
-function formatBlockHeader(data: any) {
-  const formatted: any = {}
-  for (const [key, value] of Object.entries(data) as [string, string][]) {
-    formatted[key] = isHexPrefixed(value) ? value : BigInt(value)
+const name = 'BlockchainTests'
+export class BlockchainTests {
+  testCount: number
+  FORK_CONFIG: string
+  FORK_CONFIG_TEST_SUITE: string
+  FORK_CONFIG_VM: string
+  /**
+   * Configuration for getting the tests from the ethereum/tests repository
+   */
+  testGetterArgs: TestGetterArgs
+  /**
+   * Run-time configuration
+   */
+  runnerArgs: RunnerArgs
+  runSkipped: string[]
+  expectedTests: number
+  failingTests: Record<string, (TaskResult | undefined)[]>
+  customStateTest: string | undefined
+  customTestsPath: string | undefined
+  constructor(argv: TestArgs) {
+    this.expectedTests = 0
+    this.failingTests = {}
+    this.testCount = 0
+    this.FORK_CONFIG = argv.fork !== undefined ? argv.fork : DEFAULT_FORK_CONFIG
+    this.FORK_CONFIG_TEST_SUITE = getRequiredForkConfigAlias(this.FORK_CONFIG)
+    this.FORK_CONFIG_VM = this.FORK_CONFIG.charAt(0).toLowerCase() + this.FORK_CONFIG.substring(1)
+    this.customStateTest = argv.customStateTest
+    this.customTestsPath = argv.customTestsPath
+    this.testGetterArgs = getGetterArgs(argv, this.FORK_CONFIG_TEST_SUITE)
+    this.runSkipped = this.testGetterArgs.runSkipped ?? []
+    this.runnerArgs = getRunnerArgs(argv, this.FORK_CONFIG_VM, this.FORK_CONFIG_TEST_SUITE)
+    /**
+     * Modify the forkConfig string to ensure it works with RegEx (escape `+` characters)
+     */
+    if (this.testGetterArgs.forkConfig.includes('+')) {
+      let str = this.testGetterArgs.forkConfig
+      const indices = []
+      for (let i = 0; i < str.length; i++) {
+        if (str[i] === '+') {
+          indices.push(i)
+        }
+      }
+      // traverse array in reverse order to ensure indices match when we replace the '+' with '/+'
+      for (let i = indices.length - 1; i >= 0; i--) {
+        str = `${str.slice(0, indices[i])}\\${str.slice(indices[i])}`
+      }
+      this.testGetterArgs.forkConfig = str
+    }
+    this.expectedTests = getBlockchainTests(argv, this.FORK_CONFIG_VM) ?? 0
   }
-  return formatted
-}
+  recordFailing(task: Test<{}>) {
+    if (this.failingTests[task.name] !== undefined) {
+      this.failingTests[task.name].push(task.result)
+    } else {
+      this.failingTests[task.name] = [task.result]
+    }
+  }
+  async handleError(error: string | undefined, expectException: string | boolean) {
+    expect(expectException, `${expectException}`).toBeDefined()
+    expect(error, `${error}`).toEqual(expectException)
+  }
+  async onFile(fileName: string, subDir: string, testName: string, test: any): Promise<void> {
+    if (!shouldSkip(this.runSkipped, fileName)) {
+      const testIdentifier = `${subDir}/${fileName}: ${testName}`
+      this.testCount++
+      assert.ok(testIdentifier)
+      await this.runBlockchainTest(this.runnerArgs, test, testIdentifier)
+    }
+  }
+  async runTestCase(
+    raw: any,
+    options: any,
+    testData: any,
+    currentBlock: bigint,
+    blockchain: Blockchain,
+    vm: VM,
+    common: Common,
+    state: Trie
+  ) {
+    const paramFork = `expectException${options.forkConfigTestSuite}`
+    // Two naming conventions in ethereum/tests to indicate "exception occurs on all HFs" semantics
+    // Last checked: ethereumjs-testing v1.3.1 (2020-05-11)
+    const paramAll1 = 'expectExceptionALL'
+    const paramAll2 = 'expectException'
+    const expectException = (raw[paramFork] ??
+      raw[paramAll1] ??
+      raw[paramAll2] ??
+      raw.blockHeader === undefined) as string | boolean
 
-export async function runBlockchainTest(options: any, testData: any, t: tape.Test) {
-  describe('runBlockchainTest', async () => {
-    // ensure that the test data is the right fork data
-    if (testData.network !== options.forkConfigTestSuite) {
-      t.comment(`skipping test: no data available for ${options.forkConfigTestSuite}`)
+    // Here we decode the rlp to extract the block number
+    // The block library cannot be used, as this throws on certain EIP1559 blocks when trying to convert
+    try {
+      const blockRlp = hexToBytes(raw.rlp as string)
+      const decodedRLP: any = RLP.decode(Uint8Array.from(blockRlp))
+      currentBlock = bytesToBigInt(decodedRLP[0][8])
+    } catch (e: any) {
+      await this.handleError(e, expectException)
       return
     }
 
-    // fix for BlockchainTests/GeneralStateTests/stRandom/*
-    testData.lastblockhash = stripHexPrefix(testData.lastblockhash)
-
-    let common = options.common.copy() as Common
-    common.setHardforkBy({ blockNumber: 0 })
-
-    let cacheDB = new MapDB()
-    let state = new Trie({ useKeyHashing: true })
-    let stateManager = new DefaultStateManager({
-      trie: state,
-      common,
-    })
-
-    let validatePow = false
-    // Only run with block validation when sealEngine present in test file
-    // and being set to Ethash PoW validation
-    if (testData.sealEngine === 'Ethash') {
-      if (common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
-        t.skip('SealEngine setting is not matching chain consensus type, skip test.')
-      }
-      validatePow = true
-    }
-
-    // create and add genesis block
-    const header = formatBlockHeader(testData.genesisBlockHeader)
-    const withdrawals = common.isActivatedEIP(4895) ? [] : undefined
-    const blockData = { header, withdrawals }
-    const genesisBlock = Block.fromBlockData(blockData, { common })
-
-    if (typeof testData.genesisRLP === 'string') {
-      const rlp = toBytes(testData.genesisRLP)
-      t.deepEquals(genesisBlock.serialize(), rlp, 'correct genesis RLP')
-    }
-
-    let blockchain = await Blockchain.create({
-      common,
-      validateBlocks: true,
-      validateConsensus: validatePow,
-      genesisBlock,
-    })
-
-    if (validatePow) {
-      ;(blockchain.consensus as EthashConsensus)._ethash!.cacheDB = cacheDB as any
-    }
-
-    const begin = Date.now()
-
-    let vm = await VM.create({
-      stateManager,
-      blockchain,
-      common,
-      setHardfork: true,
-    })
-
-    // set up pre-state
-    await setupPreConditions(vm.stateManager, testData)
-
-    t.deepEquals(
-      (vm.stateManager as any)._trie.root(),
-      genesisBlock.header.stateRoot,
-      'correct pre stateRoot'
-    )
-
-    async function handleError(error: string | undefined, expectException: string | boolean) {
-      if (expectException !== false) {
-        t.pass(`Expected exception ${expectException}`)
-      } else {
-        t.fail(error)
-      }
-    }
-
-    let currentBlock = BigInt(0)
-    for (const raw of testData.blocks) {
-      const paramFork = `expectException${options.forkConfigTestSuite}`
-      // Two naming conventions in ethereum/tests to indicate "exception occurs on all HFs" semantics
-      // Last checked: ethereumjs-testing v1.3.1 (2020-05-11)
-      const paramAll1 = 'expectExceptionALL'
-      const paramAll2 = 'expectException'
-      const expectException = (raw[paramFork] ??
-        raw[paramAll1] ??
-        raw[paramAll2] ??
-        raw.blockHeader === undefined) as string | boolean
-
-      // Here we decode the rlp to extract the block number
-      // The block library cannot be used, as this throws on certain EIP1559 blocks when trying to convert
+    try {
+      const blockRlp = hexToBytes(raw.rlp as string)
+      // Update common HF
+      let TD: bigint | undefined = undefined
+      let timestamp: bigint | undefined = undefined
       try {
-        const blockRlp = hexToBytes(raw.rlp as string)
-        const decodedRLP: any = RLP.decode(Uint8Array.from(blockRlp))
-        currentBlock = bytesToBigInt(decodedRLP[0][8])
-      } catch (e: any) {
-        await handleError(e, expectException)
-        continue
-      }
+        const decoded: any = RLP.decode(blockRlp)
+        const parentHash = decoded[0][0]
+        TD = await blockchain.getTotalDifficulty(parentHash)
+        timestamp = bytesToBigInt(decoded[0][11])
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
 
-      try {
-        const blockRlp = hexToBytes(raw.rlp as string)
-        // Update common HF
-        let TD: bigint | undefined = undefined
-        let timestamp: bigint | undefined = undefined
-        try {
-          const decoded: any = RLP.decode(blockRlp)
-          const parentHash = decoded[0][0]
-          TD = await blockchain.getTotalDifficulty(parentHash)
-          timestamp = bytesToBigInt(decoded[0][11])
-          // eslint-disable-next-line no-empty
-        } catch (e) {}
+      common.setHardforkBy({ blockNumber: currentBlock, td: TD, timestamp })
 
-        common.setHardforkBy({ blockNumber: currentBlock, td: TD, timestamp })
+      // transactionSequence is provided when txs are expected to be rejected.>
+      // To run this field we try to import them on the current state.
+      if (raw.transactionSequence !== undefined) {
+        const parentBlock = await vm.blockchain.getIteratorHead()
+        const blockBuilder = await vm.buildBlock({
+          parentBlock,
+          blockOpts: { calcDifficultyFromHeader: parentBlock.header },
+        })
 
-        // transactionSequence is provided when txs are expected to be rejected.>
-        // To run this field we try to import them on the current state.
-        if (raw.transactionSequence !== undefined) {
-          const parentBlock = await vm.blockchain.getIteratorHead()
-          const blockBuilder = await vm.buildBlock({
-            parentBlock,
-            blockOpts: { calcDifficultyFromHeader: parentBlock.header },
-          })
-
-          for (const txData of raw.transactionSequence as Record<
-            'exception' | 'rawBytes' | 'valid',
-            string
-          >[]) {
-            const shouldFail = txData.valid === 'false'
+        for (const txData of raw.transactionSequence as Record<
+          'exception' | 'rawBytes' | 'valid',
+          string
+        >[]) {
+          const shouldFail = txData.valid === 'false'
+          it(`tx should ${shouldFail ? 'fail' : 'succeed'}`, async () => {
             try {
               const txRLP = hexToBytes(txData.rawBytes)
               const tx = TransactionFactory.fromSerializedData(txRLP, { common })
               await blockBuilder.addTransaction(tx)
               if (shouldFail) {
-                t.fail('tx should fail, but did not fail')
+                assert.fail('tx should fail, but did not fail')
               }
             } catch (e: any) {
               if (!shouldFail) {
-                t.fail(`tx should not fail, but failed: ${e.message}`)
+                assert.fail(`tx should not fail, but failed: ${e.message}`)
               } else {
-                t.pass('tx successfully failed')
+                assert.ok('tx successfully failed')
               }
             }
-          }
-          await blockBuilder.revert() // will only revert if checkpointed
-        }
-
-        const block = Block.fromRLPSerializedBlock(blockRlp, { common })
-        await blockchain.putBlock(block)
-
-        // This is a trick to avoid generating the canonical genesis
-        // state. Generating the genesis state is not needed because
-        // blockchain tests come with their own `pre` world state.
-        // TODO: Add option to `runBlockchain` not to generate genesis state.
-        //
-        //vm._common.genesis().stateRoot = vm.stateManager._trie.root()
-        try {
-          await blockchain.iterator('vm', async (block: Block) => {
-            const parentBlock = await blockchain!.getBlock(block.header.parentHash)
-            const parentState = parentBlock.header.stateRoot
-            // run block, update head if valid
-            try {
-              await vm.runBlock({ block, root: parentState, setHardfork: TD })
-              // set as new head block
-            } catch (error: any) {
-              // remove invalid block
-              await blockchain!.delBlock(block.header.hash())
-              throw error
-            }
           })
-        } catch (e: any) {
-          // if the test fails, then block.header is the prev because
-          // vm.runBlock has a check that prevents the actual postState from being
-          // imported if it is not equal to the expected postState. it is useful
-          // for debugging to skip this, so that verifyPostConditions will compare
-          // testData.postState to the actual postState, rather than to the preState.
-          if (options.debug !== true) {
-            // make sure the state is set before checking post conditions
-            const headBlock = await vm.blockchain.getIteratorHead()
-            ;(vm.stateManager as any)._trie.root(headBlock.header.stateRoot)
-          } else {
-            await verifyPostConditions(state, testData.postState, t)
+        }
+        await blockBuilder.revert() // will only revert if checkpointed
+      }
+
+      const block = Block.fromRLPSerializedBlock(blockRlp, { common })
+      await blockchain.putBlock(block)
+
+      // This is a trick to avoid generating the canonical genesis
+      // state. Generating the genesis state is not needed because
+      // blockchain tests come with their own `pre` world state.
+      // TODO: Add option to `runBlockchain` not to generate genesis state.
+      //
+      //vm._common.genesis().stateRoot = vm.stateManager._trie.root()
+      try {
+        await blockchain.iterator('vm', async (block: Block) => {
+          const parentBlock = await blockchain!.getBlock(block.header.parentHash)
+          const parentState = parentBlock.header.stateRoot
+          // run block, update head if valid
+          try {
+            await vm.runBlock({ block, root: parentState, setHardfork: TD })
+            // set as new head block
+          } catch (error: any) {
+            // remove invalid block
+            await blockchain!.delBlock(block.header.hash())
+            throw error
           }
-
-          throw e
+        })
+      } catch (e: any) {
+        // if the test fails, then block.header is the prev because
+        // vm.runBlock has a check that prevents the actual postState from being
+        // imported if it is not equal to the expected postState. it is useful
+        // for debugging to skip this, so that verifyPostConditions will compare
+        // testData.postState to the actual postState, rather than to the preState.
+        if (options.debug !== true) {
+          // make sure the state is set before checking post conditions
+          const headBlock = await vm.blockchain.getIteratorHead()
+          ;(vm.stateManager as any)._trie.root(headBlock.header.stateRoot)
+        } else {
+          await verifyPostConditions(state, testData.postState)
         }
 
-        //  await cacheDB._leveldb.close()
+        throw e
+      }
 
-        if (expectException !== false) {
-          t.fail(`expected exception but test did not throw an exception: ${expectException}`)
-          return
+      //  await cacheDB._leveldb.close()
+
+      if (expectException !== false) {
+        assert.fail(`expected exception but test did not throw an exception: ${expectException}`)
+      }
+    } catch (error: any) {
+      // caught an error, reduce block number
+      currentBlock--
+      await this.handleError(error, expectException)
+    }
+  }
+  async runBlockchainTest(options: any, testData: any, id: string) {
+    // ensure that the test data is the right fork data
+    if (testData.network !== options.forkConfigTestSuite) {
+      console.log(`skipping test: no data available for ${options.forkConfigTestSuite}`)
+      return
+    }
+    it(`${id}`, async () => {
+      try {
+        const common = options.common.copy()
+        const begin = Date.now()
+        const { vm, blockchain, state } = await setupBlockchainTestVM(common, testData)
+        const currentBlock = BigInt(0)
+        for await (const [idx, raw] of testData.blocks.entries()) {
+          this.testCount++
+          it(`test: ${idx + 1}/${
+            testData.blocks.length
+          } -- CurrentBlock: ${currentBlock}`, async () => {
+            await this.runTestCase(
+              raw,
+              options,
+              testData,
+              currentBlock,
+              blockchain,
+              vm,
+              common,
+              state
+            )
+          })
         }
-      } catch (error: any) {
-        // caught an error, reduce block number
-        currentBlock--
-        await handleError(error, expectException)
+        this.testCount++
+        it(`should have the correct _headHeaderHash`, async () => {
+          assert.equal(
+            bytesToHex((blockchain as any)._headHeaderHash),
+            '0x' + testData.lastblockhash,
+            `_headHeaderHash: ${bytesToHex(
+              (blockchain as any)._headHeaderHash
+            )} !== testData.lastblockhash ${testData.lastblockhash}`
+          )
+          const end = Date.now()
+          const timeSpent = (end - begin) / 1000
+          expect(timeSpent, `time spent: ${timeSpent}`).toBeGreaterThan(0)
+        })
+      } catch (e: any) {
+        await this.handleError(e, false)
+      }
+    })
+  }
+  async runTests(): Promise<void> {
+    if (this.customStateTest !== undefined) {
+      return
+    } else {
+      const dirs = getTestDirs(this.FORK_CONFIG_VM, name)
+      for await (const dir of dirs) {
+        const directory = getTestPath(dir, this.testGetterArgs, this.customTestsPath)
+        await getTestsFromArgs(dir, this.onFile.bind(this), this.testGetterArgs, directory)
+      }
+
+      if (this.expectedTests > 0) {
+        it('checks test count', async () => {
+          expect(this.testCount).toBeGreaterThan(this.expectedTests)
+        })
       }
     }
-    t.equal(
-      bytesToHex((blockchain as any)._headHeaderHash),
-      '0x' + testData.lastblockhash,
-      'correct last header block'
-    )
-
-    const end = Date.now()
-    const timeSpent = `${(end - begin) / 1000} secs`
-    t.comment(`Time: ${timeSpent}`)
-    // await cacheDB._leveldb.close()
-
-    // @ts-ignore Explicitly delete objects for memory optimization (early GC)
-    common = blockchain = state = stateManager = vm = cacheDB = null // eslint-disable-line
-  })
+  }
 }
