@@ -59,7 +59,7 @@ jobs:
       - run: npm ci
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+      - run: FORK={{ matrix.fork )} npx vitest run ./test/tester/state/index.spec.ts
 
   vm-state-extended:
     if: contains(join(github.event.pull_request.labels.*.name, ' '), 'Test all hardforks')
@@ -95,7 +95,7 @@ jobs:
       - run: npm ci
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+      - run: FORK={{ matrix.fork )} npx vitest run ./test/tester/state/index.spec.ts
 
   vm-blockchain:
     runs-on: ubuntu-latest
