@@ -55,7 +55,7 @@ export interface StateManagerInterface {
   setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void>
   getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
   hasStateRoot(root: Uint8Array): Promise<boolean> // only used in client
-  copy(): StateManagerInterface
+  shallowCopy(): StateManagerInterface
 }
 
 export interface EVMStateManagerInterface extends StateManagerInterface {

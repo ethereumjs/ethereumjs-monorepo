@@ -1026,7 +1026,7 @@ export class EVM implements EVMInterface {
     const opts = {
       ...this._optsCached,
       common,
-      stateManager: this.stateManager.copy(),
+      stateManager: this.stateManager.shallowCopy(),
     }
     ;(opts.stateManager as any)._common = common
     return new EVM(opts)

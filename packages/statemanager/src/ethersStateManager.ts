@@ -47,7 +47,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
     this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
   }
 
-  copy(): EthersStateManager {
+  shallowCopy(): EthersStateManager {
     const newState = new EthersStateManager({
       provider: this.provider,
       blockTag: BigInt(this.blockTag),
