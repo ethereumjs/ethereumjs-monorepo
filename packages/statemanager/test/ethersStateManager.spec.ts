@@ -179,7 +179,7 @@ describe('Ethers State Manager API tests', () => {
         )
       }
 
-      const newState = state.copy()
+      const newState = state.shallowCopy()
 
       assert.equal(
         undefined,

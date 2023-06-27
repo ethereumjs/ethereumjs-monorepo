@@ -21,7 +21,7 @@ describe('testing checkpoints', () => {
   })
 
   it('should copy trie and get value added to original trie', async () => {
-    trieCopy = trie.copy()
+    trieCopy = trie.shallowCopy()
     assert.equal(bytesToHex(trieCopy.root()), preRoot)
     const res = await trieCopy.get(utf8ToBytes('do'))
     assert.ok(equalsBytes(utf8ToBytes('verb'), res!))
@@ -29,7 +29,7 @@ describe('testing checkpoints', () => {
 
   it('should deactivate cache on copy()', async () => {
     const trie = new Trie({ cacheSize: 100 })
-    trieCopy = trie.copy()
+    trieCopy = trie.shallowCopy()
     assert.equal((trieCopy as any)._opts.cacheSize, 0)
   })
 
@@ -55,7 +55,7 @@ describe('testing checkpoints', () => {
   })
 
   it('should copy trie and get upstream and cache values after checkpoint', async () => {
-    trieCopy = trie.copy()
+    trieCopy = trie.shallowCopy()
     assert.equal(bytesToHex(trieCopy.root()), postRoot)
     // @ts-expect-error
     assert.equal(trieCopy._db.checkpoints.length, 1)
@@ -76,7 +76,7 @@ describe('testing checkpoints', () => {
     await trie.put(utf8ToBytes('key1'), utf8ToBytes('value1'))
     trie.checkpoint()
     await trie.put(utf8ToBytes('key2'), utf8ToBytes('value2'))
-    const trieCopy = trie.copy()
+    const trieCopy = trie.shallowCopy()
     const value = await trieCopy.get(utf8ToBytes('key1'))
     assert.equal(bytesToUtf8(value!), 'value1')
   })
@@ -217,7 +217,7 @@ describe('testing checkpoints', () => {
     CommittedState.checkpoint()
 
     // Copy CommittedState
-    const MemoryState = CommittedState.copy()
+    const MemoryState = CommittedState.shallowCopy()
     MemoryState.checkpoint()
 
     // Test changes on MemoryState

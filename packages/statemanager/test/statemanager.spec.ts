@@ -17,7 +17,7 @@ describe('StateManager -> General', () => {
       prefixCodeHashes: false,
     })
 
-    let smCopy = sm.copy()
+    let smCopy = sm.shallowCopy()
     assert.equal(
       (smCopy as any)._prefixCodeHashes,
       (sm as any)._prefixCodeHashes,
