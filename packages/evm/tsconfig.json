@@ -1,4 +1,8 @@
 {
   "extends": "../../config/tsconfig.json",
-  "include": ["src/**/*.ts", "src/**/*.json", "test/**/*.ts", "../util/src/asyncemitter.ts"]
+  "include": ["src/**/*.ts", "src/**/*.json", "test/**/*.ts", "../util/src/asyncemitter.ts"],
+  "compilerOptions": {
+    "module": "Node16",
+    "target": "ES2020"
+  }
 }

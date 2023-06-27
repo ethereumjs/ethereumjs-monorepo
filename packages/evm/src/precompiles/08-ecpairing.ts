@@ -1,8 +1,9 @@
 import { short } from '@ethereumjs/util'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
-import { ec_pairing } from 'rustbn'
 
 import { OOGResult } from '../evm.js'
+
+import { ec_pairing } from './rustbn/rustbn.js'
 
 import type { ExecResult } from '../evm.js'
 import type { PrecompileInput } from './types.js'

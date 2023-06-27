@@ -54,10 +54,10 @@
     "@ethereumjs/common": "^3.1.2",
     "@ethereumjs/tx": "^4.1.2",
     "@ethereumjs/util": "^8.0.6",
+    "@scure/base": "^1.1.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.0.0",
-    "mcl-wasm": "^0.7.1",
-    "rustbn": "acolytec3/rustbn.wasm"
+    "mcl-wasm": "^0.7.1"
   },
   "devDependencies": {
     "@ethereumjs/statemanager": "^1.0.5",
