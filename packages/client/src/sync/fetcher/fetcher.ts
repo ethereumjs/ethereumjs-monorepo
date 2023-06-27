@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import Heap = require('qheap')
+import Heap from 'qheap'
 import { Readable, Writable } from 'stream'
 
 import { Event } from '../../types'
@@ -533,6 +533,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param task
    */
   private isBlockFetcherJobTask(task: JobTask | BlockFetcherJobTask): task is BlockFetcherJobTask {
-    return task !== undefined && 'first' in task && 'count' in task
+    if (task === undefined || task === null) return false
+    const keys = Object.keys(task)
+    return keys.filter((key) => key === 'first' || key === 'count').length === 2
   }
 }
