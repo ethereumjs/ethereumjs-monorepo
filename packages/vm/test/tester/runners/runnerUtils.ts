@@ -254,8 +254,7 @@ export async function setupBlockchainTestVM(
   // and being set to Ethash PoW validation
   if (testData.sealEngine === 'Ethash') {
     if (common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
-      console.log('SealEngine setting is not matching chain consensus type, skip test.')
-      // it.skip()
+      it.skip('SealEngine setting is not matching chain consensus type, skip test.')
     }
     validatePow = true
   }

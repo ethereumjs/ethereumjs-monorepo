@@ -10,7 +10,6 @@ import { DEFAULT_FORK_CONFIG, getRequiredForkConfigAlias, getTestDirs } from '..
 import { getTestsFromArgs } from '../testLoader'
 
 import {
-  describeerArgs,
   getBlockchainTests,
   getGetterArgs,
   getRunnerArgs,
@@ -19,6 +18,8 @@ import {
   shouldSkip,
 } from './runnerUtils'
 
+import type { VM } from '../../../src'
+import type { RunnerArgs, TestArgs, TestGetterArgs } from './runnerUtils'
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
 import type { Trie } from '@ethereumjs/trie'
@@ -89,9 +90,10 @@ export class BlockchainTests {
   }
   async onFile(fileName: string, subDir: string, testName: string, test: any): Promise<void> {
     if (!shouldSkip(this.runSkipped, fileName)) {
-      const testIdentifier = `${subDir}/${fileName}: ${testName}`
+      const testIdentifier = `${fileName}: ${testName}`
       this.testCount++
       assert.ok(testIdentifier)
+
       await this.runBlockchainTest(this.runnerArgs, test, testIdentifier)
     }
   }
@@ -229,6 +231,7 @@ export class BlockchainTests {
   async runBlockchainTest(options: any, testData: any, id: string) {
     // ensure that the test data is the right fork data
     if (testData.network !== options.forkConfigTestSuite) {
+      this.testCount++
       console.log(`skipping test: no data available for ${options.forkConfigTestSuite}`)
       return
     }
