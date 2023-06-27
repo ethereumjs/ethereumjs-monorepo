@@ -796,24 +796,32 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.programCounter = Number(dest)
     },
   ],
-  // 0x5e: JUMPSUB
+  // 0x5e: JUMPSUB (2315) / MCOPY (5656)
   [
     0x5e,
-    function (runState) {
-      const dest = runState.stack.pop()
+    function (runState, common) {
+      if (common.isActivatedEIP(2315)) {
+        // JUMPSUB
+        const dest = runState.stack.pop()
 
-      if (dest > runState.interpreter.getCodeSize()) {
-        trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
+        if (dest > runState.interpreter.getCodeSize()) {
+          trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
+        }
+
+        const destNum = Number(dest)
+
+        if (!jumpSubIsValid(runState, destNum)) {
+          trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
+        }
+
+        runState.returnStack.push(BigInt(runState.programCounter))
+        runState.programCounter = destNum + 1
+      } else if (common.isActivatedEIP(5656)) {
+        // MCOPY
+        const [dst, src, length] = runState.stack.popN(3)
+        const data = runState.memory.read(Number(src), Number(length), true)
+        runState.memory.write(Number(dst), Number(length), data)
       }
-
-      const destNum = Number(dest)
-
-      if (!jumpSubIsValid(runState, destNum)) {
-        trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
-      }
-
-      runState.returnStack.push(BigInt(runState.programCounter))
-      runState.programCounter = destNum + 1
     },
   ],
   // 0x5f: PUSH0

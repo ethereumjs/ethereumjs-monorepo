@@ -24,10 +24,14 @@ tape(`${method}: call with valid arguments`, async (t) => {
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
-  // sample contract from https://ethereum.stackexchange.com/a/70791
-  const data =
-    '0x608060405234801561001057600080fd5b506040516020806100ef8339810180604052602081101561003057600080fd5b810190808051906020019092919050505080600081905550506098806100576000396000f3fe6080604052600436106039576000357c010000000000000000000000000000000000000000000000000000000090048063a2a9679914603e575b600080fd5b348015604957600080fd5b5060506066565b6040518082815260200191505060405180910390f35b6000548156fea165627a7a72305820fe2ba3506418c87a075f8f3ae19bc636bd4c18ebde0644bcb45199379603a72c00290000000000000000000000000000000000000000000000000000000000000064'
-  const expectedSlotValue = `0x${data.slice(data.length - 64)}`
+  // easy sample init contract:
+  // push 00 NOT push 00 sstore
+  // this stores NOT(0) (=0xfffff..ff) into slot 0
+  // Note: previously a contract was initialized which stored 0x64 (100) here
+  // However, 0x64 in RLP is still 0x64.
+  // This new storage tests that higher RLP values than 0x80 also get returned correctly
+  const data = '0x600019600055'
+  const expectedSlotValue = '0x' + 'ff'.repeat(32)
 
   // construct block with tx
   const gasLimit = 2000000
