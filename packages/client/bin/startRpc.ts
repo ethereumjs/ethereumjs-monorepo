@@ -3,7 +3,7 @@ import { bytesToHex } from 'ethereum-cryptography/utils'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 
 import { RPCManager, saveReceiptsMethods } from '../src/rpc'
-import modules from '../src/rpc/modules'
+import * as modules from '../src/rpc/modules'
 import {
   MethodConfig,
   createRPCServer,
