@@ -5,8 +5,8 @@ import {
   blobsToCommitments,
   bytesToPrefixedHexString,
   commitmentsToVersionedHashes,
-  prefixedHexStringToBytes,
   initKZG,
+  prefixedHexStringToBytes,
   randomBytes,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'

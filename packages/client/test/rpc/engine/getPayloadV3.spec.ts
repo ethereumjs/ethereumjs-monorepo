@@ -9,8 +9,8 @@ import {
   bytesToPrefixedHexString,
   commitmentsToVersionedHashes,
   getBlobs,
-  prefixedHexStringToBytes,
   initKZG,
+  prefixedHexStringToBytes,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import * as tape from 'tape'

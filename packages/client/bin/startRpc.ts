@@ -1,4 +1,4 @@
-import { hexStringToBytes, randomBytes } from '@ethereumjs/util'
+import { prefixedHexStringToBytes, randomBytes } from '@ethereumjs/util'
 import { bytesToHex } from 'ethereum-cryptography/utils'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 
@@ -54,7 +54,7 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
     if (jwtSecretHex === undefined || jwtSecretHex.length !== 64) {
       throw Error('Need a valid 256 bit hex encoded secret')
     }
-    jwtSecret = hexStringToBytes(jwtSecretHex)
+    jwtSecret = prefixedHexStringToBytes(jwtSecretHex)
   } else {
     const folderExists = existsSync(config.datadir)
     if (!folderExists) {

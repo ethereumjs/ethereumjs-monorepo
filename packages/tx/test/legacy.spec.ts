@@ -5,8 +5,8 @@ import {
   bytesToHex,
   bytesToPrefixedHexString,
   equalsBytes,
-  prefixedHexStringToBytes,
   intToBytes,
+  prefixedHexStringToBytes,
   toBytes,
   unpadBytes,
 } from '@ethereumjs/util'

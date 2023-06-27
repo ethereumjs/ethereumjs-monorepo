@@ -3,8 +3,8 @@ import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToInt,
-  prefixedHexStringToBytes,
   intToBytes,
+  prefixedHexStringToBytes,
 } from '@ethereumjs/util'
 
 import { Protocol } from './protocol'

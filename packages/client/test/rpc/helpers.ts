@@ -4,8 +4,8 @@ import { Chain as ChainEnum, Common, parseGethGenesis } from '@ethereumjs/common
 import {
   Address,
   KECCAK256_RLP,
-  prefixedHexStringToBytes,
   parseGethGenesisState,
+  prefixedHexStringToBytes,
 } from '@ethereumjs/util'
 import { Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'

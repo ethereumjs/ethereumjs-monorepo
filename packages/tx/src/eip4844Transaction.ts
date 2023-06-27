@@ -14,8 +14,8 @@ import {
   ecrecover,
   equalsBytes,
   getBlobs,
-  prefixedHexStringToBytes,
   kzg,
+  prefixedHexStringToBytes,
   toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'

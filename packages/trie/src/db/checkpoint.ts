@@ -1,4 +1,4 @@
-import { KeyEncoding, ValueEncoding, bytesToHex, padToEven, toBytes } from '@ethereumjs/util'
+import { KeyEncoding, ValueEncoding, bytesToHex, padToEven } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils.js'
 import { LRUCache } from 'lru-cache'
 

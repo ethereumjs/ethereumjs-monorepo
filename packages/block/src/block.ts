@@ -11,9 +11,9 @@ import {
   equalsBytes,
   fetchFromProvider,
   getProvider,
-  prefixedHexStringToBytes,
   intToPrefixedHexString,
   isHexPrefixed,
+  prefixedHexStringToBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 

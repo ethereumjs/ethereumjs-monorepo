@@ -16,8 +16,8 @@ import {
   commitmentsToVersionedHashes,
   equalsBytes,
   getBlobs,
-  prefixedHexStringToBytes,
   initKZG,
+  prefixedHexStringToBytes,
   randomBytes,
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
