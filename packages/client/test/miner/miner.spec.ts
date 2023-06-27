@@ -82,6 +82,8 @@ tape('[Miner]', async (t) => {
     }
   }
 
+  const accounts: [Address, Uint8Array][] = [[A.address, A.privateKey]]
+
   const consensusConfig = {
     clique: {
       period: 10,
@@ -123,19 +125,32 @@ tape('[Miner]', async (t) => {
     extraData,
     alloc: { [addr]: { balance: '0x10000000000000000000' } },
   }
-  const common = Common.fromGethGenesis(chainData, { chain: 'devnet', hardfork: Hardfork.London })
-
-  common.setMaxListeners(50)
-  const accounts: [Address, Uint8Array][] = [[A.address, A.privateKey]]
-  const config = new Config({
+  const customCommon = Common.fromGethGenesis(chainData, {
+    chain: 'devnet',
+    hardfork: Hardfork.London,
+  })
+  customCommon.setMaxListeners(50)
+  const customConfig = new Config({
     transports: [],
     accountCache: 10000,
     storageCache: 1000,
     accounts,
     mine: true,
-    common,
+    common: customCommon,
   })
-  config.events.setMaxListeners(50)
+  customConfig.events.setMaxListeners(50)
+
+  const goerliCommon = new Common({ chain: CommonChain.Goerli, hardfork: Hardfork.Berlin })
+  goerliCommon.setMaxListeners(50)
+  const goerliConfig = new Config({
+    transports: [],
+    accountCache: 10000,
+    storageCache: 1000,
+    accounts,
+    mine: true,
+    common: goerliCommon,
+  })
+  goerliConfig.events.setMaxListeners(50)
 
   const createTx = (
     from = A,
@@ -143,7 +158,8 @@ tape('[Miner]', async (t) => {
     nonce = 0,
     value = 1,
     gasPrice = 1000000000,
-    gasLimit = 100000
+    gasLimit = 100000,
+    common = customCommon
   ) => {
     const txData = {
       nonce,
@@ -158,7 +174,17 @@ tape('[Miner]', async (t) => {
   }
 
   const txA01 = createTx() // A -> B, nonce: 0, value: 1, normal gasPrice
-  const txA011 = createTx() // A -> B, nonce: 0, value: 1, normal gasPrice
+  const txA011m = createTx(
+    // A -> B, nonce: 0, value: 1, normal gasPrice, mainnet as chain
+    A,
+    B,
+    0,
+    1,
+    1000000000,
+    100000,
+    goerliCommon
+  ) // A -> B, nonce: 0, value: 1, normal gasPrice
+
   const txA02 = createTx(A, B, 1, 1, 2000000000) // A -> B, nonce: 1, value: 1, 2x gasPrice
   const txA03 = createTx(A, B, 2, 1, 3000000000) // A -> B, nonce: 2, value: 1, 3x gasPrice
   const txB01 = createTx(B, A, 0, 1, 2500000000) // B -> A, nonce: 0, value: 1, 2.5x gasPrice
@@ -166,10 +192,10 @@ tape('[Miner]', async (t) => {
   t.test('should initialize correctly', (t) => {
     const chain = new FakeChain() as any
     const service = new FullEthereumService({
-      config,
+      config: customConfig,
       chain,
     })
-    const miner = new Miner({ config, service })
+    const miner = new Miner({ config: customConfig, service })
     t.notOk(miner.running)
     t.end()
   })
@@ -178,10 +204,10 @@ tape('[Miner]', async (t) => {
     t.plan(4)
     const chain = new FakeChain() as any
     const service = new FullEthereumService({
-      config,
+      config: customConfig,
       chain,
     })
-    let miner = new Miner({ config, service })
+    let miner = new Miner({ config: customConfig, service })
     t.notOk(miner.running)
     miner.start()
     t.ok(miner.running)
@@ -200,10 +226,10 @@ tape('[Miner]', async (t) => {
     t.plan(1)
     const chain = new FakeChain() as any
     const service = new FullEthereumService({
-      config,
+      config: customConfig,
       chain,
     })
-    const miner = new Miner({ config, service, skipHardForkValidation: true })
+    const miner = new Miner({ config: customConfig, service, skipHardForkValidation: true })
     const { txPool } = service
     const { vm } = service.execution
 
@@ -231,12 +257,12 @@ tape('[Miner]', async (t) => {
     t.plan(3)
     const chain = new FakeChain() as any
     const service = new FullEthereumService({
-      config,
+      config: goerliConfig,
       chain,
     })
 
     // no skipHardForkValidation
-    const miner = new Miner({ config, service })
+    const miner = new Miner({ config: goerliConfig, service })
     const { txPool } = service
     const { vm } = service.execution
 
@@ -246,8 +272,8 @@ tape('[Miner]', async (t) => {
     await setBalance(vm, A.address, BigInt('200000000000001'))
 
     // add tx
-    txA011.common.setHardfork(Hardfork.Paris)
-    await txPool.add(txA011)
+    txA011m.common.setHardfork(Hardfork.Paris)
+    await txPool.add(txA011m)
     t.equal(txPool.txsInPool, 1, 'transaction should be in pool')
 
     // disable consensus to skip PoA block signer validation
@@ -273,13 +299,13 @@ tape('[Miner]', async (t) => {
       t.plan(4)
       const chain = new FakeChain() as any
       const _config = {
-        ...config,
+        ...customConfig,
       }
       const service = new FullEthereumService({
-        config,
+        config: customConfig,
         chain,
       })
-      const miner = new Miner({ config, service, skipHardForkValidation: true })
+      const miner = new Miner({ config: customConfig, service, skipHardForkValidation: true })
       const { txPool } = service
       const { vm } = service.execution
       txPool.start()
@@ -320,7 +346,7 @@ tape('[Miner]', async (t) => {
       storageCache: 1000,
       accounts,
       mine: true,
-      common,
+      common: customCommon,
       saveReceipts: true,
     })
     const service = new FullEthereumService({
@@ -437,7 +463,7 @@ tape('[Miner]', async (t) => {
     t.plan(1)
     const chain = new FakeChain() as any
     const gasLimit = 100000
-    const block = Block.fromBlockData({ header: { gasLimit } }, { common })
+    const block = Block.fromBlockData({ header: { gasLimit } }, { common: customCommon })
     Object.defineProperty(chain, 'headers', {
       get() {
         return { latest: block.header, height: BigInt(0) }
@@ -449,10 +475,10 @@ tape('[Miner]', async (t) => {
       },
     })
     const service = new FullEthereumService({
-      config,
+      config: customConfig,
       chain,
     })
-    const miner = new Miner({ config, service, skipHardForkValidation: true })
+    const miner = new Miner({ config: customConfig, service, skipHardForkValidation: true })
     const { txPool } = service
     const { vm } = service.execution
     txPool.start()
@@ -464,11 +490,11 @@ tape('[Miner]', async (t) => {
     const data = '0xfe' // INVALID opcode, consumes all gas
     const tx1FillsBlockGasLimit = LegacyTransaction.fromTxData(
       { gasLimit: gasLimit - 1, data, gasPrice: BigInt('1000000000') },
-      { common }
+      { common: customCommon }
     ).sign(A.privateKey)
     const tx2ExceedsBlockGasLimit = LegacyTransaction.fromTxData(
       { gasLimit: 21000, to: B.address, nonce: 1, gasPrice: BigInt('1000000000') },
-      { common }
+      { common: customCommon }
     ).sign(A.privateKey)
     await txPool.add(tx1FillsBlockGasLimit)
     await txPool.add(tx2ExceedsBlockGasLimit)
@@ -494,8 +520,11 @@ tape('[Miner]', async (t) => {
       storageCache: 1000,
       accounts,
       mine: true,
-      common,
+      common: customCommon,
     })
+    chain.putBlocks = () => {
+      t.fail('should have stopped assembling when a new block was received')
+    }
     const service = new FullEthereumService({
       config,
       chain,
@@ -525,9 +554,9 @@ tape('[Miner]', async (t) => {
       privateKey = keccak256(privateKey)
     }
 
-    chain.putBlocks = () => {
-      t.fail('should have stopped assembling when a new block was received')
-    }
+    // chain.putBlocks = () => {
+    //   t.fail('should have stopped assembling when a new block was received')
+    // }
     await (miner as any).queueNextAssembly(5)
     await wait(5)
     t.ok((miner as any).assembling, 'miner should be assembling')
@@ -620,7 +649,43 @@ tape('[Miner]', async (t) => {
   })
 
   t.test('should handle mining ethash PoW', async (t) => {
-    const common = new Common({ chain: CommonChain.Mainnet, hardfork: Hardfork.Homestead })
+    // const common = new Common({ chain: CommonChain.Mainnet, hardfork: Hardfork.Homestead })
+    const addr = A.address.toString().slice(2)
+    const consensusConfig = { ethash: true }
+    const defaultChainData = {
+      config: {
+        chainId: 123456,
+        homesteadBlock: 0,
+        eip150Block: 0,
+        eip150Hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        eip155Block: 0,
+        eip158Block: 0,
+        byzantiumBlock: 0,
+        constantinopleBlock: 0,
+        petersburgBlock: 0,
+        istanbulBlock: 0,
+        berlinBlock: 0,
+        londonBlock: 0,
+        ...consensusConfig,
+      },
+      nonce: '0x0',
+      timestamp: '0x614b3731',
+      gasLimit: '0x47b760',
+      difficulty: '0x1',
+      mixHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      coinbase: '0x0000000000000000000000000000000000000000',
+      number: '0x0',
+      gasUsed: '0x0',
+      parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      baseFeePerGas: 7,
+    }
+    const extraData = '0x' + '0'.repeat(32)
+    const chainData = {
+      ...defaultChainData,
+      extraData,
+      alloc: { [addr]: { balance: '0x10000000000000000000' } },
+    }
+    const common = Common.fromGethGenesis(chainData, { chain: 'devnet', hardfork: Hardfork.London })
     ;(common as any)._chainParams['genesis'].difficulty = 1
     const config = new Config({
       transports: [],
