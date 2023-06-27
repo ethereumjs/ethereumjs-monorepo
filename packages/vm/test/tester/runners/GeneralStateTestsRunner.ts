@@ -12,7 +12,7 @@ import {
   getStateTests,
   getTestPath,
   parseTestCases,
-  setupVM,
+  setupStateTestVM,
   shouldSkip,
 } from './runnerUtils'
 
@@ -103,7 +103,7 @@ export class GeneralStateTests {
     // references in memory which might prevent GC
     const common = options.common.copy()
     let execInfo: string
-    const testCaseSetup = await setupVM(common, testData)
+    const testCaseSetup = await setupStateTestVM(common, testData)
     const vm = testCaseSetup.vm
     const tx = testCaseSetup.tx
     execInfo = testCaseSetup.execInfo
