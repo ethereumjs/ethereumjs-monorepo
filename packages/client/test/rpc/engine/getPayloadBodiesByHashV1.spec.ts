@@ -37,9 +37,9 @@ tape(`${method}: call with too many hashes`, async (t) => {
 tape(`${method}: call with valid parameters`, async (t) => {
   // Disable stateroot validation in TxPool since valid state root isn't available
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-  const originalStateManagerCopy = DefaultStateManager.prototype.copy
+  const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
   DefaultStateManager.prototype.setStateRoot = function (): any {}
-  DefaultStateManager.prototype.copy = function () {
+  DefaultStateManager.prototype.shallowCopy = function () {
     return this
   }
   const { chain, service, server, common } = await setupChain(genesisJSON, 'post-merge', {
@@ -117,15 +117,15 @@ tape(`${method}: call with valid parameters`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes)
   // Restore setStateRoot
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-  DefaultStateManager.prototype.copy = originalStateManagerCopy
+  DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
 })
 
 tape(`${method}: call with valid parameters on pre-Shanghai block`, async (t) => {
   // Disable stateroot validation in TxPool since valid state root isn't available
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-  const originalStateManagerCopy = DefaultStateManager.prototype.copy
+  const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
   DefaultStateManager.prototype.setStateRoot = function (): any {}
-  DefaultStateManager.prototype.copy = function () {
+  DefaultStateManager.prototype.shallowCopy = function () {
     return this
   }
   const { chain, service, server, common } = await setupChain(
@@ -205,5 +205,5 @@ tape(`${method}: call with valid parameters on pre-Shanghai block`, async (t) =>
   await baseRequest(t, server, req, 200, expectRes)
   // Restore setStateRoot
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-  DefaultStateManager.prototype.copy = originalStateManagerCopy
+  DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
 })
