@@ -140,11 +140,11 @@ describe('EVM -> custom precompiles', () => {
       ],
       stateManager: new DefaultStateManager(),
     })
-    const evmCopy = evm.copy()
+    const evmCopy = evm.shallowCopy()
     assert.deepEqual(
       (evm as any)._customPrecompiles,
       (evmCopy as any)._customPrecompiles,
-      'evm.copy() successfully copied customPrecompiles option'
+      'evm.shallowCopy() successfully copied customPrecompiles option'
     )
   })
 })

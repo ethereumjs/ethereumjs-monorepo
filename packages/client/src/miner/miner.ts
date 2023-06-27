@@ -233,7 +233,7 @@ export class Miner {
     // Use a copy of the vm to not modify the existing state.
     // The state will be updated when the newly assembled block
     // is inserted into the canonical chain.
-    const vmCopy = await this.execution.vm.copy()
+    const vmCopy = await this.execution.vm.shallowCopy()
 
     // Set the state root to ensure the resulting state
     // is based on the parent block's state

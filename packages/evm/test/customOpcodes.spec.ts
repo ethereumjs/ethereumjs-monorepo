@@ -124,12 +124,12 @@ describe('VM: custom opcodes', () => {
       customOpcodes: [testOpcode],
       stateManager: new DefaultStateManager(),
     })
-    const evmCopy = evm.copy()
+    const evmCopy = evm.shallowCopy()
 
     assert.deepEqual(
       (evmCopy as any)._customOpcodes,
       (evmCopy as any)._customOpcodes,
-      'evm.copy() successfully copied customOpcodes option'
+      'evm.shallowCopy() successfully copied customOpcodes option'
     )
   })
 })

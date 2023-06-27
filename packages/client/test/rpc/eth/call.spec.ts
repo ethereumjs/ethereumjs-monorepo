@@ -85,7 +85,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
     return address
   }
   const { execResult } = await (
-    await vm.copy()
+    await vm.shallowCopy()
   ).runTx({
     tx: estimateTx,
     skipNonce: true,

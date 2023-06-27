@@ -178,7 +178,7 @@ describe('VM -> setHardfork, state (deprecated), blockchain', () => {
     assert.equal(vm._common.chainName(), 'ropsten')
     assert.equal(vm._common.hardfork(), 'byzantium')
 
-    const copiedVM = await vm.copy()
+    const copiedVM = await vm.shallowCopy()
     assert.equal(copiedVM._common.chainName(), 'ropsten')
     assert.equal(copiedVM._common.hardfork(), 'byzantium')
   })
@@ -189,7 +189,7 @@ describe('VM -> setHardfork, state (deprecated), blockchain', () => {
     }
 
     let vm = await VM.create(opts)
-    let vmCopy = await vm.copy()
+    let vmCopy = await vm.shallowCopy()
     assert.deepEqual(
       (vmCopy as any)._setHardfork,
       true,
@@ -207,7 +207,7 @@ describe('VM -> setHardfork, state (deprecated), blockchain', () => {
       setHardfork: BigInt(5001),
     }
     vm = await VM.create(opts)
-    vmCopy = await vm.copy()
+    vmCopy = await vm.shallowCopy()
     assert.deepEqual(
       (vmCopy as any)._setHardfork,
       BigInt(5001),
