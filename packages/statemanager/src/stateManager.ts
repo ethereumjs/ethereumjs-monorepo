@@ -369,7 +369,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     const addressHex = bytesToHex(address.bytes)
     const storageTrie = this._storageTries[addressHex]
     if (storageTrie === undefined) {
-      const storageTrie = this._trie.copy(false)
+      const storageTrie = this._trie.shallowCopy(false)
       storageTrie.root(account.storageRoot)
       storageTrie.flushCheckpoints()
       this._storageTries[addressHex] = storageTrie
@@ -861,7 +861,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * 2. Cache values are generally not copied along
    */
   shallowCopy(): DefaultStateManager {
-    const trie = this._trie.copy(false)
+    const trie = this._trie.shallowCopy(false)
     const prefixCodeHashes = this._prefixCodeHashes
     let accountCacheOpts = { ...this._accountCacheSettings }
     if (!this._accountCacheSettings.deactivate) {
