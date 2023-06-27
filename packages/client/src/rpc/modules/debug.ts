@@ -1,4 +1,4 @@
-import { bigIntToHex, bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
+import { bigIntToHex, bytesToPrefixedHexString, prefixedHexStringToBytes } from '@ethereumjs/util'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
 import { middleware, validators } from '../validation'
@@ -101,7 +101,7 @@ export class Debug {
 
     try {
       const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
-        hexStringToBytes(txHash)
+        prefixedHexStringToBytes(txHash)
       )
       if (!result) return null
       const [_, blockHash, txIndex] = result

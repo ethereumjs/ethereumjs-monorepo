@@ -8,7 +8,7 @@ import {
   Address,
   bytesToHex,
   bytesToPrefixedHexString,
-  hexStringToBytes,
+  prefixedHexStringToBytes,
   initKZG,
   parseGethGenesisState,
   randomBytes,
@@ -625,7 +625,7 @@ async function inputAccounts() {
       }
     } else {
       const acc = readFileSync(path.resolve(args.unlock!), 'utf-8').replace(/(\r\n|\n|\r)/gm, '')
-      const privKey = hexStringToBytes(acc)
+      const privKey = prefixedHexStringToBytes(acc)
       const derivedAddress = Address.fromPrivateKey(privKey)
       accounts.push([derivedAddress, privKey])
     }

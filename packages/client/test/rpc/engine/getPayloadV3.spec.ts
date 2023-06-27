@@ -9,7 +9,7 @@ import {
   bytesToPrefixedHexString,
   commitmentsToVersionedHashes,
   getBlobs,
-  hexStringToBytes,
+  prefixedHexStringToBytes,
   initKZG,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
@@ -74,7 +74,9 @@ tape(`${method}: call with known payload`, async (t) => {
     hardfork: Hardfork.Cancun,
   })
   common.setHardfork(Hardfork.Cancun)
-  const pkey = hexStringToBytes('9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
+  const pkey = prefixedHexStringToBytes(
+    '0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355'
+  )
   const address = Address.fromPrivateKey(pkey)
   await service.execution.vm.stateManager.putAccount(address, new Account())
   const account = await service.execution.vm.stateManager.getAccount(address)
