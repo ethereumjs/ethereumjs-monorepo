@@ -174,7 +174,7 @@ tape('[Miner]', async (t) => {
   }
 
   const txA01 = createTx() // A -> B, nonce: 0, value: 1, normal gasPrice
-  const txA011m = createTx(
+  const txA011g = createTx(
     // A -> B, nonce: 0, value: 1, normal gasPrice, mainnet as chain
     A,
     B,
@@ -182,7 +182,8 @@ tape('[Miner]', async (t) => {
     1,
     1000000000,
     100000,
-    goerliCommon
+    // goerliCommon
+    customCommon
   ) // A -> B, nonce: 0, value: 1, normal gasPrice
 
   const txA02 = createTx(A, B, 1, 1, 2000000000) // A -> B, nonce: 1, value: 1, 2x gasPrice
@@ -257,12 +258,12 @@ tape('[Miner]', async (t) => {
     t.plan(3)
     const chain = new FakeChain() as any
     const service = new FullEthereumService({
-      config: goerliConfig,
+      config: customConfig,
       chain,
     })
 
     // no skipHardForkValidation
-    const miner = new Miner({ config: goerliConfig, service })
+    const miner = new Miner({ config: customConfig, service })
     const { txPool } = service
     const { vm } = service.execution
 
@@ -272,8 +273,8 @@ tape('[Miner]', async (t) => {
     await setBalance(vm, A.address, BigInt('200000000000001'))
 
     // add tx
-    txA011m.common.setHardfork(Hardfork.Paris)
-    await txPool.add(txA011m)
+    txA011g.common.setHardfork(Hardfork.Paris)
+    await txPool.add(txA011g)
     t.equal(txPool.txsInPool, 1, 'transaction should be in pool')
 
     // disable consensus to skip PoA block signer validation
@@ -554,9 +555,6 @@ tape('[Miner]', async (t) => {
       privateKey = keccak256(privateKey)
     }
 
-    // chain.putBlocks = () => {
-    //   t.fail('should have stopped assembling when a new block was received')
-    // }
     await (miner as any).queueNextAssembly(5)
     await wait(5)
     t.ok((miner as any).assembling, 'miner should be assembling')
@@ -649,7 +647,6 @@ tape('[Miner]', async (t) => {
   })
 
   t.test('should handle mining ethash PoW', async (t) => {
-    // const common = new Common({ chain: CommonChain.Mainnet, hardfork: Hardfork.Homestead })
     const addr = A.address.toString().slice(2)
     const consensusConfig = { ethash: true }
     const defaultChainData = {
