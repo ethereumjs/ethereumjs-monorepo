@@ -53,6 +53,7 @@ export class ETH extends Protocol {
   static eth65 = { name: 'eth', version: 65, length: 17, constructor: ETH }
   static eth66 = { name: 'eth', version: 66, length: 17, constructor: ETH }
   static eth67 = { name: 'eth', version: 67, length: 17, constructor: ETH }
+  static eth68 = { name: 'eth', version: 68, length: 17, constructor: ETH }
 
   _handleMessage(code: ETH.MESSAGE_CODES, data: any) {
     const payload = RLP.decode(data)
