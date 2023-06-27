@@ -12,9 +12,10 @@ import {
   initKZG,
   randomBytes,
 } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
-import * as tape from 'tape'
+import kzg from 'c-kzg'
+import tape from 'tape'
 
+import pow from '../../testdata/geth-genesis/pow.json'
 import {
   baseRequest,
   dummy,
@@ -23,8 +24,6 @@ import {
   runBlockWithTxs,
   setupChain,
 } from '../helpers'
-
-import pow = require('./../../testdata/geth-genesis/pow.json')
 
 const method = 'eth_getTransactionReceipt'
 

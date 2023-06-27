@@ -9,11 +9,11 @@ import {
   hexStringToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import * as tape from 'tape'
+import tape from 'tape'
 
 import { TOO_LARGE_REQUEST } from '../../../src/rpc/error-code'
-import genesisJSON = require('../../testdata/geth-genesis/eip4844.json')
-import preShanghaiGenesisJson = require('../../testdata/geth-genesis/post-merge.json')
+import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
+import preShanghaiGenesisJson from '../../testdata/geth-genesis/post-merge.json'
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 

@@ -1,7 +1,7 @@
 import { Common } from '@ethereumjs/common'
 import { bytesToPrefixedHexString, hexStringToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
-import * as tape from 'tape'
+import tape from 'tape'
 
 import {
   filterKeywords,

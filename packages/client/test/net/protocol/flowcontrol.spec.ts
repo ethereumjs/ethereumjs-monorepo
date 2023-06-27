@@ -1,7 +1,7 @@
 /// <reference path="./testdouble-timers.d.ts" />
 /// <reference path="./testdouble.d.ts" />
-import * as tape from 'tape'
-import * as td from 'testdouble'
+import tape from 'tape'
+import td from 'testdouble'
 import timers from 'testdouble-timers'
 
 import { FlowControl } from '../../../src/net/protocol'

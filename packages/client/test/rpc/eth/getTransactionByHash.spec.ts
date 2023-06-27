@@ -1,7 +1,8 @@
 import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { bytesToPrefixedHexString } from '@ethereumjs/util'
-import * as tape from 'tape'
+import tape from 'tape'
 
+import pow from '../../testdata/geth-genesis/pow.json'
 import {
   baseRequest,
   dummy,
@@ -10,8 +11,6 @@ import {
   runBlockWithTxs,
   setupChain,
 } from '../helpers'
-
-import pow = require('./../../testdata/geth-genesis/pow.json')
 
 const method = 'eth_getTransactionByHash'
 

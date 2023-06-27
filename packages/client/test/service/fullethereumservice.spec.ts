@@ -2,13 +2,13 @@ import { Common, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory, TransactionType } from '@ethereumjs/tx'
 import { hexStringToBytes, randomBytes } from '@ethereumjs/util'
 import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
-import * as td from 'testdouble'
+import tape from 'tape'
+import td from 'testdouble'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
 import { Event } from '../../src/types'
-import genesisJSON = require('../testdata/geth-genesis/post-merge.json')
+import genesisJSON from '../testdata/geth-genesis/post-merge.json'
 
 import type { Log } from '@ethereumjs/evm'
 

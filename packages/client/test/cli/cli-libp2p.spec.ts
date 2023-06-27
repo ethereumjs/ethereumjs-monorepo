@@ -1,5 +1,5 @@
 import { spawn } from 'child_process'
-import * as tape from 'tape'
+import tape from 'tape'
 
 import type { ChildProcessWithoutNullStreams } from 'child_process'
 
