@@ -68,5 +68,5 @@ export interface EVMStateManagerInterface extends StateManagerInterface {
   generateCanonicalGenesis(initState: any): Promise<void> // TODO make input more typesafe
   getProof(address: Address, storageSlots?: Uint8Array[]): Promise<Proof>
 
-  copy(): EVMStateManagerInterface
+  shallowCopy(): EVMStateManagerInterface
 }
