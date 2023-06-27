@@ -226,16 +226,26 @@ export class VM {
     common.setHardfork(this._common.hardfork())
     const blockchain = this.blockchain.copy()
     const stateManager = this.stateManager.copy()
+    // The reason why this EVM is not `this.evm.copy()`'d is that the common
+    // should point to the same common as VM
+    // If this would not be the case, then if the copied VM is first on hardfork Shanghai,
+    // then runs a block which is on Cancun, then VM points to Cancun, but since EVM has its
+    // own copy of the common, it will still run into Shanghai (thus reporting wrong results)
+    // (Side question here: shouldn't we then also set the common of stateManager / blockchain
+    // to the exact same common here? Such that they point to the same?
+    // Isn't the goal that we get two separate VMs which mimic the same as if they would be
+    // VM.create()'d)?
+    // TODO: more research
     const evmOpts = {
       ...(this.evm as any)._optsCached,
       common,
-      blockchain,
-      stateManager,
+      blockchain, // This blockchain (A) (this common could ALSO point to a different hf than VM)
+      stateManager, // this common could point to a different hf than the copied VM common's hf
     }
     const evmCopy = new EVM(evmOpts)
     return VM.create({
       stateManager,
-      blockchain: this.blockchain,
+      blockchain: this.blockchain, // is different than this blockchain (!?)
       common,
       evm: evmCopy,
       setHardfork: this._setHardfork,
