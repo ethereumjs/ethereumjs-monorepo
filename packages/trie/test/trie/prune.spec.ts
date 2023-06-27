@@ -1,7 +1,7 @@
 import {
   KECCAK256_RLP,
   equalsBytes,
-  hexStringToBytes,
+  prefixedHexStringToBytes,
   randomBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
@@ -56,7 +56,10 @@ describe('Pruned trie tests', () => {
     const values = ['00', '02', '03', '04', '05']
 
     for (let i = 0; i < keys.length; i++) {
-      await trie.put(hexStringToBytes(keys[i]), hexStringToBytes(values[i]))
+      await trie.put(
+        prefixedHexStringToBytes('0x' + keys[i]),
+        prefixedHexStringToBytes('0x' + values[i])
+      )
     }
   })
 
@@ -161,9 +164,9 @@ describe('Pruned trie tests', () => {
     // Create empty Trie (is pruned)
     let trie = new Trie()
     // Create a new value (still is pruned)
-    await trie.put(hexStringToBytes('aa'), hexStringToBytes('bb'))
+    await trie.put(prefixedHexStringToBytes('0xaa'), prefixedHexStringToBytes('0xbb'))
     // Overwrite this value (trie is now not pruned anymore)
-    await trie.put(hexStringToBytes('aa'), hexStringToBytes('aa'))
+    await trie.put(prefixedHexStringToBytes('0xaa'), prefixedHexStringToBytes('0xaa'))
     assert.ok(!(await trie.verifyPrunedIntegrity()), 'trie is not pruned')
 
     // Create new empty Trie (is pruned)

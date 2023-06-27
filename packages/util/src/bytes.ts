@@ -19,14 +19,16 @@ export const bytesToPrefixedHexString = (bytes: Uint8Array): string => {
   return hex
 }
 
-export const hexStringToBytes = (hex: string): Uint8Array => {
+export const prefixedHexStringToBytes = (hex: string): Uint8Array => {
   if (typeof hex !== 'string') {
     throw new Error(`hex argument type ${typeof hex} must be of type string`)
   }
 
-  if (hex.startsWith('0x')) {
-    hex = hex.slice(2)
+  if (!hex.startsWith('0x')) {
+    throw new Error(`prefixed hex input should start with 0x, got ${hex.substring(0, 2)}`)
   }
+
+  hex = hex.slice(2)
 
   if (hex.length % 2 !== 0) {
     hex = padToEven(hex)

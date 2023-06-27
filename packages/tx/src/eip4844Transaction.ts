@@ -14,7 +14,7 @@ import {
   ecrecover,
   equalsBytes,
   getBlobs,
-  hexStringToBytes,
+  prefixedHexStringToBytes,
   kzg,
   toBytes,
   validateNoLeadingZeroes,
@@ -40,8 +40,8 @@ import type { Common } from '@ethereumjs/common'
 type TxData = AllTypesTxData[TransactionType.BlobEIP4844]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
 
-const TRANSACTION_TYPE_BYTES = hexStringToBytes(
-  TransactionType.BlobEIP4844.toString(16).padStart(2, '0')
+const TRANSACTION_TYPE_BYTES = prefixedHexStringToBytes(
+  '0x' + TransactionType.BlobEIP4844.toString(16).padStart(2, '0')
 )
 
 const validateBlobTransactionNetworkWrapper = (

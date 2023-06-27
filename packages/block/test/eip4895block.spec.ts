@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Address, KECCAK256_RLP, Withdrawal, hexStringToBytes } from '@ethereumjs/util'
+import { Address, KECCAK256_RLP, Withdrawal, prefixedHexStringToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Block } from '../src/block.js'
@@ -31,7 +31,9 @@ common.hardforkBlock = function (hardfork: string | undefined) {
 describe('EIP4895 tests', () => {
   it('should correctly generate withdrawalsRoot', async () => {
     // get withdwalsArray
-    const gethBlockBytesArray = RLP.decode(hexStringToBytes(gethWithdrawals8BlockRlp))
+    const gethBlockBytesArray = RLP.decode(
+      prefixedHexStringToBytes('0x' + gethWithdrawals8BlockRlp)
+    )
     const withdrawals = (gethBlockBytesArray[3] as WithdrawalBytes[]).map((wa) =>
       Withdrawal.fromValuesArray(wa)
     )
@@ -50,7 +52,7 @@ describe('EIP4895 tests', () => {
       () => {
         BlockHeader.fromHeaderData(
           {
-            withdrawalsRoot: hexStringToBytes('00'.repeat(32)),
+            withdrawalsRoot: prefixedHexStringToBytes('0x' + '00'.repeat(32)),
           },
           {
             common: earlyCommon,
@@ -72,7 +74,7 @@ describe('EIP4895 tests', () => {
     assert.doesNotThrow(() => {
       BlockHeader.fromHeaderData(
         {
-          withdrawalsRoot: hexStringToBytes('00'.repeat(32)),
+          withdrawalsRoot: prefixedHexStringToBytes('0x' + '00'.repeat(32)),
         },
         {
           common,
@@ -109,7 +111,7 @@ describe('EIP4895 tests', () => {
       Block.fromBlockData(
         {
           header: {
-            withdrawalsRoot: hexStringToBytes('00'.repeat(32)),
+            withdrawalsRoot: prefixedHexStringToBytes('0x' + '00'.repeat(32)),
           },
           withdrawals: [],
         },
@@ -121,7 +123,7 @@ describe('EIP4895 tests', () => {
     const block = Block.fromBlockData(
       {
         header: {
-          withdrawalsRoot: hexStringToBytes('00'.repeat(32)),
+          withdrawalsRoot: prefixedHexStringToBytes('0x' + '00'.repeat(32)),
         },
         withdrawals: [],
       },
@@ -153,15 +155,15 @@ describe('EIP4895 tests', () => {
     const withdrawal = <WithdrawalData>{
       index: BigInt(0),
       validatorIndex: BigInt(0),
-      address: new Address(hexStringToBytes('20'.repeat(20))),
+      address: new Address(prefixedHexStringToBytes('0x' + '20'.repeat(20))),
       amount: BigInt(1000),
     }
 
     const validBlockWithWithdrawal = Block.fromBlockData(
       {
         header: {
-          withdrawalsRoot: hexStringToBytes(
-            '897ca49edcb278aecab2688bcc2b7b7ee43524cc489672534fee332a172f1718'
+          withdrawalsRoot: prefixedHexStringToBytes(
+            '0x897ca49edcb278aecab2688bcc2b7b7ee43524cc489672534fee332a172f1718'
           ),
         },
         withdrawals: [withdrawal],
@@ -178,15 +180,15 @@ describe('EIP4895 tests', () => {
     const withdrawal2 = <WithdrawalData>{
       index: BigInt(1),
       validatorIndex: BigInt(11),
-      address: new Address(hexStringToBytes('30'.repeat(20))),
+      address: new Address(prefixedHexStringToBytes('0x' + '30'.repeat(20))),
       amount: BigInt(2000),
     }
 
     const validBlockWithWithdrawal2 = Block.fromBlockData(
       {
         header: {
-          withdrawalsRoot: hexStringToBytes(
-            '3b514862c42008079d461392e29d5b6775dd5ed370a6c4441ccb8ab742bf2436'
+          withdrawalsRoot: prefixedHexStringToBytes(
+            '0x3b514862c42008079d461392e29d5b6775dd5ed370a6c4441ccb8ab742bf2436'
           ),
         },
         withdrawals: [withdrawal, withdrawal2],

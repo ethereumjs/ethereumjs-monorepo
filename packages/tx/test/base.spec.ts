@@ -5,7 +5,7 @@ import {
   SECP256K1_ORDER,
   bytesToBigInt,
   equalsBytes,
-  hexStringToBytes,
+  prefixedHexStringToBytes,
   privateToPublic,
   toBytes,
   utf8ToBytes,
@@ -274,7 +274,10 @@ describe('[BaseTransaction]', () => {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
         if (privateKey !== undefined) {
-          assert.ok(tx.sign(hexStringToBytes(privateKey)), `${txType.name}: should sign tx`)
+          assert.ok(
+            tx.sign(prefixedHexStringToBytes('0x' + privateKey)),
+            `${txType.name}: should sign tx`
+          )
         }
 
         assert.throws(
@@ -316,7 +319,7 @@ describe('[BaseTransaction]', () => {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey, sendersAddress } = txType.fixtures[i]
         if (privateKey !== undefined) {
-          const signedTx = tx.sign(hexStringToBytes(privateKey))
+          const signedTx = tx.sign(prefixedHexStringToBytes('0x' + privateKey))
           assert.equal(
             signedTx.getSenderAddress().toString(),
             `0x${sendersAddress}`,
@@ -332,9 +335,9 @@ describe('[BaseTransaction]', () => {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
         if (privateKey !== undefined) {
-          const signedTx = tx.sign(hexStringToBytes(privateKey))
+          const signedTx = tx.sign(prefixedHexStringToBytes('0x' + privateKey))
           const txPubKey = signedTx.getSenderPublicKey()
-          const pubKeyFromPriv = privateToPublic(hexStringToBytes(privateKey))
+          const pubKeyFromPriv = privateToPublic(prefixedHexStringToBytes('0x' + privateKey))
           assert.ok(
             equalsBytes(txPubKey, pubKeyFromPriv),
             `${txType.name}: should get sender's public key after signing it`
@@ -351,7 +354,7 @@ describe('[BaseTransaction]', () => {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
         if (privateKey !== undefined) {
-          let signedTx = tx.sign(hexStringToBytes(privateKey))
+          let signedTx = tx.sign(prefixedHexStringToBytes('0x' + privateKey))
           signedTx = JSON.parse(JSON.stringify(signedTx)) // deep clone
           ;(signedTx as any).s = SECP256K1_ORDER + BigInt(1)
           assert.throws(
@@ -372,7 +375,7 @@ describe('[BaseTransaction]', () => {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
         if (privateKey !== undefined) {
-          const signedTx = tx.sign(hexStringToBytes(privateKey))
+          const signedTx = tx.sign(prefixedHexStringToBytes('0x' + privateKey))
           assert.ok(signedTx.verifySignature(), `${txType.name}: should verify signing it`)
         }
       }

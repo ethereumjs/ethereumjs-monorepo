@@ -11,7 +11,7 @@ import {
   equalsBytes,
   fetchFromProvider,
   getProvider,
-  hexStringToBytes,
+  prefixedHexStringToBytes,
   intToPrefixedHexString,
   isHexPrefixed,
 } from '@ethereumjs/util'
@@ -302,7 +302,7 @@ export class Block {
     const txs = []
     for (const [index, serializedTx] of transactions.entries()) {
       try {
-        const tx = TransactionFactory.fromSerializedData(hexStringToBytes(serializedTx), {
+        const tx = TransactionFactory.fromSerializedData(prefixedHexStringToBytes(serializedTx), {
           common: options?.common,
         })
         txs.push(tx)
@@ -330,7 +330,7 @@ export class Block {
     // we are not setting setHardfork as common is already set to the correct hf
     const block = Block.fromBlockData({ header, transactions: txs, withdrawals }, options)
     // Verify blockHash matches payload
-    if (!equalsBytes(block.hash(), hexStringToBytes(payload.blockHash))) {
+    if (!equalsBytes(block.hash(), prefixedHexStringToBytes(payload.blockHash))) {
       const validationError = `Invalid blockHash, expected: ${
         payload.blockHash
       }, received: ${bytesToPrefixedHexString(block.hash())}`

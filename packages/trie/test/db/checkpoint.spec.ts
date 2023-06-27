@@ -1,4 +1,4 @@
-import { MapDB, hexStringToBytes, utf8ToBytes } from '@ethereumjs/util'
+import { MapDB, prefixedHexStringToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { CheckpointDB } from '../../src/index.js'
@@ -13,7 +13,7 @@ describe('DB tests', () => {
 
   it('Checkpointing: revert -> put (add)', async () => {
     const db = new CheckpointDB({ db: new MapDB() })
-    db.checkpoint(hexStringToBytes('01'))
+    db.checkpoint(prefixedHexStringToBytes('0x01'))
     await db.put(k, v)
     assert.deepEqual(await db.get(k), v, 'before revert: v1')
     await db.revert()
@@ -24,7 +24,7 @@ describe('DB tests', () => {
     const db = new CheckpointDB({ db: new MapDB() })
     await db.put(k, v)
     assert.deepEqual(await db.get(k), v, 'before CP: v1')
-    db.checkpoint(hexStringToBytes('01'))
+    db.checkpoint(prefixedHexStringToBytes('0x01'))
     await db.put(k, v2)
     await db.put(k, v3)
     await db.revert()
@@ -35,7 +35,7 @@ describe('DB tests', () => {
     const db = new CheckpointDB({ db: new MapDB() })
     await db.put(k, v)
     assert.deepEqual(await db.get(k), v, 'before CP: v1')
-    db.checkpoint(hexStringToBytes('01'))
+    db.checkpoint(prefixedHexStringToBytes('0x01'))
     const ops = [
       { type: 'put', key: k, value: v2 },
       { type: 'put', key: k, value: v3 },
@@ -49,7 +49,7 @@ describe('DB tests', () => {
     const db = new CheckpointDB({ db: new MapDB() })
     await db.put(k, v)
     assert.deepEqual(await db.get(k), v, 'before CP: v1')
-    db.checkpoint(hexStringToBytes('01'))
+    db.checkpoint(prefixedHexStringToBytes('0x01'))
     await db.del(k)
     assert.deepEqual(await db.get(k), undefined, 'before revert: undefined')
     await db.revert()
@@ -61,9 +61,9 @@ describe('DB tests', () => {
     await db.put(k, v)
 
     assert.deepEqual(await db.get(k), v, 'before CP: v1')
-    db.checkpoint(hexStringToBytes('01'))
+    db.checkpoint(prefixedHexStringToBytes('0x01'))
     await db.put(k, v2)
-    db.checkpoint(hexStringToBytes('02'))
+    db.checkpoint(prefixedHexStringToBytes('0x02'))
     await db.put(k, v3)
     await db.commit()
     assert.deepEqual(await db.get(k), v3, 'after commit (second CP): v3')
