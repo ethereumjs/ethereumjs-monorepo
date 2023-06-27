@@ -714,7 +714,9 @@ export class TxPool {
         .map((obj) => obj.tx)
         .sort((a, b) => Number(a.nonce - b.nonce))
       // Check if the account nonce matches the lowest known tx nonce
-      let account = await vm.stateManager.getAccount(new Address(prefixedHexStringToBytes(address)))
+      let account = await vm.stateManager.getAccount(
+        new Address(prefixedHexStringToBytes('0x' + address))
+      )
       if (account === undefined) {
         account = new Account()
       }

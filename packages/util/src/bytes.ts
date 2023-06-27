@@ -25,6 +25,7 @@ export const prefixedHexStringToBytes = (hex: string): Uint8Array => {
   }
 
   if (!hex.startsWith('0x')) {
+    console.trace()
     throw new Error(`prefixed hex input should start with 0x, got ${hex.substring(0, 2)}`)
   }
 
