@@ -107,17 +107,17 @@ jobs:
         # Tests were split with --dir and --excludeDir to balance execution times below the 9min mark.
         args:
           [
-            '--fork=Berlin --dir=GeneralStateTests/stTimeConsuming',
-            '--fork=Berlin --excludeDir=stTimeConsuming',
-            '--fork=London --dir=GeneralStateTests/stTimeConsuming',
-            '--fork=London --excludeDir=stTimeConsuming',
-            '--fork=Istanbul --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
-            '--fork=Istanbul --excludeDir=stTimeConsuming --expected-test-amount=19817',
-            '--fork=Paris --dir=GeneralStateTests/stTimeConsuming',
-            '--fork=Paris --excludeDir=stTimeConsuming',
-            '--fork=ArrowGlacierToMergeAtDiffC0000',
-            '--fork=Shanghai --dir=GeneralStateTests/stTimeConsuming',
-            '--fork=Shanghai --excludeDir=stTimeConsuming',
+            'FORK=Berlin DIR=GeneralStateTests/stTimeConsuming',
+            'FORK=Berlin EXCLUDEDIR=stTimeConsuming',
+            'FORK=London DIR=GeneralStateTests/stTimeConsuming',
+            'FORK=London EXCLUDEDIR=stTimeConsuming',
+            'FORK=Istanbul DIR=GeneralStateTests/stTimeConsuming COUNT=15561',
+            'FORK=Istanbul EXCLUDEDIR=stTimeConsuming COUNT=19817',
+            'FORK=Paris DIR=GeneralStateTests/stTimeConsuming',
+            'FORK=Paris EXCLUDEDIR=stTimeConsuming',
+            'FORK=ArrowGlacierToMergeAtDiffC0000',
+            'FORK=Shanghai DIR=GeneralStateTests/stTimeConsuming',
+            'FORK=Shanghai EXCLUDEDIR=stTimeConsuming',
           ]
       fail-fast: false
     steps:
@@ -133,7 +133,7 @@ jobs:
       - run: npm ci
         working-directory: ${{github.workspace}}
 
-      - run: FORK=${{ matrix.args }} npx vitest run test/tester/blockchain/index.spec.ts
+      - run: ${{ matrix.args }} npx vitest run test/tester/blockchain/index.spec.ts
 
   vm-blockchain-extended:
     if: contains(join(github.event.pull_request.labels.*.name, ' '), 'Test all hardforks')
@@ -143,25 +143,25 @@ jobs:
         # Args to pass to the tester.
         args:
           [
-            '--fork=Chainstart --verify-test-amount-alltests',
-            '--fork=Homestead --verify-test-amount-alltests',
-            '--fork=TangerineWhistle --verify-test-amount-alltests',
-            '--fork=SpuriousDragon --verify-test-amount-alltests',
-            '--fork=Byzantium --verify-test-amount-alltests',
-            '--fork=Constantinople --verify-test-amount-alltests',
-            '--fork=Petersburg --verify-test-amount-alltests',
-            '--fork=Istanbul --verify-test-amount-alltests',
-            '--fork=MuirGlacier --verify-test-amount-alltests',
-            '--fork=Berlin --verify-test-amount-alltests',
-            '--fork=London --verify-test-amount-alltests',
-            '--fork=Paris --verify-test-amount-alltests',
-            '--fork=Shanghai --verify-test-amount-alltests',
-            '--fork=ByzantiumToConstantinopleFixAt5 --verify-test-amount-alltests',
-            '--fork=EIP158ToByzantiumAt5 --verify-test-amount-alltests',
-            '--fork=FrontierToHomesteadAt5 --verify-test-amount-alltests',
-            '--fork=HomesteadToDaoAt5 --verify-test-amount-alltests',
-            '--fork=HomesteadToEIP150At5 --verify-test-amount-alltests',
-            '--fork=BerlinToLondonAt5 --verify-test-amount-alltests',
+            'FORK=Chainstart',
+            'FORK=Homestead',
+            'FORK=TangerineWhistle',
+            'FORK=SpuriousDragon',
+            'FORK=Byzantium',
+            'FORK=Constantinople',
+            'FORK=Petersburg',
+            'FORK=Istanbul',
+            'FORK=MuirGlacier',
+            'FORK=Berlin',
+            'FORK=London',
+            'FORK=Paris',
+            'FORK=Shanghai',
+            'FORK=ByzantiumToConstantinopleFixAt5',
+            'FORK=EIP158ToByzantiumAt5',
+            'FORK=FrontierToHomesteadAt5',
+            'FORK=HomesteadToDaoAt5',
+            'FORK=HomesteadToEIP150At5',
+            'FORK=BerlinToLondonAt5',
           ]
       fail-fast: false
     steps:
@@ -176,7 +176,7 @@ jobs:
       - run: npm ci
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:blockchain -- ${{ matrix.args }}
+      - run: ${{ matrix.args }} npm run test:blockchain
 
   vm-benchmarks:
     runs-on: ubuntu-latest
