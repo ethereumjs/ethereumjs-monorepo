@@ -1,4 +1,4 @@
-import events from 'events'
+import { EventEmitter } from 'events'
 
 import type { Config } from '../../config'
 import type {
@@ -38,7 +38,7 @@ export interface PeerOptions {
  * Network peer
  * @memberof module:net/peer
  */
-export class Peer extends events.EventEmitter {
+export class Peer extends EventEmitter {
   public config: Config
   public id: string
   public address: string
