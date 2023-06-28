@@ -182,8 +182,7 @@ tape('[Miner]', async (t) => {
     1,
     1000000000,
     100000,
-    // goerliCommon
-    customCommon
+    goerliCommon
   ) // A -> B, nonce: 0, value: 1, normal gasPrice
 
   const txA02 = createTx(A, B, 1, 1, 2000000000) // A -> B, nonce: 1, value: 1, 2x gasPrice
@@ -258,12 +257,12 @@ tape('[Miner]', async (t) => {
     t.plan(3)
     const chain = new FakeChain() as any
     const service = new FullEthereumService({
-      config: customConfig,
+      config: goerliConfig,
       chain,
     })
 
     // no skipHardForkValidation
-    const miner = new Miner({ config: customConfig, service })
+    const miner = new Miner({ config: goerliConfig, service })
     const { txPool } = service
     const { vm } = service.execution
 
