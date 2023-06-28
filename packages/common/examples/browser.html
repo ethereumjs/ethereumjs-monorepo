@@ -4,13 +4,13 @@
 <head>
     <title>EthereumJS Browser Examples</title>
     <script type="module">
-        import { Chain, Common, Hardfork } from '@ethereumjs/common';
+        import { Chain, Common, Hardfork } from '@ethereumjs/common'
 
-        const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun });
-        console.log(common.hardfork());
+        const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
+        console.log(common.hardfork())
 
-        const simpleGasPerBlob = common.param('gasPrices', 'simpleGasPerBlob');
-        console.log(simpleGasPerBlob);
+        const simpleGasPerBlob = common.param('gasPrices', 'simpleGasPerBlob')
+        console.log(simpleGasPerBlob)
     </script>
 
 </head>
