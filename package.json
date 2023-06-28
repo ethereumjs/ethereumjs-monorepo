@@ -18,6 +18,7 @@
     "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\""
   },
   "devDependencies": {
+    "@types/estree": "^1.0.1",
     "@types/node": "16.11.49",
     "@types/tape": "4.13.2",
     "@typescript-eslint/eslint-plugin": "5.33.1",
