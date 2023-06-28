@@ -625,7 +625,7 @@ async function inputAccounts() {
       }
     } else {
       const acc = readFileSync(path.resolve(args.unlock!), 'utf-8').replace(/(\r\n|\n|\r)/gm, '')
-      const privKey = prefixedHexStringToBytes(acc)
+      const privKey = prefixedHexStringToBytes('0x' + acc) // See docs: acc has to be non-zero prefixed in the file
       const derivedAddress = Address.fromPrivateKey(privKey)
       accounts.push([derivedAddress, privKey])
     }

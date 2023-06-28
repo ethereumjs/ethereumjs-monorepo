@@ -27,6 +27,11 @@ export type BytesLike =
  */
 export type PrefixedHexString = string
 
+/*
+ * A type that represents a non-prefixed hex string (such as `deadbeaf` as opposed to `0xdeadbeef`)
+ */
+export type UnprefixedHexString = string
+
 /**
  * A type that represents an input that can be converted to an Address.
  */

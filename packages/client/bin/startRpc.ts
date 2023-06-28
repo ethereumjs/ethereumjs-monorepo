@@ -54,7 +54,7 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
     if (jwtSecretHex === undefined || jwtSecretHex.length !== 64) {
       throw Error('Need a valid 256 bit hex encoded secret')
     }
-    jwtSecret = prefixedHexStringToBytes(jwtSecretHex)
+    jwtSecret = prefixedHexStringToBytes('0x' + jwtSecretHex)
   } else {
     const folderExists = existsSync(config.datadir)
     if (!folderExists) {

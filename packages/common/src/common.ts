@@ -35,7 +35,7 @@ import type {
   HardforkByOpts,
   HardforkConfig,
 } from './types.js'
-import type { BigIntLike } from '@ethereumjs/util'
+import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 
 type HardforkSpecKeys = keyof typeof HARDFORK_SPECS
 type HardforkSpecValues = typeof HARDFORK_SPECS[HardforkSpecKeys]
@@ -762,7 +762,7 @@ export class Common extends EventEmitter {
    * @param genesisHash Genesis block hash of the chain
    * @returns Fork hash as hex string
    */
-  _calcForkHash(hardfork: string | Hardfork, genesisHash: Uint8Array) {
+  _calcForkHash(hardfork: string | Hardfork, genesisHash: Uint8Array): PrefixedHexString {
     let hfBytes = new Uint8Array(0)
     let prevBlockOrTime = 0
     for (const hf of this.hardforks()) {
@@ -803,7 +803,7 @@ export class Common extends EventEmitter {
    * @param hardfork Hardfork name, optional if HF set
    * @param genesisHash Genesis block hash of the chain, optional if already defined and not needed to be calculated
    */
-  forkHash(hardfork?: string | Hardfork, genesisHash?: Uint8Array): string {
+  forkHash(hardfork?: string | Hardfork, genesisHash?: Uint8Array): PrefixedHexString {
     hardfork = hardfork ?? this._hardfork
     const data = this._getHardfork(hardfork)
     if (
