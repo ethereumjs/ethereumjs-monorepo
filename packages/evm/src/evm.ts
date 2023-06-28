@@ -244,8 +244,6 @@ export class EVM implements EVMInterface {
    */
   readonly DEBUG: boolean = false
 
-  public readonly _emit: (topic: string, data: any) => Promise<void>
-
   /**
    * EVM async constructor. Creates engine instance and initializes it.
    *
