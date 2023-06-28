@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>EthereumJS Browser Examples</title>
+    <script type="module">
+        import { RLP } from '/dist/esm/index.js';
+
+        const nestedList = [[], [[]], [[], [[]]]];
+        console.log(nestedList);
+        const encoded = RLP.encode(nestedList);
+        console.log(encoded);
+        const decoded = RLP.decode(encoded);
+        console.log(decoded);
+    </script>
+
+</head>
+
+<body style="padding:50px; font-family: Arial, Helvetica, sans-serif;">
+    <h1>RLP | @ethereumjs/rlp</h1>
+    Basic usage of this library in a browser
+
+    <ol>
+        <li>Go to package root folder</li>
+        <li>
+            Start a local http server (e.g.
+            <a href="https://github.com/tapio/live-server" target="_blank">https://github.com/tapio/live-server</a>)
+        </li>
+        <li>
+            Open the server URL + example path in the browser
+        </li>
+        <li>
+            Open the development console (e.g. Chrome Developer Tools)
+        </li>
+        <li>
+            See example results and play with the code! 🙂 🤓
+        </li>
+    </ol>
+
+</body>
+
+</html>
