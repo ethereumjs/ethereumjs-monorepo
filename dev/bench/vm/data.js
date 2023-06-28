@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1687977314976,
+  "lastUpdate": 1687981491047,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a86fe252742108441258402b914fed4ef4f66916",
-          "message": "common: update the blob target and limit to 3/6 respectively (#2775)\n\n* common: update the blob target and limit to 3/6 respectively\r\n\r\n* fix block spec\r\n\r\n* spec\r\n\r\n* fix spec\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <konjou@gmail.com>",
-          "timestamp": "2023-06-13T12:55:40+05:30",
-          "tree_id": "d43e2181982f5fbb36e1344f9c0bf0d40ce86041",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a86fe252742108441258402b914fed4ef4f66916"
-        },
-        "date": 1686641345790,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 30810,
-            "range": "±5.82%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31689,
-            "range": "±2.78%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31531,
-            "range": "±2.96%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 30837,
-            "range": "±3.10%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 24785,
-            "range": "±11.39%",
-            "unit": "ops/sec",
-            "extra": "69 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±8.86%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "71911d4bc5a011a4c396572259213d106b6a2008",
+          "message": "Monorepo: Add Browser Examples (#2835)\n\n* Add browser example (RLP)\r\n\r\n* Add browser example (Util)\r\n\r\n* Align RLP example along Vite browser example\r\n\r\n* Add Common browser example\r\n\r\n* Add tx browser example\r\n\r\n* Add Trie browser example\r\n\r\n* Add Block browser example\r\n\r\n* Add Blockchain browser example\r\n\r\n* StateManager: further guard DEBUG check to fix vite browser bundling\r\n\r\n* Add StateManager browser example\r\n\r\n* More compact ordered lists in example files\r\n\r\n* Add Wallet browser example\r\n\r\n* EVM: remove promisify usage (Node.js primitive)\r\n\r\n* Minor\r\n\r\n* EVM: additional DEBUG check guard to prevent Vite bundling (and potentially others) from breaking\r\n\r\n* Add EVM browser example (not yet working)\r\n\r\n* Add async `emit` back sans util.promisify\r\n\r\n* Switch vm to non-promisify _emit\r\n\r\n* lint\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: acolytec3 <konjou@gmail.com>",
+          "timestamp": "2023-06-28T15:40:34-04:00",
+          "tree_id": "f3782e43b12a964560c67c1ca32638a643236919",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/71911d4bc5a011a4c396572259213d106b6a2008"
+        },
+        "date": 1687981489643,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31819,
+            "range": "±5.46%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 32142,
+            "range": "±2.93%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 27527,
+            "range": "±10.32%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 31768,
+            "range": "±3.02%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30343,
+            "range": "±3.30%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
