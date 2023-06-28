@@ -1,27 +1,16 @@
 import { BranchNode, ExtensionNode, LeafNode, Trie, decodeNode } from '@ethereumjs/trie'
-import {
-  bytesToNibbles,
-  compactBytesToNibbles,
-  getPathTo,
-  // hasTerminator,
-  // hexToKeybytes,
-  // nibblesToBytes,
-  nibblesToCompactBytes,
-  padToEven,
-  toBytes,
-} from '@ethereumjs/util'
+import { bytesToNibbles, nibblesToCompactBytes, toBytes } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 import { OrderedMap } from 'js-sdsl'
-import path from 'path'
 
 import { Fetcher } from './fetcher'
 
 import type { Peer } from '../../net/peer'
 import type { FetcherOptions } from './fetcher'
 import type { Job } from './types'
-import type { Nibbles, TrieNode } from '@ethereumjs/trie'
+import type { Nibbles } from '@ethereumjs/trie'
 import type { BatchDBOp } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
@@ -38,8 +27,6 @@ const bytesToNibbles2 = (key: Uint8Array): Nibbles => {
 
   for (let i = 0; i < bkey.length; i++) {
     const q = i
-    // nibbles[q] = bkey[i] >> 4
-    // ++q
     nibbles[q] = bkey[i] % 16
   }
 
@@ -233,18 +220,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     }
   }
 
-  // getNodeKey(node: TrieNode) {
-  //   try {
-  //     const encoded = node.serialize()
-  //     if (encoded.length >= 32) {
-  //       return keccak256(encoded)
-  //     }
-  //     return node.raw()
-  //   } catch (e) {
-  //     this.debug(e)
-  //   }
-  // }
-
   /**
    * Converts a nibble array into bytes.
    * @private
@@ -256,26 +231,9 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       let q = i * 2
       buf[i] = (arr[q] << 4) + arr[++q]
     }
-    // console.log('dbg3')
-    // console.log(arr)
-    // console.log(arr.length)
-    // console.log(buf)
+
     return buf
   }
-
-  /**
-   * Converts a nibble array into bytes.
-   * @private
-   * @param arr - Nibble array
-   */
-  // nibblesToBytes(arr: Nibbles): Uint8Array {
-  //   const buf = new Uint8Array(Math.ceil(arr.length / 2))
-  //   for (let i = 0; i < buf.length; i++) {
-  //     let q = i * 2
-  //     buf[i] = (arr[q] << 4) + arr[++q]
-  //   }
-  //   return buf
-  // }
 
   // ResolvePath resolves the provided composite node path by separating the
   // path in account trie if it's existent.
@@ -320,19 +278,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           const children = (node as BranchNode).getChildren()
           for (const [i, embeddedNode] of children) {
             if (embeddedNode !== null) {
-              // let embeddedNodeHash = null
-              // const encoded = node.serialize()
-              // if (encoded.length >= 32) {
-              //   embeddedNodeHash = keccak256(encoded)
-              // } else {
-              //   embeddedNodeHash = node.raw()
-              // }
-              // if (embeddedNode.length < 32) {
-              //   console.log('dbg4')
-              //   console.log(embeddedNode.length)
-              // } else {
-              //   console.log('dbg5')
-              // }
               childNodes.unshift({
                 nodeHash: embeddedNode, // TODO not sure if I'm calculating the node hash of an embedded node correctly since <32 bytes is embedded and not hashed
                 path: nodePath.concat(bytesToHex(Uint8Array.from([i]))),
@@ -347,14 +292,12 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           if (key.length < 2) {
             hexEncodedKey = Uint8Array.from(key)
           } else {
-            // I don't think you need both nibblesToBytes and bytesToNibbles, they seem to both be doing the same thing
             // TODO this is still unverified for extensions of key length greater than 2
+            // I don't think you need both nibblesToBytes and bytesToNibbles, they seem to both be doing the same thing
             hexEncodedKey = this.nibblesToBytes(key)
             hexEncodedKey = bytesToNibbles(hexEncodedKey)
             hexEncodedKey = hexEncodedKey.subarray(0, hexEncodedKey.length - 1)
           }
-          // console.log(key)
-          // console.log(bytesToHex(node.value()))
           const val = {
             nodeHash: node.value(),
             path: nodePath.concat(bytesToHex(hexEncodedKey)),
@@ -363,9 +306,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         } else {
           this.debug('leaf node found')
 
-          // TODO implement leaf callback for batching and putting all nodes when dependencies have been fetched
           // TODO perform leaf callback on all paths that are full and complete, with partial paths handled bellow
-          // TODO should probably do leaf callback after putting nodes in completed set, that is happening right bellow
         }
 
         // request unknown child nodes that have been freshly discovered
@@ -384,7 +325,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             unknownChildNodeCount++
             this.pathToNodeRequestData.setElement(childNode.path, {
               nodeHash: bytesToHex(childNode.nodeHash as Uint8Array),
-              nodeParentHash: nodeHash, // root node does not have a parent, so handle that in the leaf callback when checking if dependencies are met recursively
+              nodeParentHash: nodeHash, // TODO root node does not have a parent, so handle that in the leaf callback when checking if dependencies are met recursively
             } as NodeRequestData)
           }
         }
@@ -403,15 +344,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         // remove filled requests
         this.requestedNodeToPath.delete(nodeHash)
         this.pathToNodeRequestData.eraseElementByKey(nodePath)
-
-        // this.debug('At end of store phase')
-        // this.debug(`unkownChildCount: ${unknownChildNodeCount}`)
-        // this.debug(`childeNodes:`)
-        // this.debug(childNodes)
       }
-      // this.debug(`fetchedAccountNodes:`)
-      // this.debug(this.fetchedAccountNodes)
-      // this.debug(`pathToNodeRequestData.length: ${this.pathToNodeRequestData.length}`)
 
       // for an initial implementation, just put nodes into trie and see if root maches stateRoot
       if (this.pathToNodeRequestData.length === 0) {
@@ -419,30 +352,11 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         for (const [nodeHash, data] of this.fetchedAccountNodes) {
           const { parentHash, deps, nodeData, path } = data
 
-          // ops.unshift({
-          //   type: 'put',
-          //   key: hexToBytes(nodeHash),
-          //   value: nodeData,
-          // })
           const node = decodeNode(nodeData)
           if (node instanceof LeafNode) {
-            console.log('dbg4')
-
-            console.log(path)
-
             const b = hexToBytes(path)
-            console.log(b)
-
             const n = bytesToNibbles2(b)
-            console.log(n)
-
-            // const key = bytesToHex(hexToKeybytes(b)).concat(
-            //   bytesToHex(this.nibblesToBytes(node.key()))
-            // )
             const key = bytesToHex(this.nibblesToBytes(n.concat(node.key())))
-
-            console.log(key)
-            console.log(key.length)
             this.trieFetcherAccounts.set(key, node.value())
             ops.unshift({
               type: 'put',
@@ -454,31 +368,13 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         await this.accountTrie.batch(ops)
         await this.accountTrie.persistRoot()
 
-        console.log('dbg0')
-        console.log(ops.length)
-        console.log(this.trieFetcherAccounts.size)
-        console.log(this.fetchedAccountNodes.size)
+        // check if calculated root matches with known root
         console.log(bytesToHex(this.accountTrie.root()))
         console.log(bytesToHex(this.root))
-        console.log(ops)
-        // console.log(this.fetchedAccountNodes)
-
-        // for (const [k, v] of (
-        //   this.fetchedAccountNodes as unknown as Map<string, FetchedNodeData>
-        // ).entries()) {
-        //   console.log(`k: ${k} -- v: ${v.nodeData}`)
-        //   // console.log(decodeNode(v.nodeData))
-        // }
-
-        // process.stdout.write(
-        //   `${util.inspect(this.accountTrie.database().db, { maxArrayLength: 1000 })}\n`
-        // )
       }
     } catch (e) {
       this.debug(e)
     }
-
-    // this.debug(`Stored ${storeCount} bytecode in code trie`)
   }
 
   // TODO do merging here too and rename as getSortedAndMergedPaths
@@ -499,7 +395,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     // TODO this is where the conversion from hex to keybytes should happen, with anything that
     //      isn't hex, being kept the same since it should be compact encoded
     // TODO resolve should happen here, with keys being either keybyte or compact encoded
-    // return pathStrings.map((s) => [nibblesToCompactBytes(hexToBytes(padToEven(s)))])
     return pathStrings.map((s) => [nibblesToCompactBytes(hexToBytes(s))])
   }
 

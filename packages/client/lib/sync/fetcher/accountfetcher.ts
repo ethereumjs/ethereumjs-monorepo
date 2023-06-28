@@ -371,27 +371,21 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       this.debug('Final range received with no elements remaining to the right')
 
       await this.accountTrie.persistRoot()
-      console.log('dbg1')
-      console.log(bytesToHex(this.accountTrie.root()))
+
+      // for (const key of this.trieFetcherAccounts.keys()) {
+      //   const deleted = this.accountFetcherAccounts.delete(key)
+      //   if (!deleted) {
+      //     console.log(`Account key ${key} does not exist in fetched accounts`)
+      //   } else {
+      //     console.log(`Account key ${key} deleted`)
+      //   }
+      // }
       // process.stdout.write(
-      //   `${util.inspect(this.accountTrie.database().db, { maxArrayLength: 1000 })}\n`
+      //   `${util.inspect(this.accountFetcherAccounts.keys(), { maxArrayLength: 1000 })}\n`
       // )
-      console.log(this.accountFetcherAccounts.size)
-      console.log(this.trieFetcherAccounts.size)
-      for (const key of this.trieFetcherAccounts.keys()) {
-        const deleted = this.accountFetcherAccounts.delete(key)
-        if (!deleted) {
-          console.log(`Account key ${key} does not exist in fetched accounts`)
-        } else {
-          console.log(`Account key ${key} deleted`)
-        }
-      }
-      process.stdout.write(
-        `${util.inspect(this.accountFetcherAccounts.keys(), { maxArrayLength: 1000 })}\n`
-      )
-      process.stdout.write(
-        `${util.inspect(this.trieFetcherAccounts.keys(), { maxArrayLength: 1000 })}\n`
-      )
+      // process.stdout.write(
+      //   `${util.inspect(this.trieFetcherAccounts.keys(), { maxArrayLength: 1000 })}\n`
+      // )
 
       snapFetchersCompleted(
         this.fetcherDoneFlags,
