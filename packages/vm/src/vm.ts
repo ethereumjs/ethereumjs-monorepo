@@ -4,7 +4,6 @@ import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address, AsyncEventEmitter } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils.js'
-import { promisify } from 'util'
 
 import { buildBlock } from './buildBlock.js'
 import { runBlock } from './runBlock.js'
