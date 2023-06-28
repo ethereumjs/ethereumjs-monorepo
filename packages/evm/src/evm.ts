@@ -244,6 +244,8 @@ export class EVM implements EVMInterface {
    */
   readonly DEBUG: boolean = false
 
+  public readonly _emit: (topic: string, data: any) => Promise<void>
+
   /**
    * EVM async constructor. Creates engine instance and initializes it.
    *
@@ -320,6 +322,12 @@ export class EVM implements EVMInterface {
       } else {
         this._mcl = mcl
       }
+    }
+
+    // We cache this promisified function as it's called from the main execution loop, and
+    // promisifying each time has a huge performance impact.
+    this._emit = async (topic: string, data: any): Promise<void> => {
+      return new Promise((resolve) => this.events.emit(topic as keyof EVMEvents, data, resolve))
     }
 
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
@@ -504,7 +512,7 @@ export class EVM implements EVMInterface {
       code: message.code,
     }
 
-    this.events.emit('newContract', newContractEvent)
+    await this._emit('newContract', newContractEvent)
 
     toAccount = await this.stateManager.getAccount(message.to)
     if (!toAccount) {
@@ -812,7 +820,7 @@ export class EVM implements EVMInterface {
       }
     }
 
-    this.events.emit('beforeMessage', message)
+    await this._emit('beforeMessage', message)
 
     if (!message.to && this._common.isActivatedEIP(2929) === true) {
       message.code = message.data
@@ -882,7 +890,7 @@ export class EVM implements EVMInterface {
         debug(`message checkpoint committed`)
       }
     }
-    this.events.emit('afterMessage', result)
+    await this._emit('afterMessage', result)
 
     return result
   }
