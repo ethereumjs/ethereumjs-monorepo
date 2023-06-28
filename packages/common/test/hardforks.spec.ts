@@ -275,7 +275,7 @@ describe('[Common]: Hardfork logic', () => {
     msg = 'should provide correct forkHash for HF provided'
     assert.equal(c.forkHash(Hardfork.SpuriousDragon), '0x3edd5b10', msg)
     const genesisHash = prefixedHexStringToBytes(
-      'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
+      '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
     )
     assert.equal(c.forkHash(Hardfork.SpuriousDragon, genesisHash), '0x3edd5b10', msg)
 
