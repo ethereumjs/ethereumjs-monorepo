@@ -1,5 +1,4 @@
-import { EIPs } from '@ethereumjs/common'
-import { assert, describe, expect, it, suite, test } from 'vitest'
+import { assert, describe, expect, it, suite } from 'vitest'
 
 import {
   DEFAULT_FORK_CONFIG,
