@@ -28,7 +28,10 @@ export class EthersStateManager implements EVMStateManagerInterface {
   private DEBUG: boolean
   constructor(opts: EthersStateManagerOpts) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
-    this.DEBUG = process?.env?.DEBUG?.includes('ethjs') === true
+    // Additional window check is to prevent vite browser bundling (and potentially other) to break
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+
     this._debug = createDebugLogger('statemanager:ethersStateManager')
     if (typeof opts.provider === 'string') {
       this.provider = new ethers.JsonRpcProvider(opts.provider)
