@@ -10,7 +10,6 @@ import type {
   SnapProtocolMethods,
 } from '../protocol'
 import type { Server } from '../server'
-import type { UnprefixedHexString } from '@ethereumjs/util'
 
 export interface PeerOptions {
   /* Config */
@@ -41,7 +40,7 @@ export interface PeerOptions {
  */
 export class Peer extends events.EventEmitter {
   public config: Config
-  public id: UnprefixedHexString
+  public id: string
   public address: string
   public inbound: boolean
   public server: Server | undefined
