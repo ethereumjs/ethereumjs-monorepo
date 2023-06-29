@@ -1,13 +1,21 @@
 import { BranchNode, ExtensionNode, LeafNode, Trie, decodeNode } from '@ethereumjs/trie'
-import { bytesToNibbles, nibblesToCompactBytes, toBytes } from '@ethereumjs/util'
+import {
+  Account,
+  KECCAK256_NULL,
+  KECCAK256_RLP,
+  bytesToNibbles,
+  nibblesToCompactBytes,
+  toBytes,
+} from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import { OrderedMap } from 'js-sdsl'
 
 import { Fetcher } from './fetcher'
 
 import type { Peer } from '../../net/peer'
+import type { AccountData } from '../../net/protocol'
 import type { FetcherOptions } from './fetcher'
 import type { Job } from './types'
 import type { Nibbles } from '@ethereumjs/trie'
@@ -16,11 +24,26 @@ import type { Debugger } from 'debug'
 
 const util = require('node:util')
 
-/**
- * Converts a bytes to a nibble array.
- * @private
- * @param key
- */
+function nibblesToBytes(arr: Nibbles): Uint8Array {
+  const buf = new Uint8Array(arr.length / 2)
+  for (let i = 0; i < buf.length; i++) {
+    let q = i * 2
+    buf[i] = (arr[q] << 4) + arr[++q]
+  }
+
+  return buf
+}
+
+function nibbleToBytes2(arr: Nibbles): Uint8Array {
+  const l = arr.length
+  const buf = new Uint8Array(l)
+  for (let i = 0; i < buf.length; i++) {
+    buf[i] = arr[i]
+  }
+
+  return buf
+}
+
 const bytesToNibbles2 = (key: Uint8Array): Nibbles => {
   const bkey = toBytes(key)
   const nibbles = [] as Nibbles
@@ -31,30 +54,6 @@ const bytesToNibbles2 = (key: Uint8Array): Nibbles => {
   }
 
   return nibbles
-}
-
-const hasTerminator = (nibbles: Uint8Array) => {
-  return nibbles.length > 0 && nibbles[nibbles.length - 1] === 16
-}
-
-const nibblesToBytes = (nibbles: Uint8Array, bytes: Uint8Array) => {
-  for (let bi = 0, ni = 0; ni < nibbles.length; bi += 1, ni += 2) {
-    bytes[bi] = (nibbles[ni] << 4) | nibbles[ni + 1]
-  }
-}
-
-const hexToKeybytes = (hex: Uint8Array) => {
-  if (hasTerminator(hex)) {
-    hex = hex.subarray(0, hex.length - 1)
-  }
-  if (hex.length % 2 === 1) {
-    console.log(hex)
-    throw Error("Can't convert hex key of odd length")
-  }
-  const key = new Uint8Array(hex.length / 2)
-  nibblesToBytes(hex, key)
-
-  return key
 }
 
 type TrieNodesResponse = Uint8Array[] & { completed?: boolean }
@@ -220,30 +219,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     }
   }
 
-  /**
-   * Converts a nibble array into bytes.
-   * @private
-   * @param arr - Nibble array
-   */
-  nibblesToBytes(arr: Nibbles): Uint8Array {
-    const buf = new Uint8Array(arr.length / 2)
-    for (let i = 0; i < buf.length; i++) {
-      let q = i * 2
-      buf[i] = (arr[q] << 4) + arr[++q]
-    }
-
-    return buf
-  }
-
-  nibblesToBytes3(arr: Nibbles): Uint8Array {
-    const l = arr.length
-    const buf = new Uint8Array(l)
-    for (let i = 0; i < buf.length; i++) {
-      buf[i] = arr[i]
-    }
-
-    return buf
-  }
   // ResolvePath resolves the provided composite node path by separating the
   // path in account trie if it's existent.
   // func ResolvePath(path []byte) (common.Hash, []byte) {
@@ -298,7 +273,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
           const b = hexToBytes(nodePath)
           const n = bytesToNibbles2(b)
-          const newPath = this.nibblesToBytes3(n.concat(node.key()))
+          const newPath = nibbleToBytes2(n.concat(node.key()))
           const stringPath = bytesToHex(newPath)
 
           const val = {
@@ -308,10 +283,9 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           childNodes.unshift(val)
         } else {
           this.debug('leaf node found')
-
-          // TODO perform leaf callback on all paths that are full and complete, with partial paths handled bellow
         }
 
+        // TODO this for loop and contained logic is not verified - have to set up a sync where we pivot to a new state to see if unkown nodes are correctly identified
         // request unknown child nodes that have been freshly discovered
         for (const childNode of childNodes) {
           try {
@@ -359,7 +333,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           if (node instanceof LeafNode) {
             const b = hexToBytes(path)
             const n = bytesToNibbles2(b)
-            const key = bytesToHex(this.nibblesToBytes(n.concat(node.key())))
+            const key = bytesToHex(nibblesToBytes(n.concat(node.key())))
             this.trieFetcherAccounts.set(key, node.value())
             ops.unshift({
               type: 'put',
