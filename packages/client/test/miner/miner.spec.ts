@@ -127,7 +127,7 @@ tape('[Miner]', async (t) => {
   }
   const customCommon = Common.fromGethGenesis(chainData, {
     chain: 'devnet',
-    hardfork: Hardfork.London,
+    hardfork: Hardfork.Berlin,
   })
   customCommon.setMaxListeners(50)
   const customConfig = new Config({
@@ -148,9 +148,9 @@ tape('[Miner]', async (t) => {
     storageCache: 1000,
     accounts,
     mine: true,
-    common: goerliCommon,
+    common: customCommon,
   })
-  goerliConfig.events.setMaxListeners(50)
+  customConfig.events.setMaxListeners(50)
 
   const createTx = (
     from = A,
