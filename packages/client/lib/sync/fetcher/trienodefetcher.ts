@@ -235,6 +235,15 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     return buf
   }
 
+  nibblesToBytes3(arr: Nibbles): Uint8Array {
+    const l = arr.length
+    const buf = new Uint8Array(l)
+    for (let i = 0; i < buf.length; i++) {
+      buf[i] = arr[i]
+    }
+
+    return buf
+  }
   // ResolvePath resolves the provided composite node path by separating the
   // path in account trie if it's existent.
   // func ResolvePath(path []byte) (common.Hash, []byte) {
@@ -287,20 +296,14 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         } else if (node instanceof ExtensionNode) {
           this.debug('extension node found')
 
-          const key = node.key()
-          let hexEncodedKey
-          if (key.length < 2) {
-            hexEncodedKey = Uint8Array.from(key)
-          } else {
-            // TODO this is still unverified for extensions of key length greater than 2
-            // I don't think you need both nibblesToBytes and bytesToNibbles, they seem to both be doing the same thing
-            hexEncodedKey = this.nibblesToBytes(key)
-            hexEncodedKey = bytesToNibbles(hexEncodedKey)
-            hexEncodedKey = hexEncodedKey.subarray(0, hexEncodedKey.length - 1)
-          }
+          const b = hexToBytes(nodePath)
+          const n = bytesToNibbles2(b)
+          const newPath = this.nibblesToBytes3(n.concat(node.key()))
+          const stringPath = bytesToHex(newPath)
+
           const val = {
             nodeHash: node.value(),
-            path: nodePath.concat(bytesToHex(hexEncodedKey)),
+            path: stringPath,
           }
           childNodes.unshift(val)
         } else {
