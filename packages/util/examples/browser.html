@@ -4,9 +4,9 @@
 <head>
     <title>EthereumJS Browser Examples</title>
     <script type="module">
-        import { hexStringToBytes, Address } from '@ethereumjs/util'
+        import { prefixedHexStringToBytes, Address } from '@ethereumjs/util'
 
-        const bytesStr = hexStringToBytes('1234')
+        const bytesStr = prefixedHexStringToBytes('0x1234')
         console.log(bytesStr)
 
         const address = Address.fromString('0x1122334455667788991011121314151617181920')
