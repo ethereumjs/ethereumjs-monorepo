@@ -1,12 +1,12 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address, bytesToPrefixedHexString, hexStringToBytes, zeros } from '@ethereumjs/util'
-import * as tape from 'tape'
-import * as td from 'testdouble'
+import tape from 'tape'
+import td from 'testdouble'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import blocks = require('../../testdata/blocks/beacon.json')
-import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
+import blocks from '../../testdata/blocks/beacon.json'
+import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 

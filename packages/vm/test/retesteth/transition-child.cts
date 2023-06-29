@@ -8,12 +8,12 @@ import { hexToBytes } from 'ethereum-cryptography/utils'
 import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 
-import { VM } from '../../src'
-import { BlockBuilder } from '../../src/buildBlock'
+import { VM } from '../../dist/cjs'
+import { BlockBuilder } from '../../dist/cjs/buildBlock'
 import { getCommon } from '../tester/config'
 import { makeBlockFromEnv, setupPreConditions } from '../util'
 
-import type { PostByzantiumTxReceipt } from '../../src'
+import type { PostByzantiumTxReceipt } from '../../dist/cjs'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { NestedUint8Array } from '@ethereumjs/util'
 
@@ -83,7 +83,7 @@ async function runTransition(argsIn: any) {
   let txCounter = 0
 
   vm.events.on('afterTx', async (afterTx, continueFn) => {
-    const receipt = <PostByzantiumTxReceipt>afterTx.receipt
+    const receipt = afterTx.receipt as PostByzantiumTxReceipt
     const pushReceipt = {
       root: '0x',
       status: receipt.status === 0 ? '0x' : '0x1',
@@ -101,10 +101,10 @@ async function runTransition(argsIn: any) {
     continueFn!(undefined)
   })
 
-  const rejected = []
+  const rejected: any = []
 
   let index = 0
-  for (const txData of <NestedUint8Array>txsData) {
+  for (const txData of txsData as NestedUint8Array) {
     try {
       let tx: TypedTransaction
       if (txData instanceof Uint8Array) {
@@ -138,7 +138,7 @@ async function runTransition(argsIn: any) {
   }
 
   if (rejected.length > 0) {
-    ;(<any>output).rejected = rejected
+    ;(output as any).rejected = rejected
   }
 
   const outputAlloc = alloc //{}

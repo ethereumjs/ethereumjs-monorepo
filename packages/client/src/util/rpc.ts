@@ -1,6 +1,6 @@
 import { json as jsonParser } from 'body-parser'
-import * as Connect from 'connect'
-import * as cors from 'cors'
+import Connect from 'connect'
+import cors from 'cors'
 import { createServer } from 'http'
 import { Server as RPCServer } from 'jayson/promise'
 import { decode } from 'jwt-simple'

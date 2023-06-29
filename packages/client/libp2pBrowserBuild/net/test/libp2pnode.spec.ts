@@ -1,5 +1,5 @@
-import * as tape from 'tape'
-import * as td from 'testdouble'
+import tape from 'tape'
+import td from 'testdouble'
 
 tape('[Libp2pNode]', async (t) => {
   td.replace('libp2p')

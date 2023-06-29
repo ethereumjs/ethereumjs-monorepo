@@ -1,6 +1,6 @@
 import { BlockHeader } from '@ethereumjs/block'
-import * as tape from 'tape'
-import * as td from 'testdouble'
+import tape from 'tape'
+import td from 'testdouble'
 
 import { baseRequest, baseSetup, params } from '../helpers'
 

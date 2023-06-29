@@ -1,8 +1,8 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { KECCAK256_RLP } from '@ethereumjs/util'
-import * as tape from 'tape'
-import * as td from 'testdouble'
+import tape from 'tape'
+import td from 'testdouble'
 
 import { Chain } from '../../../src/blockchain/chain'
 import { Config } from '../../../src/config'

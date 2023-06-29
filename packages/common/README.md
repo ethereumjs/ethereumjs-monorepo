@@ -26,7 +26,7 @@ npm install @ethereumjs/common
 import (ESM, TypeScript):
 
 ```typescript
-import { Chain, Common, Hardfork } from '@ethereumjs/common
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 ```
 
 require (CommonJS, Node.js):
