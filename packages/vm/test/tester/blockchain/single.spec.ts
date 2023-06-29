@@ -14,6 +14,7 @@ const parseInput = (input: string | undefined, bool: boolean = false) => {
 }
 
 const input = {
+  verifyTestAmountAllTests: 1,
   fork: parseInput(process.env.FORK),
   test: parseInput(process.env.TEST) ?? defaultBlockchainTestArgs.test,
   skip: parseInput(process.env.SKIP) ?? defaultBlockchainTestArgs.skip,
