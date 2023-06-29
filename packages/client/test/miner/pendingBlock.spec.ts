@@ -50,7 +50,15 @@ const setBalance = async (vm: VM, address: Address, balance: bigint) => {
   await vm.stateManager.commit()
 }
 
-const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berlin })
+const common = new Common({ chain: CommonChain.Goerli, hardfork: Hardfork.Berlin })
+// Unschedule any timestamp since tests are not configured for timestamps
+common
+  .hardforks()
+  .filter((hf) => hf.timestamp !== undefined)
+  .map((hf) => {
+    hf.timestamp = undefined
+  })
+
 const config = new Config({
   transports: [],
   common,

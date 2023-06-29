@@ -1,9 +1,8 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { Chain, Common } from '@ethereumjs/common'
 import tape from 'tape'
 import td from 'testdouble'
 
-import { baseRequest, baseSetup, createClient, createManager, params, startRPC } from '../helpers'
+import { baseRequest, baseSetup, params } from '../helpers'
 
 const method = 'eth_chainId'
 
@@ -27,20 +26,6 @@ tape(`${method}: returns 1 for Mainnet`, async (t) => {
   const expectRes = (res: any) => {
     const msg = 'should return chainId 1'
     t.equal(res.body.result, '0x1', msg)
-  }
-  await baseRequest(t, server, req, 200, expectRes)
-})
-
-tape(`${method}: returns 3 for Ropsten`, async (t) => {
-  const manager = createManager(
-    createClient({ opened: true, commonChain: new Common({ chain: Chain.Ropsten }) })
-  )
-  const server = startRPC(manager.getMethods())
-
-  const req = params(method, [])
-  const expectRes = (res: any) => {
-    const msg = 'should return chainId 3'
-    t.equal(res.body.result, '0x3', msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })

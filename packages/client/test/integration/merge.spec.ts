@@ -63,7 +63,7 @@ tape('[Integration:Merge]', async (t) => {
         },
       ],
     },
-    { baseChain: ChainCommon.Ropsten, hardfork: Hardfork.London }
+    { baseChain: ChainCommon.Mainnet, hardfork: Hardfork.London }
   )
   const accounts: [Address, Uint8Array][] = [
     [
