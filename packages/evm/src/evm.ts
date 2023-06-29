@@ -15,6 +15,7 @@ import {
   zeros,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
+import mcl from 'mcl-wasm'
 
 import { EOF, getEOFCode } from './eof.js'
 import { ERROR, EvmError } from './exceptions.js'
@@ -49,11 +50,9 @@ const debugPrecompiles = createDebugLogger('evm:precompiles')
 
 // very ugly way to detect if we are running in a browser
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
-let mcl: any
 let mclInitPromise: any
 
 if (isBrowser() === false) {
-  mcl = require('mcl-wasm')
   mclInitPromise = mcl.init(mcl.BLS12_381)
 }
 
