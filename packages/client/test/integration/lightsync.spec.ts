@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 
 import { SyncMode } from '../../src/config'
 import { Event } from '../../src/types'

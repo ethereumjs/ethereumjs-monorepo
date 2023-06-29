@@ -322,7 +322,7 @@ describe('[Transaction]', () => {
     }
   })
 
-  it('sign(), serialize(): serialize correctly after being signed with EIP155 Signature for tx created on ropsten', () => {
+  it('sign(), serialize(): serialize correctly after being signed with EIP155 Signature for tx created on mainnet', () => {
     const txRaw = [
       '0x1',
       '0x02540be400',
@@ -334,7 +334,7 @@ describe('[Transaction]', () => {
     const privateKey = hexStringToBytes(
       'DE3128752F183E8930D7F00A2AAA302DCB5E700B2CBA2D8CA5795660F07DEFD5'
     )
-    const common = new Common({ chain: 3 })
+    const common = Common.custom({ chainId: 3 })
     const tx = LegacyTransaction.fromValuesArray(txRaw.map(toBytes), { common })
     const signedTx = tx.sign(privateKey)
     assert.equal(
@@ -442,10 +442,10 @@ describe('[Transaction]', () => {
   })
 
   it('common propagates from the common of tx, not the common in TxOptions', () => {
-    const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const pkey = hexStringToBytes(txFixtures[0].privateKey)
     const txn = LegacyTransaction.fromTxData({}, { common, freeze: false })
-    const newCommon = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London, eips: [2537] })
+    const newCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [2537] })
     assert.notDeepEqual(newCommon, common, 'new common is different than original common')
     Object.defineProperty(txn, 'common', {
       get() {

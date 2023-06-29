@@ -1,6 +1,6 @@
 import { multiaddr } from 'multiaddr'
-import * as tape from 'tape'
-import * as td from 'testdouble'
+import tape from 'tape'
+import td from 'testdouble'
 
 import { Config } from '../../../src/config'
 import { Event } from '../../../src/types'

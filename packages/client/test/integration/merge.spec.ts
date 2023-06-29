@@ -8,7 +8,7 @@ import {
   Hardfork,
 } from '@ethereumjs/common'
 import { Address, hexStringToBytes } from '@ethereumjs/util'
-import * as tape from 'tape'
+import tape from 'tape'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
@@ -63,7 +63,7 @@ tape('[Integration:Merge]', async (t) => {
         },
       ],
     },
-    { baseChain: ChainCommon.Ropsten, hardfork: Hardfork.London }
+    { baseChain: ChainCommon.Mainnet, hardfork: Hardfork.London }
   )
   const accounts: [Address, Uint8Array][] = [
     [

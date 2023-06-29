@@ -102,7 +102,9 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
   })
 
   it('should only accept valid chain and fork', async () => {
-    let common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
+    // let common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
+    let common = Common.custom({ chainId: 3 })
+    common.setHardfork(Hardfork.Byzantium)
     let vm = await VM.create({ common })
     assert.equal(vm._common.param('gasPrices', 'ecAdd'), BigInt(500))
 
@@ -172,14 +174,14 @@ describe('VM -> setHardfork, state (deprecated), blockchain', () => {
 
   it('should pass the correct Common object when copying the VM', async () => {
     const vm = await setupVM({
-      common: new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium }),
+      common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium }),
     })
 
-    assert.equal(vm._common.chainName(), 'ropsten')
+    assert.equal(vm._common.chainName(), 'mainnet')
     assert.equal(vm._common.hardfork(), 'byzantium')
 
     const copiedVM = await vm.copy()
-    assert.equal(copiedVM._common.chainName(), 'ropsten')
+    assert.equal(copiedVM._common.chainName(), 'mainnet')
     assert.equal(copiedVM._common.hardfork(), 'byzantium')
   })
 

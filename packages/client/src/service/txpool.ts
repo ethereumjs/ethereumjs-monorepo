@@ -7,7 +7,7 @@ import {
   isLegacyTx,
 } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
-import Heap = require('qheap')
+import Heap from 'qheap'
 
 import type { Config } from '../config'
 import type { Peer } from '../net/peer'

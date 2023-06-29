@@ -2,7 +2,7 @@ import { Common } from '@ethereumjs/common'
 import { bytesToPrefixedHexString, hexStringToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import { randomBytes } from 'node:crypto'
-import * as tape from 'tape'
+import tape from 'tape'
 
 import {
   createBlobTxs,

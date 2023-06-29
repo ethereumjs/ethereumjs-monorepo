@@ -1,12 +1,11 @@
 import { short } from '@ethereumjs/util'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
+import { ec_mul } from 'rustbn.wasm'
 
 import { OOGResult } from '../evm.js'
 
 import type { ExecResult } from '../evm.js'
 import type { PrecompileInput } from './types.js'
-
-const bn128 = require('rustbn.js')
 
 export function precompile07(opts: PrecompileInput): ExecResult {
   const inputData = bytesToHex(opts.data.subarray(0, 128))
@@ -26,7 +25,7 @@ export function precompile07(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  const returnData = hexToBytes(bn128.mul(inputData))
+  const returnData = hexToBytes(ec_mul(inputData))
 
   // check ecmul success or failure by comparing the output length
   if (returnData.length !== 64) {
