@@ -1,6 +1,12 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Address, KECCAK256_RLP, Withdrawal, prefixedHexStringToBytes } from '@ethereumjs/util'
+import {
+  Address,
+  KECCAK256_RLP,
+  Withdrawal,
+  prefixedHexStringToBytes,
+  zeros,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Block } from '../src/block.js'
@@ -52,7 +58,7 @@ describe('EIP4895 tests', () => {
       () => {
         BlockHeader.fromHeaderData(
           {
-            withdrawalsRoot: prefixedHexStringToBytes('0x' + '00'.repeat(32)),
+            withdrawalsRoot: zeros(32),
           },
           {
             common: earlyCommon,
@@ -74,7 +80,7 @@ describe('EIP4895 tests', () => {
     assert.doesNotThrow(() => {
       BlockHeader.fromHeaderData(
         {
-          withdrawalsRoot: prefixedHexStringToBytes('0x' + '00'.repeat(32)),
+          withdrawalsRoot: zeros(32),
         },
         {
           common,
@@ -111,7 +117,7 @@ describe('EIP4895 tests', () => {
       Block.fromBlockData(
         {
           header: {
-            withdrawalsRoot: prefixedHexStringToBytes('0x' + '00'.repeat(32)),
+            withdrawalsRoot: zeros(32),
           },
           withdrawals: [],
         },
@@ -123,7 +129,7 @@ describe('EIP4895 tests', () => {
     const block = Block.fromBlockData(
       {
         header: {
-          withdrawalsRoot: prefixedHexStringToBytes('0x' + '00'.repeat(32)),
+          withdrawalsRoot: zeros(32),
         },
         withdrawals: [],
       },
