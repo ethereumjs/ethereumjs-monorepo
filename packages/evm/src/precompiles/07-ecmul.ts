@@ -1,6 +1,6 @@
 import { short } from '@ethereumjs/util'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
-import { ec_mul } from 'rustbn'
+import { ec_mul } from 'rustbn.wasm'
 
 import { OOGResult } from '../evm.js'
 

@@ -57,7 +57,7 @@
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.0.0",
     "mcl-wasm": "^0.7.1",
-    "rustbn": "ethereumjs/rustbn.wasm"
+    "rustbn.wasm": "^0.1.0"
   },
   "devDependencies": {
     "@ethereumjs/statemanager": "^1.0.5",
