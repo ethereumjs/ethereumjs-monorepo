@@ -15,7 +15,7 @@ import {
   zeros,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
-import mcl from 'mcl-wasm'
+import * as mcl from 'mcl-wasm'
 
 import { EOF, getEOFCode } from './eof.js'
 import { ERROR, EvmError } from './exceptions.js'
