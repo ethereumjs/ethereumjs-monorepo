@@ -288,6 +288,12 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           const storageRoot: Uint8Array = account.storageRoot
           if (equalsBytes(storageRoot, KECCAK256_RLP) === false) {
             // TODO
+            const syncPath = pathString!.concat('/')
+            this.pathToNodeRequestData.setElement(syncPath, {
+              nodeHash: bytesToHex(storageRoot),
+              nodeParentHash: nodeHash,
+            })
+            console.log('storageHash found for fetching')
           }
           const codeHash: Uint8Array = account.codeHash
           if (!(equalsBytes(codeHash, KECCAK256_NULL) === true)) {
