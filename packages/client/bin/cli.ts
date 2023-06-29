@@ -15,13 +15,13 @@ import {
   short,
   toBytes,
 } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
+import kzg from 'c-kzg'
 import { existsSync, writeFileSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import { Level } from 'level'
 import { homedir } from 'os'
-import * as path from 'path'
-import * as readline from 'readline'
+import path from 'path'
+import readline from 'readline'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
