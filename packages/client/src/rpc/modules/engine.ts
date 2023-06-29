@@ -668,6 +668,7 @@ export class Engine {
 
   async newPayloadV2(params: [ExecutionPayloadV2 | ExecutionPayloadV1]): Promise<PayloadStatusV1> {
     const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
+    const cancunTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Cancun)
     const withdrawals = (params[0] as ExecutionPayloadV2).withdrawals
 
     if (shanghaiTimestamp === null || parseInt(params[0].timestamp) < shanghaiTimestamp) {
@@ -683,6 +684,11 @@ export class Engine {
           code: INVALID_PARAMS,
           message: 'ExecutionPayloadV2 MUST be used after Shanghai is activated',
         }
+      }
+    } else if (cancunTimestamp === null || parseInt(params[0].timestamp) >= cancunTimestamp) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'ExecutionPayloadV3 MUST be used after Cancun is activated',
       }
     }
     const newPayload = await this.newPayload(params)
