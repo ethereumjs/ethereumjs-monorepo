@@ -20,14 +20,14 @@ function compareResult(t: any, result: any, chainId: any) {
 
 tape(`${method}: call on mainnnet`, async (t) => {
   const manager = createManager(
-    createClient({ opened: true, commonChain: new Common({ chain: Chain.Mainnet }) })
+    createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })
   )
   const server = startRPC(manager.getMethods())
 
   const req = params(method, [])
   const expectRes = (res: any) => {
     const { result } = res.body
-    compareResult(t, result, '3')
+    compareResult(t, result, '5')
   }
   await baseRequest(t, server, req, 200, expectRes)
 })

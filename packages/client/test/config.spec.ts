@@ -45,7 +45,7 @@ tape('[Config]', (t) => {
   t.test('peer discovery default testnet settings', (t) => {
     let config
 
-    for (const chain of [Chain.Goerli, Chain.Mainnet]) {
+    for (const chain of [Chain.Goerli, Chain.Sepolia]) {
       const common = new Common({ chain })
       config = new Config({ common })
       t.equal(config.discDns, true, `enables DNS peer discovery for ${chain}`)
