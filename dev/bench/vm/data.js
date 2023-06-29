@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1687981491047,
+  "lastUpdate": 1688034572002,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "bc9a613a8be56915196eea99f8e846a2dead9351",
-          "message": "vm: fix the dataGasPrice calculation in running the tx (#2779)",
-          "timestamp": "2023-06-13T12:04:14-04:00",
-          "tree_id": "16ad939486e5940f3caf7c63edfe58b2b698f23f",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/bc9a613a8be56915196eea99f8e846a2dead9351"
-        },
-        "date": 1686673208044,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31111,
-            "range": "±5.65%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31657,
-            "range": "±2.80%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 30577,
-            "range": "±3.09%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 30065,
-            "range": "±3.18%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 22834,
-            "range": "±12.27%",
-            "unit": "ops/sec",
-            "extra": "61 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.30%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "konjou@gmail.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e7e201d5569a807d164bc3df35f0a3163b9c504f",
+          "message": "Replace `rustbn.js` with wasm-compiled `rustbn.wasm` module (#2834)\n\n* Proof of concept integration with rustbn wasm\r\n\r\n* needed fixes\r\n\r\n* Switch module to node16\r\n\r\n* turn on esmodule interop in client\r\n\r\n* Fix namespace import\r\n\r\n* Remove rustbn.ts code\r\n\r\n* clean up evm config\r\n\r\n* rename vitest config\r\n\r\n* Remove dep and fix events import\r\n\r\n* Fix browser tests npm script\r\n\r\n* remove old comment\r\n\r\n* Update dependency to point to ethjs repo\r\n\r\n* EVM: update EC precompile dependency to official newly published rustbn.wasm package\r\n\r\n* Rebuild package-lock.json\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-06-29T12:16:25+02:00",
+          "tree_id": "0ef52c3cc8f84b972faec0a504b4d5163f24be43",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e7e201d5569a807d164bc3df35f0a3163b9c504f"
+        },
+        "date": 1688034571296,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 33438,
+            "range": "±4.70%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 33560,
+            "range": "±2.40%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 33334,
+            "range": "±2.31%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 27943,
+            "range": "±10.73%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 31312,
+            "range": "±2.54%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
