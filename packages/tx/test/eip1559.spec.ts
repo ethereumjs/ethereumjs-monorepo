@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { TWO_POW256, equalsBytes, prefixedHexStringToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -7,10 +7,8 @@ import { FeeMarketEIP1559Transaction } from '../src/index.js'
 
 import testdata from './json/eip1559.json' // Source: Besu
 
-const common = new Common({
-  chain: Chain.Rinkeby,
-  hardfork: Hardfork.London,
-})
+const common = Common.custom({ chainId: 4 })
+common.setHardfork(Hardfork.London)
 
 const validAddress = prefixedHexStringToBytes('0x' + '01'.repeat(20))
 const validSlot = prefixedHexStringToBytes('0x' + '01'.repeat(32))
@@ -134,7 +132,11 @@ describe('[FeeMarketEIP1559Transaction]', () => {
     const data = testdata[0]
     const pkey = prefixedHexStringToBytes(data.privateKey)
     const txn = FeeMarketEIP1559Transaction.fromTxData(data, { common, freeze: false })
-    const newCommon = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London, eips: [2537] })
+
+    const newCommon = Common.custom({ chainId: 4 })
+    newCommon.setHardfork(Hardfork.London)
+    newCommon.setEIPs([2537])
+
     assert.notDeepEqual(newCommon, common, 'new common is different than original common')
     Object.defineProperty(txn, 'common', {
       get() {

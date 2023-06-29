@@ -131,11 +131,11 @@ Currently the following hardfork rules are supported:
 - `constantinople`
 - `petersburg`
 - `istanbul`
-- `muirGlacier` (only `mainnet` and `ropsten`)
+- `muirGlacier` (only `mainnet`)
 - `berlin` (`v5.2.0`+)
 - `london` (`v5.4.0`+)
 - `arrowGlacier` (only `mainnet`) (`v5.6.0`+)
-- `merge` (only `goerli`, `ropsten` and soon `mainnet`)
+- `merge` (only `goerli` and, soon, `mainnet`)
 
 Default: `merge` (taken from `Common.DEFAULT_HARDFORK`)
 

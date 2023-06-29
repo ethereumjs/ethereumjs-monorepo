@@ -1,10 +1,10 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
-import * as tape from 'tape'
-import * as td from 'testdouble'
+import tape from 'tape'
+import td from 'testdouble'
 
 import { Event } from '../../src/types'
-import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
+import genesisJSON from '../testdata/geth-genesis/post-merge.json'
 
 import { destroy, setup, wait } from './util'
 

@@ -592,11 +592,11 @@ export class Config {
 
   /**
    * Returns specified option or the default setting for whether DNS-based peer discovery
-   * is enabled based on chainName. `true` for ropsten, rinkeby, and goerli
+   * is enabled based on chainName. `true` for goerli
    */
   getDnsDiscovery(option: boolean | undefined): boolean {
     if (option !== undefined) return option
-    const dnsNets = ['ropsten', 'rinkeby', 'goerli', 'sepolia']
+    const dnsNets = ['goerli', 'sepolia']
     return dnsNets.includes(this.chainCommon.chainName())
   }
 

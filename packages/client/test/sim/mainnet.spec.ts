@@ -5,7 +5,7 @@ import {
   privateToAddress,
 } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
-import * as tape from 'tape'
+import tape from 'tape'
 
 import {
   filterKeywords,

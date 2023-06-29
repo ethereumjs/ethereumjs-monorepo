@@ -1,5 +1,5 @@
 import { bytesToHex, bytesToPrefixedHexString, randomBytes } from '@ethereumjs/util'
-import * as tape from 'tape'
+import tape from 'tape'
 
 import { INVALID_PARAMS } from '../../src/rpc/error-code'
 import { middleware, validators } from '../../src/rpc/validation'

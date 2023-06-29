@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
-import { Account, Address, concatBytesNoTypeCheck } from '@ethereumjs/util'
+import { Account, Address, concatBytesNoTypeCheck, hexStringToBytes } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
@@ -130,7 +130,60 @@ describe('BlockBuilder', () => {
       ),
     }
 
-    const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Istanbul })
+    // const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Istanbul })
+    const consensusConfig = {
+      clique: {
+        period: 10,
+        epoch: 30000,
+      },
+    }
+    const defaultChainData = {
+      config: {
+        chainId: 123456,
+        homesteadBlock: 0,
+        eip150Block: 0,
+        eip150Hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        eip155Block: 0,
+        eip158Block: 0,
+        byzantiumBlock: 0,
+        constantinopleBlock: 0,
+        petersburgBlock: 0,
+        istanbulBlock: 0,
+        berlinBlock: 0,
+        londonBlock: 0,
+        ...consensusConfig,
+      },
+      nonce: '0x0',
+      timestamp: '0x614b3731',
+      gasLimit: '0x47b760',
+      difficulty: '0x1',
+      mixHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      coinbase: '0x0000000000000000000000000000000000000000',
+      number: '0x0',
+      gasUsed: '0x0',
+      parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      baseFeePerGas: 7,
+    }
+
+    const A = {
+      address: new Address(hexStringToBytes('0b90087d864e82a284dca15923f3776de6bb016f')),
+      privateKey: hexStringToBytes(
+        '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'
+      ),
+    }
+    const addr = A.address.toString().slice(2)
+
+    const extraData2 = '0x' + '0'.repeat(64) + addr + '0'.repeat(130)
+    const chainData = {
+      ...defaultChainData,
+      extraData: extraData2,
+      alloc: { [addr]: { balance: '0x10000000000000000000' } },
+    }
+    const common = Common.fromGethGenesis(chainData, {
+      chain: 'devnet',
+      hardfork: Hardfork.Istanbul,
+    })
+
     // extraData: [vanity, activeSigner, seal]
     const extraData = concatBytesNoTypeCheck(
       new Uint8Array(32),

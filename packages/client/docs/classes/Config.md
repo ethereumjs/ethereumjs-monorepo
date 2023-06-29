@@ -642,7 +642,7 @@ ___
 ▸ **getDnsDiscovery**(`option`): `boolean`
 
 Returns specified option or the default setting for whether DNS-based peer discovery
-is enabled based on chainName. `true` for ropsten, rinkeby, and goerli
+is enabled based on chainName. `true` for goerli
 
 #### Parameters
 

@@ -13,7 +13,7 @@ import {
   equalsBytes,
   prefixedHexStringToBytes,
 } from '@ethereumjs/util'
-import Heap = require('qheap')
+import Heap from 'qheap'
 
 import type { Config } from '../config'
 import type { Peer } from '../net/peer'

@@ -50,7 +50,7 @@ describe('[Block]: Header functions', () => {
   })
 
   it('Initialization -> fromHeaderData()', () => {
-    const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     let header = BlockHeader.fromHeaderData(undefined, { common })
     assert.ok(bytesToHex(header.hash()), 'genesis block should initialize')
     assert.equal(
@@ -189,7 +189,7 @@ describe('[Block]: Header functions', () => {
   })
 
   it('Initialization -> Clique Blocks', () => {
-    const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
     const header = BlockHeader.fromHeaderData({ extraData: new Uint8Array(97) }, { common })
     assert.ok(bytesToHex(header.hash()), 'default block should initialize')
   })
@@ -240,7 +240,7 @@ describe('[Block]: Header functions', () => {
     }
 
     // PoA
-    common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
+    common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
     genesis = Block.fromBlockData({ header: { extraData: new Uint8Array(97) } }, { common })
 
     parentHash = genesis.hash()

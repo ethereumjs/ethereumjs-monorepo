@@ -324,8 +324,6 @@ export class EVM implements EVMInterface {
       }
     }
 
-    // We cache this promisified function as it's called from the main execution loop, and
-    // promisifying each time has a huge performance impact.
     this._emit = async (topic: string, data: any): Promise<void> => {
       return new Promise((resolve) => this.events.emit(topic as keyof EVMEvents, data, resolve))
     }

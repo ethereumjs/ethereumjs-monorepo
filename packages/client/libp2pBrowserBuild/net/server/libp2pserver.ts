@@ -2,7 +2,7 @@
 // eslint-disable-next-line implicit-dependencies/no-implicit, import/no-extraneous-dependencies
 import { keys } from 'libp2p-crypto'
 import { multiaddr } from 'multiaddr'
-import * as PeerId from 'peer-id'
+import PeerId from 'peer-id'
 
 import { Event } from '../../../src/types'
 import { Libp2pPeer } from '../../../src/net/peer'

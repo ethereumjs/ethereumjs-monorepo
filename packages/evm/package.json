@@ -46,7 +46,7 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "profiling": "0x ./benchmarks/run.js profiling",
-    "test:browser": "npx vitest run --browser.name=webkit --browser.provider=playwright --browser.headless",
+    "test:browser": "npx vitest run -c=vitest.config.browser.ts --browser.name=chrome  --browser.headless",
     "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
@@ -57,7 +57,7 @@
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.0.0",
     "mcl-wasm": "^0.7.1",
-    "rustbn.js": "^0.3.0"
+    "rustbn.wasm": "^0.1.0"
   },
   "devDependencies": {
     "@ethereumjs/statemanager": "^1.0.5",
