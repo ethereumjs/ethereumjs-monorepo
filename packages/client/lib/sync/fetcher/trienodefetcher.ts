@@ -283,6 +283,16 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           childNodes.unshift(val)
         } else {
           this.debug('leaf node found')
+
+          const account = Account.fromRlpSerializedAccount(node.value())
+          const storageRoot: Uint8Array = account.storageRoot
+          if (equalsBytes(storageRoot, KECCAK256_RLP) === false) {
+            // TODO
+          }
+          const codeHash: Uint8Array = account.codeHash
+          if (!(equalsBytes(codeHash, KECCAK256_NULL) === true)) {
+            // TODO
+          }
         }
 
         // TODO this for loop and contained logic is not verified - have to set up a sync where we pivot to a new state to see if unkown nodes are correctly identified
