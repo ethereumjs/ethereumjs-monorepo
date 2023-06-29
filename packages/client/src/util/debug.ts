@@ -37,7 +37,7 @@ const main = async () => {
   const common = new Common({ chain: '${execution.config.execCommon.chainName()}', hardfork: '${
     execution.hardfork
   }' })
-  const block = Block.fromRLPSerializedBlock(hexStringToBytes('${bytesToHex(
+  const block = Block.fromRLPSerializedBlock(prefixedHexStringToBytes('0x${bytesToHex(
     block.serialize()
   )}'), { common })
 
@@ -45,7 +45,7 @@ const main = async () => {
   const trie = new Trie({ db: stateDB, useKeyHashing: true })
   const stateManager = new DefaultStateManager({ trie, common })
   // Ensure we run on the right root
-  stateManager.setStateRoot(hexStringToBytes('${bytesToHex(
+  stateManager.setStateRoot(prefixedHexStringToBytes('0x${bytesToHex(
     await execution.vm.stateManager.getStateRoot()
   )}'))
 

@@ -13,7 +13,7 @@ import {
   bytesToPrefixedHexString,
   concatBytes,
   equalsBytes,
-  hexStringToBytes,
+  prefixedHexStringToBytes,
   setLengthLeft,
   short,
   toBytes,
@@ -408,7 +408,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     const trie = await this._getStorageTrie(address, account)
     const value = await trie.get(key)
     if (!this._storageCacheSettings.deactivate) {
-      this._storageCache?.put(address, key, value ?? hexStringToBytes('80'))
+      this._storageCache?.put(address, key, value ?? prefixedHexStringToBytes('0x80'))
     }
     const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
     return decoded
@@ -662,10 +662,10 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param proof the proof to prove
    */
   async verifyProof(proof: Proof): Promise<boolean> {
-    const rootHash = keccak256(hexStringToBytes(proof.accountProof[0]))
-    const key = hexStringToBytes(proof.address)
+    const rootHash = keccak256(prefixedHexStringToBytes(proof.accountProof[0]))
+    const key = prefixedHexStringToBytes(proof.address)
     const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
-      hexStringToBytes(rlpString)
+      prefixedHexStringToBytes(rlpString)
     )
 
     // This returns the account if the proof is valid.
@@ -676,19 +676,19 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       // Verify that the account is empty in the proof.
       const emptyBytes = new Uint8Array(0)
       const notEmptyErrorMsg = 'Invalid proof provided: account is not empty'
-      const nonce = unpadBytes(hexStringToBytes(proof.nonce))
+      const nonce = unpadBytes(prefixedHexStringToBytes(proof.nonce))
       if (!equalsBytes(nonce, emptyBytes)) {
         throw new Error(`${notEmptyErrorMsg} (nonce is not zero)`)
       }
-      const balance = unpadBytes(hexStringToBytes(proof.balance))
+      const balance = unpadBytes(prefixedHexStringToBytes(proof.balance))
       if (!equalsBytes(balance, emptyBytes)) {
         throw new Error(`${notEmptyErrorMsg} (balance is not zero)`)
       }
-      const storageHash = hexStringToBytes(proof.storageHash)
+      const storageHash = prefixedHexStringToBytes(proof.storageHash)
       if (!equalsBytes(storageHash, KECCAK256_RLP)) {
         throw new Error(`${notEmptyErrorMsg} (storageHash does not equal KECCAK256_RLP)`)
       }
-      const codeHash = hexStringToBytes(proof.codeHash)
+      const codeHash = prefixedHexStringToBytes(proof.codeHash)
       if (!equalsBytes(codeHash, KECCAK256_NULL)) {
         throw new Error(`${notEmptyErrorMsg} (codeHash does not equal KECCAK256_NULL)`)
       }
@@ -702,20 +702,22 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       if (balance !== BigInt(proof.balance)) {
         throw new Error(`${invalidErrorMsg} balance does not match`)
       }
-      if (!equalsBytes(storageRoot, hexStringToBytes(proof.storageHash))) {
+      if (!equalsBytes(storageRoot, prefixedHexStringToBytes(proof.storageHash))) {
         throw new Error(`${invalidErrorMsg} storageHash does not match`)
       }
-      if (!equalsBytes(codeHash, hexStringToBytes(proof.codeHash))) {
+      if (!equalsBytes(codeHash, prefixedHexStringToBytes(proof.codeHash))) {
         throw new Error(`${invalidErrorMsg} codeHash does not match`)
       }
     }
 
-    const storageRoot = hexStringToBytes(proof.storageHash)
+    const storageRoot = prefixedHexStringToBytes(proof.storageHash)
 
     for (const stProof of proof.storageProof) {
-      const storageProof = stProof.proof.map((value: PrefixedHexString) => hexStringToBytes(value))
-      const storageValue = setLengthLeft(hexStringToBytes(stProof.value), 32)
-      const storageKey = hexStringToBytes(stProof.key)
+      const storageProof = stProof.proof.map((value: PrefixedHexString) =>
+        prefixedHexStringToBytes(value)
+      )
+      const storageValue = setLengthLeft(prefixedHexStringToBytes(stProof.value), 32)
+      const storageKey = prefixedHexStringToBytes(stProof.key)
       const proofValue = await new Trie({ useKeyHashing: true }).verifyProof(
         storageRoot,
         storageKey,

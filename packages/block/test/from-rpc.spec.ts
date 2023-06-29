@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { bytesToPrefixedHexString, hexStringToBytes, randomBytes } from '@ethereumjs/util'
+import { bytesToPrefixedHexString, prefixedHexStringToBytes, randomBytes } from '@ethereumjs/util'
 import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
@@ -32,7 +32,7 @@ describe('[fromRPC]: block #2924874', () => {
 
   it('should create a block header with the correct hash', () => {
     const block = blockHeaderFromRpc(blockData, { common })
-    const hash = hexStringToBytes(blockData.hash)
+    const hash = prefixedHexStringToBytes(blockData.hash)
     assert.ok(equalsBytes(block.hash(), hash))
   })
 })

@@ -8,7 +8,7 @@ import {
   bytesToPrefixedHexString,
   concatBytes,
   equalsBytes,
-  hexStringToBytes,
+  prefixedHexStringToBytes,
   privateToAddress,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -21,7 +21,9 @@ import {
 
 import type { AccessList, AccessListBytesItem } from '../src/index.js'
 
-const pKey = hexStringToBytes('4646464646464646464646464646464646464646464646464646464646464646')
+const pKey = prefixedHexStringToBytes(
+  '0x4646464646464646464646464646464646464646464646464646464646464646'
+)
 const address = privateToAddress(pKey)
 
 const common = new Common({
@@ -42,8 +44,8 @@ const txTypes = [
   },
 ]
 
-const validAddress = hexStringToBytes('01'.repeat(20))
-const validSlot = hexStringToBytes('01'.repeat(32))
+const validAddress = prefixedHexStringToBytes('0x' + '01'.repeat(20))
+const validSlot = prefixedHexStringToBytes('0x' + '01'.repeat(32))
 const chainId = BigInt(Chain.Mainnet)
 
 describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-2930 Compatibility', () => {
@@ -171,7 +173,10 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
 
       try {
         // Correct tx type + RLP-encoded empty list
-        const serialized = concatBytes(new Uint8Array([txType.type]), hexStringToBytes('c0'))
+        const serialized = concatBytes(
+          new Uint8Array([txType.type]),
+          prefixedHexStringToBytes('0xc0')
+        )
         txType.class.fromSerializedTx(serialized, {})
       } catch (e: any) {
         assert.ok(
@@ -228,7 +233,7 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
     for (const txType of txTypes) {
       let accessList: any[] = [
         [
-          hexStringToBytes('01'.repeat(21)), // Address of 21 bytes instead of 20
+          prefixedHexStringToBytes('0x' + '01'.repeat(21)), // Address of 21 bytes instead of 20
           [],
         ],
       ]
@@ -246,7 +251,7 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
         [
           validAddress,
           [
-            hexStringToBytes('01'.repeat(31)), // Slot of 31 bytes instead of 32
+            prefixedHexStringToBytes('0x' + '01'.repeat(31)), // Slot of 31 bytes instead of 32
           ],
         ],
       ]
@@ -310,7 +315,7 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
     for (const txType of txTypes) {
       let tx = txType.class.fromTxData(
         {
-          data: hexStringToBytes('010200'),
+          data: prefixedHexStringToBytes('0x010200'),
           to: validAddress,
           accessList: [[validAddress, [validSlot]]],
           chainId,
@@ -388,13 +393,13 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
       'should initialize correctly from its own data'
     )
 
-    const validAddress = hexStringToBytes('01'.repeat(20))
-    const validSlot = hexStringToBytes('01'.repeat(32))
+    const validAddress = prefixedHexStringToBytes('0x' + '01'.repeat(20))
+    const validSlot = prefixedHexStringToBytes('0x' + '01'.repeat(32))
     const chainId = BigInt(1)
     try {
       AccessListEIP2930Transaction.fromTxData(
         {
-          data: hexStringToBytes('010200'),
+          data: prefixedHexStringToBytes('0x010200'),
           to: validAddress,
           accessList: [[validAddress, [validSlot]]],
           chainId,
@@ -430,7 +435,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
   it(`should return right upfront cost`, () => {
     let tx = AccessListEIP2930Transaction.fromTxData(
       {
-        data: hexStringToBytes('010200'),
+        data: prefixedHexStringToBytes('0x010200'),
         to: validAddress,
         accessList: [[validAddress, [validSlot]]],
         chainId,
@@ -462,7 +467,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
     // In this Tx, `to` is `undefined`, so we should charge homestead creation gas.
     tx = AccessListEIP2930Transaction.fromTxData(
       {
-        data: hexStringToBytes('010200'),
+        data: prefixedHexStringToBytes('0x010200'),
         accessList: [[validAddress, [validSlot]]],
         chainId,
       },
@@ -514,20 +519,20 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
   it('unsigned tx -> getHashedMessageToSign()/getMessageToSign()', () => {
     const unsignedTx = AccessListEIP2930Transaction.fromTxData(
       {
-        data: hexStringToBytes('010200'),
+        data: prefixedHexStringToBytes('0x010200'),
         to: validAddress,
         accessList: [[validAddress, [validSlot]]],
         chainId,
       },
       { common }
     )
-    const expectedHash = hexStringToBytes(
-      '78528e2724aa359c58c13e43a7c467eb721ce8d410c2a12ee62943a3aaefb60b'
+    const expectedHash = prefixedHexStringToBytes(
+      '0x78528e2724aa359c58c13e43a7c467eb721ce8d410c2a12ee62943a3aaefb60b'
     )
     assert.deepEqual(unsignedTx.getHashedMessageToSign(), expectedHash), 'correct hashed version'
 
-    const expectedSerialization = hexStringToBytes(
-      '01f858018080809401010101010101010101010101010101010101018083010200f838f7940101010101010101010101010101010101010101e1a00101010101010101010101010101010101010101010101010101010101010101'
+    const expectedSerialization = prefixedHexStringToBytes(
+      '0x01f858018080809401010101010101010101010101010101010101018083010200f838f7940101010101010101010101010101010101010101e1a00101010101010101010101010101010101010101010101010101010101010101'
     )
     assert.deepEqual(
       unsignedTx.getMessageToSign(),
@@ -540,18 +545,18 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
   // https://github.com/INFURA/go-ethlibs/blob/75b2a52a39d353ed8206cffaf68d09bd1b154aae/eth/transaction_signing_test.go#L87
 
   it('should sign transaction correctly and return expected JSON', () => {
-    const address = hexStringToBytes('0000000000000000000000000000000000001337')
-    const slot1 = hexStringToBytes(
-      '0000000000000000000000000000000000000000000000000000000000000000'
+    const address = prefixedHexStringToBytes('0x0000000000000000000000000000000000001337')
+    const slot1 = prefixedHexStringToBytes(
+      '0x0000000000000000000000000000000000000000000000000000000000000000'
     )
     const txData = {
-      data: hexStringToBytes(''),
+      data: prefixedHexStringToBytes('0x'),
       gasLimit: 0x62d4,
       gasPrice: 0x3b9aca00,
       nonce: 0x00,
-      to: new Address(hexStringToBytes('df0a88b2b68c673713a8ec826003676f272e3573')),
+      to: new Address(prefixedHexStringToBytes('0xdf0a88b2b68c673713a8ec826003676f272e3573')),
       value: 0x01,
-      chainId: bytesToBigInt(hexStringToBytes('796f6c6f763378')),
+      chainId: bytesToBigInt(prefixedHexStringToBytes('0x796f6c6f763378')),
       accessList: <any>[[address, [slot1]]],
     }
 
@@ -566,24 +571,24 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
     })
     usedCommon.setEIPs([2718, 2929, 2930])
 
-    const expectedUnsignedRaw = hexStringToBytes(
-      '01f86587796f6c6f76337880843b9aca008262d494df0a88b2b68c673713a8ec826003676f272e35730180f838f7940000000000000000000000000000000000001337e1a00000000000000000000000000000000000000000000000000000000000000000808080'
+    const expectedUnsignedRaw = prefixedHexStringToBytes(
+      '0x01f86587796f6c6f76337880843b9aca008262d494df0a88b2b68c673713a8ec826003676f272e35730180f838f7940000000000000000000000000000000000001337e1a00000000000000000000000000000000000000000000000000000000000000000808080'
     )
-    const pkey = hexStringToBytes(
-      'fad9c8855b740a0b7ed4c221dbad0f33a83a49cad6b3fe8d5817ac83d38b6a19'
+    const pkey = prefixedHexStringToBytes(
+      '0xfad9c8855b740a0b7ed4c221dbad0f33a83a49cad6b3fe8d5817ac83d38b6a19'
     )
-    const expectedSigned = hexStringToBytes(
-      '01f8a587796f6c6f76337880843b9aca008262d494df0a88b2b68c673713a8ec826003676f272e35730180f838f7940000000000000000000000000000000000001337e1a0000000000000000000000000000000000000000000000000000000000000000080a0294ac94077b35057971e6b4b06dfdf55a6fbed819133a6c1d31e187f1bca938da00be950468ba1c25a5cb50e9f6d8aa13c8cd21f24ba909402775b262ac76d374d'
+    const expectedSigned = prefixedHexStringToBytes(
+      '0x01f8a587796f6c6f76337880843b9aca008262d494df0a88b2b68c673713a8ec826003676f272e35730180f838f7940000000000000000000000000000000000001337e1a0000000000000000000000000000000000000000000000000000000000000000080a0294ac94077b35057971e6b4b06dfdf55a6fbed819133a6c1d31e187f1bca938da00be950468ba1c25a5cb50e9f6d8aa13c8cd21f24ba909402775b262ac76d374d'
     )
-    const expectedHash = hexStringToBytes(
-      'bbd570a3c6acc9bb7da0d5c0322fe4ea2a300db80226f7df4fef39b2d6649eec'
+    const expectedHash = prefixedHexStringToBytes(
+      '0xbbd570a3c6acc9bb7da0d5c0322fe4ea2a300db80226f7df4fef39b2d6649eec'
     )
     const v = BigInt(0)
     const r = bytesToBigInt(
-      hexStringToBytes('294ac94077b35057971e6b4b06dfdf55a6fbed819133a6c1d31e187f1bca938d')
+      prefixedHexStringToBytes('0x294ac94077b35057971e6b4b06dfdf55a6fbed819133a6c1d31e187f1bca938d')
     )
     const s = bytesToBigInt(
-      hexStringToBytes('0be950468ba1c25a5cb50e9f6d8aa13c8cd21f24ba909402775b262ac76d374d')
+      prefixedHexStringToBytes('0x0be950468ba1c25a5cb50e9f6d8aa13c8cd21f24ba909402775b262ac76d374d')
     )
 
     const unsignedTx = AccessListEIP2930Transaction.fromTxData(txData, { common: usedCommon })

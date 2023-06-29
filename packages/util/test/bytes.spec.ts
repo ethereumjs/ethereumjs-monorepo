@@ -15,6 +15,7 @@ import {
   intToPrefixedHexString,
   intToUnpaddedBytes,
   isZeroAddress,
+  prefixedHexStringToBytes,
   setLengthLeft,
   setLengthRight,
   short,
@@ -472,5 +473,17 @@ describe('intToUnpaddedBytes', () => {
 describe('bigIntToHex', () => {
   it('should pass on correct input', () => {
     assert.equal(bigIntToHex(BigInt(1)), '0x1')
+  })
+})
+
+describe('prefixedHexStringToBytes', () => {
+  it('should throw on non-prefixed strings', () => {
+    assert.throws(() => {
+      prefixedHexStringToBytes('aabbcc112233')
+    })
+  })
+  it('should convert prefixed hex-strings', () => {
+    const converted = prefixedHexStringToBytes('0x1')
+    assert.deepEqual(converted, new Uint8Array([1]))
   })
 })

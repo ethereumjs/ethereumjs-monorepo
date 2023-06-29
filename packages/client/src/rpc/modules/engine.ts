@@ -6,7 +6,7 @@ import {
   bytesToHex,
   bytesToPrefixedHexString,
   equalsBytes,
-  hexStringToBytes,
+  prefixedHexStringToBytes,
   toBytes,
   zeros,
 } from '@ethereumjs/util'
@@ -270,7 +270,7 @@ const assembleBlock = async (
   } catch (error) {
     const validationError = `Error assembling block during from payload: ${error}`
     config.logger.error(validationError)
-    const latestValidHash = await validHash(hexStringToBytes(payload.parentHash), chain)
+    const latestValidHash = await validHash(prefixedHexStringToBytes(payload.parentHash), chain)
     const response = {
       status: `${error}`.includes('Invalid blockHash') ? Status.INVALID_BLOCK_HASH : Status.INVALID,
       latestValidHash,
@@ -470,7 +470,10 @@ export class Engine {
       if (!response) {
         const validationError = `Error assembling block during init`
         this.config.logger.debug(validationError)
-        const latestValidHash = await validHash(hexStringToBytes(payload.parentHash), this.chain)
+        const latestValidHash = await validHash(
+          prefixedHexStringToBytes(payload.parentHash),
+          this.chain
+        )
         response = { status: Status.INVALID, latestValidHash, validationError }
       }
       return response
@@ -498,7 +501,10 @@ export class Engine {
           for (let vIndex = 0; vIndex < versionedHashes.length; vIndex++) {
             // if mismatch, record error and break
             if (
-              !equalsBytes(hexStringToBytes(versionedHashes[vIndex]), txVersionedHashes[vIndex])
+              !equalsBytes(
+                prefixedHexStringToBytes(versionedHashes[vIndex]),
+                txVersionedHashes[vIndex]
+              )
             ) {
               validationError = `Error verifying versionedHashes: mismatch at index=${vIndex} expected=${short(
                 txVersionedHashes[vIndex]
@@ -512,13 +518,13 @@ export class Engine {
       // if there was a validation error return invalid
       if (validationError !== null) {
         this.config.logger.debug(validationError)
-        const latestValidHash = await validHash(hexStringToBytes(parentHash), this.chain)
+        const latestValidHash = await validHash(prefixedHexStringToBytes(parentHash), this.chain)
         const response = { status: Status.INVALID, latestValidHash, validationError }
         return response
       }
     } else if (versionedHashes !== undefined && versionedHashes !== null) {
       const validationError = `Invalid versionedHashes before EIP-4844 is activated`
-      const latestValidHash = await validHash(hexStringToBytes(parentHash), this.chain)
+      const latestValidHash = await validHash(prefixedHexStringToBytes(parentHash), this.chain)
       const response = { status: Status.INVALID, latestValidHash, validationError }
       return response
     }
@@ -541,7 +547,7 @@ export class Engine {
     // is pow block which this client would like to mint and attempt proposing it
     const optimisticLookup = await this.service.beaconSync?.extendChain(block)
 
-    const blockExists = await validBlock(hexStringToBytes(blockHash), this.chain)
+    const blockExists = await validBlock(prefixedHexStringToBytes(blockHash), this.chain)
     if (blockExists) {
       const isBlockExecuted = await this.vm.stateManager.hasStateRoot(blockExists.header.stateRoot)
       if (isBlockExecuted) {
@@ -558,11 +564,11 @@ export class Engine {
       // get the parent from beacon skeleton or from remoteBlocks cache or from the chain
       const parent =
         (await this.service.beaconSync?.skeleton.getBlockByHash(
-          hexStringToBytes(parentHash),
+          prefixedHexStringToBytes(parentHash),
           true
         )) ??
         this.remoteBlocks.get(parentHash.slice(2)) ??
-        (await this.chain.getBlock(hexStringToBytes(parentHash)))
+        (await this.chain.getBlock(prefixedHexStringToBytes(parentHash)))
 
       // Validations with parent
       if (!parent._common.gteHardfork(Hardfork.Paris)) {
@@ -584,7 +590,7 @@ export class Engine {
           block.validateBlobTransactions(parent.header)
         } catch (error: any) {
           const validationError = `Invalid 4844 transactions: ${error}`
-          const latestValidHash = await validHash(hexStringToBytes(parentHash), this.chain)
+          const latestValidHash = await validHash(prefixedHexStringToBytes(parentHash), this.chain)
           const response = { status: Status.INVALID, latestValidHash, validationError }
           return response
         }
@@ -1033,7 +1039,7 @@ export class Engine {
    * @returns Instance of {@link ExecutionPayloadV1} or an error
    */
   private async getPayload(params: [Bytes8]) {
-    const payloadId = hexStringToBytes(params[0])
+    const payloadId = prefixedHexStringToBytes(params[0])
     try {
       const built = await this.pendingBlock.build(payloadId)
       if (!built) {
@@ -1119,7 +1125,7 @@ export class Engine {
         message: 'More than 32 execution payload bodies requested',
       }
     }
-    const hashes = params[0].map(hexStringToBytes)
+    const hashes = params[0].map(prefixedHexStringToBytes)
     const blocks: (ExecutionPayloadBodyV1 | null)[] = []
     for (const hash of hashes) {
       try {

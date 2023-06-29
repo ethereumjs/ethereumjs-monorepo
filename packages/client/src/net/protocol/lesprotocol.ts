@@ -3,8 +3,8 @@ import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToInt,
-  hexStringToBytes,
   intToBytes,
+  prefixedHexStringToBytes,
 } from '@ethereumjs/util'
 
 import { Protocol } from './protocol'
@@ -190,7 +190,7 @@ export class LesProtocol extends Protocol {
     const nextFork = this.config.chainCommon.nextHardforkBlockOrTimestamp(
       this.config.chainCommon.hardfork()
     )
-    const forkID = [hexStringToBytes(forkHash.slice(2)), bigIntToUnpaddedBytes(nextFork ?? 0n)]
+    const forkID = [prefixedHexStringToBytes(forkHash), bigIntToUnpaddedBytes(nextFork ?? 0n)]
 
     return {
       networkId: bigIntToUnpaddedBytes(this.chain.networkId),

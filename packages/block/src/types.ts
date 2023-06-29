@@ -6,6 +6,7 @@ import type {
   BigIntLike,
   BytesLike,
   JsonRpcWithdrawal,
+  PrefixedHexString,
   WithdrawalBytes,
   WithdrawalData,
 } from '@ethereumjs/util'
@@ -190,29 +191,31 @@ export interface JsonRpcBlock {
   excessDataGas?: string // If EIP-4844 is enabled for this block, returns the excess data gas for the block
 }
 
+// Note: all these strings are 0x-prefixed
 export type WithdrawalV1 = {
-  index: string // Quantity, 8 Bytes
-  validatorIndex: string // Quantity, 8 bytes
-  address: string // DATA, 20 bytes
-  amount: string // Quantity, 32 bytes
+  index: PrefixedHexString // Quantity, 8 Bytes
+  validatorIndex: PrefixedHexString // Quantity, 8 bytes
+  address: PrefixedHexString // DATA, 20 bytes
+  amount: PrefixedHexString // Quantity, 32 bytes
 }
 
+// Note: all these strings are 0x-prefixed
 export type ExecutionPayload = {
-  parentHash: string // DATA, 32 Bytes
-  feeRecipient: string // DATA, 20 Bytes
-  stateRoot: string // DATA, 32 Bytes
-  receiptsRoot: string // DATA, 32 bytes
-  logsBloom: string // DATA, 256 Bytes
-  prevRandao: string // DATA, 32 Bytes
-  blockNumber: string // QUANTITY, 64 Bits
-  gasLimit: string // QUANTITY, 64 Bits
-  gasUsed: string // QUANTITY, 64 Bits
-  timestamp: string // QUANTITY, 64 Bits
-  extraData: string // DATA, 0 to 32 Bytes
-  baseFeePerGas: string // QUANTITY, 256 Bits
-  blockHash: string // DATA, 32 Bytes
-  transactions: string[] // Array of DATA - Array of transaction rlp strings,
+  parentHash: PrefixedHexString // DATA, 32 Bytes
+  feeRecipient: PrefixedHexString // DATA, 20 Bytes
+  stateRoot: PrefixedHexString // DATA, 32 Bytes
+  receiptsRoot: PrefixedHexString // DATA, 32 bytes
+  logsBloom: PrefixedHexString // DATA, 256 Bytes
+  prevRandao: PrefixedHexString // DATA, 32 Bytes
+  blockNumber: PrefixedHexString // QUANTITY, 64 Bits
+  gasLimit: PrefixedHexString // QUANTITY, 64 Bits
+  gasUsed: PrefixedHexString // QUANTITY, 64 Bits
+  timestamp: PrefixedHexString // QUANTITY, 64 Bits
+  extraData: PrefixedHexString // DATA, 0 to 32 Bytes
+  baseFeePerGas: PrefixedHexString // QUANTITY, 256 Bits
+  blockHash: PrefixedHexString // DATA, 32 Bytes
+  transactions: PrefixedHexString[] // Array of DATA - Array of transaction rlp strings,
   withdrawals?: WithdrawalV1[] // Array of withdrawal objects
-  dataGasUsed?: string // QUANTITY, 64 Bits
-  excessDataGas?: string // QUANTITY, 64 Bits
+  dataGasUsed?: PrefixedHexString // QUANTITY, 64 Bits
+  excessDataGas?: PrefixedHexString // QUANTITY, 64 Bits
 }

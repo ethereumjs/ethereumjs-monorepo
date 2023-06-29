@@ -6,7 +6,7 @@ import {
   Account,
   Address,
   bytesToPrefixedHexString,
-  hexStringToBytes,
+  prefixedHexStringToBytes,
   randomBytes,
 } from '@ethereumjs/util'
 import tape from 'tape'
@@ -47,7 +47,9 @@ tape(`${method}: call with valid parameters`, async (t) => {
     hardfork: Hardfork.Cancun,
   })
   common.setHardfork(Hardfork.Cancun)
-  const pkey = hexStringToBytes('9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
+  const pkey = prefixedHexStringToBytes(
+    '0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355'
+  )
   const address = Address.fromPrivateKey(pkey)
   await service.execution.vm.stateManager.putAccount(address, new Account())
   const account = await service.execution.vm.stateManager.getAccount(address)
@@ -137,7 +139,9 @@ tape(`${method}: call with valid parameters on pre-Shanghai block`, async (t) =>
     }
   )
   common.setHardfork(Hardfork.London)
-  const pkey = hexStringToBytes('9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
+  const pkey = prefixedHexStringToBytes(
+    '0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355'
+  )
   const address = Address.fromPrivateKey(pkey)
   await service.execution.vm.stateManager.putAccount(address, new Account())
   const account = await service.execution.vm.stateManager.getAccount(address)

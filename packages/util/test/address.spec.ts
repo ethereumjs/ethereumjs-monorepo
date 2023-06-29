@@ -1,7 +1,7 @@
 import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { Address, hexStringToBytes, toBytes } from '../src/index.js'
+import { Address, prefixedHexStringToBytes, toBytes } from '../src/index.js'
 
 import eip1014Testdata from './testdata/eip1014Examples.json'
 
@@ -98,7 +98,7 @@ describe('Address', () => {
   it('should compare equality properly', () => {
     const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
     const address1 = Address.fromString(str)
-    const address2 = new Address(hexStringToBytes(str))
+    const address2 = new Address(prefixedHexStringToBytes(str))
     assert.ok(address1.equals(address2))
     assert.ok(equalsBytes(address1.bytes, address2.bytes))
 

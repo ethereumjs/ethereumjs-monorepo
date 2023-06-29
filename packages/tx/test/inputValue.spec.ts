@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, hexStringToBytes, toBytes } from '@ethereumjs/util'
+import { Address, prefixedHexStringToBytes, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -153,7 +153,7 @@ describe('[Invalid Array Input values]', () => {
       for (const txType of txTypes) {
         let tx = TransactionFactory.fromTxData({ type: txType })
         if (signed) {
-          tx = tx.sign(hexStringToBytes('42'.repeat(32)))
+          tx = tx.sign(prefixedHexStringToBytes('0x' + '42'.repeat(32)))
         }
         const rawValues = tx.raw()
         for (let x = 0; x < rawValues.length; x++) {
@@ -222,14 +222,14 @@ describe('[Invalid Access Lists]', () => {
               accessList: <any>invalidAccessListItem,
             })
             if (signed) {
-              tx = tx.sign(hexStringToBytes('42'.repeat(32)))
+              tx = tx.sign(prefixedHexStringToBytes('0x' + '42'.repeat(32)))
             }
             assert.fail('did not fail on `fromTxData`')
           } catch (e: any) {
             assert.ok(true, 'failed ok on decoding in `fromTxData`')
             tx = TransactionFactory.fromTxData({ type: txType })
             if (signed) {
-              tx = tx.sign(hexStringToBytes('42'.repeat(32)))
+              tx = tx.sign(prefixedHexStringToBytes('0x' + '42'.repeat(32)))
             }
           }
           const rawValues = tx!.raw()

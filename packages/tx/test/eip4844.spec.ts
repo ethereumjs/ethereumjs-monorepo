@@ -7,8 +7,8 @@ import {
   concatBytes,
   equalsBytes,
   getBlobs,
-  hexStringToBytes,
   initKZG,
+  prefixedHexStringToBytes,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
@@ -449,7 +449,9 @@ describe('hash() and signature verification', () => {
         'produced the correct transaction hash'
       )
       const signedTx = unsignedTx.sign(
-        hexStringToBytes('45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
+        prefixedHexStringToBytes(
+          '0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8'
+        )
       )
 
       assert.equal(
