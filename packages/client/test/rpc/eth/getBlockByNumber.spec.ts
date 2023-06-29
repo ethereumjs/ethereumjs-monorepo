@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { prefixedHexStringToBytes } from '@ethereumjs/util'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { baseRequest, createClient, createManager, dummy, params, startRPC } from '../helpers'

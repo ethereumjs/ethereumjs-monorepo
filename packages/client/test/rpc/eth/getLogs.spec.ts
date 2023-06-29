@@ -1,6 +1,6 @@
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bytesToPrefixedHexString, prefixedHexStringToBytes } from '@ethereumjs/util'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import pow from '../../testdata/geth-genesis/pow.json'

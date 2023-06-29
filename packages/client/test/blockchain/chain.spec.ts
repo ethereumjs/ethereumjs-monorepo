@@ -4,7 +4,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { KeyEncoding, ValueEncoding } from '@ethereumjs/util'
 import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'

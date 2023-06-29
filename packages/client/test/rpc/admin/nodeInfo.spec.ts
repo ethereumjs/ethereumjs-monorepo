@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 

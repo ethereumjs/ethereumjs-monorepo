@@ -9,10 +9,10 @@ import {
   prefixedHexStringToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { TOO_LARGE_REQUEST } from '../../../src/rpc/error-code'
-import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
+import * as genesisJSON from '../../testdata/geth-genesis/eip4844.json'
 import preShanghaiGenesisJson from '../../testdata/geth-genesis/post-merge.json'
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'
 import { checkError } from '../util'

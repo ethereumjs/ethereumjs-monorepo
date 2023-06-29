@@ -13,7 +13,7 @@ import {
   equalsBytes,
   prefixedHexStringToBytes,
 } from '@ethereumjs/util'
-import Heap from 'qheap'
+import QHeap from 'qheap'
 
 import type { Config } from '../config'
 import type { Peer } from '../net/peer'
@@ -27,6 +27,7 @@ import type {
 } from '@ethereumjs/tx'
 import type { VM } from '@ethereumjs/vm'
 
+const Heap = QHeap
 // Configuration constants
 const MIN_GAS_PRICE_BUMP_PERCENT = 10
 const MIN_GAS_PRICE = BigInt(100000000) // .1 GWei

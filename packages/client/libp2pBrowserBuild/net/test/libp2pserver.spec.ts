@@ -1,8 +1,8 @@
 import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils'
 import { EventEmitter } from 'events'
 import { multiaddr } from 'multiaddr'
-import tape from 'tape'
-import td from 'testdouble'
+import * as tape from 'tape'
+import * as td from 'testdouble'
 
 import { Config } from '../../../src/config'
 import { getLogger } from '../../../src/logging'

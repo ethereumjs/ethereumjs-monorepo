@@ -7,7 +7,7 @@ import {
 } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import { randomBytes } from 'node:crypto'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import {
   createBlobTxs,

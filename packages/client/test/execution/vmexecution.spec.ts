@@ -3,16 +3,16 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
 import { VMExecution } from '../../src/execution'
 import { closeRPC, setupChain } from '../rpc/helpers'
-import blocksDataGoerli from '../testdata/blocks/goerli.json'
-import blocksDataMainnet from '../testdata/blocks/mainnet.json'
-import testnet from '../testdata/common/testnet.json'
-import shanghaiJSON from '../testdata/geth-genesis/withdrawals.json'
+import * as blocksDataGoerli from '../testdata/blocks/goerli.json'
+import * as blocksDataMainnet from '../testdata/blocks/mainnet.json'
+import * as testnet from '../testdata/common/testnet.json'
+import * as shanghaiJSON from '../testdata/geth-genesis/withdrawals.json'
 
 tape('[VMExecution]', async (t) => {
   t.test('Initialization', async (t) => {

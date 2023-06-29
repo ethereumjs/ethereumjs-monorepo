@@ -1,5 +1,5 @@
 import { Blockchain } from '@ethereumjs/blockchain'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { Config } from '../../src/config'
 import { PeerPool } from '../../src/net/peerpool'

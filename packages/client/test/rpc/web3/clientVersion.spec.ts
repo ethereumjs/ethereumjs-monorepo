@@ -1,5 +1,5 @@
 import { platform } from 'os'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { baseRequest, baseSetup, params } from '../helpers'
 

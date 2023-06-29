@@ -1,8 +1,8 @@
 import { equalsBytes, prefixedHexStringToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { EventEmitter } from 'events'
 import { multiaddr } from 'multiaddr'
-import tape from 'tape'
-import td from 'testdouble'
+import * as tape from 'tape'
+import * as td from 'testdouble'
 
 import { Config } from '../../../src/config'
 import { Event } from '../../../src/types'

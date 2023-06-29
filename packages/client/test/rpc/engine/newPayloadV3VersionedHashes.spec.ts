@@ -1,10 +1,10 @@
 import { BlockHeader } from '@ethereumjs/block'
-import tape from 'tape'
-import td from 'testdouble'
+import * as tape from 'tape'
+import * as td from 'testdouble'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import blocks from '../../testdata/blocks/beacon.json'
-import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
+import * as blocks from '../../testdata/blocks/beacon.json'
+import * as genesisJSON from '../../testdata/geth-genesis/eip4844.json'
 import { baseRequest, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 

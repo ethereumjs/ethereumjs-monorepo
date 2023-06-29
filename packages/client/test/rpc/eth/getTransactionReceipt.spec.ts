@@ -13,7 +13,7 @@ import {
   randomBytes,
 } from '@ethereumjs/util'
 import kzg from 'c-kzg'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import pow from '../../testdata/geth-genesis/pow.json'
 import {
