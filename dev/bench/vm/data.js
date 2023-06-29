@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1688039030243,
+  "lastUpdate": 1688053296579,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "6b8d9f4e3032d9bd04e8fafe020887f4aef29ccb",
-          "message": "client: fix new payload 4844 validations (#2784)\n\n* client: fix new payload 4844 validations\r\n\r\n* fix spec",
-          "timestamp": "2023-06-14T16:28:59+02:00",
-          "tree_id": "aa77096fa13938f4e44b9ac6c533457f99892606",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6b8d9f4e3032d9bd04e8fafe020887f4aef29ccb"
-        },
-        "date": 1686753144124,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31824,
-            "range": "±4.88%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31445,
-            "range": "±2.89%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31488,
-            "range": "±2.84%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25859,
-            "range": "±10.66%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29825,
-            "range": "±3.07%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±13.55%",
             "unit": "ops/sec",
             "extra": "70 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9132b40326493c44aca33c7fcfb0ad86efa450d5",
+          "message": "VM Browser Example and Various Browser Compatibility Fixes (#2840)\n\n* EVM: update EC precompile dependency to new package name rustbn.wasm -> rustbn-wasm\n\n* Rebuild package-lock.json\n\n* Activate EVM CI browser test run\n\n* EVM: add dedicated vite.config.ts to avoid have to run npx vite pointing to browser config\n\n* VM/EVM: another vite.config.ts, exlude from linting\n\n* VM: guard DEBUG property setting to fix Vite breaking\n\n* EVM: update mcl-wasm import from require -> import\n\n* VM: add browser example\n\n* Make mcl namespace import\n\n---------\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-06-29T11:34:53-04:00",
+          "tree_id": "4d369b022d2575607f4a45d739e9d5e7b9d6816a",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9132b40326493c44aca33c7fcfb0ad86efa450d5"
+        },
+        "date": 1688053295862,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31328,
+            "range": "±5.35%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31639,
+            "range": "±3.09%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31399,
+            "range": "±3.14%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25708,
+            "range": "±11.32%",
+            "unit": "ops/sec",
+            "extra": "67 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30528,
+            "range": "±3.31%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
