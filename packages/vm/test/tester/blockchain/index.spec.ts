@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest'
+import { suite } from 'vitest'
 
 import { BlockchainTests } from '../runners/BlockchainTestsRunner'
 import { defaultBlockchainTestArgs } from '../runners/runnerUtils'
@@ -17,9 +17,12 @@ const parseInput = (input: string | undefined, bool: boolean = false) => {
 }
 
 const input = {
-  forks: parseInput(process.env.FORK),
+  ['verify-test-amount-alltests']: 0,
+  count: parseInput(process.env.COUNT) !== undefined ? parseInt(process.env.COUNT!) : undefined,
+  fork: parseInput(process.env.FORK),
   file: parseInput(process.env.FILE),
-  count: parseInput(process.env.COUNT),
+  dir: parseInput(process.env.DIR),
+  excludedir: parseInput(process.env.EXCLUDEDIR),
   test: parseInput(process.env.TEST) ?? defaultBlockchainTestArgs.test,
   skip: parseInput(process.env.SKIP) ?? defaultBlockchainTestArgs.skip,
   customStateTest:
@@ -30,28 +33,42 @@ const input = {
   value: parseInput(process.env.VALUE) !== undefined ? parseInt(process.env.VALUE!) : undefined,
 }
 
-const forks = input.forks ?? 'Paris'
-const hardforks = forks.split(',')
-describe(
-  `VM Blockchain Test: ${input.file !== undefined ? input.file : hardforks} `,
+const testArgs = { ...defaultBlockchainTestArgs, ...input }
+testArgs.file !== undefined && (testArgs['verify-test-amount-alltests'] = 0)
+const blockchainTest = new BlockchainTests(testArgs)
+const runSuite = suite(
+  `${testArgs.fork} (${testArgs.dir ?? blockchainTest.expectedTests})`,
   async () => {
-    const testArgs = { ...defaultBlockchainTestArgs, ...input }
-    for await (const hardfork of hardforks) {
-      testArgs.file !== undefined && (testArgs['verify-test-amount-alltests'] = 0)
-      testArgs.count !== undefined && (testArgs['expected-test-amount'] = parseInt(testArgs.count))
-      testArgs.fork = hardfork
-      const test = new BlockchainTests(testArgs)
-      console.log({
-        test: 'blockchain',
-        skip: testArgs.skip,
-        runSkipped: testArgs.runSkipped,
-        fork: testArgs.fork,
-        expected: test.expectedTests,
-      })
-      it(`${testArgs.fork} (${test.expectedTests})`, async () => {
-        await test.runTests()
-      })
-    }
-  },
-  { timeout: 10000 }
+    await blockchainTest.runTests()
+  }
 )
+
+runSuite.on('beforeAll', (suite) => {
+  const testSuite = {
+    ...testArgs,
+    test: 'blockchain',
+    verifyTestAmountAllTests: testArgs['verify-test-amount-alltests'] > 0 ? true : false,
+    expected: blockchainTest.expectedTests > 0 ? blockchainTest.expectedTests : suite.tasks.length,
+    tasks: suite.tasks.length,
+  }
+  console.log(
+    Object.fromEntries(
+      Object.entries(testSuite).filter(([_, value]) => value !== undefined && value !== '')
+    )
+  )
+})
+
+runSuite.on('afterAll', (suite) => {
+  const completed: Map<string, string[]> = new Map()
+  for (const task of suite.tasks) {
+    const [name, id] = task.name.split(':')
+    if (!completed.has(name)) {
+      completed.set(name, [])
+    }
+    completed.get(name)!.push(id.slice(name.length + 1))
+  }
+  console.log(`Completed: ${suite.tasks.length}`)
+  console.log(Object.fromEntries([...completed.entries()].map(([name, ids]) => [name, ids.length])))
+})
+
+runSuite
