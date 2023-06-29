@@ -14,7 +14,7 @@ import {
   intToBytes,
   short,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
 import { Bloom } from './bloom/index.js'
@@ -30,6 +30,7 @@ import type {
 } from './types.js'
 import type { VM } from './vm.js'
 import type { EVM } from '@ethereumjs/evm'
+const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('vm:block')
 

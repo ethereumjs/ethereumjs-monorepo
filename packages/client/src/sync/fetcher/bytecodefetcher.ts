@@ -1,7 +1,7 @@
 import { CODEHASH_PREFIX } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { bytesToHex, concatBytes, equalsBytes } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { Fetcher } from './fetcher'
@@ -11,6 +11,7 @@ import type { FetcherOptions } from './fetcher'
 import type { Job } from './types'
 import type { BatchDBOp } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+const { debug: createDebugLogger } = debugDefault
 
 type ByteCodeDataResponse = Uint8Array[] & { completed?: boolean }
 

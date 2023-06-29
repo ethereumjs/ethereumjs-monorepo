@@ -14,7 +14,7 @@ import {
   short,
   zeros,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 import * as mcl from 'mcl-wasm'
 
 import { EOF, getEOFCode } from './eof.js'
@@ -43,6 +43,7 @@ import type {
   Log,
 } from './types.js'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
+const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('evm:evm')
 const debugGas = createDebugLogger('evm:gas')

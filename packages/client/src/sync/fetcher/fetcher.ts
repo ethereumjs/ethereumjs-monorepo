@@ -1,4 +1,4 @@
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 import Heap from 'qheap'
 import { Readable, Writable } from 'stream'
 
@@ -10,6 +10,7 @@ import type { PeerPool } from '../../net/peerpool'
 import type { JobTask as BlockFetcherJobTask } from './blockfetcherbase'
 import type { Job } from './types'
 import type { Debugger } from 'debug'
+const { debug: createDebugLogger } = debugDefault
 
 export interface FetcherOptions {
   /* Common chain config*/
