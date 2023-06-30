@@ -15,7 +15,7 @@ import {
 import kzg from 'c-kzg'
 import * as tape from 'tape'
 
-import pow from '../../testdata/geth-genesis/pow.json'
+import * as pow from '../../testdata/geth-genesis/pow.json'
 import {
   baseRequest,
   dummy,

@@ -2,7 +2,7 @@ import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { bigIntToHex, intToPrefixedHexString } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import pow from '../../testdata/geth-genesis/pow.json'
+import * as pow from '../../testdata/geth-genesis/pow.json'
 import {
   baseRequest,
   dummy,

@@ -4,7 +4,7 @@ import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import pow from '../../testdata/geth-genesis/pow.json'
+import * as pow from '../../testdata/geth-genesis/pow.json'
 import { baseRequest, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 
