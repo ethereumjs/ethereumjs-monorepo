@@ -101,9 +101,7 @@ tape(`${method}: get dataGasUsed/dataGasPrice in blob tx receipt`, async (t) => 
       // Verified KZG is loaded correctly -- NOOP if throws
       initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
       //eslint-disable-next-line
-    } catch (err) {
-      console.log(err)
-    }
+    } catch {}
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,

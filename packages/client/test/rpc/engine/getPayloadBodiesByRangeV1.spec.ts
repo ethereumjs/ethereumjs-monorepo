@@ -12,7 +12,7 @@ import * as tape from 'tape'
 
 import { INVALID_PARAMS, TOO_LARGE_REQUEST } from '../../../src/rpc/error-code'
 import * as genesisJSON from '../../testdata/geth-genesis/eip4844.json'
-import preShanghaiGenesisJSON from '../../testdata/geth-genesis/post-merge.json'
+import * as preShanghaiGenesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 
