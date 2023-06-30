@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1688053296579,
+  "lastUpdate": 1688151587800,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b21e8d2db5b7338009e4a4c8ed85a39f9eba8beb",
-          "message": "Utils tests (#2781)\n\n* Add tests for lock.ts\r\n\r\n* Add tests for mapDB.ts\r\n\r\n* When copying, create a new coppied backing map\r\n\r\n* Fix linting issues\r\n\r\n* Revert \"When copying, create a new coppied backing map\"\r\n\r\nThis reverts commit a7cd158b2844c049e7892167976b37eca1f6e5d9.\r\n\r\n* Remove test for copy function\r\n\r\n* Update packages/util/test/mapDB.spec.ts\r\n\r\nCo-authored-by: acolytec3 <konjou@gmail.com>\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <konjou@gmail.com>",
-          "timestamp": "2023-06-15T22:11:57-04:00",
-          "tree_id": "3e33055e7fdc79f080301ee8e486a08b2f64ef40",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b21e8d2db5b7338009e4a4c8ed85a39f9eba8beb"
-        },
-        "date": 1686882930364,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 30703,
-            "range": "±6.19%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31580,
-            "range": "±2.62%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31287,
-            "range": "±2.81%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 30508,
-            "range": "±2.97%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 24263,
-            "range": "±11.62%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.31%",
             "unit": "ops/sec",
             "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "konjou@gmail.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "499c49677bb6994df13a2642e4d04403f77bf42d",
+          "message": "Revert default to namespace imports (#2842)\n\n* Revert default to namespace imports\r\n\r\n* Adjust debug import syntax to make ESM happy\r\n\r\n* Revert esModuleInterop changes\r\n\r\n* fix qheap import and typing\r\n\r\n* Revert more default to namespace imports\r\n\r\n* fix json imports\r\n\r\n* More namespace import fixes\r\n\r\n* Update cli test in workflow\r\n\r\n* fix kzg import\r\n\r\n* fix more json imports\r\n\r\n* Fix last tests\r\n\r\n* Fix test imports",
+          "timestamp": "2023-06-30T20:56:18+02:00",
+          "tree_id": "bc6e92371c30e22b7af43428218f61e9ea3dd9ed",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/499c49677bb6994df13a2642e4d04403f77bf42d"
+        },
+        "date": 1688151586648,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 33587,
+            "range": "±3.82%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 33290,
+            "range": "±2.43%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 29407,
+            "range": "±7.95%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 32296,
+            "range": "±2.49%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30932,
+            "range": "±2.70%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
