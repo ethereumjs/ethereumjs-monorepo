@@ -4,7 +4,7 @@ import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { EVM, EVMResult, Log } from '@ethereumjs/evm'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
-import type { BigIntLike, WithdrawalData } from '@ethereumjs/util'
+import type { BigIntLike, GenesisState, WithdrawalData } from '@ethereumjs/util'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt | EIP4844BlobTxReceipt
 
 /**
@@ -126,7 +126,7 @@ export interface VMOpts {
    *
    * Default: `false`
    */
-  activateGenesisState?: boolean
+  genesisState?: GenesisState
 
   /**
    * Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number

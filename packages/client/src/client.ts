@@ -8,6 +8,7 @@ import { Event } from './types'
 import type { Config } from './config'
 import type { MultiaddrLike } from './types'
 import type { Blockchain } from '@ethereumjs/blockchain'
+import type { GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
 export interface EthereumClientOptions {
@@ -49,6 +50,7 @@ export interface EthereumClientOptions {
 
   /* How often to discover new peers */
   refreshInterval?: number
+  genesisState?: GenesisState
 }
 
 /**
@@ -89,6 +91,7 @@ export class EthereumClient {
           chainDB: options.chainDB,
           stateDB: options.stateDB,
           metaDB: options.metaDB,
+          genesisState: options.genesisState,
           chain,
         }),
       ]

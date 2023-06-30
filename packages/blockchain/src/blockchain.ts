@@ -1,7 +1,13 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
-import { getGenesis } from '@ethereumjs/genesis'
-import { genesisStateRoot } from '@ethereumjs/trie'
+import {
+  Chain,
+  ChainGenesis,
+  Common,
+  ConsensusAlgorithm,
+  ConsensusType,
+  Hardfork,
+} from '@ethereumjs/common'
+import { genesisStateRoot as genGenesisStateRoot } from '@ethereumjs/trie'
 import {
   KECCAK256_RLP,
   Lock,
@@ -10,7 +16,6 @@ import {
   bytesToUnprefixedHex,
   concatBytes,
   equalsBytes,
-  hexToBytes,
 } from '@ethereumjs/util'
 
 import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus/index.js'
@@ -24,7 +29,13 @@ import {
 import { DBManager } from './db/manager.js'
 import { DBTarget } from './db/operation.js'
 
-import type { BlockchainInterface, BlockchainOptions, Consensus, OnBlock } from './types.js'
+import type {
+  BlockchainInterface,
+  BlockchainOptions,
+  Consensus,
+  GenesisOptions,
+  OnBlock,
+} from './types.js'
 import type { BlockData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
@@ -75,7 +86,8 @@ export class Blockchain implements BlockchainInterface {
 
   public static async create(opts: BlockchainOptions = {}) {
     const blockchain = new Blockchain(opts)
-    await blockchain._init(opts.genesisBlock)
+
+    await blockchain._init(opts)
     return blockchain
   }
 
@@ -198,26 +210,26 @@ export class Blockchain implements BlockchainInterface {
    *
    * @hidden
    */
-  private async _init(genesisBlock?: Block): Promise<void> {
+  private async _init(opts: GenesisOptions = {}): Promise<void> {
     await this.consensus.setup({ blockchain: this })
-
     if (this._isInitialized) return
+
+    let stateRoot = opts.genesisBlock?.header.stateRoot ?? opts.genesisStateRoot
+    if (stateRoot === undefined) {
+      if (this._customGenesisState !== undefined) {
+        stateRoot = await genGenesisStateRoot(this._customGenesisState)
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        stateRoot = await getGenesisStateRoot(Number(this.common.chainId()) as Chain)
+      }
+    }
+
+    const genesisBlock = opts.genesisBlock ?? this.createGenesisBlock(stateRoot)
 
     let genesisHash = await this.dbManager.numberToHash(BigInt(0))
 
     const dbGenesisBlock =
       genesisHash !== undefined ? await this.dbManager.getBlock(genesisHash) : undefined
-
-    if (genesisBlock === undefined) {
-      let stateRoot
-      if (this.common.chainId() === BigInt(1) && this._customGenesisState === undefined) {
-        // For mainnet use the known genesis stateRoot to quicken setup
-        stateRoot = hexToBytes('0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544')
-      } else {
-        stateRoot = await genesisStateRoot(this.genesisState())
-      }
-      genesisBlock = this.createGenesisBlock(stateRoot)
-    }
 
     // If the DB has a genesis block, then verify that the genesis block in the
     // DB is indeed the Genesis block generated or assigned.
@@ -1338,16 +1350,12 @@ export class Blockchain implements BlockchainInterface {
       { common }
     )
   }
+}
 
-  /**
-   * Returns the genesis state of the blockchain.
-   * All values are provided as hex-prefixed strings.
-   */
-  genesisState(): GenesisState {
-    if (this._customGenesisState) {
-      return this._customGenesisState
-    }
-
-    return getGenesis(Number(this.common.chainId()) as Chain) ?? {}
-  }
+/**
+ * Returns the genesis state root
+ */
+async function getGenesisStateRoot(chainId: Chain): Promise<Uint8Array> {
+  const chainGenesis = ChainGenesis[chainId]
+  return chainGenesis !== undefined ? chainGenesis.stateRoot : genGenesisStateRoot({})
 }

@@ -452,6 +452,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
   const client = await EthereumClient.create({
     config,
     blockchain,
+    genesisState: customGenesisState,
     ...dbs,
   })
   await client.open()

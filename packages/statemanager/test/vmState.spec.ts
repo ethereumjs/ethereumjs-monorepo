@@ -1,5 +1,5 @@
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain } from '@ethereumjs/common'
+import { getGenesis } from '@ethereumjs/genesis'
 import { Account, Address, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -21,14 +21,12 @@ describe('stateManager', () => {
     if (isBrowser()) {
       return
     }
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     const expectedStateRoot = hexToBytes(
       '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'
     )
     const stateManager = new StateManager({})
 
-    const blockchain = await Blockchain.create({ common })
-    await stateManager.generateCanonicalGenesis(blockchain.genesisState())
+    await stateManager.generateCanonicalGenesis(getGenesis(Chain.Mainnet))
     const stateRoot = await stateManager.getStateRoot()
 
     assert.deepEqual(
@@ -51,11 +49,9 @@ describe('stateManager', () => {
     ]
 
     for (const [chain, expectedStateRoot] of chains) {
-      const common = new Common({ chain, hardfork: Hardfork.Chainstart })
       const stateManager = new DefaultStateManager({})
 
-      const blockchain = await Blockchain.create({ common })
-      await stateManager.generateCanonicalGenesis(blockchain.genesisState())
+      await stateManager.generateCanonicalGenesis(getGenesis(chain))
       const stateRoot = await stateManager.getStateRoot()
 
       assert.deepEqual(

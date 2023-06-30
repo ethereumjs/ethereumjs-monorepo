@@ -1,5 +1,6 @@
 import type { Chain } from '../blockchain'
 import type { Config } from '../config'
+import type { GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
 export interface ExecutionOptions {
@@ -14,6 +15,8 @@ export interface ExecutionOptions {
 
   /** Chain */
   chain: Chain
+
+  genesisState?: GenesisState
 }
 
 export abstract class Execution {
@@ -22,6 +25,7 @@ export abstract class Execution {
   protected stateDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
   protected metaDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
   protected chain: Chain
+  protected _customGenesisState?: GenesisState /** Custom genesis state */
 
   public running: boolean = false
   public started: boolean = false
@@ -35,6 +39,7 @@ export abstract class Execution {
     this.chain = options.chain
     this.stateDB = options.stateDB
     this.metaDB = options.metaDB
+    this._customGenesisState = options.genesisState
   }
 
   /**

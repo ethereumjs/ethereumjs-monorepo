@@ -49,6 +49,7 @@ export class FullEthereumService extends EthereumService {
       config: options.config,
       stateDB: options.stateDB,
       metaDB: options.metaDB,
+      genesisState: options.genesisState,
       chain: this.chain,
     })
 

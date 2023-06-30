@@ -7,6 +7,7 @@ import { Service } from './service'
 import type { Synchronizer } from '../sync'
 import type { V8Engine } from '../util'
 import type { ServiceOptions } from './service'
+import type { GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
 export interface EthereumServiceOptions extends ServiceOptions {
@@ -27,6 +28,8 @@ export interface EthereumServiceOptions extends ServiceOptions {
 
   /* Protocol timeout in ms (default: 6000) */
   timeout?: number
+
+  genesisState?: GenesisState
 }
 
 /**

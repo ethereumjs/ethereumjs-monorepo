@@ -7,7 +7,7 @@ import { LevelDB } from '../execution/level'
 import { Event } from '../types'
 
 import type { Config } from '../config'
-import type { DB, DBObject } from '@ethereumjs/util'
+import type { DB, DBObject, GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
 /**
@@ -28,6 +28,8 @@ export interface ChainOptions {
    * Specify a blockchain which implements the Chain interface
    */
   blockchain?: Blockchain
+
+  genesisState?: GenesisState
 }
 
 /**
@@ -102,6 +104,8 @@ export class Chain {
   public config: Config
   public chainDB: DB<string | Uint8Array, string | Uint8Array | DBObject>
   public blockchain: Blockchain
+  public _customGenesisState?: GenesisState
+
   public opened: boolean
 
   private _headers: ChainHeaders = {
@@ -158,6 +162,7 @@ export class Chain {
     this.blockchain = options.blockchain!
 
     this.chainDB = this.blockchain.db
+    this._customGenesisState = options.genesisState
     this.opened = false
   }
 
@@ -216,7 +221,7 @@ export class Chain {
   async open(): Promise<boolean | void> {
     if (this.opened) return false
     await this.blockchain.db.open()
-    await (this.blockchain as any)._init()
+    await (this.blockchain as any)._init({ genesisState: this._customGenesisState })
     this.opened = true
     await this.update(false)
 
