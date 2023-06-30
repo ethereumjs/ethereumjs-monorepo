@@ -781,7 +781,7 @@ export class Common extends EventEmitter {
     // CRC32 delivers result as signed (negative) 32-bit integer,
     // convert to hex string
     const forkhash = bytesToHex(intToBytes(crc(inputBytes) >>> 0))
-    return `0x${forkhash}`
+    return forkhash
   }
 
   /**
