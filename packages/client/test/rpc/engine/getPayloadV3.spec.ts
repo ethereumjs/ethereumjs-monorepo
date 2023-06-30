@@ -6,11 +6,11 @@ import {
   Address,
   blobsToCommitments,
   blobsToProofs,
-  bytesToPrefixedHexString,
+  bytesToHex,
   commitmentsToVersionedHashes,
   getBlobs,
   initKZG,
-  prefixedHexStringToBytes,
+  hexToBytes,
 } from '@ethereumjs/util'
 import kzg from 'c-kzg'
 import tape from 'tape'
@@ -74,7 +74,7 @@ tape(`${method}: call with known payload`, async (t) => {
     hardfork: Hardfork.Cancun,
   })
   common.setHardfork(Hardfork.Cancun)
-  const pkey = prefixedHexStringToBytes(
+  const pkey = hexToBytes(
     '0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355'
   )
   const address = Address.fromPrivateKey(pkey)
@@ -129,9 +129,9 @@ tape(`${method}: call with known payload`, async (t) => {
       'equal commitments, proofs and blobs'
     )
     t.equal(blobs.length, 1, '1 blob should be returned')
-    t.equal(proofs[0], bytesToPrefixedHexString(txProofs[0]), 'proof should match')
-    t.equal(commitments[0], bytesToPrefixedHexString(txCommitments[0]), 'commitment should match')
-    t.equal(blobs[0], bytesToPrefixedHexString(txBlobs[0]), 'blob should match')
+    t.equal(proofs[0], bytesToHex(txProofs[0]), 'proof should match')
+    t.equal(commitments[0], bytesToHex(txCommitments[0]), 'commitment should match')
+    t.equal(blobs[0], bytesToHex(txBlobs[0]), 'blob should match')
   }
 
   await baseRequest(t, server, req, 200, expectRes, false)

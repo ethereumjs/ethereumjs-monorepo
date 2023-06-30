@@ -7,7 +7,7 @@ import {
   Account,
   bytesToHex,
   equalsBytes,
-  prefixedHexStringToBytes,
+  hexToBytes,
   toBytes,
 } from '@ethereumjs/util'
 import tape from 'tape'
@@ -57,7 +57,7 @@ tape('[Integration:FullEthereumService]', async (t) => {
     const [server, service] = await setup()
     const peer = await server.accept('peer0')
     const [reqId1, headers] = await peer.eth!.getBlockHeaders({ block: BigInt(1), max: 2 })
-    const hash = prefixedHexStringToBytes(
+    const hash = hexToBytes(
       '0xa321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069'
     )
     t.equal(reqId1, BigInt(1), 'handled GetBlockHeaders')

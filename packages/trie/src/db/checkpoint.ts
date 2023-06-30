@@ -3,7 +3,6 @@ import {
   ValueEncoding,
   bytesToHex,
   padToEven,
-  hexToBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { LRUCache } from 'lru-cache'

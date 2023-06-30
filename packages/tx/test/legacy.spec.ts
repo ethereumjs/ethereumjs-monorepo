@@ -3,10 +3,10 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   bytesToBigInt,
   bytesToHex,
-  bytesToPrefixedHexString,
+  bytesToHex,
   equalsBytes,
   intToBytes,
-  prefixedHexStringToBytes,
+  hexToBytes,
   toBytes,
   unpadBytes,
 } from '@ethereumjs/util'
@@ -98,15 +98,15 @@ describe('[Transaction]', () => {
       const txData = tx.raw.map(toBytes)
       const pt = LegacyTransaction.fromValuesArray(txData)
 
-      assert.equal(bytesToPrefixedHexString(unpadBytes(toBytes(pt.nonce))), tx.raw[0])
-      assert.equal(bytesToPrefixedHexString(toBytes(pt.gasPrice)), tx.raw[1])
-      assert.equal(bytesToPrefixedHexString(toBytes(pt.gasLimit)), tx.raw[2])
+      assert.equal(bytesToHex(unpadBytes(toBytes(pt.nonce))), tx.raw[0])
+      assert.equal(bytesToHex(toBytes(pt.gasPrice)), tx.raw[1])
+      assert.equal(bytesToHex(toBytes(pt.gasLimit)), tx.raw[2])
       assert.equal(pt.to?.toString(), tx.raw[3])
-      assert.equal(bytesToPrefixedHexString(unpadBytes(toBytes(pt.value))), tx.raw[4])
-      assert.equal(bytesToPrefixedHexString(pt.data), tx.raw[5])
-      assert.equal(bytesToPrefixedHexString(toBytes(pt.v)), tx.raw[6])
-      assert.equal(bytesToPrefixedHexString(toBytes(pt.r)), tx.raw[7])
-      assert.equal(bytesToPrefixedHexString(toBytes(pt.s)), tx.raw[8])
+      assert.equal(bytesToHex(unpadBytes(toBytes(pt.value))), tx.raw[4])
+      assert.equal(bytesToHex(pt.data), tx.raw[5])
+      assert.equal(bytesToHex(toBytes(pt.v)), tx.raw[6])
+      assert.equal(bytesToHex(toBytes(pt.r)), tx.raw[7])
+      assert.equal(bytesToHex(toBytes(pt.s)), tx.raw[8])
 
       transactions.push(pt)
     }
@@ -121,7 +121,7 @@ describe('[Transaction]', () => {
     let common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Petersburg })
     let tx = LegacyTransaction.fromTxData({}, { common })
     assert.equal(tx.common.chainId(), BigInt(5))
-    const privKey = prefixedHexStringToBytes('0x' + txFixtures[0].privateKey)
+    const privKey = hexToBytes('0x' + txFixtures[0].privateKey)
     tx = tx.sign(privKey)
     const serialized = tx.serialize()
     common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
@@ -233,16 +233,16 @@ describe('[Transaction]', () => {
     })
     assert.deepEqual(
       tx.hash(),
-      prefixedHexStringToBytes('0x375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa')
+      hexToBytes('0x375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa')
     )
     assert.deepEqual(
       tx.getHashedMessageToSign(),
-      prefixedHexStringToBytes('0x61e1ec33764304dddb55348e7883d4437426f44ab3ef65e6da1e025734c03ff0')
+      hexToBytes('0x61e1ec33764304dddb55348e7883d4437426f44ab3ef65e6da1e025734c03ff0')
     )
     assert.equal(tx.getMessageToSign().length, 6)
     assert.deepEqual(
       tx.hash(),
-      prefixedHexStringToBytes('0x375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa')
+      hexToBytes('0x375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa')
     )
   })
 
@@ -266,7 +266,7 @@ describe('[Transaction]', () => {
     for (const tx of txFixturesEip155) {
       const pt = LegacyTransaction.fromSerializedTx(toBytes(tx.rlp))
       assert.equal(bytesToHex(pt.getHashedMessageToSign()), tx.hash)
-      assert.equal(bytesToPrefixedHexString(pt.serialize()), tx.rlp)
+      assert.equal(bytesToHex(pt.serialize()), tx.rlp)
       assert.equal(pt.getSenderAddress().toString(), '0x' + tx.sender)
     }
   })
@@ -281,7 +281,7 @@ describe('[Transaction]', () => {
       '0x0de0b6b3a7640000',
       '0x',
     ]
-    const privateKey = prefixedHexStringToBytes(
+    const privateKey = hexToBytes(
       '0x4646464646464646464646464646464646464646464646464646464646464646'
     )
     const pt = LegacyTransaction.fromValuesArray(txRaw.map(toBytes))
@@ -311,7 +311,7 @@ describe('[Transaction]', () => {
         common,
       })
 
-      const privKey = prefixedHexStringToBytes('0x' + txData.privateKey)
+      const privKey = hexToBytes('0x' + txData.privateKey)
       const txSigned = tx.sign(privKey)
 
       assert.equal(
@@ -331,7 +331,7 @@ describe('[Transaction]', () => {
       '0x0de0b6b3a7640000',
       '0x',
     ]
-    const privateKey = prefixedHexStringToBytes(
+    const privateKey = hexToBytes(
       '0xDE3128752F183E8930D7F00A2AAA302DCB5E700B2CBA2D8CA5795660F07DEFD5'
     )
     const common = Common.custom({ chainId: 3 })
@@ -353,7 +353,7 @@ describe('[Transaction]', () => {
       value: '0x0',
     }
 
-    const privateKey = prefixedHexStringToBytes(
+    const privateKey = hexToBytes(
       '0x4646464646464646464646464646464646464646464646464646464646464646'
     )
 
@@ -423,7 +423,7 @@ describe('[Transaction]', () => {
     let tx = LegacyTransaction.fromTxData({}, { common })
     assert.equal(tx.common.chainId(), BigInt(5))
 
-    const privKey = prefixedHexStringToBytes('0x' + txFixtures[0].privateKey)
+    const privKey = hexToBytes('0x' + txFixtures[0].privateKey)
     tx = tx.sign(privKey)
 
     const serialized = tx.serialize()
@@ -436,14 +436,14 @@ describe('[Transaction]', () => {
   it('freeze property propagates from unsigned tx to signed tx', () => {
     const tx = LegacyTransaction.fromTxData({}, { freeze: false })
     assert.notOk(Object.isFrozen(tx), 'tx object is not frozen')
-    const privKey = prefixedHexStringToBytes('0x' + txFixtures[0].privateKey)
+    const privKey = hexToBytes('0x' + txFixtures[0].privateKey)
     const signedTxn = tx.sign(privKey)
     assert.notOk(Object.isFrozen(signedTxn), 'tx object is not frozen')
   })
 
   it('common propagates from the common of tx, not the common in TxOptions', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const pkey = prefixedHexStringToBytes('0x' + txFixtures[0].privateKey)
+    const pkey = hexToBytes('0x' + txFixtures[0].privateKey)
     const txn = LegacyTransaction.fromTxData({}, { common, freeze: false })
     const newCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [2537] })
     assert.notDeepEqual(newCommon, common, 'new common is different than original common')
@@ -468,7 +468,7 @@ describe('[Transaction]', () => {
       to: '0xd9024df085d09398ec76fbed18cac0e1149f50dc',
       value: '0x0',
     }
-    const privateKey = prefixedHexStringToBytes(
+    const privateKey = hexToBytes(
       '0x4646464646464646464646464646464646464646464646464646464646464646'
     )
     tx = LegacyTransaction.fromTxData(txData)

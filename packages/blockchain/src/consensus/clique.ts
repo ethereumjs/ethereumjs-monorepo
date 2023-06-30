@@ -6,8 +6,8 @@ import {
   bigIntToBytes,
   bytesToBigInt,
   equalsBytes,
-  prefixedHexStringToBytes,
   toType,
+  hexToBytes
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 
@@ -19,7 +19,7 @@ import type { CliqueConfig } from '@ethereumjs/common'
 const debug = createDebugLogger('blockchain:clique')
 
 // Magic nonce number to vote on adding a new signer
-export const CLIQUE_NONCE_AUTH = prefixedHexStringToBytes('0xffffffffffffffff')
+export const CLIQUE_NONCE_AUTH = hexToBytes('0xffffffffffffffff')
 // Magic nonce number to vote on removing a signer.
 export const CLIQUE_NONCE_DROP = new Uint8Array(8)
 

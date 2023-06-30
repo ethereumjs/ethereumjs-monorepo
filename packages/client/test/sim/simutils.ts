@@ -5,7 +5,7 @@ import {
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
-  bytesToPrefixedHexString,
+  bytesToHex,
   bytesToUtf8,
   commitmentsToVersionedHashes,
   getBlobs,
@@ -274,7 +274,7 @@ export async function runTxHelper(
 
   const res = await client.request(
     'eth_sendRawTransaction',
-    [bytesToPrefixedHexString(tx.serialize())],
+    [bytesToHex(tx.serialize())],
     2.0
   )
   let mined = false
@@ -336,7 +336,7 @@ export const runBlobTx = async (
 
   const res = await client.request(
     'eth_sendRawTransaction',
-    [bytesToPrefixedHexString(serializedWrapper)],
+    [bytesToHex(serializedWrapper)],
     2.0
   )
 
@@ -397,9 +397,9 @@ export const createBlobTxs = async (
     const blobTx = BlobEIP4844Transaction.fromTxData(txData, opts).sign(pkey)
 
     const serializedWrapper = blobTx.serializeNetworkWrapper()
-    await fs.appendFile('./blobs.txt', bytesToPrefixedHexString(serializedWrapper) + '\n')
-    txns.push(bytesToPrefixedHexString(serializedWrapper))
-    txHashes.push(bytesToPrefixedHexString(blobTx.hash()))
+    await fs.appendFile('./blobs.txt', bytesToHex(serializedWrapper) + '\n')
+    txns.push(bytesToHex(serializedWrapper))
+    txHashes.push(bytesToHex(blobTx.hash()))
   }
   return txns
 }

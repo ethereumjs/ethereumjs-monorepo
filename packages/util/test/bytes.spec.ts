@@ -135,7 +135,7 @@ describe('setLengthRight', () => {
   })
 })
 
-describe('bytesToPrefixedHexString', () => {
+describe('bytesToHex', () => {
   it('should convert a Uint8Array to a prefixed hex string', () => {
     const bytes = hexToBytes('0x5b9ac8')
     const hex = bytesToHex(bytes)
@@ -474,7 +474,7 @@ describe('intToUnpaddedBytes', () => {
 describe('bigIntToHex', () => {
   it('should pass on correct input', () => {
     assert.equal(bigIntToHex(BigInt(1)), '0x1')
-  })
+  })hexToBytes
 })
 
 describe('prefixedHexStringToBytes', () => {

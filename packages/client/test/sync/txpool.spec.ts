@@ -6,7 +6,7 @@ import {
   Account,
   bytesToHex,
   concatBytes,
-  prefixedHexStringToBytes,
+  hexToBytes,
   privateToAddress,
 } from '@ethereumjs/util'
 import tape from 'tape'
@@ -98,15 +98,15 @@ tape('[TxPool]', async (t) => {
   DefaultStateManager.prototype.setStateRoot = (): any => {}
 
   const A = {
-    address: prefixedHexStringToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f'),
-    privateKey: prefixedHexStringToBytes(
+    address: hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f'),
+    privateKey: hexToBytes(
       '0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'
     ),
   }
 
   const B = {
-    address: prefixedHexStringToBytes('0x6f62d8382bf2587361db73ceca28be91b2acb6df'),
-    privateKey: prefixedHexStringToBytes(
+    address: hexToBytes('0x6f62d8382bf2587361db73ceca28be91b2acb6df'),
+    privateKey: hexToBytes(
       '0x2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'
     ),
   }
@@ -254,7 +254,7 @@ tape('[TxPool]', async (t) => {
     const hashes = []
     for (let i = 1; i <= TX_RETRIEVAL_LIMIT + 1; i++) {
       // One more than TX_RETRIEVAL_LIMIT
-      hashes.push(prefixedHexStringToBytes('0x' + i.toString().padStart(64, '0'))) // '0000000000000000000000000000000000000000000000000000000000000001',...
+      hashes.push(hexToBytes('0x' + i.toString().padStart(64, '0'))) // '0000000000000000000000000000000000000000000000000000000000000001',...
     }
 
     await pool.handleAnnouncedTxHashes(hashes, peer as any, peerPool)
@@ -404,8 +404,8 @@ tape('[TxPool]', async (t) => {
     const txs = []
     for (let account = 0; account < 51; account++) {
       const pkey = concatBytes(
-        prefixedHexStringToBytes('0x' + 'aa'.repeat(31)),
-        prefixedHexStringToBytes('0x' + account.toString(16).padStart(2, '0'))
+        hexToBytes('0x' + 'aa'.repeat(31)),
+        hexToBytes('0x' + account.toString(16).padStart(2, '0'))
       )
       const from = {
         address: privateToAddress(pkey),

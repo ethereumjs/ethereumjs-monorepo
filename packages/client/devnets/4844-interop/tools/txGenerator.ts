@@ -7,8 +7,8 @@ import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
   getBlobs,
-  bytesToPrefixedHexString,
-  prefixedHexStringToBytes,
+  bytesToHex,
+  hexToBytes,
 } from '@ethereumjs/util'
 
 import kzg from 'c-kzg'
@@ -19,7 +19,7 @@ import { Client } from 'jayson/promise'
 const clientPort = parseInt(process.argv[2]) // EL client port number
 const input = process.argv[3] // text to generate blob from
 const genesisJson = require(process.argv[4]) // Genesis parameters
-const pkey = prefixedHexStringToBytes('0x' + process.argv[5]) // private key of tx sender as unprefixed hex string (unprefixed in args)
+const pkey = hexToBytes('0x' + process.argv[5]) // private key of tx sender as unprefixed hex string (unprefixed in args)
 
 initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
 
@@ -67,7 +67,7 @@ async function run(data: any) {
 
   const res = await client.request(
     'eth_sendRawTransaction',
-    [bytesToPrefixedHexString(serializedWrapper)],
+    [bytesToHex(serializedWrapper)],
     2.0
   )
 

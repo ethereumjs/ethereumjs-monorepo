@@ -1,4 +1,4 @@
-import { bytesToHex, bytesToPrefixedHexString, randomBytes } from '@ethereumjs/util'
+import { bytesToHex, bytesToHex, randomBytes } from '@ethereumjs/util'
 import tape from 'tape'
 
 import { INVALID_PARAMS } from '../../src/rpc/error-code'
@@ -208,7 +208,7 @@ tape(`${prefix} byteVectors`, (t) => {
   }
   t.test('Bytes8', (st) => {
     // valid
-    st.ok(validatorResult(validators.bytes8([bytesToPrefixedHexString(randomBytes(8))], 0)))
+    st.ok(validatorResult(validators.bytes8([bytesToHex(randomBytes(8))], 0)))
     st.ok(validatorResult(validators.bytes8([bytes(8)], 0)))
     st.ok(validatorResult(validators.bytes8([bytes(1)], 0)))
     st.ok(validatorResult(validators.bytes8([bytes(2)], 0)))
@@ -221,7 +221,7 @@ tape(`${prefix} byteVectors`, (t) => {
   })
   t.test('Uint64', (st) => {
     // valid
-    st.ok(validatorResult(validators.uint64([bytesToPrefixedHexString(randomBytes(8))], 0)))
+    st.ok(validatorResult(validators.uint64([bytesToHex(randomBytes(8))], 0)))
     st.ok(validatorResult(validators.uint64([bytes(8)], 0)))
     st.ok(validatorResult(validators.uint64([bytes(1)], 0)))
     st.ok(validatorResult(validators.uint64([bytes(2)], 0)))
@@ -236,7 +236,7 @@ tape(`${prefix} byteVectors`, (t) => {
   })
   t.test('Bytes16', (st) => {
     // valid
-    st.ok(validatorResult(validators.bytes16([bytesToPrefixedHexString(randomBytes(16))], 0)))
+    st.ok(validatorResult(validators.bytes16([bytesToHex(randomBytes(16))], 0)))
     st.ok(validatorResult(validators.bytes16([bytes(16)], 0)))
     st.ok(validatorResult(validators.bytes16([bytes(1)], 0)))
     st.ok(validatorResult(validators.bytes16([bytes(2)], 0)))
@@ -252,7 +252,7 @@ tape(`${prefix} byteVectors`, (t) => {
   t.test('Bytes20', (st) => {
     // valid
     st.ok(validatorResult(validators.bytes20([bytes(20)], 0)))
-    st.ok(validatorResult(validators.bytes20([bytesToPrefixedHexString(randomBytes(20))], 0)))
+    st.ok(validatorResult(validators.bytes20([bytesToHex(randomBytes(20))], 0)))
     st.ok(validatorResult(validators.bytes20([bytes(8)], 0)))
     st.ok(validatorResult(validators.bytes20([bytes(16)], 0)))
     // invalid
@@ -264,7 +264,7 @@ tape(`${prefix} byteVectors`, (t) => {
   })
   t.test('Bytes32', (st) => {
     // valid
-    st.ok(validatorResult(validators.bytes32([bytesToPrefixedHexString(randomBytes(32))], 0)))
+    st.ok(validatorResult(validators.bytes32([bytesToHex(randomBytes(32))], 0)))
     st.ok(validatorResult(validators.bytes32([bytes(32)], 0)))
     st.ok(validatorResult(validators.bytes32([bytes(8)], 0)))
     st.ok(validatorResult(validators.bytes32([bytes(16)], 0)))
@@ -278,7 +278,7 @@ tape(`${prefix} byteVectors`, (t) => {
   })
   t.test('Uint256', (st) => {
     // valid
-    st.ok(validatorResult(validators.uint256([bytesToPrefixedHexString(randomBytes(32))], 0)))
+    st.ok(validatorResult(validators.uint256([bytesToHex(randomBytes(32))], 0)))
     st.ok(validatorResult(validators.uint256([bytes(32)], 0)))
     st.ok(validatorResult(validators.uint256([bytes(8)], 0)))
     st.ok(validatorResult(validators.uint256([bytes(16)], 0)))
@@ -292,7 +292,7 @@ tape(`${prefix} byteVectors`, (t) => {
   })
   t.test('Bytes48', (st) => {
     // valid
-    st.ok(validatorResult(validators.bytes48([bytesToPrefixedHexString(randomBytes(48))], 0)))
+    st.ok(validatorResult(validators.bytes48([bytesToHex(randomBytes(48))], 0)))
     st.ok(validatorResult(validators.bytes48([bytes(48)], 0)))
     st.ok(validatorResult(validators.bytes48([bytes(8)], 0)))
     st.ok(validatorResult(validators.bytes48([bytes(16)], 0)))
@@ -308,7 +308,7 @@ tape(`${prefix} byteVectors`, (t) => {
   })
   t.test('Bytes256', (st) => {
     // valid
-    st.ok(validatorResult(validators.bytes256([bytesToPrefixedHexString(randomBytes(256))], 0)))
+    st.ok(validatorResult(validators.bytes256([bytesToHex(randomBytes(256))], 0)))
     st.ok(validatorResult(validators.bytes256([bytes(256)], 0)))
     st.ok(validatorResult(validators.bytes256([bytes(8)], 0)))
     st.ok(validatorResult(validators.bytes256([bytes(16)], 0)))

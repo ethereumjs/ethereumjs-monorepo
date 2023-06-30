@@ -1,4 +1,4 @@
-import { Account, Address, equalsBytes, prefixedHexStringToBytes } from '@ethereumjs/util'
+import { Account, Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 // explicitly import `inherits` to fix karma-typescript issue
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -24,11 +24,11 @@ describe('StateManager -> Code', () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       const codeStateManager = new DefaultStateManager({ accountCacheOpts })
       const address1 = new Address(
-        prefixedHexStringToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+        hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
       )
       const account = createAccount()
-      const key1 = prefixedHexStringToBytes('0x' + '00'.repeat(32))
-      const key2 = prefixedHexStringToBytes('0x' + '00'.repeat(31) + '01')
+      const key1 = hexToBytes('0x' + '00'.repeat(32))
+      const key2 = hexToBytes('0x' + '00'.repeat(31) + '01')
 
       await stateManager.putAccount(address1, account)
       await stateManager.putContractStorage(address1, key1, key2)
@@ -82,9 +82,9 @@ describe('StateManager -> Code', () => {
     it(`should set and get code`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       const address = new Address(
-        prefixedHexStringToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+        hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
       )
-      const code = prefixedHexStringToBytes(
+      const code = hexToBytes(
         '0x73095e7baea6a6c7c4c2dfeb977efac326af552d873173095e7baea6a6c7c4c2dfeb977efac326af552d873157'
       )
       const raw = {
@@ -103,7 +103,7 @@ describe('StateManager -> Code', () => {
     it(`should not get code if is not contract`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       const address = new Address(
-        prefixedHexStringToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+        hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
       )
       const raw = {
         nonce: '0x0',
@@ -118,7 +118,7 @@ describe('StateManager -> Code', () => {
     it(`should set empty code`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       const address = new Address(
-        prefixedHexStringToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+        hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
       )
       const raw = {
         nonce: '0x0',
@@ -135,9 +135,9 @@ describe('StateManager -> Code', () => {
     it(`should prefix codehashes by default`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       const address = new Address(
-        prefixedHexStringToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+        hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
       )
-      const code = prefixedHexStringToBytes('0x80')
+      const code = hexToBytes('0x80')
       await stateManager.putContractCode(address, code)
       const codeRetrieved = await stateManager.getContractCode(address)
       assert.ok(equalsBytes(codeRetrieved, code))
@@ -148,9 +148,9 @@ describe('StateManager -> Code', () => {
         prefixCodeHashes: false,
       })
       const address = new Address(
-        prefixedHexStringToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+        hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
       )
-      const code = prefixedHexStringToBytes('0x80')
+      const code = hexToBytes('0x80')
       try {
         await stateManager.putContractCode(address, code)
         assert.fail('should throw')

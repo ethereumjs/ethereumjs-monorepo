@@ -5,8 +5,8 @@ import { TransactionFactory } from '@ethereumjs/tx'
 import {
   Account,
   Address,
-  bytesToPrefixedHexString,
-  prefixedHexStringToBytes,
+  bytesToHex,
+  hexToBytes,
 } from '@ethereumjs/util'
 import tape from 'tape'
 
@@ -55,7 +55,7 @@ tape(`${method}: call with valid parameters`, async (t) => {
     hardfork: Hardfork.Cancun,
   })
   common.setHardfork(Hardfork.Cancun)
-  const pkey = prefixedHexStringToBytes(
+  const pkey = hexToBytes(
     '0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355'
   )
   const address = Address.fromPrivateKey(pkey)
@@ -112,7 +112,7 @@ tape(`${method}: call with valid parameters`, async (t) => {
   const expectRes = (res: any) => {
     t.equal(
       res.body.result[0].transactions[0],
-      bytesToPrefixedHexString(tx.serialize()),
+      bytesToHex(tx.serialize()),
       'got expected transaction from first payload'
     )
     t.equal(
@@ -150,7 +150,7 @@ tape(`${method}: call with valid parameters on pre-Shanghai hardfork`, async (t)
     hardfork: Hardfork.London,
   })
   common.setHardfork(Hardfork.London)
-  const pkey = prefixedHexStringToBytes(
+  const pkey = hexToBytes(
     '0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355'
   )
   const address = Address.fromPrivateKey(pkey)

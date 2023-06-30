@@ -14,7 +14,6 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { Blockchain } from '../src/index.js'
 
 import type { DB } from '@ethereumjs/util'
-import { bytesToHex } from 'ethereum-cryptography/utils.js'
 
 export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {
   const blocks = existingBlocks ? existingBlocks : []

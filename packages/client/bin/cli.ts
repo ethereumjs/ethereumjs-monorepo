@@ -7,10 +7,9 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
   bytesToHex,
-  bytesToPrefixedHexString,
   initKZG,
   parseGethGenesisState,
-  prefixedHexStringToBytes,
+  hexToBytes,
   randomBytes,
   short,
   toBytes,
@@ -625,7 +624,7 @@ async function inputAccounts() {
       }
     } else {
       const acc = readFileSync(path.resolve(args.unlock!), 'utf-8').replace(/(\r\n|\n|\r)/gm, '')
-      const privKey = prefixedHexStringToBytes('0x' + acc) // See docs: acc has to be non-zero prefixed in the file
+      const privKey = hexToBytes('0x' + acc) // See docs: acc has to be non-zero prefixed in the file
       const derivedAddress = Address.fromPrivateKey(privKey)
       accounts.push([derivedAddress, privKey])
     }
@@ -646,7 +645,7 @@ function generateAccount(): Account {
   console.log('='.repeat(50))
   console.log('Account generated for mining blocks:')
   console.log(`Address: ${address}`)
-  console.log(`Private key: ${bytesToPrefixedHexString(privKey)}`)
+  console.log(`Private key: ${bytesToHex(privKey)}`)
   console.log('WARNING: Do not use this account for mainnet funds')
   console.log('='.repeat(50))
   return [address, privKey]

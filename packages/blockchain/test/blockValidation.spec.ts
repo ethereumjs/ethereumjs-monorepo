@@ -1,7 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToPrefixedHexString } from '@ethereumjs/util'
+import { bytesToHex } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
@@ -343,7 +343,7 @@ describe('[Blockchain]: Block validation tests', () => {
       common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin }),
     })
 
-    forkBlockHeaderData.uncleHash = bytesToPrefixedHexString(
+    forkBlockHeaderData.uncleHash = bytesToHex(
       keccak256(RLP.encode([uncleHeader.raw()]))
     )
 

@@ -1,4 +1,4 @@
-import { Account, Address, prefixedHexStringToBytes } from '@ethereumjs/util'
+import { Account, Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { DefaultStateManager } from '../src/index.js'
@@ -26,7 +26,7 @@ const accountEval = async (
 type CompareList = [Account | undefined, bigint | undefined]
 
 describe('StateManager -> Account Checkpointing', () => {
-  const address = new Address(prefixedHexStringToBytes('0x' + '11'.repeat(20)))
+  const address = new Address(hexToBytes('0x' + '11'.repeat(20)))
 
   const accountN1: CompareList = [
     Account.fromAccountData({

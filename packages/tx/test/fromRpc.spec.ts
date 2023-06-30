@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { bytesToHex, bytesToPrefixedHexString, randomBytes } from '@ethereumjs/util'
+import { bytesToHex, bytesToHex, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { normalizeTxParams } from '../src/fromRpc.js'
@@ -47,14 +47,14 @@ describe('[fromJsonRpcProvider]', () => {
     const txHash = '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0'
     const tx = await TransactionFactory.fromJsonRpcProvider(provider, txHash, { common })
     assert.equal(
-      bytesToPrefixedHexString(tx.hash()),
+      bytesToHex(tx.hash()),
       txHash,
       'generated correct tx from transaction RPC data'
     )
     try {
       await TransactionFactory.fromJsonRpcProvider(
         provider,
-        bytesToPrefixedHexString(randomBytes(32)),
+        bytesToHex(randomBytes(32)),
         {}
       )
       assert.fail('should throw')

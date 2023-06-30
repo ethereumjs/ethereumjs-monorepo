@@ -6,7 +6,7 @@ import {
 } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
-  bytesToPrefixedHexString,
+  bytesToHex,
   commitmentsToVersionedHashes,
   getBlobs,
   initKZG,
@@ -43,10 +43,10 @@ tape(`${method}: call with legacy tx`, async (t) => {
   await runBlockWithTxs(chain, execution, [tx])
 
   // get the tx
-  const req = params(method, [bytesToPrefixedHexString(tx.hash())])
+  const req = params(method, [bytesToHex(tx.hash())])
   const expectRes = (res: any) => {
     const msg = 'should return the correct tx'
-    t.equal(res.body.result.transactionHash, bytesToPrefixedHexString(tx.hash()), msg)
+    t.equal(res.body.result.transactionHash, bytesToHex(tx.hash()), msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
@@ -71,10 +71,10 @@ tape(`${method}: call with 1559 tx`, async (t) => {
   await runBlockWithTxs(chain, execution, [tx])
 
   // get the tx
-  const req = params(method, [bytesToPrefixedHexString(tx.hash())])
+  const req = params(method, [bytesToHex(tx.hash())])
   const expectRes = (res: any) => {
     const msg = 'should return the correct tx'
-    t.equal(res.body.result.transactionHash, bytesToPrefixedHexString(tx.hash()), msg)
+    t.equal(res.body.result.transactionHash, bytesToHex(tx.hash()), msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
@@ -131,7 +131,7 @@ tape(`${method}: get dataGasUsed/dataGasPrice in blob tx receipt`, async (t) => 
 
     await runBlockWithTxs(chain, execution, [tx], true)
 
-    const req = params(method, [bytesToPrefixedHexString(tx.hash())])
+    const req = params(method, [bytesToHex(tx.hash())])
     const expectRes = (res: any) => {
       t.equal(res.body.result.dataGasUsed, '0x20000', 'receipt has correct data gas usage')
       t.equal(res.body.result.dataGasPrice, '0x1', 'receipt has correct data gas price')

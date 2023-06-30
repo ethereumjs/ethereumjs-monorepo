@@ -7,7 +7,7 @@ import {
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { CacheType, DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { Lock, bytesToHex, bytesToPrefixedHexString, equalsBytes } from '@ethereumjs/util'
+import { Lock, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
 import { Event } from '../types'
@@ -613,7 +613,7 @@ export class VMExecution extends Execution {
         })
         const afterTS = Date.now()
         const diffSec = Math.round((afterTS - beforeTS) / 1000)
-        const msg = `Executed block num=${blockNumber} hash=${bytesToPrefixedHexString(
+        const msg = `Executed block num=${blockNumber} hash=${bytesToHex(
           block.hash()
         )} txs=${block.transactions.length} gasUsed=${res.gasUsed} time=${diffSec}secs`
         if (diffSec <= this.MAX_TOLERATED_BLOCK_TIME) {

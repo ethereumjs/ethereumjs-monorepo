@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { bytesToHex, prefixedHexStringToBytes } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { EVM } from '../../src'
@@ -98,7 +98,7 @@ describe('should test mcopy', () => {
       })
 
       await evm.runCall({
-        data: prefixedHexStringToBytes(bytecode),
+        data: hexToBytes(bytecode),
         gasLimit: BigInt(0xffffff),
       })
 

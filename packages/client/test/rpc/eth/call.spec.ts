@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
-import { Address, bigIntToHex, bytesToPrefixedHexString } from '@ethereumjs/util'
+import { Address, bigIntToHex, bytesToHex } from '@ethereumjs/util'
 import tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
@@ -98,14 +98,14 @@ tape(`${method}: call with valid arguments`, async (t) => {
   let req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'latest'])
   let expectRes = (res: any) => {
     const msg = 'should return the correct return value'
-    t.equal(res.body.result, bytesToPrefixedHexString(execResult.returnValue), msg)
+    t.equal(res.body.result, bytesToHex(execResult.returnValue), msg)
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
   req = params(method, [{ ...estimateTxData }, 'latest'])
   expectRes = (res: any) => {
     const msg = 'should return the correct return value with no gas limit provided'
-    t.equal(res.body.result, bytesToPrefixedHexString(execResult.returnValue), msg)
+    t.equal(res.body.result, bytesToHex(execResult.returnValue), msg)
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
@@ -114,7 +114,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
     const msg = `should let run call without 'to' for contract creation`
     t.equal(
       res.body.result,
-      bytesToPrefixedHexString(result.results[0].execResult.returnValue),
+      bytesToHex(result.results[0].execResult.returnValue),
       msg
     )
   }

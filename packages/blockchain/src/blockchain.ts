@@ -6,11 +6,11 @@ import {
   KECCAK256_RLP,
   Lock,
   MapDB,
-  bytesToPrefixedHexString,
+  bytesToHex,
   bytesToUnprefixedHex,
   concatBytesNoTypeCheck,
   equalsBytes,
-  prefixedHexStringToBytes,
+  hexToBytes,
 } from '@ethereumjs/util'
 
 import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus/index.js'
@@ -212,7 +212,7 @@ export class Blockchain implements BlockchainInterface {
       let stateRoot
       if (this._common.chainId() === BigInt(1) && this._customGenesisState === undefined) {
         // For mainnet use the known genesis stateRoot to quicken setup
-        stateRoot = prefixedHexStringToBytes(
+        stateRoot = hexToBytes(
           '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'
         )
       } else {
@@ -719,7 +719,7 @@ export class Blockchain implements BlockchainInterface {
 
     if (block === undefined) {
       if (typeof blockId === 'object') {
-        throw new Error(`Block with hash ${bytesToPrefixedHexString(blockId)} not found in DB`)
+        throw new Error(`Block with hash ${bytesToHex(blockId)} not found in DB`)
       } else {
         throw new Error(`Block number ${blockId} not found in DB`)
       }
@@ -734,7 +734,7 @@ export class Blockchain implements BlockchainInterface {
     if (number === undefined) {
       number = await this.dbManager.hashToNumber(hash)
       if (number === undefined) {
-        throw new Error(`Block with hash ${bytesToPrefixedHexString(hash)} not found in DB`)
+        throw new Error(`Block with hash ${bytesToHex(hash)} not found in DB`)
       }
     }
     return this.dbManager.getTotalDifficulty(hash, number)
@@ -1236,7 +1236,7 @@ export class Blockchain implements BlockchainInterface {
     if (number === undefined) {
       number = await this.dbManager.hashToNumber(hash)
       if (number === undefined)
-        throw new Error(`no header for ${bytesToPrefixedHexString(hash)} found in DB`)
+        throw new Error(`no header for ${bytesToHex(hash)} found in DB`)
     }
     return this.dbManager.getHeader(hash, number)
   }
