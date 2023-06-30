@@ -120,7 +120,7 @@ describe('[Block]: Header functions', () => {
     )
     assert.equal(
       bytesToHex(header.hash()),
-      'f0f936910ebf101b7b168bbe08e3f166ce1e75e16f513dd5a97af02fbe7de7c0',
+      '0xf0f936910ebf101b7b168bbe08e3f166ce1e75e16f513dd5a97af02fbe7de7c0',
       'genesis block should produce incorrect hash since default hardfork is london'
     )
   })
@@ -478,7 +478,7 @@ describe('[Block]: Header functions', () => {
     let header = BlockHeader.fromHeaderData((blocksMainnet as any).default[0]['header'], { common })
     assert.equal(
       bytesToHex(header.hash()),
-      '88e96d4537bea4d9c05d12549907b32561d3bf31f45aae734cdc119f13406cb6',
+      '0x88e96d4537bea4d9c05d12549907b32561d3bf31f45aae734cdc119f13406cb6',
       'correct PoW hash (mainnet block 1)'
     )
 
@@ -486,7 +486,7 @@ describe('[Block]: Header functions', () => {
     header = BlockHeader.fromHeaderData((blocksGoerli as any).default[0]['header'], { common })
     assert.equal(
       bytesToHex(header.hash()),
-      '8f5bab218b6bb34476f51ca588e9f4553a3a7ce5e13a66c660a5283e97e9a85a',
+      '0x8f5bab218b6bb34476f51ca588e9f4553a3a7ce5e13a66c660a5283e97e9a85a',
       'correct PoA clique hash (goerli block 1)'
     )
   })
