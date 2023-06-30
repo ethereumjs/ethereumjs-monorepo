@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { Address, hexToBytes, bytesToHex } from '@ethereumjs/util'
+import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { Interface } from '@ethersproject/abi'
 import { assert, describe, it } from 'vitest'
 

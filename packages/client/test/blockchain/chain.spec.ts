@@ -2,8 +2,7 @@
 // needed for karma-typescript bundling
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
-import { KeyEncoding, ValueEncoding } from '@ethereumjs/util'
-import { bytesToHex, equalsBytes } from '@ethereumjs/util'
+import { KeyEncoding, ValueEncoding, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import tape from 'tape'
 
 import { Chain } from '../../src/blockchain'

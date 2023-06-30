@@ -5,11 +5,11 @@ import {
   bigIntToBytes,
   bigIntToHex,
   bytesToBigInt,
+  bytesToHex,
   intToBytes,
   intToPrefixedHexString,
   toBytes,
   toType,
-  bytesToHex,
 } from '../src/index.js'
 
 describe('toType', () => {

@@ -7,7 +7,7 @@ import {
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
 } from '@ethereumjs/tx'
-import { Account, Address, KECCAK256_RLP, toBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
+import { Account, Address, KECCAK256_RLP, hexToBytes, toBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../src/vm'

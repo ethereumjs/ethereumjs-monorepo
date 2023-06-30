@@ -12,8 +12,8 @@ import {
   bytesToHex,
   commitmentsToVersionedHashes,
   getBlobs,
-  initKZG,
   hexToBytes,
+  initKZG,
   randomBytes,
 } from '@ethereumjs/util'
 import kzg from 'c-kzg'

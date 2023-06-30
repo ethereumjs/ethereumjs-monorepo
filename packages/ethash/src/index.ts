@@ -9,9 +9,9 @@ import {
   bytesToHex,
   concatBytes,
   equalsBytes,
+  hexToBytes,
   setLengthLeft,
   zeros,
-  hexToBytes,
 } from '@ethereumjs/util'
 import { keccak256, keccak512 } from 'ethereum-cryptography/keccak.js'
 

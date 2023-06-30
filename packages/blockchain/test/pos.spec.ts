@@ -1,11 +1,11 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Blockchain } from '../src/index.js'
 
 import * as testnet from './testdata/testnet.json'
-import { bytesToHex } from '@ethereumjs/util'
 
 const buildChain = async (blockchain: Blockchain, common: Common, height: number) => {
   const blocks: Block[] = []

@@ -3,8 +3,8 @@ import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToInt,
-  intToBytes,
   hexToBytes,
+  intToBytes,
 } from '@ethereumjs/util'
 
 import { Protocol } from './protocol'

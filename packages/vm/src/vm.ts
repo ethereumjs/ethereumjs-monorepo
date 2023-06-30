@@ -2,13 +2,7 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
 import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import {
-  Account,
-  Address,
-  AsyncEventEmitter,
-  hexToBytes,
-  unprefixedHexToBytes,
-} from '@ethereumjs/util'
+import { Account, Address, AsyncEventEmitter, unprefixedHexToBytes } from '@ethereumjs/util'
 
 import { buildBlock } from './buildBlock.js'
 import { runBlock } from './runBlock.js'

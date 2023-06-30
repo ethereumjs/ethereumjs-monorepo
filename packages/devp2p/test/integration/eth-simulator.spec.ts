@@ -1,6 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { intToBytes } from '@ethereumjs/util'
-import { hexToBytes } from '@ethereumjs/util'
+import { hexToBytes, intToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import * as devp2p from '../../src/index.js'

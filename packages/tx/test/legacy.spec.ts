@@ -3,10 +3,9 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   bytesToBigInt,
   bytesToHex,
-  bytesToHex,
   equalsBytes,
-  intToBytes,
   hexToBytes,
+  intToBytes,
   toBytes,
   unpadBytes,
 } from '@ethereumjs/util'

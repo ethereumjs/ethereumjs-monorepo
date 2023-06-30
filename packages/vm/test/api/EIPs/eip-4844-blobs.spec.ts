@@ -7,9 +7,9 @@ import {
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
-  hexToBytes,
   commitmentsToVersionedHashes,
   getBlobs,
+  hexToBytes,
   initKZG,
   privateToAddress,
 } from '@ethereumjs/util'

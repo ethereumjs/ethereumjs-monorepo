@@ -7,8 +7,8 @@ import {
   concatBytes,
   equalsBytes,
   getBlobs,
-  initKZG,
   hexToBytes,
+  initKZG,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'

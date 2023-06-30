@@ -2,8 +2,8 @@ import {
   TypeOutput,
   bytesToHex,
   concatBytes,
-  intToBytes,
   hexToBytes,
+  intToBytes,
   toType,
 } from '@ethereumjs/util'
 import crc from 'crc/crc32'
@@ -769,9 +769,7 @@ export class Common extends EventEmitter {
         blockOrTime !== prevBlockOrTime &&
         name !== Hardfork.Paris
       ) {
-        const hfBlockBytes = hexToBytes(
-          '0x' + blockOrTime.toString(16).padStart(16, '0')
-        )
+        const hfBlockBytes = hexToBytes('0x' + blockOrTime.toString(16).padStart(16, '0'))
         hfBytes = concatBytes(hfBytes, hfBlockBytes)
         prevBlockOrTime = blockOrTime
       }

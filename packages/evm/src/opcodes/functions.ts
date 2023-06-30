@@ -5,13 +5,13 @@ import {
   TWO_POW256,
   bigIntToBytes,
   bytesToBigInt,
+  bytesToHex,
   concatBytesNoTypeCheck,
   ecrecover,
+  hexToBytes,
   publicToAddress,
   setLengthLeft,
   setLengthRight,
-  bytesToHex,
-  hexToBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 

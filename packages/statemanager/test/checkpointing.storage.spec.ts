@@ -26,34 +26,22 @@ describe('StateManager -> Storage Checkpointing', () => {
   const key = hexToBytes('0x' + '01'.repeat(32))
 
   const value = hexToBytes('0x01')
-  const root = hexToBytes(
-    '0x561a011235f3fe8a4d292eba6d462e09015bbef9f8c3373dd70760bbc86f9a6c'
-  )
+  const root = hexToBytes('0x561a011235f3fe8a4d292eba6d462e09015bbef9f8c3373dd70760bbc86f9a6c')
 
   const value2 = hexToBytes('0x02')
-  const root2 = hexToBytes(
-    '0x38f95e481a23df7b41934aee346cc960becc5388ad4c67e51f60ac03e8687626'
-  )
+  const root2 = hexToBytes('0x38f95e481a23df7b41934aee346cc960becc5388ad4c67e51f60ac03e8687626')
 
   const value3 = hexToBytes('0x03')
-  const root3 = hexToBytes(
-    '0xdedbee161cad6e3afcc99901dfca9122c16ad48af559d78c4a8b5bec2f5f304b'
-  )
+  const root3 = hexToBytes('0xdedbee161cad6e3afcc99901dfca9122c16ad48af559d78c4a8b5bec2f5f304b')
 
   const value4 = hexToBytes('0x04')
-  const root4 = hexToBytes(
-    '0xe5ccf4afccb012ac0900d0f64f6567a1bceb89f16ff5050da2a64427da94b618'
-  )
+  const root4 = hexToBytes('0xe5ccf4afccb012ac0900d0f64f6567a1bceb89f16ff5050da2a64427da94b618')
 
   const value5 = hexToBytes('0x05')
-  const root5 = hexToBytes(
-    '0xb5b5deaf640a41912217f37f6ee338d49c6a476e0912c81188c2954fd1e959f8'
-  )
+  const root5 = hexToBytes('0xb5b5deaf640a41912217f37f6ee338d49c6a476e0912c81188c2954fd1e959f8')
 
   const valueEmpty = new Uint8Array(0)
-  const rootEmpty = hexToBytes(
-    '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
-  )
+  const rootEmpty = hexToBytes('0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421')
 
   const storageSets = [
     {

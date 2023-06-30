@@ -3,11 +3,11 @@ import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
 import {
   bytesToBigInt,
-  bytesToInt,
   bytesToHex,
+  bytesToInt,
+  concatBytes,
   setLengthLeft,
   toBytes,
-  concatBytes,
   utf8ToBytes,
 } from './bytes.js'
 import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants.js'

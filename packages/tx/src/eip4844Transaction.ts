@@ -13,8 +13,8 @@ import {
   ecrecover,
   equalsBytes,
   getBlobs,
-  kzg,
   hexToBytes,
+  kzg,
   toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'

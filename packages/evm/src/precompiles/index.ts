@@ -1,4 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
+import { type Address, bytesToUnprefixedHex } from '@ethereumjs/util'
 
 import { precompile01 } from './01-ecrecover.js'
 import { precompile02 } from './02-sha256.js'
@@ -22,7 +23,6 @@ import { precompile14 } from './14-bls12-map-fp2-to-g2.js'
 
 import type { PrecompileFunc, PrecompileInput } from './types.js'
 import type { Common } from '@ethereumjs/common'
-import { bytesToUnprefixedHex, type Address } from '@ethereumjs/util'
 
 interface PrecompileEntry {
   address: string

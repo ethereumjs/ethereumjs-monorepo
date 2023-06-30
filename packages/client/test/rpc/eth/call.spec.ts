@@ -112,11 +112,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   req = params(method, [{ gasLimit, data }, 'latest'])
   expectRes = (res: any) => {
     const msg = `should let run call without 'to' for contract creation`
-    t.equal(
-      res.body.result,
-      bytesToHex(result.results[0].execResult.returnValue),
-      msg
-    )
+    t.equal(res.body.result, bytesToHex(result.results[0].execResult.returnValue), msg)
   }
   await baseRequest(t, server, req, 200, expectRes, true)
 })

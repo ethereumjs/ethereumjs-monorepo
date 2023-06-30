@@ -1,12 +1,5 @@
 import { Trie } from '@ethereumjs/trie'
-import {
-  Account,
-  Address,
-  bytesToHex,
-  hexToBytes,
-  randomBytes,
-  zeros,
-} from '@ethereumjs/util'
+import { Account, Address, bytesToHex, hexToBytes, randomBytes, zeros } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 

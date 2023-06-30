@@ -343,9 +343,7 @@ describe('[Blockchain]: Block validation tests', () => {
       common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin }),
     })
 
-    forkBlockHeaderData.uncleHash = bytesToHex(
-      keccak256(RLP.encode([uncleHeader.raw()]))
-    )
+    forkBlockHeaderData.uncleHash = bytesToHex(keccak256(RLP.encode([uncleHeader.raw()])))
 
     const forkBlock_ValidCommon = Block.fromBlockData(
       {

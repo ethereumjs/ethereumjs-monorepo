@@ -1,9 +1,9 @@
 import {
-  concatBytesNoTypeCheck,
-  short,
   bytesToHex,
+  concatBytesNoTypeCheck,
   equalsBytes,
   hexToBytes,
+  short,
 } from '@ethereumjs/util'
 
 import { EvmErrorResult, OOGResult } from '../evm.js'

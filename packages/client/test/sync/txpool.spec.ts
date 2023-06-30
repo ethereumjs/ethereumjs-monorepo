@@ -2,13 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import {
-  Account,
-  bytesToHex,
-  concatBytes,
-  hexToBytes,
-  privateToAddress,
-} from '@ethereumjs/util'
+import { Account, bytesToHex, concatBytes, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import tape from 'tape'
 
 import { Config } from '../../src/config'
@@ -99,16 +93,12 @@ tape('[TxPool]', async (t) => {
 
   const A = {
     address: hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f'),
-    privateKey: hexToBytes(
-      '0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'
-    ),
+    privateKey: hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
   }
 
   const B = {
     address: hexToBytes('0x6f62d8382bf2587361db73ceca28be91b2acb6df'),
-    privateKey: hexToBytes(
-      '0x2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'
-    ),
+    privateKey: hexToBytes('0x2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'),
   }
 
   const createTx = (from = A, to = B, nonce = 0, value = 1, feeBump = 0) => {

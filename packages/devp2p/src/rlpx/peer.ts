@@ -2,12 +2,12 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   bytesToHex,
   bytesToInt,
+  bytesToUtf8,
   concatBytes,
   equalsBytes,
+  hexToBytes,
   intToBytes,
   utf8ToBytes,
-  bytesToUtf8,
-  hexToBytes,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { EventEmitter } from 'events'

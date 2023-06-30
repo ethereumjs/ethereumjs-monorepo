@@ -1,11 +1,10 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToInt, concatBytes, intToBytes } from '@ethereumjs/util'
+import { bytesToInt, concatBytes, hexToBytes, intToBytes } from '@ethereumjs/util'
 import * as crypto from 'crypto'
 import { debug as createDebugLogger } from 'debug'
 import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
 import { ecdh, ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import { hexToBytes } from '@ethereumjs/util'
 
 import {
   assertEq,

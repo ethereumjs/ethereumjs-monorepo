@@ -2,6 +2,7 @@ import { assert, describe, it } from 'vitest'
 
 import {
   arrayContainsArray,
+  bytesToUtf8,
   getBinarySize,
   getKeys,
   isHexPrefixed,
@@ -9,7 +10,6 @@ import {
   padToEven,
   stripHexPrefix,
   toAscii,
-  bytesToUtf8,
   utf8ToBytes,
 } from '../src/index.js'
 

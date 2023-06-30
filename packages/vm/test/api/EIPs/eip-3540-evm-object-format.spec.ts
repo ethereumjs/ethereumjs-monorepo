@@ -5,8 +5,8 @@ import {
   Account,
   Address,
   concatBytesNoTypeCheck,
-  privateToAddress,
   hexToBytes,
+  privateToAddress,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 

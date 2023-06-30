@@ -1,14 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
-import {
-  bigIntToHex,
-  bytesToHex,
-  equalsBytes,
-  hexToBytes,
-  toBytes,
-  zeros,
-} from '@ethereumjs/util'
+import { bigIntToHex, bytesToHex, equalsBytes, hexToBytes, toBytes, zeros } from '@ethereumjs/util'
 
 import { PendingBlock } from '../../miner'
 import { short } from '../../util'
@@ -146,8 +139,7 @@ const payloadAttributesFieldValidatorsV2 = {
 export const blockToExecutionPayload = (block: Block, value: bigint, bundle?: BlobsBundle) => {
   const blockJson = block.toJSON()
   const header = blockJson.header!
-  const transactions =
-    block.transactions.map((tx) => bytesToHex(tx.serialize())) ?? []
+  const transactions = block.transactions.map((tx) => bytesToHex(tx.serialize())) ?? []
   const withdrawalsArr = blockJson.withdrawals ? { withdrawals: blockJson.withdrawals } : {}
   const blobsBundle: BlobsBundleV1 | undefined = bundle
     ? {
@@ -469,10 +461,7 @@ export class Engine {
       if (!response) {
         const validationError = `Error assembling block during init`
         this.config.logger.debug(validationError)
-        const latestValidHash = await validHash(
-          hexToBytes(payload.parentHash),
-          this.chain
-        )
+        const latestValidHash = await validHash(hexToBytes(payload.parentHash), this.chain)
         response = { status: Status.INVALID, latestValidHash, validationError }
       }
       return response
@@ -499,12 +488,7 @@ export class Engine {
           // match individual hashes
           for (let vIndex = 0; vIndex < versionedHashes.length; vIndex++) {
             // if mismatch, record error and break
-            if (
-              !equalsBytes(
-                hexToBytes(versionedHashes[vIndex]),
-                txVersionedHashes[vIndex]
-              )
-            ) {
+            if (!equalsBytes(hexToBytes(versionedHashes[vIndex]), txVersionedHashes[vIndex])) {
               validationError = `Error verifying versionedHashes: mismatch at index=${vIndex} expected=${short(
                 txVersionedHashes[vIndex]
               )} received=${short(versionedHashes[vIndex])}`
@@ -562,10 +546,7 @@ export class Engine {
     try {
       // get the parent from beacon skeleton or from remoteBlocks cache or from the chain
       const parent =
-        (await this.service.beaconSync?.skeleton.getBlockByHash(
-          hexToBytes(parentHash),
-          true
-        )) ??
+        (await this.service.beaconSync?.skeleton.getBlockByHash(hexToBytes(parentHash), true)) ??
         this.remoteBlocks.get(parentHash.slice(2)) ??
         (await this.chain.getBlock(hexToBytes(parentHash)))
 

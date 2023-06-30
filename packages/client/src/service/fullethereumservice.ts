@@ -1,6 +1,6 @@
 import { Hardfork } from '@ethereumjs/common'
-import { encodeReceipt } from '@ethereumjs/vm'
 import { concatBytes } from '@ethereumjs/util'
+import { encodeReceipt } from '@ethereumjs/vm'
 
 import { SyncMode } from '../config'
 import { VMExecution } from '../execution'

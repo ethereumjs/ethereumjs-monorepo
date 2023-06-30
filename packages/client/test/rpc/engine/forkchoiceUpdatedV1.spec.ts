@@ -1,6 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { bytesToHex, bytesToHex, zeros } from '@ethereumjs/util'
+import { bytesToHex, zeros } from '@ethereumjs/util'
 import tape from 'tape'
 import td from 'testdouble'
 

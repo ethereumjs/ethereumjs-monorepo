@@ -1,12 +1,7 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common, parseGethGenesis } from '@ethereumjs/common'
-import {
-  Address,
-  KECCAK256_RLP,
-  parseGethGenesisState,
-  hexToBytes,
-} from '@ethereumjs/util'
+import { Address, KECCAK256_RLP, hexToBytes, parseGethGenesisState } from '@ethereumjs/util'
 import { Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
 
@@ -318,7 +313,5 @@ export function gethGenesisStartLondon(gethGenesis: any) {
  */
 export const dummy = {
   addr: new Address(hexToBytes('0xcde098d93535445768e8a2345a2f869139f45641')),
-  privKey: hexToBytes(
-    '0x5831aac354d13ff96a0c051af0d44c0931c2a20bdacee034ffbaa2354d84f5f8'
-  ),
+  privKey: hexToBytes('0x5831aac354d13ff96a0c051af0d44c0931c2a20bdacee034ffbaa2354d84f5f8'),
 }

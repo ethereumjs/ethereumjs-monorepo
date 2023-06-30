@@ -23,9 +23,7 @@ describe('StateManager -> Code', () => {
       // Setup
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       const codeStateManager = new DefaultStateManager({ accountCacheOpts })
-      const address1 = new Address(
-        hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-      )
+      const address1 = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const account = createAccount()
       const key1 = hexToBytes('0x' + '00'.repeat(32))
       const key2 = hexToBytes('0x' + '00'.repeat(31) + '01')
@@ -81,9 +79,7 @@ describe('StateManager -> Code', () => {
 
     it(`should set and get code`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
-      const address = new Address(
-        hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-      )
+      const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const code = hexToBytes(
         '0x73095e7baea6a6c7c4c2dfeb977efac326af552d873173095e7baea6a6c7c4c2dfeb977efac326af552d873157'
       )
@@ -102,9 +98,7 @@ describe('StateManager -> Code', () => {
 
     it(`should not get code if is not contract`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
-      const address = new Address(
-        hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-      )
+      const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const raw = {
         nonce: '0x0',
         balance: '0x03e7',
@@ -117,9 +111,7 @@ describe('StateManager -> Code', () => {
 
     it(`should set empty code`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
-      const address = new Address(
-        hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-      )
+      const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const raw = {
         nonce: '0x0',
         balance: '0x03e7',
@@ -134,9 +126,7 @@ describe('StateManager -> Code', () => {
 
     it(`should prefix codehashes by default`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
-      const address = new Address(
-        hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-      )
+      const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const code = hexToBytes('0x80')
       await stateManager.putContractCode(address, code)
       const codeRetrieved = await stateManager.getContractCode(address)
@@ -147,9 +137,7 @@ describe('StateManager -> Code', () => {
       const stateManager = new DefaultStateManager({
         prefixCodeHashes: false,
       })
-      const address = new Address(
-        hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-      )
+      const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const code = hexToBytes('0x80')
       try {
         await stateManager.putContractCode(address, code)

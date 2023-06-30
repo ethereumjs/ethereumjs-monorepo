@@ -1,5 +1,5 @@
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Account, Address, bigIntToBytes, setLengthLeft, hexToBytes } from '@ethereumjs/util'
+import { Account, Address, bigIntToBytes, hexToBytes, setLengthLeft } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { EVM } from '../src/index.js'

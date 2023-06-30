@@ -1,7 +1,6 @@
 import { Common } from '@ethereumjs/common'
-import { parseGethGenesisState, privateToAddress } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes, parseGethGenesisState, privateToAddress } from '@ethereumjs/util'
 import debug from 'debug'
-import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import tape from 'tape'
 

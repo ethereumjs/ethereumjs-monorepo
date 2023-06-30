@@ -1,10 +1,6 @@
 import { Common } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
-import {
-  bytesToHex,
-  hexToBytes,
-  privateToAddress,
-} from '@ethereumjs/util'
+import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import { randomBytes } from 'node:crypto'
 import tape from 'tape'
@@ -20,9 +16,7 @@ import {
   waitForELStart,
 } from './simutils'
 
-const pkey = hexToBytes(
-  '0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8'
-)
+const pkey = hexToBytes('0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
 const sender = bytesToHex(privateToAddress(pkey))
 const client = Client.http({ port: 8545 })
 

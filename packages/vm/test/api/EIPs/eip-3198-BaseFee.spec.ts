@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Address, privateToAddress, hexToBytes } from '@ethereumjs/util'
+import { Address, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'

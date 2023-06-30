@@ -1,9 +1,5 @@
 import { Common } from '@ethereumjs/common'
-import {
-  bytesToHex,
-  hexToBytes,
-  privateToAddress,
-} from '@ethereumjs/util'
+import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import tape from 'tape'
 
@@ -16,9 +12,7 @@ import {
   waitForELStart,
 } from './simutils'
 
-const pkey = hexToBytes(
-  '0xae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e'
-)
+const pkey = hexToBytes('0xae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e')
 const sender = bytesToHex(privateToAddress(pkey))
 const client = Client.http({ port: 8545 })
 

@@ -1,4 +1,4 @@
-import { short, bytesToHex, bytesToUnprefixedHex, unprefixedHexToBytes } from '@ethereumjs/util'
+import { bytesToHex, bytesToUnprefixedHex, short, unprefixedHexToBytes } from '@ethereumjs/util'
 import { ec_add } from 'rustbn-wasm'
 
 import { OOGResult } from '../evm.js'

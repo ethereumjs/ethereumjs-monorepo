@@ -274,10 +274,7 @@ describe('[BaseTransaction]', () => {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
         if (privateKey !== undefined) {
-          assert.ok(
-            tx.sign(hexToBytes('0x' + privateKey)),
-            `${txType.name}: should sign tx`
-          )
+          assert.ok(tx.sign(hexToBytes('0x' + privateKey)), `${txType.name}: should sign tx`)
         }
 
         assert.throws(

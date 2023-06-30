@@ -7,9 +7,9 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
   bytesToHex,
+  hexToBytes,
   initKZG,
   parseGethGenesisState,
-  hexToBytes,
   randomBytes,
   short,
   toBytes,

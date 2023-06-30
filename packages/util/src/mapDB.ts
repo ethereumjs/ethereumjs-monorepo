@@ -1,4 +1,5 @@
 import { bytesToUnprefixedHex } from './bytes.js'
+
 import type { BatchDBOp, DB, DBObject } from './db.js'
 
 export class MapDB<

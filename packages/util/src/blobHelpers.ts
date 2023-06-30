@@ -1,6 +1,6 @@
 import { sha256 } from 'ethereum-cryptography/sha256.js'
-import { utf8ToBytes } from '../src'
 
+import { utf8ToBytes } from './bytes.js'
 import { kzg } from './kzg.js'
 
 /**

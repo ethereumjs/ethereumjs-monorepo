@@ -4,11 +4,11 @@ import {
   Account,
   Address,
   MAX_UINT64,
+  bytesToHex,
   concatBytesNoTypeCheck,
+  hexToBytes,
   padToEven,
   unpadBytes,
-  bytesToHex,
-  hexToBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'

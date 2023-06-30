@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Account, Address, toBytes, hexToBytes } from '@ethereumjs/util'
+import { Account, Address, hexToBytes, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'

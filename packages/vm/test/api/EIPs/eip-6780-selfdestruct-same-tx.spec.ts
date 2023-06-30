@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
-import { Account, Address, privateToAddress, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { Account, Address, equalsBytes, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'

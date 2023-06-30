@@ -9,10 +9,10 @@ import {
   GWEI_TO_WEI,
   KECCAK256_RLP,
   Withdrawal,
-  parseGethGenesisState,
-  zeros,
   bytesToHex,
   hexToBytes,
+  parseGethGenesisState,
+  zeros,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 

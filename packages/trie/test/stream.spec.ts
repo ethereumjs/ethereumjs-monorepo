@@ -1,8 +1,9 @@
+import { utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Trie } from '../src/index.js'
 
-import type { BatchDBOp, utf8ToBytes } from '@ethereumjs/util'
+import type { BatchDBOp } from '@ethereumjs/util'
 
 describe('kv stream test', () => {
   const trie = new Trie()

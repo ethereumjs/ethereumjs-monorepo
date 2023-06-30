@@ -613,9 +613,9 @@ export class VMExecution extends Execution {
         })
         const afterTS = Date.now()
         const diffSec = Math.round((afterTS - beforeTS) / 1000)
-        const msg = `Executed block num=${blockNumber} hash=${bytesToHex(
-          block.hash()
-        )} txs=${block.transactions.length} gasUsed=${res.gasUsed} time=${diffSec}secs`
+        const msg = `Executed block num=${blockNumber} hash=${bytesToHex(block.hash())} txs=${
+          block.transactions.length
+        } gasUsed=${res.gasUsed} time=${diffSec}secs`
         if (diffSec <= this.MAX_TOLERATED_BLOCK_TIME) {
           this.config.logger.info(msg)
         } else {

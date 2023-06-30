@@ -9,9 +9,9 @@ import {
   Account,
   Address,
   bigIntToBytes,
+  hexToBytes,
   privateToAddress,
   setLengthLeft,
-  hexToBytes,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 

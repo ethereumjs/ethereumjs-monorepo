@@ -1,10 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import {hexToBytes
-  bytesToHex,
-  equalsBytes,
-  prefixedHexStringToBytes,
-  randomBytes,
-} from '@ethereumjs/util'
+import { bytesToHex, equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { blockFromRpc } from '../src/from-rpc.js'
@@ -31,12 +26,12 @@ describe('[fromRPC]: block #2924874', () => {
   it('should create a block with transactions with valid signatures', () => {
     const block = blockFromRpc(blockData, [], { common })
     const allValid = block.transactions.every((tx) => tx.verifySignature())
-    assert.equal(hexToBytesnsaction signatures are valid')
+    assert.equal(allValid, true, 'all transaction signatures are valid')
   })
 
   it('should create a block header with the correct hash', () => {
     const block = blockHeaderFromRpc(blockData, { common })
-    const hash = prefixedHexStringToBytes(blockData.hash)
+    const hash = hexToBytes(blockData.hash)
     assert.ok(equalsBytes(block.hash(), hash))
   })
 })

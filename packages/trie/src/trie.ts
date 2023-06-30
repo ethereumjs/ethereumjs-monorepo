@@ -6,7 +6,6 @@ import {
   bytesToHex,
   bytesToUtf8,
   equalsBytes,
-  hexToBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'

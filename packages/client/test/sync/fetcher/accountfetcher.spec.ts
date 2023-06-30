@@ -175,18 +175,12 @@ tape('[AccountFetcher]', async (t) => {
     const fetcher = new AccountFetcher({
       config,
       pool,
-      root: hexToBytes(
-        '0x39ed8daab7679c0b1b7cf3667c50108185d4d9d1431c24a1c35f696a58277f8f'
-      ),
+      root: hexToBytes('0x39ed8daab7679c0b1b7cf3667c50108185d4d9d1431c24a1c35f696a58277f8f'),
       first: bytesToBigInt(
-        hexToBytes(
-          '0x0000000000000000000000000000000000000000000000000000000000000001'
-        )
+        hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000001')
       ),
       count: bytesToBigInt(
-        hexToBytes(
-          '0x000010c6f7a0b5ed8d36b4c7f34938583621fafc8b0079a2834d26fa3fcc9ea9'
-        )
+        hexToBytes('0x000010c6f7a0b5ed8d36b4c7f34938583621fafc8b0079a2834d26fa3fcc9ea9')
       ),
     })
     t.ok(fetcher.storageFetcher !== undefined, 'storageFetcher should be created')

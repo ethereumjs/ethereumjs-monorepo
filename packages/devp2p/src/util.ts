@@ -1,9 +1,9 @@
 import { RLP } from '@ethereumjs/rlp'
+import { bytesToHex, bytesToUnprefixedHex, concatBytes, equalsBytes } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { keccak256 as _keccak256 } from 'ethereum-cryptography/keccak.js'
 import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import { bytesToHex, bytesToUnprefixedHex, concatBytes, equalsBytes } from '@ethereumjs/util'
 
 import type { ETH } from './protocol/eth.js'
 import type { LES } from './protocol/les.js'

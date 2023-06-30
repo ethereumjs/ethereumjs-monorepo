@@ -1,11 +1,11 @@
 import {
   Address,
-  hexToBytes,
-  unpadBytes,
-  zeros,
   bytesToHex,
   concatBytes,
   equalsBytes,
+  hexToBytes,
+  unpadBytes,
+  zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'

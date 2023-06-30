@@ -1,5 +1,7 @@
 import {
   bytesToHex,
+  concatBytes,
+  equalsBytes,
   importPublic,
   isValidPrivate,
   isValidPublic,
@@ -8,10 +10,8 @@ import {
   publicToAddress,
   randomBytes,
   toChecksumAddress,
-  concatBytes,
-  equalsBytes,
-  utf8ToBytes,
   unprefixedHexToBytes,
+  utf8ToBytes,
 } from '@ethereumjs/util'
 import { base58check } from '@scure/base'
 import * as aes from 'ethereum-cryptography/aes.js'

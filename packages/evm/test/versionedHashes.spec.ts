@@ -1,6 +1,6 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Account, Address, unpadBytes, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { Account, Address, bytesToHex, hexToBytes, unpadBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { EVM } from '../src/index.js'

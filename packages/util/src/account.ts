@@ -6,12 +6,12 @@ import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
-  toBytes,
-  zeros,
   concatBytes,
   equalsBytes,
   hexToBytes,
+  toBytes,
   utf8ToBytes,
+  zeros,
 } from './bytes.js'
 import { KECCAK256_NULL, KECCAK256_RLP } from './constants.js'
 import { assertIsBytes, assertIsHexString, assertIsString } from './helpers.js'

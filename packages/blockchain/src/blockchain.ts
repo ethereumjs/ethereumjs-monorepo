@@ -212,9 +212,7 @@ export class Blockchain implements BlockchainInterface {
       let stateRoot
       if (this._common.chainId() === BigInt(1) && this._customGenesisState === undefined) {
         // For mainnet use the known genesis stateRoot to quicken setup
-        stateRoot = hexToBytes(
-          '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'
-        )
+        stateRoot = hexToBytes('0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544')
       } else {
         stateRoot = await genesisStateRoot(this.genesisState())
       }
@@ -1235,8 +1233,7 @@ export class Blockchain implements BlockchainInterface {
   private async _getHeader(hash: Uint8Array, number?: bigint) {
     if (number === undefined) {
       number = await this.dbManager.hashToNumber(hash)
-      if (number === undefined)
-        throw new Error(`no header for ${bytesToHex(hash)} found in DB`)
+      if (number === undefined) throw new Error(`no header for ${bytesToHex(hash)} found in DB`)
     }
     return this.dbManager.getHeader(hash, number)
   }

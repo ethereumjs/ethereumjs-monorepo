@@ -1,4 +1,4 @@
-import { hexToBytes, bytesToHex, randomBytes, bytesToUnprefixedHex } from '@ethereumjs/util'
+import { bytesToUnprefixedHex, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 
 import { RPCManager, saveReceiptsMethods } from '../src/rpc'

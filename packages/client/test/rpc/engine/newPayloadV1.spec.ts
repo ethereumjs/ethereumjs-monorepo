@@ -1,11 +1,6 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import {
-  Address,
-  bytesToHex,
-  hexToBytes,
-  zeros,
-} from '@ethereumjs/util'
+import { Address, bytesToHex, hexToBytes, zeros } from '@ethereumjs/util'
 import tape from 'tape'
 import td from 'testdouble'
 
@@ -225,9 +220,7 @@ tape(`${method}: call with valid data & valid transaction but not signed`, async
 })
 
 tape(`${method}: call with valid data & valid transaction`, async (t) => {
-  const accountPk = hexToBytes(
-    '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
-  )
+  const accountPk = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
   const accountAddress = Address.fromPrivateKey(accountPk)
   const newGenesisJSON = {
     ...genesisJSON,

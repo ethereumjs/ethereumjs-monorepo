@@ -4,9 +4,9 @@ import {
   bytesToBigInt,
   computeVersionedHash,
   concatBytesNoTypeCheck,
+  hexToBytes,
   initKZG,
   unpadBytes,
-  hexToBytes,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { assert, describe, it } from 'vitest'

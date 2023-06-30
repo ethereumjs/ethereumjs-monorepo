@@ -2,11 +2,11 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
   Address,
-  concatBytesNoTypeCheck,
-  privateToAddress,
   concatBytes,
+  concatBytesNoTypeCheck,
   equalsBytes,
   hexToBytes,
+  privateToAddress,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 

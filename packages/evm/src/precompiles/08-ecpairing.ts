@@ -1,4 +1,4 @@
-import { bytesToUnprefixedHex, short, unprefixedHexToBytes, bytesToHex } from '@ethereumjs/util'
+import { bytesToHex, bytesToUnprefixedHex, short, unprefixedHexToBytes } from '@ethereumjs/util'
 import { ec_pairing } from 'rustbn-wasm'
 
 import { OOGResult } from '../evm.js'

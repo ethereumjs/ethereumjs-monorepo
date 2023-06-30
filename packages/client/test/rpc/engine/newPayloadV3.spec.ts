@@ -1,11 +1,6 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import {
-  Address,
-  bytesToHex,
-  hexToBytes,
-  zeros,
-} from '@ethereumjs/util'
+import { Address, bytesToHex, hexToBytes, zeros } from '@ethereumjs/util'
 import tape from 'tape'
 import td from 'testdouble'
 

@@ -7,8 +7,11 @@ import {
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
+  bytesToHex,
   bytesToInt,
+  equalsBytes,
   fromSigned,
+  hexToBytes,
   intToBytes,
   intToPrefixedHexString,
   intToUnpaddedBytes,
@@ -22,13 +25,10 @@ import {
   unpadArray,
   unpadBytes,
   unpadHexString,
+  utf8ToBytes,
   validateNoLeadingZeroes,
   zeroAddress,
   zeros,
-  bytesToHex,
-  equalsBytes,
-  hexToBytes,
-  utf8ToBytes,
 } from '../src/index.js'
 
 describe('zeros function', () => {
@@ -474,7 +474,7 @@ describe('intToUnpaddedBytes', () => {
 describe('bigIntToHex', () => {
   it('should pass on correct input', () => {
     assert.equal(bigIntToHex(BigInt(1)), '0x1')
-  })hexToBytes
+  })
 })
 
 describe('prefixedHexStringToBytes', () => {

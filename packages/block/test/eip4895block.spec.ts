@@ -1,12 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import {
-  Address,
-  KECCAK256_RLP,
-  Withdrawal,
-  hexToBytes,
-  zeros,
-} from '@ethereumjs/util'
+import { Address, KECCAK256_RLP, Withdrawal, hexToBytes, zeros } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Block } from '../src/block.js'
@@ -37,9 +31,7 @@ common.hardforkBlock = function (hardfork: string | undefined) {
 describe('EIP4895 tests', () => {
   it('should correctly generate withdrawalsRoot', async () => {
     // get withdwalsArray
-    const gethBlockBytesArray = RLP.decode(
-      hexToBytes('0x' + gethWithdrawals8BlockRlp)
-    )
+    const gethBlockBytesArray = RLP.decode(hexToBytes('0x' + gethWithdrawals8BlockRlp))
     const withdrawals = (gethBlockBytesArray[3] as WithdrawalBytes[]).map((wa) =>
       Withdrawal.fromValuesArray(wa)
     )

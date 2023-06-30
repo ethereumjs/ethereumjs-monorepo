@@ -1,9 +1,5 @@
 import { Common } from '@ethereumjs/common'
-import {
-  bytesToHex,
-  hexToBytes,
-  privateToAddress,
-} from '@ethereumjs/util'
+import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import { randomBytes } from 'node:crypto'
 import tape from 'tape'

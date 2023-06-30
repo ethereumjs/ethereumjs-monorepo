@@ -1,4 +1,4 @@
-import { bytesToHex, bytesToHex, randomBytes } from '@ethereumjs/util'
+import { bytesToHex, randomBytes } from '@ethereumjs/util'
 import tape from 'tape'
 
 import { INVALID_PARAMS } from '../../src/rpc/error-code'

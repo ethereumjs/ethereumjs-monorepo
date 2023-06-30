@@ -79,9 +79,7 @@ describe('[Header]: Clique PoA Functionality', () => {
 
   const A: Signer = {
     address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
-    privateKey: hexToBytes(
-      '0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'
-    ),
+    privateKey: hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
     publicKey: hexToBytes(
       '0x40b2ebdf4b53206d2d3d3d59e7e2f13b1ea68305aec71d5d24cefe7f24ecae886d241f9267f04702d7f693655eb7b4aa23f30dcd0c3c5f2b970aad7c8a828195'
     ),

@@ -3,10 +3,10 @@ import {
   KECCAK256_NULL,
   KECCAK256_RLP_S,
   bytesToHex,
-  hexToBytes,
-  utf8ToBytes,
   bytesToUtf8,
   concatBytes,
+  hexToBytes,
+  utf8ToBytes,
 } from '@ethereumjs/util'
 import { blake2b } from 'ethereum-cryptography/blake2b.js'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'

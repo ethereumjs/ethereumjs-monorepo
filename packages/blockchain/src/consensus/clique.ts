@@ -6,8 +6,8 @@ import {
   bigIntToBytes,
   bytesToBigInt,
   equalsBytes,
+  hexToBytes,
   toType,
-  hexToBytes
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 

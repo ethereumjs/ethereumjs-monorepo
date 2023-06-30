@@ -4,8 +4,8 @@ import {
   bytesToBigInt,
   bytesToHex,
   bytesToInt,
-  intToBytes,
   hexToBytes,
+  intToBytes,
 } from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 

@@ -14,9 +14,7 @@ function createChain() {
   const genesisBlockHash = hexToBytes(
     '0xdcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5'
   )
-  const blockHash = hexToBytes(
-    '0xdcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5'
-  )
+  const blockHash = hexToBytes('0xdcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5')
   const transactions = [mockedTx1]
   const transactions2 = [mockedTx2]
   const genesisBlock = {

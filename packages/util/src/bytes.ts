@@ -1,8 +1,8 @@
 import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
 import {
   bytesToHex as _bytesToUnprefixedHex,
-  bytesToUtf8,
   hexToBytes as _unprefixedHexToBytes,
+  bytesToUtf8,
 } from 'ethereum-cryptography/utils.js'
 
 // Note: ethereum-cryptography/hexToBytes is imported as "unprefixedHexToBytes"
@@ -14,6 +14,16 @@ import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.js'
 import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal.js'
 
 import type { PrefixedHexString, TransformabletoBytes } from './types.js'
+
+/**
+ * @deprecated
+ */
+export const bytesToUnprefixedHex = _bytesToUnprefixedHex
+
+/**
+ * @deprecated
+ */
+export const unprefixedHexToBytes = _unprefixedHexToBytes
 
 /****************  Borrowed from @chainsafe/ssz */
 // Caching this info costs about ~1000 bytes and speeds up toHexString() by x6
@@ -443,15 +453,5 @@ export const concatBytesNoTypeCheck = (...arrays: Uint8Array[]): Uint8Array => {
   }
   return result
 }
-
-/**
- * @deprecated
- */
-export const bytesToUnprefixedHex = _bytesToUnprefixedHex
-
-/**
- * @deprecated
- */
-export const unprefixedHexToBytes = _unprefixedHexToBytes
 
 export { bytesToUtf8, concatBytes, equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'

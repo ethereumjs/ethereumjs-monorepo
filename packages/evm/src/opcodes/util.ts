@@ -1,10 +1,10 @@
 import { Hardfork } from '@ethereumjs/common'
 import {
   bigIntToBytes,
-  setLengthLeft,
-  setLengthRight,
   bytesToHex,
   equalsBytes,
+  setLengthLeft,
+  setLengthRight,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 

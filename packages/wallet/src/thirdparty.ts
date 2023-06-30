@@ -1,8 +1,8 @@
+import { bytesToUtf8, concatBytes, unprefixedHexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { base64 } from '@scure/base'
 import { decrypt } from 'ethereum-cryptography/aes.js'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { pbkdf2Sync } from 'ethereum-cryptography/pbkdf2.js'
-import { bytesToUtf8, concatBytes, unprefixedHexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import * as md5 from 'js-md5'
 
 import { Wallet } from './wallet.js'

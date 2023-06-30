@@ -6,10 +6,10 @@ import {
   Address,
   KECCAK256_NULL,
   bytesToHex,
-  hexToBytes,
-  equalsBytes,
-  short,
   bytesToUnprefixedHex,
+  equalsBytes,
+  hexToBytes,
+  short,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 

@@ -1,9 +1,9 @@
 import {
   bytesToBigInt,
-  concatBytesNoTypeCheck,
-  padToEven,
-  equalsBytes,
   bytesToUnprefixedHex,
+  concatBytesNoTypeCheck,
+  equalsBytes,
+  padToEven,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 

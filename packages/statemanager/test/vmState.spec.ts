@@ -1,7 +1,6 @@
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Account, Address, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
-
 import { assert, describe, it } from 'vitest'
 
 import { DefaultStateManager } from '../src/index.js'

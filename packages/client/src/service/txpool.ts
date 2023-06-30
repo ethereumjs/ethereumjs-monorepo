@@ -6,13 +6,7 @@ import {
   isFeeMarketEIP1559Tx,
   isLegacyTx,
 } from '@ethereumjs/tx'
-import {
-  Account,
-  Address,
-  bytesToHex,
-  equalsBytes,
-  hexToBytes,
-} from '@ethereumjs/util'
+import { Account, Address, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import Heap from 'qheap'
 
 import type { Config } from '../config'
@@ -714,9 +708,7 @@ export class TxPool {
         .map((obj) => obj.tx)
         .sort((a, b) => Number(a.nonce - b.nonce))
       // Check if the account nonce matches the lowest known tx nonce
-      let account = await vm.stateManager.getAccount(
-        new Address(hexToBytes('0x' + address))
-      )
+      let account = await vm.stateManager.getAccount(new Address(hexToBytes('0x' + address)))
       if (account === undefined) {
         account = new Account()
       }

@@ -5,7 +5,6 @@ import {
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
-  bytesToHex,
   bytesToUtf8,
   commitmentsToVersionedHashes,
   getBlobs,
@@ -272,11 +271,7 @@ export async function runTxHelper(
     { common }
   ).sign(pkey)
 
-  const res = await client.request(
-    'eth_sendRawTransaction',
-    [bytesToHex(tx.serialize())],
-    2.0
-  )
+  const res = await client.request('eth_sendRawTransaction', [bytesToHex(tx.serialize())], 2.0)
   let mined = false
   let receipt
   console.log(`tx: ${res.result}`)
@@ -334,11 +329,7 @@ export const runBlobTx = async (
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 
-  const res = await client.request(
-    'eth_sendRawTransaction',
-    [bytesToHex(serializedWrapper)],
-    2.0
-  )
+  const res = await client.request('eth_sendRawTransaction', [bytesToHex(serializedWrapper)], 2.0)
 
   console.log(`tx: ${res.result}`)
   let tries = 0

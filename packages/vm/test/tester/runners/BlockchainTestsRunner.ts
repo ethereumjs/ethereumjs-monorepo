@@ -8,12 +8,12 @@ import { TransactionFactory } from '@ethereumjs/tx'
 import {
   MapDB,
   bytesToBigInt,
+  bytesToHex,
+  hexToBytes,
   initKZG,
   isHexPrefixed,
   stripHexPrefix,
   toBytes,
-  bytesToHex,
-  hexToBytes,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 

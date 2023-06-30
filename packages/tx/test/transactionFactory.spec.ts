@@ -15,9 +15,7 @@ const common = new Common({
   hardfork: Hardfork.London,
 })
 
-const pKey = hexToBytes(
-  '0x4646464646464646464646464646464646464646464646464646464646464646'
-)
+const pKey = hexToBytes('0x4646464646464646464646464646464646464646464646464646464646464646')
 
 const unsignedLegacyTx = LegacyTransaction.fromTxData({})
 const signedLegacyTx = unsignedLegacyTx.sign(pKey)

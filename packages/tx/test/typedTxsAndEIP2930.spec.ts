@@ -21,9 +21,7 @@ import {
 
 import type { AccessList, AccessListBytesItem } from '../src/index.js'
 
-const pKey = hexToBytes(
-  '0x4646464646464646464646464646464646464646464646464646464646464646'
-)
+const pKey = hexToBytes('0x4646464646464646464646464646464646464646464646464646464646464646')
 const address = privateToAddress(pKey)
 
 const common = new Common({
@@ -173,10 +171,7 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
 
       try {
         // Correct tx type + RLP-encoded empty list
-        const serialized = concatBytes(
-          new Uint8Array([txType.type]),
-          hexToBytes('0xc0')
-        )
+        const serialized = concatBytes(new Uint8Array([txType.type]), hexToBytes('0xc0'))
         txType.class.fromSerializedTx(serialized, {})
       } catch (e: any) {
         assert.ok(
@@ -546,9 +541,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
 
   it('should sign transaction correctly and return expected JSON', () => {
     const address = hexToBytes('0x0000000000000000000000000000000000001337')
-    const slot1 = hexToBytes(
-      '0x0000000000000000000000000000000000000000000000000000000000000000'
-    )
+    const slot1 = hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000000')
     const txData = {
       data: hexToBytes('0x'),
       gasLimit: 0x62d4,
@@ -574,9 +567,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
     const expectedUnsignedRaw = hexToBytes(
       '0x01f86587796f6c6f76337880843b9aca008262d494df0a88b2b68c673713a8ec826003676f272e35730180f838f7940000000000000000000000000000000000001337e1a00000000000000000000000000000000000000000000000000000000000000000808080'
     )
-    const pkey = hexToBytes(
-      '0xfad9c8855b740a0b7ed4c221dbad0f33a83a49cad6b3fe8d5817ac83d38b6a19'
-    )
+    const pkey = hexToBytes('0xfad9c8855b740a0b7ed4c221dbad0f33a83a49cad6b3fe8d5817ac83d38b6a19')
     const expectedSigned = hexToBytes(
       '0x01f8a587796f6c6f76337880843b9aca008262d494df0a88b2b68c673713a8ec826003676f272e35730180f838f7940000000000000000000000000000000000001337e1a0000000000000000000000000000000000000000000000000000000000000000080a0294ac94077b35057971e6b4b06dfdf55a6fbed819133a6c1d31e187f1bca938da00be950468ba1c25a5cb50e9f6d8aa13c8cd21f24ba909402775b262ac76d374d'
     )
