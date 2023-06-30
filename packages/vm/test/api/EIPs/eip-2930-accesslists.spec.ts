@@ -1,7 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
-import { Account, Address, bytesToHex } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
@@ -12,11 +11,11 @@ const common = new Common({
   hardfork: Hardfork.Berlin,
 })
 
-const validAddress = hexToBytes('00000000000000000000000000000000000000ff')
-const validSlot = hexToBytes('00'.repeat(32))
+const validAddress = hexToBytes('0x00000000000000000000000000000000000000ff')
+const validSlot = hexToBytes('0x' + '00'.repeat(32))
 
 // setup the accounts for this test
-const privateKey = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
+const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 const contractAddress = new Address(validAddress)
 
 describe('EIP-2930 Optional Access Lists tests', () => {
@@ -49,7 +48,7 @@ describe('EIP-2930 Optional Access Lists tests', () => {
     const vm = await VM.create({ common })
 
     // contract code PUSH1 0x00 SLOAD STOP
-    await vm.stateManager.putContractCode(contractAddress, hexToBytes('60005400'))
+    await vm.stateManager.putContractCode(contractAddress, hexToBytes('0x60005400'))
 
     const address = Address.fromPrivateKey(privateKey)
     const initialBalance = BigInt(10) ** BigInt(18)

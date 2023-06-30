@@ -1,7 +1,6 @@
-import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { Address, prefixedHexStringToBytes, toBytes } from '../src/index.js'
+import { Address, hexToBytes, equalsBytes, toBytes } from '../src/index.js'
 
 import eip1014Testdata from './testdata/eip1014Examples.json'
 
@@ -37,7 +36,7 @@ describe('Address', () => {
 
   it('should instantiate from public key', () => {
     const pubKey = hexToBytes(
-      '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
+      '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
     )
     const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
     const addr = Address.fromPublicKey(pubKey)
@@ -46,7 +45,7 @@ describe('Address', () => {
 
   it('should fail to instantiate from invalid public key', () => {
     const pubKey = hexToBytes(
-      '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744'
+      '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744'
     )
     assert.throws(() => Address.fromPublicKey(pubKey))
   })
@@ -98,7 +97,7 @@ describe('Address', () => {
   it('should compare equality properly', () => {
     const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
     const address1 = Address.fromString(str)
-    const address2 = new Address(prefixedHexStringToBytes(str))
+    const address2 = new Address(hexToBytes(str))
     assert.ok(address1.equals(address2))
     assert.ok(equalsBytes(address1.bytes, address2.bytes))
 

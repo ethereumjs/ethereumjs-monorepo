@@ -1,6 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { intToBytes } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { intToBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import * as devp2p from '../../src/index.js'
@@ -8,7 +7,9 @@ import * as devp2p from '../../src/index.js'
 import * as util from './util.js'
 
 const GENESIS_TD = 17179869184
-const GENESIS_HASH = hexToBytes('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3')
+const GENESIS_HASH = hexToBytes(
+  '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
+)
 
 const capabilities = [devp2p.LES.les4]
 

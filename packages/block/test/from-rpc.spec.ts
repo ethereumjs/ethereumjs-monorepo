@@ -1,6 +1,10 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { bytesToPrefixedHexString, prefixedHexStringToBytes, randomBytes } from '@ethereumjs/util'
-import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
+import {
+  bytesToPrefixedHexString,
+  equalsBytes,
+  prefixedHexStringToBytes,
+  randomBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { blockFromRpc } from '../src/from-rpc.js'
@@ -108,8 +112,8 @@ describe('[fromRPC]:', () => {
   it('should create a block header with the correct hash when EIP-4896 withdrawals are present', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
     const block = blockHeaderFromRpc(blockDataWithWithdrawals, { common })
-    const hash = blockDataWithWithdrawals.hash.slice(2)
-    assert.equal(bytesToHex(block.hash()), hash)
+    const hash = blockDataWithWithdrawals.hash
+    assert.equal(bytesToPrefixedHexString(block.hash()), hash)
   })
 })
 

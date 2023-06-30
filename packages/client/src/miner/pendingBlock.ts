@@ -3,7 +3,6 @@ import {
   TypeOutput,
   bigIntToUnpaddedBytes,
   bytesToHex,
-  bytesToPrefixedHexString,
   concatBytes,
   equalsBytes,
   toBytes,
@@ -112,7 +111,7 @@ export class PendingBlock {
         8
       )
     )
-    const payloadId = bytesToPrefixedHexString(payloadIdBytes)
+    const payloadId = bytesToHex(payloadIdBytes)
 
     // If payload has already been triggered, then return the payloadid
     if (this.pendingPayloads.get(payloadId) !== undefined) {
@@ -194,7 +193,7 @@ export class PendingBlock {
    */
   stop(payloadIdBytes: Uint8Array | string) {
     const payloadId =
-      typeof payloadIdBytes !== 'string' ? bytesToPrefixedHexString(payloadIdBytes) : payloadIdBytes
+      typeof payloadIdBytes !== 'string' ? bytesToHex(payloadIdBytes) : payloadIdBytes
     const builder = this.pendingPayloads.get(payloadId)
     if (builder === undefined) return
     // Revert blockBuilder
@@ -211,7 +210,7 @@ export class PendingBlock {
     payloadIdBytes: Uint8Array | string
   ): Promise<void | [block: Block, receipts: TxReceipt[], value: bigint, blobs?: BlobsBundle]> {
     const payloadId =
-      typeof payloadIdBytes !== 'string' ? bytesToPrefixedHexString(payloadIdBytes) : payloadIdBytes
+      typeof payloadIdBytes !== 'string' ? bytesToHex(payloadIdBytes) : payloadIdBytes
     const builder = this.pendingPayloads.get(payloadId)
     if (builder === undefined) {
       return
@@ -322,15 +321,13 @@ export class PendingBlock {
         // Remove the blob tx which doesn't has blobs bundled
         this.txPool.removeByHash(bytesToHex(tx.hash()))
         this.config.logger.error(
-          `Pending: Removed from txPool a blob tx ${bytesToPrefixedHexString(
-            tx.hash()
-          )} with missing blobs`
+          `Pending: Removed from txPool a blob tx ${bytesToHex(tx.hash())} with missing blobs`
         )
         addTxResult = AddTxResult.RemovedByErrors
       } else {
         // If there is an error adding a tx, it will be skipped
         this.config.logger.debug(
-          `Pending: Skipping tx ${bytesToPrefixedHexString(
+          `Pending: Skipping tx ${bytesToHex(
             tx.hash()
           )}, error encountered when trying to add tx:\n${error}`
         )

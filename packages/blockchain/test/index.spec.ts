@@ -1,7 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { MapDB } from '@ethereumjs/util'
-import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
+import { MapDB, bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Blockchain } from '../src/index.js'
@@ -212,7 +211,7 @@ describe('blockchain test', () => {
     }
 
     try {
-      await blockchain.getBlock(hexToBytes('1234'))
+      await blockchain.getBlock(hexToBytes('0x1234'))
       assert.fail('should throw an exception')
     } catch (e: any) {
       assert.ok(
@@ -264,13 +263,13 @@ describe('blockchain test', () => {
 
     const newblock22 = await blockchain.getBlock(22)
     assert.equal(newblock22.header.number, BigInt(22), 'canonical references should be restored')
-    assert.equal(
-      bytesToHex(newblock22.hash()),
-      bytesToHex(newblock22.hash()),
-      'fetched block should match'
-    )
     const newheader22 = await blockchain.getCanonicalHeader(BigInt(22))
     assert.equal(newheader22.number, BigInt(22), 'canonical references should be restored')
+    assert.equal(
+      bytesToHex(newblock22.hash()),
+      bytesToHex(newheader22.hash()),
+      'fetched block should match'
+    )
   })
 
   it('should get 5 blocks, skipping 1 apart, starting from genesis hash', async () => {

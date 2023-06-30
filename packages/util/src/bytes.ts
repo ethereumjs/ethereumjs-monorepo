@@ -1,5 +1,14 @@
 import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
-import { bytesToHex, bytesToUtf8, hexToBytes } from 'ethereum-cryptography/utils.js'
+import {
+  bytesToHex as _bytesToUnprefixedHex,
+  bytesToUtf8,
+  hexToBytes as _unprefixedHexToBytes,
+} from 'ethereum-cryptography/utils.js'
+
+// Note: ethereum-cryptography/hexToBytes is imported as "unprefixedHexToBytes"
+// This name is not correct, since it supports prefixed strings. However, internally here we
+// explicitly use it when the strings are known to be unprefixed (for readability and avoid
+// confuction why we would not use our own `hexToBytes`)
 
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.js'
 import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal.js'
@@ -10,7 +19,7 @@ import type { PrefixedHexString, TransformabletoBytes } from './types.js'
 // Caching this info costs about ~1000 bytes and speeds up toHexString() by x6
 const hexByByte = Array.from({ length: 256 }, (v, i) => i.toString(16).padStart(2, '0'))
 
-export const bytesToPrefixedHexString = (bytes: Uint8Array): string => {
+export const bytesToHex = (bytes: Uint8Array): string => {
   let hex = '0x'
   if (bytes === undefined || bytes.length === 0) return hex
   for (const byte of bytes) {
@@ -19,7 +28,7 @@ export const bytesToPrefixedHexString = (bytes: Uint8Array): string => {
   return hex
 }
 
-export const prefixedHexStringToBytes = (hex: string): Uint8Array => {
+export const hexToBytes = (hex: string): Uint8Array => {
   if (typeof hex !== 'string') {
     throw new Error(`hex argument type ${typeof hex} must be of type string`)
   }
@@ -64,7 +73,7 @@ export const intToPrefixedHexString = function (i: number): PrefixedHexString {
  */
 export const intToBytes = function (i: number): Uint8Array {
   const hex = intToPrefixedHexString(i)
-  return hexToBytes(padToEven(hex.slice(2)))
+  return hexToBytes(padToEven(hex))
 }
 
 /**
@@ -202,7 +211,7 @@ export const toBytes = function (v: ToBytesInputTypes): Uint8Array {
         `Cannot convert string to Uint8Array. toBytes only supports 0x-prefixed hex strings and this string was given: ${v}`
       )
     }
-    return hexToBytes(padToEven(v.slice(2)))
+    return hexToBytes(padToEven(v))
   }
 
   if (typeof v === 'number') {
@@ -215,7 +224,7 @@ export const toBytes = function (v: ToBytesInputTypes): Uint8Array {
     }
     let n = v.toString(16)
     if (n.length % 2) n = '0' + n
-    return hexToBytes(n)
+    return unprefixedHexToBytes(n)
   }
 
   if (v.toBytes !== undefined) {
@@ -232,7 +241,7 @@ export const toBytes = function (v: ToBytesInputTypes): Uint8Array {
  * @returns {bigint}
  */
 export function bytesToBigInt(bytes: Uint8Array): bigint {
-  const hex = bytesToPrefixedHexString(bytes)
+  const hex = bytesToHex(bytes)
   if (hex === '0x') {
     return BigInt(0)
   }
@@ -333,7 +342,7 @@ export const toUtf8 = function (hex: string): string {
   if (hex.length % 2 !== 0) {
     throw new Error('Invalid non-even hex string input for toUtf8() provided')
   }
-  const bytesVal = hexToBytes(hex.replace(zerosRegexp, ''))
+  const bytesVal = unprefixedHexToBytes(hex.replace(zerosRegexp, ''))
 
   return bytesToUtf8(bytesVal)
 }
@@ -435,10 +444,14 @@ export const concatBytesNoTypeCheck = (...arrays: Uint8Array[]): Uint8Array => {
   return result
 }
 
-export {
-  bytesToHex,
-  bytesToUtf8,
-  concatBytes,
-  equalsBytes,
-  utf8ToBytes,
-} from 'ethereum-cryptography/utils.js'
+/**
+ * @deprecated
+ */
+export const bytesToUnprefixedHex = _bytesToUnprefixedHex
+
+/**
+ * @deprecated
+ */
+export const unprefixedHexToBytes = _unprefixedHexToBytes
+
+export { bytesToUtf8, concatBytes, equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'

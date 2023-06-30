@@ -1,8 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Address, privateToAddress } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { Address, privateToAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
@@ -31,8 +30,8 @@ common.hardforkBlock = function (hardfork: Hardfork | undefined) {
   return BigInt(0)
 }
 
-const coinbase = new Address(hexToBytes('11'.repeat(20)))
-const pkey = hexToBytes('20'.repeat(32))
+const coinbase = new Address(hexToBytes('0x' + '11'.repeat(20)))
+const pkey = hexToBytes('0x' + '20'.repeat(32))
 const sender = new Address(privateToAddress(pkey))
 
 /**

@@ -1,8 +1,13 @@
 import { Blockchain } from '@ethereumjs/blockchain'
 import { TransactionFactory, TransactionType } from '@ethereumjs/tx'
-import { Account, blobsToCommitments, computeVersionedHash, getBlobs } from '@ethereumjs/util'
+import {
+  Account,
+  blobsToCommitments,
+  computeVersionedHash,
+  getBlobs,
+  hexToBytes,
+} from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { hexToBytes } from 'ethereum-cryptography/utils'
 import { MemoryLevel } from 'memory-level'
 
 import { VM } from '../../src/vm'
@@ -107,7 +112,7 @@ export function getTransaction(
 
   if (sign) {
     const privateKey = hexToBytes(
-      'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
     )
     return tx.sign(privateKey)
   }

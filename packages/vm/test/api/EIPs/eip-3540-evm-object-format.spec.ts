@@ -1,13 +1,18 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EOF } from '@ethereumjs/evm'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Account, Address, concatBytesNoTypeCheck, privateToAddress } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import {
+  Account,
+  Address,
+  concatBytesNoTypeCheck,
+  privateToAddress,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 
-const pkey = hexToBytes('20'.repeat(32))
+const pkey = hexToBytes('0x' + '20'.repeat(32))
 const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
 

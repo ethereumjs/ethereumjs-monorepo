@@ -6,9 +6,10 @@ import {
   equalsBytes,
   intToBytes,
   utf8ToBytes,
+  bytesToUtf8,
+  hexToBytes,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
-import { bytesToUtf8, hexToBytes } from 'ethereum-cryptography/utils.js'
 import { EventEmitter } from 'events'
 import * as snappy from 'snappyjs'
 
@@ -321,7 +322,7 @@ export class Peer extends EventEmitter {
     const bytesCount = this._nextPacketSize
     const parseData = this._socketData.subarray(0, bytesCount)
     if (!this._eciesSession._gotEIP8Auth) {
-      if (parseData.subarray(0, 1) === hexToBytes('04')) {
+      if (parseData.subarray(0, 1) === hexToBytes('0x04')) {
         this._eciesSession.parseAuthPlain(parseData)
       } else {
         this._eciesSession._gotEIP8Auth = true
@@ -344,7 +345,7 @@ export class Peer extends EventEmitter {
     const bytesCount = this._nextPacketSize
     const parseData = this._socketData.subarray(0, bytesCount)
     if (!this._eciesSession._gotEIP8Ack) {
-      if (parseData.subarray(0, 1) === hexToBytes('04')) {
+      if (parseData.subarray(0, 1) === hexToBytes('0x04')) {
         this._eciesSession.parseAckPlain(parseData)
         this._logger(
           `Received ack (old format) from ${this._socket.remoteAddress}:${this._socket.remotePort}`

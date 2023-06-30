@@ -1,7 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
-import { Account, Address, bytesToInt, privateToAddress } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { Account, Address, bytesToInt, privateToAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
@@ -14,7 +13,7 @@ interface Test {
   transactions: TypedTransaction[]
 }
 
-const senderKey = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
+const senderKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 
 describe('EIP 1153: transient storage', () => {
   const initialGas = BigInt(0xffffffffff)
@@ -69,11 +68,11 @@ describe('EIP 1153: transient storage', () => {
   }
 
   it('should tload and tstore', async () => {
-    const code = '60026001b46001b360005260206000F3'
+    const code = '0x60026001b46001b360005260206000F3'
     const returndata = new Uint8Array(32)
     returndata[31] = 0x02
 
-    const address = new Address(hexToBytes('000000000000000000000000636F6E7472616374'))
+    const address = new Address(hexToBytes('0x00000000000000000000000636F6E7472616374'))
     const tx = LegacyTransaction.fromTxData({
       gasLimit: BigInt(21000 + 9000),
       to: address,
@@ -110,8 +109,9 @@ describe('EIP 1153: transient storage', () => {
     // and then assert that the returndata is 0. If the returndata
     // is 0, then the transient storage is cleared between
     // transactions
-    const code = '36600014630000001c5760016300000012575b60ff6000b4600080f35b6000b360005260206000f3'
-    const address = new Address(hexToBytes('000000000000000000000000636F6E7472616374'))
+    const code =
+      '0x36600014630000001c5760016300000012575b60ff6000b4600080f35b6000b360005260206000f3'
+    const address = new Address(hexToBytes('0x000000000000000000000000636F6E7472616374'))
 
     const test = {
       contracts: [{ address, code }],
@@ -168,7 +168,7 @@ describe('EIP 1153: transient storage', () => {
 
   it('tload should not keep reverted changes', async () => {
     // logic address has a contract with transient storage logic in it
-    const logicAddress = new Address(hexToBytes('EA674fdDe714fd979de3EdF0F56AA9716B898ec8'))
+    const logicAddress = new Address(hexToBytes('0xEA674fdDe714fd979de3EdF0F56AA9716B898ec8'))
     // calling address is the address that calls the logic address
     const callingAddress = new Address(new Uint8Array(20).fill(0xff))
 
@@ -181,9 +181,9 @@ describe('EIP 1153: transient storage', () => {
     // first call. This asserts that reverts are handled correctly.
 
     const logicCode =
-      '36600080376000518063afc874d214630000003457806362fdb9be14630000003f57806343ac1c3914630000004a5760006000fd5b60ff6000b460006000fd5b60aa6000b460006000f35b6000b360005260206000f3'
+      '0x36600080376000518063afc874d214630000003457806362fdb9be14630000003f57806343ac1c3914630000004a5760006000fd5b60ff6000b460006000fd5b60aa6000b460006000f35b6000b360005260206000f3'
     const callingCode =
-      '6362fdb9be600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff163afc874d2600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff16343ac1c39600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff1366000803760206000f3'
+      '0x6362fdb9be600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff163afc874d2600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff16343ac1c39600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff1366000803760206000f3'
 
     const unsignedTx = LegacyTransaction.fromTxData({
       gasLimit: BigInt(15000000),

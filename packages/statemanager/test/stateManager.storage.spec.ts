@@ -1,6 +1,13 @@
-import { Address, prefixedHexStringToBytes, unpadBytes, zeros } from '@ethereumjs/util'
+import {
+  Address,
+  hexToBytes,
+  unpadBytes,
+  zeros,
+  bytesToHex,
+  concatBytes,
+  equalsBytes,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { bytesToHex, concatBytes, equalsBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 // explicitly import `inherits` to fix karma-typescript issue
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -13,17 +20,13 @@ describe('StateManager -> Storage', () => {
   for (const storageCacheOpts of [{ deactivate: false }, { deactivate: true }]) {
     it(`should dump storage`, async () => {
       const stateManager = new DefaultStateManager({ storageCacheOpts })
-      const address = new Address(
-        prefixedHexStringToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-      )
+      const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const account = createAccount()
 
       await stateManager.putAccount(address, account)
 
-      const key = prefixedHexStringToBytes(
-        '0x1234567890123456789012345678901234567890123456789012345678901234'
-      )
-      const value = prefixedHexStringToBytes('0x0a') // We used this value as its RLP encoding is also 0a
+      const key = hexToBytes('0x1234567890123456789012345678901234567890123456789012345678901234')
+      const value = hexToBytes('0x0a') // We used this value as its RLP encoding is also 0a
       await stateManager.putContractStorage(address, key, value)
 
       const data = await stateManager.dumpStorage(address)
@@ -33,18 +36,12 @@ describe('StateManager -> Storage', () => {
 
     it("should validate the key's length when modifying a contract's storage", async () => {
       const stateManager = new DefaultStateManager({ storageCacheOpts })
-      const address = new Address(
-        prefixedHexStringToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-      )
+      const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const account = createAccount()
       await stateManager.putAccount(address, account)
 
       try {
-        await stateManager.putContractStorage(
-          address,
-          new Uint8Array(12),
-          prefixedHexStringToBytes('0x1231')
-        )
+        await stateManager.putContractStorage(address, new Uint8Array(12), hexToBytes('0x1231'))
       } catch (e: any) {
         assert.equal(e.message, 'Storage key must be 32 bytes long')
         return
@@ -55,9 +52,7 @@ describe('StateManager -> Storage', () => {
 
     it("should validate the key's length when reading a contract's storage", async () => {
       const stateManager = new DefaultStateManager({ storageCacheOpts })
-      const address = new Address(
-        prefixedHexStringToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-      )
+      const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
       const account = createAccount()
       await stateManager.putAccount(address, account)
 
@@ -78,7 +73,7 @@ describe('StateManager -> Storage', () => {
       await stateManager.putAccount(address, account)
 
       const key = zeros(32)
-      const value = prefixedHexStringToBytes('0x' + 'aa'.repeat(33))
+      const value = hexToBytes('0x' + 'aa'.repeat(33))
       try {
         await stateManager.putContractStorage(address, key, value)
         assert.fail('did not throw')
@@ -94,14 +89,14 @@ describe('StateManager -> Storage', () => {
       await stateManager.putAccount(address, account)
 
       const key0 = zeros(32)
-      const value0 = prefixedHexStringToBytes('0x' + '00' + 'aa'.repeat(30)) // put a value of 31-bytes length with a leading zero byte
+      const value0 = hexToBytes('0x' + '00' + 'aa'.repeat(30)) // put a value of 31-bytes length with a leading zero byte
       const expect0 = unpadBytes(value0)
       await stateManager.putContractStorage(address, key0, value0)
       const slot0 = await stateManager.getContractStorage(address, key0)
       assert.ok(equalsBytes(slot0, expect0), 'value of 31 bytes padded correctly')
 
-      const key1 = concatBytes(zeros(31), prefixedHexStringToBytes('0x01'))
-      const value1 = prefixedHexStringToBytes('0x' + '0000' + 'aa'.repeat(1)) // put a value of 1-byte length with two leading zero bytes
+      const key1 = concatBytes(zeros(31), hexToBytes('0x01'))
+      const value1 = hexToBytes('0x' + '0000' + 'aa'.repeat(1)) // put a value of 1-byte length with two leading zero bytes
       const expect1 = unpadBytes(value1)
       await stateManager.putContractStorage(address, key1, value1)
       const slot1 = await stateManager.getContractStorage(address, key1)
@@ -113,7 +108,7 @@ describe('StateManager -> Storage', () => {
       const address = Address.zero()
       const key = zeros(32)
 
-      const startValue = prefixedHexStringToBytes('0x01')
+      const startValue = hexToBytes('0x01')
 
       const zeroLengths = [0, 1, 31, 32] // checks for arbitrary-length zeros
 
@@ -144,8 +139,8 @@ describe('StateManager -> Storage', () => {
       await stateManager.putAccount(address, account)
 
       const key = zeros(32)
-      const value = prefixedHexStringToBytes('0x0000aabb00')
-      const expect = prefixedHexStringToBytes('0xaabb00')
+      const value = hexToBytes('0x0000aabb00')
+      const expect = hexToBytes('0xaabb00')
 
       await stateManager.putContractStorage(address, key, value)
       const contractValue = await stateManager.getContractStorage(address, key)

@@ -8,9 +8,16 @@ import {
   TransactionFactory,
   TransactionType,
 } from '@ethereumjs/tx'
-import { Account, Address, KECCAK256_NULL, MAX_INTEGER, initKZG } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  KECCAK256_NULL,
+  MAX_INTEGER,
+  initKZG,
+  hexToBytes,
+  zeros,
+} from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../src/vm'
@@ -193,7 +200,7 @@ describe('runTx tests', () => {
         const vm = await VM.create({ common })
 
         const privateKey = hexToBytes(
-          'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+          '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
         )
         const address = Address.fromPrivateKey(privateKey)
         const initialBalance = BigInt(10) ** BigInt(18)
@@ -219,7 +226,7 @@ describe('runTx tests', () => {
         )
         const tx = unsignedTx.sign(privateKey)
 
-        const coinbase = hexToBytes('00000000000000000000000000000000000000ff')
+        const coinbase = hexToBytes('0x00000000000000000000000000000000000000ff')
         const block = Block.fromBlockData(
           {
             header: {
@@ -424,7 +431,7 @@ describe('runTx tests', () => {
         const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
         const vm = await VM.create({ common })
         const privateKey = hexToBytes(
-          'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+          '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
         )
         /* Code which is deployed here:
         PUSH1 01
@@ -432,13 +439,13 @@ describe('runTx tests', () => {
         SSTORE
         INVALID
       */
-        const code = hexToBytes('6001600055FE')
-        const address = new Address(hexToBytes('00000000000000000000000000000000000000ff'))
+        const code = hexToBytes('0x6001600055FE')
+        const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
         await vm.stateManager.putContractCode(address, code)
         await vm.stateManager.putContractStorage(
           address,
-          hexToBytes('00'.repeat(32)),
-          hexToBytes('00'.repeat(31) + '01')
+          hexToBytes('0x' + '00'.repeat(32)),
+          hexToBytes('0x' + '00'.repeat(31) + '01')
         )
         const txParams: any = {
           nonce: '0x00',
@@ -503,7 +510,7 @@ describe('runTx tests', () => {
         const from = createAccount()
         await vm.stateManager.putAccount(caller, from)
 
-        const contractAddress = new Address(hexToBytes('61de9dc6f6cff1df2809480882cfd3c2364b28f7'))
+        const contractAddress = Address.fromString('0x61de9dc6f6cff1df2809480882cfd3c2364b28f7')
         const to = createAccount(BigInt(0), MAX_INTEGER)
         await vm.stateManager.putAccount(contractAddress, to)
 
@@ -592,7 +599,7 @@ describe('runTx tests', () => {
 
         assert.deepEqual(
           res.bloom.bitvector,
-          hexToBytes('00'.repeat(256)),
+          hexToBytes('0x' + '00'.repeat(256)),
           `runTx result -> bloom.bitvector -> should be empty (${txType.name})`
         )
         assert.equal(
@@ -728,7 +735,9 @@ describe('runTx tests', () => {
   it('runTx() -> skipBalance behavior', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
     const vm = await VM.create({ common })
-    const senderKey = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
+    const senderKey = hexToBytes(
+      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+    )
     const sender = Address.fromPrivateKey(senderKey)
 
     for (const balance of [undefined, BigInt(5)]) {
@@ -761,7 +770,7 @@ describe('runTx tests', () => {
 
     // CALLER EXTCODEHASH PUSH 0 SSTORE STOP
     // Puts EXTCODEHASH of CALLER into slot 0
-    const code = hexToBytes('333F60005500')
+    const code = hexToBytes('0x333F60005500')
     const codeAddr = Address.fromString('0x' + '20'.repeat(20))
     await vm.stateManager.putContractCode(codeAddr, code)
 
@@ -778,7 +787,7 @@ describe('runTx tests', () => {
     await vm.stateManager.putAccount(addr, acc!)
     await vm.runTx({ tx, skipHardForkValidation: true })
 
-    const hash = await vm.stateManager.getContractStorage(codeAddr, hexToBytes('00'.repeat(32)))
+    const hash = await vm.stateManager.getContractStorage(codeAddr, zeros(32))
     assert.deepEqual(hash, KECCAK256_NULL, 'hash ok')
   })
 
@@ -794,7 +803,7 @@ describe('runTx tests', () => {
     // STOP
 
     // Calls CALLER and sends back the ETH just sent with the transaction
-    const code = hexToBytes('600080808034335AF100')
+    const code = hexToBytes('0x600080808034335AF100')
     const codeAddr = Address.fromString('0x' + '20'.repeat(20))
     await vm.stateManager.putContractCode(codeAddr, code)
 
@@ -825,7 +834,7 @@ describe('runTx tests', () => {
 
     // CALLER EXTCODEHASH PUSH 0 SSTORE STOP
     // Puts EXTCODEHASH of CALLER into slot 0
-    const code = hexToBytes('33FF')
+    const code = hexToBytes('0x33FF')
     const codeAddr = Address.fromString('0x' + '20'.repeat(20))
     await vm.stateManager.putContractCode(codeAddr, code)
 

@@ -1,4 +1,4 @@
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { bytesToHex } from '@ethereumjs/util'
 
 import { DataDirectory } from '..'
 
@@ -37,7 +37,7 @@ const main = async () => {
   const common = new Common({ chain: '${execution.config.execCommon.chainName()}', hardfork: '${
     execution.hardfork
   }' })
-  const block = Block.fromRLPSerializedBlock(prefixedHexStringToBytes('0x${bytesToHex(
+  const block = Block.fromRLPSerializedBlock(prefixedHexStringToBytes('${bytesToHex(
     block.serialize()
   )}'), { common })
 
@@ -45,7 +45,7 @@ const main = async () => {
   const trie = new Trie({ db: stateDB, useKeyHashing: true })
   const stateManager = new DefaultStateManager({ trie, common })
   // Ensure we run on the right root
-  stateManager.setStateRoot(prefixedHexStringToBytes('0x${bytesToHex(
+  stateManager.setStateRoot(prefixedHexStringToBytes('${bytesToHex(
     await execution.vm.stateManager.getStateRoot()
   )}'))
 

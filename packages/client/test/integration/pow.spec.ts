@@ -1,6 +1,6 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { Address, parseGethGenesisState } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from '@ethereumjs/util'
 import { removeSync } from 'fs-extra'
 import tape from 'tape'
 
@@ -9,7 +9,7 @@ import { createInlineClient } from '../sim/simutils'
 
 import type { EthereumClient } from '../../src'
 
-const pk = hexToBytes('95a602ff1ae30a2243f400dcf002561b9743b2ae9827b1008e3714a5cc1c0cfe')
+const pk = hexToBytes('0x95a602ff1ae30a2243f400dcf002561b9743b2ae9827b1008e3714a5cc1c0cfe')
 const minerAddress = Address.fromPrivateKey(pk)
 
 async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {

@@ -1,4 +1,4 @@
-import { utf8ToBytes } from 'ethereum-cryptography/utils.js'
+import { utf8ToBytes } from '@ethereumjs/util'
 
 import type { BranchNode, ExtensionNode, LeafNode } from './node/index.js'
 import type { WalkController } from './util/walkController.js'

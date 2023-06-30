@@ -1,5 +1,4 @@
-import { short } from '@ethereumjs/util'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
+import { bytesToUnprefixedHex, short, unprefixedHexToBytes, bytesToHex } from '@ethereumjs/util'
 import { ec_pairing } from 'rustbn-wasm'
 
 import { OOGResult } from '../evm.js'
@@ -29,7 +28,7 @@ export function precompile08(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  const returnData = hexToBytes(ec_pairing(bytesToHex(inputData)))
+  const returnData = unprefixedHexToBytes(ec_pairing(bytesToUnprefixedHex(inputData)))
 
   // check ecpairing success or failure by comparing the output length
   if (returnData.length !== 32) {

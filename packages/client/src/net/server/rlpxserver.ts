@@ -1,5 +1,5 @@
 import { DPT as Devp2pDPT, RLPx as Devp2pRLPx } from '@ethereumjs/devp2p'
-import { bytesToHex, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 
 import { Event } from '../../types'
 import { getClientVersion } from '../../util'

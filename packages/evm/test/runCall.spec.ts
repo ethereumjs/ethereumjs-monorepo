@@ -7,9 +7,10 @@ import {
   concatBytesNoTypeCheck,
   padToEven,
   unpadBytes,
+  bytesToHex,
+  hexToBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
 import genesisJSON from '../../client/test/testdata/geth-genesis/eip4844.json'
@@ -475,7 +476,7 @@ describe('RunCall tests', () => {
     const result = await evm.runCall(runCallArgs)
     const expectedAddress = '0x28373a29d17af317e669579d97e7dddc9da6e3e2'
     const expectedCode =
-      '00000000000000000000000028373a29d17af317e669579d97e7dddc9da6e3e2e7dddc9da6e3e200000000000000000000000000000000000000000000000000'
+      '0x00000000000000000000000028373a29d17af317e669579d97e7dddc9da6e3e2e7dddc9da6e3e200000000000000000000000000000000000000000000000000'
 
     assert.equal(result.createdAddress?.toString(), expectedAddress, 'created address correct')
     const deployedCode = await evm.stateManager.getContractCode(result.createdAddress!)
@@ -598,7 +599,7 @@ describe('RunCall tests', () => {
     const res = await evm.runCall(runCallArgs)
     assert.equal(
       bytesToHex(unpadBytes(res.execResult.returnValue)),
-      'ab',
+      '0xab',
       'retrieved correct versionedHash from runState'
     )
 
@@ -612,7 +613,7 @@ describe('RunCall tests', () => {
     const res2 = await evm.runCall(runCall2Args)
     assert.equal(
       bytesToHex(unpadBytes(res2.execResult.returnValue)),
-      '',
+      '0x',
       'retrieved no versionedHash when specified versionedHash does not exist in runState'
     )
   })
@@ -624,7 +625,7 @@ describe('RunCall tests', () => {
       stateManager: new DefaultStateManager(),
     })
 
-    const contractCode = hexToBytes('600060405200') // PUSH 0 PUSH 40 MSTORE STOP
+    const contractCode = hexToBytes('0x600060405200') // PUSH 0 PUSH 40 MSTORE STOP
     const contractAddress = Address.fromString('0x000000000000000000000000636F6E7472616374')
     await evm.stateManager.putContractCode(contractAddress, contractCode)
 
@@ -655,7 +656,7 @@ describe('RunCall tests', () => {
     // Create a contract which is too large
     const runCallArgs = {
       gasLimit: BigInt(10000000),
-      data: hexToBytes('61FFFF6000F3'),
+      data: hexToBytes('0x61FFFF6000F3'),
     }
 
     const res = await evm.runCall(runCallArgs)
@@ -664,7 +665,7 @@ describe('RunCall tests', () => {
     // Create a contract which goes OOG when creating
     const runCallArgs2 = {
       gasLimit: BigInt(100000),
-      data: hexToBytes('62FFFFFF6000F3'),
+      data: hexToBytes('0x62FFFFFF6000F3'),
     }
 
     const res2 = await evm.runCall(runCallArgs2)
@@ -681,7 +682,7 @@ describe('RunCall tests', () => {
     // Create a contract which cannot pay the code deposit fee
     const runCallArgs = {
       gasLimit: BigInt(10000000),
-      data: hexToBytes('61FFFF6000F3'),
+      data: hexToBytes('0x61FFFF6000F3'),
     }
 
     const res = await evm.runCall(runCallArgs)
@@ -690,7 +691,7 @@ describe('RunCall tests', () => {
     // Create a contract which goes OOG when creating
     const runCallArgs2 = {
       gasLimit: BigInt(100000),
-      data: hexToBytes('62FFFFFF6000F3'),
+      data: hexToBytes('0x62FFFFFF6000F3'),
     }
 
     const res2 = await evm.runCall(runCallArgs2)

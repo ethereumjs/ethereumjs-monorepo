@@ -1,7 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
-import { Account, Address } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { Account, Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
@@ -9,8 +8,8 @@ import { VM } from '../../../src/vm'
 // Test cases source: https://gist.github.com/holiman/174548cad102096858583c6fbbb0649a
 describe('EIP 2929: gas cost tests', () => {
   const initialGas = BigInt(0xffffffffff)
-  const address = new Address(hexToBytes('000000000000000000000000636F6E7472616374'))
-  const senderKey = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
+  const address = new Address(hexToBytes('0x000000000000000000000000636F6E7472616374'))
+  const senderKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
 
   const runTest = async function (test: any) {
@@ -65,9 +64,9 @@ describe('EIP 2929: gas cost tests', () => {
   const runCodeTest = async function (code: string, expectedGasUsed: bigint) {
     // setup the accounts for this test
     const privateKey = hexToBytes(
-      'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
     )
-    const contractAddress = new Address(hexToBytes('00000000000000000000000000000000000000ff'))
+    const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
     const vm = await VM.create({ common })
@@ -102,7 +101,7 @@ describe('EIP 2929: gas cost tests', () => {
   // cheaper second time they are accessed. Lastly, it checks the BALANCE of origin and this.
   it('should charge for warm address loads correctly', async () => {
     const test = {
-      code: '60013f5060023b506003315060f13f5060f23b5060f3315060f23f5060f33b5060f1315032315030315000',
+      code: '0x60013f5060023b506003315060f13f5060f23b5060f3315060f23f5060f33b5060f1315032315030315000',
       totalGasUsed: 8653,
       steps: [
         { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
@@ -150,7 +149,7 @@ describe('EIP 2929: gas cost tests', () => {
   // and then does `extcodecopy( this,0,0,0,0)`.
   it('should charge for extcodecopy correctly', async () => {
     const test = {
-      code: '60006000600060ff3c60006000600060ff3c600060006000303c00',
+      code: '0x60006000600060ff3c60006000600060ff3c600060006000303c00',
       totalGasUsed: BigInt(2835),
       steps: [
         { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
@@ -180,7 +179,7 @@ describe('EIP 2929: gas cost tests', () => {
   // then 'naked' sstore:`sstore(loc: 0x02, val:0x11)` twice, and `sload(0x2)`, `sload(0x1)`.
   it('should charge for sload and sstore correctly )', async () => {
     const test = {
-      code: '6001545060116001556011600255601160025560025460015400',
+      code: '0x6001545060116001556011600255601160025560025460015400',
       totalGasUsed: 44529,
       steps: [
         { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
@@ -211,7 +210,7 @@ describe('EIP 2929: gas cost tests', () => {
   // and `staticcall`s the sameaccount (cheap)
   it('should charge for pre-compiles and staticcalls correctly', async () => {
     const test = {
-      code: '60008080808060046000f15060008080808060ff6000f15060008080808060ff6000fa5000',
+      code: '0x60008080808060046000f15060008080808060ff6000f15060008080808060ff6000fa5000',
       totalGasUsed: 2869,
       steps: [
         { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
@@ -263,17 +262,17 @@ describe('EIP 2929: gas cost tests', () => {
     // SLOAD or CALL operations.
 
     // load same storage slot twice (also in inner call)
-    await runCodeTest('60005460003415601357600080808080305AF15B00', BigInt(23369))
+    await runCodeTest('0x60005460003415601357600080808080305AF15B00', BigInt(23369))
     // call to contract, load slot 0, revert inner call. load slot 0 in outer call.
-    await runCodeTest('341515600D57600054600080FD5B600080808080305AF160005400', BigInt(25374))
+    await runCodeTest('0x341515600D57600054600080FD5B600080808080305AF160005400', BigInt(25374))
 
     // call to address 0xFFFF..FF
     const callFF = '6000808080806000195AF1'
     // call address 0xFF..FF, now call same contract again, call 0xFF..FF again (it is now warm)
-    await runCodeTest(callFF + '60003415601B57600080808080305AF15B00', BigInt(23909))
+    await runCodeTest('0x' + callFF + '60003415601B57600080808080305AF15B00', BigInt(23909))
     // call to contract, call 0xFF..FF, revert, call 0xFF..FF (should be cold)
     await runCodeTest(
-      '341515601557' + callFF + '600080FD5B600080808080305AF1' + callFF + '00',
+      '0x341515601557' + callFF + '600080FD5B600080808080305AF1' + callFF + '00',
       BigInt(26414)
     )
   })

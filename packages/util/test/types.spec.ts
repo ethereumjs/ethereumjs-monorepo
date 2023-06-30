@@ -1,4 +1,3 @@
-import { bytesToHex } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -10,6 +9,7 @@ import {
   intToPrefixedHexString,
   toBytes,
   toType,
+  bytesToHex,
 } from '../src/index.js'
 
 describe('toType', () => {

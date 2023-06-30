@@ -1,13 +1,14 @@
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import { concatBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 
 import {
   bytesToBigInt,
   bytesToInt,
-  bytesToPrefixedHexString,
+  bytesToHex,
   setLengthLeft,
   toBytes,
+  concatBytes,
+  utf8ToBytes,
 } from './bytes.js'
 import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants.js'
 import { assertIsBytes } from './helpers.js'
@@ -96,9 +97,7 @@ export const toRpcSig = function (
 
   // geth (and the RPC eth_sign method) uses the 65 byte format used by Bitcoin
 
-  return bytesToPrefixedHexString(
-    concatBytes(setLengthLeft(r, 32), setLengthLeft(s, 32), toBytes(v))
-  )
+  return bytesToHex(concatBytes(setLengthLeft(r, 32), setLengthLeft(s, 32), toBytes(v)))
 }
 
 /**
@@ -122,7 +121,7 @@ export const toCompactSig = function (
     ss[0] |= 0x80
   }
 
-  return bytesToPrefixedHexString(concatBytes(setLengthLeft(r, 32), setLengthLeft(ss, 32)))
+  return bytesToHex(concatBytes(setLengthLeft(r, 32), setLengthLeft(ss, 32)))
 }
 
 /**

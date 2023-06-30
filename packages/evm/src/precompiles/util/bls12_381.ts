@@ -1,5 +1,11 @@
-import { bytesToBigInt, concatBytesNoTypeCheck, padToEven } from '@ethereumjs/util'
-import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
+import {
+  bytesToBigInt,
+  concatBytesNoTypeCheck,
+  padToEven,
+  equalsBytes,
+  bytesToUnprefixedHex,
+  unprefixedHexToBytes,
+} from '@ethereumjs/util'
 
 import { ERROR, EvmError } from '../../exceptions.js'
 
@@ -143,8 +149,8 @@ export const gasDiscountPairs = [
 // this does /NOT/ do any input checks. the input Uint8Array needs to be of length 128
 // it does raise an error if the point is not on the curve.
 function BLS12_381_ToG1Point(input: Uint8Array, mcl: any): any {
-  const p_x = bytesToHex(input.subarray(16, 64))
-  const p_y = bytesToHex(input.subarray(80, 128))
+  const p_x = bytesToUnprefixedHex(input.subarray(16, 64))
+  const p_y = bytesToUnprefixedHex(input.subarray(80, 128))
 
   const ZeroString48Bytes = '0'.repeat(96)
   if (p_x === p_y && p_x === ZeroString48Bytes) {
@@ -194,8 +200,14 @@ function BLS12_381_FromG1Point(input: any): Uint8Array {
 
   // convert to buffers.
 
-  const xBuffer = concatBytesNoTypeCheck(new Uint8Array(64 - xval.length / 2), hexToBytes(xval))
-  const yBuffer = concatBytesNoTypeCheck(new Uint8Array(64 - yval.length / 2), hexToBytes(yval))
+  const xBuffer = concatBytesNoTypeCheck(
+    new Uint8Array(64 - xval.length / 2),
+    unprefixedHexToBytes(xval)
+  )
+  const yBuffer = concatBytesNoTypeCheck(
+    new Uint8Array(64 - yval.length / 2),
+    unprefixedHexToBytes(yval)
+  )
 
   return concatBytesNoTypeCheck(xBuffer, yBuffer)
 }
@@ -268,10 +280,22 @@ function BLS12_381_FromG2Point(input: any): Uint8Array {
 
   // convert to buffers.
 
-  const xBuffer1 = concatBytesNoTypeCheck(new Uint8Array(64 - x_1.length / 2), hexToBytes(x_1))
-  const xBuffer2 = concatBytesNoTypeCheck(new Uint8Array(64 - x_2.length / 2), hexToBytes(x_2))
-  const yBuffer1 = concatBytesNoTypeCheck(new Uint8Array(64 - y_1.length / 2), hexToBytes(y_1))
-  const yBuffer2 = concatBytesNoTypeCheck(new Uint8Array(64 - y_2.length / 2), hexToBytes(y_2))
+  const xBuffer1 = concatBytesNoTypeCheck(
+    new Uint8Array(64 - x_1.length / 2),
+    unprefixedHexToBytes(x_1)
+  )
+  const xBuffer2 = concatBytesNoTypeCheck(
+    new Uint8Array(64 - x_2.length / 2),
+    unprefixedHexToBytes(x_2)
+  )
+  const yBuffer1 = concatBytesNoTypeCheck(
+    new Uint8Array(64 - y_1.length / 2),
+    unprefixedHexToBytes(y_1)
+  )
+  const yBuffer2 = concatBytesNoTypeCheck(
+    new Uint8Array(64 - y_2.length / 2),
+    unprefixedHexToBytes(y_2)
+  )
 
   return concatBytesNoTypeCheck(xBuffer1, xBuffer2, yBuffer1, yBuffer2)
 }
@@ -280,7 +304,7 @@ function BLS12_381_FromG2Point(input: any): Uint8Array {
 // output: a mcl Fr point
 
 function BLS12_381_ToFrPoint(input: Uint8Array, mcl: any): any {
-  const mclHex = mcl.fromHexStr(bytesToHex(input))
+  const mclHex = mcl.fromHexStr(bytesToUnprefixedHex(input))
   const Fr = new mcl.Fr()
   Fr.setBigEndianMod(mclHex)
   return Fr
@@ -297,7 +321,7 @@ function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array, mcl: any): any {
 
   const fp = new mcl.Fp()
 
-  fp.setBigEndianMod(mcl.fromHexStr(bytesToHex(fpCoordinate)))
+  fp.setBigEndianMod(mcl.fromHexStr(bytesToUnprefixedHex(fpCoordinate)))
 
   return fp
 }
@@ -318,8 +342,8 @@ function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Arr
   const fp_y = new mcl.Fp()
 
   const fp2 = new mcl.Fp2()
-  fp_x.setStr(bytesToHex(fpXCoordinate.subarray(16)), 16)
-  fp_y.setStr(bytesToHex(fpYCoordinate.subarray(16)), 16)
+  fp_x.setStr(bytesToUnprefixedHex(fpXCoordinate.subarray(16)), 16)
+  fp_y.setStr(bytesToUnprefixedHex(fpYCoordinate.subarray(16)), 16)
 
   fp2.set_a(fp_x)
   fp2.set_b(fp_y)

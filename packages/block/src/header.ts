@@ -16,11 +16,12 @@ import {
   ecrecover,
   ecsign,
   equalsBytes,
+  hexToBytes,
+  prefixedHexStringToBytes,
   toType,
   zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
 import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique.js'
 import { fakeExponential, valuesArrayToHeaderData } from './helpers.js'
@@ -909,7 +910,7 @@ export class BlockHeader {
     if (DAOActivationBlock === null || this.number < DAOActivationBlock) {
       return
     }
-    const DAO_ExtraData = hexToBytes('64616f2d686172642d666f726b')
+    const DAO_ExtraData = prefixedHexStringToBytes('64616f2d686172642d666f726b')
     const DAO_ForceExtraDataRange = BigInt(9)
     const drift = this.number - DAOActivationBlock
     if (drift <= DAO_ForceExtraDataRange && !equalsBytes(this.extraData, DAO_ExtraData)) {

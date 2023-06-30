@@ -4,10 +4,9 @@ import {
   bytesToBigInt,
   bytesToHex,
   bytesToInt,
-  bytesToPrefixedHexString,
   intToBytes,
+  hexToBytes,
 } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
 import * as snappy from 'snappyjs'
 
 import { assertEq, formatLogData, formatLogId } from '../util.js'
@@ -121,7 +120,7 @@ export class ETH extends Protocol {
   _validateForkId(forkId: Uint8Array[]) {
     const c = this._peer._common
 
-    const peerForkHash = bytesToPrefixedHexString(forkId[0])
+    const peerForkHash = bytesToHex(forkId[0])
     const peerNextFork = bytesToBigInt(forkId[1])
 
     if (this._forkHash === peerForkHash) {
@@ -217,7 +216,7 @@ export class ETH extends Protocol {
   }
 
   _forkHashFromForkId(forkId: Uint8Array): string {
-    return bytesToPrefixedHexString(forkId)
+    return bytesToHex(forkId)
   }
 
   _nextForkFromForkId(forkId: Uint8Array): number {
@@ -234,7 +233,7 @@ export class ETH extends Protocol {
     )}, GenH:${formatLogId(bytesToHex(status[4] as Uint8Array), this._verbose)}`
     if (this._version >= 64) {
       sStr += `, ForkHash: ${
-        status[5] !== undefined ? bytesToPrefixedHexString(status[5][0] as Uint8Array) : '-'
+        status[5] !== undefined ? bytesToHex(status[5][0] as Uint8Array) : '-'
       }`
       sStr += `, ForkNext: ${
         (status[5][1] as Uint8Array).length > 0 ? bytesToHex(status[5][1] as Uint8Array) : '-'
@@ -263,7 +262,7 @@ export class ETH extends Protocol {
         }
         this._latestBlock = latestBlock
       }
-      const forkHashB = hexToBytes(this._forkHash.substr(2))
+      const forkHashB = hexToBytes(this._forkHash)
 
       const nextForkB =
         this._nextForkBlock === BigInt(0) ? new Uint8Array() : bigIntToBytes(this._nextForkBlock)

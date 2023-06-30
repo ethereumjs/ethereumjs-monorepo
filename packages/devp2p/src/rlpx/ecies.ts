@@ -5,7 +5,7 @@ import { debug as createDebugLogger } from 'debug'
 import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
 import { ecdh, ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { hexToBytes } from '@ethereumjs/util'
 
 import {
   assertEq,
@@ -119,7 +119,7 @@ export class ECIES {
   _decryptMessage(data: Uint8Array, sharedMacData: Uint8Array | null = null): Uint8Array {
     assertEq(
       data.subarray(0, 1),
-      hexToBytes('04'),
+      hexToBytes('0x04'),
       'wrong ecies header (possible cause: EIP8 upgrade)',
       debug
     )

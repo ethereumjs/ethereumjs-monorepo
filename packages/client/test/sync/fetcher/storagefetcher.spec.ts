@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import tape from 'tape'
 import td from 'testdouble'
 
@@ -29,14 +29,14 @@ tape('[StorageFetcher]', async (t) => {
     const fetcher = new StorageFetcher({
       config,
       pool,
-      root: hexToBytes('e794e45a596856bcd5412788f46752a559a4aa89fe556ab26a8c2cf0fc24cb5e'),
+      root: hexToBytes('0xe794e45a596856bcd5412788f46752a559a4aa89fe556ab26a8c2cf0fc24cb5e'),
       storageRequests: [
         {
           accountHash: hexToBytes(
-            '352a47fc6863b89a6b51890ef3c1550d560886c027141d2058ba1e2d4c66d99a'
+            '0x352a47fc6863b89a6b51890ef3c1550d560886c027141d2058ba1e2d4c66d99a'
           ),
           storageRoot: hexToBytes(
-            '556a482068355939c95a3412bdb21213a301483edb1b64402fb66ac9f3583599'
+            '0x556a482068355939c95a3412bdb21213a301483edb1b64402fb66ac9f3583599'
           ),
           first: BigInt(0),
           count: BigInt(2) ** BigInt(256) - BigInt(1),
@@ -49,8 +49,12 @@ tape('[StorageFetcher]', async (t) => {
     t.equal((fetcher as any).storageRequests.length, 1, 'one storageRequests have been added')
     fetcher.enqueueByStorageRequestList([
       {
-        accountHash: hexToBytes('e9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1'),
-        storageRoot: hexToBytes('69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92'),
+        accountHash: hexToBytes(
+          '0xe9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1'
+        ),
+        storageRoot: hexToBytes(
+          '0x69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92'
+        ),
         first: BigInt(0),
         count: BigInt(2) ** BigInt(256) - BigInt(1),
       },

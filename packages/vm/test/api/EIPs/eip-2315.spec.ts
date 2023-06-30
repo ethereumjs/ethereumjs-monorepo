@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
@@ -19,7 +19,7 @@ describe('Berlin: EIP 2315 tests', () => {
     })
 
     const result = await vm.evm.runCode!({
-      code: hexToBytes(test.code),
+      code: hexToBytes('0x' + test.code),
       gasLimit: BigInt(0xffffffffff),
     })
 

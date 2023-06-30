@@ -1,11 +1,11 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { bytesToHex } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
 import { Blockchain } from '../src/index.js'
 
 import * as testnet from './testdata/testnet.json'
+import { bytesToHex } from '@ethereumjs/util'
 
 const buildChain = async (blockchain: Blockchain, common: Common, height: number) => {
   const blocks: Block[] = []
@@ -67,7 +67,7 @@ describe('Proof of Stake - inserting blocks into blockchain', () => {
       const genesisHeader = await blockchain.getCanonicalHeadHeader()
       assert.equal(
         bytesToHex(genesisHeader.hash()),
-        '1119dc5ff680bf7b4c3d9cd41168334dee127d46b3626482076025cdd498ed0b',
+        '0x1119dc5ff680bf7b4c3d9cd41168334dee127d46b3626482076025cdd498ed0b',
         'genesis hash matches'
       )
       await buildChain(blockchain, s.common, 15)

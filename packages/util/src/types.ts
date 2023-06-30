@@ -1,6 +1,4 @@
-import { bytesToHex } from 'ethereum-cryptography/utils.js'
-
-import { bytesToBigInt, toBytes } from './bytes.js'
+import { bytesToBigInt, toBytes, bytesToHex } from './bytes.js'
 import { isHexString } from './internal.js'
 
 import type { Address } from './address.js'

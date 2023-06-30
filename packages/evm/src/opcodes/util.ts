@@ -1,7 +1,12 @@
 import { Hardfork } from '@ethereumjs/common'
-import { bigIntToBytes, setLengthLeft, setLengthRight } from '@ethereumjs/util'
+import {
+  bigIntToBytes,
+  setLengthLeft,
+  setLengthRight,
+  bytesToHex,
+  equalsBytes,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils.js'
 
 import { EvmError } from '../exceptions.js'
 

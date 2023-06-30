@@ -1,6 +1,5 @@
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Account, Address, bigIntToBytes, setLengthLeft } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { Account, Address, bigIntToBytes, setLengthLeft, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { EVM } from '../src/index.js'
@@ -113,13 +112,13 @@ describe('Stack', () => {
   })
 
   it('stack items should not change if they are DUPed', async () => {
-    const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee'))
-    const addr = new Address(hexToBytes('00000000000000000000000000000000000000ff'))
+    const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee'))
+    const addr = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     const evm = await EVM.create({
       stateManager: new DefaultStateManager(),
     })
     const account = createAccount(BigInt(0), BigInt(0))
-    const code = '60008080808060013382F15060005260206000F3'
+    const code = '0x60008080808060013382F15060005260206000F3'
     const expectedReturnValue = setLengthLeft(bigIntToBytes(BigInt(0)), 32)
     /*
       code:             remarks: (top of the stack is at the zero index)

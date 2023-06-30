@@ -6,9 +6,10 @@ import {
   bytesToHex,
   bytesToUtf8,
   equalsBytes,
+  hexToBytes,
+  unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
 import { CheckpointDB } from './db/index.js'
 import {
@@ -99,7 +100,7 @@ export class Trie {
           keyEncoding: KeyEncoding.String,
           valueEncoding: ValueEncoding.String,
         })
-        opts.root = rootHex !== undefined ? hexToBytes(rootHex) : undefined
+        opts.root = rootHex !== undefined ? unprefixedHexToBytes(rootHex) : undefined
       } else {
         await opts?.db.put(bytesToHex(key), bytesToHex(opts.root), {
           keyEncoding: KeyEncoding.String,

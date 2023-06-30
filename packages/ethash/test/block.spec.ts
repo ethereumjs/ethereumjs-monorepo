@@ -1,8 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { MapDB, toBytes } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { MapDB, toBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Ethash } from '../src/index.js'

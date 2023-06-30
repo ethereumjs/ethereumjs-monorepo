@@ -2,7 +2,7 @@ import { base64 } from '@scure/base'
 import { decrypt } from 'ethereum-cryptography/aes.js'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { pbkdf2Sync } from 'ethereum-cryptography/pbkdf2.js'
-import { bytesToUtf8, concatBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
+import { bytesToUtf8, concatBytes, unprefixedHexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import * as md5 from 'js-md5'
 
 import { Wallet } from './wallet.js'
@@ -126,7 +126,7 @@ export async function fromEtherWallet(
     if (json.private.length !== 64) {
       throw new Error('Invalid private key length')
     }
-    privateKey = hexToBytes(json.private)
+    privateKey = unprefixedHexToBytes(json.private)
   } else {
     if (typeof password !== 'string') {
       throw new Error('Password required')
@@ -152,7 +152,7 @@ export async function fromEtherWallet(
     const pr = await decrypt(cipher.ciphertext, evp.key, evp.iv, 'aes-256-cbc')
 
     // NOTE: yes, they've run it through UTF8
-    privateKey = hexToBytes(bytesToUtf8(pr))
+    privateKey = unprefixedHexToBytes(bytesToUtf8(pr))
   }
   const wallet = new Wallet(privateKey)
   if (wallet.getAddressString() !== json.address) {

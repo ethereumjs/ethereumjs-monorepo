@@ -1,5 +1,11 @@
-import { KeyEncoding, ValueEncoding, bytesToHex, padToEven } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import {
+  KeyEncoding,
+  ValueEncoding,
+  bytesToHex,
+  padToEven,
+  hexToBytes,
+  unprefixedHexToBytes,
+} from '@ethereumjs/util'
 import { LRUCache } from 'lru-cache'
 
 import type { Checkpoint, CheckpointDBOpts } from '../types.js'
@@ -176,7 +182,7 @@ export class CheckpointDB implements DB {
     if (valueHex !== undefined) {
       this._stats.db.hits += 1
     }
-    const value = valueHex !== undefined ? hexToBytes(valueHex) : undefined
+    const value = valueHex !== undefined ? unprefixedHexToBytes(valueHex) : undefined
     this._cache?.set(keyHex, value)
     if (this.hasCheckpoints()) {
       // Since we are a checkpoint, put this value in diff cache,

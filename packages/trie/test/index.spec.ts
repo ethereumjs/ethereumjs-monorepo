@@ -3,12 +3,13 @@ import {
   KECCAK256_NULL,
   KECCAK256_RLP_S,
   bytesToHex,
-  prefixedHexStringToBytes,
+  hexToBytes,
   utf8ToBytes,
+  bytesToUtf8,
+  concatBytes,
 } from '@ethereumjs/util'
 import { blake2b } from 'ethereum-cryptography/blake2b.js'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { bytesToUtf8, concatBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
 import { LeafNode, Trie } from '../src/index.js'
@@ -19,9 +20,7 @@ import type { HashKeysFunction } from '../src/index.js'
 for (const cacheSize of [0, 100]) {
   describe('simple save and retrieve', () => {
     it('should not crash if given a non-existent root', async () => {
-      const root = prefixedHexStringToBytes(
-        '0x3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d'
-      )
+      const root = hexToBytes('0x3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d')
 
       const trie = new Trie({ root })
       const value = await trie.get(utf8ToBytes('test'))
@@ -243,10 +242,10 @@ for (const cacheSize of [0, 100]) {
     it('should work', async () => {
       const trie4 = new Trie({ cacheSize })
 
-      const g = prefixedHexStringToBytes('0x8a40bfaa73256b60764c1bf40675a99083efb075')
-      const j = prefixedHexStringToBytes('0xe6716f9544a56c530d868e4bfbacb172315bdead')
-      const v = prefixedHexStringToBytes('0x1e12515ce3e0f817a4ddef9ca55788a1d66bd2df')
-      const a = prefixedHexStringToBytes('0x1a26338f0d905e295fccb71fa9ea849ffa12aaf4')
+      const g = hexToBytes('0x8a40bfaa73256b60764c1bf40675a99083efb075')
+      const j = hexToBytes('0xe6716f9544a56c530d868e4bfbacb172315bdead')
+      const v = hexToBytes('0x1e12515ce3e0f817a4ddef9ca55788a1d66bd2df')
+      const a = hexToBytes('0x1a26338f0d905e295fccb71fa9ea849ffa12aaf4')
 
       const storageRoot = new Uint8Array(32)
       storageRoot.fill(0)
@@ -283,7 +282,7 @@ for (const cacheSize of [0, 100]) {
       const k2 = utf8ToBytes('2')
       const v2 = utf8ToBytes('this-is-some-longer-value-to-test-the-delete-operation-value2')
 
-      const rootAfterK1 = prefixedHexStringToBytes(
+      const rootAfterK1 = hexToBytes(
         '0x809e75931f394603657e113eb7244794f35b8d326cff99407111d600722e9425'
       )
 

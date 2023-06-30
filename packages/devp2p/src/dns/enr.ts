@@ -1,7 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import { base32, base64url } from '@scure/base'
 import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat.js'
-import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils.js'
+import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 import { Multiaddr } from 'multiaddr'
 import { sscanf } from 'scanf'
 

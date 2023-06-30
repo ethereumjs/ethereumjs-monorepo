@@ -1,5 +1,4 @@
-import { prefixedHexStringToBytes, randomBytes } from '@ethereumjs/util'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { hexToBytes, bytesToHex, randomBytes, bytesToUnprefixedHex } from '@ethereumjs/util'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 
 import { RPCManager, saveReceiptsMethods } from '../src/rpc'
@@ -54,7 +53,7 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
     if (jwtSecretHex === undefined || jwtSecretHex.length !== 64) {
       throw Error('Need a valid 256 bit hex encoded secret')
     }
-    jwtSecret = prefixedHexStringToBytes('0x' + jwtSecretHex)
+    jwtSecret = hexToBytes('0x' + jwtSecretHex)
   } else {
     const folderExists = existsSync(config.datadir)
     if (!folderExists) {
@@ -62,7 +61,7 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
     }
 
     jwtSecret = randomBytes(32)
-    writeFileSync(defaultJwtPath, bytesToHex(jwtSecret), {})
+    writeFileSync(defaultJwtPath, bytesToUnprefixedHex(jwtSecret), {})
     config.logger.info(`New Engine API JWT token created path=${defaultJwtPath}`)
   }
   config.logger.info(`Using Engine API with JWT token authentication path=${usedJwtPath}`)

@@ -1,7 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Address, bytesToPrefixedHexString } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { EVM } from '../../src/evm.js'
@@ -15,7 +14,7 @@ const precompiles: string[] = []
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
 for (let address = precompileAddressStart; address <= precompileAddressEnd; address++) {
-  precompiles.push(address.toString(16).padStart(40, '0'))
+  precompiles.push('0x' + address.toString(16).padStart(40, '0'))
 }
 
 describe('EIP-2537 BLS tests', () => {
@@ -117,7 +116,7 @@ describe('EIP-2537 BLS tests', () => {
 
       assert.deepEqual(
         testVectorResult,
-        bytesToPrefixedHexString(result.returnValue),
+        bytesToHex(result.returnValue),
         'return value should match testVectorResult'
       )
     }

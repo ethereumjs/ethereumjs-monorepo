@@ -1,5 +1,5 @@
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { hexToBytes } from './bytes'
 
 /**
  * 2^64-1
@@ -35,7 +35,7 @@ export const TWO_POW256 = BigInt(
 /**
  * Keccak-256 hash of null
  */
-export const KECCAK256_NULL_S = 'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+export const KECCAK256_NULL_S = '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
 
 /**
  * Keccak-256 hash of null
@@ -46,7 +46,7 @@ export const KECCAK256_NULL = hexToBytes(KECCAK256_NULL_S)
  * Keccak-256 of an RLP of an empty array
  */
 export const KECCAK256_RLP_ARRAY_S =
-  '1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347'
+  '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347'
 
 /**
  * Keccak-256 of an RLP of an empty array
@@ -56,7 +56,7 @@ export const KECCAK256_RLP_ARRAY = hexToBytes(KECCAK256_RLP_ARRAY_S)
 /**
  * Keccak-256 hash of the RLP of null
  */
-export const KECCAK256_RLP_S = '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
+export const KECCAK256_RLP_S = '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
 
 /**
  * Keccak-256 hash of the RLP of null

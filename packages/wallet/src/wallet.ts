@@ -1,6 +1,5 @@
 import {
   bytesToHex,
-  bytesToPrefixedHexString,
   importPublic,
   isValidPrivate,
   isValidPublic,
@@ -9,6 +8,10 @@ import {
   publicToAddress,
   randomBytes,
   toChecksumAddress,
+  concatBytes,
+  equalsBytes,
+  utf8ToBytes,
+  unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { base58check } from '@scure/base'
 import * as aes from 'ethereum-cryptography/aes.js'
@@ -16,7 +19,6 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { pbkdf2 } from 'ethereum-cryptography/pbkdf2.js'
 import { scrypt } from 'ethereum-cryptography/scrypt.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
-import { concatBytes, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 import { v4 as uuidv4 } from 'uuid'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -39,7 +41,7 @@ function scryptV3(password: string, kdfparams: ScryptKDFParams) {
 }
 function scryptV3Out(password: string, kdfparams: ScryptKDFParamsOut) {
   const { salt, n, p, r, dklen } = kdfparams
-  return scrypt(utf8ToBytes(password), hexToBytes(salt), n, p, r, dklen)
+  return scrypt(utf8ToBytes(password), unprefixedHexToBytes(salt), n, p, r, dklen)
 }
 
 // parameters for the toV3() method
@@ -124,13 +126,13 @@ function mergeToV3ParamsWithDefaults(params?: Partial<V3Params>): V3ParamsStrict
   }
 
   if (typeof params.salt === 'string') {
-    params.salt = hexToBytes(validateHexString('salt', params.salt))
+    params.salt = unprefixedHexToBytes(validateHexString('salt', params.salt))
   }
   if (typeof params.iv === 'string') {
-    params.iv = hexToBytes(validateHexString('iv', params.iv, 32))
+    params.iv = unprefixedHexToBytes(validateHexString('iv', params.iv, 32))
   }
   if (typeof params.uuid === 'string') {
-    params.uuid = hexToBytes(validateHexString('uuid', params.uuid, 32))
+    params.uuid = unprefixedHexToBytes(validateHexString('uuid', params.uuid, 32))
   }
 
   if (params.salt) {
@@ -378,9 +380,9 @@ export class Wallet {
     }
 
     const kdfparams = json.Crypto.KeyHeader.KdfParams
-    const salt = hexToBytes(json.Crypto.Salt)
+    const salt = unprefixedHexToBytes(json.Crypto.Salt)
     const derivedKey = await scryptV1(utf8ToBytes(password), salt, kdfparams)
-    const ciphertext = hexToBytes(json.Crypto.CipherText)
+    const ciphertext = unprefixedHexToBytes(json.Crypto.CipherText)
     const mac = keccak256(concatBytes(derivedKey.subarray(16, 32), ciphertext))
     if (bytesToHex(mac) !== json.Crypto.MAC) {
       throw new Error('Key derivation failed - possibly wrong passphrase')
@@ -389,7 +391,7 @@ export class Wallet {
     const seed = await aes.decrypt(
       ciphertext,
       keccak256(derivedKey.subarray(0, 16)).subarray(0, 16),
-      hexToBytes(json.Crypto.IV),
+      unprefixedHexToBytes(json.Crypto.IV),
       'aes-128-cbc'
     )
     return new Wallet(seed)
@@ -427,7 +429,7 @@ export class Wallet {
 
       derivedKey = await pbkdf2(
         utf8ToBytes(password),
-        hexToBytes(kdfparams.salt),
+        unprefixedHexToBytes(kdfparams.salt),
         kdfparams.c,
         kdfparams.dklen,
         'sha256'
@@ -436,7 +438,7 @@ export class Wallet {
       throw new Error('Unsupported key derivation scheme')
     }
 
-    const ciphertext = hexToBytes(json.crypto.ciphertext)
+    const ciphertext = unprefixedHexToBytes(json.crypto.ciphertext)
     const mac = keccak256(concatBytes(derivedKey.subarray(16, 32), ciphertext))
     if (bytesToHex(mac) !== json.crypto.mac) {
       throw new Error('Key derivation failed - possibly wrong passphrase')
@@ -445,7 +447,7 @@ export class Wallet {
     const seed = await aes.decrypt(
       ciphertext,
       derivedKey.subarray(0, 16),
-      hexToBytes(json.crypto.cipherparams.iv),
+      unprefixedHexToBytes(json.crypto.cipherparams.iv),
       json.crypto.cipher
     )
     return new Wallet(seed)
@@ -465,7 +467,7 @@ export class Wallet {
   ): Promise<Wallet> {
     const json: EthSaleKeystore = typeof input === 'object' ? input : JSON.parse(input)
 
-    const encseed = hexToBytes(json.encseed)
+    const encseed = unprefixedHexToBytes(json.encseed)
 
     // key derivation
     const pass = utf8ToBytes(password)
@@ -522,7 +524,7 @@ export class Wallet {
   }
 
   public getPrivateKeyString(): PrefixedHexString {
-    return bytesToPrefixedHexString(this.privKey)
+    return bytesToHex(this.privKey)
   }
 
   /**
@@ -536,7 +538,7 @@ export class Wallet {
    * Returns the wallet's public key as a "0x" prefixed hex string
    */
   public getPublicKeyString(): PrefixedHexString {
-    return bytesToPrefixedHexString(this.getPublicKey())
+    return bytesToHex(this.getPublicKey())
   }
 
   /**
@@ -550,7 +552,7 @@ export class Wallet {
    * Returns the wallet's address as a "0x" prefixed hex string
    */
   public getAddressString(): PrefixedHexString {
-    return bytesToPrefixedHexString(this.getAddress())
+    return bytesToHex(this.getAddress())
   }
 
   /**

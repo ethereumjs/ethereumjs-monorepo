@@ -7,9 +7,11 @@ import {
   Lock,
   MapDB,
   bytesToPrefixedHexString,
+  bytesToUnprefixedHex,
   concatBytesNoTypeCheck,
+  equalsBytes,
+  prefixedHexStringToBytes,
 } from '@ethereumjs/util'
-import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
 
 import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus/index.js'
 import {
@@ -210,7 +212,9 @@ export class Blockchain implements BlockchainInterface {
       let stateRoot
       if (this._common.chainId() === BigInt(1) && this._customGenesisState === undefined) {
         // For mainnet use the known genesis stateRoot to quicken setup
-        stateRoot = hexToBytes('d7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544')
+        stateRoot = prefixedHexStringToBytes(
+          '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'
+        )
       } else {
         stateRoot = await genesisStateRoot(this.genesisState())
       }
@@ -662,11 +666,11 @@ export class Blockchain implements BlockchainInterface {
       canonicalBlockMap.push(parentBlock)
 
       // mark block hash as part of the canonical chain
-      canonicalChainHashes[bytesToHex(parentBlock.hash())] = true
+      canonicalChainHashes[bytesToUnprefixedHex(parentBlock.hash())] = true
 
       // for each of the uncles, mark the uncle as included
       parentBlock.uncleHeaders.map((uh) => {
-        includedUncles[bytesToHex(uh.hash())] = true
+        includedUncles[bytesToUnprefixedHex(uh.hash())] = true
       })
 
       parentHash = parentBlock.header.parentHash
@@ -678,8 +682,8 @@ export class Blockchain implements BlockchainInterface {
     // Uncle Header has a parentHash which points to the canonical chain.
 
     uncleHeaders.map((uh) => {
-      const uncleHash = bytesToHex(uh.hash())
-      const parentHash = bytesToHex(uh.parentHash)
+      const uncleHash = bytesToUnprefixedHex(uh.hash())
+      const parentHash = bytesToUnprefixedHex(uh.parentHash)
 
       if (!canonicalChainHashes[parentHash]) {
         throw new Error(
@@ -715,7 +719,7 @@ export class Blockchain implements BlockchainInterface {
 
     if (block === undefined) {
       if (typeof blockId === 'object') {
-        throw new Error(`Block with hash ${bytesToHex(blockId)} not found in DB`)
+        throw new Error(`Block with hash ${bytesToPrefixedHexString(blockId)} not found in DB`)
       } else {
         throw new Error(`Block number ${blockId} not found in DB`)
       }
@@ -1204,7 +1208,7 @@ export class Blockchain implements BlockchainInterface {
     // LevelDB doesn't handle Uint8Arrays properly when they are part
     // of a JSON object being stored as a value in the DB
     const hexHeads = Object.fromEntries(
-      Object.entries(this._heads).map((entry) => [entry[0], bytesToHex(entry[1])])
+      Object.entries(this._heads).map((entry) => [entry[0], bytesToUnprefixedHex(entry[1])])
     )
     return [
       DBOp.set(DBTarget.Heads, hexHeads),

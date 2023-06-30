@@ -7,11 +7,10 @@ import {
   bigIntToBytes,
   bytesToHex,
   equalsBytes,
-  prefixedHexStringToBytes,
+  hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { hexToBytes } from 'ethereum-cryptography/utils'
 import tape from 'tape'
 
 import { Chain } from '../../../src/blockchain'
@@ -49,12 +48,8 @@ tape('[SnapProtocol]', (t) => {
     const p = new SnapProtocol({ config, chain })
     const root = new Uint8Array(0)
     const reqId = BigInt(1)
-    const origin = prefixedHexStringToBytes(
-      '0x0000000000000000000000000000000000000000000000000000000000000000'
-    )
-    const limit = prefixedHexStringToBytes(
-      '0x0000000000000000000000000f00000000000000000000000000000000000010'
-    )
+    const origin = hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000000')
+    const limit = hexToBytes('0x0000000000000000000000000f00000000000000000000000000000000000010')
     const bytes = BigInt(5000000)
 
     const payload = p.encode(
@@ -106,7 +101,7 @@ tape('[SnapProtocol]', (t) => {
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     /* eslint-disable @typescript-eslint/no-use-before-define */
-    const data = RLP.decode(prefixedHexStringToBytes(contractAccountRangeRLP)) as unknown
+    const data = RLP.decode(hexToBytes(contractAccountRangeRLP)) as unknown
     const { reqId, accounts, proof } = p.decode(
       p.messages.filter((message) => message.name === 'AccountRange')[0],
       data
@@ -150,7 +145,7 @@ tape('[SnapProtocol]', (t) => {
     const pSlim = new SnapProtocol({ config, chain })
     const pFull = new SnapProtocol({ config, chain, convertSlimBody: true })
     // accountRangeRLP is the corresponding response to getAccountRangeRLP
-    const resData = RLP.decode(prefixedHexStringToBytes(accountRangeRLP))
+    const resData = RLP.decode(hexToBytes(accountRangeRLP))
 
     const fullData = pFull.decode(
       pFull.messages.filter((message) => message.name === 'AccountRange')[0],
@@ -188,13 +183,13 @@ tape('[SnapProtocol]', (t) => {
     const p = new SnapProtocol({ config, chain })
 
     /* eslint-disable @typescript-eslint/no-use-before-define */
-    const reqData = RLP.decode(prefixedHexStringToBytes(getAccountRangeRLP))
+    const reqData = RLP.decode(hexToBytes(getAccountRangeRLP))
     const { root: stateRoot } = p.decode(
       p.messages.filter((message) => message.name === 'GetAccountRange')[0],
       reqData
     )
     // accountRangeRLP is the corresponding response to getAccountRangeRLP
-    const resData = RLP.decode(prefixedHexStringToBytes(accountRangeRLP))
+    const resData = RLP.decode(hexToBytes(accountRangeRLP))
     const { accounts, proof } = p.decode(
       p.messages.filter((message) => message.name === 'AccountRange')[0],
       resData
@@ -228,18 +223,12 @@ tape('[SnapProtocol]', (t) => {
     const p = new SnapProtocol({ config, chain })
     const root = new Uint8Array(0)
     const reqId = BigInt(1)
-    const origin = prefixedHexStringToBytes(
-      '0x0000000000000000000000000000000000000000000000000000000000000000'
-    )
-    const limit = prefixedHexStringToBytes(
-      '0x0000000000000000000000000f00000000000000000000000000000000000010'
-    )
+    const origin = hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000000')
+    const limit = hexToBytes('0x0000000000000000000000000f00000000000000000000000000000000000010')
     const bytes = BigInt(5000000)
     const accounts = [
-      keccak256(prefixedHexStringToBytes('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')),
-      prefixedHexStringToBytes(
-        '0x0000000000000000000000000f00000000000000000000000000000000000010'
-      ),
+      keccak256(hexToBytes('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')),
+      hexToBytes('0x0000000000000000000000000f00000000000000000000000000000000000010'),
     ]
 
     const payload = p.encode(
@@ -294,7 +283,7 @@ tape('[SnapProtocol]', (t) => {
     const p = new SnapProtocol({ config, chain })
 
     /* eslint-disable @typescript-eslint/no-use-before-define */
-    const data = RLP.decode(prefixedHexStringToBytes(storageRangesRLP)) as unknown
+    const data = RLP.decode(hexToBytes(storageRangesRLP)) as unknown
     const { reqId, slots, proof } = p.decode(
       p.messages.filter((message) => message.name === 'StorageRanges')[0],
       data
@@ -328,7 +317,7 @@ tape('[SnapProtocol]', (t) => {
     const p = new SnapProtocol({ config, chain })
 
     // Get the handle on the data for the account for which storageRanges has been fetched
-    const accountsData = RLP.decode(prefixedHexStringToBytes(contractAccountRangeRLP))
+    const accountsData = RLP.decode(hexToBytes(contractAccountRangeRLP))
     const { accounts } = p.decode(
       p.messages.filter((message) => message.name === 'AccountRange')[0],
       accountsData
@@ -336,7 +325,7 @@ tape('[SnapProtocol]', (t) => {
     const lastAccount = accounts[accounts.length - 1]
 
     /* eslint-disable @typescript-eslint/no-use-before-define */
-    const data = RLP.decode(prefixedHexStringToBytes(storageRangesRLP))
+    const data = RLP.decode(hexToBytes(storageRangesRLP))
     const { proof, slots } = p.decode(
       p.messages.filter((message) => message.name === 'StorageRanges')[0],
       data
@@ -373,10 +362,8 @@ tape('[SnapProtocol]', (t) => {
     const p = new SnapProtocol({ config, chain })
     const reqId = BigInt(1)
     const hashes = [
-      keccak256(prefixedHexStringToBytes('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')),
-      prefixedHexStringToBytes(
-        '0x0000000000000000000000000f00000000000000000000000000000000000010'
-      ),
+      keccak256(hexToBytes('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')),
+      hexToBytes('0x0000000000000000000000000f00000000000000000000000000000000000010'),
     ]
     const bytes = BigInt(5000000)
 
@@ -414,7 +401,7 @@ tape('[SnapProtocol]', (t) => {
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
-    const codesRes = RLP.decode(prefixedHexStringToBytes(byteCodesRLP))
+    const codesRes = RLP.decode(hexToBytes(byteCodesRLP))
     const { reqId, codes } = p.decode(
       p.messages.filter((message) => message.name === 'ByteCodes')[0],
       codesRes
@@ -442,13 +429,13 @@ tape('[SnapProtocol]', (t) => {
     const p = new SnapProtocol({ config, chain })
 
     /* eslint-disable @typescript-eslint/no-use-before-define */
-    const codesReq = RLP.decode(prefixedHexStringToBytes(getByteCodesRLP))
+    const codesReq = RLP.decode(hexToBytes(getByteCodesRLP))
     const { hashes } = p.decode(
       p.messages.filter((message) => message.name === 'GetByteCodes')[0],
       codesReq
     )
     const codeHash = hashes[0]
-    const codesRes = RLP.decode(prefixedHexStringToBytes(byteCodesRLP))
+    const codesRes = RLP.decode(hexToBytes(byteCodesRLP))
     const { codes } = p.decode(
       p.messages.filter((message) => message.name === 'ByteCodes')[0],
       codesRes
@@ -464,7 +451,7 @@ tape('[SnapProtocol]', (t) => {
     const p = new SnapProtocol({ config, chain })
 
     const reqId = BigInt(1)
-    const root = hexToBytes('04157502e6177a76ca4dbf7784e5ec1a926049db6a91e13efb70a095a72a45d9')
+    const root = hexToBytes('0x04157502e6177a76ca4dbf7784e5ec1a926049db6a91e13efb70a095a72a45d9')
     const paths = [[hexToBytes('0x00')], [hexToBytes('0x00')]]
     const bytes = BigInt(5000000)
 
@@ -546,7 +533,7 @@ const accountRangeRLP =
 //   origin: hexToBytes(
 //     '27be64f6a1510e4166b35201a920e543e0579df3b947b8743458736e51549f0c'
 //   ),
-//   limit: prefixedHexStringToBytes('0xf000000000000000000000000f00000000000000000000000000000000000010'),
+//   limit: hexToBytes('0xf000000000000000000000000f00000000000000000000000000000000000010'),
 //   bytes: BigInt(100),
 // })
 const contractAccountRangeRLP =
@@ -557,11 +544,11 @@ const contractAccountRangeRLP =
 //  await peer!.snap!.getStorageRanges({
 //   root: stateRoot,
 //   accounts: [
-//     prefixedHexStringToBytes('0x27be7c29a7a7d6da542205ed52b91990e625039a545702874be74db9f40fb215'),
+//     hexToBytes('0x27be7c29a7a7d6da542205ed52b91990e625039a545702874be74db9f40fb215'),
 //   ],
-//   origin: prefixedHexStringToBytes(
+//   origin: hexToBytes(
 //     '0x0000000000000000000000000f00000000000000000000000000000000000000'),
-//   limit: prefixedHexStringToBytes('0xf000000000000000000000000f00000000000000000000000000000000000010'),
+//   limit: hexToBytes('0xf000000000000000000000000f00000000000000000000000000000000000010'),
 //   bytes: BigInt(100),
 // })
 const _getStorageRangesRLP =
@@ -571,7 +558,7 @@ const storageRangesRLP =
 
 // await peer!.snap!.getByteCodes({
 //   hashes: [
-//     prefixedHexStringToBytes('0xe68fe0bb7c4a483affd0f19cc2b989105242bd6b256c6de3afd738f8acd80c66'),
+//     hexToBytes('0xe68fe0bb7c4a483affd0f19cc2b989105242bd6b256c6de3afd738f8acd80c66'),
 //   ],
 //   bytes: BigInt(50000),
 // })

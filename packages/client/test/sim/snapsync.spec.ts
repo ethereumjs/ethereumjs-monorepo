@@ -1,7 +1,7 @@
 import { Common } from '@ethereumjs/common'
 import { parseGethGenesisState, privateToAddress } from '@ethereumjs/util'
 import debug from 'debug'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import tape from 'tape'
 
@@ -21,8 +21,8 @@ import {
 import type { EthereumClient } from '../../src/client'
 import type { RlpxServer } from '../../src/net/server'
 
-const pkey = hexToBytes('ae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e')
-const sender = '0x' + bytesToHex(privateToAddress(pkey))
+const pkey = hexToBytes('0xae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e')
+const sender = bytesToHex(privateToAddress(pkey))
 const client = Client.http({ port: 8545 })
 
 const network = 'mainnet'

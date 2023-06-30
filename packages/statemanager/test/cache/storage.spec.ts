@@ -1,5 +1,4 @@
-import { Address } from '@ethereumjs/util'
-import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
+import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { CacheType, StorageCache } from '../../src/cache/index.js'
@@ -18,9 +17,9 @@ describe('Storage Cache: put and get account', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
     const cache = new StorageCache({ size: 100, type })
 
-    const addr = new Address(hexToBytes('10'.repeat(20)))
-    const key = hexToBytes('01')
-    const value = hexToBytes('01')
+    const addr = new Address(hexToBytes('0x' + '10'.repeat(20)))
+    const key = hexToBytes('0x01')
+    const value = hexToBytes('0x01')
 
     it('should return undefined for CacheElement if account not present in the cache', async () => {
       const elem = cache.get(addr, key)
@@ -42,18 +41,18 @@ describe('Storage Cache: put and get account', () => {
       cache.del(addr, key)
 
       const elem = cache.get(addr, key)
-      assert.ok(elem !== undefined && equalsBytes(elem, hexToBytes('80')))
+      assert.ok(elem !== undefined && equalsBytes(elem, hexToBytes('0x80')))
     })
   }
 })
 
 describe('Storage Cache: checkpointing', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
-    const addr = new Address(hexToBytes('10'.repeat(20)))
-    const key = hexToBytes('01')
-    const value = hexToBytes('01')
+    const addr = new Address(hexToBytes('0x' + '10'.repeat(20)))
+    const key = hexToBytes('0x01')
+    const value = hexToBytes('0x01')
 
-    const updatedValue = hexToBytes('02')
+    const updatedValue = hexToBytes('0x02')
 
     it(`should revert to correct state`, async () => {
       const cache = new StorageCache({ size: 100, type })

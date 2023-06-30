@@ -1,4 +1,4 @@
-import { bytesToHex } from 'ethereum-cryptography/utils.js'
+import { bytesToUnprefixedHex } from '@ethereumjs/util'
 import { LRUCache } from 'lru-cache'
 
 /**
@@ -14,14 +14,14 @@ export class Cache<V> {
 
   set(key: string | Uint8Array, value: V): void {
     if (key instanceof Uint8Array) {
-      key = bytesToHex(key)
+      key = bytesToUnprefixedHex(key)
     }
     this._cache.set(key, { value })
   }
 
   get(key: string | Uint8Array): V | undefined {
     if (key instanceof Uint8Array) {
-      key = bytesToHex(key)
+      key = bytesToUnprefixedHex(key)
     }
     const elem = this._cache.get(key)
     return elem !== undefined ? elem.value : undefined
@@ -29,7 +29,7 @@ export class Cache<V> {
 
   del(key: string | Uint8Array): void {
     if (key instanceof Uint8Array) {
-      key = bytesToHex(key)
+      key = bytesToUnprefixedHex(key)
     }
     this._cache.delete(key)
   }

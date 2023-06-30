@@ -11,11 +11,12 @@ import {
   bytesToHex,
   concatBytesNoTypeCheck,
   equalsBytes,
+  hexToBytes,
   intToBytes,
   short,
+  unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
 import { Bloom } from './bloom/index.js'
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
@@ -418,7 +419,7 @@ export async function rewardAccount(evm: EVM, address: Address, reward: bigint):
 export function encodeReceipt(receipt: TxReceipt, txType: TransactionType) {
   const encoded = RLP.encode([
     (receipt as PreByzantiumTxReceipt).stateRoot ??
-      ((receipt as PostByzantiumTxReceipt).status === 0 ? Uint8Array.from([]) : hexToBytes('01')),
+      ((receipt as PostByzantiumTxReceipt).status === 0 ? Uint8Array.from([]) : hexToBytes('0x01')),
     bigIntToBytes(receipt.cumulativeBlockGasUsed),
     receipt.bitvector,
     receipt.logs,
@@ -438,7 +439,7 @@ export function encodeReceipt(receipt: TxReceipt, txType: TransactionType) {
  */
 async function _applyDAOHardfork(evm: EVM) {
   const state = evm.stateManager
-  const DAORefundContractAddress = new Address(hexToBytes(DAORefundContract))
+  const DAORefundContractAddress = new Address(unprefixedHexToBytes(DAORefundContract))
   if ((await state.getAccount(DAORefundContractAddress)) === undefined) {
     await evm.journal.putAccount(DAORefundContractAddress, new Account())
   }
@@ -449,7 +450,7 @@ async function _applyDAOHardfork(evm: EVM) {
 
   for (const addr of DAOAccountList) {
     // retrieve the account and add it to the DAO's Refund accounts' balance.
-    const address = new Address(hexToBytes(addr))
+    const address = new Address(unprefixedHexToBytes(addr))
     let account = await state.getAccount(address)
     if (account === undefined) {
       account = new Account()

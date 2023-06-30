@@ -6,14 +6,14 @@ import {
   Address,
   blobsToCommitments,
   blobsToProofs,
-  bytesToPrefixedHexString,
+  bytesToHex,
+  hexToBytes,
   commitmentsToVersionedHashes,
   getBlobs,
   initKZG,
   privateToAddress,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
 import genesisJSON from '../../../../client/test/testdata/geth-genesis/eip4844.json'
@@ -23,8 +23,8 @@ import { setBalance } from '../utils'
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
-const pk = hexToBytes('20'.repeat(32))
-const sender = bytesToPrefixedHexString(privateToAddress(pk))
+const pk = hexToBytes('0x' + '20'.repeat(32))
+const sender = bytesToHex(privateToAddress(pk))
 if (isBrowser() === false) {
   try {
     initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet6.txt')

@@ -1,4 +1,4 @@
-import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 import { EventEmitter } from 'events'
 import { multiaddr } from 'multiaddr'
 import tape from 'tape'

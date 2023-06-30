@@ -1,6 +1,6 @@
 import { debug as createDebugLogger } from 'debug'
 import * as dgram from 'dgram'
-import { bytesToHex } from 'ethereum-cryptography/utils.js'
+import { bytesToHex, bytesToUnprefixedHex } from '@ethereumjs/util'
 import { EventEmitter } from 'events'
 
 import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
@@ -111,7 +111,7 @@ export class Server extends EventEmitter {
     })
 
     const deferred = createDeferred()
-    const rkey = bytesToHex(hash)
+    const rkey = bytesToUnprefixedHex(hash)
     this._requests.set(rkey, {
       peer,
       deferred,

@@ -1,9 +1,17 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, Capability, isBlobEIP4844Tx } from '@ethereumjs/tx'
-import { Account, Address, KECCAK256_NULL, bytesToPrefixedHexString, short } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  KECCAK256_NULL,
+  bytesToHex,
+  hexToBytes,
+  equalsBytes,
+  short,
+  bytesToUnprefixedHex,
+} from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
-import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
 
 import { Bloom } from './bloom/index.js'
 
@@ -192,10 +200,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     this.evm.journal.addAlwaysWarmAddress(caller.toString())
     if (tx.to !== undefined) {
       // Note: in case we create a contract, we do this in EVMs `_executeCreate` (this is also correct in inner calls, per the EIP)
-      this.evm.journal.addAlwaysWarmAddress(bytesToHex(tx.to.bytes))
+      this.evm.journal.addAlwaysWarmAddress(bytesToUnprefixedHex(tx.to.bytes))
     }
     if (this._common.isActivatedEIP(3651) === true) {
-      this.evm.journal.addAlwaysWarmAddress(bytesToHex(block.header.coinbase.bytes))
+      this.evm.journal.addAlwaysWarmAddress(bytesToUnprefixedHex(block.header.coinbase.bytes))
     }
   }
 
@@ -386,7 +394,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (this.DEBUG) {
     debug(
-      `Running tx=0x${
+      `Running tx=${
         tx.isSigned() ? bytesToHex(tx.hash()) : 'unsigned'
       } with caller=${caller} gasLimit=${gasLimit} to=${
         to?.toString() ?? 'none'
@@ -563,7 +571,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (this.DEBUG) {
     debug(
       `tx run finished hash=${
-        opts.tx.isSigned() ? bytesToPrefixedHexString(opts.tx.hash()) : 'unsigned'
+        opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
       } sender=${caller}`
     )
   }

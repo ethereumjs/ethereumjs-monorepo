@@ -1,13 +1,20 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { MapDB, toBytes } from '@ethereumjs/util'
+import {
+  MapDB,
+  bytesToUnprefixedHex,
+  equalsBytes,
+  hexToBytes,
+  toBytes,
+  utf8ToBytes,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 
 import { Blockchain } from '../src/index.js'
 
 import type { DB } from '@ethereumjs/util'
+import { bytesToHex } from 'ethereum-cryptography/utils.js'
 
 export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {
   const blocks = existingBlocks ? existingBlocks : []
@@ -124,13 +131,13 @@ export const createTestDB = async (): Promise<
   await db.batch([
     {
       type: 'put',
-      key: hexToBytes('6800000000000000006e'),
+      key: hexToBytes('0x6800000000000000006e'),
       value: genesis.hash(),
     },
     {
       type: 'put',
-      key: hexToBytes('48d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'),
-      value: hexToBytes('00'),
+      key: hexToBytes('0x48d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'),
+      value: hexToBytes('0x00'),
     },
     {
       type: 'put',
@@ -145,28 +152,28 @@ export const createTestDB = async (): Promise<
     {
       type: 'put',
       key: hexToBytes(
-        '680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
+        '0x680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
       ),
       value: genesis.header.serialize(),
     },
     {
       type: 'put',
       key: hexToBytes(
-        '680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa374'
+        '0x680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa374'
       ),
       value: RLP.encode(toBytes(17179869184)),
     },
     {
       type: 'put',
       key: hexToBytes(
-        '620000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
+        '0x620000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
       ),
       value: RLP.encode(genesis.raw().slice(1)),
     },
     {
       type: 'put',
       key: 'heads',
-      value: { head0: bytesToHex(Uint8Array.from([171, 205])) },
+      value: { head0: bytesToUnprefixedHex(Uint8Array.from([171, 205])) },
     },
   ])
   return [db, genesis]

@@ -1,5 +1,10 @@
-import { concatBytesNoTypeCheck, short } from '@ethereumjs/util'
-import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
+import {
+  concatBytesNoTypeCheck,
+  short,
+  bytesToHex,
+  equalsBytes,
+  hexToBytes,
+} from '@ethereumjs/util'
 
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
@@ -10,7 +15,7 @@ import type { ExecResult } from '../evm.js'
 import type { PrecompileInput } from './types.js'
 
 const zeroBuffer = new Uint8Array(32)
-const oneBuffer = concatBytesNoTypeCheck(new Uint8Array(31), hexToBytes('01'))
+const oneBuffer = concatBytesNoTypeCheck(new Uint8Array(31), hexToBytes('0x01'))
 
 export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
   const mcl = (<any>opts._EVM)._mcl!
