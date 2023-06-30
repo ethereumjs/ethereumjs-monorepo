@@ -483,12 +483,12 @@ describe('Network wrapper deserialization test', () => {
       }
       const txMeta = {
         sender: '0x5b638bee5a4e8ff43701747afc023f906abe0636',
-        unsignedHash: '75754a0ce96fd090a1d0abeb0a7f01d9743bc31c206c45e666fd777979e92149',
-        hash: 'ae074935ea3899fbfd387d79c50e99a9f07c145f71182f8f2709648b308b8cf3',
+        unsignedHash: '0x75754a0ce96fd090a1d0abeb0a7f01d9743bc31c206c45e666fd777979e92149',
+        hash: '0xae074935ea3899fbfd387d79c50e99a9f07c145f71182f8f2709648b308b8cf3',
         // 131325 bytes long i.e. ~128KB
-        networkSerializedHexLength: 262650,
+        networkSerializedHexLength: 262652, // 0x included
         serialized:
-          '03f88a0180808083ffffff941f738d535998ba73b31f38f1ecf6a6ad013eaa208080c08405f5e100e1a00172f7e05f83dde3e36fb3de430f65c09efb9dbbbf53826e1c1c9780b8fb952080a03d8cacf503f773c3ae4eed2b38ba68859063bc5ad253a4fb456b1295061f1e0ba0616727b04ef78f58d2f521774c6261396fc21eac725ba2a2d89758eae171effb',
+          '0x03f88a0180808083ffffff941f738d535998ba73b31f38f1ecf6a6ad013eaa208080c08405f5e100e1a00172f7e05f83dde3e36fb3de430f65c09efb9dbbbf53826e1c1c9780b8fb952080a03d8cacf503f773c3ae4eed2b38ba68859063bc5ad253a4fb456b1295061f1e0ba0616727b04ef78f58d2f521774c6261396fc21eac725ba2a2d89758eae171effb',
       }
 
       const blobs = getBlobs('hello world')

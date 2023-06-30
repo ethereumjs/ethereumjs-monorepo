@@ -249,22 +249,22 @@ describe('[Transaction]', () => {
     const tx = LegacyTransaction.fromValuesArray(txFixtures[4].raw.map(toBytes))
     assert.equal(
       bytesToHex(tx.hash()),
-      '0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4'
+      '0x0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4'
     )
     assert.equal(
       bytesToHex(tx.hash()),
-      '0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4'
+      '0x0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4'
     )
     assert.equal(
       bytesToHex(tx.getHashedMessageToSign()),
-      'f97c73fdca079da7652dbc61a46cd5aeef804008e057be3e712c43eac389aaf0'
+      '0xf97c73fdca079da7652dbc61a46cd5aeef804008e057be3e712c43eac389aaf0'
     )
   })
 
   it("getHashedMessageToSign(), getSenderPublicKey() (implicit call) -> verify EIP155 signature based on Vitalik's tests", () => {
     for (const tx of txFixturesEip155) {
       const pt = LegacyTransaction.fromSerializedTx(toBytes(tx.rlp))
-      assert.equal(bytesToHex(pt.getHashedMessageToSign()), tx.hash)
+      assert.equal(bytesToHex(pt.getHashedMessageToSign()), '0x' + tx.hash)
       assert.equal(bytesToHex(pt.serialize()), tx.rlp)
       assert.equal(pt.getSenderAddress().toString(), '0x' + tx.sender)
     }
@@ -290,16 +290,16 @@ describe('[Transaction]', () => {
     // We don't have a getter for such a value in LegacyTransaction.
     assert.equal(
       bytesToHex(pt.serialize()),
-      'ec098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a764000080808080'
+      '0xec098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a764000080808080'
     )
     const signedTx = pt.sign(privateKey)
     assert.equal(
       bytesToHex(signedTx.getHashedMessageToSign()),
-      'daf5a779ae972f972197303d7b574746c7ef83eadac0f2791ad23db92e4c8e53'
+      '0xdaf5a779ae972f972197303d7b574746c7ef83eadac0f2791ad23db92e4c8e53'
     )
     assert.equal(
       bytesToHex(signedTx.serialize()),
-      'f86c098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a76400008025a028ef61340bd939bc2195fe537567866003e1a15d3c71ff63e1590620aa636276a067cbe9d8997f761aecb703304b3800ccf555c9f3dc64214b297fb1966a3b6d83'
+      '0xf86c098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a76400008025a028ef61340bd939bc2195fe537567866003e1a15d3c71ff63e1590620aa636276a067cbe9d8997f761aecb703304b3800ccf555c9f3dc64214b297fb1966a3b6d83'
     )
   })
 
@@ -338,7 +338,7 @@ describe('[Transaction]', () => {
     const signedTx = tx.sign(privateKey)
     assert.equal(
       bytesToHex(signedTx.serialize()),
-      'f86c018502540be40082520894d7250824390ec5c8b71d856b5de895e271170d9d880de0b6b3a76400008029a0d3512c68099d184ccf54f44d9d6905bff303128574b663dcf10b4c726ddd8133a0628acc8f481dea593f13309dfc5f0340f83fdd40cf9fbe47f782668f6f3aec74'
+      '0xf86c018502540be40082520894d7250824390ec5c8b71d856b5de895e271170d9d880de0b6b3a76400008029a0d3512c68099d184ccf54f44d9d6905bff303128574b663dcf10b4c726ddd8133a0628acc8f481dea593f13309dfc5f0340f83fdd40cf9fbe47f782668f6f3aec74'
     )
   })
 

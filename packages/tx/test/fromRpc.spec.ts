@@ -65,11 +65,7 @@ describe('[normalizeTxParams]', () => {
     const normedTx = normalizeTxParams(rpcTx)
     const tx = TransactionFactory.fromTxData(normedTx)
     assert.equal(normedTx.gasLimit, 21000n, 'correctly converted "gas" to "gasLimit"')
-    assert.equal(
-      bytesToHex(tx.hash()),
-      rpcTx.hash.slice(2),
-      'converted normed tx data to transaction objec'
-    )
+    assert.equal(bytesToHex(tx.hash()), rpcTx.hash, 'converted normed tx data to transaction objec')
   })
 })
 
