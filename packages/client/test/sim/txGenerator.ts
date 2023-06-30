@@ -9,7 +9,7 @@ import {
   prefixedHexStringToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import kzg from 'c-kzg'
+import * as kzg from 'c-kzg'
 import { Client } from 'jayson/promise'
 
 import type { TransactionType, TxData } from '@ethereumjs/tx'

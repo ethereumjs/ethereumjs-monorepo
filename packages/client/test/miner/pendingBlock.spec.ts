@@ -21,7 +21,7 @@ import {
   randomBytes,
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
-import kzg from 'c-kzg'
+import * as kzg from 'c-kzg'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 

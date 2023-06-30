@@ -12,7 +12,7 @@ import {
   initKZG,
   prefixedHexStringToBytes,
 } from '@ethereumjs/util'
-import kzg from 'c-kzg'
+import * as kzg from 'c-kzg'
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
