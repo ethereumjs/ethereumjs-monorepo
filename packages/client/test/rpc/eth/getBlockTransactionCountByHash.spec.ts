@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { baseRequest, baseSetup, params } from '../helpers'

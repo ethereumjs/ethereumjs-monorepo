@@ -11,7 +11,7 @@ import {
   prefixedHexStringToBytes,
 } from '@ethereumjs/util'
 
-import kzg from 'c-kzg'
+import * as kzg from 'c-kzg'
 import { randomBytes } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 

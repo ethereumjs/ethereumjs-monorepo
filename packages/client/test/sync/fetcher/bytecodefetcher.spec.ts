@@ -1,8 +1,8 @@
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
-import tape from 'tape'
-import td from 'testdouble'
+import * as tape from 'tape'
+import * as td from 'testdouble'
 
 import { Chain } from '../../../src/blockchain'
 import { Config } from '../../../src/config'

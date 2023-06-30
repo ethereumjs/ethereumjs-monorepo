@@ -6,12 +6,12 @@ import {
   prefixedHexStringToBytes,
   zeros,
 } from '@ethereumjs/util'
-import tape from 'tape'
-import td from 'testdouble'
+import * as tape from 'tape'
+import * as td from 'testdouble'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import blocks from '../../testdata/blocks/beacon.json'
-import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
+import * as blocks from '../../testdata/blocks/beacon.json'
+import * as genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 

@@ -9,7 +9,7 @@ import {
   prefixedHexStringToBytes,
   privateToAddress,
 } from '@ethereumjs/util'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { Config } from '../../src/config'
 import { getLogger } from '../../src/logging'

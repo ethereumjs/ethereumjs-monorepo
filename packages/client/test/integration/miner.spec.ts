@@ -7,7 +7,7 @@ import {
   Hardfork,
 } from '@ethereumjs/common'
 import { Address, prefixedHexStringToBytes } from '@ethereumjs/util'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'

@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { MemoryLevel } from 'memory-level'
-import tape from 'tape'
-import td from 'testdouble'
+import * as tape from 'tape'
+import * as td from 'testdouble'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'

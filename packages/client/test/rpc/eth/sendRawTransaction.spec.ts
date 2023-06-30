@@ -16,8 +16,8 @@ import {
   prefixedHexStringToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import kzg from 'c-kzg'
-import tape from 'tape'
+import * as kzg from 'c-kzg'
+import * as tape from 'tape'
 
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../src/rpc/error-code'
 import { baseRequest, baseSetup, params } from '../helpers'

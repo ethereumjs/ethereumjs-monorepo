@@ -1,4 +1,4 @@
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 
 import { formatLogId } from '../util.js'
 
@@ -6,6 +6,7 @@ import { KBucket } from './kbucket.js'
 
 import type { PeerInfo } from './dpt.js'
 import type LRUCache from 'lru-cache'
+const { debug: createDebugLogger } = debugDefault
 
 const LRU = require('lru-cache')
 

@@ -1,9 +1,9 @@
 import { Block } from '@ethereumjs/block'
 import { Withdrawal, bigIntToHex, bytesToHex, intToPrefixedHexString } from '@ethereumjs/util'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import genesisJSON from '../../testdata/geth-genesis/withdrawals.json'
+import * as genesisJSON from '../../testdata/geth-genesis/withdrawals.json'
 import { baseRequest, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 

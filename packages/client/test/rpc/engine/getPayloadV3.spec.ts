@@ -12,11 +12,11 @@ import {
   initKZG,
   prefixedHexStringToBytes,
 } from '@ethereumjs/util'
-import kzg from 'c-kzg'
-import tape from 'tape'
+import * as kzg from 'c-kzg'
+import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
+import * as genesisJSON from '../../testdata/geth-genesis/eip4844.json'
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 

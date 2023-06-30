@@ -12,11 +12,11 @@ import {
   initKZG,
   randomBytes,
 } from '@ethereumjs/util'
-import kzg from 'c-kzg'
-import fs from 'fs/promises'
+import * as kzg from 'c-kzg'
+import * as fs from 'fs/promises'
 import { Level } from 'level'
 import { execSync, spawn } from 'node:child_process'
-import net from 'node:net'
+import * as net from 'node:net'
 
 import { EthereumClient } from '../../src/client'
 import { Config } from '../../src/config'

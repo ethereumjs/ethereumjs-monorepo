@@ -1,6 +1,6 @@
 import { randomBytes } from '@ethereumjs/util'
 import { encode } from 'jwt-simple'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { METHOD_NOT_FOUND } from '../../src/rpc/error-code'
 

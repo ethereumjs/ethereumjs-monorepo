@@ -1,7 +1,7 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Chain, Common } from '@ethereumjs/common'
-import tape from 'tape'
-import td from 'testdouble'
+import * as tape from 'tape'
+import * as td from 'testdouble'
 
 import { baseRequest, baseSetup, createClient, createManager, params, startRPC } from '../helpers'
 

@@ -1,8 +1,8 @@
 import { LegacyTransaction } from '@ethereumjs/tx'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import pow from '../../testdata/geth-genesis/pow.json'
+import * as pow from '../../testdata/geth-genesis/pow.json'
 import { baseRequest, baseSetup, dummy, params, runBlockWithTxs, setupChain } from '../helpers'
 import { checkError } from '../util'
 

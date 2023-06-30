@@ -7,7 +7,7 @@ import {
   prefixedHexStringToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { Chain } from '../../../src/blockchain/chain'
 import { Config } from '../../../src/config'
