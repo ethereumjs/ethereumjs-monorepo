@@ -1,4 +1,10 @@
-import { bytesToHex, bytesToInt, equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
+import {
+  bytesToInt,
+  bytesToUnprefixedHex,
+  equalsBytes,
+  unprefixedHexToBytes,
+  utf8ToBytes,
+} from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'events'
@@ -84,7 +90,7 @@ export class RLPx extends EventEmitter {
           this._debug(`banning peer with missing tcp port: ${peer.address}`)
           return
         }
-        const key = bytesToHex(peer.id!)
+        const key = bytesToUnprefixedHex(peer.id!)
         if (this._peersLRU.has(key)) return
         this._peersLRU.set(key, true)
 
@@ -136,7 +142,7 @@ export class RLPx extends EventEmitter {
     if (this._server) this._server.close(...args)
     this._server = null
 
-    for (const peerKey of this._peers.keys()) this.disconnect(hexToBytes(peerKey))
+    for (const peerKey of this._peers.keys()) this.disconnect(unprefixedHexToBytes(peerKey))
   }
 
   async connect(peer: PeerInfo) {
@@ -144,7 +150,7 @@ export class RLPx extends EventEmitter {
     this._isAliveCheck()
 
     if (!(peer.id instanceof Uint8Array)) throw new TypeError('Expected peer.id as Uint8Array')
-    const peerKey = bytesToHex(peer.id)
+    const peerKey = bytesToUnprefixedHex(peer.id)
 
     if (this._peers.has(peerKey)) throw new Error('Already connected')
     if (this._getOpenSlots() === 0) throw new Error('Too many peers already connected')
@@ -172,7 +178,7 @@ export class RLPx extends EventEmitter {
   }
 
   disconnect(id: Uint8Array) {
-    const peer = this._peers.get(bytesToHex(id))
+    const peer = this._peers.get(bytesToUnprefixedHex(id))
     if (peer instanceof Peer) {
       peer.disconnect(DISCONNECT_REASONS.CLIENT_QUITTING)
     }
@@ -241,7 +247,7 @@ export class RLPx extends EventEmitter {
         return peer.disconnect(DISCONNECT_REASONS.SAME_IDENTITY)
       }
 
-      const peerKey = bytesToHex(id!)
+      const peerKey = bytesToUnprefixedHex(id!)
       const item = this._peers.get(peerKey)
       if (item && item instanceof Peer) {
         return peer.disconnect(DISCONNECT_REASONS.ALREADY_CONNECTED)
@@ -275,7 +281,7 @@ export class RLPx extends EventEmitter {
 
       const id = peer.getId()
       if (id) {
-        const peerKey = bytesToHex(id)
+        const peerKey = bytesToUnprefixedHex(id)
         this._peers.delete(peerKey)
         this.emit('peer:removed', peer, reason, disconnectWe)
       }

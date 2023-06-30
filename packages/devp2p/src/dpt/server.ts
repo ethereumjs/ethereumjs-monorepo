@@ -188,7 +188,7 @@ export class Server extends EventEmitter {
       }
 
       case 'pong': {
-        const rkey = bytesToHex(info.data.hash)
+        const rkey = bytesToUnprefixedHex(info.data.hash)
         const request = this._requests.get(rkey)
         if (request !== undefined) {
           this._requests.delete(rkey)

@@ -41,7 +41,7 @@ describe('ETH simulator tests', () => {
       opts.status0 = Object.assign({}, status)
       opts.status1 = Object.assign({}, status)
       opts.onPeerError0 = function (err: Error, rlpxs: any) {
-        const msg = 'NetworkId mismatch: 01 / aa36a7'
+        const msg = 'NetworkId mismatch: 0x01 / 0xaa36a7'
         assert.equal(err.message, msg, `should emit error: ${msg}`)
         util.destroyRLPXs(rlpxs)
         resolve(undefined)
@@ -62,7 +62,7 @@ describe('ETH simulator tests', () => {
       opts.status1 = status1
       opts.onPeerError0 = function (err: Error, rlpxs: any) {
         const msg =
-          'Genesis block mismatch: d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3 / 0000000000000000000000000000000000000000000000000000000000000000'
+          'Genesis block mismatch: 0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3 / 0x0000000000000000000000000000000000000000000000000000000000000000'
         assert.equal(err.message, msg, `should emit error: ${msg}`)
         util.destroyRLPXs(rlpxs)
         resolve(undefined)

@@ -4,6 +4,7 @@ import {
   bytesToBigInt,
   bytesToHex,
   bytesToInt,
+  bytesToUnprefixedHex,
   hexToBytes,
   intToBytes,
 } from '@ethereumjs/util'
@@ -216,7 +217,7 @@ export class ETH extends Protocol {
   }
 
   _forkHashFromForkId(forkId: Uint8Array): string {
-    return bytesToHex(forkId)
+    return bytesToUnprefixedHex(forkId)
   }
 
   _nextForkFromForkId(forkId: Uint8Array): number {

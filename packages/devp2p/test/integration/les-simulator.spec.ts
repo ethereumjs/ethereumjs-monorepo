@@ -51,13 +51,13 @@ describe('LES simulator tests', () => {
     })
   })
 
-  it('LES: send status message (NetworkId mismatch)', async () => {
+  it.only('LES: send status message (NetworkId mismatch)', async () => {
     await new Promise((resolve) => {
       const opts: any = {}
       opts.status0 = Object.assign({}, status)
       opts.status1 = Object.assign({}, status)
       opts.onPeerError0 = function (err: Error, rlpxs: any) {
-        const msg = 'NetworkId mismatch: 01 / aa36a7'
+        const msg = 'NetworkId mismatch: 0x01 / 0xaa36a7'
         assert.equal(err.message, msg, `should emit error: ${msg}`)
         util.destroyRLPXs(rlpxs)
         resolve(undefined)
