@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 4.0.0-rc.1 - 2023-07-04
+## 4.0.0-rc.1 - 2023-07-11
 
 ### Buffer -> Uint8Array
 
@@ -19,11 +19,8 @@ We nevertheless think this is very much worth it and we tried to make transition
 For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
 
 ```typescript
-forkHash(hardfork?: string | Hardfork, genesisHash?: Buffer): string // Old
-forkHash(hardfork?: string | Hardfork, genesisHash?: Uint8Array): string // New
-
-setForkHashes(genesisHash: Buffer) // Old
-setForkHashes(genesisHash: Uint8Array) // New
+forkHash(hardfork?: string | Hardfork, genesisHash?: Uint8Array): string
+setForkHashes(genesisHash: Uint8Array)
 ```
 
 We have added helper methods for "Buffer -> Uint8Array" conversions in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
