@@ -10,6 +10,7 @@ import {
   KECCAK256_RLP_S,
   bigIntToHex,
   bytesToHex,
+  bytesToUnprefixedHex,
   concatBytes,
   equalsBytes,
   hexToBytes,
@@ -320,7 +321,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
     await this._trie.database().put(key, value)
 
-    const keyHex = bytesToHex(key)
+    const keyHex = bytesToUnprefixedHex(key)
     this._codeCache[keyHex] = value
 
     if (this.DEBUG) {
@@ -350,7 +351,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       ? concatBytes(CODEHASH_PREFIX, account.codeHash)
       : account.codeHash
 
-    const keyHex = bytesToHex(key)
+    const keyHex = bytesToUnprefixedHex(key)
     if (keyHex in this._codeCache) {
       return this._codeCache[keyHex]
     } else {
@@ -367,7 +368,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    */
   private async _getStorageTrie(address: Address, account: Account): Promise<Trie> {
     // from storage cache
-    const addressHex = bytesToHex(address.bytes)
+    const addressHex = bytesToUnprefixedHex(address.bytes)
     const storageTrie = this._storageTries[addressHex]
     if (storageTrie === undefined) {
       const storageTrie = this._trie.copy(false)
@@ -430,7 +431,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
       modifyTrie(storageTrie, async () => {
         // update storage cache
-        const addressHex = bytesToHex(address.bytes)
+        const addressHex = bytesToUnprefixedHex(address.bytes)
         this._storageTries[addressHex] = storageTrie
 
         // update contract storageRoot
@@ -615,9 +616,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       const returnValue: Proof = {
         address: address.toString(),
         balance: '0x',
-        codeHash: '0x' + KECCAK256_NULL_S,
+        codeHash: KECCAK256_NULL_S,
         nonce: '0x',
-        storageHash: '0x' + KECCAK256_RLP_S,
+        storageHash: KECCAK256_RLP_S,
         accountProof: (await this._trie.createProof(address.bytes)).map((p) => bytesToHex(p)),
         storageProof: [],
       }

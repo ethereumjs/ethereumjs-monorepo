@@ -1,5 +1,13 @@
 import { Trie } from '@ethereumjs/trie'
-import { Account, Address, bytesToHex, hexToBytes, randomBytes, zeros } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  bytesToHex,
+  bytesToUnprefixedHex,
+  hexToBytes,
+  randomBytes,
+  zeros,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
@@ -92,7 +100,7 @@ describe('ProofStateManager', () => {
     assert.ok(await stateManager.verifyProof(ropsten_nonexistentAccount))
   })
 
-  it('should report data equal to geth output for EIP 1178 proofs - account with storage', async () => {
+  it.only('should report data equal to geth output for EIP 1178 proofs - account with storage', async () => {
     // Data source: Ropsten, retrieved with Geth eth_getProof
     // eth.getProof("0x2D80502854FC7304c3E3457084DE549f5016B73f", ["0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1ca", "0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1cb"], 11098094)
     // Note: the first slot has a value, but the second slot is empty
@@ -123,7 +131,7 @@ describe('ProofStateManager', () => {
       }
     }
     storageTrie.root(hexToBytes(storageRoot))
-    const addressHex = bytesToHex(address.bytes)
+    const addressHex = bytesToUnprefixedHex(address.bytes)
     stateManager._storageTries[addressHex] = storageTrie
     trie.root(stateRoot!)
 

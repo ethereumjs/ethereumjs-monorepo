@@ -1,4 +1,4 @@
-import { bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { bytesToUnprefixedHex, hexToBytes } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { OrderedMap } from 'js-sdsl'
 import { LRUCache } from 'lru-cache'
@@ -85,14 +85,14 @@ export class StorageCache extends Cache {
    * @param val - RLP-encoded storage value
    */
   put(address: Address, key: Uint8Array, value: Uint8Array): void {
-    const addressHex = bytesToHex(address.bytes)
-    const keyHex = bytesToHex(key)
+    const addressHex = bytesToUnprefixedHex(address.bytes)
+    const keyHex = bytesToUnprefixedHex(key)
     this._saveCachePreState(addressHex, keyHex)
 
     if (this.DEBUG) {
       this._debug(
         `Put storage for ${addressHex}: ${keyHex} -> ${
-          value !== undefined ? bytesToHex(value) : ''
+          value !== undefined ? bytesToUnprefixedHex(value) : ''
         }`
       )
     }
@@ -123,8 +123,8 @@ export class StorageCache extends Cache {
    * @returns Storage value or undefined
    */
   get(address: Address, key: Uint8Array): Uint8Array | undefined {
-    const addressHex = bytesToHex(address.bytes)
-    const keyHex = bytesToHex(key)
+    const addressHex = bytesToUnprefixedHex(address.bytes)
+    const keyHex = bytesToUnprefixedHex(key)
     if (this.DEBUG) {
       this._debug(`Get storage for ${addressHex}`)
     }
@@ -148,8 +148,8 @@ export class StorageCache extends Cache {
    * @param key - Storage key
    */
   del(address: Address, key: Uint8Array): void {
-    const addressHex = bytesToHex(address.bytes)
-    const keyHex = bytesToHex(key)
+    const addressHex = bytesToUnprefixedHex(address.bytes)
+    const keyHex = bytesToUnprefixedHex(key)
     this._saveCachePreState(addressHex, keyHex)
     if (this.DEBUG) {
       this._debug(`Delete storage for ${addressHex}: ${keyHex}`)
@@ -178,7 +178,7 @@ export class StorageCache extends Cache {
    * @param address
    */
   clearContractStorage(address: Address): void {
-    const addressHex = bytesToHex(address.bytes)
+    const addressHex = bytesToUnprefixedHex(address.bytes)
     if (this._lruCache) {
       this._lruCache!.set(addressHex, new Map())
     } else {

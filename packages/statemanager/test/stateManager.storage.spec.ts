@@ -30,7 +30,7 @@ describe('StateManager -> Storage', () => {
       await stateManager.putContractStorage(address, key, value)
 
       const data = await stateManager.dumpStorage(address)
-      const expect = { [bytesToHex(keccak256(key))]: '0a' }
+      const expect = { [bytesToHex(keccak256(key))]: '0x0a' }
       assert.deepEqual(data, expect, 'should dump storage value')
     })
 

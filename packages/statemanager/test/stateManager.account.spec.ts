@@ -141,11 +141,11 @@ describe('StateManager -> General/Account', () => {
 
       assert.equal(
         bytesToHex(res3!.codeHash),
-        'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b'
+        '0xd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b'
       )
       assert.equal(
         bytesToHex(res3!.storageRoot),
-        'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7'
+        '0xcafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7'
       )
     })
   }
