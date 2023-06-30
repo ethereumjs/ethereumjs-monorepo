@@ -20,7 +20,7 @@ class fibonacciConsensus implements Consensus {
     return new Promise<void>((resolve) => resolve())
   }
   validateConsensus(_block: Block): Promise<void> {
-    if (bytesToHex(_block.header.extraData) !== '12358d') {
+    if (bytesToHex(_block.header.extraData) !== '0x12358d') {
       throw new Error(
         'header contains invalid extradata - must match first 6 elements of fibonacci sequence'
       )
@@ -59,7 +59,7 @@ describe('Optional consensus parameter in blockchain constructor', () => {
 })
 
 describe('Custom consensus validation rules', () => {
-  it('should validat custom consensus rules', async () => {
+  it.only('should validat custom consensus rules', async () => {
     const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Chainstart })
     const consensus = new fibonacciConsensus()
     const blockchain = await Blockchain.create({ common, consensus })

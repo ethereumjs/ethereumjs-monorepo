@@ -6,7 +6,7 @@ import {
   bytesToBigInt,
   bytesToHex,
   equalsBytes,
-  hexToBytes,
+  unprefixedHexToBytes,
 } from '@ethereumjs/util'
 
 import { Cache } from './cache.js'
@@ -61,7 +61,7 @@ export class DBManager {
       // Heads are stored in DB as hex strings since Level converts Uint8Arrays
       // to nested JSON objects when they are included in a value being stored
       // in the DB
-      decodedHeads[key] = hexToBytes(heads[key] as string) // TODO CHECK ME
+      decodedHeads[key] = unprefixedHexToBytes(heads[key] as string)
     }
     return decodedHeads
   }
