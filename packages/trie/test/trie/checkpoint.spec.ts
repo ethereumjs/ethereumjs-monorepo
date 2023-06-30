@@ -229,11 +229,11 @@ describe('testing checkpoints', () => {
     assert.equal(
       // @ts-expect-error
       bytesToHex(await CommittedState._db.get(KEY_ROOT)),
-      '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c'
+      '0x77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c'
     )
     assert.equal(
       bytesToHex(CommittedState.root()),
-      '77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c'
+      '0x77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c'
     )
 
     // From MemoryState, now take the final checkpoint

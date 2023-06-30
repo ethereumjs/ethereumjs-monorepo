@@ -1,34 +1,13 @@
 import {
   KeyEncoding,
   ValueEncoding,
-  bytesToHex,
-  padToEven,
+  bytesToUnprefixedHex,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { LRUCache } from 'lru-cache'
 
 import type { Checkpoint, CheckpointDBOpts } from '../types.js'
 import type { BatchDBOp, DB, DelBatch, PutBatch } from '@ethereumjs/util'
-
-/**
- * In order to not-prefix the key/values in the DB each time (this copies the key/values each time: expensive)
- * Use this "private" method (see `prefixedHexStringToBytes` from @ethereumjs/util for reference)
- * @param hex
- * @returns
- */
-function _nonPrefixedHexStringToBytes(hex: string) {
-  if (hex.length % 2 !== 0) {
-    hex = padToEven(hex)
-  }
-
-  const byteLen = hex.length / 2
-  const bytes = new Uint8Array(byteLen)
-  for (let i = 0; i < byteLen; i++) {
-    const byte = parseInt(hex.slice(i * 2, (i + 1) * 2), 16)
-    bytes[i] = byte
-  }
-  return bytes
-}
 
 /**
  * DB is a thin wrapper around the underlying levelup db,
@@ -124,12 +103,12 @@ export class CheckpointDB implements DB {
         if (value === undefined) {
           batchOp.push({
             type: 'del',
-            key: _nonPrefixedHexStringToBytes(key),
+            key: unprefixedHexToBytes(key),
           })
         } else {
           batchOp.push({
             type: 'put',
-            key: _nonPrefixedHexStringToBytes(key),
+            key: unprefixedHexToBytes(key),
             value,
           })
         }
@@ -156,7 +135,7 @@ export class CheckpointDB implements DB {
    * @inheritDoc
    */
   async get(key: Uint8Array): Promise<Uint8Array | undefined> {
-    const keyHex = bytesToHex(key)
+    const keyHex = bytesToUnprefixedHex(key)
     if (this._cache !== undefined) {
       const value = this._cache.get(keyHex)
       this._stats.cache.reads += 1
@@ -196,8 +175,8 @@ export class CheckpointDB implements DB {
    * @inheritDoc
    */
   async put(key: Uint8Array, value: Uint8Array): Promise<void> {
-    const keyHex = bytesToHex(key)
-    const valueHex = bytesToHex(value)
+    const keyHex = bytesToUnprefixedHex(key)
+    const valueHex = bytesToUnprefixedHex(value)
     if (this.hasCheckpoints()) {
       // put value in diff cache
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, value)
@@ -219,7 +198,7 @@ export class CheckpointDB implements DB {
    * @inheritDoc
    */
   async del(key: Uint8Array): Promise<void> {
-    const keyHex = bytesToHex(key)
+    const keyHex = bytesToUnprefixedHex(key)
     if (this.hasCheckpoints()) {
       // delete the value in the current diff cache
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, undefined)
@@ -252,8 +231,8 @@ export class CheckpointDB implements DB {
     } else {
       const convertedOps = opStack.map((op) => {
         const convertedOp = {
-          key: bytesToHex(op.key),
-          value: op.type === 'put' ? bytesToHex(op.value) : undefined,
+          key: bytesToUnprefixedHex(op.key),
+          value: op.type === 'put' ? bytesToUnprefixedHex(op.value) : undefined,
           type: op.type,
           opts: op.opts,
         }
