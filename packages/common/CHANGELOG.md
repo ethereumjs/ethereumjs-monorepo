@@ -12,66 +12,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 With this releases we remove all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`). While this is a big step towards interoperability and browser compatibility of our libraries, this is also one of the most invasive operations we have ever done, see the huge changeset from PR [#2566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2566) and [#2607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2607). 😋
 
-We are nevertheless think it is very much worth it and we try to make transition work as seamless as possible by providing both general upgrade guidance for all libraries and specfic per-library notes.
+We nevertheless think this is very much worth it and we tried to make transition work as easy as possible.
 
-#### What has changed?
+#### How to upgrade?
 
-All methods and constructors of the EthereumJS libraries which took a `Buffer` instance as an input or resulted in a `Buffer` (containing) output have been updated to take in an `Uint8Array` instead and/or produce `Uint8Array` as an output.
-
-Here are some examples from our libraries:
-
-```typescript
-async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> // StateManager, old
-async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> // StateManager, new
-
-hash(): Buffer // Block, old
-hash(): Uint8Array // Block, new
-```
-
-The same goes for exposed constants and TypeScript types:
-
-```typescript
-export const KECCAK256_NULL = Buffer.from(KECCAK256_NULL_S, 'hex') // Util, old
-export const KECCAK256_NULL = hexToBytes(KECCAK256_NULL_S) // Util, new
-
-export type AccessListBufferItem = [Buffer, Buffer[]] // Tx, old (Type)
-export type AccessListBytesItem = [Uint8Array, Uint8Array[]] // Tx, new
-```
-
-As you can see, complex datastructures containing `Buffer` objects are now renamed from containing `Buffer` as an
-indicator key word to now having a `Bytes` containing name.
-
-### Upgrade Helpers
-
-Depending on the extend of `Buffer` usage within your own libraries and other planning considerations, there are the two upgrade options to either take the occasion and also do the switch to `Uint8Array` or keep `Buffer` and do transitions for input and output values.
-
-We have updated the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module with helpers for the most common conversions:
-
-```typescript
-Buffer.alloc(97) // Allocate a Buffer with length 97
-new Uint8Array(97) // Allocate a Uint8Array with length 97
-
-Buffer.from('342770c0', 'hex') // Convert a hex string to a Buffer
-prefixedHexStringToBytes('0x342770c0') // Convert a hex string to a Uint8Array, Util.prefixedHexStringToBytes()
-
-`0x${myBuffer.toString('hex')}` // Convert a Buffer to a prefixed hex string
-bytesToPrefixedHexString(myUint8Array) // Convert a Uint8Array to a prefixed hex string
-
-intToBuffer(9) // Convert an integer to a Buffer, old (removed)
-intToBytes(9) // Convert an integer to a Uint8Array, Util.intToBytes()
-
-bytesToInt(myUint8Array) // Convert a Uint8Array to an integer, Util.bytesToInt()
-
-bytesToBigInt(myUint8Array) // Convert a Uint8Array to a BigInt, Util.bytesToInt()
-
-toBuffer(v: ToBufferInputTypes) // Converts various byte compatible types to Buffer, old (removed)
-toBytes(v: ToBytesInputTypes) // Converts various byte compatible types to Uint8Array, Util.toBytes()
-```
-
-### This library: What to do?
-
-For this library you should check if you use one of the following constructors, methods, constants or types
-and do a search and update input and/or output values or general usages and add conversion methods if necessary:
+For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
 
 ```typescript
 forkHash(hardfork?: string | Hardfork, genesisHash?: Buffer): string // Old
@@ -80,6 +25,8 @@ forkHash(hardfork?: string | Hardfork, genesisHash?: Uint8Array): string // New
 setForkHashes(genesisHash: Buffer) // Old
 setForkHashes(genesisHash: Uint8Array) // New
 ```
+
+We have added helper methods for "Buffer -> Uint8Array" conversions in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
 
 ## 3.1.2 - 2023-04-20
 

@@ -56,9 +56,67 @@ Read the [API docs](docs/).
 - [withdrawal](src/withdrawal.ts)
   - Withdrawal class (EIP-4895)
 
+### Buffer -> Uint8Array
+
+Starting with the Summer 2023 EthereumJS breaking release round (Util v9) all methods, constructors, constants and types of the EthereumJS libraries which took a `Buffer` instance as an input or resulted in a `Buffer` (containing) output have been updated to take in an `Uint8Array` instead and/or produce `Uint8Array` as an output.
+
+Here are some examples of the changes:
+
+```typescript
+async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> // StateManager, old
+async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> // StateManager, new
+
+hash(): Buffer // Block, old
+hash(): Uint8Array // Block, new
+
+export const KECCAK256_NULL = Buffer.from(KECCAK256_NULL_S, 'hex') // Util, old
+export const KECCAK256_NULL = hexToBytes(KECCAK256_NULL_S) // Util, new
+
+export type AccessListBufferItem = [Buffer, Buffer[]] // Tx, old (Type)
+export type AccessListBytesItem = [Uint8Array, Uint8Array[]] // Tx, new
+```
+
+As you can see, complex datastructures containing `Buffer` objects are now renamed from containing `Buffer` as an indicator key word to now having a `Bytes` containing name.
+
+### Upgrade Helpers in bytes-Module
+
+Depending on the extend of `Buffer` usage within your own libraries and other planning considerations, there are the two upgrade options to do the switch to `Uint8Array` yourself or keep `Buffer` and do transitions for input and output values.
+
+We have updated the `@ethereumjs/util` `bytes` module with helpers for the most common conversions:
+
+```typescript
+Buffer.alloc(97) // Allocate a Buffer with length 97
+new Uint8Array(97) // Allocate a Uint8Array with length 97
+
+Buffer.from('342770c0', 'hex') // Convert a hex string to a Buffer
+prefixedHexStringToBytes('0x342770c0') // Convert a hex string to a Uint8Array, Util.prefixedHexStringToBytes()
+
+`0x${myBuffer.toString('hex')}` // Convert a Buffer to a prefixed hex string
+bytesToPrefixedHexString(myUint8Array) // Convert a Uint8Array to a prefixed hex string
+
+intToBuffer(9) // Convert an integer to a Buffer, old (removed)
+intToBytes(9) // Convert an integer to a Uint8Array, Util.intToBytes()
+bytesToInt(myUint8Array) // Convert a Uint8Array to an integer, Util.bytesToInt()
+
+bigIntToBytes(myBigInt) // Convert a BigInt to a Uint8Array, Util.bigIntToBytes()
+bytesToBigInt(myUint8Array) // Convert a Uint8Array to a BigInt, Util.bytesToInt()
+
+utf8ToBytes(myUtf8String) // Converts a UTF-8 string to a Uint8Array, Util.utf8ToBytes()
+bytesToUtf8(myUint8Array) // Converts a Uint8Array to a UTF-8 string, Util.bytesToUtf8()
+
+toBuffer(v: ToBufferInputTypes) // Converts various byte compatible types to Buffer, old (removed)
+toBytes(v: ToBytesInputTypes) // Converts various byte compatible types to Uint8Array, Util.toBytes()
+```
+
+Helper methods can be imported like this:
+
+```typescript
+import { prefixedHexStringToBytes } from '@ethereumjs/util'
+```
+
 ### BigInt Support
 
-Starting with v8 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
+Starting with Util v8 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
 
 Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
