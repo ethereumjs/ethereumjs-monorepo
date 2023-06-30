@@ -102,7 +102,7 @@ describe('should test mcopy', () => {
         gasLimit: BigInt(0xffffff),
       })
 
-      assert.equal(currentMem, situation.post, 'post-memory correct')
+      assert.equal(currentMem, '0x' + situation.post, 'post-memory correct')
     })
   }
 })
