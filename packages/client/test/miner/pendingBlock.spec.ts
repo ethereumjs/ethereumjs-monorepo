@@ -25,7 +25,7 @@ import * as kzg from 'c-kzg'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import gethGenesis from '../../../block/test/testdata/4844-hardfork.json'
+import * as gethGenesis from '../../../block/test/testdata/4844-hardfork.json'
 import { Config } from '../../src/config'
 import { getLogger } from '../../src/logging'
 import { PendingBlock } from '../../src/miner'

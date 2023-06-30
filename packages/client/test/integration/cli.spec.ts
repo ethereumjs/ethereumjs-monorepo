@@ -29,12 +29,12 @@ tape('[CLI]', (t) => {
       // eslint-disable-next-line no-console
       console.log(message)
 
-      if (message.toLowerCase().includes('error')) {
+      if (message.toLowerCase().includes('error') === true) {
         t.fail(message)
         return end()
       }
-      if (message.includes('Executed')) {
-        t.pass('successfully imported blocks or headers')
+      if (message.includes('Executed') === true) {
+        t.pass('successfully executed blocks')
         return end()
       }
     })
