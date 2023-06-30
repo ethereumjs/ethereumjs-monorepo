@@ -22,8 +22,8 @@ describe('EIP-2930 Optional Access Lists tests', () => {
   it('VM should charge the right gas when using access list transactions', async () => {
     const access = [
       {
-        address: '0x' + bytesToHex(validAddress),
-        storageKeys: ['0x' + bytesToHex(validSlot)],
+        address: bytesToHex(validAddress),
+        storageKeys: [bytesToHex(validSlot)],
       },
     ]
     const txnWithAccessList = AccessListEIP2930Transaction.fromTxData(

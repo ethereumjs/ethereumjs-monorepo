@@ -42,13 +42,13 @@ const block = Block.fromBlockData(
   { common }
 )
 
-const callerPrivateKey = hexToBytes('0x44'.repeat(32))
+const callerPrivateKey = hexToBytes('0x' + '44'.repeat(32))
 const callerAddress = new Address(privateToAddress(callerPrivateKey))
 const PREBALANCE = BigInt(10000000)
 
 const address = new Address(privateToAddress(privateKey))
-const contractAddress = new Address(hexToBytes('0xff'.repeat(20)))
-const contractStorageAddress = new Address(hexToBytes('0xee'.repeat(20)))
+const contractAddress = new Address(hexToBytes('0x' + 'ff'.repeat(20)))
+const contractStorageAddress = new Address(hexToBytes('0x' + 'ee'.repeat(20)))
 
 // Bytecode to exit call frame and return the topmost stack item
 const RETURNTOP = hexToBytes('0x60005260206000F3')
@@ -488,7 +488,7 @@ describe('EIP-3074 AUTHCALL', () => {
 
     const gasUsed = await vm.stateManager.getContractStorage(
       contractStorageAddress,
-      hexToBytes('0x00'.repeat(31) + '01')
+      hexToBytes('0x' + '00'.repeat(31) + '01')
     )
     const gasBigInt = bytesToBigInt(gasUsed)
     const preGas =
@@ -531,7 +531,7 @@ describe('EIP-3074 AUTHCALL', () => {
 
     const gasUsed = await vm.stateManager.getContractStorage(
       contractStorageAddress,
-      hexToBytes('0x00'.repeat(31) + '01')
+      hexToBytes('0x' + '00'.repeat(31) + '01')
     )
     const gasBigInt = bytesToBigInt(gasUsed)
     const preGas = gas! - common.param('gasPrices', 'warmstorageread')!
@@ -545,7 +545,7 @@ describe('EIP-3074 AUTHCALL', () => {
     const code = concatBytesNoTypeCheck(
       getAuthCode(message, signature, authAddress),
       getAuthCallCode({
-        address: new Address(hexToBytes('0xcc'.repeat(20))),
+        address: new Address(hexToBytes('0x' + 'cc'.repeat(20))),
         value: 1n,
       }),
       RETURNTOP
@@ -616,7 +616,7 @@ describe('EIP-3074 AUTHCALL', () => {
 
     const gasUsed = await vm.stateManager.getContractStorage(
       contractStorageAddress,
-      hexToBytes('0x00'.repeat(31) + '01')
+      hexToBytes('0x' + '00'.repeat(31) + '01')
     )
     const gasBigInt = bytesToBigInt(gasUsed)
     const preGas =
@@ -777,7 +777,7 @@ describe('EIP-3074 AUTHCALL', () => {
     await vm.runTx({ tx, block, skipHardForkValidation: true })
     const gas = await vm.stateManager.getContractStorage(
       contractStorageAddress,
-      hexToBytes('0x00'.repeat(31) + '01')
+      hexToBytes('0x' + '00'.repeat(31) + '01')
     )
     const gasBigInt = bytesToBigInt(gas)
     assert.equal(gasBigInt, BigInt(700000 - 2), 'forwarded the right amount of gas') // The 2 is subtracted due to the GAS opcode base fee
@@ -786,7 +786,7 @@ describe('EIP-3074 AUTHCALL', () => {
   it('Should set input and output correctly', async () => {
     const message = hexToBytes('0x01')
     const signature = signMessage(message, contractAddress, privateKey)
-    const input = hexToBytes('0xaa'.repeat(32))
+    const input = hexToBytes('0x' + 'aa'.repeat(32))
     const code = concatBytesNoTypeCheck(
       getAuthCode(message, signature, authAddress),
       MSTORE(hexToBytes('0x20'), input),
@@ -810,7 +810,7 @@ describe('EIP-3074 AUTHCALL', () => {
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
     const callInput = await vm.stateManager.getContractStorage(
       contractStorageAddress,
-      hexToBytes('0x00'.repeat(31) + '02')
+      hexToBytes('0x' + '00'.repeat(31) + '02')
     )
     assert.deepEqual(callInput, input, 'authcall input ok')
     assert.deepEqual(result.execResult.returnValue, input, 'authcall output ok')

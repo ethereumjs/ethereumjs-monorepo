@@ -9,7 +9,7 @@ const pkey = hexToBytes('0x' + '20'.repeat(32))
 const GWEI = BigInt(1000000000)
 const sender = new Address(privateToAddress(pkey))
 
-const coinbase = new Address(hexToBytes('ff'.repeat(20)))
+const coinbase = new Address(hexToBytes('0x' + 'ff'.repeat(20)))
 
 const common = new Common({
   chain: Chain.Mainnet,
@@ -27,8 +27,8 @@ const block = Block.fromBlockData(
   { common }
 )
 
-const code = hexToBytes('60008080806001415AF100')
-const contractAddress = new Address(hexToBytes('ee'.repeat(20)))
+const code = hexToBytes('0x60008080806001415AF100')
+const contractAddress = new Address(hexToBytes('0x' + 'ee'.repeat(20)))
 
 async function getVM(common: Common) {
   const vm = await VM.create({ common })

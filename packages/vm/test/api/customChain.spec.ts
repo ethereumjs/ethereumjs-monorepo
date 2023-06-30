@@ -103,7 +103,7 @@ describe('VM initialized with custom state', () => {
     const storage = genesisState[contractAddress][2]
     // Returned value should be 4, because we are trying to trigger the method `retrieve`
     // in the contract, which returns the variable stored in slot 0x00..00
-    assert.equal(bytesToHex(callResult.execResult.returnValue), storage[0][1].slice(2))
+    assert.equal(bytesToHex(callResult.execResult.returnValue), storage[0][1])
   })
 
   it('setHardfork', async () => {

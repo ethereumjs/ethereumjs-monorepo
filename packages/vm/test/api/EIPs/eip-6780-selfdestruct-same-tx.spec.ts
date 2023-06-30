@@ -91,7 +91,7 @@ describe('EIP 6780 tests', () => {
     assert.equal(contract.balance, BigInt(0), 'value sent')
     assert.equal(contract.nonce, BigInt(1), 'nonce 1')
 
-    const key = hexToBytes('0x ' + '00'.repeat(31) + '01')
+    const key = hexToBytes('0x' + '00'.repeat(31) + '01')
     const storage = await vm.stateManager.getContractStorage(target, key)
 
     assert.ok(equalsBytes(storage, hexToBytes('0x01')), 'storage not cleared')

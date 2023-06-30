@@ -2,7 +2,7 @@ import { Hardfork } from '@ethereumjs/common'
 import {
   Address,
   RIPEMD160_ADDRESS_STRING,
-  bytesToHex,
+  bytesToUnprefixedHex,
   stripHexPrefix,
   toBytes,
 } from '@ethereumjs/util'
@@ -208,7 +208,7 @@ export class Journal {
    * @param address - The address (as a Uint8Array) to check
    */
   isWarmedAddress(address: Uint8Array): boolean {
-    const addressHex = bytesToHex(address)
+    const addressHex = bytesToUnprefixedHex(address)
     const warm = this.journal.has(addressHex) || this.alwaysWarmJournal.has(addressHex)
     return warm
   }
@@ -218,7 +218,7 @@ export class Journal {
    * @param addressArr - The address (as a Uint8Array) to check
    */
   addWarmedAddress(addressArr: Uint8Array): void {
-    const address = bytesToHex(addressArr)
+    const address = bytesToUnprefixedHex(addressArr)
     if (!this.journal.has(address)) {
       this.journal.set(address, new Set())
       const diffArr = this.journalDiff[this.journalDiff.length - 1][1]
@@ -237,18 +237,18 @@ export class Journal {
    * @param slot - The slot (as a Uint8Array) to check
    */
   isWarmedStorage(address: Uint8Array, slot: Uint8Array): boolean {
-    const addressHex = bytesToHex(address)
+    const addressHex = bytesToUnprefixedHex(address)
     const slots = this.journal.get(addressHex)
     if (slots === undefined) {
       if (this.alwaysWarmJournal.has(addressHex)) {
-        return this.alwaysWarmJournal.get(addressHex)!.has(bytesToHex(slot))
+        return this.alwaysWarmJournal.get(addressHex)!.has(bytesToUnprefixedHex(slot))
       }
       return false
     }
-    if (slots.has(bytesToHex(slot))) {
+    if (slots.has(bytesToUnprefixedHex(slot))) {
       return true
     } else if (this.alwaysWarmJournal.has(addressHex)) {
-      return this.alwaysWarmJournal.get(addressHex)!.has(bytesToHex(slot))
+      return this.alwaysWarmJournal.get(addressHex)!.has(bytesToUnprefixedHex(slot))
     }
     return false
   }
@@ -259,13 +259,13 @@ export class Journal {
    * @param slot - The slot (as a Uint8Array) to check
    */
   addWarmedStorage(address: Uint8Array, slot: Uint8Array): void {
-    const addressHex = bytesToHex(address)
+    const addressHex = bytesToUnprefixedHex(address)
     let slots = this.journal.get(addressHex)
     if (slots === undefined) {
       this.addWarmedAddress(address)
       slots = this.journal.get(addressHex)
     }
-    const slotStr = bytesToHex(slot)
+    const slotStr = bytesToUnprefixedHex(slot)
     if (!slots!.has(slotStr)) {
       slots!.add(slotStr)
       const diff = this.journalDiff[this.journalDiff.length - 1][1]

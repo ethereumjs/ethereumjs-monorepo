@@ -87,7 +87,7 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
   if (typeof a === 'string' && isHexPrefixed(a)) {
     a = a.slice(2)
     if (a.length % 2) a = '0' + a
-    a = hexToBytes(a)
+    a = hexToBytes('0x' + a)
   } else if (!isHex) {
     try {
       a = bigIntToBytes(BigInt(a))
@@ -96,7 +96,7 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
     }
   } else {
     if (a.length % 2) a = '0' + a
-    a = hexToBytes(a)
+    a = hexToBytes('0x' + a)
   }
 
   if (toZero && bytesToHex(a) === '0x') {

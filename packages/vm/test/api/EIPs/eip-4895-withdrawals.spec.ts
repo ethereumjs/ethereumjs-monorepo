@@ -35,7 +35,7 @@ describe('EIP4895 tests', () => {
   it('EIP4895: withdrawals execute as expected', async () => {
     const vm = await VM.create({ common })
     const withdrawals = <WithdrawalData[]>[]
-    const addresses = ['0x' + '20'.repeat(20), '0x' + '30'.repeat(20), '0x' + '40'.repeat(20)]
+    const addresses = ['20'.repeat(20), '30'.repeat(20), '40'.repeat(20)]
     const amounts = [BigInt(1000), BigInt(3000), BigInt(5000)]
 
     /*
@@ -82,7 +82,7 @@ describe('EIP4895 tests', () => {
       withdrawals.push({
         index,
         validatorIndex: index,
-        address: new Address(hexToBytes(addresses[i])),
+        address: new Address(hexToBytes('0x' + addresses[i])),
         amount: amounts[i],
       })
       index++
@@ -112,7 +112,7 @@ describe('EIP4895 tests', () => {
     await vm.runBlock({ block, generate: true })
 
     for (let i = 0; i < addresses.length; i++) {
-      const address = new Address(hexToBytes(addresses[i]))
+      const address = new Address(hexToBytes('0x' + addresses[i]))
       const amount = amounts[i]
       const balance = (await vm.stateManager.getAccount(address))!.balance
       assert.equal(BigInt(amount) * GWEI_TO_WEI, balance, 'balance ok')
