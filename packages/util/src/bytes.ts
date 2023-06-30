@@ -83,7 +83,7 @@ export const intToPrefixedHexString = function (i: number): PrefixedHexString {
  */
 export const intToBytes = function (i: number): Uint8Array {
   const hex = intToPrefixedHexString(i)
-  return hexToBytes(padToEven(hex))
+  return hexToBytes(hex)
 }
 
 /**
@@ -221,7 +221,7 @@ export const toBytes = function (v: ToBytesInputTypes): Uint8Array {
         `Cannot convert string to Uint8Array. toBytes only supports 0x-prefixed hex strings and this string was given: ${v}`
       )
     }
-    return hexToBytes(padToEven(v))
+    return hexToBytes(v)
   }
 
   if (typeof v === 'number') {
@@ -323,10 +323,11 @@ export const addHexPrefix = function (str: string): PrefixedHexString {
  */
 export function short(bytes: Uint8Array | string, maxLength: number = 50): string {
   const byteStr = bytes instanceof Uint8Array ? bytesToHex(bytes) : bytes
-  if (byteStr.length <= maxLength) {
+  const len = byteStr.slice(0, 2) === '0x' ? maxLength + 2 : maxLength
+  if (byteStr.length <= len) {
     return byteStr
   }
-  return byteStr.slice(0, maxLength) + '…'
+  return byteStr.slice(0, len) + '…'
 }
 
 /**

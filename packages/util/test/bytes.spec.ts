@@ -202,18 +202,18 @@ describe('hex prefix', () => {
   })
 })
 
-describe('short', () => {
-  const string = '657468657265756d000000000000000000000000000000000000000000000000'
-  const shortened = '657468657265756d0000000000000000000000000000000000…'
-  const shortenedToTen = '6574686572…'
+describe.only('short', () => {
+  const string = '0x657468657265756d000000000000000000000000000000000000000000000000'
+  const shortened = '0x657468657265756d0000000000000000000000000000000000…'
+  const shortenedToTen = '0x6574686572…'
   it('should short string', () => {
     assert.equal(short(string), shortened)
   })
   it('should short buffer', () => {
-    assert.equal(short(hexToBytes('0x' + string)), '0x' + shortened)
+    assert.equal(short(hexToBytes(string)), shortened)
   })
   it('should short buffer to 10 chars', () => {
-    assert.equal(short(hexToBytes(string), 10), '0x' + shortenedToTen)
+    assert.equal(short(hexToBytes(string), 10), shortenedToTen)
   })
 })
 

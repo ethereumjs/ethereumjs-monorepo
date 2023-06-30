@@ -443,7 +443,7 @@ describe('Utility Functions', () => {
 
   it('generateAddress', () => {
     const addr = generateAddress(
-      utf8ToBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
+      utf8ToBytes('990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
       toBytes(14)
     )
     assert.equal(
