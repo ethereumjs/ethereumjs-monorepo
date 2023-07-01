@@ -1322,7 +1322,7 @@ export class Blockchain implements BlockchainInterface {
       number: 0,
       stateRoot,
       withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
-      excessDataGas: common.isActivatedEIP(4844) ? BigInt(0) : undefined,
+      excessDataGas: common.isActivatedEIP(4844) ? common.genesis().excessDataGas : undefined,
     }
     if (common.consensusType() === 'poa') {
       if (common.genesis().extraData) {
