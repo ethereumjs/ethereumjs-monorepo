@@ -9,12 +9,13 @@ import {
   hexToBytes,
   toType,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 
 import type { Blockchain } from '../index.js'
 import type { Consensus, ConsensusOptions } from '../types.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
+const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('blockchain:clique')
 

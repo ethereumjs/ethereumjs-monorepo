@@ -1,5 +1,5 @@
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { Libp2pSender } from '../../../src/net/protocol'
 

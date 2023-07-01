@@ -1,7 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToBigInt, hexToBytes } from '@ethereumjs/util'
-import tape from 'tape'
-import td from 'testdouble'
+import * as tape from 'tape'
+import * as td from 'testdouble'
 
 import { Chain } from '../../../src/blockchain'
 import { Config } from '../../../src/config'

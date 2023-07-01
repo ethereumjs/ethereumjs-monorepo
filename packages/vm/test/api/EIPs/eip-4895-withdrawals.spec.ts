@@ -16,7 +16,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import genesisJSON from '../../../../client/test/testdata/geth-genesis/withdrawals.json'
+import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/withdrawals.json'
 import { VM } from '../../../src/vm'
 
 import type { WithdrawalBytes, WithdrawalData } from '@ethereumjs/util'

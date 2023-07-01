@@ -1,6 +1,6 @@
 import { Trie } from '@ethereumjs/trie'
 import { Account, bigIntToHex, bytesToBigInt, bytesToHex, toBytes } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { ethers } from 'ethers'
 
@@ -11,6 +11,7 @@ import type { Proof } from './index.js'
 import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+const { debug: createDebugLogger } = debugDefault
 
 export interface EthersStateManagerOpts {
   provider: string | ethers.JsonRpcProvider

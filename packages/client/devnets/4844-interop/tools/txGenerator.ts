@@ -11,7 +11,7 @@ import {
   hexToBytes,
 } from '@ethereumjs/util'
 
-import kzg from 'c-kzg'
+import * as kzg from 'c-kzg'
 import { randomBytes } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 
@@ -65,11 +65,7 @@ async function run(data: any) {
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 
-  const res = await client.request(
-    'eth_sendRawTransaction',
-    [bytesToHex(serializedWrapper)],
-    2.0
-  )
+  const res = await client.request('eth_sendRawTransaction', [bytesToHex(serializedWrapper)], 2.0)
 
   if (res.result.error !== undefined) {
     console.log('error sending transaction')

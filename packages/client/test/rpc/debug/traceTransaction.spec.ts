@@ -1,10 +1,10 @@
 import { Block } from '@ethereumjs/block'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../src/rpc/error-code'
-import genesisJSON from '../../testdata/geth-genesis/debug.json'
+import * as genesisJSON from '../../testdata/geth-genesis/debug.json'
 import { baseRequest, baseSetup, dummy, params, runBlockWithTxs, setupChain } from '../helpers'
 import { checkError } from '../util'
 

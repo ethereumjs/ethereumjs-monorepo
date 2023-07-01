@@ -1,6 +1,7 @@
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 
 import type { Debugger } from 'debug'
+const { debug: createDebugLogger } = debugDefault
 
 export class Cache {
   _debug: Debugger

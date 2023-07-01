@@ -1,7 +1,7 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { Address, hexToBytes, parseGethGenesisState } from '@ethereumjs/util'
 import { removeSync } from 'fs-extra'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { Config } from '../../src'
 import { createInlineClient } from '../sim/simutils'

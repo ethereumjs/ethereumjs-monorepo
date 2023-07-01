@@ -9,7 +9,7 @@ import {
   intToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 import { EventEmitter } from 'events'
 import * as snappy from 'snappyjs'
 
@@ -21,6 +21,7 @@ import type { ETH, LES } from '../protocol/index.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type { Socket } from 'net'
+const { debug: createDebugLogger } = debugDefault
 
 const DEBUG_BASE_NAME = 'rlpx:peer'
 const verbose = createDebugLogger('verbose').enabled

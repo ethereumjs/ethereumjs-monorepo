@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToHex, bytesToInt, bytesToUtf8, concatBytes, intToBytes } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
 
 import {
@@ -14,6 +14,7 @@ import {
 } from '../util.js'
 
 import type { PeerInfo } from './dpt.js'
+const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('devp2p:dpt:server')
 

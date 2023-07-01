@@ -1,5 +1,5 @@
 import { bytesToHex } from '@ethereumjs/util'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { EthereumClient } from '../../src/client'
 import { Config } from '../../src/config'

@@ -1,4 +1,4 @@
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { EthereumClient } from '../../src/client'
 import { Config, SyncMode } from '../../src/config'

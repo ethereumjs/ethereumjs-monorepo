@@ -16,7 +16,7 @@ import {
   short,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 
 import { Bloom } from './bloom/index.js'
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
@@ -31,6 +31,7 @@ import type {
 } from './types.js'
 import type { VM } from './vm.js'
 import type { EVM } from '@ethereumjs/evm'
+const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('vm:block')
 

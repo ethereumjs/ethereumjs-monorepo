@@ -2,8 +2,8 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
 import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
-import tape from 'tape'
-import td from 'testdouble'
+import * as tape from 'tape'
+import * as td from 'testdouble'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
@@ -11,7 +11,7 @@ import { getLogger } from '../../src/logging'
 import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync/skeleton'
 import { short } from '../../src/util'
 import { wait } from '../integration/util'
-import genesisJSON from '../testdata/geth-genesis/post-merge.json'
+import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
 type Subchain = {
   head: bigint
   tail: bigint

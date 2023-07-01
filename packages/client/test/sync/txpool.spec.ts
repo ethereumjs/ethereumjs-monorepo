@@ -3,7 +3,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Account, bytesToHex, concatBytes, hexToBytes, privateToAddress } from '@ethereumjs/util'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { Config } from '../../src/config'
 import { getLogger } from '../../src/logging'

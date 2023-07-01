@@ -1,7 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToInt, concatBytes, hexToBytes, intToBytes } from '@ethereumjs/util'
 import * as crypto from 'crypto'
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
 import { ecdh, ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
@@ -18,6 +18,7 @@ import {
 } from '../util.js'
 
 import { MAC } from './mac.js'
+const { debug: createDebugLogger } = debugDefault
 type Decipher = crypto.Decipher
 
 const debug = createDebugLogger('devp2p:rlpx:peer')

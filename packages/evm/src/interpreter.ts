@@ -1,6 +1,6 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { Account, MAX_UINT64, bigIntToHex, bytesToBigInt, bytesToHex } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 
 import { EOF } from './eof.js'
 import { ERROR, EvmError } from './exceptions.js'
@@ -15,6 +15,7 @@ import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes/index.js'
 import type { Block, Blockchain, Log } from './types.js'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
+const { debug: createDebugLogger } = debugDefault
 
 const debugGas = createDebugLogger('evm:gas')
 

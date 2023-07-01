@@ -1,7 +1,7 @@
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
+import * as genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 

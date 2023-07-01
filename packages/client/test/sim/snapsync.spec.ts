@@ -2,7 +2,7 @@ import { Common } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes, parseGethGenesisState, privateToAddress } from '@ethereumjs/util'
 import debug from 'debug'
 import { Client } from 'jayson/promise'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { Config } from '../../src/config'
 import { getLogger } from '../../src/logging'

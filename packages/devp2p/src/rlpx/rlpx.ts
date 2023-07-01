@@ -5,7 +5,7 @@ import {
   unprefixedHexToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'events'
 import * as net from 'net'
@@ -20,6 +20,7 @@ import type { Capabilities } from './peer.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type LRUCache from 'lru-cache'
+const { debug: createDebugLogger } = debugDefault
 
 // note: relative path only valid in .js file in dist
 

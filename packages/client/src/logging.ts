@@ -1,4 +1,4 @@
-import chalk from 'chalk'
+import * as chalk from 'chalk'
 import { createLogger, format, transports as wTransports } from 'winston'
 
 import type { Logger as WinstonLogger } from 'winston'

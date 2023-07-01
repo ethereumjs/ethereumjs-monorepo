@@ -11,7 +11,7 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import tape from 'tape'
+import * as tape from 'tape'
 
 import { Chain } from '../../../src/blockchain'
 import { Config } from '../../../src/config'

@@ -1,5 +1,5 @@
 import { bytesToHex, bytesToUnprefixedHex } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 import * as dgram from 'dgram'
 import { EventEmitter } from 'events'
 
@@ -11,6 +11,7 @@ import type { DPT, PeerInfo } from './dpt.js'
 import type { Debugger } from 'debug'
 import type { Socket as DgramSocket, RemoteInfo } from 'dgram'
 import type LRUCache from 'lru-cache'
+const { debug: createDebugLogger } = debugDefault
 
 const LRU = require('lru-cache')
 

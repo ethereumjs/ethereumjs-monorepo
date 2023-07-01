@@ -11,7 +11,7 @@ import {
   hexToBytes,
   short,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 
 import { Bloom } from './bloom/index.js'
 
@@ -33,6 +33,7 @@ import type {
   LegacyTransaction,
   TypedTransaction,
 } from '@ethereumjs/tx'
+const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')

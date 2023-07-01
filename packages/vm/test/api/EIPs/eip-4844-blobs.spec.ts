@@ -16,7 +16,7 @@ import {
 import * as kzg from 'c-kzg'
 import { assert, describe, it } from 'vitest'
 
-import genesisJSON from '../../../../client/test/testdata/geth-genesis/eip4844.json'
+import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/eip4844.json'
 import { VM } from '../../../src/vm'
 import { setBalance } from '../utils'
 

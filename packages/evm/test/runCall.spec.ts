@@ -13,7 +13,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import genesisJSON from '../../client/test/testdata/geth-genesis/eip4844.json'
+import * as genesisJSON from '../../client/test/testdata/geth-genesis/eip4844.json'
 import { ERROR } from '../src/exceptions.js'
 import { EVM } from '../src/index.js'
 
