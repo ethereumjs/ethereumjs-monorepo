@@ -169,9 +169,9 @@ If not during a checkpoint phase
 
 ___
 
-### copy
+### shallowCopy
 
-▸ **copy**(`includeCheckpoints?`): [`Trie`](Trie.md)
+▸ **shallowCopy**(`includeCheckpoints?`): [`Trie`](Trie.md)
 
 Returns a copy of the underlying trie.
 
