@@ -445,7 +445,7 @@ export const randomBytes = (length: number): Uint8Array => {
  * @returns {Uint8Array} one Uint8Array with all the elements of the original set
  * works like `Buffer.concat`
  */
-export const concatBytesNoTypeCheck = (...arrays: Uint8Array[]): Uint8Array => {
+export const concatBytes = (...arrays: Uint8Array[]): Uint8Array => {
   if (arrays.length === 1) return arrays[0]
   const length = arrays.reduce((a, arr) => a + arr.length, 0)
   const result = new Uint8Array(length)
@@ -458,4 +458,4 @@ export const concatBytesNoTypeCheck = (...arrays: Uint8Array[]): Uint8Array => {
 }
 
 // eslint-disable-next-line no-restricted-imports
-export { bytesToUtf8, concatBytes, equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
+export { bytesToUtf8, equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
