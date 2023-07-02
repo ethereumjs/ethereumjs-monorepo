@@ -3,7 +3,7 @@
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
-    "module": "commonjs",
+    "module": "Node16",
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,

@@ -8,7 +8,7 @@ import {
   concatBytes,
   ecrecover,
   equalsBytes,
-  hexStringToBytes,
+  prefixedHexStringToBytes,
   toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
@@ -31,8 +31,8 @@ import type { Common } from '@ethereumjs/common'
 type TxData = AllTypesTxData[TransactionType.FeeMarketEIP1559]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP1559]
 
-const TRANSACTION_TYPE_BYTES = hexStringToBytes(
-  TransactionType.FeeMarketEIP1559.toString(16).padStart(2, '0')
+const TRANSACTION_TYPE_BYTES = prefixedHexStringToBytes(
+  '0x' + TransactionType.FeeMarketEIP1559.toString(16).padStart(2, '0')
 )
 
 /**

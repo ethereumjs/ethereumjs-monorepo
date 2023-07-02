@@ -4,7 +4,7 @@ import {
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   equalsBytes,
-  hexStringToBytes,
+  prefixedHexStringToBytes,
   zeros,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -48,7 +48,7 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
     // Building a header with random values for constants
     try {
       const headerData = {
-        uncleHash: hexStringToBytes('123abc'),
+        uncleHash: prefixedHexStringToBytes('0x123abc'),
       }
       BlockHeader.fromHeaderData(headerData, { common })
       assert.fail('should throw')

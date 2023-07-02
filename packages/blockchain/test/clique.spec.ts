@@ -10,7 +10,7 @@ import { Blockchain } from '../src/index.js'
 import type { CliqueConsensus } from '../src/consensus/clique.js'
 import type { CliqueConfig } from '@ethereumjs/common'
 
-const COMMON = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
+const COMMON = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
 const EXTRA_DATA = new Uint8Array(97)
 const GAS_LIMIT = BigInt(8000000)
 
@@ -182,7 +182,7 @@ const addNextBlock = async (
 
 describe('Clique: Initialization', () => {
   it('should initialize a clique blockchain', async () => {
-    const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.create({ common })
 
     const head = await blockchain.getIteratorHead()
@@ -619,7 +619,7 @@ describe('Clique: Initialization', () => {
         },
       },
       {
-        baseChain: Chain.Rinkeby,
+        baseChain: Chain.Goerli,
         hardfork: Hardfork.Chainstart,
       }
     )
@@ -675,7 +675,7 @@ describe('Clique: Initialization', () => {
         },
       },
       {
-        baseChain: Chain.Rinkeby,
+        baseChain: Chain.Goerli,
         hardfork: Hardfork.Chainstart,
       }
     )

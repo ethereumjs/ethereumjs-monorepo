@@ -6,8 +6,13 @@ import {
   isFeeMarketEIP1559Tx,
   isLegacyTx,
 } from '@ethereumjs/tx'
-import { Account, Address, bytesToHex, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
-import Heap = require('qheap')
+import {
+  Account,
+  Address,
+  bytesToHex,
+  equalsBytes,
+  prefixedHexStringToBytes,
+} from '@ethereumjs/util'
 
 import type { Config } from '../config'
 import type { Peer } from '../net/peer'
@@ -20,6 +25,9 @@ import type {
   TypedTransaction,
 } from '@ethereumjs/tx'
 import type { VM } from '@ethereumjs/vm'
+import type QHeap from 'qheap'
+
+const Heap = require('qheap')
 
 // Configuration constants
 const MIN_GAS_PRICE_BUMP_PERCENT = 10
@@ -708,7 +716,9 @@ export class TxPool {
         .map((obj) => obj.tx)
         .sort((a, b) => Number(a.nonce - b.nonce))
       // Check if the account nonce matches the lowest known tx nonce
-      let account = await vm.stateManager.getAccount(new Address(hexStringToBytes(address)))
+      let account = await vm.stateManager.getAccount(
+        new Address(prefixedHexStringToBytes('0x' + address))
+      )
       if (account === undefined) {
         account = new Account()
       }
@@ -731,10 +741,10 @@ export class TxPool {
       byNonce.set(address, txsSortedByNonce)
     }
     // Initialize a price based heap with the head transactions
-    const byPrice = new Heap<TypedTransaction>({
+    const byPrice = new Heap({
       comparBefore: (a: TypedTransaction, b: TypedTransaction) =>
         this.normalizedGasPrice(b, baseFee) - this.normalizedGasPrice(a, baseFee) < BigInt(0),
-    })
+    }) as QHeap<TypedTransaction>
     for (const [address, txs] of byNonce) {
       byPrice.insert(txs[0])
       byNonce.set(address, txs.slice(1))

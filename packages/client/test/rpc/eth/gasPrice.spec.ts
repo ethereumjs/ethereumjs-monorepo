@@ -2,6 +2,7 @@ import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { bigIntToHex, intToPrefixedHexString } from '@ethereumjs/util'
 import * as tape from 'tape'
 
+import * as pow from '../../testdata/geth-genesis/pow.json'
 import {
   baseRequest,
   dummy,
@@ -10,8 +11,6 @@ import {
   runBlockWithTxs,
   setupChain,
 } from '../helpers'
-
-import pow = require('./../../testdata/geth-genesis/pow.json')
 
 const method = 'eth_gasPrice'
 

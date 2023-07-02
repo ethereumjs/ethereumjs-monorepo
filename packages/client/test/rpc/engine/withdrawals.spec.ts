@@ -3,7 +3,7 @@ import { Withdrawal, bigIntToHex, bytesToHex, intToPrefixedHexString } from '@et
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import genesisJSON = require('../../testdata/geth-genesis/withdrawals.json')
+import * as genesisJSON from '../../testdata/geth-genesis/withdrawals.json'
 import { baseRequest, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 

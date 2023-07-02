@@ -14,8 +14,8 @@ import {
   short,
   zeros,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
-import { promisify } from 'util'
+import debugDefault from 'debug'
+import * as mcl from 'mcl-wasm'
 
 import { EOF, getEOFCode } from './eof.js'
 import { ERROR, EvmError } from './exceptions.js'
@@ -43,6 +43,7 @@ import type {
   Log,
 } from './types.js'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
+const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('evm:evm')
 const debugGas = createDebugLogger('evm:gas')
@@ -50,11 +51,9 @@ const debugPrecompiles = createDebugLogger('evm:precompiles')
 
 // very ugly way to detect if we are running in a browser
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
-let mcl: any
 let mclInitPromise: any
 
 if (isBrowser() === false) {
-  mcl = require('mcl-wasm')
   mclInitPromise = mcl.init(mcl.BLS12_381)
 }
 
@@ -325,14 +324,14 @@ export class EVM implements EVMInterface {
       }
     }
 
-    // We cache this promisified function as it's called from the main execution loop, and
-    // promisifying each time has a huge performance impact.
-    this._emit = <(topic: string, data: any) => Promise<void>>(
-      promisify(this.events.emit.bind(this.events))
-    )
+    this._emit = async (topic: string, data: any): Promise<void> => {
+      return new Promise((resolve) => this.events.emit(topic as keyof EVMEvents, data, resolve))
+    }
 
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
-    this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
+    // Additional window check is to prevent vite browser bundling (and potentially other) to break
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
   }
 
   protected async init(): Promise<void> {

@@ -1,4 +1,4 @@
-import { hexStringToBytes } from '@ethereumjs/util'
+import { prefixedHexStringToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Common } from '../src/common'
@@ -59,8 +59,8 @@ describe('[Utils/Parse]', () => {
   it('should successfully parse kiln genesis and set forkhash', async () => {
     const common = Common.fromGethGenesis(gethGenesisKilnJSON, {
       chain: 'customChain',
-      genesisHash: hexStringToBytes(
-        '51c7fe41be669f69c45c33a56982cbde405313342d9e2b00d7c91a7b284dd4f8'
+      genesisHash: prefixedHexStringToBytes(
+        '0x51c7fe41be669f69c45c33a56982cbde405313342d9e2b00d7c91a7b284dd4f8'
       ),
       mergeForkIdPostMerge: false,
     })

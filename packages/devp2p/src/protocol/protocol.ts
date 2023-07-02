@@ -1,4 +1,4 @@
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 import { EventEmitter } from 'events'
 
 import { DISCONNECT_REASONS } from '../rlpx/peer.js'
@@ -6,6 +6,7 @@ import { devp2pDebug } from '../util.js'
 
 import type { Peer } from '../rlpx/peer.js'
 import type { Debugger } from 'debug'
+const { debug: createDebugLogger } = debugDefault
 
 export enum EthProtocol { // What does this represent?
   ETH = 'eth',

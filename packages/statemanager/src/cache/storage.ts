@@ -1,5 +1,5 @@
-import { bytesToHex, hexStringToBytes } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import { bytesToHex, prefixedHexStringToBytes } from '@ethereumjs/util'
+import debugDefault from 'debug'
 import { OrderedMap } from 'js-sdsl'
 import { LRUCache } from 'lru-cache'
 
@@ -8,6 +8,7 @@ import { CacheType } from './types.js'
 
 import type { CacheOpts } from './types.js'
 import type { Address } from '@ethereumjs/util'
+const { debug: createDebugLogger } = debugDefault
 
 /**
  * key -> storage mapping
@@ -116,7 +117,7 @@ export class StorageCache extends Cache {
 
   /**
    * Returns the queried slot as the RLP encoded storage value
-   * hexStringToBytes('80'): slot is known to be empty
+   * prefixedHexStringToBytes('0x80'): slot is known to be empty
    * undefined: slot is not in cache
    * @param address - Address of account
    * @param key - Storage key
@@ -159,14 +160,14 @@ export class StorageCache extends Cache {
       if (!storageMap) {
         storageMap = new Map()
       }
-      storageMap.set(keyHex, hexStringToBytes('80'))
+      storageMap.set(keyHex, prefixedHexStringToBytes('0x80'))
       this._lruCache!.set(addressHex, storageMap)
     } else {
       let storageMap = this._orderedMapCache!.getElementByKey(addressHex)
       if (!storageMap) {
         storageMap = new Map()
       }
-      storageMap.set(keyHex, hexStringToBytes('80'))
+      storageMap.set(keyHex, prefixedHexStringToBytes('0x80'))
       this._orderedMapCache!.setElement(addressHex, storageMap)
     }
 

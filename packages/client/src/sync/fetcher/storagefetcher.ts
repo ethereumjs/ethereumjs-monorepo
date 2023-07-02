@@ -7,7 +7,7 @@ import {
   equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 
 import { LevelDB } from '../../execution/level'
 import { short } from '../../util'
@@ -19,6 +19,7 @@ import type { StorageData } from '../../net/protocol/snapprotocol'
 import type { FetcherOptions } from './fetcher'
 import type { Job } from './types'
 import type { Debugger } from 'debug'
+const { debug: createDebugLogger } = debugDefault
 
 const TOTAL_RANGE_END = BigInt(2) ** BigInt(256) - BigInt(1)
 

@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToHex, equalsBytes, hexStringToBytes, toBytes, zeros } from '@ethereumjs/util'
+import { bytesToHex, equalsBytes, prefixedHexStringToBytes, toBytes, zeros } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 // explicitly import util, needed for karma-typescript bundling
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, simple-import-sort/imports
@@ -127,7 +127,7 @@ describe('[Block]: block functions', () => {
   })
 
   it('should initialize with null parameters without throwing', () => {
-    const common = new Common({ chain: Chain.Ropsten })
+    const common = new Common({ chain: Chain.Goerli })
     const opts = { common }
     assert.doesNotThrow(function () {
       Block.fromBlockData({}, opts)
@@ -135,7 +135,7 @@ describe('[Block]: block functions', () => {
   })
 
   it('should throw when trying to initialize with uncle headers on a PoA network', () => {
-    const common = new Common({ chain: Chain.Rinkeby })
+    const common = new Common({ chain: Chain.Mainnet })
     const uncleBlock = Block.fromBlockData(
       { header: { extraData: new Uint8Array(117) } },
       { common }
@@ -192,7 +192,7 @@ describe('[Block]: block functions', () => {
   })
 
   it('should test transaction validation with legacy tx in london', async () => {
-    const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.London })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const blockRlp = toBytes(testDataPreLondon.blocks[0].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     await testTransactionValidation(block)
@@ -225,18 +225,10 @@ describe('[Block]: block functions', () => {
     assert.equal(genesisBlock.isGenesis(), true)
   })
 
-  it('should test isGenesis (ropsten)', () => {
-    const common = new Common({ chain: Chain.Ropsten })
-    const block = Block.fromBlockData({ header: { number: 1 } }, { common })
-    assert.notEqual(block.isGenesis(), true)
-    const genesisBlock = Block.fromBlockData({ header: { number: 0 } }, { common })
-    assert.equal(genesisBlock.isGenesis(), true)
-  })
-
   it('should test genesis hashes (mainnet default)', () => {
-    const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
-    const rlp = hexStringToBytes(testDataGenesis.test.genesis_rlp_hex)
-    const hash = hexStringToBytes(testDataGenesis.test.genesis_hash)
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const rlp = prefixedHexStringToBytes('0x' + testDataGenesis.test.genesis_rlp_hex)
+    const hash = prefixedHexStringToBytes('0x' + testDataGenesis.test.genesis_hash)
     const block = Block.fromRLPSerializedBlock(rlp, { common })
     assert.ok(equalsBytes(block.hash(), hash), 'genesis hash match')
   })
@@ -280,7 +272,7 @@ describe('[Block]: block functions', () => {
   it('DAO hardfork', () => {
     const blockData = RLP.decode(testDataPreLondon2.blocks[0].rlp) as NestedUint8Array
     // Set block number from test block to mainnet DAO fork block 1920000
-    blockData[0][8] = hexStringToBytes('1D4C00')
+    blockData[0][8] = prefixedHexStringToBytes('0x1D4C00')
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Dao })
     assert.throws(
@@ -293,7 +285,7 @@ describe('[Block]: block functions', () => {
     ) // eslint-disable-line
 
     // Set extraData to dao-hard-fork
-    blockData[0][12] = hexStringToBytes('64616f2d686172642d666f726b')
+    blockData[0][12] = prefixedHexStringToBytes('0x64616f2d686172642d666f726b')
 
     assert.doesNotThrow(function () {
       Block.fromValuesArray(blockData as BlockBytes, { common })

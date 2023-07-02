@@ -56,14 +56,14 @@ describe('LES simulator tests', () => {
       opts.status0 = Object.assign({}, status)
       opts.status1 = Object.assign({}, status)
       opts.onPeerError0 = function (err: Error, rlpxs: any) {
-        const msg = 'NetworkId mismatch: 01 / 03'
+        const msg = 'NetworkId mismatch: 01 / aa36a7'
         assert.equal(err.message, msg, `should emit error: ${msg}`)
         util.destroyRLPXs(rlpxs)
         resolve(undefined)
       }
 
       const c1 = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-      const c2 = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.London })
+      const c2 = new Common({ chain: Chain.Sepolia, hardfork: Hardfork.London })
       util.twoPeerMsgExchange(it, opts, capabilities, [c1, c2], 41591)
     })
   })

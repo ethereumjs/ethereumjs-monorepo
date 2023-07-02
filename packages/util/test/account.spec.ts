@@ -8,7 +8,6 @@ import {
   bytesToPrefixedHexString,
   generateAddress,
   generateAddress2,
-  hexStringToBytes,
   importPublic,
   intToBytes,
   intToPrefixedHexString,
@@ -17,6 +16,7 @@ import {
   isValidPrivate,
   isValidPublic,
   padToEven,
+  prefixedHexStringToBytes,
   privateToAddress,
   privateToPublic,
   publicToAddress,
@@ -52,7 +52,7 @@ describe('Account', () => {
       '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', // storageRoot
       '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470', // codeHash
     ]
-    const account = Account.fromValuesArray(raw.map((el) => hexStringToBytes(el)))
+    const account = Account.fromValuesArray(raw.map((el) => prefixedHexStringToBytes(el)))
 
     assert.equal(account.nonce, BigInt(2), 'should have correct nonce')
     assert.equal(account.balance, BigInt(900), 'should have correct balance')

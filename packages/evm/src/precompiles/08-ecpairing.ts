@@ -1,12 +1,11 @@
 import { short } from '@ethereumjs/util'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
+import { ec_pairing } from 'rustbn-wasm'
 
 import { OOGResult } from '../evm.js'
 
 import type { ExecResult } from '../evm.js'
 import type { PrecompileInput } from './types.js'
-
-const bn128 = require('rustbn.js')
 
 export function precompile08(opts: PrecompileInput): ExecResult {
   const inputData = opts.data
@@ -30,7 +29,7 @@ export function precompile08(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  const returnData = hexToBytes(bn128.pairing(bytesToHex(inputData)))
+  const returnData = hexToBytes(ec_pairing(bytesToHex(inputData)))
 
   // check ecpairing success or failure by comparing the output length
   if (returnData.length !== 32) {

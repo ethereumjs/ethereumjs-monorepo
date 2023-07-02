@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { bytesToHex, hexStringToBytes } from '@ethereumjs/util'
+import { bytesToHex, prefixedHexStringToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { EVM } from '../../src'
@@ -61,7 +61,7 @@ describe('should test mcopy', () => {
   for (const situation of situations) {
     it('should produce correct output', async () => {
       // create bytecode
-      let bytecode = ''
+      let bytecode = '0x'
       // prepare the memory
       for (let i = 0; i < situation.pre.length / 2; i++) {
         const start = i * 2
@@ -98,7 +98,7 @@ describe('should test mcopy', () => {
       })
 
       await evm.runCall({
-        data: hexStringToBytes(bytecode),
+        data: prefixedHexStringToBytes(bytecode),
         gasLimit: BigInt(0xffffff),
       })
 

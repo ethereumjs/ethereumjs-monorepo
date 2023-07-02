@@ -16,8 +16,8 @@ import {
   commitmentsToVersionedHashes,
   equalsBytes,
   getBlobs,
-  hexStringToBytes,
   initKZG,
+  prefixedHexStringToBytes,
   randomBytes,
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
@@ -25,6 +25,7 @@ import * as kzg from 'c-kzg'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
+import * as gethGenesis from '../../../block/test/testdata/4844-hardfork.json'
 import { Config } from '../../src/config'
 import { getLogger } from '../../src/logging'
 import { PendingBlock } from '../../src/miner'
@@ -34,13 +35,17 @@ import { mockBlockchain } from '../rpc/mockBlockchain'
 import type { TypedTransaction } from '@ethereumjs/tx'
 
 const A = {
-  address: new Address(hexStringToBytes('0b90087d864e82a284dca15923f3776de6bb016f')),
-  privateKey: hexStringToBytes('64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
+  address: new Address(prefixedHexStringToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
+  privateKey: prefixedHexStringToBytes(
+    '0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'
+  ),
 }
 
 const B = {
-  address: new Address(hexStringToBytes('6f62d8382bf2587361db73ceca28be91b2acb6df')),
-  privateKey: hexStringToBytes('2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'),
+  address: new Address(prefixedHexStringToBytes('0x6f62d8382bf2587361db73ceca28be91b2acb6df')),
+  privateKey: prefixedHexStringToBytes(
+    '0x2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'
+  ),
 }
 
 const setBalance = async (vm: VM, address: Address, balance: bigint) => {
@@ -49,7 +54,15 @@ const setBalance = async (vm: VM, address: Address, balance: bigint) => {
   await vm.stateManager.commit()
 }
 
-const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berlin })
+const common = new Common({ chain: CommonChain.Goerli, hardfork: Hardfork.Berlin })
+// Unschedule any timestamp since tests are not configured for timestamps
+common
+  .hardforks()
+  .filter((hf) => hf.timestamp !== undefined)
+  .map((hf) => {
+    hf.timestamp = undefined
+  })
+
 const config = new Config({
   transports: [],
   common,
@@ -320,7 +333,6 @@ tape('[PendingBlock]', async (t) => {
       initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
       // eslint-disable-next-line
     } catch {}
-    const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,

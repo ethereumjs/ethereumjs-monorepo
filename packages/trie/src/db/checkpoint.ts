@@ -1,9 +1,29 @@
-import { KeyEncoding, ValueEncoding, bytesToHex, hexStringToBytes } from '@ethereumjs/util'
+import { KeyEncoding, ValueEncoding, bytesToHex, padToEven } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils.js'
 import { LRUCache } from 'lru-cache'
 
 import type { Checkpoint, CheckpointDBOpts } from '../types.js'
 import type { BatchDBOp, DB, DelBatch, PutBatch } from '@ethereumjs/util'
+
+/**
+ * In order to not-prefix the key/values in the DB each time (this copies the key/values each time: expensive)
+ * Use this "private" method (see `prefixedHexStringToBytes` from @ethereumjs/util for reference)
+ * @param hex
+ * @returns
+ */
+function _nonPrefixedHexStringToBytes(hex: string) {
+  if (hex.length % 2 !== 0) {
+    hex = padToEven(hex)
+  }
+
+  const byteLen = hex.length / 2
+  const bytes = new Uint8Array(byteLen)
+  for (let i = 0; i < byteLen; i++) {
+    const byte = parseInt(hex.slice(i * 2, (i + 1) * 2), 16)
+    bytes[i] = byte
+  }
+  return bytes
+}
 
 /**
  * DB is a thin wrapper around the underlying levelup db,
@@ -99,12 +119,12 @@ export class CheckpointDB implements DB {
         if (value === undefined) {
           batchOp.push({
             type: 'del',
-            key: hexStringToBytes(key),
+            key: _nonPrefixedHexStringToBytes(key),
           })
         } else {
           batchOp.push({
             type: 'put',
-            key: hexStringToBytes(key),
+            key: _nonPrefixedHexStringToBytes(key),
             value,
           })
         }

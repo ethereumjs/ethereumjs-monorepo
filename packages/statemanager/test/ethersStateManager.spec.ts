@@ -6,7 +6,7 @@ import {
   Address,
   bigIntToBytes,
   equalsBytes,
-  hexStringToBytes,
+  prefixedHexStringToBytes,
   setLengthLeft,
   utf8ToBytes,
 } from '@ethereumjs/util'
@@ -216,8 +216,8 @@ describe('runTx custom transaction test', () => {
       const vm = await VM.create({ common, stateManager: <any>state }) // TODO fix the type DefaultStateManager back to StateManagerInterface in VM
 
       const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
-      const privateKey = hexStringToBytes(
-        'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+      const privateKey = prefixedHexStringToBytes(
+        '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
       )
       const tx = FeeMarketEIP1559Transaction.fromTxData(
         { to: vitalikDotEth, value: '0x100', gasLimit: 500000n, maxFeePerGas: 7 },

@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToBigInt, hexStringToBytes } from '@ethereumjs/util'
+import { bytesToBigInt, prefixedHexStringToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
@@ -175,18 +175,24 @@ tape('[AccountFetcher]', async (t) => {
     const fetcher = new AccountFetcher({
       config,
       pool,
-      root: hexStringToBytes('39ed8daab7679c0b1b7cf3667c50108185d4d9d1431c24a1c35f696a58277f8f'),
+      root: prefixedHexStringToBytes(
+        '0x39ed8daab7679c0b1b7cf3667c50108185d4d9d1431c24a1c35f696a58277f8f'
+      ),
       first: bytesToBigInt(
-        hexStringToBytes('0000000000000000000000000000000000000000000000000000000000000001')
+        prefixedHexStringToBytes(
+          '0x0000000000000000000000000000000000000000000000000000000000000001'
+        )
       ),
       count: bytesToBigInt(
-        hexStringToBytes('000010c6f7a0b5ed8d36b4c7f34938583621fafc8b0079a2834d26fa3fcc9ea9')
+        prefixedHexStringToBytes(
+          '0x000010c6f7a0b5ed8d36b4c7f34938583621fafc8b0079a2834d26fa3fcc9ea9'
+        )
       ),
     })
     t.ok(fetcher.storageFetcher !== undefined, 'storageFetcher should be created')
 
     const task = { count: 3, first: BigInt(1) }
-    const resData = RLP.decode(hexStringToBytes(_accountRangeRLP))
+    const resData = RLP.decode(prefixedHexStringToBytes('0x' + _accountRangeRLP))
     const { accounts, proof } = p.decode(
       p.messages.filter((message) => message.name === 'AccountRange')[0],
       resData

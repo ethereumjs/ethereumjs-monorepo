@@ -1,6 +1,6 @@
 import { Trie } from '@ethereumjs/trie'
 import { Account, bigIntToHex, bytesToBigInt, bytesToHex, toBytes } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { ethers } from 'ethers'
 
@@ -11,6 +11,7 @@ import type { Proof } from './index.js'
 import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+const { debug: createDebugLogger } = debugDefault
 
 export interface EthersStateManagerOpts {
   provider: string | ethers.JsonRpcProvider
@@ -28,7 +29,10 @@ export class EthersStateManager implements EVMStateManagerInterface {
   private DEBUG: boolean
   constructor(opts: EthersStateManagerOpts) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
-    this.DEBUG = process?.env?.DEBUG?.includes('ethjs') === true
+    // Additional window check is to prevent vite browser bundling (and potentially other) to break
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+
     this._debug = createDebugLogger('statemanager:ethersStateManager')
     if (typeof opts.provider === 'string') {
       this.provider = new ethers.JsonRpcProvider(opts.provider)

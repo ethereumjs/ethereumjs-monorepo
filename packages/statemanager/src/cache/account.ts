@@ -1,5 +1,5 @@
 import { bytesToHex } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 import { OrderedMap } from 'js-sdsl'
 import { LRUCache } from 'lru-cache'
 
@@ -8,6 +8,7 @@ import { CacheType } from './types.js'
 
 import type { CacheOpts } from './types.js'
 import type { Account, Address } from '@ethereumjs/util'
+const { debug: createDebugLogger } = debugDefault
 
 /**
  * account: undefined

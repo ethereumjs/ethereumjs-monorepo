@@ -15,6 +15,8 @@ import {
 import * as kzg from 'c-kzg'
 import * as tape from 'tape'
 
+import * as gethGenesis from '../../../../block/test/testdata/4844-hardfork.json'
+import * as pow from '../../testdata/geth-genesis/pow.json'
 import {
   baseRequest,
   dummy,
@@ -23,8 +25,6 @@ import {
   runBlockWithTxs,
   setupChain,
 } from '../helpers'
-
-import pow = require('./../../testdata/geth-genesis/pow.json')
 
 const method = 'eth_getTransactionReceipt'
 
@@ -102,7 +102,6 @@ tape(`${method}: get dataGasUsed/dataGasPrice in blob tx receipt`, async (t) => 
       initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
       //eslint-disable-next-line
     } catch {}
-    const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
