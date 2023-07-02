@@ -67,23 +67,23 @@ tape('[LesProtocol]', (t) => {
     })
     let status = p.encodeStatus()
     t.ok(
-      bytesToHex(status.networkId) === '01' &&
-        bytesToHex(status.headTd) === '64' &&
+      bytesToHex(status.networkId) === '0x01' &&
+        bytesToHex(status.headTd) === '0x64' &&
         status.headHash === '0xaa' &&
-        bytesToHex(status.headNum) === '64' &&
+        bytesToHex(status.headNum) === '0x64' &&
         status.genesisHash === '0xbb' &&
-        bytesToHex(status.forkID[0]) === 'fc64ec04' &&
-        bytesToHex(status.forkID[1]) === '118c30' &&
-        bytesToHex(status.recentTxLookup) === '01' &&
+        bytesToHex(status.forkID[0]) === '0xfc64ec04' &&
+        bytesToHex(status.forkID[1]) === '0x118c30' &&
+        bytesToHex(status.recentTxLookup) === '0x01' &&
         status.serveHeaders === 1 &&
         status.serveChainSince === 0 &&
         status.serveStateSince === 0 &&
         //status.txRelay === 1 && TODO: uncomment with client tx pool functionality
-        bytesToHex(status['flowControl/BL']) === '03e8' &&
-        bytesToHex(status['flowControl/MRR']) === '0a' &&
-        bytesToHex(status['flowControl/MRC'][0][0]) === '02' &&
-        bytesToHex(status['flowControl/MRC'][0][1]) === '0a' &&
-        bytesToHex(status['flowControl/MRC'][0][2]) === '0a',
+        bytesToHex(status['flowControl/BL']) === '0x03e8' &&
+        bytesToHex(status['flowControl/MRR']) === '0x0a' &&
+        bytesToHex(status['flowControl/MRC'][0][0]) === '0x02' &&
+        bytesToHex(status['flowControl/MRC'][0][1]) === '0x0a' &&
+        bytesToHex(status['flowControl/MRC'][0][2]) === '0x0a',
       'encode status'
     )
     status = { ...status, networkId: [0x01] }
@@ -94,9 +94,9 @@ tape('[LesProtocol]', (t) => {
         status.headHash === '0xaa' &&
         status.headNum === BigInt(100) &&
         status.genesisHash === '0xbb' &&
-        bytesToHex(status.forkID[0]) === 'fc64ec04' &&
-        bytesToHex(status.forkID[1]) === '118c30' &&
-        bytesToHex(status.recentTxLookup) === '01' &&
+        bytesToHex(status.forkID[0]) === '0xfc64ec04' &&
+        bytesToHex(status.forkID[1]) === '0x118c30' &&
+        bytesToHex(status.recentTxLookup) === '0x01' &&
         status.serveHeaders === true &&
         status.serveChainSince === 0 &&
         status.serveStateSince === 0 &&

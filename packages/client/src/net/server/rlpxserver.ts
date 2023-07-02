@@ -1,5 +1,5 @@
 import { DPT as Devp2pDPT, RLPx as Devp2pRLPx } from '@ethereumjs/devp2p'
-import { bytesToHex, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
+import { bytesToUnprefixedHex, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 
 import { Event } from '../../types'
 import { getClientVersion } from '../../util'
@@ -105,7 +105,7 @@ export class RlpxServer extends Server {
         ports: { discovery: this.config.port, listener: this.config.port },
       }
     }
-    const id = bytesToHex(this.rlpx._id)
+    const id = bytesToUnprefixedHex(this.rlpx._id)
     return {
       enode: `enode://${id}@${listenAddr}`,
       id,
@@ -188,7 +188,7 @@ export class RlpxServer extends Server {
       return false
     }
     this.dpt!.banPeer(peerId, maxAge)
-    this.rlpx!.disconnect(hexToBytes(peerId))
+    this.rlpx!.disconnect(hexToBytes('0x' + peerId))
     return true
   }
 
@@ -253,7 +253,7 @@ export class RlpxServer extends Server {
       this.rlpx.on('peer:added', async (rlpxPeer: Devp2pRLPxPeer) => {
         let peer: RlpxPeer | null = new RlpxPeer({
           config: this.config,
-          id: bytesToHex(rlpxPeer.getId()!),
+          id: bytesToUnprefixedHex(rlpxPeer.getId()!),
           host: rlpxPeer._socket.remoteAddress!,
           port: rlpxPeer._socket.remotePort!,
           protocols: Array.from(this.protocols),
@@ -275,7 +275,7 @@ export class RlpxServer extends Server {
       })
 
       this.rlpx.on('peer:removed', (rlpxPeer: Devp2pRLPxPeer, reason: any) => {
-        const id = bytesToHex(rlpxPeer.getId() as Uint8Array)
+        const id = bytesToUnprefixedHex(rlpxPeer.getId() as Uint8Array)
         const peer = this.peers.get(id)
         if (peer) {
           this.peers.delete(peer.id)
