@@ -99,23 +99,6 @@ export const hexToBytes = (hex: string): Uint8Array => {
     }
   }
 
-  /*
-  if (hex.length % 2 === 0) {
-    // Hex string has even length and should not be padded
-    for (let i = 0; i < byteLen; i++) {
-      const startStr = (i + 1) * 2
-      const byte = parseInt(hex.slice(startStr, startStr + 2), 16)
-      bytes[i] = byte
-    }
-  } else if (hex.length > 2) {
-    // Hex length has odd length and should be padded
-    bytes[0] = parseInt(hex.slice(2,3))
-    for (let i = 0; i < byteLen; i++) {
-      const startStr = (i + 1) * 2 + 1
-      const byte = parseInt(hex.slice(startStr, startStr + 2), 16)
-      bytes[i + 1] = byte
-    }
-  }*/
   return bytes
 }
 
