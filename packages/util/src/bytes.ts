@@ -94,7 +94,7 @@ export const hexToBytes = (hex: string): Uint8Array => {
  * @param {number} i
  * @return {PrefixedHexString}
  */
-export const intToPrefixedHexString = (i: number): PrefixedHexString => {
+export const intToHex = (i: number): PrefixedHexString => {
   if (!Number.isSafeInteger(i) || i < 0) {
     throw new Error(`Received an invalid integer type: ${i}`)
   }
@@ -107,7 +107,7 @@ export const intToPrefixedHexString = (i: number): PrefixedHexString => {
  * @return {Uint8Array}
  */
 export const intToBytes = (i: number): Uint8Array => {
-  const hex = intToPrefixedHexString(i)
+  const hex = intToHex(i)
   return hexToBytes(hex)
 }
 

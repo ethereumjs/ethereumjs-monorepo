@@ -1,4 +1,4 @@
-import { bigIntToHex, bytesToHex, intToPrefixedHexString } from '@ethereumjs/util'
+import { bigIntToHex, bytesToHex, intToHex } from '@ethereumjs/util'
 
 import type { Block } from '@ethereumjs/block'
 import type { JsonRpcTx, TypedTransaction } from '@ethereumjs/tx'
@@ -16,14 +16,14 @@ export const jsonRpcTx = (tx: TypedTransaction, block?: Block, txIndex?: number)
     gasPrice: txJSON.gasPrice ?? txJSON.maxFeePerGas!,
     maxFeePerGas: txJSON.maxFeePerGas,
     maxPriorityFeePerGas: txJSON.maxPriorityFeePerGas,
-    type: intToPrefixedHexString(tx.type),
+    type: intToHex(tx.type),
     accessList: txJSON.accessList,
     chainId: txJSON.chainId,
     hash: bytesToHex(tx.hash()),
     input: txJSON.data!,
     nonce: txJSON.nonce!,
     to: tx.to?.toString() ?? null,
-    transactionIndex: txIndex !== undefined ? intToPrefixedHexString(txIndex) : null,
+    transactionIndex: txIndex !== undefined ? intToHex(txIndex) : null,
     value: txJSON.value!,
     v: txJSON.v!,
     r: txJSON.r!,

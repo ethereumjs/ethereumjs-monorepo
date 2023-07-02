@@ -1,4 +1,4 @@
-import { intToPrefixedHexString, isHexPrefixed, stripHexPrefix } from '@ethereumjs/util'
+import { intToHex, isHexPrefixed, stripHexPrefix } from '@ethereumjs/util'
 
 import { Hardfork } from './enums.js'
 
@@ -57,7 +57,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
   }
   // geth may use number for timestamp
   if (!isHexPrefixed(timestamp)) {
-    timestamp = intToPrefixedHexString(parseInt(timestamp))
+    timestamp = intToHex(parseInt(timestamp))
   }
   // geth may not give us a nonce strictly formatted to an 8 byte hex string
   if (nonce.length !== 18) {

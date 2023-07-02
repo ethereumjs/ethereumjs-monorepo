@@ -13,7 +13,7 @@ import {
   fromSigned,
   hexToBytes,
   intToBytes,
-  intToPrefixedHexString,
+  intToHex,
   intToUnpaddedBytes,
   isZeroAddress,
   setLengthLeft,
@@ -295,66 +295,31 @@ describe('intToBytes', () => {
   })
 })
 
-describe('intToPrefixedHexString', () => {
+describe('intToHex', () => {
   it('should throw on wrong input', () => {
+    assert.throws(() => intToHex(<any>'test'), undefined, undefined, 'throws on string')
+    assert.throws(() => intToHex(<any>Infinity), undefined, undefined, 'throws on +Infinity')
+    assert.throws(() => intToHex(<any>-Infinity), undefined, undefined, 'throws on -Infinity')
+    assert.throws(() => intToHex(<any>NaN), undefined, undefined, 'throws on NaN')
+    assert.throws(() => intToHex(<any>undefined), undefined, undefined, 'throws on undefined')
+    assert.throws(() => intToHex(<any>null), undefined, undefined, 'throws on null')
+    assert.throws(() => intToHex(<any>-1), undefined, undefined, 'throws on negative numbers')
+    assert.throws(() => intToHex(<any>1.05), undefined, undefined, 'throws on decimal numbers')
+    assert.throws(() => intToHex(<any>{}), undefined, undefined, 'throws on objects')
+    assert.throws(() => intToHex(<any>true), undefined, undefined, 'throws on true')
+    assert.throws(() => intToHex(<any>false), undefined, undefined, 'throws on false')
+    assert.throws(() => intToHex(<any>[]), undefined, undefined, 'throws on arrays')
+    assert.throws(() => intToHex(<any>(() => {})), undefined, undefined, 'throws on arrays')
     assert.throws(
-      () => intToPrefixedHexString(<any>'test'),
-      undefined,
-      undefined,
-      'throws on string'
-    )
-    assert.throws(
-      () => intToPrefixedHexString(<any>Infinity),
-      undefined,
-      undefined,
-      'throws on +Infinity'
-    )
-    assert.throws(
-      () => intToPrefixedHexString(<any>-Infinity),
-      undefined,
-      undefined,
-      'throws on -Infinity'
-    )
-    assert.throws(() => intToPrefixedHexString(<any>NaN), undefined, undefined, 'throws on NaN')
-    assert.throws(
-      () => intToPrefixedHexString(<any>undefined),
-      undefined,
-      undefined,
-      'throws on undefined'
-    )
-    assert.throws(() => intToPrefixedHexString(<any>null), undefined, undefined, 'throws on null')
-    assert.throws(
-      () => intToPrefixedHexString(<any>-1),
-      undefined,
-      undefined,
-      'throws on negative numbers'
-    )
-    assert.throws(
-      () => intToPrefixedHexString(<any>1.05),
-      undefined,
-      undefined,
-      'throws on decimal numbers'
-    )
-    assert.throws(() => intToPrefixedHexString(<any>{}), undefined, undefined, 'throws on objects')
-    assert.throws(() => intToPrefixedHexString(<any>true), undefined, undefined, 'throws on true')
-    assert.throws(() => intToPrefixedHexString(<any>false), undefined, undefined, 'throws on false')
-    assert.throws(() => intToPrefixedHexString(<any>[]), undefined, undefined, 'throws on arrays')
-    assert.throws(
-      () => intToPrefixedHexString(<any>(() => {})),
-      undefined,
-      undefined,
-      'throws on arrays'
-    )
-    assert.throws(
-      () => intToPrefixedHexString(Number.MAX_SAFE_INTEGER + 1),
+      () => intToHex(Number.MAX_SAFE_INTEGER + 1),
       undefined,
       undefined,
       'throws on unsafe integers'
     )
   })
   it('should pass on correct input', () => {
-    assert.ok(intToPrefixedHexString(0) === '0x0', 'correctly converts 0 to a hex string')
-    assert.ok(intToPrefixedHexString(1) === '0x1', 'correctly converts 1 to a hex string')
+    assert.ok(intToHex(0) === '0x0', 'correctly converts 0 to a hex string')
+    assert.ok(intToHex(1) === '0x1', 'correctly converts 1 to a hex string')
   })
 })
 

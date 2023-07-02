@@ -11,7 +11,7 @@ import {
   fetchFromProvider,
   getProvider,
   hexToBytes,
-  intToPrefixedHexString,
+  intToHex,
   isHexPrefixed,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
@@ -270,7 +270,7 @@ export class Block {
       for (let x = 0; x < blockData.uncles.length; x++) {
         const headerData = await fetchFromProvider(providerUrl, {
           method: 'eth_getUncleByBlockHashAndIndex',
-          params: [blockData.hash, intToPrefixedHexString(x)],
+          params: [blockData.hash, intToHex(x)],
         })
         uncleHeaders.push(headerData)
       }

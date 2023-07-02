@@ -5,7 +5,7 @@ import {
   bigIntToHex,
   bytesToHex,
   hexToBytes,
-  intToPrefixedHexString,
+  intToHex,
   setLengthLeft,
   toType,
   utf8ToBytes,
@@ -121,7 +121,7 @@ const jsonRpcBlock = async (
     difficulty: header.difficulty!,
     totalDifficulty: bigIntToHex(td),
     extraData: header.extraData!,
-    size: intToPrefixedHexString(utf8ToBytes(JSON.stringify(json)).byteLength),
+    size: intToHex(utf8ToBytes(JSON.stringify(json)).byteLength),
     gasLimit: header.gasLimit!,
     gasUsed: header.gasUsed!,
     timestamp: header.timestamp!,
@@ -145,8 +145,8 @@ const jsonRpcLog = async (
   logIndex?: number
 ): Promise<JsonRpcLog> => ({
   removed: false, // TODO implement
-  logIndex: logIndex !== undefined ? intToPrefixedHexString(logIndex) : null,
-  transactionIndex: txIndex !== undefined ? intToPrefixedHexString(txIndex) : null,
+  logIndex: logIndex !== undefined ? intToHex(logIndex) : null,
+  transactionIndex: txIndex !== undefined ? intToHex(txIndex) : null,
   transactionHash: tx !== undefined ? bytesToHex(tx.hash()) : null,
   blockHash: block ? bytesToHex(block.hash()) : null,
   blockNumber: block ? bigIntToHex(block.header.number) : null,
@@ -171,7 +171,7 @@ const jsonRpcReceipt = async (
   dataGasPrice?: bigint
 ): Promise<JsonRpcReceipt> => ({
   transactionHash: bytesToHex(tx.hash()),
-  transactionIndex: intToPrefixedHexString(txIndex),
+  transactionIndex: intToHex(txIndex),
   blockHash: bytesToHex(block.hash()),
   blockNumber: bigIntToHex(block.header.number),
   from: tx.getSenderAddress().toString(),
@@ -190,7 +190,7 @@ const jsonRpcReceipt = async (
       : undefined,
   status:
     ((receipt as PostByzantiumTxReceipt).status as unknown) instanceof Uint8Array
-      ? intToPrefixedHexString((receipt as PostByzantiumTxReceipt).status)
+      ? intToHex((receipt as PostByzantiumTxReceipt).status)
       : undefined,
   dataGasUsed: dataGasUsed !== undefined ? bigIntToHex(dataGasUsed) : undefined,
   dataGasPrice: dataGasPrice !== undefined ? bigIntToHex(dataGasPrice) : undefined,
@@ -580,7 +580,7 @@ export class Eth {
     const [blockHash] = params
     try {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
-      return intToPrefixedHexString(block.transactions.length)
+      return intToHex(block.transactions.length)
     } catch (error) {
       throw {
         code: INVALID_PARAMS,
@@ -727,7 +727,7 @@ export class Eth {
    * @param params An empty array
    */
   protocolVersion(_params = []) {
-    return intToPrefixedHexString(this.ethVersion)
+    return intToHex(this.ethVersion)
   }
 
   /**
@@ -1083,7 +1083,7 @@ export class Eth {
   async getBlockTransactionCountByNumber(params: [string]) {
     const [blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
-    return intToPrefixedHexString(block.transactions.length)
+    return intToHex(block.transactions.length)
   }
 
   /**

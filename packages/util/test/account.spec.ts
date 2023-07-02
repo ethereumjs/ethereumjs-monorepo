@@ -11,7 +11,7 @@ import {
   hexToBytes,
   importPublic,
   intToBytes,
-  intToPrefixedHexString,
+  intToHex,
   isValidAddress,
   isValidChecksumAddress,
   isValidPrivate,
@@ -666,10 +666,7 @@ describe('Utility Functions', () => {
             assert.ok(isValidChecksumAddress(addr, intToBytes(parseInt(chainId))))
             assert.ok(isValidChecksumAddress(addr, BigInt(chainId)))
             assert.ok(
-              isValidChecksumAddress(
-                addr,
-                '0x' + padToEven(intToPrefixedHexString(parseInt(chainId)).slice(2))
-              )
+              isValidChecksumAddress(addr, '0x' + padToEven(intToHex(parseInt(chainId)).slice(2)))
             )
           }
         }
