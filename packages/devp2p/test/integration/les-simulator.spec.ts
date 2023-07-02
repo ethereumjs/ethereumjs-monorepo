@@ -51,7 +51,7 @@ describe('LES simulator tests', () => {
     })
   })
 
-  it.only('LES: send status message (NetworkId mismatch)', async () => {
+  it('LES: send status message (NetworkId mismatch)', async () => {
     await new Promise((resolve) => {
       const opts: any = {}
       opts.status0 = Object.assign({}, status)

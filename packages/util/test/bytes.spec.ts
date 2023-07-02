@@ -202,7 +202,7 @@ describe('hex prefix', () => {
   })
 })
 
-describe.only('short', () => {
+describe('short', () => {
   const string = '0x657468657265756d000000000000000000000000000000000000000000000000'
   const shortened = '0x657468657265756d0000000000000000000000000000000000…'
   const shortenedToTen = '0x6574686572…'
