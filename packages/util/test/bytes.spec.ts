@@ -23,7 +23,7 @@ import {
   toUnsigned,
   unpadArray,
   unpadBytes,
-  unpadHexString,
+  unpadHex,
   validateNoLeadingZeroes,
   zeroAddress,
   zeros,
@@ -84,15 +84,15 @@ describe('unpadArray', () => {
   })
 })
 
-describe('unpadHexString', () => {
+describe('unpadHex', () => {
   it('should unpad a hex prefixed string', () => {
     const str = '0x0000000006600'
-    const r = unpadHexString(str)
+    const r = unpadHex(str)
     assert.equal(r, '0x6600')
   })
   it('should throw if input is not hex-prefixed', () => {
     assert.throws(function () {
-      unpadHexString('0000000006600')
+      unpadHex('0000000006600')
     })
   })
 })

@@ -219,7 +219,7 @@ export const unpadArray = (a: number[]): number[] => {
  * @param {PrefixedHexString} a
  * @return {PrefixedHexString}
  */
-export const unpadHexString = (a: string): PrefixedHexString => {
+export const unpadHex = (a: string): PrefixedHexString => {
   assertIsHexString(a)
   a = stripHexPrefix(a)
   return '0x' + stripZeros(a)
