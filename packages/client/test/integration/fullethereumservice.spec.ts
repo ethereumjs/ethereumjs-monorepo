@@ -109,7 +109,7 @@ tape('[Integration:FullEthereumService]', async (t) => {
     const { headers } = await peer.les!.getBlockHeaders({ block: BigInt(1), max: 2 })
     t.equals(
       bytesToHex(headers[1].hash()),
-      'a321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069',
+      '0xa321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069',
       'handled GetBlockHeaders'
     )
     await destroy(server, service)
