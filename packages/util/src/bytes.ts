@@ -1,4 +1,5 @@
 import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
+// eslint-disable-next-line no-restricted-imports
 import {
   bytesToHex as _bytesToUnprefixedHex,
   hexToBytes as _unprefixedHexToBytes,
@@ -455,4 +456,5 @@ export const concatBytesNoTypeCheck = (...arrays: Uint8Array[]): Uint8Array => {
   return result
 }
 
+// eslint-disable-next-line no-restricted-imports
 export { bytesToUtf8, concatBytes, equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
