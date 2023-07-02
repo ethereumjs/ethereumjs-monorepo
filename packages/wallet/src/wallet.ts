@@ -1,5 +1,6 @@
 import {
   bytesToHex,
+  bytesToUnprefixedHex,
   concatBytes,
   equalsBytes,
   importPublic,
@@ -291,7 +292,7 @@ export class Wallet {
       const max = BigInt('0x088f924eeceeda7fe92e1f5b0fffffffffffffff')
       for (;;) {
         const privateKey = randomBytes(32)
-        const hex = bytesToHex(privateToAddress(privateKey))
+        const hex = bytesToUnprefixedHex(privateToAddress(privateKey))
         if (BigInt('0x' + hex) <= max) {
           return new Wallet(privateKey)
         }
@@ -312,7 +313,7 @@ export class Wallet {
     for (;;) {
       const privateKey = randomBytes(32)
       const address = privateToAddress(privateKey)
-      if (pattern.test(bytesToHex(address))) {
+      if (pattern.test(bytesToUnprefixedHex(address))) {
         return new Wallet(privateKey)
       }
     }
@@ -384,7 +385,7 @@ export class Wallet {
     const derivedKey = await scryptV1(utf8ToBytes(password), salt, kdfparams)
     const ciphertext = unprefixedHexToBytes(json.Crypto.CipherText)
     const mac = keccak256(concatBytes(derivedKey.subarray(16, 32), ciphertext))
-    if (bytesToHex(mac) !== json.Crypto.MAC) {
+    if (bytesToUnprefixedHex(mac) !== json.Crypto.MAC) {
       throw new Error('Key derivation failed - possibly wrong passphrase')
     }
 
@@ -440,7 +441,7 @@ export class Wallet {
 
     const ciphertext = unprefixedHexToBytes(json.crypto.ciphertext)
     const mac = keccak256(concatBytes(derivedKey.subarray(16, 32), ciphertext))
-    if (bytesToHex(mac) !== json.crypto.mac) {
+    if (bytesToUnprefixedHex(mac) !== json.crypto.mac) {
       throw new Error('Key derivation failed - possibly wrong passphrase')
     }
 
@@ -485,7 +486,7 @@ export class Wallet {
     )
 
     const wallet = new Wallet(keccak256(seed))
-    if (bytesToHex(wallet.getAddress()) !== json.ethaddr) {
+    if (bytesToUnprefixedHex(wallet.getAddress()) !== json.ethaddr) {
       throw new Error('Decoded key mismatch - possibly wrong passphrase')
     }
     return wallet
@@ -611,17 +612,17 @@ export class Wallet {
       version: 3,
       id: uuidv4({ random: v3Params.uuid }),
       // @ts-ignore - the official V3 keystore spec omits the address key
-      address: bytesToHex(this.getAddress()),
+      address: bytesToUnprefixedHex(this.getAddress()),
       crypto: {
-        ciphertext: bytesToHex(ciphertext),
-        cipherparams: { iv: bytesToHex(v3Params.iv) },
+        ciphertext: bytesToUnprefixedHex(ciphertext),
+        cipherparams: { iv: bytesToUnprefixedHex(v3Params.iv) },
         cipher: v3Params.cipher,
         kdf: v3Params.kdf,
         kdfparams: {
           ...kdfParams,
-          salt: bytesToHex(kdfParams.salt),
+          salt: bytesToUnprefixedHex(kdfParams.salt),
         },
-        mac: bytesToHex(mac),
+        mac: bytesToUnprefixedHex(mac),
       },
     }
   }
@@ -642,7 +643,12 @@ export class Wallet {
      *
      */
     const ts = timestamp !== undefined ? new Date(timestamp) : new Date()
-    return ['UTC--', ts.toJSON().replace(/:/g, '-'), '--', bytesToHex(this.getAddress())].join('')
+    return [
+      'UTC--',
+      ts.toJSON().replace(/:/g, '-'),
+      '--',
+      bytesToUnprefixedHex(this.getAddress()),
+    ].join('')
   }
 
   public async toV3String(password: string, opts?: Partial<V3Params>): Promise<string> {
