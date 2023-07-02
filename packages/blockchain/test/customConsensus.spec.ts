@@ -59,7 +59,7 @@ describe('Optional consensus parameter in blockchain constructor', () => {
 })
 
 describe('Custom consensus validation rules', () => {
-  it.only('should validat custom consensus rules', async () => {
+  it('should validat custom consensus rules', async () => {
     const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Chainstart })
     const consensus = new fibonacciConsensus()
     const blockchain = await Blockchain.create({ common, consensus })
