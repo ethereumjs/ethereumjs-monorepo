@@ -11,7 +11,7 @@ import { wait } from '../../integration/util'
 import { _accountRangeRLP } from './accountfetcher.spec'
 
 const _storageRangesRLP =
-  'f83e0bf83af838f7a0290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5639594053cd080a26cb03d5e6d2956cebb31c56e7660cac0'
+  '0xf83e0bf83af838f7a0290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5639594053cd080a26cb03d5e6d2956cebb31c56e7660cac0'
 
 tape('[StorageFetcher]', async (t) => {
   class PeerPool {
@@ -100,10 +100,10 @@ tape('[StorageFetcher]', async (t) => {
       storageRequests: [
         {
           accountHash: hexToBytes(
-            'e9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1'
+            '0xe9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1'
           ),
           storageRoot: hexToBytes(
-            '69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92'
+            '0x69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92'
           ),
           first: BigInt(0),
           count: BigInt(2) ** BigInt(256) - BigInt(1),
@@ -141,10 +141,10 @@ tape('[StorageFetcher]', async (t) => {
       storageRequests: [
         {
           accountHash: hexToBytes(
-            'e9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1'
+            '0xe9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1'
           ),
           storageRoot: hexToBytes(
-            '69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92'
+            '0x69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92'
           ),
           first: BigInt(0),
           count: BigInt(2) ** BigInt(256) - BigInt(1),
@@ -192,10 +192,10 @@ tape('[StorageFetcher]', async (t) => {
       storageRequests: [
         {
           accountHash: hexToBytes(
-            'e9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1'
+            '0xe9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1'
           ),
           storageRoot: hexToBytes(
-            '69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92'
+            '0x69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92'
           ),
           first: BigInt(0),
           count: BigInt(2) ** BigInt(256) - BigInt(1),
@@ -224,7 +224,9 @@ tape('[StorageFetcher]', async (t) => {
     td.verify(
       job.peer.snap.getStorageRanges({
         root: utf8ToBytes(''),
-        accounts: [hexToBytes('e9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1')],
+        accounts: [
+          hexToBytes('0xe9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1'),
+        ],
         origin: td.matchers.anything(),
         limit: td.matchers.anything(),
         bytes: BigInt(50000),
@@ -254,10 +256,10 @@ tape('[StorageFetcher]', async (t) => {
       storageRequests: [
         {
           accountHash: hexToBytes(
-            '00009e5969eba9656d7e4dad5b0596241deb87c29bbab71c23b602c2b88a7276'
+            '0x00009e5969eba9656d7e4dad5b0596241deb87c29bbab71c23b602c2b88a7276'
           ),
           storageRoot: hexToBytes(
-            '4431bd7d69241190bb930b74485c1e31ff75552f67d758d0b6612e7bd9226121'
+            '0x4431bd7d69241190bb930b74485c1e31ff75552f67d758d0b6612e7bd9226121'
           ),
           first: BigInt(0),
           count: BigInt(2) ** BigInt(256) - BigInt(1),
@@ -308,7 +310,7 @@ tape('[StorageFetcher]', async (t) => {
       accResData
     )
     const dummyStorageRoot = hexToBytes(
-      '39ed8daab7679c0b1b7cf3667c50108185d4d9d1431c24a1c35f696a58277f8f'
+      '0x39ed8daab7679c0b1b7cf3667c50108185d4d9d1431c24a1c35f696a58277f8f'
     )
     const dummyOrigin = new Uint8Array(32)
     try {

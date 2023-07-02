@@ -6,7 +6,14 @@ import {
   isFeeMarketEIP1559Tx,
   isLegacyTx,
 } from '@ethereumjs/tx'
-import { Account, Address, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  bytesToHex,
+  bytesToUnprefixedHex,
+  equalsBytes,
+  hexToBytes,
+} from '@ethereumjs/util'
 
 import type { Config } from '../config'
 import type { Peer } from '../net/peer'
@@ -338,7 +345,7 @@ export class TxPool {
    * @param isLocalTransaction if this is a local transaction (loosens some constraints) (default: false)
    */
   async add(tx: TypedTransaction, isLocalTransaction: boolean = false) {
-    const hash: UnprefixedHash = bytesToHex(tx.hash())
+    const hash: UnprefixedHash = bytesToUnprefixedHex(tx.hash())
     const added = Date.now()
     const address: UnprefixedAddress = tx.getSenderAddress().toString().slice(2)
     try {
@@ -367,7 +374,7 @@ export class TxPool {
   getByHash(txHashes: Uint8Array[]): TypedTransaction[] {
     const found = []
     for (const txHash of txHashes) {
-      const txHashStr = bytesToHex(txHash)
+      const txHashStr = bytesToUnprefixedHex(txHash)
       const handled = this.handled.get(txHashStr)
       if (!handled) continue
       const inPool = this.pool.get(handled.address)?.filter((poolObj) => poolObj.hash === txHashStr)
@@ -416,11 +423,11 @@ export class TxPool {
     for (const hash of txHashes) {
       const inSent = this.knownByPeer
         .get(peer.id)!
-        .filter((sentObject) => sentObject.hash === bytesToHex(hash)).length
+        .filter((sentObject) => sentObject.hash === bytesToUnprefixedHex(hash)).length
       if (inSent === 0) {
         const added = Date.now()
         const add = {
-          hash: bytesToHex(hash),
+          hash: bytesToUnprefixedHex(hash),
           added,
         }
         this.knownByPeer.get(peer.id)!.push(add)
@@ -475,8 +482,8 @@ export class TxPool {
         // This is used to avoid re-sending along pooledTxHashes
         // announcements/re-broadcasts
         const newHashes = this.addToKnownByPeer(hashes, peer)
-        const newHashesHex = newHashes.map((txHash) => bytesToHex(txHash))
-        const newTxs = txs.filter((tx) => newHashesHex.includes(bytesToHex(tx.hash())))
+        const newHashesHex = newHashes.map((txHash) => bytesToUnprefixedHex(txHash))
+        const newTxs = txs.filter((tx) => newHashesHex.includes(bytesToUnprefixedHex(tx.hash())))
         peer.eth?.request('Transactions', newTxs).catch((e) => {
           this.markFailedSends(peer, newHashes, e as Error)
         })
@@ -488,7 +495,7 @@ export class TxPool {
     for (const txHash of failedHashes) {
       const sendobject = this.knownByPeer
         .get(peer.id)
-        ?.filter((sendObject) => sendObject.hash === bytesToHex(txHash))[0]
+        ?.filter((sendObject) => sendObject.hash === bytesToUnprefixedHex(txHash))[0]
       if (sendobject) {
         sendobject.error = e
       }
@@ -541,7 +548,7 @@ export class TxPool {
 
     const reqHashes = []
     for (const txHash of txHashes) {
-      const txHashStr: UnprefixedHash = bytesToHex(txHash)
+      const txHashStr: UnprefixedHash = bytesToUnprefixedHex(txHash)
       if (this.pending.includes(txHashStr) || this.handled.has(txHashStr)) {
         continue
       }
@@ -552,7 +559,7 @@ export class TxPool {
 
     this.config.logger.debug(`TxPool: received new tx hashes number=${reqHashes.length}`)
 
-    const reqHashesStr: UnprefixedHash[] = reqHashes.map(bytesToHex)
+    const reqHashesStr: UnprefixedHash[] = reqHashes.map(bytesToUnprefixedHex)
     this.pending = this.pending.concat(reqHashesStr)
     this.config.logger.debug(
       `TxPool: requesting txs number=${reqHashes.length} pending=${this.pending.length}`
@@ -591,7 +598,7 @@ export class TxPool {
     if (!this.running) return
     for (const block of newBlocks) {
       for (const tx of block.transactions) {
-        const txHash: UnprefixedHash = bytesToHex(tx.hash())
+        const txHash: UnprefixedHash = bytesToUnprefixedHex(tx.hash())
         this.removeByHash(txHash)
       }
     }

@@ -1,4 +1,4 @@
-import { bytesToHex, randomBytes } from '@ethereumjs/util'
+import { bytesToHex, bytesToUnprefixedHex, randomBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../src/rpc/error-code'
@@ -216,7 +216,7 @@ tape(`${prefix} byteVectors`, (t) => {
     // invalid
     st.notOk(validatorResult(validators.bytes8([bytes(10)], 0)))
     st.notOk(validatorResult(validators.bytes8([bytes(8, false)], 0)))
-    st.notOk(validatorResult(validators.bytes8([bytesToHex(randomBytes(8))], 0)))
+    st.notOk(validatorResult(validators.bytes8([bytesToUnprefixedHex(randomBytes(8))], 0)))
     st.end()
   })
   t.test('Uint64', (st) => {
@@ -231,7 +231,7 @@ tape(`${prefix} byteVectors`, (t) => {
     st.notOk(validatorResult(validators.bytes8([badhex(8)], 0)))
     st.notOk(validatorResult(validators.uint64([bytes(10)], 0)))
     st.notOk(validatorResult(validators.uint64([bytes(8, false)], 0)))
-    st.notOk(validatorResult(validators.uint64([bytesToHex(randomBytes(8))], 0)))
+    st.notOk(validatorResult(validators.uint64([bytesToUnprefixedHex(randomBytes(8))], 0)))
     st.end()
   })
   t.test('Bytes16', (st) => {
@@ -246,7 +246,7 @@ tape(`${prefix} byteVectors`, (t) => {
     st.notOk(validatorResult(validators.bytes16([badhex(16)], 0)))
     st.notOk(validatorResult(validators.bytes16([bytes(20)], 0)))
     st.notOk(validatorResult(validators.bytes16([bytes(16, false)], 0)))
-    st.notOk(validatorResult(validators.bytes16([bytesToHex(randomBytes(16))], 0)))
+    st.notOk(validatorResult(validators.bytes16([bytesToUnprefixedHex(randomBytes(16))], 0)))
     st.end()
   })
   t.test('Bytes20', (st) => {
@@ -259,7 +259,7 @@ tape(`${prefix} byteVectors`, (t) => {
     st.notOk(validatorResult(validators.bytes20([badhex(20)], 0)))
     st.notOk(validatorResult(validators.bytes20([bytes(20, false)], 0)))
     st.notOk(validatorResult(validators.bytes20([bytes(32)], 0)))
-    st.notOk(validatorResult(validators.bytes20([bytesToHex(randomBytes(20))], 0)))
+    st.notOk(validatorResult(validators.bytes20([bytesToUnprefixedHex(randomBytes(20))], 0)))
     st.end()
   })
   t.test('Bytes32', (st) => {
@@ -273,7 +273,7 @@ tape(`${prefix} byteVectors`, (t) => {
     st.notOk(validatorResult(validators.bytes32([badhex(32)], 0)))
     st.notOk(validatorResult(validators.bytes32([bytes(48)], 0)))
     st.notOk(validatorResult(validators.bytes32([bytes(32, false)], 0)))
-    st.notOk(validatorResult(validators.bytes32([bytesToHex(randomBytes(32))], 0)))
+    st.notOk(validatorResult(validators.bytes32([bytesToUnprefixedHex(randomBytes(32))], 0)))
     st.end()
   })
   t.test('Uint256', (st) => {
@@ -287,7 +287,7 @@ tape(`${prefix} byteVectors`, (t) => {
     st.notOk(validatorResult(validators.uint256([badhex(32)], 0)))
     st.notOk(validatorResult(validators.uint256([bytes(48)], 0)))
     st.notOk(validatorResult(validators.uint256([bytes(32, false)], 0)))
-    st.notOk(validatorResult(validators.uint256([bytesToHex(randomBytes(32))], 0)))
+    st.notOk(validatorResult(validators.uint256([bytesToUnprefixedHex(randomBytes(32))], 0)))
     st.end()
   })
   t.test('Bytes48', (st) => {
@@ -303,7 +303,7 @@ tape(`${prefix} byteVectors`, (t) => {
     st.notOk(validatorResult(validators.bytes48([badhex(48)], 0)))
     st.notOk(validatorResult(validators.bytes48([bytes(64)], 0)))
     st.notOk(validatorResult(validators.bytes48([bytes(48, false)], 0)))
-    st.notOk(validatorResult(validators.bytes48([bytesToHex(randomBytes(48))], 0)))
+    st.notOk(validatorResult(validators.bytes48([bytesToUnprefixedHex(randomBytes(48))], 0)))
     st.end()
   })
   t.test('Bytes256', (st) => {
@@ -320,7 +320,7 @@ tape(`${prefix} byteVectors`, (t) => {
     st.notOk(validatorResult(validators.bytes256([badhex(256)], 0)))
     st.notOk(validatorResult(validators.bytes256([bytes(512)], 0)))
     st.notOk(validatorResult(validators.bytes256([bytes(256, false)], 0)))
-    st.notOk(validatorResult(validators.bytes256([bytesToHex(randomBytes(256))], 0)))
+    st.notOk(validatorResult(validators.bytes256([bytesToUnprefixedHex(randomBytes(256))], 0)))
     st.end()
   })
 

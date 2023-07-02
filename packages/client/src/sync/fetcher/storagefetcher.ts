@@ -4,6 +4,7 @@ import {
   bigIntToHex,
   bytesToBigInt,
   bytesToHex,
+  bytesToUnprefixedHex,
   equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
@@ -397,13 +398,13 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       result[0].map((slotArray, i) => {
         const accountHash = result.requests[i].accountHash
         const storageTrie =
-          this.accountToStorageTrie.get(bytesToHex(accountHash)) ??
+          this.accountToStorageTrie.get(bytesToUnprefixedHex(accountHash)) ??
           new Trie({ useKeyHashing: false })
         for (const slot of slotArray as any) {
           slotCount++
           void storageTrie.put(slot.hash, slot.body)
         }
-        this.accountToStorageTrie.set(bytesToHex(accountHash), storageTrie)
+        this.accountToStorageTrie.set(bytesToUnprefixedHex(accountHash), storageTrie)
       })
       this.debug(`Stored ${slotCount} slot(s)`)
     } catch (err) {

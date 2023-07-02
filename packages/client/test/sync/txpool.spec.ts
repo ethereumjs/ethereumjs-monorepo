@@ -2,7 +2,14 @@ import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Account, bytesToHex, concatBytes, hexToBytes, privateToAddress } from '@ethereumjs/util'
+import {
+  Account,
+  bytesToHex,
+  bytesToUnprefixedHex,
+  concatBytes,
+  hexToBytes,
+  privateToAddress,
+} from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Config } from '../../src/config'
@@ -199,7 +206,7 @@ tape('[TxPool]', async (t) => {
     t.equal((pool as any).knownByPeer.get(peer.id).length, 1, 'one tx added for peer 1')
     t.equal(
       (pool as any).knownByPeer.get(peer.id)[0].hash,
-      bytesToHex(txA01.hash()),
+      bytesToUnprefixedHex(txA01.hash()),
       'new known tx hashes entry for announcing peer'
     )
 
@@ -288,7 +295,7 @@ tape('[TxPool]', async (t) => {
 
     await pool.handleAnnouncedTxHashes([txA01.hash(), txA02.hash()], peer, peerPool)
     t.equal(pool.pool.size, 1, 'pool size 1')
-    const address = bytesToHex(A.address)
+    const address = bytesToUnprefixedHex(A.address)
     const poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 1, 'only one tx')
     t.deepEqual(poolContent[0].tx.hash(), txA02.hash(), 'only later-added tx')
@@ -333,7 +340,7 @@ tape('[TxPool]', async (t) => {
         e.message.includes('replacement gas too low'),
         'successfully failed adding underpriced txn'
       )
-      const poolObject = pool['handled'].get(bytesToHex(txA02_Underpriced.hash()))
+      const poolObject = pool['handled'].get(bytesToUnprefixedHex(txA02_Underpriced.hash()))
       t.equal(poolObject?.error, e, 'should have an errored poolObject')
       const poolTxs = pool.getByHash([txA02_Underpriced.hash()])
       t.equal(poolTxs.length, 0, `should not be added in pool`)
@@ -346,7 +353,7 @@ tape('[TxPool]', async (t) => {
       'NewPooledTransactionHashes',
       'should have errored sendObject for NewPooledTransactionHashes broadcast'
     )
-    const address = bytesToHex(A.address)
+    const address = bytesToUnprefixedHex(A.address)
     const poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 1, 'only one tx')
     t.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'only later-added tx')
@@ -380,7 +387,7 @@ tape('[TxPool]', async (t) => {
       await pool.handleAnnouncedTxHashes([txA01.hash(), txA02_Underpriced.hash()], peer, peerPool)
 
       t.equal(pool.pool.size, 1, 'pool size 1')
-      const address = bytesToHex(A.address)
+      const address = bytesToUnprefixedHex(A.address)
       const poolContent = pool.pool.get(address)!
       t.equal(poolContent.length, 1, 'only one tx')
       t.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'only later-added tx')
@@ -652,7 +659,7 @@ tape('[TxPool]', async (t) => {
 
     await pool.handleAnnouncedTxs([txA01], peer, peerPool)
     t.equal(pool.pool.size, 1, 'pool size 1')
-    const address = bytesToHex(A.address)
+    const address = bytesToUnprefixedHex(A.address)
     const poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 1, 'one tx')
     t.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'correct tx')
@@ -696,7 +703,7 @@ tape('[TxPool]', async (t) => {
     }
     await pool.handleAnnouncedTxHashes([txB01.hash(), txB02.hash()], peer, peerPool)
     t.equal(pool.pool.size, 1, 'pool size 1')
-    const address = bytesToHex(B.address)
+    const address = bytesToUnprefixedHex(B.address)
     let poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 2, 'two txs')
 
@@ -771,7 +778,7 @@ tape('[TxPool]', async (t) => {
     knownByPeerObj1.added = Date.now() - pool.POOLED_STORAGE_TIME_LIMIT * 1000 * 60 - 1
     ;(pool as any).knownByPeer.set(peer.id, [knownByPeerObj1, knownByPeerObj2])
 
-    const hash = bytesToHex(txB01.hash())
+    const hash = bytesToUnprefixedHex(txB01.hash())
     const handledObj = (pool as any).handled.get(hash)
     handledObj.added = Date.now() - pool.HANDLED_CLEANUP_TIME_LIMIT * 1000 * 60 - 1
     ;(pool as any).handled.set(hash, handledObj)

@@ -87,14 +87,14 @@ const testCases = [
   {
     name: 'empty withdrawals',
     withdrawals: [],
-    withdrawalsRoot: '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+    withdrawalsRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
     stateRoot: '',
     gethBlockRlp: undefined,
   },
   {
     name: '8 withdrawals',
     withdrawals: withdrawalsGethVector,
-    withdrawalsRoot: 'b695b29ec7ee934ef6a68838b13729f2d49fffe26718de16a1a9ed94a4d7d06d',
+    withdrawalsRoot: '0xb695b29ec7ee934ef6a68838b13729f2d49fffe26718de16a1a9ed94a4d7d06d',
     gethBlockRlp: gethWithdrawals8BlockRlp,
   },
 ]

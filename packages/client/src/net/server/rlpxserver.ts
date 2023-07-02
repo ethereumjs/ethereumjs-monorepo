@@ -1,5 +1,5 @@
 import { DPT as Devp2pDPT, RLPx as Devp2pRLPx } from '@ethereumjs/devp2p'
-import { bytesToUnprefixedHex, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
+import { bytesToUnprefixedHex, unprefixedHexToBytes, utf8ToBytes } from '@ethereumjs/util'
 
 import { Event } from '../../types'
 import { getClientVersion } from '../../util'
@@ -188,7 +188,7 @@ export class RlpxServer extends Server {
       return false
     }
     this.dpt!.banPeer(peerId, maxAge)
-    this.rlpx!.disconnect(hexToBytes('0x' + peerId))
+    this.rlpx!.disconnect(unprefixedHexToBytes(peerId))
     return true
   }
 

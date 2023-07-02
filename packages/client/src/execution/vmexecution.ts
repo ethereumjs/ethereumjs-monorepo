@@ -391,7 +391,7 @@ export class VMExecution extends Execution {
                 if (diffSec > this.MAX_TOLERATED_BLOCK_TIME) {
                   const msg = `Slow block execution for block num=${
                     block.header.number
-                  } hash=0x${bytesToHex(block.hash())} txs=${block.transactions.length} gasUsed=${
+                  } hash=${bytesToHex(block.hash())} txs=${block.transactions.length} gasUsed=${
                     result.gasUsed
                   } time=${diffSec}secs`
                   this.config.logger.warn(msg)

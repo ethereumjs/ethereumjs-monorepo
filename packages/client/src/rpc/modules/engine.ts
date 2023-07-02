@@ -1,7 +1,15 @@
 import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
-import { bigIntToHex, bytesToHex, equalsBytes, hexToBytes, toBytes, zeros } from '@ethereumjs/util'
+import {
+  bigIntToHex,
+  bytesToHex,
+  bytesToUnprefixedHex,
+  equalsBytes,
+  hexToBytes,
+  toBytes,
+  zeros,
+} from '@ethereumjs/util'
 
 import { PendingBlock } from '../../miner'
 import { short } from '../../util'
@@ -587,7 +595,7 @@ export class Engine {
         optimisticLookup === true ? Status.SYNCING : Status.ACCEPTED
       if (status === Status.ACCEPTED) {
         // Stash the block for a potential forced forkchoice update to it later.
-        this.remoteBlocks.set(bytesToHex(block.hash()), block)
+        this.remoteBlocks.set(bytesToUnprefixedHex(block.hash()), block)
       }
       const response = { status, validationError: null, latestValidHash: null }
       return response
@@ -632,7 +640,7 @@ export class Engine {
       return response
     }
 
-    this.remoteBlocks.set(bytesToHex(block.hash()), block)
+    this.remoteBlocks.set(bytesToUnprefixedHex(block.hash()), block)
 
     const response = {
       status: Status.VALID,
@@ -836,7 +844,7 @@ export class Engine {
           payloadStatus: {
             status: Status.INVALID,
             validationError: null,
-            latestValidHash: bytesToHex(zeros(32)),
+            latestValidHash: bytesToUnprefixedHex(zeros(32)),
           },
           payloadId: null,
         }
