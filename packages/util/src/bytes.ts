@@ -8,7 +8,7 @@ import {
 // Note: ethereum-cryptography/hexToBytes is imported as "unprefixedHexToBytes"
 // This name is not correct, since it supports prefixed strings. However, internally here we
 // explicitly use it when the strings are known to be unprefixed (for readability and avoid
-// confuction why we would not use our own `hexToBytes`)
+// confusion why we would not use our own `hexToBytes`)
 
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.js'
 import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal.js'
