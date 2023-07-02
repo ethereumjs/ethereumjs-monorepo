@@ -11,7 +11,6 @@ import {
   bytesToBigInt,
   bytesToHex,
   concatBytes,
-  concatBytesNoTypeCheck,
   ecrecover,
   ecsign,
   equalsBytes,
@@ -781,7 +780,7 @@ export class BlockHeader {
     this._requireClique('cliqueSealBlock')
 
     const signature = ecsign(this.cliqueSigHash(), privateKey)
-    const signatureB = concatBytesNoTypeCheck(
+    const signatureB = concatBytes(
       signature.r,
       signature.s,
       bigIntToBytes(signature.v - BigInt(27))
@@ -791,7 +790,7 @@ export class BlockHeader {
       0,
       this.extraData.length - CLIQUE_EXTRA_SEAL
     )
-    const extraData = concatBytesNoTypeCheck(extraDataWithoutSeal, signatureB)
+    const extraData = concatBytes(extraDataWithoutSeal, signatureB)
     return extraData
   }
 

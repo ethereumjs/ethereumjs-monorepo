@@ -5,7 +5,7 @@ import {
   Address,
   MAX_UINT64,
   bytesToHex,
-  concatBytesNoTypeCheck,
+  concatBytes,
   hexToBytes,
   padToEven,
   unpadBytes,
@@ -22,7 +22,7 @@ import type { EVMRunCallOpts } from '../src/types.js'
 // Non-protected Create2Address generator. Does not check if Uint8Arrays have the right padding.
 function create2address(sourceAddress: Address, codeHash: Uint8Array, salt: Uint8Array): Address {
   const rlp_proc_bytes = hexToBytes('0xff')
-  const hashBytes = concatBytesNoTypeCheck(rlp_proc_bytes, sourceAddress.bytes, salt, codeHash)
+  const hashBytes = concatBytes(rlp_proc_bytes, sourceAddress.bytes, salt, codeHash)
   return new Address(keccak256(hashBytes).slice(12))
 }
 
@@ -91,7 +91,7 @@ describe('RunCall tests', () => {
       // pad bytes
       if (valueBytes.length < 32) {
         const diff = 32 - valueBytes.length
-        valueBytes = concatBytesNoTypeCheck(new Uint8Array(diff), valueBytes)
+        valueBytes = concatBytes(new Uint8Array(diff), valueBytes)
       }
       // calculate expected CREATE2 address
       const expectedAddress = create2address(contractAddress, codeHash, valueBytes)

@@ -7,7 +7,7 @@ import {
   Address,
   bigIntToBytes,
   bytesToBigInt,
-  concatBytesNoTypeCheck,
+  concatBytes,
   ecsign,
   hexToBytes,
   privateToAddress,
@@ -69,7 +69,7 @@ function signMessage(commitUnpadded: Uint8Array, address: Address, privateKey: U
   const commit = setLengthLeft(commitUnpadded, 32)
   const paddedInvokerAddress = setLengthLeft(address.bytes, 32)
   const chainId = setLengthLeft(bigIntToBytes(common.chainId()), 32)
-  const message = concatBytesNoTypeCheck(hexToBytes('0x03'), chainId, paddedInvokerAddress, commit)
+  const message = concatBytes(hexToBytes('0x03'), chainId, paddedInvokerAddress, commit)
   const msgHash = keccak256(message)
   return ecsign(msgHash, privateKey)
 }
@@ -101,12 +101,12 @@ function getAuthCode(
   const AUTH = hexToBytes('0xF6')
   const MSTORE = hexToBytes('0x52')
   const mslot0 = zeros(32)
-  const mslot1 = concatBytesNoTypeCheck(zeros(31), hexToBytes('0x20'))
-  const mslot2 = concatBytesNoTypeCheck(zeros(31), hexToBytes('0x40'))
-  const mslot3 = concatBytesNoTypeCheck(zeros(31), hexToBytes('0x60'))
+  const mslot1 = concatBytes(zeros(31), hexToBytes('0x20'))
+  const mslot2 = concatBytes(zeros(31), hexToBytes('0x40'))
+  const mslot3 = concatBytes(zeros(31), hexToBytes('0x60'))
   const addressBuffer = setLengthLeft(address.bytes, 32)
   // This bytecode setups the stack to be used for AUTH
-  return concatBytesNoTypeCheck(
+  return concatBytes(
     PUSH32,
     signature.s,
     PUSH32,
@@ -154,7 +154,7 @@ type AuthcallData = {
  * @param value
  */
 function MSTORE(position: Uint8Array, value: Uint8Array) {
-  return concatBytesNoTypeCheck(
+  return concatBytes(
     hexToBytes('0x7F'),
     setLengthLeft(value, 32),
     hexToBytes('0x7F'),
@@ -195,7 +195,7 @@ function getAuthCallCode(data: AuthcallData) {
     bufferList.push(e)
   })
   bufferList.push(AUTHCALL)
-  return concatBytesNoTypeCheck(...bufferList)
+  return concatBytes(...bufferList)
 }
 
 // This flips the signature: the result is a signature which has the same public key upon key recovery,
@@ -218,7 +218,7 @@ describe('EIP-3074 AUTH', () => {
     const vm = await VM.create({ common })
     const message = hexToBytes('0x01')
     const signature = signMessage(message, contractAddress, privateKey)
-    const code = concatBytesNoTypeCheck(getAuthCode(message, signature, authAddress), RETURNTOP)
+    const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNTOP)
 
     await vm.stateManager.putContractCode(contractAddress, code)
     const tx = LegacyTransaction.fromTxData({
@@ -242,7 +242,7 @@ describe('EIP-3074 AUTH', () => {
     const message = hexToBytes('0x01')
     const signature = signMessage(message, contractAddress, privateKey)
     signature.r = signature.s
-    const code = concatBytesNoTypeCheck(getAuthCode(message, signature, authAddress), RETURNTOP)
+    const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNTOP)
 
     await vm.stateManager.putContractCode(contractAddress, code)
     const tx = LegacyTransaction.fromTxData({
@@ -267,7 +267,7 @@ describe('EIP-3074 AUTH', () => {
     const signature = signMessage(message, contractAddress, privateKey)
     signature.r = signature.s
     // use the contractAddress instead of authAddress for the expected address (this should fail)
-    const code = concatBytesNoTypeCheck(getAuthCode(message, signature, contractAddress), RETURNTOP)
+    const code = concatBytes(getAuthCode(message, signature, contractAddress), RETURNTOP)
 
     await vm.stateManager.putContractCode(contractAddress, code)
     const tx = LegacyTransaction.fromTxData({
@@ -290,7 +290,7 @@ describe('EIP-3074 AUTH', () => {
     const vm = await VM.create({ common })
     const message = hexToBytes('0x01')
     const signature = flipSignature(signMessage(message, contractAddress, privateKey))
-    const code = concatBytesNoTypeCheck(getAuthCode(message, signature, authAddress), RETURNTOP)
+    const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNTOP)
 
     await vm.stateManager.putContractCode(contractAddress, code)
     const tx = LegacyTransaction.fromTxData({
@@ -317,7 +317,7 @@ describe('EIP-3074 AUTH', () => {
     const message = hexToBytes('0x01')
     const signature = signMessage(message, contractAddress, privateKey)
     const signature2 = signMessage(message, contractAddress, callerPrivateKey)
-    const code = concatBytesNoTypeCheck(
+    const code = concatBytes(
       getAuthCode(message, signature, authAddress),
       getAuthCode(message, signature2, callerAddress),
       RETURNTOP
@@ -344,7 +344,7 @@ describe('EIP-3074 AUTH', () => {
     const vm = await VM.create({ common })
     const message = hexToBytes('0x00')
     const signature = signMessage(message, contractAddress, privateKey)
-    const code = concatBytesNoTypeCheck(
+    const code = concatBytes(
       getAuthCode(message, signature, authAddress, hexToBytes('0x60')),
       RETURNTOP
     )
@@ -370,7 +370,7 @@ describe('EIP-3074 AUTH', () => {
     const vm = await VM.create({ common })
     const message = hexToBytes('0x00')
     const signature = signMessage(message, contractAddress, privateKey)
-    const code = concatBytesNoTypeCheck(getAuthCode(message, signature, authAddress), RETURNMEMSIZE)
+    const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNMEMSIZE)
 
     await vm.stateManager.putContractCode(contractAddress, code)
     const tx = LegacyTransaction.fromTxData({
@@ -393,7 +393,7 @@ describe('EIP-3074 AUTH', () => {
     )
     const gas = result.execResult.executionGasUsed
 
-    const code2 = concatBytesNoTypeCheck(
+    const code2 = concatBytes(
       getAuthCode(message, signature, authAddress, hexToBytes('0x90')),
       RETURNMEMSIZE
     )
@@ -435,7 +435,7 @@ describe('EIP-3074 AUTHCALL', () => {
   it('Should execute AUTHCALL correctly', async () => {
     const message = hexToBytes('0x01')
     const signature = signMessage(message, contractAddress, privateKey)
-    const code = concatBytesNoTypeCheck(
+    const code = concatBytes(
       getAuthCode(message, signature, authAddress),
       getAuthCallCode({
         address: contractStorageAddress,
@@ -462,7 +462,7 @@ describe('EIP-3074 AUTHCALL', () => {
   it('Should forward max call gas when gas set to 0', async () => {
     const message = hexToBytes('0x01')
     const signature = signMessage(message, contractAddress, privateKey)
-    const code = concatBytesNoTypeCheck(
+    const code = concatBytes(
       getAuthCode(message, signature, authAddress),
       getAuthCallCode({
         address: contractStorageAddress,
@@ -502,7 +502,7 @@ describe('EIP-3074 AUTHCALL', () => {
   it('Should forward max call gas when gas set to 0 - warm account', async () => {
     const message = hexToBytes('0x01')
     const signature = signMessage(message, contractAddress, privateKey)
-    const code = concatBytesNoTypeCheck(
+    const code = concatBytes(
       getAuthCode(message, signature, authAddress),
       getAuthCallCode({
         address: contractStorageAddress,
@@ -542,7 +542,7 @@ describe('EIP-3074 AUTHCALL', () => {
   it('Should forward max call gas when gas set to 0 - cold account, nonzero transfer, create new account', async () => {
     const message = hexToBytes('0x01')
     const signature = signMessage(message, contractAddress, privateKey)
-    const code = concatBytesNoTypeCheck(
+    const code = concatBytes(
       getAuthCode(message, signature, authAddress),
       getAuthCallCode({
         address: new Address(hexToBytes('0x' + 'cc'.repeat(20))),
@@ -585,7 +585,7 @@ describe('EIP-3074 AUTHCALL', () => {
   it('Should charge value transfer gas when transferring and transfer from contract, not authcall address', async () => {
     const message = hexToBytes('0x01')
     const signature = signMessage(message, contractAddress, privateKey)
-    const code = concatBytesNoTypeCheck(
+    const code = concatBytes(
       getAuthCode(message, signature, authAddress),
       getAuthCallCode({
         address: contractStorageAddress,
@@ -640,7 +640,7 @@ describe('EIP-3074 AUTHCALL', () => {
   })
 
   it('Should throw if AUTH not set', async () => {
-    const code = concatBytesNoTypeCheck(
+    const code = concatBytes(
       getAuthCallCode({
         address: contractStorageAddress,
       }),
@@ -671,7 +671,7 @@ describe('EIP-3074 AUTHCALL', () => {
       r: signature.s,
       s: signature.s,
     }
-    const code = concatBytesNoTypeCheck(
+    const code = concatBytes(
       getAuthCode(message, signature, authAddress),
       getAuthCallCode({
         address: contractStorageAddress,
@@ -702,7 +702,7 @@ describe('EIP-3074 AUTHCALL', () => {
   it('Should throw if not enough gas is available', async () => {
     const message = hexToBytes('0x01')
     const signature = signMessage(message, contractAddress, privateKey)
-    const code = concatBytesNoTypeCheck(
+    const code = concatBytes(
       getAuthCode(message, signature, authAddress),
       getAuthCallCode({
         address: contractStorageAddress,
@@ -730,7 +730,7 @@ describe('EIP-3074 AUTHCALL', () => {
   it('Should throw if valueExt is nonzero', async () => {
     const message = hexToBytes('0x01')
     const signature = signMessage(message, contractAddress, privateKey)
-    const code = concatBytesNoTypeCheck(
+    const code = concatBytes(
       getAuthCode(message, signature, authAddress),
       getAuthCallCode({
         address: contractStorageAddress,
@@ -758,7 +758,7 @@ describe('EIP-3074 AUTHCALL', () => {
   it('Should forward the right amount of gas', async () => {
     const message = hexToBytes('0x01')
     const signature = signMessage(message, contractAddress, privateKey)
-    const code = concatBytesNoTypeCheck(
+    const code = concatBytes(
       getAuthCode(message, signature, authAddress),
       getAuthCallCode({
         address: contractStorageAddress,
@@ -787,7 +787,7 @@ describe('EIP-3074 AUTHCALL', () => {
     const message = hexToBytes('0x01')
     const signature = signMessage(message, contractAddress, privateKey)
     const input = hexToBytes('0x' + 'aa'.repeat(32))
-    const code = concatBytesNoTypeCheck(
+    const code = concatBytes(
       getAuthCode(message, signature, authAddress),
       MSTORE(hexToBytes('0x20'), input),
       getAuthCallCode({

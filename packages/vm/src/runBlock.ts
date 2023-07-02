@@ -9,7 +9,7 @@ import {
   GWEI_TO_WEI,
   bigIntToBytes,
   bytesToHex,
-  concatBytesNoTypeCheck,
+  concatBytes,
   equalsBytes,
   hexToBytes,
   intToBytes,
@@ -432,7 +432,7 @@ export function encodeReceipt(receipt: TxReceipt, txType: TransactionType) {
 
   // Serialize receipt according to EIP-2718:
   // `typed-receipt = tx-type || receipt-data`
-  return concatBytesNoTypeCheck(intToBytes(txType), encoded)
+  return concatBytes(intToBytes(txType), encoded)
 }
 
 /**

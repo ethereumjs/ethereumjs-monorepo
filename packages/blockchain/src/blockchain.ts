@@ -8,7 +8,7 @@ import {
   MapDB,
   bytesToHex,
   bytesToUnprefixedHex,
-  concatBytesNoTypeCheck,
+  concatBytes,
   equalsBytes,
   hexToBytes,
 } from '@ethereumjs/util'
@@ -1331,7 +1331,7 @@ export class Blockchain implements BlockchainInterface {
         header.extraData = common.genesis().extraData
       } else {
         // Add required extraData (32 bytes vanity + 65 bytes filled with zeroes
-        header.extraData = concatBytesNoTypeCheck(new Uint8Array(32), new Uint8Array(65))
+        header.extraData = concatBytes(new Uint8Array(32), new Uint8Array(65))
       }
     }
     return Block.fromBlockData(

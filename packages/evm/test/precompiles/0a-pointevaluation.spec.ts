@@ -3,7 +3,7 @@ import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
   bytesToBigInt,
   computeVersionedHash,
-  concatBytesNoTypeCheck,
+  concatBytes,
   hexToBytes,
   initKZG,
   unpadBytes,
@@ -57,7 +57,7 @@ describe('Precompiles: point evaluation', () => {
       const versionedHash = computeVersionedHash(testCase.Commitment, 1)
 
       const opts: PrecompileInput = {
-        data: concatBytesNoTypeCheck(
+        data: concatBytes(
           versionedHash,
           testCase.InputPoint,
           testCase.ClaimedValue,
@@ -77,8 +77,8 @@ describe('Precompiles: point evaluation', () => {
       )
 
       const optsWithInvalidCommitment: PrecompileInput = {
-        data: concatBytesNoTypeCheck(
-          concatBytesNoTypeCheck(Uint8Array.from([0]), versionedHash.slice(1)),
+        data: concatBytes(
+          concatBytes(Uint8Array.from([0]), versionedHash.slice(1)),
           testCase.InputPoint,
           testCase.ClaimedValue,
           testCase.Commitment,

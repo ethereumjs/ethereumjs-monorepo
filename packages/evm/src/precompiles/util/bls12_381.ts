@@ -1,7 +1,7 @@
 import {
   bytesToBigInt,
   bytesToUnprefixedHex,
-  concatBytesNoTypeCheck,
+  concatBytes,
   equalsBytes,
   padToEven,
   unprefixedHexToBytes,
@@ -200,16 +200,10 @@ function BLS12_381_FromG1Point(input: any): Uint8Array {
 
   // convert to buffers.
 
-  const xBuffer = concatBytesNoTypeCheck(
-    new Uint8Array(64 - xval.length / 2),
-    unprefixedHexToBytes(xval)
-  )
-  const yBuffer = concatBytesNoTypeCheck(
-    new Uint8Array(64 - yval.length / 2),
-    unprefixedHexToBytes(yval)
-  )
+  const xBuffer = concatBytes(new Uint8Array(64 - xval.length / 2), unprefixedHexToBytes(xval))
+  const yBuffer = concatBytes(new Uint8Array(64 - yval.length / 2), unprefixedHexToBytes(yval))
 
-  return concatBytesNoTypeCheck(xBuffer, yBuffer)
+  return concatBytes(xBuffer, yBuffer)
 }
 
 // convert an input Uint8Array to a mcl G2 point
@@ -280,24 +274,12 @@ function BLS12_381_FromG2Point(input: any): Uint8Array {
 
   // convert to buffers.
 
-  const xBuffer1 = concatBytesNoTypeCheck(
-    new Uint8Array(64 - x_1.length / 2),
-    unprefixedHexToBytes(x_1)
-  )
-  const xBuffer2 = concatBytesNoTypeCheck(
-    new Uint8Array(64 - x_2.length / 2),
-    unprefixedHexToBytes(x_2)
-  )
-  const yBuffer1 = concatBytesNoTypeCheck(
-    new Uint8Array(64 - y_1.length / 2),
-    unprefixedHexToBytes(y_1)
-  )
-  const yBuffer2 = concatBytesNoTypeCheck(
-    new Uint8Array(64 - y_2.length / 2),
-    unprefixedHexToBytes(y_2)
-  )
+  const xBuffer1 = concatBytes(new Uint8Array(64 - x_1.length / 2), unprefixedHexToBytes(x_1))
+  const xBuffer2 = concatBytes(new Uint8Array(64 - x_2.length / 2), unprefixedHexToBytes(x_2))
+  const yBuffer1 = concatBytes(new Uint8Array(64 - y_1.length / 2), unprefixedHexToBytes(y_1))
+  const yBuffer2 = concatBytes(new Uint8Array(64 - y_2.length / 2), unprefixedHexToBytes(y_2))
 
-  return concatBytesNoTypeCheck(xBuffer1, xBuffer2, yBuffer1, yBuffer2)
+  return concatBytes(xBuffer1, xBuffer2, yBuffer1, yBuffer2)
 }
 
 // input: a 32-byte hex scalar Uint8Array

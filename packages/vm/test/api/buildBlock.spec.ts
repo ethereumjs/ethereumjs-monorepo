@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
-import { Account, Address, concatBytesNoTypeCheck, hexToBytes } from '@ethereumjs/util'
+import { Account, Address, concatBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../src/vm'
@@ -182,11 +182,7 @@ describe('BlockBuilder', () => {
     })
 
     // extraData: [vanity, activeSigner, seal]
-    const extraData = concatBytesNoTypeCheck(
-      new Uint8Array(32),
-      signer.address.toBytes(),
-      new Uint8Array(65)
-    )
+    const extraData = concatBytes(new Uint8Array(32), signer.address.toBytes(), new Uint8Array(65))
     const cliqueSigner = signer.privateKey
     const genesisBlock = Block.fromBlockData(
       { header: { gasLimit: 50000, extraData } },
