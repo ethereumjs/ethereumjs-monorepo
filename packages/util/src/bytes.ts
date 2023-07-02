@@ -3,7 +3,6 @@ import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
 import {
   bytesToHex as _bytesToUnprefixedHex,
   hexToBytes as _unprefixedHexToBytes,
-  bytesToUtf8,
 } from 'ethereum-cryptography/utils.js'
 
 // Note: ethereum-cryptography/hexToBytes is imported as "unprefixedHexToBytes"
@@ -332,34 +331,6 @@ export const short = (bytes: Uint8Array | string, maxLength: number = 50): strin
     return byteStr
   }
   return byteStr.slice(0, len) + '…'
-}
-
-/**
- * Returns the utf8 string representation from a hex string.
- *
- * Examples:
- *
- * Input 1: '657468657265756d000000000000000000000000000000000000000000000000'
- * Input 2: '657468657265756d'
- * Input 3: '000000000000000000000000000000000000000000000000657468657265756d'
- *
- * Output (all 3 input variants): 'ethereum'
- *
- * Note that this method is not intended to be used with hex strings
- * representing quantities in both big endian or little endian notation.
- *
- * @param {PrefixedHexString} hex
- * @return {string} Utf8 string
- */
-export const toUtf8 = (hex: string): string => {
-  const zerosRegexp = /^(00)+|(00)+$/g
-  hex = stripHexPrefix(hex)
-  if (hex.length % 2 !== 0) {
-    throw new Error('Invalid non-even hex string input for toUtf8() provided')
-  }
-  const bytesVal = unprefixedHexToBytes(hex.replace(zerosRegexp, ''))
-
-  return bytesToUtf8(bytesVal)
 }
 
 /**

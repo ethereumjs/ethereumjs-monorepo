@@ -21,11 +21,9 @@ import {
   short,
   toBytes,
   toUnsigned,
-  toUtf8,
   unpadArray,
   unpadBytes,
   unpadHexString,
-  utf8ToBytes,
   validateNoLeadingZeroes,
   zeroAddress,
   zeros,
@@ -214,33 +212,6 @@ describe('short', () => {
   })
   it('should short buffer to 10 chars', () => {
     assert.equal(short(hexToBytes(string), 10), shortenedToTen)
-  })
-})
-
-describe('toUtf8', () => {
-  it('toUtf8', () => {
-    let input = bytesToHex(utf8ToBytes('hello')) // '68656c6c6f'
-    assert.equal(toUtf8(input), 'hello', 'should convert a non-hex-prefixed value')
-    assert.equal(toUtf8(`0x${input}`), 'hello', 'should convert a hex-prefixed value')
-
-    input = bytesToHex(utf8ToBytes('bip')) // '626970'
-    assert.equal(toUtf8(input), 'bip', 'should handle trailing single 0s correctly')
-
-    input = '657468657265756d000000000000000000000000000000000000000000000000'
-    assert.equal(toUtf8(input), 'ethereum', 'should handle trailing double 0s correctly')
-    input = '657468657265756d'
-    assert.equal(toUtf8(input), 'ethereum', 'neither trailing nor leading zeros')
-    input = '000000000000000000000000000000000000000000000000657468657265756d'
-    assert.equal(toUtf8(input), 'ethereum', 'should handle leading double 0s correctly')
-
-    assert.throws(
-      () => {
-        toUtf8('123')
-      },
-      undefined,
-      undefined,
-      'should throw on uneven hex-string input'
-    )
   })
 })
 
