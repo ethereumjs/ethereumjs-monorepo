@@ -180,8 +180,8 @@ describe('VM -> setHardfork, state (deprecated), blockchain', () => {
     assert.equal(vm._common.chainName(), 'mainnet')
     assert.equal(vm._common.hardfork(), 'byzantium')
 
-    const copiedVM = await vm.shallowCopy()
-    assert.equal(copiedVM._common.chainName(), 'ropsten')
+    const copiedVM = await vm.copy()
+    assert.equal(copiedVM._common.chainName(), 'mainnet')
     assert.equal(copiedVM._common.hardfork(), 'byzantium')
   })
 
