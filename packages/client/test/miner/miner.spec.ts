@@ -81,7 +81,7 @@ tape('[Miner]', async (t) => {
       },
       validateHeader: () => {},
       // eslint-disable-next-line no-invalid-this
-      copy: () => this.blockchain,
+      shallowCopy: () => this.blockchain,
       _init: async () => undefined,
     }
   }
