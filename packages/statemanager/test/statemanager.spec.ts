@@ -33,7 +33,7 @@ describe('StateManager -> General', () => {
       },
     })
 
-    smCopy = sm.copy()
+    smCopy = sm.shallowCopy()
     assert.equal(
       (smCopy as any)._accountCacheSettings.type,
       CacheType.ORDERED_MAP,
