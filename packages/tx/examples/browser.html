@@ -6,7 +6,7 @@
     <script type="module">
         import { Chain, Common, Hardfork } from '@ethereumjs/common'
         import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-        import { bytesToPrefixedHexString } from '@ethereumjs/util'
+        import { bytesToHex } from '@ethereumjs/util'
 
         const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
@@ -27,7 +27,7 @@
         }
 
         const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
-        console.log(bytesToPrefixedHexString(tx.hash()))
+        console.log(bytesToHex(tx.hash()))
     </script>
 
 </head>

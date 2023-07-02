@@ -413,7 +413,7 @@ describe('bigIntToHex', () => {
   })
 })
 
-describe('prefixedHexStringToBytes', () => {
+describe('hexToBytes', () => {
   it('should throw on non-prefixed strings', () => {
     assert.throws(() => {
       hexToBytes('aabbcc112233')
