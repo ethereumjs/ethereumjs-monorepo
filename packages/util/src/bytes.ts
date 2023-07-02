@@ -39,6 +39,31 @@ export const bytesToHex = (bytes: Uint8Array): string => {
   return hex
 }
 
+/**
+ * Converts a {@link Uint8Array} to a {@link bigint}
+ * @param {Uint8Array} bytes the bytes to convert
+ * @returns {bigint}
+ */
+export function bytesToBigInt(bytes: Uint8Array): bigint {
+  const hex = bytesToHex(bytes)
+  if (hex === '0x') {
+    return BigInt(0)
+  }
+  return BigInt(hex)
+}
+
+/**
+ * Converts a {@link Uint8Array} to a {@link number}.
+ * @param {Uint8Array} bytes the bytes to convert
+ * @return  {number}
+ * @throws If the input number exceeds 53 bits.
+ */
+export const bytesToInt = function (bytes: Uint8Array): number {
+  const res = Number(bytesToBigInt(bytes))
+  if (!Number.isSafeInteger(res)) throw new Error('Number exceeds 53 bits')
+  return res
+}
+
 export const hexToBytes = (hex: string): Uint8Array => {
   if (typeof hex !== 'string') {
     throw new Error(`hex argument type ${typeof hex} must be of type string`)
@@ -85,6 +110,16 @@ export const intToPrefixedHexString = function (i: number): PrefixedHexString {
 export const intToBytes = function (i: number): Uint8Array {
   const hex = intToPrefixedHexString(i)
   return hexToBytes(hex)
+}
+
+/**
+ * Converts a {@link bigint} to a {@link Uint8Array}
+ *  * @param {bigint} num the bigint to convert
+ * @returns {Uint8Array}
+ */
+export const bigIntToBytes = (num: bigint): Uint8Array => {
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+  return toBytes('0x' + padToEven(num.toString(16)))
 }
 
 /**
@@ -244,40 +279,6 @@ export const toBytes = function (v: ToBytesInputTypes): Uint8Array {
   }
 
   throw new Error('invalid type')
-}
-
-/**
- * Converts a {@link Uint8Array} to a {@link bigint}
- * @param {Uint8Array} bytes the bytes to convert
- * @returns {bigint}
- */
-export function bytesToBigInt(bytes: Uint8Array): bigint {
-  const hex = bytesToHex(bytes)
-  if (hex === '0x') {
-    return BigInt(0)
-  }
-  return BigInt(hex)
-}
-
-/**
- * Converts a {@link bigint} to a {@link Uint8Array}
- *  * @param {bigint} num the bigint to convert
- * @returns {Uint8Array}
- */
-export const bigIntToBytes = (num: bigint): Uint8Array => {
-  return toBytes('0x' + padToEven(num.toString(16)))
-}
-
-/**
- * Converts a {@link Uint8Array} to a {@link number}.
- * @param {Uint8Array} bytes the bytes to convert
- * @return  {number}
- * @throws If the input number exceeds 53 bits.
- */
-export const bytesToInt = function (bytes: Uint8Array): number {
-  const res = Number(bytesToBigInt(bytes))
-  if (!Number.isSafeInteger(res)) throw new Error('Number exceeds 53 bits')
-  return res
 }
 
 /**
