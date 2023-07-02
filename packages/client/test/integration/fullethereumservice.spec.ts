@@ -27,8 +27,8 @@ tape('[Integration:FullEthereumService]', async (t) => {
   // Stub out setStateRoot since correct state root doesn't exist in mock state.
   const ogSetStateRoot = DefaultStateManager.prototype.setStateRoot
   DefaultStateManager.prototype.setStateRoot = (): any => {}
-  const originalStateManagerCopy = DefaultStateManager.prototype.copy
-  DefaultStateManager.prototype.copy = function () {
+  const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
+  DefaultStateManager.prototype.shallowCopy = function () {
     return this
   }
   async function setup(): Promise<[MockServer, FullEthereumService]> {
@@ -124,6 +124,6 @@ tape('[Integration:FullEthereumService]', async (t) => {
 
     // unstub setStateRoot
     DefaultStateManager.prototype.setStateRoot = ogSetStateRoot
-    DefaultStateManager.prototype.copy = originalStateManagerCopy
+    DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
   })
 })
