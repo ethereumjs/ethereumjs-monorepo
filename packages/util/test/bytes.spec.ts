@@ -419,8 +419,40 @@ describe('hexToBytes', () => {
       hexToBytes('aabbcc112233')
     })
   })
-  it('should convert prefixed hex-strings', () => {
+  it('should convert prefixed hex-strings (byte length: 0)', () => {
+    const converted = hexToBytes('0x')
+    assert.deepEqual(converted, new Uint8Array([]))
+  })
+  it('should convert prefixed hex-strings (byte length: 1)', () => {
+    const converted = hexToBytes('0x01')
+    assert.deepEqual(converted, new Uint8Array([1]))
+  })
+  it('should convert prefixed hex-strings (byte length: 2)', () => {
+    const converted = hexToBytes('0x01aa')
+    assert.deepEqual(converted, new Uint8Array([1, 0xaa]))
+  })
+  it('should convert prefixed hex-strings (byte length: 3)', () => {
+    const converted = hexToBytes('0x01aabb')
+    assert.deepEqual(converted, new Uint8Array([1, 0xaa, 0xbb]))
+  })
+  it('should convert prefixed hex-strings (byte length: 4)', () => {
+    const converted = hexToBytes('0x01aabbcc')
+    assert.deepEqual(converted, new Uint8Array([1, 0xaa, 0xbb, 0xcc]))
+  })
+  it('should convert prefixed hex-strings (odd length, 1 character, byte length: 1)', () => {
     const converted = hexToBytes('0x1')
     assert.deepEqual(converted, new Uint8Array([1]))
+  })
+  it('should convert prefixed hex-strings (odd length, byte length: 2)', () => {
+    const converted = hexToBytes('0x1aa')
+    assert.deepEqual(converted, new Uint8Array([1, 0xaa]))
+  })
+  it('should convert prefixed hex-strings (odd length, byte length: 3)', () => {
+    const converted = hexToBytes('0x1aabb')
+    assert.deepEqual(converted, new Uint8Array([1, 0xaa, 0xbb]))
+  })
+  it('should convert prefixed hex-strings (odd length, byte length: 4)', () => {
+    const converted = hexToBytes('0x1aabbcc')
+    assert.deepEqual(converted, new Uint8Array([1, 0xaa, 0xbb, 0xcc]))
   })
 })

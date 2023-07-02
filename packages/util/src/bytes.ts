@@ -72,18 +72,50 @@ export const hexToBytes = (hex: string): Uint8Array => {
     throw new Error(`prefixed hex input should start with 0x, got ${hex.substring(0, 2)}`)
   }
 
-  hex = hex.slice(2)
-
-  if (hex.length % 2 !== 0) {
-    hex = padToEven(hex)
-  }
-
-  const byteLen = hex.length / 2
+  const byteLen = Math.ceil(hex.length / 2) - 1
   const bytes = new Uint8Array(byteLen)
-  for (let i = 0; i < byteLen; i++) {
-    const byte = parseInt(hex.slice(i * 2, (i + 1) * 2), 16)
-    bytes[i] = byte
+
+  if (hex.length > 2) {
+    let doOddCheck = hex.length % 2 === 1
+    const startIndex = doOddCheck ? 1 : 2
+
+    for (let byteIndex = 0; byteIndex < byteLen; byteIndex++) {
+      // If the string is odd, then start at index 1 (so at the `x` of `0x`)
+      // Else, start at the next character right after `0x`
+      const startStr = startIndex + byteIndex * 2
+      if (doOddCheck && byteIndex === 0) {
+        // Special case only for odd characters:
+        // In this case, the zero index is special:
+        // In the hex string "0x501", for the zero index only take the first character after `0x`
+        // (So: 5) and convert this to a hex string (it is assumed to be left-padded)
+        // Then, for all other indices just pursue normally
+        // (Note that for index 1, we thus take 1 + 1*2 = 3 as start string, and
+        // take 2 characters instead of 1)
+        bytes[byteIndex] = parseInt(hex.slice(2, 3), 16)
+        doOddCheck = false // Special case handled, continue as normal
+      } else {
+        bytes[byteIndex] = parseInt(hex.slice(startStr, startStr + 2), 16)
+      }
+    }
   }
+
+  /*
+  if (hex.length % 2 === 0) {
+    // Hex string has even length and should not be padded
+    for (let i = 0; i < byteLen; i++) {
+      const startStr = (i + 1) * 2
+      const byte = parseInt(hex.slice(startStr, startStr + 2), 16)
+      bytes[i] = byte
+    }
+  } else if (hex.length > 2) {
+    // Hex length has odd length and should be padded
+    bytes[0] = parseInt(hex.slice(2,3))
+    for (let i = 0; i < byteLen; i++) {
+      const startStr = (i + 1) * 2 + 1
+      const byte = parseInt(hex.slice(startStr, startStr + 2), 16)
+      bytes[i + 1] = byte
+    }
+  }*/
   return bytes
 }
 
