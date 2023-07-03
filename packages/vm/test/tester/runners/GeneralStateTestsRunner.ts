@@ -42,6 +42,7 @@ export class GeneralStateTests {
   failingTests: Record<string, (TaskResult | undefined)[]>
   customStateTest: string | undefined
   customTestsPath: string | undefined
+  logResults: boolean
   constructor(argv: TestArgs) {
     this.expectedTests = 0
     this.failingTests = {}
@@ -54,6 +55,7 @@ export class GeneralStateTests {
     this.testGetterArgs = getGetterArgs(argv, this.FORK_CONFIG_TEST_SUITE)
     this.runSkipped = this.testGetterArgs.runSkipped ?? []
     this.runnerArgs = getRunnerArgs(argv, this.FORK_CONFIG_VM, this.FORK_CONFIG_TEST_SUITE)
+    this.logResults = argv.debug ?? false
     /**
      * Modify the forkConfig string to ensure it works with RegEx (escape `+` characters)
      */
@@ -212,7 +214,7 @@ export class GeneralStateTests {
                 for await (const [fileName, testData] of Object.entries(subDir)) {
                   suite(fileName, async () => {
                     for await (const [testName, t] of Object.values(testData)) {
-                      it(testName, async () => {
+                      suite(testName, async () => {
                         await this.onFile(fileName, testDir, testName, t)
                       })
                     }
@@ -233,6 +235,25 @@ export class GeneralStateTests {
                     }
                   })
                 }
+              }
+            }).on('afterAll', async (context) => {
+              if (this.logResults) {
+                let totalTasks = 0
+                const logs = []
+                for await (const t of context.tasks) {
+                  const _t = t as any
+                  logs.push(`---- { subDir: ${t.name}, tests: ${_t.tasks.length} }`)
+                  for await (const tt of _t.tasks) {
+                    totalTasks += tt.tasks.length
+                    logs.push(`---- ---- { test:  ${tt.name}, checks: ${tt.tasks.length} }`)
+                  }
+                }
+                console.log({
+                  test: context.name,
+                  subDirs: context.tasks.length,
+                  totalResults: totalTasks,
+                })
+                console.log(logs.join('\n'))
               }
             })
           }
