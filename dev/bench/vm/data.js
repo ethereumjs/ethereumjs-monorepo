@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1688378761930,
+  "lastUpdate": 1688382786061,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "konjou@gmail.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "d645cd2a86f64416f443e62a59892554f0b546d3",
-          "message": "devp2p: file extensions (#2789)",
-          "timestamp": "2023-06-16T22:42:39-04:00",
-          "tree_id": "e100fe716cce476a0f9b68b1dc79fe69e1858b7f",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d645cd2a86f64416f443e62a59892554f0b546d3"
-        },
-        "date": 1686970000278,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 30688,
-            "range": "±5.83%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 30863,
-            "range": "±2.78%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 30602,
-            "range": "±2.90%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 30481,
-            "range": "±2.88%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 25248,
-            "range": "±10.21%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.20%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "629c80f42d84f76ec96186b06f3dabd2caa352fa",
+          "message": "VM/SM/Blockchain/Trie/EVM: Copy() -> shallowCopy() function renaming (#2826)\n\n* Rename vm copy function to shallowCopy\r\n\r\n* Rename StateManager copy function to shallowCopy\r\n\r\n* Rename evm copy function to shallowCopy\r\n\r\n* Rename Blockchain copy function to shallowCopy\r\n\r\n* Fix interface copy function naming\r\n\r\n* Rename Trie copy function to shallowCopy\r\n\r\n* Fix tests\r\n\r\n* Fix tests\r\n\r\n* Fix test\r\n\r\n* Update mocked objects in tests to reflect naming change\r\n\r\n* Fix test\r\n\r\n* Update examples and recipes to reflect naming changes\r\n\r\n* Fix tests\r\n\r\n* Update documentation to reflect naming changes\r\n\r\n* Update benchmarks and tests\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-07-03T13:09:25+02:00",
+          "tree_id": "2f1df6dbd0d96b9e45a954301ad853ee68af557d",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/629c80f42d84f76ec96186b06f3dabd2caa352fa"
+        },
+        "date": 1688382784302,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 32186,
+            "range": "±5.50%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 32182,
+            "range": "±2.78%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31939,
+            "range": "±2.95%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25988,
+            "range": "±11.24%",
+            "unit": "ops/sec",
+            "extra": "69 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30742,
+            "range": "±3.07%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
