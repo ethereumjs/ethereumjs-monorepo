@@ -237,8 +237,7 @@ export class BlockchainTests {
       return
     }
 
-    test(`${id}`, async (name) => {
-      console.log('name: ', name)
+    test(`${id}`, async () => {
       try {
         const common = options.common.copy()
         const begin = Date.now()

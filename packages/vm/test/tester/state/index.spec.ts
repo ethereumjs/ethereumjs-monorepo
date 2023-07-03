@@ -31,28 +31,7 @@ if (testArgs.test !== undefined || testArgs.customStateTest !== undefined) {
   testArgs['verify-test-amount-alltests'] = 0
 }
 const test = new GeneralStateTests(testArgs)
-console.log({
-  test: 'state',
-  skip: testArgs.skip,
-  runSkipped: testArgs.runSkipped,
-  fork: testArgs.fork,
-  expected: test.expectedTests,
-})
-const runSuite = suite(`${testArgs.fork} (${test.expectedTests})`, async () => {
-  await test.runTests()
-})
 
-runSuite.on('beforeAll', (suite) => {
-  const testSuite = {
-    ...testArgs,
-    test: 'state',
-    verifyTestAmountAllTests: testArgs['verify-test-amount-alltests'] > 0 ? true : false,
-    expected: test.expectedTests > 0 ? test.expectedTests : suite.tasks.length,
-    tasks: suite.tasks.length,
-  }
-  console.log(
-    Object.fromEntries(
-      Object.entries(testSuite).filter(([_, value]) => value !== undefined && value !== '')
-    )
-  )
+suite(`${testArgs.fork} (${test.expectedTests})`, async () => {
+  await test.runTests()
 })

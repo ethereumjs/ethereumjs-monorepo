@@ -182,7 +182,6 @@ export async function getTestsFromArgs(
       return testName !== args.test
     }
   }
-  console.log({ directory })
   return getTests(onFile, fileFilter, skipFn, directory, excludeDir)
 }
 

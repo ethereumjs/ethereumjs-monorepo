@@ -27,13 +27,6 @@ const input = {
 
 const testArgs = { ...defaultStateTestArgs, ...input }
 const statetest = new GeneralStateTests(testArgs)
-console.log({
-  test: 'state',
-  skip: testArgs.skip,
-  runSkipped: testArgs.runSkipped,
-  fork: testArgs.fork,
-  expected: statetest.expectedTests,
-})
 describe(`${testArgs.fork} (${statetest.expectedTests})`, async () => {
   await statetest.runTests()
 })

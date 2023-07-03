@@ -28,13 +28,6 @@ const input = {
 
 const testArgs = { ...defaultBlockchainTestArgs, ...input }
 const blockchaintest = new BlockchainTests(testArgs)
-console.log({
-  test: 'blockchain',
-  skip: testArgs.skip,
-  runSkipped: testArgs.runSkipped,
-  fork: testArgs.fork,
-  expected: blockchaintest.expectedTests,
-})
 describe(`${testArgs.fork} (${blockchaintest.expectedTests})`, async () => {
   await blockchaintest.runTests()
 })
