@@ -218,6 +218,8 @@ export class VM {
 
   /**
    * Returns a copy of the {@link VM} instance.
+   *
+   * Note that the returned copy will share the same db as the original for the blockchain and the statemanager
    */
   async shallowCopy(): Promise<VM> {
     const common = this._common.copy()

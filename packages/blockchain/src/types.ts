@@ -44,7 +44,7 @@ export interface BlockchainInterface {
   ): Promise<number>
 
   /**
-   * Returns a copy of the blockchain
+   * Returns a shallow copy of the blockchain that may share state with the original
    */
   shallowCopy(): BlockchainInterface
 
