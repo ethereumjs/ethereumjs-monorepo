@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToHex, equalsBytes, prefixedHexStringToBytes, toBytes, zeros } from '@ethereumjs/util'
+import { bytesToHex, equalsBytes, hexToBytes, toBytes, zeros } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 // explicitly import util, needed for karma-typescript bundling
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, simple-import-sort/imports
@@ -227,8 +227,8 @@ describe('[Block]: block functions', () => {
 
   it('should test genesis hashes (mainnet default)', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const rlp = prefixedHexStringToBytes('0x' + testDataGenesis.test.genesis_rlp_hex)
-    const hash = prefixedHexStringToBytes('0x' + testDataGenesis.test.genesis_hash)
+    const rlp = hexToBytes('0x' + testDataGenesis.test.genesis_rlp_hex)
+    const hash = hexToBytes('0x' + testDataGenesis.test.genesis_hash)
     const block = Block.fromRLPSerializedBlock(rlp, { common })
     assert.ok(equalsBytes(block.hash(), hash), 'genesis hash match')
   })
@@ -272,7 +272,7 @@ describe('[Block]: block functions', () => {
   it('DAO hardfork', () => {
     const blockData = RLP.decode(testDataPreLondon2.blocks[0].rlp) as NestedUint8Array
     // Set block number from test block to mainnet DAO fork block 1920000
-    blockData[0][8] = prefixedHexStringToBytes('0x1D4C00')
+    blockData[0][8] = hexToBytes('0x1D4C00')
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Dao })
     assert.throws(
@@ -285,7 +285,7 @@ describe('[Block]: block functions', () => {
     ) // eslint-disable-line
 
     // Set extraData to dao-hard-fork
-    blockData[0][12] = prefixedHexStringToBytes('0x64616f2d686172642d666f726b')
+    blockData[0][12] = hexToBytes('0x64616f2d686172642d666f726b')
 
     assert.doesNotThrow(function () {
       Block.fromValuesArray(blockData as BlockBytes, { common })

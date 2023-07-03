@@ -1,16 +1,35 @@
 import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
-import { bytesToHex, bytesToUtf8, hexToBytes } from 'ethereum-cryptography/utils.js'
+// eslint-disable-next-line no-restricted-imports
+import {
+  bytesToHex as _bytesToUnprefixedHex,
+  hexToBytes as _unprefixedHexToBytes,
+} from 'ethereum-cryptography/utils.js'
+
+// Note: ethereum-cryptography/hexToBytes is imported as "unprefixedHexToBytes"
+// This name is not correct, since it supports prefixed strings. However, internally here we
+// explicitly use it when the strings are known to be unprefixed (for readability and avoid
+// confusion why we would not use our own `hexToBytes`)
 
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.js'
 import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal.js'
 
 import type { PrefixedHexString, TransformabletoBytes } from './types.js'
 
+/**
+ * @deprecated
+ */
+export const bytesToUnprefixedHex = _bytesToUnprefixedHex
+
+/**
+ * @deprecated
+ */
+export const unprefixedHexToBytes = _unprefixedHexToBytes
+
 /****************  Borrowed from @chainsafe/ssz */
 // Caching this info costs about ~1000 bytes and speeds up toHexString() by x6
 const hexByByte = Array.from({ length: 256 }, (v, i) => i.toString(16).padStart(2, '0'))
 
-export const bytesToPrefixedHexString = (bytes: Uint8Array): string => {
+export const bytesToHex = (bytes: Uint8Array): string => {
   let hex = '0x'
   if (bytes === undefined || bytes.length === 0) return hex
   for (const byte of bytes) {
@@ -19,7 +38,32 @@ export const bytesToPrefixedHexString = (bytes: Uint8Array): string => {
   return hex
 }
 
-export const prefixedHexStringToBytes = (hex: string): Uint8Array => {
+/**
+ * Converts a {@link Uint8Array} to a {@link bigint}
+ * @param {Uint8Array} bytes the bytes to convert
+ * @returns {bigint}
+ */
+export const bytesToBigInt = (bytes: Uint8Array): bigint => {
+  const hex = bytesToHex(bytes)
+  if (hex === '0x') {
+    return BigInt(0)
+  }
+  return BigInt(hex)
+}
+
+/**
+ * Converts a {@link Uint8Array} to a {@link number}.
+ * @param {Uint8Array} bytes the bytes to convert
+ * @return  {number}
+ * @throws If the input number exceeds 53 bits.
+ */
+export const bytesToInt = (bytes: Uint8Array): number => {
+  const res = Number(bytesToBigInt(bytes))
+  if (!Number.isSafeInteger(res)) throw new Error('Number exceeds 53 bits')
+  return res
+}
+
+export const hexToBytes = (hex: string): Uint8Array => {
   if (typeof hex !== 'string') {
     throw new Error(`hex argument type ${typeof hex} must be of type string`)
   }
@@ -50,7 +94,7 @@ export const prefixedHexStringToBytes = (hex: string): Uint8Array => {
  * @param {number} i
  * @return {PrefixedHexString}
  */
-export const intToPrefixedHexString = function (i: number): PrefixedHexString {
+export const intToHex = (i: number): PrefixedHexString => {
   if (!Number.isSafeInteger(i) || i < 0) {
     throw new Error(`Received an invalid integer type: ${i}`)
   }
@@ -62,9 +106,19 @@ export const intToPrefixedHexString = function (i: number): PrefixedHexString {
  * @param {Number} i
  * @return {Uint8Array}
  */
-export const intToBytes = function (i: number): Uint8Array {
-  const hex = intToPrefixedHexString(i)
-  return hexToBytes(padToEven(hex.slice(2)))
+export const intToBytes = (i: number): Uint8Array => {
+  const hex = intToHex(i)
+  return hexToBytes(hex)
+}
+
+/**
+ * Converts a {@link bigint} to a {@link Uint8Array}
+ *  * @param {bigint} num the bigint to convert
+ * @returns {Uint8Array}
+ */
+export const bigIntToBytes = (num: bigint): Uint8Array => {
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+  return toBytes('0x' + padToEven(num.toString(16)))
 }
 
 /**
@@ -72,7 +126,7 @@ export const intToBytes = function (i: number): Uint8Array {
  * @param {number} bytes the number of bytes of the Uint8Array
  * @return {Uint8Array}
  */
-export const zeros = function (bytes: number): Uint8Array {
+export const zeros = (bytes: number): Uint8Array => {
   return new Uint8Array(bytes)
 }
 
@@ -84,7 +138,7 @@ export const zeros = function (bytes: number): Uint8Array {
  * @param {boolean} right whether to start padding form the left or right
  * @return {Uint8Array}
  */
-const setLength = function (msg: Uint8Array, length: number, right: boolean): Uint8Array {
+const setLength = (msg: Uint8Array, length: number, right: boolean): Uint8Array => {
   if (right) {
     if (msg.length < length) {
       return new Uint8Array([...msg, ...zeros(length - msg.length)])
@@ -105,7 +159,7 @@ const setLength = function (msg: Uint8Array, length: number, right: boolean): Ui
  * @param {number} length the number of bytes the output should be
  * @return {Uint8Array}
  */
-export const setLengthLeft = function (msg: Uint8Array, length: number): Uint8Array {
+export const setLengthLeft = (msg: Uint8Array, length: number): Uint8Array => {
   assertIsBytes(msg)
   return setLength(msg, length, false)
 }
@@ -117,7 +171,7 @@ export const setLengthLeft = function (msg: Uint8Array, length: number): Uint8Ar
  * @param {number} length the number of bytes the output should be
  * @return {Uint8Array}
  */
-export const setLengthRight = function (msg: Uint8Array, length: number): Uint8Array {
+export const setLengthRight = (msg: Uint8Array, length: number): Uint8Array => {
   assertIsBytes(msg)
   return setLength(msg, length, true)
 }
@@ -127,9 +181,11 @@ export const setLengthRight = function (msg: Uint8Array, length: number): Uint8A
  * @param {Uint8Array|number[]|PrefixedHexString} a
  * @return {Uint8Array|number[]|PrefixedHexString}
  */
-const stripZeros = function <
+const stripZeros = <
   T extends Uint8Array | number[] | PrefixedHexString = Uint8Array | number[] | PrefixedHexString
->(a: T): T {
+>(
+  a: T
+): T => {
   let first = a[0]
   while (a.length > 0 && first.toString() === '0') {
     a = a.slice(1) as T
@@ -143,7 +199,7 @@ const stripZeros = function <
  * @param {Uint8Array} a
  * @return {Uint8Array}
  */
-export const unpadBytes = function (a: Uint8Array): Uint8Array {
+export const unpadBytes = (a: Uint8Array): Uint8Array => {
   assertIsBytes(a)
   return stripZeros(a)
 }
@@ -153,7 +209,7 @@ export const unpadBytes = function (a: Uint8Array): Uint8Array {
  * @param  {number[]} a
  * @return {number[]}
  */
-export const unpadArray = function (a: number[]): number[] {
+export const unpadArray = (a: number[]): number[] => {
   assertIsArray(a)
   return stripZeros(a)
 }
@@ -163,7 +219,7 @@ export const unpadArray = function (a: number[]): number[] {
  * @param {PrefixedHexString} a
  * @return {PrefixedHexString}
  */
-export const unpadHexString = function (a: string): PrefixedHexString {
+export const unpadHex = (a: string): PrefixedHexString => {
   assertIsHexString(a)
   a = stripHexPrefix(a)
   return '0x' + stripZeros(a)
@@ -187,7 +243,7 @@ export type ToBytesInputTypes =
  * @return {Uint8Array}
  */
 
-export const toBytes = function (v: ToBytesInputTypes): Uint8Array {
+export const toBytes = (v: ToBytesInputTypes): Uint8Array => {
   if (v === null || v === undefined) {
     return new Uint8Array()
   }
@@ -202,7 +258,7 @@ export const toBytes = function (v: ToBytesInputTypes): Uint8Array {
         `Cannot convert string to Uint8Array. toBytes only supports 0x-prefixed hex strings and this string was given: ${v}`
       )
     }
-    return hexToBytes(padToEven(v.slice(2)))
+    return hexToBytes(v)
   }
 
   if (typeof v === 'number') {
@@ -215,7 +271,7 @@ export const toBytes = function (v: ToBytesInputTypes): Uint8Array {
     }
     let n = v.toString(16)
     if (n.length % 2) n = '0' + n
-    return hexToBytes(n)
+    return unprefixedHexToBytes(n)
   }
 
   if (v.toBytes !== undefined) {
@@ -227,45 +283,11 @@ export const toBytes = function (v: ToBytesInputTypes): Uint8Array {
 }
 
 /**
- * Converts a {@link Uint8Array} to a {@link bigint}
- * @param {Uint8Array} bytes the bytes to convert
- * @returns {bigint}
- */
-export function bytesToBigInt(bytes: Uint8Array): bigint {
-  const hex = bytesToPrefixedHexString(bytes)
-  if (hex === '0x') {
-    return BigInt(0)
-  }
-  return BigInt(hex)
-}
-
-/**
- * Converts a {@link bigint} to a {@link Uint8Array}
- *  * @param {bigint} num the bigint to convert
- * @returns {Uint8Array}
- */
-export const bigIntToBytes = (num: bigint): Uint8Array => {
-  return toBytes('0x' + padToEven(num.toString(16)))
-}
-
-/**
- * Converts a {@link Uint8Array} to a {@link number}.
- * @param {Uint8Array} bytes the bytes to convert
- * @return  {number}
- * @throws If the input number exceeds 53 bits.
- */
-export const bytesToInt = function (bytes: Uint8Array): number {
-  const res = Number(bytesToBigInt(bytes))
-  if (!Number.isSafeInteger(res)) throw new Error('Number exceeds 53 bits')
-  return res
-}
-
-/**
  * Interprets a `Uint8Array` as a signed integer and returns a `BigInt`. Assumes 256-bit numbers.
  * @param {Uint8Array} num Signed integer value
  * @returns {bigint}
  */
-export const fromSigned = function (num: Uint8Array): bigint {
+export const fromSigned = (num: Uint8Array): bigint => {
   return BigInt.asIntN(256, bytesToBigInt(num))
 }
 
@@ -274,7 +296,7 @@ export const fromSigned = function (num: Uint8Array): bigint {
  * @param {bigint} num
  * @returns {Uint8Array}
  */
-export const toUnsigned = function (num: bigint): Uint8Array {
+export const toUnsigned = (num: bigint): Uint8Array => {
   return bigIntToBytes(BigInt.asUintN(256, num))
 }
 
@@ -283,7 +305,7 @@ export const toUnsigned = function (num: bigint): Uint8Array {
  * @param {string} str
  * @return {PrefixedHexString}
  */
-export const addHexPrefix = function (str: string): PrefixedHexString {
+export const addHexPrefix = (str: string): PrefixedHexString => {
   if (typeof str !== 'string') {
     return str
   }
@@ -302,40 +324,13 @@ export const addHexPrefix = function (str: string): PrefixedHexString {
  * @param {number} maxLength
  * @return {string}
  */
-export function short(bytes: Uint8Array | string, maxLength: number = 50): string {
+export const short = (bytes: Uint8Array | string, maxLength: number = 50): string => {
   const byteStr = bytes instanceof Uint8Array ? bytesToHex(bytes) : bytes
-  if (byteStr.length <= maxLength) {
+  const len = byteStr.slice(0, 2) === '0x' ? maxLength + 2 : maxLength
+  if (byteStr.length <= len) {
     return byteStr
   }
-  return byteStr.slice(0, maxLength) + '…'
-}
-
-/**
- * Returns the utf8 string representation from a hex string.
- *
- * Examples:
- *
- * Input 1: '657468657265756d000000000000000000000000000000000000000000000000'
- * Input 2: '657468657265756d'
- * Input 3: '000000000000000000000000000000000000000000000000657468657265756d'
- *
- * Output (all 3 input variants): 'ethereum'
- *
- * Note that this method is not intended to be used with hex strings
- * representing quantities in both big endian or little endian notation.
- *
- * @param {PrefixedHexString} hex
- * @return {string} Utf8 string
- */
-export const toUtf8 = function (hex: string): string {
-  const zerosRegexp = /^(00)+|(00)+$/g
-  hex = stripHexPrefix(hex)
-  if (hex.length % 2 !== 0) {
-    throw new Error('Invalid non-even hex string input for toUtf8() provided')
-  }
-  const bytesVal = hexToBytes(hex.replace(zerosRegexp, ''))
-
-  return bytesToUtf8(bytesVal)
+  return byteStr.slice(0, len) + '…'
 }
 
 /**
@@ -351,9 +346,7 @@ export const toUtf8 = function (hex: string): string {
  * @param values An object containing string keys and Uint8Array values
  * @throws if any provided value is found to have leading zero bytes
  */
-export const validateNoLeadingZeroes = function (values: {
-  [key: string]: Uint8Array | undefined
-}) {
+export const validateNoLeadingZeroes = (values: { [key: string]: Uint8Array | undefined }) => {
   for (const [k, v] of Object.entries(values)) {
     if (v !== undefined && v.length > 0 && v[0] === 0) {
       throw new Error(`${k} cannot have leading zeroes, received: ${bytesToHex(v)}`)
@@ -376,7 +369,7 @@ export const bigIntToHex = (num: bigint): PrefixedHexString => {
  * @param {bigint} value the bigint to convert
  * @returns {Uint8Array}
  */
-export function bigIntToUnpaddedBytes(value: bigint): Uint8Array {
+export const bigIntToUnpaddedBytes = (value: bigint): Uint8Array => {
   return unpadBytes(bigIntToBytes(value))
 }
 
@@ -386,7 +379,7 @@ export function bigIntToUnpaddedBytes(value: bigint): Uint8Array {
  * @param {number} value the bigint to convert
  * @returns {Uint8Array}
  */
-export function intToUnpaddedBytes(value: number): Uint8Array {
+export const intToUnpaddedBytes = (value: number): Uint8Array => {
   return unpadBytes(intToBytes(value))
 }
 
@@ -399,7 +392,7 @@ export function intToUnpaddedBytes(value: number): Uint8Array {
  *                   A negative number if value1 is smaller than value2,
  *                   or 0 if value1 and value2 are equal.
  */
-export function compareBytes(value1: Uint8Array, value2: Uint8Array): number {
+export const compareBytes = (value1: Uint8Array, value2: Uint8Array): number => {
   const bigIntValue1 = bytesToBigInt(value1)
   const bigIntValue2 = bytesToBigInt(value2)
   return bigIntValue1 > bigIntValue2 ? 1 : bigIntValue1 < bigIntValue2 ? -1 : 0
@@ -411,7 +404,7 @@ export function compareBytes(value1: Uint8Array, value2: Uint8Array): number {
  * @param {number} length - The length of the Uint8Array.
  * @returns {Uint8Array} A Uint8Array of random bytes of specified length.
  */
-export function randomBytes(length: number): Uint8Array {
+export const randomBytes = (length: number): Uint8Array => {
   return getRandomBytesSync(length)
 }
 
@@ -423,7 +416,7 @@ export function randomBytes(length: number): Uint8Array {
  * @returns {Uint8Array} one Uint8Array with all the elements of the original set
  * works like `Buffer.concat`
  */
-export const concatBytesNoTypeCheck = (...arrays: Uint8Array[]): Uint8Array => {
+export const concatBytes = (...arrays: Uint8Array[]): Uint8Array => {
   if (arrays.length === 1) return arrays[0]
   const length = arrays.reduce((a, arr) => a + arr.length, 0)
   const result = new Uint8Array(length)
@@ -435,10 +428,5 @@ export const concatBytesNoTypeCheck = (...arrays: Uint8Array[]): Uint8Array => {
   return result
 }
 
-export {
-  bytesToHex,
-  bytesToUtf8,
-  concatBytes,
-  equalsBytes,
-  utf8ToBytes,
-} from 'ethereum-cryptography/utils.js'
+// eslint-disable-next-line no-restricted-imports
+export { bytesToUtf8, equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'

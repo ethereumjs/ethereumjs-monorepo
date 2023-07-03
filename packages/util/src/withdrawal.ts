@@ -1,5 +1,5 @@
 import { Address } from './address.js'
-import { bigIntToHex, bytesToPrefixedHexString, toBytes } from './bytes.js'
+import { bigIntToHex, bytesToHex, toBytes } from './bytes.js'
 import { TypeOutput, toType } from './types.js'
 
 import type { AddressLike, BigIntLike } from './types.js'
@@ -113,7 +113,7 @@ export class Withdrawal {
     return {
       index: bigIntToHex(this.index),
       validatorIndex: bigIntToHex(this.validatorIndex),
-      address: bytesToPrefixedHexString(this.address.bytes),
+      address: bytesToHex(this.address.bytes),
       amount: bigIntToHex(this.amount),
     }
   }

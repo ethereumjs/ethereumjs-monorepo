@@ -2,8 +2,7 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
 import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Account, Address, AsyncEventEmitter } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { Account, Address, AsyncEventEmitter, unprefixedHexToBytes } from '@ethereumjs/util'
 
 import { buildBlock } from './buildBlock.js'
 import { runBlock } from './runBlock.js'
@@ -154,7 +153,7 @@ export class VM {
       await this.evm.journal.checkpoint()
       // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
       for (const [addressStr] of getActivePrecompiles(this._common)) {
-        const address = new Address(hexToBytes(addressStr))
+        const address = new Address(unprefixedHexToBytes(addressStr))
         let account = await this.stateManager.getAccount(address)
         // Only do this if it is not overridden in genesis
         // Note: in the case that custom genesis has storage fields, this is preserved

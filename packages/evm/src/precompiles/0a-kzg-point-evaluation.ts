@@ -2,7 +2,7 @@ import {
   bigIntToBytes,
   bytesToHex,
   computeVersionedHash,
-  concatBytesNoTypeCheck,
+  concatBytes,
   kzg,
   setLengthLeft,
   short,
@@ -94,6 +94,6 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
 
   return {
     executionGasUsed: gasUsed,
-    returnValue: concatBytesNoTypeCheck(fieldElementsBuffer, modulusBuffer),
+    returnValue: concatBytes(fieldElementsBuffer, modulusBuffer),
   }
 }

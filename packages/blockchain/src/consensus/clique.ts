@@ -1,8 +1,15 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Address, TypeOutput, bigIntToBytes, bytesToBigInt, toType } from '@ethereumjs/util'
+import {
+  Address,
+  TypeOutput,
+  bigIntToBytes,
+  bytesToBigInt,
+  equalsBytes,
+  hexToBytes,
+  toType,
+} from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
 
 import type { Blockchain } from '../index.js'
 import type { Consensus, ConsensusOptions } from '../types.js'
@@ -13,7 +20,7 @@ const { debug: createDebugLogger } = debugDefault
 const debug = createDebugLogger('blockchain:clique')
 
 // Magic nonce number to vote on adding a new signer
-export const CLIQUE_NONCE_AUTH = hexToBytes('ffffffffffffffff')
+export const CLIQUE_NONCE_AUTH = hexToBytes('0xffffffffffffffff')
 // Magic nonce number to vote on removing a signer.
 export const CLIQUE_NONCE_DROP = new Uint8Array(8)
 

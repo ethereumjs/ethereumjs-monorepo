@@ -1,12 +1,11 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EOF } from '@ethereumjs/evm'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Account, Address, privateToAddress } from '@ethereumjs/util'
-import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { Account, Address, hexToBytes, privateToAddress, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
-const pkey = hexToBytes('20'.repeat(32))
+const pkey = hexToBytes('0x' + '20'.repeat(32))
 const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
 
@@ -101,17 +100,17 @@ describe('EIP 3670 tests', () => {
 
     // Valid EOF code
     const codeValid = hexToBytes(
-      'ef000101008102000c006080604052348015600f57600080fd5b506004361060285760003560e01c8063f8a8fd6d14602d575b600080fd5b60336047565b604051603e91906067565b60405180910390f35b6000602a905090565b6000819050919050565b6061816050565b82525050565b6000602082019050607a6000830184605a565b92915050560048656c6c6f20576f726c6421'
+      '0xef000101008102000c006080604052348015600f57600080fd5b506004361060285760003560e01c8063f8a8fd6d14602d575b600080fd5b60336047565b604051603e91906067565b60405180910390f35b6000602a905090565b6000819050919050565b6061816050565b82525050565b6000602082019050607a6000830184605a565b92915050560048656c6c6f20576f726c6421'
     )
     // Invalid EOF code: code is exactly the same except the byte at the zero-index is not the FORMAT magic
     // This thus runs into opcode 0xED which is unassigned and thus invalid
     const codeInvalid = hexToBytes(
-      'ed000101008102000c006080604052348015600f57600080fd5b506004361060285760003560e01c8063f8a8fd6d14602d575b600080fd5b60336047565b604051603e91906067565b60405180910390f35b6000602a905090565b6000819050919050565b6061816050565b82525050565b6000602082019050607a6000830184605a565b92915050560048656c6c6f20576f726c6421'
+      '0xed000101008102000c006080604052348015600f57600080fd5b506004361060285760003560e01c8063f8a8fd6d14602d575b600080fd5b60336047565b604051603e91906067565b60405180910390f35b6000602a905090565b6000819050919050565b6061816050565b82525050565b6000602082019050607a6000830184605a565b92915050560048656c6c6f20576f726c6421'
     )
 
     const codes = [codeValid, codeInvalid]
     const returnValues = [
-      hexToBytes('000000000000000000000000000000000000000000000000000000000000002a'),
+      hexToBytes('0x000000000000000000000000000000000000000000000000000000000000002a'),
       utf8ToBytes(''),
     ]
     const expectedErrors = [false, true]
@@ -119,10 +118,10 @@ describe('EIP 3670 tests', () => {
     let nonce = 0n
 
     for (let i = 0; i < codes.length; i++) {
-      const calldata = hexToBytes('f8a8fd6d')
+      const calldata = hexToBytes('0xf8a8fd6d')
 
-      const addr = new Address(hexToBytes('20'.repeat(20)))
-      const pkey = hexToBytes('42'.repeat(32))
+      const addr = new Address(hexToBytes('0x' + '20'.repeat(20)))
+      const pkey = hexToBytes('0x' + '42'.repeat(32))
 
       const code = codes[i]
 

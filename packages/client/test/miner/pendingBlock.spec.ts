@@ -12,12 +12,11 @@ import {
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
-  bytesToPrefixedHexString,
   commitmentsToVersionedHashes,
   equalsBytes,
   getBlobs,
+  hexToBytes,
   initKZG,
-  prefixedHexStringToBytes,
   randomBytes,
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
@@ -35,17 +34,13 @@ import { mockBlockchain } from '../rpc/mockBlockchain'
 import type { TypedTransaction } from '@ethereumjs/tx'
 
 const A = {
-  address: new Address(prefixedHexStringToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
-  privateKey: prefixedHexStringToBytes(
-    '0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'
-  ),
+  address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
+  privateKey: hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
 }
 
 const B = {
-  address: new Address(prefixedHexStringToBytes('0x6f62d8382bf2587361db73ceca28be91b2acb6df')),
-  privateKey: prefixedHexStringToBytes(
-    '0x2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'
-  ),
+  address: new Address(hexToBytes('0x6f62d8382bf2587361db73ceca28be91b2acb6df')),
+  privateKey: hexToBytes('0x2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'),
 }
 
 const setBalance = async (vm: VM, address: Address, balance: bigint) => {
@@ -166,7 +161,7 @@ tape('[PendingBlock]', async (t) => {
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
-    const payload = pendingBlock.pendingPayloads.get(bytesToPrefixedHexString(payloadId))
+    const payload = pendingBlock.pendingPayloads.get(bytesToHex(payloadId))
     t.equal(
       (payload as any).transactions.filter(
         (tx: TypedTransaction) => bytesToHex(tx.hash()) === bytesToHex(txA011.hash())

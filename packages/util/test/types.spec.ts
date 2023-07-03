@@ -1,4 +1,3 @@
-import { bytesToHex } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -6,8 +5,9 @@ import {
   bigIntToBytes,
   bigIntToHex,
   bytesToBigInt,
+  bytesToHex,
   intToBytes,
-  intToPrefixedHexString,
+  intToHex,
   toBytes,
   toType,
 } from '../src/index.js'
@@ -93,10 +93,10 @@ describe('toType', () => {
     })
   })
   it('from PrefixedHexString', () => {
-    const num = intToPrefixedHexString(1000)
+    const num = intToHex(1000)
     it('should convert to Number', () => {
       const result = toType(num, TypeOutput.Number)
-      assert.strictEqual(intToPrefixedHexString(result), num)
+      assert.strictEqual(intToHex(result), num)
     })
     it('should convert to BigInt', () => {
       const result = toType(num, TypeOutput.BigInt)

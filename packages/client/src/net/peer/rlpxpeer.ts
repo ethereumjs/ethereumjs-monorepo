@@ -4,7 +4,7 @@ import {
   RLPx as Devp2pRLPx,
   SNAP as Devp2pSNAP,
 } from '@ethereumjs/devp2p'
-import { prefixedHexStringToBytes, randomBytes } from '@ethereumjs/util'
+import { randomBytes, unprefixedHexToBytes } from '@ethereumjs/util'
 
 import { Event } from '../../types'
 import { RlpxSender } from '../protocol'
@@ -111,7 +111,7 @@ export class RlpxPeer extends Peer {
       common: this.config.chainCommon,
     })
     await this.rlpx.connect({
-      id: prefixedHexStringToBytes('0x' + this.id),
+      id: unprefixedHexToBytes(this.id),
       address: this.host,
       tcpPort: this.port,
     })

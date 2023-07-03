@@ -3,12 +3,13 @@ import {
   KECCAK256_NULL,
   KECCAK256_RLP_S,
   bytesToHex,
-  prefixedHexStringToBytes,
+  bytesToUtf8,
+  concatBytes,
+  hexToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { blake2b } from 'ethereum-cryptography/blake2b.js'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { bytesToUtf8, concatBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
 import { LeafNode, Trie } from '../src/index.js'
@@ -19,9 +20,7 @@ import type { HashKeysFunction } from '../src/index.js'
 for (const cacheSize of [0, 100]) {
   describe('simple save and retrieve', () => {
     it('should not crash if given a non-existent root', async () => {
-      const root = prefixedHexStringToBytes(
-        '0x3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d'
-      )
+      const root = hexToBytes('0x3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d')
 
       const trie = new Trie({ root })
       const value = await trie.get(utf8ToBytes('test'))
@@ -64,7 +63,7 @@ for (const cacheSize of [0, 100]) {
     it('should create a branch here', async () => {
       await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
       assert.equal(
-        'de8a34a8c1d558682eae1528b47523a483dd8685d6db14b291451a66066bf0fc',
+        '0xde8a34a8c1d558682eae1528b47523a483dd8685d6db14b291451a66066bf0fc',
         bytesToHex(trie.root())
       )
     })
@@ -88,7 +87,7 @@ for (const cacheSize of [0, 100]) {
       it('should store a longer string', async () => {
         await trie.put(utf8ToBytes('done'), utf8ToBytes(longString))
         await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
-        assert.equal(longStringRoot, bytesToHex(trie.root()))
+        assert.equal('0x' + longStringRoot, bytesToHex(trie.root()))
       })
 
       it('should retrieve a longer value', async () => {
@@ -111,7 +110,7 @@ for (const cacheSize of [0, 100]) {
       it('should create extension to store this value', async () => {
         await trie.put(utf8ToBytes('do'), utf8ToBytes('verb'))
         assert.equal(
-          'f803dfcb7e8f1afd45e88eedb4699a7138d6c07b71243d9ae9bff720c99925f9',
+          '0xf803dfcb7e8f1afd45e88eedb4699a7138d6c07b71243d9ae9bff720c99925f9',
           bytesToHex(trie.root())
         )
       })
@@ -119,7 +118,7 @@ for (const cacheSize of [0, 100]) {
       it('should store this value under the extension', async () => {
         await trie.put(utf8ToBytes('done'), utf8ToBytes('finished'))
         assert.equal(
-          '409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
+          '0x409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
           bytesToHex(trie.root())
         )
       })
@@ -139,7 +138,7 @@ for (const cacheSize of [0, 100]) {
       it('should store this value under the extension', async () => {
         await trie.put(utf8ToBytes('done'), utf8ToBytes('finished'))
         assert.equal(
-          '409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
+          '0x409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
           bytesToHex(trie.root())
         )
       })
@@ -243,10 +242,10 @@ for (const cacheSize of [0, 100]) {
     it('should work', async () => {
       const trie4 = new Trie({ cacheSize })
 
-      const g = prefixedHexStringToBytes('0x8a40bfaa73256b60764c1bf40675a99083efb075')
-      const j = prefixedHexStringToBytes('0xe6716f9544a56c530d868e4bfbacb172315bdead')
-      const v = prefixedHexStringToBytes('0x1e12515ce3e0f817a4ddef9ca55788a1d66bd2df')
-      const a = prefixedHexStringToBytes('0x1a26338f0d905e295fccb71fa9ea849ffa12aaf4')
+      const g = hexToBytes('0x8a40bfaa73256b60764c1bf40675a99083efb075')
+      const j = hexToBytes('0xe6716f9544a56c530d868e4bfbacb172315bdead')
+      const v = hexToBytes('0x1e12515ce3e0f817a4ddef9ca55788a1d66bd2df')
+      const a = hexToBytes('0x1a26338f0d905e295fccb71fa9ea849ffa12aaf4')
 
       const storageRoot = new Uint8Array(32)
       storageRoot.fill(0)
@@ -258,9 +257,9 @@ for (const cacheSize of [0, 100]) {
       const account = [startAmount, 0, storageRoot, KECCAK256_NULL]
       const rlpAccount = RLP.encode(account)
       const cppRlp =
-        'f85e9a010000000000000000000000000000000000000000000000000080a00000000000000000000000000000000000000000000000000000000000000000a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+        '0xf85e9a010000000000000000000000000000000000000000000000000080a00000000000000000000000000000000000000000000000000000000000000000a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
 
-      const genesisStateRoot = '2f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d'
+      const genesisStateRoot = '0x2f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d'
       assert.equal(cppRlp, bytesToHex(rlpAccount))
 
       await trie4.put(g, rlpAccount)
@@ -283,7 +282,7 @@ for (const cacheSize of [0, 100]) {
       const k2 = utf8ToBytes('2')
       const v2 = utf8ToBytes('this-is-some-longer-value-to-test-the-delete-operation-value2')
 
-      const rootAfterK1 = prefixedHexStringToBytes(
+      const rootAfterK1 = hexToBytes(
         '0x809e75931f394603657e113eb7244794f35b8d326cff99407111d600722e9425'
       )
 
@@ -338,7 +337,7 @@ for (const cacheSize of [0, 100]) {
 
       assert.equal(
         bytesToHex(trie.root()),
-        'e118db4e01512253df38daafa16fc1d69e03e755595b5847d275d7404ebdc74a'
+        '0xe118db4e01512253df38daafa16fc1d69e03e755595b5847d275d7404ebdc74a'
       )
     })
   })

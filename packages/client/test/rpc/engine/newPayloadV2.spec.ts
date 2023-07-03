@@ -1,11 +1,6 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import {
-  Address,
-  bytesToPrefixedHexString,
-  prefixedHexStringToBytes,
-  zeros,
-} from '@ethereumjs/util'
+import { Address, bytesToHex, hexToBytes, zeros } from '@ethereumjs/util'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
@@ -152,7 +147,7 @@ tape(`${method}: call with executionPayloadV1`, (v1) => {
     const req = params(method, [blockData, null])
     const expectRes = (res: any) => {
       t.equal(res.body.result.status, 'INVALID')
-      t.equal(res.body.result.latestValidHash, bytesToPrefixedHexString(zeros(32)))
+      t.equal(res.body.result.latestValidHash, bytesToHex(zeros(32)))
     }
     await baseRequest(t, server, req, 200, expectRes)
   })
@@ -205,7 +200,7 @@ tape(`${method}: call with executionPayloadV1`, (v1) => {
       { common }
     )
 
-    const transactions = [bytesToPrefixedHexString(tx.serialize())]
+    const transactions = [bytesToHex(tx.serialize())]
     const blockDataWithValidTransaction = {
       ...blockData,
       transactions,
@@ -221,7 +216,7 @@ tape(`${method}: call with executionPayloadV1`, (v1) => {
   })
 
   v1.test(`${method}: call with valid data & valid transaction`, async (t) => {
-    const accountPk = prefixedHexStringToBytes(
+    const accountPk = hexToBytes(
       '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
     )
     const accountAddress = Address.fromPrivateKey(accountPk)
@@ -245,7 +240,7 @@ tape(`${method}: call with executionPayloadV1`, (v1) => {
       },
       { common }
     ).sign(accountPk)
-    const transactions = [bytesToPrefixedHexString(tx.serialize())]
+    const transactions = [bytesToHex(tx.serialize())]
     const blockDataWithValidTransaction = {
       ...blockData,
       transactions,

@@ -1,7 +1,6 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory, TransactionType } from '@ethereumjs/tx'
-import { prefixedHexStringToBytes, randomBytes } from '@ethereumjs/util'
-import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import { equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
@@ -294,7 +293,7 @@ tape('[FullEthereumService]', async (t) => {
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     service.txPool.handleAnnouncedTxHashes = async (msg, _peer, _pool) => {
-      st.deepEqual(msg[0], prefixedHexStringToBytes('0xabcd'), 'handled NewPooledTransactionhashes')
+      st.deepEqual(msg[0], hexToBytes('0xabcd'), 'handled NewPooledTransactionhashes')
       st.end()
     }
 

@@ -3,13 +3,7 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import {
-  Account,
-  bytesToHex,
-  equalsBytes,
-  prefixedHexStringToBytes,
-  toBytes,
-} from '@ethereumjs/util'
+import { Account, bytesToHex, equalsBytes, hexToBytes, toBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
@@ -57,9 +51,7 @@ tape('[Integration:FullEthereumService]', async (t) => {
     const [server, service] = await setup()
     const peer = await server.accept('peer0')
     const [reqId1, headers] = await peer.eth!.getBlockHeaders({ block: BigInt(1), max: 2 })
-    const hash = prefixedHexStringToBytes(
-      '0xa321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069'
-    )
+    const hash = hexToBytes('0xa321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069')
     t.equal(reqId1, BigInt(1), 'handled GetBlockHeaders')
     t.ok(equalsBytes(headers![1].hash(), hash), 'handled GetBlockHeaders')
     const res = await peer.eth!.getBlockBodies({ hashes: [hash] })
@@ -117,7 +109,7 @@ tape('[Integration:FullEthereumService]', async (t) => {
     const { headers } = await peer.les!.getBlockHeaders({ block: BigInt(1), max: 2 })
     t.equals(
       bytesToHex(headers[1].hash()),
-      'a321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069',
+      '0xa321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069',
       'handled GetBlockHeaders'
     )
     await destroy(server, service)

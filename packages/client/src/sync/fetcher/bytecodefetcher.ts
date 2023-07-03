@@ -1,6 +1,6 @@
 import { CODEHASH_PREFIX } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { bytesToHex, concatBytes, equalsBytes } from '@ethereumjs/util'
+import { bytesToHex, bytesToUnprefixedHex, concatBytes, equalsBytes } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
@@ -114,7 +114,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         break
       } else {
         // match found
-        receivedCodes.set(bytesToHex(receivedHash), receivedCode)
+        receivedCodes.set(bytesToUnprefixedHex(receivedHash), receivedCode)
       }
     }
 

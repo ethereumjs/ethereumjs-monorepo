@@ -1,4 +1,4 @@
-import { bytesToHex } from 'ethereum-cryptography/utils.js'
+import { bytesToUnprefixedHex } from '@ethereumjs/util'
 import { EventEmitter } from 'events'
 
 import { KBucket as _KBucket } from '../ext/index.js'
@@ -46,11 +46,11 @@ export class KBucket extends EventEmitter {
   }
 
   static getKeys(obj: Uint8Array | string | PeerInfo): string[] {
-    if (obj instanceof Uint8Array) return [bytesToHex(obj)]
+    if (obj instanceof Uint8Array) return [bytesToUnprefixedHex(obj)]
     if (typeof obj === 'string') return [obj]
 
     const keys = []
-    if (obj.id instanceof Uint8Array) keys.push(bytesToHex(obj.id))
+    if (obj.id instanceof Uint8Array) keys.push(bytesToUnprefixedHex(obj.id))
     if (obj.address !== undefined && typeof obj.tcpPort === 'number')
       keys.push(`${obj.address}:${obj.tcpPort}`)
     return keys

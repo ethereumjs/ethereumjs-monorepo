@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
@@ -8,7 +8,7 @@ import { VM } from '../../../src/vm'
 import type { InterpreterStep } from '@ethereumjs/evm'
 import type { Address } from '@ethereumjs/util'
 
-const pkey = hexToBytes('20'.repeat(32))
+const pkey = hexToBytes('0x' + '20'.repeat(32))
 
 describe('EIP 3541 tests', () => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [3541] })

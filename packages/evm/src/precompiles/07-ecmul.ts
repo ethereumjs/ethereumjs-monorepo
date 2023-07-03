@@ -1,5 +1,4 @@
-import { short } from '@ethereumjs/util'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
+import { bytesToHex, bytesToUnprefixedHex, short, unprefixedHexToBytes } from '@ethereumjs/util'
 import { ec_mul } from 'rustbn-wasm'
 
 import { OOGResult } from '../evm.js'
@@ -8,7 +7,7 @@ import type { ExecResult } from '../evm.js'
 import type { PrecompileInput } from './types.js'
 
 export function precompile07(opts: PrecompileInput): ExecResult {
-  const inputData = bytesToHex(opts.data.subarray(0, 128))
+  const inputData = bytesToUnprefixedHex(opts.data.subarray(0, 128))
   const gasUsed = opts._common.param('gasPrices', 'ecMul')
   if (opts._debug !== undefined) {
     opts._debug(
@@ -25,7 +24,7 @@ export function precompile07(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  const returnData = hexToBytes(ec_mul(inputData))
+  const returnData = unprefixedHexToBytes(ec_mul(inputData))
 
   // check ecmul success or failure by comparing the output length
   if (returnData.length !== 64) {

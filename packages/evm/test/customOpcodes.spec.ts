@@ -1,5 +1,5 @@
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
+import { equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { EVM } from '../src/evm.js'
@@ -38,7 +38,7 @@ describe('VM: custom opcodes', () => {
       }
     })
     const res = await evm.runCode({
-      code: hexToBytes('21'),
+      code: hexToBytes('0x21'),
       gasLimit: BigInt(gas),
     })
     assert.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')
@@ -53,7 +53,7 @@ describe('VM: custom opcodes', () => {
     })
     const gas = BigInt(123456)
     const res = await evm.runCode({
-      code: hexToBytes('20'),
+      code: hexToBytes('0x20'),
       gasLimit: BigInt(gas),
     })
     assert.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
@@ -68,7 +68,7 @@ describe('VM: custom opcodes', () => {
     })
     const gas = BigInt(123456)
     const res = await evm.runCode({
-      code: hexToBytes('01'),
+      code: hexToBytes('0x01'),
       gasLimit: BigInt(gas),
     })
     assert.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
@@ -86,10 +86,10 @@ describe('VM: custom opcodes', () => {
     // PUSH 1F // RETURNDATA offset
     // RETURN  // Returns 0x05
     const result = await evmDefault.runCode!({
-      code: hexToBytes('60046001016000526001601FF3'),
+      code: hexToBytes('0x60046001016000526001601FF3'),
       gasLimit: BigInt(gas),
     })
-    assert.ok(equalsBytes(result.returnValue, hexToBytes('05')))
+    assert.ok(equalsBytes(result.returnValue, hexToBytes('0x05')))
   })
 
   it('should override opcodes in the EVM', async () => {
@@ -100,7 +100,7 @@ describe('VM: custom opcodes', () => {
     })
     const gas = 123456
     const res = await evm.runCode({
-      code: hexToBytes('20'),
+      code: hexToBytes('0x20'),
       gasLimit: BigInt(gas),
     })
     assert.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')

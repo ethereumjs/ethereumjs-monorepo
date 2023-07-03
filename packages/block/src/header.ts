@@ -10,17 +10,15 @@ import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
-  bytesToPrefixedHexString,
   concatBytes,
-  concatBytesNoTypeCheck,
   ecrecover,
   ecsign,
   equalsBytes,
+  hexToBytes,
   toType,
   zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
 import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique.js'
 import { fakeExponential, valuesArrayToHeaderData } from './helpers.js'
@@ -782,7 +780,7 @@ export class BlockHeader {
     this._requireClique('cliqueSealBlock')
 
     const signature = ecsign(this.cliqueSigHash(), privateKey)
-    const signatureB = concatBytesNoTypeCheck(
+    const signatureB = concatBytes(
       signature.r,
       signature.s,
       bigIntToBytes(signature.v - BigInt(27))
@@ -792,7 +790,7 @@ export class BlockHeader {
       0,
       this.extraData.length - CLIQUE_EXTRA_SEAL
     )
-    const extraData = concatBytesNoTypeCheck(extraDataWithoutSeal, signatureB)
+    const extraData = concatBytes(extraDataWithoutSeal, signatureB)
     return extraData
   }
 
@@ -867,25 +865,25 @@ export class BlockHeader {
    */
   toJSON(): JsonHeader {
     const withdrawalAttr = this.withdrawalsRoot
-      ? { withdrawalsRoot: bytesToPrefixedHexString(this.withdrawalsRoot) }
+      ? { withdrawalsRoot: bytesToHex(this.withdrawalsRoot) }
       : {}
     const jsonDict: JsonHeader = {
-      parentHash: bytesToPrefixedHexString(this.parentHash),
-      uncleHash: bytesToPrefixedHexString(this.uncleHash),
+      parentHash: bytesToHex(this.parentHash),
+      uncleHash: bytesToHex(this.uncleHash),
       coinbase: this.coinbase.toString(),
-      stateRoot: bytesToPrefixedHexString(this.stateRoot),
-      transactionsTrie: bytesToPrefixedHexString(this.transactionsTrie),
+      stateRoot: bytesToHex(this.stateRoot),
+      transactionsTrie: bytesToHex(this.transactionsTrie),
       ...withdrawalAttr,
-      receiptTrie: bytesToPrefixedHexString(this.receiptTrie),
-      logsBloom: bytesToPrefixedHexString(this.logsBloom),
+      receiptTrie: bytesToHex(this.receiptTrie),
+      logsBloom: bytesToHex(this.logsBloom),
       difficulty: bigIntToHex(this.difficulty),
       number: bigIntToHex(this.number),
       gasLimit: bigIntToHex(this.gasLimit),
       gasUsed: bigIntToHex(this.gasUsed),
       timestamp: bigIntToHex(this.timestamp),
-      extraData: bytesToPrefixedHexString(this.extraData),
-      mixHash: bytesToPrefixedHexString(this.mixHash),
-      nonce: bytesToPrefixedHexString(this.nonce),
+      extraData: bytesToHex(this.extraData),
+      mixHash: bytesToHex(this.mixHash),
+      nonce: bytesToHex(this.nonce),
     }
     if (this._common.isActivatedEIP(1559) === true) {
       jsonDict.baseFeePerGas = bigIntToHex(this.baseFeePerGas!)
@@ -909,7 +907,7 @@ export class BlockHeader {
     if (DAOActivationBlock === null || this.number < DAOActivationBlock) {
       return
     }
-    const DAO_ExtraData = hexToBytes('64616f2d686172642d666f726b')
+    const DAO_ExtraData = hexToBytes('0x64616f2d686172642d666f726b')
     const DAO_ForceExtraDataRange = BigInt(9)
     const drift = this.number - DAOActivationBlock
     if (drift <= DAO_ForceExtraDataRange && !equalsBytes(this.extraData, DAO_ExtraData)) {
