@@ -100,7 +100,6 @@ export class Debug {
     const opts = validateTracerConfig(config)
 
     try {
-      console.log(txHash)
       const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
         hexToBytes(txHash)
       )
