@@ -65,7 +65,10 @@ export async function getTests(
         }
       }
       if (filteredTestsByName.length > 0) {
-        if (dirList.length === 1) {
+        if (dirList.length === 0) {
+          const sub = { [`${parsed.dir.split('/').slice(-1)[0]}`]: filteredTestsByName }
+          fileData[`${parsedFileName}`] = sub
+        } else if (dirList.length === 1) {
           const sub = fileData[dirList[0]] ?? {}
           sub[`${parsedFileName}`] = filteredTestsByName
           fileData[dirList[0]] = sub
