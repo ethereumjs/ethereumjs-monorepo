@@ -1,8 +1,7 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
-import { bytesToPrefixedHexString } from '@ethereumjs/util'
-import { equalsBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
 import { LevelDB } from '../execution/level'
@@ -326,7 +325,7 @@ export class Miner {
           }
         } else {
           // If there is an error adding a tx, it will be skipped
-          const hash = bytesToPrefixedHexString(txs[index].hash())
+          const hash = bytesToHex(txs[index].hash())
           this.config.logger.debug(
             `Skipping tx ${hash}, error encountered when trying to add tx:\n${error}`
           )

@@ -9,11 +9,11 @@ import {
   bytesToHex,
   concatBytes,
   equalsBytes,
+  hexToBytes,
   setLengthLeft,
   zeros,
 } from '@ethereumjs/util'
 import { keccak256, keccak512 } from 'ethereum-cryptography/keccak.js'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
 import {
   bytesReverse,

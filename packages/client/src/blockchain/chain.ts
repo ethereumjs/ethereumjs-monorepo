@@ -1,7 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
-import { equalsBytes } from 'ethereum-cryptography/utils'
+import { equalsBytes } from '@ethereumjs/util'
 
 import { LevelDB } from '../execution/level'
 import { Event } from '../types'

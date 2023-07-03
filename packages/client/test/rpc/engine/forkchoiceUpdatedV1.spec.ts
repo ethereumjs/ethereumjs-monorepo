@@ -1,6 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { bytesToHex, bytesToPrefixedHexString, zeros } from '@ethereumjs/util'
+import { bytesToHex, bytesToUnprefixedHex, zeros } from '@ethereumjs/util'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
@@ -161,7 +161,7 @@ tape(`${method}: invalid terminal block with only genesis block`, async (t) => {
   const req = params(method, [validForkChoiceState, null])
   const expectRes = (res: any) => {
     t.equal(res.body.result.payloadStatus.status, 'INVALID')
-    t.equal(res.body.result.payloadStatus.latestValidHash, bytesToHex(zeros(32)))
+    t.equal(res.body.result.payloadStatus.latestValidHash, bytesToUnprefixedHex(zeros(32)))
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
@@ -195,12 +195,12 @@ tape(`${method}: invalid terminal block with 1+ blocks`, async (t) => {
 
   await chain.putBlocks([newBlock])
   const req = params(method, [
-    { ...validForkChoiceState, headBlockHash: bytesToPrefixedHexString(newBlock.hash()) },
+    { ...validForkChoiceState, headBlockHash: bytesToHex(newBlock.hash()) },
     null,
   ])
   const expectRes = (res: any) => {
     t.equal(res.body.result.payloadStatus.status, 'INVALID')
-    t.equal(res.body.result.payloadStatus.latestValidHash, bytesToHex(zeros(32)))
+    t.equal(res.body.result.payloadStatus.latestValidHash, bytesToUnprefixedHex(zeros(32)))
   }
   await baseRequest(t, server, req, 200, expectRes)
 })

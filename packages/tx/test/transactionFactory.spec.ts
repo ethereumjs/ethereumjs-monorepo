@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { prefixedHexStringToBytes } from '@ethereumjs/util'
+import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -15,9 +15,7 @@ const common = new Common({
   hardfork: Hardfork.London,
 })
 
-const pKey = prefixedHexStringToBytes(
-  '0x4646464646464646464646464646464646464646464646464646464646464646'
-)
+const pKey = hexToBytes('0x4646464646464646464646464646464646464646464646464646464646464646')
 
 const unsignedLegacyTx = LegacyTransaction.fromTxData({})
 const signedLegacyTx = unsignedLegacyTx.sign(pKey)

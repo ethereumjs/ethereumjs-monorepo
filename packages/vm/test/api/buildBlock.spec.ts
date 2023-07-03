@@ -2,13 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
-import {
-  Account,
-  Address,
-  concatBytesNoTypeCheck,
-  prefixedHexStringToBytes,
-} from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { Account, Address, concatBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../src/vm'
@@ -128,10 +122,10 @@ describe('BlockBuilder', () => {
 
   it('should correctly seal a PoA block', async () => {
     const signer = {
-      address: new Address(hexToBytes('0b90087d864e82a284dca15923f3776de6bb016f')),
-      privateKey: hexToBytes('64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
+      address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
+      privateKey: hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
       publicKey: hexToBytes(
-        '40b2ebdf4b53206d2d3d3d59e7e2f13b1ea68305aec71d5d24cefe7f24ecae886d241f9267f04702d7f693655eb7b4aa23f30dcd0c3c5f2b970aad7c8a828195'
+        '0x40b2ebdf4b53206d2d3d3d59e7e2f13b1ea68305aec71d5d24cefe7f24ecae886d241f9267f04702d7f693655eb7b4aa23f30dcd0c3c5f2b970aad7c8a828195'
       ),
     }
 
@@ -171,10 +165,8 @@ describe('BlockBuilder', () => {
     }
 
     const A = {
-      address: new Address(prefixedHexStringToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
-      privateKey: prefixedHexStringToBytes(
-        '0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'
-      ),
+      address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
+      privateKey: hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
     }
     const addr = A.address.toString().slice(2)
 
@@ -190,11 +182,7 @@ describe('BlockBuilder', () => {
     })
 
     // extraData: [vanity, activeSigner, seal]
-    const extraData = concatBytesNoTypeCheck(
-      new Uint8Array(32),
-      signer.address.toBytes(),
-      new Uint8Array(65)
-    )
+    const extraData = concatBytes(new Uint8Array(32), signer.address.toBytes(), new Uint8Array(65))
     const cliqueSigner = signer.privateKey
     const genesisBlock = Block.fromBlockData(
       { header: { gasLimit: 50000, extraData } },

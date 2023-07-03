@@ -1,4 +1,4 @@
-import { equalsBytes } from 'ethereum-cryptography/utils.js'
+import { equalsBytes } from '@ethereumjs/util'
 
 import { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
 import { Trie } from '../trie.js'

@@ -5,14 +5,15 @@ import {
   TWO_POW256,
   bigIntToBytes,
   bytesToBigInt,
-  concatBytesNoTypeCheck,
+  bytesToHex,
+  concatBytes,
   ecrecover,
+  hexToBytes,
   publicToAddress,
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
 
 import { ERROR } from '../exceptions.js'
 
@@ -33,7 +34,7 @@ import {
 import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
 
-const EIP3074MAGIC = hexToBytes('03')
+const EIP3074MAGIC = hexToBytes('0x03')
 
 export interface SyncOpHandler {
   (runState: RunState, common: Common): void
@@ -374,7 +375,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (length !== BigInt(0)) {
         data = runState.memory.read(Number(offset), Number(length))
       }
-      const r = BigInt('0x' + bytesToHex(keccak256(data)))
+      const r = BigInt(bytesToHex(keccak256(data)))
       runState.stack.push(r)
     },
   ],
@@ -523,7 +524,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         return
       }
 
-      runState.stack.push(BigInt('0x' + bytesToHex(account.codeHash)))
+      runState.stack.push(BigInt(bytesToHex(account.codeHash)))
     },
   ],
   // 0x3d: RETURNDATASIZE
@@ -1075,7 +1076,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       const paddedInvokerAddress = setLengthLeft(runState.interpreter._env.address.bytes, 32)
       const chainId = setLengthLeft(bigIntToBytes(runState.interpreter.getChainId()), 32)
-      const message = concatBytesNoTypeCheck(EIP3074MAGIC, chainId, paddedInvokerAddress, commit)
+      const message = concatBytes(EIP3074MAGIC, chainId, paddedInvokerAddress, commit)
       const msgHash = keccak256(message)
 
       let recover

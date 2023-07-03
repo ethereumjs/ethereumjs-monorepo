@@ -1,7 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVMErrorMessage } from '@ethereumjs/evm'
-import { Address, bytesToBigInt } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { Address, bytesToBigInt, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
@@ -16,9 +15,9 @@ const testCases = [
 const code = ['47', '60', '00', '53', '60', '01', '60', '00', 'f3']
 describe('Istanbul: EIP-1884', () => {
   it('SELFBALANCE', async () => {
-    const addr = new Address(hexToBytes('00000000000000000000000000000000000000ff'))
+    const addr = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     const runCodeArgs = {
-      code: hexToBytes(code.join('')),
+      code: hexToBytes('0x' + code.join('')),
       gasLimit: BigInt(0xffff),
       address: addr,
     }

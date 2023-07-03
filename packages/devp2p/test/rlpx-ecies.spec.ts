@@ -1,6 +1,6 @@
+import { unprefixedHexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
 import { publicKeyCreate } from 'ethereum-cryptography/secp256k1-compat.js'
-import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 import { assert, it } from 'vitest'
 
 import { ECIES } from '../src/rlpx/ecies.js'
@@ -35,22 +35,22 @@ function randomBefore(fn: Function) {
 function testdataBefore(fn: Function) {
   return (t: EciesTestContext) => {
     const v = testdata.eip8Values
-    const keyA = hexToBytes(v.keyA)
-    const keyB = hexToBytes(v.keyB)
-    const pubA = hexToBytes(v.pubA)
-    const pubB = hexToBytes(v.pubB)
+    const keyA = unprefixedHexToBytes(v.keyA)
+    const keyB = unprefixedHexToBytes(v.keyB)
+    const pubA = unprefixedHexToBytes(v.pubA)
+    const pubB = unprefixedHexToBytes(v.pubB)
     const h = testdata.eip8Handshakes
 
     t.context = {
       a: new ECIES(keyA, util.pk2id(pubA), util.pk2id(pubB)),
       b: new ECIES(keyB, util.pk2id(pubB), util.pk2id(pubA)),
       h0: {
-        auth: hexToBytes(h[0].auth.join('')),
-        ack: hexToBytes(h[0].ack.join('')),
+        auth: unprefixedHexToBytes(h[0].auth.join('')),
+        ack: unprefixedHexToBytes(h[0].ack.join('')),
       },
       h1: {
-        auth: hexToBytes(h[1].auth.join('')),
-        ack: hexToBytes(h[1].ack.join('')),
+        auth: unprefixedHexToBytes(h[1].auth.join('')),
+        ack: unprefixedHexToBytes(h[1].ack.join('')),
       },
     }
     fn(t)

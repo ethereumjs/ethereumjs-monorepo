@@ -1,4 +1,3 @@
-import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -8,23 +7,23 @@ import {
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
+  bytesToHex,
   bytesToInt,
-  bytesToPrefixedHexString,
+  equalsBytes,
   fromSigned,
+  hexToBytes,
   intToBytes,
-  intToPrefixedHexString,
+  intToHex,
   intToUnpaddedBytes,
   isZeroAddress,
-  prefixedHexStringToBytes,
   setLengthLeft,
   setLengthRight,
   short,
   toBytes,
   toUnsigned,
-  toUtf8,
   unpadArray,
   unpadBytes,
-  unpadHexString,
+  unpadHex,
   validateNoLeadingZeroes,
   zeroAddress,
   zeros,
@@ -33,7 +32,7 @@ import {
 describe('zeros function', () => {
   it('should produce lots of 0s', () => {
     const z60 = zeros(30)
-    const zs60 = '000000000000000000000000000000000000000000000000000000000000'
+    const zs60 = '0x000000000000000000000000000000000000000000000000000000000000'
     assert.equal(bytesToHex(z60), zs60)
   })
 })
@@ -85,15 +84,15 @@ describe('unpadArray', () => {
   })
 })
 
-describe('unpadHexString', () => {
+describe('unpadHex', () => {
   it('should unpad a hex prefixed string', () => {
     const str = '0x0000000006600'
-    const r = unpadHexString(str)
+    const r = unpadHex(str)
     assert.equal(r, '0x6600')
   })
   it('should throw if input is not hex-prefixed', () => {
     assert.throws(function () {
-      unpadHexString('0000000006600')
+      unpadHex('0000000006600')
     })
   })
 })
@@ -102,12 +101,12 @@ describe('setLengthLeft', () => {
   it('should left pad a Uint8Array', () => {
     const bytes = new Uint8Array([9, 9])
     const padded = setLengthLeft(bytes, 3)
-    assert.equal(bytesToHex(padded), '000909')
+    assert.equal(bytesToHex(padded), '0x000909')
   })
   it('should left truncate a Uint8Array', () => {
     const bytes = new Uint8Array([9, 0, 9])
     const padded = setLengthLeft(bytes, 2)
-    assert.equal(bytesToHex(padded), '0009')
+    assert.equal(bytesToHex(padded), '0x0009')
   })
   it('should throw if input is not a Uint8Array', () => {
     assert.throws(function () {
@@ -120,12 +119,12 @@ describe('setLengthRight', () => {
   it('should right pad a Uint8Array', () => {
     const bytes = new Uint8Array([9, 9])
     const padded = setLengthRight(bytes, 3)
-    assert.equal(bytesToHex(padded), '090900')
+    assert.equal(bytesToHex(padded), '0x090900')
   })
   it('should right truncate a Uint8Array', () => {
     const bytes = new Uint8Array([9, 0, 9])
     const padded = setLengthRight(bytes, 2)
-    assert.equal(bytesToHex(padded), '0900')
+    assert.equal(bytesToHex(padded), '0x0900')
   })
   it('should throw if input is not a Uint8Array', () => {
     assert.throws(function () {
@@ -134,22 +133,22 @@ describe('setLengthRight', () => {
   })
 })
 
-describe('bytesToPrefixedHexString', () => {
+describe('bytesToHex', () => {
   it('should convert a Uint8Array to a prefixed hex string', () => {
-    const bytes = hexToBytes('5b9ac8')
-    const hex = bytesToPrefixedHexString(bytes)
+    const bytes = hexToBytes('0x5b9ac8')
+    const hex = bytesToHex(bytes)
     assert.equal(hex, '0x5b9ac8')
   })
   it('empty Uint8Array', () => {
     const bytes = new Uint8Array()
-    const hex = bytesToPrefixedHexString(bytes)
+    const hex = bytesToHex(bytes)
     assert.strictEqual(hex, '0x')
   })
 })
 
 describe('bytesToInt', () => {
   it('should convert an int to hex', () => {
-    const bytes = hexToBytes('5b9ac8')
+    const bytes = hexToBytes('0x5b9ac8')
     const i = bytesToInt(bytes)
     assert.equal(i, 6003400)
     assert.equal(bytesToInt(new Uint8Array()), 0)
@@ -179,7 +178,7 @@ describe('fromSigned', () => {
 describe('toUnsigned', () => {
   it('should convert a signed (negative) number to unsigned', () => {
     const neg = '-452312848583266388373324160190187140051835877600158453279131187530910662656'
-    const hex = 'ff00000000000000000000000000000000000000000000000000000000000000'
+    const hex = '0xff00000000000000000000000000000000000000000000000000000000000000'
     const num = BigInt(neg)
 
     assert.equal(bytesToHex(toUnsigned(num)), hex)
@@ -187,7 +186,7 @@ describe('toUnsigned', () => {
 
   it('should convert a signed (positive) number to unsigned', () => {
     const neg = '452312848583266388373324160190187140051835877600158453279131187530910662656'
-    const hex = '0100000000000000000000000000000000000000000000000000000000000000'
+    const hex = '0x0100000000000000000000000000000000000000000000000000000000000000'
     const num = BigInt(neg)
 
     assert.equal(bytesToHex(toUnsigned(num)), hex)
@@ -202,9 +201,9 @@ describe('hex prefix', () => {
 })
 
 describe('short', () => {
-  const string = '657468657265756d000000000000000000000000000000000000000000000000'
-  const shortened = '657468657265756d0000000000000000000000000000000000…'
-  const shortenedToTen = '6574686572…'
+  const string = '0x657468657265756d000000000000000000000000000000000000000000000000'
+  const shortened = '0x657468657265756d0000000000000000000000000000000000…'
+  const shortenedToTen = '0x6574686572…'
   it('should short string', () => {
     assert.equal(short(string), shortened)
   })
@@ -216,33 +215,6 @@ describe('short', () => {
   })
 })
 
-describe('toUtf8', () => {
-  it('toUtf8', () => {
-    let input = bytesToHex(utf8ToBytes('hello')) // '68656c6c6f'
-    assert.equal(toUtf8(input), 'hello', 'should convert a non-hex-prefixed value')
-    assert.equal(toUtf8(`0x${input}`), 'hello', 'should convert a hex-prefixed value')
-
-    input = bytesToHex(utf8ToBytes('bip')) // '626970'
-    assert.equal(toUtf8(input), 'bip', 'should handle trailing single 0s correctly')
-
-    input = '657468657265756d000000000000000000000000000000000000000000000000'
-    assert.equal(toUtf8(input), 'ethereum', 'should handle trailing double 0s correctly')
-    input = '657468657265756d'
-    assert.equal(toUtf8(input), 'ethereum', 'neither trailing nor leading zeros')
-    input = '000000000000000000000000000000000000000000000000657468657265756d'
-    assert.equal(toUtf8(input), 'ethereum', 'should handle leading double 0s correctly')
-
-    assert.throws(
-      () => {
-        toUtf8('123')
-      },
-      undefined,
-      undefined,
-      'should throw on uneven hex-string input'
-    )
-  })
-})
-
 describe('toBytes', () => {
   it('should work', () => {
     // Uint8Array
@@ -251,7 +223,7 @@ describe('toBytes', () => {
     assert.ok(equalsBytes(toBytes([]), new Uint8Array()))
     // String
     assert.ok(equalsBytes(toBytes('0x11'), Uint8Array.from([17])))
-    assert.equal(bytesToHex(toBytes('0x1234')), '1234')
+    assert.equal(bytesToHex(toBytes('0x1234')), '0x1234')
     assert.ok(equalsBytes(toBytes('0x'), Uint8Array.from([])))
     // Number
     assert.ok(equalsBytes(toBytes(1), Uint8Array.from([1])))
@@ -318,71 +290,36 @@ describe('intToBytes', () => {
   })
 
   it('should pass on correct input', () => {
-    assert.deepEqual(intToBytes(0), hexToBytes('00'), 'correctly converts 0 to a Uint8Array')
-    assert.deepEqual(intToBytes(1), hexToBytes('01'), 'correctly converts 1 to a Uint8Array')
+    assert.deepEqual(intToBytes(0), hexToBytes('0x00'), 'correctly converts 0 to a Uint8Array')
+    assert.deepEqual(intToBytes(1), hexToBytes('0x01'), 'correctly converts 1 to a Uint8Array')
   })
 })
 
-describe('intToPrefixedHexString', () => {
+describe('intToHex', () => {
   it('should throw on wrong input', () => {
+    assert.throws(() => intToHex(<any>'test'), undefined, undefined, 'throws on string')
+    assert.throws(() => intToHex(<any>Infinity), undefined, undefined, 'throws on +Infinity')
+    assert.throws(() => intToHex(<any>-Infinity), undefined, undefined, 'throws on -Infinity')
+    assert.throws(() => intToHex(<any>NaN), undefined, undefined, 'throws on NaN')
+    assert.throws(() => intToHex(<any>undefined), undefined, undefined, 'throws on undefined')
+    assert.throws(() => intToHex(<any>null), undefined, undefined, 'throws on null')
+    assert.throws(() => intToHex(<any>-1), undefined, undefined, 'throws on negative numbers')
+    assert.throws(() => intToHex(<any>1.05), undefined, undefined, 'throws on decimal numbers')
+    assert.throws(() => intToHex(<any>{}), undefined, undefined, 'throws on objects')
+    assert.throws(() => intToHex(<any>true), undefined, undefined, 'throws on true')
+    assert.throws(() => intToHex(<any>false), undefined, undefined, 'throws on false')
+    assert.throws(() => intToHex(<any>[]), undefined, undefined, 'throws on arrays')
+    assert.throws(() => intToHex(<any>(() => {})), undefined, undefined, 'throws on arrays')
     assert.throws(
-      () => intToPrefixedHexString(<any>'test'),
-      undefined,
-      undefined,
-      'throws on string'
-    )
-    assert.throws(
-      () => intToPrefixedHexString(<any>Infinity),
-      undefined,
-      undefined,
-      'throws on +Infinity'
-    )
-    assert.throws(
-      () => intToPrefixedHexString(<any>-Infinity),
-      undefined,
-      undefined,
-      'throws on -Infinity'
-    )
-    assert.throws(() => intToPrefixedHexString(<any>NaN), undefined, undefined, 'throws on NaN')
-    assert.throws(
-      () => intToPrefixedHexString(<any>undefined),
-      undefined,
-      undefined,
-      'throws on undefined'
-    )
-    assert.throws(() => intToPrefixedHexString(<any>null), undefined, undefined, 'throws on null')
-    assert.throws(
-      () => intToPrefixedHexString(<any>-1),
-      undefined,
-      undefined,
-      'throws on negative numbers'
-    )
-    assert.throws(
-      () => intToPrefixedHexString(<any>1.05),
-      undefined,
-      undefined,
-      'throws on decimal numbers'
-    )
-    assert.throws(() => intToPrefixedHexString(<any>{}), undefined, undefined, 'throws on objects')
-    assert.throws(() => intToPrefixedHexString(<any>true), undefined, undefined, 'throws on true')
-    assert.throws(() => intToPrefixedHexString(<any>false), undefined, undefined, 'throws on false')
-    assert.throws(() => intToPrefixedHexString(<any>[]), undefined, undefined, 'throws on arrays')
-    assert.throws(
-      () => intToPrefixedHexString(<any>(() => {})),
-      undefined,
-      undefined,
-      'throws on arrays'
-    )
-    assert.throws(
-      () => intToPrefixedHexString(Number.MAX_SAFE_INTEGER + 1),
+      () => intToHex(Number.MAX_SAFE_INTEGER + 1),
       undefined,
       undefined,
       'throws on unsafe integers'
     )
   })
   it('should pass on correct input', () => {
-    assert.ok(intToPrefixedHexString(0) === '0x0', 'correctly converts 0 to a hex string')
-    assert.ok(intToPrefixedHexString(1) === '0x1', 'correctly converts 1 to a hex string')
+    assert.ok(intToHex(0) === '0x0', 'correctly converts 0 to a hex string')
+    assert.ok(intToHex(1) === '0x1', 'correctly converts 1 to a hex string')
   })
 })
 
@@ -459,14 +396,14 @@ describe('bigIntToBytes', () => {
 describe('bigIntToUnpaddedBytes', () => {
   it('should equal unpadded buffer value', () => {
     assert.deepEqual(bigIntToUnpaddedBytes(BigInt(0)), Uint8Array.from([]))
-    assert.deepEqual(bigIntToUnpaddedBytes(BigInt(100)), hexToBytes('64'))
+    assert.deepEqual(bigIntToUnpaddedBytes(BigInt(100)), hexToBytes('0x64'))
   })
 })
 
 describe('intToUnpaddedBytes', () => {
   it('should equal unpadded buffer value', () => {
     assert.deepEqual(intToUnpaddedBytes(0), Uint8Array.from([]))
-    assert.deepEqual(intToUnpaddedBytes(100), hexToBytes('64'))
+    assert.deepEqual(intToUnpaddedBytes(100), hexToBytes('0x64'))
   })
 })
 
@@ -476,14 +413,14 @@ describe('bigIntToHex', () => {
   })
 })
 
-describe('prefixedHexStringToBytes', () => {
+describe('hexToBytes', () => {
   it('should throw on non-prefixed strings', () => {
     assert.throws(() => {
-      prefixedHexStringToBytes('aabbcc112233')
+      hexToBytes('aabbcc112233')
     })
   })
   it('should convert prefixed hex-strings', () => {
-    const converted = prefixedHexStringToBytes('0x1')
+    const converted = hexToBytes('0x1')
     assert.deepEqual(converted, new Uint8Array([1]))
   })
 })

@@ -2,13 +2,7 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { TransactionFactory } from '@ethereumjs/tx'
-import {
-  Account,
-  Address,
-  bytesToPrefixedHexString,
-  prefixedHexStringToBytes,
-  randomBytes,
-} from '@ethereumjs/util'
+import { Account, Address, bytesToHex, hexToBytes, randomBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { TOO_LARGE_REQUEST } from '../../../src/rpc/error-code'
@@ -23,7 +17,7 @@ tape(`${method}: call with too many hashes`, async (t) => {
   const { server } = baseSetup({ engine: true, includeVM: true })
   const tooManyHashes: string[] = []
   for (let x = 0; x < 35; x++) {
-    tooManyHashes.push(bytesToPrefixedHexString(randomBytes(32)))
+    tooManyHashes.push(bytesToHex(randomBytes(32)))
   }
   const req = params(method, [tooManyHashes])
   const expectRes = checkError(
@@ -47,9 +41,7 @@ tape(`${method}: call with valid parameters`, async (t) => {
     hardfork: Hardfork.Cancun,
   })
   common.setHardfork(Hardfork.Cancun)
-  const pkey = prefixedHexStringToBytes(
-    '0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355'
-  )
+  const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
   const address = Address.fromPrivateKey(pkey)
   await service.execution.vm.stateManager.putAccount(address, new Account())
   const account = await service.execution.vm.stateManager.getAccount(address)
@@ -101,16 +93,12 @@ tape(`${method}: call with valid parameters`, async (t) => {
   await chain.putBlocks([block, block2], true)
 
   const req = params(method, [
-    [
-      bytesToPrefixedHexString(block.hash()),
-      bytesToPrefixedHexString(randomBytes(32)),
-      bytesToPrefixedHexString(block2.hash()),
-    ],
+    [bytesToHex(block.hash()), bytesToHex(randomBytes(32)), bytesToHex(block2.hash())],
   ])
   const expectRes = (res: any) => {
     t.equal(
       res.body.result[0].transactions[0],
-      bytesToPrefixedHexString(tx.serialize()),
+      bytesToHex(tx.serialize()),
       'got expected transaction from first payload'
     )
     t.equal(res.body.result[1], null, 'got null for block not found in chain')
@@ -139,9 +127,7 @@ tape(`${method}: call with valid parameters on pre-Shanghai block`, async (t) =>
     }
   )
   common.setHardfork(Hardfork.London)
-  const pkey = prefixedHexStringToBytes(
-    '0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355'
-  )
+  const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
   const address = Address.fromPrivateKey(pkey)
   await service.execution.vm.stateManager.putAccount(address, new Account())
   const account = await service.execution.vm.stateManager.getAccount(address)
@@ -193,11 +179,7 @@ tape(`${method}: call with valid parameters on pre-Shanghai block`, async (t) =>
   await chain.putBlocks([block, block2], true)
 
   const req = params(method, [
-    [
-      bytesToPrefixedHexString(block.hash()),
-      bytesToPrefixedHexString(randomBytes(32)),
-      bytesToPrefixedHexString(block2.hash()),
-    ],
+    [bytesToHex(block.hash()), bytesToHex(randomBytes(32)), bytesToHex(block2.hash())],
   ])
   const expectRes = (res: any) => {
     t.equal(

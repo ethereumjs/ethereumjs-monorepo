@@ -3,10 +3,10 @@ import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
   Address,
   blobsToCommitments,
-  bytesToPrefixedHexString,
+  bytesToHex,
   commitmentsToVersionedHashes,
+  hexToBytes,
   initKZG,
-  prefixedHexStringToBytes,
   randomBytes,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
@@ -24,9 +24,7 @@ const MAX_USEFUL_BYTES_PER_TX = USEFUL_BYTES_PER_BLOB * MAX_BLOBS_PER_TX - 1
 const BLOB_SIZE = BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB
 
 initKZG(kzg, __dirname + '/../../src/trustedSetup/devnet4.txt')
-const pkey = prefixedHexStringToBytes(
-  '0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8'
-)
+const pkey = hexToBytes('0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
 const sender = Address.fromPrivateKey(pkey)
 
 function get_padded(data: any, blobs_len: number) {
@@ -51,7 +49,7 @@ function get_blob(data: any) {
 
 // ref: https://github.com/asn-d6/blobbers/blob/packing_benchmarks/src/packer_naive.rs
 function get_blobs(data: any) {
-  data = prefixedHexStringToBytes(data)
+  data = hexToBytes(data)
   const len = (data as Uint8Array).byteLength
   if (len === 0) {
     throw Error('invalid blob data')
@@ -126,11 +124,7 @@ async function run(data: any) {
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 
-  const res = await client.request(
-    'eth_sendRawTransaction',
-    [bytesToPrefixedHexString(serializedWrapper)],
-    2.0
-  )
+  const res = await client.request('eth_sendRawTransaction', [bytesToHex(serializedWrapper)], 2.0)
 
   if (res.result.error !== undefined) {
     console.log('error sending transaction')
@@ -170,8 +164,8 @@ async function run(data: any) {
     return false
   }
 
-  const expected_kzgs = bytesToPrefixedHexString(blobTx.kzgCommitments![0])
-  if (blob_kzg !== bytesToPrefixedHexString(blobTx.kzgCommitments![0])) {
+  const expected_kzgs = bytesToHex(blobTx.kzgCommitments![0])
+  if (blob_kzg !== bytesToHex(blobTx.kzgCommitments![0])) {
     console.log(`Unexpected KZG commitment: expected ${expected_kzgs}, got ${blob_kzg}`)
     return false
   } else {

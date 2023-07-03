@@ -1,12 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import {
-  Address,
-  KECCAK256_RLP,
-  Withdrawal,
-  prefixedHexStringToBytes,
-  zeros,
-} from '@ethereumjs/util'
+import { Address, KECCAK256_RLP, Withdrawal, hexToBytes, zeros } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Block } from '../src/block.js'
@@ -37,9 +31,7 @@ common.hardforkBlock = function (hardfork: string | undefined) {
 describe('EIP4895 tests', () => {
   it('should correctly generate withdrawalsRoot', async () => {
     // get withdwalsArray
-    const gethBlockBytesArray = RLP.decode(
-      prefixedHexStringToBytes('0x' + gethWithdrawals8BlockRlp)
-    )
+    const gethBlockBytesArray = RLP.decode(hexToBytes('0x' + gethWithdrawals8BlockRlp))
     const withdrawals = (gethBlockBytesArray[3] as WithdrawalBytes[]).map((wa) =>
       Withdrawal.fromValuesArray(wa)
     )
@@ -161,14 +153,14 @@ describe('EIP4895 tests', () => {
     const withdrawal = <WithdrawalData>{
       index: BigInt(0),
       validatorIndex: BigInt(0),
-      address: new Address(prefixedHexStringToBytes('0x' + '20'.repeat(20))),
+      address: new Address(hexToBytes('0x' + '20'.repeat(20))),
       amount: BigInt(1000),
     }
 
     const validBlockWithWithdrawal = Block.fromBlockData(
       {
         header: {
-          withdrawalsRoot: prefixedHexStringToBytes(
+          withdrawalsRoot: hexToBytes(
             '0x897ca49edcb278aecab2688bcc2b7b7ee43524cc489672534fee332a172f1718'
           ),
         },
@@ -186,14 +178,14 @@ describe('EIP4895 tests', () => {
     const withdrawal2 = <WithdrawalData>{
       index: BigInt(1),
       validatorIndex: BigInt(11),
-      address: new Address(prefixedHexStringToBytes('0x' + '30'.repeat(20))),
+      address: new Address(hexToBytes('0x' + '30'.repeat(20))),
       amount: BigInt(2000),
     }
 
     const validBlockWithWithdrawal2 = Block.fromBlockData(
       {
         header: {
-          withdrawalsRoot: prefixedHexStringToBytes(
+          withdrawalsRoot: hexToBytes(
             '0x3b514862c42008079d461392e29d5b6775dd5ed370a6c4441ccb8ab742bf2436'
           ),
         },

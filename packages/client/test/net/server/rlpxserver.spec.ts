@@ -1,4 +1,4 @@
-import { equalsBytes, prefixedHexStringToBytes, utf8ToBytes } from '@ethereumjs/util'
+import { equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { EventEmitter } from 'events'
 import { multiaddr } from 'multiaddr'
 import * as tape from 'tape'
@@ -52,7 +52,7 @@ tape('[RlpxServer]', async (t) => {
       key: 'abcd',
     })
     t.equals(server.name, 'rlpx', 'get name')
-    t.ok(equalsBytes(server.key!, prefixedHexStringToBytes('0xabcd')), 'key parse')
+    t.ok(equalsBytes(server.key!, hexToBytes('0xabcd')), 'key parse')
     t.deepEquals(
       server.bootnodes,
       [multiaddr('/ip4/10.0.0.1/tcp/1234'), multiaddr('/ip4/10.0.0.2/tcp/1234')],
@@ -128,7 +128,7 @@ tape('[RlpxServer]', async (t) => {
     ;(server as any).rlpx = td.object({
       destroy: td.func(),
     })
-    server.rlpx!._id = prefixedHexStringToBytes('0x' + mockId)
+    server.rlpx!._id = hexToBytes('0x' + mockId)
     td.when(
       server.dpt!.bootstrap({ address: '10.0.0.1', udpPort: 1234, tcpPort: 1234 })
     ).thenResolve(undefined)
@@ -172,7 +172,7 @@ tape('[RlpxServer]', async (t) => {
     ;(server as any).rlpx = td.object({
       destroy: td.func(),
     })
-    server.rlpx!._id = prefixedHexStringToBytes('0x' + mockId)
+    server.rlpx!._id = hexToBytes('0x' + mockId)
     td.when(
       server.dpt!.bootstrap({ address: '10.0.0.1', udpPort: 1234, tcpPort: 1234 })
     ).thenResolve(undefined)
@@ -261,7 +261,7 @@ tape('[RlpxServer]', async (t) => {
     ;(server as any).peers.set('01', { id: '01' } as any)
     server.rlpx!.emit('peer:removed', rlpxPeer)
     server.rlpx!.emit('peer:error', rlpxPeer, new Error('err0'))
-    server.rlpx!._id = prefixedHexStringToBytes('0xff')
+    server.rlpx!._id = hexToBytes('0xff')
     server.rlpx!.emit('listening')
   })
 

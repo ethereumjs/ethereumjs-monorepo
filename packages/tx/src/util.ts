@@ -1,4 +1,4 @@
-import { bytesToPrefixedHexString, prefixedHexStringToBytes, setLengthLeft } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes, setLengthLeft } from '@ethereumjs/util'
 
 import { isAccessList } from './types.js'
 
@@ -27,10 +27,10 @@ export class AccessLists {
 
       for (let i = 0; i < accessList.length; i++) {
         const item: AccessListItem = accessList[i]
-        const addressBytes = prefixedHexStringToBytes(item.address)
+        const addressBytes = hexToBytes(item.address)
         const storageItems: Uint8Array[] = []
         for (let index = 0; index < item.storageKeys.length; index++) {
-          storageItems.push(prefixedHexStringToBytes(item.storageKeys[index]))
+          storageItems.push(hexToBytes(item.storageKeys[index]))
         }
         newAccessList.push([addressBytes, storageItems])
       }
@@ -41,10 +41,10 @@ export class AccessLists {
       const json: AccessList = []
       for (let i = 0; i < bufferAccessList.length; i++) {
         const data = bufferAccessList[i]
-        const address = bytesToPrefixedHexString(data[0])
+        const address = bytesToHex(data[0])
         const storageKeys: string[] = []
         for (let item = 0; item < data[1].length; item++) {
-          storageKeys.push(bytesToPrefixedHexString(data[1][item]))
+          storageKeys.push(bytesToHex(data[1][item]))
         }
         const jsonItem: AccessListItem = {
           address,
@@ -87,13 +87,13 @@ export class AccessLists {
     for (let index = 0; index < accessList.length; index++) {
       const item: any = accessList[index]
       const JSONItem: any = {
-        address: bytesToPrefixedHexString(setLengthLeft(item[0], 20)),
+        address: bytesToHex(setLengthLeft(item[0], 20)),
         storageKeys: [],
       }
       const storageSlots: Uint8Array[] = item[1]
       for (let slot = 0; slot < storageSlots.length; slot++) {
         const storageSlot = storageSlots[slot]
-        JSONItem.storageKeys.push(bytesToPrefixedHexString(setLengthLeft(storageSlot, 32)))
+        JSONItem.storageKeys.push(bytesToHex(setLengthLeft(storageSlot, 32)))
       }
       accessListJSON.push(JSONItem)
     }

@@ -2,8 +2,8 @@ import {
   TypeOutput,
   bytesToHex,
   concatBytes,
+  hexToBytes,
   intToBytes,
-  prefixedHexStringToBytes,
   toType,
 } from '@ethereumjs/util'
 import crc from 'crc/crc32'
@@ -769,9 +769,7 @@ export class Common extends EventEmitter {
         blockOrTime !== prevBlockOrTime &&
         name !== Hardfork.Paris
       ) {
-        const hfBlockBytes = prefixedHexStringToBytes(
-          '0x' + blockOrTime.toString(16).padStart(16, '0')
-        )
+        const hfBlockBytes = hexToBytes('0x' + blockOrTime.toString(16).padStart(16, '0'))
         hfBytes = concatBytes(hfBytes, hfBlockBytes)
         prevBlockOrTime = blockOrTime
       }
@@ -783,7 +781,7 @@ export class Common extends EventEmitter {
     // CRC32 delivers result as signed (negative) 32-bit integer,
     // convert to hex string
     const forkhash = bytesToHex(intToBytes(crc(inputBytes) >>> 0))
-    return `0x${forkhash}`
+    return forkhash
   }
 
   /**

@@ -8,13 +8,14 @@ import { TransactionFactory } from '@ethereumjs/tx'
 import {
   MapDB,
   bytesToBigInt,
+  bytesToHex,
+  hexToBytes,
   initKZG,
   isHexPrefixed,
   stripHexPrefix,
   toBytes,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { VM } from '../../../dist/cjs'
 import { setupPreConditions, verifyPostConditions } from '../../util'
@@ -126,7 +127,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     // Here we decode the rlp to extract the block number
     // The block library cannot be used, as this throws on certain EIP1559 blocks when trying to convert
     try {
-      const blockRlp = hexToBytes((raw.rlp as string).slice(2))
+      const blockRlp = hexToBytes(raw.rlp as string)
       const decodedRLP: any = RLP.decode(Uint8Array.from(blockRlp))
       currentBlock = bytesToBigInt(decodedRLP[0][8])
     } catch (e: any) {
@@ -135,7 +136,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     }
 
     try {
-      const blockRlp = hexToBytes((raw.rlp as string).slice(2))
+      const blockRlp = hexToBytes(raw.rlp as string)
       // Update common HF
       let TD: bigint | undefined = undefined
       let timestamp: bigint | undefined = undefined
@@ -164,7 +165,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         >[]) {
           const shouldFail = txData.valid === 'false'
           try {
-            const txRLP = hexToBytes(txData.rawBytes.slice(2))
+            const txRLP = hexToBytes(txData.rawBytes)
             const tx = TransactionFactory.fromSerializedData(txRLP, { common })
             await blockBuilder.addTransaction(tx)
             if (shouldFail) {
@@ -235,7 +236,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   }
   t.equal(
     bytesToHex((blockchain as any)._headHeaderHash),
-    testData.lastblockhash,
+    '0x' + testData.lastblockhash,
     'correct last header block'
   )
 

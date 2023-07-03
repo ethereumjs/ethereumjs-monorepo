@@ -1,6 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
-import { equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 import * as tape from 'tape'
 import * as td from 'testdouble'

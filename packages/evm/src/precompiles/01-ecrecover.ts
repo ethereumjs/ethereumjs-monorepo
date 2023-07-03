@@ -1,7 +1,6 @@
 import {
   bytesToBigInt,
   bytesToHex,
-  bytesToPrefixedHexString,
   ecrecover,
   publicToAddress,
   setLengthLeft,
@@ -74,7 +73,7 @@ export function precompile01(opts: PrecompileInput): ExecResult {
   }
   const address = setLengthLeft(publicToAddress(publicKey), 32)
   if (opts._debug !== undefined) {
-    opts._debug(`ECRECOVER (0x01) return address=${bytesToPrefixedHexString(address)}`)
+    opts._debug(`ECRECOVER (0x01) return address=${bytesToHex(address)}`)
   }
   return {
     executionGasUsed: gasUsed,

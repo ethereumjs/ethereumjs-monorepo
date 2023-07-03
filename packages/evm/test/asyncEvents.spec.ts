@@ -1,13 +1,12 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Address } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { EVM } from '../src/index.js'
 describe('async events', () => {
   it('should work', async () => {
-    const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee'))
+    const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee'))
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
     const evm = await EVM.create({
       common,
@@ -23,7 +22,7 @@ describe('async events', () => {
     const runCallArgs = {
       caller, // call address
       gasLimit: BigInt(0xffffffffff),
-      data: hexToBytes('600000'),
+      data: hexToBytes('0x600000'),
     }
     await evm.runCall(runCallArgs)
   })

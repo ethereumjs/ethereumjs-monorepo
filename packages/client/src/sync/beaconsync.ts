@@ -1,4 +1,4 @@
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { bytesToHex } from '@ethereumjs/util'
 
 import { Event } from '../types'
 import { short } from '../util'

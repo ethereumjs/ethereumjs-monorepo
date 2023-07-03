@@ -1,4 +1,4 @@
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
+import { bytesToUnprefixedHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { getEOFCode } from '../src/eof.js'
@@ -20,12 +20,12 @@ describe('getEOFCode()', () => {
     const invalidEofCode = generateInvalidEOFCode(code)
 
     assert.equal(
-      bytesToHex(getEOFCode(hexToBytes(validEofCode.slice(2)))),
+      bytesToUnprefixedHex(getEOFCode(hexToBytes(validEofCode))),
       code,
       'returned just code section of EOF container'
     )
     assert.equal(
-      bytesToHex(getEOFCode(hexToBytes(invalidEofCode.slice(2)))),
+      bytesToUnprefixedHex(getEOFCode(hexToBytes(invalidEofCode))),
       invalidEofCode.toLowerCase().slice(2),
       'returns entire code string for non EOF code'
     )

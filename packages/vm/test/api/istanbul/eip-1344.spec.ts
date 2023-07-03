@@ -1,7 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVMErrorMessage } from '@ethereumjs/evm'
-import { bytesToBigInt } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToBigInt, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
@@ -17,7 +16,7 @@ const code = ['46', '60', '00', '53', '60', '01', '60', '00', 'f3']
 describe('Istanbul: EIP-1344', () => {
   it('CHAINID', async () => {
     const runCodeArgs = {
-      code: hexToBytes(code.join('')),
+      code: hexToBytes('0x' + code.join('')),
       gasLimit: BigInt(0xffff),
     }
 

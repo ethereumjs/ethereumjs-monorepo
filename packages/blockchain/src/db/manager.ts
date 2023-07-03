@@ -4,10 +4,10 @@ import {
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   bytesToBigInt,
-  bytesToPrefixedHexString,
+  bytesToHex,
   equalsBytes,
+  unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
 import { Cache } from './cache.js'
 import { DBOp, DBTarget } from './operation.js'
@@ -61,7 +61,7 @@ export class DBManager {
       // Heads are stored in DB as hex strings since Level converts Uint8Arrays
       // to nested JSON objects when they are included in a value being stored
       // in the DB
-      decodedHeads[key] = hexToBytes(heads[key] as string)
+      decodedHeads[key] = unprefixedHexToBytes(heads[key] as string)
     }
     return decodedHeads
   }
@@ -181,7 +181,7 @@ export class DBManager {
   async hashToNumber(blockHash: Uint8Array): Promise<bigint | undefined> {
     const value = await this.get(DBTarget.HashToNumber, { blockHash })
     if (value === undefined) {
-      throw new Error(`value for ${bytesToPrefixedHexString(blockHash)} not found in DB`)
+      throw new Error(`value for ${bytesToHex(blockHash)} not found in DB`)
     }
     return value !== undefined ? bytesToBigInt(value) : undefined
   }

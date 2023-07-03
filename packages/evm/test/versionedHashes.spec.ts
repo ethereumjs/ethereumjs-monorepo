@@ -1,7 +1,6 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Account, Address, unpadBytes } from '@ethereumjs/util'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
+import { Account, Address, bytesToHex, hexToBytes, unpadBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { EVM } from '../src/index.js'
@@ -21,19 +20,19 @@ describe('BLOBHASH / access versionedHashes in calldata', () => {
       stateManager: new DefaultStateManager(),
     })
 
-    const getBlobHashIndex0Code = '60004960005260206000F3'
+    const getBlobHashIndex0Code = '0x60004960005260206000F3'
     // setup the call arguments
     const runCallArgs: EVMRunCallOpts = {
       gasLimit: BigInt(0xffffffffff),
       // calldata -- retrieves the versioned hash at index 0 and returns it from memory
       data: hexToBytes(getBlobHashIndex0Code),
-      versionedHashes: [hexToBytes('ab')],
+      versionedHashes: [hexToBytes('0xab')],
     }
     const res = await evm.runCall(runCallArgs)
 
     assert.equal(
       bytesToHex(unpadBytes(res.execResult.returnValue)),
-      'ab',
+      '0xab',
       'retrieved correct versionedHash from runState'
     )
   })
@@ -52,16 +51,17 @@ describe(`BLOBHASH: access versionedHashes within contract calls`, () => {
       stateManager: new DefaultStateManager(),
     })
 
-    const getBlobHasIndexCode = '60004960005260206000F3'
-    const contractAddress = new Address(hexToBytes('00000000000000000000000000000000000000ff')) // contract address
+    const getBlobHasIndexCode = '0x60004960005260206000F3'
+    const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff')) // contract address
     await evm.stateManager.putContractCode(contractAddress, hexToBytes(getBlobHasIndexCode)) // setup the contract code
 
-    const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee')) // caller address
+    const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee')) // caller address
     await evm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11111111))) // give the calling account a big balance so we don't run out of funds
 
     for (const callCode of ['F1', 'F4', 'F2', 'FA']) {
       // Call the contract via static call and return the returned BLOBHASH
       const staticCallCode =
+        '0x' +
         // return, args and value
         '5F5F5F5F5F' +
         // push 20 bytes address of contract to call
@@ -77,13 +77,13 @@ describe(`BLOBHASH: access versionedHashes within contract calls`, () => {
         gasLimit: BigInt(0xffffffffff),
         // calldata -- retrieves the versioned hash at index 0 and returns it from memory
         data: hexToBytes(staticCallCode),
-        versionedHashes: [hexToBytes('ab')],
+        versionedHashes: [hexToBytes('0xab')],
       }
       const res = await evm.runCall(runCallArgs)
 
       assert.equal(
         bytesToHex(unpadBytes(res.execResult.returnValue)),
-        'ab',
+        '0xab',
         `retrieved correct versionedHash from runState through callCode=${callCode}`
       )
     }
@@ -106,12 +106,13 @@ describe(`BLOBHASH: access versionedHashes in a CREATE/CREATE2 frame`, () => {
     let getBlobHashIndex0Code = '60004960005260206000F3'
     getBlobHashIndex0Code = getBlobHashIndex0Code.padEnd(64, '0')
 
-    const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee')) // caller address
+    const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee')) // caller address
     await evm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11111111))) // give the calling account a big balance so we don't run out of funds
 
     for (const createOP of ['F0', 'F5']) {
       // Call the contract via static call and return the returned BLOBHASH
       const staticCallCode =
+        '0x' +
         // push initcode
         '7F' +
         getBlobHashIndex0Code +
@@ -131,16 +132,16 @@ describe(`BLOBHASH: access versionedHashes in a CREATE/CREATE2 frame`, () => {
         gasLimit: BigInt(0xffffffffff),
         // calldata -- retrieves the versioned hash at index 0 and returns it from memory
         data: hexToBytes(staticCallCode),
-        versionedHashes: [hexToBytes('ab')],
+        versionedHashes: [hexToBytes('0xab')],
       }
       const res = await evm.runCall(runCallArgs)
 
-      const address = Address.fromString('0x' + bytesToHex(res.execResult.returnValue.slice(12)))
+      const address = Address.fromString(bytesToHex(res.execResult.returnValue.slice(12)))
       const code = await evm.stateManager.getContractCode(address)
 
       assert.equal(
         bytesToHex(code),
-        'ab'.padStart(64, '0'), // have to padStart here, since `BLOBHASH` will push 32 bytes on stack
+        '0x' + 'ab'.padStart(64, '0'), // have to padStart here, since `BLOBHASH` will push 32 bytes on stack
         `retrieved correct versionedHash from runState through createOP=${createOP}`
       )
     }

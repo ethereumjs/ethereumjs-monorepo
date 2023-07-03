@@ -7,15 +7,14 @@ import {
   blobsToProofs,
   bytesToBigInt,
   bytesToHex,
-  bytesToPrefixedHexString,
   commitmentsToVersionedHashes,
   computeVersionedHash,
   concatBytes,
   ecrecover,
   equalsBytes,
   getBlobs,
+  hexToBytes,
   kzg,
-  prefixedHexStringToBytes,
   toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
@@ -40,7 +39,7 @@ import type { Common } from '@ethereumjs/common'
 type TxData = AllTypesTxData[TransactionType.BlobEIP4844]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
 
-const TRANSACTION_TYPE_BYTES = prefixedHexStringToBytes(
+const TRANSACTION_TYPE_BYTES = hexToBytes(
   '0x' + TransactionType.BlobEIP4844.toString(16).padStart(2, '0')
 )
 
@@ -548,7 +547,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       maxFeePerGas: bigIntToHex(this.maxFeePerGas),
       accessList: accessListJSON,
       maxFeePerDataGas: bigIntToHex(this.maxFeePerDataGas),
-      versionedHashes: this.versionedHashes.map((hash) => bytesToPrefixedHexString(hash)),
+      versionedHashes: this.versionedHashes.map((hash) => bytesToHex(hash)),
     }
   }
 

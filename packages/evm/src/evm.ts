@@ -7,7 +7,7 @@ import {
   KECCAK256_NULL,
   MAX_INTEGER,
   bigIntToBytes,
-  bytesToHex,
+  bytesToUnprefixedHex,
   equalsBytes,
   generateAddress,
   generateAddress2,
@@ -926,7 +926,7 @@ export class EVM implements EVMInterface {
    * if no such precompile exists.
    */
   getPrecompile(address: Address): PrecompileFunc | undefined {
-    return this.precompiles.get(bytesToHex(address.bytes))
+    return this.precompiles.get(bytesToUnprefixedHex(address.bytes))
   }
 
   /**

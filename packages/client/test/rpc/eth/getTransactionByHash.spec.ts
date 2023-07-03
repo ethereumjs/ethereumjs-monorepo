@@ -1,5 +1,5 @@
 import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
-import { bytesToPrefixedHexString } from '@ethereumjs/util'
+import { bytesToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import * as pow from '../../testdata/geth-genesis/pow.json'
@@ -26,16 +26,16 @@ tape(`${method}: call with legacy tx`, async (t) => {
   await runBlockWithTxs(chain, execution, [tx])
 
   // get the tx
-  let req = params(method, [bytesToPrefixedHexString(tx.hash())])
+  let req = params(method, [bytesToHex(tx.hash())])
   let expectRes = (res: any) => {
     const msg = 'should return the correct tx'
-    t.equal(res.body.result.hash, bytesToPrefixedHexString(tx.hash()), msg)
+    t.equal(res.body.result.hash, bytesToHex(tx.hash()), msg)
   }
   await baseRequest(t, server, req, 200, expectRes, false, false)
 
   // run a block to ensure tx hash index is cleaned up when txLookupLimit=1
   await runBlockWithTxs(chain, execution, [])
-  req = params(method, [bytesToPrefixedHexString(tx.hash())])
+  req = params(method, [bytesToHex(tx.hash())])
   expectRes = (res: any) => {
     const msg = 'should return null when past txLookupLimit'
     t.equal(res.body.result, null, msg)
@@ -64,7 +64,7 @@ tape(`${method}: call with 1559 tx`, async (t) => {
   await runBlockWithTxs(chain, execution, [tx])
 
   // get the tx
-  let req = params(method, [bytesToPrefixedHexString(tx.hash())])
+  let req = params(method, [bytesToHex(tx.hash())])
   let expectRes = (res: any) => {
     const msg = 'should return the correct tx type'
     t.equal(res.body.result.type, '0x2', msg)
@@ -75,10 +75,10 @@ tape(`${method}: call with 1559 tx`, async (t) => {
   await runBlockWithTxs(chain, execution, [])
   await runBlockWithTxs(chain, execution, [])
   await runBlockWithTxs(chain, execution, [])
-  req = params(method, [bytesToPrefixedHexString(tx.hash())])
+  req = params(method, [bytesToHex(tx.hash())])
   expectRes = (res: any) => {
     const msg = 'should return the correct tx when txLookupLimit=0'
-    t.equal(res.body.result.hash, bytesToPrefixedHexString(tx.hash()), msg)
+    t.equal(res.body.result.hash, bytesToHex(tx.hash()), msg)
   }
   await baseRequest(t, server, req, 200, expectRes, true) // pass endOnFinish=true for last test
 })

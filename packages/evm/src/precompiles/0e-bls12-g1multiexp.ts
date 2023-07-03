@@ -1,5 +1,4 @@
-import { short } from '@ethereumjs/util'
-import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils.js'
+import { bytesToHex, equalsBytes, short } from '@ethereumjs/util'
 
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'

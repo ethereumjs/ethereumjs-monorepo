@@ -7,13 +7,12 @@ import {
   Withdrawal,
   bigIntToHex,
   bytesToHex,
-  bytesToPrefixedHexString,
   equalsBytes,
   fetchFromProvider,
   getProvider,
-  intToPrefixedHexString,
+  hexToBytes,
+  intToHex,
   isHexPrefixed,
-  prefixedHexStringToBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
@@ -271,7 +270,7 @@ export class Block {
       for (let x = 0; x < blockData.uncles.length; x++) {
         const headerData = await fetchFromProvider(providerUrl, {
           method: 'eth_getUncleByBlockHashAndIndex',
-          params: [blockData.hash, intToPrefixedHexString(x)],
+          params: [blockData.hash, intToHex(x)],
         })
         uncleHeaders.push(headerData)
       }
@@ -302,7 +301,7 @@ export class Block {
     const txs = []
     for (const [index, serializedTx] of transactions.entries()) {
       try {
-        const tx = TransactionFactory.fromSerializedData(prefixedHexStringToBytes(serializedTx), {
+        const tx = TransactionFactory.fromSerializedData(hexToBytes(serializedTx), {
           common: options?.common,
         })
         txs.push(tx)
@@ -330,10 +329,10 @@ export class Block {
     // we are not setting setHardfork as common is already set to the correct hf
     const block = Block.fromBlockData({ header, transactions: txs, withdrawals }, options)
     // Verify blockHash matches payload
-    if (!equalsBytes(block.hash(), prefixedHexStringToBytes(payload.blockHash))) {
+    if (!equalsBytes(block.hash(), hexToBytes(payload.blockHash))) {
       const validationError = `Invalid blockHash, expected: ${
         payload.blockHash
-      }, received: ${bytesToPrefixedHexString(block.hash())}`
+      }, received: ${bytesToHex(block.hash())}`
       throw Error(validationError)
     }
 

@@ -2,7 +2,7 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
-import { Address, equalsBytes, prefixedHexStringToBytes } from '@ethereumjs/util'
+import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { AbstractLevel } from 'abstract-level'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as tape from 'tape'
@@ -20,17 +20,13 @@ import type { CliqueConsensus } from '@ethereumjs/blockchain'
 import type { VM } from '@ethereumjs/vm'
 
 const A = {
-  address: new Address(prefixedHexStringToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
-  privateKey: prefixedHexStringToBytes(
-    '0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'
-  ),
+  address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
+  privateKey: hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
 }
 
 const B = {
-  address: new Address(prefixedHexStringToBytes('0x6f62d8382bf2587361db73ceca28be91b2acb6df')),
-  privateKey: prefixedHexStringToBytes(
-    '0x2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'
-  ),
+  address: new Address(hexToBytes('0x6f62d8382bf2587361db73ceca28be91b2acb6df')),
+  privateKey: hexToBytes('0x2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'),
 }
 
 const setBalance = async (vm: VM, address: Address, balance: bigint) => {

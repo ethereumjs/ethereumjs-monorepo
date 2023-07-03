@@ -2,8 +2,7 @@
 // needed for karma-typescript bundling
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
-import { Account, Address, KECCAK256_RLP } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { Account, Address, KECCAK256_RLP, hexToBytes } from '@ethereumjs/util'
 import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
 import { assert, describe, it } from 'vitest'
 
@@ -224,13 +223,13 @@ describe('VM -> setHardfork, state (deprecated), blockchain', () => {
   describe('Ensure that precompile activation creates non-empty accounts', () => {
     it('should work', async () => {
       // setup the accounts for this test
-      const caller = new Address(hexToBytes('00000000000000000000000000000000000000ee')) // caller address
-      const contractAddress = new Address(hexToBytes('00000000000000000000000000000000000000ff')) // contract address
+      const caller = Address.fromString('0x00000000000000000000000000000000000000ee') // caller address
+      const contractAddress = Address.fromString('0x00000000000000000000000000000000000000ff') // contract address
       // setup the vm
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
       const vmNotActivated = await VM.create({ common })
       const vmActivated = await VM.create({ common, activatePrecompiles: true })
-      const code = '6000808080347300000000000000000000000000000000000000045AF100'
+      const code = '0x6000808080347300000000000000000000000000000000000000045AF100'
       /*
         idea: call the Identity precompile with nonzero value in order to trigger "callNewAccount" for the non-activated VM and do not deduct this
               when calling from the activated VM. Explicitly check that the difference in gas cost is equal to the common callNewAccount gas.
