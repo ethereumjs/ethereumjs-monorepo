@@ -79,7 +79,7 @@ const setup = () => {
     execution: {
       vm: {
         stateManager,
-        copy: () => service.execution.vm,
+        shallowCopy: () => service.execution.vm,
         setStateRoot: () => {},
         blockchain: mockBlockchain({}),
       },

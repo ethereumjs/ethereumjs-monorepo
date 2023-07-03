@@ -110,7 +110,7 @@ export class Debug {
       const tx = block.transactions[txIndex]
 
       // Copy VM so as to not modify state when running transactions being traced
-      const vmCopy = await this.service.execution.vm.copy()
+      const vmCopy = await this.service.execution.vm.shallowCopy()
       await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
       for (let x = 0; x < txIndex; x++) {
         // Run all txns in the block prior to the traced transaction

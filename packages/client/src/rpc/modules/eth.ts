@@ -409,7 +409,7 @@ export class Eth {
       throw new Error('missing vm')
     }
 
-    const vm = await this._vm.copy()
+    const vm = await this._vm.shallowCopy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const { from, to, gas: gasLimit, gasPrice, value, data } = transaction
@@ -467,7 +467,7 @@ export class Eth {
       throw new Error('missing vm')
     }
 
-    const vm = await this._vm.copy()
+    const vm = await this._vm.shallowCopy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     if (transaction.gas === undefined) {
@@ -531,7 +531,7 @@ export class Eth {
       throw new Error('missing vm')
     }
 
-    const vm = await this._vm.copy()
+    const vm = await this._vm.shallowCopy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
     const account = await vm.stateManager.getAccount(address)
     if (account === undefined) {
@@ -603,7 +603,7 @@ export class Eth {
       throw new Error('missing vm')
     }
 
-    const vm = await this._vm.copy()
+    const vm = await this._vm.shallowCopy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = Address.fromString(addressHex)
@@ -631,7 +631,7 @@ export class Eth {
       throw new Error('missing vm')
     }
 
-    const vm = await this._vm.copy()
+    const vm = await this._vm.shallowCopy()
     // TODO: this needs more thought, keep on latest for now
     const block = await getBlockByOption(blockOpt, this._chain)
     await vm.stateManager.setStateRoot(block.header.stateRoot)
@@ -711,7 +711,7 @@ export class Eth {
       throw new Error('missing vm')
     }
 
-    const vm = await this._vm.copy()
+    const vm = await this._vm.shallowCopy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = Address.fromString(addressHex)
@@ -781,7 +781,7 @@ export class Eth {
             block.header.baseFeePerGas!
         : (tx as LegacyTransaction).gasPrice
 
-      const vmCopy = await this._vm!.copy()
+      const vmCopy = await this._vm!.shallowCopy()
       vmCopy._common.setHardfork(tx.common.hardfork())
       // Run tx through copied vm to get tx gasUsed and createdAddress
       const runBlockResult = await vmCopy.runBlock({
@@ -1014,7 +1014,7 @@ export class Eth {
       throw new Error('missing vm')
     }
 
-    const vm = await this._vm.copy()
+    const vm = await this._vm.shallowCopy()
 
     if (!('getProof' in vm.stateManager)) {
       throw new Error('getProof RPC method not supported with the StateManager provided')

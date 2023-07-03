@@ -219,11 +219,11 @@ export class VM {
   /**
    * Returns a copy of the {@link VM} instance.
    */
-  async copy(): Promise<VM> {
+  async shallowCopy(): Promise<VM> {
     const common = this._common.copy()
     common.setHardfork(this._common.hardfork())
-    const blockchain = this.blockchain.copy()
-    const stateManager = this.stateManager.copy()
+    const blockchain = this.blockchain.shallowCopy()
+    const stateManager = this.stateManager.shallowCopy()
     const evmOpts = {
       ...(this.evm as any)._optsCached,
       common,

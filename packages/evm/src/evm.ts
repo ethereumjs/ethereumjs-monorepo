@@ -1018,14 +1018,14 @@ export class EVM implements EVMInterface {
     if (this._common.isActivatedEIP(1153)) this._transientStorage.clear()
   }
 
-  public copy(): EVMInterface {
+  public shallowCopy(): EVMInterface {
     const common = this._common.copy()
     common.setHardfork(this._common.hardfork())
 
     const opts = {
       ...this._optsCached,
       common,
-      stateManager: this.stateManager.copy(),
+      stateManager: this.stateManager.shallowCopy(),
     }
     ;(opts.stateManager as any)._common = common
     return new EVM(opts)

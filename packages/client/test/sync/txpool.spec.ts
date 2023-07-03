@@ -35,7 +35,7 @@ const setup = () => {
           getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000')),
           setStateRoot: async (_root: Uint8Array) => {},
         },
-        copy: () => service.execution.vm,
+        shallowCopy: () => service.execution.vm,
       },
     },
   }

@@ -960,7 +960,7 @@ export class Engine {
       }
 
       const payloadId = await this.pendingBlock.start(
-        await this.vm.copy(),
+        await this.vm.shallowCopy(),
         headBlock,
         {
           timestamp,

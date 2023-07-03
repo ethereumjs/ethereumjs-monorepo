@@ -47,7 +47,7 @@ describe('EIP4844 tests', () => {
 
     const address = Address.fromString(sender)
     await setBalance(vm, address, 14680063125000000000n)
-    const vmCopy = await vm.copy()
+    const vmCopy = await vm.shallowCopy()
 
     const blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,

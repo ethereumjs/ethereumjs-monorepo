@@ -267,9 +267,9 @@ last call to checkpoint.
 
 ___
 
-### copy
+### shallowCopy
 
-▸ **copy**(): [`StateManager`](../interfaces/StateManager.md)
+▸ **shallowCopy**(): [`StateManager`](../interfaces/StateManager.md)
 
 Copies the current instance of the `StateManager`
 at the last fully committed point, i.e. as if all current

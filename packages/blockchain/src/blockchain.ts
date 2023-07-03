@@ -182,7 +182,7 @@ export class Blockchain implements BlockchainInterface {
    * set the {@link db} of this returned instance to a copy of
    * the original.
    */
-  copy(): Blockchain {
+  shallowCopy(): Blockchain {
     const copiedBlockchain = Object.create(
       Object.getPrototypeOf(this),
       Object.getOwnPropertyDescriptors(this)

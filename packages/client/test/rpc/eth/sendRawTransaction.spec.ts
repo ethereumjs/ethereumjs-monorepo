@@ -30,9 +30,9 @@ const method = 'eth_sendRawTransaction'
 tape(`${method}: call with valid arguments`, async (t) => {
   // Disable stateroot validation in TxPool since valid state root isn't available
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-  const originalStateManagerCopy = DefaultStateManager.prototype.copy
+  const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
   DefaultStateManager.prototype.setStateRoot = function (): any {}
-  DefaultStateManager.prototype.copy = function () {
+  DefaultStateManager.prototype.shallowCopy = function () {
     return this
   }
   const common = new Common({ chain: Chain.Mainnet })
@@ -69,7 +69,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes)
   // Restore setStateRoot
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-  DefaultStateManager.prototype.copy = originalStateManagerCopy
+  DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
 })
 
 tape(`${method}: send local tx with gasprice lower than minimum`, async (t) => {
@@ -176,8 +176,8 @@ tape(`${method}: call with no peers`, async (t) => {
   // Disable stateroot validation in TxPool since valid state root isn't available
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   DefaultStateManager.prototype.setStateRoot = (): any => {}
-  const originalStateManagerCopy = DefaultStateManager.prototype.copy
-  DefaultStateManager.prototype.copy = function () {
+  const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
+  DefaultStateManager.prototype.shallowCopy = function () {
     return this
   }
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
@@ -209,7 +209,7 @@ tape(`${method}: call with no peers`, async (t) => {
 
   // Restore setStateRoot
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-  DefaultStateManager.prototype.copy = originalStateManagerCopy
+  DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
 })
 
 tape('blob EIP 4844 transaction', async (t) => {
@@ -217,8 +217,8 @@ tape('blob EIP 4844 transaction', async (t) => {
   // Disable stateroot validation in TxPool since valid state root isn't available
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   DefaultStateManager.prototype.setStateRoot = (): any => {}
-  const originalStateManagerCopy = DefaultStateManager.prototype.copy
-  DefaultStateManager.prototype.copy = function () {
+  const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
+  DefaultStateManager.prototype.shallowCopy = function () {
     return this
   }
   // Disable block header consensus format validation
@@ -292,6 +292,6 @@ tape('blob EIP 4844 transaction', async (t) => {
 
   // Restore stubbed out functionality
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-  DefaultStateManager.prototype.copy = originalStateManagerCopy
+  DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
   BlockHeader.prototype._consensusFormatValidation = consensusFormatValidation
 })

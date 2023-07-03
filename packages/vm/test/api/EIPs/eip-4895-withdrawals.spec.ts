@@ -206,7 +206,7 @@ describe('EIP4895 tests', () => {
     )
     const vm = await VM.create({ common, blockchain })
     await vm.stateManager.generateCanonicalGenesis(parseGethGenesisState(genesisJSON))
-    const vmCopy = await vm.copy()
+    const vmCopy = await vm.shallowCopy()
 
     const gethBlockBufferArray = decode(hexToBytes(gethWithdrawals8BlockRlp))
     const withdrawals = (gethBlockBufferArray[3] as WithdrawalBytes[]).map((wa) =>

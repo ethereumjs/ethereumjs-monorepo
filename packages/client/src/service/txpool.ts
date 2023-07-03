@@ -315,7 +315,7 @@ export class TxPool {
     }
 
     // Copy VM in order to not overwrite the state root of the VMExecution module which may be concurrently running blocks
-    const vmCopy = await this.vm.copy()
+    const vmCopy = await this.vm.shallowCopy()
     // Set state root to latest block so that account balance is correct when doing balance check
     await vmCopy.stateManager.setStateRoot(block.stateRoot)
     let account = await vmCopy.stateManager.getAccount(senderAddress)

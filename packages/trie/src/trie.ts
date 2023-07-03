@@ -897,7 +897,7 @@ export class Trie {
    *
    * @param includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
    */
-  copy(includeCheckpoints = true): Trie {
+  shallowCopy(includeCheckpoints = true): Trie {
     const trie = new Trie({
       ...this._opts,
       db: this._db.db.shallowCopy(),
