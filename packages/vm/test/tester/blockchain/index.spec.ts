@@ -4,6 +4,26 @@ import { BlockchainTests } from '../runners/BlockchainTestsRunner'
 import { defaultBlockchainTestArgs } from '../runners/runnerUtils'
 
 import type { TestArgs } from '../runners/runnerUtils'
+const CLI_ARGS: (keyof TestArgs)[] = [
+  'state',
+  'blockchain',
+  'fork',
+  'file',
+  'test',
+  'dir',
+  'excludeDir',
+  'testsPath',
+  'customTestsPath',
+  'customStateTest',
+  'jsontrace',
+  'dist',
+  'data',
+  'gas',
+  'value',
+  'debug',
+  'expected-test-amount',
+  'reps',
+]
 
 const parseInput = (input: string | undefined, bool: boolean = false) => {
   if (input === undefined) {
@@ -17,25 +37,15 @@ const parseInput = (input: string | undefined, bool: boolean = false) => {
   }
   return input
 }
-
-const input: TestArgs = {
-  'verify-test-amount-alltests': 0,
-  'expected-test-amount':
-    parseInput(process.env.COUNT) !== undefined ? parseInt(process.env.COUNT!) : undefined,
-  fork: parseInput(process.env.FORK),
-  file: parseInput(process.env.FILE),
-  dir: parseInput(process.env.DIR),
-  excludeDir: parseInput(process.env.EXCLUDEDIR),
-  test: parseInput(process.env.TEST) ?? defaultBlockchainTestArgs.test,
+const _input: Partial<Record<keyof TestArgs, string | number | undefined>> = {
   skip: parseInput(process.env.SKIP) ?? defaultBlockchainTestArgs.skip,
   runSkipped: parseInput(process.env.RUNSKIPPED) ?? defaultBlockchainTestArgs.runSkipped,
-  customStateTest:
-    parseInput(process.env.CUSTOMSTATETEST) ?? defaultBlockchainTestArgs.customStateTest,
-  jsontrace: parseInput(process.env.JSONTRACE, true) !== undefined,
-  data: parseInput(process.env.DATA) !== undefined ? parseInt(process.env.DATA!) : undefined,
-  gas: parseInput(process.env.GAS) !== undefined ? parseInt(process.env.GAS!) : undefined,
-  value: parseInput(process.env.VALUE) !== undefined ? parseInt(process.env.VALUE!) : undefined,
+  'verify-test-amount-alltests': 0,
 }
+for (const arg of CLI_ARGS) {
+  _input[arg] = parseInput(process.env[arg.toUpperCase()])
+}
+const input: TestArgs = _input as TestArgs
 
 const testArgs = { ...defaultBlockchainTestArgs, ...input }
 testArgs.file !== undefined && (testArgs['verify-test-amount-alltests'] = 0)
