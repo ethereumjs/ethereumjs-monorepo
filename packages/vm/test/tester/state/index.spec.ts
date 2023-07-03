@@ -56,16 +56,3 @@ runSuite.on('beforeAll', (suite) => {
     )
   )
 })
-
-runSuite.on('afterAll', (suite) => {
-  const completed: Map<string, string[]> = new Map()
-  for (const task of suite.tasks) {
-    const [name, id] = task.name.split(':')
-    if (!completed.has(name)) {
-      completed.set(name, [])
-    }
-    completed.get(name)!.push(id.slice(name.length + 1))
-  }
-  console.log(`Completed: ${suite.tasks.length}`)
-  console.log(Object.fromEntries([...completed.entries()].map(([name, ids]) => [name, ids.length])))
-})
