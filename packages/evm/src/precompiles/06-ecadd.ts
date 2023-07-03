@@ -1,10 +1,4 @@
-import {
-  bytesToHex,
-  bytesToUnprefixedHex,
-  hexToBytes,
-  short,
-  unprefixedHexToBytes,
-} from '@ethereumjs/util'
+import { bytesToHex, bytesToUnprefixedHex, hexToBytes, short } from '@ethereumjs/util'
 import { ec_add } from 'rustbn-wasm'
 
 import { OOGResult } from '../evm.js'
@@ -31,7 +25,7 @@ export function precompile06(opts: PrecompileInput): ExecResult {
   }
 
   const ret = ec_add(inputData)
-  const returnData = ret.slice(0, 2) === '0x' ? hexToBytes(ret) : unprefixedHexToBytes(ret)
+  const returnData = hexToBytes(ret)
 
   // check ecadd success or failure by comparing the output length
   if (returnData.length !== 64) {
