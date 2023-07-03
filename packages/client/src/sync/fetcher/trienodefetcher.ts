@@ -4,6 +4,7 @@ import {
   KECCAK256_NULL,
   KECCAK256_RLP,
   bytesToNibbles,
+  hexToKeybytes,
   nibblesToCompactBytes,
   toBytes,
 } from '@ethereumjs/util'
@@ -11,6 +12,7 @@ import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import { OrderedMap } from 'js-sdsl'
+import path from 'path'
 
 import { Fetcher } from './fetcher'
 
@@ -171,6 +173,9 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       bytes: BigInt(this.config.maxRangeBytes),
     })
 
+    // console.log('dbg30')
+    // console.log(paths)
+    // console.log(rangeResult.nodes)
     // Response is valid, but check if peer is signalling that it does not have
     // the requested data. For bytecode range queries that means the peer is not
     // yet synced.
@@ -385,10 +390,65 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   mergeAndFormatPaths(pathStrings: string[]) {
     this.debug('At start of mergeAndFormatPaths')
 
-    // TODO this is where the conversion from hex to keybytes should happen, with anything that
-    //      isn't hex, being kept the same since it should be compact encoded
+    const ret: string[][] = []
+    let currAccountPath = undefined
+    let paths: string[] = []
+    for (let i = 0; i < pathStrings.length; i++) {
+      const pathString = pathStrings[i]!.split('/')
+      const accountPath = pathString[0]
+      const storagePath = pathString[1]
+
+      console.log(pathString)
+      console.log(accountPath)
+      console.log(storagePath)
+      if (currAccountPath === undefined) {
+        // console.log('dbg0')
+        currAccountPath = accountPath
+        // console.log(currAccountPath)
+        paths.push(accountPath)
+        continue
+      }
+      if (currAccountPath === accountPath) {
+        // console.log('dbg1')
+
+        paths.push(storagePath as string)
+        continue
+      }
+      // console.log('dbg2')
+
+      // if currAccountPath !== accountPath
+      if (storagePath !== undefined) {
+        console.log('dbg30')
+        paths.push(storagePath)
+      }
+      ret.push(paths)
+      paths = []
+      paths.push(accountPath)
+      currAccountPath = accountPath
+    }
+
+    if (paths.length > 0) ret.push(paths)
+
+    // console.log('dbg12')
+    // console.log(ret)
+    // console.log(JSON.stringify(paths))
+
+    // have to put into compact and keybytes format depending on if path is partial or full
+
     // TODO resolve should happen here, with keys being either keybyte or compact encoded
-    return pathStrings.map((s) => [nibblesToCompactBytes(hexToBytes(s))])
+    return ret.map((pathStrings) =>
+      pathStrings.map((s) => {
+        if (s.length < 64) {
+          // partial path is compact encoded
+          // console.log('dbg20')
+          return nibblesToCompactBytes(hexToBytes(s))
+        } else {
+          // full path is keybyte encoded
+          // console.log('dbg21')
+          return hexToKeybytes(hexToBytes(s))
+        }
+      })
+    )
   }
 
   /**
@@ -409,9 +469,12 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             if (nodeHash === undefined) throw Error('Path should exist')
             this.requestedNodeToPath.set(nodeHash as unknown as string, pathString)
           }
+          const paths = this.mergeAndFormatPaths(requestedPathStrings) as unknown as Uint8Array[][]
+          console.log('dbg10')
+          console.log(JSON.stringify(paths))
           tasks.push({
             pathStrings: requestedPathStrings,
-            paths: this.mergeAndFormatPaths(requestedPathStrings),
+            paths,
           })
           this.debug(`Created new tasks num=${tasks.length}`)
         }
@@ -420,6 +483,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     } catch (e) {
       this.debug(e)
     }
+    // console.log('dbg11')
+    // console.log(tasks)
     return tasks
   }
 
