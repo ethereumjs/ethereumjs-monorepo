@@ -2,9 +2,9 @@ import { Block } from '@ethereumjs/block'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Chain } from '../../lib/blockchain'
-import { Config } from '../../lib/config'
-import { Event } from '../../lib/types'
+import { Chain } from '../../src/blockchain'
+import { Config } from '../../src/config'
+import { Event } from '../../src/types'
 
 tape('[FullSynchronizer]', async (t) => {
   const txPool: any = { removeNewBlockTxs: () => {}, checkRunState: () => {} }
@@ -26,9 +26,9 @@ tape('[FullSynchronizer]', async (t) => {
   BlockFetcher.prototype.fetch = td.func<any>()
   BlockFetcher.prototype.clear = td.func<any>()
   BlockFetcher.prototype.destroy = td.func<any>()
-  td.replace<any>('../../lib/sync/fetcher', { BlockFetcher })
+  td.replace<any>('../../src/sync/fetcher', { BlockFetcher })
 
-  const { FullSynchronizer } = await import('../../lib/sync/fullsync')
+  const { FullSynchronizer } = await import('../../src/sync/fullsync')
 
   t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
@@ -236,6 +236,32 @@ tape('[FullSynchronizer]', async (t) => {
     ;(sync as any).newBlocksKnownByPeer.delete(peers[0].id)
     await sync.handleNewBlock(newBlock, peers[2] as any)
     td.verify(chain.putBlocks([newBlock]))
+  })
+
+  t.test('should process blocks', async (t) => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const pool = new PeerPool() as any
+    const chain = await Chain.create({ config })
+    const sync = new FullSynchronizer({
+      config,
+      interval: 1,
+      pool,
+      chain,
+      txPool,
+      execution,
+    })
+
+    const chainTip = Block.fromBlockData({
+      header: {},
+    })
+    const newBlock = Block.fromBlockData({
+      header: {
+        parentHash: chainTip.hash(),
+      },
+    })
+
+    sync.running = true
+    t.ok(await sync.processBlocks([newBlock]), 'should successfully process blocks')
   })
 
   t.test('should reset td', (t) => {

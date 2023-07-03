@@ -19,8 +19,15 @@
   "contributors": [
     "Alex Beregszaszi <alex@rtfs.hu>"
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "type": "commonjs",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "files": [
     "dist",
     "src"
@@ -30,7 +37,7 @@
     "build": "../../config/cli/ts-build.sh",
     "build:benchmarks": "npm run build && tsc -p tsconfig.benchmarks.json",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "c8 --all --reporter=lcov --reporter=text npm run coverage:test",
+    "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "coverage:test": "npm run test:API",
     "docs:build": "typedoc --options typedoc.js",
     "examples": "ts-node ../../scripts/examples-runner.ts -- vm",
@@ -40,10 +47,9 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh && npm run test:buildIntegrity",
     "profiling": "0x ./benchmarks/run.js profiling",
-    "tape": "tape -r ts-node/register --stack-size=1500",
     "test": "echo \"[INFO] Generic test cmd not used. See package.json for more specific test run cmds.\"",
-    "test:API": "npm run tape -- './test/api/**/*.spec.ts'",
-    "test:API:browser": "karma start karma.conf.js",
+    "test:API": "npx vitest run ./test/api/",
+    "test:browser": "npx vitest run ./test/api/**/*.spec.ts --browser.name=webkit --browser.provider=playwright --browser.headless",
     "test:blockchain": "npm run tester -- --blockchain",
     "test:blockchain:allForks": "echo 'Chainstart Homestead dao TangerineWhistle SpuriousDragon Byzantium Constantinople Petersburg Istanbul MuirGlacier Berlin London ByzantiumToConstantinopleFixAt5 EIP158ToByzantiumAt5 FrontierToHomesteadAt5 HomesteadToDaoAt5 HomesteadToEIP150At5 BerlinToLondonAt5' | xargs -n1 | xargs -I v1 npm run tester -- --blockchain --fork=v1 --verify-test-amount-alltests",
     "test:blockchain:transitionForks": "echo 'ByzantiumToConstantinopleFixAt5 EIP158ToByzantiumAt5 FrontierToHomesteadAt5 HomesteadToDaoAt5 HomesteadToEIP150At5 BerlinToLondonAt5' | xargs -n1 | xargs -I v1 npm run tester -- --blockchain --fork=v1 --verify-test-amount-alltests",
@@ -67,8 +73,7 @@
     "@ethereumjs/util": "^8.0.6",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.0.0",
-    "mcl-wasm": "^0.7.1",
-    "rustbn.js": "~0.2.0"
+    "mcl-wasm": "^0.7.1"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.0.12",
@@ -77,7 +82,7 @@
     "@types/minimist": "^1.2.2",
     "@types/node-dir": "^0.0.34",
     "benchmark": "^2.1.4",
-    "c-kzg": "^2.0.4",
+    "c-kzg": "^2.1.0",
     "minimist": "^1.2.5",
     "node-dir": "^0.1.17",
     "nyc": "^15.1.0",

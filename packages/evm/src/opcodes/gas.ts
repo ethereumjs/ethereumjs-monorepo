@@ -1,11 +1,11 @@
 import { Hardfork } from '@ethereumjs/common'
 import { Address, bigIntToBytes, setLengthLeft } from '@ethereumjs/util'
 
-import { ERROR } from '../exceptions'
+import { ERROR } from '../exceptions.js'
 
-import { updateSstoreGasEIP1283 } from './EIP1283'
-import { updateSstoreGasEIP2200 } from './EIP2200'
-import { accessAddressEIP2929, accessStorageEIP2929 } from './EIP2929'
+import { updateSstoreGasEIP1283 } from './EIP1283.js'
+import { updateSstoreGasEIP2200 } from './EIP2200.js'
+import { accessAddressEIP2929, accessStorageEIP2929 } from './EIP2929.js'
 import {
   addresstoBytes,
   divCeil,
@@ -14,9 +14,9 @@ import {
   subMemUsage,
   trap,
   updateSstoreGas,
-} from './util'
+} from './util.js'
 
-import type { RunState } from '../interpreter'
+import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
 
 /**
@@ -59,12 +59,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       },
     ],
     [
-      /* SHA3 */
+      /* KECCAK256 */
       0x20,
       async function (runState, gas, common): Promise<bigint> {
         const [offset, length] = runState.stack.peek(2)
         gas += subMemUsage(runState, offset, length, common)
-        gas += common.param('gasPrices', 'sha3Word') * divCeil(length, BigInt(32))
+        gas += common.param('gasPrices', 'keccak256Word') * divCeil(length, BigInt(32))
         return gas
       },
     ],
@@ -262,6 +262,18 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       },
     ],
     [
+      /* MCOPY */
+      0x5e,
+      async function (runState, gas, common): Promise<bigint> {
+        const [dst, src, length] = runState.stack.peek(3)
+        const wordsCopied = (length + BigInt(31)) / BigInt(32)
+        gas += BigInt(3) * wordsCopied
+        gas += subMemUsage(runState, src, length, common)
+        gas += subMemUsage(runState, dst, length, common)
+        return gas
+      },
+    ],
+    [
       /* LOG */
       0xa0,
       async function (runState, gas, common): Promise<bigint> {
@@ -335,13 +347,17 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (common.gteHardfork(Hardfork.SpuriousDragon)) {
           // We are at or after Spurious Dragon
           // Call new account gas: account is DEAD and we transfer nonzero value
-          if (
-            (await runState.stateManager.accountIsEmptyOrNonExistent(toAddress)) &&
-            !(value === BigInt(0))
-          ) {
+
+          const account = await runState.stateManager.getAccount(toAddress)
+          let deadAccount = false
+          if (account === undefined || account.isEmpty()) {
+            deadAccount = true
+          }
+
+          if (deadAccount && !(value === BigInt(0))) {
             gas += common.param('gasPrices', 'callNewAccount')
           }
-        } else if (!(await runState.stateManager.accountExists(toAddress))) {
+        } else if ((await runState.stateManager.getAccount(toAddress)) === undefined) {
           // We are before Spurious Dragon and the account does not exist.
           // Call new account gas: account does not exist (it is not in the state trie, not even as an "empty" account)
           gas += common.param('gasPrices', 'callNewAccount')
@@ -473,7 +489,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             ((length + BigInt(31)) / BigInt(32)) * common.param('gasPrices', 'initCodeWordCost')
         }
 
-        gas += common.param('gasPrices', 'sha3Word') * divCeil(length, BigInt(32))
+        gas += common.param('gasPrices', 'keccak256Word') * divCeil(length, BigInt(32))
         let gasLimit = runState.interpreter.getGasLeft() - gas
         gasLimit = maxCallGas(gasLimit, gasLimit, runState, common) // CREATE2 is only available after TangerineWhistle (Constantinople introduced this opcode)
         runState.messageGasLimit = gasLimit
@@ -599,16 +615,15 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           )
           if (balance > BigInt(0)) {
             // This technically checks if account is empty or non-existent
-            const empty = await runState.stateManager.accountIsEmptyOrNonExistent(
-              selfdestructToAddress
-            )
-            if (empty) {
+            const account = await runState.stateManager.getAccount(selfdestructToAddress)
+            if (account === undefined || account.isEmpty()) {
               deductGas = true
             }
           }
         } else if (common.gteHardfork(Hardfork.TangerineWhistle)) {
           // EIP-150 (Tangerine Whistle) gas semantics
-          const exists = await runState.stateManager.accountExists(selfdestructToAddress)
+          const exists =
+            (await runState.stateManager.getAccount(selfdestructToAddress)) !== undefined
           if (!exists) {
             deductGas = true
           }

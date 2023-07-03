@@ -1,11 +1,11 @@
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Config } from '../../../lib/config'
-import { Fetcher } from '../../../lib/sync/fetcher/fetcher'
-import { Event } from '../../../lib/types'
+import { Config } from '../../../src/config'
+import { Fetcher } from '../../../src/sync/fetcher/fetcher'
+import { Event } from '../../../src/types'
 
-import type { Job } from '../../../lib/sync/fetcher/types'
+import type { Job } from '../../../src/sync/fetcher/types'
 
 class FetcherTest extends Fetcher<any, any, any> {
   process(_job: any, res: any) {

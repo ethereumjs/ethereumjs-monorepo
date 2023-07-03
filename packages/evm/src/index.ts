@@ -1,13 +1,15 @@
-import { EVM, EVMResult, ExecResult } from './evm'
-import { EvmError, ERROR as EvmErrorMessage } from './exceptions'
-import { InterpreterStep } from './interpreter'
-import { Message } from './message'
-import { getActivePrecompiles } from './precompiles'
-import { EVMInterface, Log } from './types'
+import { EOF } from './eof.js'
+import { EVM, EVMResult, ExecResult } from './evm.js'
+import { ERROR as EVMErrorMessage, EvmError } from './exceptions.js'
+import { InterpreterStep } from './interpreter.js'
+import { Message } from './message.js'
+import { PrecompileInput, getActivePrecompiles } from './precompiles/index.js'
+import { EVMInterface, Log } from './types.js'
 export {
+  EOF,
   EVM,
   EvmError,
-  EvmErrorMessage,
+  EVMErrorMessage,
   EVMInterface,
   EVMResult,
   ExecResult,
@@ -15,4 +17,5 @@ export {
   InterpreterStep,
   Log,
   Message,
+  PrecompileInput,
 }

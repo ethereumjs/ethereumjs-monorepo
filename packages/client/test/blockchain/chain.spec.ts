@@ -2,14 +2,13 @@
 // needed for karma-typescript bundling
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
-import { KeyEncoding, ValueEncoding } from '@ethereumjs/util'
-import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
+import { KeyEncoding, ValueEncoding, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { Chain } from '../../lib/blockchain'
-import { Config } from '../../lib/config'
+import { Chain } from '../../src/blockchain'
+import { Config } from '../../src/config'
 
-import type { LevelDB } from '../../lib/execution/level'
+import type { LevelDB } from '../../src/execution/level'
 import type { BlockData, HeaderData } from '@ethereumjs/block'
 
 const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -42,7 +41,7 @@ tape('[Chain]', (t) => {
     t.equal(chain.blocks.height.toString(10), '0', 'get chain.blocks.height')
     t.equal(
       bytesToHex(chain.genesis.hash()),
-      'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
+      '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
       'get chain.genesis'
     )
     t.ok(equalsBytes(chain.genesis.hash(), chain.blocks.latest!.hash()), 'get chain.block.latest')

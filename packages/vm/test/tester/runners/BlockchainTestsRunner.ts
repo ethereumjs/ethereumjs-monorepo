@@ -8,21 +8,23 @@ import { TransactionFactory } from '@ethereumjs/tx'
 import {
   MapDB,
   bytesToBigInt,
+  bytesToHex,
+  hexToBytes,
   initKZG,
   isHexPrefixed,
   stripHexPrefix,
   toBytes,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 
+import { VM } from '../../../dist/cjs'
 import { setupPreConditions, verifyPostConditions } from '../../util'
 
 import type { EthashConsensus } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
 import type * as tape from 'tape'
 
-initKZG(kzg, __dirname + '/../../../../client/lib/trustedSetups/devnet4.txt')
+initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet6.txt')
 
 function formatBlockHeader(data: any) {
   const formatted: any = {}
@@ -43,7 +45,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   testData.lastblockhash = stripHexPrefix(testData.lastblockhash)
 
   let common = options.common.copy() as Common
-  common.setHardforkByBlockNumber(0)
+  common.setHardforkBy({ blockNumber: 0 })
 
   let cacheDB = new MapDB()
   let state = new Trie({ useKeyHashing: true })
@@ -84,26 +86,23 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     ;(blockchain.consensus as EthashConsensus)._ethash!.cacheDB = cacheDB as any
   }
 
-  let VM
-  if (options.dist === true) {
-    ;({ VM } = require('../../../dist'))
-  } else {
-    ;({ VM } = require('../../../src'))
-  }
-
   const begin = Date.now()
 
   let vm = await VM.create({
     stateManager,
     blockchain,
     common,
-    hardforkByBlockNumber: true,
+    setHardfork: true,
   })
 
   // set up pre-state
   await setupPreConditions(vm.stateManager, testData)
 
-  t.deepEquals(vm.stateManager._trie.root(), genesisBlock.header.stateRoot, 'correct pre stateRoot')
+  t.deepEquals(
+    (vm.stateManager as any)._trie.root(),
+    genesisBlock.header.stateRoot,
+    'correct pre stateRoot'
+  )
 
   async function handleError(error: string | undefined, expectException: string | boolean) {
     if (expectException !== false) {
@@ -128,7 +127,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     // Here we decode the rlp to extract the block number
     // The block library cannot be used, as this throws on certain EIP1559 blocks when trying to convert
     try {
-      const blockRlp = hexToBytes((raw.rlp as string).slice(2))
+      const blockRlp = hexToBytes(raw.rlp as string)
       const decodedRLP: any = RLP.decode(Uint8Array.from(blockRlp))
       currentBlock = bytesToBigInt(decodedRLP[0][8])
     } catch (e: any) {
@@ -137,7 +136,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     }
 
     try {
-      const blockRlp = hexToBytes((raw.rlp as string).slice(2))
+      const blockRlp = hexToBytes(raw.rlp as string)
       // Update common HF
       let TD: bigint | undefined = undefined
       let timestamp: bigint | undefined = undefined
@@ -149,7 +148,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         // eslint-disable-next-line no-empty
       } catch (e) {}
 
-      common.setHardforkByBlockNumber(currentBlock, TD, timestamp)
+      common.setHardforkBy({ blockNumber: currentBlock, td: TD, timestamp })
 
       // transactionSequence is provided when txs are expected to be rejected.
       // To run this field we try to import them on the current state.
@@ -166,7 +165,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         >[]) {
           const shouldFail = txData.valid === 'false'
           try {
-            const txRLP = hexToBytes(txData.rawBytes.slice(2))
+            const txRLP = hexToBytes(txData.rawBytes)
             const tx = TransactionFactory.fromSerializedData(txRLP, { common })
             await blockBuilder.addTransaction(tx)
             if (shouldFail) {
@@ -183,21 +182,22 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         await blockBuilder.revert() // will only revert if checkpointed
       }
 
-      const block = Block.fromRLPSerializedBlock(blockRlp, { common })
+      const block = Block.fromRLPSerializedBlock(blockRlp, { common, setHardfork: TD })
       await blockchain.putBlock(block)
 
       // This is a trick to avoid generating the canonical genesis
       // state. Generating the genesis state is not needed because
       // blockchain tests come with their own `pre` world state.
       // TODO: Add option to `runBlockchain` not to generate genesis state.
-      vm._common.genesis().stateRoot = vm.stateManager._trie.root()
+      //
+      //vm._common.genesis().stateRoot = vm.stateManager._trie.root()
       try {
         await blockchain.iterator('vm', async (block: Block) => {
           const parentBlock = await blockchain!.getBlock(block.header.parentHash)
           const parentState = parentBlock.header.stateRoot
           // run block, update head if valid
           try {
-            await vm.runBlock({ block, root: parentState, hardforkByTTD: TD })
+            await vm.runBlock({ block, root: parentState, setHardfork: TD })
             // set as new head block
           } catch (error: any) {
             // remove invalid block
@@ -214,7 +214,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         if (options.debug !== true) {
           // make sure the state is set before checking post conditions
           const headBlock = await vm.blockchain.getIteratorHead()
-          vm.stateManager._trie.root(headBlock.header.stateRoot)
+          ;(vm.stateManager as any)._trie.root(headBlock.header.stateRoot)
         } else {
           await verifyPostConditions(state, testData.postState, t)
         }
@@ -236,7 +236,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   }
   t.equal(
     bytesToHex((blockchain as any)._headHeaderHash),
-    testData.lastblockhash,
+    '0x' + testData.lastblockhash,
     'correct last header block'
   )
 

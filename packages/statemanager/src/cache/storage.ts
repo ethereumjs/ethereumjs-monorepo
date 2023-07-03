@@ -1,15 +1,14 @@
-import { bytesToHex, hexStringToBytes } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import { bytesToUnprefixedHex, hexToBytes } from '@ethereumjs/util'
+import debugDefault from 'debug'
 import { OrderedMap } from 'js-sdsl'
+import { LRUCache } from 'lru-cache'
 
-import { Cache } from './cache'
-import { CacheType } from './types'
+import { Cache } from './cache.js'
+import { CacheType } from './types.js'
 
-import type { CacheOpts } from './types'
+import type { CacheOpts } from './types.js'
 import type { Address } from '@ethereumjs/util'
-import type LRUCache from 'lru-cache'
-
-const LRU = require('lru-cache')
+const { debug: createDebugLogger } = debugDefault
 
 /**
  * key -> storage mapping
@@ -37,7 +36,7 @@ export class StorageCache extends Cache {
   constructor(opts: CacheOpts) {
     super()
     if (opts.type === CacheType.LRU) {
-      this._lruCache = new LRU({
+      this._lruCache = new LRUCache({
         max: opts.size,
         updateAgeOnGet: true,
       })
@@ -87,14 +86,14 @@ export class StorageCache extends Cache {
    * @param val - RLP-encoded storage value
    */
   put(address: Address, key: Uint8Array, value: Uint8Array): void {
-    const addressHex = bytesToHex(address.bytes)
-    const keyHex = bytesToHex(key)
+    const addressHex = bytesToUnprefixedHex(address.bytes)
+    const keyHex = bytesToUnprefixedHex(key)
     this._saveCachePreState(addressHex, keyHex)
 
     if (this.DEBUG) {
       this._debug(
         `Put storage for ${addressHex}: ${keyHex} -> ${
-          value !== undefined ? bytesToHex(value) : ''
+          value !== undefined ? bytesToUnprefixedHex(value) : ''
         }`
       )
     }
@@ -118,15 +117,15 @@ export class StorageCache extends Cache {
 
   /**
    * Returns the queried slot as the RLP encoded storage value
-   * hexStringToBytes('80'): slot is known to be empty
+   * hexToBytes('0x80'): slot is known to be empty
    * undefined: slot is not in cache
    * @param address - Address of account
    * @param key - Storage key
    * @returns Storage value or undefined
    */
   get(address: Address, key: Uint8Array): Uint8Array | undefined {
-    const addressHex = bytesToHex(address.bytes)
-    const keyHex = bytesToHex(key)
+    const addressHex = bytesToUnprefixedHex(address.bytes)
+    const keyHex = bytesToUnprefixedHex(key)
     if (this.DEBUG) {
       this._debug(`Get storage for ${addressHex}`)
     }
@@ -150,8 +149,8 @@ export class StorageCache extends Cache {
    * @param key - Storage key
    */
   del(address: Address, key: Uint8Array): void {
-    const addressHex = bytesToHex(address.bytes)
-    const keyHex = bytesToHex(key)
+    const addressHex = bytesToUnprefixedHex(address.bytes)
+    const keyHex = bytesToUnprefixedHex(key)
     this._saveCachePreState(addressHex, keyHex)
     if (this.DEBUG) {
       this._debug(`Delete storage for ${addressHex}: ${keyHex}`)
@@ -161,14 +160,14 @@ export class StorageCache extends Cache {
       if (!storageMap) {
         storageMap = new Map()
       }
-      storageMap.set(keyHex, hexStringToBytes('80'))
+      storageMap.set(keyHex, hexToBytes('0x80'))
       this._lruCache!.set(addressHex, storageMap)
     } else {
       let storageMap = this._orderedMapCache!.getElementByKey(addressHex)
       if (!storageMap) {
         storageMap = new Map()
       }
-      storageMap.set(keyHex, hexStringToBytes('80'))
+      storageMap.set(keyHex, hexToBytes('0x80'))
       this._orderedMapCache!.setElement(addressHex, storageMap)
     }
 
@@ -180,7 +179,7 @@ export class StorageCache extends Cache {
    * @param address
    */
   clearContractStorage(address: Address): void {
-    const addressHex = bytesToHex(address.bytes)
+    const addressHex = bytesToUnprefixedHex(address.bytes)
     if (this._lruCache) {
       this._lruCache!.set(addressHex, new Map())
     } else {

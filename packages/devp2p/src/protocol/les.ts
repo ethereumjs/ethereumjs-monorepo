@@ -7,16 +7,15 @@ import {
   intToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import ms = require('ms')
 import * as snappy from 'snappyjs'
 
-import { DISCONNECT_REASONS } from '../rlpx/peer'
-import { assertEq, formatLogData } from '../util'
+import { DISCONNECT_REASONS } from '../rlpx/peer.js'
+import { assertEq, formatLogData } from '../util.js'
 
-import { EthProtocol, Protocol } from './protocol'
+import { EthProtocol, Protocol } from './protocol.js'
 
-import type { Peer } from '../rlpx/peer'
-import type { SendMethod } from './protocol'
+import type { Peer } from '../rlpx/peer.js'
+import type { SendMethod } from './protocol.js'
 
 export const DEFAULT_ANNOUNCE_TYPE = 1
 
@@ -29,7 +28,7 @@ export class LES extends Protocol {
 
     this._statusTimeoutId = setTimeout(() => {
       this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
-    }, ms('5s'))
+    }, 5000) // 5 sec * 1000
   }
 
   static les2 = { name: 'les', version: 2, length: 21, constructor: LES }

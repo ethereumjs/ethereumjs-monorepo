@@ -1,14 +1,14 @@
 // Adapted from - https://github.com/Inphi/eip4844-interop/blob/master/blob_tx_generator/blob.js
 import { Common, Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, TransactionType, TxData } from '@ethereumjs/tx'
 import {
   Address,
   initKZG,
   blobsToCommitments,
   commitmentsToVersionedHashes,
   getBlobs,
-  bytesToPrefixedHexString,
-  hexStringToBytes,
+  bytesToHex,
+  hexToBytes,
 } from '@ethereumjs/util'
 
 import * as kzg from 'c-kzg'
@@ -19,9 +19,9 @@ import { Client } from 'jayson/promise'
 const clientPort = parseInt(process.argv[2]) // EL client port number
 const input = process.argv[3] // text to generate blob from
 const genesisJson = require(process.argv[4]) // Genesis parameters
-const pkey = hexStringToBytes(process.argv[5]) // private key of tx sender as unprefixed hex string
+const pkey = hexToBytes('0x' + process.argv[5]) // private key of tx sender as unprefixed hex string (unprefixed in args)
 
-initKZG(kzg, __dirname + '/../../../lib/trustedSetups/devnet4.txt')
+initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
 
 const sender = Address.fromPrivateKey(pkey)
 const common = Common.fromGethGenesis(genesisJson, {
@@ -41,15 +41,13 @@ async function run(data: any) {
   const hashes = commitmentsToVersionedHashes(commitments)
 
   const account = Address.fromPrivateKey(randomBytes(32))
-  const txData = {
-    from: sender.toString(),
+  const txData: TxData[TransactionType.BlobEIP4844] = {
     to: account.toString(),
     data: '0x',
     chainId: common.chainId(),
     blobs,
     kzgCommitments: commitments,
     versionedHashes: hashes,
-    gas: undefined,
     maxFeePerDataGas: undefined,
     maxPriorityFeePerGas: undefined,
     maxFeePerGas: undefined,
@@ -57,21 +55,17 @@ async function run(data: any) {
     gasLimit: undefined,
   }
 
-  txData['maxFeePerGas'] = BigInt(1000000000) as any
-  txData['maxPriorityFeePerGas'] = BigInt(100000000) as any
-  txData['maxFeePerDataGas'] = BigInt(1000) as any
-  txData['gasLimit'] = BigInt(28000000) as any
+  txData.maxFeePerGas = BigInt(1000000000)
+  txData.maxPriorityFeePerGas = BigInt(100000000)
+  txData.maxFeePerDataGas = BigInt(1000)
+  txData.gasLimit = BigInt(28000000)
   const nonce = await getNonce(client, sender.toString())
-  txData['nonce'] = BigInt(nonce) as any
+  txData.nonce = BigInt(nonce)
   const blobTx = BlobEIP4844Transaction.fromTxData(txData, { common }).sign(pkey)
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 
-  const res = await client.request(
-    'eth_sendRawTransaction',
-    [bytesToPrefixedHexString(serializedWrapper)],
-    2.0
-  )
+  const res = await client.request('eth_sendRawTransaction', [bytesToHex(serializedWrapper)], 2.0)
 
   if (res.result.error !== undefined) {
     console.log('error sending transaction')

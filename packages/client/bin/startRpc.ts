@@ -1,18 +1,17 @@
-import { hexStringToBytes, randomBytes } from '@ethereumjs/util'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { bytesToUnprefixedHex, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 
-import { RPCManager, saveReceiptsMethods } from '../lib/rpc'
-import * as modules from '../lib/rpc/modules'
+import { RPCManager, saveReceiptsMethods } from '../src/rpc'
+import * as modules from '../src/rpc/modules'
 import {
   MethodConfig,
   createRPCServer,
   createRPCServerListener,
   createWsRPCServerListener,
-} from '../lib/util'
+} from '../src/util'
 
-import type { EthereumClient } from '../lib/client'
-import type { Config } from '../lib/config'
+import type { EthereumClient } from '../src/client'
+import type { Config } from '../src/config'
 import type { Server as RPCServer } from 'jayson/promise'
 
 export type RPCArgs = {
@@ -54,7 +53,7 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
     if (jwtSecretHex === undefined || jwtSecretHex.length !== 64) {
       throw Error('Need a valid 256 bit hex encoded secret')
     }
-    jwtSecret = hexStringToBytes(jwtSecretHex)
+    jwtSecret = hexToBytes('0x' + jwtSecretHex)
   } else {
     const folderExists = existsSync(config.datadir)
     if (!folderExists) {
@@ -62,7 +61,7 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
     }
 
     jwtSecret = randomBytes(32)
-    writeFileSync(defaultJwtPath, bytesToHex(jwtSecret), {})
+    writeFileSync(defaultJwtPath, bytesToUnprefixedHex(jwtSecret), {})
     config.logger.info(`New Engine API JWT token created path=${defaultJwtPath}`)
   }
   config.logger.info(`Using Engine API with JWT token authentication path=${usedJwtPath}`)

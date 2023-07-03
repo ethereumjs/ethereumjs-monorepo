@@ -1,24 +1,23 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { ERROR } from '@ethereumjs/evm/dist/exceptions'
-import { Address, bytesToBigInt } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { EVMErrorMessage } from '@ethereumjs/evm'
+import { Address, bytesToBigInt, hexToBytes } from '@ethereumjs/util'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 import { createAccount } from '../utils'
 
 const testCases = [
   { chain: Chain.Mainnet, hardfork: Hardfork.Istanbul, selfbalance: '0xf1' },
-  { chain: Chain.Mainnet, hardfork: Hardfork.Constantinople, err: ERROR.INVALID_OPCODE },
+  { chain: Chain.Mainnet, hardfork: Hardfork.Constantinople, err: EVMErrorMessage.INVALID_OPCODE },
 ]
 
 // SELFBALANCE PUSH8 0x00 MSTORE8 PUSH8 0x01 PUSH8 0x00 RETURN
 const code = ['47', '60', '00', '53', '60', '01', '60', '00', 'f3']
-tape('Istanbul: EIP-1884', async (t) => {
-  t.test('SELFBALANCE', async (st) => {
-    const addr = new Address(hexToBytes('00000000000000000000000000000000000000ff'))
+describe('Istanbul: EIP-1884', () => {
+  it('SELFBALANCE', async () => {
+    const addr = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     const runCodeArgs = {
-      code: hexToBytes(code.join('')),
+      code: hexToBytes('0x' + code.join('')),
       gasLimit: BigInt(0xffff),
       address: addr,
     }
@@ -36,16 +35,14 @@ tape('Istanbul: EIP-1884', async (t) => {
       try {
         const res = await vm.evm.runCode!(runCodeArgs)
         if (testCase.err !== undefined) {
-          st.equal(res.exceptionError?.error, testCase.err)
+          assert.equal(res.exceptionError?.error, testCase.err)
         } else {
-          st.assert(res.exceptionError === undefined)
-          st.assert(BigInt(testCase.selfbalance!) === bytesToBigInt(res.returnValue))
+          assert.ok(res.exceptionError === undefined)
+          assert.ok(BigInt(testCase.selfbalance!) === bytesToBigInt(res.returnValue))
         }
       } catch (e: any) {
-        st.fail(e.message)
+        assert.fail(e.message)
       }
     }
-
-    st.end()
   })
 })

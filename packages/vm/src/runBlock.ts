@@ -2,21 +2,23 @@ import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
+import { TransactionType } from '@ethereumjs/tx'
 import {
   Account,
   Address,
   GWEI_TO_WEI,
   bigIntToBytes,
   bytesToHex,
-  concatBytesNoTypeCheck,
+  concatBytes,
   equalsBytes,
+  hexToBytes,
   intToBytes,
   short,
+  unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import debugDefault from 'debug'
 
-import { Bloom } from './bloom'
+import { Bloom } from './bloom/index.js'
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
 
 import type {
@@ -26,9 +28,10 @@ import type {
   RunBlockOpts,
   RunBlockResult,
   TxReceipt,
-} from './types'
-import type { VM } from './vm'
-import type { EVMStateManagerInterface } from '@ethereumjs/common'
+} from './types.js'
+import type { VM } from './vm.js'
+import type { EVM } from '@ethereumjs/evm'
+const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('vm:block')
 
@@ -43,6 +46,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   const state = this.stateManager
   const { root } = opts
   const clearCache = opts.clearCache ?? true
+  const setHardfork = opts.setHardfork ?? false
   let { block } = opts
   const generateFields = opts.generate === true
 
@@ -55,16 +59,20 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
    */
   await this._emit('beforeBlock', block)
 
-  if (
-    this._hardforkByBlockNumber ||
-    this._hardforkByTTD !== undefined ||
-    opts.hardforkByTTD !== undefined
-  ) {
-    this._common.setHardforkByBlockNumber(
-      block.header.number,
-      opts.hardforkByTTD ?? this._hardforkByTTD,
-      block.header.timestamp
-    )
+  if (setHardfork !== false || this._setHardfork !== false) {
+    const setHardforkUsed = setHardfork ?? this._setHardfork
+    if (setHardforkUsed === true) {
+      this._common.setHardforkBy({
+        blockNumber: block.header.number,
+        timestamp: block.header.timestamp,
+      })
+    } else if (typeof setHardforkUsed !== 'boolean') {
+      this._common.setHardforkBy({
+        blockNumber: block.header.number,
+        td: setHardforkUsed,
+        timestamp: block.header.timestamp,
+      })
+    }
   }
 
   if (this.DEBUG) {
@@ -79,7 +87,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   // Set state root if provided
   if (root) {
     if (this.DEBUG) {
-      debug(`Set provided state root ${bytesToHex(root)}`)
+      debug(`Set provided state root ${bytesToHex(root)} clearCache=${clearCache}`)
     }
     await state.setStateRoot(root, clearCache)
   }
@@ -92,13 +100,13 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     if (this.DEBUG) {
       debug(`Apply DAO hardfork`)
     }
-    await state.checkpoint()
-    await _applyDAOHardfork(state)
-    await state.commit()
+    await this.evm.journal.checkpoint()
+    await _applyDAOHardfork(this.evm)
+    await this.evm.journal.commit()
   }
 
   // Checkpoint state
-  await state.checkpoint()
+  await this.evm.journal.checkpoint()
   if (this.DEBUG) {
     debug(`block checkpoint`)
   }
@@ -116,7 +124,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       )
     }
   } catch (err: any) {
-    await state.revert()
+    await this.evm.journal.revert()
     if (this.DEBUG) {
       debug(`block checkpoint reverted`)
     }
@@ -124,7 +132,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   }
 
   // Persist state
-  await state.commit()
+  await this.evm.journal.commit()
   if (this.DEBUG) {
     debug(`block checkpoint committed`)
   }
@@ -254,7 +262,7 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   const blockResults = await applyTransactions.bind(this)(block, opts)
   if (this._common.isActivatedEIP(4895)) {
     await assignWithdrawals.bind(this)(block)
-    await this.stateManager.cleanupTouchedAccounts()
+    await this.evm.journal.cleanup()
   }
   // Pay ommers and miners
   if (block._common.consensusType() === ConsensusType.ProofOfWork) {
@@ -338,7 +346,6 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
 }
 
 async function assignWithdrawals(this: VM, block: Block): Promise<void> {
-  const state = this.stateManager
   const withdrawals = block.withdrawals!
   for (const withdrawal of withdrawals) {
     const { address, amount } = withdrawal
@@ -346,7 +353,7 @@ async function assignWithdrawals(this: VM, block: Block): Promise<void> {
     // converted to wei
     // Note: event if amount is 0, still reward the account
     // such that the account is touched and marked for cleanup if it is empty
-    await rewardAccount(state, address, amount * GWEI_TO_WEI)
+    await rewardAccount(this.evm, address, amount * GWEI_TO_WEI)
   }
 }
 
@@ -358,20 +365,19 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
   if (this.DEBUG) {
     debug(`Assign block rewards`)
   }
-  const state = this.stateManager
   const minerReward = this._common.param('pow', 'minerReward')
   const ommers = block.uncleHeaders
   // Reward ommers
   for (const ommer of ommers) {
     const reward = calculateOmmerReward(ommer.number, block.header.number, minerReward)
-    const account = await rewardAccount(state, ommer.coinbase, reward)
+    const account = await rewardAccount(this.evm, ommer.coinbase, reward)
     if (this.DEBUG) {
       debug(`Add uncle reward ${reward} to account ${ommer.coinbase} (-> ${account.balance})`)
     }
   }
   // Reward miner
   const reward = calculateMinerReward(minerReward, ommers.length)
-  const account = await rewardAccount(state, block.header.coinbase, reward)
+  const account = await rewardAccount(this.evm, block.header.coinbase, reward)
   if (this.DEBUG) {
     debug(`Add miner reward ${reward} to account ${block.header.coinbase} (-> ${account.balance})`)
   }
@@ -398,48 +404,45 @@ export function calculateMinerReward(minerReward: bigint, ommersNum: number): bi
   return reward
 }
 
-export async function rewardAccount(
-  state: EVMStateManagerInterface,
-  address: Address,
-  reward: bigint
-): Promise<Account> {
-  let account = await state.getAccount(address)
+export async function rewardAccount(evm: EVM, address: Address, reward: bigint): Promise<Account> {
+  let account = await evm.stateManager.getAccount(address)
   if (account === undefined) {
     account = new Account()
   }
   account.balance += reward
-  await state.putAccount(address, account, true)
+  await evm.journal.putAccount(address, account)
   return account
 }
 
 /**
  * Returns the encoded tx receipt.
  */
-export function encodeReceipt(receipt: TxReceipt, txType: number) {
+export function encodeReceipt(receipt: TxReceipt, txType: TransactionType) {
   const encoded = RLP.encode([
     (receipt as PreByzantiumTxReceipt).stateRoot ??
-      ((receipt as PostByzantiumTxReceipt).status === 0 ? Uint8Array.from([]) : hexToBytes('01')),
+      ((receipt as PostByzantiumTxReceipt).status === 0 ? Uint8Array.from([]) : hexToBytes('0x01')),
     bigIntToBytes(receipt.cumulativeBlockGasUsed),
     receipt.bitvector,
     receipt.logs,
   ])
 
-  if (txType === 0) {
+  if (txType === TransactionType.Legacy) {
     return encoded
   }
 
   // Serialize receipt according to EIP-2718:
   // `typed-receipt = tx-type || receipt-data`
-  return concatBytesNoTypeCheck(intToBytes(txType), encoded)
+  return concatBytes(intToBytes(txType), encoded)
 }
 
 /**
  * Apply the DAO fork changes to the VM
  */
-async function _applyDAOHardfork(state: EVMStateManagerInterface) {
-  const DAORefundContractAddress = new Address(hexToBytes(DAORefundContract))
-  if ((await state.accountExists(DAORefundContractAddress)) === false) {
-    await state.putAccount(DAORefundContractAddress, new Account(), true)
+async function _applyDAOHardfork(evm: EVM) {
+  const state = evm.stateManager
+  const DAORefundContractAddress = new Address(unprefixedHexToBytes(DAORefundContract))
+  if ((await state.getAccount(DAORefundContractAddress)) === undefined) {
+    await evm.journal.putAccount(DAORefundContractAddress, new Account())
   }
   let DAORefundAccount = await state.getAccount(DAORefundContractAddress)
   if (DAORefundAccount === undefined) {
@@ -448,7 +451,7 @@ async function _applyDAOHardfork(state: EVMStateManagerInterface) {
 
   for (const addr of DAOAccountList) {
     // retrieve the account and add it to the DAO's Refund accounts' balance.
-    const address = new Address(hexToBytes(addr))
+    const address = new Address(unprefixedHexToBytes(addr))
     let account = await state.getAccount(address)
     if (account === undefined) {
       account = new Account()
@@ -456,11 +459,11 @@ async function _applyDAOHardfork(state: EVMStateManagerInterface) {
     DAORefundAccount.balance += account.balance
     // clear the accounts' balance
     account.balance = BigInt(0)
-    await state.putAccount(address, account, true)
+    await evm.journal.putAccount(address, account)
   }
 
   // finally, put the Refund Account
-  await state.putAccount(DAORefundContractAddress, DAORefundAccount, true)
+  await evm.journal.putAccount(DAORefundContractAddress, DAORefundAccount)
 }
 
 async function _genTxTrie(block: Block) {

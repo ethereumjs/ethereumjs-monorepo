@@ -1,11 +1,13 @@
-import { KeyEncoding, ValueEncoding, bytesToHex, hexStringToBytes } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import {
+  KeyEncoding,
+  ValueEncoding,
+  bytesToUnprefixedHex,
+  unprefixedHexToBytes,
+} from '@ethereumjs/util'
+import { LRUCache } from 'lru-cache'
 
-import type { Checkpoint, CheckpointDBOpts } from '../types'
+import type { Checkpoint, CheckpointDBOpts } from '../types.js'
 import type { BatchDBOp, DB, DelBatch, PutBatch } from '@ethereumjs/util'
-import type LRUCache from 'lru-cache'
-
-const LRU = require('lru-cache')
 
 /**
  * DB is a thin wrapper around the underlying levelup db,
@@ -16,7 +18,17 @@ export class CheckpointDB implements DB {
   public db: DB<string, string>
   public readonly cacheSize: number
 
-  protected _cache?: LRUCache<string, Uint8Array | undefined>
+  // Starting with lru-cache v8 undefined and null are not allowed any more
+  // as cache values. At the same time our design works well, since undefined
+  // indicates for us that we know that the value is not present in the
+  // underlying trie database as well (so it carries real value).
+  //
+  // Solution here seems therefore adequate, other solutions would rather
+  // be some not so clean workaround.
+  //
+  // (note that @ts-ignore doesn't work since stripped on declaration (.d.ts) files)
+  protected _cache?: LRUCache<string, any>
+  // protected _cache?: LRUCache<string, Uint8Array | undefined>
 
   _stats = {
     cache: {
@@ -41,7 +53,8 @@ export class CheckpointDB implements DB {
     this.checkpoints = []
 
     if (this.cacheSize > 0) {
-      this._cache = new LRU({
+      // @ts-ignore
+      this._cache = new LRUCache({
         max: this.cacheSize,
         updateAgeOnGet: true,
       })
@@ -90,12 +103,12 @@ export class CheckpointDB implements DB {
         if (value === undefined) {
           batchOp.push({
             type: 'del',
-            key: hexStringToBytes(key),
+            key: unprefixedHexToBytes(key),
           })
         } else {
           batchOp.push({
             type: 'put',
-            key: hexStringToBytes(key),
+            key: unprefixedHexToBytes(key),
             value,
           })
         }
@@ -122,7 +135,7 @@ export class CheckpointDB implements DB {
    * @inheritDoc
    */
   async get(key: Uint8Array): Promise<Uint8Array | undefined> {
-    const keyHex = bytesToHex(key)
+    const keyHex = bytesToUnprefixedHex(key)
     if (this._cache !== undefined) {
       const value = this._cache.get(keyHex)
       this._stats.cache.reads += 1
@@ -147,7 +160,7 @@ export class CheckpointDB implements DB {
     if (valueHex !== undefined) {
       this._stats.db.hits += 1
     }
-    const value = valueHex !== undefined ? hexToBytes(valueHex) : undefined
+    const value = valueHex !== undefined ? unprefixedHexToBytes(valueHex) : undefined
     this._cache?.set(keyHex, value)
     if (this.hasCheckpoints()) {
       // Since we are a checkpoint, put this value in diff cache,
@@ -162,8 +175,8 @@ export class CheckpointDB implements DB {
    * @inheritDoc
    */
   async put(key: Uint8Array, value: Uint8Array): Promise<void> {
-    const keyHex = bytesToHex(key)
-    const valueHex = bytesToHex(value)
+    const keyHex = bytesToUnprefixedHex(key)
+    const valueHex = bytesToUnprefixedHex(value)
     if (this.hasCheckpoints()) {
       // put value in diff cache
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, value)
@@ -185,7 +198,7 @@ export class CheckpointDB implements DB {
    * @inheritDoc
    */
   async del(key: Uint8Array): Promise<void> {
-    const keyHex = bytesToHex(key)
+    const keyHex = bytesToUnprefixedHex(key)
     if (this.hasCheckpoints()) {
       // delete the value in the current diff cache
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, undefined)
@@ -218,8 +231,8 @@ export class CheckpointDB implements DB {
     } else {
       const convertedOps = opStack.map((op) => {
         const convertedOp = {
-          key: bytesToHex(op.key),
-          value: op.type === 'put' ? bytesToHex(op.value) : undefined,
+          key: bytesToUnprefixedHex(op.key),
+          value: op.type === 'put' ? bytesToUnprefixedHex(op.value) : undefined,
           type: op.type,
           opts: op.opts,
         }
@@ -252,7 +265,7 @@ export class CheckpointDB implements DB {
   /**
    * @inheritDoc
    */
-  copy(): CheckpointDB {
+  shallowCopy(): CheckpointDB {
     return new CheckpointDB({ db: this.db, cacheSize: this.cacheSize })
   }
 

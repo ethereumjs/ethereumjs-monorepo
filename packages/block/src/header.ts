@@ -10,23 +10,22 @@ import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
-  bytesToPrefixedHexString,
   concatBytes,
-  concatBytesNoTypeCheck,
   ecrecover,
   ecsign,
   equalsBytes,
+  hexToBytes,
   toType,
   zeros,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique'
-import { valuesArrayToHeaderData } from './helpers'
+import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique.js'
+import { fakeExponential, valuesArrayToHeaderData } from './helpers.js'
 
-import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from './types'
+import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from './types.js'
 import type { CliqueConfig } from '@ethereumjs/common'
+import type { BigIntLike } from '@ethereumjs/util'
 
 interface HeaderCache {
   hash: Uint8Array | undefined
@@ -55,6 +54,7 @@ export class BlockHeader {
   public readonly nonce: Uint8Array
   public readonly baseFeePerGas?: bigint
   public readonly withdrawalsRoot?: Uint8Array
+  public readonly dataGasUsed?: bigint
   public readonly excessDataGas?: bigint
 
   public readonly _common: Common
@@ -108,16 +108,25 @@ export class BlockHeader {
    */
   public static fromValuesArray(values: BlockHeaderBytes, opts: BlockOptions = {}) {
     const headerData = valuesArrayToHeaderData(values)
-    const { number, baseFeePerGas } = headerData
+    const { number, baseFeePerGas, excessDataGas, dataGasUsed } = headerData
+    const header = BlockHeader.fromHeaderData(headerData, opts)
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    if (opts.common?.isActivatedEIP(1559) && baseFeePerGas === undefined) {
-      const eip1559ActivationBlock = bigIntToBytes(opts.common?.eipBlock(1559)!)
+    if (header._common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
+      const eip1559ActivationBlock = bigIntToBytes(header._common.eipBlock(1559)!)
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
       if (eip1559ActivationBlock && equalsBytes(eip1559ActivationBlock, number as Uint8Array)) {
         throw new Error('invalid header. baseFeePerGas should be provided')
       }
     }
-    return BlockHeader.fromHeaderData(headerData, opts)
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    if (header._common.isActivatedEIP(4844)) {
+      if (excessDataGas === undefined) {
+        throw new Error('invalid header. excessDataGas should be provided')
+      } else if (dataGasUsed === undefined) {
+        throw new Error('invalid header. dataGasUsed should be provided')
+      }
+    }
+    return header
   }
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
@@ -133,12 +142,6 @@ export class BlockHeader {
       this._common = new Common({
         chain: Chain.Mainnet, // default
       })
-    }
-
-    if (options.hardforkByBlockNumber !== undefined && options.hardforkByTTD !== undefined) {
-      throw new Error(
-        `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
-      )
     }
 
     const skipValidateConsensusFormat = options.skipConsensusFormatValidation ?? false
@@ -181,9 +184,18 @@ export class BlockHeader {
     const mixHash = toType(headerData.mixHash, TypeOutput.Uint8Array) ?? defaults.mixHash
     const nonce = toType(headerData.nonce, TypeOutput.Uint8Array) ?? defaults.nonce
 
-    const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
-    if (hardforkByBlockNumber || options.hardforkByTTD !== undefined) {
-      this._common.setHardforkByBlockNumber(number, options.hardforkByTTD, timestamp)
+    const setHardfork = options.setHardfork ?? false
+    if (setHardfork === true) {
+      this._common.setHardforkBy({
+        blockNumber: number,
+        timestamp,
+      })
+    } else if (typeof setHardfork !== 'boolean') {
+      this._common.setHardforkBy({
+        blockNumber: number,
+        td: setHardfork as BigIntLike,
+        timestamp,
+      })
     }
 
     // Hardfork defaults which couldn't be paired with earlier defaults
@@ -194,6 +206,7 @@ export class BlockHeader {
           : BigInt(7)
         : undefined,
       withdrawalsRoot: this._common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
+      dataGasUsed: this._common.isActivatedEIP(4844) ? BigInt(0) : undefined,
       excessDataGas: this._common.isActivatedEIP(4844) ? BigInt(0) : undefined,
     }
 
@@ -201,6 +214,8 @@ export class BlockHeader {
       toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? hardforkDefaults.baseFeePerGas
     const withdrawalsRoot =
       toType(headerData.withdrawalsRoot, TypeOutput.Uint8Array) ?? hardforkDefaults.withdrawalsRoot
+    const dataGasUsed =
+      toType(headerData.dataGasUsed, TypeOutput.BigInt) ?? hardforkDefaults.dataGasUsed
     const excessDataGas =
       toType(headerData.excessDataGas, TypeOutput.BigInt) ?? hardforkDefaults.excessDataGas
 
@@ -214,8 +229,14 @@ export class BlockHeader {
       )
     }
 
-    if (!this._common.isActivatedEIP(4844) && headerData.excessDataGas !== undefined) {
-      throw new Error('excess data gas can only be provided with EIP4844 activated')
+    if (!this._common.isActivatedEIP(4844)) {
+      if (headerData.dataGasUsed !== undefined) {
+        throw new Error('data gas used can only be provided with EIP4844 activated')
+      }
+
+      if (headerData.excessDataGas !== undefined) {
+        throw new Error('excess data gas can only be provided with EIP4844 activated')
+      }
     }
 
     this.parentHash = parentHash
@@ -235,6 +256,7 @@ export class BlockHeader {
     this.nonce = nonce
     this.baseFeePerGas = baseFeePerGas
     this.withdrawalsRoot = withdrawalsRoot
+    this.dataGasUsed = dataGasUsed
     this.excessDataGas = excessDataGas
     this._genericFormatValidation()
     this._validateDAOExtraData()
@@ -524,6 +546,50 @@ export class BlockHeader {
   }
 
   /**
+   * Returns the price per unit of data gas for a blob transaction in the current/pending block
+   * @returns the price in gwei per unit of data gas spent
+   */
+  getDataGasPrice(): bigint {
+    if (this.excessDataGas === undefined) {
+      throw new Error('header must have excessDataGas field populated')
+    }
+    return fakeExponential(
+      this._common.param('gasPrices', 'minDataGasPrice'),
+      this.excessDataGas,
+      this._common.param('gasConfig', 'dataGasPriceUpdateFraction')
+    )
+  }
+
+  /**
+   * Returns the total fee for data gas spent for including blobs in block.
+   *
+   * @param numBlobs number of blobs in the transaction/block
+   * @returns the total data gas fee for numBlobs blobs
+   */
+  calcDataFee(numBlobs: number): bigint {
+    const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
+    const dataGasUsed = dataGasPerBlob * BigInt(numBlobs)
+
+    const dataGasPrice = this.getDataGasPrice()
+    return dataGasUsed * dataGasPrice
+  }
+
+  /**
+   * Calculates the excess data gas for next (hopefully) post EIP 4844 block.
+   */
+  public calcNextExcessDataGas(): bigint {
+    // The validation of the fields and 4844 activation is already taken care in BlockHeader constructor
+    const targetGasConsumed = (this.excessDataGas ?? BigInt(0)) + (this.dataGasUsed ?? BigInt(0))
+    const targetDataGasPerBlock = this._common.param('gasConfig', 'targetDataGasPerBlock')
+
+    if (targetGasConsumed <= targetDataGasPerBlock) {
+      return BigInt(0)
+    } else {
+      return targetGasConsumed - targetDataGasPerBlock
+    }
+  }
+
+  /**
    * Returns a Uint8Array Array of the raw Bytes in this header, in order.
    */
   raw(): BlockHeaderBytes {
@@ -553,6 +619,7 @@ export class BlockHeader {
       rawItems.push(this.withdrawalsRoot!)
     }
     if (this._common.isActivatedEIP(4844) === true) {
+      rawItems.push(bigIntToUnpaddedBytes(this.dataGasUsed!))
       rawItems.push(bigIntToUnpaddedBytes(this.excessDataGas!))
     }
 
@@ -713,7 +780,7 @@ export class BlockHeader {
     this._requireClique('cliqueSealBlock')
 
     const signature = ecsign(this.cliqueSigHash(), privateKey)
-    const signatureB = concatBytesNoTypeCheck(
+    const signatureB = concatBytes(
       signature.r,
       signature.s,
       bigIntToBytes(signature.v - BigInt(27))
@@ -723,7 +790,7 @@ export class BlockHeader {
       0,
       this.extraData.length - CLIQUE_EXTRA_SEAL
     )
-    const extraData = concatBytesNoTypeCheck(extraDataWithoutSeal, signatureB)
+    const extraData = concatBytes(extraDataWithoutSeal, signatureB)
     return extraData
   }
 
@@ -798,30 +865,31 @@ export class BlockHeader {
    */
   toJSON(): JsonHeader {
     const withdrawalAttr = this.withdrawalsRoot
-      ? { withdrawalsRoot: bytesToPrefixedHexString(this.withdrawalsRoot) }
+      ? { withdrawalsRoot: bytesToHex(this.withdrawalsRoot) }
       : {}
     const jsonDict: JsonHeader = {
-      parentHash: bytesToPrefixedHexString(this.parentHash),
-      uncleHash: bytesToPrefixedHexString(this.uncleHash),
+      parentHash: bytesToHex(this.parentHash),
+      uncleHash: bytesToHex(this.uncleHash),
       coinbase: this.coinbase.toString(),
-      stateRoot: bytesToPrefixedHexString(this.stateRoot),
-      transactionsTrie: bytesToPrefixedHexString(this.transactionsTrie),
+      stateRoot: bytesToHex(this.stateRoot),
+      transactionsTrie: bytesToHex(this.transactionsTrie),
       ...withdrawalAttr,
-      receiptTrie: bytesToPrefixedHexString(this.receiptTrie),
-      logsBloom: bytesToPrefixedHexString(this.logsBloom),
+      receiptTrie: bytesToHex(this.receiptTrie),
+      logsBloom: bytesToHex(this.logsBloom),
       difficulty: bigIntToHex(this.difficulty),
       number: bigIntToHex(this.number),
       gasLimit: bigIntToHex(this.gasLimit),
       gasUsed: bigIntToHex(this.gasUsed),
       timestamp: bigIntToHex(this.timestamp),
-      extraData: bytesToPrefixedHexString(this.extraData),
-      mixHash: bytesToPrefixedHexString(this.mixHash),
-      nonce: bytesToPrefixedHexString(this.nonce),
+      extraData: bytesToHex(this.extraData),
+      mixHash: bytesToHex(this.mixHash),
+      nonce: bytesToHex(this.nonce),
     }
     if (this._common.isActivatedEIP(1559) === true) {
       jsonDict.baseFeePerGas = bigIntToHex(this.baseFeePerGas!)
     }
     if (this._common.isActivatedEIP(4844) === true) {
+      jsonDict.dataGasUsed = bigIntToHex(this.dataGasUsed!)
       jsonDict.excessDataGas = bigIntToHex(this.excessDataGas!)
     }
     return jsonDict
@@ -839,7 +907,7 @@ export class BlockHeader {
     if (DAOActivationBlock === null || this.number < DAOActivationBlock) {
       return
     }
-    const DAO_ExtraData = hexToBytes('64616f2d686172642d666f726b')
+    const DAO_ExtraData = hexToBytes('0x64616f2d686172642d666f726b')
     const DAO_ForceExtraDataRange = BigInt(9)
     const drift = this.number - DAOActivationBlock
     if (drift <= DAO_ForceExtraDataRange && !equalsBytes(this.extraData, DAO_ExtraData)) {

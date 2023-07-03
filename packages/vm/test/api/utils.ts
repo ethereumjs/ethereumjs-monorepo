@@ -1,12 +1,18 @@
 import { Blockchain } from '@ethereumjs/blockchain'
-import { TransactionFactory } from '@ethereumjs/tx'
-import { Account, blobsToCommitments, computeVersionedHash, getBlobs } from '@ethereumjs/util'
+import { TransactionFactory, TransactionType } from '@ethereumjs/tx'
+import {
+  Account,
+  blobsToCommitments,
+  computeVersionedHash,
+  getBlobs,
+  hexToBytes,
+} from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { hexToBytes } from 'ethereum-cryptography/utils'
 import { MemoryLevel } from 'memory-level'
 
 import { VM } from '../../src/vm'
-import { LevelDB } from '../level'
+
+import { LevelDB } from './level'
 
 import type { VMOpts } from '../../src/types'
 import type { Block } from '@ethereumjs/block'
@@ -44,7 +50,7 @@ export async function setupVM(opts: VMOpts & { genesisBlock?: Block } = {}) {
 
 export function getTransaction(
   common: Common,
-  txType = 0,
+  txType = TransactionType.Legacy,
   sign = false,
   value = '0x00',
   createContract = false,
@@ -68,11 +74,11 @@ export function getTransaction(
     data,
   }
 
-  if (txType > 0) {
+  if (txType > TransactionType.Legacy) {
     txParams['type'] = txType
   }
 
-  if (txType === 1) {
+  if (txType === TransactionType.AccessListEIP2930) {
     txParams['chainId'] = common.chainId()
     txParams['accessList'] = [
       {
@@ -83,11 +89,11 @@ export function getTransaction(
         ],
       },
     ]
-  } else if (txType === 2) {
+  } else if (txType === TransactionType.FeeMarketEIP1559) {
     txParams['gasPrice'] = undefined
     txParams['maxFeePerGas'] = BigInt(100)
     txParams['maxPriorityFeePerGas'] = BigInt(10)
-  } else if (txType === 3) {
+  } else if (txType === TransactionType.BlobEIP4844) {
     txParams['gasPrice'] = undefined
     txParams['maxFeePerGas'] = BigInt(1000000000)
     txParams['maxPriorityFeePerGas'] = BigInt(10)
@@ -106,19 +112,10 @@ export function getTransaction(
 
   if (sign) {
     const privateKey = hexToBytes(
-      'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
     )
     return tx.sign(privateKey)
   }
 
   return tx
-}
-
-/**
- * Checks if in a karma test runner.
- * @returns boolean whether running in karma
- */
-export function isRunningInKarma(): boolean {
-  // eslint-disable-next-line no-undef
-  return typeof (<any>globalThis).window !== 'undefined' && (<any>globalThis).window.__karma__
 }

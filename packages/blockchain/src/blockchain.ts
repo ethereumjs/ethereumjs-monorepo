@@ -1,27 +1,33 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import { getGenesis } from '@ethereumjs/genesis'
+import { genesisStateRoot } from '@ethereumjs/trie'
 import {
   KECCAK256_RLP,
   Lock,
   MapDB,
-  bytesToPrefixedHexString,
-  concatBytesNoTypeCheck,
+  bytesToHex,
+  bytesToUnprefixedHex,
+  concatBytes,
+  equalsBytes,
+  hexToBytes,
 } from '@ethereumjs/util'
-import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
-import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus'
-import { DBOp, DBSaveLookups, DBSetBlockOrHeader, DBSetHashToNumber, DBSetTD } from './db/helpers'
-import { DBManager } from './db/manager'
-import { DBTarget } from './db/operation'
-import { genesisStateRoot } from './genesisStates'
-import {} from './utils'
+import { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus/index.js'
+import {
+  DBOp,
+  DBSaveLookups,
+  DBSetBlockOrHeader,
+  DBSetHashToNumber,
+  DBSetTD,
+} from './db/helpers.js'
+import { DBManager } from './db/manager.js'
+import { DBTarget } from './db/operation.js'
 
-import type { Consensus } from './consensus'
-import type { GenesisState } from './genesisStates'
-import type { BlockchainInterface, BlockchainOptions, OnBlock } from './types'
+import type { BlockchainInterface, BlockchainOptions, Consensus, OnBlock } from './types.js'
 import type { BlockData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
-import type { BigIntLike, DB, DBObject } from '@ethereumjs/util'
+import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
 
 /**
  * This class stores and interacts with blocks.
@@ -85,7 +91,7 @@ export class Blockchain implements BlockchainInterface {
     for (const blockData of blocksData) {
       const block = Block.fromBlockData(blockData, {
         common: blockchain._common,
-        hardforkByBlockNumber: true,
+        setHardfork: true,
       })
       await blockchain.putBlock(block)
     }
@@ -176,7 +182,7 @@ export class Blockchain implements BlockchainInterface {
    * set the {@link db} of this returned instance to a copy of
    * the original.
    */
-  copy(): Blockchain {
+  shallowCopy(): Blockchain {
     const copiedBlockchain = Object.create(
       Object.getPrototypeOf(this),
       Object.getOwnPropertyDescriptors(this)
@@ -206,7 +212,7 @@ export class Blockchain implements BlockchainInterface {
       let stateRoot
       if (this._common.chainId() === BigInt(1) && this._customGenesisState === undefined) {
         // For mainnet use the known genesis stateRoot to quicken setup
-        stateRoot = hexToBytes('d7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544')
+        stateRoot = hexToBytes('0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544')
       } else {
         stateRoot = await genesisStateRoot(this.genesisState())
       }
@@ -280,7 +286,7 @@ export class Blockchain implements BlockchainInterface {
   /**
    * Returns the specified iterator head.
    *
-   * This function replaces the old {@link Blockchain.getHead} method. Note that
+   * This function replaces the old Blockchain.getHead() method. Note that
    * the function deviates from the old behavior and returns the
    * genesis hash instead of the current head block if an iterator
    * has not been run. This matches the behavior of {@link Blockchain.iterator}.
@@ -291,27 +297,6 @@ export class Blockchain implements BlockchainInterface {
     return this.runWithLock<Block>(async () => {
       // if the head is not found return the genesis hash
       const hash = this._heads[name] ?? this.genesisBlock.hash()
-      const block = await this.getBlock(hash)
-      return block
-    })
-  }
-
-  /**
-   * Returns the specified iterator head.
-   *
-   * @param name - Optional name of the iterator head (default: 'vm')
-   *
-   * @deprecated use {@link Blockchain.getIteratorHead} instead.
-   * Note that {@link Blockchain.getIteratorHead} doesn't return
-   * the `headHeader` but the genesis hash as an initial iterator
-   * head value (now matching the behavior of {@link Blockchain.iterator}
-   * on a first run)
-   */
-  async getHead(name = 'vm'): Promise<Block> {
-    return this.runWithLock<Block>(async () => {
-      // if the head is not found return the headHeader
-      const hash = this._heads[name] ?? this._headBlockHash
-      if (hash === undefined) throw new Error('No head found.')
       const block = await this.getBlock(hash)
       return block
     })
@@ -440,7 +425,7 @@ export class Blockchain implements BlockchainInterface {
       try {
         const block =
           item instanceof BlockHeader
-            ? new Block(item, undefined, undefined, {
+            ? new Block(item, undefined, undefined, undefined, {
                 common: item._common,
               })
             : item
@@ -611,6 +596,13 @@ export class Blockchain implements BlockchainInterface {
         throw new Error(`Invalid block: base fee not correct ${header.errorStr()}`)
       }
     }
+
+    if (header._common.isActivatedEIP(4844) === true) {
+      const expectedExcessDataGas = parentHeader.calcNextExcessDataGas()
+      if (header.excessDataGas !== expectedExcessDataGas) {
+        throw new Error(`expected data gas: ${expectedExcessDataGas}, got: ${header.excessDataGas}`)
+      }
+    }
   }
 
   /**
@@ -672,11 +664,11 @@ export class Blockchain implements BlockchainInterface {
       canonicalBlockMap.push(parentBlock)
 
       // mark block hash as part of the canonical chain
-      canonicalChainHashes[bytesToHex(parentBlock.hash())] = true
+      canonicalChainHashes[bytesToUnprefixedHex(parentBlock.hash())] = true
 
       // for each of the uncles, mark the uncle as included
       parentBlock.uncleHeaders.map((uh) => {
-        includedUncles[bytesToHex(uh.hash())] = true
+        includedUncles[bytesToUnprefixedHex(uh.hash())] = true
       })
 
       parentHash = parentBlock.header.parentHash
@@ -688,8 +680,8 @@ export class Blockchain implements BlockchainInterface {
     // Uncle Header has a parentHash which points to the canonical chain.
 
     uncleHeaders.map((uh) => {
-      const uncleHash = bytesToHex(uh.hash())
-      const parentHash = bytesToHex(uh.parentHash)
+      const uncleHash = bytesToUnprefixedHex(uh.hash())
+      const parentHash = bytesToUnprefixedHex(uh.parentHash)
 
       if (!canonicalChainHashes[parentHash]) {
         throw new Error(
@@ -740,7 +732,7 @@ export class Blockchain implements BlockchainInterface {
     if (number === undefined) {
       number = await this.dbManager.hashToNumber(hash)
       if (number === undefined) {
-        throw new Error(`Block with hash ${bytesToPrefixedHexString(hash)} not found in DB`)
+        throw new Error(`Block with hash ${bytesToHex(hash)} not found in DB`)
       }
     }
     return this.dbManager.getTotalDifficulty(hash, number)
@@ -1214,7 +1206,7 @@ export class Blockchain implements BlockchainInterface {
     // LevelDB doesn't handle Uint8Arrays properly when they are part
     // of a JSON object being stored as a value in the DB
     const hexHeads = Object.fromEntries(
-      Object.entries(this._heads).map((entry) => [entry[0], bytesToHex(entry[1])])
+      Object.entries(this._heads).map((entry) => [entry[0], bytesToUnprefixedHex(entry[1])])
     )
     return [
       DBOp.set(DBTarget.Heads, hexHeads),
@@ -1241,18 +1233,21 @@ export class Blockchain implements BlockchainInterface {
   private async _getHeader(hash: Uint8Array, number?: bigint) {
     if (number === undefined) {
       number = await this.dbManager.hashToNumber(hash)
-      if (number === undefined)
-        throw new Error(`no header for ${bytesToPrefixedHexString(hash)} found in DB`)
+      if (number === undefined) throw new Error(`no header for ${bytesToHex(hash)} found in DB`)
     }
     return this.dbManager.getHeader(hash, number)
   }
 
   async checkAndTransitionHardForkByNumber(
-    number: bigint,
+    number: BigIntLike,
     td?: BigIntLike,
     timestamp?: BigIntLike
   ): Promise<void> {
-    this._common.setHardforkByBlockNumber(number, td, timestamp)
+    this._common.setHardforkBy({
+      blockNumber: number,
+      td,
+      timestamp,
+    })
 
     // If custom consensus algorithm is used, skip merge hardfork consensus checks
     if (!Object.values(ConsensusAlgorithm).includes(this.consensus.algorithm as ConsensusAlgorithm))
@@ -1317,18 +1312,17 @@ export class Blockchain implements BlockchainInterface {
    */
   createGenesisBlock(stateRoot: Uint8Array): Block {
     const common = this._common.copy()
-    common.setHardforkByBlockNumber(
-      0,
-      BigInt(common.genesis().difficulty),
-      common.genesis().timestamp
-    )
+    common.setHardforkBy({
+      blockNumber: 0,
+      td: BigInt(common.genesis().difficulty),
+      timestamp: common.genesis().timestamp,
+    })
 
     const header: BlockData['header'] = {
       ...common.genesis(),
       number: 0,
       stateRoot,
       withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
-      excessDataGas: common.isActivatedEIP(4844) ? BigInt(0) : undefined,
     }
     if (common.consensusType() === 'poa') {
       if (common.genesis().extraData) {
@@ -1336,7 +1330,7 @@ export class Blockchain implements BlockchainInterface {
         header.extraData = common.genesis().extraData
       } else {
         // Add required extraData (32 bytes vanity + 65 bytes filled with zeroes
-        header.extraData = concatBytesNoTypeCheck(new Uint8Array(32), new Uint8Array(65))
+        header.extraData = concatBytes(new Uint8Array(32), new Uint8Array(65))
       }
     }
     return Block.fromBlockData(
@@ -1353,22 +1347,7 @@ export class Blockchain implements BlockchainInterface {
     if (this._customGenesisState) {
       return this._customGenesisState
     }
-    // Use require statements here in favor of import statements
-    // to load json files on demand
-    // (high memory usage by large mainnet.json genesis state file)
-    switch (this._common.chainName()) {
-      case 'mainnet':
-        return require('./genesisStates/mainnet.json')
-      case 'ropsten':
-        return require('./genesisStates/ropsten.json')
-      case 'rinkeby':
-        return require('./genesisStates/rinkeby.json')
-      case 'goerli':
-        return require('./genesisStates/goerli.json')
-      case 'sepolia':
-        return require('./genesisStates/sepolia.json')
-    }
 
-    return {}
+    return getGenesis(Number(this._common.chainId()) as Chain) ?? {}
   }
 }

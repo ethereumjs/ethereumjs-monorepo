@@ -1,6 +1,6 @@
 import { Address } from '@ethereumjs/util'
 
-import type { PrecompileFunc } from './precompiles'
+import type { PrecompileFunc } from './precompiles/index.js'
 
 const defaults = {
   value: BigInt(0),
@@ -26,9 +26,13 @@ interface MessageOpts {
   isCompiled?: boolean
   salt?: Uint8Array
   /**
-   * A map of addresses to selfdestruct, see {@link Message.selfdestruct}
+   * A set of addresses to selfdestruct, see {@link Message.selfdestruct}
    */
-  selfdestruct?: { [key: string]: boolean } | { [key: string]: Uint8Array }
+  selfdestruct?: Set<string>
+  /**
+   * Map of addresses which were created (used in EIP 6780)
+   */
+  createdAddresses?: Set<string>
   delegatecall?: boolean
   authcallOrigin?: Address
   gasRefund?: bigint
@@ -49,10 +53,13 @@ export class Message {
   salt?: Uint8Array
   containerCode?: Uint8Array /** container code for EOF1 contracts - used by CODECOPY/CODESIZE */
   /**
-   * Map of addresses to selfdestruct. Key is the unprefixed address.
-   * Value is a boolean when marked for destruction and replaced with a Uint8Array containing the address where the remaining funds are sent.
+   * Set of addresses to selfdestruct. Key is the unprefixed address.
    */
-  selfdestruct?: { [key: string]: boolean } | { [key: string]: Uint8Array }
+  selfdestruct?: Set<string>
+  /**
+   * Map of addresses which were created (used in EIP 6780)
+   */
+  createdAddresses?: Set<string>
   delegatecall: boolean
   /**
    * This is used to store the origin of the AUTHCALL,
@@ -78,6 +85,7 @@ export class Message {
     this.isCompiled = opts.isCompiled ?? defaults.isCompiled
     this.salt = opts.salt
     this.selfdestruct = opts.selfdestruct
+    this.createdAddresses = opts.createdAddresses
     this.delegatecall = opts.delegatecall ?? defaults.delegatecall
     this.authcallOrigin = opts.authcallOrigin
     this.gasRefund = opts.gasRefund ?? defaults.gasRefund

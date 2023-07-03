@@ -50,8 +50,6 @@ jobs:
           max_attempts: 3
           command: cd ${{github.workspace}}/packages/client && npm run test:integration
 
-      - run: npm run test:browser
-
       - run: npm run lint
 
   test-client-dockerfile:
@@ -100,4 +98,4 @@ jobs:
         with:
           timeout_minutes: 10
           max_attempts: 3
-          command: cd ${{github.workspace}}/packages/client && npm run tape -- 'test/sim/mainnet.spec.ts'
+          command: cd ${{github.workspace}}/packages/client && npm run tape -- 'test/integration/cli.spec.ts'

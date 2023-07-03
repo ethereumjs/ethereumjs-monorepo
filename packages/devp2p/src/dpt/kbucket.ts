@@ -1,8 +1,9 @@
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { bytesToUnprefixedHex } from '@ethereumjs/util'
 import { EventEmitter } from 'events'
-import _KBucket = require('k-bucket')
 
-import type { PeerInfo } from './dpt'
+import { KBucket as _KBucket } from '../ext/index.js'
+
+import type { PeerInfo } from './dpt.js'
 
 const KBUCKET_SIZE = 16
 const KBUCKET_CONCURRENCY = 3
@@ -18,7 +19,8 @@ export class KBucket extends EventEmitter {
   constructor(localNodeId: Uint8Array) {
     super()
 
-    this._kbucket = new _KBucket<CustomContact>({
+    // new _KBucket<CustomContact>({
+    this._kbucket = new _KBucket({
       localNodeId,
       numberOfNodesPerKBucket: KBUCKET_SIZE,
       numberOfNodesToPing: KBUCKET_CONCURRENCY,
@@ -44,11 +46,11 @@ export class KBucket extends EventEmitter {
   }
 
   static getKeys(obj: Uint8Array | string | PeerInfo): string[] {
-    if (obj instanceof Uint8Array) return [bytesToHex(obj)]
+    if (obj instanceof Uint8Array) return [bytesToUnprefixedHex(obj)]
     if (typeof obj === 'string') return [obj]
 
     const keys = []
-    if (obj.id instanceof Uint8Array) keys.push(bytesToHex(obj.id))
+    if (obj.id instanceof Uint8Array) keys.push(bytesToUnprefixedHex(obj.id))
     if (obj.address !== undefined && typeof obj.tcpPort === 'number')
       keys.push(`${obj.address}:${obj.tcpPort}`)
     return keys

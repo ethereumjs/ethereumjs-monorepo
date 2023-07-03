@@ -2,15 +2,13 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
 import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Account, Address, AsyncEventEmitter, TypeOutput, toType } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
-import { promisify } from 'util'
+import { Account, Address, AsyncEventEmitter, unprefixedHexToBytes } from '@ethereumjs/util'
 
-import { buildBlock } from './buildBlock'
-import { runBlock } from './runBlock'
-import { runTx } from './runTx'
+import { buildBlock } from './buildBlock.js'
+import { runBlock } from './runBlock.js'
+import { runTx } from './runTx.js'
 
-import type { BlockBuilder } from './buildBlock'
+import type { BlockBuilder } from './buildBlock.js'
 import type {
   BuildBlockOpts,
   RunBlockOpts,
@@ -19,9 +17,10 @@ import type {
   RunTxResult,
   VMEvents,
   VMOpts,
-} from './types'
+} from './types.js'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
+import type { BigIntLike } from '@ethereumjs/util'
 
 /**
  * Execution engine which can be used to run a blockchain, individual
@@ -51,8 +50,7 @@ export class VM {
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
 
-  protected readonly _hardforkByBlockNumber: boolean
-  protected readonly _hardforkByTTD?: bigint
+  protected readonly _setHardfork: boolean | BigIntLike
 
   /**
    * Cached emit() function, not for public usage
@@ -121,23 +119,16 @@ export class VM {
       })
     }
 
-    if (opts.hardforkByBlockNumber !== undefined && opts.hardforkByTTD !== undefined) {
-      throw new Error(
-        `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
-      )
+    this._setHardfork = opts.setHardfork ?? false
+
+    this._emit = async (topic: string, data: any): Promise<void> => {
+      return new Promise((resolve) => this.events.emit(topic as keyof VMEvents, data, resolve))
     }
 
-    this._hardforkByBlockNumber = opts.hardforkByBlockNumber ?? false
-    this._hardforkByTTD = toType(opts.hardforkByTTD, TypeOutput.BigInt)
-
-    // We cache this promisified function as it's called from the main execution loop, and
-    // promisifying each time has a huge performance impact.
-    this._emit = <(topic: string, data: any) => Promise<void>>(
-      promisify(this.events.emit.bind(this.events))
-    )
-
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
-    this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
+    // Additional window check is to prevent vite browser bundling (and potentially other) to break
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
   }
 
   async init(): Promise<void> {
@@ -159,10 +150,10 @@ export class VM {
     }
 
     if (this._opts.activatePrecompiles === true && typeof this._opts.stateManager === 'undefined') {
-      await this.stateManager.checkpoint()
+      await this.evm.journal.checkpoint()
       // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
       for (const [addressStr] of getActivePrecompiles(this._common)) {
-        const address = new Address(hexToBytes(addressStr))
+        const address = new Address(unprefixedHexToBytes(addressStr))
         let account = await this.stateManager.getAccount(address)
         // Only do this if it is not overridden in genesis
         // Note: in the case that custom genesis has storage fields, this is preserved
@@ -175,7 +166,7 @@ export class VM {
           await this.stateManager.putAccount(address, newAccount)
         }
       }
-      await this.stateManager.commit()
+      await this.evm.journal.commit()
     }
     this._isInitialized = true
   }
@@ -228,11 +219,11 @@ export class VM {
   /**
    * Returns a copy of the {@link VM} instance.
    */
-  async copy(): Promise<VM> {
+  async shallowCopy(): Promise<VM> {
     const common = this._common.copy()
     common.setHardfork(this._common.hardfork())
-    const blockchain = this.blockchain.copy()
-    const stateManager = this.stateManager.copy()
+    const blockchain = this.blockchain.shallowCopy()
+    const stateManager = this.stateManager.shallowCopy()
     const evmOpts = {
       ...(this.evm as any)._optsCached,
       common,
@@ -245,8 +236,7 @@ export class VM {
       blockchain: this.blockchain,
       common,
       evm: evmCopy,
-      hardforkByBlockNumber: this._hardforkByBlockNumber ? true : undefined,
-      hardforkByTTD: this._hardforkByTTD,
+      setHardfork: this._setHardfork,
     })
   }
 

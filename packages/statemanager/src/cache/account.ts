@@ -1,15 +1,14 @@
-import { bytesToHex } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import { bytesToUnprefixedHex } from '@ethereumjs/util'
+import debugDefault from 'debug'
 import { OrderedMap } from 'js-sdsl'
+import { LRUCache } from 'lru-cache'
 
-import { Cache } from './cache'
-import { CacheType } from './types'
+import { Cache } from './cache.js'
+import { CacheType } from './types.js'
 
-import type { CacheOpts } from './types'
+import type { CacheOpts } from './types.js'
 import type { Account, Address } from '@ethereumjs/util'
-import type LRUCache from 'lru-cache'
-
-const LRU = require('lru-cache')
+const { debug: createDebugLogger } = debugDefault
 
 /**
  * account: undefined
@@ -37,7 +36,7 @@ export class AccountCache extends Cache {
   constructor(opts: CacheOpts) {
     super()
     if (opts.type === CacheType.LRU) {
-      this._lruCache = new LRU({
+      this._lruCache = new LRUCache({
         max: opts.size,
         updateAgeOnGet: true,
       })
@@ -68,7 +67,7 @@ export class AccountCache extends Cache {
    * @param account - Account or undefined if account doesn't exist in the trie
    */
   put(address: Address, account: Account | undefined): void {
-    const addressHex = bytesToHex(address.bytes)
+    const addressHex = bytesToUnprefixedHex(address.bytes)
     this._saveCachePreState(addressHex)
     const elem = {
       accountRLP: account !== undefined ? account.serialize() : undefined,
@@ -90,7 +89,7 @@ export class AccountCache extends Cache {
    * @param address - Address of account
    */
   get(address: Address): AccountCacheElement | undefined {
-    const addressHex = bytesToHex(address.bytes)
+    const addressHex = bytesToUnprefixedHex(address.bytes)
     if (this.DEBUG) {
       this._debug(`Get account ${addressHex}`)
     }
@@ -113,7 +112,7 @@ export class AccountCache extends Cache {
    * @param address - Address
    */
   del(address: Address): void {
-    const addressHex = bytesToHex(address.bytes)
+    const addressHex = bytesToUnprefixedHex(address.bytes)
     this._saveCachePreState(addressHex)
     if (this.DEBUG) {
       this._debug(`Delete account ${addressHex}`)

@@ -1,9 +1,10 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common } from '@ethereumjs/common'
 import {
   Address,
   MAX_INTEGER,
   MAX_UINT64,
   SECP256K1_ORDER_DIV_2,
+  bigIntToHex,
   bytesToBigInt,
   bytesToHex,
   ecsign,
@@ -12,19 +13,18 @@ import {
   unpadBytes,
 } from '@ethereumjs/util'
 
-import { Capability } from './types'
-import { checkMaxInitCodeSize } from './util'
+import { Capability, TransactionType } from './types.js'
+import { checkMaxInitCodeSize } from './util.js'
 
 import type {
-  AccessListEIP2930TxData,
-  AccessListEIP2930ValuesArray,
-  FeeMarketEIP1559TxData,
-  FeeMarketEIP1559ValuesArray,
   JsonTx,
+  Transaction,
+  TransactionInterface,
   TxData,
   TxOptions,
   TxValuesArray,
-} from './types'
+} from './types.js'
+import type { Hardfork } from '@ethereumjs/common'
 import type { BigIntLike } from '@ethereumjs/util'
 
 interface TransactionCache {
@@ -42,8 +42,10 @@ interface TransactionCache {
  *
  * It is therefore not recommended to use directly.
  */
-export abstract class BaseTransaction<TransactionObject> {
-  private readonly _type: number
+export abstract class BaseTransaction<T extends TransactionType>
+  implements TransactionInterface<T>
+{
+  private readonly _type: TransactionType
 
   public readonly nonce: bigint
   public readonly gasLimit: bigint
@@ -81,15 +83,7 @@ export abstract class BaseTransaction<TransactionObject> {
    */
   protected DEFAULT_CHAIN = Chain.Mainnet
 
-  /**
-   * The default HF if the tx type is active on that HF
-   * or the first greater HF where the tx is active.
-   *
-   * @hidden
-   */
-  protected DEFAULT_HARDFORK: string | Hardfork = Hardfork.Shanghai
-
-  constructor(txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData, opts: TxOptions) {
+  constructor(txData: TxData[T], opts: TxOptions) {
     const { nonce, gasLimit, to, value, data, v, r, s, type } = txData
     this._type = Number(bytesToBigInt(toBytes(type)))
 
@@ -148,7 +142,7 @@ export abstract class BaseTransaction<TransactionObject> {
    * tx type is unknown (e.g. when instantiated with
    * the tx factory).
    *
-   * See `Capabilites` in the `types` module for a reference
+   * See `Capabilities` in the `types` module for a reference
    * on all supported capabilities.
    */
   supports(capability: Capability) {
@@ -156,24 +150,31 @@ export abstract class BaseTransaction<TransactionObject> {
   }
 
   /**
-   * Checks if the transaction has the minimum amount of gas required
-   * (DataFee + TxFee + Creation Fee).
+   * Validates the transaction signature and minimum gas requirements.
+   * @returns {string[]} an array of error strings
    */
-  validate(): boolean
-  validate(stringError: false): boolean
-  validate(stringError: true): string[]
-  validate(stringError: boolean = false): boolean | string[] {
+  getValidationErrors(): string[] {
     const errors = []
-
-    if (this.getBaseFee() > this.gasLimit) {
-      errors.push(`gasLimit is too low. given ${this.gasLimit}, need at least ${this.getBaseFee()}`)
-    }
 
     if (this.isSigned() && !this.verifySignature()) {
       errors.push('Invalid Signature')
     }
 
-    return stringError ? errors : errors.length === 0
+    if (this.getBaseFee() > this.gasLimit) {
+      errors.push(`gasLimit is too low. given ${this.gasLimit}, need at least ${this.getBaseFee()}`)
+    }
+
+    return errors
+  }
+
+  /**
+   * Validates the transaction signature and minimum gas requirements.
+   * @returns {boolean} true if the transaction is valid, false otherwise
+   */
+  isValid(): boolean {
+    const errors = this.getValidationErrors()
+
+    return errors.length === 0
   }
 
   protected _validateYParity() {
@@ -255,19 +256,18 @@ export abstract class BaseTransaction<TransactionObject> {
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
    * representation for external signing use {@link BaseTransaction.getMessageToSign}.
    */
-  abstract raw(): TxValuesArray | AccessListEIP2930ValuesArray | FeeMarketEIP1559ValuesArray
+  abstract raw(): TxValuesArray[T]
 
   /**
    * Returns the encoding of the transaction.
    */
   abstract serialize(): Uint8Array
 
-  // Returns the unsigned tx (hashed or raw), which is used to sign the transaction.
-  //
-  // Note: do not use code docs here since VS Studio is then not able to detect the
-  // comments from the inherited methods
-  abstract getMessageToSign(hashMessage: false): Uint8Array | Uint8Array[]
-  abstract getMessageToSign(hashMessage?: true): Uint8Array
+  // Returns the raw unsigned tx, which is used to sign the transaction.
+  abstract getMessageToSign(): Uint8Array | Uint8Array[]
+
+  // Returns the hashed unsigned tx, which is used to sign the transaction.
+  abstract getHashedMessageToSign(): Uint8Array
 
   abstract hash(): Uint8Array
 
@@ -316,7 +316,7 @@ export abstract class BaseTransaction<TransactionObject> {
    * const signedTx = tx.sign(privateKey)
    * ```
    */
-  sign(privateKey: Uint8Array): TransactionObject {
+  sign(privateKey: Uint8Array): Transaction[T] {
     if (privateKey.length !== 32) {
       const msg = this._errorMsg('Private key must be 32 bytes in length.')
       throw new Error(msg)
@@ -328,7 +328,7 @@ export abstract class BaseTransaction<TransactionObject> {
     // 2021-06-23
     let hackApplied = false
     if (
-      this.type === 0 &&
+      this.type === TransactionType.Legacy &&
       this.common.gteHardfork('spuriousDragon') &&
       !this.supports(Capability.EIP155ReplayProtection)
     ) {
@@ -336,7 +336,7 @@ export abstract class BaseTransaction<TransactionObject> {
       hackApplied = true
     }
 
-    const msgHash = this.getMessageToSign(true)
+    const msgHash = this.getHashedMessageToSign()
     const { v, r, s } = ecsign(msgHash, privateKey)
     const tx = this._processSignature(v, r, s)
 
@@ -354,10 +354,22 @@ export abstract class BaseTransaction<TransactionObject> {
   /**
    * Returns an object with the JSON representation of the transaction
    */
-  abstract toJSON(): JsonTx
+  toJSON(): JsonTx {
+    return {
+      type: bigIntToHex(BigInt(this.type)),
+      nonce: bigIntToHex(this.nonce),
+      gasLimit: bigIntToHex(this.gasLimit),
+      to: this.to !== undefined ? this.to.toString() : undefined,
+      value: bigIntToHex(this.value),
+      data: bytesToHex(this.data),
+      v: this.v !== undefined ? bigIntToHex(this.v) : undefined,
+      r: this.r !== undefined ? bigIntToHex(this.r) : undefined,
+      s: this.s !== undefined ? bigIntToHex(this.s) : undefined,
+    }
+  }
 
-  // Accept the v,r,s values from the `sign` method, and convert this into a TransactionObject
-  protected abstract _processSignature(v: bigint, r: Uint8Array, s: Uint8Array): TransactionObject
+  // Accept the v,r,s values from the `sign` method, and convert this into a T
+  protected abstract _processSignature(v: bigint, r: Uint8Array, s: Uint8Array): Transaction[T]
 
   /**
    * Does chain ID checks on common and returns a common
@@ -383,7 +395,7 @@ export abstract class BaseTransaction<TransactionObject> {
         if (Common.isSupportedChainId(chainIdBigInt)) {
           // No Common, chain ID supported by Common
           // -> Instantiate Common with chain ID
-          return new Common({ chain: chainIdBigInt, hardfork: this.DEFAULT_HARDFORK })
+          return new Common({ chain: chainIdBigInt })
         } else {
           // No Common, chain ID not supported by Common
           // -> Instantiate custom Common derived from DEFAULT_CHAIN
@@ -393,16 +405,14 @@ export abstract class BaseTransaction<TransactionObject> {
               networkId: chainIdBigInt,
               chainId: chainIdBigInt,
             },
-            { baseChain: this.DEFAULT_CHAIN, hardfork: this.DEFAULT_HARDFORK }
+            { baseChain: this.DEFAULT_CHAIN }
           )
         }
       }
     } else {
       // No chain ID provided
       // -> return Common provided or create new default Common
-      return (
-        common?.copy() ?? new Common({ chain: this.DEFAULT_CHAIN, hardfork: this.DEFAULT_HARDFORK })
-      )
+      return common?.copy() ?? new Common({ chain: this.DEFAULT_CHAIN })
     }
   }
 

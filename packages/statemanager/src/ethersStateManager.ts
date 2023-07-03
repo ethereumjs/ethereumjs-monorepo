@@ -1,38 +1,42 @@
 import { Trie } from '@ethereumjs/trie'
 import { Account, bigIntToHex, bytesToBigInt, bytesToHex, toBytes } from '@ethereumjs/util'
-import { debug } from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { ethers } from 'ethers'
 
-import { AccountCache, CacheType, StorageCache } from './cache'
+import { AccountCache, CacheType, StorageCache } from './cache/index.js'
+import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
-import type { Proof } from '.'
-import type {
-  AccessList,
-  AccountFields,
-  EVMStateManagerInterface,
-  StorageDump,
-} from '@ethereumjs/common'
+import type { Proof } from './index.js'
+import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
-
-const log = debug('statemanager')
+import type { Debugger } from 'debug'
+const { debug: createDebugLogger } = debugDefault
 
 export interface EthersStateManagerOpts {
-  provider: string | ethers.providers.StaticJsonRpcProvider | ethers.providers.JsonRpcProvider
+  provider: string | ethers.JsonRpcProvider
   blockTag: bigint | 'earliest'
 }
 
 export class EthersStateManager implements EVMStateManagerInterface {
-  private provider: ethers.providers.StaticJsonRpcProvider | ethers.providers.JsonRpcProvider
+  private provider: ethers.JsonRpcProvider
   private contractCache: Map<string, Uint8Array>
   private storageCache: StorageCache
   private blockTag: string
   _accountCache: AccountCache
-
+  originalStorageCache: OriginalStorageCache
+  private _debug: Debugger
+  private DEBUG: boolean
   constructor(opts: EthersStateManagerOpts) {
+    // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
+    // Additional window check is to prevent vite browser bundling (and potentially other) to break
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+
+    this._debug = createDebugLogger('statemanager:ethersStateManager')
     if (typeof opts.provider === 'string') {
-      this.provider = new ethers.providers.StaticJsonRpcProvider(opts.provider)
-    } else if (opts.provider instanceof ethers.providers.JsonRpcProvider) {
+      this.provider = new ethers.JsonRpcProvider(opts.provider)
+    } else if (opts.provider instanceof ethers.JsonRpcProvider) {
       this.provider = opts.provider
     } else {
       throw new Error(`valid JsonRpcProvider or url required; got ${opts.provider}`)
@@ -41,18 +45,26 @@ export class EthersStateManager implements EVMStateManagerInterface {
     this.blockTag = opts.blockTag === 'earliest' ? opts.blockTag : bigIntToHex(opts.blockTag)
 
     this.contractCache = new Map()
-    this.storageCache = new StorageCache({ size: 10000, type: CacheType.LRU })
-    this._accountCache = new AccountCache({ size: 100000, type: CacheType.LRU })
+    this.storageCache = new StorageCache({ size: 100000, type: CacheType.ORDERED_MAP })
+    this._accountCache = new AccountCache({ size: 100000, type: CacheType.ORDERED_MAP })
+
+    this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
   }
 
-  copy(): EthersStateManager {
+  shallowCopy(): EthersStateManager {
     const newState = new EthersStateManager({
       provider: this.provider,
       blockTag: BigInt(this.blockTag),
     })
-    ;(newState as any).contractCache = new Map(this.contractCache)
-    ;(newState as any).storageCache = new StorageCache({ size: 10000, type: CacheType.LRU })
-    ;(newState as any)._accountCache = this._accountCache
+    newState.contractCache = new Map(this.contractCache)
+    newState.storageCache = new StorageCache({
+      size: 100000,
+      type: CacheType.ORDERED_MAP,
+    })
+    newState._accountCache = new AccountCache({
+      size: 100000,
+      type: CacheType.ORDERED_MAP,
+    })
     return newState
   }
 
@@ -64,6 +76,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
   setBlockTag(blockTag: bigint | 'earliest'): void {
     this.blockTag = blockTag === 'earliest' ? blockTag : bigIntToHex(blockTag)
     this.clearCaches()
+    if (this.DEBUG) this._debug(`setting block tag to ${this.blockTag}`)
   }
 
   /**
@@ -123,7 +136,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
     }
 
     // Retrieve storage slot from provider if not found in cache
-    const storage = await this.provider.getStorageAt(
+    const storage = await this.provider.getStorage(
       address.toString(),
       bytesToBigInt(key),
       this.blockTag
@@ -178,7 +191,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * @param address - Address of the `account` to check
    */
   async accountExists(address: Address): Promise<boolean> {
-    log(`Verify if ${address.toString()} exists`)
+    if (this.DEBUG) this._debug?.(`verify if ${address.toString()} exists`)
 
     const localAccount = this._accountCache.get(address)
     if (localAccount !== undefined) return true
@@ -219,6 +232,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * @private
    */
   async getAccountFromProvider(address: Address): Promise<Account> {
+    if (this.DEBUG) this._debug(`retrieving account data from ${address.toString()} from provider`)
     const accountData = await this.provider.send('eth_getProof', [
       address.toString(),
       [],
@@ -239,6 +253,9 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * @param account - The account to store
    */
   async putAccount(address: Address, account: Account): Promise<void> {
+    if (this.DEBUG) {
+      this._debug(`putting account data for ${address.toString()}`)
+    }
     this._accountCache.put(address, account)
   }
 
@@ -250,6 +267,19 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * @param accountFields - Object containing account fields and values to modify
    */
   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
+    if (this.DEBUG) {
+      this._debug(`modifying account fields for ${address.toString()}`)
+      this._debug(
+        JSON.stringify(
+          accountFields,
+          (k, v) => {
+            if (k === 'nonce') return v.toString()
+            return v
+          },
+          2
+        )
+      )
+    }
     let account = await this.getAccount(address)
     if (!account) {
       account = new Account()
@@ -266,6 +296,9 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * @param address - Address of the account which should be deleted
    */
   async deleteAccount(address: Address) {
+    if (this.DEBUG) {
+      this._debug(`deleting account corresponding to ${address.toString()}`)
+    }
     this._accountCache.del(address)
   }
 
@@ -276,6 +309,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * @returns an EIP-1186 formatted proof
    */
   async getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
+    if (this.DEBUG) this._debug(`retrieving proof from provider for ${address.toString()}`)
     const proof = await this.provider.send('eth_getProof', [
       address.toString(),
       [storageSlots.map((slot) => bytesToHex(slot))],
@@ -314,7 +348,6 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * Partial implementation , called from the subclass.
    */
   async revert(): Promise<void> {
-    // setup cache checkpointing
     this._accountCache.revert()
   }
 
@@ -341,35 +374,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
     throw new Error('function not implemented')
   }
 
-  accountIsEmptyOrNonExistent(_address: Address): Promise<boolean> {
-    throw new Error('function not implemented')
-  }
-  getOriginalContractStorage(_address: Address, _key: Uint8Array): Promise<Uint8Array> {
-    throw new Error('function not implemented')
-  }
-  clearWarmedAccounts(): void {}
-  cleanupTouchedAccounts(): Promise<void> {
-    return Promise.resolve()
-  }
-  clearOriginalStorageCache(): void {
-    // throw new Error('function not implemented')
-  }
-  addWarmedAddress(_address: Uint8Array): void {
-    //  throw new Error('function not implemented')
-  }
-  isWarmedAddress(_address: Uint8Array): boolean {
-    throw new Error('function not implemented')
-  }
-  addWarmedStorage(_address: Uint8Array, _slot: Uint8Array): void {
-    //   throw new Error('function not implemented')
-  }
-  isWarmedStorage(_address: Uint8Array, _slot: Uint8Array): boolean {
-    throw new Error('function not implemented')
-  }
   generateCanonicalGenesis(_initState: any): Promise<void> {
     return Promise.resolve()
-  }
-  generateAccessList(_addressesRemoved: Address[], _addressesOnlyStorage: Address[]): AccessList {
-    throw new Error('function not implemented')
   }
 }

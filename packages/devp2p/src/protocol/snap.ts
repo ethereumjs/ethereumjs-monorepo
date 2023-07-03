@@ -1,13 +1,13 @@
 import { RLP, utils } from '@ethereumjs/rlp'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { bytesToHex } from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 
-import { formatLogData } from '../util'
+import { formatLogData } from '../util.js'
 
-import { EthProtocol, Protocol } from './protocol'
+import { EthProtocol, Protocol } from './protocol.js'
 
-import type { Peer } from '../rlpx/peer'
-import type { SendMethod } from './protocol'
+import type { Peer } from '../rlpx/peer.js'
+import type { SendMethod } from './protocol.js'
 
 export class SNAP extends Protocol {
   constructor(version: number, peer: Peer, send: SendMethod) {

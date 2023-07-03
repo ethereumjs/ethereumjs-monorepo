@@ -19,8 +19,15 @@
   "contributors": [
     "g11tech <gajinder@g11.in>"
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "type": "commonjs",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "files": [
     "dist",
     "src"
@@ -28,16 +35,15 @@
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "../../config/cli/coverage.sh",
+    "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "docs:build": "typedoc --options typedoc.js",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh && npm run test:node",
-    "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "karma start karma.conf.js",
-    "test:node": "npm run tape -- 'test/**/*.spec.ts'",
+    "test:browser": "npx vitest run --config=vitest.config.browser.ts --browser.name=webkit --browser.provider=playwright --browser.headless",
+    "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
@@ -45,9 +51,9 @@
     "@ethereumjs/rlp": "^4.0.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.0.0",
-    "ethers": "^5.7.1",
+    "ethers": "^6.4.0",
     "js-sdsl": "^4.1.4",
-    "lru-cache": "^7.18.3"
+    "lru-cache": "^10.0.0"
   },
   "devDependencies": {
     "@ethereumjs/block": "^4.2.2",
@@ -66,7 +72,6 @@
     "karma-typescript": "^5.5.3",
     "nyc": "^15.1.0",
     "standard": "^10.0.0",
-    "tape": "^5.3.1",
     "ts-node": "^10.2.1",
     "typescript": "^4.4.2"
   }

@@ -1,18 +1,26 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Address, TypeOutput, bigIntToBytes, bytesToBigInt, toType } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
-import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import {
+  Address,
+  TypeOutput,
+  bigIntToBytes,
+  bytesToBigInt,
+  equalsBytes,
+  hexToBytes,
+  toType,
+} from '@ethereumjs/util'
+import debugDefault from 'debug'
 
-import type { Blockchain } from '..'
-import type { Consensus, ConsensusOptions } from './interface'
+import type { Blockchain } from '../index.js'
+import type { Consensus, ConsensusOptions } from '../types.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
+const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('blockchain:clique')
 
 // Magic nonce number to vote on adding a new signer
-export const CLIQUE_NONCE_AUTH = hexToBytes('ffffffffffffffff')
+export const CLIQUE_NONCE_AUTH = hexToBytes('0xffffffffffffffff')
 // Magic nonce number to vote on removing a signer.
 export const CLIQUE_NONCE_DROP = new Uint8Array(8)
 
@@ -566,7 +574,7 @@ export class CliqueConsensus implements Consensus {
     const signers = RLP.decode(blockSigners as Uint8Array) as [Uint8Array, Uint8Array][]
     return signers.map((s) => {
       const blockNum = bytesToBigInt(s[0] as Uint8Array)
-      const signer = new Address(s[1] as any)
+      const signer = new Address(s[1])
       return [blockNum, signer]
     }) as CliqueLatestBlockSigners
   }

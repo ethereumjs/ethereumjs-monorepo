@@ -1,15 +1,15 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 import { checkError } from '../util'
 
-import type { FullEthereumService } from '../../../lib/service'
+import type { FullEthereumService } from '../../../src/service'
 
 const method = 'eth_getTransactionCount'
 
@@ -46,7 +46,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes, false)
 
   // construct block with tx
-  const tx = Transaction.fromTxData({ gasLimit: 53000 }, { common, freeze: false })
+  const tx = LegacyTransaction.fromTxData({ gasLimit: 53000 }, { common, freeze: false })
   tx.getSenderAddress = () => {
     return address
   }

@@ -1,12 +1,17 @@
 import { Hardfork } from '@ethereumjs/common'
-import { bigIntToBytes, setLengthLeft, setLengthRight } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
+import {
+  bigIntToBytes,
+  bytesToHex,
+  equalsBytes,
+  setLengthLeft,
+  setLengthRight,
+} from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { EvmError } from '../exceptions'
+import { EvmError } from '../exceptions.js'
 
-import type { ERROR } from '../exceptions'
-import type { RunState } from '../interpreter'
+import type { ERROR } from '../exceptions.js'
+import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
 
 const MASK_160 = (BigInt(1) << BigInt(160)) - BigInt(1)
@@ -180,7 +185,7 @@ export function subMemUsage(runState: RunState, offset: bigint, length: bigint, 
 }
 
 /**
- * Writes data returned by eei.call* methods to memory
+ * Writes data returned by evm.call* methods to memory
  */
 export function writeCallOutput(runState: RunState, outOffset: bigint, outLength: bigint) {
   const returnData = runState.interpreter.getReturnData()

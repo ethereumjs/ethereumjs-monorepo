@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 
 import { Block } from '@ethereumjs/block'
-import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
+import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
   bytesToHex,
-  bytesToPrefixedHexString,
-  hexStringToBytes,
+  hexToBytes,
   initKZG,
+  parseGethGenesisState,
   randomBytes,
   short,
   toBytes,
@@ -20,25 +20,25 @@ import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import { Level } from 'level'
 import { homedir } from 'os'
 import * as path from 'path'
-import * as readline from 'readline'
+import readline from 'readline'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
-import { EthereumClient } from '../lib/client'
-import { Config, DataDirectory, SyncMode } from '../lib/config'
-import { LevelDB } from '../lib/execution/level'
-import { getLogger } from '../lib/logging'
-import { Event } from '../lib/types'
-import { parseMultiaddrs } from '../lib/util'
+import { EthereumClient } from '../src/client'
+import { Config, DataDirectory, SyncMode } from '../src/config'
+import { LevelDB } from '../src/execution/level'
+import { getLogger } from '../src/logging'
+import { Event } from '../src/types'
+import { parseMultiaddrs } from '../src/util'
 
 import { helprpc, startRPCServers } from './startRpc'
 
-import type { Logger } from '../lib/logging'
-import type { FullEthereumService } from '../lib/service'
-import type { ClientOpts } from '../lib/types'
+import type { Logger } from '../src/logging'
+import type { FullEthereumService } from '../src/service'
+import type { ClientOpts } from '../src/types'
 import type { RPCArgs } from './startRpc'
 import type { BlockBytes } from '@ethereumjs/block'
-import type { GenesisState } from '@ethereumjs/blockchain/dist/genesisStates'
+import type { GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
 type Account = [address: Address, privateKey: Uint8Array]
@@ -86,6 +86,10 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   })
   .option('gethGenesis', {
     describe: 'Import a geth genesis file for running a custom network',
+    coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+  })
+  .option('trustedSetup', {
+    describe: 'A custom trusted setup txt file for initializing the kzg library',
     coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
   })
   .option('mergeForkIdPostMerge', {
@@ -482,7 +486,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
       try {
         const block = Block.fromValuesArray(buf.data as BlockBytes, {
           common: config.chainCommon,
-          hardforkByBlockNumber: true,
+          setHardfork: true,
         })
         blocks.push(block)
         buf = RLP.decode(buf.remainder, true)
@@ -620,7 +624,7 @@ async function inputAccounts() {
       }
     } else {
       const acc = readFileSync(path.resolve(args.unlock!), 'utf-8').replace(/(\r\n|\n|\r)/gm, '')
-      const privKey = hexStringToBytes(acc)
+      const privKey = hexToBytes('0x' + acc) // See docs: acc has to be non-zero prefixed in the file
       const derivedAddress = Address.fromPrivateKey(privKey)
       accounts.push([derivedAddress, privKey])
     }
@@ -641,7 +645,7 @@ function generateAccount(): Account {
   console.log('='.repeat(50))
   console.log('Account generated for mining blocks:')
   console.log(`Address: ${address}`)
-  console.log(`Private key: ${bytesToPrefixedHexString(privKey)}`)
+  console.log(`Private key: ${bytesToHex(privKey)}`)
   console.log('WARNING: Do not use this account for mainnet funds')
   console.log('='.repeat(50))
   return [address, privKey]
@@ -658,7 +662,7 @@ async function run() {
 
   // TODO sharding: Just initialize kzg library now, in future it can be optimized to be
   // loaded and initialized on the sharding hardfork activation
-  initKZG(kzg, __dirname + '/../lib/trustedSetups/devnet4.txt')
+  initKZG(kzg, args.trustedSetup ?? __dirname + '/../src/trustedSetups/devnet6.txt')
   // Give network id precedence over network name
   const chain = args.networkId ?? args.network ?? Chain.Mainnet
 

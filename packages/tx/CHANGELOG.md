@@ -159,7 +159,7 @@ If you want to prevent these kind of implicit HF switches in the future it is li
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-const tx = Transaction.fromTxData(
+const tx = LegacyTransaction.fromTxData(
   {
     // Provide your tx data here or use default values
   },
@@ -231,7 +231,7 @@ If you want to prevent these kind of implicit HF switches in the future it is li
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
-const tx = Transaction.fromTxData(
+const tx = LegacyTransaction.fromTxData(
   {
     // Provide your tx data here or use default values
   },
@@ -341,7 +341,7 @@ import { Transaction } from '@ethereumjs/tx'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.ArrowGlacier })
-const tx = Transaction.fromTxData({}, { common })
+const tx = LegacyTransaction.fromTxData({}, { common })
 ```
 
 ### Additional Error Context for Error Messages
@@ -410,7 +410,7 @@ const txData = {
   value: 1,
 }
 
-const tx = Transaction.fromTxData(txData, { common })
+const tx = LegacyTransaction.fromTxData(txData, { common })
 const signedTx = tx.sign(Buffer.from(PRIV_KEY, 'hex'))
 ```
 
@@ -511,7 +511,7 @@ import Common from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 
 const common = new Common({ chain: 'goerli', hardfork: 'berlin' })
-const tx = Transaction.fromTxData({}, { common })
+const tx = LegacyTransaction.fromTxData({}, { common })
 
 const message = tx.getMessageToSign(false)
 const serializedMessage = rlp.encode(message) // use this for the ledger input
@@ -712,7 +712,7 @@ const txData = {
   gasLimit: 10000000,
   value: 42,
 }
-const tx = Transaction.fromTxData(txData)
+const tx = LegacyTransaction.fromTxData(txData)
 
 // Initializing from array of 0x-prefixed strings.
 // First, convert to array of Buffers.
@@ -825,7 +825,7 @@ const txData = {
   gasLimit: 10000000,
   value: 42,
 }
-const tx = Transaction.fromTxData(txData)
+const tx = LegacyTransaction.fromTxData(txData)
 
 // Initializing from array of 0x-prefixed strings.
 // First, convert to array of Buffers.

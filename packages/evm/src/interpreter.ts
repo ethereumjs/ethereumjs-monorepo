@@ -1,21 +1,23 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { Account, MAX_UINT64, bigIntToHex, bytesToBigInt, bytesToHex } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 
-import { EOF } from './eof'
-import { ERROR, EvmError } from './exceptions'
-import { Memory } from './memory'
-import { Message } from './message'
-import { trap } from './opcodes'
-import { Stack } from './stack'
+import { EOF } from './eof.js'
+import { ERROR, EvmError } from './exceptions.js'
+import { Memory } from './memory.js'
+import { Message } from './message.js'
+import { trap } from './opcodes/index.js'
+import { Stack } from './stack.js'
 
-import type { EVM, EVMResult } from './evm'
-import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes'
-import type { Block, Blockchain, Log } from './types'
+import type { EVM, EVMResult } from './evm.js'
+import type { Journal } from './journal.js'
+import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes/index.js'
+import type { Block, Blockchain, Log } from './types.js'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
+const { debug: createDebugLogger } = debugDefault
 
-const debugGas = createDebugLogger('evm:eei:gas')
+const debugGas = createDebugLogger('evm:gas')
 
 export interface InterpreterOpts {
   pc?: number
@@ -28,9 +30,14 @@ export interface RunResult {
   logs: Log[]
   returnValue?: Uint8Array
   /**
-   * A map from the accounts that have self-destructed to the addresses to send their funds to
+   * A set of accounts to selfdestruct
    */
-  selfdestruct: { [k: string]: Uint8Array }
+  selfdestruct: Set<string>
+
+  /**
+   * A map which tracks which addresses were created (used in EIP 6780)
+   */
+  createdAddresses?: Set<string>
 }
 
 export interface Env {
@@ -108,6 +115,7 @@ export class Interpreter {
   protected _stateManager: EVMStateManagerInterface
   protected _common: Common
   public _evm: EVM
+  public journal: Journal
   _env: Env
 
   // Keep track of this Interpreter run result
@@ -117,15 +125,14 @@ export class Interpreter {
   // Opcode debuggers (e.g. { 'push': [debug Object], 'sstore': [debug Object], ...})
   private opDebuggers: { [key: string]: (debug: string) => void } = {}
 
-  // TODO remove eei from constructor this can be directly read from EVM
-  // EEI gets created on EVM creation and will not be re-instantiated
   // TODO remove gasLeft as constructor argument
   constructor(
     evm: EVM,
     stateManager: EVMStateManagerInterface,
     blockchain: Blockchain,
     env: Env,
-    gasLeft: bigint
+    gasLeft: bigint,
+    journal: Journal
   ) {
     this._evm = evm
     this._stateManager = stateManager
@@ -149,11 +156,12 @@ export class Interpreter {
       gasLeft,
       returnBytes: new Uint8Array(0),
     }
+    this.journal = journal
     this._env = env
     this._result = {
       logs: [],
       returnValue: undefined,
-      selfdestruct: {},
+      selfdestruct: new Set(),
     }
   }
 
@@ -392,10 +400,6 @@ export class Interpreter {
   }
 
   /**
-   * Logic extracted from EEI
-   */
-
-  /**
    * Subtracts an amount from the gas counter.
    * @param amount - Amount of gas to consume
    * @param context - Usage context for debugging
@@ -484,7 +488,7 @@ export class Interpreter {
    * Store 256-bit a value in memory to persistent storage.
    */
   async storageStore(key: Uint8Array, value: Uint8Array): Promise<void> {
-    await this._stateManager.putContractStorage(this._env.address, key, value, true)
+    await this._stateManager.putContractStorage(this._env.address, key, value)
     const account = await this._stateManager.getAccount(this._env.address)
     if (!account) {
       throw new Error('could not read account while persisting memory')
@@ -499,7 +503,7 @@ export class Interpreter {
    */
   async storageLoad(key: Uint8Array, original = false): Promise<Uint8Array> {
     if (original) {
-      return this._stateManager.getOriginalContractStorage(this._env.address, key)
+      return this._stateManager.originalStorageCache.get(this._env.address, key)
     } else {
       return this._stateManager.getContractStorage(this._env.address, key)
     }
@@ -837,9 +841,17 @@ export class Interpreter {
   }
 
   async _baseCall(msg: Message): Promise<bigint> {
-    const selfdestruct = { ...this._result.selfdestruct }
+    const selfdestruct = new Set(this._result.selfdestruct)
     msg.selfdestruct = selfdestruct
     msg.gasRefund = this._runState.gasRefund
+
+    // empty the return data Uint8Array
+    this._runState.returnBytes = new Uint8Array(0)
+    let createdAddresses: Set<string>
+    if (this._common.isActivatedEIP(6780)) {
+      createdAddresses = new Set(this._result.createdAddresses)
+      msg.createdAddresses = createdAddresses
+    }
 
     // empty the return data Uint8Array
     this._runState.returnBytes = new Uint8Array(0)
@@ -871,7 +883,15 @@ export class Interpreter {
     }
 
     if (!results.execResult.exceptionError) {
-      Object.assign(this._result.selfdestruct, selfdestruct)
+      for (const addressToSelfdestructHex of selfdestruct) {
+        this._result.selfdestruct.add(addressToSelfdestructHex)
+      }
+      if (this._common.isActivatedEIP(6780)) {
+        // copy over the items to result via iterator
+        for (const item of createdAddresses!) {
+          this._result.createdAddresses!.add(item)
+        }
+      }
       // update stateRoot on current contract
       const account = await this._stateManager.getAccount(this._env.address)
       if (!account) {
@@ -893,7 +913,7 @@ export class Interpreter {
     data: Uint8Array,
     salt?: Uint8Array
   ): Promise<bigint> {
-    const selfdestruct = { ...this._result.selfdestruct }
+    const selfdestruct = new Set(this._result.selfdestruct)
     const caller = this._env.address
     const depth = this._env.depth + 1
 
@@ -914,7 +934,7 @@ export class Interpreter {
     }
 
     this._env.contract.nonce += BigInt(1)
-    await this._stateManager.putAccount(this._env.address, this._env.contract, true)
+    await this.journal.putAccount(this._env.address, this._env.contract)
 
     if (this._common.isActivatedEIP(3860)) {
       if (
@@ -937,6 +957,12 @@ export class Interpreter {
       versionedHashes: this._env.versionedHashes,
     })
 
+    let createdAddresses: Set<string>
+    if (this._common.isActivatedEIP(6780)) {
+      createdAddresses = new Set(this._result.createdAddresses)
+      message.createdAddresses = createdAddresses
+    }
+
     const results = await this._evm.runCall({ message })
 
     if (results.execResult.logs) {
@@ -958,7 +984,15 @@ export class Interpreter {
       !results.execResult.exceptionError ||
       results.execResult.exceptionError.error === ERROR.CODESTORE_OUT_OF_GAS
     ) {
-      Object.assign(this._result.selfdestruct, selfdestruct)
+      for (const addressToSelfdestructHex of selfdestruct) {
+        this._result.selfdestruct.add(addressToSelfdestructHex)
+      }
+      if (this._common.isActivatedEIP(6780)) {
+        // copy over the items to result via iterator
+        for (const item of createdAddresses!) {
+          this._result.createdAddresses!.add(item)
+        }
+      }
       // update stateRoot on current contract
       const account = await this._stateManager.getAccount(this._env.address)
       if (!account) {
@@ -1000,11 +1034,11 @@ export class Interpreter {
 
   async _selfDestruct(toAddress: Address): Promise<void> {
     // only add to refund if this is the first selfdestruct for the address
-    if (this._result.selfdestruct[bytesToHex(this._env.address.bytes)] === undefined) {
+    if (!this._result.selfdestruct.has(bytesToHex(this._env.address.bytes))) {
       this.refundGas(this._common.param('gasPrices', 'selfdestructRefund'))
     }
 
-    this._result.selfdestruct[bytesToHex(this._env.address.bytes)] = toAddress.bytes
+    this._result.selfdestruct.add(bytesToHex(this._env.address.bytes))
 
     // Add to beneficiary balance
     let toAccount = await this._stateManager.getAccount(toAddress)
@@ -1012,7 +1046,7 @@ export class Interpreter {
       toAccount = new Account()
     }
     toAccount.balance += this._env.contract.balance
-    await this._stateManager.putAccount(toAddress, toAccount, true)
+    await this.journal.putAccount(toAddress, toAccount)
 
     // Subtract from contract balance
     await this._stateManager.modifyAccountFields(this._env.address, {
@@ -1039,8 +1073,6 @@ export class Interpreter {
   }
 
   private _getReturnCode(results: EVMResult) {
-    // This preserves the previous logic, but seems to contradict the EEI spec
-    // https://github.com/ewasm/design/blob/38eeded28765f3e193e12881ea72a6ab807a3371/eth_interface.md
     if (results.execResult.exceptionError) {
       return BigInt(0)
     } else {

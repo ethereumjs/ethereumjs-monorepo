@@ -1,8 +1,7 @@
-import type { Consensus } from './consensus'
-import type { GenesisState } from './genesisStates'
+import type { Blockchain } from '.'
 import type { Block, BlockHeader } from '@ethereumjs/block'
-import type { Common } from '@ethereumjs/common'
-import type { DB, DBObject } from '@ethereumjs/util'
+import type { Common, ConsensusAlgorithm } from '@ethereumjs/common'
+import type { DB, DBObject, GenesisState } from '@ethereumjs/util'
 
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
@@ -47,7 +46,7 @@ export interface BlockchainInterface {
   /**
    * Returns a copy of the blockchain
    */
-  copy(): BlockchainInterface
+  shallowCopy(): BlockchainInterface
 
   /**
    * Validates a block header, throwing if invalid. It is being validated against the reported `parentHash`.
@@ -61,7 +60,15 @@ export interface BlockchainInterface {
    *
    * @param name - Optional name of the iterator head (default: 'vm')
    */
-  getIteratorHead?(name?: string): Promise<Block>
+  getIteratorHead(name?: string): Promise<Block>
+
+  /**
+   * Set header hash of a certain `tag`.
+   * When calling the iterator, the iterator will start running the first child block after the header hash currently stored.
+   * @param tag - The tag to save the headHash to
+   * @param headHash - The head hash to save
+   */
+  setIteratorHead(tag: string, headHash: Uint8Array): Promise<void>
 
   /**
    * Gets total difficulty for a block specified by hash and number
@@ -72,12 +79,12 @@ export interface BlockchainInterface {
    * Returns the genesis state of the blockchain.
    * All values are provided as hex-prefixed strings.
    */
-  genesisState?(): GenesisState
+  genesisState(): GenesisState
 
   /**
    * Returns the latest full block in the canonical chain.
    */
-  getCanonicalHeadBlock?(): Promise<Block>
+  getCanonicalHeadBlock(): Promise<Block>
 }
 
 /**
@@ -167,4 +174,48 @@ export interface BlockchainOptions {
    * Optional custom consensus that implements the {@link Consensus} class
    */
   consensus?: Consensus
+}
+
+/**
+ * Interface that a consensus class needs to implement.
+ */
+export interface Consensus {
+  algorithm: ConsensusAlgorithm | string
+  /**
+   * Initialize genesis for consensus mechanism
+   * @param genesisBlock genesis block
+   */
+  genesisInit(genesisBlock: Block): Promise<void>
+
+  /**
+   * Set up consensus mechanism
+   */
+  setup({ blockchain }: ConsensusOptions): Promise<void>
+
+  /**
+   * Validate block consensus parameters
+   * @param block block to be validated
+   */
+  validateConsensus(block: Block): Promise<void>
+
+  validateDifficulty(header: BlockHeader): Promise<void>
+
+  /**
+   * Update consensus on new block
+   * @param block new block
+   * @param commonAncestor common ancestor block header (optional)
+   * @param ancientHeaders array of ancestor block headers (optional)
+   */
+  newBlock(
+    block: Block,
+    commonAncestor?: BlockHeader,
+    ancientHeaders?: BlockHeader[]
+  ): Promise<void>
+}
+
+/**
+ * Options when initializing a class that implements the Consensus interface.
+ */
+export interface ConsensusOptions {
+  blockchain: Blockchain
 }

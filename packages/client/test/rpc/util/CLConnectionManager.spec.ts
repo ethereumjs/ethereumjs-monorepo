@@ -1,10 +1,10 @@
 import { Common, parseGethGenesis } from '@ethereumjs/common'
 import * as tape from 'tape'
 
-import { Config } from '../../../lib'
-import { CLConnectionManager } from '../../../lib/rpc/util/CLConnectionManager'
-import { Event } from '../../../lib/types'
-import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
+import { Config } from '../../../src'
+import { CLConnectionManager } from '../../../src/rpc/util/CLConnectionManager'
+import { Event } from '../../../src/types'
+import * as genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 
 const payload = {
   payload: {
@@ -49,7 +49,7 @@ tape('[CLConnectionManager]', (t) => {
       chain: params.name,
       customChains: [params],
     })
-    common.setHardforkByBlockNumber(0)
+    common.setHardforkBy({ blockNumber: 0 })
     config = new Config({ common })
     manager = new CLConnectionManager({ config })
     st.ok(manager.running, 'starts on instantiation if hardfork is MergeForkBlock')
@@ -61,7 +61,7 @@ tape('[CLConnectionManager]', (t) => {
     })
     config = new Config({ common })
     manager = new CLConnectionManager({ config })
-    config.chainCommon.setHardforkByBlockNumber(11)
+    config.chainCommon.setHardforkBy({ blockNumber: 11 })
     config.events.on(Event.CHAIN_UPDATED, () => {
       st.ok(manager.running, 'connection manager started on chain update on mergeBlock')
     })

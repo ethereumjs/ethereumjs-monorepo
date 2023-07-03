@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import {
@@ -8,35 +8,29 @@ import {
   KECCAK256_NULL_S,
   KECCAK256_RLP,
   KECCAK256_RLP_S,
-  RIPEMD160_ADDRESS_STRING,
   bigIntToHex,
   bytesToHex,
-  bytesToPrefixedHexString,
+  bytesToUnprefixedHex,
   concatBytes,
   equalsBytes,
-  hexStringToBytes,
+  hexToBytes,
   setLengthLeft,
   short,
   toBytes,
   unpadBytes,
+  unprefixedHexToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { AccountCache, CacheType, StorageCache } from './cache'
-import { Journaling } from './cache/journaling'
+import { AccountCache, CacheType, StorageCache } from './cache/index.js'
+import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
-import type {
-  AccessListItem,
-  AccountFields,
-  EVMStateManagerInterface,
-  StorageDump,
-} from '@ethereumjs/common'
+import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-import type { AccessList } from 'ethers/lib/utils'
+const { debug: createDebugLogger } = debugDefault
 
 export type StorageProof = {
   key: PrefixedHexString
@@ -148,31 +142,11 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   _accountCache?: AccountCache
   _storageCache?: StorageCache
 
+  originalStorageCache: OriginalStorageCache
+
   _trie: Trie
   _storageTries: { [key: string]: Trie }
   _codeCache: { [key: string]: Uint8Array }
-
-  // EIP-2929 address/storage trackers.
-  // This maps both the accessed accounts and the accessed storage slots.
-  // It is a Map(Address => StorageSlots)
-  // It is possible that the storage slots set is empty. This means that the address is warm.
-  // It is not possible to have an accessed storage slot on a cold address (which is why this structure works)
-  // Each call level tracks their access themselves.
-  // In case of a commit, copy everything if the value does not exist, to the level above
-  // In case of a revert, discard any warm slots.
-  //
-  // TODO: Switch to diff based version similar to _touchedStack
-  // (_accessStorage representing the actual state, separate _accessedStorageStack dictionary
-  // tracking the access diffs per commit)
-  protected _accessedStorage: Map<string, Set<string>>[]
-
-  // Backup structure for address/storage tracker frames on reverts
-  // to also include on access list generation
-  protected _accessedStorageReverted: Map<string, Set<string>>[]
-
-  protected _originalStorageCache: Map<string, Map<string, Uint8Array>>
-
-  protected readonly touchedJournal: Journaling<string>
 
   protected readonly _prefixCodeHashes: boolean
   protected readonly _accountCacheSettings: CacheSettings
@@ -197,7 +171,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    */
   constructor(opts: DefaultStateManagerOpts = {}) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
-    this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
+    // Additional window check is to prevent vite browser bundling (and potentially other) to break
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
 
     this._debug = createDebugLogger('statemanager:statemanager')
 
@@ -209,11 +185,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     this._storageTries = {}
     this._codeCache = {}
 
-    this._originalStorageCache = new Map()
-    this._accessedStorage = [new Map()]
-    this._accessedStorageReverted = [new Map()]
-
-    this.touchedJournal = new Journaling<string>()
+    this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
 
     this._prefixCodeHashes = opts.prefixCodeHashes ?? true
     this._accountCacheSettings = {
@@ -267,26 +239,11 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   }
 
   /**
-   * Checks if the `account` corresponding to `address`
-   * is empty or non-existent as defined in
-   * EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
-   * @param address - Address to check
-   */
-  async accountIsEmptyOrNonExistent(address: Address): Promise<boolean> {
-    const account = await this.getAccount(address)
-    if (account === undefined || account.isEmpty()) {
-      return true
-    }
-    return false
-  }
-
-  /**
    * Saves an account into state under the provided `address`.
    * @param address - Address under which to store `account`
    * @param account - The account to store or undefined if to be deleted
-   * @param touch - If the account should be touched or not (for state clearing, see TangerineWhistle / SpuriousDragon hardforks)
    */
-  async putAccount(address: Address, account: Account | undefined, touch = false): Promise<void> {
+  async putAccount(address: Address, account: Account | undefined): Promise<void> {
     if (this.DEBUG) {
       this._debug(
         `Save account address=${address} nonce=${account?.nonce} balance=${
@@ -309,9 +266,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       } else {
         this._accountCache!.del(address)
       }
-    }
-    if (touch) {
-      this.touchAccount(address)
     }
   }
 
@@ -337,9 +291,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   /**
    * Deletes an account from state under the provided `address`.
    * @param address - Address of the account which should be deleted
-   * @param touch - If the account should be touched or not (for state clearing, see TangerineWhistle / SpuriousDragon hardforks)
    */
-  async deleteAccount(address: Address, touch = false) {
+  async deleteAccount(address: Address) {
     if (this.DEBUG) {
       this._debug(`Delete account ${address}`)
     }
@@ -351,41 +304,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (!this._storageCacheSettings.deactivate) {
       this._storageCache?.clearContractStorage(address)
     }
-    if (touch) {
-      this.touchAccount(address)
-    }
-  }
-
-  /**
-   * Marks an account as touched, according to the definition
-   * in [EIP-158](https://eips.ethereum.org/EIPS/eip-158).
-   * This happens when the account is triggered for a state-changing
-   * event. Touched accounts that are empty will be cleared
-   * at the end of the tx.
-   */
-  protected touchAccount(address: Address): void {
-    this.touchedJournal.addJournalItem(address.toString().slice(2))
-  }
-
-  /**
-   * Removes accounts form the state trie that have been touched,
-   * as defined in EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
-   */
-  async cleanupTouchedAccounts(): Promise<void> {
-    if (this._common.gteHardfork(Hardfork.SpuriousDragon) === true) {
-      const touchedArray = Array.from(this.touchedJournal.journal)
-      for (const addressHex of touchedArray) {
-        const address = new Address(hexToBytes(addressHex))
-        const empty = await this.accountIsEmptyOrNonExistent(address)
-        if (empty) {
-          await this.deleteAccount(address)
-          if (this.DEBUG) {
-            this._debug(`Cleanup touched account address=${address} (>= SpuriousDragon)`)
-          }
-        }
-      }
-    }
-    this.touchedJournal.clear()
   }
 
   /**
@@ -404,7 +322,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
     await this._trie.database().put(key, value)
 
-    const keyHex = bytesToHex(key)
+    const keyHex = bytesToUnprefixedHex(key)
     this._codeCache[keyHex] = value
 
     if (this.DEBUG) {
@@ -434,7 +352,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       ? concatBytes(CODEHASH_PREFIX, account.codeHash)
       : account.codeHash
 
-    const keyHex = bytesToHex(key)
+    const keyHex = bytesToUnprefixedHex(key)
     if (keyHex in this._codeCache) {
       return this._codeCache[keyHex]
     } else {
@@ -451,10 +369,10 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    */
   private async _getStorageTrie(address: Address, account: Account): Promise<Trie> {
     // from storage cache
-    const addressHex = bytesToHex(address.bytes)
+    const addressHex = bytesToUnprefixedHex(address.bytes)
     const storageTrie = this._storageTries[addressHex]
     if (storageTrie === undefined) {
-      const storageTrie = this._trie.copy(false)
+      const storageTrie = this._trie.shallowCopy(false)
       storageTrie.root(account.storageRoot)
       storageTrie.flushCheckpoints()
       this._storageTries[addressHex] = storageTrie
@@ -491,51 +409,10 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     const trie = await this._getStorageTrie(address, account)
     const value = await trie.get(key)
     if (!this._storageCacheSettings.deactivate) {
-      this._storageCache?.put(address, key, value ?? hexStringToBytes('80'))
+      this._storageCache?.put(address, key, value ?? hexToBytes('0x80'))
     }
     const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
     return decoded
-  }
-
-  /**
-   * Caches the storage value associated with the provided `address` and `key`
-   * on first invocation, and returns the cached (original) value from then
-   * onwards. This is used to get the original value of a storage slot for
-   * computing gas costs according to EIP-1283.
-   * @param address - Address of the account to get the storage for
-   * @param key - Key in the account's storage to get the value for. Must be 32 bytes long.
-   */
-  async getOriginalContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
-    if (key.length !== 32) {
-      throw new Error('Storage key must be 32 bytes long')
-    }
-
-    const addressHex = address.toString()
-    const keyHex = bytesToHex(key)
-
-    let map: Map<string, Uint8Array>
-    if (!this._originalStorageCache.has(addressHex)) {
-      map = new Map()
-      this._originalStorageCache.set(addressHex, map)
-    } else {
-      map = this._originalStorageCache.get(addressHex)!
-    }
-
-    if (map.has(keyHex)) {
-      return map.get(keyHex)!
-    } else {
-      const current = await this.getContractStorage(address, key)
-      map.set(keyHex, current)
-      return current
-    }
-  }
-
-  /**
-   * Clears the original storage cache. Refer to {@link StateManager.getOriginalContractStorage}
-   * for more explanation. Alias of the internal {@link StateManager._clearOriginalStorageCache}
-   */
-  clearOriginalStorageCache(): void {
-    this._originalStorageCache = new Map()
   }
 
   /**
@@ -555,7 +432,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
       modifyTrie(storageTrie, async () => {
         // update storage cache
-        const addressHex = bytesToHex(address.bytes)
+        const addressHex = bytesToUnprefixedHex(address.bytes)
         this._storageTries[addressHex] = storageTrie
 
         // update contract storageRoot
@@ -599,14 +476,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param value - Value to set at `key` for account corresponding to `address`.
    * Cannot be more than 32 bytes. Leading zeros are stripped.
    * If it is a empty or filled with zeros, deletes the value.
-   * @param touch - If the account should be touched or not (for state clearing, see TangerineWhistle / SpuriousDragon hardforks)
    */
-  async putContractStorage(
-    address: Address,
-    key: Uint8Array,
-    value: Uint8Array,
-    touch = false
-  ): Promise<void> {
+  async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')
     }
@@ -627,17 +498,13 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     } else {
       await this._writeContractStorage(address, account, key, value)
     }
-    if (touch) {
-      this.touchAccount(address)
-    }
   }
 
   /**
    * Clears all storage entries for the account corresponding to `address`.
-   * @param address -  Address to clear the storage of
-   * @param touch - If the account should be touched or not (for state clearing, see TangerineWhistle / SpuriousDragon hardforks)
+   * @param address - Address to clear the storage of
    */
-  async clearContractStorage(address: Address, touch = false): Promise<void> {
+  async clearContractStorage(address: Address): Promise<void> {
     let account = await this.getAccount(address)
     if (!account) {
       account = new Account()
@@ -647,9 +514,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       storageTrie.root(storageTrie.EMPTY_TRIE_ROOT)
       done()
     })
-    if (touch) {
-      this.touchAccount(address)
-    }
   }
 
   /**
@@ -661,11 +525,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     this._trie.checkpoint()
     this._storageCache?.checkpoint()
     this._accountCache?.checkpoint()
-    if (this._common.gteHardfork(Hardfork.Berlin)) {
-      this._accessedStorage.push(new Map())
-    }
     this._checkpointCount++
-    this.touchedJournal.checkpoint()
   }
 
   /**
@@ -677,19 +537,11 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     await this._trie.commit()
     this._storageCache?.commit()
     this._accountCache?.commit()
-    if (this._common.gteHardfork(Hardfork.Berlin)) {
-      // Copy the contents of the map of the current level to a map higher.
-      const storageMap = this._accessedStorage.pop()
-      if (storageMap) {
-        this._accessedStorageMerge(this._accessedStorage, storageMap)
-      }
-    }
-    this.touchedJournal.commit()
     this._checkpointCount--
 
     if (this._checkpointCount === 0) {
       await this.flush()
-      this.clearOriginalStorageCache()
+      this.originalStorageCache.clear()
     }
 
     if (this.DEBUG) {
@@ -708,20 +560,12 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     this._accountCache?.revert()
     this._storageTries = {}
     this._codeCache = {}
-    if (this._common.gteHardfork(Hardfork.Berlin)) {
-      // setup cache checkpointing
-      const lastItem = this._accessedStorage.pop()
-      if (lastItem) {
-        this._accessedStorageReverted.push(lastItem)
-      }
-    }
-    this.touchedJournal.revert(RIPEMD160_ADDRESS_STRING)
 
     this._checkpointCount--
 
     if (this._checkpointCount === 0) {
       await this.flush()
-      this.clearOriginalStorageCache()
+      this.originalStorageCache.clear()
     }
   }
 
@@ -734,7 +578,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       for (const item of items) {
         const address = Address.fromString(`0x${item[0]}`)
         const keyHex = item[1]
-        const keyBytes = hexToBytes(keyHex)
+        const keyBytes = unprefixedHexToBytes(keyHex)
         const value = item[2]
 
         const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
@@ -748,7 +592,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       const items = this._accountCache!.flush()
       for (const item of items) {
         const addressHex = item[0]
-        const addressBytes = hexToBytes(addressHex)
+        const addressBytes = unprefixedHexToBytes(addressHex)
         const elem = item[1]
         if (elem.accountRLP === undefined) {
           const trie = this._trie
@@ -773,29 +617,25 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       const returnValue: Proof = {
         address: address.toString(),
         balance: '0x',
-        codeHash: '0x' + KECCAK256_NULL_S,
+        codeHash: KECCAK256_NULL_S,
         nonce: '0x',
-        storageHash: '0x' + KECCAK256_RLP_S,
-        accountProof: (await this._trie.createProof(address.bytes)).map((p) =>
-          bytesToPrefixedHexString(p)
-        ),
+        storageHash: KECCAK256_RLP_S,
+        accountProof: (await this._trie.createProof(address.bytes)).map((p) => bytesToHex(p)),
         storageProof: [],
       }
       return returnValue
     }
     const accountProof: PrefixedHexString[] = (await this._trie.createProof(address.bytes)).map(
-      (p) => bytesToPrefixedHexString(p)
+      (p) => bytesToHex(p)
     )
     const storageProof: StorageProof[] = []
     const storageTrie = await this._getStorageTrie(address, account)
 
     for (const storageKey of storageSlots) {
-      const proof = (await storageTrie.createProof(storageKey)).map((p) =>
-        bytesToPrefixedHexString(p)
-      )
-      const value = bytesToPrefixedHexString(await this.getContractStorage(address, storageKey))
+      const proof = (await storageTrie.createProof(storageKey)).map((p) => bytesToHex(p))
+      const value = bytesToHex(await this.getContractStorage(address, storageKey))
       const proofItem: StorageProof = {
-        key: bytesToPrefixedHexString(storageKey),
+        key: bytesToHex(storageKey),
         value: value === '0x' ? '0x0' : value, // Return '0x' values as '0x0' since this is a JSON RPC response
         proof,
       }
@@ -805,9 +645,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     const returnValue: Proof = {
       address: address.toString(),
       balance: bigIntToHex(account.balance),
-      codeHash: bytesToPrefixedHexString(account.codeHash),
+      codeHash: bytesToHex(account.codeHash),
       nonce: bigIntToHex(account.nonce),
-      storageHash: bytesToPrefixedHexString(account.storageRoot),
+      storageHash: bytesToHex(account.storageRoot),
       accountProof,
       storageProof,
     }
@@ -819,10 +659,10 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param proof the proof to prove
    */
   async verifyProof(proof: Proof): Promise<boolean> {
-    const rootHash = keccak256(hexStringToBytes(proof.accountProof[0]))
-    const key = hexStringToBytes(proof.address)
+    const rootHash = keccak256(hexToBytes(proof.accountProof[0]))
+    const key = hexToBytes(proof.address)
     const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
-      hexStringToBytes(rlpString)
+      hexToBytes(rlpString)
     )
 
     // This returns the account if the proof is valid.
@@ -833,19 +673,19 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       // Verify that the account is empty in the proof.
       const emptyBytes = new Uint8Array(0)
       const notEmptyErrorMsg = 'Invalid proof provided: account is not empty'
-      const nonce = unpadBytes(hexStringToBytes(proof.nonce))
+      const nonce = unpadBytes(hexToBytes(proof.nonce))
       if (!equalsBytes(nonce, emptyBytes)) {
         throw new Error(`${notEmptyErrorMsg} (nonce is not zero)`)
       }
-      const balance = unpadBytes(hexStringToBytes(proof.balance))
+      const balance = unpadBytes(hexToBytes(proof.balance))
       if (!equalsBytes(balance, emptyBytes)) {
         throw new Error(`${notEmptyErrorMsg} (balance is not zero)`)
       }
-      const storageHash = hexStringToBytes(proof.storageHash)
+      const storageHash = hexToBytes(proof.storageHash)
       if (!equalsBytes(storageHash, KECCAK256_RLP)) {
         throw new Error(`${notEmptyErrorMsg} (storageHash does not equal KECCAK256_RLP)`)
       }
-      const codeHash = hexStringToBytes(proof.codeHash)
+      const codeHash = hexToBytes(proof.codeHash)
       if (!equalsBytes(codeHash, KECCAK256_NULL)) {
         throw new Error(`${notEmptyErrorMsg} (codeHash does not equal KECCAK256_NULL)`)
       }
@@ -859,20 +699,20 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       if (balance !== BigInt(proof.balance)) {
         throw new Error(`${invalidErrorMsg} balance does not match`)
       }
-      if (!equalsBytes(storageRoot, hexStringToBytes(proof.storageHash))) {
+      if (!equalsBytes(storageRoot, hexToBytes(proof.storageHash))) {
         throw new Error(`${invalidErrorMsg} storageHash does not match`)
       }
-      if (!equalsBytes(codeHash, hexStringToBytes(proof.codeHash))) {
+      if (!equalsBytes(codeHash, hexToBytes(proof.codeHash))) {
         throw new Error(`${invalidErrorMsg} codeHash does not match`)
       }
     }
 
-    const storageRoot = hexStringToBytes(proof.storageHash)
+    const storageRoot = hexToBytes(proof.storageHash)
 
     for (const stProof of proof.storageProof) {
-      const storageProof = stProof.proof.map((value: PrefixedHexString) => hexStringToBytes(value))
-      const storageValue = setLengthLeft(hexStringToBytes(stProof.value), 32)
-      const storageKey = hexStringToBytes(stProof.key)
+      const storageProof = stProof.proof.map((value: PrefixedHexString) => hexToBytes(value))
+      const storageValue = setLengthLeft(hexToBytes(stProof.value), 32)
+      const storageKey = hexToBytes(stProof.key)
       const proofValue = await new Trie({ useKeyHashing: true }).verifyProof(
         storageRoot,
         storageKey,
@@ -927,137 +767,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     this._storageTries = {}
     this._codeCache = {}
   }
-
-  /** EIP-2929 logic
-   * This should only be called from within the EVM
-   */
-
-  /**
-   * Returns true if the address is warm in the current context
-   * @param address - The address (as a Uint8Array) to check
-   */
-  isWarmedAddress(address: Uint8Array): boolean {
-    for (let i = this._accessedStorage.length - 1; i >= 0; i--) {
-      const currentMap = this._accessedStorage[i]
-      if (currentMap.has(bytesToHex(address))) {
-        return true
-      }
-    }
-    return false
-  }
-
-  /**
-   * Add a warm address in the current context
-   * @param address - The address (as a Uint8Array) to check
-   */
-  addWarmedAddress(address: Uint8Array): void {
-    const key = bytesToHex(address)
-    const storageSet = this._accessedStorage[this._accessedStorage.length - 1].get(key)
-    if (!storageSet) {
-      const emptyStorage = new Set<string>()
-      this._accessedStorage[this._accessedStorage.length - 1].set(key, emptyStorage)
-    }
-  }
-
-  /**
-   * Returns true if the slot of the address is warm
-   * @param address - The address (as a Uint8Array) to check
-   * @param slot - The slot (as a Uint8Array) to check
-   */
-  isWarmedStorage(address: Uint8Array, slot: Uint8Array): boolean {
-    const addressKey = bytesToHex(address)
-    const storageKey = bytesToHex(slot)
-
-    for (let i = this._accessedStorage.length - 1; i >= 0; i--) {
-      const currentMap = this._accessedStorage[i]
-      if (currentMap.has(addressKey) && currentMap.get(addressKey)!.has(storageKey)) {
-        return true
-      }
-    }
-
-    return false
-  }
-
-  /**
-   * Mark the storage slot in the address as warm in the current context
-   * @param address - The address (as a Uint8Array) to check
-   * @param slot - The slot (as a Uint8Array) to check
-   */
-  addWarmedStorage(address: Uint8Array, slot: Uint8Array): void {
-    const addressKey = bytesToHex(address)
-    let storageSet = this._accessedStorage[this._accessedStorage.length - 1].get(addressKey)
-    if (!storageSet) {
-      storageSet = new Set()
-      this._accessedStorage[this._accessedStorage.length - 1].set(addressKey, storageSet!)
-    }
-    storageSet!.add(bytesToHex(slot))
-  }
-
-  /**
-   * Clear the warm accounts and storage. To be called after a transaction finished.
-   */
-  clearWarmedAccounts(): void {
-    this._accessedStorage = [new Map()]
-    this._accessedStorageReverted = [new Map()]
-  }
-
-  /**
-   * Generates an EIP-2930 access list
-   *
-   * Note: this method is not yet part of the {@link StateManager} interface.
-   * If not implemented, {@link VM.runTx} is not allowed to be used with the
-   * `reportAccessList` option and will instead throw.
-   *
-   * Note: there is an edge case on accessList generation where an
-   * internal call might revert without an accessList but pass if the
-   * accessList is used for a tx run (so the subsequent behavior might change).
-   * This edge case is not covered by this implementation.
-   *
-   * @param addressesRemoved - List of addresses to be removed from the final list
-   * @param addressesOnlyStorage - List of addresses only to be added in case of present storage slots
-   *
-   * @returns - an [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/packages/tx) `AccessList`
-   */
-  generateAccessList(
-    addressesRemoved: Address[] = [],
-    addressesOnlyStorage: Address[] = []
-  ): AccessList {
-    // Merge with the reverted storage list
-    const mergedStorage = [...this._accessedStorage, ...this._accessedStorageReverted]
-
-    // Fold merged storage array into one Map
-    while (mergedStorage.length >= 2) {
-      const storageMap = mergedStorage.pop()
-      if (storageMap) {
-        this._accessedStorageMerge(mergedStorage, storageMap)
-      }
-    }
-    const folded = new Map([...mergedStorage[0].entries()].sort())
-
-    // Transfer folded map to final structure
-    const accessList: AccessList = []
-    for (const [addressStr, slots] of folded.entries()) {
-      const address = Address.fromString(`0x${addressStr}`)
-      const check1 = addressesRemoved.find((a) => a.equals(address))
-      const check2 =
-        addressesOnlyStorage.find((a) => a.equals(address)) !== undefined && slots.size === 0
-
-      if (!check1 && !check2) {
-        const storageSlots = Array.from(slots)
-          .map((s) => `0x${s}`)
-          .sort()
-        const accessListItem: AccessListItem = {
-          address: `0x${addressStr}`,
-          storageKeys: storageSlots,
-        }
-        accessList!.push(accessListItem)
-      }
-    }
-
-    return accessList
-  }
-
-  // End of EIP-2929 related logic
 
   /**
    * Dumps the RLP-encoded storage values for an `account` specified by `address`.
@@ -1128,9 +837,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       }
     }
     await this.flush()
-    // If any empty accounts are put, these should not be marked as touched
-    // (when first tx is ran, this account is deleted when it cleans up the accounts)
-    this.touchedJournal.clear()
   }
 
   /**
@@ -1138,44 +844,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    */
   async hasStateRoot(root: Uint8Array): Promise<boolean> {
     return this._trie.checkRoot(root)
-  }
-
-  /**
-   * Checks if the `account` corresponding to `address`
-   * exists
-   * @param address - Address of the `account` to check
-   */
-  async accountExists(address: Address): Promise<boolean> {
-    const account = await this.getAccount(address)
-    if (account) {
-      return true
-    } else {
-      return false
-    }
-  }
-
-  /**
-   * Merges a storage map into the last item of the accessed storage stack
-   */
-  private _accessedStorageMerge(
-    storageList: Map<string, Set<string> | undefined>[],
-    storageMap: Map<string, Set<string>>
-  ) {
-    const mapTarget = storageList[storageList.length - 1]
-
-    if (mapTarget !== undefined) {
-      // Note: storageMap is always defined here per definition (TypeScript cannot infer this)
-      for (const [addressString, slotSet] of storageMap) {
-        const addressExists = mapTarget.get(addressString)
-        if (!addressExists) {
-          mapTarget.set(addressString, new Set())
-        }
-        const storageSet = mapTarget.get(addressString)
-        for (const value of slotSet) {
-          storageSet!.add(value)
-        }
-      }
-    }
   }
 
   /**
@@ -1191,8 +859,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * a large overhead here.
    * 2. Cache values are generally not copied along
    */
-  copy(): DefaultStateManager {
-    const trie = this._trie.copy(false)
+  shallowCopy(): DefaultStateManager {
+    const trie = this._trie.shallowCopy(false)
     const prefixCodeHashes = this._prefixCodeHashes
     let accountCacheOpts = { ...this._accountCacheSettings }
     if (!this._accountCacheSettings.deactivate) {

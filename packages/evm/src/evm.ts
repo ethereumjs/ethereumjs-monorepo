@@ -7,30 +7,31 @@ import {
   KECCAK256_NULL,
   MAX_INTEGER,
   bigIntToBytes,
-  bytesToHex,
+  bytesToUnprefixedHex,
   equalsBytes,
   generateAddress,
   generateAddress2,
   short,
   zeros,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
-import { promisify } from 'util'
+import debugDefault from 'debug'
+import * as mcl from 'mcl-wasm'
 
-import { EOF, getEOFCode } from './eof'
-import { ERROR, EvmError } from './exceptions'
-import { Interpreter } from './interpreter'
-import { Message } from './message'
-import { getOpcodesForHF } from './opcodes'
-import { getActivePrecompiles } from './precompiles'
-import { TransientStorage } from './transientStorage'
-import { DefaultBlockchain } from './types'
+import { EOF, getEOFCode } from './eof.js'
+import { ERROR, EvmError } from './exceptions.js'
+import { Interpreter } from './interpreter.js'
+import { Journal } from './journal.js'
+import { Message } from './message.js'
+import { getOpcodesForHF } from './opcodes/index.js'
+import { getActivePrecompiles } from './precompiles/index.js'
+import { TransientStorage } from './transientStorage.js'
+import { DefaultBlockchain } from './types.js'
 
-import type { InterpreterOpts, RunState } from './interpreter'
-import type { MessageWithTo } from './message'
-import type { OpHandler, OpcodeList } from './opcodes'
-import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
-import type { CustomPrecompile, PrecompileFunc } from './precompiles'
+import type { InterpreterOpts, RunState } from './interpreter.js'
+import type { MessageWithTo } from './message.js'
+import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
+import type { OpHandler, OpcodeList } from './opcodes/index.js'
+import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.js'
 import type {
   Block,
   Blockchain,
@@ -40,8 +41,9 @@ import type {
   EVMRunCallOpts,
   EVMRunCodeOpts,
   Log,
-} from './types'
+} from './types.js'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
+const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('evm:evm')
 const debugGas = createDebugLogger('evm:gas')
@@ -49,11 +51,9 @@ const debugPrecompiles = createDebugLogger('evm:precompiles')
 
 // very ugly way to detect if we are running in a browser
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
-let mcl: any
 let mclInitPromise: any
 
 if (isBrowser() === false) {
-  mcl = require('mcl-wasm')
   mclInitPromise = mcl.init(mcl.BLS12_381)
 }
 
@@ -86,7 +86,7 @@ export interface EVMOpts {
    * - [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (`experimental`)
    * - [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations
    * - [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022
-   *
+   * - [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656) - MCOPY - Memory copying instruction (`experimental`)
    * *Annotations:*
    *
    * - `experimental`: behaviour can change on patch versions
@@ -185,6 +185,7 @@ export class EVM implements EVMInterface {
 
   public stateManager: EVMStateManagerInterface
   public blockchain: Blockchain
+  public journal: Journal
 
   public readonly _transientStorage: TransientStorage
 
@@ -284,7 +285,7 @@ export class EVM implements EVMInterface {
     // Supported EIPs
     const supportedEIPs = [
       1153, 1559, 2315, 2537, 2565, 2718, 2929, 2930, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
-      3670, 3855, 3860, 4399, 4895, 4844, 5133,
+      3670, 3855, 3860, 4399, 4895, 4844, 5133, 5656, 6780,
     ]
 
     for (const eip of this._common.eips()) {
@@ -304,6 +305,8 @@ export class EVM implements EVMInterface {
     this._customOpcodes = opts.customOpcodes
     this._customPrecompiles = opts.customPrecompiles
 
+    this.journal = new Journal(this.stateManager, this._common)
+
     this._common.on('hardforkChanged', () => {
       this.getActiveOpcodes()
       this._precompiles = getActivePrecompiles(this._common, this._customPrecompiles)
@@ -321,14 +324,14 @@ export class EVM implements EVMInterface {
       }
     }
 
-    // We cache this promisified function as it's called from the main execution loop, and
-    // promisifying each time has a huge performance impact.
-    this._emit = <(topic: string, data: any) => Promise<void>>(
-      promisify(this.events.emit.bind(this.events))
-    )
+    this._emit = async (topic: string, data: any): Promise<void> => {
+      return new Promise((resolve) => this.events.emit(topic as keyof EVMEvents, data, resolve))
+    }
 
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
-    this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
+    // Additional window check is to prevent vite browser bundling (and potentially other) to break
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
   }
 
   protected async init(): Promise<void> {
@@ -468,6 +471,11 @@ export class EVM implements EVMInterface {
     message.code = message.data
     message.data = new Uint8Array(0)
     message.to = await this._generateAddress(message)
+
+    if (this._common.isActivatedEIP(6780)) {
+      message.createdAddresses!.add(message.to.toString())
+    }
+
     if (this.DEBUG) {
       debug(`Generated CREATE contract address ${message.to}`)
     }
@@ -494,8 +502,8 @@ export class EVM implements EVMInterface {
       }
     }
 
-    await this.stateManager.putAccount(message.to, toAccount, true)
-    await this.stateManager.clearContractStorage(message.to, true)
+    await this.journal.putAccount(message.to, toAccount)
+    await this.stateManager.clearContractStorage(message.to)
 
     const newContractEvent = {
       address: message.to,
@@ -612,20 +620,30 @@ export class EVM implements EVMInterface {
       }
     } else {
       if (this._common.gteHardfork(Hardfork.Homestead)) {
-        if (this.DEBUG) {
-          debug(`Not enough gas or code size not allowed (>= Homestead)`)
+        if (!allowedCodeSize) {
+          if (this.DEBUG) {
+            debug(`Code size exceeds maximum code size (>= SpuriousDragon)`)
+          }
+          result = { ...result, ...CodesizeExceedsMaximumError(message.gasLimit) }
+        } else {
+          if (this.DEBUG) {
+            debug(`Contract creation: out of gas`)
+          }
+          result = { ...result, ...OOGResult(message.gasLimit) }
         }
-        result = { ...result, ...CodesizeExceedsMaximumError(message.gasLimit) }
       } else {
         // we are in Frontier
-        if (this.DEBUG) {
-          debug(`Not enough gas or code size not allowed (Frontier)`)
-        }
         if (totalGas - returnFee <= message.gasLimit) {
           // we cannot pay the code deposit fee (but the deposit code actually did run)
+          if (this.DEBUG) {
+            debug(`Not enough gas to pay the code deposit fee (Frontier)`)
+          }
           result = { ...result, ...COOGResult(totalGas - returnFee) }
           CodestoreOOG = true
         } else {
+          if (this.DEBUG) {
+            debug(`Contract creation: out of gas`)
+          }
           result = { ...result, ...OOGResult(message.gasLimit) }
         }
       }
@@ -649,7 +667,7 @@ export class EVM implements EVMInterface {
         // It is thus an unnecessary default item, which we have to save to disk
         // It does change the state root, but it only wastes storage.
         const account = await this.stateManager.getAccount(message.to)
-        await this.stateManager.putAccount(message.to, account ?? new Account(), true)
+        await this.journal.putAccount(message.to, account ?? new Account())
       }
     }
 
@@ -660,8 +678,7 @@ export class EVM implements EVMInterface {
   }
 
   /**
-   * Starts the actual bytecode processing for a CALL or CREATE, providing
-   * it with the {@link EEI}.
+   * Starts the actual bytecode processing for a CALL or CREATE
    */
   protected async runInterpreter(
     message: Message,
@@ -694,10 +711,14 @@ export class EVM implements EVMInterface {
       this.stateManager,
       this.blockchain,
       env,
-      message.gasLimit
+      message.gasLimit,
+      this.journal
     )
     if (message.selfdestruct) {
-      interpreter._result.selfdestruct = message.selfdestruct as { [key: string]: Uint8Array }
+      interpreter._result.selfdestruct = message.selfdestruct
+    }
+    if (message.createdAddresses) {
+      interpreter._result.createdAddresses = message.createdAddresses
     }
 
     const interpreterRes = await interpreter.run(message.code as Uint8Array, opts)
@@ -716,7 +737,8 @@ export class EVM implements EVMInterface {
       result = {
         ...result,
         logs: [],
-        selfdestruct: {},
+        selfdestruct: new Set(),
+        createdAddresses: new Set(),
       }
     }
 
@@ -760,7 +782,7 @@ export class EVM implements EVMInterface {
         if (callerAccount.balance < value) {
           // if skipBalance and balance less than value, set caller balance to `value` to ensure sufficient funds
           callerAccount.balance = value
-          await this.stateManager.putAccount(caller, callerAccount, true)
+          await this.journal.putAccount(caller, callerAccount)
         }
       }
 
@@ -775,7 +797,8 @@ export class EVM implements EVMInterface {
         isCompiled: opts.isCompiled,
         isStatic: opts.isStatic,
         salt: opts.salt,
-        selfdestruct: opts.selfdestruct ?? {},
+        selfdestruct: opts.selfdestruct ?? new Set(),
+        createdAddresses: opts.createdAddresses ?? new Set(),
         delegatecall: opts.delegatecall,
         versionedHashes: opts.versionedHashes,
       })
@@ -789,7 +812,7 @@ export class EVM implements EVMInterface {
         callerAccount = new Account()
       }
       callerAccount.nonce++
-      await this.stateManager.putAccount(message.caller, callerAccount, true)
+      await this.journal.putAccount(message.caller, callerAccount)
       if (this.DEBUG) {
         debug(`Update fromAccount (caller) nonce (-> ${callerAccount.nonce}))`)
       }
@@ -799,10 +822,10 @@ export class EVM implements EVMInterface {
 
     if (!message.to && this._common.isActivatedEIP(2929) === true) {
       message.code = message.data
-      this.stateManager.addWarmedAddress((await this._generateAddress(message)).bytes)
+      this.journal.addWarmedAddress((await this._generateAddress(message)).bytes)
     }
 
-    await this.stateManager.checkpoint()
+    await this.journal.checkpoint()
     if (this._common.isActivatedEIP(1153)) this._transientStorage.checkpoint()
     if (this.DEBUG) {
       debug('-'.repeat(100))
@@ -844,7 +867,8 @@ export class EVM implements EVMInterface {
     // (this only happens the Frontier/Chainstart fork)
     // then the error is dismissed
     if (err && err.error !== ERROR.CODESTORE_OUT_OF_GAS) {
-      result.execResult.selfdestruct = {}
+      result.execResult.selfdestruct = new Set()
+      result.execResult.createdAddresses = new Set()
       result.execResult.gasRefund = BigInt(0)
     }
     if (
@@ -852,13 +876,13 @@ export class EVM implements EVMInterface {
       !(this._common.hardfork() === Hardfork.Chainstart && err.error === ERROR.CODESTORE_OUT_OF_GAS)
     ) {
       result.execResult.logs = []
-      await this.stateManager.revert()
+      await this.journal.revert()
       if (this._common.isActivatedEIP(1153)) this._transientStorage.revert()
       if (this.DEBUG) {
         debug(`message checkpoint reverted`)
       }
     } else {
-      await this.stateManager.commit()
+      await this.journal.commit()
       if (this._common.isActivatedEIP(1153)) this._transientStorage.commit()
       if (this.DEBUG) {
         debug(`message checkpoint committed`)
@@ -889,7 +913,7 @@ export class EVM implements EVMInterface {
       caller: opts.caller,
       value: opts.value,
       depth: opts.depth,
-      selfdestruct: opts.selfdestruct ?? {},
+      selfdestruct: opts.selfdestruct ?? new Set(),
       isStatic: opts.isStatic,
       versionedHashes: opts.versionedHashes,
     })
@@ -902,7 +926,7 @@ export class EVM implements EVMInterface {
    * if no such precompile exists.
    */
   getPrecompile(address: Address): PrecompileFunc | undefined {
-    return this.precompiles.get(bytesToHex(address.bytes))
+    return this.precompiles.get(bytesToUnprefixedHex(address.bytes))
   }
 
   /**
@@ -966,11 +990,7 @@ export class EVM implements EVMInterface {
     if (account.balance < BigInt(0)) {
       throw new EvmError(ERROR.INSUFFICIENT_BALANCE)
     }
-    const result = this.stateManager.putAccount(
-      message.authcallOrigin ?? message.caller,
-      account,
-      true
-    )
+    const result = this.journal.putAccount(message.authcallOrigin ?? message.caller, account)
     if (this.DEBUG) {
       debug(`Reduced sender (${message.caller}) balance (-> ${account.balance})`)
     }
@@ -984,7 +1004,7 @@ export class EVM implements EVMInterface {
     }
     toAccount.balance = newBalance
     // putAccount as the nonce may have changed for contract creation
-    const result = this.stateManager.putAccount(message.to, toAccount, true)
+    const result = this.journal.putAccount(message.to, toAccount)
     if (this.DEBUG) {
       debug(`Added toAccount (${message.to}) balance (-> ${toAccount.balance})`)
     }
@@ -998,14 +1018,14 @@ export class EVM implements EVMInterface {
     if (this._common.isActivatedEIP(1153)) this._transientStorage.clear()
   }
 
-  public copy(): EVMInterface {
+  public shallowCopy(): EVMInterface {
     const common = this._common.copy()
     common.setHardfork(this._common.hardfork())
 
     const opts = {
       ...this._optsCached,
       common,
-      stateManager: this.stateManager.copy(),
+      stateManager: this.stateManager.shallowCopy(),
     }
     ;(opts.stateManager as any)._common = common
     return new EVM(opts)
@@ -1052,9 +1072,13 @@ export interface ExecResult {
    */
   logs?: Log[]
   /**
-   * A map from the accounts that have self-destructed to the addresses to send their funds to
+   * A set of accounts to selfdestruct
    */
-  selfdestruct?: { [k: string]: Uint8Array }
+  selfdestruct?: Set<string>
+  /**
+   * Map of addresses which were created (used in EIP 6780)
+   */
+  createdAddresses?: Set<string>
   /**
    * The gas refund counter
    */

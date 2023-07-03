@@ -1,17 +1,17 @@
-import { debug as createDebugLogger } from 'debug'
+import { bytesToHex, bytesToUnprefixedHex } from '@ethereumjs/util'
+import debugDefault from 'debug'
 import * as dgram from 'dgram'
-import { bytesToHex } from 'ethereum-cryptography/utils'
 import { EventEmitter } from 'events'
-import ms = require('ms')
 
-import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util'
+import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
 
-import { decode, encode } from './message'
+import { decode, encode } from './message.js'
 
-import type { DPT, PeerInfo } from './dpt'
+import type { DPT, PeerInfo } from './dpt.js'
 import type { Debugger } from 'debug'
 import type { Socket as DgramSocket, RemoteInfo } from 'dgram'
 import type LRUCache from 'lru-cache'
+const { debug: createDebugLogger } = debugDefault
 
 const LRU = require('lru-cache')
 
@@ -59,10 +59,10 @@ export class Server extends EventEmitter {
     this._dpt = dpt
     this._privateKey = privateKey
 
-    this._timeout = options.timeout ?? ms('2s')
+    this._timeout = options.timeout ?? 2000 // 2 * 1000
     this._endpoint = options.endpoint ?? { address: '0.0.0.0', udpPort: null, tcpPort: null }
     this._requests = new Map()
-    this._requestsCache = new LRU({ max: 1000, ttl: ms('1s'), stale: false })
+    this._requestsCache = new LRU({ max: 1000, ttl: 1000, stale: false }) // 1 sec * 1000
 
     const createSocket = options.createSocket ?? dgram.createSocket.bind(null, { type: 'udp4' })
     this._socket = createSocket()
@@ -112,7 +112,7 @@ export class Server extends EventEmitter {
     })
 
     const deferred = createDeferred()
-    const rkey = bytesToHex(hash)
+    const rkey = bytesToUnprefixedHex(hash)
     this._requests.set(rkey, {
       peer,
       deferred,
@@ -167,7 +167,7 @@ export class Server extends EventEmitter {
     // add peer if not in our table
     const peer = this._dpt.getPeer(peerId)
     if (peer === null && info.typename === 'ping' && info.data.from.udpPort !== null) {
-      setTimeout(() => this.emit('peers', [info.data.from]), ms('100ms'))
+      setTimeout(() => this.emit('peers', [info.data.from]), 100) // 100 ms
     }
 
     switch (info.typename) {
@@ -189,7 +189,7 @@ export class Server extends EventEmitter {
       }
 
       case 'pong': {
-        const rkey = bytesToHex(info.data.hash)
+        const rkey = bytesToUnprefixedHex(info.data.hash)
         const request = this._requests.get(rkey)
         if (request !== undefined) {
           this._requests.delete(rkey)

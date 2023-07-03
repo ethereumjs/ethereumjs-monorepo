@@ -4,15 +4,15 @@ import {
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   bytesToBigInt,
-  bytesToPrefixedHexString,
+  bytesToHex,
   equalsBytes,
+  unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
 
-import { Cache } from './cache'
-import { DBOp, DBTarget } from './operation'
+import { Cache } from './cache.js'
+import { DBOp, DBTarget } from './operation.js'
 
-import type { DatabaseKey } from './operation'
+import type { DatabaseKey } from './operation.js'
 import type { BlockBodyBytes, BlockBytes, BlockOptions } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { BatchDBOp, DB, DBObject, DelBatch, PutBatch } from '@ethereumjs/util'
@@ -61,7 +61,7 @@ export class DBManager {
       // Heads are stored in DB as hex strings since Level converts Uint8Arrays
       // to nested JSON objects when they are included in a value being stored
       // in the DB
-      decodedHeads[key] = hexToBytes(heads[key] as string)
+      decodedHeads[key] = unprefixedHexToBytes(heads[key] as string)
     }
     return decodedHeads
   }
@@ -129,9 +129,9 @@ export class DBManager {
     const blockData = [header.raw(), ...body] as BlockBytes
     const opts: BlockOptions = { common: this._common }
     if (number === BigInt(0)) {
-      opts.hardforkByTTD = await this.getTotalDifficulty(hash, BigInt(0))
+      opts.setHardfork = await this.getTotalDifficulty(hash, BigInt(0))
     } else {
-      opts.hardforkByTTD = await this.getTotalDifficulty(header.parentHash, number - BigInt(1))
+      opts.setHardfork = await this.getTotalDifficulty(header.parentHash, number - BigInt(1))
     }
     return Block.fromValuesArray(blockData, opts)
   }
@@ -156,13 +156,13 @@ export class DBManager {
 
     const opts: BlockOptions = { common: this._common }
     if (blockNumber === BigInt(0)) {
-      opts.hardforkByTTD = await this.getTotalDifficulty(blockHash, BigInt(0))
+      opts.setHardfork = await this.getTotalDifficulty(blockHash, BigInt(0))
     } else {
       // Lets fetch the parent hash but not by number since this block might not
       // be in canonical chain
       const headerData = valuesArrayToHeaderData(headerValues as Uint8Array[])
       const parentHash = headerData.parentHash as Uint8Array
-      opts.hardforkByTTD = await this.getTotalDifficulty(parentHash, blockNumber - BigInt(1))
+      opts.setHardfork = await this.getTotalDifficulty(parentHash, blockNumber - BigInt(1))
     }
     return BlockHeader.fromValuesArray(headerValues as Uint8Array[], opts)
   }
@@ -181,7 +181,7 @@ export class DBManager {
   async hashToNumber(blockHash: Uint8Array): Promise<bigint | undefined> {
     const value = await this.get(DBTarget.HashToNumber, { blockHash })
     if (value === undefined) {
-      throw new Error(`value for ${bytesToPrefixedHexString(blockHash)} not found in DB`)
+      throw new Error(`value for ${bytesToHex(blockHash)} not found in DB`)
     }
     return value !== undefined ? bytesToBigInt(value) : undefined
   }

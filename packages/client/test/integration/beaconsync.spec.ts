@@ -3,7 +3,7 @@ import { Common } from '@ethereumjs/common'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Event } from '../../lib/types'
+import { Event } from '../../src/types'
 import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
 
 import { destroy, setup, wait } from './util'
@@ -12,7 +12,7 @@ const originalValidate = BlockHeader.prototype._consensusFormatValidation
 
 tape('[Integration:BeaconSync]', async (t) => {
   const common = Common.fromGethGenesis(genesisJSON, { chain: 'post-merge' })
-  common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
+  common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
 
   t.test('should sync blocks', async (t) => {
     BlockHeader.prototype._consensusFormatValidation = td.func<any>()

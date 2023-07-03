@@ -1,12 +1,12 @@
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 import { EventEmitter } from 'events'
-import ms = require('ms')
 
-import { DISCONNECT_REASONS } from '../rlpx/peer'
-import { devp2pDebug } from '../util'
+import { DISCONNECT_REASONS } from '../rlpx/peer.js'
+import { devp2pDebug } from '../util.js'
 
-import type { Peer } from '../rlpx/peer'
+import type { Peer } from '../rlpx/peer.js'
 import type { Debugger } from 'debug'
+const { debug: createDebugLogger } = debugDefault
 
 export enum EthProtocol { // What does this represent?
   ETH = 'eth',
@@ -53,7 +53,7 @@ export class Protocol extends EventEmitter {
       protocol !== EthProtocol.SNAP
         ? setTimeout(() => {
             this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
-          }, ms('5s'))
+          }, 5000) // 5 sec * 1000
         : undefined
 
     this._debug = devp2pDebug.extend(protocol)

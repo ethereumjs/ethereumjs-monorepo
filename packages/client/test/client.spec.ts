@@ -1,8 +1,8 @@
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Config } from '../lib/config'
-import { PeerPool } from '../lib/net/peerpool'
+import { Config } from '../src/config'
+import { PeerPool } from '../src/net/peerpool'
 
 tape('[EthereumClient]', async (t) => {
   const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
@@ -16,7 +16,7 @@ tape('[EthereumClient]', async (t) => {
   FullEthereumService.prototype.open = td.func<any>()
   FullEthereumService.prototype.start = td.func<any>()
   FullEthereumService.prototype.stop = td.func<any>()
-  td.replace<any>('../lib/service', { FullEthereumService })
+  td.replace<any>('../src/service', { FullEthereumService })
   td.when(FullEthereumService.prototype.open()).thenResolve()
   td.when(FullEthereumService.prototype.start()).thenResolve()
   td.when(FullEthereumService.prototype.stop()).thenResolve()
@@ -31,12 +31,12 @@ tape('[EthereumClient]', async (t) => {
   Server.prototype.start = td.func<any>()
   Server.prototype.stop = td.func<any>()
   Server.prototype.bootstrap = td.func<any>()
-  td.replace<any>('../lib/net/server/server', { Server })
+  td.replace<any>('../src/net/server/server', { Server })
   td.when(Server.prototype.start()).thenResolve()
   td.when(Server.prototype.stop()).thenResolve()
   td.when(Server.prototype.bootstrap()).thenResolve()
 
-  const { EthereumClient } = await import('../lib/client')
+  const { EthereumClient } = await import('../src/client')
 
   t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })

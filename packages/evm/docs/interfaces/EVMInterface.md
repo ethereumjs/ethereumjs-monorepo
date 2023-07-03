@@ -51,9 +51,9 @@ ___
 
 ## Methods
 
-### copy
+### shallowCopy
 
-▸ **copy**(): [`EVMInterface`](EVMInterface.md)
+▸ **shallowCopy**(): [`EVMInterface`](EVMInterface.md)
 
 #### Returns
 

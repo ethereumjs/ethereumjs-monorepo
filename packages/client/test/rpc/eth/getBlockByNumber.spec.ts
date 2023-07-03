@@ -1,22 +1,20 @@
 import { Block } from '@ethereumjs/block'
-import { Transaction } from '@ethereumjs/tx'
-import { hexStringToBytes } from '@ethereumjs/util'
+import { LegacyTransaction } from '@ethereumjs/tx'
+import { hexToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
-import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { baseRequest, createClient, createManager, dummy, params, startRPC } from '../helpers'
 import { checkError } from '../util'
 
-const mockedTx1 = Transaction.fromTxData({}).sign(dummy.privKey)
-const mockedTx2 = Transaction.fromTxData({ nonce: 1 }).sign(dummy.privKey)
+const mockedTx1 = LegacyTransaction.fromTxData({}).sign(dummy.privKey)
+const mockedTx2 = LegacyTransaction.fromTxData({ nonce: 1 }).sign(dummy.privKey)
 
 function createChain() {
-  const genesisBlockHash = hexStringToBytes(
-    'dcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5'
+  const genesisBlockHash = hexToBytes(
+    '0xdcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5'
   )
-  const blockHash = hexStringToBytes(
-    'dcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5'
-  )
+  const blockHash = hexToBytes('0xdcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5')
   const transactions = [mockedTx1]
   const transactions2 = [mockedTx2]
   const genesisBlock = {

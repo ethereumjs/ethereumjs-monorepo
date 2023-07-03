@@ -2,25 +2,26 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   bytesToHex,
   bytesToInt,
+  bytesToUtf8,
   concatBytes,
   equalsBytes,
+  hexToBytes,
   intToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
-import { bytesToUtf8, hexToBytes } from 'ethereum-cryptography/utils'
+import debugDefault from 'debug'
 import { EventEmitter } from 'events'
-import ms = require('ms')
 import * as snappy from 'snappyjs'
 
-import { devp2pDebug, formatLogData } from '../util'
+import { devp2pDebug, formatLogData } from '../util.js'
 
-import { ECIES } from './ecies'
+import { ECIES } from './ecies.js'
 
-import type { ETH, LES } from '..'
+import type { ETH, LES } from '../protocol/index.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type { Socket } from 'net'
+const { debug: createDebugLogger } = debugDefault
 
 const DEBUG_BASE_NAME = 'rlpx:peer'
 const verbose = createDebugLogger('verbose').enabled
@@ -28,7 +29,7 @@ const verbose = createDebugLogger('verbose').enabled
 export const BASE_PROTOCOL_VERSION = 5
 export const BASE_PROTOCOL_LENGTH = 16
 
-export const PING_INTERVAL = ms('15s')
+export const PING_INTERVAL = 15000 // 15 sec * 1000
 
 export enum PREFIXES {
   HELLO = 0x00,
@@ -279,7 +280,7 @@ export class Peer extends EventEmitter {
     this._disconnectReason = reason
     this._disconnectWe = true
     this._closed = true
-    setTimeout(() => this._socket.end(), ms('2s'))
+    setTimeout(() => this._socket.end(), 2000) // 2 sec * 1000
   }
 
   /**
@@ -322,7 +323,7 @@ export class Peer extends EventEmitter {
     const bytesCount = this._nextPacketSize
     const parseData = this._socketData.subarray(0, bytesCount)
     if (!this._eciesSession._gotEIP8Auth) {
-      if (parseData.subarray(0, 1) === hexToBytes('04')) {
+      if (parseData.subarray(0, 1) === hexToBytes('0x04')) {
         this._eciesSession.parseAuthPlain(parseData)
       } else {
         this._eciesSession._gotEIP8Auth = true
@@ -345,7 +346,7 @@ export class Peer extends EventEmitter {
     const bytesCount = this._nextPacketSize
     const parseData = this._socketData.subarray(0, bytesCount)
     if (!this._eciesSession._gotEIP8Ack) {
-      if (parseData.subarray(0, 1) === hexToBytes('04')) {
+      if (parseData.subarray(0, 1) === hexToBytes('0x04')) {
         this._eciesSession.parseAckPlain(parseData)
         this._logger(
           `Received ack (old format) from ${this._socket.remoteAddress}:${this._socket.remotePort}`

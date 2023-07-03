@@ -27,8 +27,15 @@
       "hireable": true
     }
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "type": "commonjs",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "files": [
     "dist",
     "src"
@@ -36,29 +43,26 @@
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "../../config/cli/coverage.sh",
+    "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "docs:build": "typedoc --options typedoc.js",
     "examples": "ts-node ../../scripts/examples-runner.ts -- tx",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
-    "tape": "tape -r ts-node/register",
-    "test": "npm run test:node && npm run test:browser && npm run test:txTests",
-    "test:browser": "karma start karma.conf.js",
-    "test:node": "tape -r ts-node/register -- 'test/**/*.spec.ts'",
-    "test:txTests": "tape -r ts-node/register ./test/transactionRunner.ts",
+    "test": "npm run test:node && npm run test:browser",
+    "test:browser": "npx vitest run --config=./vitest.config.browser.ts --browser.name=chrome --browser.headless",
+    "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@chainsafe/ssz": "^0.11.1",
     "@ethereumjs/common": "^3.1.2",
     "@ethereumjs/rlp": "^4.0.1",
     "@ethereumjs/util": "^8.0.6",
     "ethereum-cryptography": "^2.0.0"
   },
   "peerDependencies": {
-    "c-kzg": "^2.0.4"
+    "c-kzg": "^2.1.0"
   },
   "peerDependenciesMeta": {
     "c-kzg": {
@@ -69,8 +73,7 @@
     "@types/minimist": "^1.2.0",
     "@types/node-dir": "^0.0.34",
     "minimist": "^1.2.0",
-    "node-dir": "^0.1.16",
-    "testdouble": "^3.17.2"
+    "node-dir": "^0.1.16"
   },
   "engines": {
     "node": ">=16"

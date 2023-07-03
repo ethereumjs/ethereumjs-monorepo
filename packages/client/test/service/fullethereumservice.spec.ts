@@ -1,16 +1,15 @@
 import { Common, Hardfork } from '@ethereumjs/common'
-import { TransactionFactory } from '@ethereumjs/tx'
-import { hexStringToBytes, randomBytes } from '@ethereumjs/util'
-import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import { TransactionFactory, TransactionType } from '@ethereumjs/tx'
+import { equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Chain } from '../../lib/blockchain'
-import { Config } from '../../lib/config'
-import { Event } from '../../lib/types'
-import genesisJSON = require('../testdata/geth-genesis/post-merge.json')
+import { Chain } from '../../src/blockchain'
+import { Config } from '../../src/config'
+import { Event } from '../../src/types'
+import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
 
-import type { Log } from '@ethereumjs/evm/dist/types'
+import type { Log } from '@ethereumjs/evm'
 
 tape('[FullEthereumService]', async (t) => {
   class PeerPool {
@@ -23,14 +22,14 @@ tape('[FullEthereumService]', async (t) => {
   PeerPool.prototype.close = td.func<any>()
   PeerPool.prototype.start = td.func<any>()
   PeerPool.prototype.stop = td.func<any>()
-  td.replace<any>('../../lib/net/peerpool', { PeerPool })
+  td.replace<any>('../../src/net/peerpool', { PeerPool })
   const MockChain = td.constructor([] as any)
   MockChain.prototype.open = td.func<any>()
-  td.replace<any>('../../lib/blockchain', { Chain: MockChain })
+  td.replace<any>('../../src/blockchain', { Chain: MockChain })
   const EthProtocol = td.constructor([] as any)
   const LesProtocol = td.constructor([] as any)
-  td.replace<any>('../../lib/net/protocol/ethprotocol', { EthProtocol })
-  td.replace<any>('../../lib/net/protocol/lesprotocol', { LesProtocol })
+  td.replace<any>('../../src/net/protocol/ethprotocol', { EthProtocol })
+  td.replace<any>('../../src/net/protocol/lesprotocol', { LesProtocol })
   class FullSynchronizer {
     start() {}
     stop() {}
@@ -55,7 +54,7 @@ tape('[FullEthereumService]', async (t) => {
   BeaconSynchronizer.prototype.stop = td.func<any>()
   BeaconSynchronizer.prototype.open = td.func<any>()
   BeaconSynchronizer.prototype.close = td.func<any>()
-  td.replace<any>('../../lib/sync', { FullSynchronizer, BeaconSynchronizer })
+  td.replace<any>('../../src/sync', { FullSynchronizer, BeaconSynchronizer })
 
   class Block {
     static fromValuesArray() {
@@ -63,7 +62,7 @@ tape('[FullEthereumService]', async (t) => {
     }
   }
   td.replace<any>('@ethereumjs/block', { Block })
-  const { FullEthereumService } = await import('../../lib/service/fullethereumservice')
+  const { FullEthereumService } = await import('../../src/service/fullethereumservice')
 
   t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
@@ -241,7 +240,7 @@ tape('[FullEthereumService]', async (t) => {
             new Uint8Array(10),
           ],
         ] as Log[],
-        txType: 2,
+        txType: TransactionType.FeeMarketEIP1559,
       },
       {
         status: 0 as 0 | 1,
@@ -254,7 +253,7 @@ tape('[FullEthereumService]', async (t) => {
             new Uint8Array(10),
           ],
         ] as Log[],
-        txType: 0,
+        txType: TransactionType.Legacy,
       },
     ]
     td.when(service.execution.receiptsManager!.getReceipts(blockHash, true, true)).thenResolve(
@@ -294,7 +293,7 @@ tape('[FullEthereumService]', async (t) => {
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     service.txPool.handleAnnouncedTxHashes = async (msg, _peer, _pool) => {
-      st.deepEqual(msg[0], hexStringToBytes('0xabcd'), 'handled NewPooledTransactionhashes')
+      st.deepEqual(msg[0], hexToBytes('0xabcd'), 'handled NewPooledTransactionhashes')
       st.end()
     }
 
@@ -333,7 +332,7 @@ tape('[FullEthereumService]', async (t) => {
 
   t.test('should start on beacon sync when past merge', async (t) => {
     const common = Common.fromGethGenesis(genesisJSON, { chain: 'post-merge' })
-    common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
+    common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000, common })
     const chain = await Chain.create({ config })
     let service = new FullEthereumService({ config, chain })

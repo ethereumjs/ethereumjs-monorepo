@@ -1,7 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, setLengthLeft, toBytes } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { Address, hexToBytes, setLengthLeft, toBytes } from '@ethereumjs/util'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 import { createAccount } from '../utils'
@@ -15,6 +14,7 @@ const testCases = [
     gas: undefined,
     err: undefined,
   }, // 0 -> 0 -> 0
+  // TODO check why this is commented out
   /*{ original:BigInt(0), code: '60006000556001600055', used: 20812, refund: 0 }, // 0 -> 0 -> 1
   { original:BigInt(0), code: '60016000556000600055', used: 20812, refund: 19200 }, // 0 -> 1 -> 0
   { original:BigInt(0), code: '60016000556002600055', used: 20812, refund: 0 }, // 0 -> 1 -> 2
@@ -42,10 +42,10 @@ const testCases = [
   { original:BigInt(1), gas: BigInt(2307), code: '6001600055', used: 806, refund: 0 }, // 1 -> 1 (2301 sentry + 2xPUSH)*/
 ]
 
-tape('Istanbul: EIP-2200', async (t) => {
-  t.test('net-metering SSTORE', async (st) => {
-    const caller = new Address(hexToBytes('0000000000000000000000000000000000000000'))
-    const addr = new Address(hexToBytes('00000000000000000000000000000000000000ff'))
+describe('Istanbul: EIP-2200', () => {
+  it('net-metering SSTORE', async () => {
+    const caller = new Address(hexToBytes('0x0000000000000000000000000000000000000000'))
+    const addr = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     const key = setLengthLeft(toBytes('0x' + BigInt(0).toString(16)), 32)
 
     for (const testCase of testCases) {
@@ -54,7 +54,7 @@ tape('Istanbul: EIP-2200', async (t) => {
 
       const account = createAccount(BigInt(0), BigInt(0))
       await vm.stateManager.putAccount(addr, account)
-      await vm.stateManager.putContractCode(addr, hexToBytes(testCase.code))
+      await vm.stateManager.putContractCode(addr, hexToBytes('0x' + testCase.code))
       if (testCase.original !== BigInt(0)) {
         await vm.stateManager.putContractStorage(
           addr,
@@ -72,17 +72,15 @@ tape('Istanbul: EIP-2200', async (t) => {
       try {
         const res = await vm.evm.runCall(runCallArgs)
         if (typeof testCase.err !== 'undefined') {
-          st.equal(res.execResult.exceptionError?.error, testCase.err)
+          assert.equal(res.execResult.exceptionError?.error, testCase.err)
         } else {
-          st.equal(res.execResult.exceptionError, undefined)
+          assert.equal(res.execResult.exceptionError, undefined)
         }
-        st.equal(res.execResult.executionGasUsed, BigInt(testCase.used))
-        st.equal(res.execResult.gasRefund!, BigInt(testCase.refund))
+        assert.equal(res.execResult.executionGasUsed, BigInt(testCase.used))
+        assert.equal(res.execResult.gasRefund!, BigInt(testCase.refund))
       } catch (e: any) {
-        st.fail(e.message)
+        assert.fail(e.message)
       }
     }
-
-    st.end()
   })
 })

@@ -1,7 +1,7 @@
 import { createCipheriv } from 'crypto'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { xor } from '../util'
+import { xor } from '../util.js'
 
 export type Hash = ReturnType<typeof keccak256.create>
 

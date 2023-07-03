@@ -1,10 +1,10 @@
 import { bytesToHex, short } from '@ethereumjs/util'
-import { sha256 } from 'ethereum-cryptography/sha256'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 
-import { OOGResult } from '../evm'
+import { OOGResult } from '../evm.js'
 
-import type { ExecResult } from '../evm'
-import type { PrecompileInput } from './types'
+import type { ExecResult } from '../evm.js'
+import type { PrecompileInput } from './types.js'
 
 export function precompile02(opts: PrecompileInput): ExecResult {
   const data = opts.data

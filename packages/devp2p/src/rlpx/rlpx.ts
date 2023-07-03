@@ -1,26 +1,30 @@
-import { bytesToInt } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
-import { bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+import {
+  bytesToInt,
+  bytesToUnprefixedHex,
+  equalsBytes,
+  unprefixedHexToBytes,
+  utf8ToBytes,
+} from '@ethereumjs/util'
+import debugDefault from 'debug'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'events'
-import ms = require('ms')
 import * as net from 'net'
 import * as os from 'os'
 
-import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util'
+import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
 
-import { DISCONNECT_REASONS, Peer } from './peer'
+import { DISCONNECT_REASONS, Peer } from './peer.js'
 
-import type { DPT, PeerInfo } from '../dpt'
-import type { Capabilities } from './peer'
+import type { DPT, PeerInfo } from '../dpt/index.js'
+import type { Capabilities } from './peer.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type LRUCache from 'lru-cache'
-
-const LRU = require('lru-cache')
+const { debug: createDebugLogger } = debugDefault
 
 // note: relative path only valid in .js file in dist
-const { version: pVersion } = require('../../package.json')
+
+const LRU = require('lru-cache')
 
 const DEBUG_BASE_NAME = 'rlpx'
 const verbose = createDebugLogger('verbose').enabled
@@ -66,12 +70,12 @@ export class RLPx extends EventEmitter {
     this._id = pk2id(secp256k1.getPublicKey(this._privateKey, false))
 
     // options
-    this._timeout = options.timeout ?? ms('10s')
+    this._timeout = options.timeout ?? 10000 // 10 sec * 1000
     this._maxPeers = options.maxPeers ?? 10
 
     this._clientId = options.clientId
       ? options.clientId
-      : utf8ToBytes(`ethereumjs-devp2p/v${pVersion}/${os.platform()}-${os.arch()}/nodejs`)
+      : utf8ToBytes(`ethereumjs-devp2p/${os.platform()}-${os.arch()}/nodejs`)
 
     this._remoteClientIdFilter = options.remoteClientIdFilter
     this._capabilities = options.capabilities
@@ -83,11 +87,11 @@ export class RLPx extends EventEmitter {
     if (this._dpt !== null) {
       this._dpt.on('peer:new', (peer: PeerInfo) => {
         if (peer.tcpPort === null || peer.tcpPort === undefined) {
-          this._dpt!.banPeer(peer, ms('5m'))
+          this._dpt!.banPeer(peer, 300000) // 5 min * 60 * 1000
           this._debug(`banning peer with missing tcp port: ${peer.address}`)
           return
         }
-        const key = bytesToHex(peer.id!)
+        const key = bytesToUnprefixedHex(peer.id!)
         if (this._peersLRU.has(key)) return
         this._peersLRU.set(key, true)
 
@@ -118,7 +122,7 @@ export class RLPx extends EventEmitter {
     this._peers = new Map()
     this._peersQueue = []
     this._peersLRU = new LRU({ max: 25000 })
-    const REFILL_INTERVALL = ms('10s')
+    const REFILL_INTERVALL = 10000 // 10 sec * 1000
     const refillIntervalSubdivided = Math.floor(REFILL_INTERVALL / 10)
     this._refillIntervalId = setInterval(() => this._refillConnections(), refillIntervalSubdivided)
   }
@@ -139,7 +143,7 @@ export class RLPx extends EventEmitter {
     if (this._server) this._server.close(...args)
     this._server = null
 
-    for (const peerKey of this._peers.keys()) this.disconnect(hexToBytes(peerKey))
+    for (const peerKey of this._peers.keys()) this.disconnect(unprefixedHexToBytes(peerKey))
   }
 
   async connect(peer: PeerInfo) {
@@ -147,7 +151,7 @@ export class RLPx extends EventEmitter {
     this._isAliveCheck()
 
     if (!(peer.id instanceof Uint8Array)) throw new TypeError('Expected peer.id as Uint8Array')
-    const peerKey = bytesToHex(peer.id)
+    const peerKey = bytesToUnprefixedHex(peer.id)
 
     if (this._peers.has(peerKey)) throw new Error('Already connected')
     if (this._getOpenSlots() === 0) throw new Error('Too many peers already connected')
@@ -175,8 +179,10 @@ export class RLPx extends EventEmitter {
   }
 
   disconnect(id: Uint8Array) {
-    const peer = this._peers.get(bytesToHex(id))
-    if (peer instanceof Peer) peer.disconnect(DISCONNECT_REASONS.CLIENT_QUITTING)
+    const peer = this._peers.get(bytesToUnprefixedHex(id))
+    if (peer instanceof Peer) {
+      peer.disconnect(DISCONNECT_REASONS.CLIENT_QUITTING)
+    }
   }
 
   _isAlive() {
@@ -199,7 +205,7 @@ export class RLPx extends EventEmitter {
     this.connect(peer).catch((err) => {
       if (this._dpt === null) return
       if (err.code === 'ECONNRESET' || (err.toString() as string).includes('Connection timeout')) {
-        this._dpt.banPeer(peer, ms('5m'))
+        this._dpt.banPeer(peer, 300000) // 5 min * 60 * 1000
       }
     })
   }
@@ -242,7 +248,7 @@ export class RLPx extends EventEmitter {
         return peer.disconnect(DISCONNECT_REASONS.SAME_IDENTITY)
       }
 
-      const peerKey = bytesToHex(id!)
+      const peerKey = bytesToUnprefixedHex(id!)
       const item = this._peers.get(peerKey)
       if (item && item instanceof Peer) {
         return peer.disconnect(DISCONNECT_REASONS.ALREADY_CONNECTED)
@@ -269,14 +275,14 @@ export class RLPx extends EventEmitter {
               address: peer._socket.remoteAddress,
               tcpPort: peer._socket.remotePort,
             },
-            ts: (Date.now() + ms('5m')) as number,
+            ts: (Date.now() + 300000) as number, // 5 min * 60 * 1000
           })
         }
       }
 
       const id = peer.getId()
       if (id) {
-        const peerKey = bytesToHex(id)
+        const peerKey = bytesToUnprefixedHex(id)
         this._peers.delete(peerKey)
         this.emit('peer:removed', peer, reason, disconnectWe)
       }

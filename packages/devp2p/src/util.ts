@@ -1,12 +1,13 @@
 import { RLP } from '@ethereumjs/rlp'
-import { debug as createDebugLogger } from 'debug'
-import { keccak256 as _keccak256 } from 'ethereum-cryptography/keccak'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
-import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat'
-import { bytesToHex, concatBytes, equalsBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, bytesToUnprefixedHex, concatBytes, equalsBytes } from '@ethereumjs/util'
+import debugDefault from 'debug'
+import { keccak256 as _keccak256 } from 'ethereum-cryptography/keccak.js'
+import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat.js'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
-import type { ETH } from './protocol/eth'
-import type { LES } from './protocol/les'
+import type { ETH } from './protocol/eth.js'
+import type { LES } from './protocol/les.js'
+const { debug: createDebugLogger } = debugDefault
 
 export const devp2pDebug = createDebugLogger('devp2p')
 
@@ -183,11 +184,11 @@ export const ipToBytes = (ip: string, bytes?: Uint8Array, offset: number = 0) =>
 
       if (isv4) {
         v4Bytes = ipToBytes(sections[i])
-        sections[i] = bytesToHex(v4Bytes.subarray(0, 2))
+        sections[i] = bytesToUnprefixedHex(v4Bytes.subarray(0, 2))
       }
 
       if (v4Bytes.length > 0 && ++i < 8) {
-        sections.splice(i, 0, bytesToHex(v4Bytes.subarray(2, 4)))
+        sections.splice(i, 0, bytesToUnprefixedHex(v4Bytes.subarray(2, 4)))
       }
     }
 

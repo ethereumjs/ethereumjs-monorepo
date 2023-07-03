@@ -1,22 +1,21 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Account, Address, privateToAddress } from '@ethereumjs/util'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { Account, Address, bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
-const pkey = hexToBytes('20'.repeat(32))
+const pkey = hexToBytes('0x' + '20'.repeat(32))
 const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
 
-tape('EIP 3860 tests', (t) => {
+describe('EIP 3860 tests', () => {
   const common = new Common({
     chain: Chain.Mainnet,
     hardfork: Hardfork.London,
     eips: [3860],
   })
 
-  t.test('EIP-3860 tests', async (st) => {
+  it('EIP-3860 tests', async () => {
     const vm = await VM.create({ common })
     await vm.stateManager.putAccount(sender, new Account())
     const account = await vm.stateManager.getAccount(sender)
@@ -32,7 +31,7 @@ tape('EIP 3860 tests', (t) => {
       {
         data:
           '0x7F6000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060005260206000F3' +
-          bytesToHex(bytes),
+          bytesToHex(bytes).slice(2),
         gasLimit: 100000000000,
         maxFeePerGas: 7,
         nonce: 0,
@@ -40,7 +39,7 @@ tape('EIP 3860 tests', (t) => {
       { common: txCommon }
     ).sign(pkey)
     const result = await vm.runTx({ tx })
-    st.ok(
+    assert.ok(
       (result.execResult.exceptionError?.error as string) === 'initcode exceeds max initcode size',
       'initcode exceeds max size'
     )

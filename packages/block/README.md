@@ -102,7 +102,7 @@ const blockWithMatchingBaseFee = Block.fromBlockData(
 )
 ```
 
-EIP-1559 blocks have an extra `baseFeePerGas` field (default: `BigInt(7)`) and can encompass `FeeMarketEIP1559Transaction` txs (type `2`) (supported by `@ethereumjs/tx` `v3.2.0` or higher) as well as `Transaction` legacy txs (internal type `0`) and `AccessListEIP2930Transaction` txs (type `1`).
+EIP-1559 blocks have an extra `baseFeePerGas` field (default: `BigInt(7)`) and can encompass `FeeMarketEIP1559Transaction` txs (type `2`) (supported by `@ethereumjs/tx` `v3.2.0` or higher) as well as `LegacyTransaction` legacy txs (internal type `0`) and `AccessListEIP2930Transaction` txs (type `1`).
 
 ### EIP-4895 Beacon Chain Withdrawals Blocks (experimental)
 

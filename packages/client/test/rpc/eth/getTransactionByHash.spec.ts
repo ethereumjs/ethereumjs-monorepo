@@ -1,7 +1,8 @@
-import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
-import { bytesToPrefixedHexString } from '@ethereumjs/util'
+import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
+import { bytesToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
 
+import * as pow from '../../testdata/geth-genesis/pow.json'
 import {
   baseRequest,
   dummy,
@@ -11,15 +12,13 @@ import {
   setupChain,
 } from '../helpers'
 
-import pow = require('./../../testdata/geth-genesis/pow.json')
-
 const method = 'eth_getTransactionByHash'
 
 tape(`${method}: call with legacy tx`, async (t) => {
   const { chain, common, execution, server } = await setupChain(pow, 'pow', { txLookupLimit: 1 })
 
   // construct tx
-  const tx = Transaction.fromTxData(
+  const tx = LegacyTransaction.fromTxData(
     { gasLimit: 2000000, gasPrice: 100, to: '0x0000000000000000000000000000000000000000' },
     { common }
   ).sign(dummy.privKey)
@@ -27,16 +26,16 @@ tape(`${method}: call with legacy tx`, async (t) => {
   await runBlockWithTxs(chain, execution, [tx])
 
   // get the tx
-  let req = params(method, [bytesToPrefixedHexString(tx.hash())])
+  let req = params(method, [bytesToHex(tx.hash())])
   let expectRes = (res: any) => {
     const msg = 'should return the correct tx'
-    t.equal(res.body.result.hash, bytesToPrefixedHexString(tx.hash()), msg)
+    t.equal(res.body.result.hash, bytesToHex(tx.hash()), msg)
   }
   await baseRequest(t, server, req, 200, expectRes, false, false)
 
   // run a block to ensure tx hash index is cleaned up when txLookupLimit=1
   await runBlockWithTxs(chain, execution, [])
-  req = params(method, [bytesToPrefixedHexString(tx.hash())])
+  req = params(method, [bytesToHex(tx.hash())])
   expectRes = (res: any) => {
     const msg = 'should return null when past txLookupLimit'
     t.equal(res.body.result, null, msg)
@@ -65,7 +64,7 @@ tape(`${method}: call with 1559 tx`, async (t) => {
   await runBlockWithTxs(chain, execution, [tx])
 
   // get the tx
-  let req = params(method, [bytesToPrefixedHexString(tx.hash())])
+  let req = params(method, [bytesToHex(tx.hash())])
   let expectRes = (res: any) => {
     const msg = 'should return the correct tx type'
     t.equal(res.body.result.type, '0x2', msg)
@@ -76,10 +75,10 @@ tape(`${method}: call with 1559 tx`, async (t) => {
   await runBlockWithTxs(chain, execution, [])
   await runBlockWithTxs(chain, execution, [])
   await runBlockWithTxs(chain, execution, [])
-  req = params(method, [bytesToPrefixedHexString(tx.hash())])
+  req = params(method, [bytesToHex(tx.hash())])
   expectRes = (res: any) => {
     const msg = 'should return the correct tx when txLookupLimit=0'
-    t.equal(res.body.result.hash, bytesToPrefixedHexString(tx.hash()), msg)
+    t.equal(res.body.result.hash, bytesToHex(tx.hash()), msg)
   }
   await baseRequest(t, server, req, 200, expectRes, true) // pass endOnFinish=true for last test
 })

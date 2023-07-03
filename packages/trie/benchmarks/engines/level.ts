@@ -1,7 +1,7 @@
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import { MemoryLevel } from 'memory-level'
 
-import type { BatchDBOp, DB } from '../../src/types'
+import type { BatchDBOp, DB } from '../../src/types.js'
 import type { AbstractLevel } from 'abstract-level'
 
 export const ENCODING_OPTS = { keyEncoding: 'view', valueEncoding: 'view' }
@@ -66,7 +66,7 @@ export class LevelDB implements DB {
   /**
    * @inheritDoc
    */
-  copy(): DB {
+  shallowCopy(): DB {
     return new LevelDB(this._leveldb)
   }
 }

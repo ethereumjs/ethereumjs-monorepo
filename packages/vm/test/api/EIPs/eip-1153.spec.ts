@@ -1,24 +1,25 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
-import { Account, Address, bytesToInt, privateToAddress } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { LegacyTransaction } from '@ethereumjs/tx'
+import { Account, Address, bytesToInt, hexToBytes, privateToAddress } from '@ethereumjs/util'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
+
+import type { TypedTransaction } from '@ethereumjs/tx'
 
 interface Test {
   steps: { expectedOpcode: string; expectedGasUsed: number; expectedStack: bigint[] }[]
   contracts: { code: string; address: Address }[]
-  transactions: Transaction[]
+  transactions: TypedTransaction[]
 }
 
-const senderKey = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
+const senderKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 
-tape('EIP 1153: transient storage', (t) => {
+describe('EIP 1153: transient storage', () => {
   const initialGas = BigInt(0xffffffffff)
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [1153] })
 
-  const runTest = async function (test: Test, st: tape.Test) {
+  const runTest = async function (test: Test) {
     let i = 0
     let currentGas = initialGas
     const vm = await VM.create({ common })
@@ -27,13 +28,13 @@ tape('EIP 1153: transient storage', (t) => {
       const gasUsed = currentGas - step.gasLeft
       currentGas = step.gasLeft
 
-      st.equal(
+      assert.equal(
         step.opcode.name,
         test.steps[i].expectedOpcode,
         `Expected Opcode: ${test.steps[i].expectedOpcode}`
       )
 
-      st.deepEqual(
+      assert.deepEqual(
         step.stack.map((e: bigint) => e.toString()),
         test.steps[i].expectedStack.map((e: bigint) => e.toString()),
         `Expected stack: ${step.stack}`
@@ -41,7 +42,7 @@ tape('EIP 1153: transient storage', (t) => {
 
       if (i > 0) {
         const expectedGasUsed = BigInt(test.steps[i - 1].expectedGasUsed)
-        st.ok(
+        assert.ok(
           gasUsed === expectedGasUsed,
           `Opcode: ${
             test.steps[i - 1].expectedOpcode
@@ -66,13 +67,13 @@ tape('EIP 1153: transient storage', (t) => {
     return results
   }
 
-  t.test('should tload and tstore', async (st) => {
-    const code = '60026001b46001b360005260206000F3'
+  it('should tload and tstore', async () => {
+    const code = '0x60026001b46001b360005260206000F3'
     const returndata = new Uint8Array(32)
     returndata[31] = 0x02
 
-    const address = new Address(hexToBytes('000000000000000000000000636F6E7472616374'))
-    const tx = Transaction.fromTxData({
+    const address = new Address(hexToBytes('0x00000000000000000000000636F6E7472616374'))
+    const tx = LegacyTransaction.fromTxData({
       gasLimit: BigInt(21000 + 9000),
       to: address,
       value: BigInt(1),
@@ -95,13 +96,12 @@ tape('EIP 1153: transient storage', (t) => {
       ],
     }
 
-    const result = await runTest(test, st)
-    st.deepEqual(returndata, result[0].execResult.returnValue)
-    st.equal(undefined, result[0].execResult.exceptionError)
-    st.end()
+    const result = await runTest(test)
+    assert.deepEqual(returndata, result[0].execResult.returnValue)
+    assert.equal(undefined, result[0].execResult.exceptionError)
   })
 
-  t.test('should clear between transactions', async (st) => {
+  it('should clear between transactions', async () => {
     // If calldata size is 0, do a tload and return the value
     // at key 0. If calldata size is nonzero, do a tstore at
     // key 0. Send a transaction with nonzero calldata first
@@ -109,18 +109,19 @@ tape('EIP 1153: transient storage', (t) => {
     // and then assert that the returndata is 0. If the returndata
     // is 0, then the transient storage is cleared between
     // transactions
-    const code = '36600014630000001c5760016300000012575b60ff6000b4600080f35b6000b360005260206000f3'
-    const address = new Address(hexToBytes('000000000000000000000000636F6E7472616374'))
+    const code =
+      '0x36600014630000001c5760016300000012575b60ff6000b4600080f35b6000b360005260206000f3'
+    const address = new Address(hexToBytes('0x000000000000000000000000636F6E7472616374'))
 
     const test = {
       contracts: [{ address, code }],
       transactions: [
-        Transaction.fromTxData({
+        LegacyTransaction.fromTxData({
           gasLimit: BigInt(15000000),
           to: address,
           data: new Uint8Array(32),
         }).sign(senderKey),
-        Transaction.fromTxData({
+        LegacyTransaction.fromTxData({
           nonce: 1,
           gasLimit: BigInt(15000000),
           to: address,
@@ -160,15 +161,14 @@ tape('EIP 1153: transient storage', (t) => {
       ],
     }
 
-    const [result1, result2] = await runTest(test, st)
-    st.equal(result1.execResult.exceptionError, undefined)
-    st.equal(bytesToInt(result2.execResult.returnValue), 0)
-    st.end()
+    const [result1, result2] = await runTest(test)
+    assert.equal(result1.execResult.exceptionError, undefined)
+    assert.equal(bytesToInt(result2.execResult.returnValue), 0)
   })
 
-  t.test('tload should not keep reverted changes', async (st) => {
+  it('tload should not keep reverted changes', async () => {
     // logic address has a contract with transient storage logic in it
-    const logicAddress = new Address(hexToBytes('EA674fdDe714fd979de3EdF0F56AA9716B898ec8'))
+    const logicAddress = new Address(hexToBytes('0xEA674fdDe714fd979de3EdF0F56AA9716B898ec8'))
     // calling address is the address that calls the logic address
     const callingAddress = new Address(new Uint8Array(20).fill(0xff))
 
@@ -181,11 +181,11 @@ tape('EIP 1153: transient storage', (t) => {
     // first call. This asserts that reverts are handled correctly.
 
     const logicCode =
-      '36600080376000518063afc874d214630000003457806362fdb9be14630000003f57806343ac1c3914630000004a5760006000fd5b60ff6000b460006000fd5b60aa6000b460006000f35b6000b360005260206000f3'
+      '0x36600080376000518063afc874d214630000003457806362fdb9be14630000003f57806343ac1c3914630000004a5760006000fd5b60ff6000b460006000fd5b60aa6000b460006000f35b6000b360005260206000f3'
     const callingCode =
-      '6362fdb9be600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff163afc874d2600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff16343ac1c39600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff1366000803760206000f3'
+      '0x6362fdb9be600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff163afc874d2600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff16343ac1c39600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff1366000803760206000f3'
 
-    const unsignedTx = Transaction.fromTxData({
+    const unsignedTx = LegacyTransaction.fromTxData({
       gasLimit: BigInt(15000000),
       to: callingAddress,
     })
@@ -656,8 +656,7 @@ tape('EIP 1153: transient storage', (t) => {
       ],
     }
 
-    const [result] = await runTest(test, st)
-    st.equal(bytesToInt(result.execResult.returnValue), 0xaa)
-    st.end()
+    const [result] = await runTest(test)
+    assert.equal(bytesToInt(result.execResult.returnValue), 0xaa)
   })
 })

@@ -3,10 +3,10 @@ import { MemoryLevel } from 'memory-level'
 import * as tape from 'tape'
 import * as td from 'testdouble'
 
-import { Chain } from '../../../lib/blockchain/chain'
-import { Config } from '../../../lib/config'
-import { Skeleton } from '../../../lib/sync'
-import { Event } from '../../../lib/types'
+import { Chain } from '../../../src/blockchain/chain'
+import { Config } from '../../../src/config'
+import { Skeleton } from '../../../src/sync'
+import { Event } from '../../../src/types'
 import { wait } from '../../integration/util'
 
 tape('[ReverseBlockFetcher]', async (t) => {
@@ -17,7 +17,7 @@ tape('[ReverseBlockFetcher]', async (t) => {
   PeerPool.prototype.idle = td.func<any>()
   PeerPool.prototype.ban = td.func<any>()
 
-  const { ReverseBlockFetcher } = await import('../../../lib/sync/fetcher/reverseblockfetcher')
+  const { ReverseBlockFetcher } = await import('../../../src/sync/fetcher/reverseblockfetcher')
 
   t.test('should start/stop', async (t) => {
     const config = new Config({ maxPerRequest: 5, transports: [] })
@@ -243,19 +243,19 @@ tape('[ReverseBlockFetcher]', async (t) => {
     })
     const block47 = Block.fromBlockData(
       { header: { number: BigInt(47), difficulty: BigInt(1) } },
-      { hardforkByBlockNumber: true }
+      { setHardfork: true }
     )
     const block48 = Block.fromBlockData(
       {
         header: { number: BigInt(48), parentHash: block47.hash(), difficulty: BigInt(1) },
       },
-      { hardforkByBlockNumber: true }
+      { setHardfork: true }
     )
     const block49 = Block.fromBlockData(
       {
         header: { number: BigInt(49), parentHash: block48.hash(), difficulty: BigInt(1) },
       },
-      { hardforkByBlockNumber: true }
+      { setHardfork: true }
     )
     ;(skeleton as any).status.progress.subchains = [
       { head: BigInt(100), tail: BigInt(50), next: block49.hash() },

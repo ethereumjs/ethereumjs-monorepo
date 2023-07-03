@@ -4,11 +4,10 @@ import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { Account, Address, bytesToHex, equalsBytes, toBytes } from '@ethereumjs/util'
 
-import { EVM } from '../../../../evm/src'
+import { VM } from '../../../dist/cjs'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
 
-import type { VM } from '../../../src'
-import type { InterpreterStep } from '@ethereumjs/evm/dist//interpreter'
+import type { InterpreterStep } from '@ethereumjs/evm'
 import type * as tape from 'tape'
 
 function parseTestCases(
@@ -66,12 +65,6 @@ function parseTestCases(
 }
 
 async function runTestCase(options: any, testData: any, t: tape.Test) {
-  let VM
-  if (options.dist === true) {
-    ;({ VM } = require('../../../dist'))
-  } else {
-    ;({ VM } = require('../../../src'))
-  }
   const begin = Date.now()
   // Copy the common object to not create long-lasting
   // references in memory which might prevent GC
@@ -79,7 +72,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
 
   // Have to create a blockchain with empty block as genesisBlock for Merge
   // Otherwise mainnet genesis will throw since this has difficulty nonzero
-  const genesisBlock = new Block(undefined, undefined, undefined, { common })
+  const genesisBlock = new Block(undefined, undefined, undefined, undefined, { common })
   const blockchain = await Blockchain.create({ genesisBlock, common })
   const state = new Trie({ useKeyHashing: true })
   const stateManager = new DefaultStateManager({
@@ -87,8 +80,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     common,
   })
 
-  const evm = new EVM({ common, stateManager, blockchain })
-  const vm = await VM.create({ state, stateManager, common, blockchain, evm })
+  const vm = await VM.create({ stateManager, common, blockchain })
 
   await setupPreConditions(vm.stateManager, testData)
 
@@ -104,7 +96,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   // Even if no txs are ran, coinbase should always be created
   const coinbaseAddress = Address.fromString(testData.env.currentCoinbase)
   const account = await (<VM>vm).stateManager.getAccount(coinbaseAddress)
-  await (<VM>vm).stateManager.putAccount(coinbaseAddress, account ?? new Account(), true)
+  await (<VM>vm).evm.journal.putAccount(coinbaseAddress, account ?? new Account())
 
   const stepHandler = (e: InterpreterStep) => {
     let hexStack = []
@@ -127,13 +119,13 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
 
   const afterTxHandler = async () => {
     const stateRoot = {
-      stateRoot: bytesToHex(vm.stateManager._trie.root),
+      stateRoot: bytesToHex((vm.stateManager as any)._trie.root),
     }
     t.comment(JSON.stringify(stateRoot))
   }
 
   if (tx) {
-    if (tx.validate()) {
+    if (tx.isValid()) {
       const block = makeBlockFromEnv(testData.env, { common })
 
       if (options.jsontrace === true) {
@@ -152,10 +144,10 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   }
 
   // Cleanup touched accounts (this wipes coinbase if it is empty on HFs >= TangerineWhistle)
-  await (<VM>vm).stateManager.cleanupTouchedAccounts()
+  await (<VM>vm).evm.journal.cleanup()
   await (<VM>vm).stateManager.getStateRoot() // Ensure state root is updated (flush all changes to trie)
 
-  const stateManagerStateRoot = vm.stateManager._trie.root()
+  const stateManagerStateRoot = (vm.stateManager as any)._trie.root()
   const testDataPostStateRoot = toBytes(testData.postStateRoot)
   const stateRootsAreEqual = equalsBytes(stateManagerStateRoot, testDataPostStateRoot)
 

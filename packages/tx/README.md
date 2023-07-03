@@ -32,7 +32,7 @@ For blob transactions and other KZG related proof functionality (e.g. for EVM pr
 The following two manual installation steps for a KZG library and the trusted setup are needed.
 
 1. Install an additional dependency that supports the `kzg` interface defined in [the kzg interface](./src/kzg/kzg.ts). You can install the default option [c-kzg](https://github.com/ethereum/c-kzg-4844) by simply running `npm install c-kzg`.
-2. Download the trusted setup required for the KZG module. It can be found [here](../client/lib/trustedSetups/trusted_setup.txt) within the client package.
+2. Download the trusted setup required for the KZG module. It can be found [here](../client/src/trustedSetups/trusted_setup.txt) within the client package.
 
 #### Global Initialization
 
@@ -62,7 +62,7 @@ All types of transaction objects are frozen with `Object.freeze()` which gives y
 
 ### Chain and Hardfork Support
 
-The `Transaction` constructor receives a parameter of an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common) object that lets you specify the chain and hardfork to be used. If there is no `Common` provided the chain ID provided as a parameter on typed tx or the chain ID derived from the `v` value on signed EIP-155 conforming legacy txs will be taken (introduced in `v3.2.1`). In other cases the chain defaults to `mainnet`.
+The `LegacyTransaction` constructor receives a parameter of an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common) object that lets you specify the chain and hardfork to be used. If there is no `Common` provided the chain ID provided as a parameter on typed tx or the chain ID derived from the `v` value on signed EIP-155 conforming legacy txs will be taken (introduced in `v3.2.1`). In other cases the chain defaults to `mainnet`.
 
 Base default HF (determined by `Common`): `merge`
 
@@ -137,12 +137,15 @@ const txData = {
   versionedHashes: ['0xabc...'], // Test with empty array on a first run
   kzgCommitments: ['0xdef...'], // Test with empty array on a first run
   blobs: ['0xghi...'], // Test with empty array on a first run
+  proofs: ['0xabcd...'], //
 }
 
 const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
 ```
 
-Note that `versionedHashes` and `kzgCommitments` have a real length of 32 bytes and `blobs` have a real length of `4096` bytes and values are trimmed here for brevity.
+Note that `versionedHashes` and `kzgCommitments` have a real length of 32 bytes, `blobs` have a real length of `4096` bytes and values are trimmed here for brevity.
+
+Alternatively, you can pass a `blobsData` property with an array of strings corresponding to a set of blobs and the `fromTxData` constructor will derive the corresponding `blobs`, `versionedHashes`, `kzgCommitments`, and `kzgProofs` for you.
 
 See the [Blob Transaction Tests](./test/eip4844.spec.ts) for examples of usage in instantiating, serializing, and deserializing these transactions.
 
@@ -224,7 +227,7 @@ on the `Vm.runTx()` method of the `@ethereumjs/vm` `TypeScript` VM implementatio
 
 ### Legacy Transactions
 
-- Class: `Transaction`
+- Class: `LegacyTransaction`
 - Activation: `chainstart` (with modifications along the road, see HF section below)
 - Type: `0` (internal)
 
@@ -233,7 +236,7 @@ See this [example script](./examples/transactions.ts) or the following code exam
 
 ```typescript
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 
 const txParams = {
   nonce: '0x00',
@@ -245,7 +248,7 @@ const txParams = {
 }
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-const tx = Transaction.fromTxData(txParams, { common })
+const tx = LegacyTransaction.fromTxData(txParams, { common })
 
 const privateKey = Buffer.from(
   'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
@@ -291,7 +294,7 @@ The correct tx type class for instantiation will then be chosen on runtime based
 This library has been tested to work with various L2 networks (`v3.3.0`+). All predefined supported custom chains introduced with `Common` `v2.4.0` or higher are supported, the following is a simple example to send a tx to the xDai chain:
 
 ```typescript
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import { Common } from '@ethereumjs/common'
 
 const from = 'PUBLIC_KEY'
@@ -309,7 +312,7 @@ const txData = {
   value: 1,
 }
 
-const tx = Transaction.fromTxData(txData, { common })
+const tx = LegacyTransaction.fromTxData(txData, { common })
 const signedTx = tx.sign(Buffer.from(PRIV_KEY, 'hex'))
 ```
 
@@ -337,21 +340,21 @@ const common = Common.custom({ chainId: 1234 })
 
 ### Signing with a hardware or external wallet
 
-To sign a tx with a hardware or external wallet use `tx.getMessageToSign(false)` to return an [EIP-155](https://eips.ethereum.org/EIPS/eip-155) compliant unsigned tx.
+To sign a tx with a hardware or external wallet use `tx.getMessageToSign()` to return an [EIP-155](https://eips.ethereum.org/EIPS/eip-155) compliant unsigned tx.
 
 A legacy transaction will return a Buffer list of the values, and a Typed Transaction ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)) will return the serialized output.
 
 Here is an example of signing txs with `@ledgerhq/hw-app-eth` as of `v6.5.0`:
 
 ```typescript
-import { Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Chain, Common } from '@ethereumjs/common'
 import { bufArrToArr } from '@ethereumjs/util'
 import { RLP } from '@ethereumjs/rlp'
 import Eth from '@ledgerhq/hw-app-eth'
 
 const eth = new Eth(transport)
-const common = new Common({ chain: Chain.Rinkeby })
+const common = new Common({ chain: Chain.Sepolia })
 
 let txData: any = { value: 1 }
 let tx: Transaction | FeeMarketEIP1559Transaction
@@ -361,19 +364,19 @@ const bip32Path = "44'/60'/0'/0/0"
 
 const run = async () => {
   // Signing a legacy tx
-  tx = Transaction.fromTxData(txData, { common })
-  unsignedTx = tx.getMessageToSign(false)
+  tx = LegacyTransaction.fromTxData(txData, { common })
+  unsignedTx = tx.getMessageToSign()
   unsignedTx = Buffer.from(RLP.encode(bufArrToArr(unsignedTx))) // ledger signTransaction API expects it to be serialized
   let { v, r, s } = await eth.signTransaction(bip32Path, unsignedTx)
   txData = { ...txData, v, r, s }
-  signedTx = Transaction.fromTxData(txData, { common })
+  signedTx = LegacyTransaction.fromTxData(txData, { common })
   let from = signedTx.getSenderAddress().toString()
   console.log(`signedTx: 0x${signedTx.serialize().toString('hex')}\nfrom: ${from}`)
 
   // Signing a 1559 tx
   txData = { value: 1 }
   tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
-  unsignedTx = tx.getMessageToSign(false)
+  unsignedTx = tx.getMessageToSign()
   ;({ v, r, s } = await eth.signTransaction(bip32Path, unsignedTx)) // this syntax is: object destructuring - assignment without declaration
   txData = { ...txData, v, r, s }
   signedTx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
@@ -397,7 +400,7 @@ _getFakeTransaction(txParams: TxParams): Transaction {
   delete txParams.from
 
   const opts = { common: this._common, freeze: false }
-  const tx = Transaction.fromTxData(txParams, opts)
+  const tx = LegacyTransaction.fromTxData(txParams, opts)
 
   // override getSenderAddress
   tx.getSenderAddress = () => { return from }

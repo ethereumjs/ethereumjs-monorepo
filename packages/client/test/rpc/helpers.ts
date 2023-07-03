@@ -1,24 +1,24 @@
 import { BlockHeader } from '@ethereumjs/block'
-import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
+import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common, parseGethGenesis } from '@ethereumjs/common'
-import { Address, KECCAK256_RLP, hexStringToBytes } from '@ethereumjs/util'
+import { Address, KECCAK256_RLP, hexToBytes, parseGethGenesisState } from '@ethereumjs/util'
 import { Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
 
-import { Chain } from '../../lib/blockchain/chain'
-import { Config } from '../../lib/config'
-import { VMExecution } from '../../lib/execution'
-import { getLogger } from '../../lib/logging'
-import { RlpxServer } from '../../lib/net/server/rlpxserver'
-import { RPCManager as Manager } from '../../lib/rpc'
-import { TxPool } from '../../lib/service/txpool'
-import { Event } from '../../lib/types'
-import { createRPCServerListener, createWsRPCServerListener } from '../../lib/util'
+import { Chain } from '../../src/blockchain/chain'
+import { Config } from '../../src/config'
+import { VMExecution } from '../../src/execution'
+import { getLogger } from '../../src/logging'
+import { RlpxServer } from '../../src/net/server/rlpxserver'
+import { RPCManager as Manager } from '../../src/rpc'
+import { TxPool } from '../../src/service/txpool'
+import { Event } from '../../src/types'
+import { createRPCServerListener, createWsRPCServerListener } from '../../src/util'
 
 import { mockBlockchain } from './mockBlockchain'
 
-import type { EthereumClient } from '../../lib/client'
-import type { FullEthereumService } from '../../lib/service'
+import type { EthereumClient } from '../../src/client'
+import type { FullEthereumService } from '../../src/service'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { IncomingMessage } from 'connect'
 import type { HttpServer } from 'jayson/promise'
@@ -226,7 +226,10 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
     chain: chainName,
     customChains: [genesisParams],
   })
-  common.setHardforkByBlockNumber(0, genesisParams.genesis.difficulty)
+  common.setHardforkBy({
+    blockNumber: 0,
+    td: genesisParams.genesis.difficulty,
+  })
 
   const blockchain = await Blockchain.create({
     common,
@@ -255,7 +258,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   await chain.open()
   await execution?.open()
   await chain.update()
-  return { chain, common, execution: execution!, server, service }
+  return { chain, common, execution: execution!, server, service, blockchain }
 }
 
 /**
@@ -270,7 +273,7 @@ export async function runBlockWithTxs(
   const { vm } = execution
   // build block with tx
   const parentBlock = await chain.getCanonicalHeadBlock()
-  const vmCopy = await vm.copy()
+  const vmCopy = await vm.shallowCopy()
   const blockBuilder = await vmCopy.buildBlock({
     parentBlock,
     headerData: {
@@ -309,6 +312,6 @@ export function gethGenesisStartLondon(gethGenesis: any) {
  * This address has preallocated balance in file `testdata/geth-genesis/pow.json`
  */
 export const dummy = {
-  addr: new Address(hexStringToBytes('0xcde098d93535445768e8a2345a2f869139f45641')),
-  privKey: hexStringToBytes('5831aac354d13ff96a0c051af0d44c0931c2a20bdacee034ffbaa2354d84f5f8'),
+  addr: new Address(hexToBytes('0xcde098d93535445768e8a2345a2f869139f45641')),
+  privKey: hexToBytes('0x5831aac354d13ff96a0c051af0d44c0931c2a20bdacee034ffbaa2354d84f5f8'),
 }

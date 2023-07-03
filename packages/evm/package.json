@@ -21,18 +21,23 @@
   "contributors": [
     "Alex Beregszaszi <alex@rtfs.hu>"
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "files": [
     "dist",
     "src"
   ],
   "scripts": {
-    "rustbnHotFix": "sed -i -e \"s/.toString('hex')), 'hex'//g\" ../../node_modules/rustbn.js/index.js && sed -i -e \"s/Buffer.from(//g\" ../../node_modules/rustbn.js/index.js",
-    "build": "npm run rustbnHotFix && ../../config/cli/ts-build.sh",
+    "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "c8 --all --reporter=lcov --reporter=text npm run coverage:test",
-    "coverage:test": "npm run test && cd ../vm && npm run tester -- --state",
+    "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
+    "coverage:test": "npm run test:node && cd ../vm && npm run tester -- --state",
     "docs:build": "typedoc --options typedoc.js",
     "examples": "ts-node ../../scripts/examples-runner.ts -- evm",
     "formatTest": "node ./scripts/formatTest",
@@ -41,9 +46,8 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "profiling": "0x ./benchmarks/run.js profiling",
-    "tape": "tape -r ts-node/register --stack-size=1500",
-    "test": "npm run tape -- './test/**/*.spec.ts'",
-    "test:browser": "karma start karma.conf.js",
+    "test:browser": "npx vitest run -c=vitest.config.browser.ts --browser.name=chrome  --browser.headless",
+    "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
@@ -53,7 +57,7 @@
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.0.0",
     "mcl-wasm": "^0.7.1",
-    "rustbn.js": "~0.2.0"
+    "rustbn-wasm": "^0.1.0"
   },
   "devDependencies": {
     "@ethereumjs/statemanager": "^1.0.5",
@@ -63,7 +67,7 @@
     "@types/minimist": "^1.2.2",
     "@types/node-dir": "^0.0.34",
     "benchmark": "^2.1.4",
-    "c-kzg": "^2.0.4",
+    "c-kzg": "^2.1.0",
     "level": "^8.0.0",
     "memory-level": "^1.0.0",
     "minimist": "^1.2.5",

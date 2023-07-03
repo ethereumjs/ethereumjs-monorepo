@@ -4,21 +4,22 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
-  Transaction,
+  LegacyTransaction,
 } from '@ethereumjs/tx'
 import {
   Account,
   Address,
   bigIntToBytes,
   bytesToBigInt,
-  bytesToPrefixedHexString,
+  bytesToHex,
+  equalsBytes,
+  hexToBytes,
   isHexPrefixed,
   setLengthLeft,
   stripHexPrefix,
   toBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import type { BlockOptions } from '@ethereumjs/block'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
@@ -65,7 +66,7 @@ export function dumpState(state: any, cb: Function) {
       results.push(result)
     }
     for (let i = 0; i < results.length; i++) {
-      console.log("SHA3'd address: " + bytesToHex(results[i].address))
+      console.log('Hashed address: ' + bytesToHex(results[i].address))
       console.log('\tstorage root: ' + bytesToHex(results[i].storageRoot))
       console.log('\tstorage: ')
       for (const storageKey in results[i].storage) {
@@ -86,7 +87,7 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
   if (typeof a === 'string' && isHexPrefixed(a)) {
     a = a.slice(2)
     if (a.length % 2) a = '0' + a
-    a = hexToBytes(a)
+    a = hexToBytes('0x' + a)
   } else if (!isHex) {
     try {
       a = bigIntToBytes(BigInt(a))
@@ -95,10 +96,10 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
     }
   } else {
     if (a.length % 2) a = '0' + a
-    a = hexToBytes(a)
+    a = hexToBytes('0x' + a)
   }
 
-  if (toZero && bytesToHex(a) === '') {
+  if (toZero && bytesToHex(a) === '0x') {
     a = Uint8Array.from([0])
   }
 
@@ -109,19 +110,19 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
  * Make a tx using JSON from tests repo
  * @param {Object} txData The tx object from tests repo
  * @param {TxOptions} opts Tx opts that can include an @ethereumjs/common object
- * @returns {FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | Transaction} Transaction to be passed to VM.runTx function
+ * @returns {FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | LegacyTransaction} Transaction to be passed to VM.runTx function
  */
 export function makeTx(
   txData: any,
   opts?: TxOptions
-): FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | Transaction {
+): FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | LegacyTransaction {
   let tx
   if (txData.maxFeePerGas !== undefined) {
     tx = FeeMarketEIP1559Transaction.fromTxData(txData, opts)
   } else if (txData.accessLists !== undefined) {
     tx = AccessListEIP2930Transaction.fromTxData(txData, opts)
   } else {
-    tx = Transaction.fromTxData(txData, opts)
+    tx = LegacyTransaction.fromTxData(txData, opts)
   }
 
   if (txData.secretKey !== undefined) {
@@ -215,7 +216,7 @@ export function verifyAccountPostConditions(
     const rs = state.createReadStream()
     rs.on('data', function (data: any) {
       let key = bytesToHex(data.key)
-      const val = bytesToPrefixedHexString(RLP.decode(data.value) as Uint8Array)
+      const val = bytesToHex(RLP.decode(data.value) as Uint8Array)
 
       if (key === '0x') {
         key = '0x00'
@@ -225,7 +226,7 @@ export function verifyAccountPostConditions(
 
       if (val !== hashedStorage[key]) {
         t.comment(
-          `Expected storage key 0x${bytesToHex(data.key)} at address ${address} to have value ${
+          `Expected storage key ${bytesToHex(data.key)} at address ${address} to have value ${
             hashedStorage[key] ?? '0x'
           }, but got ${val}}`
         )
@@ -343,7 +344,7 @@ export async function setupPreConditions(state: EVMStateManagerInterface, testDa
     // Set contract storage
     for (const storageKey of Object.keys(storage)) {
       const val = format(storage[storageKey])
-      if (['', '00'].includes(bytesToHex(val))) {
+      if (['0x', '0x00'].includes(bytesToHex(val))) {
         continue
       }
       const key = setLengthLeft(format(storageKey), 32)
@@ -364,35 +365,6 @@ export async function setupPreConditions(state: EVMStateManagerInterface, testDa
     await state.putAccount(address, account)
   }
   await state.commit()
-  // Clear the touched stack, otherwise untouched accounts in the block which are empty (>= SpuriousDragon)
-  // will get deleted from the state, resulting in state trie errors
-  ;(<any>state).touchedJournal.clear()
-}
-
-/**
- * Returns an alias for specified hardforks to meet test dependencies requirements/assumptions.
- * @param forkConfig - the name of the hardfork for which an alias should be returned
- * @returns Either an alias of the forkConfig param, or the forkConfig param itself
- */
-export function getRequiredForkConfigAlias(forkConfig: string): string {
-  // Run the Istanbul tests for MuirGlacier since there are no dedicated tests
-  if (String(forkConfig).match(/^muirGlacier/i)) {
-    return 'Istanbul'
-  }
-  // Petersburg is named ConstantinopleFix in the client-independent consensus test suite
-  if (String(forkConfig).match(/^petersburg$/i)) {
-    return 'ConstantinopleFix'
-  }
-  return forkConfig
-}
-
-/**
- * Checks if in a karma test runner.
- * @returns boolean whether running in karma
- */
-export function isRunningInKarma(): boolean {
-  // eslint-disable-next-line no-undef
-  return typeof (<any>globalThis).window !== 'undefined' && (<any>globalThis).window.__karma__
 }
 
 /**

@@ -1,9 +1,8 @@
-import { bytesToPrefixedHexString, hexStringToBytes, setLengthLeft } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes, setLengthLeft } from '@ethereumjs/util'
 
-import { isAccessList } from './types'
+import { isAccessList } from './types.js'
 
-import type { BlobEIP4844Transaction } from './eip4844Transaction'
-import type { AccessList, AccessListBytes, AccessListItem } from './types'
+import type { AccessList, AccessListBytes, AccessListItem } from './types.js'
 import type { Common } from '@ethereumjs/common'
 
 export function checkMaxInitCodeSize(common: Common, length: number) {
@@ -28,10 +27,10 @@ export class AccessLists {
 
       for (let i = 0; i < accessList.length; i++) {
         const item: AccessListItem = accessList[i]
-        const addressBytes = hexStringToBytes(item.address)
+        const addressBytes = hexToBytes(item.address)
         const storageItems: Uint8Array[] = []
         for (let index = 0; index < item.storageKeys.length; index++) {
-          storageItems.push(hexStringToBytes(item.storageKeys[index]))
+          storageItems.push(hexToBytes(item.storageKeys[index]))
         }
         newAccessList.push([addressBytes, storageItems])
       }
@@ -42,10 +41,10 @@ export class AccessLists {
       const json: AccessList = []
       for (let i = 0; i < bufferAccessList.length; i++) {
         const data = bufferAccessList[i]
-        const address = bytesToPrefixedHexString(data[0])
+        const address = bytesToHex(data[0])
         const storageKeys: string[] = []
         for (let item = 0; item < data[1].length; item++) {
-          storageKeys.push(bytesToPrefixedHexString(data[1][item]))
+          storageKeys.push(bytesToHex(data[1][item]))
         }
         const jsonItem: AccessListItem = {
           address,
@@ -88,13 +87,13 @@ export class AccessLists {
     for (let index = 0; index < accessList.length; index++) {
       const item: any = accessList[index]
       const JSONItem: any = {
-        address: bytesToPrefixedHexString(setLengthLeft(item[0], 20)),
+        address: bytesToHex(setLengthLeft(item[0], 20)),
         storageKeys: [],
       }
       const storageSlots: Uint8Array[] = item[1]
       for (let slot = 0; slot < storageSlots.length; slot++) {
         const storageSlot = storageSlots[slot]
-        JSONItem.storageKeys.push(bytesToPrefixedHexString(setLengthLeft(storageSlot, 32)))
+        JSONItem.storageKeys.push(bytesToHex(setLengthLeft(storageSlot, 32)))
       }
       accessListJSON.push(JSONItem)
     }
@@ -114,35 +113,5 @@ export class AccessLists {
 
     const addresses = accessList.length
     return addresses * Number(accessListAddressCost) + slots * Number(accessListStorageKeyCost)
-  }
-}
-
-export const blobTxToNetworkWrapperDataFormat = (tx: BlobEIP4844Transaction) => {
-  const to = {
-    selector: tx.to !== undefined ? 1 : 0,
-    value: tx.to?.toBytes() ?? null,
-  }
-  return {
-    message: {
-      chainId: tx.common.chainId(),
-      nonce: tx.nonce,
-      maxPriorityFeePerGas: tx.maxPriorityFeePerGas,
-      maxFeePerGas: tx.maxFeePerGas,
-      gas: tx.gasLimit,
-      to,
-      value: tx.value,
-      data: tx.data,
-      accessList: tx.accessList.map((listItem) => {
-        return { address: listItem[0], storageKeys: listItem[1] }
-      }),
-      blobVersionedHashes: tx.versionedHashes,
-      maxFeePerDataGas: tx.maxFeePerDataGas,
-    },
-    // If transaction is unsigned, signature fields will be initialized to zeroes
-    signature: {
-      r: tx.r ?? BigInt(0),
-      s: tx.s ?? BigInt(0),
-      yParity: tx.v === BigInt(1) ? true : false,
-    },
   }
 }
