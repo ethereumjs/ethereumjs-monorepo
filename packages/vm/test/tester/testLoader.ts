@@ -5,6 +5,10 @@ import * as path from 'path'
 import { DEFAULT_TESTS_PATH } from './config'
 
 const falsePredicate = () => false
+type FileWithTests = Record<string, any>
+type DirWithFiles = Record<string, FileWithTests>
+type DirWithSubDirs = Record<string, DirWithFiles>
+export type FileData = Record<string, DirWithFiles | DirWithSubDirs>
 
 /**
  * Returns the list of test files matching the given parameters
@@ -21,18 +25,21 @@ export async function getTests(
   skipPredicate: (...args: any[]) => boolean = falsePredicate,
   directory: string,
   excludeDir: RegExp | string[] = []
-): Promise<string[]> {
+): Promise<FileData> {
   const options = {
     match: fileFilter,
     excludeDir,
   }
+
+  const fileData: FileData = {}
+  const skipped: string[] = []
   return new Promise((resolve, reject) => {
-    const finishedCallback = (err: Error | undefined, files: string[]) => {
+    const finishedCallback = (err: Error | undefined, _files: string[]) => {
       if (err) {
         reject(err)
         return
       }
-      resolve(files)
+      resolve(fileData)
     }
     const fileCallback = async (
       err: Error | undefined,
@@ -44,15 +51,33 @@ export async function getTests(
         reject(err)
         return
       }
-      const subDir = fileName.substr(directory.length + 1)
       const parsedFileName = path.parse(fileName).name
+      const parsed = path.parse(fileName)
+      const subDir = parsed.dir.slice(directory.length + 1)
+      const dirList = subDir.split(`/`).slice(1)
       content = content instanceof Uint8Array ? content.toString() : content
       const testsByName = JSON.parse(content)
+      const filteredTestsByName = []
       const testNames = Object.keys(testsByName)
       for (const testName of testNames) {
         if (!skipPredicate(testName, testsByName[testName])) {
-          await onFile(parsedFileName, subDir, testName, testsByName[testName])
+          filteredTestsByName.push([testName, testsByName[testName]])
         }
+      }
+      if (filteredTestsByName.length > 0) {
+        if (dirList.length === 1) {
+          const sub = fileData[dirList[0]] ?? {}
+          sub[`${parsedFileName}`] = filteredTestsByName
+          fileData[dirList[0]] = sub
+        } else if (dirList.length === 2) {
+          const sub = fileData[dirList[0]] ?? {}
+          const subSub = sub[dirList[1]] ?? {}
+          subSub[`${parsedFileName}`] = filteredTestsByName
+          sub[dirList[1]] = subSub
+          fileData[dirList[0]] = sub
+        }
+      } else {
+        skipped.push(parsedFileName)
       }
       next()
     }
@@ -154,7 +179,7 @@ export async function getTestsFromArgs(
       return testName !== args.test
     }
   }
-
+  console.log({ directory })
   return getTests(onFile, fileFilter, skipFn, directory, excludeDir)
 }
 

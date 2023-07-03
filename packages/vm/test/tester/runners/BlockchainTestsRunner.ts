@@ -3,7 +3,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { bytesToBigInt, initKZG } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { assert, expect, it } from 'vitest'
+import { assert, expect, it, suite, test } from 'vitest'
 
 import { verifyPostConditions } from '../../util'
 import { DEFAULT_FORK_CONFIG, getRequiredForkConfigAlias, getTestDirs } from '../config'
@@ -19,6 +19,7 @@ import {
 } from './runnerUtils'
 
 import type { VM } from '../../../src'
+import type { FileData } from '../testLoader'
 import type { RunnerArgs, TestArgs, TestGetterArgs } from './runnerUtils'
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
@@ -235,29 +236,33 @@ export class BlockchainTests {
       console.log(`skipping test: no data available for ${options.forkConfigTestSuite}`)
       return
     }
-    it(`${id}`, async () => {
+
+    test(`${id}`, async (name) => {
+      console.log('name: ', name)
       try {
         const common = options.common.copy()
         const begin = Date.now()
         const { vm, blockchain, state } = await setupBlockchainTestVM(common, testData)
         const currentBlock = BigInt(0)
-        for await (const [idx, raw] of testData.blocks.entries()) {
-          this.testCount++
-          it(`test: ${idx + 1}/${
-            testData.blocks.length
-          } -- CurrentBlock: ${currentBlock}`, async () => {
-            await this.runTestCase(
-              raw,
-              options,
-              testData,
-              currentBlock,
-              blockchain,
-              vm,
-              common,
-              state
-            )
-          })
-        }
+        suite('testData', async () => {
+          for await (const [idx, raw] of testData.blocks.entries()) {
+            this.testCount++
+            test(`test: ${idx + 1}/${
+              testData.blocks.length
+            } -- CurrentBlock: ${currentBlock}`, async () => {
+              await this.runTestCase(
+                raw,
+                options,
+                testData,
+                currentBlock,
+                blockchain,
+                vm,
+                common,
+                state
+              )
+            })
+          }
+        })
         this.testCount++
         it(`should have the correct _headHeaderHash`, async () => {
           assert.equal(
@@ -281,9 +286,46 @@ export class BlockchainTests {
       return
     } else {
       const dirs = getTestDirs(this.FORK_CONFIG_VM, name)
-      for await (const dir of dirs) {
-        const directory = getTestPath(dir, this.testGetterArgs, this.customTestsPath)
-        await getTestsFromArgs(dir, this.onFile.bind(this), this.testGetterArgs, directory)
+      for (const dir of dirs) {
+        suite(dir, async () => {
+          const directory = getTestPath(dir, this.testGetterArgs, this.customTestsPath)
+          const tests = await getTestsFromArgs(
+            dir,
+            this.onFile.bind(this),
+            this.testGetterArgs,
+            directory
+          )
+          for await (const [testDir, subDir] of Object.entries(tests as FileData)) {
+            suite(testDir, async () => {
+              if (Array.isArray(Object.values(subDir)[0])) {
+                for await (const [fileName, testData] of Object.entries(subDir)) {
+                  suite(fileName, async () => {
+                    for await (const [testName, t] of Object.values(testData)) {
+                      it(testName, async () => {
+                        await this.onFile(fileName, testDir, testName, t)
+                      })
+                    }
+                  })
+                }
+              } else {
+                for await (const [subDirName, subSubDir] of Object.entries(subDir)) {
+                  suite(subDirName, async () => {
+                    for await (const [fileName, testData] of Object.entries(subSubDir)) {
+                      suite(fileName, async () => {
+                        for await (const tst of Object.values(testData)) {
+                          const [testName, t] = tst as [string, any]
+                          it(testName, async () => {
+                            await this.onFile(fileName, testDir, testName, t)
+                          })
+                        }
+                      })
+                    }
+                  })
+                }
+              }
+            })
+          }
+        })
       }
 
       if (this.expectedTests > 0) {

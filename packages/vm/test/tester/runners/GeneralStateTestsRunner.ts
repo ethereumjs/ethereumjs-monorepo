@@ -1,6 +1,6 @@
 import { toBytes } from '@ethereumjs/util'
 import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
-import { assert, expect, it } from 'vitest'
+import { assert, expect, it, suite } from 'vitest'
 
 import { makeBlockFromEnv } from '../../util'
 import { DEFAULT_FORK_CONFIG, getRequiredForkConfigAlias, getTestDirs } from '../config'
@@ -17,6 +17,7 @@ import {
 } from './runnerUtils'
 
 import type { VM } from '../../../src'
+import type { FileData } from '../testLoader'
 import type { RunnerArgs, TestArgs, TestGetterArgs } from './runnerUtils'
 import type { InterpreterStep } from '@ethereumjs/evm'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
@@ -197,8 +198,45 @@ export class GeneralStateTests {
     } else {
       const dirs = getTestDirs(this.FORK_CONFIG_VM, name)
       for await (const dir of dirs) {
-        const directory = getTestPath(dir, this.testGetterArgs, this.customTestsPath)
-        await getTestsFromArgs(dir, this.onFile.bind(this), this.testGetterArgs, directory)
+        suite(dir, async () => {
+          const directory = getTestPath(dir, this.testGetterArgs, this.customTestsPath)
+          const tests = await getTestsFromArgs(
+            dir,
+            this.onFile.bind(this),
+            this.testGetterArgs,
+            directory
+          )
+          for await (const [testDir, subDir] of Object.entries(tests as FileData)) {
+            suite(testDir, async () => {
+              if (Array.isArray(Object.values(subDir)[0])) {
+                for await (const [fileName, testData] of Object.entries(subDir)) {
+                  suite(fileName, async () => {
+                    for await (const [testName, t] of Object.values(testData)) {
+                      it(testName, async () => {
+                        await this.onFile(fileName, testDir, testName, t)
+                      })
+                    }
+                  })
+                }
+              } else {
+                for await (const [subDirName, subSubDir] of Object.entries(subDir)) {
+                  suite(subDirName, async () => {
+                    for await (const [fileName, testData] of Object.entries(subSubDir)) {
+                      suite(fileName, async () => {
+                        for await (const tst of Object.values(testData)) {
+                          const [testName, t] = tst as [string, any]
+                          it(testName, async () => {
+                            await this.onFile(fileName, testDir, testName, t)
+                          })
+                        }
+                      })
+                    }
+                  })
+                }
+              }
+            })
+          }
+        })
       }
 
       if (this.expectedTests > 0) {
