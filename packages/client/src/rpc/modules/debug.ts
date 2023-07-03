@@ -1,4 +1,4 @@
-import { bigIntToHex, bytesToHex, unprefixedHexToBytes } from '@ethereumjs/util'
+import { bigIntToHex, bytesToHex, hexToBytes } from '@ethereumjs/util'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
 import { middleware, validators } from '../validation'
@@ -100,8 +100,9 @@ export class Debug {
     const opts = validateTracerConfig(config)
 
     try {
+      console.log(txHash)
       const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
-        unprefixedHexToBytes(txHash)
+        hexToBytes(txHash)
       )
       if (!result) return null
       const [_, blockHash, txIndex] = result
