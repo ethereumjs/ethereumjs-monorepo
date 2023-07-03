@@ -6,6 +6,39 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.0.0 - 2023-07-11
+
+### Buffer -> Uint8Array
+
+With this releases we remove all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`). While this is a big step towards interoperability and browser compatibility of our libraries, this is also one of the most invasive operations we have ever done, see the huge changeset from PR [#2566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2566) and [#2607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2607). 😋
+
+We nevertheless think this is very much worth it and we tried to make transition work as easy as possible.
+
+#### How to upgrade?
+
+For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
+
+```typescript
+// DPT
+new DPT(privateKey: Uint8Array, options: DPTOptions)
+DPT.getPeer(obj: string | Uint8Array | PeerInfo)
+DPT.getClosestPeers(id: Uint8Array)
+DPT.banPeer(obj: string | Uint8Array | PeerInfo, maxAge?: number)
+
+// RLPx
+new RLPx(privateKey: Uint8Array, options: RLPxOptions)
+RLPx.disconnect(id: Uint8Array)
+
+// ETH
+ETH.senStatus()
+ETH.sendMessage()
+ETH.on('message', () => { ... })
+```
+
+Eventually it is a good idea to generally have a closer look at code parts where events are received, so e.g. do an ".on" search in your IDE.
+
+We have added helper methods for "Buffer -> Uint8Array" conversions in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
+
 ## 5.1.2 - 2023-04-20
 
 - Update ethereum-cryptography from 1.2 to 2.0 (switch from noble-secp256k1 to noble-curves), PR [#2641](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2641)
