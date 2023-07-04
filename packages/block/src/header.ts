@@ -57,7 +57,7 @@ export class BlockHeader {
   public readonly dataGasUsed?: bigint
   public readonly excessDataGas?: bigint
 
-  public readonly _common: Common
+  public readonly common: Common
 
   private cache: HeaderCache = {
     hash: undefined,
@@ -67,7 +67,7 @@ export class BlockHeader {
    * EIP-4399: After merge to PoS, `mixHash` supplanted as `prevRandao`
    */
   get prevRandao() {
-    if (this._common.isActivatedEIP(4399) === false) {
+    if (this.common.isActivatedEIP(4399) === false) {
       const msg = this._errorMsg(
         'The prevRandao parameter can only be accessed when EIP-4399 is activated'
       )
@@ -111,15 +111,15 @@ export class BlockHeader {
     const { number, baseFeePerGas, excessDataGas, dataGasUsed } = headerData
     const header = BlockHeader.fromHeaderData(headerData, opts)
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    if (header._common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
-      const eip1559ActivationBlock = bigIntToBytes(header._common.eipBlock(1559)!)
+    if (header.common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
+      const eip1559ActivationBlock = bigIntToBytes(header.common.eipBlock(1559)!)
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
       if (eip1559ActivationBlock && equalsBytes(eip1559ActivationBlock, number as Uint8Array)) {
         throw new Error('invalid header. baseFeePerGas should be provided')
       }
     }
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    if (header._common.isActivatedEIP(4844)) {
+    if (header.common.isActivatedEIP(4844)) {
       if (excessDataGas === undefined) {
         throw new Error('invalid header. excessDataGas should be provided')
       } else if (dataGasUsed === undefined) {
@@ -137,9 +137,9 @@ export class BlockHeader {
    */
   constructor(headerData: HeaderData, options: BlockOptions = {}) {
     if (options.common) {
-      this._common = options.common.copy()
+      this.common = options.common.copy()
     } else {
-      this._common = new Common({
+      this.common = new Common({
         chain: Chain.Mainnet, // default
       })
     }
@@ -186,12 +186,12 @@ export class BlockHeader {
 
     const setHardfork = options.setHardfork ?? false
     if (setHardfork === true) {
-      this._common.setHardforkBy({
+      this.common.setHardforkBy({
         blockNumber: number,
         timestamp,
       })
     } else if (typeof setHardfork !== 'boolean') {
-      this._common.setHardforkBy({
+      this.common.setHardforkBy({
         blockNumber: number,
         td: setHardfork as BigIntLike,
         timestamp,
@@ -200,14 +200,14 @@ export class BlockHeader {
 
     // Hardfork defaults which couldn't be paired with earlier defaults
     const hardforkDefaults = {
-      baseFeePerGas: this._common.isActivatedEIP(1559)
-        ? number === this._common.hardforkBlock(Hardfork.London)
-          ? this._common.param('gasConfig', 'initialBaseFee')
+      baseFeePerGas: this.common.isActivatedEIP(1559)
+        ? number === this.common.hardforkBlock(Hardfork.London)
+          ? this.common.param('gasConfig', 'initialBaseFee')
           : BigInt(7)
         : undefined,
-      withdrawalsRoot: this._common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
-      dataGasUsed: this._common.isActivatedEIP(4844) ? BigInt(0) : undefined,
-      excessDataGas: this._common.isActivatedEIP(4844) ? BigInt(0) : undefined,
+      withdrawalsRoot: this.common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
+      dataGasUsed: this.common.isActivatedEIP(4844) ? BigInt(0) : undefined,
+      excessDataGas: this.common.isActivatedEIP(4844) ? BigInt(0) : undefined,
     }
 
     const baseFeePerGas =
@@ -219,17 +219,17 @@ export class BlockHeader {
     const excessDataGas =
       toType(headerData.excessDataGas, TypeOutput.BigInt) ?? hardforkDefaults.excessDataGas
 
-    if (!this._common.isActivatedEIP(1559) && baseFeePerGas !== undefined) {
+    if (!this.common.isActivatedEIP(1559) && baseFeePerGas !== undefined) {
       throw new Error('A base fee for a block can only be set with EIP1559 being activated')
     }
 
-    if (!this._common.isActivatedEIP(4895) && withdrawalsRoot !== undefined) {
+    if (!this.common.isActivatedEIP(4895) && withdrawalsRoot !== undefined) {
       throw new Error(
         'A withdrawalsRoot for a header can only be provided with EIP4895 being activated'
       )
     }
 
-    if (!this._common.isActivatedEIP(4844)) {
+    if (!this.common.isActivatedEIP(4844)) {
       if (headerData.dataGasUsed !== undefined) {
         throw new Error('data gas used can only be provided with EIP4844 activated')
       }
@@ -266,7 +266,7 @@ export class BlockHeader {
     // block option parameter, we instead set difficulty to this value.
     if (
       options.calcDifficultyFromHeader &&
-      this._common.consensusAlgorithm() === ConsensusAlgorithm.Ethash
+      this.common.consensusAlgorithm() === ConsensusAlgorithm.Ethash
     ) {
       this.difficulty = this.ethashCanonicalDifficulty(options.calcDifficultyFromHeader)
     }
@@ -335,18 +335,18 @@ export class BlockHeader {
     }
 
     // Validation for EIP-1559 blocks
-    if (this._common.isActivatedEIP(1559) === true) {
+    if (this.common.isActivatedEIP(1559) === true) {
       if (typeof this.baseFeePerGas !== 'bigint') {
         const msg = this._errorMsg('EIP1559 block has no base fee field')
         throw new Error(msg)
       }
-      const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
+      const londonHfBlock = this.common.hardforkBlock(Hardfork.London)
       if (
         typeof londonHfBlock === 'bigint' &&
         londonHfBlock !== BigInt(0) &&
         this.number === londonHfBlock
       ) {
-        const initialBaseFee = this._common.param('gasConfig', 'initialBaseFee')
+        const initialBaseFee = this.common.param('gasConfig', 'initialBaseFee')
         if (this.baseFeePerGas !== initialBaseFee) {
           const msg = this._errorMsg('Initial EIP1559 block does not have initial base fee')
           throw new Error(msg)
@@ -354,7 +354,7 @@ export class BlockHeader {
       }
     }
 
-    if (this._common.isActivatedEIP(4895) === true) {
+    if (this.common.isActivatedEIP(4895) === true) {
       if (this.withdrawalsRoot === undefined) {
         const msg = this._errorMsg('EIP4895 block has no withdrawalsRoot field')
         throw new Error(msg)
@@ -374,21 +374,21 @@ export class BlockHeader {
    */
   protected _consensusFormatValidation() {
     const { nonce, uncleHash, difficulty, extraData, number } = this
-    const hardfork = this._common.hardfork()
+    const hardfork = this.common.hardfork()
 
     // Consensus type dependent checks
-    if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Ethash) {
+    if (this.common.consensusAlgorithm() === ConsensusAlgorithm.Ethash) {
       // PoW/Ethash
       if (
         number > BigInt(0) &&
-        this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)
+        this.extraData.length > this.common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)
       ) {
         // Check length of data on all post-genesis blocks
         const msg = this._errorMsg('invalid amount of extra data')
         throw new Error(msg)
       }
     }
-    if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
+    if (this.common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       // PoA/Clique
       const minLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
       if (!this.cliqueIsEpochTransition()) {
@@ -422,7 +422,7 @@ export class BlockHeader {
       }
     }
     // Validation for PoS blocks (EIP-3675)
-    if (this._common.consensusType() === ConsensusType.ProofOfStake) {
+    if (this.common.consensusType() === ConsensusType.ProofOfStake) {
       let error = false
       let errorMsg = ''
 
@@ -466,20 +466,20 @@ export class BlockHeader {
     let parentGasLimit = parentBlockHeader.gasLimit
     // EIP-1559: assume double the parent gas limit on fork block
     // to adopt to the new gas target centered logic
-    const londonHardforkBlock = this._common.hardforkBlock(Hardfork.London)
+    const londonHardforkBlock = this.common.hardforkBlock(Hardfork.London)
     if (
       typeof londonHardforkBlock === 'bigint' &&
       londonHardforkBlock !== BigInt(0) &&
       this.number === londonHardforkBlock
     ) {
-      const elasticity = this._common.param('gasConfig', 'elasticityMultiplier')
+      const elasticity = this.common.param('gasConfig', 'elasticityMultiplier')
       parentGasLimit = parentGasLimit * elasticity
     }
     const gasLimit = this.gasLimit
-    const hardfork = this._common.hardfork()
+    const hardfork = this.common.hardfork()
 
     const a =
-      parentGasLimit / this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork)
+      parentGasLimit / this.common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork)
     const maxGasLimit = parentGasLimit + a
     const minGasLimit = parentGasLimit - a
 
@@ -493,7 +493,7 @@ export class BlockHeader {
       throw new Error(msg)
     }
 
-    if (gasLimit < this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork)) {
+    if (gasLimit < this.common.paramByHardfork('gasConfig', 'minGasLimit', hardfork)) {
       const msg = this._errorMsg(
         `gas limit decreased below minimum gas limit for hardfork=${hardfork}`
       )
@@ -505,21 +505,21 @@ export class BlockHeader {
    * Calculates the base fee for a potential next block
    */
   public calcNextBaseFee(): bigint {
-    if (this._common.isActivatedEIP(1559) === false) {
+    if (this.common.isActivatedEIP(1559) === false) {
       const msg = this._errorMsg(
         'calcNextBaseFee() can only be called with EIP1559 being activated'
       )
       throw new Error(msg)
     }
     let nextBaseFee: bigint
-    const elasticity = this._common.param('gasConfig', 'elasticityMultiplier')
+    const elasticity = this.common.param('gasConfig', 'elasticityMultiplier')
     const parentGasTarget = this.gasLimit / elasticity
 
     if (parentGasTarget === this.gasUsed) {
       nextBaseFee = this.baseFeePerGas!
     } else if (this.gasUsed > parentGasTarget) {
       const gasUsedDelta = this.gasUsed - parentGasTarget
-      const baseFeeMaxChangeDenominator = this._common.param(
+      const baseFeeMaxChangeDenominator = this.common.param(
         'gasConfig',
         'baseFeeMaxChangeDenominator'
       )
@@ -530,7 +530,7 @@ export class BlockHeader {
         (calculatedDelta > BigInt(1) ? calculatedDelta : BigInt(1)) + this.baseFeePerGas!
     } else {
       const gasUsedDelta = parentGasTarget - this.gasUsed
-      const baseFeeMaxChangeDenominator = this._common.param(
+      const baseFeeMaxChangeDenominator = this.common.param(
         'gasConfig',
         'baseFeeMaxChangeDenominator'
       )
@@ -554,9 +554,9 @@ export class BlockHeader {
       throw new Error('header must have excessDataGas field populated')
     }
     return fakeExponential(
-      this._common.param('gasPrices', 'minDataGasPrice'),
+      this.common.param('gasPrices', 'minDataGasPrice'),
       this.excessDataGas,
-      this._common.param('gasConfig', 'dataGasPriceUpdateFraction')
+      this.common.param('gasConfig', 'dataGasPriceUpdateFraction')
     )
   }
 
@@ -567,7 +567,7 @@ export class BlockHeader {
    * @returns the total data gas fee for numBlobs blobs
    */
   calcDataFee(numBlobs: number): bigint {
-    const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
+    const dataGasPerBlob = this.common.param('gasConfig', 'dataGasPerBlob')
     const dataGasUsed = dataGasPerBlob * BigInt(numBlobs)
 
     const dataGasPrice = this.getDataGasPrice()
@@ -580,7 +580,7 @@ export class BlockHeader {
   public calcNextExcessDataGas(): bigint {
     // The validation of the fields and 4844 activation is already taken care in BlockHeader constructor
     const targetGasConsumed = (this.excessDataGas ?? BigInt(0)) + (this.dataGasUsed ?? BigInt(0))
-    const targetDataGasPerBlock = this._common.param('gasConfig', 'targetDataGasPerBlock')
+    const targetDataGasPerBlock = this.common.param('gasConfig', 'targetDataGasPerBlock')
 
     if (targetGasConsumed <= targetDataGasPerBlock) {
       return BigInt(0)
@@ -611,14 +611,14 @@ export class BlockHeader {
       this.nonce,
     ]
 
-    if (this._common.isActivatedEIP(1559) === true) {
+    if (this.common.isActivatedEIP(1559) === true) {
       rawItems.push(bigIntToUnpaddedBytes(this.baseFeePerGas!))
     }
 
-    if (this._common.isActivatedEIP(4895) === true) {
+    if (this.common.isActivatedEIP(4895) === true) {
       rawItems.push(this.withdrawalsRoot!)
     }
-    if (this._common.isActivatedEIP(4844) === true) {
+    if (this.common.isActivatedEIP(4844) === true) {
       rawItems.push(bigIntToUnpaddedBytes(this.dataGasUsed!))
       rawItems.push(bigIntToUnpaddedBytes(this.excessDataGas!))
     }
@@ -648,7 +648,7 @@ export class BlockHeader {
   }
 
   protected _requireClique(name: string) {
-    if (this._common.consensusAlgorithm() !== ConsensusAlgorithm.Clique) {
+    if (this.common.consensusAlgorithm() !== ConsensusAlgorithm.Clique) {
       const msg = this._errorMsg(
         `BlockHeader.${name}() call only supported for clique PoA networks`
       )
@@ -662,28 +662,28 @@ export class BlockHeader {
    * @param parentBlockHeader - the header from the parent `Block` of this header
    */
   ethashCanonicalDifficulty(parentBlockHeader: BlockHeader): bigint {
-    if (this._common.consensusType() !== ConsensusType.ProofOfWork) {
+    if (this.common.consensusType() !== ConsensusType.ProofOfWork) {
       const msg = this._errorMsg('difficulty calculation is only supported on PoW chains')
       throw new Error(msg)
     }
-    if (this._common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
+    if (this.common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
       const msg = this._errorMsg(
         'difficulty calculation currently only supports the ethash algorithm'
       )
       throw new Error(msg)
     }
-    const hardfork = this._common.hardfork()
+    const hardfork = this.common.hardfork()
     const blockTs = this.timestamp
     const { timestamp: parentTs, difficulty: parentDif } = parentBlockHeader
-    const minimumDifficulty = this._common.paramByHardfork('pow', 'minimumDifficulty', hardfork)
+    const minimumDifficulty = this.common.paramByHardfork('pow', 'minimumDifficulty', hardfork)
     const offset =
-      parentDif / this._common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork)
+      parentDif / this.common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork)
     let num = this.number
 
     // We use a ! here as TS cannot follow this hardfork-dependent logic, but it always gets assigned
     let dif!: bigint
 
-    if (this._common.hardforkGteHardfork(hardfork, Hardfork.Byzantium) === true) {
+    if (this.common.hardforkGteHardfork(hardfork, Hardfork.Byzantium) === true) {
       // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99) (EIP100)
       const uncleAddend = equalsBytes(parentBlockHeader.uncleHash, KECCAK256_RLP_ARRAY) ? 1 : 2
       let a = BigInt(uncleAddend) - (blockTs - parentTs) / BigInt(9)
@@ -695,13 +695,13 @@ export class BlockHeader {
       dif = parentDif + offset * a
     }
 
-    if (this._common.hardforkGteHardfork(hardfork, Hardfork.Byzantium) === true) {
+    if (this.common.hardforkGteHardfork(hardfork, Hardfork.Byzantium) === true) {
       // Get delay as parameter from common
-      num = num - this._common.param('pow', 'difficultyBombDelay')
+      num = num - this.common.param('pow', 'difficultyBombDelay')
       if (num < BigInt(0)) {
         num = BigInt(0)
       }
-    } else if (this._common.hardforkGteHardfork(hardfork, Hardfork.Homestead) === true) {
+    } else if (this.common.hardforkGteHardfork(hardfork, Hardfork.Homestead) === true) {
       // 1 - (block_timestamp - parent_timestamp) // 10
       let a = BigInt(1) - (blockTs - parentTs) / BigInt(10)
       const cutoff = BigInt(-99)
@@ -712,7 +712,7 @@ export class BlockHeader {
       dif = parentDif + offset * a
     } else {
       // pre-homestead
-      if (parentTs + this._common.paramByHardfork('pow', 'durationLimit', hardfork) > blockTs) {
+      if (parentTs + this.common.paramByHardfork('pow', 'durationLimit', hardfork) > blockTs) {
         dif = offset + parentDif
       } else {
         dif = parentDif - offset
@@ -747,7 +747,7 @@ export class BlockHeader {
    */
   cliqueIsEpochTransition(): boolean {
     this._requireClique('cliqueIsEpochTransition')
-    const epoch = BigInt((this._common.consensusConfig() as CliqueConfig).epoch)
+    const epoch = BigInt((this.common.consensusConfig() as CliqueConfig).epoch)
     // Epoch transition block if the block number has no
     // remainder on the division by the epoch length
     return this.number % epoch === BigInt(0)
@@ -885,10 +885,10 @@ export class BlockHeader {
       mixHash: bytesToHex(this.mixHash),
       nonce: bytesToHex(this.nonce),
     }
-    if (this._common.isActivatedEIP(1559) === true) {
+    if (this.common.isActivatedEIP(1559) === true) {
       jsonDict.baseFeePerGas = bigIntToHex(this.baseFeePerGas!)
     }
-    if (this._common.isActivatedEIP(4844) === true) {
+    if (this.common.isActivatedEIP(4844) === true) {
       jsonDict.dataGasUsed = bigIntToHex(this.dataGasUsed!)
       jsonDict.excessDataGas = bigIntToHex(this.excessDataGas!)
     }
@@ -900,10 +900,10 @@ export class BlockHeader {
    * activation block (see: https://blog.slock.it/hard-fork-specification-24b889e70703)
    */
   protected _validateDAOExtraData() {
-    if (this._common.hardforkIsActiveOnBlock(Hardfork.Dao, this.number) === false) {
+    if (this.common.hardforkIsActiveOnBlock(Hardfork.Dao, this.number) === false) {
       return
     }
-    const DAOActivationBlock = this._common.hardforkBlock(Hardfork.Dao)
+    const DAOActivationBlock = this.common.hardforkBlock(Hardfork.Dao)
     if (DAOActivationBlock === null || this.number < DAOActivationBlock) {
       return
     }
@@ -928,7 +928,7 @@ export class BlockHeader {
     }
     let hf = ''
     try {
-      hf = this._common.hardfork()
+      hf = this.common.hardfork()
     } catch (e: any) {
       hf = 'error'
     }
