@@ -475,7 +475,7 @@ export class Engine {
       return response
     }
 
-    if (block._common.isActivatedEIP(4844)) {
+    if (block.common.isActivatedEIP(4844)) {
       let validationError: string | null = null
       if (versionedHashes === undefined || versionedHashes === null) {
         validationError = `Error verifying versionedHashes: received none`
@@ -522,7 +522,7 @@ export class Engine {
 
     this.connectionManager.updatePayloadStats(block)
 
-    const hardfork = block._common.hardfork()
+    const hardfork = block.common.hardfork()
     if (hardfork !== this.lastNewPayloadHF && this.lastNewPayloadHF !== '') {
       this.config.logger.info(
         `Hardfork change along new payload block number=${block.header.number} hash=${short(
@@ -559,7 +559,7 @@ export class Engine {
         (await this.chain.getBlock(hexToBytes(parentHash)))
 
       // Validations with parent
-      if (!parent._common.gteHardfork(Hardfork.Paris)) {
+      if (!parent.common.gteHardfork(Hardfork.Paris)) {
         const validTerminalBlock = await validateTerminalBlock(parent, this.chain)
         if (!validTerminalBlock) {
           const response = {
@@ -573,7 +573,7 @@ export class Engine {
 
       // validate 4844 transactions and fields as these validations generally happen on putBlocks
       // when parent is confirmed to be in the chain. But we can do it here early
-      if (block._common.isActivatedEIP(4844)) {
+      if (block.common.isActivatedEIP(4844)) {
         try {
           block.validateBlobTransactions(parent.header)
         } catch (error: any) {
@@ -816,7 +816,7 @@ export class Engine {
       }
     }
 
-    const hardfork = headBlock._common.hardfork()
+    const hardfork = headBlock.common.hardfork()
     if (hardfork !== this.lastForkchoiceUpdatedHF && this.lastForkchoiceUpdatedHF !== '') {
       this.config.logger.info(
         `Hardfork change along forkchoice head block update number=${
@@ -837,7 +837,7 @@ export class Engine {
     // Only validate this as terminal block if this block's difficulty is non-zero,
     // else this is a PoS block but its hardfork could be indeterminable if the skeleton
     // is not yet connected.
-    if (!headBlock._common.gteHardfork(Hardfork.Paris) && headBlock.header.difficulty > BigInt(0)) {
+    if (!headBlock.common.gteHardfork(Hardfork.Paris) && headBlock.header.difficulty > BigInt(0)) {
       const validTerminalBlock = await validateTerminalBlock(headBlock, this.chain)
       if (!validTerminalBlock) {
         const response = {

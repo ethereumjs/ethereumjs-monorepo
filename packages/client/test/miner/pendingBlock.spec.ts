@@ -379,8 +379,8 @@ tape('[PendingBlock]', async (t) => {
     await setBalance(vm, A.address, BigInt(500000000000000000))
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     // stub the vm's common set hf to do nothing but stay in cancun
-    vm._common.setHardforkBy = () => {
-      return vm._common.hardfork()
+    vm.common.setHardforkBy = () => {
+      return vm.common.hardfork()
     }
     const payloadId = await pendingBlock.start(vm, parentBlock)
     const [block, _receipts, _value, blobsBundles] = (await pendingBlock.build(payloadId)) ?? []
@@ -439,8 +439,8 @@ tape('[PendingBlock]', async (t) => {
     await setBalance(vm, A.address, BigInt(500000000000000000))
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     // stub the vm's common set hf to do nothing but stay in cancun
-    vm._common.setHardforkBy = () => {
-      return vm._common.hardfork()
+    vm.common.setHardforkBy = () => {
+      return vm.common.hardfork()
     }
     const payloadId = await pendingBlock.start(vm, parentBlock)
     const [block, _receipts, _value, blobsBundles] = (await pendingBlock.build(payloadId)) ?? []

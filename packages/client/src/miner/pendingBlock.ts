@@ -125,13 +125,13 @@ export class PendingBlock {
       throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
     }
     const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
-    vm._common.setHardforkBy({
+    vm.common.setHardforkBy({
       blockNumber: number,
       td,
       timestamp,
     })
 
-    const baseFeePerGas = vm._common.isActivatedEIP(1559)
+    const baseFeePerGas = vm.common.isActivatedEIP(1559)
       ? parentBlock.header.calcNextBaseFee()
       : undefined
 
@@ -160,9 +160,9 @@ export class PendingBlock {
 
     // Get if and how many blobs are allowed in the tx
     let allowedBlobs
-    if (vm._common.isActivatedEIP(4844)) {
-      const dataGasLimit = vm._common.param('gasConfig', 'maxDataGasPerBlock')
-      const dataGasPerBlob = vm._common.param('gasConfig', 'dataGasPerBlob')
+    if (vm.common.isActivatedEIP(4844)) {
+      const dataGasLimit = vm.common.param('gasConfig', 'maxDataGasPerBlock')
+      const dataGasPerBlob = vm.common.param('gasConfig', 'dataGasPerBlob')
       allowedBlobs = Number(dataGasLimit / dataGasPerBlob)
     } else {
       allowedBlobs = 0
@@ -182,7 +182,7 @@ export class PendingBlock {
     )
 
     // Construct initial blobs bundle when payload is constructed
-    if (vm._common.isActivatedEIP(4844)) {
+    if (vm.common.isActivatedEIP(4844)) {
       this.constructBlobsBundle(payloadId, blobTxs)
     }
     return payloadIdBytes
@@ -223,10 +223,10 @@ export class PendingBlock {
 
     // get the number of blobs that can be further added
     let allowedBlobs
-    if (vm._common.isActivatedEIP(4844)) {
+    if (vm.common.isActivatedEIP(4844)) {
       const bundle = this.blobsBundles.get(payloadId) ?? { blobs: [], commitments: [], proofs: [] }
-      const dataGasLimit = vm._common.param('gasConfig', 'maxDataGasPerBlock')
-      const dataGasPerBlob = vm._common.param('gasConfig', 'dataGasPerBlob')
+      const dataGasLimit = vm.common.param('gasConfig', 'maxDataGasPerBlock')
+      const dataGasPerBlob = vm.common.param('gasConfig', 'dataGasPerBlob')
       allowedBlobs = Number(dataGasLimit / dataGasPerBlob) - bundle.blobs.length
     } else {
       allowedBlobs = 0
@@ -248,7 +248,7 @@ export class PendingBlock {
     const { skippedByAddErrors, blobTxs } = await this.addTransactions(builder, txs)
     const block = await builder.build()
     // Construct blobs bundle
-    const blobs = block._common.isActivatedEIP(4844)
+    const blobs = block.common.isActivatedEIP(4844)
       ? this.constructBlobsBundle(payloadId, blobTxs)
       : undefined
 

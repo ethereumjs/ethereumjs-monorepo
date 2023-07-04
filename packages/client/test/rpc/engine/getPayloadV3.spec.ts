@@ -109,7 +109,7 @@ tape(`${method}: call with known payload`, async (t) => {
     { common }
   ).sign(pkey)
 
-  ;(service.txPool as any).vm._common.setHardfork(Hardfork.Cancun)
+  ;(service.txPool as any).vm.common.setHardfork(Hardfork.Cancun)
   await service.txPool.add(tx, true)
   req = params('engine_getPayloadV3', [payloadId])
   expectRes = (res: any) => {

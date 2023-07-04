@@ -834,11 +834,11 @@ tape('[Skeleton] / setHead', async (t) => {
       ;(chain.blockchain as any)._validateConsensus = false
       // Only add td validations to the validateBlock
       chain.blockchain.validateBlock = async (block: Block) => {
-        if (!(block.header._common.consensusType() === 'pos') && block.header.difficulty === 0n) {
+        if (!(block.header.common.consensusType() === 'pos') && block.header.difficulty === 0n) {
           throw Error(
             `Invalid header difficulty=${
               block.header.difficulty
-            } for consensus=${block.header._common.consensusType()}`
+            } for consensus=${block.header.common.consensusType()}`
           )
         }
       }
