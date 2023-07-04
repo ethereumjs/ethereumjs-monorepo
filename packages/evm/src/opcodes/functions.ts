@@ -930,7 +930,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (
         common.isActivatedEIP(3860) &&
         length > Number(common.param('vm', 'maxInitCodeSize')) &&
-        !runState.interpreter._evm._allowUnlimitedInitCodeSize
+        !runState.interpreter._evm.allowUnlimitedInitCodeSize
       ) {
         trap(ERROR.INITCODE_SIZE_VIOLATION)
       }
@@ -960,7 +960,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (
         common.isActivatedEIP(3860) &&
         length > Number(common.param('vm', 'maxInitCodeSize')) &&
-        !runState.interpreter._evm._allowUnlimitedInitCodeSize
+        !runState.interpreter._evm.allowUnlimitedInitCodeSize
       ) {
         trap(ERROR.INITCODE_SIZE_VIOLATION)
       }

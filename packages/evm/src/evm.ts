@@ -155,7 +155,7 @@ export interface EVMOpts {
  * @ignore
  */
 export class EVM implements EVMInterface {
-  private static supportedHardforks = [
+  protected static supportedHardforks = [
     Hardfork.Chainstart,
     Hardfork.Homestead,
     Hardfork.Dao,
@@ -182,36 +182,25 @@ export class EVM implements EVMInterface {
   protected _block?: Block
 
   public readonly common: Common
+  public readonly events: AsyncEventEmitter<EVMEvents>
 
   public stateManager: EVMStateManagerInterface
   public blockchain: Blockchain
   public journal: Journal
 
-  public readonly _transientStorage: TransientStorage
+  public readonly transientStorage: TransientStorage
 
-  public readonly events: AsyncEventEmitter<EVMEvents>
+  protected _opcodes!: OpcodeList
 
-  /**
-   * This opcode data is always set since `getActiveOpcodes()` is called in the constructor
-   * @hidden
-   */
-  _opcodes!: OpcodeList
-
-  public readonly _allowUnlimitedContractSize: boolean
-  public readonly _allowUnlimitedInitCodeSize: boolean
+  public readonly allowUnlimitedContractSize: boolean
+  public readonly allowUnlimitedInitCodeSize: boolean
 
   protected readonly _customOpcodes?: CustomOpcode[]
   protected readonly _customPrecompiles?: CustomPrecompile[]
 
-  /**
-   * @hidden
-   */
-  _handlers!: Map<number, OpHandler>
+  protected _handlers!: Map<number, OpHandler>
 
-  /**
-   * @hidden
-   */
-  _dynamicGasHandlers!: Map<number, AsyncDynamicGasHandler | SyncDynamicGasHandler>
+  protected _dynamicGasHandlers!: Map<number, AsyncDynamicGasHandler | SyncDynamicGasHandler>
 
   protected _precompiles!: Map<string, PrecompileFunc>
 
@@ -244,7 +233,7 @@ export class EVM implements EVMInterface {
    */
   readonly DEBUG: boolean = false
 
-  public readonly _emit: (topic: string, data: any) => Promise<void>
+  protected readonly _emit: (topic: string, data: any) => Promise<void>
 
   /**
    * EVM async constructor. Creates engine instance and initializes it.
@@ -262,7 +251,7 @@ export class EVM implements EVMInterface {
 
     this._optsCached = opts
 
-    this._transientStorage = new TransientStorage()
+    this.transientStorage = new TransientStorage()
 
     if (opts.common) {
       this.common = opts.common
@@ -300,8 +289,8 @@ export class EVM implements EVMInterface {
       )
     }
 
-    this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false
-    this._allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
+    this.allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false
+    this.allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
     this._customOpcodes = opts.customOpcodes
     this._customPrecompiles = opts.customPrecompiles
 
@@ -455,7 +444,7 @@ export class EVM implements EVMInterface {
     if (this.common.isActivatedEIP(3860)) {
       if (
         message.data.length > Number(this.common.param('vm', 'maxInitCodeSize')) &&
-        !this._allowUnlimitedInitCodeSize
+        !this.allowUnlimitedInitCodeSize
       ) {
         return {
           createdAddress: message.to,
@@ -583,7 +572,7 @@ export class EVM implements EVMInterface {
 
     // If enough gas and allowed code size
     let CodestoreOOG = false
-    if (totalGas <= message.gasLimit && (this._allowUnlimitedContractSize || allowedCodeSize)) {
+    if (totalGas <= message.gasLimit && (this.allowUnlimitedContractSize || allowedCodeSize)) {
       if (this.common.isActivatedEIP(3541) && result.returnValue[0] === EOF.FORMAT) {
         if (!this.common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
@@ -826,7 +815,7 @@ export class EVM implements EVMInterface {
     }
 
     await this.journal.checkpoint()
-    if (this.common.isActivatedEIP(1153)) this._transientStorage.checkpoint()
+    if (this.common.isActivatedEIP(1153)) this.transientStorage.checkpoint()
     if (this.DEBUG) {
       debug('-'.repeat(100))
       debug(`message checkpoint`)
@@ -877,13 +866,13 @@ export class EVM implements EVMInterface {
     ) {
       result.execResult.logs = []
       await this.journal.revert()
-      if (this.common.isActivatedEIP(1153)) this._transientStorage.revert()
+      if (this.common.isActivatedEIP(1153)) this.transientStorage.revert()
       if (this.DEBUG) {
         debug(`message checkpoint reverted`)
       }
     } else {
       await this.journal.commit()
-      if (this.common.isActivatedEIP(1153)) this._transientStorage.commit()
+      if (this.common.isActivatedEIP(1153)) this.transientStorage.commit()
       if (this.DEBUG) {
         debug(`message checkpoint committed`)
       }
@@ -1015,7 +1004,7 @@ export class EVM implements EVMInterface {
    * Once the interpreter has finished depth 0, a post-message cleanup should be done
    */
   private postMessageCleanup() {
-    if (this.common.isActivatedEIP(1153)) this._transientStorage.clear()
+    if (this.common.isActivatedEIP(1153)) this.transientStorage.clear()
   }
 
   /**

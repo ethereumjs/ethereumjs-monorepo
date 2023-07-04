@@ -257,7 +257,7 @@ export class Interpreter {
     const gasLimitClone = this.getGasLeft()
 
     if (opInfo.dynamicGas) {
-      const dynamicGasHandler = this._evm._dynamicGasHandlers.get(this._runState.opCode)!
+      const dynamicGasHandler = (this._evm as any)._dynamicGasHandlers.get(this._runState.opCode)!
       // This function updates the gas in-place.
       // It needs the base fee, for correct gas limit calculation for the CALL opcodes
       gas = await dynamicGasHandler(this._runState, gas, this.common)
@@ -293,7 +293,7 @@ export class Interpreter {
    * Get the handler function for an opcode.
    */
   getOpHandler(opInfo: Opcode): OpHandler {
-    return this._evm._handlers.get(opInfo.code)!
+    return (this._evm as any)._handlers.get(opInfo.code)!
   }
 
   /**
@@ -301,7 +301,7 @@ export class Interpreter {
    */
   lookupOpInfo(op: number): Opcode {
     // if not found, return 0xfe: INVALID
-    return this._evm._opcodes.get(op) ?? this._evm._opcodes.get(0xfe)!
+    return this._evm.opcodes.get(op) ?? this._evm.opcodes.get(0xfe)!
   }
 
   async _runStepHook(dynamicFee: bigint, gasLeft: bigint): Promise<void> {
@@ -374,7 +374,7 @@ export class Interpreter {
      * @property {BigInt} memoryWordCount current size of memory in words
      * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
      */
-    await this._evm._emit('step', eventObj)
+    await (this._evm as any)._emit('step', eventObj)
   }
 
   // Returns all valid jump and jumpsub destinations.
@@ -516,7 +516,7 @@ export class Interpreter {
    * @param value Storage value
    */
   transientStorageStore(key: Uint8Array, value: Uint8Array): void {
-    return this._evm._transientStorage.put(this._env.address, key, value)
+    return this._evm.transientStorage.put(this._env.address, key, value)
   }
 
   /**
@@ -525,7 +525,7 @@ export class Interpreter {
    * @param key Storage key
    */
   transientStorageLoad(key: Uint8Array): Uint8Array {
-    return this._evm._transientStorage.get(this._env.address, key)
+    return this._evm.transientStorage.get(this._env.address, key)
   }
 
   /**
@@ -939,7 +939,7 @@ export class Interpreter {
     if (this.common.isActivatedEIP(3860)) {
       if (
         data.length > Number(this.common.param('vm', 'maxInitCodeSize')) &&
-        this._evm._allowUnlimitedInitCodeSize === false
+        this._evm.allowUnlimitedInitCodeSize === false
       ) {
         return BigInt(0)
       }
