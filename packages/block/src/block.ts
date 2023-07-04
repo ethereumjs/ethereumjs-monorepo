@@ -48,7 +48,7 @@ export class Block {
   public readonly uncleHeaders: BlockHeader[] = []
   public readonly withdrawals?: Withdrawal[]
   public readonly txTrie = new Trie()
-  public readonlycommon: Common
+  public readonly common: Common
 
   /**
    * Returns the withdrawals trie root for array of Withdrawal.
