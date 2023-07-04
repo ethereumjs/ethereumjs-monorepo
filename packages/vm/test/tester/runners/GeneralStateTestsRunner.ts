@@ -96,6 +96,7 @@ export class GeneralStateTests {
   ): Promise<void> {
     if (!shouldSkip(this.runSkipped, fileName)) {
       const testIdentifier = `${subDir}/${fileName}: ${testName}`
+      this.testCount++
       assert.ok(testIdentifier)
       await this.runStateTest(this.runnerArgs, test, testIdentifier)
     }
@@ -214,7 +215,7 @@ export class GeneralStateTests {
                 for await (const [fileName, testData] of Object.entries(subDir)) {
                   suite(fileName, async () => {
                     for await (const [testName, t] of Object.values(testData)) {
-                      suite(testName, async () => {
+                      it(testName, async () => {
                         await this.onFile(fileName, testDir, testName, t)
                       })
                     }

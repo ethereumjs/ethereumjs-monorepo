@@ -7,6 +7,9 @@ const parseInput = (input: string | undefined, bool: boolean = false) => {
   if (input === undefined) {
     return undefined
   }
+  if (input === '') {
+    return undefined
+  }
   if (input === 'true' && bool === false) {
     return undefined
   }
@@ -14,7 +17,7 @@ const parseInput = (input: string | undefined, bool: boolean = false) => {
 }
 
 const input = {
-  ['verify-test-amount-alltests']: 0,
+  ['verify-test-amount-alltests']: parseInput(process.env.VERIFY_ALLTESTS) === undefined ? 0 : 1,
   count: parseInput(process.env.COUNT) !== undefined ? parseInt(process.env.COUNT!) : undefined,
   fork: parseInput(process.env.FORK) ?? 'Paris',
   test: parseInput(process.env.STATETEST),
@@ -39,21 +42,11 @@ const forkSuite = suite(`${testArgs.fork} (${test.expectedTests})`, async () => 
   await test.runTests()
 })
 
-forkSuite.on('beforeAll', async (context) => {
-  let totalExpect = 0
-  for await (const dir of context.tasks) {
-    for await (const subDir of (dir as any).tasks) {
-      for await (const file of subDir.tasks) {
-        for await (const test of file.tasks) {
-          totalExpect += test.tasks.length
-        }
-      }
-    }
-  }
+forkSuite.on('beforeAll', async () => {
   console.log('----------TEST_FORK------------')
   console.log(`${testArgs.fork} > test: ${testArgs.test}`)
   testArgs.test !== undefined &&
-    console.log(`${' '.repeat(testArgs.fork.length)} > expected_tests: (${totalExpect})`)
+    console.log(`${' '.repeat(testArgs.fork.length)} > expected_tests: (${test.expectedTests})`)
   console.log('-------------------------------')
 })
 
@@ -61,18 +54,25 @@ forkSuite.on('afterAll', async (context) => {
   let totalTestRun = 0
   let totalPassing = 0
   for await (const dir of context.tasks) {
+    if (!('tasks' in dir)) {
+      continue
+    }
     for await (const subDir of (dir as any).tasks) {
       for await (const file of subDir.tasks) {
-        for await (const test of file.tasks) {
-          const passing = test.tasks.filter((t: any) => t.result.state === 'pass').length
-          totalTestRun += test.tasks.length
-          totalPassing += passing
-        }
+        const passing = file.tasks.filter((t: any) => t.result.state === 'pass').length
+        totalTestRun += file.tasks.length
+        totalPassing += passing
+        // for await (const test of file.tasks) {
+        // const passing = test.tasks.filter((t: any) => t.result.state === 'pass').length
+        // totalTestRun += test.tasks.length
+        // totalPassing += passing
+        // }
       }
     }
   }
   console.log('---------RESULT----------------')
-  console.log(`${testArgs.fork} > totalTestRun: (${totalTestRun})`)
+  console.log(`${testArgs.fork} > totalChecks: (${test.testCount} / ${test.expectedTests})`)
+  console.log(`${' '.repeat(testArgs.fork.length)} > totalTests: (${totalTestRun})`)
   console.log(`${' '.repeat(testArgs.fork.length)} > totalPassing: (${totalPassing})`)
   console.log('-------------------------------')
 })
