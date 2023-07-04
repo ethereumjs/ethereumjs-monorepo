@@ -307,7 +307,7 @@ export class EVM implements EVMInterface {
 
     this.journal = new Journal(this.stateManager, this._common)
 
-    this._common.on('hardforkChanged', () => {
+    this._common.events.on('hardforkChanged', () => {
       this.getActiveOpcodes()
       this._precompiles = getActivePrecompiles(this._common, this._customPrecompiles)
     })

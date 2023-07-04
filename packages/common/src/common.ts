@@ -45,7 +45,7 @@ type HardforkSpecValues = typeof HARDFORK_SPECS[HardforkSpecKeys]
  * custom chain {@link Common} objects (more complete custom chain setups
  * can be created via the main constructor and the {@link CommonOpts.customChains} parameter).
  */
-export class Common extends EventEmitter {
+export class Common {
   readonly DEFAULT_HARDFORK: string | Hardfork
 
   private _chainParams: ChainConfig
@@ -54,6 +54,8 @@ export class Common extends EventEmitter {
   private _customChains: ChainConfig[]
 
   private HARDFORK_CHANGES: [HardforkSpecKeys, HardforkSpecValues][]
+
+  public events: EventEmitter
 
   /**
    * Creates a {@link Common} object for a custom chain, based on a standard one.
@@ -221,7 +223,8 @@ export class Common extends EventEmitter {
   }
 
   constructor(opts: CommonOpts) {
-    super()
+    this.events = new EventEmitter()
+
     this._customChains = opts.customChains ?? []
     this._chainParams = this.setChain(opts.chain)
     this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Shanghai
@@ -282,7 +285,7 @@ export class Common extends EventEmitter {
       if (hfChanges[0] === hardfork) {
         if (this._hardfork !== hardfork) {
           this._hardfork = hardfork
-          this.emit('hardforkChanged', hardfork)
+          this.events.emit('hardforkChanged', hardfork)
         }
         existing = true
       }
@@ -982,7 +985,7 @@ export class Common extends EventEmitter {
    */
   copy(): Common {
     const copy = Object.assign(Object.create(Object.getPrototypeOf(this)), this)
-    copy.removeAllListeners()
+    copy.events = new EventEmitter()
     return copy
   }
 

@@ -89,7 +89,7 @@ describe('[Common]: Hardfork logic', () => {
 
   it('setHardfork(): hardforkChanged event', () => {
     const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    c.on('hardforkChanged', (hardfork: string) => {
+    c.events.on('hardforkChanged', (hardfork: string) => {
       assert.equal(hardfork, Hardfork.Byzantium, 'should send correct hardforkChanged event')
     })
     c.setHardfork(Hardfork.Byzantium)

@@ -220,7 +220,7 @@ export class Chain {
     this.opened = true
     await this.update(false)
 
-    this.config.chainCommon.on('hardforkChanged', async (hardfork: string) => {
+    this.config.chainCommon.events.on('hardforkChanged', async (hardfork: string) => {
       const block = this.config.chainCommon.hardforkBlock()
       this.config.logger.info(`New hardfork reached 🪢 ! hardfork=${hardfork} block=${block}`)
     })
