@@ -44,7 +44,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   await vm.runBlock({ block, generate: true, skipBlockValidation: true })
   await vm.blockchain.putBlock(ranBlock!)
   const service = client.services[0] as FullEthereumService
-  service.execution.vm._common.setHardfork('london')
+  service.execution.vm.common.setHardfork('london')
   service.chain.config.chainCommon.setHardfork('london')
   const headBlock = await service.chain.getCanonicalHeadBlock()
   const londonBlock = Block.fromBlockData(

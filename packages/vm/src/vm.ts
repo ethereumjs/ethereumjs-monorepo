@@ -39,7 +39,7 @@ export class VM {
    */
   readonly blockchain: BlockchainInterface
 
-  readonly _common: Common
+  readonly common: Common
 
   readonly events: AsyncEventEmitter<VMEvents>
   /**
@@ -94,26 +94,26 @@ export class VM {
     this._opts = opts
 
     if (opts.common) {
-      this._common = opts.common
+      this.common = opts.common
     } else {
       const DEFAULT_CHAIN = Chain.Mainnet
-      this._common = new Common({ chain: DEFAULT_CHAIN })
+      this.common = new Common({ chain: DEFAULT_CHAIN })
     }
 
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
     } else {
-      this.stateManager = new DefaultStateManager({ common: this._common })
+      this.stateManager = new DefaultStateManager({ common: this.common })
     }
 
-    this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this._common })
+    this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this.common })
 
     // TODO tests
     if (opts.evm) {
       this.evm = opts.evm
     } else {
       this.evm = new EVM({
-        common: this._common,
+        common: this.common,
         stateManager: this.stateManager,
         blockchain: this.blockchain,
       })
@@ -152,7 +152,7 @@ export class VM {
     if (this._opts.activatePrecompiles === true && typeof this._opts.stateManager === 'undefined') {
       await this.evm.journal.checkpoint()
       // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
-      for (const [addressStr] of getActivePrecompiles(this._common)) {
+      for (const [addressStr] of getActivePrecompiles(this.common)) {
         const address = new Address(unprefixedHexToBytes(addressStr))
         let account = await this.stateManager.getAccount(address)
         // Only do this if it is not overridden in genesis
@@ -222,8 +222,8 @@ export class VM {
    * Note that the returned copy will share the same db as the original for the blockchain and the statemanager
    */
   async shallowCopy(): Promise<VM> {
-    const common = this._common.copy()
-    common.setHardfork(this._common.hardfork())
+    const common = this.common.copy()
+    common.setHardfork(this.common.hardfork())
     const blockchain = this.blockchain.shallowCopy()
     const stateManager = this.stateManager.shallowCopy()
     const evmOpts = {
@@ -248,7 +248,7 @@ export class VM {
   errorStr() {
     let hf = ''
     try {
-      hf = this._common.hardfork()
+      hf = this.common.hardfork()
     } catch (e: any) {
       hf = 'error'
     }

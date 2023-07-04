@@ -54,14 +54,14 @@ describe('[Block]: Header functions', () => {
     let header = BlockHeader.fromHeaderData(undefined, { common })
     assert.ok(bytesToHex(header.hash()), 'genesis block should initialize')
     assert.equal(
-      header._common.hardfork(),
+      header.common.hardfork(),
       'chainstart',
       'should initialize with correct HF provided'
     )
 
     common.setHardfork(Hardfork.Byzantium)
     assert.equal(
-      header._common.hardfork(),
+      header.common.hardfork(),
       'chainstart',
       'should stay on correct HF if outer common HF changes'
     )
@@ -494,7 +494,7 @@ describe('[Block]: Header functions', () => {
   it('should be able to initialize shanghai header with correct hardfork defaults', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
     const header = BlockHeader.fromHeaderData({}, { common })
-    assert.equal(header._common.hardfork(), Hardfork.Shanghai, 'hardfork should be set to shanghai')
+    assert.equal(header.common.hardfork(), Hardfork.Shanghai, 'hardfork should be set to shanghai')
     assert.equal(header.baseFeePerGas, BigInt(7), 'baseFeePerGas should be set to minimum default')
     assert.deepEqual(
       header.withdrawalsRoot,

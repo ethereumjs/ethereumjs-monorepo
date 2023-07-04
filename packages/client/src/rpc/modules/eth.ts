@@ -490,7 +490,7 @@ export class Eth {
       gasLimit: transaction.gas,
     }
 
-    const tx = TransactionFactory.fromTxData(txData, { common: vm._common, freeze: false })
+    const tx = TransactionFactory.fromTxData(txData, { common: vm.common, freeze: false })
 
     // set from address
     const from =
@@ -782,7 +782,7 @@ export class Eth {
         : (tx as LegacyTransaction).gasPrice
 
       const vmCopy = await this._vm!.shallowCopy()
-      vmCopy._common.setHardfork(tx.common.hardfork())
+      vmCopy.common.setHardfork(tx.common.hardfork())
       // Run tx through copied vm to get tx gasUsed and createdAddress
       const runBlockResult = await vmCopy.runBlock({
         block,
@@ -1096,7 +1096,7 @@ export class Eth {
     const minGasPrice: bigint = this._chain.config.chainCommon.param('gasConfig', 'minPrice')
     let gasPrice = BigInt(0)
     const latest = await this._chain.getCanonicalHeadHeader()
-    if (this._vm !== undefined && this._vm._common.isActivatedEIP(1559)) {
+    if (this._vm !== undefined && this._vm.common.isActivatedEIP(1559)) {
       const baseFee = latest.calcNextBaseFee()
       let priorityFee = BigInt(0)
       const block = await this._chain.getBlock(latest.number)

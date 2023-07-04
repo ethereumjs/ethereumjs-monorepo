@@ -36,8 +36,8 @@ const setBalance = async (vm: VM, address: Address, balance: bigint) => {
 }
 
 tape('[Miner]', async (t) => {
-  const originalValidate = BlockHeader.prototype._consensusFormatValidation
-  BlockHeader.prototype._consensusFormatValidation = td.func<any>()
+  const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
+  ;(BlockHeader as any).prototype._consensusFormatValidation = td.func<any>()
   td.replace<any>('@ethereumjs/block', { BlockHeader })
 
   // Stub out setStateRoot so txPool.validate checks will pass since correct state root
@@ -129,7 +129,7 @@ tape('[Miner]', async (t) => {
     chain: 'devnet',
     hardfork: Hardfork.Berlin,
   })
-  customCommon.setMaxListeners(50)
+  customCommon.events.setMaxListeners(50)
   const customConfig = new Config({
     transports: [],
     accountCache: 10000,
@@ -141,7 +141,7 @@ tape('[Miner]', async (t) => {
   customConfig.events.setMaxListeners(50)
 
   const goerliCommon = new Common({ chain: CommonChain.Goerli, hardfork: Hardfork.Berlin })
-  goerliCommon.setMaxListeners(50)
+  goerliCommon.events.setMaxListeners(50)
   const goerliConfig = new Config({
     transports: [],
     accountCache: 10000,
@@ -717,7 +717,7 @@ tape('[Miner]', async (t) => {
     // according to https://github.com/testdouble/testdouble.js/issues/379#issuecomment-415868424
     // mocking indirect dependencies is not properly supported, but it works for us in this file,
     // so we will replace the original functions to avoid issues in other tests that come after
-    BlockHeader.prototype._consensusFormatValidation = originalValidate
+    ;(BlockHeader as any).prototype._consensusFormatValidation = originalValidate
     DefaultStateManager.prototype.setStateRoot = ogStateManagerSetStateRoot
     t.end()
   })

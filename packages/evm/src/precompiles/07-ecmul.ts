@@ -8,7 +8,7 @@ import type { PrecompileInput } from './types.js'
 
 export function precompile07(opts: PrecompileInput): ExecResult {
   const inputData = bytesToUnprefixedHex(opts.data.subarray(0, 128))
-  const gasUsed = opts._common.param('gasPrices', 'ecMul')
+  const gasUsed = opts.common.param('gasPrices', 'ecMul')
   if (opts._debug !== undefined) {
     opts._debug(
       `Run ECMUL (0x07) precompile data=${short(opts.data)} length=${opts.data.length} gasLimit=${

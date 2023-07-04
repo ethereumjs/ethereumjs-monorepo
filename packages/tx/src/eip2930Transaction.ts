@@ -330,7 +330,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
     }
   }
 
-  _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
+  protected _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
     const opts = { ...this.txOptions, common: this.common }
 
     return AccessListEIP2930Transaction.fromTxData(

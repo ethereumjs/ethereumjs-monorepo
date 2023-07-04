@@ -109,7 +109,7 @@ tape('[Integration:Merge]', async (t) => {
     ;(remoteService.chain.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [
       accounts[0][0],
     ] // stub
-    BlockHeader.prototype._consensusFormatValidation = () => {} //stub
+    ;(BlockHeader as any).prototype._consensusFormatValidation = () => {} //stub
     await server.discover('remotePeer1', '127.0.0.2')
     const targetTTD = BigInt(5)
     remoteService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {

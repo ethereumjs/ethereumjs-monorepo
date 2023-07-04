@@ -10,7 +10,7 @@ export interface PrecompileFunc {
 export interface PrecompileInput {
   data: Uint8Array
   gasLimit: bigint
-  _common: Common
+  common: Common
   _EVM: EVMInterface
   _debug?: debug.Debugger
 }

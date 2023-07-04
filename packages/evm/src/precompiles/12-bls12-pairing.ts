@@ -16,7 +16,7 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
 
   const inputData = opts.data
 
-  const baseGas = opts._common.paramByEIP('gasPrices', 'Bls12381PairingBaseGas', 2537) ?? BigInt(0)
+  const baseGas = opts.common.paramByEIP('gasPrices', 'Bls12381PairingBaseGas', 2537) ?? BigInt(0)
 
   if (inputData.length === 0) {
     if (opts._debug !== undefined) {
@@ -26,7 +26,7 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   const gasUsedPerPair =
-    opts._common.paramByEIP('gasPrices', 'Bls12381PairingPerPairGas', 2537) ?? BigInt(0)
+    opts.common.paramByEIP('gasPrices', 'Bls12381PairingPerPairGas', 2537) ?? BigInt(0)
 
   const gasUsed = baseGas + gasUsedPerPair * BigInt(Math.floor(inputData.length / 384))
   if (opts._debug !== undefined) {

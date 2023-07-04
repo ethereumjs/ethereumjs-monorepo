@@ -138,16 +138,16 @@ describe('[Common]: copy() listener tests', () => {
   it('Should work', () => {
     const common = new Common({ chain: 'mainnet' })
     // Add two listeners
-    common.on('hardforkChanged', () => {})
-    common.on('hardforkChanged', () => {})
+    common.events.on('hardforkChanged', () => {})
+    common.events.on('hardforkChanged', () => {})
     const commonCopy = common.copy()
     assert.equal(
-      common.listenerCount('hardforkChanged'),
+      common.events.listenerCount('hardforkChanged'),
       2,
       'original common instance should have two listeners'
     )
     assert.equal(
-      commonCopy.listenerCount('hardforkChanged'),
+      commonCopy.events.listenerCount('hardforkChanged'),
       0,
       'copied common instance should have zero listeners'
     )

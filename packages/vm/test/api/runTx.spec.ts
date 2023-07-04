@@ -42,22 +42,22 @@ const TRANSACTION_TYPES = [
 ]
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-common.setMaxListeners(100)
+common.events.setMaxListeners(100)
 describe('runTx tests', () => {
   it('runTx() -> successful API parameter usage', async () => {
     async function simpleRun(vm: VM, msg: string) {
       for (const txType of TRANSACTION_TYPES) {
-        const tx = getTransaction(vm._common, txType.type, true)
+        const tx = getTransaction(vm.common, txType.type, true)
 
         const caller = tx.getSenderAddress()
         const acc = createAccount()
         await vm.stateManager.putAccount(caller, acc)
         let block
-        if (vm._common.consensusType() === 'poa') {
+        if (vm.common.consensusType() === 'poa') {
           // Setup block with correct extraData for POA
           block = Block.fromBlockData(
             { header: { extraData: new Uint8Array(97) } },
-            { common: vm._common }
+            { common: vm.common }
           )
         }
 
@@ -85,11 +85,11 @@ describe('runTx tests', () => {
         common,
         blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),
       })
-      const tx = getTransaction(vm._common, 0, true)
+      const tx = getTransaction(vm.common, 0, true)
       const caller = tx.getSenderAddress()
       const acc = createAccount()
       await vm.stateManager.putAccount(caller, acc)
-      const block = Block.fromBlockData({}, { common: vm._common.copy() })
+      const block = Block.fromBlockData({}, { common: vm.common.copy() })
       await vm.runTx({ tx, block })
       assert.ok(true, 'matched hardfork should run without throwing')
     })
@@ -100,13 +100,13 @@ describe('runTx tests', () => {
         common,
         blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),
       })
-      const tx = getTransaction(vm._common, 0, true)
+      const tx = getTransaction(vm.common, 0, true)
       const caller = tx.getSenderAddress()
       const acc = createAccount()
       await vm.stateManager.putAccount(caller, acc)
-      const block = Block.fromBlockData({}, { common: vm._common.copy() })
+      const block = Block.fromBlockData({}, { common: vm.common.copy() })
 
-      block._common.setHardfork(Hardfork.Paris)
+      block.common.setHardfork(Hardfork.Paris)
       try {
         await vm.runTx({ tx, block })
         assert.fail('vm/block mismatched hardfork should have failed')
@@ -120,7 +120,7 @@ describe('runTx tests', () => {
       }
 
       tx.common.setHardfork(Hardfork.London)
-      block._common.setHardfork(Hardfork.Paris)
+      block.common.setHardfork(Hardfork.Paris)
       try {
         await vm.runTx({ tx, block })
         assert.fail('vm/tx mismatched hardfork should have failed')
@@ -143,14 +143,14 @@ describe('runTx tests', () => {
         common,
         blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),
       })
-      const tx = getTransaction(vm._common, 0, true)
+      const tx = getTransaction(vm.common, 0, true)
       const caller = tx.getSenderAddress()
       const acc = createAccount()
       await vm.stateManager.putAccount(caller, acc)
-      const block = Block.fromBlockData({}, { common: vm._common.copy() })
+      const block = Block.fromBlockData({}, { common: vm.common.copy() })
 
       tx.common.setHardfork(Hardfork.GrayGlacier)
-      block._common.setHardfork(Hardfork.GrayGlacier)
+      block.common.setHardfork(Hardfork.GrayGlacier)
       try {
         await vm.runTx({ tx, block })
         assert.ok(true, 'successfully ignored merge hf while hf matching in runTx')
@@ -163,7 +163,7 @@ describe('runTx tests', () => {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
       const vm = await VM.create({ common })
 
-      const tx = getTransaction(vm._common, 0, true)
+      const tx = getTransaction(vm.common, 0, true)
 
       const caller = tx.getSenderAddress()
       const acc = createAccount()
@@ -182,7 +182,7 @@ describe('runTx tests', () => {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
       const vm = await VM.create({ common })
 
-      const tx = getTransaction(vm._common, 0, true)
+      const tx = getTransaction(vm.common, 0, true)
 
       const caller = tx.getSenderAddress()
       const acc = createAccount()
@@ -304,7 +304,7 @@ describe('runTx tests', () => {
     it('simple run (reportAccessList option)', async () => {
       const vm = await VM.create({ common })
 
-      const tx = getTransaction(vm._common, 0, true)
+      const tx = getTransaction(vm.common, 0, true)
 
       const caller = tx.getSenderAddress()
       const acc = createAccount()
@@ -321,7 +321,7 @@ describe('runTx tests', () => {
     it('run without signature', async () => {
       for (const txType of TRANSACTION_TYPES) {
         const vm = await VM.create({ common })
-        const tx = getTransaction(vm._common, txType.type, false)
+        const tx = getTransaction(vm.common, txType.type, false)
         try {
           await vm.runTx({ tx })
           assert.fail('should throw error')
@@ -334,7 +334,7 @@ describe('runTx tests', () => {
     it('run with insufficient funds', async () => {
       for (const txType of TRANSACTION_TYPES) {
         const vm = await VM.create({ common })
-        const tx = getTransaction(vm._common, txType.type, true)
+        const tx = getTransaction(vm.common, txType.type, true)
         try {
           await vm.runTx({ tx })
         } catch (e: any) {
@@ -348,7 +348,7 @@ describe('runTx tests', () => {
       // EIP-1559
       // Fail if signer.balance < gas_limit * max_fee_per_gas
       const vm = await VM.create({ common })
-      let tx = getTransaction(vm._common, 2, true) as FeeMarketEIP1559Transaction
+      let tx = getTransaction(vm.common, 2, true) as FeeMarketEIP1559Transaction
       const address = tx.getSenderAddress()
       tx = Object.create(tx)
       const maxCost: bigint = tx.gasLimit * tx.maxFeePerGas
@@ -410,7 +410,7 @@ describe('runTx tests', () => {
       // Fail if transaction.maxFeePerGas < block.baseFeePerGas
       for (const txType of TRANSACTION_TYPES) {
         const vm = await VM.create({ common })
-        const tx = getTransaction(vm._common, txType.type, true)
+        const tx = getTransaction(vm.common, txType.type, true)
         const block = Block.fromBlockData({ header: { baseFeePerGas: 100000 } }, { common })
         try {
           await vm.runTx({ tx, block })
@@ -477,7 +477,7 @@ describe('runTx tests', () => {
     it('account balance overflows (call)', async () => {
       for (const txType of TRANSACTION_TYPES) {
         const vm = await VM.create({ common })
-        const tx = getTransaction(vm._common, txType.type, true, '0x01')
+        const tx = getTransaction(vm.common, txType.type, true, '0x01')
 
         const caller = tx.getSenderAddress()
         const from = createAccount()
@@ -504,7 +504,7 @@ describe('runTx tests', () => {
     it('account balance overflows (create)', async () => {
       for (const txType of TRANSACTION_TYPES) {
         const vm = await VM.create({ common })
-        const tx = getTransaction(vm._common, txType.type, true, '0x01', true)
+        const tx = getTransaction(vm.common, txType.type, true, '0x01', true)
 
         const caller = tx.getSenderAddress()
         const from = createAccount()
@@ -535,7 +535,7 @@ describe('runTx tests', () => {
     it('simple run, common return values', async () => {
       for (const txType of TRANSACTION_TYPES) {
         const vm = await VM.create({ common })
-        const tx = getTransaction(vm._common, txType.type, true)
+        const tx = getTransaction(vm.common, txType.type, true)
 
         const caller = tx.getSenderAddress()
         const acc = createAccount()
@@ -564,7 +564,7 @@ describe('runTx tests', () => {
     it('simple run, runTx default return values', async () => {
       for (const txType of TRANSACTION_TYPES) {
         const vm = await VM.create({ common })
-        const tx = getTransaction(vm._common, txType.type, true)
+        const tx = getTransaction(vm.common, txType.type, true)
 
         const caller = tx.getSenderAddress()
         const acc = createAccount()
@@ -709,7 +709,7 @@ describe('runTx tests', () => {
       const vm = await VM.create({ common })
       await setBalance(vm, Address.zero(), BigInt(10000000000))
       for (const txType of TRANSACTION_TYPES) {
-        const tx = getTransaction(vm._common, txType.type, false)
+        const tx = getTransaction(vm.common, txType.type, false)
         tx.getSenderAddress = () => Address.zero()
         // @ts-ignore overwrite read-only property
         tx.value -= BigInt(1)

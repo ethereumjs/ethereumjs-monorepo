@@ -202,7 +202,7 @@ tape(`${method}: call with valid parameters on pre-Shanghai hardfork`, async (t)
       'withdrawals field is null for pre-shanghai blocks'
     )
   }
-  service.execution.vm._common.setHardfork(Hardfork.London)
+  service.execution.vm.common.setHardfork(Hardfork.London)
   await baseRequest(t, server, req, 200, expectRes)
   // Restore setStateRoot
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot

@@ -594,7 +594,7 @@ export class VMExecution extends Execution {
         throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
       }
       const td = await vm.blockchain.getTotalDifficulty(block.header.parentHash)
-      vm._common.setHardforkBy({
+      vm.common.setHardforkBy({
         blockNumber,
         td,
         timestamp: block.header.timestamp,

@@ -268,7 +268,7 @@ describe('runBlock tests', () => {
       const { nonce, gasPrice, to, value, data, v, r, s } = block.transactions[0]
 
       const gasLimit = BigInt('0x3fefba')
-      const opts = { common: block._common }
+      const opts = { common: block.common }
       block.transactions[0] = new LegacyTransaction(
         { nonce, gasPrice, gasLimit, to, value, data, v, r, s },
         opts
@@ -465,7 +465,7 @@ describe('runBlock tests', () => {
 
   it('runBlock() -> tx types', async () => {
     async function simpleRun(vm: VM, transactions: TypedTransaction[]) {
-      const common = vm._common
+      const common = vm.common
 
       const blockRlp = toBytes(testData.blocks[0].rlp)
       const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })

@@ -62,12 +62,12 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   if (setHardfork !== false || this._setHardfork !== false) {
     const setHardforkUsed = setHardfork ?? this._setHardfork
     if (setHardforkUsed === true) {
-      this._common.setHardforkBy({
+      this.common.setHardforkBy({
         blockNumber: block.header.number,
         timestamp: block.header.timestamp,
       })
     } else if (typeof setHardforkUsed !== 'boolean') {
-      this._common.setHardforkBy({
+      this.common.setHardforkBy({
         blockNumber: block.header.number,
         td: setHardforkUsed,
         timestamp: block.header.timestamp,
@@ -80,7 +80,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     debug(
       `Running block hash=${bytesToHex(block.hash())} number=${
         block.header.number
-      } hardfork=${this._common.hardfork()}`
+      } hardfork=${this.common.hardfork()}`
     )
   }
 
@@ -94,8 +94,8 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
 
   // check for DAO support and if we should apply the DAO fork
   if (
-    this._common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) === true &&
-    block.header.number === this._common.hardforkBlock(Hardfork.Dao)!
+    this.common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) === true &&
+    block.header.number === this.common.hardforkBlock(Hardfork.Dao)!
   ) {
     if (this.DEBUG) {
       debug(`Apply DAO hardfork`)
@@ -152,7 +152,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       ...block,
       header: { ...block.header, ...generatedFields },
     }
-    block = Block.fromBlockData(blockData, { common: this._common })
+    block = Block.fromBlockData(blockData, { common: this.common })
   } else {
     if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
       if (this.DEBUG) {
@@ -219,7 +219,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     debug(
       `Running block finished hash=${bytesToHex(block.hash())} number=${
         block.header.number
-      } hardfork=${this._common.hardfork()}`
+      } hardfork=${this.common.hardfork()}`
     )
   }
 
@@ -260,12 +260,12 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
     debug(`Apply transactions`)
   }
   const blockResults = await applyTransactions.bind(this)(block, opts)
-  if (this._common.isActivatedEIP(4895)) {
+  if (this.common.isActivatedEIP(4895)) {
     await assignWithdrawals.bind(this)(block)
     await this.evm.journal.cleanup()
   }
   // Pay ommers and miners
-  if (block._common.consensusType() === ConsensusType.ProofOfWork) {
+  if (block.common.consensusType() === ConsensusType.ProofOfWork) {
     await assignBlockRewards.bind(this)(block)
   }
 
@@ -294,8 +294,8 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     const tx = block.transactions[txIdx]
 
     let maxGasLimit
-    if (this._common.isActivatedEIP(1559) === true) {
-      maxGasLimit = block.header.gasLimit * this._common.param('gasConfig', 'elasticityMultiplier')
+    if (this.common.isActivatedEIP(1559) === true) {
+      maxGasLimit = block.header.gasLimit * this.common.param('gasConfig', 'elasticityMultiplier')
     } else {
       maxGasLimit = block.header.gasLimit
     }
@@ -365,7 +365,7 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
   if (this.DEBUG) {
     debug(`Assign block rewards`)
   }
-  const minerReward = this._common.param('pow', 'minerReward')
+  const minerReward = this.common.param('pow', 'minerReward')
   const ommers = block.uncleHeaders
   // Reward ommers
   for (const ommer of ommers) {

@@ -76,7 +76,7 @@ describe('Proof of Stake - inserting blocks into blockchain', () => {
       assert.equal(latestHeader.number, BigInt(15), 'blockchain is at correct height')
 
       assert.equal(
-        (blockchain as any)._common.hardfork(),
+        (blockchain as any).common.hardfork(),
         'paris',
         'HF should have been correctly updated'
       )

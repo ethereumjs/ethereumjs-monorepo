@@ -40,7 +40,7 @@ describe('VM -> basic instantiation / boolean switches', () => {
       KECCAK256_RLP,
       'it has default trie'
     )
-    assert.equal(vm._common.hardfork(), Hardfork.Shanghai, 'it has correct default HF')
+    assert.equal(vm.common.hardfork(), Hardfork.Shanghai, 'it has correct default HF')
   })
 
   it('should be able to activate precompiles', async () => {
@@ -88,7 +88,7 @@ describe('VM -> supportedHardforks', () => {
   it('should succeed when common is set to a supported hardfork', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
     const vm = await VM.create({ common })
-    assert.equal(vm._common.hardfork(), Hardfork.Byzantium)
+    assert.equal(vm.common.hardfork(), Hardfork.Byzantium)
   })
 })
 
@@ -97,7 +97,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 
     const vm = await VM.create({ common })
-    assert.equal(vm._common, common)
+    assert.equal(vm.common, common)
   })
 
   it('should only accept valid chain and fork', async () => {
@@ -105,7 +105,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
     let common = Common.custom({ chainId: 3 })
     common.setHardfork(Hardfork.Byzantium)
     let vm = await VM.create({ common })
-    assert.equal(vm._common.param('gasPrices', 'ecAdd'), BigInt(500))
+    assert.equal(vm.common.param('gasPrices', 'ecAdd'), BigInt(500))
 
     try {
       common = new Common({ chain: 'mainchain', hardfork: Hardfork.Homestead })
@@ -138,7 +138,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
     })
 
     const vm = await VM.create({ common })
-    assert.equal(vm._common, common)
+    assert.equal(vm.common, common)
   })
 
   it('should accept a custom chain config (Common customChains constructor option)', async () => {
@@ -146,7 +146,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
     const common = new Common({ chain: 'testnet', hardfork: Hardfork.Berlin, customChains })
 
     const vm = await VM.create({ common })
-    assert.equal(vm._common, common)
+    assert.equal(vm.common, common)
   })
 })
 
@@ -176,12 +176,12 @@ describe('VM -> setHardfork, state (deprecated), blockchain', () => {
       common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium }),
     })
 
-    assert.equal(vm._common.chainName(), 'mainnet')
-    assert.equal(vm._common.hardfork(), 'byzantium')
+    assert.equal(vm.common.chainName(), 'mainnet')
+    assert.equal(vm.common.hardfork(), 'byzantium')
 
     const copiedVM = await vm.shallowCopy()
-    assert.equal(copiedVM._common.chainName(), 'mainnet')
-    assert.equal(copiedVM._common.hardfork(), 'byzantium')
+    assert.equal(copiedVM.common.chainName(), 'mainnet')
+    assert.equal(copiedVM.common.hardfork(), 'byzantium')
   })
 
   it('should pass the correct VM options when copying the VM', async () => {

@@ -14,7 +14,7 @@ export async function precompile14(opts: PrecompileInput): Promise<ExecResult> {
   const inputData = opts.data
 
   // note: the gas used is constant; even if the input is incorrect.
-  const gasUsed = opts._common.paramByEIP('gasPrices', 'Bls12381MapG2Gas', 2537) ?? BigInt(0)
+  const gasUsed = opts.common.paramByEIP('gasPrices', 'Bls12381MapG2Gas', 2537) ?? BigInt(0)
   if (opts._debug !== undefined) {
     opts._debug(
       `Run BLS12MAPFP2TOG2 (0x12) precompile data=${short(opts.data)} length=${
