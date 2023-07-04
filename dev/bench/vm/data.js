@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1688382786061,
+  "lastUpdate": 1688478466755,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "6100ca07a61d06b55173adc9b861a6fbaf336b6f",
-          "message": "util: improve bytes jsdocs and rename intToHex to intToPrefixedHexString (#2791)\n\n* util: improve jsdocs and rename intToHex to intToPrefixedHexString\n\n* monorepo: intToHex -> intoToPrefixedHexString\n\n* tx: remove file accidentally committed",
-          "timestamp": "2023-06-17T06:51:39-04:00",
-          "tree_id": "73bb4ebce597bab15174a9e9cd58857c97737389",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6100ca07a61d06b55173adc9b861a6fbaf336b6f"
-        },
-        "date": 1686999395645,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 25847,
-            "range": "±6.38%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 26272,
-            "range": "±3.09%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 26044,
-            "range": "±3.28%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25556,
-            "range": "±3.38%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 25202,
-            "range": "±3.45%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.07%",
             "unit": "ops/sec",
             "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d7131f555e3332955e5fab45cb9036f5b7fdb5b4",
+          "message": "Update function docs to detail shallow copy behavior (#2855)",
+          "timestamp": "2023-07-04T15:44:15+02:00",
+          "tree_id": "e96ec5e98b72cbc58aaa2c4bf433e54551d725f4",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d7131f555e3332955e5fab45cb9036f5b7fdb5b4"
+        },
+        "date": 1688478466025,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 33924,
+            "range": "±4.69%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 33799,
+            "range": "±2.24%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 33266,
+            "range": "±2.34%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 28587,
+            "range": "±8.85%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 31723,
+            "range": "±2.50%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
