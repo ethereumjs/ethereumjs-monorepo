@@ -16,7 +16,7 @@ describe('Precompiles: ECMUL', () => {
     const result = await ECMUL({
       data: new Uint8Array(0),
       gasLimit: BigInt(0xffff),
-      common: common,
+      common,
       _EVM: evm,
     })
 
