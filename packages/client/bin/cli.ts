@@ -43,7 +43,7 @@ import type { AbstractLevel } from 'abstract-level'
 
 type Account = [address: Address, privateKey: Uint8Array]
 
-const networks = Object.entries(Common._getInitializedChains().names)
+const networks = Object.entries(Common.getInitializedChains().names)
 
 let logger: Logger
 

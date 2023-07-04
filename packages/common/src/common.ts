@@ -195,7 +195,7 @@ export class Common {
    * @returns boolean
    */
   static isSupportedChainId(chainId: bigint): boolean {
-    const initializedChains = this._getInitializedChains()
+    const initializedChains = this.getInitializedChains()
     return Boolean((initializedChains['names'] as ChainName)[chainId.toString()])
   }
 
@@ -203,7 +203,7 @@ export class Common {
     chain: string | number | Chain | bigint,
     customChains?: ChainConfig[]
   ): ChainConfig {
-    const initializedChains = this._getInitializedChains(customChains)
+    const initializedChains = this.getInitializedChains(customChains)
     if (typeof chain === 'number' || typeof chain === 'bigint') {
       chain = chain.toString()
 
@@ -989,7 +989,7 @@ export class Common {
     return copy
   }
 
-  private static _getInitializedChains(customChains?: ChainConfig[]): ChainsConfig {
+  static getInitializedChains(customChains?: ChainConfig[]): ChainsConfig {
     const names: ChainName = {}
     for (const [name, id] of Object.entries(Chain)) {
       names[id] = name.toLowerCase()
