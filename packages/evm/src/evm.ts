@@ -1018,6 +1018,15 @@ export class EVM implements EVMInterface {
     if (this._common.isActivatedEIP(1153)) this._transientStorage.clear()
   }
 
+  /**
+   * This method copies the EVM, current HF and EIP settings
+   * and returns a new EVM instance.
+   *
+   * Note: this is only a shallow copy and both EVM instances
+   * will point to the same underlying state DB.
+   *
+   * @returns EVMInterface
+   */
   public shallowCopy(): EVMInterface {
     const common = this._common.copy()
     common.setHardfork(this._common.hardfork())
