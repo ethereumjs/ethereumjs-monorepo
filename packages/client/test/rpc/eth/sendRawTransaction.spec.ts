@@ -222,8 +222,8 @@ tape('blob EIP 4844 transaction', async (t) => {
     return this
   }
   // Disable block header consensus format validation
-  const consensusFormatValidation = BlockHeader.prototype._consensusFormatValidation
-  BlockHeader.prototype._consensusFormatValidation = (): any => {}
+  const consensusFormatValidation = (BlockHeader as any).prototype._consensusFormatValidation
+  ;(BlockHeader as any).prototype._consensusFormatValidation = (): any => {}
   try {
     initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
     // eslint-disable-next-line
@@ -293,5 +293,5 @@ tape('blob EIP 4844 transaction', async (t) => {
   // Restore stubbed out functionality
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
   DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
-  BlockHeader.prototype._consensusFormatValidation = consensusFormatValidation
+  ;(BlockHeader as any).prototype._consensusFormatValidation = consensusFormatValidation
 })

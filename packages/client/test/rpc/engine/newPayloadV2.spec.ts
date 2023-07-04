@@ -17,7 +17,7 @@ const method = 'engine_newPayloadV2'
 
 const [blockData] = blocks
 
-const originalValidate = BlockHeader.prototype._consensusFormatValidation
+const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
 
 export const batchBlocks = async (t: Test, server: HttpServer) => {
   for (let i = 0; i < 3; i++) {
@@ -137,7 +137,7 @@ tape(`${method}: call with executionPayloadV1`, (v1) => {
       },
     }
 
-    BlockHeader.prototype._consensusFormatValidation = td.func<any>()
+    ;(BlockHeader as any).prototype._consensusFormatValidation = td.func<any>()
     td.replace<any>('@ethereumjs/block', { BlockHeader })
 
     const { server } = await setupChain(genesisWithHigherTtd, 'post-merge', {
@@ -302,7 +302,7 @@ tape(`${method}: call with executionPayloadV1`, (v1) => {
   })
 
   v1.test(`reset TD`, (t) => {
-    BlockHeader.prototype._consensusFormatValidation = originalValidate
+    ;(BlockHeader as any).prototype._consensusFormatValidation = originalValidate
     td.reset()
     t.end()
   })

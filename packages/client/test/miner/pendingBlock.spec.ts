@@ -90,8 +90,8 @@ const setup = () => {
 }
 
 tape('[PendingBlock]', async (t) => {
-  const originalValidate = BlockHeader.prototype._consensusFormatValidation
-  BlockHeader.prototype._consensusFormatValidation = td.func<any>()
+  const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
+  ;(BlockHeader as any).prototype._consensusFormatValidation = td.func<any>()
   td.replace<any>('@ethereumjs/block', { BlockHeader })
 
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
@@ -455,7 +455,7 @@ tape('[PendingBlock]', async (t) => {
     // according to https://github.com/testdouble/testdouble.js/issues/379#issuecomment-415868424
     // mocking indirect dependencies is not properly supported, but it works for us in this file,
     // so we will replace the original functions to avoid issues in other tests that come after
-    BlockHeader.prototype._consensusFormatValidation = originalValidate
+    ;(BlockHeader as any).prototype._consensusFormatValidation = originalValidate
     DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
 
     st.end()

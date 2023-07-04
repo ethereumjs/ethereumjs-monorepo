@@ -6,7 +6,7 @@ import { baseRequest, baseSetup, params } from '../helpers'
 
 const method = 'eth_chainId'
 
-const originalValidate = BlockHeader.prototype._consensusFormatValidation
+const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
 
 tape(`${method}: calls`, async (t) => {
   const { server } = baseSetup()
@@ -31,7 +31,7 @@ tape(`${method}: returns 1 for Mainnet`, async (t) => {
 })
 
 tape(`reset TD`, (t) => {
-  BlockHeader.prototype._consensusFormatValidation = originalValidate
+  ;(BlockHeader as any).prototype._consensusFormatValidation = originalValidate
   td.reset()
   t.end()
 })

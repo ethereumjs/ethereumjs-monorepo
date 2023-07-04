@@ -17,7 +17,7 @@ const method = 'engine_newPayloadV1'
 
 const [blockData] = blocks
 
-const originalValidate = BlockHeader.prototype._consensusFormatValidation
+const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
 
 /**
  *
@@ -142,7 +142,7 @@ tape(`${method}: invalid terminal block`, async (t) => {
     },
   }
 
-  BlockHeader.prototype._consensusFormatValidation = td.func<any>()
+  ;(BlockHeader as any).prototype._consensusFormatValidation = td.func<any>()
   td.replace<any>('@ethereumjs/block', { BlockHeader })
 
   const { server } = await setupChain(genesisWithHigherTtd, 'post-merge', {
@@ -304,7 +304,7 @@ tape(`${method}: parent hash equals to block hash`, async (t) => {
 })
 
 tape(`reset TD`, (t) => {
-  BlockHeader.prototype._consensusFormatValidation = originalValidate
+  ;(BlockHeader as any).prototype._consensusFormatValidation = originalValidate
   td.reset()
   t.end()
 })
