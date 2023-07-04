@@ -225,7 +225,7 @@ export function verifyAccountPostConditions(
       const rs = state.createReadStream()
       rs.on('data', function (data: any) {
         let key = bytesToHex(data.key)
-        const val = bytesToPrefixedHexString(RLP.decode(data.value) as Uint8Array)
+        const val = bytesToHex(RLP.decode(data.value) as Uint8Array)
 
         if (key === '0x') {
           key = '0x00'
@@ -233,15 +233,14 @@ export function verifyAccountPostConditions(
           delete acctData.storage['0x']
         }
 
-          if (val !== hashedStorage[key]) {
-            assert.ok(
-              `Expected storage key 0x${bytesToHex(data.key)} at address ${address} to have value ${
-                hashedStorage[key] ?? '0x'
-              }, but got ${val}}`
-            )
-          }
-          delete hashedStorage[key]
-        })
+        if (val !== hashedStorage[key]) {
+          assert.ok(
+            `Expected storage key 0x${bytesToHex(data.key)} at address ${address} to have value ${
+              hashedStorage[key] ?? '0x'
+            }, but got ${val}}`
+          )
+        }
+        delete hashedStorage[key]
       })
 
       rs.on('end', function () {

@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { bytesToBigInt, initKZG } from '@ethereumjs/util'
+import { bytesToBigInt, bytesToHex, hexToBytes, initKZG } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { assert, expect, it, suite, test } from 'vitest'
 
