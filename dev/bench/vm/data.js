@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1688478466755,
+  "lastUpdate": 1688484087400,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b71b3d4ae81dadf32160cd67e621e6260e1d2985",
-          "message": "wallet: remove type/node devdependency (#2793)\n\n* wallet: remove type/node devdependency\n\n* wallet: remove tape script",
-          "timestamp": "2023-06-17T22:22:31-04:00",
-          "tree_id": "9d3245616d7ba95f450b7c63521c26e9e11821fa",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b71b3d4ae81dadf32160cd67e621e6260e1d2985"
-        },
-        "date": 1687055274018,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 16796,
-            "range": "±7.00%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17836,
-            "range": "±3.09%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 16048,
-            "range": "±7.62%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 17926,
-            "range": "±2.89%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 16663,
-            "range": "±3.18%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.50%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5f8552fedb45314bc4594d0978e64ff44abb835c",
+          "message": "Monorepo: make _* methods protected / _common -> common (#2857)\n\n* Common: switch to a separated EventEmitter structure (API cleanliness)\r\n\r\n* EVM: added additional shallowCopy() test for event emitter functionality\r\n\r\n* Test fixes\r\n\r\n* Common: _* methods/properties -> protected\r\n\r\n* Common: make getInitializedChains() public\r\n\r\n* Tx: _* methods/properties -> protected\r\n\r\n* Block: _* methods/properties -> protected\r\n\r\n* Block: _common -> common\r\n\r\n* Small fix\r\n\r\n* Blockchain: _common -> common\r\n\r\n* EVM/VM: _common -> common\r\n\r\n* Client: _common -> common\r\n\r\n* Lint fixes\r\n\r\n* Client test fixes\r\n\r\n* Trie: _* methods/properties -> protected\r\n\r\n* StateManager: _* methods/properties -> protected\r\n\r\n* EVM: _* methods/properties -> protected",
+          "timestamp": "2023-07-04T17:17:31+02:00",
+          "tree_id": "5a562e8d13d31aa72ffd747a6ebae0e20a927606",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5f8552fedb45314bc4594d0978e64ff44abb835c"
+        },
+        "date": 1688484086205,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31781,
+            "range": "±5.83%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 32122,
+            "range": "±2.93%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31764,
+            "range": "±3.03%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 26578,
+            "range": "±10.02%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30343,
+            "range": "±3.19%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
