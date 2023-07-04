@@ -110,7 +110,7 @@ describe('EIP-2537 BLS tests', () => {
       const result = await BLS12G2MultiExp({
         data: hexToBytes(testVector),
         gasLimit: BigInt(5000000),
-        _common: common,
+        common: common,
         _EVM: evm,
       })
 

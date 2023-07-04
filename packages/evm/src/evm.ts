@@ -181,7 +181,7 @@ export class EVM implements EVMInterface {
   }
   protected _block?: Block
 
-  readonly _common: Common
+  public readonly common: Common
 
   public stateManager: EVMStateManagerInterface
   public blockchain: Blockchain
@@ -265,10 +265,10 @@ export class EVM implements EVMInterface {
     this._transientStorage = new TransientStorage()
 
     if (opts.common) {
-      this._common = opts.common
+      this.common = opts.common
     } else {
       const DEFAULT_CHAIN = Chain.Mainnet
-      this._common = new Common({ chain: DEFAULT_CHAIN })
+      this.common = new Common({ chain: DEFAULT_CHAIN })
     }
 
     let blockchain: Blockchain
@@ -288,15 +288,15 @@ export class EVM implements EVMInterface {
       3670, 3855, 3860, 4399, 4895, 4844, 5133, 5656, 6780,
     ]
 
-    for (const eip of this._common.eips()) {
+    for (const eip of this.common.eips()) {
       if (!supportedEIPs.includes(eip)) {
         throw new Error(`EIP-${eip} is not supported by the EVM`)
       }
     }
 
-    if (!EVM.supportedHardforks.includes(this._common.hardfork() as Hardfork)) {
+    if (!EVM.supportedHardforks.includes(this.common.hardfork() as Hardfork)) {
       throw new Error(
-        `Hardfork ${this._common.hardfork()} not set as supported in supportedHardforks`
+        `Hardfork ${this.common.hardfork()} not set as supported in supportedHardforks`
       )
     }
 
@@ -305,18 +305,18 @@ export class EVM implements EVMInterface {
     this._customOpcodes = opts.customOpcodes
     this._customPrecompiles = opts.customPrecompiles
 
-    this.journal = new Journal(this.stateManager, this._common)
+    this.journal = new Journal(this.stateManager, this.common)
 
-    this._common.events.on('hardforkChanged', () => {
+    this.common.events.on('hardforkChanged', () => {
       this.getActiveOpcodes()
-      this._precompiles = getActivePrecompiles(this._common, this._customPrecompiles)
+      this._precompiles = getActivePrecompiles(this.common, this._customPrecompiles)
     })
 
     // Initialize the opcode data
     this.getActiveOpcodes()
-    this._precompiles = getActivePrecompiles(this._common, this._customPrecompiles)
+    this._precompiles = getActivePrecompiles(this.common, this._customPrecompiles)
 
-    if (this._common.isActivatedEIP(2537)) {
+    if (this.common.isActivatedEIP(2537)) {
       if (isBrowser() === true) {
         throw new Error('EIP-2537 is currently not supported in browsers')
       } else {
@@ -339,7 +339,7 @@ export class EVM implements EVMInterface {
       return
     }
 
-    if (this._common.isActivatedEIP(2537)) {
+    if (this.common.isActivatedEIP(2537)) {
       if (isBrowser() === true) {
         throw new Error('EIP-2537 is currently not supported in browsers')
       } else {
@@ -359,7 +359,7 @@ export class EVM implements EVMInterface {
    * available for EVM execution
    */
   getActiveOpcodes(): OpcodeList {
-    const data = getOpcodesForHF(this._common, this._customOpcodes)
+    const data = getOpcodesForHF(this.common, this._customOpcodes)
     this._opcodes = data.opcodes
     this._dynamicGasHandlers = data.dynamicGasHandlers
     this._handlers = data.handlers
@@ -452,9 +452,9 @@ export class EVM implements EVMInterface {
     // Reduce tx value from sender
     await this._reduceSenderBalance(account, message)
 
-    if (this._common.isActivatedEIP(3860)) {
+    if (this.common.isActivatedEIP(3860)) {
       if (
-        message.data.length > Number(this._common.param('vm', 'maxInitCodeSize')) &&
+        message.data.length > Number(this.common.param('vm', 'maxInitCodeSize')) &&
         !this._allowUnlimitedInitCodeSize
       ) {
         return {
@@ -472,7 +472,7 @@ export class EVM implements EVMInterface {
     message.data = new Uint8Array(0)
     message.to = await this._generateAddress(message)
 
-    if (this._common.isActivatedEIP(6780)) {
+    if (this.common.isActivatedEIP(6780)) {
       message.createdAddresses!.add(message.to.toString())
     }
 
@@ -517,7 +517,7 @@ export class EVM implements EVMInterface {
       toAccount = new Account()
     }
     // EIP-161 on account creation and CREATE execution
-    if (this._common.gteHardfork(Hardfork.SpuriousDragon)) {
+    if (this.common.gteHardfork(Hardfork.SpuriousDragon)) {
       toAccount.nonce += BigInt(1)
     }
 
@@ -564,7 +564,7 @@ export class EVM implements EVMInterface {
     let returnFee = BigInt(0)
     if (!result.exceptionError) {
       returnFee =
-        BigInt(result.returnValue.length) * BigInt(this._common.param('gasPrices', 'createData'))
+        BigInt(result.returnValue.length) * BigInt(this.common.param('gasPrices', 'createData'))
       totalGas = totalGas + returnFee
       if (this.DEBUG) {
         debugGas(`Add return value size fee (${returnFee} to gas used (-> ${totalGas}))`)
@@ -575,8 +575,8 @@ export class EVM implements EVMInterface {
     let allowedCodeSize = true
     if (
       !result.exceptionError &&
-      this._common.gteHardfork(Hardfork.SpuriousDragon) &&
-      result.returnValue.length > Number(this._common.param('vm', 'maxCodeSize'))
+      this.common.gteHardfork(Hardfork.SpuriousDragon) &&
+      result.returnValue.length > Number(this.common.param('vm', 'maxCodeSize'))
     ) {
       allowedCodeSize = false
     }
@@ -584,8 +584,8 @@ export class EVM implements EVMInterface {
     // If enough gas and allowed code size
     let CodestoreOOG = false
     if (totalGas <= message.gasLimit && (this._allowUnlimitedContractSize || allowedCodeSize)) {
-      if (this._common.isActivatedEIP(3541) && result.returnValue[0] === EOF.FORMAT) {
-        if (!this._common.isActivatedEIP(3540)) {
+      if (this.common.isActivatedEIP(3541) && result.returnValue[0] === EOF.FORMAT) {
+        if (!this.common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
         }
         // Begin EOF1 contract code checks
@@ -596,7 +596,7 @@ export class EVM implements EVMInterface {
             ...result,
             ...INVALID_EOF_RESULT(message.gasLimit),
           }
-        } else if (this._common.isActivatedEIP(3670)) {
+        } else if (this.common.isActivatedEIP(3670)) {
           // EIP-3670 EOF1 opcode check
           const codeStart = eof1CodeAnalysisResults.data > 0 ? 10 : 7
           // The start of the code section of an EOF1 compliant contract will either be
@@ -619,7 +619,7 @@ export class EVM implements EVMInterface {
         result.executionGasUsed = totalGas
       }
     } else {
-      if (this._common.gteHardfork(Hardfork.Homestead)) {
+      if (this.common.gteHardfork(Hardfork.Homestead)) {
         if (!allowedCodeSize) {
           if (this.DEBUG) {
             debug(`Code size exceeds maximum code size (>= SpuriousDragon)`)
@@ -661,7 +661,7 @@ export class EVM implements EVMInterface {
       }
     } else if (CodestoreOOG) {
       // This only happens at Frontier. But, let's do a sanity check;
-      if (!this._common.gteHardfork(Hardfork.Homestead)) {
+      if (!this.common.gteHardfork(Hardfork.Homestead)) {
         // Pre-Homestead behavior; put an empty contract.
         // This contract would be considered "DEAD" in later hard forks.
         // It is thus an unnecessary default item, which we have to save to disk
@@ -820,13 +820,13 @@ export class EVM implements EVMInterface {
 
     await this._emit('beforeMessage', message)
 
-    if (!message.to && this._common.isActivatedEIP(2929) === true) {
+    if (!message.to && this.common.isActivatedEIP(2929) === true) {
       message.code = message.data
       this.journal.addWarmedAddress((await this._generateAddress(message)).bytes)
     }
 
     await this.journal.checkpoint()
-    if (this._common.isActivatedEIP(1153)) this._transientStorage.checkpoint()
+    if (this.common.isActivatedEIP(1153)) this._transientStorage.checkpoint()
     if (this.DEBUG) {
       debug('-'.repeat(100))
       debug(`message checkpoint`)
@@ -873,17 +873,17 @@ export class EVM implements EVMInterface {
     }
     if (
       err &&
-      !(this._common.hardfork() === Hardfork.Chainstart && err.error === ERROR.CODESTORE_OUT_OF_GAS)
+      !(this.common.hardfork() === Hardfork.Chainstart && err.error === ERROR.CODESTORE_OUT_OF_GAS)
     ) {
       result.execResult.logs = []
       await this.journal.revert()
-      if (this._common.isActivatedEIP(1153)) this._transientStorage.revert()
+      if (this.common.isActivatedEIP(1153)) this._transientStorage.revert()
       if (this.DEBUG) {
         debug(`message checkpoint reverted`)
       }
     } else {
       await this.journal.commit()
-      if (this._common.isActivatedEIP(1153)) this._transientStorage.commit()
+      if (this.common.isActivatedEIP(1153)) this._transientStorage.commit()
       if (this.DEBUG) {
         debug(`message checkpoint committed`)
       }
@@ -944,7 +944,7 @@ export class EVM implements EVMInterface {
     const opts = {
       data,
       gasLimit,
-      _common: this._common,
+      common: this.common,
       _EVM: this,
       _debug: this.DEBUG ? debugPrecompiles : undefined,
     }
@@ -961,7 +961,7 @@ export class EVM implements EVMInterface {
       } else {
         message.containerCode = await this.stateManager.getContractCode(message.codeAddress)
         message.isCompiled = false
-        if (this._common.isActivatedEIP(3540)) {
+        if (this.common.isActivatedEIP(3540)) {
           message.code = getEOFCode(message.containerCode)
         } else {
           message.code = message.containerCode
@@ -1015,7 +1015,7 @@ export class EVM implements EVMInterface {
    * Once the interpreter has finished depth 0, a post-message cleanup should be done
    */
   private postMessageCleanup() {
-    if (this._common.isActivatedEIP(1153)) this._transientStorage.clear()
+    if (this.common.isActivatedEIP(1153)) this._transientStorage.clear()
   }
 
   /**
@@ -1028,15 +1028,15 @@ export class EVM implements EVMInterface {
    * @returns EVMInterface
    */
   public shallowCopy(): EVMInterface {
-    const common = this._common.copy()
-    common.setHardfork(this._common.hardfork())
+    const common = this.common.copy()
+    common.setHardfork(this.common.hardfork())
 
     const opts = {
       ...this._optsCached,
       common,
       stateManager: this.stateManager.shallowCopy(),
     }
-    ;(opts.stateManager as any)._common = common
+    ;(opts.stateManager as any).common = common
     return new EVM(opts)
   }
 }

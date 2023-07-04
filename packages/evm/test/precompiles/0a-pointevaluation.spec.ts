@@ -66,7 +66,7 @@ describe('Precompiles: point evaluation', () => {
         ),
         gasLimit: 0xfffffffffn,
         _EVM: evm,
-        _common: common,
+        common: common,
       }
 
       let res = await pointEvaluation(opts)
@@ -86,7 +86,7 @@ describe('Precompiles: point evaluation', () => {
         ),
         gasLimit: 0xfffffffffn,
         _EVM: evm,
-        _common: common,
+        common: common,
       }
 
       res = await pointEvaluation(optsWithInvalidCommitment)

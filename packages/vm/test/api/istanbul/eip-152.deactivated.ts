@@ -97,7 +97,7 @@ describe('Istanbul: EIP-152', () => {
       const res = precompile09({
         data: hexToBytes('0x' + testCase.input),
         gasLimit: BigInt(20),
-        _common: common,
+        common: common,
         _EVM: vm.evm,
       })
       assert.equal(res.exceptionError?.error, testCase.err)
@@ -108,7 +108,7 @@ describe('Istanbul: EIP-152', () => {
       const res = precompile09({
         data: hexToBytes('0x' + testCase.input),
         gasLimit: BigInt(10000000),
-        _common: common,
+        common: common,
         _EVM: vm.evm,
       })
       assert.equal(bytesToHex(res.returnValue), '0x' + testCase.expected)

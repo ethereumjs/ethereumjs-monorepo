@@ -101,7 +101,7 @@ describe('EIP4895 tests', () => {
         transactions: [transaction],
         withdrawals,
       },
-      { common: vm._common }
+      { common: vm.common }
     )
 
     let result: Uint8Array
@@ -154,7 +154,7 @@ describe('EIP4895 tests', () => {
         transactions: [],
         withdrawals: withdrawals.slice(0, 1),
       },
-      { common: vm._common }
+      { common: vm.common }
     )
     postState = bytesToHex(await vm.stateManager.getStateRoot())
 
@@ -176,7 +176,7 @@ describe('EIP4895 tests', () => {
         transactions: [],
         withdrawals,
       },
-      { common: vm._common }
+      { common: vm.common }
     )
     await vm.runBlock({ block, generate: true })
     postState = bytesToHex(await vm.stateManager.getStateRoot())

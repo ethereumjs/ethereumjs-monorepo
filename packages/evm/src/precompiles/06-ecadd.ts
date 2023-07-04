@@ -9,7 +9,7 @@ import type { PrecompileInput } from './types.js'
 export function precompile06(opts: PrecompileInput): ExecResult {
   const inputData = bytesToUnprefixedHex(opts.data.subarray(0, 128))
 
-  const gasUsed = opts._common.param('gasPrices', 'ecAdd')
+  const gasUsed = opts.common.param('gasPrices', 'ecAdd')
   if (opts._debug !== undefined) {
     opts._debug(
       `Run ECADD (0x06) precompile data=${short(opts.data)} length=${opts.data.length} gasLimit=${

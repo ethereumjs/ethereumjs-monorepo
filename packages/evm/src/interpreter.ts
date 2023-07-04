@@ -113,7 +113,7 @@ export class Interpreter {
   protected _vm: any
   protected _runState: RunState
   protected _stateManager: EVMStateManagerInterface
-  protected _common: Common
+  protected common: Common
   public _evm: EVM
   public journal: Journal
   _env: Env
@@ -136,7 +136,7 @@ export class Interpreter {
   ) {
     this._evm = evm
     this._stateManager = stateManager
-    this._common = this._evm._common
+    this.common = this._evm.common
     this._runState = {
       programCounter: 0,
       opCode: 0xfe, // INVALID opcode
@@ -166,10 +166,10 @@ export class Interpreter {
   }
 
   async run(code: Uint8Array, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
-    if (!this._common.isActivatedEIP(3540) || code[0] !== EOF.FORMAT) {
+    if (!this.common.isActivatedEIP(3540) || code[0] !== EOF.FORMAT) {
       // EIP-3540 isn't active and first byte is not 0xEF - treat as legacy bytecode
       this._runState.code = code
-    } else if (this._common.isActivatedEIP(3540)) {
+    } else if (this.common.isActivatedEIP(3540)) {
       if (code[1] !== EOF.MAGIC) {
         // Bytecode contains invalid EOF magic byte
         return {
@@ -260,7 +260,7 @@ export class Interpreter {
       const dynamicGasHandler = this._evm._dynamicGasHandlers.get(this._runState.opCode)!
       // This function updates the gas in-place.
       // It needs the base fee, for correct gas limit calculation for the CALL opcodes
-      gas = await dynamicGasHandler(this._runState, gas, this._common)
+      gas = await dynamicGasHandler(this._runState, gas, this.common)
     }
 
     if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
@@ -283,9 +283,9 @@ export class Interpreter {
     const opFn = this.getOpHandler(opInfo)
 
     if (opInfo.isAsync) {
-      await (opFn as AsyncOpHandler).apply(null, [this._runState, this._common])
+      await (opFn as AsyncOpHandler).apply(null, [this._runState, this.common])
     } else {
-      opFn.apply(null, [this._runState, this._common])
+      opFn.apply(null, [this._runState, this.common])
     }
   }
 
@@ -667,7 +667,7 @@ export class Interpreter {
    */
   getBlockCoinbase(): bigint {
     let coinbase: Address
-    if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
+    if (this.common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       coinbase = this._env.block.header.cliqueSigner()
     } else {
       coinbase = this._env.block.header.coinbase
@@ -720,7 +720,7 @@ export class Interpreter {
    * CHAINID opcode proposed in [EIP-1344](https://eips.ethereum.org/EIPS/eip-1344).
    */
   getChainId(): bigint {
-    return this._common.chainId()
+    return this.common.chainId()
   }
 
   /**
@@ -848,7 +848,7 @@ export class Interpreter {
     // empty the return data Uint8Array
     this._runState.returnBytes = new Uint8Array(0)
     let createdAddresses: Set<string>
-    if (this._common.isActivatedEIP(6780)) {
+    if (this.common.isActivatedEIP(6780)) {
       createdAddresses = new Set(this._result.createdAddresses)
       msg.createdAddresses = createdAddresses
     }
@@ -858,7 +858,7 @@ export class Interpreter {
 
     // Check if account has enough ether and max depth not exceeded
     if (
-      this._env.depth >= Number(this._common.param('vm', 'stackLimit')) ||
+      this._env.depth >= Number(this.common.param('vm', 'stackLimit')) ||
       (msg.delegatecall !== true && this._env.contract.balance < msg.value)
     ) {
       return BigInt(0)
@@ -886,7 +886,7 @@ export class Interpreter {
       for (const addressToSelfdestructHex of selfdestruct) {
         this._result.selfdestruct.add(addressToSelfdestructHex)
       }
-      if (this._common.isActivatedEIP(6780)) {
+      if (this.common.isActivatedEIP(6780)) {
         // copy over the items to result via iterator
         for (const item of createdAddresses!) {
           this._result.createdAddresses!.add(item)
@@ -922,7 +922,7 @@ export class Interpreter {
 
     // Check if account has enough ether and max depth not exceeded
     if (
-      this._env.depth >= Number(this._common.param('vm', 'stackLimit')) ||
+      this._env.depth >= Number(this.common.param('vm', 'stackLimit')) ||
       this._env.contract.balance < value
     ) {
       return BigInt(0)
@@ -936,9 +936,9 @@ export class Interpreter {
     this._env.contract.nonce += BigInt(1)
     await this.journal.putAccount(this._env.address, this._env.contract)
 
-    if (this._common.isActivatedEIP(3860)) {
+    if (this.common.isActivatedEIP(3860)) {
       if (
-        data.length > Number(this._common.param('vm', 'maxInitCodeSize')) &&
+        data.length > Number(this.common.param('vm', 'maxInitCodeSize')) &&
         this._evm._allowUnlimitedInitCodeSize === false
       ) {
         return BigInt(0)
@@ -958,7 +958,7 @@ export class Interpreter {
     })
 
     let createdAddresses: Set<string>
-    if (this._common.isActivatedEIP(6780)) {
+    if (this.common.isActivatedEIP(6780)) {
       createdAddresses = new Set(this._result.createdAddresses)
       message.createdAddresses = createdAddresses
     }
@@ -987,7 +987,7 @@ export class Interpreter {
       for (const addressToSelfdestructHex of selfdestruct) {
         this._result.selfdestruct.add(addressToSelfdestructHex)
       }
-      if (this._common.isActivatedEIP(6780)) {
+      if (this.common.isActivatedEIP(6780)) {
         // copy over the items to result via iterator
         for (const item of createdAddresses!) {
           this._result.createdAddresses!.add(item)
@@ -1035,7 +1035,7 @@ export class Interpreter {
   async _selfDestruct(toAddress: Address): Promise<void> {
     // only add to refund if this is the first selfdestruct for the address
     if (!this._result.selfdestruct.has(bytesToHex(this._env.address.bytes))) {
-      this.refundGas(this._common.param('gasPrices', 'selfdestructRefund'))
+      this.refundGas(this.common.param('gasPrices', 'selfdestructRefund'))
     }
 
     this._result.selfdestruct.add(bytesToHex(this._env.address.bytes))

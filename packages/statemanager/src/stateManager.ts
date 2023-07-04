@@ -152,7 +152,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   protected readonly _accountCacheSettings: CacheSettings
   protected readonly _storageCacheSettings: CacheSettings
 
-  protected readonly _common: Common
+  public readonly common: Common
 
   protected _checkpointCount: number
 
@@ -177,7 +177,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     this._debug = createDebugLogger('statemanager:statemanager')
 
-    this._common = opts.common ?? new Common({ chain: Chain.Mainnet })
+    this.common = opts.common ?? new Common({ chain: Chain.Mainnet })
 
     this._checkpointCount = 0
 
