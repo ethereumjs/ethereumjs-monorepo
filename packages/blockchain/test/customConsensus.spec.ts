@@ -152,7 +152,7 @@ describe('consensus transition checks', () => {
     }
 
     ;(blockchain as any).consensus = new EthashConsensus()
-    ;(blockchain._common as any).consensusAlgorithm = () => 'fibonacci'
+    ;(blockchain.common as any).consensusAlgorithm = () => 'fibonacci'
 
     try {
       await (blockchain as any).checkAndTransitionHardForkByNumber(5n)
