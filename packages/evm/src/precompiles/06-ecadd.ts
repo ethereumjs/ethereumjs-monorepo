@@ -24,8 +24,7 @@ export function precompile06(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  const ret = ec_add(inputData)
-  const returnData = hexToBytes(ret)
+  const returnData = hexToBytes(ec_add(inputData))
 
   // check ecadd success or failure by comparing the output length
   if (returnData.length !== 64) {

@@ -57,7 +57,7 @@
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.0.0",
     "mcl-wasm": "^0.7.1",
-    "rustbn-wasm": "TODO_FIXME_NEED:https://github.com/ethereumjs/rustbn-wasm/pull/5"
+    "rustbn-wasm": "^0.2.0"
   },
   "devDependencies": {
     "@ethereumjs/statemanager": "^1.0.5",
