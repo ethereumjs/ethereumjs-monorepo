@@ -82,8 +82,8 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   })
   const blockchain = clientOpts.blockchain ?? mockBlockchain()
 
-  // @ts-ignore TODO Move to async Chain.create() initialization
   const chain =
+    // @ts-ignore TODO Move to async Chain.create() initialization
     clientOpts.chain ?? new Chain({ config, blockchain: blockchain as any, genesisState })
   chain.opened = true
 
