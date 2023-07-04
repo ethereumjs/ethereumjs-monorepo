@@ -129,7 +129,7 @@ tape('[Miner]', async (t) => {
     chain: 'devnet',
     hardfork: Hardfork.Berlin,
   })
-  customCommon.setMaxListeners(50)
+  customCommon.events.setMaxListeners(50)
   const customConfig = new Config({
     transports: [],
     accountCache: 10000,
@@ -141,7 +141,7 @@ tape('[Miner]', async (t) => {
   customConfig.events.setMaxListeners(50)
 
   const goerliCommon = new Common({ chain: CommonChain.Goerli, hardfork: Hardfork.Berlin })
-  goerliCommon.setMaxListeners(50)
+  goerliCommon.events.setMaxListeners(50)
   const goerliConfig = new Config({
     transports: [],
     accountCache: 10000,
