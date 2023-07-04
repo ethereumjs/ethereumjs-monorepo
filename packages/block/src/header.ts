@@ -295,7 +295,7 @@ export class BlockHeader {
   /**
    * Validates correct buffer lengths, throws if invalid.
    */
-  _genericFormatValidation() {
+  protected _genericFormatValidation() {
     const { parentHash, stateRoot, transactionsTrie, receiptTrie, mixHash, nonce } = this
 
     if (parentHash.length !== 32) {
@@ -372,7 +372,7 @@ export class BlockHeader {
    * Checks static parameters related to consensus algorithm
    * @throws if any check fails
    */
-  _consensusFormatValidation() {
+  protected _consensusFormatValidation() {
     const { nonce, uncleHash, difficulty, extraData, number } = this
     const hardfork = this._common.hardfork()
 
@@ -647,7 +647,7 @@ export class BlockHeader {
     return this.number === BigInt(0)
   }
 
-  private _requireClique(name: string) {
+  protected _requireClique(name: string) {
     if (this._common.consensusAlgorithm() !== ConsensusAlgorithm.Clique) {
       const msg = this._errorMsg(
         `BlockHeader.${name}() call only supported for clique PoA networks`
@@ -899,7 +899,7 @@ export class BlockHeader {
    * Validates extra data is DAO_ExtraData for DAO_ForceExtraDataRange blocks after DAO
    * activation block (see: https://blog.slock.it/hard-fork-specification-24b889e70703)
    */
-  private _validateDAOExtraData() {
+  protected _validateDAOExtraData() {
     if (this._common.hardforkIsActiveOnBlock(Hardfork.Dao, this.number) === false) {
       return
     }
