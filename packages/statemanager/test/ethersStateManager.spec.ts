@@ -34,11 +34,15 @@ describe('Ethers State Manager initialization tests', () => {
       state instanceof EthersStateManager,
       'was able to instantiate state manager with JsonRpcProvider subclass'
     )
-    assert.equal((state as any).blockTag, '0x1', 'State manager starts with default block tag of 1')
+    assert.equal(
+      (state as any)._blockTag,
+      '0x1',
+      'State manager starts with default block tag of 1'
+    )
 
     state = new EthersStateManager({ provider, blockTag: 1n })
     assert.equal(
-      (state as any).blockTag,
+      (state as any)._blockTag,
       '0x1',
       'State Manager instantiated with predefined blocktag'
     )
@@ -96,7 +100,8 @@ describe('Ethers State Manager API tests', () => {
 
       await state.putContractCode(UNIerc20ContractAddress, UNIContractCode)
       assert.ok(
-        typeof (state as any).contractCache.get(UNIerc20ContractAddress.toString()) !== 'undefined',
+        typeof (state as any)._contractCache.get(UNIerc20ContractAddress.toString()) !==
+          'undefined',
         'UNI ERC20 contract code was found in cache'
       )
 
@@ -183,21 +188,21 @@ describe('Ethers State Manager API tests', () => {
 
       assert.equal(
         undefined,
-        (state as any).contractCache.get(UNIerc20ContractAddress),
+        (state as any)._contractCache.get(UNIerc20ContractAddress),
         'should not have any code for contract after cache is cleared'
       )
 
       assert.notEqual(
         undefined,
-        (newState as any).contractCache.get(UNIerc20ContractAddress.toString()),
+        (newState as any)._contractCache.get(UNIerc20ContractAddress.toString()),
         'state manager copy should have code for contract after cache is cleared on original state manager'
       )
 
-      assert.equal((state as any).blockTag, '0x1', 'blockTag defaults to 1')
+      assert.equal((state as any)._blockTag, '0x1', 'blockTag defaults to 1')
       state.setBlockTag(5n)
-      assert.equal((state as any).blockTag, '0x5', 'blockTag set to 0x5')
+      assert.equal((state as any)._blockTag, '0x5', 'blockTag set to 0x5')
       state.setBlockTag('earliest')
-      assert.equal((state as any).blockTag, 'earliest', 'blockTag set to earliest')
+      assert.equal((state as any)._blockTag, 'earliest', 'blockTag set to earliest')
     }
   })
 })
