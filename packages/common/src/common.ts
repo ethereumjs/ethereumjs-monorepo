@@ -433,7 +433,7 @@ export class Common {
    * @param hardfork Hardfork name
    * @returns Dictionary with hardfork params or null if hardfork not on chain
    */
-  _getHardfork(hardfork: string | Hardfork): HardforkConfig | null {
+  private _getHardfork(hardfork: string | Hardfork): HardforkConfig | null {
     const hfs = this.hardforks()
     for (const hf of hfs) {
       if (hf['name'] === hardfork) return hf
@@ -753,7 +753,7 @@ export class Common {
    * @param genesisHash Genesis block hash of the chain
    * @returns Fork hash as hex string
    */
-  _calcForkHash(hardfork: string | Hardfork, genesisHash: Uint8Array): PrefixedHexString {
+  private _calcForkHash(hardfork: string | Hardfork, genesisHash: Uint8Array): PrefixedHexString {
     let hfBytes = new Uint8Array(0)
     let prevBlockOrTime = 0
     for (const hf of this.hardforks()) {
@@ -989,7 +989,7 @@ export class Common {
     return copy
   }
 
-  static _getInitializedChains(customChains?: ChainConfig[]): ChainsConfig {
+  private static _getInitializedChains(customChains?: ChainConfig[]): ChainsConfig {
     const names: ChainName = {}
     for (const [name, id] of Object.entries(Chain)) {
       names[id] = name.toLowerCase()
