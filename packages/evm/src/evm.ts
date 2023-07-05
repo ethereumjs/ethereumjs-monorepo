@@ -898,7 +898,7 @@ export class EVM implements EVMInterface {
       code: opts.code,
       data: opts.data,
       gasLimit: opts.gasLimit,
-      to: opts.address ?? Address.zero(),
+      to: opts.to ?? Address.zero(),
       caller: opts.caller,
       value: opts.value,
       depth: opts.depth,

@@ -131,10 +131,6 @@ export interface EVMRunCodeOpts {
    */
   block?: Block
   /**
-   * Pass a custom {@link EVM} to use. If omitted the default {@link EVM} will be used.
-   */
-  evm?: EVM
-  /**
    * The gas price for the call. Defaults to `0`
    */
   gasPrice?: bigint
@@ -177,7 +173,7 @@ export interface EVMRunCodeOpts {
   /**
    * The address of the account that is executing this code (`address(this)`). Defaults to the zero address.
    */
-  address?: Address
+  to?: Address
   /**
    * The initial program counter. Defaults to `0`
    */
