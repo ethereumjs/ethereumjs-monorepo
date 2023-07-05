@@ -50,6 +50,8 @@ export interface EthereumClientOptions {
 
   /* How often to discover new peers */
   refreshInterval?: number
+
+  /* custom genesisState if any for the chain */
   genesisState?: GenesisState
 }
 
@@ -91,7 +93,6 @@ export class EthereumClient {
           chainDB: options.chainDB,
           stateDB: options.stateDB,
           metaDB: options.metaDB,
-          genesisState: options.genesisState,
           chain,
         }),
       ]
