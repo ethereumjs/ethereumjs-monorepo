@@ -60,6 +60,10 @@ Block.serialize(): Uint8Array
 
 We have added helper methods for "Buffer -> Uint8Array" conversions in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
 
+### Other Changes
+
+- Migrate `fromEthersProvider()` to more general `fromJsonRpcProvider()` constructor, remove `Ethers` dependency, PR [#2663](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2663)
+
 ## 4.2.2 - 2023-04-20
 
 ### Bugfixes

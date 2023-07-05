@@ -26,6 +26,8 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 ```
 
+### Database Abstraction / Removed LevelDB Dependency
+
 ### Buffer -> Uint8Array
 
 With this releases we remove all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`). While this is a big step towards interoperability and browser compatibility of our libraries, this is also one of the most invasive operations we have ever done, see the huge changeset from PR [#2566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2566) and [#2607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2607). 😋
@@ -54,6 +56,7 @@ We have added helper methods for "Buffer -> Uint8Array" conversions in the [@eth
 ### Other Changes
 
 - Fixed clique signer reorg scenario, PR [#2610](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2610)
+- Fix handling of nested uint8Arrays in JSON in DB, PR [#2666](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2666)
 
 ## 6.2.2 - 2023-04-20
 

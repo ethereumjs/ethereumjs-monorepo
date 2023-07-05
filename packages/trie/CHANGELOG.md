@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 6.0.0-rc.1 - 2023-07-11
 
+### New Trie Node Cache
+
+There is a new permanent trie node cache which can be leveraged to make Trie operations significantly faster, see PR [#2667](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2667). Since this also increases base-memory usage of a trie instantiation, this new cache is mainly intended to be used in rather long-lived trie scenarios.
+
+The new cache can be activated by setting a fitting cache size with the new `cacheSize` option (default: `0` (deactivated)).
+
 ### Buffer -> Uint8Array
 
 With this releases we remove all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`). While this is a big step towards interoperability and browser compatibility of our libraries, this is also one of the most invasive operations we have ever done, see the huge changeset from PR [#2566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2566) and [#2607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2607). 😋

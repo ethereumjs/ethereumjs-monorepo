@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Permanent Account, Storage and Trie Node Caches
 
-The client now has integrated permanent caches for accounts and storage as well as trie nodes and a lot less trie reads and writes are needed over time, see PR [#2630](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634) and [#2634](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634). This is a quantum leap for client sync and execution performance leading to the ability sync substantially more extensive networks (no: `mainnet` not yet 😋).
+The client now has integrated permanent caches for accounts and storage as well as trie nodes and a lot less trie reads and writes are needed over time, see PR [#2630](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634), [#2634](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634), [#2667](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2667) and [#2681](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2681). This is a quantum leap for client sync and execution performance leading to the ability sync substantially more extensive networks (no: `mainnet` not yet 😋).
 
 The new caches are activated by default and stats are provided in regular intervals. Caches can be adopted and resized with the new `--accountCache`, `--storageCache` and `--trieCache` options as well as completely deactivated by setting size to `0`, e.g. with `--accountCache=0`.
 
@@ -23,6 +23,14 @@ This release supports EIP-4844 along this snapshot [b9a5a11](https://github.com/
 The following changes are included:
 
 - Add proofs to engine API BlobsBundleV1, PR [#2642](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2642)
+- Limit blobs as per the maxDataGasPerBlock for block building, PR [#2661](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2661)
+- Add 4844 devnet5 blob post utility, PR [#2674](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2674)
+
+### Other Changes
+
+- Memory logging and memory optimizations, PR [#2675](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2675) and [#2678](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2678)
+- New `--execute` option to activate/deactivate VM execution, PR [#2675](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2675)
+- Fix unclean shutdown scenario where SIGINT may come before client fully started, PR [#2677](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2677)
 
 ## 0.7.1 - 2023-04-20
 

@@ -30,6 +30,10 @@ Ethash.verifyPOW(block: Block)
 
 We have added helper methods for "Buffer -> Uint8Array" conversions in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
 
+### Other Changes
+
+- Fix handling of nested uint8Arrays in JSON in DB, PR [#2666](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2666)
+
 ## 2.0.5 - 2023-04-30
 
 - Update ethereum-cryptography from 1.2 to 2.0 (switch from noble-secp256k1 to noble-curves), PR [#2641](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2641)
