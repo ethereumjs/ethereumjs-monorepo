@@ -59,7 +59,6 @@
     "@ethereumjs/block": "^4.2.2",
     "@ethereumjs/trie": "^5.0.5",
     "@ethereumjs/util": "^8.0.6",
-    "@types/node": "^16.11.7",
     "@types/tape": "^4.13.2",
     "debug": "^4.3.3",
     "eslint": "^8.0.0",

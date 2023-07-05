@@ -76,6 +76,6 @@
     "testdouble": "^3.8.2"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   }
 }

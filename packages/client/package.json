@@ -114,6 +114,6 @@
     "webpack-cli": "^4.8.0"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   }
 }

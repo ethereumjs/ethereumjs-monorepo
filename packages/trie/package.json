@@ -71,6 +71,6 @@
     "micro-bmark": "0.2.0"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   }
 }
