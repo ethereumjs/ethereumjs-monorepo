@@ -19,7 +19,7 @@ import { devp2pDebug, formatLogData } from '../util.js'
 import { ECIES } from './ecies.js'
 
 import type { ETH, LES } from '../protocol/index.js'
-import type { Capabilities } from '../types.js'
+import type { Capabilities, PeerOptions } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type { Socket } from 'net'
@@ -94,7 +94,7 @@ export class Peer extends EventEmitter {
    */
   _protocols: ProtocolDescriptor[]
 
-  constructor(options: any) {
+  constructor(options: PeerOptions) {
     super()
 
     // hello data
@@ -107,7 +107,7 @@ export class Peer extends EventEmitter {
 
     // ECIES session
     this._remoteId = options.remoteId
-    this._EIP8 = options.EIP8 !== undefined ? options.EIP8 : true
+    this._EIP8 = options.EIP8 ?? true
     this._eciesSession = new ECIES(options.privateKey, this._id, this._remoteId)
 
     // Auth, Ack, Header, Body

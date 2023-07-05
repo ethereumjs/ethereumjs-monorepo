@@ -1,5 +1,6 @@
 import type { DPT } from './dpt'
 import type { Common } from '@ethereumjs/common'
+import type { Socket } from 'net'
 
 interface ProtocolConstructor {
   new (...args: any[]): any
@@ -172,6 +173,20 @@ export interface PeerInfo {
   address?: string
   udpPort?: number | null
   tcpPort?: number | null
+}
+
+export interface PeerOptions {
+  clientId: Uint8Array
+  capabilities?: Capabilities[]
+  common: Common
+  port: number
+  id: Uint8Array
+  remoteClientIdFilter: any
+  remoteId: Uint8Array
+  EIP8?: Uint8Array | boolean
+  privateKey: Uint8Array
+  socket: Socket
+  timeout: number
 }
 
 export interface RLPxOptions {

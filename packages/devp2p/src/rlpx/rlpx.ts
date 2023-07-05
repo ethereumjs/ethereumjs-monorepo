@@ -203,7 +203,7 @@ export class RLPx extends EventEmitter {
 
     const peer: Peer = new Peer({
       socket,
-      remoteId: peerId,
+      remoteId: peerId!,
       privateKey: this._privateKey,
       id: this._id,
       timeout: this._timeout,
@@ -211,7 +211,7 @@ export class RLPx extends EventEmitter {
       remoteClientIdFilter: this._remoteClientIdFilter,
       capabilities: this._capabilities,
       common: this._common,
-      port: this._listenPort,
+      port: this._listenPort!,
     })
     peer.on('error', (err) => this.emit('peer:error', peer, err))
 
