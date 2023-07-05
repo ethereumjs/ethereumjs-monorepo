@@ -60,7 +60,7 @@
     "webdriverio": "^8.10.7"
   },
   "engines": {
-    "node": ">=14",
+    "node": ">=18",
     "npm": ">=7"
   }
 }
