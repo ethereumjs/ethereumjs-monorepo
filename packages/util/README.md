@@ -89,10 +89,10 @@ Buffer.alloc(97) // Allocate a Buffer with length 97
 new Uint8Array(97) // Allocate a Uint8Array with length 97
 
 Buffer.from('342770c0', 'hex') // Convert a hex string to a Buffer
-prefixedHexStringToBytes('0x342770c0') // Convert a hex string to a Uint8Array, Util.prefixedHexStringToBytes()
+hexToBytes('0x342770c0') // Convert a prefixed hex string to a Uint8Array, Util.hexToBytes()
 
 `0x${myBuffer.toString('hex')}` // Convert a Buffer to a prefixed hex string
-bytesToPrefixedHexString(myUint8Array) // Convert a Uint8Array to a prefixed hex string
+bytesToHex(myUint8Array) // Convert a Uint8Array to a prefixed hex string
 
 intToBuffer(9) // Convert an integer to a Buffer, old (removed)
 intToBytes(9) // Convert an integer to a Uint8Array, Util.intToBytes()
@@ -111,7 +111,7 @@ toBytes(v: ToBytesInputTypes) // Converts various byte compatible types to Uint8
 Helper methods can be imported like this:
 
 ```typescript
-import { prefixedHexStringToBytes } from '@ethereumjs/util'
+import { hexToBytes } from '@ethereumjs/util'
 ```
 
 ### BigInt Support
