@@ -76,21 +76,57 @@ export interface BlockchainInterface {
   getTotalDifficulty?(hash: Uint8Array, number?: bigint): Promise<bigint>
 
   /**
-   * Returns the genesis state of the blockchain.
-   * All values are provided as hex-prefixed strings.
-   */
-  genesisState(): GenesisState
-
-  /**
    * Returns the latest full block in the canonical chain.
    */
   getCanonicalHeadBlock(): Promise<Block>
 }
 
+export interface GenesisOptions {
+  /**
+   * The blockchain only initializes successfully if it has a genesis block. If
+   * there is no block available in the DB and a `genesisBlock` is provided,
+   * then the provided `genesisBlock` will be used as genesis. If no block is
+   * present in the DB and no block is provided, then the genesis block as
+   * provided from the `common` will be used.
+   */
+  genesisBlock?: Block
+
+  /**
+   * If you are using a custom chain {@link Common}, pass the genesis state.
+   *
+   * Pattern 1 (with genesis state see {@link GenesisState} for format):
+   *
+   * ```javascript
+   * {
+   *   '0x0...01': '0x100', // For EoA
+   * }
+   * ```
+   *
+   * Pattern 2 (with complex genesis state, containing contract accounts and storage).
+   * Note that in {@link AccountState} there are two
+   * accepted types. This allows to easily insert accounts in the genesis state:
+   *
+   * A complex genesis state with Contract and EoA states would have the following format:
+   *
+   * ```javascript
+   * {
+   *   '0x0...01': '0x100', // For EoA
+   *   '0x0...02': ['0x1', '0xRUNTIME_BYTECODE', [[storageKey1, storageValue1], [storageKey2, storageValue2]]] // For contracts
+   * }
+   * ```
+   */
+  genesisState?: GenesisState
+
+  /**
+   * State root of the genesis state
+   */
+  genesisStateRoot?: Uint8Array
+}
+
 /**
  * This are the options that the Blockchain constructor can receive.
  */
-export interface BlockchainOptions {
+export interface BlockchainOptions extends GenesisOptions {
   /**
    * Specify the chain and hardfork by passing a {@link Common} instance.
    *
@@ -134,41 +170,6 @@ export interface BlockchainOptions {
    *
    */
   validateBlocks?: boolean
-
-  /**
-   * The blockchain only initializes successfully if it has a genesis block. If
-   * there is no block available in the DB and a `genesisBlock` is provided,
-   * then the provided `genesisBlock` will be used as genesis. If no block is
-   * present in the DB and no block is provided, then the genesis block as
-   * provided from the `common` will be used.
-   */
-  genesisBlock?: Block
-
-  /**
-   * If you are using a custom chain {@link Common}, pass the genesis state.
-   *
-   * Pattern 1 (with genesis state see {@link GenesisState} for format):
-   *
-   * ```javascript
-   * {
-   *   '0x0...01': '0x100', // For EoA
-   * }
-   * ```
-   *
-   * Pattern 2 (with complex genesis state, containing contract accounts and storage).
-   * Note that in {@link AccountState} there are two
-   * accepted types. This allows to easily insert accounts in the genesis state:
-   *
-   * A complex genesis state with Contract and EoA states would have the following format:
-   *
-   * ```javascript
-   * {
-   *   '0x0...01': '0x100', // For EoA
-   *   '0x0...02': ['0x1', '0xRUNTIME_BYTECODE', [[storageKey1, storageValue1], [storageKey2, storageValue2]]] // For contracts
-   * }
-   * ```
-   */
-  genesisState?: GenesisState
 
   /**
    * Optional custom consensus that implements the {@link Consensus} class

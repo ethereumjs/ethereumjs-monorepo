@@ -1,6 +1,7 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common, parseGethGenesis } from '@ethereumjs/common'
+import { getGenesis } from '@ethereumjs/genesis'
 import { Address, KECCAK256_RLP, hexToBytes, parseGethGenesisState } from '@ethereumjs/util'
 import { Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
@@ -20,6 +21,7 @@ import { mockBlockchain } from './mockBlockchain'
 import type { EthereumClient } from '../../src/client'
 import type { FullEthereumService } from '../../src/service'
 import type { TypedTransaction } from '@ethereumjs/tx'
+import type { GenesisState } from '@ethereumjs/util'
 import type { IncomingMessage } from 'connect'
 import type { HttpServer } from 'jayson/promise'
 import type * as tape from 'tape'
@@ -42,6 +44,7 @@ type createClientArgs = {
   blockchain: Blockchain
   chain: any // Could be anything that implements a portion of the Chain interface (varies by test)
   opened: boolean
+  genesisState: GenesisState
 }
 export function startRPC(
   methods: any,
@@ -69,6 +72,7 @@ export function createManager(client: EthereumClient) {
 
 export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   const common: Common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
+  const genesisState = clientOpts.genesisState ?? getGenesis(Number(common.chainId())) ?? {}
   const config = new Config({
     transports: [],
     common,
@@ -79,8 +83,9 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   })
   const blockchain = clientOpts.blockchain ?? mockBlockchain()
 
-  // @ts-ignore TODO Move to async Chain.create() initialization
-  const chain = clientOpts.chain ?? new Chain({ config, blockchain: blockchain as any })
+  const chain =
+    // @ts-ignore TODO Move to async Chain.create() initialization
+    clientOpts.chain ?? new Chain({ config, blockchain: blockchain as any, genesisState })
   chain.opened = true
 
   const defaultClientConfig = {
@@ -243,6 +248,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
     blockchain,
     includeVM: true,
     enableMetaDB: true,
+    genesisState,
   })
   const manager = createManager(client)
   const engineMethods = clientOpts.engine === true ? manager.getMethods(true) : {}

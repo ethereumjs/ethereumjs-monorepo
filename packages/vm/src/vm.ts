@@ -20,7 +20,7 @@ import type {
 } from './types.js'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
-import type { BigIntLike } from '@ethereumjs/util'
+import type { BigIntLike, GenesisState } from '@ethereumjs/util'
 
 /**
  * Execution engine which can be used to run a blockchain, individual
@@ -76,7 +76,11 @@ export class VM {
    */
   static async create(opts: VMOpts = {}): Promise<VM> {
     const vm = new this(opts)
-    await vm.init()
+    const genesisStateOpts =
+      opts.stateManager === undefined && opts.genesisState === undefined
+        ? { genesisState: {} }
+        : undefined
+    await vm.init({ ...genesisStateOpts, ...opts })
     return vm
   }
 
@@ -131,22 +135,17 @@ export class VM {
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
   }
 
-  async init(): Promise<void> {
+  async init({ genesisState }: { genesisState?: GenesisState } = {}): Promise<void> {
     if (this._isInitialized) return
-    if (typeof (<any>this.blockchain)._init === 'function') {
-      await (this.blockchain as any)._init()
+
+    if (genesisState !== undefined) {
+      await this.stateManager.generateCanonicalGenesis(genesisState)
+    } else if (this._opts.stateManager === undefined) {
+      throw Error('genesisState state required to set genesis for stateManager')
     }
 
-    if (!this._opts.stateManager) {
-      if (this._opts.activateGenesisState === true) {
-        if (typeof (<any>this.blockchain).genesisState === 'function') {
-          await this.stateManager.generateCanonicalGenesis((<any>this.blockchain).genesisState())
-        } else {
-          throw new Error(
-            'cannot activate genesis state: blockchain object has no `genesisState` method'
-          )
-        }
-      }
+    if (typeof (<any>this.blockchain)._init === 'function') {
+      await (this.blockchain as any)._init({ genesisState })
     }
 
     if (this._opts.activatePrecompiles === true && typeof this._opts.stateManager === 'undefined') {

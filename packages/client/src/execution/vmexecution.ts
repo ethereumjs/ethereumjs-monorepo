@@ -5,6 +5,7 @@ import {
   DBSetTD,
 } from '@ethereumjs/blockchain'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { getGenesis } from '@ethereumjs/genesis'
 import { CacheType, DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { Lock, bytesToHex, equalsBytes } from '@ethereumjs/util'
@@ -132,10 +133,12 @@ export class VMExecution extends Execution {
       this.hardfork = this.config.execCommon.hardfork()
       this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
       if (number === BigInt(0)) {
-        if (typeof this.vm.blockchain.genesisState !== 'function') {
-          throw new Error('cannot get iterator head: blockchain has no genesisState function')
+        const genesisState =
+          this.chain['_customGenesisState'] ?? getGenesis(Number(this.vm.common.chainId()))
+        if (!genesisState) {
+          throw new Error('genesisState not available')
         }
-        await this.vm.stateManager.generateCanonicalGenesis(this.vm.blockchain.genesisState())
+        await this.vm.stateManager.generateCanonicalGenesis(genesisState)
       }
       await super.open()
       // TODO: Should a run be started to execute any left over blocks?
