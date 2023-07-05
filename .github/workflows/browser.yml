@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16]
+        node-version: [18]
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
@@ -31,7 +31,7 @@ jobs:
 
       - run: npm ci
 
-#     Install playwright dependencies
+      #     Install playwright dependencies
       - run: npx playwright install-deps
 
       - run: npm run test:browser -w=@ethereumjs/rlp
@@ -40,13 +40,12 @@ jobs:
       - run: npm run test:browser -w=@ethereumjs/trie
       - run: npm run test:browser -w=@ethereumjs/tx
       - run: npm run test:browser -w=@ethereumjs/block
-#     No browser tests for devp2p
+      #     No browser tests for devp2p
       - run: npm run test:browser -w=@ethereumjs/blockchain
-#     No browser tests for ethash
+      #     No browser tests for ethash
       - run: npm run test:browser -w=@ethereumjs/wallet
       - run: cd ../statemanager && npm run test:browser
       - run: cd ../evm && npm run test:browser
-
 #     VM: several tests not passing yet
 #     - run: npm run test:browser -w=@ethereumjs/vm
 
