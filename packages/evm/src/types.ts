@@ -1,6 +1,6 @@
 import { zeros } from '@ethereumjs/util'
 
-import type { EVM, EVMResult, ExecResult } from './evm.js'
+import type { EVMResult, ExecResult } from './evm.js'
 import type { InterpreterStep } from './interpreter.js'
 import type { Message } from './message.js'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
@@ -174,10 +174,6 @@ export interface EVMRunCodeOpts {
    * The address of the account that is executing this code (`address(this)`). Defaults to the zero address.
    */
   to?: Address
-  /**
-   * The initial program counter. Defaults to `0`
-   */
-  pc?: number
   /**
    * Versioned hashes for each blob in a blob transaction
    */
