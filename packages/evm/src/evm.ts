@@ -897,7 +897,7 @@ export class EVM implements EVMInterface {
     const message = new Message({
       code: opts.code,
       data: opts.data,
-      gasLimit: opts.gasLimit,
+      gasLimit: opts.gasLimit ?? BigInt(0xffffff),
       to: opts.to ?? Address.zero(),
       caller: opts.caller,
       value: opts.value,

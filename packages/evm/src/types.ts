@@ -36,93 +36,6 @@ export type AddOpcode = {
 export type CustomOpcode = AddOpcode | DeleteOpcode
 
 /**
- * Options for running a call (or create) operation with `EVM.runCall()`
- */
-export interface EVMRunCallOpts {
-  /**
-   * The `block` the `tx` belongs to. If omitted a default blank block will be used.
-   */
-  block?: Block
-  /**
-   * The gas price for the call. Defaults to `0`
-   */
-  gasPrice?: bigint
-  /**
-   * The address where the call originated from. Defaults to the zero address.
-   */
-  origin?: Address
-  /**
-   * The address that ran this code (`msg.sender`). Defaults to the zero address.
-   */
-  caller?: Address
-  /**
-   * The gas limit for the call. Defaults to `0xffffff`
-   */
-  gasLimit?: bigint
-  /**
-   * The to address. Defaults to the zero address.
-   */
-  to?: Address
-  /**
-   * The value in ether that is being sent to `opts.to`. Defaults to `0`
-   */
-  value?: bigint
-  /**
-   * The data for the call.
-   */
-  data?: Uint8Array
-  /**
-   * This is for CALLCODE where the code to load is different than the code from the `opts.to` address.
-   */
-  code?: Uint8Array
-  /**
-   * The call depth. Defaults to `0`
-   */
-  depth?: number
-  /**
-   * If the code location is a precompile.
-   */
-  isCompiled?: boolean
-  /**
-   * If the call should be executed statically. Defaults to false.
-   */
-  isStatic?: boolean
-  /**
-   * An optional salt to pass to CREATE2.
-   */
-  salt?: Uint8Array
-  /**
-   * Addresses to selfdestruct. Defaults to the empty set.
-   */
-  selfdestruct?: Set<string>
-  /**
-   * Created addresses in current context. Used in EIP 6780
-   */
-  createdAddresses?: Set<string>
-  /**
-   * Skip balance checks if true. If caller balance is less than message value,
-   * sets balance to message value to ensure execution doesn't fail.
-   */
-  skipBalance?: boolean
-  /**
-   * If the call is a DELEGATECALL. Defaults to false.
-   */
-  delegatecall?: boolean
-  /**
-   * Refund counter. Defaults to `0`
-   */
-  gasRefund?: bigint
-  /**
-   * Optionally pass in an already-built message.
-   */
-  message?: Message
-  /**
-   * Versioned hashes for each blob in a blob transaction
-   */
-  versionedHashes?: Uint8Array[]
-}
-
-/**
  * Options for the `EVM.runCode()` method.
  */
 export interface EVMRunCodeOpts {
@@ -151,9 +64,9 @@ export interface EVMRunCodeOpts {
    */
   data?: Uint8Array
   /**
-   * The gas limit for the call.
+   * The gas limit for the call. Defaults to `16777215` (`0xffffff`)
    */
-  gasLimit: bigint
+  gasLimit?: bigint
   /**
    * The value in ether that is being sent to `opts.address`. Defaults to `0`
    */
@@ -178,6 +91,41 @@ export interface EVMRunCodeOpts {
    * Versioned hashes for each blob in a blob transaction
    */
   versionedHashes?: Uint8Array[]
+}
+
+/**
+ * Options for running a call (or create) operation with `EVM.runCall()`
+ */
+export interface EVMRunCallOpts extends EVMRunCodeOpts {
+  /**
+   * If the code location is a precompile.
+   */
+  isCompiled?: boolean
+  /**
+   * An optional salt to pass to CREATE2.
+   */
+  salt?: Uint8Array
+  /**
+   * Created addresses in current context. Used in EIP 6780
+   */
+  createdAddresses?: Set<string>
+  /**
+   * Skip balance checks if true. If caller balance is less than message value,
+   * sets balance to message value to ensure execution doesn't fail.
+   */
+  skipBalance?: boolean
+  /**
+   * If the call is a DELEGATECALL. Defaults to false.
+   */
+  delegatecall?: boolean
+  /**
+   * Refund counter. Defaults to `0`
+   */
+  gasRefund?: bigint
+  /**
+   * Optionally pass in an already-built message.
+   */
+  message?: Message
 }
 
 interface NewContractEvent {
