@@ -3,7 +3,7 @@ import { EventEmitter } from 'events'
 
 import { KBucket as _KBucket } from '../ext/index.js'
 
-import type { PeerInfo } from './dpt.js'
+import type { PeerInfo } from '../types.js'
 
 const KBUCKET_SIZE = 16
 const KBUCKET_CONCURRENCY = 3

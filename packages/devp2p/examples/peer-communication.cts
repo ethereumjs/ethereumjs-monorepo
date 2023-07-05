@@ -1,4 +1,11 @@
-import { bytesToInt, intToBytes, randomBytes, bytesToUnprefixedHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import {
+  bytesToInt,
+  intToBytes,
+  randomBytes,
+  bytesToUnprefixedHex,
+  equalsBytes,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
@@ -101,7 +108,7 @@ rlpx.on('peer:added', (peer) => {
       [intToBytes(CHECK_BLOCK_NR), Uint8Array.from([1]), Uint8Array.from([]), Uint8Array.from([])],
     ])
     forkDrop = setTimeout(() => {
-      peer.disconnect(devp2p.DISCONNECT_REASONS.USELESS_PEER)
+      peer.disconnect(devp2p.DISCONNECT_REASON.USELESS_PEER)
     }, ms('15s'))
     peer.once('close', () => clearTimeout(forkDrop))
   })
@@ -148,7 +155,7 @@ rlpx.on('peer:added', (peer) => {
         }
 
         if (requests.headers.length === 0 && requests.msgTypes[code] >= 8) {
-          peer.disconnect(devp2p.DISCONNECT_REASONS.USELESS_PEER)
+          peer.disconnect(devp2p.DISCONNECT_REASON.USELESS_PEER)
         } else {
           eth.sendMessage(devp2p.ETH.MESSAGE_CODES.BLOCK_HEADERS, [payload[0], headers])
         }
@@ -161,7 +168,7 @@ rlpx.on('peer:added', (peer) => {
             console.log(
               `${addr} expected one header for ${CHECK_BLOCK_TITLE} verify (received: ${payload[1].length})`
             )
-            peer.disconnect(devp2p.DISCONNECT_REASONS.USELESS_PEER)
+            peer.disconnect(devp2p.DISCONNECT_REASON.USELESS_PEER)
             break
           }
 
@@ -198,7 +205,9 @@ rlpx.on('peer:added', (peer) => {
           }
 
           if (!isValidPayload) {
-            console.log(`${addr} received wrong block header ${bytesToUnprefixedHex(header.hash())}`)
+            console.log(
+              `${addr} received wrong block header ${bytesToUnprefixedHex(header.hash())}`
+            )
           }
         }
 
@@ -207,7 +216,7 @@ rlpx.on('peer:added', (peer) => {
 
       case devp2p.ETH.MESSAGE_CODES.GET_BLOCK_BODIES:
         if (requests.headers.length === 0 && requests.msgTypes[code] >= 8) {
-          peer.disconnect(devp2p.DISCONNECT_REASONS.USELESS_PEER)
+          peer.disconnect(devp2p.DISCONNECT_REASON.USELESS_PEER)
         } else {
           eth.sendMessage(devp2p.ETH.MESSAGE_CODES.BLOCK_BODIES, [payload[0], []])
         }
@@ -256,7 +265,7 @@ rlpx.on('peer:added', (peer) => {
 
       case devp2p.ETH.MESSAGE_CODES.GET_NODE_DATA:
         if (requests.headers.length === 0 && requests.msgTypes[code] >= 8) {
-          peer.disconnect(devp2p.DISCONNECT_REASONS.USELESS_PEER)
+          peer.disconnect(devp2p.DISCONNECT_REASON.USELESS_PEER)
         } else {
           eth.sendMessage(devp2p.ETH.MESSAGE_CODES.NODE_DATA, [payload[0], []])
         }
@@ -267,7 +276,7 @@ rlpx.on('peer:added', (peer) => {
 
       case devp2p.ETH.MESSAGE_CODES.GET_RECEIPTS:
         if (requests.headers.length === 0 && requests.msgTypes[code] >= 8) {
-          peer.disconnect(devp2p.DISCONNECT_REASONS.USELESS_PEER)
+          peer.disconnect(devp2p.DISCONNECT_REASON.USELESS_PEER)
         } else {
           eth.sendMessage(devp2p.ETH.MESSAGE_CODES.RECEIPTS, [payload[0], []])
         }

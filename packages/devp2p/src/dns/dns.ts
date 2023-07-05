@@ -2,7 +2,7 @@ import debugDefault from 'debug'
 
 import { ENR } from './enr.js'
 
-import type { PeerInfo } from '../dpt/index.js'
+import type { PeerInfo } from '../types.js'
 const { debug: createDebugLogger } = debugDefault
 
 let dns: any
@@ -20,7 +20,7 @@ type SearchContext = {
   visits: { [key: string]: boolean }
 }
 
-export type DNSOptions = {
+type DNSOptions = {
   /**
    * ipv4 or ipv6 address of server to pass to native dns.setServers()
    * Sets the IP address of servers to be used when performing

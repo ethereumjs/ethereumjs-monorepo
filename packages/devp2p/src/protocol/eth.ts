@@ -10,12 +10,13 @@ import {
 } from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 
+import { EthProtocol } from '../types.js'
 import { assertEq, formatLogData, formatLogId } from '../util.js'
 
-import { EthProtocol, Protocol } from './protocol.js'
+import { Protocol } from './protocol.js'
 
 import type { Peer } from '../rlpx/peer.js'
-import type { SendMethod } from './protocol.js'
+import type { SendMethod } from '../types.js'
 
 export class ETH extends Protocol {
   _status: ETH.StatusMsg | null = null

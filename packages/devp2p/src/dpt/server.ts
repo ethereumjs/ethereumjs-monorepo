@@ -7,7 +7,8 @@ import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
 
 import { decode, encode } from './message.js'
 
-import type { DPT, PeerInfo } from './dpt.js'
+import type { PeerInfo } from '../types.js'
+import type { DPT } from './dpt.js'
 import type { Debugger } from 'debug'
 import type { Socket as DgramSocket, RemoteInfo } from 'dgram'
 import type LRUCache from 'lru-cache'
@@ -20,7 +21,7 @@ const verbose = createDebugLogger('verbose').enabled
 
 const VERSION = 0x04
 
-export interface DPTServerOptions {
+interface DPTServerOptions {
   /**
    * Timeout for peer requests
    *

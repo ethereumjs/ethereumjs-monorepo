@@ -9,18 +9,12 @@ import { BanList } from './ban-list.js'
 import { KBucket } from './kbucket.js'
 import { Server as DPTServer } from './server.js'
 
+import type { PeerInfo } from '../types.js'
 import type { Debugger } from 'debug'
 
 const DEBUG_BASE_NAME = 'dpt'
 
-export interface PeerInfo {
-  id?: Uint8Array
-  address?: string
-  udpPort?: number | null
-  tcpPort?: number | null
-}
-
-export interface DPTOptions {
+interface DPTOptions {
   /**
    * Timeout for peer requests
    *

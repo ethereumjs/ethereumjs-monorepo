@@ -1,22 +1,15 @@
 import debugDefault from 'debug'
 import { EventEmitter } from 'events'
 
-import { DISCONNECT_REASONS } from '../rlpx/peer.js'
+import { DISCONNECT_REASON, EthProtocol } from '../types.js'
 import { devp2pDebug } from '../util.js'
 
 import type { Peer } from '../rlpx/peer.js'
+import type { SendMethod } from '../types.js'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
 
-export enum EthProtocol { // What does this represent?
-  ETH = 'eth',
-  LES = 'les',
-  SNAP = 'snap',
-}
-
 type MessageCodes = { [key: number | string]: number | string }
-
-export type SendMethod = (code: number, data: Uint8Array) => any
 
 export class Protocol extends EventEmitter {
   _version: number
@@ -52,7 +45,7 @@ export class Protocol extends EventEmitter {
     this._statusTimeoutId =
       protocol !== EthProtocol.SNAP
         ? setTimeout(() => {
-            this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
+            this._peer.disconnect(DISCONNECT_REASON.TIMEOUT)
           }, 5000) // 5 sec * 1000
         : undefined
 

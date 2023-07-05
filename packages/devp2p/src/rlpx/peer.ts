@@ -13,11 +13,13 @@ import debugDefault from 'debug'
 import { EventEmitter } from 'events'
 import * as snappy from 'snappyjs'
 
+import { DISCONNECT_REASON } from '../types.js'
 import { devp2pDebug, formatLogData } from '../util.js'
 
 import { ECIES } from './ecies.js'
 
 import type { ETH, LES } from '../protocol/index.js'
+import type { Capabilities } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type { Socket } from 'net'
@@ -26,35 +28,19 @@ const { debug: createDebugLogger } = debugDefault
 const DEBUG_BASE_NAME = 'rlpx:peer'
 const verbose = createDebugLogger('verbose').enabled
 
-export const BASE_PROTOCOL_VERSION = 5
-export const BASE_PROTOCOL_LENGTH = 16
+const BASE_PROTOCOL_VERSION = 5
+const BASE_PROTOCOL_LENGTH = 16
 
-export const PING_INTERVAL = 15000 // 15 sec * 1000
+const PING_INTERVAL = 15000 // 15 sec * 1000
 
-export enum PREFIXES {
+enum PREFIXES {
   HELLO = 0x00,
   DISCONNECT = 0x01,
   PING = 0x02,
   PONG = 0x03,
 }
 
-export enum DISCONNECT_REASONS {
-  DISCONNECT_REQUESTED = 0x00,
-  NETWORK_ERROR = 0x01,
-  PROTOCOL_ERROR = 0x02,
-  USELESS_PEER = 0x03,
-  TOO_MANY_PEERS = 0x04,
-  ALREADY_CONNECTED = 0x05,
-  INCOMPATIBLE_VERSION = 0x06,
-  INVALID_IDENTITY = 0x07,
-  CLIENT_QUITTING = 0x08,
-  UNEXPECTED_IDENTITY = 0x09,
-  SAME_IDENTITY = 0x0a,
-  TIMEOUT = 0x0b,
-  SUBPROTOCOL_ERROR = 0x10,
-}
-
-export type HelloMsg = {
+type HelloMsg = {
   0: Uint8Array
   1: Uint8Array
   2: Uint8Array[][]
@@ -63,24 +49,13 @@ export type HelloMsg = {
   length: 5
 }
 
-export interface ProtocolDescriptor {
+interface ProtocolDescriptor {
   protocol: any
   offset: number
   length?: number
 }
 
-export interface ProtocolConstructor {
-  new (...args: any[]): any
-}
-
-export interface Capabilities {
-  name: string
-  version: number
-  length: number
-  constructor: ProtocolConstructor
-}
-
-export interface Hello {
+interface Hello {
   protocolVersion: number
   clientId: string
   capabilities: Capabilities[]
@@ -108,7 +83,7 @@ export class Peer extends EventEmitter {
   _pingTimeoutId: NodeJS.Timeout | null
   _closed: boolean
   _connected: boolean
-  _disconnectReason?: DISCONNECT_REASONS
+  _disconnectReason?: DISCONNECT_REASON
   _disconnectWe: null | boolean
   _pingTimeout: number
   _logger: Debugger
@@ -270,7 +245,7 @@ export class Peer extends EventEmitter {
    * Send DISCONNECT message
    * @param reason
    */
-  _sendDisconnect(reason: DISCONNECT_REASONS) {
+  _sendDisconnect(reason: DISCONNECT_REASON) {
     const reasonName = this.getDisconnectPrefix(reason)
     const debugMsg = `Send DISCONNECT to ${this._socket.remoteAddress}:${this._socket.remotePort} (reason: ${reasonName})`
     this.debug('DISCONNECT', debugMsg, reasonName)
@@ -298,7 +273,7 @@ export class Peer extends EventEmitter {
 
     clearTimeout(this._pingTimeoutId!)
     this._pingTimeoutId = setTimeout(() => {
-      this.disconnect(DISCONNECT_REASONS.TIMEOUT)
+      this.disconnect(DISCONNECT_REASON.TIMEOUT)
     }, this._pingTimeout)
   }
 
@@ -392,13 +367,13 @@ export class Peer extends EventEmitter {
     if (this._remoteId === null) {
       this._remoteId = this._hello.id
     } else if (!equalsBytes(this._remoteId, this._hello.id)) {
-      return this.disconnect(DISCONNECT_REASONS.INVALID_IDENTITY)
+      return this.disconnect(DISCONNECT_REASON.INVALID_IDENTITY)
     }
 
     if (this._remoteClientIdFilter !== undefined) {
       for (const filterStr of this._remoteClientIdFilter) {
         if (this._hello.clientId.toLowerCase().includes(filterStr.toLowerCase())) {
-          return this.disconnect(DISCONNECT_REASONS.USELESS_PEER)
+          return this.disconnect(DISCONNECT_REASON.USELESS_PEER)
         }
       }
     }
@@ -436,7 +411,7 @@ export class Peer extends EventEmitter {
       })
 
     if (this._protocols.length === 0) {
-      return this.disconnect(DISCONNECT_REASONS.USELESS_PEER)
+      return this.disconnect(DISCONNECT_REASON.USELESS_PEER)
     }
 
     this._connected = true
@@ -457,7 +432,7 @@ export class Peer extends EventEmitter {
       payload instanceof Uint8Array
         ? bytesToInt(payload)
         : bytesToInt(payload[0] ?? Uint8Array.from([0]))
-    const reason = DISCONNECT_REASONS[this._disconnectReason as number]
+    const reason = DISCONNECT_REASON[this._disconnectReason as number]
     const debugMsg = `DISCONNECT reason: ${reason} ${this._socket.remoteAddress}:${this._socket.remotePort}`
     this.debug('DISCONNECT', debugMsg, reason)
     this._disconnectWe = false
@@ -544,12 +519,12 @@ export class Peer extends EventEmitter {
     if (code === 0x80) code = 0
 
     if (code !== PREFIXES.HELLO && code !== PREFIXES.DISCONNECT && this._hello === null) {
-      return this.disconnect(DISCONNECT_REASONS.PROTOCOL_ERROR)
+      return this.disconnect(DISCONNECT_REASON.PROTOCOL_ERROR)
     }
     // Protocol object referencing either this Peer object or the
     // underlying subprotocol (e.g. `ETH`)
     const protocolObj = this._getProtocol(code)
-    if (protocolObj === undefined) return this.disconnect(DISCONNECT_REASONS.PROTOCOL_ERROR)
+    if (protocolObj === undefined) return this.disconnect(DISCONNECT_REASON.PROTOCOL_ERROR)
 
     const msgCode = code - protocolObj.offset
     const protocolName = protocolObj.protocol.constructor.name
@@ -603,7 +578,7 @@ export class Peer extends EventEmitter {
       }
       protocolObj.protocol._handleMessage(msgCode, payload)
     } catch (err: any) {
-      this.disconnect(DISCONNECT_REASONS.SUBPROTOCOL_ERROR)
+      this.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
       this._logger(`Error on peer subprotocol message handling: ${err}`)
       this.emit('error', err)
     }
@@ -635,7 +610,7 @@ export class Peer extends EventEmitter {
         }
       }
     } catch (err: any) {
-      this.disconnect(DISCONNECT_REASONS.SUBPROTOCOL_ERROR)
+      this.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
       this._logger(`Error on peer socket data handling: ${err}`)
       this.emit('error', err)
     }
@@ -681,11 +656,11 @@ export class Peer extends EventEmitter {
     return PREFIXES[code]
   }
 
-  getDisconnectPrefix(code: DISCONNECT_REASONS): string {
-    return DISCONNECT_REASONS[code]
+  getDisconnectPrefix(code: DISCONNECT_REASON): string {
+    return DISCONNECT_REASON[code]
   }
 
-  disconnect(reason: DISCONNECT_REASONS = DISCONNECT_REASONS.DISCONNECT_REQUESTED) {
+  disconnect(reason: DISCONNECT_REASON = DISCONNECT_REASON.DISCONNECT_REQUESTED) {
     this._sendDisconnect(reason)
   }
 

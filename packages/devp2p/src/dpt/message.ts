@@ -13,7 +13,7 @@ import {
   unstrictDecode,
 } from '../util.js'
 
-import type { PeerInfo } from './dpt.js'
+import type { PeerInfo } from '../types.js'
 const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('devp2p:dpt:server')
