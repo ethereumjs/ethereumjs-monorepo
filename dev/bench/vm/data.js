@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1688546524687,
+  "lastUpdate": 1688558471233,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": false,
-          "id": "4146f58af854fc31f528fd3252e0a5baacd19b94",
-          "message": "util: Rename mapdb copy function (#2795)\n\n* Rename copy function to shallowCopy\n\n* Add test for shallowCopy",
-          "timestamp": "2023-06-18T17:06:33-04:00",
-          "tree_id": "bcef1d36cef9dcb474c4b237a14208f14f950309",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4146f58af854fc31f528fd3252e0a5baacd19b94"
-        },
-        "date": 1687123554073,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 32834,
-            "range": "±4.35%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 32782,
-            "range": "±2.06%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 29881,
-            "range": "±7.29%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 31882,
-            "range": "±2.30%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 31043,
-            "range": "±2.32%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.65%",
             "unit": "ops/sec",
             "extra": "78 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "79761c10225c03e6d52517289c87baca45ab99e6",
+          "message": "blockchain: remove genesis state dependancy from blockchain (#2844)\n\n* blockchain: remove genesis state dependancy from blockchain\r\n\r\nfix the blockchain init and statepassing from client\r\n\r\npass custom genesis from client's chain to blockchain\r\n\r\nsimplify stateroot fetch\r\n\r\nremove need to genesis state in blockchain\r\n\r\nremove package dependancy\r\n\r\nrebase fixes\r\n\r\nlint\r\n\r\nfix statemanager spec\r\n\r\nfix vm spec\r\n\r\nfix client spec\r\n\r\nfix client spec\r\n\r\n* lint\r\n\r\n* address genesisstate in test helper\r\n\r\n* fix client spec\r\n\r\n* add as a dev dependancy in trie for tests\r\n\r\n* cleanup genesis state references in client and add some comments\r\n\r\n* further cleanup genesis state passing\r\n\r\n* improve jsdocs\r\n\r\n* fix jsdocs\r\n\r\n* fix client sim runner",
+          "timestamp": "2023-07-05T13:43:30+02:00",
+          "tree_id": "731d22d29ff370032d20741d98111156a5678f46",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/79761c10225c03e6d52517289c87baca45ab99e6"
+        },
+        "date": 1688558470462,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31468,
+            "range": "±4.48%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 30817,
+            "range": "±2.91%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31045,
+            "range": "±2.88%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 26237,
+            "range": "±9.76%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 29432,
+            "range": "±3.25%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
           }
         ]
       }
