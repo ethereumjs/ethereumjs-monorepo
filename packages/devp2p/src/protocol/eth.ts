@@ -293,8 +293,8 @@ export class ETH extends Protocol {
   }
 
   sendMessage(code: ETH.MESSAGE_CODES, payload: any) {
-    const logData = formatLogData(bytesToHex(RLP.encode(payload)), this._verbose)
     if (this.DEBUG) {
+      const logData = formatLogData(bytesToHex(RLP.encode(payload)), this._verbose)
       const messageName = this.getMsgPrefix(code)
       const debugMsg = `Send ${messageName} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${logData}`
 
