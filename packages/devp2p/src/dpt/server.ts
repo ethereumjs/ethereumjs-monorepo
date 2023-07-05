@@ -7,7 +7,7 @@ import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
 
 import { decode, encode } from './message.js'
 
-import type { PeerInfo } from '../types.js'
+import type { DPTServerOptions, PeerInfo } from '../types.js'
 import type { DPT } from './dpt.js'
 import type { Debugger } from 'debug'
 import type { Socket as DgramSocket, RemoteInfo } from 'dgram'
@@ -20,29 +20,6 @@ const DEBUG_BASE_NAME = 'dpt:server'
 const verbose = createDebugLogger('verbose').enabled
 
 const VERSION = 0x04
-
-interface DPTServerOptions {
-  /**
-   * Timeout for peer requests
-   *
-   * Default: 10s
-   */
-  timeout?: number
-
-  /**
-   * Network info to send a long a request
-   *
-   * Default: 0.0.0.0, no UDP or TCP port provided
-   */
-  endpoint?: PeerInfo
-
-  /**
-   * Function for socket creation
-   *
-   * Default: dgram-created socket
-   */
-  createSocket?: Function
-}
 
 export class Server extends EventEmitter {
   _dpt: DPT

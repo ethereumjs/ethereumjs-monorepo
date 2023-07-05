@@ -8,7 +8,7 @@ import type { PeerInfo } from '../types.js'
 const KBUCKET_SIZE = 16
 const KBUCKET_CONCURRENCY = 3
 
-export interface CustomContact extends PeerInfo {
+interface CustomContact extends PeerInfo {
   id: Uint8Array
   vectorClock: number
 }

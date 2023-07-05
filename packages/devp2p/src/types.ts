@@ -1,3 +1,6 @@
+import type { DPT } from './dpt'
+import type { Common } from '@ethereumjs/common'
+
 interface ProtocolConstructor {
   new (...args: any[]): any
 }
@@ -23,6 +26,103 @@ export enum DISCONNECT_REASON {
   SAME_IDENTITY = 0x0a,
   TIMEOUT = 0x0b,
   SUBPROTOCOL_ERROR = 0x10,
+}
+export type DNSOptions = {
+  /**
+   * ipv4 or ipv6 address of server to pass to native dns.setServers()
+   * Sets the IP address of servers to be used when performing
+   * DNS resolution.
+   * @type {string}
+   */
+  dnsServerAddress?: string
+}
+
+export interface DPTOptions {
+  /**
+   * Timeout for peer requests
+   *
+   * Default: 10s
+   */
+  timeout?: number
+
+  /**
+   * Network info to send a long a request
+   *
+   * Default: 0.0.0.0, no UDP or TCP port provided
+   */
+  endpoint?: PeerInfo
+
+  /**
+   * Function for socket creation
+   *
+   * Default: dgram-created socket
+   */
+  createSocket?: Function
+
+  /**
+   * Interval for peer table refresh
+   *
+   * Default: 60s
+   */
+  refreshInterval?: number
+
+  /**
+   * Toggles whether or not peers should be queried with 'findNeighbours'
+   * to discover more peers
+   *
+   * Default: true
+   */
+  shouldFindNeighbours?: boolean
+
+  /**
+   * Toggles whether or not peers should be discovered by querying EIP-1459 DNS lists
+   *
+   * Default: false
+   */
+  shouldGetDnsPeers?: boolean
+
+  /**
+   * Max number of candidate peers to retrieve from DNS records when
+   * attempting to discover new nodes
+   *
+   * Default: 25
+   */
+  dnsRefreshQuantity?: number
+
+  /**
+   * EIP-1459 ENR tree urls to query for peer discovery
+   *
+   * Default: (network dependent)
+   */
+  dnsNetworks?: string[]
+
+  /**
+   * DNS server to query DNS TXT records from for peer discovery
+   */
+  dnsAddr?: string
+}
+
+export interface DPTServerOptions {
+  /**
+   * Timeout for peer requests
+   *
+   * Default: 10s
+   */
+  timeout?: number
+
+  /**
+   * Network info to send a long a request
+   *
+   * Default: 0.0.0.0, no UDP or TCP port provided
+   */
+  endpoint?: PeerInfo
+
+  /**
+   * Function for socket creation
+   *
+   * Default: dgram-created socket
+   */
+  createSocket?: Function
 }
 
 export enum EthProtocol { // What does this represent?
@@ -72,6 +172,19 @@ export interface PeerInfo {
   address?: string
   udpPort?: number | null
   tcpPort?: number | null
+}
+
+export interface RLPxOptions {
+  clientId?: Uint8Array
+  /* Timeout (default: 10s) */
+  timeout?: number
+  dpt?: DPT | null
+  /* Max peers (default: 10) */
+  maxPeers?: number
+  remoteClientIdFilter?: string[]
+  capabilities: Capabilities[]
+  common: Common
+  listenPort?: number | null
 }
 
 export type SendMethod = (code: number, data: Uint8Array) => any

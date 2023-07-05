@@ -17,7 +17,7 @@ import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
 import { Peer } from './peer.js'
 
 import type { DPT } from '../dpt/index.js'
-import type { Capabilities, PeerInfo } from '../types.js'
+import type { Capabilities, PeerInfo, RLPxOptions } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type LRUCache from 'lru-cache'
@@ -29,19 +29,6 @@ const LRU = require('lru-cache')
 
 const DEBUG_BASE_NAME = 'rlpx'
 const verbose = createDebugLogger('verbose').enabled
-
-export interface RLPxOptions {
-  clientId?: Uint8Array
-  /* Timeout (default: 10s) */
-  timeout?: number
-  dpt?: DPT | null
-  /* Max peers (default: 10) */
-  maxPeers?: number
-  remoteClientIdFilter?: string[]
-  capabilities: Capabilities[]
-  common: Common
-  listenPort?: number | null
-}
 
 export class RLPx extends EventEmitter {
   _privateKey: Uint8Array
