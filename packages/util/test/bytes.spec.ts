@@ -24,6 +24,7 @@ import {
   unpadArray,
   unpadBytes,
   unpadHex,
+  unprefixedHexToBytes,
   validateNoLeadingZeroes,
   zeroAddress,
   zeros,
@@ -422,5 +423,21 @@ describe('hexToBytes', () => {
   it('should convert prefixed hex-strings', () => {
     const converted = hexToBytes('0x1')
     assert.deepEqual(converted, new Uint8Array([1]))
+  })
+})
+
+describe('unprefixedHexToBytes', () => {
+  it('should throw on prefixed strings', () => {
+    assert.throws(() => {
+      unprefixedHexToBytes('0xaabbcc112233')
+    })
+  })
+  it('should convert unprefixed hex-strings', () => {
+    const converted = unprefixedHexToBytes('1')
+    assert.deepEqual(converted, new Uint8Array([1]))
+  })
+  it('should convert unprefixed hex-strings', () => {
+    const converted = unprefixedHexToBytes('11')
+    assert.deepEqual(converted, new Uint8Array([17]))
   })
 })
