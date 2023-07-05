@@ -428,7 +428,14 @@ export async function createInlineClient(config: any, common: any, customGenesis
     validateConsensus: false,
   })
   config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
-  const inlineClient = await EthereumClient.create({ config, blockchain, chainDB, stateDB, metaDB })
+  const inlineClient = await EthereumClient.create({
+    config,
+    blockchain,
+    chainDB,
+    stateDB,
+    metaDB,
+    genesisState: customGenesisState,
+  })
   await inlineClient.open()
   await inlineClient.start()
   return inlineClient
