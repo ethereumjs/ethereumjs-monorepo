@@ -1,6 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { getGenesis } from '@ethereumjs/genesis'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
@@ -25,7 +26,8 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
   t.notEqual(execution, undefined, 'should have valid execution')
   const { vm } = execution
-  await vm.stateManager.generateCanonicalGenesis({})
+  const genesisState = getGenesis(Chain.Mainnet)
+  await vm.stateManager.generateCanonicalGenesis(genesisState)
 
   // genesis address
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')

@@ -1,6 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { getGenesis } from '@ethereumjs/genesis'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
@@ -32,7 +33,8 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   // since synchronizer.run() is not executed in the mock setup,
   // manually run stateManager.generateCanonicalGenesis()
-  await vm.stateManager.generateCanonicalGenesis({})
+  const genesisState = getGenesis(Chain.Mainnet)
+  await vm.stateManager.generateCanonicalGenesis(genesisState)
 
   // a genesis address
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
