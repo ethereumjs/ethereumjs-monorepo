@@ -134,7 +134,7 @@ export class VMExecution extends Execution {
       this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
       if (number === BigInt(0)) {
         const genesisState =
-          this._customGenesisState ?? getGenesis(Number(this.vm.common.chainId()))
+          this.chain['_customGenesisState'] ?? getGenesis(Number(this.vm.common.chainId()))
         if (!genesisState) {
           throw new Error('genesisState not available')
         }

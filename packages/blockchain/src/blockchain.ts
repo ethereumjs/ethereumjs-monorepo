@@ -208,6 +208,8 @@ export class Blockchain implements BlockchainInterface {
    * values from the DB and makes these available to the consumers of
    * Blockchain.
    *
+   * @param opts An options object to provide genesisBlock or ways to contruct it
+   *
    * @hidden
    */
   private async _init(opts: GenesisOptions = {}): Promise<void> {
@@ -1353,7 +1355,7 @@ export class Blockchain implements BlockchainInterface {
 }
 
 /**
- * Returns the genesis state root
+ * Returns the genesis state root if chain is well known or an empty state's root otherwise
  */
 async function getGenesisStateRoot(chainId: Chain): Promise<Uint8Array> {
   const chainGenesis = ChainGenesis[chainId]

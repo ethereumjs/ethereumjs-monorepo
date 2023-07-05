@@ -127,7 +127,7 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   let execution
   if (!(clientOpts.includeVM === false)) {
     const metaDB: any = clientOpts.enableMetaDB === true ? new MemoryLevel() : undefined
-    execution = new VMExecution({ config, chain, metaDB, genesisState })
+    execution = new VMExecution({ config, chain, metaDB })
   }
 
   let peers = [1, 2, 3]

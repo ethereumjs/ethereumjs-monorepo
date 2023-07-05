@@ -117,6 +117,9 @@ export interface GenesisOptions {
    */
   genesisState?: GenesisState
 
+  /**
+   * State root of the genesis state
+   */
   genesisStateRoot?: Uint8Array
 }
 
