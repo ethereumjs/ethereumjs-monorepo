@@ -6,8 +6,10 @@ export enum Chain {
   Sepolia = 11155111,
 }
 
-// Genesis meta gives the genesis state info which is uncoupled with common's genesis params
-type GenesiState = {
+/**
+ * Genesis state meta info which is decoupled from common's genesis params
+ */
+type GenesisState = {
   /* blockNumber that can be used to update and track the regenesis marker */
   blockNumber: bigint
   /* stateRoot of the chain at the blockNumber */
@@ -15,7 +17,10 @@ type GenesiState = {
 }
 
 // Having this info as record will force typescript to make sure no chain is missed
-export const ChainGenesis: Record<Chain, GenesiState> = {
+/**
+ * GenesisState info about well known ethereum chains
+ */
+export const ChainGenesis: Record<Chain, GenesisState> = {
   [Chain.Mainnet]: {
     blockNumber: BigInt(0),
     stateRoot: hexToBytes('0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'),
