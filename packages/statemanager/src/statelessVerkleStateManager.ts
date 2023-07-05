@@ -3,7 +3,6 @@
 import {
   Account,
   bytesToHex,
-  bytesToPrefixedHexString,
   padToEven,
   readBigInt64LE,
   readInt32LE,
@@ -310,7 +309,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * at the last fully committed point, i.e. as if all current
    * checkpoints were reverted.
    */
-  copy(): EVMStateManagerInterface {
+  shallowCopy(): EVMStateManagerInterface {
     const stateManager = new StatelessVerkleStateManager()
     stateManager.initVerkleExecutionWitness(this._executionWitness!)
     return stateManager
@@ -336,7 +335,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     // Get the contract code size
     const codeSizeKey = this.getTreeKeyForCodeSize(address)
 
-    const codeSizeLE = hexToBytes(this._state[bytesToPrefixedHexString(codeSizeKey)] ?? '0x')
+    const codeSizeLE = hexToBytes(this._state[bytesToHex(codeSizeKey)] ?? '0x')
 
     // Calculate number of chunks
     const chunks = Math.ceil(readInt32LE(codeSizeLE) / 32)
@@ -366,7 +365,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    */
   async getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     const storageKey = this.getTreeKeyForStorageSlot(address, Number(bytesToHex(key)))
-    const storage = toBytes(this._state[bytesToPrefixedHexString(storageKey)])
+    const storage = toBytes(this._state[bytesToHex(storageKey)])
 
     return storage
   }
@@ -380,7 +379,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    */
   async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
     const storageKey = this.getTreeKeyForStorageSlot(address, Number(bytesToHex(key)))
-    this._state[bytesToPrefixedHexString(storageKey)] = bytesToPrefixedHexString(value)
+    this._state[bytesToHex(storageKey)] = bytesToHex(value)
   }
 
   /**
@@ -398,9 +397,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     const nonceKey = this.getTreeKeyForNonce(address)
     const codeHashKey = this.getTreeKeyForCodeHash(address)
 
-    const balanceLE = toBytes(this._state[bytesToPrefixedHexString(balanceKey)])
-    const nonceLE = toBytes(this._state[bytesToPrefixedHexString(nonceKey)])
-    const codeHash = toBytes(this._state[bytesToPrefixedHexString(codeHashKey)])
+    const balanceLE = toBytes(this._state[bytesToHex(balanceKey)])
+    const nonceLE = toBytes(this._state[bytesToHex(nonceKey)])
+    const codeHash = toBytes(this._state[bytesToHex(codeHashKey)])
 
     return Account.fromAccountData({
       balance: balanceLE.length > 0 ? readBigInt64LE(balanceLE) : 0n,
@@ -418,9 +417,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     const balanceBuf = writeBigInt64LE(account.balance)
     const nonceBuf = writeBigInt64LE(account.nonce)
 
-    this._state[bytesToPrefixedHexString(balanceKey)] = bytesToPrefixedHexString(balanceBuf)
-    this._state[bytesToPrefixedHexString(nonceKey)] = bytesToPrefixedHexString(nonceBuf)
-    this._state[bytesToPrefixedHexString(codeHashKey)] = bytesToPrefixedHexString(account.codeHash)
+    this._state[bytesToHex(balanceKey)] = bytesToHex(balanceBuf)
+    this._state[bytesToHex(nonceKey)] = bytesToHex(nonceBuf)
+    this._state[bytesToHex(codeHashKey)] = bytesToHex(account.codeHash)
   }
 
   /**
