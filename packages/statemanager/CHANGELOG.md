@@ -8,6 +8,51 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 2.0.0-rc.1 - 2023-07-11
 
+### StateManager / Cache Refactoring
+
+With this release the StateManager has been completely refactored, see PR [#2630](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634) and [#2634](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634). While the overall API has been preserved for the most part, the API DOES come with some changes where things needed a clean-up, which will need some adoption. The cache backend has been completely rewritten and there is now a cleaner separation between the StateManager and the account and storage caches. The `BaseStateManager` class - being rather restrictive than useful - has been removed.
+
+All this makes it significantly easier to write an own StateManager implementation or customize the existing implementation.
+
+To integrate an already existing StateManager implementation it is likely best to start from the updated `statemanager.ts` file including the `DefaultStateManager` class and re-include the own functionality parts in the existing methods there, or to inherit from this class if your changes are not so extensive.
+
+### New Permanent Account and Storage LRU Caches
+
+This release comes with a significantly more elaborate caching mechanism for account and storage caches, see PR [#2630](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634) and [#2634](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634).
+
+There are now two cache options available: an unbounded cache (`CacheType.ORDERED_MAP`) for short-lived usage scenarios (this one is the default cache) and a fixed-size cache (`CacheType.LRU`) for a long-lived large cache scenario.
+
+Caches now "survive" a flush operation and especially long-lived usage scenarios will benefit from increased performance by a growing and more "knowing" cache leading to less and less trie reads.
+
+Have a loot at the extended `CacheOptions` on how to use and leverage the new cache system.
+
+### API Changes
+
+Also along PR [#2630](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634) and [#2634](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634): the StateManager API has been significantly cleaned up with one of the major changes being `getAccount()` not returning an empty account any more if no result was found. While this needs some adoption this one single change makes state handling a lot cleaner.
+
+API Change Summary:
+
+```typescript
+getAccount(address: Address): Promise<Account> // old
+getAccount(address: Address): Promise<Account | undefined> // new
+
+putAccount(address: Address, account: Account): Promise<void> // old
+putAccount(address: Address, account: Account | undefined): Promise<void> // new (now also allows for deletion)
+
+accountIsEmpty(address: Address): Promise<boolean> // removed
+
+setStateRoot(stateRoot: Uint8Array): Promise<void> // old
+setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void> // new
+
+clearCaches(): void // new
+```
+
+The `StateManagerInterface` has now been moved to the `@ethereum/common` package for more universal access and should be loaded from there with:
+
+```typescript
+import type { StateManagerInterface } from '@ethereumjs/common'
+```
+
 ### Buffer -> Uint8Array
 
 With this releases we remove all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`). While this is a big step towards interoperability and browser compatibility of our libraries, this is also one of the most invasive operations we have ever done, see the huge changeset from PR [#2566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2566) and [#2607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2607). 😋
