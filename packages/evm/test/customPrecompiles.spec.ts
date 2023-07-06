@@ -1,4 +1,3 @@
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -29,7 +28,6 @@ describe('EVM -> custom precompiles', () => {
           function: customPrecompile,
         },
       ],
-      stateManager: new DefaultStateManager(),
     })
     const result = await EVMOverride.runCall({
       to: shaAddress,
@@ -49,7 +47,6 @@ describe('EVM -> custom precompiles', () => {
           address: shaAddress,
         },
       ],
-      stateManager: new DefaultStateManager(),
     })
     const result = await EVMOverride.runCall({
       to: shaAddress,
@@ -69,7 +66,6 @@ describe('EVM -> custom precompiles', () => {
           function: customPrecompile,
         },
       ],
-      stateManager: new DefaultStateManager(),
     })
     const result = await EVMOverride.runCall({
       to: newPrecompile,
@@ -82,9 +78,7 @@ describe('EVM -> custom precompiles', () => {
   })
 
   it('should not persist changes to precompiles', async () => {
-    let EVMSha = await EVM.create({
-      stateManager: new DefaultStateManager(),
-    })
+    let EVMSha = await EVM.create()
     const shaResult = await EVMSha.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
@@ -98,7 +92,6 @@ describe('EVM -> custom precompiles', () => {
           function: customPrecompile,
         },
       ],
-      stateManager: new DefaultStateManager(),
     })
     const result = await EVMOverride.runCall({
       to: shaAddress,
@@ -109,9 +102,7 @@ describe('EVM -> custom precompiles', () => {
     // sanity: check we have overridden
     assert.deepEqual(result.execResult.returnValue, expectedReturn, 'return value is correct')
     assert.ok(result.execResult.executionGasUsed === expectedGas, 'gas used is correct')
-    EVMSha = await EVM.create({
-      stateManager: new DefaultStateManager(),
-    })
+    EVMSha = await EVM.create()
     const shaResult2 = await EVMSha.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
@@ -137,7 +128,6 @@ describe('EVM -> custom precompiles', () => {
           function: customPrecompile,
         },
       ],
-      stateManager: new DefaultStateManager(),
     })
     const evmCopy = evm.shallowCopy()
     assert.deepEqual(

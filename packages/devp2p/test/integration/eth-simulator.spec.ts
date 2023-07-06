@@ -7,6 +7,8 @@ import { ETH } from '../../src/index.js'
 
 import * as util from './util.js'
 
+import type { Capabilities } from '../../src/index.js'
+
 const GENESIS_TD = 17179869184
 const GENESIS_HASH = hexToBytes(
   '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
@@ -71,7 +73,7 @@ describe('ETH simulator tests', () => {
     })
   })
 
-  async function sendWithProtocolVersion(t: typeof it, version: number, cap?: Object) {
+  async function sendWithProtocolVersion(t: typeof it, version: number, cap?: Capabilities[]) {
     await new Promise((resolve) => {
       const opts: any = {}
       opts.status0 = Object.assign({}, status)
@@ -95,7 +97,7 @@ describe('ETH simulator tests', () => {
   async function sendNotAllowed(
     t: typeof it,
     version: number,
-    cap: Object,
+    cap: Capabilities[],
     expectedCode: ETH.MESSAGE_CODES
   ) {
     await new Promise((resolve) => {

@@ -1,5 +1,4 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -86,7 +85,6 @@ describe('should test mcopy', () => {
 
       const evm = await EVM.create({
         common,
-        stateManager: new DefaultStateManager(),
       })
 
       let currentMem = ''

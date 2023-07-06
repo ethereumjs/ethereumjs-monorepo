@@ -1,3 +1,4 @@
+export * from '../types.js'
 export * from './ecies.js'
 export * from './mac.js'
 export * from './peer.js'
