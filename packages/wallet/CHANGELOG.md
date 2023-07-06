@@ -20,7 +20,7 @@ So the new version of the library can now be installed with:
 npm i @ethereumjs/wallet
 ```
 
-The wallet library has now also been integrated into the EthereumJS monorepo, see PR [#2729](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2729) and got a general update along the way aligning with the other EthereumJS libraries by e.g. switching from Buffer usage to Uint8Array and providing a hybrid CJS/ESM build.
+The wallet library has now also been integrated into the EthereumJS monorepo, see PR [#2729](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2729) and PR [#2739](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2739) and got a general update along the way aligning with the other EthereumJS libraries by e.g. switching from Buffer usage to Uint8Array and providing a hybrid CJS/ESM build.
 
 ### Removed default Exports
 

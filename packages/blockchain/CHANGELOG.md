@@ -19,7 +19,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
 ```
 
-And third on hardforks 🙂: while not all Cancun EIPs are finalized yet, Cancun is now an officially selectable hardfork in our libraries and can be activated with:
+And third on hardforks 🙂: while not all Cancun EIPs are finalized yet, Cancun is now an officially selectable hardfork in our libraries (see PR [#2659](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2659)) and can be activated with:
 
 ```typescript
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
@@ -30,7 +30,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 
 Up to this release the backend store for the blockchain library was tied to be a `LevelDB` database, which was unfortunate since `level` is a depedency which doesn't play so well in the browser and beyond there are many use cases for this library where a persistent data store is just not needed.
 
-With this release the database therefore gets an additional abstraction layer which allows to switch the backend to whatever is fitting the best for a use case, see PR [#2669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2669). The database just needs to conform to the new [DB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts) interface which we provide in the `@ethereumjs/util` package (since this is used in other places as well).
+With this release the database therefore gets an additional abstraction layer which allows to switch the backend to whatever is fitting the best for a use case, see PR [#2669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2669) and PR [#2673](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2673). The database just needs to conform to the new [DB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts) interface which we provide in the `@ethereumjs/util` package (since this is used in other places as well).
 
 By default the blockchain package is now using a [MapDB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts) non-persistent data storage which is also generically provided in the `@ethereumjs/util` package.
 
@@ -65,6 +65,7 @@ We have added helper methods for "Buffer -> Uint8Array" conversions in the [@eth
 
 - Fixed clique signer reorg scenario, PR [#2610](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2610)
 - Fix handling of nested uint8Arrays in JSON in DB, PR [#2666](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2666)
+- Save iterator head to last successfuly executed even on errors, PR [#2680](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2680)
 
 ## 6.2.2 - 2023-04-20
 

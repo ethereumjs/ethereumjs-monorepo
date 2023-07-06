@@ -19,7 +19,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
 ```
 
-And third on hardforks 🙂: while not all Cancun EIPs are finalized yet, Cancun is now an officially selectable hardfork in our libraries and can be activated with:
+And third on hardforks 🙂: while not all Cancun EIPs are finalized yet, Cancun is now an officially selectable hardfork in our libraries (see PR [#2659](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2659)) and can be activated with:
 
 ```typescript
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
@@ -98,6 +98,7 @@ We have added helper methods for "Buffer -> Uint8Array" conversions in the [@eth
 ### Other Changes
 
 - `EthersStateManager` now uses `Ethers` `v6`, PR [#2720](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2720)
+- Integrate an `OriginalStorage` cache, other VM/EVM EEI refactoring related changes, PR [#2702](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2702)
 
 ## 1.0.5 - 2023-04-20
 

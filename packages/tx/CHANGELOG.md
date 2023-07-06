@@ -19,7 +19,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
 ```
 
-And third on hardforks 🙂: while not all Cancun EIPs are finalized yet, Cancun is now an officially selectable hardfork in our libraries and can be activated with:
+And third on hardforks 🙂: while not all Cancun EIPs are finalized yet, Cancun is now an officially selectable hardfork in our libraries (see PR [#2659](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2659)) and can be activated with:
 
 ```typescript
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
@@ -35,6 +35,7 @@ This release supports EIP-4844 along this snapshot [b9a5a11](https://github.com/
 The following changes are included:
 
 - Update blob tx type to 0x03, PR [#2363](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2636)
+- Fix the deserialization of blob txs and add no empty blobs validation, PR [#2640](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2640)
 
 ### Buffer -> Uint8Array
 

@@ -19,11 +19,29 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
 ```
 
-And third on hardforks 🙂: while not all Cancun EIPs are finalized yet, Cancun is now an officially selectable hardfork in our libraries and can be activated with:
+And third on hardforks 🙂: while not all Cancun EIPs are finalized yet, Cancun is now an officially selectable hardfork in our libraries (see PR [#2659](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2659)) and can be activated with:
 
 ```typescript
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
+```
+
+### EIP-4844 Support (Status: Review, 4844-devnet-7, July 2023)
+
+While there might be last-round final tweaks [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) is closing in on its final format with a lot of spec changes during the last 2-3 months still happening.
+
+This release supports EIP-4844 along this snapshot [b9a5a11](https://github.com/ethereum/EIPs/commit/b9a5a117ab7e1dc18f937841d00598b527c306e7)from the EIP repository with the EIP being in `Review` status and features/changes included which made it into [4844-devnet-7](https://github.com/ethpandaops/4844-testnet).
+
+#### New Block Header field: dataGasUsed
+
+For the Block library the most significant change is that there is now a new header field `dataGasUsed` if `EIP-4844` is activated (via `Common`), see PR [#2750](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2750).
+
+Additionally there are the following three `dataGasUsed` related new helper methods:
+
+```typescript
+BlockHeader.getDataGasPrice(): bigint
+BlockHeader.calcDataFee(numBlobs: number): bigint
+BlockHeader.calcNextExcessDataGas(): bigint
 ```
 
 ### Block: fromExecutionPayload() / fromBeaconPayloadJson()
@@ -75,6 +93,7 @@ We have added helper methods for "Buffer -> Uint8Array" conversions in the [@eth
 ### Other Changes
 
 - Migrate `fromEthersProvider()` to more general `fromJsonRpcProvider()` constructor, remove `Ethers` dependency, PR [#2663](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2663)
+- While the main `new Block()` constructor should generally not be used (use the static constructor methods instead) just to mention: `withdrawals` and `opts` constructor arguments have been swapped, PR [#2715](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2715)
 
 ## 4.2.2 - 2023-04-20
 
