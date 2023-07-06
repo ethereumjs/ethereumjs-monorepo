@@ -8,6 +8,37 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 2.0.0-rc.1 - 2023-07-11
 
+### New Package Name and General Library Update
+
+This is the first release of this library under a new namespaced package name switching from:
+
+- `ethereumjs-wallet` -> `@ethereumjs/wallet`
+
+So the new version of the library can now be installed with:
+
+```shell
+npm i @ethereumjs/wallet
+```
+
+The wallet library has now also been integrated into the EthereumJS monorepo, see PR [#2729](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2729) and got a general update along the way aligning with the other EthereumJS libraries by e.g. switching from Buffer usage to Uint8Array and providing a hybrid CJS/ESM build.
+
+### Removed default Exports
+
+All default exports for the libraries have been removed since these cause reoccuring import problems under certain build and usage conditions.
+
+So imports needs to be updated as follows:
+
+```typescript
+import Wallet from 'ethereumjs-wallet'
+import { Wallet } from '@ethereumjs/wallet'
+
+import { thirdparty } from 'ethereumjs-wallet'
+import { thirdparty } from '@ethereumjs/wallet'
+
+import { hdkey } from 'ethereumjs-wallet'
+import { hdkey } from '@ethereumjs/wallet'
+```
+
 ### Buffer -> Uint8Array
 
 With this releases we remove all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`). While this is a big step towards interoperability and browser compatibility of our libraries, this is also one of the most invasive operations we have ever done, see the huge changeset from PR [#2566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2566), additional updates in [#2607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2607) as well as the Wallet specific update in [#2739](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2739). 😋
