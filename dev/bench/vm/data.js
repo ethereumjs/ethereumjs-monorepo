@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1688603961296,
+  "lastUpdate": 1688629751976,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "2fd4087ad2aec85580750e4748ce4b3a6a2b32af",
-          "message": "genesis: Extract network genesis states into a separate genesis package (#2768)\n\n* genesis: Extract network genesis states into a separate genesis package\r\n\r\nmove the stats json\r\n\r\ngenesis working build\r\n\r\nbuild and working\r\n\r\nlint\r\n\r\ncleanup\r\n\r\nrefactor\r\n\r\nfix build\r\n\r\nadd spec coverage\r\n\r\nfix tests\r\n\r\nenhance coverage\r\n\r\nfix\r\n\r\nadd spec\r\n\r\n* rebase fixes\r\n\r\n* bring test uptodate with new framework\r\n\r\n* fix spec",
-          "timestamp": "2023-06-19T10:19:22+02:00",
-          "tree_id": "aa04bb43073deaa3ce0728ed335d00d40d56d2db",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2fd4087ad2aec85580750e4748ce4b3a6a2b32af"
-        },
-        "date": 1687163004346,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 32399,
-            "range": "±5.36%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 32433,
-            "range": "±2.33%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 28927,
-            "range": "±8.33%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 31891,
-            "range": "±2.54%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30723,
-            "range": "±2.52%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.11%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4c6b4bf84c6ddb63938df54c204c7a8b7ddacb69",
+          "message": "devp2p: type improvements & cleanup (#2863)\n\n* devp2p: refactor types into src/types and type kbucketOptions\r\n\r\n* devp2p: migrate additional types to src/types.ts\r\n\r\n* devp2p: PeerOptions interface\r\n\r\n* devp2p: address sendMessage performance issue (useless debug message encoding)\r\n\r\n* devp2p: type node-ip utils\r\n\r\n* devp2p: improve types and get rid of most anys\r\n\r\n* devp2p: refactor arrayEquals with equalsBytes\r\n\r\n* client: fix RlpxSender protocol type issue\r\n\r\n* devp2p rename CustomContact to Contact and small typedoc fix\r\n\r\n* devp2p: remove unnecessary !\r\n\r\n* devp2p: declare debugMsgs inline instead of prior to debug call\r\n\r\n* devp2p: rename ProtocolLabel -> ProtocolType\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <konjou@gmail.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-07-06T09:44:29+02:00",
+          "tree_id": "5f65669e3588cc0cb8fe431d379ca385b81e00b2",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4c6b4bf84c6ddb63938df54c204c7a8b7ddacb69"
+        },
+        "date": 1688629750621,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 20012,
+            "range": "±5.97%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 19504,
+            "range": "±3.40%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 19825,
+            "range": "±3.56%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 17663,
+            "range": "±10.21%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19030,
+            "range": "±3.48%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
           }
         ]
       }
