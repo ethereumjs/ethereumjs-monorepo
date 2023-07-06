@@ -118,7 +118,11 @@ describe('[TransactionFactory]: Basic functions', () => {
           `round-trip serialization should match (${txType.name})`
         )
       } else {
-        assert.deepEqual(tx.raw(), rawTx, `round-trip raw() creation should match (${txType.name})`)
+        assert.deepEqual(
+          tx.raw(),
+          rawTx as Uint8Array[],
+          `round-trip raw() creation should match (${txType.name})`
+        )
       }
     }
   })

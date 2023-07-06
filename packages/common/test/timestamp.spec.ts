@@ -100,7 +100,7 @@ describe('[Common]: Timestamp Hardfork logic', () => {
     for (const hf of c.hardforks()) {
       if (typeof hf.forkHash === 'string') {
         const msg = `Verify forkHash calculation for: ${hf.name}`
-        assert.equal(c._calcForkHash(hf.name, mainnetGenesisHash), hf.forkHash, msg)
+        assert.equal(c['_calcForkHash'](hf.name, mainnetGenesisHash), hf.forkHash, msg)
       }
     }
 

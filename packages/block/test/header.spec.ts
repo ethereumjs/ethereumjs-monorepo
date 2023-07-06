@@ -457,9 +457,13 @@ describe('[Block]: Header functions', () => {
     const bcBlockGasLimitTestData = testData.tests.BlockGasLimit2p63m1
 
     for (const key of Object.keys(bcBlockGasLimitTestData)) {
-      const genesisRlp = toBytes(bcBlockGasLimitTestData[key].genesisRLP)
+      const genesisRlp = toBytes(
+        bcBlockGasLimitTestData[key as keyof typeof bcBlockGasLimitTestData].genesisRLP
+      )
       const parentBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
-      const blockRlp = toBytes(bcBlockGasLimitTestData[key].blocks[0].rlp)
+      const blockRlp = toBytes(
+        bcBlockGasLimitTestData[key as keyof typeof bcBlockGasLimitTestData].blocks[0].rlp
+      )
       const block = Block.fromRLPSerializedBlock(blockRlp, { common })
       assert.doesNotThrow(() => block.validateGasLimit(parentBlock))
     }
