@@ -19,7 +19,7 @@ describe('Istanbul: EIP-1884', () => {
     const runCodeArgs = {
       code: hexToBytes('0x' + code.join('')),
       gasLimit: BigInt(0xffff),
-      address: addr,
+      to: addr,
     }
 
     for (const testCase of testCases) {

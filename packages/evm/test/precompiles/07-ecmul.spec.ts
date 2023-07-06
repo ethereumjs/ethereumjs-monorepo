@@ -1,5 +1,4 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { assert, describe, it } from 'vitest'
 
 import { EVM, getActivePrecompiles } from '../../src/index.js'
@@ -9,7 +8,6 @@ describe('Precompiles: ECMUL', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     const evm = await EVM.create({
       common,
-      stateManager: new DefaultStateManager(),
     })
     const ECMUL = getActivePrecompiles(common).get('0000000000000000000000000000000000000007')!
 

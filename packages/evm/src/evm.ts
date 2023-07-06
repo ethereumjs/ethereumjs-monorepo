@@ -37,7 +37,6 @@ import type {
   Blockchain,
   CustomOpcode,
   EVMEvents,
-  EVMInterface,
   EVMRunCallOpts,
   EVMRunCodeOpts,
   Log,
@@ -140,7 +139,7 @@ export interface EVMOpts {
   /*
    * The StateManager which is used to update the trie
    */
-  stateManager: EVMStateManagerInterface
+  stateManager?: EVMStateManagerInterface
 
   /**
    *
@@ -154,7 +153,7 @@ export interface EVMOpts {
  * and storing them to state (or discarding changes in case of exceptions).
  * @ignore
  */
-export class EVM implements EVMInterface {
+export class EVM {
   protected static supportedHardforks = [
     Hardfork.Chainstart,
     Hardfork.Homestead,
@@ -240,7 +239,7 @@ export class EVM implements EVMInterface {
    *
    * @param opts EVM engine constructor options
    */
-  static async create(opts: EVMOpts): Promise<EVM> {
+  static async create(opts: EVMOpts = {}): Promise<EVM> {
     const evm = new this(opts)
     await evm.init()
     return evm
@@ -897,8 +896,8 @@ export class EVM implements EVMInterface {
     const message = new Message({
       code: opts.code,
       data: opts.data,
-      gasLimit: opts.gasLimit,
-      to: opts.address ?? Address.zero(),
+      gasLimit: opts.gasLimit ?? BigInt(0xffffff),
+      to: opts.to ?? Address.zero(),
       caller: opts.caller,
       value: opts.value,
       depth: opts.depth,
@@ -1014,9 +1013,9 @@ export class EVM implements EVMInterface {
    * Note: this is only a shallow copy and both EVM instances
    * will point to the same underlying state DB.
    *
-   * @returns EVMInterface
+   * @returns EVM
    */
-  public shallowCopy(): EVMInterface {
+  public shallowCopy(): EVM {
     const common = this.common.copy()
     common.setHardfork(this.common.hardfork())
 

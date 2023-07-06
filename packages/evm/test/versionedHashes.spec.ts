@@ -1,5 +1,4 @@
 import { Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address, bytesToHex, hexToBytes, unpadBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -17,7 +16,6 @@ describe('BLOBHASH / access versionedHashes in calldata', () => {
     })
     const evm = await EVM.create({
       common,
-      stateManager: new DefaultStateManager(),
     })
 
     const getBlobHashIndex0Code = '0x60004960005260206000F3'
@@ -48,7 +46,6 @@ describe(`BLOBHASH: access versionedHashes within contract calls`, () => {
     })
     const evm = await EVM.create({
       common,
-      stateManager: new DefaultStateManager(),
     })
 
     const getBlobHasIndexCode = '0x60004960005260206000F3'
@@ -100,7 +97,6 @@ describe(`BLOBHASH: access versionedHashes in a CREATE/CREATE2 frame`, () => {
     })
     const evm = await EVM.create({
       common,
-      stateManager: new DefaultStateManager(),
     })
 
     let getBlobHashIndex0Code = '60004960005260206000F3'

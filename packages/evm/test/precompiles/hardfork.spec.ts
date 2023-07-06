@@ -1,5 +1,4 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -23,7 +22,6 @@ describe('Precompiles: hardfork availability', () => {
 
     let evm = await EVM.create({
       common: commonByzantium,
-      stateManager: new DefaultStateManager(),
     })
     let result = await evm.runCall({
       caller: Address.zero(),
@@ -45,7 +43,6 @@ describe('Precompiles: hardfork availability', () => {
 
     evm = await EVM.create({
       common: commonPetersburg,
-      stateManager: new DefaultStateManager(),
     })
     result = await evm.runCall({
       caller: Address.zero(),
@@ -68,7 +65,6 @@ describe('Precompiles: hardfork availability', () => {
 
     evm = await EVM.create({
       common: commonHomestead,
-      stateManager: new DefaultStateManager(),
     })
 
     result = await evm.runCall({

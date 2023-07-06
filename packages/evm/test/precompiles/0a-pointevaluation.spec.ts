@@ -1,5 +1,4 @@
 import { Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
   bytesToBigInt,
   computeVersionedHash,
@@ -35,7 +34,6 @@ describe('Precompiles: point evaluation', () => {
       })
       const evm = await EVM.create({
         common,
-        stateManager: new DefaultStateManager(),
       })
       const addressStr = '000000000000000000000000000000000000000a'
       const pointEvaluation = getActivePrecompiles(common).get(addressStr)!
